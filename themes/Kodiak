@@ -1,0 +1,151 @@
+# -*- Mode: Properties -*-
+# Kodiak 4/14/2000-11/1/2000
+# $Id: Kodiak,v 1.8 2003-02-05 04:05:22 piso Exp $
+
+color.text                              = 0 0 0
+color.background                        = 255 255 224
+color.currentLineBackground             = 235 235 204
+color.selectionBackground               = 153 204 255
+color.matchingBracketBackground         = 153 204 255
+color.caret                             = 255 0 0
+
+color.keyword                           = 0 0 153
+color.string                            = 153 51 0
+color.comment                           = 0 102 0
+color.function                          = 0 0 0
+color.operator                          = 0 0 255
+color.brace                             = 0 128 128
+color.number                            = 153 102 51
+color.preprocessor                      = 255 0 0
+color.disabled                          = 153 153 153
+color.verticalRule                      = 204 204 204
+color.lineNumber                        = 153 153 153
+color.gutterBorder                      = 153 153 153
+color.change                            = 255 164 0
+color.savedChange                       = 180 180 180
+color.delimiter                         = 0 153 153
+
+CSSMode.color.selector                  = 0 0 0
+CSSMode.style.selector                  = 1
+CSSMode.color.property                  = 0 0 204
+CSSMode.style.property                  = 0
+
+PerlMode.color.scalar                   = 51 51 0
+PerlMode.color.list                     = 0 51 51
+
+LispMode.color.substitution             = 153 0 153
+LispMode.color.punctuation              = 102 102 102
+LispMode.color.parenthesis              = 102 102 102
+LispMode.color.secondaryKeyword         = 0 102 153
+
+TclMode.color.brace                     = 153 0 51
+TclMode.style.brace                     = 1
+TclMode.color.bracket                   = 204 102 0
+TclMode.style.bracket                   = 1
+
+VHDLMode.color.type                     = 0 0 255
+
+PHPMode.color.var                       = 51 51 0
+PHPMode.color.tag                       = 0 0 0
+PHPMode.color.attribute                 = 0 0 128
+PHPMode.color.equals                    = 0 153 153
+
+color.prompt                            = 0 0 0
+color.input                             = 0 0 255
+
+XmlMode.color.attribute                 = 0 0 128
+XmlMode.color.equals                    = 0 153 153
+XmlMode.color.namespace                 = 0 0 0
+XmlMode.color.tag                       = 0 0 0
+
+HtmlMode.color.tag                      = 0 0 204
+HtmlMode.color.image                    = 204 102 0
+HtmlMode.color.anchor                   = 51 153 51
+HtmlMode.color.table                    = 204 0 0
+HtmlMode.color.tableRow                 = 153 0 0
+HtmlMode.color.tableData                = 153 51 0
+HtmlMode.color.comment                  = 128 128 128
+HtmlMode.color.script                   = 0 0 255
+
+MakefileMode.color.target               = 0 0 0
+
+DiffMode.color.file                     = 0
+DiffMode.style.file                     = 1
+DiffMode.color.header                   = 0 102 0
+DiffMode.style.header                   = 2
+DiffMode.color.context                  = 0
+DiffMode.color.inserted                 = 153 0 0
+DiffMode.style.inserted                 = 0
+DiffMode.color.deleted                  = 0 0 153
+DiffMode.style.deleted                  = 0
+
+DirectoryMode.color.directory           = 0 0 0
+DirectoryMode.style.directory           = 1
+DirectoryMode.color.symlink             = 0 0 255
+DirectoryMode.color.marked              = 153 0 0
+DirectoryMode.style.marked              = 1
+
+WebMode.color.link                      = 0 0 255
+WebMode.style.link                      = 0
+
+MailboxMode.color.date                  = 51 51 51
+MailboxMode.style.date                  = 0
+MailboxMode.color.from                  = 0 0 0
+MailboxMode.style.from                  = 1
+MailboxMode.color.size                  = 51 51 51
+MailboxMode.color.subject               = 51 102 102
+MailboxMode.style.subject               = 1
+
+MailboxMode.color.flaggedTo             = 204 51 0
+MailboxMode.style.flaggedTo             = 1
+MailboxMode.style.flaggedFlags          = 0
+MailboxMode.style.flaggedDate           = 0
+MailboxMode.color.flaggedFrom           = 204 51 0
+MailboxMode.style.flaggedFrom           = 1
+MailboxMode.style.flaggedSize           = 0
+MailboxMode.color.flaggedSubject        = 204 51 0
+MailboxMode.style.flaggedSubject        = 1
+
+MailboxMode.color.marked                = 153 0 0
+MailboxMode.style.marked                = 1
+
+MessageMode.color.headerValue           = 51 102 102
+MessageMode.style.headerValue           = 1
+MessageMode.color.signature             = 102 102 102
+MessageMode.color.string                = 0 102 0
+MessageMode.style.string                = 0
+MessageMode.color.comment               = 102 102 102
+MessageMode.style.comment               = 0
+
+WebMode.color.headerValue               = 51 102 102
+WebMode.style.headerValue               = 1
+
+color.matchingText                      = 204 102 0
+style.matchingText                      = 1
+color.status                            = 0 0 153
+style.status                            = 2
+
+# Properties mode.
+color.key                               = 0 0 153
+style.key                               = 0
+color.value                             = 128 0 0
+style.value                             = 0
+color.section                           = 0 0 153
+style.section                           = 1
+
+# List Registers mode
+color.registerPrefix                    = 0 0 153
+style.registerPrefix                    = 1
+color.registerName                      = 204 102 0
+style.registerName                      = 1
+
+# Font.PLAIN is 0, Font.BOLD is 1, Font.ITALIC is 2.
+style.text                              = 0
+style.keyword                           = 1
+style.function                          = 1
+style.prompt                            = 1
+style.comment                           = 2
+style.delimiter                         = 1
+XmlMode.style.tag                       = 1
+PHPMode.style.tag                       = 1
+MakefileMode.style.target               = 1

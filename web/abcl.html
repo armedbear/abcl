@@ -1,0 +1,117 @@
+<html>
+<head>
+<meta name="author" content="Peter Graves">
+<meta name="description" content="Armed Bear Common Lisp">
+<meta name="keywords" content="Armed Bear Common Lisp, ABCL, Common Lisp, Java, open source, GPL">
+<link rel="stylesheet" href="armedbear.css" type="text/css">
+<title>Armed Bear Common Lisp</title>
+</head>
+
+<body>
+
+<center>
+  <h1>Armed Bear</h1>
+  <i>The right of the people to keep and arm bears shall not be infringed!</i>
+</center>
+
+<hr size="2">
+<p>
+
+<font face="sans-serif" size="4">
+  <b>About ABCL</b>
+</font>
+
+<p>
+<dl>
+  <dd>
+      Armed Bear Common Lisp (ABCL) is an implementation of ANSI Common Lisp
+      that runs in a Java virtual machine. It provides a runtime system, a
+      compiler that compiles Lisp source to JVM bytecode, and an interactive
+      REPL for program development.
+      <p>
+      ABCL is distributed under the terms of the <a href="http://www.gnu.org/copyleft/gpl.html">GNU General Public
+      License</a>, with a special linking exception. If you link ABCL with your
+      own program, then you do not need to release the source code for that
+      program. However, any changes that you make to ABCL itself must be
+      released in accordance with the terms of the GPL.
+      <p>
+      ABCL runs on platforms that support Java 1.4 (or later), including Linux,
+      Windows, and Mac OS X.
+      <p>
+      ABCL is free software and comes with ABSOLUTELY NO WARRANTY.
+      <p>
+      The latest version is 0.0.10, released March 6, 2007.
+  </dd>
+</dl>
+
+<p>
+<font face="sans-serif" size="4">
+  <b>Download</b>
+</font>
+<dl>
+  <dd>
+      <a href="http://armedbear.org/abcl-0.0.10.tar.gz">abcl-0.0.10.tar.gz</a>
+      (source, 632987 bytes)
+      <p>
+      <a href="http://armedbear.org/abcl-0.0.10.zip">abcl-0.0.10.zip</a>
+      (source, 1012345 bytes)
+  </dd>
+</dl>
+
+<p>
+<font face="sans-serif" size="4">
+  <b>CVS</b>
+</font>
+<dl>
+  <dd>
+      The project's SourceForge.net CVS repository can be checked out through
+      anonymous (pserver) CVS with the following command:
+      <pre>
+      cvs -d:cvs -z3 -d:pserver:anonymous@armedbear-j.cvs.sourceforge.net:/cvsroot/armedbear-j co j
+      </pre>
+  </dd>
+</dl>
+
+<p>
+<font face="sans-serif" size="4">
+  <b>Bugs</b>
+</font>
+<dl>
+    <dd>
+        ABCL is a young implementation (particularly by Lisp standards). You
+        are certain to encounter bugs.
+        <p>
+        ABCL 0.0.10 fails 67 out of 21696 tests in the GCL ANSI test suite.
+        <p>
+        ABCL's CLOS is intolerably slow and does not handle on-the-fly
+        redefinition of classes correctly. There is no support for the long
+        form of DEFINE-METHOD-COMBINATION, and certain other required CLOS
+        features are also missing. Enough CLOS is there to run ASDF and
+        CL-PPCRE, if you're in no hurry. There's no MOP worth mentioning.
+        <p>
+        Since this is an early public release, there might be build problems as
+        well as runtime bugs.
+        <p>
+        Please report problems to the <a href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">j development mailing list</a>
+        (you must be subscribed to post).
+    </dd>
+</dl>
+
+<p>
+<font face="sans-serif" size="4">
+  <b>Installation</b>
+</font>
+<dl>
+  <dd>
+    The README file in the root directory of the source distribution contains
+    instructions for building ABCL.
+    <p>
+    Java 1.4 or later is required.
+    <a href="http://java.sun.com/javase/downloads/index_jdk5.jsp">Java 1.5</a>
+    is recommended. There are
+    <a href="http://sourceforge.net/mailarchive/message.php?msg_name=20070218045318.5111%40stephen">
+    unresolved performance issues</a> with Java 1.6. To build ABCL, you'll need
+    the full JDK; the JRE is not enough. </dd>
+</dl>
+<p>
+</body> </html>

@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<title>J User's Guide - Sessions</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+<body>
+<a href="contents.html">Top</a>
+<hr>
+<h1>Sessions</h1>
+<hr>
+<p>
+By default, information about your editing session is saved so that when you
+restart j, things come back more or less as you left them: the same buffers
+will be open (except for remote and transient buffers), and the current
+location in each buffer will be the same.
+</p>
+<p>
+J also provides support for named sessions with the commands
+<a href="commands.html#saveSession">saveSession</a> and
+<a href="commands.html#loadSession">loadSession</a>.
+</p>
+<p>
+<a href="commands.html#saveSession">saveSession</a> saves information about
+the current editing session in a named session file. If no named session is
+active yet, you will be prompted for a name for the current session;
+subsequent saves will go to that session file without further prompting.
+</p>
+<p>
+<a href="commands.html#loadSession">loadSession</a> loads a previously saved
+named session, which then becomes the active named session as far as
+<a href="commands.html#saveSession">saveSession</a> is concerned. All
+currently open buffers are closed before the new session is loaded.
+</p>
+<p>
+If a named session is active, you can save the current session under a new
+name by using <a href="commands.html#executeCommand">executeCommand</a> to
+invoke <a href="commands.html#saveSession">saveSession</a> with the new name
+as an argument (e.g. Alt X, "saveSession foo"). If you do this, subsequent
+saves will go to the new session file by default.
+</p>
+<p>
+When a named session is active, the session name appears in the title bar of
+the top-level window, enclosed in brackets.
+</p>
+<p>
+By default, the information in a named session file is only updated when you
+explicitly invoke <a href="commands.html#saveSession">saveSession</a>. This
+allows you to exercise better control over the contents of named session
+files. If you'd like named session information to be updated automatically,
+add this line to ~/.j/prefs or C:\.j\prefs:
+<pre>
+    autosaveNamedSessions = true</pre>
+<p>
+You can use "-session" on the command line to start j with a specific named
+session:
+<pre>
+    j -session foo</pre>
+or
+<pre>
+    java -jar j.jar -session foo</pre>
+<p>
+When you start j without specifying a named session on the command line, the
+previous session is restored, but no named session is active until you do
+<a href="commands.html#saveSession">saveSession</a> or
+<a href="commands.html#loadSession">loadSession</a>.
+</p>
+<p>
+Named session files are stored in the directory ~/.j/sessions (or
+C:\.j\sessions). You might want to visit that directory on your day off and
+delete session files that are no longer needed.
+</p>
+</body>
+</html>

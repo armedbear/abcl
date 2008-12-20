@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - Aliases</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Aliases</h1>
+
+<hr>
+
+<p>
+<a href="commands.html#openFile">openFile</a> and 
+<a href="commands.html#executeCommand">executeCommand</a> support the use of
+aliases.
+<p>
+To define an alias, use the command <a href="commands.html#alias">alias</a>,
+which you can invoke using 
+<a href="commands.html#executeCommand">executeCommand</a> (mapped by default
+to Alt X).
+<p>
+Usage:
+<pre>
+    alias key=value</pre>
+<p>
+For example:
+<pre>
+    alias notes=/home/peter/notes</pre>
+or
+<pre>
+    alias pf=man perlfunc</pre>
+<p>
+The '=' is optional; a space will do as well. Keys may not contain embedded
+spaces.
+<p>
+If you want to define an alias for the current file, you can use "here" as a
+shortcut:
+<pre>
+    alias notes here</pre>
+<p>
+Once you've defined an alias, you can use the key ("notes" or "pf") instead of
+the value ("/home/peter/notes" or "man perlfunc") with 
+<a href="commands.html#openFile">openFile</a> or 
+<a href="commands.html#executeCommand">executeCommand</a>. J simply substitues
+the value for the key when you press Enter in the location bar textfield.
+<p>
+To unset an alias, set it to nothing:
+<pre>
+    alias notes=</pre>
+You can bring up a dialog box to edit the value of an alias by invoking 
+<a href="commands.html#alias">alias</a> with no arguments or by specifying
+just the key:
+<pre>
+    alias notes</pre>
+<p>
+Aliases are stored in the file ~/.j/aliases, or C:\.j\aliases on Windows,
+unless you specify a different home directory when starting j (see 
+<a href="preferences.html">Preferences</a>). You can edit this file to add,
+remove, or modify aliases as long as you maintain the same format. If you use
+j to edit your aliases file, the running instance of j automatically reloads
+your aliases when you save the changes to the file, so it is not necessary to
+restart j in order to pick up the new aliases. 
+<p>
+J itself defines three system aliases which may not be changed: "prefs" is an
+alias for j's <a href="preferences.html">preferences file</a>, "aliases" is an
+alias for the file that contains the aliases themselves, and "inbox" is an
+alias for the user's default inbox, if any, as specified in the preferences
+file (see <a href="preferences.html#inbox">inbox</a>).
+
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - Mail</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Mail</h1>
+
+<hr>
+
+<p>
+  J provides support for IMAP, POP and SMTP. (By coincidence, it's also
+  possible to use the <a href="commands.html#openMailbox">openMailbox</a>
+  command to open a read-only view of a Unix mbox-style mailbox, but that's
+  not officially sanctioned yet.)
+  <br><br>
+  To set up mail, you need to add a few lines to your
+  <a href="preferences.html">preferences</a> file:
+
+  <pre>
+    enableExperimentalFeatures = true
+    enableMail = true
+
+    # Default "From" address information.
+    userFullName = Peter Graves
+    userMailAddress = peter@armedbear.org
+
+    # The SMTP server to be used for sending mail.
+    smtp = annie</pre>
+
+  (Your name, mail address and SMTP server may be different. On a Unix system,
+  setting smtp to "localhost" might work.)
+  <br><br>
+  You might also want to specify a default mailbox for the
+  <a href="commands.html#inbox">inbox</a> command:
+
+  <pre>
+    inbox = {peter@annie}inbox</pre>
+
+  You can also get j to send automatic blind copies of outgoing messages:
+  <pre>
+    bcc = peter@armedbear.org</pre>
+
+  To read mail, use the <a href="commands.html#openMailbox">openMailbox</a>
+  command. For IMAP, mailbox URLs should look like this:
+
+  <pre>
+    {user@host}folder</pre>
+
+  For example:
+
+  <pre>
+    {peter@annie}inbox
+    {peter@annie}/var/spool/mail/peter
+    {peter@annie}mail/j</pre>
+
+  For POP, mailbox URLs should look like this:
+
+  <pre>
+    pop://user@host</pre>
+
+  For example:
+
+  <pre>
+    pop://peter@annie
+    pop://pgraves@vipmail.com</pre>
+
+  Once you're in your mailbox, you can use
+  <a href="commands.html#mailboxReadMessage">mailboxReadMessage</a>, mapped by
+  default to Enter, to read the message at the current location of the caret.
+  <br><br>
+  To compose mail, use the <a href="commands.html#compose">compose</a>
+  command. You can also use
+  <a href="commands.html#messageReplyToSender">messageReplyToSender</a>
+  or <a href="commands.html#messageReplyToGroup">messageReplyToGroup</a> to
+  reply to a message you're reading.
+  <br><br>
+  In a message composition buffer, the header lines at the top of the buffer
+  will be sent verbatim with your message, with the exception of lines listing
+  attachments. You can edit the default header lines or add additional ones.
+  You should leave the message separator line ("--text follows this line--")
+  alone; j uses it to mark the end of the message headers, and it will be
+  removed automatically before the message is actually sent.
+  <br><br>
+  Automatic word wrap is on by default in mail composition buffers (except for
+  the header lines). You can use
+  <a href="commands.html#toggleWrap">toggleWrap</a> to turn it off. By
+  default, <a href="preferences.html#wrapCol">wrapCol</a> is 72 in mail
+  composition buffers. To change this, add a line like this to your
+  <a href="preferences.html">preferences</a> file:
+  <pre>
+    SendMailMode.wrapCol = 80</pre>
+  You can use the command <a href="commands.html#attachFile">attachFile</a> to
+  attach one or more files to your outgoing message.
+  <br><br>
+  When you're ready, use the <a href="commands.html#send">send</a> command to
+  send your message.
+  <br><br>
+  By default, j never deletes any messages in your POP mailbox on the server.
+  You can configure j to delete messages on the server after they have been
+  successfully retrieved by adding this line to your
+  <a href="preferences.html">preferences</a> file:
+
+  <pre>
+    popKeepMessagesOnServer = false</pre>
+
+  If you prefer, you can configure j to keep messages on the server when they
+  are first retrieved, but delete them on the server when you have deleted and
+  expunged them locally. To do so, add these two lines to your
+  <a href="preferences.html">preferences</a> file:
+
+  <pre>
+    popKeepMessagesOnServer = true
+    popExpungeDeletedMessagesOnServer = true</pre>
+
+  The
+  <a href="preferences.html#popKeepMessagesOnServer">popKeepMessagesOnServer
+  </a> and <a href="preferences.html#popExpungeDeletedMessagesOnServer">popExpungeDeletedMessagesOnServer</a>
+  properties only apply to POP mailboxes.
+  <br><br>
+  Until you invoke <a href="commands.html#mailboxExpunge">mailboxExpunge</a>,
+  you can use the command
+  <a href="commands.html#mailboxUndelete">mailboxUndelete</a> to undelete any
+  message that is marked for deletion. This applies to both POP and IMAP
+  mailboxes.
+  <br><br>
+  The following commands are specifically relevant to mail:
+  <ul>
+    <li><a href="commands.html#addGroup">addGroup</a></li>
+    <li><a href="commands.html#attachFile">attachFile</a></li>
+    <li><a href="commands.html#bounceMessage">bounceMessage</a></li>
+    <li><a href="commands.html#compose">compose</a></li>
+    <li><a href="commands.html#expandMailAddress">expandMailAddress</a></li>
+    <li><a href="commands.html#inbox">inbox</a></li>
+    <li><a href="commands.html#mailboxCreateFolder">mailboxCreateFolder</a></li>
+    <li><a href="commands.html#mailboxDelete">mailboxDelete</a></li>
+    <li><a href="commands.html#mailboxDeleteFolder">mailboxDeleteFolder</a></li>
+    <li><a href="commands.html#mailboxExpunge">mailboxExpunge</a></li>
+    <li><a href="commands.html#mailboxFlag">mailboxFlag</a></li>
+    <li><a href="commands.html#mailboxGetNewMessages">mailboxGetNewMessages</a></li>
+    <li><a href="commands.html#mailboxLastMessage">mailboxLastMessage</a></li>
+    <li><a href="commands.html#mailboxLimit">mailboxLimit</a></li>
+    <li><a href="commands.html#mailboxMarkRead">mailboxMarkRead</a></li>
+    <li><a href="commands.html#mailboxMarkUnread">mailboxMarkUnread</a></li>
+    <li><a href="commands.html#mailboxMoveToFolder">mailboxMoveToFolder</a></li>
+    <li><a href="commands.html#mailboxReadMessage">mailboxReadMessage</a></li>
+    <li><a href="commands.html#mailboxSaveToFolder">mailboxSaveToFolder</a></li>
+    <li><a href="commands.html#mailboxStop">mailboxStop</a></li>
+    <li><a href="commands.html#mailboxTag">mailboxTag</a></li>
+    <li><a href="commands.html#mailboxTagPattern">mailboxTagPattern</a></li>
+    <li><a href="commands.html#mailboxToggleRaw">mailboxToggleRaw</a></li>
+    <li><a href="commands.html#mailboxUndelete">mailboxUndelete</a></li>
+    <li><a href="commands.html#mailboxUnlimit">mailboxUnlimit</a></li>
+    <li><a href="commands.html#mailboxUntagAll">mailboxUntagAll</a></li>
+    <li><a href="commands.html#messageDelete">messageDelete</a></li>
+    <li><a href="commands.html#messageFlag">messageFlag</a></li>
+    <li><a href="commands.html#messageForward">messageForward</a></li>
+    <li><a href="commands.html#messageIndex">messageIndex</a></li>
+    <li><a href="commands.html#messageMoveToFolder">messageMoveToFolder</a></li>
+    <li><a href="commands.html#messageNext">messageNext</a></li>
+    <li><a href="commands.html#messageNextInThread">messageNextInThread</a></li>
+    <li><a href="commands.html#messagePrevious">messagePrevious</a></li>
+    <li><a href="commands.html#messagePreviousInThread">messagePreviousInThread</a></li>
+    <li><a href="commands.html#messageReplyToGroup">messageReplyToGroup</a></li>
+    <li><a href="commands.html#messageReplyToSender">messageReplyToSender</a></li>
+    <li><a href="commands.html#messageSaveAttachment">messageSaveAttachment</a></li>
+    <li><a href="commands.html#messageToggleHeaders">messageToggleHeaders</a></li>
+    <li><a href="commands.html#messageToggleRaw">messageToggleRaw</a></li>
+    <li><a href="commands.html#messageToggleWrap">messageToggleWrap</a></li>
+    <li><a href="commands.html#messageViewAttachment">messageViewAttachment</a></li>
+    <li><a href="commands.html#openMailbox">openMailbox</a></li>
+    <li><a href="commands.html#send">send</a></li>
+    <li><a href="commands.html#sendMailBackTab">sendMailBackTab</a></li>
+    <li><a href="commands.html#sendMailTab">sendMailTab</a></li>
+    <li><a href="commands.html#toggleGroupByThread">toggleGroupByThread</a></li>
+  </ul>
+</body>
+</html>

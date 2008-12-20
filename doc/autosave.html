@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - Autosave, Crash Recovery and Backups</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Autosave, Crash Recovery and Backups</h1>
+
+<hr>
+
+<p>
+
+To minimize loss of work in the event of a crash, j autosaves each modified
+buffer whenever there is no user activity for a minimum of two seconds. This
+has no effect on the file you're editing; modified buffers are written out to
+temporary files in j's autosave directory (which is normally 
+<code>~/.j/autosave</code> on Unix or <code>C:\.j\autosave</code> on Windows,
+but see below).
+
+<p>
+
+Whenever you explicitly save a file, the corresponding autosave file is
+deleted. When j exits normally, all the autosave files are deleted. If a crash
+occurs, the autosave files will still be around when you restart j, and j will
+ask you, one by one, if you want to recover the files in question. If you say
+yes, the file will be restored from the corresponding autosave file. If you say
+no, j will offer to delete the autosave file. If you choose not to delete the
+autosave file, it will remain in the autosave directory for perusal and
+disposition at your leisure.
+
+<p>
+
+Whenever you explicitly save a file, a backup of the file is written to the
+backup directory, which by default is a directory called <code>backup</code>
+located in the home directory of the current user (i.e. <code>~/backup</code>
+on Unix).
+
+<p>
+
+On Windows, the home directory of the current user normally defaults to   
+<code>C:\</code> (the default is actually the root directory of the first
+writable drive, excluding <code>A:</code> and <code>B:</code>), so the default
+backup directory on Windows is normally <code>C:\backup</code>.
+
+<p>
+
+You can specify a different home directory by starting j with the 
+<code>--home</code> command line option:
+<pre>
+    j --home=C:\ArmedBear
+</pre>
+In this case your home directory, as far as j is concerned, will be    
+<code>C:\ArmedBear</code>, the <code>.j</code> directory will be 
+<code>C:\ArmedBear\.j</code>, autosave files will be stored in   
+<code>C:\ArmedBear\.j\autosave</code>, and the default backup directory will be
+<code>C:\ArmedBear\backup</code>.
+
+<p>
+
+You can specify the location of the backup directory separately by setting the 
+<code>backupDirectory</code> property in your       
+<a href="preferences.html">preferences</a> file:
+<pre>
+    backupDirectory=/home/peter/work/backup
+</pre>
+
+The backup file (in the backup directory) always has the same name as the original file.
+
+<p>
+
+It's a good idea to visit your backup directory occasionally and clean it out;
+there is no mechanism in j to do this automatically.
+
+</body>
+
+</html>

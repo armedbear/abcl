@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - Themes</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Themes</h1>
+
+<hr>
+
+<p>
+Themes are a way to gather together the properties that control the appearance
+of the editor.
+<p>
+The distribution comes with a themes directory which contains several themes. You can
+specify the theme to use by setting the <a href="preferences.html#theme">theme</a>
+property in your <a href="preferences.html">preferences</a> file:
+<pre>
+    theme=Anokha
+</pre>
+The specified theme file is loaded as an additional preferences file after
+~/.j/prefs is loaded.
+<p>
+You can use the <a href="preferences.html#themePath">themePath</a> property
+to specify a list of directories that will be searched (in the specified order)
+for theme files when the full path of the theme file is not given. For example:
+<pre>
+    themePath=/home/peter:/home/peter/j/themes:/usr/local/share/j/themes
+</pre>
+
+</body>
+</html>

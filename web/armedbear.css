@@ -1,0 +1,37 @@
+BODY
+{
+    font-family: arial, helvetica, sans-serif;
+    color: #000000;
+    background-color: #ffffff;
+}
+
+B, I, P, UL, LI, H1, H2, H3, H4
+{
+    font-family: arial, helvetica, sans-serif;
+}
+
+
+A:link
+{
+    color: #cc6600;
+}
+
+A:active
+{
+    color: #cc6600;
+}
+
+A:visited
+{
+    color: #cc6600;
+}
+
+A:hover
+{
+    color: #cc6600;
+}
+
+CODE
+{
+    font-family: monospaced;
+}

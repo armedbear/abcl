@@ -1,0 +1,1896 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>Preferences</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Preferences</h1>
+
+<hr>
+
+<p>
+
+Preferences are read from a file named <code>prefs</code> in the
+<code>.j</code> directory. This directory is created automatically by j in the
+home directory of the current user.
+
+<p>
+
+On Windows, from j's point of view, the home directory of the current user
+normally defaults to <code>C:\</code>. The default is actually the root
+directory of the first writable drive, excluding drives A and B.
+
+<p>
+
+So, by default, your preferences file is <code>~/.j/prefs</code> on Unix and
+<code>C:\.j\prefs</code> on Windows.
+
+<p>
+
+You can specify a different home directory by starting j with the
+<code>--home</code> command line option:
+<pre>
+    j --home=C:\ArmedBear
+</pre>
+In this case your home directory, as far as j is concerned, will be
+<code>C:\ArmedBear</code>, the <code>.j</code> directory will be
+<code>C:\ArmedBear\.j</code>, and your preferences file will be
+<code>C:\ArmedBear\.j\prefs</code>.
+
+<p>
+
+The <code>--home</code> command line option is available on Unix as well as
+Windows.
+
+<p>
+
+The preferences file is an ordinary text file which will not exist until you
+specifically create it. You can open this file in j by simply specifying
+"prefs" in the Open File dialog or on the command line.
+
+<p>
+
+Each entry in the preferences file must be on a line by itself and must be
+of the form:
+<pre>
+    key=value
+</pre>
+Comments start with #, and values (but not keys) may contain embedded spaces.
+String values may be enclosed in double quotes. Property names (keys) are not
+case-sensitive, so "lineuparglist" and "lineUpArgList" (and, for that matter,
+"LINEUParglist" and "LiNeUpArGlIsT") are, in effect, the same as
+"lineupArglist", which is actually the official spelling.
+<p>
+Here's an example for Unix:
+
+<pre>
+  #
+  # Unix
+  # Path separator is colon.
+  #
+  sourcePath=/home/peter/j/src/org/armedbear/j:/home/peter/j/src
+  includePath=/usr/include:/usr/src/linux/include/linux
+  docPath=/home/peter/j/doc
+</pre>
+<p>
+Here's a similar example for Windows:
+<pre>
+  #
+  # Windows
+  # Path separator is semicolon.
+  # Note that double backslashes are required!
+  #
+  sourcePath=C:\\j\\src\\org\\armedbear\\j;C:\\j\\src
+  includePath=C:\\Program Files\\DevStudio\\vc\\include
+  docPath=C:\\j\\doc
+</pre>
+<p>
+If you use j to edit your preferences file, the running instance of j
+automatically reloads your preferences when you save the changes to the file,
+so in most cases it is not necessary to restart j in order to pick up the new
+settings.
+<p>
+Many properties (notably colors, styles, and properties such as tab width and
+indent size) may be set globally and overridden on a mode-specific basis.  For
+example:
+<pre>
+    color.text=black
+    color.comment=gray
+    JavaMode.color.text=blue
+    JavaMode.color.comment=0 128 0
+    indentSize=8
+    JavaMode.indentSize=4
+</pre>
+Colors are normally specified by their RGB values:
+<pre>
+    color.selectionBackground=153 204 255</pre>
+Common colors may be specified by name:
+<pre>
+    color.text=black</pre>
+<p>
+The following properties are supported:
+<br><br>
+
+<code><a name="adjustAscent">adjustAscent</a></code>
+<dl>
+<dd>
+Amount to be added to the default ascent for the current display font (a
+negative value can be specified).
+<p>
+<b>See also:</b> <a href="#adjustDescent">adjustDescent</a>,
+<a href="#adjustLeading">adjustLeading</a>
+<p>
+<b>Default value:</b> 0
+</dl>
+
+<code><a name="adjustDescent">adjustDescent</a></code>
+<dl>
+<dd>
+Amount to be added to the default descent for the current display font (a
+negative value can be specified).
+<p>
+<b>See also:</b> <a href="#adjustAscent">adjustAscent</a>,
+<a href="#adjustLeading">adjustLeading</a>
+<p>
+<b>Default value:</b> 0
+</dl>
+
+<code><a name="adjustLeading">adjustLeading</a></code>
+<dl>
+<dd>
+Amount to be added to the default leading for the current display font (a
+negative value can be specified).
+<p>
+<b>See also:</b> <a href="#adjustAscent">adjustAscent</a>,
+<a href="#adjustDescent">adjustDescent</a>
+<p>
+<b>Default value:</b> 0
+</dl>
+
+<code><a name="antialias">antialias</a></code>
+<dl>
+<dd>
+If true, j uses the antialiasing supported by Java2D. This may make things look
+better, or it may make things look worse.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="attributesRequireQuotes">attributesRequireQuotes</a></code>
+<dl>
+<dd>
+If true, in HTML mode <a href="commands.html#electricEquals">electricEquals</a>
+automatically inserts a pair of quotation marks after the '=' following an
+attribute name, making it possible to enclose attribute values in quotation
+marks without having to type the quotation marks themselves.
+<p>
+This property is ignored in XML mode; attribute values in XML are always
+enclosed in quotation marks.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="attribution">attribution</a></code>
+<dl>
+<dd>
+Template for the string that precedes a message that is quoted in a reply.
+<p>
+A couple of substitutions are supported:
+<pre>
+        %d      date and time of the original message
+        %n      sender's name (or address if name is missing)</pre>
+<p>
+<b>Default value:</b> "On %d, %n wrote:"
+</dl>
+
+<code><a name="autoIndent">autoIndent</a></code>
+<dl>
+<dd>
+If true, the functions
+<a href="commands.html#electricCloseAngleBracket">electricCloseAngleBracket</a>,
+<a href="commands.html#htmlEndTag">htmlEndTag</a>,
+<a href="commands.html#htmlInsertTag">htmlInsertTag</a>,
+<a href="commands.html#htmlBold">htmlBold</a> and
+<a href="commands.html#xmlElectricSlash">xmlElectricSlash</a> automatically
+re-indent the current line according to context. This property only applies to
+HTML and XML modes.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="autoNewline">autoNewline</a></code>
+<dl>
+<dd>
+If true, the functions
+<a href="commands.html#electricOpenBrace">electricOpenBrace</a>,
+<a href="commands.html#electricCloseBrace">electricCloseBrace</a>,
+<a href="commands.html#electricColon">electricColon</a> and
+<a href="commands.html#electricSemi">electricSemi</a>
+automatically insert a line separator.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="autoPasteLines">autoPasteLines</a></code>
+<dl>
+<dd>
+If true, <a href="commands.html#paste">paste</a> inserts text that ends with a
+line separator above the line containing the caret, as if the caret were in the
+first column of the line, even if that is not the case. The intention behind
+this is to make it easy to cut and paste whole lines of text (or blocks of
+lines), without having to move the caret to the beginning of the line. If
+possible, the indentation of the inserted lines is corrected to match their new
+context.
+<p>
+If false, the inserted text is always placed at the exact location of the caret.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="autoReloadKeyMaps">autoReloadKeyMaps</a></code>
+<dl>
+<dd>
+If true, custom key maps are reloaded automatically after you use j to edit
+them (and save the changes). Ad hoc key mappings (including mappings made in
+<a href="init.lisp.html">init.lisp</a>) in the same scope (i.e. global or for a
+particular mode) are discarded.
+<p>
+<b>Default value:</b> false
+<p>
+<b>See also:</b> <a href="keys.html">Key Mappings</a>
+</dl>
+
+<code><a name="autosaveNamedSessions">autosaveNamedSessions</a></code>
+<dl>
+<dd>
+If true, session information is automatically saved to the active named
+session file, as necessary.
+<p>
+If false, the information in the named session file is only updated when you
+explicitly invoke <a href="commands.html#saveSession">saveSession</a>.
+<p>
+<b>Default value:</b> false
+<p>
+<b>See also:</b> <a href="sessions.html">Sessions</a>
+</dl>
+
+<code><a name="autoSelectLine">autoSelectLine</a></code>
+<dl>
+<dd>
+If true, <a href="#selectDown">selectDown</a> and
+<a href="#selectUp">selectUp</a>, when invoked with no selection in effect,
+select the current line in its entirety, rather than beginning a stream
+selection at the exact location of the caret.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="backupDirectory">backupDirectory</a></code>
+<dl>
+<dd>
+Pathname of directory where backup files will be stored.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="bcc">bcc</a></code>
+<dl>
+<dd>
+Address to which automatic blind copies of outgoing mail messages should be
+sent.
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b> <a href="mail.html">Mail</a>
+</dl>
+
+<code><a name="blinkCaret">blinkCaret</a></code>
+<dl>
+<dd>
+If true, the caret blinks.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="browser">browser</a></code>
+<dl>
+<dd>
+Command to invoke your favorite external browser.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="browserOpts">browserOpts</a></code>
+<dl>
+<dd>
+Command line options to use when invoking the external browser.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="changeMarkWidth">changeMarkWidth</a></code>
+<dl>
+<dd>
+Width (in pixels) of change marks, which appear in the edit window if
+<a href="#showChangeMarks">showChangeMarks</a> is true.
+<p>
+<b>Default value:</b> 4
+<p>
+<b>See also:</b>
+<a href="#color.change">color.change</a>,
+<a href="#color.savedChange">color.savedChange</a>,
+<a href="#showChangeMarks">showChangeMarks</a>,
+<a href="commands.html#nextChange">nextChange</a>,
+<a href="commands.html#previousChange">previousChange</a>
+</dl>
+
+<code><a name="checkEnabled">checkEnabled</a></code>
+<dl>
+<dd>
+<i>Not documented.</i>
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="checkIdleBackground">checkIdleBackground</a></code>
+<dl>
+<dd>
+<i>Not documented.</i>
+<p>
+<b>Default value:</b> 10
+</dl>
+
+<code><a name="checkIdleForeground">checkIdleForeground</a></code>
+<dl>
+<dd>
+<i>Not documented.</i>
+<p>
+<b>Default value:</b> 60
+</dl>
+
+<code><a name="checkInterval">checkInterval</a></code>
+<dl>
+<dd>
+<i>Not documented.</i>
+<p>
+<b>Default value:</b> 60
+</dl>
+
+<code><a name="clhsRoot">clhsRoot</a></code>
+<dl>
+<dd>
+The location of the local copy of the Common Lisp Hyperspec.
+<p>
+<b>Default value:</b> /usr/share/doc/hyperspec
+<p>
+<b>See also:</b> <a href="commands.html#hyperspec">hyperspec</a>
+</dl>
+
+<code><a name="color.background">color.background</a></code>
+<dl>
+<dd>
+Default background color.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.brace">color.brace</a></code>
+<dl>
+<dd>
+Color for braces in Java, JavaScript, C and C++ files.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.caret">color.caret</a></code>
+<dl>
+<dd>
+Color of the caret. If you don't specify a value for this property, the caret
+will be drawn in the default text color.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.change">color.change</a></code>
+<dl>
+<dd>
+Color for change marks that identify lines containing unsaved changes (i.e.
+lines that have been modified since the buffer was last saved).
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b>
+<a href="#color.savedChange">color.savedChange</a>,
+<a href="#changeMarkWidth">changeMarkWidth</a>,
+<a href="#showChangeMarks">showChangeMarks</a>,
+<a href="commands.html#nextChange">nextChange</a>,
+<a href="commands.html#previousChange">previousChange</a>
+</dl>
+
+<code><a name="color.comment">color.comment</a></code>
+<dl>
+<dd>
+Color for comments.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.currentLineBackground">color.currentLineBackground</a></code>
+<dl>
+<dd>
+Background color for line containing caret.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.disabled">color.disabled</a></code>
+<dl>
+<dd>
+Color for areas between #if 0 and the corresponding #endif in C and C++ files.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.function">color.function</a></code>
+<dl>
+<dd>
+Color for function names.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.gutterBorder">color.gutterBorder</a></code>
+<dl>
+<dd>
+Color for the vertical border that separates the line number area (the gutter)
+from the text in the buffer, if line numbering is enabled.
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b> <a href="#color.lineNumber">color.lineNumber</a>,
+<a href="#showLineNumbers">showLineNumbers</a>
+</dl>
+
+<code><a name="color.headerName">color.headerName</a></code>
+<dl>
+<dd>
+Color for header names in List Occurrences and Message buffers.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.headerValue">color.headerValue</a></code>
+<dl>
+<dd>
+Color for header values in List Occurrences and Message buffers.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.keyword">color.keyword</a></code>
+<dl>
+<dd>
+Color for programming language keywords.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.lineNumber">color.lineNumber</a></code>
+<dl>
+<dd>
+Color for line numbers.
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b> <a href="#color.gutterBorder">color.gutterBorder</a>,
+<a href="#showLineNumbers">showLineNumbers</a>
+</dl>
+
+<code><a name="color.matchingText">color.matchingText</a></code>
+<dl>
+<dd>
+Color for text matching the search pattern in List Occurrences buffers.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.number">color.number</a></code>
+<dl>
+<dd>
+Color for numbers.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.operator">color.operator</a></code>
+<dl>
+<dd>
+Color for operators (e.g. "==").
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.preprocessor">color.preprocessor</a></code>
+<dl>
+<dd>
+Color for preprocessor directives in C and C++ files.
+<p>
+<b>Default value:</b> None.
+</dl>
+
+<code><a name="color.savedChange">color.savedChange</a></code>
+<dl>
+<dd>
+Color for change marks that identify lines containing saved changes (i.e.
+lines that were modified in the current session but which have not been
+modified since the buffer was last saved).
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b>
+<a href="#color.change">color.change</a>,
+<a href="#changeMarkWidth">changeMarkWidth</a>,
+<a href="#showChangeMarks">showChangeMarks</a>,
+<a href="commands.html#nextChange">nextChange</a>,
+<a href="commands.html#previousChange">previousChange</a>
+</dl>
+
+<code><a name="color.selectionBackground">color.selectionBackground</a></code>
+<dl>
+<dd>
+Background color for selected text.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.string">color.string</a></code>
+<dl>
+<dd>
+Color for quoted strings.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.text">color.text</a></code>
+<dl>
+<dd>
+Default text color.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="color.verticalRule">color.verticalRule</a></code>
+<dl>
+<dd>
+Color for vertical rule.
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b> <a href="#verticalRule">verticalRule</a>
+</dl>
+
+<code><a name="confirmSend">confirmSend</a></code>
+<dl>
+<dd>
+If true, a confirmation dialog is displayed when you send a mail message. The
+dialog allows you to change the "From" and "Bcc" addresses and specify which
+SMTP server to use.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="debug">debug</a></code>
+<dl>
+<dd>
+If true, debugging is enabled.
+<p>
+When debugging is enabled, debugging information is logged (in addition to
+errors), and all output sent to the log file is also sent to System.err, so it
+can be seen in the console window from which j was started.
+<p>
+<b>Default value:</b> false
+<p>
+<b>See also:</b> <a href="logging.html">Logging</a>
+</dl>
+
+<code><a name="defaultEncoding">defaultEncoding</a></code>
+<dl>
+<dd>
+Character encoding to use when loading and saving files.
+<p>
+<b>Default value:</b> ISO8859_1
+</dl>
+
+<code><a name="dialogFontName">dialogFontName</a></code>
+<dl>
+<dd>
+Name of dialog font (which is used for menus, toolbars, and sidebar components
+as well as dialogs).
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b> <a href="#dialogFontSize">dialogFontSize</a>,
+<a href="#fontName">fontName</a>, <a href="#gutterFontName">gutterFontName</a>,
+<a href="#textFieldFontName">textFieldFontName</a>
+</dl>
+
+<code><a name="dialogFontSize">dialogFontSize</a></code>
+<dl>
+<dd>
+Size (in points) of dialog font (which is used for menus, toolbars, and
+sidebar components as well as dialogs).
+<p>
+<b>Default value:</b> 11
+<p>
+<b>See also:</b> <a href="#dialogFontName">dialogFontName</a>,
+<a href="#fontSize">fontSize</a>, <a href="#gutterFontSize">gutterFontSize</a>,
+<a href="#textFieldFontSize">textFieldFontSize</a>
+</dl>
+
+<code><a name="DirectoryMode.color.directory">DirectoryMode.color.directory</a></code>
+<dl>
+<dd>
+Color for directories in directory buffers.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="DirectoryMode.color.marked">DirectoryMode.color.marked</a></code>
+<dl>
+<dd>
+Color for marked files in directory buffers.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="DirectoryMode.color.symlink">DirectoryMode.color.symlink</a></code>
+<dl>
+<dd>
+Color for symbolic links in directory buffers.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="DirectoryMode.enableTree">DirectoryMode.enableTree</a></code>
+<dl>
+<dd>
+If true, a directory tree is displayed in the sidebar in Directory mode.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="dirSortDirectoriesFirst">dirSortDirectoriesFirst</a></code>
+<dl>
+<dd>
+If true, directories appear grouped together at the top of directory
+buffers, followed by ordinary files.
+<p>
+<b>Default value:</b> <code>!dirUseNativeFormat</code>
+</dl>
+
+<code><a name="dirUseNativeFormat">dirUseNativeFormat</a></code>
+<dl>
+<dd>
+If true, directory buffers use <code>ls</code> to generate the directory
+listing. This only works if you have a copy of <code>ls</code> in your
+path. If false, j's built-in directory format is used (and less
+information is displayed).
+<p>
+<b>Default value:</b> false for Windows, true for Unix
+</dl>
+
+<code><a name="docPath">docPath</a></code>
+<dl>
+<dd>
+Full path of directory containing j's documentation.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="emulateBold">emulateBold</a></code>
+<dl>
+<dd>
+If true, j will emulate a bold font by doing a paint trick with the plain
+font. This is only useful if you're actually using a font that needs this
+special treatment (such as Lucida Console on Windows).
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="enableDragText">enableDragText</a></code>
+<dl>
+<dd>
+If true, drag/drop of text is enabled.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="enableExperimentalFeatures">enableExperimentalFeatures</a></code>
+<dl>
+<dd>
+If true, j's undocumented and experimental features are enabled.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="enableItalics">enableItalics</a></code>
+<dl>
+<dd>
+If false, j won't use an italic font for syntax highlighting even if one is
+specified by the current theme.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="enableTree">enableTree</a></code>
+<dl>
+<dd>
+If true, a tree representing the document you are editing is displayed in
+the sidebar in XML mode.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="extendEnd">extendEnd</a></code>
+<dl>
+<dd>
+If true, special behavior is triggered when
+<a href="commands.html#end">end</a> is invoked repeatedly in quick sequence.
+See <a href="commands.html#end">end</a> for details.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="extendHome">extendHome</a></code>
+<dl>
+<dd>
+If true, special behavior is triggered when
+<a href="commands.html#home">home</a> is invoked repeatedly in quick sequence.
+See <a href="commands.html#home">home</a> for details.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="extension">extension</a></code>
+<dl>
+<dd>
+Name of extension class. If the name ends in <code>.class</code>, it is taken
+to be a filename, rather than a class name, and in that case the file's
+absolute pathname may be specified.  If the absolute pathname is not specified,
+or if the <code>.class</code> extension is omitted, the class file in question
+must be in the directory <code>~/.j</code> (Unix) or <code>C:\.j</code>
+(Windows). When j starts up, the specified extension class is loaded by j's
+extension class loader, a new instance of the extension class is created, and
+its <code>public void run</code> method is invoked.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="filenameCompletionsIgnoreCase">filenameCompletionsIgnoreCase</a></code>
+<dl>
+<dd>
+If true, filename completions (in the Open File dialog, for example) ignore
+case on non-Windows platforms. (Filename completions always ignore case on
+Windows.)
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="fontName">fontName</a></code>
+<dl>
+<dd>
+Name of display font.
+<p>
+<b>Default value:</b> Monospaced
+<p>
+<b>See also:</b> <a href="fontSize">fontSize</a>,
+<a href="#dialogFontName">dialogFontName</a>,
+<a href="#gutterFontName">gutterFontName</a>
+</dl>
+
+<code><a name="fontSize">fontSize</a></code>
+<dl>
+<dd>
+Display font size (in points).
+<p>
+<b>Default value:</b> 12
+<p>
+<b>See also:</b> <a href="fontName">fontName</a>,
+<a href="#dialogFontSize">dialogFontSize</a>,
+<a href="#gutterFontSize">gutterFontSize</a>
+</dl>
+
+<code><a name="ftpUsePassiveMode">ftpUsePassiveMode</a></code>
+<dl>
+<dd>
+If true, passive mode is used for FTP operations.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="globalKeyMap">globalKeyMap</a></code>
+<dl>
+<dd>
+Pathname of file containing global key map. J will load the global key map from
+the specified file, rather than using its internal defaults.  The specified
+file must be in the format used by <code>writeGlobalKeyMap</code>.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="gutterFontName">gutterFontName</a></code>
+<dl>
+<dd>
+Name of font used for line numbers.
+<p>
+<b>Default value:</b> Same as normal display font
+<p>
+<b>See also:</b> <a href="#gutterFontSize">gutterFontSize</a>,
+<a href="#fontName">fontName</a>,
+<a href="#dialogFontName">dialogFontName</a>,
+<a href="#showLineNumbers">showLineNumbers</a>
+</dl>
+
+<code><a name="gutterFontSize">gutterFontSize</a></code>
+<dl>
+<dd>
+Font size (in points) used for line numbers.
+<p>
+<b>Default value:</b> Same as normal display font
+<p>
+<b>See also:</b> <a href="#gutterFontName">gutterFontName</a>,
+<a href="#fontSize">fontSize</a>,
+<a href="#dialogFontSize">dialogFontSize</a>,
+<a href="#showLineNumbers">showLineNumbers</a>
+</dl>
+
+<code><a name="highlightBrackets">highlightBrackets</a></code>
+<dl>
+<dd>
+If true, when the caret is immediately before an opening parenthesis, bracket
+or brace, or immediately after a closing parenthesis, bracket or brace, the
+pair of matching parentheses, braces, or brackets is highlighted.
+<p>
+<b>Default value:</b> false
+<p>
+<b>See also:</b> <a href="#highlightMatchingBracket">highlightMatchingBracket</a>
+</dl>
+
+<code><a name="highlightMatchingBracket">highlightMatchingBracket</a></code>
+<dl>
+<dd>
+If true, when the caret is immediately before an opening parenthesis, bracket
+or brace, or immediately after a closing parenthesis, bracket or brace, the
+matching parenthesis, brace, or bracket, if any, is highlighted.
+<p>
+<b>Default value:</b> false
+<p>
+<b>See also:</b> <a href="#highlightBrackets">highlightBrackets</a>
+</dl>
+
+<code><a name="HtmlMode.color.anchor">HtmlMode.color.anchor</a></code>
+<dl>
+<dd>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="HtmlMode.color.comment">HtmlMode.color.comment</a></code>
+<dl>
+<dd>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="HtmlMode.color.image">HtmlMode.color.image</a></code>
+<dl>
+<dd>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="HtmlMode.color.script">HtmlMode.color.script</a></code>
+<dl>
+<dd>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="HtmlMode.color.table">HtmlMode.color.table</a></code>
+<dl>
+<dd>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="HtmlMode.color.tableData">HtmlMode.color.tableData</a></code>
+<dl>
+<dd>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="HtmlMode.color.tableRow">HtmlMode.color.tableRow</a></code>
+<dl>
+<dd>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="HtmlMode.color.tag">HtmlMode.color.tag</a></code>
+<dl>
+<dd>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="HtmlMode.fixCase">HtmlMode.fixCase</a></code>
+<dl> <dd>
+If true, tag and attribute names in HTML buffers are automatically converted to
+the preferred case, as specified by <a href="#HtmlMode.upperCaseTagNames">HtmlMode.upperCaseTagNames</a> and
+<a href="#HtmlMode.upperCaseAttributeNames">HtmlMode.upperCaseAttributeNames</a>.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="HtmlMode.tags">HtmlMode.tags</a></code>
+<dl> <dd>
+Pathname of file containing tag customizations for HTML mode.  Lines in this file
+should look like this:
+<pre>
+        p=0
+</pre>
+This line tells j not to insert an end tag for the &lt;P&gt; tag.  If you do want
+the end tag, use:
+<pre>
+        p=1
+</pre>
+It's not necessary to use a tag customization file unless you take issue with
+j's internal defaults. If you do use a tag customization file, it only needs to
+contain entries for the tags you want to customize.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="HtmlMode.upperCaseAttributeNames">HtmlMode.upperCaseAttributeNames</a></code>
+<dl> <dd>
+If true, upper case is preferred for attribute names in HTML mode; otherwise,
+lower case is preferred.  If <a href="#HtmlMode.fixCase">HtmlMode.fixCase</a> is true,
+attribute names are automatically converted to the preferred case as you type them in.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="HtmlMode.upperCaseTagNames">HtmlMode.upperCaseTagNames</a></code>
+<dl> <dd>
+If true, upper case is preferred for tag names in HTML mode; otherwise,
+lower case is preferred. If <a href="#HtmlMode.fixCase">HtmlMode.fixCase</a> is true,
+tag names are automatically converted to the preferred case as you type them in.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="httpProxy">httpProxy</a></code>
+<dl>
+<dd>
+Host name (or IP address) and port of proxy server to use for HTTP operations.
+<p>
+Example:
+<pre>
+    httpProxy=192.168.1.1:3128</pre>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="imapUseLocalCache">imapUseLocalCache</a></code>
+<dl>
+<dd>
+If true, j saves a local copy of each IMAP message that you read. If you
+reread the message later, j will get it from the cache instead of pulling the
+same bits over the network again. This is particularly useful if you have a
+slow network connection.
+<p>
+Each message is saved in a file named after its UID, in a directory specific
+to the mailbox in question, under ~/.j/mail/imap/cache.
+<p>
+Deleted messages are automatically removed from the cache by
+<a href="commands.html#mailboxExpunge">mailboxExpunge</a>. The current
+implementation has no concept of expiration or aging of undeleted messages and
+imposes no limit on utilization of disk space.
+<p>
+<b>Default value:</b> true
+<p>
+<b>See also:</b> <a href="mail.html">Mail</a>
+</dl>
+
+<code><a name="inbox">inbox</a></code>
+<dl>
+<dd>
+Default mailbox for the <a href="commands.html#inbox">inbox</a> command.
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b> <a href="commands.html#openMailbox">openMailbox</a>,
+<a href="mail.html">Mail</a>
+</dl>
+
+<code><a name="includePath">includePath</a></code>
+<dl>
+<dd>
+A list of directories to search when opening a .h file whose name is specified without
+a full path, if the file in question is not found in the current directory. The
+directories in the list must be separated by the platform-specific path
+separator character, which is a colon for Unix and a semicolon for Windows.
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b> <a href="#sourcePath">sourcePath</a>,
+<a href="commands.html#iList">iList</a>,
+<a href="commands.html#checkPath">checkPath</a>,
+<a href="commands.html#listIncludes">listIncludes</a>
+</dl>
+
+<code><a name="indentAfterBrace">indentAfterBrace</a></code>
+<dl>
+<dd>
+If true, the next line after a line that ends with '{' is indented, like this:
+<pre>
+        if (foo)
+        {
+            bar(); // This line is indented because of the preceding '{'.
+        }
+</pre>
+<p>
+<b>See also:</b> <a href="#indentBeforeBrace">indentBeforeBrace</a>
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="indentBeforeBrace">indentBeforeBrace</a></code>
+<dl>
+<dd>
+If true, lines that start with '{' are indented, like this:
+<pre>
+        if (foo)
+            {      // This line is indented because it starts with '{'.
+            bar();
+            }
+</pre>
+<p>
+<b>See also:</b> <a href="#indentAfterBrace">indentAfterBrace</a>
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="indentLineFixWhitespace">indentLineFixWhitespace</a></code>
+<dl>
+<dd>
+If true, the indentation commands
+<a href="commands.html#indentLine">indentLine</a>,
+<a href="commands.html#indentRegion">indentRegion</a> and
+<a href="commands.html#indentLineOrRegion">indentLineOrRegion</a> entab or
+detab the indentation of the line or lines in question based upon the setting
+of the <a href="#useTabs">useTabs</a> property even if the existing
+indentation is otherwise correct.
+<p>
+If false, the indentation is changed only if the non-whitespace text of the
+line or lines in question does not already start in the correct column.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="indentSize">indentSize</a></code>
+<dl>
+<dd>
+<p>
+<b>Default value:</b> 4
+</dl>
+
+<code><a name="indentStrings">indentStrings</a></code>
+<dl>
+<dd>
+This property is used to control the indentation of multiline strings in Lisp
+mode.
+<p>
+By default, the second and subsequent lines of multiline strings are not
+indented at all and begin at the left margin, like this:
+<pre>
+        (defun foo ()
+          (format t "pretend that this is a
+        very long string"))
+</pre>
+There is one exception. If any line of the string ends with '~', the next line
+is indented to line up with the beginning of the string:
+<pre>
+        (defun foo ()
+          (format t "pretend that this is a ~
+                     very long string"))
+</pre>
+If <a href="#indentStrings">indentStrings</a> is true, the second and
+subsequent lines of multiline strings are always indented to line up with the
+beginning of the string:
+<pre>
+        (defun foo ()
+          (format nil "pretend that this is a
+                       very long string"))
+</pre>
+In general, this is probably not what you want, since it inserts an arbitrary
+amount of whitespace in the middle of the string, but if you can live with that
+you do end up with better-looking code.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="jdkDocPath">jdkDocPath</a></code>
+<dl>
+<dd>
+The full pathname of the directory containing the JDK HTML documentation.
+<p>
+<b>See also:</b> <a href="commands.html#jdkHelp">jdkHelp</a>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="jdkSourcePath">jdkSourcePath</a></code>
+<dl>
+<dd>
+The full pathname of the directory containing the JDK Java class source tree.
+<p>
+<b>See also:</b> <a href="commands.html#source">source</a>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="JList.fixedCellHeight">JList.fixedCellHeight</a></code>
+<dl>
+<dd>
+If > 0, the height in pixels for listbox (JList) cells. This value can be used
+to override the default behavior if listboxes don't look quite right on your
+display. (Try 17.)
+<p>
+<b>Default value:</b> 0
+</dl>
+
+<code><a name="keywords">keywords</a></code>
+<dl>
+<dd>
+The filename of the custom keyword list for a specific mode. For example:
+<pre>
+        LispMode.keywords = /home/peter/lisp.keywords
+</pre>
+The keyword list should be an ordinary text file with one keyword per line.
+<p>
+For examples of the format, take a look at the various .keywords files in
+org/armedbear/j. There is such a file for each mode, containing the default
+keyword list for that mode.
+<p>
+Note that the mode prefix (e.g. "LispMode.") is required; there is no global
+keywords file.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="lineupArglist">lineupArglist</a></code>
+<dl>
+<dd>
+If true, function calls that span multiple lines will be indented like this:
+<pre>
+        veryLongFunctionName(arg1,
+                             arg2);
+</pre>
+If false, the indentation will look like this:
+<pre>
+        veryLongFunctionName(arg1,
+            arg2);
+</pre>
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="listThreads">listThreads</a></code>
+<dl>
+<dd>
+If > 0, specifies an interval in minutes for writing thread information to the
+log, for debugging purposes only. The list threads task is only installed if
+<a href="#debug">debug</a> is true at startup.
+<p>
+<b>Default value:</b> 0
+<p>
+<b>See also:</b> <a href="logging.html">Logging</a>
+</dl>
+
+<code><a name="Log.enabled">Log.enabled</a></code>
+<dl>
+<dd>
+If true, logging is enabled.
+<p>
+<b>Default value:</b> true
+<p>
+<b>See also:</b> <a href="logging.html">Logging</a>,
+<a href="#debug">debug</a>
+</dl>
+
+<code><a name="Log.maxBackupIndex">Log.maxBackupIndex</a></code>
+<dl>
+<dd>
+The maximum index for backups of j's log file (~/.j/log or C:\.j\log). Since
+the first backup file is ~/.j/log.0 (or C:\.j\log.0), the number of backups
+that will be kept is one more than the maximum backup index.
+<p>
+<b>Default value:</b> 0
+<p>
+<b>See also:</b> <a href="logging.html">Logging</a>,
+<a href="#Log.maxFileSize">Log.maxFileSize</a>
+</dl>
+
+<code><a name="Log.maxFileSize">Log.maxFileSize</a></code>
+<dl>
+<dd>
+The maximum size, in bytes, of j's log file (~/.j/log or C:\.j\log).
+<p>
+When the log file exceeds its maximum size, it is rolled over to the file
+~/.j/log.0, which in turn is rolled over to ~/.j/log.1, etc.
+<p>
+<b>Default value:</b> 100000
+<p>
+<b>See also:</b> <a href="logging.html">Logging</a>,
+<a href="#Log.maxBackupIndex">Log.maxBackupIndex</a>
+</dl>
+
+<code><a name="nntpReadTimeout">nntpReadTimeout</a></code>
+<dl>
+<dd>
+<i>Not documented.</i>
+<p>
+<b>Default value:</b> 0
+</dl>
+
+<code><a name="org.xml.sax.driver">org.xml.sax.driver</a></code>
+<dl>
+<dd>
+Class name of XML parser to use. For example:
+<pre>
+        org.xml.sax.driver = org.apache.xerces.parsers.SAXParser
+</pre>
+If this property is not specified, the XML parser provided as part of the Java
+1.4 runtime library will be used.
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b> <a href="xmlmode.html">XML Mode</a>
+</dl>
+
+<code><a name="p4AutoEdit">p4AutoEdit</a></code>
+<dl>
+<dd>
+If you're using Perforce with a quick and reliable connection, setting this
+preference to true will let you edit files without having to check them out
+explicitly first; j will automatically do "p4 edit" for you when you make the
+first change to the file.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="parensRequireSpaces">parensRequireSpaces</a></code>
+<dl>
+<dd>
+If true, the command
+<a href="commands.html#insertParentheses">insertParentheses</a> adds single
+space characters after the opening parenthesis and before the closing
+parenthesis.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="patchMode">patchMode</a></code>
+<dl>
+<dd>
+Suffix to be used for the filename of the first backup of a local file.
+<p>
+For example, if the value of this property is ".orig", the first backup of the
+file foo.bar will be made to the file foo.bar.orig in the same directory.
+<p>
+The <a href="commands.html#diff">diff</a> command, when invoked with no
+arguments, diffs the file associated with the current buffer against its
+patchMode backup file (if it exists).
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="PHPMode.color.var">PHPMode.color.var</a></code>
+<dl>
+<dd>
+Color for variable names in PHP mode.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="popExpungeDeletedMessagesOnServer">popExpungeDeletedMessagesOnServer</a></code>
+<dl>
+<dd>
+If true, messages are deleted from the POP server when they have been deleted
+and expunged locally. Otherwise (and by default) deleted messages are expunged
+from the local message store but left intact on the server. Applies only to
+POP mailboxes.
+<p>
+<b>Default value:</b> false
+<p>
+<b>See also:</b> <a href="mail.html">Mail</a>
+</dl>
+
+<code><a name="popKeepMessagesOnServer">popKeepMessagesOnServer</a></code>
+<dl>
+<dd>
+If false, messages are deleted from the POP server after they have been
+successfully retrieved. Otherwise (and by default) messages are left on the
+server when they are retrieved. Applies only to POP mailboxes.
+<p>
+<b>Default value:</b> true
+<p>
+<b>See also:</b> <a href="mail.html">Mail</a>
+</dl>
+
+<code><a name="printerFontSize">printerFontSize</a></code>
+<dl>
+<dd>
+Printer font size in points.
+<p>
+<b>Default value:</b> 10
+</dl>
+
+<code><a name="removeTrailingWhitespace">removeTrailingWhitespace</a></code>
+<dl>
+<dd>
+If true, trailing whitespace (spaces and/or tab characters at the end of a
+line) is removed before the buffer is saved.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="reorderBuffers">reorderBuffers</a></code>
+<dl>
+<dd>
+Controls reordering of buffers for the sidebar buffer list and the buffer
+navigation commands <a href="commands.html#nextBuffer">nextBuffer</a> and
+<a href="commands.html#prevBuffer">prevBuffer</a>.
+<p>
+If reorderBuffers is 0, no reordering is performed; buffers are left in the
+order in which they were originally opened.
+<p>
+If reorderBuffers is 1, buffers opened (or activated) by
+<a href="commands.html#openFile">openFile</a> (and similar commands) are
+placed after the current buffer in the list.
+<p>
+If reorderBuffers is 2, reordering is also performed when you use the sidebar
+buffer list to switch to a different buffer.
+<p>
+Buffers are never reordered when you use
+<a href="commands.html#nextBuffer">nextBuffer</a> or
+<a href="commands.html#prevBuffer">prevBuffer</a> to switch between buffers.
+<p>
+If <a href="#sortBufferList">sortBufferList</a> is true, this property is
+ignored.
+<p>
+<b>Default value:</b> 1
+<p>
+<b>See also:</b> <a href="#sortBufferList">sortBufferList</a>
+</dl>
+
+<code><a name="restrictCaret">restrictCaret</a></code>
+<dl>
+<dd>
+If true, the caret is restricted to the actual text on the line (including
+leading and trailing whitespace). <a href="commands.html#right">right</a>, at
+the end of the line, advances the caret to column 1 of the following line.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="saveInPlace">saveInPlace</a></code>
+<dl>
+<dd>
+If true, FTP saves are written directly to the destination file.
+<p>
+If false, FTP saves are first written to a temporary file, which is then
+renamed to replace the destination file, and finally the file permissions that
+were in effect before the save are restored using the SITE CHMOD command. This
+approach is normally safer since the destination file is less likely to be
+lost or truncated if a network problem prevents successful completion of the
+save, but it may not preserve all attributes of the destination file.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="scrollCaret">scrollCaret</a></code>
+<dl>
+<dd>
+If true, the caret is automatically relocated (if necessary) to stay in the
+edit window when you scroll the window vertically using the scroll bar, the
+mouse wheel, or the functions <a href="commands.html#windowUp">windowUp</a> or
+<a href="commands.html#windowDown">windowDown</a>.
+<p>
+If false, the caret is allowed to scroll out of the edit window when you scroll
+the window vertically.
+<p>
+Scrolling never relocates the caret if a selection is active in the edit
+window, regardless of the value of this property.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="shellFileName">shellFileName</a></code>
+<dl>
+<dd>
+
+<p>
+<b>Default value:</b>
+</dl>
+
+<code><a name="ShellMode.color.input">ShellMode.color.input</a></code>
+<dl>
+<dd>
+Color for user input in shell buffers.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="ShellMode.color.prompt">ShellMode.color.prompt</a></code>
+<dl>
+<dd>
+Color for prompt in shell buffers.
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="shellOutputLimit">shellOutputLimit</a></code>
+<dl>
+<dd>
+Maximum number of lines retained in a shell buffer. If zero, no limit is
+enforced.
+<p>
+<b>Default value:</b> 1000
+</dl>
+
+<code><a name="shellPromptPattern">shellPromptPattern</a></code>
+<dl>
+<dd>
+Regular expression to match prompts in a shell buffer.
+<p>
+<b>Default value:</b> "^[^#$%>]*[#$%>] *|^: *"
+</dl>
+
+<code><a name="sshPromptPattern">sshPromptPattern</a></code>
+<dl>
+<dd>
+Regular expression to match prompts when using ssh.
+<p>
+<b>Default value:</b> "^[^#$%>]*[#$%>] *|^: *"
+</dl>
+
+<code><a name="sshTimeout">sshTimeout</a></code>
+<dl>
+<dd>
+<i>Not documented.</i>
+<p>
+<b>Default value:</b> 250 milliseconds
+</dl>
+
+<code><a name="showChangeMarks">showChangeMarks</a></code>
+<dl>
+<dd>
+If true, change marks are displayed in the edit window.
+<p>
+<b>Default value:</b> true
+<p>
+<b>See also:</b> <a href="#color.change">color.change</a>,
+<a href="#color.savedChange">color.savedChange</a>,
+<a href="#changeMarkWidth">changeMarkWidth</a>,
+<a href="commands.html#nextChange">nextChange</a>,
+<a href="commands.html#previousChange">previousChange</a>
+</dl>
+
+<code><a name="showLineNumbers">showLineNumbers</a></code>
+<dl>
+<dd>
+If true, line numbers are displayed in the edit window.
+<p>
+<b>Default value:</b> false
+<p>
+<b>See also:</b> <a href="#gutterFontName">gutterFontName</a>,
+<a href="#gutterFontSize">gutterFontSize</a>,
+<a href="#color.gutterBorder">color.gutterBorder</a>,
+<a href="#color.lineNumber">color.lineNumber</a>
+</dl>
+
+<code><a name="sortBufferList">sortBufferList</a></code>
+<dl>
+<dd>
+If true, the sidebar buffer list is kept sorted in alphabetical order.
+<p>
+<b>Default value:</b> false
+<p>
+<b>See also:</b> <a href="#reorderBuffers">reorderBuffers</a>
+</dl>
+
+<code><a name="sourcePath">sourcePath</a></code>
+<dl>
+<dd>
+A list of directories to search when opening any file whose name is specified
+without a full path, if the file in question is not found in the current
+directory. For .h files, the source path is searched after the include path.
+The directories in the list must be separated by the platform-specific path
+separator character, which is a colon for Unix and a semicolon for Windows.
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b> <a href="#includePath">includePath</a>
+</dl>
+
+<code><a name="stampFormat">stampFormat</a></code>
+<dl>
+<dd>
+Controls the format of the date/time string inserted by the
+<a href="commands.html#stamp">stamp</a> command. The specified pattern is used
+to construct a
+<a href="http://java.sun.com/j2se/1.4/docs/api/java/text/SimpleDateFormat.html">
+SimpleDateFormat</a> object that formats the output string.
+<p>
+<b>Default value:</b> "MMM d yyyy h:mm a"
+</dl>
+
+<code><a name="StatusBar.displayContext">StatusBar.displayContext</a></code>
+<dl>
+<dd>
+If >= 1, context information (typically identifying the current function or
+method in the source) is displayed in the status bar when there is no other
+information that needs to be displayed there. If > 1, the long form of the
+context string is used; if = 1, the short form is used. If = 0, no context
+information is displayed.
+<p>
+<b>Default value:</b> 1
+</dl>
+
+<code><a name="StatusBar.displayLineCount">StatusBar.displayLineCount</a></code>
+<dl>
+<dd>
+If true, the total number of lines in the buffer is displayed in the status bar.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="StatusBar.displayLineSeparator">StatusBar.displayLineSeparator</a></code>
+<dl>
+<dd>
+If true, the line separator for the current buffer (LF, CR, or CR+LF) is
+displayed in the status bar.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="style.comment">style.comment</a></code>
+<dl>
+<dd>
+Style for comments (0 is plain, 1 is bold, 2 is italic).
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="style.text">style.text</a></code>
+<dl>
+<dd>
+Default style (0 is plain, 1 is bold, 2 is italic).
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="style.directory">style.directory</a></code>
+<dl>
+<dd>
+Style for directory names in directory buffers (0 is plain, 1 is bold, 2 is italic).
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="style.function">style.function</a></code>
+<dl>
+<dd>
+Style for function names (0 is plain, 1 is bold, 2 is italic).
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="style.keyword">style.keyword</a></code>
+<dl>
+<dd>
+Style for language keywords (0 is plain, 1 is bold, 2 is italic).
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="style.marked">style.marked</a></code>
+<dl>
+<dd>
+Style for marked files in directory buffers (0 is plain, 1 is bold, 2 is italic).
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="style.prompt">style.prompt</a></code>
+<dl>
+<dd>
+Style for prompt in shell buffers (0 is plain, 1 is bold, 2 is italic).
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="tabAlwaysIndent">tabAlwaysIndent</a></code>
+<dl>
+<dd>
+If true, the <a href="commands.html#tab">tab</a> command always re-indents the
+current line (or multi-line selected region) according to context.
+<p>
+If false, the behavior of the <a href="commands.html#tab">tab</a> command
+depends on the location of the caret.
+<p>
+If the caret is at the very beginning of the text on the line, or in the
+whitespace to the left of the text, <a href="commands.html#tab">tab</a> calls <a href="commands.html#indentLine">indentLine</a>.
+If the caret is in the midst of the actual text on the line, <a href="commands.html#tab">tab</a>
+inserts either a single tab character or the equivalent number of spaces,
+depending on the setting of the <a href="#useTabs">useTabs</a> property.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="tabWidth">tabWidth</a></code>
+<dl>
+<dd>
+Distance between tab stops, in columns, for display purposes.
+<p>
+<b>Default value:</b> 8
+</dl>
+
+<code><a name="telnetPromptPattern">telnetPromptPattern</a></code>
+<dl>
+<dd>
+Regular expression to match prompts in a telnet buffer.
+<p>
+<b>Default value:</b> "^[^#$%>]*[#$%>] *|^: *"
+</dl>
+
+<code><a name="ToolBar.isRollover">ToolBar.isRollover</a></code>
+<dl>
+<dd>
+If true, toolbar buttons have dynamic borders which are only painted when the mouse
+cursor is over the button.  If false, toolbar buttons have normal borders.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="ToolBar.showIcons">ToolBar.showIcons</a></code>
+<dl>
+<dd>
+If true, toolbar buttons contain icons.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="ToolBar.showText">ToolBar.showText</a></code>
+<dl>
+<dd>
+If true, toolbar buttons contain text.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="textFieldFontName">textFieldFontName</a></code>
+<dl>
+<dd>
+Name of font used for textfields in dialogs and the location bar.
+<p>
+<b>Default value:</b> Monospaced
+<p>
+<b>See also:</b> <a href="#textFieldFontSize">textFieldFontSize</a>,
+<a href="#dialogFontName">dialogFontName</a>
+</dl>
+
+<code><a name="textFieldFontSize">textFieldFontSize</a></code>
+<dl>
+<dd>
+Size (in points) of font used for textfields in dialogs and the location bar.
+If this parameter is not specified, the value of
+<a href="#dialogFontSize">dialogFontSize</a> is used.
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b> <a href="#textFieldFontName">textFieldFontName</a>,
+<a href="#dialogFontSize">dialogFontSize</a>
+</dl>
+
+<code><a name="theme">theme</a></code>
+<dl>
+<dd>
+Name of theme file. The specified theme file is loaded as an additional
+preferences file after ~/.j/prefs is loaded. The idea is to gather all the
+settings that relate to j's look and feel in one place.
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b> <code><a href="#themePath">themePath</a></code>
+</dl>
+
+<code><a name="themePath">themePath</a></code>
+<dl>
+<dd>
+A list of directories to search for theme files, if the full path of the theme
+file isn't specified. The directories in the list must be separated by the
+platform-specific path separator character, which is a colon for Unix and a
+semicolon for Windows.
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b> <code><a href="#theme">theme</a></code>
+</dl>
+
+<code><a name="useIncrementalFind">useIncrementalFind</a></code> <dl> <dd> If
+true, the primary default global key mapping for <a href="commands.html#find">find</a>,
+which is Ctrl F, is assigned to <a href="commands.html#incrementalFind">incrementalFind</a>
+instead. This setting has no effect if you are using a custom global key map.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="useMenuMnemonics">useMenuMnemonics</a></code>
+<dl>
+<dd>
+If true, mnemonics are used in the top-level menu. Set this to false if you
+want to make these keystrokes (Alt F, Alt E, etc.) available for mapping
+commands instead.
+<p>
+<b>Default value:</b> true
+</dl>
+
+<code><a name="useTabs">useTabs</a></code>
+<dl>
+<dd>
+If true, actual tab characters are inserted in the buffer. If false, the
+equivalent number of spaces are inserted instead. Changing the value of this
+property does not have a retroactive effect on spaces or tab characters that
+are already in the buffer.
+<p>
+<b>Default value:</b> false
+<p>
+<b>See also:</b> <a href="commands.html#detabRegion">detabRegion</a>,
+<a href="commands.html#entabRegion">entabRegion</a>
+</dl>
+
+<code><a name="userFullName">userFullName</a></code>
+<dl>
+<dd>
+The user's full name (e.g. "Enzo Pirelli"), used in constructing the default
+"From" address for outgoing mail messages.
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b> <a href="#userMailAddress">userMailAddress</a>,
+<a href="mail.html">Mail</a>
+</dl>
+
+<code><a name="userMailAddress">userMailAddress</a></code>
+<dl>
+<dd>
+The user's mail address (e.g. "enzo@hotmail.com"), used in constructing the
+default "From" address for outgoing mail messages.
+<p>
+<b>Default value:</b> None
+<p>
+<b>See also:</b> <a href="#userFullName">userFullName</a>,
+<a href="mail.html">Mail</a>
+</dl>
+
+<code><a name="verticalRule">verticalRule</a></code>
+<dl>
+<dd>
+If non-zero, this parameter specifies the column for the vertical rule. The
+vertical rule is a 1-pixel-wide vertical line that is displayed to the right
+of the specified column as a reminder of the desired location of the
+right margin. If this parameter is zero, no vertical rule is displayed.
+<p>
+<b>Default value:</b> 0
+<p>
+<b>See also:</b> <a href="#color.verticalRule">color.verticalRule</a>
+</dl>
+
+<code><a name="verticalScrollIncrement">verticalScrollIncrement</a></code>
+<dl>
+<dd>
+The number of lines scrolled when you click on the arrow button at the top or
+bottom of the vertical scroll bar.
+<p>
+<b>Default value:</b> 5
+</dl>
+
+<code><a name="wrapCol">wrapCol</a></code>
+<dl>
+<dd>
+The column where text is wrapped by automatic word wrap and by the commands
+<a href="commands.html#wrapComment">wrapComment</a>,
+<a href="commands.html#wrapParagraph">wrapParagraph</a> and
+<a href="commands.html#wrapRegion">wrapRegion</a>.
+<p>
+<b>Default value:</b> 80
+</dl>
+
+<code><a name="XmlMode.color.attribute">XmlMode.color.attribute</a></code>
+<dl>
+<dd>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="XmlMode.color.comment">XmlMode.color.comment</a></code>
+<dl>
+<dd>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="XmlMode.color.delimiter">XmlMode.color.delimiter</a></code>
+<dl>
+<dd>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="XmlMode.color.namespace">XmlMode.color.namespace</a></code>
+<dl>
+<dd>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="XmlMode.color.tag">XmlMode.color.tag</a></code>
+<dl>
+<dd>
+<p>
+<b>Default value:</b> None
+</dl>
+
+<code><a name="XmlMode.fixCase">XmlMode.fixCase</a></code>
+<dl> <dd>
+If true, tag and attribute names in XML mode are automatically converted to
+the preferred case, as specified by <a href="#XmlMode.upperCaseTagNames">XmlMode.upperCaseTagNames</a> and
+<a href="#XmlMode.upperCaseAttributeNames">XmlMode.upperCaseAttributeNames</a>.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="XmlMode.upperCaseAttributeNames">XmlMode.upperCaseAttributeNames</a></code>
+<dl> <dd>
+If true, upper case is preferred for attribute names in XML mode; otherwise,
+lower case is preferred.  If <a href="#XmlMode.fixCase">XmlMode.fixCase</a> is true,
+attribute names are automatically converted to the preferred case as you type them in.
+<p>
+<b>Default value:</b> false
+</dl>
+
+<code><a name="XmlMode.upperCaseTagNames">XmlMode.upperCaseTagNames</a></code>
+<dl> <dd>
+If true, upper case is preferred for tag names in XML mode; otherwise,
+lower case is preferred. If <a href="#XmlMode.fixCase">XmlMode.fixCase</a> is true,
+tag names are automatically converted to the preferred case as you type them in.
+<p>
+<b>Default value:</b> true
+</dl>
+
+</body>
+
+</html>

@@ -1,0 +1,52 @@
+# Contrast
+# Wally Brock
+# $Id: Contrast,v 1.1.1.1 2002-09-24 16:10:25 piso Exp $
+
+color.text                    = 0   0   0
+color.background              = 255 255 255
+color.caret                   = 0   0   0
+
+color.selectionBackground     = 100 100 255
+color.preprocessor            = 0   185 0
+color.comment                 = 0   128 0
+color.keyword                 = 0   0   0
+color.brace                   = 0   0   0
+color.number                  = 0   0   0
+color.currentLineBackground   = 237 237 237
+color.function                = 0   0   140
+color.string                  = 255 0   0
+color.operator                = 0   0   0
+color.disabled                = 153 153 153
+ShellMode.color.prompt        = 0   64 255
+ShellMode.color.input         = 255 0  64
+
+HtmlMode.color.tag            =   0   0 153 
+HtmlMode.color.image          = 204 102   0 
+HtmlMode.color.anchor         =  51 153  51 
+HtmlMode.color.table          = 204   0   0 
+HtmlMode.color.tableRow       = 153   0   0 
+HtmlMode.color.tableData      = 153  51   0 
+HtmlMode.color.comment        = 128 128 128
+HtmlMode.color.script         =   0   0 255
+
+PerlMode.color.list           = 0   0   150
+PerlMode.color.scalar         = 0   0   255
+
+MakefileMode.color.target     = 153 255 255
+
+PropertiesMode.color.section  = 153 255 255
+
+DirectoryMode.color.directory = 0   0   255
+DirectoryMode.color.symlink   = 255 0   204
+DirectoryMode.color.marked    = 255 0   0
+
+# Font.PLAIN is 0, Font.BOLD is 1, Font.ITALIC is 2.
+style.operator                = 1
+style.text                    = 0
+style.keyword                 = 1
+style.function                = 1
+DirectoryMode.style.directory = 1
+DirectoryMode.style.marked    = 0
+ShellMode.style.prompt        = 0
+style.comment                 = 2
+

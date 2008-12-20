@@ -1,0 +1,127 @@
+GENERAL INFORMATION
+===================
+
+Armed Bear Common Lisp is an implementation of ANSI Common Lisp that
+runs in a Java virtual machine.  It compiles its code to Java byte code.
+
+
+LICENSE
+=======
+
+Armed Bear Common Lisp is distributed under the GNU General Public
+License with classpath exception (described below).
+
+A copy of GNU General Public License (GPL) is included in this
+distribution, in the file COPYING.
+
+Linking this software statically or dynamically with other modules is
+making a combined work based on this software. Thus, the terms and
+conditions of the GNU General Public License cover the whole
+combination.
+
+As a special exception, the copyright holders of this software give
+you permission to link this software with independent modules to
+produce an executable, regardless of the license terms of these
+independent modules, and to copy and distribute the resulting
+executable under terms of your choice, provided that you also meet,
+for each linked independent module, the terms and conditions of the
+license of that module. An independent module is a module which is not
+derived from or based on this software. If you modify this software,
+you may extend this exception to your version of the software, but you
+are not obligated to do so. If you do not wish to do so, delete this
+exception statement from your version.
+
+
+BUILDING
+========
+
+If you want to build ABCL, you have 2 options. The first option
+applies when you come from a lisp background. The second option is more
+appropriate when you come from Java development:
+
+ I) Bootstrap ABCL using a Common Lisp implementation
+    Supported implementations for this process: SBCL, CMUCL, OpenMCL,
+    Allegro CL, LispWorks or CLISP
+
+II) Use the Ant make-like build tool for Java environments
+    The tested lowest working version is Ant 1.7.0
+
+
+In both cases you need a supported JDK version (1.5 and 1.6 have been
+tested).  Just the JRE isn't enough.
+
+
+
+I. Lisp-based build
+-------------------
+
+Copy the file 'customizations.lisp.in' to customization.lisp', in the
+directory containing this README file, editing to suit your situation,
+paying attention to the comments in the file.
+
+Start up one of the supported Common Lisp implementations in the
+directory containing this README file.
+
+Load build-abcl.lisp:
+
+    (load "build-abcl.lisp")
+
+Then do:
+
+    (build-abcl:build-abcl :clean t :full t)
+
+Wait for the build to finish and exit the host Lisp.
+
+Use abcl.bat on Windows or ./abcl on Unix to start ABCL.
+Note: abcl.bat and abcl contain absolute paths, so you'll need
+to edit them if you move things around after the build.
+
+In case of failure in the javac stage, you might try this:
+
+    (build-abcl:build-abcl :clean t :full t :batch nil)
+
+This invokes javac separately for each .java file, which avoids running
+into limitations on command line length (but is a lot slower).
+
+
+II. Ant-based build
+-------------------
+
+With Ant in your path, executing
+
+    ant -find build.xml abcl.wrapper
+
+from the directory containing this README file will create an
+executable wrapper ('abcl' under UNIX, 'abcl.bat' under Windows).
+Use this wrapper to start the ABCL Java program.
+
+
+BUGS
+====
+
+A lot of (renewed) energy has been spent to make ABCL a compliant
+and practically useable Common Lisp implementation.  Because of this,
+ABCL 0.0.11 now fails only 47 out of 21702 tests in the ANSI CL test
+suite.  Next to that, the fail count of the Maxima test suite has been
+reduced from over 1400 in 0.0.10 to little more than 600 in 0.0.11.
+
+ABCL's CLOS does not handle on-the-fly redefinition of classes
+correctly, and in any event is intolerably slow. There is no support
+for the long form of DEFINE-METHOD-COMBINATION, and certain other
+required CLOS features are also missing. Enough CLOS is there to run
+ASDF and CL-PPCRE, if you're in no hurry.
+
+There is no MOP worth mentioning.
+
+Since this is a early public release, there might be build
+problems as well as runtime bugs.
+
+Please report problems to the j-devel mailing list:
+
+    armedbear-j-devel@lists.sourceforge.net
+
+Have fun!
+
+On behalf of all ABCL development team and contributors,
+Erik Huelsmann
+October 18, 2008

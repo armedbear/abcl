@@ -1,0 +1,99 @@
+# -*- Mode: Properties -*-
+# Dark
+# Bruce Hellstrom
+# $Id: Dark,v 1.5 2003-02-05 04:05:16 piso Exp $
+
+# Possible color settings for each mode
+#
+# color.background
+# color.brace
+# color.caret
+# color.change
+# color.comment
+# color.currentLineBackground
+# color.disabled
+# color.function
+# color.gutterBorder
+# color.headerName
+# color.headerValue
+# color.keyword
+# color.lineNumber
+# color.matchingBracketBackground
+# color.matchingText
+# color.number
+# color.operator
+# color.preprocessor
+# color.savedChange
+# color.selectionBackground
+# color.string
+# color.text
+# color.verticalRule
+
+# default color settings for Dark theme
+
+color.background              = 0 0 0
+color.brace                   = 255 255 255
+color.caret                   = 255 0 0
+color.change                  = 255   0   0
+color.comment                 = 128 128 128
+color.currentLineBackground   = 72 64 96
+color.disabled                = 128 128 128
+color.function                = 255 255 255
+color.gutterBorder            = 96 96 96
+color.headerName              = 255 255 0
+color.headerValue             = 0 228 228
+color.keyword                 = 255 255 0
+color.lineNumber              = 96 96 96
+color.matchingBracketBackground = 255 0 0
+color.matchingText            = 255 255 255
+color.number                  = 0 255 255
+color.operator                = 0 192 255
+color.preprocessor            = 0 255 192
+color.savedChange             =   0 255   0
+color.selectionBackground     = 128 48 0
+color.string                  = 128 128 255
+color.text                    = 0 255 0
+color.verticalRule            = 96 96 96
+
+
+color.prompt                  = 0 255 255
+color.input                   = 255 255 0
+
+XmlMode.color.text            = 0 255 0
+XmlMode.color.attribute       = 0 255 255
+XmlMode.color.delimiter       = 255 255 255
+XmlMode.color.namespace       = 255 204 0
+XmlMode.color.tag             = 255 255 0
+XmlMode.color.comment         = 128 128 128
+
+HtmlMode.color.tag            = 255 255 0
+HtmlMode.color.anchor         = 192 192 192
+HtmlMode.color.image          = 128 255 128
+HtmlMode.color.table          = 0 0 255
+HtmlMode.color.tableRow       = 128 128 255
+HtmlMode.color.tableData      = 0 255 255
+HtmlMode.color.comment        = 128 128 128
+HtmlMode.color.script         = 0 255 0
+
+PerlMode.color.scalar         = 0 255 255
+PerlMode.color.list           = 192 255 255
+
+PHPMode.color.var             = 0 255 255
+PHPMode.color.attribute       = 128 192 255
+PHPMode.color.delimiter       = 255 255 255
+PHPMode.color.tag             = 255 255 0
+
+MakefileMode.color.target     = 255 255 255
+
+PropertiesMode.color.section  = 255 255 0
+
+DirectoryMode.color.directory = 255 255 0
+DirectoryMode.color.symlink   = 255 255 0
+DirectoryMode.color.marked    = 255 255 255
+DirectoryMode.style.directory = 2
+
+style.keyword                 = 0
+style.function                = 0
+style.tag                     = 0
+style.section                 = 0
+

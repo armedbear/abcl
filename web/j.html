@@ -1,0 +1,288 @@
+<html>
+<head>
+<meta name="author" content="Peter Graves">
+<meta name="description" content="J">
+<meta name="keywords" content="Armed Bear, j, editor, Java, Common Lisp, open source, GPL">
+<link rel="stylesheet" href="armedbear.css" type="text/css">
+<title>J</title>
+</head>
+
+<body>
+
+<center>
+  <h1>Armed Bear</h1>
+  <i>The right of the people to keep and arm bears shall not be infringed!</i>
+</center>
+
+<hr size="2">
+
+<p>
+<font face="sans-serif" size="4">
+  <b>About J</b>
+</font>
+<dl>
+  <dd>
+    J is a text editor written in Java and distributed under the
+    <a href="http://www.gnu.org/copyleft/gpl.html">GNU General Public
+    License</a>.
+    <p>
+    J runs on platforms that support Java 1.4, including Linux,
+    Windows, and Mac OS X.
+    <p>
+    J is free software and comes with ABSOLUTELY NO WARRANTY.
+    <p>
+    The latest version is 0.21.0, released September 24, 2004.
+  </dd>
+</dl>
+
+<p>
+<font face="sans-serif" size="4">
+  <b>Screenshots</b>
+</font>
+<dl>
+  <dd>J 0.14.0 in Java mode, with line numbers and change marks turned on:
+    <br><br>
+    <dl>
+      <dd><a href="http://armedbear-j.sourceforge.net/j-0.14.0.png">j-0.14.0.png</a> (91816 bytes)</dd>
+    </dl>
+  </dd>
+  <p>
+  <dd>J 0.16.4 reading mail:
+    <br><br>
+    <dl>
+      <dd><a href="http://armedbear-j.sourceforge.net/j-0.16.4.png">j-0.16.4.png</a> (145493 bytes)</dd>
+    </dl>
+  </dd>
+  <p>
+  <dd>J 0.19.0 in the Java debugger:
+    <br><br>
+    <dl>
+      <dd><a href="http://armedbear-j.sourceforge.net/j-0.19.0.png">j-0.19.0.png</a> (111165 bytes)</dd>
+    </dl>
+  </dd>
+</dl>
+
+<p>
+<font face="sans-serif" size="4">
+  <b>Download</b>
+</font>
+<dl>
+  <dd>
+    The latest release is available from the SourceForge
+    <a href=http://sourceforge.net/project/showfiles.php?group_id=55057>download page</a>.
+  </dd>
+</dl>
+
+<p>
+<font face="sans-serif" size="4">
+  <b>Documentation</b>
+</font>
+<dl>
+    <dd>
+        Documentation is included in both source and binary distributions.
+        <p>
+        You can also view the documentation for the current release
+        <a href="http://armedbear-j.sourceforge.net/doc/contents.html">online</a>.
+    </dd>
+</dl>
+
+<p>
+<font face="sans-serif" size="4">
+  <b>Mailing Lists</b>
+</font>
+<dl>
+  <dd>J's mailing list page on SourceForge is <a href="http://sourceforge.net/mail/?group_id=55057">here</a>.</dd>
+</dl>
+
+<p>
+<font face="sans-serif" size="4">
+  <b>Reporting Bugs</b>
+</font>
+<dl>
+  <dd><a href="http://sourceforge.net/tracker/?func=add&amp;group_id=55057&amp;atid=475785">Report a bug</a>.</dd>
+</dl>
+
+<p>
+<font face="sans-serif" size="4">
+  <b>What's New</b>
+</font>
+<dl>
+  <dd>
+  <b>Sep 24 2004 4:45 PM - Version 0.21.0</b>
+  <p>
+  Some minor problems that prevented j from working correctly with the Java 1.5
+  betas are fixed in this release.
+  <p>
+  It is now possible to use drag/drop in the sidebar buffer list to reorder the
+  buffers, so that navigating between buffers using
+  <a href="http://armedbear-j.sourceforge.net/doc/commands.html#nextBuffer">nextBuffer</a> and
+  <a href="http://armedbear-j.sourceforge.net/doc/commands.html#prevBuffer">prevBuffer</a> (mapped by default to
+  Alt Right and Alt Left, respectively) is more efficient. Thanks to Mike
+  Rutter for providing the code to do this.
+  <p>
+  By request, the command
+  <a href="http://armedbear-j.sourceforge.net/doc/commands.html#wrapParagraphsInRegion">wrapParagraphsInRegion</a>
+  has been added. It is mapped by default to Ctrl Shift F12 in plain text and
+  mail composition buffers.
+  <a href="http://armedbear-j.sourceforge.net/doc/commands.html#wrapParagraphsInRegion">wrapParagraphsInRegion</a>
+  walks through the region (or the whole buffer if no region is selected) and,
+  in effect, calls <a href="http://armedbear-j.sourceforge.net/doc/commands.html#wrapParagraph">wrapParagraph</a>
+  on each paragraph.
+  <p>
+  The wrap commands should now do a better job of handling lines that break on
+  the hyphen of a hyphenated word (like "wrap-paragraph"). If the paragraph is
+  subsequently reformatted in such a way that the line break no longer falls on
+  the hyphen in question, the parts of the hyphenated word are now put back
+  together properly. In previous versions of j, you were likely to end up with
+  "wrap- paragraph", with a bogus extra space after the hyphen.
+  <p>
+  The commands
+  <a href="http://armedbear-j.sourceforge.net/doc/commands.html#pageUpOtherWindow">pageUpOtherWindow</a> and
+  <a href="http://armedbear-j.sourceforge.net/doc/commands.html#pageDownOtherWindow">pageDownOtherWindow</a> have
+  been added. They are mapped by default to Alt Page Down and Alt Page Up,
+  respectively, in all modes. These commands are helpful in a split-window
+  situation when you want to scroll the other window without switching to it.
+  <p>
+  The commmand
+  <a href="http://armedbear-j.sourceforge.net/doc/commands.html#findOccurrenceAtDotAndKillList">findOccurrenceAtDotAndKillList</a>
+  has been added. It is mapped by default to Ctrl Enter in List Occurrences
+  buffers. It works like
+  <a href="http://armedbear-j.sourceforge.net/doc/commands.html#findOccurrenceAtDot">findOccurrenceAtDot</a>, but
+  in addition it closes the List Occurrences buffer.
+  <p>
+  The commands <a href="http://armedbear-j.sourceforge.net/doc/commands.html#shellNextPrompt">shellNextPrompt</a>
+  and <a href="http://armedbear-j.sourceforge.net/doc/commands.html#shellPreviousPrompt">shellPreviousPrompt</a>
+  have been added. They are mapped by default to Ctrl Alt N and Ctrl Alt P,
+  respectively, in shell buffers and their derivatives (including Lisp shells),
+  and they help you find the next or previous prompt, starting from the current
+  location of the caret.
+  <p>
+  The command <a href="http://armedbear-j.sourceforge.net/doc/commands.html#p4Log">p4Log</a> has been added. It
+  runs the Perforce command "filelog -l" on the file associated with the
+  current buffer.
+  <p>
+  The command <a href="http://armedbear-j.sourceforge.net/doc/commands.html#p4Diff">p4Diff</a> now runs the
+  Perforce command "p4 diff -f -du", instead of "p4 diff -du". This change
+  means that <a href="http://armedbear-j.sourceforge.net/doc/commands.html#p4Diff">p4Diff</a> will display
+  potentially useful output even if the file associated with the current buffer
+  has not, in Perforce's opinion, been officially opened for editing.
+  <p>
+  J's ssh-related code now recognizes "Response:" as a password prompt, in
+  addition the to other password prompts it recognized already.
+  <p>
+  Compilation buffers are now supported on Windows NT 4. Thanks to Pete Kirkham
+  for pointing out that this was possible.
+  <p>
+  In previous versions of j, there was an incorrect optimization in the display
+  code which malfunctioned on very rare occasions and caused lines to disappear
+  from the display, even though they were still present in the buffer (there
+  was never any loss of data). This bug has been fixed by removing the
+  optimization in question.
+  <p>
+  There are a number of new features and minor improvements in Lisp mode and
+  in Lisp shells. Thanks to Sam Steingold for help with many of these.
+  <p>
+  This release includes version 0.0.4 of Armed Bear Common Lisp. ABCL 0.0.4
+  passes 17778 out of 17942 tests in the GCL ANSI Common Lisp test suite, for a
+  nominal compliance of 99.0859%. The test suite is still not complete,
+  however, so ABCL's actual percentage of ANSI compliance, whatever that may
+  mean, is undoubtedly lower. In any case, version 0.0.4 represents a
+  substantial improvement over version 0.0.3, back when it was still called
+  Armed Bear Lisp, which passed 12986 out of 14127 tests (91.92%).
+  <p>
+  ABCL includes a compiler, written in Lisp, that generates JVM bytecode from
+  Lisp source. The compiler is not finished, and there are valid Lisp
+  constructs that it doesn't know how to compile. In most situations, when the
+  compiler encounters code that it can't compile correctly, it is smart enough
+  to leave the code alone so that it will continue to work correctly with the
+  interpreter. Compiled code and interpreted code can coexist happily in the
+  same running instance of ABCL.
+  <p>
+  The 0.21.0 binary distribution contains a compiled version of the Lisp
+  library code (i.e. a full set of .abcl and .cls files), as well as the Lisp
+  source files for the library code that is implemented in Lisp. If you build j
+  from source, using either configure/make or Ant, the Lisp library code will
+  be compiled as part of the build. There is no longer any need to do
+  COMPILE-SYSTEM manually.
+  <p>
+  ABCL 0.0.4 is better at some things than others. In particular, it's not very
+  good at CLOS. ABCL's CLOS correctness is reasonable, but its CLOS performance
+  is terrible (for one thing, the compiler doesn't even attempt to compile
+  generic functions). This deficiency is due more to simple neglect than to any
+  intrinsic limitation, and the CLOS implementation should improve in future
+  releases.
+  <p>
+  You can start ABCL from within j by doing Alt X, "abcl", or by selecting "Run
+  Lisp as Separate Process" from the Lisp menu. Note that the "Run Embedded
+  Lisp" menu selection opens a Lisp shell using an instance of ABCL that runs
+  in the editor process; it only makes sense to do this if you're planning to
+  interact with the running instance of j, which is not normally the case. If
+  you just want to experiment with ABCL, "Run Lisp as Separate Process" (or Alt
+  X, "abcl") is your friend.
+  <p>
+  If you're truly adventurous, you can also start ABCL from within j by doing
+  Alt X, "slime". J's version of slime is adapted from the "Superior Lisp
+  Interaction Mode for Emacs", originally written by Eric Marsden, Luke Gorrie
+  and Helmut Eller. Slime-for-j is less than a month old, so it is nowhere near
+  as robust or featureful as slime-for-emacs, but in principle it offers more
+  functionality than Alt X, "abcl". In particular, the tab key can be used for
+  symbol completion, function argument lists are displayed in the status bar
+  when you type a space, and Alt . should work to find function definitions (if
+  you've built ABCL from source). In addition, the evaluation of forms and
+  regions in Lisp source files makes an attempt to set *PACKAGE* to the right
+  thing first. I don't think any of these features works 100% correctly yet,
+  but even so, slime-for-j feels like an improvement over the basic Lisp shell
+  functionality available in previous versions of j. For more information, see
+  slime.lisp.
+  <p>
+  More (and more timely) details about recent changes in j and ABCL are
+  available on the J Development Mailing List, the archives of which are
+  <a href="http://sourceforge.net/mailarchive/forum.php?forum_id=9737">here</a>
+  (or on
+  <a href="http://news.gmane.org/thread.php?group=gmane.editors.j.devel">Gmane</a>).
+  <p>
+  The complete change log (back to the beginning of time) is available
+  <a href="http://armedbear-j.sourceforge.net/changelog.html">here</a>.
+  </dd>
+</dl>
+<p>
+<font face="sans-serif" size="4">
+  <b>Installation</b>
+</font>
+<dl>
+  <dd>
+    Java 1.4 or later is required. Java 1.5 is recommended.
+    <p>
+    <a href="http://java.sun.com/j2se/1.5.0/download.jsp">Sun Java 1.5</a> or
+    <a href="http://www.blackdown.org/java-linux/java2-status/jdk1.4-status.html">Blackdown Java 1.4.2-01</a>
+    is recommended for Linux.
+    <p>
+    <a href="http://java.sun.com/j2se/1.5.0/download.jsp">Sun Java 1.5</a> is recommended for
+    Windows.
+    <p>
+    Simply untar or unzip the binary distribution, cd into the j-0.21.0
+    directory, and run the jar file:
+    <pre>
+        $ tar xvfz j-0.21.0-binary.tar.gz
+        $ cd j-0.21.0
+        $ java -jar j.jar</pre>
+    <p>
+    Or for Windows:
+    <pre>
+        C:\&gt; unzip j-0.21.0-binary.zip
+        C:\&gt; cd j-0.21.0
+        C:\j-0.21.0&gt; java -jar j.jar</pre>
+  </dd>
+</dl>
+<p>
+<font face="sans-serif" size="4">
+  <b>Building the Source</b>
+</font>
+<dl>
+  <dd>
+    Instructions are provided in the file
+    <a href="http://armedbear-j.sourceforge.net/doc/building.html">building.html</a> in the doc directory of the
+    distribution. </dd>
+</dl>
+<A href="http://sourceforge.net"> <IMG src="http://sourceforge.net/sflogo.php?group_id=55057" width="105" height="31" border="0" alt="SourceForge Logo" align="right"></A>
+</body> </html>

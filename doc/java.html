@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<title>J User's Guide - Calling Java From Lisp</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+<body>
+<a href="contents.html">Top</a>
+<hr>
+<h1>Calling Java From Lisp</h1>
+<hr>
+<p>
+Programs in j's built-in Lisp can use the following functions to instantiate
+Java classes and call Java methods:
+<p>
+<a name="jclass">&#8226; jclass</a><dl><dd>
+<p>
+jclass <i>class-name</i> =&gt; <i>class-ref</i>
+<p>
+Returns a reference to the specified Java class.
+        <pre>
+        (jclass "java.lang.String") =&gt;
+            #&lt;JAVAOBJECT ... class java.lang.String&gt;</pre>
+</dl>
+<a name="jconstructor">&#8226; jconstructor</a><dl><dd>
+<p>
+jconstructor <i>class-name &amp;rest parameter-class-names</i> =&gt; <i>constructor-ref</i>
+<p>
+Returns a reference to the specified constructor.
+        <pre>
+        (jconstructor "java.lang.StringBuffer") =&gt;
+            #&lt;JAVAOBJECT ... public java.lang.StringBuffer()&gt;
+
+        (jconstructor "java.lang.StringBuffer" "java.lang.String") =&gt;
+            #&lt;JAVAOBJECT ... public java.lang.StringBuffer(java.lang.String)&gt;</pre>
+        Java primitive types may be used as parameter class names:
+        <pre>
+        (jconstructor "java.lang.StringBuffer" "int") =&gt;
+            #&lt;JAVAOBJECT ... public java.lang.StringBuffer(int)&gt;</pre>
+</dl>
+<a name="jmethod">&#8226; jmethod</a><dl><dd>
+<p>
+jmethod <i>class-name method-name &amp;rest parameter-class-names</i> =&gt; <i>method-ref</i>
+<p>
+Returns a reference to the specified method.
+        <pre>
+        (jmethod "java.lang.String" "length") =&gt;
+            #&lt;JAVAOBJECT ... java.lang.String.length()&gt;
+
+        (jmethod "java.lang.StringBuffer" "append" "java.lang.String") =&gt;
+            #&lt;JAVAOBJECT ... java.lang.StringBuffer.append(java.lang.String)&gt;</pre>
+The parameter class names may be omitted if there is no ambiguity:
+        <pre>
+        (jmethod "java.lang.StringBuffer" "setLength") =&gt;
+           #&lt;JAVAOBJECT ... public synchronized void java.lang.StringBuffer.setLength(int)&gt;</pre>
+</dl>
+<a name="jstatic">&#8226; jstatic</a><dl><dd>
+<p>
+jstatic <i>method-ref class-ref &amp;rest args</i> =&gt; <i>result</i>
+<p>
+Invokes a static method.
+<p>
+If <i>method-ref</i> is a string, it is assumed to name a method. <i>class-ref</i>
+must be a class name or a class reference returned by <a href="#jclass">jclass</a>.
+        <pre>
+        (jstatic "currentTimeMillis" "java.lang.System") =&gt;
+            1043330903587</pre>
+<p>
+If <i>method-ref</i> is a method reference returned by <a href="#jmethod">jmethod</a>,
+the <i>class-ref</i> argument is ignored.
+        <pre>
+        (jstatic (jmethod "java.lang.System" "currentTimeMillis") nil) =&gt;
+            1043330944932</pre>
+</dl>
+<a name="jnew">&#8226; jnew</a><dl><dd>
+<p>
+jnew <i>constructor &amp;rest args</i> =&gt; <i>object-ref</i>
+<p>
+Invokes a constructor.
+<pre>
+        (jnew (jconstructor "java.lang.String" "java.lang.String") "this is a test") =&gt;
+            #&lt;JAVAOBJECT [java.lang.String] this is a test&gt;</pre>
+</dl>
+<a name="jcall">&#8226; jcall</a><dl><dd>
+<p>
+jcall <i>method-ref instance-ref &amp;rest args</i> =&gt; <i>result</i>
+<p>
+Invokes a method on a Java object.
+<pre>
+        (setq x (jnew (jconstructor "java.lang.String" "java.lang.String") "this is a test")) =&gt;
+            #&lt;JAVAOBJECT [java.lang.String] this is a test&gt;
+
+        (defconstant length-method (jmethod "java.lang.String" "length")) =&gt;
+            LENGTH-METHOD
+
+        (jcall length-method x) =&gt;
+            14</pre>
+</dl>
+</body>
+</html>

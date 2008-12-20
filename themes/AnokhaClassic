@@ -1,0 +1,110 @@
+# -*- Mode: Properties -*-
+# Anokha Classic
+# $Id: AnokhaClassic,v 1.4 2003-02-05 04:04:54 piso Exp $
+
+color.text                              = 255 255 255
+color.background                        = 0   51  51
+color.currentLineBackground             = 0   0   0
+color.selectionBackground               = 51  102 102
+color.matchingBracketBackground         = 51 102 102
+color.caret                             = 204 255 204
+
+color.preprocessor                      = 255 255 0
+color.comment                           = 180 180 128
+color.keyword                           = 204 102 0
+color.brace                             = 255 255 0
+color.number                            = 255 153 0
+color.function                          = 255 153 0
+color.string                            = 153 204 153
+color.operator                          = 255 255 0
+color.disabled                          = 153 153 153
+color.verticalRule                      = 96 96 72
+color.lineNumber                        = 128 128 96
+color.gutterBorder                      = 96 96 72
+color.change                            = 255 164 0
+color.savedChange                       = 128 96 0
+
+color.headerName                        = 204 102 0
+color.headerValue                       = 255 255 204
+color.matchingText                      = 255 153 0
+color.signature                         = 204 204 153
+
+MailboxMode.color.deleted               = 153 153 102
+MailboxMode.color.to                    = 255 255 0
+MailboxMode.color.flags                 = 255 255 204
+MailboxMode.color.date                  = 204 204 153
+MailboxMode.color.from                  = 255 153 0
+MailboxMode.color.size                  = 204 204 153
+MailboxMode.color.subject               = 255 255 255
+MailboxMode.style.subject               = 1
+
+MailboxMode.color.flaggedTo             = 255 204 0
+MailboxMode.style.flaggedTo             = 1
+MailboxMode.color.flaggedSubject        = 255 204 0
+MailboxMode.style.flaggedSubject        = 1
+MailboxMode.color.flaggedFrom           = 255 204 0
+MailboxMode.style.flaggedFrom           = 1
+
+PerlMode.color.scalar                   = 255 255 204
+PerlMode.color.list                     = 204 204 153
+
+LispMode.color.substitution             = 255 204 102
+LispMode.color.parenthesis              = 153 153 102
+LispMode.color.punctuation              = 153 153 102
+LispMode.color.secondaryKeyword         = 153 102 51
+
+PHPMode.color.var                       = 255 255 204
+PHPMode.color.attribute                 = 204 204 153
+PHPMode.color.equals                    = 255 255 0
+PHPMode.color.delimiter                 = 255 255 0
+PHPMode.color.tag                       = 255 153 0
+
+color.prompt                            = 153 204 153
+color.input                             = 255 153 0
+
+XmlMode.color.attribute                 = 204 204 153
+XmlMode.color.equals                    = 255 255 0
+XmlMode.color.delimiter                 = 255 255 0
+XmlMode.color.namespace                 = 255 204 0
+XmlMode.color.tag                       = 255 153 0
+
+HtmlMode.color.tag                      = 153 204 153
+HtmlMode.color.anchor                   = 255 204 0
+HtmlMode.color.image                    = 255 153 0
+HtmlMode.color.table                    = 153 153 102
+HtmlMode.color.tableRow                 = 204 204 153
+HtmlMode.color.tableData                = 255 255 204
+HtmlMode.color.comment                  = 102 153 153
+HtmlMode.color.script                   = 255 0   0
+
+MakefileMode.color.target               = 255 153 0
+
+PropertiesMode.color.section            = 255 153 0
+
+DirectoryMode.color.directory           = 255 153 0
+DirectoryMode.color.symlink             = 255 204 0
+color.marked                            = 255 255 0
+
+DiffMode.color.file                     = 255 255 0
+DiffMode.style.file                     = 0
+DiffMode.color.deleted                  = 180 180 180
+DiffMode.color.inserted                 = 255 153 0
+
+# List Registers mode
+color.registerHeader                    = 255 153 0
+style.registerHeader                    = 0
+color.registerName                      = 255 255 0
+style.registerName                      = 0
+
+# Font.PLAIN is 0, Font.BOLD is 1, Font.ITALIC is 2.
+style.text                              = 0
+style.keyword                           = 0
+style.function                          = 0
+DirectoryMode.style.directory           = 0
+DirectoryMode.style.marked              = 0
+ShellMode.style.prompt                  = 0
+style.comment                           = 0
+XmlMode.style.tag                       = 0
+XmlMode.style.delimiter                 = 0
+PHPMode.style.tag                       = 0
+PHPMode.style.delimiter                 = 0

@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - Modes</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Modes</h1>
+
+<hr>
+
+<p>
+J provides specialized modes for editing particular kinds of files. Currently
+Java, JavaScript, C, C++, XML, HTML, Lisp, Perl, shell script, makefile,
+autoconf, and properties modes are provided, as well as plain text mode for
+text files that don't fit into any of those categories. There are also modes
+for directory, archive and image buffers.  In addition, any kind of file can be
+viewed (but not edited) in binary mode.
+<p>
+In principle, each mode provides its own implementation of syntax highlighting,
+tagging and indentation, each mode provides its own local key map and menu, and
+each mode supplies its own default values for such properties as tab width,
+indent size, and wrap column.  In the current implementation, C, C++ and
+JavaScript modes inherit much of their functionality from Java mode.
+<p>
+When a file is first opened, j does its best to detect what kind of file it is
+and open it using the appropriate mode. Except for archives and image files,
+binary files are always opened in binary mode.
+<p>
+J uses regular expressions to determine what mode to use based on the name of
+the file. These are j's internal defaults:
+<pre>
+    JavaMode.files=".+\\.java|.+\\.jad"
+    JavaScriptMode.files=".+\\.js"
+    CMode.files=".+\\.c"
+    CppMode.files="(.+\\.cpp)|(.+\\.hpp)|(.+\\.h)"
+    XmlMode.files=".+\\.x[ms]l"
+    HtmlMode.files=".+\\.html?"
+    LispMode.files=".+\\.[ej]l|.*\\.emacs"
+    PerlMode.files=".+\\.p[lm]"
+    ShellScriptMode.files=".+\\.[ck]?sh"
+    MakefileMode.files="makefile(\\.in)?"
+    AutoconfMode.files="configure.in|aclocal.m4"
+    PropertiesMode.files="(.+\\.config)|(.+\\.co?nf)|(.+\\.cfg)|(.+\\.ini)|(.+\\.properties)|prefs"
+    ImageMode.files=".+\\.gif|.+\\.jpe?g|.+\\.png"
+</pre>
+In the current implementation, case is ignored. Note that by default, .h
+files are opened in C++ mode rather than C mode.
+<p>
+You can customize this behavior by supplying different values for these
+regular expressions in your <a href="preferences.html">preferences</a> file.
+<p>
+If the filename doesn't match any of these regular expressions, j examines the
+first line of the file.  If the line begins with "#!", the file is loaded
+in Perl mode or shell script mode, if appropriate.
+<p>
+If the filename doesn't match any of these regular expressions, j defaults
+to plain text mode, so it's not necessary or useful to assign a regular
+expression for plain text mode.
+<p>
+You can use the Properties dialog to change the mode and mode-specific
+properties of the current buffer. The Properties dialog is available on the
+File menu and is mapped by default to Alt P. J makes an effort to remember any
+changes you make in the Properties dialog in case you load the same file again.
+<p>
+You can specify default values for mode-specific properties in your preferences
+file.  You can specify global defaults and override them for specific modes,
+like this:
+<pre>
+    #Global defaults
+    tabWidth=4
+    indentSize=2
+
+    # Override for C++ mode.
+    CppMode.tabWidth=4
+    CppMode.indentBeforeBrace=true
+    CppMode.indentAfterBrace=false
+
+    # Override for Java mode.
+    JavaMode.indentSize=2
+</pre>
+</body>
+
+</html>
+

@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - XML Mode</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>XML Mode</h1>
+
+<hr>
+
+<p>
+In XML mode, the bottom pane of the sidebar normally displays a tree
+representing the document you're editing. The tree is enabled by default. To
+disable it, add the following line to your
+<a href="preferences.html">preferences</a> file:
+<pre>
+    XmlMode.enableTree = false
+</pre>
+<p>
+If the tree is enabled but no tree appears in the sidebar, the most likely
+reason is that j's XML parser was unable to parse the contents of the buffer.
+Parsing is done in a background thread, so it may take a little while for the
+tree to appear (or possibly a long while, if the document references a DTD on
+the Internet, for example).
+<p>
+Starting with version 0.19.0.2, j uses the XML parser provided as part of the
+Java 1.4 runtime library. (Earlier versions of j included a version of the
+&AElig;lfred XML parser.)
+<p>
+If you would rather use a different XML parser, you need to do two things:
+<ul>
+<li>
+Add the relevant jar file(s) to j's runtime <code>CLASSPATH</code>. If you
+build j from source, you can use the configure script's
+<code>--with-extensions</code> option to do this:
+<pre>
+        ./configure --with-extensions=/usr/share/java/xercesImpl.jar
+</pre>
+The j shell script that is automatically generated and installed will then use
+the correct <code>CLASSPATH</code>.
+<br><br>
+</li>
+<li>
+Add a line to your <a href="preferences.html">preferences</a> file to specify
+the <a href="preferences.html#org.xml.sax.driver">org.xml.sax.driver</a>
+property, which tells j the fully qualified class name of the parser to use.
+For example:
+<pre>
+        org.xml.sax.driver = org.apache.xerces.parsers.SAXParser
+</pre>
+(The corresponding property in versions of j prior to 0.19.0.2 was
+"org.xml.sax.parser".)
+</li>
+</ul>
+<p>
+When you have a tree in the sidebar, the selection in the tree will follow
+along as you navigate in the edit buffer, but the tree is not automatically
+expanded to show nested nodes. You can use
+<a href="commands.html#xmlFindCurrentNode">xmlFindCurrentNode</a>, mapped by
+default to Ctrl =, to force the tree to expand all the way down to the node
+corresponding to the location of the caret in the edit buffer.
+<p>
+Clicking on a node in the tree moves the caret to the corresponding
+location in the edit buffer.
+<p>
+The tree is refreshed automatically by the idle thread when you make changes to
+the buffer.
+<p>
+You can also use <a href="commands.html#xmlParseBuffer">xmlParseBuffer</a>,
+mapped by default to Ctrl P, to force the tree to be refreshed. The parser uses
+the image of the buffer in memory, rather than the file on disk, so there's no
+need to save any changes you've made to the buffer before refreshing the tree.
+<p>
+If <a href="commands.html#xmlParseBuffer">xmlParseBuffer</a> encounters an
+error, the tree is not updated.
+<p>
+Parser errors that occur when j is automatically refreshing the tree are not reported.
+<p>
+<a href="commands.html#xmlParseBuffer">xmlParseBuffer</a> invokes
+<a href="commands.html#xmlFindCurrentNode">xmlFindCurrentNode</a> automatically
+when it succeeds in updating the tree.
+<p>
+The following commands are also specifically relevant in XML mode:
+<ul>
+<li><a href="commands.html#xmlElectricEquals">xmlElectricEquals</a></li>
+<li><a href="commands.html#xmlFindMatch">xmlFindMatch</a></li>
+<li><a href="commands.html#xmlInsertEmptyElementTag">xmlInsertEmptyElementTag</a></li>
+<li><a href="commands.html#xmlInsertTag">xmlInsertTag</a></li>
+<li><a href="commands.html#xmlValidateBuffer">xmlValidateBuffer</a></li>
+</ul>
+</body>
+</html>

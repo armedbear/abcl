@@ -1,0 +1,67 @@
+<project name="lisp" default="compile" basedir="../../..">
+
+  <!-- Set global properties for this build -->
+  <property name="topdir" value="${basedir}/.."/>
+  <property file="${topdir}/build.properties"/>
+  <property name="java" value="${jdk}/jre/bin/java"/>
+  <property name="junit" value=""/>
+  <property name="build.compiler.pedantic" value="yes"/>
+
+  <property name="JAVA" value="${java}"/>
+  <property name="JAVA_OPTIONS" value="${java_options}"/>
+
+  <property name="debug" value="yes"/>
+  <property name="build.compiler.emacs" value="yes"/>
+
+  <target name="compile" depends="lisp"/>
+
+  <target name="prepare">
+    <!-- Create the time stamp -->
+    <tstamp>
+      <format property="build" pattern="EEE MMM dd yyyy HH:mm:ss zzz"/>
+    </tstamp>
+  </target>
+
+  <target name="lisp" depends="prepare">
+    <echo message="debug=${debug}" />
+    <javac
+      srcdir="."
+      destdir="${basedir}"
+      classpath="${basedir}:${jdk}/jre/lib/rt.jar:${junit}"
+      includeAntRuntime="no"
+      includes="org/armedbear/lisp/**/*"
+      debug="yes"
+      optimize="no"
+    />
+    <tstamp>
+      <format property="build" pattern="EEE MMM dd yyyy HH:mm:ss zzz"/>
+    </tstamp>
+    <echo message="${build}&#10;" file="${basedir}/org/armedbear/lisp/build"/>
+  </target>
+
+  <target name="clean">
+    <delete>
+      <fileset dir="${basedir}/org/armedbear/lisp" includes="**/*.zip"/>
+      <fileset dir="${basedir}/org/armedbear/lisp" includes="**/*.tar.gz"/>
+      <fileset dir="${basedir}/org/armedbear/lisp" includes="**/*.jar"/>
+      <fileset dir="${basedir}/org/armedbear/lisp" includes="**/*.class"/>
+      <fileset dir="${basedir}/org/armedbear/lisp" includes="**/*.fasl"/>
+      <fileset dir="${basedir}/org/armedbear/lisp" includes="**/*.fasl-tmp"/>
+      <fileset dir="${basedir}/org/armedbear/lisp" includes="**/*.cls"/>
+      <fileset dir="${basedir}/org/armedbear/lisp" includes="**/*~"/>
+      <fileset dir="${basedir}/org/armedbear/lisp" includes="**/.#*"/>
+      <fileset dir="${basedir}/org/armedbear/lisp" includes="**/TEST-*.txt"/>
+    </delete>
+    <delete file="${basedir}/org/armedbear/lisp/build"/>
+  </target>
+
+  <target name="lisp.zip">
+    <delete file="${topdir}/lisp.zip"/>
+    <zip
+      zipfile="${topdir}/lisp.zip"
+      basedir="${basedir}/org/armedbear/lisp"
+      includes="build.xml, *.java, *.lisp"
+    />
+  </target>
+
+</project>

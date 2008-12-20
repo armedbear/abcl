@@ -1,0 +1,953 @@
+;;; compiler-pass1.lisp
+;;;
+;;; Copyright (C) 2003-2008 Peter Graves
+;;; $Id$
+;;;
+;;; This program is free software; you can redistribute it and/or
+;;; modify it under the terms of the GNU General Public License
+;;; as published by the Free Software Foundation; either version 2
+;;; of the License, or (at your option) any later version.
+;;;
+;;; This program is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with this program; if not, write to the Free Software
+;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+;;;
+;;; As a special exception, the copyright holders of this library give you
+;;; permission to link this library with independent modules to produce an
+;;; executable, regardless of the license terms of these independent
+;;; modules, and to copy and distribute the resulting executable under
+;;; terms of your choice, provided that you also meet, for each linked
+;;; independent module, the terms and conditions of the license of that
+;;; module.  An independent module is a module which is not derived from
+;;; or based on this library.  If you modify this library, you may extend
+;;; this exception to your version of the library, but you are not
+;;; obligated to do so.  If you do not wish to do so, delete this
+;;; exception statement from your version.
+
+(in-package "JVM")
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (require "LOOP")
+  (require "FORMAT")
+  (require "CLOS")
+  (require "PRINT-OBJECT")
+  (require "COMPILER-TYPES")
+  (require "KNOWN-FUNCTIONS")
+  (require "KNOWN-SYMBOLS")
+  (require "DUMP-FORM")
+  (require "OPCODES")
+  (require "JAVA"))
+
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun generate-inline-expansion (block-name lambda-list body)
+    (cond ((intersection lambda-list '(&optional &rest &key &allow-other-keys &aux) :test 'eq)
+           nil)
+          (t
+           (setf body (copy-tree body))
+           (list 'LAMBDA lambda-list (precompile-form (list* 'BLOCK block-name body) t)))))
+  ) ; EVAL-WHEN
+
+;;; Pass 1.
+
+
+;; Returns a list of declared free specials, if any are found.
+(declaim (ftype (function (list list) list) process-declarations-for-vars))
+(defun process-declarations-for-vars (body variables)
+  (let ((free-specials '()))
+    (dolist (subform body)
+      (unless (and (consp subform) (eq (%car subform) 'DECLARE))
+        (return))
+      (let ((decls (%cdr subform)))
+        (dolist (decl decls)
+          (case (car decl)
+            ((DYNAMIC-EXTENT FTYPE INLINE NOTINLINE OPTIMIZE)
+             ;; Nothing to do here.
+             )
+            ((IGNORE IGNORABLE)
+             (process-ignore/ignorable (%car decl) (%cdr decl) variables))
+            (SPECIAL
+             (dolist (name (%cdr decl))
+               (let ((variable (find-variable name variables)))
+                 (cond ((and variable
+                             ;; see comment below (and DO-ALL-SYMBOLS.11)
+                             (eq (variable-compiland variable) *current-compiland*))
+                        (setf (variable-special-p variable) t))
+                       (t
+                        (dformat t "adding free special ~S~%" name)
+                        (push (make-variable :name name :special-p t) free-specials))))))
+            (TYPE
+             (dolist (name (cddr decl))
+               (let ((variable (find-variable name variables)))
+                 (when (and variable
+                            ;; Don't apply a declaration in a local function to
+                            ;; a variable defined in its parent. For an example,
+                            ;; see CREATE-GREEDY-NO-ZERO-MATCHER in cl-ppcre.
+                            ;; FIXME suboptimal, since we ignore the declaration
+                            (eq (variable-compiland variable) *current-compiland*))
+                   (setf (variable-declared-type variable)
+                         (make-compiler-type (cadr decl)))))))
+            (t
+             (dolist (name (cdr decl))
+               (let ((variable (find-variable name variables)))
+                 (when variable
+                   (setf (variable-declared-type variable)
+                         (make-compiler-type (%car decl)))))))))))
+    free-specials))
+
+(defun check-name (name)
+  ;; FIXME Currently this error is signalled by the precompiler.
+  (unless (symbolp name)
+    (compiler-error "The variable ~S is not a symbol." name))
+  (when (constantp name)
+    (compiler-error "The name of the variable ~S is already in use to name a constant." name))
+  name)
+
+(declaim (ftype (function (t) t) p1-body))
+(defun p1-body (body)
+  (declare (optimize speed))
+  (let ((tail body))
+    (loop
+      (when (endp tail)
+        (return))
+      (setf (car tail) (p1 (%car tail)))
+      (setf tail (%cdr tail))))
+  body)
+
+(defknown p1-default (t) t)
+(declaim (inline p1-default))
+(defun p1-default (form)
+  (setf (cdr form) (p1-body (cdr form)))
+  form)
+
+(defknown p1-if (t) t)
+(defun p1-if (form)
+  (let ((test (cadr form)))
+    (cond ((unsafe-p test)
+           (cond ((and (consp test)
+                       (memq (%car test) '(GO RETURN-FROM THROW)))
+                  (p1 test))
+                 (t
+                  (let* ((var (gensym))
+                         (new-form
+                          `(let ((,var ,test))
+                             (if ,var ,(third form) ,(fourth form)))))
+                    (p1 new-form)))))
+          (t
+           (p1-default form)))))
+
+(defknown p1-let-vars (t) t)
+(defun p1-let-vars (varlist)
+  (let ((vars ()))
+    (dolist (varspec varlist)
+      (cond ((consp varspec)
+              ;; FIXME Currently this error is signalled by the precompiler.
+             (unless (= (length varspec) 2)
+               (compiler-error "The LET binding specification ~S is invalid."
+                               varspec))
+             (let ((name (check-name (%car varspec)))
+                   (initform (p1 (%cadr varspec))))
+               (push (make-variable :name name :initform initform) vars)))
+            (t
+             (push (make-variable :name (check-name varspec)) vars))))
+    (setf vars (nreverse vars))
+    (dolist (variable vars)
+      (push variable *visible-variables*)
+      (push variable *all-variables*))
+    vars))
+
+(defknown p1-let*-vars (t) t)
+(defun p1-let*-vars (varlist)
+  (let ((vars ()))
+    (dolist (varspec varlist)
+      (cond ((consp varspec)
+              ;; FIXME Currently this error is signalled by the precompiler.
+             (unless (= (length varspec) 2)
+               (compiler-error "The LET* binding specification ~S is invalid."
+                               varspec))
+             (let* ((name (%car varspec))
+                    (initform (p1 (%cadr varspec)))
+                    (var (make-variable :name (check-name name) :initform initform)))
+               (push var vars)
+               (push var *visible-variables*)
+               (push var *all-variables*)))
+            (t
+             (let ((var (make-variable :name (check-name varspec))))
+               (push var vars)
+               (push var *visible-variables*)
+               (push var *all-variables*)))))
+    (nreverse vars)))
+
+(defun p1-let/let* (form)
+  (declare (type cons form))
+  (let* ((*visible-variables* *visible-variables*)
+         (block (make-block-node '(LET)))
+         (*blocks* (cons block *blocks*))
+         (op (%car form))
+         (varlist (cadr form))
+         (body (cddr form)))
+    (aver (or (eq op 'LET) (eq op 'LET*)))
+    (when (eq op 'LET)
+      ;; Convert to LET* if possible.
+      (if (null (cdr varlist))
+          (setf op 'LET*)
+          (dolist (varspec varlist (setf op 'LET*))
+            (or (atom varspec)
+                (constantp (cadr varspec))
+                (eq (car varspec) (cadr varspec))
+                (return)))))
+    (let ((vars (if (eq op 'LET)
+                    (p1-let-vars varlist)
+                    (p1-let*-vars varlist))))
+      ;; Check for globally declared specials.
+      (dolist (variable vars)
+        (when (special-variable-p (variable-name variable))
+          (setf (variable-special-p variable) t)))
+      ;; For processing declarations, we want to walk the variable list from
+      ;; last to first, since declarations apply to the last-defined variable
+      ;; with the specified name.
+      (setf (block-free-specials block) (process-declarations-for-vars body (reverse vars)))
+      (setf (block-vars block) vars)
+      ;; Make free specials visible.
+      (dolist (variable (block-free-specials block))
+        (push variable *visible-variables*)))
+    (setf body (p1-body body))
+    (setf (block-form block) (list* op varlist body))
+    block))
+
+(defun p1-locally (form)
+  (let ((*visible-variables* *visible-variables*)
+        (specials (process-special-declarations (cdr form))))
+    (dolist (name specials)
+;;       (format t "p1-locally ~S is special~%" name)
+      (push (make-variable :name name :special-p t) *visible-variables*))
+    (setf (cdr form) (p1-body (cdr form)))
+    form))
+
+(defknown p1-m-v-b (t) t)
+(defun p1-m-v-b (form)
+  (when (= (length (cadr form)) 1)
+    (let ((new-form `(let* ((,(caadr form) ,(caddr form))) ,@(cdddr form))))
+      (return-from p1-m-v-b (p1-let/let* new-form))))
+  (let* ((*visible-variables* *visible-variables*)
+         (block (make-block-node '(MULTIPLE-VALUE-BIND)))
+         (*blocks* (cons block *blocks*))
+         (varlist (cadr form))
+         (values-form (caddr form))
+         (body (cdddr form)))
+    ;; Process the values-form first. ("The scopes of the name binding and
+    ;; declarations do not include the values-form.")
+    (setf values-form (p1 values-form))
+    (let ((vars ()))
+      (dolist (symbol varlist)
+        (let ((var (make-variable :name symbol)))
+          (push var vars)
+          (push var *visible-variables*)
+          (push var *all-variables*)))
+      ;; Check for globally declared specials.
+      (dolist (variable vars)
+        (when (special-variable-p (variable-name variable))
+          (setf (variable-special-p variable) t)))
+      (setf (block-free-specials block) (process-declarations-for-vars body vars))
+      (setf (block-vars block) (nreverse vars)))
+    (setf body (p1-body body))
+    (setf (block-form block) (list* 'MULTIPLE-VALUE-BIND varlist values-form body))
+    block))
+
+(defun p1-block (form)
+  (let* ((block (make-block-node (cadr form)))
+         (*blocks* (cons block *blocks*)))
+    (setf (cddr form) (p1-body (cddr form)))
+    (setf (block-form block) form)
+    block))
+
+(defun p1-catch (form)
+  (let* ((tag (p1 (cadr form)))
+         (body (cddr form))
+         (result '()))
+    (dolist (subform body)
+      (let ((op (and (consp subform) (%car subform))))
+        (push (p1 subform) result)
+        (when (memq op '(GO RETURN-FROM THROW))
+          (return))))
+    (setf result (nreverse result))
+    (when (and (null (cdr result))
+               (consp (car result))
+               (eq (caar result) 'GO))
+      (return-from p1-catch (car result)))
+    (push tag result)
+    (push 'CATCH result)
+    (let ((block (make-block-node '(CATCH))))
+      (setf (block-form block) result)
+      block)))
+
+(defun p1-unwind-protect (form)
+  (if (= (length form) 2)
+      (p1 (second form)) ; No cleanup forms: (unwind-protect (...)) => (...)
+      (let* ((block (make-block-node '(UNWIND-PROTECT)))
+             (*blocks* (cons block *blocks*)))
+        (setf (block-form block) (p1-default form))
+        block)))
+
+(defknown p1-return-from (t) t)
+(defun p1-return-from (form)
+  (let* ((name (second form))
+         (block (find-block name)))
+    (when (null block)
+      (compiler-error "RETURN-FROM ~S: no block named ~S is currently visible."
+                      name name))
+    (dformat t "p1-return-from block = ~S~%" (block-name block))
+    (setf (block-return-p block) t)
+    (cond ((eq (block-compiland block) *current-compiland*)
+           ;; Local case. If the RETURN is nested inside an UNWIND-PROTECT
+           ;; which is inside the block we're returning from, we'll do a non-
+           ;; local return anyway so that UNWIND-PROTECT can catch it and run
+           ;; its cleanup forms.
+           (dformat t "*blocks* = ~S~%" (mapcar #'block-name *blocks*))
+           (let ((protected
+                  (dolist (enclosing-block *blocks*)
+                    (when (eq enclosing-block block)
+                      (return nil))
+                    (when (equal (block-name enclosing-block) '(UNWIND-PROTECT))
+                      (return t)))))
+             (dformat t "p1-return-from protected = ~S~%" protected)
+             (when protected
+               (setf (block-non-local-return-p block) t))))
+          (t
+           (setf (block-non-local-return-p block) t)))
+    (when (block-non-local-return-p block)
+      (dformat t "non-local return from block ~S~%" (block-name block))))
+  (list* 'RETURN-FROM (cadr form) (mapcar #'p1 (cddr form))))
+
+(defun p1-tagbody (form)
+  (let* ((block (make-block-node '(TAGBODY)))
+         (*blocks* (cons block *blocks*))
+         (*visible-tags* *visible-tags*)
+         (body (cdr form)))
+    ;; Make all the tags visible before processing the body forms.
+    (dolist (subform body)
+      (when (or (symbolp subform) (integerp subform))
+        (let* ((tag (make-tag :name subform :label (gensym) :block block)))
+          (push tag *visible-tags*))))
+    (let ((new-body '())
+          (live t))
+      (dolist (subform body)
+        (cond ((or (symbolp subform) (integerp subform))
+               (push subform new-body)
+               (setf live t))
+              ((not live)
+               ;; Nothing to do.
+               )
+              (t
+               (when (and (consp subform)
+                          (memq (%car subform) '(GO RETURN-FROM THROW)))
+                 ;; Subsequent subforms are unreachable until we see another
+                 ;; tag.
+                 (setf live nil))
+               (push (p1 subform) new-body))))
+      (setf (block-form block) (list* 'TAGBODY (nreverse new-body))))
+    block))
+
+(defknown p1-go (t) t)
+(defun p1-go (form)
+  (let* ((name (cadr form))
+         (tag (find-tag name)))
+    (unless tag
+      (error "p1-go: tag not found: ~S" name))
+    (let ((tag-block (tag-block tag)))
+      (cond ((eq (tag-compiland tag) *current-compiland*)
+             ;; Does the GO leave an enclosing UNWIND-PROTECT?
+             (let ((protected
+                    (dolist (enclosing-block *blocks*)
+                      (when (eq enclosing-block tag-block)
+                        (return nil))
+                      (when (equal (block-name enclosing-block) '(UNWIND-PROTECT))
+                        (return t)))))
+               (when protected
+                 (setf (block-non-local-go-p tag-block) t))))
+            (t
+             (setf (block-non-local-go-p tag-block) t)))))
+  form)
+
+(defun validate-name-and-lambda-list (name lambda-list context)
+  (unless (or (symbolp name) (setf-function-name-p name))
+    (compiler-error "~S is not a valid function name." name))
+  (when (or (memq '&optional lambda-list)
+            (memq '&key lambda-list))
+    (let ((state nil))
+      (dolist (arg lambda-list)
+        (cond ((memq arg lambda-list-keywords)
+               (setf state arg))
+              ((memq state '(&optional &key))
+               (when (and (consp arg) (not (constantp (second arg))))
+                 (compiler-unsupported
+                  "~A: can't handle ~A argument with non-constant initform."
+                  context
+                  (if (eq state '&optional) "optional" "keyword")))))))))
+
+(defun p1-flet (form)
+  (incf (compiland-children *current-compiland*) (length (cadr form)))
+  (let ((*visible-variables* *visible-variables*)
+        (*local-functions* *local-functions*)
+        (*current-compiland* *current-compiland*)
+        (local-functions '()))
+    (dolist (definition (cadr form))
+      (let ((name (car definition))
+            (lambda-list (cadr definition)))
+        (validate-name-and-lambda-list name lambda-list 'FLET)
+        (let* ((body (cddr definition))
+               (compiland (make-compiland :name name
+                                          :parent *current-compiland*))
+               (local-function (make-local-function :name name
+                                                    :compiland compiland)))
+          (multiple-value-bind (body decls) (parse-body body)
+            (let* ((block-name (fdefinition-block-name name))
+                   (lambda-expression
+                    `(lambda ,lambda-list ,@decls (block ,block-name ,@body)))
+                   (*visible-variables* *visible-variables*)
+                   (*local-functions* *local-functions*)
+                   (*current-compiland* compiland))
+              (setf (compiland-lambda-expression compiland) lambda-expression)
+              (setf (local-function-inline-expansion local-function)
+                    (generate-inline-expansion block-name lambda-list body))
+              (p1-compiland compiland)))
+          (when *closure-variables*
+            (let ((variable (make-variable :name (gensym))))
+              (setf (local-function-variable local-function) variable)
+              (push variable *all-variables*)))
+          (push local-function local-functions))))
+    (setf local-functions (nreverse local-functions))
+    ;; Make the local functions visible.
+    (dolist (local-function local-functions)
+      (push local-function *local-functions*)
+      (let ((variable (local-function-variable local-function)))
+        (when variable
+          (push variable *visible-variables*))))
+    (with-saved-compiler-policy
+      (process-optimization-declarations (cddr form))
+      (list* (car form) local-functions (p1-body (cddr form))))))
+
+(defun p1-labels (form)
+  (incf (compiland-children *current-compiland*) (length (cadr form)))
+  (let ((*visible-variables* *visible-variables*)
+        (*local-functions* *local-functions*)
+        (*current-compiland* *current-compiland*)
+        (local-functions '()))
+    (dolist (definition (cadr form))
+      (let ((name (car definition))
+            (lambda-list (cadr definition)))
+        (validate-name-and-lambda-list name lambda-list 'LABELS)
+        (let* ((body (cddr definition))
+               (compiland (make-compiland :name name
+                                          :parent *current-compiland*))
+               (variable (make-variable :name (gensym)))
+               (local-function (make-local-function :name name
+                                                    :compiland compiland
+                                                    :variable variable)))
+          (multiple-value-bind (body decls) (parse-body body)
+            (setf (compiland-lambda-expression compiland)
+                  `(lambda ,lambda-list ,@decls (block ,name ,@body))))
+          (push variable *all-variables*)
+          (push local-function local-functions))))
+    (setf local-functions (nreverse local-functions))
+    ;; Make the local functions visible.
+    (dolist (local-function local-functions)
+      (push local-function *local-functions*)
+      (push (local-function-variable local-function) *visible-variables*))
+    (dolist (local-function local-functions)
+      (let ((*visible-variables* *visible-variables*)
+            (*current-compiland* (local-function-compiland local-function)))
+        (p1-compiland (local-function-compiland local-function))))
+    (list* (car form) local-functions (p1-body (cddr form)))))
+
+(defknown p1-funcall (t) t)
+(defun p1-funcall (form)
+  (unless (> (length form) 1)
+    (compiler-warn "Wrong number of arguments for ~A." (car form))
+    (return-from p1-funcall form))
+  (let ((function-form (%cadr form)))
+    (when (and (consp function-form)
+               (eq (%car function-form) 'FUNCTION))
+      (let ((name (%cadr function-form)))
+;;         (format t "p1-funcall name = ~S~%" name)
+        (let ((source-transform (source-transform name)))
+          (when source-transform
+;;             (format t "found source transform for ~S~%" name)
+;;             (format t "old form = ~S~%" form)
+;;             (let ((new-form (expand-source-transform form)))
+;;               (when (neq new-form form)
+;;                 (format t "new form = ~S~%" new-form)
+;;                 (return-from p1-funcall (p1 new-form))))
+            (let ((new-form (expand-source-transform (list* name (cddr form)))))
+;;               (format t "new form = ~S~%" new-form)
+              (return-from p1-funcall (p1 new-form)))
+            )))))
+  ;; Otherwise...
+  (p1-function-call form))
+
+(defun p1-function (form)
+  (let ((form (copy-tree form))
+        local-function)
+    (cond ((and (consp (cadr form))
+                (or (eq (caadr form) 'LAMBDA)
+                    (eq (caadr form) 'NAMED-LAMBDA)))
+           (let* ((named-lambda-p (eq (caadr form) 'NAMED-LAMBDA))
+                  (named-lambda-form (when named-lambda-p
+                                       (cadr form)))
+                  (name (when named-lambda-p
+                          (cadr named-lambda-form)))
+                  (lambda-form (if named-lambda-p
+                                   (cons 'LAMBDA (cddr named-lambda-form))
+                                   (cadr form)))
+                  (lambda-list (cadr lambda-form))
+                  (body (cddr lambda-form))
+                  (compiland (make-compiland :name (if named-lambda-p
+                                                       name (gensym "ANONYMOUS-LAMBDA-"))
+                                             :lambda-expression lambda-form
+                                             :parent *current-compiland*)))
+             (when *current-compiland*
+               (incf (compiland-children *current-compiland*)))
+             (multiple-value-bind (body decls)
+                 (parse-body body)
+               (setf (compiland-lambda-expression compiland)
+                     (if named-lambda-p
+                         `(lambda ,lambda-list ,@decls (block nil ,@body))
+                         `(lambda ,lambda-list ,@decls ,@body)))
+               (let ((*visible-variables* *visible-variables*)
+                     (*current-compiland* compiland))
+                 (p1-compiland compiland)))
+             (list 'FUNCTION compiland)))
+          ((setf local-function (find-local-function (cadr form)))
+           (dformat t "p1-function local function ~S~%" (cadr form))
+           (let ((variable (local-function-variable local-function)))
+             (when variable
+                 (dformat t "p1-function ~S used non-locally~%" (variable-name variable))
+                 (setf (variable-used-non-locally-p variable) t)))
+           form)
+          (t
+           form))))
+
+(defun p1-lambda (form)
+  (let* ((lambda-list (cadr form))
+         (body (cddr form))
+         (auxvars (memq '&AUX lambda-list)))
+    (when (or (memq '&optional lambda-list)
+              (memq '&key lambda-list))
+      (let ((state nil))
+        (dolist (arg lambda-list)
+          (cond ((memq arg lambda-list-keywords)
+                 (setf state arg))
+                ((memq state '(&optional &key))
+                 (when (and (consp arg)
+                            (not (constantp (second arg))))
+                   (compiler-unsupported
+                    "P1-LAMBDA: can't handle optional argument with non-constant initform.")))))))
+    (when auxvars
+      (setf lambda-list (subseq lambda-list 0 (position '&AUX lambda-list)))
+      (setf body (list (append (list 'LET* (cdr auxvars)) body))))
+    (p1-function (list 'FUNCTION (list* 'LAMBDA lambda-list body)))))
+
+(defun p1-eval-when (form)
+  (list* (car form) (cadr form) (mapcar #'p1 (cddr form))))
+
+(defknown p1-progv (t) t)
+(defun p1-progv (form)
+  ;; We've already checked argument count in PRECOMPILE-PROGV.
+  (let ((new-form (rewrite-progv form)))
+    (when (neq new-form form)
+      (return-from p1-progv (p1 new-form))))
+  (let ((symbols-form (cadr form))
+        (values-form (caddr form))
+        (body (cdddr form)))
+    `(progv ,(p1 symbols-form) ,(p1 values-form) ,@(p1-body body))))
+
+(defknown rewrite-progv (t) t)
+(defun rewrite-progv (form)
+  (let ((symbols-form (cadr form))
+        (values-form (caddr form))
+        (body (cdddr form)))
+    (cond ((or (unsafe-p symbols-form) (unsafe-p values-form))
+           (let ((g1 (gensym))
+                 (g2 (gensym)))
+             `(let ((,g1 ,symbols-form)
+                    (,g2 ,values-form))
+                (progv ,g1 ,g2 ,@body))))
+          (t
+           form))))
+
+(defun p1-quote (form)
+  (unless (= (length form) 2)
+    (compiler-error "Wrong number of arguments for special operator ~A (expected 1, but received ~D)."
+                    'QUOTE
+                    (1- (length form))))
+  (let ((arg (%cadr form)))
+    (if (or (numberp arg) (characterp arg))
+        arg
+        form)))
+
+(defun p1-setq (form)
+  (unless (= (length form) 3)
+    (error "Too many arguments for SETQ."))
+  (let ((arg1 (%cadr form))
+        (arg2 (%caddr form)))
+    (let ((variable (find-visible-variable arg1)))
+      (if variable
+          (progn
+            (when (variable-ignore-p variable)
+              (compiler-style-warn
+               "Variable ~S is assigned even though it was declared to be ignored."
+               (variable-name variable)))
+            (incf (variable-writes variable))
+            (cond ((eq (variable-compiland variable) *current-compiland*)
+                   (dformat t "p1-setq: write ~S~%" arg1))
+                  (t
+                   (dformat t "p1-setq: non-local write ~S~%" arg1)
+                   (setf (variable-used-non-locally-p variable) t))))
+          (dformat t "p1-setq: unknown variable ~S~%" arg1)))
+    (list 'SETQ arg1 (p1 arg2))))
+
+(defun p1-the (form)
+  (unless (= (length form) 3)
+    (compiler-error "Wrong number of arguments for special operator ~A (expected 2, but received ~D)."
+                    'THE
+                    (1- (length form))))
+  (let ((type (%cadr form))
+        (expr (%caddr form)))
+    (cond ((and (listp type) (eq (car type) 'VALUES))
+           ;; FIXME
+           (p1 expr))
+          ((= *safety* 3)
+           (let* ((sym (gensym))
+                  (new-expr `(let ((,sym ,expr))
+                               (require-type ,sym ',type)
+                               ,sym)))
+             (p1 new-expr)))
+          (t
+           (list 'THE type (p1 expr))))))
+
+(defun p1-truly-the (form)
+  (unless (= (length form) 3)
+    (compiler-error "Wrong number of arguments for special operator ~A (expected 2, but received ~D)."
+                    'TRULY-THE
+                    (1- (length form))))
+  (list 'TRULY-THE (%cadr form) (p1 (%caddr form))))
+
+(defknown unsafe-p (t) t)
+(defun unsafe-p (args)
+  (cond ((node-p args)
+         (unsafe-p (node-form args)))
+        ((atom args)
+         nil)
+        (t
+         (case (%car args)
+           (QUOTE
+            nil)
+           (LAMBDA
+            nil)
+           ((RETURN-FROM GO CATCH THROW UNWIND-PROTECT BLOCK)
+            t)
+           (t
+            (dolist (arg args)
+              (when (unsafe-p arg)
+                (return t))))))))
+
+(defknown rewrite-throw (t) t)
+(defun rewrite-throw (form)
+  (let ((args (cdr form)))
+    (if (unsafe-p args)
+        (let ((syms ())
+              (lets ()))
+          ;; Tag.
+          (let ((arg (first args)))
+            (if (constantp arg)
+                (push arg syms)
+                (let ((sym (gensym)))
+                  (push sym syms)
+                  (push (list sym arg) lets))))
+          ;; Result. "If the result-form produces multiple values, then all the
+          ;; values are saved."
+          (let ((arg (second args)))
+            (if (constantp arg)
+                (push arg syms)
+                (let ((sym (gensym)))
+                  (cond ((single-valued-p arg)
+                         (push sym syms)
+                         (push (list sym arg) lets))
+                        (t
+                         (push (list 'VALUES-LIST sym) syms)
+                         (push (list sym (list 'MULTIPLE-VALUE-LIST arg)) lets))))))
+          (list 'LET* (nreverse lets) (list* 'THROW (nreverse syms))))
+        form)))
+
+(defknown p1-throw (t) t)
+(defun p1-throw (form)
+  (let ((new-form (rewrite-throw form)))
+    (when (neq new-form form)
+      (return-from p1-throw (p1 new-form))))
+  (list* 'THROW (mapcar #'p1 (cdr form))))
+
+(defknown rewrite-function-call (t) t)
+(defun rewrite-function-call (form)
+  (let ((args (cdr form)))
+    (if (unsafe-p args)
+        (let ((arg1 (car args)))
+          (cond ((and (consp arg1) (eq (car arg1) 'GO))
+                 arg1)
+                (t
+                 (let ((syms ())
+                       (lets ()))
+                   ;; Preserve the order of evaluation of the arguments!
+                   (dolist (arg args)
+                     (cond ((constantp arg)
+                            (push arg syms))
+                           ((and (consp arg) (eq (car arg) 'GO))
+                            (return-from rewrite-function-call
+                                         (list 'LET* (nreverse lets) arg)))
+                           (t
+                            (let ((sym (gensym)))
+                              (push sym syms)
+                              (push (list sym arg) lets)))))
+                   (list 'LET* (nreverse lets) (list* (car form) (nreverse syms)))))))
+        form)))
+
+(defknown p1-function-call (t) t)
+(defun p1-function-call (form)
+  (let ((new-form (rewrite-function-call form)))
+    (when (neq new-form form)
+;;       (let ((*print-structure* nil))
+;;         (format t "old form = ~S~%" form)
+;;         (format t "new form = ~S~%" new-form))
+      (return-from p1-function-call (p1 new-form))))
+  (let* ((op (car form))
+         (local-function (find-local-function op)))
+    (cond (local-function
+;;            (format t "p1 local call to ~S~%" op)
+;;            (format t "inline-p = ~S~%" (inline-p op))
+
+           (when (and *enable-inline-expansion* (inline-p op))
+             (let ((expansion (local-function-inline-expansion local-function)))
+               (when expansion
+                 (let ((explain *explain*))
+                   (when (and explain (memq :calls explain))
+                     (format t ";   inlining call to local function ~S~%" op)))
+                 (return-from p1-function-call (p1 (expand-inline form expansion))))))
+
+           ;; FIXME
+           (dformat t "local function assumed not single-valued~%")
+           (setf (compiland-%single-valued-p *current-compiland*) nil)
+
+           (let ((variable (local-function-variable local-function)))
+             (when variable
+               (dformat t "p1 ~S used non-locally~%" (variable-name variable))
+               (setf (variable-used-non-locally-p variable) t))))
+          (t
+           ;; Not a local function call.
+           (dformat t "p1 non-local call to ~S~%" op)
+           (unless (single-valued-p form)
+;;                (format t "not single-valued op = ~S~%" op)
+             (setf (compiland-%single-valued-p *current-compiland*) nil)))))
+  (p1-default form))
+
+(defknown p1 (t) t)
+(defun p1 (form)
+  (cond ((symbolp form)
+         (let (value)
+           (cond ((null form)
+                  form)
+                 ((eq form t)
+                  form)
+                 ((keywordp form)
+                  form)
+                 ((and (constantp form)
+                       (progn
+                         (setf value (symbol-value form))
+                         (or (numberp value)
+                             (stringp value)
+                             (pathnamep value))))
+                  (setf form value))
+                 (t
+                  (let ((variable (find-visible-variable form)))
+                    (when (null variable)
+		      (unless (or (special-variable-p form)
+                                  (memq form *undefined-variables*))
+			(compiler-style-warn "Undefined variable: ~S" form)
+			(push form *undefined-variables*))
+                      (setf variable (make-variable :name form :special-p t))
+                      (push variable *visible-variables*))
+                    (let ((ref (make-var-ref variable)))
+                      (unless (variable-special-p variable)
+                        (when (variable-ignore-p variable)
+                          (compiler-style-warn
+                           "Variable ~S is read even though it was declared to be ignored."
+                           (variable-name variable)))
+                        (push ref (variable-references variable))
+                        (incf (variable-reads variable))
+                        (cond ((eq (variable-compiland variable) *current-compiland*)
+                               (dformat t "p1: read ~S~%" form))
+                              (t
+                               (dformat t "p1: non-local read ~S variable-compiland = ~S current compiland = ~S~%"
+                                        form
+                                        (compiland-name (variable-compiland variable))
+                                        (compiland-name *current-compiland*))
+                               (setf (variable-used-non-locally-p variable) t))))
+                      (setf form ref)))
+                  form))))
+        ((atom form)
+         form)
+        (t
+         (let ((op (%car form))
+               handler)
+           (cond ((symbolp op)
+                  (when (compiler-macro-function op)
+                    (unless (notinline-p op)
+                      (multiple-value-bind (expansion expanded-p)
+                          (compiler-macroexpand form)
+                        ;; Fall through if no change...
+                        (when expanded-p
+                          (return-from p1 (p1 expansion))))))
+                  (cond ((setf handler (get op 'p1-handler))
+                         (funcall handler form))
+                        ((macro-function op *compile-file-environment*)
+                         (p1 (macroexpand form *compile-file-environment*)))
+                        ((special-operator-p op)
+                         (compiler-unsupported "P1: unsupported special operator ~S" op))
+                        (t
+                         (p1-function-call form))))
+                 ((and (consp op) (eq (%car op) 'LAMBDA))
+                  (p1 (list* 'FUNCALL form)))
+                 (t
+                  form))))))
+
+(defun install-p1-handler (symbol handler)
+  (setf (get symbol 'p1-handler) handler))
+
+(defun initialize-p1-handlers ()
+  (dolist (pair '((AND                  p1-default)
+                  (BLOCK                p1-block)
+                  (CATCH                p1-catch)
+                  (DECLARE              identity)
+                  (EVAL-WHEN            p1-eval-when)
+                  (FLET                 p1-flet)
+                  (FUNCALL              p1-funcall)
+                  (FUNCTION             p1-function)
+                  (GO                   p1-go)
+                  (IF                   p1-if)
+                  (LABELS               p1-labels)
+                  (LAMBDA               p1-lambda)
+                  (LET                  p1-let/let*)
+                  (LET*                 p1-let/let*)
+                  (LOAD-TIME-VALUE      identity)
+                  (LOCALLY              p1-locally)
+                  (MULTIPLE-VALUE-BIND  p1-m-v-b)
+                  (MULTIPLE-VALUE-CALL  p1-default)
+                  (MULTIPLE-VALUE-LIST  p1-default)
+                  (MULTIPLE-VALUE-PROG1 p1-default)
+                  (OR                   p1-default)
+                  (PROGN                p1-default)
+                  (PROGV                p1-progv)
+                  (QUOTE                p1-quote)
+                  (RETURN-FROM          p1-return-from)
+                  (SETQ                 p1-setq)
+                  (SYMBOL-MACROLET      identity)
+                  (TAGBODY              p1-tagbody)
+                  (THE                  p1-the)
+                  (THROW                p1-throw)
+                  (TRULY-THE            p1-truly-the)
+                  (UNWIND-PROTECT       p1-unwind-protect)))
+    (install-p1-handler (%car pair) (%cadr pair))))
+
+(initialize-p1-handlers)
+
+(defun p1-compiland (compiland)
+;;   (format t "p1-compiland name = ~S~%" (compiland-name compiland))
+  (let ((form (compiland-lambda-expression compiland)))
+    (aver (eq (car form) 'LAMBDA))
+    (process-optimization-declarations (cddr form))
+
+    (let* ((lambda-list (cadr form))
+           (body (cddr form))
+           (auxvars (memq '&AUX lambda-list)))
+      (when auxvars
+        (setf lambda-list (subseq lambda-list 0 (position '&AUX lambda-list)))
+        (setf body (list (append (list 'LET* (cdr auxvars)) body))))
+
+      (when (and (null (compiland-parent compiland))
+                 ;; FIXME support SETF functions!
+                 (symbolp (compiland-name compiland)))
+        (when (memq '&OPTIONAL lambda-list)
+          (unless (or (memq '&KEY lambda-list) (memq '&REST lambda-list))
+            (let ((required-args (subseq lambda-list 0 (position '&OPTIONAL lambda-list)))
+                  (optional-args (cdr (memq '&OPTIONAL lambda-list))))
+            (dformat t "optional-args = ~S~%" optional-args)
+            (when (= (length optional-args) 1)
+              (let* ((optional-arg (car optional-args))
+                     (name (if (consp optional-arg) (%car optional-arg) optional-arg))
+                     (initform (if (consp optional-arg) (cadr optional-arg) nil))
+                     (supplied-p-var (and (consp optional-arg)
+                                          (= (length optional-arg) 3)
+                                          (third optional-arg)))
+                     (all-args
+                      (append required-args (list name)
+                              (when supplied-p-var (list supplied-p-var)))))
+                (when (<= (length all-args) call-registers-limit)
+                  (dformat t "optional-arg = ~S~%" optional-arg)
+                  (dformat t "supplied-p-var = ~S~%" supplied-p-var)
+                  (dformat t "required-args = ~S~%" required-args)
+                  (dformat t "all-args = ~S~%" all-args)
+                  (cond (supplied-p-var
+                         (let ((xep-lambda-expression
+                                `(lambda ,required-args
+                                   (let* ((,name ,initform)
+                                          (,supplied-p-var nil))
+                                     (%call-internal ,@all-args)))))
+                           (dformat t "xep-lambda-expression = ~S~%" xep-lambda-expression)
+                           (let ((xep-compiland
+                                  (make-compiland :lambda-expression (precompile-form xep-lambda-expression t)
+                                                  :class-file (compiland-class-file compiland))))
+                             (compile-xep xep-compiland)))
+                         (let ((xep-lambda-expression
+                                `(lambda ,(append required-args (list name))
+                                   (let* ((,supplied-p-var t))
+                                     (%call-internal ,@all-args)))))
+                           (dformat t "xep-lambda-expression = ~S~%" xep-lambda-expression)
+                           (let ((xep-compiland
+                                  (make-compiland :lambda-expression (precompile-form xep-lambda-expression t)
+                                                  :class-file (compiland-class-file compiland))))
+                             (compile-xep xep-compiland)))
+                         (setf lambda-list all-args)
+                         (setf (compiland-kind compiland) :internal))
+                        (t
+                         (let ((xep-lambda-expression
+                                `(lambda ,required-args
+                                   (let* ((,name ,initform))
+                                     (,(compiland-name compiland) ,@all-args)))))
+                           (dformat t "xep-lambda-expression = ~S~%" xep-lambda-expression)
+                           (let ((xep-compiland
+                                  (make-compiland :lambda-expression (precompile-form xep-lambda-expression t)
+                                                  :class-file (compiland-class-file compiland))))
+                             (compile-xep xep-compiland)))
+                         (setf lambda-list all-args))))))))))
+
+      (let* ((closure (make-closure `(lambda ,lambda-list nil) nil))
+             (syms (sys::varlist closure))
+             (vars nil))
+        (dolist (sym syms)
+          (let ((var (make-variable :name sym)))
+            (push var vars)
+            (push var *all-variables*)))
+        (setf (compiland-arg-vars compiland) (nreverse vars))
+        (let ((*visible-variables* *visible-variables*))
+          (dolist (var (compiland-arg-vars compiland))
+            (push var *visible-variables*))
+          (let ((free-specials (process-declarations-for-vars body *visible-variables*)))
+            (dolist (var free-specials)
+              (push var *visible-variables*)))
+          (setf (compiland-p1-result compiland)
+                (list* 'LAMBDA lambda-list (p1-body body))))))))
+
+(provide "COMPILER-PASS1")

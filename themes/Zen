@@ -1,0 +1,43 @@
+color.text                    = 255 255 204
+color.background              = 102 0   0
+color.caret                   = 204 204 153
+
+color.selectionBackground     = 204 102 0
+color.preprocessor            = 255 204 0
+color.comment                 = 153 51  0
+color.keyword                 = 204 102 0
+color.brace                   = 255 204 0
+color.number                  = 255 204 0
+color.currentLineBackground   = 0   0   0
+color.function                = 255 153 0
+color.string                  = 204 102 0
+color.operator                = 255 204 0
+color.disabled                = 153 153 153
+ShellMode.color.prompt        = 204 102 0
+ShellMode.color.input         = 255 153 0
+
+HtmlMode.color.tag            = 153 153 102
+HtmlMode.color.anchor         = 255 0   0
+HtmlMode.color.image          = 204 204 153
+HtmlMode.color.table          = 204 51  0
+HtmlMode.color.tableRow       = 204 102 0
+HtmlMode.color.tableData      = 255 153 0
+HtmlMode.color.comment        = 153 51  0
+HtmlMode.color.script         = 255 255 255
+
+MakefileMode.color.target     = 255 153 0
+
+PropertiesMode.color.section  = 255 153 0
+
+DirectoryMode.color.directory = 255 255 204
+DirectoryMode.color.symlink   = 204 102 0
+DirectoryMode.color.marked    = 255 153 0
+
+# Font.PLAIN is 0, Font.BOLD is 1, Font.ITALIC is 2.
+style.text                    = 0
+style.keyword                 = 0
+style.function                = 0
+DirectoryMode.style.directory = 1
+DirectoryMode.style.marked    = 0
+ShellMode.style.prompt        = 0
+style.comment                 = 0

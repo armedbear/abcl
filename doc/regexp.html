@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - Regular Expressions</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Regular Expressions</h1>
+
+<hr>
+
+<h2>Background</h2>
+
+A regular expression is a character string where some characters are given
+special meaning, so that the pattern as a whole denotes a possibly infinite
+class of alternative strings to match.
+<p>
+J uses the <a href="http://www.cacas.org/~wes/java">gnu.regexp</a> package.
+
+
+<h2>Supported Syntax</h2>
+
+Within a regular expression, the following characters have special meaning:
+
+<ul>
+<li>
+Positional Operators
+<blockquote>
+<code>^</code> matches the beginning of a line<br>
+<code>$</code> matches the end of a line<br>
+</blockquote>
+
+<li>
+One-Character Operators
+<blockquote>
+<code>.</code> matches any single character<br>
+<code>\d</code> matches any decimal digit<br>
+<code>\D</code> matches any non-digit<br>
+<code>\n</code> matches a newline character<br>
+<code>\r</code> matches a return character<br>
+<code>\s</code> matches any whitespace character<br>
+<code>\S</code> matches any non-whitespace character<br>
+<code>\t</code> matches a tab character<br>
+<code>\w</code> matches any word (alphanumeric) character<br>
+<code>\W</code> matches any non-word (alphanumeric) character<br>
+<p>
+Otherwise, <code>\c</code> matches the character <i>c</i>.
+</blockquote>
+
+<li>
+Character Classes
+<blockquote>
+<code>[abc]</code> matches any character in the set <i>a</i>, <i>b</i> or <i>c</i><br>
+<code>[^abc]</code> matches any character not in the set <i>a</i>, <i>b</i> or <i>c</i><br>
+<code>[a-z]</code> matches any character in the range <i>a</i> to <i>z</i> (inclusive)<br>
+<p>
+A leading or trailing dash is interpreted literally.<br>
+</blockquote>
+
+<li>
+Subexpressions and Backreferences
+<blockquote>
+<code>(abc)</code> matches whatever the expression <i>abc</i> would match, and saves it as a subexpression<br>
+<code>\<i>n</i></code> where 1 &lt;= <i>n</i> &lt;= 9, matches the same thing the <i>n</i>th subexpression matched<br>
+<p>
+Parentheses can also be used for grouping.
+<p>
+Parentheses used for grouping or to record matched subexpressions should not be escaped.
+<p>
+Backreferences may also be used in replacement strings; see <a href="commands.html#replace">replace</a>.
+</blockquote>
+
+<li>
+Branching (Alternation) Operator
+<blockquote>
+<code>a|b</code> matches whatever the expression <i>a</i> would match, or whatever the expression <i>b</i> would match.<br>
+</blockquote>
+
+<li>
+Repeating Operators
+<blockquote>
+<code>?</code> matches zero or one occurrence of the preceding expression or the null string<br>
+<code>*</code> matches zero or more occurrences of the preceding expression<br>
+<code>+</code> matches one or more occurrences of the preceding expression<br>
+<code>{m}</code> matches exactly <i>m</i> occurrences of the preceding expression<br>
+<code>{m,n}</code> matches between <i>m</i> and <i>n</i> occurrences of the preceding expression (inclusive)<br>
+<code>{m,}</code> matches <i>m</i> or more occurrences of the preceding expression<br>
+<p>
+The repeating operators operate on the preceding atomic expression.<br>
+</blockquote>
+
+<li>
+Stingy (Minimal) Matching
+<blockquote>
+If a repeating operator is immediately followed by a ?, the repeating operator
+will stop at the smallest number of repetitions that can complete the rest of
+the match.
+</blockquote>
+
+</ul>
+
+</body>
+
+</html>

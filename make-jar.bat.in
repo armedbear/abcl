@@ -1,0 +1,6 @@
+cd src
+@JAR@ cmf manifest-abcl ..\abcl.jar org\armedbear\lisp\*.class
+@JAR@ uf ..\abcl.jar org\armedbear\lisp\java\awt\*.class
+@JAR@ uf ..\abcl.jar org\armedbear\lisp\*.lisp org\armedbear\lisp\LICENSE
+@JAR@ uf ..\abcl.jar org\armedbear\lisp\*.abcl
+@JAR@ uf ..\abcl.jar org\armedbear\lisp\*.cls

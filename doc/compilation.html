@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - Compilation Buffers</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Compilation Buffers</h1>
+
+<hr>
+
+<p>
+J can run compilers for languages like Java and C, redirecting the output into
+a compilation buffer. For some compilers, including javac, jikes, gcc, and
+Microsoft C/C++, j can also parse the compiler's error messages and jump to the
+location in the source file where the error occurred. (Please note that on
+Windows, compilation buffers are only supported for Windows NT 4, Windows 2000
+and Windows XP.)
+</p>
+<p>
+The command <a href="commands.html#compile">compile</a>, mapped by default to
+F9, can be used to run make,
+<a href="http://jakarta.apache.org/ant/index.html">Ant</a>, or a compiler. You
+will be prompted for the compile command. The current directory (the directory
+of the file in the current buffer) is used as the working directory for the
+execution of the compile command, so if you're using make or Ant, the Makefile
+or build.xml in the current directory will be used by default.
+</p>
+<p>
+The command <a href="commands.html#recompile">recompile</a>, mapped by default
+to Ctrl F9, repeats the last compile command you specified. To make this
+command more useful, you can use the dynamic alias "here" in your compile
+command to represent the full pathname of the current file (the file in the
+current buffer).
+<p>
+For example, you could specify the compile command:
+<pre>
+        javac -classpath /home/peter/j/src here</pre>
+Then you could use <a href="commands.html#recompile">recompile</a> in any
+buffer containing a Java source file to run javac (with the specified
+classpath) on that particular file.
+<p>
+When you start a compilation, j displays the compilation buffer in another
+window, splitting the current window if necessary. Keyboard focus remains in
+the source window.
+</p>
+<p>
+If the compilation completes without error, you can use
+<a href="commands.html#escape">escape</a>, mapped by default to Escape, to
+kill the compilation buffer and unsplit the window.
+</p>
+<p>
+If there are errors, you can use the commands
+<a href="commands.html#nextError">nextError</a>, mapped by default to F4, and
+<a href="commands.html#previousError">previousError</a>, mapped by default to
+Shift F4, to jump to the location of each error in the source.
+</p>
+<p>
+In the compilation buffer itself, the command
+<a href="commands.html#thisError">thisError</a>, mapped by default to Enter,
+jumps to the location in the source file that corresponds to the error message
+at the current location of the caret.
+(<a href="commands.html#thisError">thisError</a> is also mapped by default to
+Ctrl Shift G, left button double click, and middle button single click.)
+</p>
+<p>
+The
+command <a href="commands.html#showMessage">showMessage</a>, mapped by default
+to Ctrl Shift M, displays the full text of the current error message.
+</p>
+<p>
+Note that when using jikes, you must specify the +D flag in the compile
+command (or Makefile) in order for j to be able to parse the error messages
+correctly:
+<pre>
+        jikes +D [...] here</pre>
+When using ant, you should set the build.compiler.emacs property:
+<pre>
+        build.compiler.emacs=on</pre>
+</body>
+
+</html>

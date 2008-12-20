@@ -1,0 +1,46 @@
+# Hypnogogic
+# $Id: Hypnogogic,v 1.1.1.1 2002-09-24 16:10:26 piso Exp $
+
+color.text                    = 204 204 204
+color.background              = 0   0   0
+color.caret                   = 255 255 255
+
+color.selectionBackground     = 51  102 102
+color.preprocessor            = 255 204 0
+color.comment                 = 102 153 153
+color.keyword                 = 255 255 153
+color.brace                   = 255 255 204
+color.number                  = 102 204 204
+color.currentLineBackground   = 51  51  51
+color.function                = 153 255 255
+color.string                  = 153 255 153
+color.operator                = 255 255 255
+color.disabled                = 153 153 153
+ShellMode.color.prompt        = 153 255 255
+ShellMode.color.input         = 255 255 153
+
+HtmlMode.color.tag            = 153 204 153
+HtmlMode.color.anchor         = 204 255 255
+HtmlMode.color.image          = 102 153 153
+HtmlMode.color.table          = 102 102 51
+HtmlMode.color.tableRow       = 153 153 102
+HtmlMode.color.tableData      = 204 204 153
+HtmlMode.color.comment        = 153 153 153
+#HtmlMode.color.script        = 255 0   0
+
+MakefileMode.color.target     = 153 255 255
+
+PropertiesMode.color.section  = 153 255 255
+
+DirectoryMode.color.directory = 204 204 204
+DirectoryMode.color.symlink   = 255 255 204
+DirectoryMode.color.marked    = 153 255 255
+
+# Font.PLAIN is 0, Font.BOLD is 1, Font.ITALIC is 2.
+style.text                    = 0
+style.keyword                 = 0
+style.function                = 0
+DirectoryMode.style.directory = 1
+DirectoryMode.style.marked    = 0
+ShellMode.style.prompt        = 0
+style.comment                 = 0

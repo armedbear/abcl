@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<title>init.lisp</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+<body>
+<a href="contents.html">Top</a>
+<hr>
+<h1>init.lisp</h1>
+<hr>
+<p>
+Starting (officially) with version 0.20.0, j loads the file ~/.j/init.lisp
+(Unix) or C:\.j\init.lisp (Windows) on startup if it exists. This is done after
+the user's preferences, theme, and custom key maps (if any) have been loaded.
+<p>
+The following commands are officially supported:
+<pre>
+        <b>global-map-key</b> <i>key</i> <i>command</i> =&gt; <i>generalized-boolean</i>
+        <b>global-unmap-key</b> <i>key</i> =&gt; <i>generalized-boolean</i>
+        <b>map-key-for-mode</b> <i>key</i> <i>command</i> <i>mode</i> =&gt; <i>generalized-boolean</i>
+        <b>unmap-key-for-mode</b> <i>key</i> <i>mode</i> =&gt; <i>generalized-boolean</i>
+</pre>
+You can use these commands to make minor changes to the default key mappings
+without having to define a full set of custom key maps (see
+<a href="keys.html">Key Mappings</a>).
+<p>
+For these commands, the <i>key</i> parameter is the name of the key or key
+combination to be mapped or unmapped (e.g. "F7", "Ctrl Shift G", "J"). When in
+doubt, you can use <a href="commands.html#insertKeyText">insertKeyText</a> to
+insert the appropriate text string. The <i>command</i> parameter is the name of
+the command to be mapped (e.g. "openFile", "cyclePaste", "jdkHelp"). The
+<i>mode</i> parameter is the name of the mode, as displayed in the status bar
+when that particular mode is in effect in the current buffer (e.g. "Java",
+"HTML", "Plain Text").
+<p>
+Some examples:
+<pre>
+        (global-map-key "Mouse-1" "mouseSetPoint")
+        (global-unmap-key "F3")
+        (map-key-for-mode "Alt Mouse-1" "mouseFindTag" "Java")
+        (unmap-key-for-mode "F4" "perl")
+</pre>
+If you make changes to init.lisp while j is running, you can use
+<a href="commands.html#executeCommand">executeCommand</a>, mapped by default to
+Alt X, to reload init.lisp without restarting j, for example:
+<pre>
+        (load "/home/peter/.j/init.lisp")
+</pre>
+or:
+<pre>
+        (load "C:\\.j\\init.lisp")
+</pre>
+</body>
+</html>

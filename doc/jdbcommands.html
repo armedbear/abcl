@@ -1,0 +1,265 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - Debugger Commands</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body link=blue vlink=blue>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Debugger Commands</h1>
+
+<hr>
+<p>
+The commands described here may be used in the "Command" textfield of the
+debugger control dialog. The debugger must actually be running first; use Alt X,
+<a href="commands.html#jdb">jdb</a>, without any arguments, to start it.
+<p>
+If you're working in an editor source window, you can use Alt X, "jdb
+[command]" to send a command to the running instance of the debugger (for
+example, Alt X, "jdb continue", or Alt X, "jdb restart"). Several frequently
+used debugger commands are also available on the right-button context menu in
+Java source buffers.
+<p>
+Any command may be shortened to the first few letters of its name, as long as
+the abbreviation is unambiguous.
+<p>
+Certain frequently used commands may be invoked with their first letter, even
+if there are other commands that start with the same letter (e.g.
+<a href="jdbcommands.html#continue">continue</a>,
+<a href="jdbcommands.html#step">step</a>).
+<p>
+The <a href="jdbcommands.html#continue">continue</a>,
+<a href="jdbcommand.html#next">next</a> and
+<a href="jdbcommands.html#step">step</a> commands may be repeated by just
+pressing Enter in the "Command" textfield.
+
+<ul>
+    <li><a href="jdbcommands.html#break">break</a>, <a href="jdbcommands.html#break">b</a></li>
+    <li><a href="jdbcommands.html#clear">clear</a></li>
+    <li><a href="jdbcommands.html#clearall">clear all</a></li>
+    <li><a href="jdbcommands.html#continue">continue</a>, <a href="jdbcommands.html#continue">c</a></li>
+    <li><a href="jdbcommands.html#finish">finish</a>, <a href="jdbcommands.html#finish">f</a></li>
+    <li><a href="jdbcommands.html#go">go</a></li>
+    <li><a href="jdbcommands.html#locals">locals</a></li>
+    <li><a href="jdbcommands.html#next">next</a>, <a href="jdbcommands.html#next">n</a></li>
+    <li><a href="jdbcommands.html#print">print</a>, <a href="jdbcommands.html#print">p</a></li>
+    <li><a href="jdbcommands.html#quit">quit</a>, <a href="jdbcommands.html#quit">q</a></li>
+    <li><a href="jdbcommands.html#resume">resume</a></li>
+    <li><a href="jdbcommands.html#stdin">stdin</a></li>
+    <li><a href="jdbcommands.html#step">step</a>, <a href="jdbcommands.html#step">s</a></li>
+    <li><a href="jdbcommands.html#stepout">step out</a></li>
+    <li><a href="jdbcommands.html#stop">stop</a></li>
+    <li><a href="jdbcommands.html#suspend">suspend</a></li>
+    <li><a href="jdbcommands.html#tbreak">tbreak</a></li>
+</ul>
+
+<a name="break">break</a><dl><dd>
+<p>
+Sets a breakpoint.
+<p>
+<b>Syntax:</b>
+<pre>
+        break <i>filename:linenumber</i>
+        break <i>class.method</i></pre>
+<b>Examples:</b>
+<pre>
+        b Lisp.java:138
+        b org.armedbear.lisp.Main.main</pre>
+<p>
+<b>Aliases:</b> <a href="#stop">stop</a>
+<p>
+<b>Abbreviation:</b> b
+</dl>
+
+<a name="clear">clear</a><dl><dd>
+<p>
+Clears a breakpoint.
+<p>
+<b>Syntax:</b>
+<pre>
+        clear <i>filename:linenumber</i>
+        clear <i>class.method</i></pre>
+<b>Example:</b>
+<pre>
+        clear Lisp.java:138</pre>
+</dl>
+
+<a name="clearall">clear all</a><dl><dd>
+<p>
+Clears all breakpoints.
+</dl>
+
+<a name="continue">continue</a><dl><dd>
+<p>
+Resumes execution at the address where the program last stopped.
+<p>
+<b>Aliases:</b> <a href="#go">go</a>, <a href="#resume">resume</a>
+<p>
+<b>Abbreviation:</b> c
+</dl>
+
+<a name="finish">finish</a><dl><dd>
+<p>
+Continues execution until just after the current method returns.
+<p>
+<b>Aliases:</b> step out
+<p>
+<b>Abbreviation:</b> f
+</dl>
+
+<a name="go">go</a><dl><dd>
+<p>
+Resumes execution at the address where the program last stopped.
+<p>
+<b>Alias for:</b> <a href="#continue">continue</a>
+</dl>
+
+<a name="locals">locals</a><dl><dd>
+<p>
+Displays values for all of the local variables in the current stack frame.
+<p>
+<b>Aliases:</b> None
+</dl>
+
+<a name="next">next</a><dl><dd>
+<p>
+Executes the current line of code, stepping over method calls.
+<p>
+<b>Syntax:</b>
+<pre>
+        next
+        next <i>count</i></pre>
+<b>Examples:</b>
+<pre>
+        n
+        n 5</pre>
+<p>
+<b>Aliases:</b> None
+<p>
+<b>Abbreviation:</b> n
+</dl>
+
+<a name="print">print</a><dl><dd>
+<p>
+Prints the value of a variable.
+<p>
+<b>Syntax:</b>
+<pre>
+        print <i>expr</i></pre>
+<b>Examples:</b>
+<pre>
+        p foo
+        p foo.bar</pre>
+<p>
+<b>Aliases:</b> None
+<p>
+<b>Abbreviation:</b> p
+</dl>
+
+<a name="quit">quit</a><dl><dd>
+<p>
+Terminates the debugger, closes the control dialog and kills the transcript
+buffer. (If you want to keep the transcript, copy it somewhere before quitting.)
+<p>
+<b>Aliases:</b> None
+<p>
+<b>Abbreviation:</b> q
+</dl>
+
+<a name="resume">resume</a><dl><dd>
+<p>
+Resumes execution at the address where the program last stopped.
+<p>
+<b>Alias for:</b> <a href="#continue">continue</a>
+</dl>
+
+<a name="stdin">stdin</a><dl><dd>
+<p>
+Sends argument to stdin of debuggee.
+<p>
+<b>Syntax:</b>
+<pre>
+        stdin <i>string</i></pre>
+<b>Examples:</b>
+<pre>
+        stdin (+ 1 2)</pre>
+<p>
+<b>Aliases:</b> None
+</dl>
+
+<a name="step">step</a><dl><dd>
+<p>
+Executes the current line of code, stepping into any method calls it may
+contain.
+<p>
+<b>Syntax:</b>
+<pre>
+        step
+        step <i>count</i></pre>
+<b>Examples:</b>
+<pre>
+        s
+        s 3</pre>
+<p>
+<b>Aliases:</b> None
+<p>
+<b>Abbreviation:</b> s
+</dl>
+
+<a name="stepout">step out</a><dl><dd>
+<p>
+Continues execution until just after the current method returns.
+<p>
+<b>Alias for:</b> <a href="#finish">finish</a>
+</dl>
+
+<a name="stop">stop</a><dl><dd>
+<p>
+Sets a breakpoint.
+<p>
+<b>Syntax:</b>
+<pre>
+        stop <i>filename:linenumber</i>
+        stop <i>class.method</i></pre>
+<b>Examples:</b>
+<pre>
+        stop Lisp.java:138
+        stop org.armedbear.lisp.Main.main</pre>
+<p>
+<b>Alias for:</b> <a href="#break">break</a>
+</dl>
+
+<a name="suspend">suspend</a><dl><dd>
+<p>
+Suspends execution of the application.
+<p>
+<b>Aliases:</b> None
+</dl>
+
+<a name="tbreak">tbreak</a><dl><dd>
+<p>
+Sets a temporary breakpoint.
+<p>
+<b>Syntax:</b>
+<pre>
+        tbreak <i>filename:linenumber</i>
+        tbreak <i>class.method</i></pre>
+<b>Examples:</b>
+<pre>
+        tbreak Lisp.java:138
+        tbreak org.armedbear.lisp.Main.main</pre>
+<p>
+<b>Aliases:</b> None
+</dl>
+
+
+</body>
+
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - Image Buffers</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Image Buffers</h1>
+
+<hr>
+
+<p>
+Image buffers let you view images in several standard formats.
+<p>
+Image buffers are an experimental feature. If you want to use experimental features,
+add this line to your <a href="preferences.html">preferences</a> file:
+<pre>
+    enableExperimentalFeatures=true
+</pre>
+You can view an image by opening an image file in any of the normal ways: the
+Open File dialog, on the command line when starting j, or from a directory
+buffer. <a href="commands.html#gotoFile">gotoFile</a>, mapped by default to
+Ctrl Shift G, is particularly handy in HTML and HTTP buffers.
+<p>
+The directly supported image formats are GIF and JPEG. PNG is also supported directly
+if you're running Java 1.3.
+<p>
+If <a href="http://java.sun.com/products/jimi">JIMI</a> is in j's CLASSPATH,
+additional formats are available. If you're building j from source, you'll
+need to edit the generated shell script and/or batch file manually to add
+JimiProClasses.zip to the CLASSPATH.
+<p>
+J uses a regular expression to control which files are
+opened in Image mode. This is the default setting:
+<pre>
+    ImageMode.files=".+\\.gif|.+\\.jpe?g|.+\\.png"
+</pre>
+You can change this by specifying a different regular expression in your <a href="preferences.html">preferences</a> file.
+(You'll probably want to do this if you use JIMI.)
+<p>
+In Image mode, the command <a href="commands.html#imageFit">imageFit</a>,
+mapped by default to 'f', can be used to scale the image to fit the current
+edit window. The aspect ratio of the original image is preserved.
+<p>
+You can use <a href="commands.html#imageZoomIn">imageZoomIn</a>, mapped by
+default to '=', and  <a href="commands.html#imageZoomOut">imageZoomOut</a>,
+mapped by default to '-', to zoom in or out on the image.
+<p>
+<a href="commands.html#imageRestore">imageRestore</a>, mapped by default to
+'r', restores the image to its original size.
+<p>
+<a href="commands.html#imageCycleBackground">imageCycleBackground</a>,
+mapped by default to 'c', changes the background color of the image.
+You can use this command repeatedly to cycle through a small number of plausible
+background colors (currently gray, black and white).
+
+</body>
+
+</html>

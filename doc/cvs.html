@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - CVS Support</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>CVS Support</h1>
+
+<hr>
+
+<p>
+J provides commands to perform a few common CVS operations that it makes sense
+to do from within an editor.
+<p>
+For these commands to work, CVS must be set up correctly outside of j first. A
+CVS operation won't work within j unless it can be performed successfully from
+a shell command prompt in the parent directory of the current buffer.
+<p>
+Most CVS-related commands are not mapped to any keystrokes by default, but you
+can use <a href="commands.html#executeCommand">executeCommand</a>, mapped by
+default to Alt X, and then type in the name of the command (or just type "cvs"
+and then keep hitting Tab until you see the command you want; completion is
+your friend).
+<p>
+CVS revision information for checked-out files is displayed in the status
+bar, to the right of the mode name, like this:
+<pre>
+    CVS 1.34</pre>
+or
+<pre>
+    CVS 1.34 M</pre>
+or
+<pre>
+    CVS A</pre>
+<p>
+In this example, "1.34" is the revision; it's followed by an 'M' if the file
+modification time of the local file is different from the checkout time, which
+is often an indication that the local file has been modified since it was
+checked out. "CVS A", with no revision number, means the file has been added
+to CVS but not yet committed.
+<p>
+If you're working on a file that's registered with CVS, you can use the
+command <a href="commands.html#cvsDiff">cvsDiff</a> to get a diff output
+buffer showing the changes between the checked-in version and your local copy.
+<a href="commands.html#cvsDiffDir">cvsDiffDir</a> is similar, but it generates
+a diff output buffer containing information about all the files in the current
+directory and its subdirectories, not just the current buffer. Once you're in
+the diff output buffer, you can scroll around and use
+<a href="commands.html#diffGotoFile">diffGotoFile</a>, mapped by default to
+Enter, to jump to the location in the source file that corresponds to the line
+you're on in the diff output buffer. You can use
+<a href="commands.html#escape">escape</a>, mapped by default to Escape, to get
+rid of the diff output buffer when you're done.
+<p>
+When you're ready to check in your changes, use the command
+<a href="commands.html#cvsCommit">cvsCommit</a>. This command opens a checkin
+buffer in which you can compose your checkin comment. When your comment is
+ready, use the command <a href="commands.html#finish">finish</a>, mapped by
+default to Ctrl Enter in the checkin buffer, to complete the checkin operation.
+<p>
+If you change several source files for the same reason, it is often convenient
+to specify the same checkin comment for several files. To help you do this, j
+maintains a history of the checkin comments you've used recently. You can use
+the commands <a href="commands.html#previousComment">previousComment</a> and
+<a href="commands.html#nextComment">nextComment</a>, mapped by default to Ctrl
+P and Ctrl N (respectively) in the checkin buffer, to cycle through this
+history list.
+<p>
+To register the current buffer's file with CVS for the first time, use the
+command <a href="commands.html#cvsAdd">cvsAdd</a>.
+<p> The generic command <a href="commands.html#cvs">cvs</a>, which requires an
+argument, can be used to execute arbitrary CVS commands for which j has no
+specific support. The required argument is the CVS command to be executed,
+together with any necessary flags. For example:
+<pre>
+        cvs status -v</pre>
+<p>
+The name of the file associated with the current buffer is automatically
+appended to the command line, so if you're editing a file called Jdb.java, the
+command line that CVS sees is actually:
+<pre>
+        cvs status -v Jdb.java</pre>
+<p>
+There is one exception: if the argument you supply begins with "-H" (CVS
+command-specific help), the filename is not appended. For example:
+<pre>
+        cvs -H admin</pre>
+<p>
+The output of the command is displayed in a transient output buffer.
+<p>
+The following commands are specifically relevant to CVS support:
+<ul>
+    <li><a href="commands.html#cvs">cvs</a></li>
+    <li><a href="commands.html#cvsAdd">cvsAdd</a></li>
+    <li><a href="commands.html#cvsCommit">cvsCommit</a></li>
+    <li><a href="commands.html#cvsDiff">cvsDiff</a></li>
+    <li><a href="commands.html#cvsDiffDir">cvsDiffDir</a></li>
+    <li><a href="commands.html#cvsLog">cvsLog</a></li>
+    <li><a href="commands.html#finish">finish</a></li>
+    <li><a href="commands.html#nextComment">nextComment</a></li>
+    <li><a href="commands.html#previousComment">previousComment</a></li>
+</ul>
+</body>
+</html>

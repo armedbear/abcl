@@ -1,0 +1,55 @@
+# Default
+# $Id: Default,v 1.1.1.1 2002-09-24 16:10:25 piso Exp $
+
+color.text                    =   0   0   0
+color.background              = 255 255 255
+color.currentLineBackground   = 224 224 224
+
+color.selectionBackground     = 204 204 255
+color.keyword                 =   0   0 128
+color.string                  = 128   0   0
+color.comment                 =   0 128   0 
+color.function                =   0   0   0
+color.operator                =   0   0 255 
+color.brace                   =   0 128 128 
+color.number                  = 128 128   0 
+color.preprocessor            = 255   0   0 
+color.disabled                = 128 128 128 
+
+PerlMode.color.scalar         =   0   0   0
+PerlMode.color.list           =   0   0   0
+
+ShellMode.color.prompt        =   0   0   0
+ShellMode.color.input         =   0   0 255
+
+XmlMode.color.attribute       = 128   0   0
+XmlMode.color.delimiter       =   0 128 128
+XmlMode.color.namespace       =   0   0   0
+XmlMode.color.tag             =   0   0   0
+
+HtmlMode.color.tag            =   0   0 153 
+HtmlMode.color.image          = 204 102   0 
+HtmlMode.color.anchor         =  51 153  51 
+HtmlMode.color.table          = 204   0   0 
+HtmlMode.color.tableRow       = 153   0   0 
+HtmlMode.color.tableData      = 153  51   0 
+HtmlMode.color.comment        = 128 128 128
+HtmlMode.color.script         =   0   0 255
+
+MakefileMode.color.target     = 255   0 255
+
+DirectoryMode.color.directory =   0   0   0
+DirectoryMode.color.symlink   =   0   0 255
+DirectoryMode.color.marked    = 255   0   0
+
+# Font.PLAIN is 0, Font.BOLD is 1, Font.ITALIC is 2.
+style.text                    = 0
+style.keyword                 = 1
+style.function                = 1
+DirectoryMode.style.directory = 1
+DirectoryMode.style.marked    = 1
+ShellMode.style.prompt        = 1
+style.comment                 = 2
+XmlMode.style.tag             = 1
+XmlMode.style.delimiter       = 1
+

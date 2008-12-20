@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - Extending J</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Extending J</h1>
+
+<hr>
+
+<p>
+
+J provides a mechanism to support arbitrary user extensions.  You can add a
+line like this to your <a href="preferences.html">preferences</a> file:
+<pre>
+    extension=SampleExtension
+</pre>
+where <code>SampleExtension</code> is the name of a class you've written,
+compiled, and placed in <code>~/.j</code> or <code>C:\.j</code>. The class must
+provide the method <code>public void run( )</code>, and the class itself must
+be declared  <code>public</code>. If these conditions are met, your class
+will be loaded when the editor starts up and the <code>run</code> method will
+be invoked.
+<p>
+One problem you're likely to run into with this is that any editor method or
+member variable referenced in your extension class must be explicitly declared
+<code>public</code> in the editor source; otherwise you'll get an 
+<code>IllegalAccessException</code>. The short-term solution to this is to
+hack the editor source and make the thing <code>public</code>; the long-term
+solution is to <a href="mailto:peter@armedbear.org">tell me about it</a> so
+that I can make sure it stays <code>public</code> in the future.
+<p>
+The easiest way to write your extension class is to develop and debug it in the
+j's top-level <code>src</code> directory; the loader will pick it up from
+there, so you don't have to copy it into <code>~/.j</code> every time you
+compile it.  When you're done you should move it into <code>~/.j</code> and
+delete any extraneous copies.
+<p>
+Strictly speaking, your extension class does not have to live in   
+<code>~/.j</code> or <code>C:\.j</code>.  You can also specify the fully
+qualified pathname of your extension's <code>.class</code> file in your
+preferences file, like this:
+<pre>
+    extension=/home/peter/SampleExtension.class
+</pre>
+In this case you must specifically append the <code>.class</code> extension, as
+shown in the example.
+
+</body>
+
+</html>

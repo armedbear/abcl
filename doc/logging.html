@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<title>J User's Guide - Logging</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+<body>
+<a href="contents.html">Top</a>
+<hr>
+<h1>Logging</h1>
+<hr>
+<p>
+J keeps a log of interesting events in the file ~/.j/log (or C:\.j\log). By
+default, only errors are logged.
+<p>
+When debugging is enabled, debugging information is also logged, and all
+output sent to the log file is also sent to System.err, so it can be seen in
+the console window from which j was started.
+<p>
+You can enable debugging by adding the following line to your
+<a href="preferences.html">preferences</a> file:
+<pre>
+    debug = true</pre>
+<p>
+The maximum size of the log file is controlled by the property
+<a href="preferences.html#Log.maxFileSize">Log.maxFileSize</a>; the default is
+100 KB. When the log file exceeds its maximum size, it is rolled over to the
+file ~/.j/log.0, which in turn is rolled over to ~/.j/log.1, etc. The maximum
+backup index is controlled by the property
+<a href="preferences.html#Log.maxBackupIndex">Log.maxBackupIndex</a>; the
+default is zero, which means one backup is made.
+<p>
+To disable logging entirely, add this line to your
+<a href="preferences.html">preferences</a> file:
+<pre>
+    Log.enabled = false</pre>
+<p>
+If logging is disabled, nothing will be written to the log file, but if
+debugging is enabled, log output will still be sent to System.err.
+</body>
+</html>

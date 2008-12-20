@@ -1,0 +1,47 @@
+# -*- Mode: Properties -*-
+# Pastel
+# Brian Mastenbrook
+# $Id: Pastel,v 1.1 2003-09-30 18:42:41 piso Exp $
+
+color.text                    = 0 0 0
+color.background              = 234  240  240
+color.caret                   = 0 0 0
+
+color.selectionBackground     = 238 220 130
+color.preprocessor            = 176 48 96
+color.comment                 = 0 139 139
+color.keyword                 = 85 26 139
+color.brace                   = 0 0 0
+color.number                  = 77 77 77
+color.currentLineBackground   = 234  240  240
+color.function                = 0 0 139
+color.string                  = 77 77 77
+color.operator                = 0 0 0
+color.disabled                = 139 0 0
+ShellMode.color.prompt        = 69 139 116
+ShellMode.color.input         = 77 77 77
+
+HtmlMode.color.tag            = 153 204 204
+HtmlMode.color.anchor         = 0 0 0
+HtmlMode.color.image          = 0 0 0
+HtmlMode.color.table          = 0 0 0
+HtmlMode.color.tableRow       = 0 0 0
+HtmlMode.color.tableData      = 0 0 0
+HtmlMode.color.comment        = 0 139 139
+
+MakefileMode.color.target     = 0 0 139
+
+PropertiesMode.color.section  = 0 0 139
+
+DirectoryMode.color.directory = 69 139 116
+DirectoryMode.color.symlink   = 255 99 71
+DirectoryMode.color.marked    = 0 0 0
+
+# Font.PLAIN is 0, Font.BOLD is 1, Font.ITALIC is 2.
+style.text                    = 0
+style.keyword                 = 0
+style.function                = 0
+DirectoryMode.style.directory = 0
+DirectoryMode.style.marked    = 1
+ShellMode.style.prompt        = 1
+style.comment                 = 2

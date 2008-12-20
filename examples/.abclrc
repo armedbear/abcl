@@ -1,0 +1,77 @@
+;;; -*- Mode: Lisp -*-
+
+;;; See also:
+;;;   .clinit.cl         (Allegro)
+;;;   .cmucl-init.lisp   (CMUCL)
+;;;   .sbclrc            (SBCL)
+;;;   .clisprc.lisp      (CLISP)
+;;;   .lispworks         (LispWorks)
+
+(defparameter *ansi-tests-directory*
+  #-(or windows mswindows win32)
+  #p"/home/peter/xcl/x/ansi-tests/"
+  #+(or windows mswindows win32)
+  #p"c:\\msys\\1.0\\home\\peter\\xcl\\x\ansi-tests\\")
+
+(defun run-ansi-tests (&optional (compile-tests t))
+  (format t "COMPILE-TESTS is ~A~%" compile-tests)
+  (let ((*default-pathname-defaults* *ansi-tests-directory*))
+    #+(and abcl unix)
+    (run-shell-command "make clean" :directory *default-pathname-defaults*)
+    (time (load (if compile-tests "compileit.lsp" "doit.lsp")))))
+
+(defun run-random-tests (size nvars count)
+  (let ((*default-pathname-defaults* *ansi-tests-directory*))
+    (load "gclload1.lsp")
+    (load "random-int-form.lsp")
+    (let ((f (find-symbol "TEST-RANDOM-INTEGER-FORMS" "CL-TEST")))
+      (when f
+        (let (#+abcl (*suppress-compiler-warnings* t)
+              (*random-state* (make-random-state t)))
+          (time (funcall f size nvars count)))))))
+
+#+(or abcl sbcl clisp)
+(defun test-cl-ppcre ()
+  #+abcl (require "JVM")
+  (let ((*default-pathname-defaults* #-(or windows mswindows win32)
+                                     #p"/home/peter/cl-ppcre-1.2.19/"
+                                     #+(or windows mswindows win32)
+                                     #p"c:\\cygwin\\home\\peter\\cl-ppcre-1.2.19\\"))
+    #+abcl
+    (map nil #'delete-file (directory "*.abcl"))
+    #+sbcl
+    (map nil #'delete-file (directory "*.fasl"))
+    (load "load.lisp")
+    (let ((f (find-symbol "TEST" "CL-PPCRE-TEST")))
+      (when f
+        #+abcl (gc)
+        (time (funcall f))
+        #+abcl (gc)
+        (time (funcall f))))))
+
+#+abcl
+(defun run-other-tests ()
+  (test-cl-ppcre)
+  (let ((*default-pathname-defaults* "/home/peter/salza-0.7.2/"))
+    (map nil #'delete-file (directory "*.abcl"))
+    (load "/home/peter/test-salza.lisp")
+    (gc)
+    (test-salza)
+    (gc)
+    (test-salza)))
+
+#+abcl
+(autoload 'do-tests "rt.lisp")
+
+#+allegro
+(top-level:alias "ap" (arg) (apropos arg nil nil t))
+#+allegro
+(top-level:alias "de" (arg) (describe (eval arg)))
+
+#+cmu
+(setf *gc-verbose* nil)
+
+;; #+sbcl
+;; (require '#:asdf)
+;; #+sbcl
+;; (require '#:sb-aclrepl)

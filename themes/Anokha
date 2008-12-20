@@ -1,0 +1,50 @@
+color.text                    = 255 255 255
+color.background              = 0   51  51
+color.caret                   = 204 255 204
+
+color.selectionBackground     = 0   102 0
+color.preprocessor            = 255 255 0
+color.comment                 = 102 153 153
+color.keyword                 = 255 153 0
+color.brace                   = 255 255 0
+color.number                  = 255 204 0
+color.currentLineBackground   = 51  102 102
+color.function                = 255 204 0
+color.string                  = 153 204 153
+color.operator                = 255 255 0
+color.disabled                = 153 153 153
+ShellMode.color.prompt        = 153 204 153
+ShellMode.color.input         = 255 153 0
+
+XmlMode.color.text            = 255 255 255
+XmlMode.color.attribute       = 153 204 153
+XmlMode.color.delimiter       = 255 255 0
+XmlMode.color.namespace       = 255 204 0
+XmlMode.color.tag             = 255 153 0
+XmlMode.color.comment         = 102 153 153
+
+HtmlMode.color.tag            = 153 204 153
+HtmlMode.color.anchor         = 255 204 0
+HtmlMode.color.image          = 255 153 0
+HtmlMode.color.table          = 153 153 102
+HtmlMode.color.tableRow       = 204 204 153
+HtmlMode.color.tableData      = 255 255 204
+HtmlMode.color.comment        = 102 153 153
+HtmlMode.color.script         = 255 0   0
+
+MakefileMode.color.target     = 255 153 0
+
+PropertiesMode.color.section  = 255 153 0
+
+DirectoryMode.color.directory = 255 153 0
+DirectoryMode.color.symlink   = 255 204 0
+DirectoryMode.color.marked    = 255 255 0
+
+# Font.PLAIN is 0, Font.BOLD is 1, Font.ITALIC is 2.
+style.text                    = 0
+style.keyword                 = 0
+style.function                = 0
+DirectoryMode.style.directory = 0
+DirectoryMode.style.marked    = 0
+ShellMode.style.prompt        = 0
+style.comment                 = 0

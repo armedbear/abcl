@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - The Status Bar</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>The Status Bar</h1>
+
+<hr>
+
+<p>
+
+The status bar at the bottom of each frame displays information about the
+buffer that is currently active in that frame. By default, this information
+includes the mode of the buffer (Java, C++, HTML, etc.) and the location of the
+caret (line and column number). If  <a href="commands.html#recordMacro">macro
+recording</a> is in progress, "REC" is displayed in the status bar (at the
+right end, after the column number).
+
+<p>
+
+In addition to the default information, the status bar can optionally display
+the line separator for the current buffer (LF, CR, or CR+LF) and the total
+number of lines in the buffer. To activate these options, add one or both of
+the following lines to your<a href="preferences.html"> preferences</a> file:
+<pre>
+    StatusBar.displayLineSeparator=true
+    StatusBar.displayLineCount=true
+</pre>
+
+<p>
+
+The line separator for the current buffer can be changed in the
+Properties dialog (see <a href="commands.html#properties">properties</a>).
+
+</body>
+
+</html>
+

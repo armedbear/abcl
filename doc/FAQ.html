@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - Frequently Asked Questions</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Frequently Asked Questions</h1>
+
+<hr>
+
+<p>
+  <b>How do I get j to use the ISO-8859-2 encoding when loading and saving files?</b>
+</p>
+<p>
+  Add the following line to your <a href="preferences.html">preferences</a> file:
+</p>
+  <pre>
+    defaultEncoding = ISO8859_2</pre>
+
+<p>
+  <b>What's up with the Tab key?</b>
+</p>
+<p>
+  In programming modes (including Java, JavaScript, C, C++, PHP, Python, HTML,
+  and XML), the Tab key is mapped by default to the command
+  <a href="commands.html#tab">tab</a>. The default behavior of this command is
+  to re-indent the current line according to j's idea of correct indentation.
+</p>
+<p>
+  If you want to get rid of this behavior, you can create a custom key map for
+  the mode in question that maps the Tab key to <a href="commands.html#insertTab">insertTab</a>
+  (see <a href="keys.html">Key Mappings</a>). You might also want to map some other key to
+  <a href="commands.html#indentLineOrRegion">indentLineOrRegion</a>, which
+  provides the re-indentation functionality assigned by default to the Tab key.
+</p>
+<p>
+  A less radical step is to add the following line to your <a href="preferences.html">preferences</a>
+  file:
+  <pre>
+    tabAlwaysIndent = false</pre>
+  If <a href="commands.html#tabAlwaysIndent">tabAlwaysIndent</a> is false, the behavior of
+  the tab command depends on the location of the caret.
+  If the caret is at the very beginning of the text on the line, or in the
+  whitespace to the left of the text, tab calls <a href="commands.html#indentLine">indentLine</a>.
+  If the caret is in the midst of the actual text on the line, tab
+  inserts either a single tab character or the equivalent number of spaces,
+  depending on the setting of the <a href="preferences.html#useTabs">useTabs</a> property.
+<p>
+  <code>tabAlwaysIndent</code> is true by default.
+</p>
+<p>
+  <code>tabAlwaysIndent</code> is a mode-specific property,
+  so you can set it for a specific mode if that's what you want:
+  <pre>
+    JavaMode.tabAlwaysIndent = false</pre>
+<p>
+  <b>Why don't certain keys work in j?</b>
+</p>
+<p>
+  There is no single answer to this question.
+</p>
+<p>
+  There are <a href="http://developer.java.sun.com/developer/bugParade/bugs/4371923.html">known bugs</a>
+  on specific platforms with specific versions of Java and certain keyboards
+  (German, Swedish, and possibly others). If you suspect that this is your
+  problem, you might try switching to another version of Java. On Linux, IBM
+  1.3 seems to have the fewest problems, and Blackdown's version of 1.3 seems
+  to be better than Sun's. But your mileage may vary. In any case, if the key
+  in question doesn't work with the Swing Notepad demo, there's not much chance
+  that it will work in j. Complain to your Java vendor!
+</p>
+<p>
+  If the key in question works with the Swing Notepad demo but does not work
+  with j, please <a href="mailto:peter@armedbear.org">let me know</a>. Be sure
+  to mention what platform you're running on, what version of Java you're
+  using, and your locale.
+</p>
+<p>
+  The command <a href="commands.html#insertKeyText">insertKeyText</a> may be
+  useful in debugging keyboard problems.
+</p>
+
+<p>
+  <b> When selecting text with the keyboard, if I want to select multiple
+  lines, the first line is always selected completely. If I just want to
+  select part of the first line, I've got to do it with the mouse.</b>
+</p>
+<p>
+  That's not a bug, that's a feature (really). The idea is that selecting
+  whole lines is the more common case when the selection spans multiple lines,
+  so j tries to save you an extra keystroke in that situation.
+</p>
+<p>
+  When you just want to select part of the text on the first line, you can use
+  the left or right arrow key to select a single character first, and then use
+  the up or down key to extend the selection. This costs you an extra
+  keystroke, but it's the less common case. Or at least that's the idea.
+</p>
+<p>
+  If you don't like this behavior, you can disable it by adding the following
+  line to your <a href="preferences.html">preferences</a> file:
+  <pre>
+    autoSelectLine = false</pre>
+<p>
+  <b> I just upgraded to Mac OS X 10.2, and now j has odd display problems.</b>
+</p>
+<p>
+  It may help to disable hardware acceleration when starting j:
+  <pre>
+    java -Dcom.apple.hwaccel=false -jar j.jar</pre>
+</body>
+
+</html>

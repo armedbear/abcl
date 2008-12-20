@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - Building the Source</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Building the Source</h1>
+
+<hr>
+
+<p>
+<b>Using configure and make</b>
+<p>
+This is the recommended build system on Unix platforms. On Windows, you are
+more likely to succeed with Ant; see <a href="#Using_Ant">below</a>.
+<p>
+For Linux:
+
+<pre>
+    $ ./configure --with-jdk=DIR
+    $ make
+    $ make install
+</pre>
+
+The <code>--with-jdk</code> option is <b>always</b> required,
+in order to specify which JDK to use (give the full path of its top-level directory).
+<p>
+On Mac OS X, the --with-jdk option should be specified like this:
+<pre>
+    --with-jdk=/System/Library/Frameworks/JavaVM.framework
+</pre>
+<p>
+You can use the <code>--with-extensions</code> option to specify extensions to
+the <code>CLASSPATH</code>. For example, you may want to build j with support
+for an external XML parser:
+<pre>
+    $ ./configure ... --with-extensions=/usr/share/java/xerces.jar
+</pre>
+Extensions specified in this way are added to the <code>CLASSPATH</code> both
+during the build process and at runtime.
+<p>
+<a name="jpty"></a>If you want to use certain experimental features such as
+shell and ssh buffers, you should specify the <code>--enable-jpty</code> option
+(you will also need to set <code>enableExperimentalFeatures=true</code> in your
+<a href="preferences.html">preferences</a> file).
+<p>
+By default, j will be installed in /usr/local/bin.
+<p>
+After you've built and installed j, you should be able to invoke it from the
+command line by just typing
+<pre>
+    $ j
+</pre>
+if /usr/local/bin is in your path.
+<p>
+<b><a name="Using_Ant">Using Ant</a></b>
+<p>
+<a href="http://jakarta.apache.org/ant">Ant</a> is the recommended build system
+on Windows. Version 1.4.1 or later of Ant is required.
+<p>
+Change into the root directory of the j source distribution and edit the file
+build.properties to suit your situation. Then:
+<pre>
+    C:\j-0.21.0> ant all
+</pre>
+This will build j.jar and generate a batch file, j.bat, that you can use to
+launch j.
+</body>
+</html>

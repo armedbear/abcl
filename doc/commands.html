@@ -1,0 +1,4899 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - Commands</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body link=blue vlink=blue>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Commands</h1>
+
+<hr>
+
+<ul>
+    <li><a href="commands.html#about">about</a></li>
+    <li><a href="commands.html#alias">alias</a></li>
+    <li><a href="commands.html#alignStrings">alignStrings</a></li>
+    <li><a href="commands.html#apropos">apropos</a></li>
+    <li><a href="commands.html#archiveOpenFile">archiveOpenFile</a></li>
+    <li><a href="commands.html#attachFile">attachFile</a></li>
+    <li><a href="commands.html#backspace">backspace</a></li>
+    <li><a href="commands.html#backwardSexp">backwardSexp</a></li>
+    <li><a href="commands.html#backwardUpList">backwardUpList</a></li>
+    <li><a href="commands.html#binaryMode">binaryMode</a></li>
+    <li><a href="commands.html#bob">bob</a></li>
+    <li><a href="commands.html#bol">bol</a></li>
+    <li><a href="commands.html#bottom">bottom</a></li>
+    <li><a href="commands.html#bounceMessage">bounceMessage</a></li>
+    <li><a href="commands.html#browseFileAtDot">browseFileAtDot</a></li>
+    <li><a href="commands.html#ccGroup">ccGroup</a></li>
+    <li><a href="commands.html#centerTag">centerTag</a></li>
+    <li><a href="commands.html#changes">changes</a></li>
+    <li><a href="commands.html#checkPath">checkPath</a></li>
+    <li><a href="commands.html#clearRegister">clearRegister</a></li>
+    <li><a href="commands.html#closeAll">closeAll</a></li>
+    <li><a href="commands.html#closeOthers">closeOthers</a></li>
+    <li><a href="commands.html#closeParen">closeParen</a></li>
+    <li><a href="commands.html#commentRegion">commentRegion</a></li>
+    <li><a href="commands.html#compile">compile</a></li>
+    <li><a href="commands.html#compose">compose</a></li>
+    <li><a href="commands.html#copyAppend">copyAppend</a></li>
+    <li><a href="commands.html#copyLink">copyLink</a></li>
+    <li><a href="commands.html#copyPath">copyPath</a></li>
+    <li><a href="commands.html#copyRegion">copyRegion</a></li>
+    <li><a href="commands.html#copyXPath">copyXPath</a></li>
+    <li><a href="commands.html#cppFindMatch">cppFindMatch</a></li>
+    <li><a href="commands.html#cvs">cvs</a></li>
+    <li><a href="commands.html#cvsAdd">cvsAdd</a></li>
+    <li><a href="commands.html#cvsCommit">cvsCommit</a></li>
+    <li><a href="commands.html#cvsDiff">cvsDiff</a></li>
+    <li><a href="commands.html#cvsDiffDir">cvsDiffDir</a></li>
+    <li><a href="commands.html#cvsLog">cvsLog</a></li>
+    <li><a href="commands.html#cycleIndentSize">cycleIndentSize</a></li>
+    <li><a href="commands.html#cyclePaste">cyclePaste</a></li>
+    <li><a href="commands.html#cycleTabWidth">cycleTabWidth</a></li>
+    <li><a href="commands.html#decodeRegion">decodeRegion</a></li>
+    <li><a href="commands.html#defaultMode">defaultMode</a></li>
+    <li><a href="commands.html#defaultKeyMaps">defaultKeyMaps</a></li>
+    <li><a href="commands.html#delete">delete</a></li>
+    <li><a href="commands.html#deleteWordLeft">deleteWordLeft</a></li>
+    <li><a href="commands.html#deleteWordRight">deleteWordRight</a></li>
+    <li><a href="commands.html#describeKey">describeKey</a></li>
+    <li><a href="commands.html#detabRegion">detabRegion</a></li>
+    <li><a href="commands.html#diff">diff</a></li>
+    <li><a href="commands.html#diffGotoFile">diffGotoFile</a></li>
+    <li><a href="commands.html#dir">dir</a></li>
+    <li><a href="commands.html#dirBack">dirBack</a></li>
+    <li><a href="commands.html#dirBrowseFile">dirBrowseFile</a></li>
+    <li><a href="commands.html#dirCopyFile">dirCopyFile</a></li>
+    <li><a href="commands.html#dirCycleSortBy">dirCycleSortBy</a></li>
+    <li><a href="commands.html#dirDeleteFiles">dirDeleteFiles</a></li>
+    <li><a href="commands.html#dirDoShellCommand">dirDoShellCommand</a></li>
+    <li><a href="commands.html#dirForward">dirForward</a></li>
+    <li><a href="commands.html#dirHome">dirHome</a></li>
+    <li><a href="commands.html#dirHomeDir">dirHomeDir</a></li>
+    <li><a href="commands.html#dirLimit">dirLimit</a></li>
+    <li><a href="commands.html#dirMoveFile">dirMoveFile</a></li>
+    <li><a href="commands.html#dirOpenFile">dirOpenFile</a></li>
+    <li><a href="commands.html#dirOpenFileAndKillDirectory">dirOpenFileAndKillDirectory</a></li>
+    <li><a href="commands.html#dirRescan">dirRescan</a></li>
+    <li><a href="commands.html#dirTagFile">dirTagFile</a></li>
+    <li><a href="commands.html#dirUnlimit">dirUnlimit</a></li>
+    <li><a href="commands.html#dirUpDir">dirUpDir</a></li>
+    <li><a href="commands.html#doShellCommandOnRegion">doShellCommandOnRegion</a></li>
+    <li><a href="commands.html#down">down</a></li>
+    <li><a href="commands.html#downList">downList</a></li>
+    <li><a href="commands.html#dropBookmark">dropBookmark</a></li>
+    <li><a href="commands.html#dropTemporaryMarker">dropTemporaryMarker</a></li>
+    <li><a href="commands.html#editRegister">editRegister</a></li>
+    <li><a href="commands.html#electricCloseAngleBracket">electricCloseAngleBracket</a></li>
+    <li><a href="commands.html#electricCloseBrace">electricCloseBrace</a></li>
+    <li><a href="commands.html#electricColon">electricColon</a></li>
+    <li><a href="commands.html#electricOpenBrace">electricOpenBrace</a></li>
+    <li><a href="commands.html#electricPound">electricPound</a></li>
+    <li><a href="commands.html#electricSemi">electricSemi</a></li>
+    <li><a href="commands.html#electricStar">electricStar</a></li>
+    <li><a href="commands.html#end">end</a></li>
+    <li><a href="commands.html#entabRegion">entabRegion</a></li>
+    <li><a href="commands.html#eob">eob</a></li>
+    <li><a href="commands.html#escape">escape</a></li>
+    <li><a href="commands.html#evalDefunLisp">evalDefunLisp</a></li>
+    <li><a href="commands.html#evalRegionLisp">evalRegionLisp</a></li>
+    <li><a href="commands.html#executeCommand">executeCommand</a></li>
+    <li><a href="commands.html#expand">expand</a></li>
+    <li><a href="commands.html#find">find</a></li>
+    <li><a href="commands.html#findFirstOccurrence">findFirstOccurrence</a></li>
+    <li><a href="commands.html#findInFiles">findInFiles</a></li>
+    <li><a href="commands.html#findMatchingChar">findMatchingChar</a></li>
+    <li><a href="commands.html#findNext">findNext</a></li>
+    <li><a href="commands.html#findNextWord">findNextWord</a></li>
+    <li><a href="commands.html#findOccurrenceAtDot">findOccurrenceAtDot</a></li>
+    <li><a href="commands.html#findPrev">findPrev</a></li>
+    <li><a href="commands.html#findPrevWord">findPrevWord</a></li>
+    <li><a href="commands.html#findTag">findTag</a></li>
+    <li><a href="commands.html#findTagAtDot">findTagAtDot</a></li>
+    <li><a href="commands.html#findTagAtDotOtherWindow">findTagAtDotOtherWindow</a></li>
+    <li><a href="commands.html#finish">finish</a></li>
+    <li><a href="commands.html#fold">fold</a></li>
+    <li><a href="commands.html#foldMethods">foldMethods</a></li>
+    <li><a href="commands.html#foldRegion">foldRegion</a></li>
+    <li><a href="commands.html#forwardSexp">forwardSexp</a></li>
+    <li><a href="commands.html#gotoBookmark">gotoBookmark</a></li>
+    <li><a href="commands.html#gotoTemporaryMarker">gotoTemporaryMarker</a></li>
+    <li><a href="commands.html#gotoFile">gotoFile</a></li>
+    <li><a href="commands.html#help">help</a></li>
+    <li><a href="commands.html#home">home</a></li>
+    <li><a href="commands.html#htmlBold">htmlBold</a></li>
+    <li><a href="commands.html#htmlElectricEquals">htmlElectricEquals</a></li>
+    <li><a href="commands.html#htmlEndTag">htmlEndTag</a></li>
+    <li><a href="commands.html#htmlFindMatch">htmlFindMatch</a></li>
+    <li><a href="commands.html#htmlInsertMatchingEndTag">htmlInsertMatchingEndTag</a></li>
+    <li><a href="commands.html#htmlInsertTag">htmlInsertTag</a></li>
+    <li><a href="commands.html#htmlStartTag">htmlStartTag</a></li>
+    <li><a href="commands.html#httpShowHeaders">httpShowHeaders</a></li>
+    <li><a href="commands.html#hyperspec">hyperspec</a></li>
+    <li><a href="commands.html#iList">iList</a></li>
+    <li><a href="commands.html#imageCycleBackground">imageCycleBackground</a></li>
+    <li><a href="commands.html#imageFit">imageFit</a></li>
+    <li><a href="commands.html#imageRestore">imageRestore</a></li>
+    <li><a href="commands.html#imageZoomIn">imageZoomIn</a></li>
+    <li><a href="commands.html#imageZoomOut">imageZoomOut</a></li>
+    <li><a href="commands.html#inbox">inbox</a></li>
+    <li><a href="commands.html#incrementalFind">incrementalFind</a></li>
+    <li><a href="commands.html#indentLine">indentLine</a></li>
+    <li><a href="commands.html#indentLineOrRegion">indentLineOrRegion</a></li>
+    <li><a href="commands.html#indentRegion">indentRegion</a></li>
+    <li><a href="commands.html#insertBraces">insertBraces</a></li>
+    <li><a href="commands.html#insertByte">insertByte</a></li>
+    <li><a href="commands.html#insertChar">insertChar</a></li>
+    <li><a href="commands.html#insertKeyText">insertKeyText</a></li>
+    <li><a href="commands.html#insertParentheses">insertParentheses</a></li>
+    <li><a href="commands.html#insertRegister">insertRegister</a></li>
+    <li><a href="commands.html#insertString">insertString</a></li>
+    <li><a href="commands.html#insertTab">insertTab</a></li>
+    <li><a href="commands.html#jdb">jdb</a></li>
+    <li><a href="commands.html#jdkHelp">jdkHelp</a></li>
+    <li><a href="commands.html#jlisp">jlisp</a></li>
+    <li><a href="commands.html#jmips">jmips</a></li>
+    <li><a href="commands.html#jumpToColumn">jumpToColumn</a></li>
+    <li><a href="commands.html#jumpToLine">jumpToLine</a></li>
+    <li><a href="commands.html#jumpToOffset">jumpToOffset</a></li>
+    <li><a href="commands.html#killAppend">killAppend</a></li>
+    <li><a href="commands.html#killBuffer">killBuffer</a></li>
+    <li><a href="commands.html#killFrame">killFrame</a></li>
+    <li><a href="commands.html#killLine">killLine</a></li>
+    <li><a href="commands.html#killRegion">killRegion</a></li>
+    <li><a href="commands.html#killWindow">killWindow</a></li>
+    <li><a href="commands.html#killWordLeft">killWordLeft</a></li>
+    <li><a href="commands.html#killWordRight">killWordRight</a></li>
+    <li><a href="commands.html#left">left</a></li>
+    <li><a href="commands.html#lisp">lisp</a></li>
+    <li><a href="commands.html#lispFindMatchingChar">lispFindMatchingChar</a></li>
+    <li><a href="commands.html#lispSelectSyntax">lispSelectSyntax</a></li>
+    <li><a href="commands.html#listBindings">listBindings</a></li>
+    <li><a href="commands.html#listFiles">listFiles</a></li>
+    <li><a href="commands.html#listIncludes">listIncludes</a></li>
+    <li><a href="commands.html#listOccurrences">listOccurrences</a></li>
+    <li><a href="commands.html#listOccurrencesOfPatternAtDot">listOccurrencesOfPatternAtDot</a></li>
+    <li><a href="commands.html#listRegisters">listRegisters</a></li>
+    <li><a href="commands.html#listTags">listTags</a></li>
+    <li><a href="commands.html#loadSession">loadSession</a></li>
+    <li><a href="commands.html#lowerCaseRegion">lowerCaseRegion</a></li>
+    <li><a href="commands.html#mailboxCreateFolder">mailboxCreateFolder</a></li>
+    <li><a href="commands.html#mailboxDelete">mailboxDelete</a></li>
+    <li><a href="commands.html#mailboxDeleteFolder">mailboxDeleteFolder</a></li>
+    <li><a href="commands.html#mailboxExpunge">mailboxExpunge</a></li>
+    <li><a href="commands.html#mailboxFlag">mailboxFlag</a></li>
+    <li><a href="commands.html#mailboxGetNewMessages">mailboxGetNewMessages</a></li>
+    <li><a href="commands.html#mailboxLastMessage">mailboxLastMessage</a></li>
+    <li><a href="commands.html#mailboxLimit">mailboxLimit</a></li>
+    <li><a href="commands.html#mailboxMarkRead">mailboxMarkRead</a></li>
+    <li><a href="commands.html#mailboxMarkUnread">mailboxMarkUnread</a></li>
+    <li><a href="commands.html#mailboxMoveToFolder">mailboxMoveToFolder</a></li>
+    <li><a href="commands.html#mailboxReadMessage">mailboxReadMessage</a></li>
+    <li><a href="commands.html#mailboxSaveToFolder">mailboxSaveToFolder</a></li>
+    <li><a href="commands.html#mailboxStop">mailboxStop</a></li>
+    <li><a href="commands.html#mailboxTag">mailboxTag</a></li>
+    <li><a href="commands.html#mailboxTagPattern">mailboxTagPattern</a></li>
+    <li><a href="commands.html#mailboxToggleRaw">mailboxToggleRaw</a></li>
+    <li><a href="commands.html#mailboxUndelete">mailboxUndelete</a></li>
+    <li><a href="commands.html#mailboxUnlimit">mailboxUnlimit</a></li>
+    <li><a href="commands.html#mailboxUntagAll">mailboxUntagAll</a></li>
+    <li><a href="commands.html#makeTagFile">makeTagFile</a></li>
+    <li><a href="commands.html#man">man</a></li>
+    <li><a href="commands.html#manFollowLink">manFollowLink</a></li>
+    <li><a href="commands.html#messageDelete">messageDelete</a></li>
+    <li><a href="commands.html#messageFlag">messageFlag</a></li>
+    <li><a href="commands.html#messageForward">messageForward</a></li>
+    <li><a href="commands.html#messageIndex">messageIndex</a></li>
+    <li><a href="commands.html#messageMoveToFolder">messageMoveToFolder</a></li>
+    <li><a href="commands.html#messageNext">messageNext</a></li>
+    <li><a href="commands.html#messageNextInThread">messageNextInThread</a></li>
+    <li><a href="commands.html#messagePrevious">messagePrevious</a></li>
+    <li><a href="commands.html#messagePreviousInThread">messagePreviousInThread</a></li>
+    <li><a href="commands.html#messageReplyToGroup">messageReplyToGroup</a></li>
+    <li><a href="commands.html#messageReplyToSender">messageReplyToSender</a></li>
+    <li><a href="commands.html#messageSaveAttachment">messageSaveAttachment</a></li>
+    <li><a href="commands.html#messageToggleHeaders">messageToggleHeaders</a></li>
+    <li><a href="commands.html#messageToggleRaw">messageToggleRaw</a></li>
+    <li><a href="commands.html#messageToggleWrap">messageToggleWrap</a></li>
+    <li><a href="commands.html#messageViewAttachment">messageViewAttachment</a></li>
+    <li><a href="commands.html#mode">mode</a></li>
+    <li><a href="commands.html#mouseFindOccurrence">mouseFindOccurrence</a></li>
+    <li><a href="commands.html#mouseFindTag">mouseFindTag</a></li>
+    <li><a href="commands.html#mouseMoveDotToPoint">mouseMoveDotToPoint</a></li>
+    <li><a href="commands.html#mousePaste">mousePaste</a></li>
+    <li><a href="commands.html#mouseSelect">mouseSelect</a></li>
+    <li><a href="commands.html#mouseShowContextMenu">mouseShowContextMenu</a></li>
+    <li><a href="commands.html#movePastCloseAndReindent">movePastCloseAndReindent</a></li>
+    <li><a href="commands.html#newBuffer">newBuffer</a></li>
+    <li><a href="commands.html#newFrame">newFrame</a></li>
+    <li><a href="commands.html#newline">newline</a></li>
+    <li><a href="commands.html#newlineAndIndent">newlineAndIndent</a></li>
+    <li><a href="commands.html#nextBuffer">nextBuffer</a></li>
+    <li><a href="commands.html#nextChange">nextChange</a></li>
+    <li><a href="commands.html#nextComment">nextComment</a></li>
+    <li><a href="commands.html#nextError">nextError</a></li>
+    <li><a href="commands.html#nextFrame">nextFrame</a></li>
+    <li><a href="commands.html#offset">offset</a></li>
+    <li><a href="commands.html#openFile">openFile</a></li>
+    <li><a href="commands.html#openFileInOtherFrame">openFileInOtherFrame</a></li>
+    <li><a href="commands.html#openFileInOtherWindow">openFileInOtherWindow</a></li>
+    <li><a href="commands.html#openMailbox">openMailbox</a></li>
+    <li><a href="commands.html#otherWindow">otherWindow</a></li>
+    <li><a href="commands.html#p4">p4</a></li>
+    <li><a href="commands.html#p4Add">p4Add</a></li>
+    <li><a href="commands.html#p4Change">p4Change</a></li>
+    <li><a href="commands.html#p4Diff">p4Diff</a></li>
+    <li><a href="commands.html#p4DiffDir">p4DiffDir</a></li>
+    <li><a href="commands.html#p4Edit">p4Edit</a></li>
+    <li><a href="commands.html#p4Log">p4Log</a></li>
+    <li><a href="commands.html#p4Revert">p4Revert</a></li>
+    <li><a href="commands.html#p4Submit">p4Submit</a></li>
+    <li><a href="commands.html#pageDown">pageDown</a></li>
+    <li><a href="commands.html#pageDownOtherWindow">pageDownOtherWindow</a></li>
+    <li><a href="commands.html#pageUp">pageUp</a></li>
+    <li><a href="commands.html#pageUpOtherWindow">pageUpOtherWindow</a></li>
+    <li><a href="commands.html#paste">paste</a></li>
+    <li><a href="commands.html#pasteColumn">pasteColumn</a></li>
+    <li><a href="commands.html#pastePrimarySelection">pastePrimarySelection</a></li>
+    <li><a href="commands.html#playbackMacro">playbackMacro</a></li>
+    <li><a href="commands.html#popPosition">popPosition</a></li>
+    <li><a href="commands.html#prevBuffer">prevBuffer</a></li>
+    <li><a href="commands.html#previousChange">previousChange</a></li>
+    <li><a href="commands.html#previousComment">previousComment</a></li>
+    <li><a href="commands.html#previousError">previousError</a></li>
+    <li><a href="commands.html#print">print</a></li>
+    <li><a href="commands.html#properties">properties</a></li>
+    <li><a href="commands.html#pushPosition">pushPosition</a></li>
+    <li><a href="commands.html#quit">quit</a></li>
+    <li><a href="commands.html#recompile">recompile</a></li>
+    <li><a href="commands.html#recordMacro">recordMacro</a></li>
+    <li><a href="commands.html#redo">redo</a></li>
+    <li><a href="commands.html#reloadKeyMaps">reloadKeyMaps</a></li>
+    <li><a href="commands.html#renumberRegion">renumberRegion</a></li>
+    <li><a href="commands.html#replace">replace</a></li>
+    <li><a href="commands.html#replaceInFiles">replaceInFiles</a></li>
+    <li><a href="commands.html#resetDisplay">resetDisplay</a></li>
+    <li><a href="commands.html#resetLisp">resetLisp</a></li>
+    <li><a href="commands.html#revertBuffer">revertBuffer</a></li>
+    <li><a href="commands.html#right">right</a></li>
+    <li><a href="commands.html#save">save</a></li>
+    <li><a href="commands.html#saveAll">saveAll</a></li>
+    <li><a href="commands.html#saveAllExit">saveAllExit</a></li>
+    <li><a href="commands.html#saveAs">saveAs</a></li>
+    <li><a href="commands.html#saveCopy">saveCopy</a></li>
+    <li><a href="commands.html#saveSession">saveSession</a></li>
+    <li><a href="commands.html#saveToRegister">saveToRegister</a></li>
+    <li><a href="commands.html#selectAll">selectAll</a></li>
+    <li><a href="commands.html#selectBob">selectBob</a></li>
+    <li><a href="commands.html#selectDown">selectDown</a></li>
+    <li><a href="commands.html#selectEnd">selectEnd</a></li>
+    <li><a href="commands.html#selectEob">selectEob</a></li>
+    <li><a href="commands.html#selectHome">selectHome</a></li>
+    <li><a href="commands.html#selectLeft">selectLeft</a></li>
+    <li><a href="commands.html#selectPageDown">selectPageDown</a></li>
+    <li><a href="commands.html#selectPageUp">selectPageUp</a></li>
+    <li><a href="commands.html#selectRight">selectRight</a></li>
+    <li><a href="commands.html#selectSyntax">selectSyntax</a></li>
+    <li><a href="commands.html#selectToMarker">selectToMarker</a></li>
+    <li><a href="commands.html#selectToTemporaryMarker">selectToTemporaryMarker</a></li>
+    <li><a href="commands.html#selectUp">selectUp</a></li>
+    <li><a href="commands.html#selectWord">selectWord</a></li>
+    <li><a href="commands.html#selectWordLeft">selectWordLeft</a></li>
+    <li><a href="commands.html#selectWordRight">selectWordRight</a></li>
+    <li><a href="commands.html#send">send</a></li>
+    <li><a href="commands.html#sendMailBackTab">sendMailBackTab</a></li>
+    <li><a href="commands.html#sendMailTab">sendMailTab</a></li>
+    <li><a href="commands.html#setEncoding">setEncoding</a></li>
+    <li><a href="commands.html#shellCommand">shellCommand</a></li>
+    <li><a href="commands.html#shellEscape">shellEscape</a></li>
+    <li><a href="commands.html#shellHome">shellHome</a></li>
+    <li><a href="commands.html#shellNextInput">shellNextInput</a></li>
+    <li><a href="commands.html#shellNextPrompt">shellNextPrompt</a></li>
+    <li><a href="commands.html#shellPreviousInput">shellPreviousInput</a></li>
+    <li><a href="commands.html#shellPreviousPrompt">shellPreviousPrompt</a></li>
+    <li><a href="commands.html#shellTab">shellTab</a></li>
+    <li><a href="commands.html#showMessage">showMessage</a></li>
+    <li><a href="commands.html#sidebarListBuffers">sidebarListBuffers</a></li>
+    <li><a href="commands.html#sidebarListTags">sidebarListTags</a></li>
+    <li><a href="commands.html#slideIn">slideIn</a></li>
+    <li><a href="commands.html#slideOut">slideOut</a></li>
+    <li><a href="commands.html#sortLines">sortLines</a></li>
+    <li><a href="commands.html#source">source</a></li>
+    <li><a href="commands.html#splitWindow">splitWindow</a></li>
+    <li><a href="commands.html#stamp">stamp</a></li>
+    <li><a href="commands.html#tab">tab</a></li>
+    <li><a href="commands.html#tempBufferQuit">tempBufferQuit</a></li>
+    <li><a href="commands.html#thisError">thisError</a></li>
+    <li><a href="commands.html#toCenter">toCenter</a></li>
+    <li><a href="commands.html#toggleGroupByThread">toggleGroupByThread</a></li>
+    <li><a href="commands.html#toggleSidebar">toggleSidebar</a></li>
+    <li><a href="commands.html#toggleWrap">toggleWrap</a></li>
+    <li><a href="commands.html#top">top</a></li>
+    <li><a href="commands.html#toTop">toTop</a></li>
+    <li><a href="commands.html#uncommentRegion">uncommentRegion</a></li>
+    <li><a href="commands.html#undo">undo</a></li>
+    <li><a href="commands.html#unfold">unfold</a></li>
+    <li><a href="commands.html#unfoldAll">unfoldAll</a></li>
+    <li><a href="commands.html#unsplitWindow">unsplitWindow</a></li>
+    <li><a href="commands.html#unwrapParagraph">unwrapParagraph</a></li>
+    <li><a href="commands.html#up">up</a></li>
+    <li><a href="commands.html#upperCaseRegion">upperCaseRegion</a></li>
+    <li><a href="commands.html#visibleTabs">visibleTabs</a></li>
+    <li><a href="commands.html#whatChar">whatChar</a></li>
+    <li><a href="commands.html#whereIs">whereIs</a></li>
+    <li><a href="commands.html#windowDown">windowDown</a></li>
+    <li><a href="commands.html#windowUp">windowUp</a></li>
+    <li><a href="commands.html#wordLeft">wordLeft</a></li>
+    <li><a href="commands.html#wordRight">wordRight</a></li>
+    <li><a href="commands.html#wrapComment">wrapComment</a></li>
+    <li><a href="commands.html#wrapParagraph">wrapParagraph</a></li>
+    <li><a href="commands.html#wrapParagraphsInRegion">wrapParagraphsInRegion</a></li>
+    <li><a href="commands.html#wrapRegion">wrapRegion</a></li>
+    <li><a href="commands.html#writeGlobalKeyMap">writeGlobalKeyMap</a></li>
+    <li><a href="commands.html#writeLocalKeyMap">writeLocalKeyMap</a></li>
+    <li><a href="commands.html#xmlElectricEquals">xmlElectricEquals</a></li>
+    <li><a href="commands.html#xmlElectricSlash">xmlElectricSlash</a></li>
+    <li><a href="commands.html#xmlFindCurrentNode">xmlFindCurrentNode</a></li>
+    <li><a href="commands.html#xmlFindMatch">xmlFindMatch</a></li>
+    <li><a href="commands.html#xmlInsertEmptyElementTag">xmlInsertEmptyElementTag</a></li>
+    <li><a href="commands.html#xmlInsertMatchingEndTag">xmlInsertMatchingEndTag</a></li>
+    <li><a href="commands.html#xmlInsertTag">xmlInsertTag</a></li>
+    <li><a href="commands.html#xmlParseBuffer">xmlParseBuffer</a></li>
+    <li><a href="commands.html#xmlValidateBuffer">xmlValidateBuffer</a></li>
+</ul>
+
+<a name="about">about</a><dl><dd>
+<p>
+Displays the about box.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="alias">alias</a><dl><dd>
+<p>
+Sets or modifies an alias. See <a href="aliases.html">Aliases</a>.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="alignStrings">alignStrings</a><dl><dd>
+<p>
+Prompts for a regular expression and aligns the first occurrence of the
+specified regular expression in each line of the selected region.
+<p>
+For example, suppose you start with a region that looks like this:
+<pre>
+        private static final int STATE_VARIABLE = STATE_LAST + 1;
+        private static final int STATE_HERE_DOCUMENT = STATE_LAST + 2;
+        private static final int STATE_POD = STATE_LAST + 3;
+        private static final int STATE_REGEXP_DELIMITER = STATE_LAST + 4;
+        private static final int STATE_REGEXP = STATE_LAST + 5;
+        private static final int STATE_SUBST = STATE_LAST + 6;
+</pre>
+If you specify "=" as the regular expression, alignStrings will reformat the
+region like this:
+<pre>
+        private static final int STATE_VARIABLE         = STATE_LAST + 1;
+        private static final int STATE_HERE_DOCUMENT    = STATE_LAST + 2;
+        private static final int STATE_POD              = STATE_LAST + 3;
+        private static final int STATE_REGEXP_DELIMITER = STATE_LAST + 4;
+        private static final int STATE_REGEXP           = STATE_LAST + 5;
+        private static final int STATE_SUBST            = STATE_LAST + 6;
+</pre>
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="apropos">apropos</a><dl><dd>
+<p>
+Displays a list of commands and preferences that contain a specified pattern.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="archiveOpenFile">archiveOpenFile</a><dl><dd>
+<p>
+Opens the file at the location of the caret or mouse click.
+<p>
+<b>Default key mapping:</b> Enter, Ctrl Shift G, Double Mouse-1, or Mouse-2 in Archive mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="attachFile">attachFile</a><dl><dd>
+<p>
+Attaches a file to the message in the current mail composition buffer.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="backspace">backspace</a><dl><dd>
+<p>
+If a region is marked, deletes it.  Otherwise, deletes the character to the
+left of the caret.
+<br><br>
+<b>Default key mapping:</b> Backspace, Shift Backspace
+<br><br>
+</dl><!--<hr>-->
+
+<a name="backwardSexp">backwardSexp</a><dl><dd>
+<p>
+Moves backward across one balanced syntactic expression, if possible.
+<p>
+<b>Default key mapping:</b> Ctrl Alt B in Lisp mode
+<p>
+<b>See also:</b> <a href="#forwardSexp">forwardSexp</a>,
+<a href="#downList">downList</a>, <a href="#backwardUpList">backwardUpList</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="backwardUpList">backwardUpList</a><dl><dd>
+<p>
+Moves the caret backward out of one level of parentheses.
+<br><br>
+<b>Default key mapping:</b> Ctrl Alt U in Lisp mode
+<p>
+<b>See also:</b> <a href="#downList">downList</a>,
+<a href="#forwardSexp">forwardSexp</a>,
+<a href="#backwardSexp">backwardSexp</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="binaryMode">binaryMode</a><dl><dd>
+<p>
+Reloads the current buffer in binary mode.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="#defaultMode">defaultMode</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="bob">bob</a><dl><dd>
+<p>
+Moves to the beginning of the buffer.
+<br><br>
+<b>Default key mapping:</b> Ctrl Home
+<br><br>
+</dl><!--<hr>-->
+
+<a name="bol">bol</a><dl><dd>
+<p>
+Moves the caret to the beginning of the line.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="bottom">bottom</a><dl><dd>
+<p>
+Moves the caret to the bottom line of the display, keeping it in the same column.
+<br><br>
+<b>Default key mapping:</b> Ctrl Page Down
+<br><br>
+</dl><!--<hr>-->
+
+<a name="bounceMessage">bounceMessage</a><dl><dd>
+<p>
+Resends the current message to one or more specified addresses.
+<br><br>
+<b>Default key mapping:</b> 'b' in message buffers
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="browseFileAtDot">browseFileAtDot</a><dl><dd>
+<p>
+Uses the default browser to view the file at the location of the caret.
+<p>
+For this command to work, you need to specify the properties
+<a href="preferences.html#browser">browser</a> and (optionally)
+<a href="preferences.html#browserOpts">browserOpts</a> in your
+<a href="preferences.html">preferences</a> file.
+<p>
+<b>Default key mapping:</b> Ctrl Shift B
+<br><br>
+</dl><!--<hr>-->
+
+<a name="ccGroup">ccGroup</a><dl><dd>
+<p>
+This command is available in mail composition buffers when you're replying to
+a message. It adds all of the recipients of the original message
+to the "Cc:" header of your reply, just as if you had initiated the reply with
+<a href="#messageReplyToGroup">messageReplyToGroup</a> instead of
+<a href="#messageReplyToSender">messageReplyToSender</a>.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="centerTag">centerTag</a><dl><dd>
+<p>
+Centers the current function vertically in the edit window.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="changes">changes</a><dl><dd>
+<p>
+Runs diff to show the unsaved changes to the current buffer (if any). In the
+resulting output buffer, you can use <a href="#diffGotoFile">diffGotoFile</a>,
+mapped by default to Enter, to jump to the location of a particular change.
+<p>
+Because it uses diff, this command will not work unless diff is installed and
+in your path, which is more likely to be the case on Unix than on Windows.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="checkPath">checkPath</a><dl><dd>
+<p>
+Examines all the lines in the current buffer that start with "#include" and
+reports which included files can't be found in your
+<a href="preferences.html#includePath">include path</a> (or in the current
+directory, if the filename is enclosed in quotes rather than in angle
+brackets). This command also recursively checks all the included files that it
+can find, and reports which (if any) of the files included by those files
+can't be found.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="preferences.html#includePath">includePath</a>,
+<a href="#listIncludes">listIncludes</a>, <a href="#iList">iList</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="clearRegister">clearRegister</a><dl><dd>
+<p>
+Prompts for a register name and erases the contents of the specified register.
+<p>
+Register names must be lower case letters (a-z). The contents of registers
+persist automatically from one j session to the next.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b>
+<a href="#editRegister">editRegister</a>,
+<a href="#insertRegister">insertRegister</a>,
+<a href="#listRegisters">listRegisters</a>,
+<a href="#saveToRegister">saveToRegister</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="closeAll">closeAll</a><dl><dd>
+<p>
+Closes all open buffers, leaving a directory buffer looking at the current
+directory.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#closeOthers">closeOthers</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="closeOthers">closeOthers</a><dl><dd>
+<p>
+Closes all open buffers except the current one.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="closeParen">closeParen</a><dl><dd>
+<p>
+Inserts a closing parenthesis and briefly moves the caret to the matching
+opening parenthesis.
+<br><br>
+<b>Default key mapping:</b> ')' in Java mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="commentRegion">commentRegion</a><dl><dd>
+<p>
+Comments out each line in the selected region, or the current line if no region is selected.
+<br><br>
+<b>Default key mapping:</b> F11
+<br><br>
+<b>See also:</b> <a href="#uncommentRegion">uncommentRegion</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="compile">compile</a><dl><dd>
+<p>
+Compiles the source file in the current buffer. You will be prompted for the
+compile command. (On Windows, this command is only supported for Windows NT 4,
+Windows 2000 and Windows XP.)
+<p>
+<b>Default key mapping:</b>
+<p>
+<b>See also:</b> <a href="#recompile">recompile</a>,
+<a href="compilation.html">Compilation Buffers</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="compose">compose</a><dl><dd>
+<p>
+Opens a new mail composition buffer.
+<br><br>
+<b>Default key mapping:</b> 'c' in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="copyAppend">copyAppend</a><dl><dd>
+<p>
+Appends the selected region (or the current line if no region is selected)
+to last entry in the <a href="killring.html">kill ring</a>.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift C
+<br><br>
+<b>See also:</b> <a href="#copyRegion">copyRegion</a>,
+<a href="#killAppend">killAppend</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="copyLink">copyLink</a><dl><dd>
+<p>
+In web mode, copies to the <a href="killring.html">kill ring</a> (and to the
+system clipboard) the link at the location of the caret.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="copyPath">copyPath</a><dl><dd>
+<p>
+In directory buffers, copies to the <a href="killring.html">kill ring</a> (and
+to the system clipboard) the full pathname of the file on the line containing
+the caret.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="copyRegion">copyRegion</a><dl><dd>
+<p>
+Copies the contents of the selected region (or the current line if no region
+is selected). For normal regions, the copied text is placed in the
+<a href="killring.html">kill ring</a>. If the selected region is a column, the
+text is saved but not placed in the kill ring; it can be retrieved with the
+command <a href="#pasteColumn">pasteColumn</a>.
+<p>
+<b>Default key mapping:</b> Ctrl C
+<p>
+<b>See also:</b> <a href="#copyAppend">copyAppend</a>,
+<a href="#killRegion">killRegion</a>, <a href="#paste">paste</a>,
+<a href="columns.html">Columns</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="copyXPath">copyXPath</a><dl><dd>
+<p>
+In XML mode, copies to the <a href="killring.html">kill ring</a> (and to the
+system clipboard) the path of the element at the current location of the caret.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="cppFindMatch">cppFindMatch</a><dl><dd>
+<p>
+If the caret is on a line that starts with <code>#if</code>,
+<code>#else</code>, <code>#elif</code> or <code>#endif</code>, finds the
+matching expression. Otherwise, finds the match of the brace, parenthesis or
+bracket at the location of the caret.
+<br><br>
+<b>Default key mapping:</b> Ctrl M in C++ mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="cvs">cvs</a><dl><dd>
+<p>
+Executes an arbitrary CVS command. The CVS command, together with any required
+flags, must be supplied as an argument. The name of the file associated with
+the current buffer is automatically appended to the command line, unless the
+argument you supply begins with "-H". For example:
+<pre>
+        cvs status -v
+</pre>
+<p>
+or:
+<pre>
+        cvs -H admin
+</pre>
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="cvs.html">CVS Support</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="cvsAdd">cvsAdd</a><dl><dd>
+<p>
+Adds the file associated with the current buffer to CVS. The file is not
+actually placed in the CVS repository until you use
+<a href="#cvsCommit">cvsCommit</a> to make the change permanent.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="cvs.html">CVS Support</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="cvsCommit">cvsCommit</a><dl><dd>
+<p>
+Opens a checkin buffer in which you can compose a CVS checkin comment for the
+file associated with the current buffer.
+<p>
+When your comment is ready, you can use the command
+<a href="commands.html#finish">finish</a>, mapped by default to Ctrl Enter in
+the checkin buffer, to complete the checkin operation.
+<p>
+The file associated with the current buffer must already have been registered
+with CVS using <a href="#cvsAdd">cvsAdd</a> or the CVS "add" command.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="cvs.html">CVS Support</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="cvsDiff">cvsDiff</a><dl><dd>
+<p>
+Opens a diff output buffer showing the changes between the checked-in version
+of the file associated with the current buffer and your local copy.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="cvs.html">CVS Support</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="cvsDiffDir">cvsDiffDir</a><dl><dd>
+<p>
+Opens a diff output buffer showing the changes between the checked-in version
+and your local copy for all the files in the current directory and its
+subdirectories.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="cvs.html">CVS Support</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="cvsLog">cvsLog</a><dl><dd>
+<p>
+Runs the CVS "log" command on the file associated with the current buffer. The
+output is displayed in a transient output buffer.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="cvs.html">CVS Support</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="cycleIndentSize">cycleIndentSize</a><dl><dd>
+<p>
+Cycles through the most plausible possibilities for the indent size of the
+current buffer (2, 4 and 8 spaces).  The value that is currently in effect is
+shown in the status bar.
+<br><br>
+If you use cycleIndentSize to set the indent size, j will try to
+remember the setting the next time you open the same file.
+<br><br>
+<b>Default key mapping:</b> Alt I in most programming modes
+<br><br>
+</dl><!--<hr>-->
+
+<a name="cyclePaste">cyclePaste</a><dl><dd>
+<p>
+If the last command to be executed was not paste or cyclePaste, cyclePaste does
+exactly the same thing as <a href="#paste">paste</a>.
+<br><br>
+If the last command to be executed was paste or cyclePaste, cyclePaste fetches
+the next item from the <a href="killring.html">kill ring</a> and inserts it in
+place of the text inserted by the last paste or cyclePaste.
+<br><br>
+What this means in practice is that you can invoke cyclePaste repeatedly to
+cycle through the contents of the kill ring, stopping when you see that the
+text you want has been inserted. If you can't find what you want and
+would like to cancel the operation, use <a href="#undo">undo</a>.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift V
+<br><br>
+</dl><!--<hr>-->
+
+<a name="cycleTabWidth">cycleTabWidth</a><dl><dd>
+<p>
+Cycles through the most plausible possibilities for the tab width of the
+current buffer (2, 4 and 8 spaces). The value that is currently in effect is
+shown in the status bar.
+<p>
+This is intended to be a quick way to figure out the proper tab width to use
+when you've loaded a file for the first time and the indentation looks goofy.
+Just press Alt T repeatedly until things look right. Of course that may not
+happen; bear in mind that cycleTabWidth only considers the three most common
+possibilities.
+<p>
+If you use cycleTabWidth to set the tab width, j will try to remember the
+setting the next time you open the same file.
+<p>
+<b>Default key mapping:</b> Alt T
+<br><br>
+</dl><!--<hr>-->
+
+<a name="decodeRegion">decodeRegion</a><dl><dd>
+<p>
+Base 64 decodes the selected region (or the line containing the caret if no
+region is selected). If the resulting output is text, it is displayed in a new
+buffer; otherwise, you are prompted for a filename and the output is saved in
+the specified file.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="defaultMode">defaultMode</a><dl><dd>
+<p>
+Reloads the current buffer in its default mode.
+<p>
+<b>Default key mapping:</b> Ctrl Alt B in binary mode
+<p>
+<b>See also:</b> <a href="#binaryMode">binaryMode</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="defaultKeyMaps">defaultKeyMaps</a><dl><dd>
+<p>
+Discards all custom key mappings and returns to j's internal defaults.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#reloadKeyMaps">reloadKeyMaps</a>,
+<a href="keys.html">Key Mappings</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="delete">delete</a><dl><dd>
+<p>
+If a region is marked, deletes it.  Otherwise, deletes the character at the
+location of the caret.
+<p>
+<b>Default key mapping:</b> Delete
+<br><br>
+</dl><!--<hr>-->
+
+<a name="detabRegion">detabRegion</a><dl><dd>
+<p>
+Replaces tab characters in the selected region with the appropriate number of
+spaces, based on the tab width of the buffer. Buffer-specific settings such as
+<a href="preferences.html#tabWidth">tabWidth</a> may be inspected and modified
+in the Properties dialog (see <a href="#properties">properties</a>).
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="#entabRegion">entabRegion</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="deleteWordLeft">deleteWordLeft</a><dl><dd>
+<p>
+Deletes the word to the left of the caret.
+<br><br>
+<b>Default key mapping:</b> Ctrl Backspace
+<p>
+<b>See also:</b> <a href="#killWordLeft">killWordLeft</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="deleteWordRight">deleteWordRight</a><dl><dd>
+<p>
+Deletes the word to the right of the caret.
+<br><br>
+<b>Default key mapping:</b> Ctrl Delete
+<p>
+<b>See also:</b> <a href="#killWordRight">killWordRight</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="describeKey">describeKey</a><dl><dd>
+<p>
+Displays information about the command mapped to a particular key or key combination.
+<br><br>
+<b>Default key mapping:</b> Alt K
+<br><br>
+</dl><!--<hr>-->
+
+<a name="diff">diff</a><dl><dd>
+<p>
+Runs diff with the supplied arguments and presents the output in a diff output
+buffer.
+<p>
+When constructing the command line, you can use "%" as a dynamic alias for the
+file associated with the current buffer. For example:
+<pre>
+        diff -ub % ~/backup
+</pre>
+If you don't explicitly specify any command line switches (e.g. "-ub", "-c",
+"--normal"), j will run "diff -u".
+<p>
+If no arguments are provided, this command diffs the file associated with the
+current buffer against its <a href="preferences.html#patchMode">patchMode</a>
+backup file (if it exists).
+<p>
+Because it uses diff, this command will not work unless diff is installed and
+in your path, which is more likely to be the case on Unix than on Windows.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#changes">changes</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="diffGotoFile">diffGotoFile</a><dl><dd>
+<p>
+Jumps to the location in the source buffer corresponding to the current line
+in the diff output buffer.
+<p>
+<b>Default key mapping:</b> Enter, Ctrl Shift G, Double Mouse-1, or Mouse-2 in
+Diff mode
+<p>
+<b>See also:</b> <a href="#changes">changes</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dir">dir</a><dl><dd>
+<p>
+Opens a directory buffer on the current directory.  The current directory is
+normally the parent directory of the file that is open in the current editor
+window.
+<br><br>
+<b>Default key mapping:</b> Ctrl D
+<br><br>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirBack">dirBack</a><dl><dd>
+<p>
+Changes to the previous directory in the history list for the current directory buffer.
+<br><br>
+<b>Default key mapping:</b> 'b' in directory buffers
+<br><br>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirBrowseFile">dirBrowseFile</a><dl><dd>
+<p>
+Uses the default browser to view the file at the location of the caret.
+<p>
+For this command to work, you need to specify the properties
+<a href="preferences.html#browser">browser</a> and (optionally)
+<a href="preferences.html#browserOpts">browserOpts</a> in your
+<a href="preferences.html">preferences</a> file.
+<p>
+<b>Default key mapping:</b> Ctrl Shift B in directory buffers
+<p>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirCopyFile">dirCopyFile</a><dl><dd>
+<p>
+Copies the file at the current location of the caret to a specified destination.
+You can specify either a filename or a directory as the destination.
+<p>
+<b>Default key mapping:</b> 'c' in directory buffers
+<p>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirCycleSortBy">dirCycleSortBy</a><dl><dd>
+<p>
+Cycles through the possibilities (name, date, size) for the sort order of the
+directory listing. The sort order that is currently in effect is displayed in
+the title bar of the editor window.
+<br><br>
+<b>Default key mapping:</b> Ctrl S in directory buffers
+<br><br>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirDeleteFiles">dirDeleteFiles</a><dl><dd>
+<p>
+Deletes the marked files, or, if no files are marked, deletes the file at the
+current location of the caret.
+<br><br>
+<b>Default key mapping:</b> Delete in directory buffers
+<br><br>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirDoShellCommand">dirDoShellCommand</a><dl><dd>
+<p>
+Prompts for a shell command and executes the specified command on all the
+marked files in the current directory buffer.
+<p>
+If no files are marked, the command is executed on the file at the current
+location of the caret.
+<p>
+If the command string contains '*', the command runs once, with the list of
+marked files in place of the '*'. The order of the list is the order of
+appearance in the directory buffer.
+<p>
+If the command string does not contain '*', the command runs separately for
+each file, with the file name added at the end of the command string.
+<p>
+In all cases, the command is executed in the current directory (the directory
+displayed in the directory buffer).
+<p>
+<b>Default key mapping:</b> '!' in directory buffers
+<p>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirForward">dirForward</a><dl><dd>
+<p>
+Changes to the next directory in the history list for the current directory buffer.
+<p>
+<b>Default key mapping:</b> 'f' in directory buffers
+<p>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirGetFile">dirGetFile</a><dl><dd>
+<p>
+Copies the remote file at the current location of the caret to a specified
+destination on the local machine. You can specify either a filename or a
+directory as the destination.
+<br><br>
+<b>Default key mapping:</b> G in remote directory buffers
+<br><br>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirHome">dirHome</a><dl><dd>
+<p>
+If the caret is to the right of the first character of the filename on the
+current line, moves the caret to the first character of the filename.
+Otherwise, moves the caret to the beginning of the line.
+<br><br>
+<b>Default key mapping:</b> Home in directory buffers
+<br><br>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirHomeDir">dirHomeDir</a><dl><dd>
+<p>
+If the current buffer is a directory buffer, changes to the home directory of
+the current user. Otherwise, finds an existing directory buffer or opens a new
+one on the home directory of the current user.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirMoveFile">dirMoveFile</a><dl><dd>
+<p>
+Moves the file at the current location of the caret to a specified destination.
+You can specify either a filename or a directory as the destination.
+<br><br>
+<b>Default key mapping:</b> 'm' in directory buffers
+<br><br>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirOpenFile">dirOpenFile</a><dl><dd>
+<p>
+Opens the file or directory at the location of the caret or mouse click in a
+directory buffer.
+<p>
+<b>Default key mapping:</b> Enter, Ctrl Shift G, Double Mouse-1, or Mouse-2 in directory buffers
+<p>
+<b>See also:</b> <a href="#dirOpenFileAndKillDirectory">dirOpenFileAndKillDirectory</a>,
+<a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirOpenFileAndKillDirectory">dirOpenFileAndKillDirectory</a><dl><dd>
+<p>
+Opens the file or directory at the location of the caret or mouse click in a
+directory buffer and then closes the directory buffer.
+<p>
+<b>Default key mapping:</b> Ctrl Enter in directory buffers
+<p>
+<b>See also:</b> <a href="#dirOpenFile">dirOpenFile</a>,
+<a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirRescan">dirRescan</a><dl><dd>
+<p>
+Refreshes the directory listing for the current directory buffer and rescans the
+directory tree.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirLimit">dirLimit</a><dl><dd>
+<p>
+Sets a limit pattern (something like "*.java") to control what files are
+displayed in the directory listing. Entering a blank string removes the limit,
+so that all files are displayed.
+<br><br>
+<b>Default key mapping:</b> 'l' in directory buffers.
+<br><br>
+<b>See also:</b> <a href="#dirUnlimit">dirUnlimit</a>,
+<a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirTagFile">dirTagFile</a><dl><dd>
+<p>
+Tags or untags the file at the current location of the caret.
+<p>
+<b>Default key mapping:</b> 't' in directory buffers
+<p>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirUnlimit">dirUnlimit</a><dl><dd>
+<p>
+Removes any limit pattern that may be in effect for the current directory
+buffer, so that all files are displayed.
+<br><br>
+<b>Default key mapping:</b> 'L' in directory buffers.
+<br><br>
+<b>See also:</b> <a href="#dirUnlimit">dirUnlimit</a>,
+<a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dirUpDir">dirUpDir</a><dl><dd>
+<p>
+Navigates to the parent of the current directory.
+<br><br>
+<b>Default key mapping:</b> 'u' and Backspace in directory buffers
+<br><br>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="doShellCommandOnRegion">doShellCommandOnRegion</a><dl><dd>
+<p>
+Prompts for a shell command and then executes that command, using the selected
+region as input. The contents of the selected region are replaced by the
+output of the command. If an error occurs, you can use
+<a href="commands.html#undo">undo</a> to restore the previous contents.
+<br><br>
+<code>doShellCommandOnRegion</code> is an experimental command, not enabled by
+default. On Windows, you need to have the
+<a href="http://sources.redhat.com/cygwin/">Cygwin</a> tools installed, and
+sh.exe must be in your path.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="down">down</a><dl><dd>
+<p>
+Moves the caret down one line.
+<br><br>
+<b>Default key mapping:</b> Down arrow
+<br><br>
+</dl><!--<hr>-->
+
+<a name="downList">downList</a><dl><dd>
+<p>
+Moves forward down one level of parentheses.
+<p>
+<b>Default key mapping:</b> Ctrl Alt D in Lisp mode
+<p>
+<b>See also:</b> <a href="#backwardUpList">backwardUpList</a>,
+<a href="#forwardSexp">forwardSexp</a>,
+<a href="#backwardSexp">backwardSexp</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dropBookmark">dropBookmark</a><dl><dd>
+<p>
+Drops a numbered bookmark at the location of the caret in the current buffer. By
+default, <code>dropBookmark</code> is mapped to the ten keystrokes Alt 0 through Alt
+9, and <code>gotoBookmark</code> is mapped by default to the ten keystrokes Ctrl 0
+through Ctrl 9. When you drop a bookmark with Alt n, you can return to it with
+Ctrl n. It's possible to unmap these keystrokes or map other commands to them,
+but the current implementation of <code>dropBookmark</code> and <code>gotoBookmark</code>
+only works with these key mappings.
+<br><br>
+You can still return to a bookmark even if the buffer it refers to has been
+closed (in that case the buffer will be re-opened in the current frame), but
+bookmarks are not retained from one session to the next.
+<br><br>
+<b>Default key mapping:</b> Alt 0 through Alt 9 (bookmarks 0-9)
+<br><br>
+<b>See also:</b> <a href="#gotoBookmark">gotoBookmark</a>,
+<a href="#selectToMarker">selectToMarker</a>,
+<a href="#dropTemporaryMarker">dropTemporaryMarker</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="dropTemporaryMarker">dropTemporaryMarker</a><dl><dd>
+<p>
+Drops a temporary marker at the location of the caret in the current buffer.
+<p>
+You can use <a href="#gotoTemporaryMarker">gotoTemporaryMarker</a>, mapped by
+default to Ctrl \, to return to the location of the temporary marker.
+<p>
+This command recycles the same temporary marker for each subsequent use, so you
+can only have one temporary marker at a time.
+<p>
+<b>Default key mapping:</b> Alt \
+<p>
+<b>See also:</b> <a href="#dropBookmark">dropBookmark</a>,
+<a href="#gotoTemporaryMarker">gotoTemporaryMarker</a>,
+<a href="#selectToTemporaryMarker">selectToTemporaryMarker</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="editRegister">editRegister</a><dl><dd>
+<p>
+Prompts for a register name and opens a buffer so you can edit the contents of
+the specified register.
+<p>
+Register names must be lower case letters (a-z). The contents of registers
+persist automatically from one j session to the next.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b>
+<a href="#clearRegister">clearRegister</a>,
+<a href="#insertRegister">insertRegister</a>,
+<a href="#listRegisters">listRegisters</a>,
+<a href="#saveToRegister">saveToRegister</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="electricCloseAngleBracket">electricCloseAngleBracket</a><dl><dd>
+<p>
+Inserts '>' and, if the property
+<a href="preferences.html#autoIndent">autoIndent</a> is <code>true</code>,
+re-indents the current line according to context.
+<br><br>
+<b>Default key mapping:</b> '>' in HTML and XML modes
+<br><br>
+</dl><!--<hr>-->
+
+<a name="electricCloseBrace">electricCloseBrace</a><dl><dd>
+<p>
+Inserts '}' and re-indents the current line according to context. If
+the property <a href="preferences.html#autoNewline">autoNewline</a>
+is <code>true</code>, also inserts a line separator
+and moves the caret to the appropriate column on the new line.
+<br><br>
+<b>Default key mapping:</b> '}' in Java, JavaScript, C and C++ modes
+<br><br>
+<b>See also:</b> <a href="#electricOpenBrace">electricOpenBrace</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="electricColon">electricColon</a><dl><dd>
+<p>
+Inserts a colon at the current location of the caret and re-indents the current
+line according to context.  If the property
+<a href="preferences.html#autoNewline">autoNewline</a> is <code>true</code>,
+also inserts a line separator and moves the caret to the appropriate column on
+the new line.
+<br><br>
+<b>Default key mapping:</b> ':' in Java mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="electricOpenBrace">electricOpenBrace</a><dl><dd>
+<p>
+Inserts '{' and re-indents the current line according to context. If
+the property <a href="preferences.html#autoNewline">autoNewline</a>
+is <code>true</code>, also inserts a line separator
+and moves the caret to the appropriate column on the new line.
+<br><br>
+<b>Default key mapping:</b> '{' in Java, JavaScript, C and C++ modes
+<br><br>
+<b>See also:</b> <a href="#electricCloseBrace">electricCloseBrace</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="electricPound">electricPound</a><dl><dd>
+<p>
+Inserts a '#' character at the current location of the caret.  If the line
+contains only whitespace, the '#' will be forced into the first column.
+<br><br>
+<b>Default key mapping:</b> '#' in C and C++ modes
+<br><br>
+</dl><!--<hr>-->
+
+<a name="electricSemi">electricSemi</a><dl><dd>
+<p>
+Inserts a semicolon at the current location of the caret and re-indents the
+current line according to context.  If the property <a href="preferences.html#autoNewline">autoNewline</a> is
+<code>true</code>, also inserts a line separator and moves the caret to the
+appropriate column on the new line.
+<br><br>
+<b>Default key mapping:</b> ';' in Java, JavaScript, C and C++ modes
+<br><br>
+</dl><!--<hr>-->
+
+<a name="electricStar">electricStar</a><dl><dd>
+<p>
+Inserts '*' at the current location of the caret and, if the current line is
+otherwise blank, re-indents the line according to context.
+<br><br>
+<b>Default key mapping:</b> '*' in Java, JavaScript, C and C++ modes
+<br><br>
+</dl><!--<hr>-->
+
+<a name="end">end</a><dl><dd>
+<p>
+Moves the caret to the end of the current line.
+<p>
+If the preference <a href="preferences.html#extendEnd">extendEnd</a> is true,
+invoking <b>end</b> repeatedly in quick sequence triggers special behavior
+after the caret reaches the end of the current line: the caret is first moved
+to the bottom of the edit window, and then to the end of the buffer. There is
+a one-second timeout on this operation, meaning that if one second elapses
+between invocations of <b>end</b>, the second invocation is viewed as an
+independent event rather than a repetition of the first, and the special
+behavior is not triggered.
+<p>
+<b>Default key mapping:</b> End
+<p>
+<b>See also:</b> <a href="#home">home</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="entabRegion">entabRegion</a><dl><dd>
+<p>
+Replaces spaces with tab characters in the selected region, based on the tab
+width of the buffer. Buffer-specific settings such as <code>tabWidth</code> may
+be inspected and modified in the Properties dialog (see <a href="#properties">properties</a>).
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#detabRegion">detabRegion</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="eob">eob</a><dl><dd>
+<p>
+Moves the caret to the end of the buffer.
+<br><br>
+<b>Default key mapping:</b> Ctrl End
+<br><br>
+</dl><!--<hr>-->
+
+<a name="eol">eol</a><dl><dd>
+<p>
+Moves the caret to the end of the line.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="evalDefunLisp">evalDefunLisp</a><dl><dd>
+<p>
+Sends the definition at the location of the caret in a Lisp source buffer to
+the active Lisp shell for evaluation.
+<p>
+<b>Default key mapping:</b> Ctrl Alt E in Lisp mode
+<p>
+<b>See also:</b> <a href="#evalRegionLisp">evalRegionLisp</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="evalRegionLisp">evalRegionLisp</a><dl><dd>
+<p>
+Sends the selected region in a Lisp source buffer to the active Lisp shell for
+evaluation.
+<p>
+<b>Default key mapping:</b> Ctrl Alt R in Lisp mode
+<p>
+<b>See also:</b> <a href="#evalDefunLisp">evalDefunLisp</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="escape">escape</a><dl><dd>
+<p>
+Escapes from the last operation.
+<p>
+More specifically, closes the most recently visited transient buffer (and
+possibly unsplits the window). Transient buffers include help buffers, list
+occurrencess buffers, and compilation buffers.
+<p>
+If no transient buffer is currently displayed, clears the selection
+(if any) in the current buffer.
+<p>
+Otherwise, cancels any background process associated with the current buffer.
+<p>
+Each invocation of <code>escape</code> does at most one thing.
+<p>
+<b>Default key mapping:</b> Escape
+<br><br>
+</dl><!--<hr>-->
+
+<a name="executeCommand">executeCommand</a><dl><dd>
+<p>
+Executes an editor command by name. The "Command:" textfield in the location
+bar supports both history (using the up and down arrow keys) and completion
+(using Tab and Shift Tab).
+<p>
+Some commands (for example, <a href="#insertString">insertString</a>,
+<a href="#help">help</a>, <a href="#jdkHelp">jdkHelp</a>, and
+<a href="#source">source</a>) require or accept an argument (which in the
+current implementation is always a string). Such commands can be entered like
+this:
+<pre>
+        insertString this is a test
+</pre>
+or like this:
+<pre>
+        insertString("this is a test")
+</pre>
+<b>Default key mapping:</b> Alt x
+<br><br>
+</dl><!--<hr>-->
+
+<a name="expand">expand</a><dl><dd>
+<p>
+Replaces the text to the left of the caret with a word in the current buffer for
+which that text is a prefix.
+<br><br>
+The expand command takes the sequence of characters you've just typed (more
+precisely, the sequence of characters that are legal in a Java identifier,
+beginning immediately to the left of the caret), looks through the entire
+buffer for words (i.e. legal Java identifiers) that have the sequence in
+question as a prefix, and replaces the sequence of characters with the first
+match it finds.
+<p>
+If you don't like that particular replacement, you can hit Alt Space (or Alt
+/) again (and again and again) to cycle through all the possible replacements.
+If you don't like any of the replacements, you can use
+<a href="#undo">undo</a>, mapped by default to Ctrl Z, or
+<a href="#escape">escape</a>, mapped by default to Escape, at any point, and
+get back where you started.
+<p>
+In the header area of a mail composition buffer, expand looks for completions
+in the global address book, rather than in the text of the buffer, so you can
+use it to auto-complete mail addresses.
+<p>
+This functionality is also available in all of j's textfields (both in dialog
+boxes and in the location bar), with the same default key mappings. In a
+textfield, the expansion text is taken from the current buffer, and the
+expansion can be cancelled by pressing Escape.
+<p>
+<b>Default key mapping:</b> Alt Space (except on Windows), Alt /
+<br><br>
+</dl><!--<hr>-->
+
+<a name="find">find</a><dl><dd>
+<p>
+Prompts for a pattern and finds the next occurrence of the specified pattern in
+the current buffer.
+<p>
+The search is case-insensitive if the "Ignore case" checkbox is checked.
+<p>
+If the "Whole words only" checkbox is checked, a match is returned only if it
+is both preceded and followed by a non-word character (i.e. a character not
+legal in an identifier, based on the mode of the buffer).
+<p>
+If the "Regular expression" checkbox is checked, the pattern is interpreted as
+a <a href="regexp.html">regular expression</a> rather than as a simple string.
+<p>
+If the "Multiline pattern" checkbox is checked, the regular expression can
+contain newline characters ("\n"). Because of the way j handles things
+internally, a single "\n" should be used to match a newline even if the file
+being edited uses "\r\n" or "\r" as its line separator string. (The "Multiline
+pattern" feature is experimental and is not enabled by default.)
+<p>
+If the "List occurrences" checkbox is checked, all lines in the current buffer
+that match the specified pattern are listed.
+<p>
+If the "Search from start of document" checkbox is checked, the search begins
+at the start of the document. Otherwise, the search begins at the current
+location of the caret.
+<p>
+<b>Default key mapping:</b> Ctrl F, Alt F3
+<p>
+<b>Note:</b> If you set
+<a href="preferences.html#useIncrementalFind">useIncrementalFind</a> to true
+in your <a href="preferences.html">preferences</a> file,
+<a href="commands.html#incrementalFind">incrementalFind</a> will be mapped by
+default to Ctrl F.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="findFirstOccurrence">findFirstOccurrence</a><dl><dd>
+<p>
+Finds the first occurrence in the current buffer of the word at the current
+location of the caret.
+<p>
+The search is case-sensitive and is carried out as if the "whole words only"
+option was specified.
+<p>
+<b>Default key mapping:</b> Ctrl Alt Up
+<p>
+<b>See also:</b> <a href="#findNextWord">findNextWord</a>,
+<a href="#findPrevWord">findPrevWord</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="findInFiles">findInFiles</a><dl><dd>
+<p>
+Prompts for a pattern and a file specification and generates a list of all
+occurrences of the specified pattern in files matching the file specification.
+<p>
+Several file specifications can be supplied at once, separated by semicolons.
+If the full path is not given in a file specification, the current directory or
+the directory last specified by a full path is used.
+<p>
+For example, if the file specification is <code>*.c;/usr/src/emacs-20.3/src/*.c;*.h</code>,
+the search will examine <code>.c</code> files in the current directory and
+<code>.c</code> and <code>.h</code> files in <code>/usr/src/emacs-20.3/src</code>.
+<p>
+The search is case-insensitive if the "Ignore case" checkbox is checked.
+<p>
+When the "Whole words only" checkbox is checked, a match is returned only if it
+is both preceded and followed by a non-word character (i.e. a character not
+legal in an identifier in the specified mode).
+<p>
+If the "Regular expression" checkbox is checked, the pattern is interpreted as
+a <a href="regexp.html">regular expression</a> rather than as a simple string.
+<p>
+If the "Include subdirectories" checkbox is checked, the search examines files
+in any subdirectories of directories in the file specification. For example,
+if the file specification is <code>/usr/src/linux/*.c</code>, the search will
+examine <code>.c</code> files in <code>/usr/src/linux</code> and all of its
+subdirectories.
+<p>
+If the "Search files in memory" checkbox is checked, if a file matching the
+file specification is currently loaded in a buffer, the contents of the buffer
+will be searched rather than the file as last saved on disk, so unsaved
+changes to the buffer will be taken into account.
+<p>
+You can use the command <a href="#escape">escape</a>, mapped by default to
+Escape, to cancel a search in progress.
+<p>
+<b>Default key mapping:</b> Ctrl Shift F, F6
+<p>
+<b>See also:</b> <a href="#listFiles">listFiles</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="findMatchingChar">findMatchingChar</a><dl><dd>
+<p>
+Finds the match of the brace, parenthesis or bracket at the location of the
+caret.
+<br><br>
+<b>Default key mapping:</b> Ctrl M
+<br><br>
+</dl><!--<hr>-->
+
+<a name="findNext">findNext</a><dl><dd>
+<p>
+Finds the next match in the current search (initiated by <a href="#find">find</a>,
+<a href="#incrementalFind">incrementalFind</a>, <a href="#findNextWord">findNextWord</a>
+or <a href="#findPrevWord">findPrevWord</a>).
+<br><br>
+<b>Default key mapping:</b> F3, Ctrl G
+<br><br>
+</dl><!--<hr>-->
+
+<a name="findNextWord">findNextWord</a><dl><dd>
+<p>
+Finds the next occurrence in the current buffer of the word at the current
+location of the caret.
+<p>
+The search is case-sensitive and is carried out as if the "whole words only"
+option was specified.
+<p>
+<b>Default key mapping:</b> Alt Down
+<p>
+<b>See also:</b> <a href="#findFirstOccurrence">findFirstOccurrence</a>,
+<a href="#findPrevWord">findPrevWord</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="findOccurrenceAtDot">findOccurrenceAtDot</a><dl><dd>
+<p>
+Jumps to the source line that corresponds to the current line in a List
+Occurrences buffer.
+<p>
+<b>Default key mapping:</b> Enter or Ctrl Shift G in List Occurrences buffers
+<p>
+<b>See also:</b> <a href="#findOccurrenceAtDotAndKillList">findOccurrenceAtDotAndKillList</a>,
+<a href="#mouseFindOccurrence">mouseFindOccurrence</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="findOccurrenceAtDotAndKillList">findOccurrenceAtDotAndKillList</a><dl><dd>
+<p>
+Jumps to the source line that corresponds to the current line in a List
+Occurrences buffer, and closes the List Occurrences buffer.
+<p>
+<b>Default key mapping:</b> Ctrl Enter in List Occurrences buffers
+<p>
+<b>See also:</b> <a href="#findOccurrenceAtDot">findOccurrenceAtDot</a>,
+<a href="#mouseFindOccurrence">mouseFindOccurrence</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="findPrev">findPrev</a><dl><dd>
+<p>
+Finds the previous match in the current search (initiated by <a href="#find">find</a>,
+<a href="#incrementalFind">incrementalFind</a>, <a href="#findNextWord">findNextWord</a>
+or <a href="#findPrevWord">findPrevWord</a>).
+<br><br>
+<b>Default key mapping:</b> Shift F3, Ctrl H
+<br><br>
+</dl><!--<hr>-->
+
+<a name="findPrevWord">findPrevWord</a><dl><dd>
+<p>
+Finds the previous occurrence in the current buffer of the word at the current
+location of the caret.
+<p>
+The search is case-sensitive and is carried out as if the "whole words only"
+option was specified.
+<p>
+<b>Default key mapping:</b> Alt Up
+<p>
+<b>See also:</b> <a href="#findFirstOccurrence">findFirstOccurrence</a>,
+<a href="#findNextWord">findNextWord</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="findTag">findTag</a><dl><dd>
+<p>
+Prompts for a tag (generally speaking, a tag is a function name) and moves the
+caret to the definition of the specified function. The current location of the
+caret is first saved on the marker stack as a temporary bookmark, so you can
+use <a href="#popPosition">popPosition</a>, mapped by default to Shift F5, to
+get back where you came from.
+<p>
+<b>Default key mapping:</b> Ctrl T
+<p>
+<b>See also:</b> <a href="#findTagAtDot">findTagAtDot</a>,
+<a href="#findTagAtDotOtherWindow">findTagAtDotOtherWindow</a>,
+<a href="#mouseFindTag">mouseFindTag</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="findTagAtDot">findTagAtDot</a><dl><dd>
+<p>
+Jumps to the definition of the function at the current location of the caret.
+The current location of the caret is first saved on the marker stack as a
+temporary bookmark, so you can use <a href="#popPosition">popPosition</a>,
+mapped by default to Shift F5, to get back where you came from.
+<p>
+<b>Default key mapping:</b> Alt . (Alt dot) in Java, C, C++, Lisp, Scheme and
+Perl modes
+<p>
+<b>See also:</b> <a href="#findTag">findTag</a>,
+<a href="#findTagAtDotOtherWindow">findTagAtDotOtherWindow</a>,
+<a href="#mouseFindTag">mouseFindTag</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="findTagAtDotOtherWindow">findTagAtDotOtherWindow</a><dl><dd>
+<p>
+Jumps to the definition of the function at the current location of the caret,
+using the other window (splitting the current window if necessary). Keyboard
+focus stays in the original window.
+<p>
+<b>Default key mapping:</b> Ctrl Alt . (Ctrl Alt dot) in Java mode and its
+derivatives
+<p>
+<b>See also:</b> <a href="#findTag">findTag</a>,
+<a href="#findTagAtDot">findTagAtDot</a>,
+<a href="#mouseFindTag">mouseFindTag</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="finish">finish</a><dl><dd>
+<p>
+Completes the CVS checkin operation, using the contents of the current buffer
+as the checkin comment. This command is only available in CVS checkin buffers.
+<p>
+<b>Default key mapping:</b> Ctrl Enter in CVS checkin buffers
+<p>
+<b>See also:</b> <a href="cvs.html">CVS Support</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="fold">fold</a><dl><dd>
+<p>
+Creates a fold at (or near) the current location of the caret.
+<br><br>
+<b>Default key mapping:</b> Ctrl [ in Java, C, C++ and Perl modes
+<br><br>
+<b>See also:</b> <a href="#foldMethods">foldMethods</a>,
+<a href="#unfold">unfold</a>, <a href="#unfoldAll">unfoldAll</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="foldMethods">foldMethods</a><dl><dd>
+<p>
+Folds all the methods in the current buffer.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="#fold">fold</a>,
+<a href="#foldRegion">foldRegion</a>, <a href="#unfold">unfold</a>,
+<a href="#unfoldAll">unfoldAll</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="foldRegion">foldRegion</a><dl><dd>
+<p>
+Folds the marked region. The region in question must consist of full lines; in
+other words, both dot and mark must be in column 1.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="#fold">fold</a>,
+<a href="#foldMethods">foldMethods</a>, <a href="#unfold">unfold</a>,
+<a href="#unfoldAll">unfoldAll</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="forwardSexp">forwardSexp</a><dl><dd>
+<p>
+Moves forward across one balanced syntactic expression, if possible.
+<p>
+<b>Default key mapping:</b> Ctrl Alt F in Lisp mode
+<p>
+<b>See also:</b> <a href="#backwardSexp">backwardSexp</a>,
+<a href="#downList">downList</a>, <a href="#backwardUpList">backwardUpList</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="gotoBookmark">gotoBookmark</a><dl><dd>
+<p>
+Returns to a previously dropped numbered bookmark. By default,
+<code>dropBookmark</code> is mapped to the ten keystrokes Alt 0 through Alt 9, and
+<code>gotoBookmark</code> is mapped by default to the ten keystrokes Ctrl 0 through
+Ctrl 9. When you drop a bookmark with Alt n, you can return to it with Ctrl n.
+It's possible to unmap these keystrokes or map other commands to them, but the
+current implementation of <code>dropBookmark</code> and <code>gotoBookmark</code> only
+works with these key mappings.
+<p>
+You can still return to a bookmark even if the buffer it refers to has been
+closed (in that case the buffer will be re-opened in the current frame), but
+bookmarks are not retained from one session to the next.
+<p>
+<b>Default key mapping:</b> Ctrl 0 through Ctrl 9 (bookmarks 0-9)
+<p>
+<b>See also:</b> <a href="#dropBookmark">dropBookmark</a>,
+<a href="#selectToMarker">selectToMarker</a>,
+<br><br>
+</dl><!--<hr>-->
+
+<a name="gotoFile">gotoFile</a><dl><dd>
+<p>
+Opens the file at the location of the caret or mouse click.
+<p>
+<b>Default key mapping:</b> Ctrl Shift G (global), Mouse-2 (shell buffers)
+<br><br>
+</dl><!--<hr>-->
+
+<a name="gotoTemporaryMarker">gotoTemporaryMarker</a><dl><dd>
+<p>
+Returns to a previously dropped temporary marker.
+<p>
+<b>Default key mapping:</b> Ctrl \
+<p>
+<b>See also:</b> <a href="#dropTemporaryMarker">dropTemporaryMarker</a>,
+<a href="#selectToTemporaryMarker">selectToTemporaryMarker</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="help">help</a><dl><dd>
+<p>
+Displays help.
+<p>
+For this command to work, you may need to set the <a href="preferences.html#docPath">docPath</a>
+property in your <a href="preferences.html">preferences</a> file to point to the
+directory containing the documentation:
+<pre>
+        docPath=/home/peter/j/doc
+</pre>
+For Windows, you'll need to use double backslashes, like this:
+<pre>
+        docPath=c:\\j\\doc
+</pre>
+If you use
+<a href="#executeCommand">executeCommand</a> to invoke help, you can
+specify the command you want help on at the same time:
+<pre>
+        help executeCommand
+</pre>
+or
+<pre>
+        help("executeCommand")
+</pre>
+<b>Default key mapping:</b> F1
+<p>
+<b>See also:</b> <a href="#executeCommand">executeCommand</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="home">home</a><dl><dd>
+<p>
+Moves the caret to the beginning of the text on the current line, if the caret
+is to the right of that location to begin with. If the caret is already at the
+beginning of the text on the current line or in the whitespace to the left of
+the text, <b>home</b> moves the caret to column 1 on the same line.
+<p>
+If the preference <a href="preferences.html#extendHome">extendHome</a> is
+true, invoking <b>home</b> repeatedly in quick sequence triggers special
+behavior after the caret reaches column 1 on the current line: the caret is
+then moved to the top left corner of the edit window, and then to the
+beginning of the buffer. There is a one-second timeout on this operation,
+meaning that if one second elapses between invocations of <b>home</b>, the
+second invocation is viewed as an independent event rather than a repetition
+of the first, and the special behavior is not triggered.
+<p>
+<a href="preferences.html#extendHome">extendHome</a> is false by default.
+<p>
+<b>Default key mapping:</b> Home
+<p>
+<b>See also:</b> <a href="#end">end</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="htmlBold">htmlBold</a><dl><dd>
+<p>
+Inserts an HTML bold tag ("&lt;B&gt;") before the selected text (or before the location of
+the caret, if there's no selection) and an HTML end tag ("&lt;/B&gt;") after the selected
+text (or after the location of the caret).
+<br><br>
+The case of the inserted tags is controlled by the property <a href="preferences.html#HtmlMode.upperCaseTagNames">HtmlMode.upperCaseTagNames</a>,
+which is <code>true</code> by default.
+<br><br>
+<b>Default key mapping:</b> Ctrl B in HTML mode
+<br><br>
+<b>See also:</b> <a href="#htmlInsertTag">htmlInsertTag</a>
+
+<br><br>
+</dl><!--<hr>-->
+
+<a name="htmlElectricEquals">htmlElectricEquals</a><dl><dd>
+<p>
+Inserts '=' at the current location of the caret.
+<br><br>
+In HTML mode, if the property
+<a href="preferences.html#HtmlMode.attributesRequireQuotes">HtmlMode.attributesRequireQuotes</a>
+is true, and if the '=' immediately follows an attribute name, and if the
+character following the '=' is either whitespace or '>', this command inserts
+a pair of double quotation marks after the '=' and positions the caret between
+the quotation marks.
+<p>
+The effect of this is to make it possible to enclose attribute values in
+quotation marks without having to type the quotation marks themselves.
+<p>
+<b>Default key mapping:</b> '=' in HTML mode
+<p>
+<b>See also:</b> <a href="#xmlElectricEquals">xmlElectricEquals</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="htmlEndTag">htmlEndTag</a><dl><dd>
+<p>
+Inserts an empty HTML end tag, with the caret positioned after the opening "&lt;/".
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift .
+<br><br>
+</dl><!--<hr>-->
+
+<a name="htmlFindMatch">htmlFindMatch</a><dl><dd>
+<p>
+Finds the match to the HTML tag at the location of the caret.  Nested tags are
+handled correctly.
+<br><br>
+<b>Default key mapping:</b> Ctrl M in HTML mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="htmlInsertMatchingEndTag">htmlInsertMatchingEndTag</a><dl><dd>
+<p>
+Inserts the HTML end tag corresponding to the last HTML start tag before the
+location of the caret. Nested tags are not currently supported.
+<br><br>
+<b>Default key mapping:</b> Ctrl E in HTML mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="htmlInsertTag">htmlInsertTag</a><dl><dd>
+<p>
+Inserts an HTML start tag and (if appropriate) the corresponding end tag,
+enclosing the current selection. If no selection is marked, the start and end
+tags will enclose the word at the current location of the caret, if any.
+<br><br>
+If the property <a href="preferences.html#HtmlMode.fixCase">HtmlMode.fixCase</a>
+is true, the tag name will be converted to the preferred case (as specified by
+<a href="preferences.html#HtmlMode.upperCaseTagNames">HtmlMode.upperCaseTagNames</a>
+when it is inserted in the buffer.
+<br><br>
+J will normally insert an end tag unless it is forbidden.  You can customize this
+behavior by supply a tag customization file; see <a href="preferences.html#HtmlMode.tags">HtmlMode.tags</a>.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift , (Ctrl Shift comma) in HTML mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="htmlStartTag">htmlStartTag</a><dl><dd>
+<p>
+Inserts an empty HTML start tag, with the caret positioned after the opening angle bracket.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="httpShowHeaders">httpShowHeaders</a><dl><dd>
+<p>
+Displays the request and response headers for the current HTTP buffer.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="hyperspec">hyperspec</a><dl><dd>
+<p>
+Displays the Common Lisp HyperSpec documentation for the symbol at the current
+location of the caret.
+<p>
+The documentation is displayed in another window, splitting the current window
+if necessary. This transient window can be dismissed using
+<a href="#escape">escape</a>, mapped by default to Escape.
+<p>
+You can also invoke the hyperspec command with Alt X, giving the symbol name as
+an argument (e.g. Alt X, "hyperspec mapcar", or Alt X, "hs mapcar").
+<p>
+The Common Lisp HyperSpec is available here:
+<pre>
+        http://www.lispworks.com/reference/HyperSpec/index.html</pre>
+<p>
+For this command to work, you may need to add a line to your
+<a href="preferences.html">preferences</a> file specifying the location of the
+HyperSpec root directory on your system:
+<pre>
+        clhsRoot = /usr/share/doc/hyperspec</pre>
+<p>
+<b>Default key mapping:</b> Alt F1 in Lisp mode
+<p>
+<b>Abbreviations:</b> hs, clhs
+<p>
+<b>See also:</b> <a href="preferences.html#clhsRoot">clhsRoot</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="iList">iList</a><dl><dd>
+<p>
+Lists all occurrences of the identifier at the location of the caret, both in
+the current buffer and in any files referenced by a "#include" directive in
+the current buffer, in the order in which they occur.
+<p>
+<b>Default key mapping:</b> Ctrl F6 in C and C++ modes
+<p>
+<b>See also:</b> <a href="preferences.html#includePath">includePath</a>,
+<a href="#checkPath">checkPath</a>, <a href="#listIncludes">listIncludes</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="imageCycleBackground">imageCycleBackground</a><dl><dd>
+<p>
+In Image mode, changes the background color of the image. Invoking this command
+repeatedly cycles through a small number of plausible background colors
+(currently gray, black and white).
+<br><br>
+<b>Default key mapping:</b> 'c' in Image mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="imageFit">imageFit</a><dl><dd>
+<p>
+Scales the image to fit the current display window. The aspect ratio of the
+original image is preserved.
+<br><br>
+<b>Default key mapping:</b> 'f' in Image mode
+<br><br>
+<b>See also:</b> <a href="#imageRestore">imageRestore</a>,
+<a href="#imageZoomIn">imageZoomIn</a>,
+<a href="#imageZoomOut">imageZoomOut</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="imageRestore">imageRestore</a><dl><dd>
+<p>
+Restores the image to its original size.
+<br><br>
+<b>Default key mapping:</b> 'r' in Image mode
+<br><br>
+<b>See also:</b> <a href="#imageFit">imageFit</a>,
+<a href="#imageZoomIn">imageZoomIn</a>,
+<a href="#imageZoomOut">imageZoomOut</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="imageZoomIn">imageZoomIn</a><dl><dd>
+<p>
+Zoom in by a factor of 2.
+<br><br>
+<b>Default key mapping:</b> '=' in Image mode
+<br><br>
+<b>See also:</b> <a href="#imageFit">imageFit</a>,
+<a href="#imageRestore">imageRestore</a>,
+<a href="#imageZoomOut">imageZoomOut</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="imageZoomOut">imageZoomOut</a><dl><dd>
+<p>
+Zoom out by a factor of 2.
+<br><br>
+<b>Default key mapping:</b> '-' in Image mode
+<br><br>
+<b>See also:</b> <a href="#imageFit">imageFit</a>,
+<a href="#imageRestore">imageRestore</a>,
+<a href="#imageZoomIn">imageZoomIn</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="inbox">inbox</a><dl><dd>
+<p>
+Opens your default inbox.
+<br><br>
+To specify your default inbox, add a line like this to your
+<a href="preferences.html">preferences</a> file:
+<pre>
+        inbox = pop://peter@annie</pre>
+or for IMAP:
+<pre>
+        inbox = {peter@annie}inbox</pre>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="#openMailbox">openMailbox</a>,
+<a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="incrementalFind">incrementalFind</a><dl><dd>
+<p>
+Prompts for input and finds the string entered, as it is typed in.
+<br><br>
+The search is case-insensitive unless (or until) the pattern contains at least
+one upper case character.
+<br><br>
+In the incremental find textfield, any key combination mapped to
+<code>incrementalFind</code> or <code>findNext</code> can be used to search
+for the next occurrence of the current pattern, and any key combination mapped
+to <code>findPrev</code> can be used to search for the previous occurrence of
+the pattern. (By default, <code>findNext</code> is mapped to F3 and Ctrl G, and
+<code>findPrev</code> is mapped to Shift F3 and Ctrl H.)
+<p>
+Ctrl W can be used to copy text from the buffer into the search pattern. Ctrl
+W copies the text from the buffer starting at the current location of the
+caret up until the end of the current word (or the end of the next word, if
+the caret is already at the end of the current word).
+<p>
+Ctrl P and Ctrl N can be used to navigate through the history list of
+previously used search patterns.
+<p>
+If you invoke <a href="#incrementalFind">incrementalFind</a> and then realize
+you'd rather use <a href="#find">find</a> instead, you can get there by simply
+pressing Enter (as long as the incremental find textfield is empty).
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>Note:</b> If you set
+<a href="preferences.html#useIncrementalFind">useIncrementalFind</a> to true
+in your <a href="preferences.html">preferences</a> file,
+<a href="#incrementalFind">incrementalFind</a> will be mapped by default to
+Ctrl F.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="indentLine">indentLine</a><dl><dd>
+<p>
+Applies j's idea of correct indentation to the current line.
+<br><br>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#indentRegion">indentRegion</a>,
+<a href="#indentLineOrRegion">indentLineOrRegion</a>,
+<a href="preferences.html#indentLineFixWhitespace">indentLineFixWhitespace</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="indentLineOrRegion">indentLineOrRegion</a><dl><dd>
+<p>
+Applies j's idea of correct indentation to the marked region, or, if no region is
+marked, the current line.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#indentLine">indentLine</a>,
+<a href="#indentRegion">indentRegion</a>,
+<a href="preferences.html#indentLineFixWhitespace">indentLineFixWhitespace</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="indentRegion">indentRegion</a><dl><dd>
+<p>
+Applies j's idea of correct indentation to the marked region.
+<br><br>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="commands.html#indentLine">indentLine</a>,
+<a href="#indentLineOrRegion">indentLineOrRegion</a>,
+<a href="preferences.html#indentLineFixWhitespace">indentLineFixWhitespace</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="insertBraces">insertBraces</a><dl><dd>
+<p>
+Inserts an opening brace followed by a closing brace, indented appropriately,
+leaving the caret positioned between them.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift [ in Java, JavaScript, C and C++ modes
+<br><br>
+</dl><!--<hr>-->
+
+<a name="insertByte">insertByte</a><dl><dd>
+<p>
+Inserts the character that corresponds to the specified byte in the default
+encoding at the current location of the caret. The byte must be specified as a
+decimal, hexadecimal or octal number. A leading zero denotes an octal number; a
+leading "0x" or "0X" denotes a hexidecimal number; otherwise the number is
+assumed to be decimal.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="insertChar">insertChar</a><dl><dd>
+<p>
+Inserts the specified Unicode character at the current location of the caret.
+The character must be specified as a decimal, hexidecimal or octal number. A
+leading zero denotes an octal number; a leading "0x" or "0X" denotes a
+hexidecimal number; otherwise the number is assumed to be decimal.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="insertKeyText">insertKeyText</a><dl><dd>
+<p>
+Inserts the next key combination you type (which can be a single key like Enter
+or Backspace, or a combination like Ctrl Alt S) as a string (like "Enter" or
+"Backspace" or "Ctrl Alt S") at the location of the caret in the current
+buffer. The action mapped to the key combination in question (if any) is not
+performed. Useful for editing a custom key map. The inserted text is guaranteed
+(well, not guaranteed, exactly, but extremely likely) to be in a format
+recognizable by j's key map parser.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="insertParentheses">insertParentheses</a><dl><dd>
+<p>
+If a region is selected, inserts parentheses around the selected region.
+Otherwise, inserts an opening parenthesis followed by a closing parenthesis,
+leaving the caret positioned between them.
+<br><br>
+If <a href="preferences.html#parensRequireSpaces">parensRequireSpaces</a> is
+true, single space characters are added after the opening parenthesis
+and before the closing parenthesis.
+<p>
+<b>Default key mapping:</b> Ctrl Shift ( in Java, JavaScript, C, C++, Lisp and
+Perl modes
+<p>
+<b>See also:</b> <a href="#movePastCloseAndReindent">movePastCloseAndReindent</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="insertRegister">insertRegister</a><dl><dd>
+<p>
+Prompts for a register name and inserts the contents of the selected register
+at the location of the caret in the current buffer.
+<p>
+Register names must be lower case letters (a-z). The contents of registers
+persist automatically from one j session to the next.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>Abbreviation:</b> ir
+<p>
+<b>See also:</b>
+<a href="#clearRegister">clearRegister</a>,
+<a href="#editRegister">editRegister</a>,
+<a href="#listRegisters">listRegisters</a>.
+<a href="#saveToRegister">saveToRegister</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="insertString">insertString</a><dl><dd>
+<p>
+Requires a string argument. The supplied string argument is inserted in the
+current buffer at the location of the caret. Can be invoked using
+<a href="#executeCommand">executeCommand</a> or mapped to a key combination in
+a global or mode-specific key map.
+<p>
+For example:
+<pre>
+        insertString("e.printStackTrace( );")
+</pre>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#executeCommand">executeCommand</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="insertTab">insertTab</a><dl><dd>
+<p>
+If <code>useTabs</code> is <code>true</code> for the current buffer, inserts a
+tab character at the location of the caret, otherwise inserts the appropriate
+number of spaces, based on the buffer's <code>indentSize</code>.
+Buffer-specific settings such as <code>useTabs</code> and
+<code>indentSize</code> may be inspected and modified in the Properties dialog
+(see <a href="#properties">properties</a>).
+<br><br>
+<b>Default key mapping:</b> Ctrl Tab in Java and HTML modes
+<br><br>
+</dl><!--<hr>-->
+
+<a name="jdb">jdb</a><dl><dd>
+<p>
+Invokes j's built-in Java debugger, or, if the debugger is already running,
+ensures that the debugger transcript buffer is visible.
+<p>
+If an argument is supplied, it is passed as a command to the running instance
+of the debugger. For example:
+<pre>
+        jdb restart</pre>
+<p>
+It is an error to use this command with an argument unless the debugger has
+already been started.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="jdb.html">The Java Debugger</a>,
+<a href="jdbcommands.html">Debugger Commands</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="jdkHelp">jdkHelp</a><dl><dd>
+<p>
+Displays the JDK HTML help file corresponding to the class name at the
+location of the caret or mouse click.
+<p>
+The help file is displayed in another window, splitting the current window if
+necessary. The help buffer can subsequently be dismissed using
+<a href="#escape">escape</a>, mapped by default to Escape.
+<p>
+For this to work, you need to add a line to your
+<a href="preferences.html">preferences</a> file specifying the location of the
+JDK documentation:
+<pre>
+        jdkDocPath=/home/peter/sun/jdk1.3/docs</pre>
+<p>
+<b>Default key mapping:</b> Alt F1 in Java mode
+<p>
+<b>See also:</b> <a href="preferences.html#jdkDocPath">jdkDocPath</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="jlisp">jlisp</a><dl><dd>
+<p>
+Runs Armed Bear Lisp embedded in the running instance of j, with interaction in
+a Lisp shell buffer.
+<p>
+Using this command to run Lisp lets you use the resulting Lisp shell to
+interact with the running instance of j.
+<p>
+If you don't need to interact with the running instance of j, you should use
+the <a href="#lisp">lisp</a> command instead of this one. The
+<a href="#lisp">lisp</a> command runs Lisp as a separate process, making it
+less likely that ensuing anomalies will have a detrimental impact on your
+editor session.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#lisp">lisp</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="jmips">jmips</a><dl><dd>
+<p>
+Measures the performance of the underlying Java runtime system (which is, of
+course, dependent on the performance of the underlying hardware). The result
+is displayed in the status bar.
+<p>
+The first measurement in a given session may be wildly inaccurate, since some
+just-in-time compilers wait to compile a method until the second time it is called.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="jumpToColumn">jumpToColumn</a><dl><dd>
+<p>
+Prompts for a column number and moves the caret to the specified column.
+<p>
+The column number can be a simple number ("123"), an arithmetic expression
+("100+23"), or a positive or negative offset from the current location ("+7",
+"-12").
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="jumpToLine">jumpToLine</a><dl><dd>
+<p>
+Prompts for a line number and moves the caret to the beginning of the specified line.
+<p>
+The line number can be a simple number ("123"), an arithmetic expression
+("100+23"), or a positive or negative offset from the current location ("+7",
+"-12").
+<p>
+<b>Default key mapping:</b> Ctrl J
+<br><br>
+</dl><!--<hr>-->
+
+<a name="jumpToOffset">jumpToOffset</a><dl><dd>
+<p>
+Prompts for an absolute offset (the number of characters from the start of the
+buffer) and moves the caret to the specified location.
+<p>
+The offset can be a simple number ("123"), an arithmetic expression
+("100+23"), or a positive or negative offset from the current location ("+7",
+"-12").
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#offset">offset</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="killAppend">killAppend</a><dl><dd>
+<p>
+Deletes the selected region (or the current line if no region is selected),
+appending the deleted text to the most recent entry in the
+<a href="killring.html">kill ring</a>.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift X
+<br><br>
+</dl><!--<hr>-->
+
+<a name="killBuffer">killBuffer</a><dl><dd>
+<p>
+Closes the current buffer and removes it from the buffer list. If the buffer has
+unsaved changes, you will be prompted for confirmation before they are discarded.
+<br><br>
+<b>Default key mapping:</b> Ctrl W
+<br><br>
+</dl><!--<hr>-->
+
+<a name="killFrame">killFrame</a><dl><dd>
+<p>
+Closes the current frame.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift W
+<br><br>
+</dl><!--<hr>-->
+
+<a name="killLine">killLine</a><dl><dd>
+<p>
+Copies the text from the location of the caret to the end of the current line to
+the <a href="killring.html">kill ring</a> and then deletes that text. If the
+text to be deleted is nothing but whitespace, or if the caret is already at the
+end of the line, the following line separator is copied to the kill ring and
+deleted too.
+<br><br>
+<b>Default key mapping:</b> Ctrl K
+<br><br>
+</dl><!--<hr>-->
+
+<a name="killRegion">killRegion</a><dl><dd>
+<p>
+Deletes the selected region (or the current line if no region is selected).
+For normal regions, the deleted text is placed in the
+<a href="killring.html">kill ring</a>. If the selected region is a column, the
+deleted text is saved but not placed in the kill ring; it can be retrieved
+with the command <a href="#pasteColumn">pasteColumn</a>.
+<p>
+<b>Default key mapping:</b> Ctrl X
+<p>
+<b>See also:</b> <a href="#copyRegion">copyRegion</a>,
+<a href="columns.html">Columns</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="killWindow">killWindow</a><dl><dd>
+<p>
+If the current frame contains two edit windows, closes the current edit window,
+so that the other edit window fills the frame. Equivalent to
+<a href="#otherWindow">otherWindow</a> followed by
+<a href="#unsplitWindow">unsplitWindow</a>.
+<p>
+<b>Default key mapping:</b> Ctrl Shift F10
+<p>
+<b>See also:</b> <a href="#unsplitWindow">unsplitWindow</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="killWordLeft">killWordLeft</a><dl><dd>
+<p>
+Deletes the word to the left of the caret, appending the deleted text to the
+<a href="killring.html">kill ring</a>.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#deleteWordLeft">deleteWordLeft</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="killWordRight">killWordRight</a><dl><dd>
+<p>
+Deletes the word to the right of the caret, appending the deleted text to the
+<a href="killring.html">kill ring</a>.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#deleteWordRight">deleteWordRight</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="left">left</a><dl><dd>
+<p>
+Moves the caret one character to the left.
+<p>
+<b>Default key mapping:</b> Left arrow key
+<br><br>
+</dl><!--<hr>-->
+
+<a name="lisp">lisp</a><dl><dd>
+<p>
+Runs Lisp as a separate process, with interaction in a Lisp shell buffer.
+<p>
+By default, this command runs Armed Bear Lisp, which comes bundled with j.
+<p>
+If you have <a href="building.html#jpty">jpty</a> installed, you can run a
+different Lisp by supplying an argument to this command. For example, on a
+normal Debian system, you can run SBCL (if it's installed) with Alt X, "lisp
+/usr/bin/sbcl".
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#jlisp">jlisp</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="lispFindMatchingChar">lispFindMatchingChar</a><dl><dd>
+<p>
+Finds the match of the parenthesis at the location of the caret.
+<p>
+<b>Default key mapping:</b> Ctrl M in Lisp mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="lispSelectSyntax">lispSelectSyntax</a><dl><dd>
+<p>
+Selects the syntactic expression in the vicinity of the caret. (If a region is
+already selected, it is extended to the enclosing syntactic expression.)
+<p>
+<b>Default key mapping:</b> Ctrl Shift M in Lisp mode
+<p>
+<b>See also:</b> <a href="#selectSyntax">selectSyntax</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="listBindings">listBindings</a><dl><dd>
+<p>
+Displays a list of the key bindings that are in effect in the current buffer.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="listFiles">listFiles</a><dl><dd>
+<p>
+Displays the List Occurrences output buffer generated by the last invocation
+of <a href="#findInFiles">findInFiles</a>.
+<p>
+<b>Default key mapping:</b> Ctrl Shift L
+<br><br>
+</dl><!--<hr>-->
+
+<a name="listIncludes">listIncludes</a><dl><dd>
+<p>
+Recursively lists all files referenced by a "#include" directive in the
+current buffer or in a file so referenced.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="preferences.html#includePath">includePath</a>,
+<a href="#checkPath">checkPath</a>, <a href="#iList">iList</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="listOccurrences">listOccurrences</a><dl><dd>
+<p>
+Lists all lines in the current buffer that match the last search.
+<p>
+<b>Default key mapping:</b> Ctrl L, Ctrl F3
+<br><br>
+</dl><!--<hr>-->
+
+<a name="listOccurrencesOfPatternAtDot">listOccurrencesOfPatternAtDot</a><dl><dd>
+<p>
+Lists all occurrences in the current buffer of the selected text (if any) or of
+the word at the current location of the caret.
+<p>
+If text is selected on the current line, the selected text is used as the
+pattern for the search, and the search is carried out as if the "whole words
+only" option was not specified.
+<p>
+If there is no selection on the current line, the word at the current location
+of the caret is used as the pattern, and the search is carried out as if
+the "whole words only" option was specified.
+<p>
+The search is case-sensitive (in both cases).
+<p>
+Multi-line selections are not supported.
+<br><br>
+<b>Default key mapping:</b> Ctrl Alt L
+<br><br>
+</dl><!--<hr>-->
+
+<a name="listRegisters">listRegisters</a><dl><dd>
+<p>
+Lists the contents of all registers in use.
+<p>
+Register names must be lower case letters (a-z). The contents of registers
+persist automatically from one j session to the next.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>Abbreviation:</b> lr
+<p>
+<b>See also:</b>
+<a href="#clearRegister">clearRegister</a>,
+<a href="#editRegister">editRegister</a>,
+<a href="#insertRegister">insertRegister</a>,
+<a href="#saveToRegister">saveToRegister</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="listTags">listTags</a><dl><dd>
+<p>
+Lists the tags in the current buffer (generally speaking, a tag is a function
+name). Pressing Enter in the tag list will move the caret to the definition of
+the selected function. See <a href="tags.html">Tags and Tag Files</a>.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="#sidebarListTags">sidebarListTags</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="loadSession">loadSession</a><dl><dd>
+<p>
+Loads a previously saved named session. All currently open buffers are closed
+before the new session is loaded.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="sessions.html">Sessions</a>,
+<a href="#saveSession">saveSession</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="lowerCaseRegion">lowerCaseRegion</a><dl><dd>
+<p>
+Converts all upper case characters in the selected region to lower case.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="#upperCaseRegion">upperCaseRegion</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxCreateFolder">mailboxCreateFolder</a><dl><dd>
+<p><b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxDelete">mailboxDelete</a><dl><dd>
+<p>
+Marks for deletion the tagged messages or the message at the current location
+of the caret.
+<br><br>
+<b>Default key mapping:</b> 'd' in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="#mailboxUndelete">mailboxUndelete</a>,
+<a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxDeleteFolder">mailboxDeleteFolder</a><dl><dd>
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxExpunge">mailboxExpunge</a><dl><dd>
+<p>
+Commits deletions in the current mailbox.
+<p>
+<b>Default key mapping:</b> '$' in Mailbox mode
+<p>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxFlag">mailboxFlag</a><dl><dd>
+<p>
+Toggles the "important" flag of the current message (or set of tagged messages).
+<br><br>
+<b>Default key mapping:</b> 'F' in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="#messageFlag">messageFlag</a>,
+<a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxGetNewMessages">mailboxGetNewMessages</a><dl><dd>
+<p>
+Connects to the server and retrieves any new messages (POP) or message headers
+(IMAP).
+<br><br>
+<b>Default key mapping:</b> 'G' in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxLastMessage">mailboxLastMessage</a><dl><dd>
+<p>
+Moves to the last message in the mailbox.
+<br><br>
+<b>Default key mapping:</b> Ctrl End in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxLimit">mailboxLimit</a><dl><dd>
+<p>
+Prompts for a pattern and limits the messages displayed in the mailbox to
+those matching the specified pattern.
+<br><br>
+If a simple pattern is specified, j looks for a match in the "Subject" and
+"From" fields.
+<br><br>
+A few special patterns are also supported:
+<pre>
+    ~C expression       messages with expression in the "To" or "Cc" field
+    ~D                  deleted messages
+    ~d date1-date2      messages with date sent in the range date1-date2 (see below)
+    ~F                  flagged messages
+    ~N                  new messages
+    ~R                  read messages
+    ~T                  tagged messages
+    ~t expression       messages with expression in the "To" field
+    ~U                  unread messages
+</pre>
+If the expression to be matched contains any upper case letters, the matches
+are exact; otherwise, case is ignored.
+<br><br>
+Dates must be in DD/MM/YY format. Month and year are optional; if omitted,
+they default to the current month and year. If you omit the first date and
+specify "-DD/MM/YY", all messages sent from the beginning of time through the
+specified date will be selected. If you omit the second date and specify
+"DD/MM/YY-", all messages sent from the specified date through the end of time
+will be selected. If you specify a single date with no '-', only messages sent
+on the specified date will be selected.
+<br><br>
+<b>Default key mapping:</b> 'l' (lower case 'L') in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="#mailboxTagPattern">mailboxTagPattern</a>,
+<a href="#mailboxUnlimit">mailboxUnlimit</a>, <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxMarkRead">mailboxMarkRead</a><dl><dd>
+<p>
+Marks the current message (or set of tagged messages) read.
+<br><br>
+<b>Default key mapping:</b> 'M' in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxMarkUnread">mailboxMarkUnread</a><dl><dd>
+<p>
+Marks the current message (or set of tagged messages) unread.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift M in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxMoveToFolder">mailboxMoveToFolder</a><dl><dd>
+<p>
+Moves the current message (or set of tagged messages) to the specified folder.
+Only supported in IMAP mailboxes.
+<br><br>
+<b>Default key mapping:</b> 'm' in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="#mailboxSaveToFolder">mailboxSaveToFolder</a>,
+<a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxReadMessage">mailboxReadMessage</a><dl><dd>
+<p>
+Opens a message buffer to read the message at the current location of the caret.
+<p>
+<b>Default key mapping:</b> Enter, Ctrl Shift G, Double Mouse-1, or Mouse-2 in Mailbox mode
+<p>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxSaveToFolder">mailboxSaveToFolder</a><dl><dd>
+<p>
+Saves the current message (or set of tagged messages) in the specified folder.
+Only supported in IMAP mailboxes.
+<br><br>
+<b>Default key mapping:</b> 's' in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="#mailboxMoveToFolder">mailboxMoveToFolder</a>,
+<a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxStop">mailboxStop</a><dl><dd>
+<p>
+Stops the current background process in a mailbox buffer. Mapped to the Stop
+button on the toolbar in Mailbox mode.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxTag">mailboxTag</a><dl><dd>
+<p>
+Tags or untags the message at the current location of the caret.
+<br><br>
+<b>Default key mapping:</b> 't' in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="#mailboxUntagAll">mailboxUntagAll</a>,
+<a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxTagPattern">mailboxTagPattern</a><dl><dd>
+<p>
+Prompts for a pattern and tags all messages that match the specified pattern.
+<br><br>
+If a simple pattern is specified, j looks for a match in the "Subject" and
+"From" fields.
+<br><br>
+A few special patterns are also supported:
+<pre>
+    ~C expression       messages with expression in the "To" or "Cc" field
+    ~D                  deleted messages
+    ~d date1-date2      messages with date sent in the range date1-date2 (see below)
+    ~F                  flagged messages
+    ~N                  new messages
+    ~R                  read messages
+    ~t expression       messages with expression in the "To" field
+    ~U                  unread messages
+</pre>
+If the expression to be matched contains any upper case letters, the matches
+are exact; otherwise, case is ignored.
+<br><br>
+Dates must be in DD/MM/YY format. Month and year are optional; if omitted,
+they default to the current month and year. If you omit the first date and
+specify "-DD/MM/YY", all messages sent from the beginning of time through the
+specified date will be selected. If you omit the second date and specify
+"DD/MM/YY-", all messages sent from the specified date through the end of time
+will be selected. If you specify a single date with no '-', only messages sent
+on the specified date will be selected.
+<br><br>
+<b>Default key mapping:</b> Ctrl T in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="#mailboxLimit">mailboxLimit</a>,
+<a href="#mailboxUntagAll">mailboxUntagAll</a>, <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxToggleRaw">mailboxToggleRaw</a><dl><dd>
+<p>
+Toggles raw mode for messages in this mailbox. Normally, messages are
+displayed with only the most important headers shown, and MIME-encoded
+messages are decoded. In raw mode, the text of the message is displayed
+exactly as received.
+<br><br>
+<b>Default key mapping:</b> 'R' in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxUndelete">mailboxUndelete</a><dl><dd>
+<p>
+Undeletes the tagged messages or the message at the current location of the
+caret.
+<br><br>
+<b>Default key mapping:</b> 'u' in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="#mailboxDelete">mailboxDelete</a>,
+<a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxUnlimit">mailboxUnlimit</a><dl><dd>
+<p>
+Cancels the limit pattern for the current mailbox, so all messages are listed.
+<br><br>
+<b>Default key mapping:</b> 'L' in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mailboxUntagAll">mailboxUntagAll</a><dl><dd>
+<p>
+Untags all messages in the current mailbox.
+<br><br>
+<b>Default key mapping:</b> 'T' in Mailbox mode
+<br><br>
+<b>See also:</b> <a href="#mailboxTag">mailboxTag</a>,
+<a href="#mailboxTagPattern">mailboxTagPattern</a>, <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="makeTagFile">makeTagFile</a><dl><dd>
+<p>
+Makes a tag file for the current directory. It is normally not necessary to use
+this command explicitly, since tag files are managed automatically.
+See <a href="tags.html">Tags and Tag Files</a>.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="man">man</a><dl><dd>
+<p>
+Prompts for a topic and displays the corresponding man page.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="manFollowLink">manFollowLink</a><dl><dd>
+<p>
+Invokes <a href="#man">man</a> on the cross reference at the location of the
+caret or mouse click.
+<p>
+<b>Default key mapping:</b> Enter, Ctrl Shift G, Double Mouse-1, or Mouse-2 in Man mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messageDelete">messageDelete</a><dl><dd>
+<p>
+Marks the current message deleted and loads the next undeleted message in the
+current message buffer.
+<br><br>
+<b>Default key mapping:</b> 'd' in Message mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messageFlag">messageFlag</a><dl><dd>
+<p>
+Toggles the "important" flag of the current message and loads the next
+undeleted message in the current message buffer.
+<br><br>
+<b>Default key mapping:</b> 'F' in Message mode
+<br><br>
+<b>See also:</b> <a href="#mailboxFlag">mailboxFlag</a>,
+<a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messageForward">messageForward</a><dl><dd>
+<p>
+Opens a mail composition buffer to forward the current message.
+<br><br>
+<b>Default key mapping:</b> 'f' in Message mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messageIndex">messageIndex</a><dl><dd>
+<p>
+Closes the current message buffer and returns to the parent mailbox.
+<br><br>
+<b>Default key mapping:</b> 'i' in Message mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messageMoveToFolder">messageMoveToFolder</a><dl><dd>
+<p>
+Moves the current message to the specified folder. Currently this command is
+only implemented for IMAP folders.
+<br><br>
+<b>Default key mapping:</b> 'm' in Message mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messageNext">messageNext</a><dl><dd>
+<p>
+Loads the next undeleted message in the current message buffer.
+<br><br>
+<b>Default key mapping:</b> 'n' in Message mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messageNextInThread">messageNextInThread</a><dl><dd>
+<p>
+Loads the next message in the current thread into the current message buffer.
+Messages that are marked deleted but not yet expunged are included.
+<br><br>
+<b>Default key mapping:</b> 'N' in Message mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messagePrevious">messagePrevious</a><dl><dd>
+<p>
+Loads the previous undeleted message in the current message buffer.
+<br><br>
+<b>Default key mapping:</b> 'p' in Message mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messagePreviousInThread">messagePreviousInThread</a><dl><dd>
+<p>
+Loads the previous message in the current thread into the current message
+buffer. Messages that are marked deleted but not yet expunged are included.
+<br><br>
+<b>Default key mapping:</b> 'P' in Message mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messageReplyToGroup">messageReplyToGroup</a><dl><dd>
+<p>
+Opens a mail composition buffer to reply to the current message. The reply is
+addressed to the sender and addressees of the original message.
+<br><br>
+<b>Default key mapping:</b> 'g' in Message mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messageReplyToSender">messageReplyToSender</a><dl><dd>
+<p>
+Opens a mail composition buffer to reply to the current message. The reply is
+addressed to the sender of the original message.
+<br><br>
+<b>Default key mapping:</b> 'r' in Message mode
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messageSaveAttachment">messageSaveAttachment</a><dl><dd>
+<p>
+Prompts for a filename and saves the attachment listed on the line containing
+the caret to the specified file.
+<br><br>
+<b>Default key mapping:</b> 's' in Message mode
+<br><br>
+<b>See also:</b> <a href="#messageViewAttachment">messageViewAttachment</a>,
+<a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messageToggleHeaders">messageToggleHeaders</a><dl><dd>
+<p>
+Toggles display of full headers in message buffers.
+<br><br>
+<b>Default key mapping:</b> 'h' in Message mode
+<br><br>
+<b>See also:</b> <a href="#messageToggleRaw">messageToggleRaw</a>,
+<a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messageToggleRaw">messageToggleRaw</a><dl><dd>
+<p>
+Toggles raw mode for the current message (and all messages in the parent
+mailbox). Normally, messages are displayed with only the most important
+headers shown, and MIME-encoded messages are decoded. In raw mode, the text of
+the message is displayed exactly as received.
+<br><br>
+<b>Default key mapping:</b> 'R' in Message mode
+<br><br>
+<b>See also:</b> <a href="#mailboxToggleRaw">mailboxToggleRaw</a>,
+<a href="#messageToggleHeaders">messageToggleHeaders</a>,
+<a href="#messageToggleWrap">messageToggleWrap</a>,
+<a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messageToggleWrap">messageToggleWrap</a><dl><dd>
+<p>
+Toggles word wrap for the current message. Normally, long lines in mail
+messages are wrapped to fit the width of the display. This command only affects
+the rendering of the message; the message itself is not modified.
+<br><br>
+<b>Default key mapping:</b> Ctrl F12 in Message mode
+<br><br>
+<b>See also:</b> <a href="#messageToggleRaw">messageToggleRaw</a>,
+<a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="messageViewAttachment">messageViewAttachment</a><dl><dd>
+<p>
+Opens the attachment listed on the line containing the caret.
+<p>
+<b>Default key mapping:</b> Enter or 'v' in Message mode
+<p>
+<b>See also:</b> <a href="#messageSaveAttachment">messageSaveAttachment</a>,
+<a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mode">mode</a><dl><dd>
+<p>
+Changes the mode of the current buffer. For example, Alt X, "mode diff", or Alt
+X, "mode lisp".
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mouseFindOccurrence">mousefindOccurrence</a><dl><dd>
+<p>
+Jumps to the line in the source file corresponding to the location of the
+mouse click in a List Occurrences buffer.
+<p>
+<b>Default key mapping:</b> Mouse-2 or Double Mouse-1 in List Occurrences buffers
+<p>
+<b>See also:</b> <a href="#findOccurrenceAtDot">findOccurrenceAtDot</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mouseFindTag">mouseFindTag</a><dl><dd>
+<p>
+Jumps to the definition of the function at the location of the mouse click.
+The location of the mouse click is first saved on the marker stack as a
+temporary bookmark, so you can use <a href="#popPosition">popPosition</a>,
+mapped by default to Shift F5, to get back where you came from.
+<p>
+<b>Default key mapping:</b> Mouse-2 in Java, C, C++, Lisp, Scheme and Perl modes
+<p>
+<b>See also:</b> <a href="#findTag">findTag</a>,
+<a href="#findTagAtDot">findTagAtDot</a>,
+<a href="#findTagAtDotOtherWindow">findTagAtDotOtherWindow</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mouseMoveDotToPoint">mouseMoveDotToPoint</a><dl><dd>
+<p>
+Moves the caret to the location of the mouse click.
+<p>
+<b>Default key mapping:</b> Mouse-1
+<p>
+<b>See also:</b> <a href="#mouseSelect">mouseSelect</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mousePaste">mousePaste</a><dl><dd>
+<p>
+If a selection is marked, the contents of the selected region are copied to
+the <a href="killring.html">kill ring</a>, and the region is deselected. Then
+the copied text is inserted at the location of the mouse click.
+<p>
+If no selection is marked, mousePaste is equivalent to
+<a href="#paste">paste</a> at the location of the mouse click.
+<p>
+If the text to be inserted ends with a line separator, it is inserted above
+the line where the mouse click occurred, as if the mouse click were in the
+first column of the line, even if that is not the case. The intention behind
+this is to make it easy to paste whole lines of text (or blocks of lines),
+without having to click exactly at the beginning of the line. If possible, the
+indentation of the inserted lines is corrected to match their new context.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#paste">paste</a>,
+<a href="#cyclePaste">cyclePaste</a>,
+<a href="#pasteColumn">pasteColumn</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mouseSelect">mouseSelect</a><dl><dd>
+<p>
+Selects the region from the caret to the location of the mouse click, or
+adjusts the current selection accordingly.
+<p>
+<b>Default key mapping:</b> Mouse-1
+<p>
+<b>See also:</b> <a href="#mouseMoveDotToPoint">mouseMoveDotToPoint</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="mouseShowContextMenu">mouseShowContextMenu</a><dl><dd>
+<p>
+Displays the context menu (if any) for the current buffer.
+<p>
+<b>Default key mapping:</b> Mouse-3
+<br><br>
+</dl><!--<hr>-->
+
+<a name="movePastCloseAndReindent">movePastCloseAndReindent</a><dl><dd>
+<p>
+Moves the caret past the next unmatched closing parenthesis to the right of its
+current location, inserts a line separator, and indents according to context.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift ) in Java, JavaScript, C, C++ and Lisp modes
+<br><br>
+<b>See also:</b> <a href="#insertParentheses">insertParentheses</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="newBuffer">newBuffer</a><dl><dd>
+<p>
+Creates and activates an empty buffer with no associated file.
+<br><br>
+<b>Default key mapping:</b> Ctrl N
+<br><br>
+</dl><!--<hr>-->
+
+<a name="newFrame">newFrame</a><dl><dd>
+<p>
+Creates a new frame (top-level editor window) displaying the current buffer.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift N
+<br><br>
+</dl><!--<hr>-->
+
+<a name="newline">newline</a><dl><dd>
+<p>
+Inserts a line separator at the location of the caret.
+<br><br>
+<b>Default key mapping:</b> Enter (global default); Ctrl Enter in JavaScript and HTML modes
+<br><br>
+</dl><!--<hr>-->
+
+<a name="newlineAndIndent">newlineAndIndent</a><dl><dd>
+<p>
+Inserts a line separator at the location of the caret and indents according to
+context.
+<br><br>
+<b>Default key mapping:</b> Ctrl J globally, Enter in programming modes
+<br><br>
+</dl><!--<hr>-->
+
+<a name="nextBuffer">nextBuffer</a><dl><dd>
+<p>
+Switches to the next buffer.
+<br><br>
+<b>Default key mapping:</b> Alt Right
+<br><br>
+<b>See also:</b> <a href="#prevBuffer">prevBuffer</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="nextChange">nextChange</a><dl><dd>
+<p>
+Moves to the next group of changed lines (below the position of the caret in
+the current buffer).
+<p>
+<b>Default key mapping:</b> Ctrl Alt N
+<p>
+<b>See also:</b> <a href="#previousChange">previousChange</a>,
+<a href="preferences.html#showChangeMarks">showChangeMarks</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="nextComment">nextComment</a><dl><dd>
+<p>
+Cycles forwards through the history of CVS checkin comments.
+<p>
+<b>Default key mapping:</b> Ctrl N in CVS checkin buffers
+<p>
+<b>See also:</b> <a href="#previousComment">previousComment</a>,
+<a href="#cvsCommit">cvsCommit</a>, <a href="#finish">finish</a>,
+<a href="cvs.html">CVS Support</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="nextError">nextError</a><dl><dd>
+<p>
+Jumps to the location in the source file that corresponds to the next
+compilation error.
+<p>
+<b>Default key mapping:</b> F4
+<p>
+<b>See also:</b> <a href="#previousError">previousError</a>,
+<a href="#thisError">thisError</a>,
+<a href="compilation.html">Compilation Buffers</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="nextFrame">nextFrame</a><dl><dd>
+<p>
+Activates the next frame (top-level editor window).
+<br><br>
+<b>Default key mapping:</b> Alt N
+<br><br>
+</dl><!--<hr>-->
+
+<a name="offset">offset</a><dl><dd>
+<p>
+Reports the current location of the caret as an absolute offset (the number of
+characters from the start of the buffer).
+<br><br>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#jumpToOffset">jumpToOffset</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="openFile">openFile</a><dl><dd>
+<p>
+Sets focus to the edit control in the location bar of the current window,
+where you can enter a filename and press Enter to activate the corresponding
+buffer, if it exists, or else create and activate a new buffer for the
+specified file.
+<br><br>
+If the specified file is not found in the current directory, j will look for it
+first in the <a href="preferences.html#includePath">include path</a> (if it's a
+.h file) and then in the <a href="preferences.html#sourcePath">source path</a>.
+You can define include and source paths in your <a href="preferences.html">preferences</a> file.
+If j can't find the file you specify, you will be asked if you want to create
+it.
+<br><br>
+The edit control supports both history (using the up and down arrow keys) and
+completion (using Tab and Shift Tab).
+<br><br>
+In addition to normal text files, you can open a directory, a .zip or .gz file,
+or a URL (like http://armedbear.org).
+<br><br>
+If you press Enter with no text in the edit control, you will get a directory
+buffer on the current directory.
+<br><br>
+<b>Default key mapping:</b> Ctrl O
+<br><br>
+<b>See also:</b> <a href="directories.html">Directory Buffers</a>.
+<br><br>
+</dl><!--<hr>-->
+
+<a name="openFileInOtherFrame">openFileInOtherFrame</a><dl><dd>
+<p>
+Same as <a href="#openFile">openFile</a>, but the specified file is opened in
+a different (possibly new) frame (top-level editor window). You will be
+prompted to enter the filename in a dialog box, rather than in the location
+bar of the current window.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift O
+<br><br>
+</dl><!--<hr>-->
+
+<a name="openFileInOtherWindow">openFileInOtherWindow</a><dl><dd>
+<p>
+Same as <a href="#openFile">openFile</a>, but the specified file
+is opened in the other window of the current frame. The current window is
+split if necessary.
+<br><br>
+<b>Default key mapping:</b> Ctrl Alt O
+<br><br>
+</dl><!--<hr>-->
+
+<a name="openMailbox">openMailbox</a><dl><dd>
+<p>
+Prompts for a URL and opens the corresponding mailbox. IMAP and POP are
+supported.
+<br><br>
+IMAP URLs look like this:
+<pre>
+    {user@host}folder</pre>
+For example:
+<pre>
+    {peter@annie}inbox
+    {peter@annie}mail/linux-kernel</pre>
+POP URLs look like this:
+<pre>
+    pop://user@host</pre>
+For example:
+<pre>
+    pop://peter@annie
+    pop://pgraves@ix.netcom.com</pre>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="#inbox">inbox</a>, <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="otherWindow">otherWindow</a><dl><dd>
+<p>
+Selects the other window in the current frame.
+<br><br>
+<b>Default key mapping:</b> Alt O
+<br><br>
+</dl><!--<hr>-->
+
+<a name="p4">p4</a><dl><dd>
+<p>
+Executes an arbitrary Perforce command. The Perforce command, together with
+any required flags and arguments, must be supplied as an argument to this
+command. You can use "%" to represent the full pathname of the file associated
+with the current buffer. For example:
+<pre>
+        p4 filelog -l %
+</pre>
+<p>
+or:
+<pre>
+        p4 help commands
+</pre>
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="p4Add">p4Add</a><dl><dd>
+<p>
+Runs the Perforce "add" command on the file associated with the current buffer.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="p4Change">p4Change</a><dl><dd>
+<p>
+Runs the Perforce "change" command.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="p4Diff">p4Diff</a><dl><dd>
+<p>
+Opens a diff output buffer showing the changes between your local copy of the
+file associated with the current buffer and the version in the Perforce
+repository.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="p4DiffDir">p4DiffDir</a><dl><dd>
+<p>
+Opens a diff output buffer showing the changes between the checked-in version
+and your local copy for all files that are open in Perforce.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="p4Edit">p4Edit</a><dl><dd>
+<p>
+Runs the Perforce "edit" command on the file associated with the current
+buffer.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="p4Log">p4Log</a><dl><dd>
+<p>
+Runs the Perforce command "filelog -l" on the file associated with the current
+buffer. The output is displayed in a transient output buffer.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="p4Revert">p4Revert</a><dl><dd>
+<p>
+Runs the Perforce "revert" command on the file associated with the current
+buffer.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="p4Submit">p4Submit</a><dl><dd>
+<p>
+Opens a checkin buffer in which you can compose a Perforce checkin comment for
+the default changelist (or you can use the "-c" option to specify a different
+numbered changelist).
+<p>
+When your comment is ready, you can use the command
+<a href="commands.html#finish">finish</a>, mapped by default to Ctrl Enter in
+the checkin buffer, to complete the checkin operation.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="pageDown">pageDown</a><dl><dd>
+<p>
+Moves the caret down one full screen.
+<br><br>
+<b>Default key mapping:</b> Page Down
+<br><br>
+</dl><!--<hr>-->
+
+<a name="pageDownOtherWindow">pageDownOtherWindow</a><dl><dd>
+<p>
+Moves the caret down one full screen in the other window in the same frame.
+<p>
+<b>Default key mapping:</b> Alt Page Down
+<br><br>
+</dl><!--<hr>-->
+
+<a name="pageUp">pageUp</a><dl><dd>
+<p>
+Moves the caret up one full screen.
+<br><br>
+<b>Default key mapping:</b> Page Up
+<br><br>
+</dl><!--<hr>-->
+
+<a name="pageUpOtherWindow">pageUpOtherWindow</a><dl><dd>
+<p>
+Moves the caret up one full screen in the other window in the same frame.
+<p>
+<b>Default key mapping:</b> Alt Page Up
+<br><br>
+</dl><!--<hr>-->
+
+<a name="paste">paste</a><dl><dd>
+<p>
+The contents of the system clipboard (if any) are appended to the
+<a href="killring.html">kill ring</a>, and then the last item from the
+kill ring (which will be the contents of the system clipboard, if anything was
+there) is inserted at the current location of the caret.
+<p>
+If a block is marked, the inserted text replaces the marked block.
+<p>
+By default, if the text to be inserted ends with a line separator, it is
+inserted above the line containing the caret, as if the caret were in the first
+column of the line, even if that is not the case. The intention behind this is
+to make it easy to cut and paste whole lines of text (or blocks of lines),
+without having to move the caret to the beginning of the line. If possible, the
+indentation of the inserted lines is corrected to match their new context.
+<p>
+You can disable this behavior by setting the property
+<a href="preferences.html#autoPasteLines">autoPasteLines</a> to false. If
+<a href="preferences.html#autoPasteLines">autoPasteLines</a> is false, the
+inserted text is always placed at the exact location of the caret.
+<p>
+<b>Default key mapping:</b> Ctrl V
+<p>
+<b>See also:</b> <a href="#cyclePaste">cyclePaste</a>,
+<a href="#pasteColumn">pasteColumn</a>,
+<a href="#mousePaste">mousePaste</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="pasteColumn">pasteColumn</a><dl><dd>
+<p>
+Inserts the last killed or copied column at the current location of the caret.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#copyRegion">copyRegion</a>,
+<a href="#killRegion">killRegion</a>, <a href="#paste">paste</a>,
+<a href="columns.html">Columns</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="pastePrimarySelection">pastePrimarySelection</a><dl><dd>
+<p>
+Inserts the primary X selection at the current location of the caret or mouse
+click. This command requires Java 1.4 or later and only works on platforms
+that support a primary X selection (e.g. Linux).
+<p>
+<b>Default key mapping:</b> Mouse-2 (on supported platforms)
+<br><br>
+</dl><!--<hr>-->
+
+<a name="playbackMacro">playbackMacro</a><dl><dd>
+<p>
+Plays back previously recorded keystrokes.
+<br><br>
+<b>Default key mapping:</b> F8
+<br><br>
+<b>See also:</b> <a href="#recordMacro">recordMacro</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="popPosition">popPosition</a><dl><dd>
+<p>
+Pops the last position off the marker stack and jumps to that location.
+<br><br>
+<b>Default key mapping:</b> Shift F5
+<br><br>
+<b>See also:</b> <a href="#pushPosition">pushPosition</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="prevBuffer">prevBuffer</a><dl><dd>
+<p>
+Switches to the previous buffer.
+<p>
+<b>Default key mapping:</b> Alt Left
+<p>
+<b>See also:</b> <a href="#nextBuffer">nextBuffer</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="previousChange">previousChange</a><dl><dd>
+<p>
+Moves to the previous group of changed lines (above the position of the caret
+in the current buffer).
+<p>
+<b>Default key mapping:</b> Ctrl Alt P
+<p>
+<b>See also:</b> <a href="#nextChange">nextChange</a>,
+<a href="preferences.html#showChangeMarks">showChangeMarks</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="previousComment">previousComment</a><dl><dd>
+<p>
+Cycles backwards through the history of CVS checkin comments.
+<p>
+<b>Default key mapping:</b> Ctrl P in CVS checkin buffers
+<p>
+<b>See also:</b> <a href="#nextComment">nextComment</a>,
+<a href="#cvsCommit">cvsCommit</a>, <a href="#finish">finish</a>,
+<a href="cvs.html">CVS Support</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="previousError">previousError</a><dl><dd>
+<p>
+Jumps to the location in the source file that corresponds to the previous
+compilation error.
+<p>
+<b>Default key mapping:</b> Shift F4
+<p>
+<b>See also:</b> <a href="#nextError">nextError</a>,
+<a href="#thisError">thisError</a>,
+<a href="compilation.html">Compilation Buffers</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="print">print</a><dl><dd>
+<p>
+Prints the selected region, or the current buffer if no region is selected.
+<p>
+<b>Default key mapping:</b> Ctrl P
+<br><br>
+</dl><!--<hr>-->
+
+<a name="properties">properties</a><dl><dd>
+<p>
+Invokes the Properties dialog, which lets you inspect and modify
+buffer-specific settings such as tab width, indent size, and mode.
+<p>
+<b>Default key mapping:</b> Alt P
+<br><br>
+</dl><!--<hr>-->
+
+<a name="pushPosition">pushPosition</a><dl><dd>
+<p>
+Saves the current location of the caret on the marker stack as a temporary bookmark.
+<br><br>
+<b>Default key mapping:</b> F5
+<br><br>
+<b>See also:</b> <a href="#popPosition">popPosition</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="quit">quit</a><dl><dd>
+<p>
+Shuts down the editor. You will be prompted for confirmation if there are any
+buffers with unsaved changes.
+<br><br>
+<b>Default key mapping:</b> Ctrl Q
+<br><br>
+<b>See also:</b> <a href="#saveAllExit">saveAllExit</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="recompile">recompile</a><dl><dd>
+<p>
+Compiles the source file in the current buffer, using the last specified
+compile command. (On Windows, this command is only supported for Windows NT 4,
+Windows 2000 and Windows XP.)
+<p>
+<b>Default key mapping:</b> Ctrl F9
+<p>
+<b>See also:</b> <a href="#compile">compile</a>,
+<a href="compilation.html">Compilation Buffers</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="recordMacro">recordMacro</a><dl><dd>
+<p>
+Records keystrokes for later playback. Recording ends when this command is
+invoked again. While recording is in progress, "REC" is displayed in the
+status bar (at the right end, after the column number).
+<br><br>
+<b>Default key mapping:</b> F7
+<br><br>
+<b>See also:</b> <a href="#playbackMacro">playbackMacro</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="redo">redo</a><dl><dd>
+<p>
+Undoes the last undo.
+<br><br>
+<b>Default key mapping:</b> Ctrl Y
+<br><br>
+<b>See also:</b> <a href="#undo">undo</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="reloadKeyMaps">reloadKeyMaps</a><dl><dd>
+<p>
+Reloads all configured key maps. If no custom key maps are configured, j's
+internal default key maps will be used. Ad hoc mappings (including mappings
+made in <a href="init.lisp.html">init.lisp</a>) are discarded.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="#defaultKeyMaps">defaultKeyMaps</a>,
+<a href="preferences.html#autoReloadKeyMaps">autoReloadKeyMaps</a>,
+<a href="keys.html">Key Mappings</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="renumberRegion">renumberRegion</a><dl><dd>
+<p>
+Changes the first number in each line of the selected region so that the it is
+one more than the first number in the preceding line. By default, the smallest
+value in the entire region is used as the value for the first line. The order
+of the lines is not changed. Only the first number in each line is considered,
+and lines that don't contain a number at all are ignored.
+<p>
+For example, suppose you start with a region that looks like this:
+<pre>
+        private static final int DEFUN       = 52;
+        private static final int DEFVAR      = 6;
+        private static final int DO          = 17;
+        private static final int DOLIST      = 81; // Not 82!
+        private static final int IF          = 9;
+        private static final int LAMBDA      = 1;
+        private static final int LET         = 3;</pre>
+When invoked with no arguments, renumberRegions starts by looking at the first
+number in each line of the region to find the smallest value (which in this
+case is 1). The first number in the first line of the region (52) is replaced
+with this value (1), and the first number in each subsequent line is changed so
+that it is one more than the first number on the preceding line. So the region
+ends up looking like this:
+<pre>
+        private static final int DEFUN       = 1;
+        private static final int DEFVAR      = 2;
+        private static final int DO          = 3;
+        private static final int DOLIST      = 4; // Not 82!
+        private static final int IF          = 5;
+        private static final int LAMBDA      = 6;
+        private static final int LET         = 7;</pre>
+You can also explicitly specify what number to start with by providing a
+numeric argument with the command. For example, if you do Alt X,
+"renumberRegion 100", the region ends up looking like this:
+<pre>
+        private static final int DEFUN       = 100;
+        private static final int DEFVAR      = 101;
+        private static final int DO          = 102;
+        private static final int DOLIST      = 103; // Not 82!
+        private static final int IF          = 104;
+        private static final int LAMBDA      = 105;
+        private static final int LET         = 106;</pre>
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#sortLines">sortLines</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="replace">replace</a><dl><dd>
+<p>
+Replaces one or more occurrences of one pattern with another.
+<p>
+If the "Ignore case" checkbox is checked, j tries, paradoxically, to preserve
+case, if possible, when it makes a replacement. More precisely, if the pattern
+is all upper case, j will make the replacement all upper case, and if the
+pattern begins with an upper case letter, j will make the replacement begin
+with an upper case letter. For example, if the pattern is "javaFormatter" and
+the replacement is "cppFormatter", "JAVAFORMATTER" will become "CPPFORMATTER",
+and "JavaFormatter" will  become "CppFormatter". These are the only two
+situations in which the replacement string is altered to preserve case.
+Upper-case letters in the replacement string are NEVER converted to lower case.
+This may seem strange, but in practice, chances are good that this is the
+behavior you want.
+<p>
+If the "Whole words only" checkbox is checked, occurrences of the pattern will
+be replaced only if they are delimited by characters that cannot appear in a
+Java identifier. Generally speaking, Java identifiers can contain letters,
+digits, and the characters '$' and '_'.
+<p>
+If the "Regular expressions" checkbox is checked, the pattern will be
+interpreted as a regular expression rather than as a literal string. In
+addition, the replacement string can refer to all or part of what is matched by
+the pattern. "\&amp;" in the replacement string will be replaced with the
+entire string that matched the pattern. "\<i>n</i>", where <i>n</i> is a digit
+from 1 to 9, will be replaced by whatever matched the <i>n</i>th
+parenthesized grouping in the pattern.
+See <a href="regexp.html">Regular Expressions</a>.
+<p>
+For example, if you specify this pattern:
+<pre>
+    foo\((.*), (.*)\)
+</pre>
+and this replacement:
+<pre>
+    foo(\2, \1)
+</pre>
+the effect would be to reverse the order of the arguments in every call to the
+function foo. Note that you need to escape the literal parentheses in the
+pattern, but not in the replacement.
+<p>
+If the "Multiline pattern" checkbox is checked, both the regular expression
+and the replacement can contain newline characters ("\n"). Because of the way
+j handles things internally, a single "\n" should be used to match a newline
+even if the file being edited uses "\r\n" or "\r" as its line separator
+string. (The "Multiline pattern" feature is experimental and is not enabled by
+default.)
+<p>
+If the "Restrict changes to selected text" checkbox is checked, only those
+occurrences of the pattern that fall within the current selection are replaced.
+Otherwise, if a block is marked, replacements are carried out starting at the
+beginning of the marked block.
+<p>
+If the "Confirm changes" checkbox is checked, you will be prompted to confirm
+each replacement.
+<br><br>
+<b>Default key mapping:</b> Ctrl R
+<br><br>
+</dl><!--<hr>-->
+
+<a name="replaceInFiles">replaceInFiles</a><dl><dd>
+<p>
+Replaces one or more occurrences of one pattern with another in multiple files.
+If a file matching the file specification is already loaded in a buffer, the
+operation is performed on the contents of the buffer rather than the file as
+last saved on disk, so unsaved changes to the buffer are never lost. Files that
+were not previously loaded are saved automatically if any replacements are
+made. Buffers created specifically for the replace in files operation are
+deleted when they are no longer needed.
+<p>
+Several file specifications can be supplied at once, separated by semicolons.
+If the full path is not given in a file specification, the current directory or
+the directory last specified by a full path is used.
+<p>
+For example, if the file specification is <code>*.c;/usr/src/emacs-20.3/src/*.c;*.h</code>,
+the search will examine <code>.c</code> files in the current directory and
+<code>.c</code> and <code>.h</code> files in <code>/usr/src/emacs-20.3/src</code>.
+<p>
+If the "Ignore case" checkbox is checked, j tries, paradoxically, to preserve
+case, if possible, when it makes a replacement. More precisely, if the pattern
+is all upper case, j will make the replacement all upper case, and if the
+pattern begins with an upper case letter, j will make the replacement begin
+with an upper case letter. For example, if the pattern is "javaFormatter" and
+the replacement is "cppFormatter", "JAVAFORMATTER" will become "CPPFORMATTER",
+and "JavaFormatter" will  become "CppFormatter". These are the only two
+situations in which the replacement string is altered to preserve case.
+Upper-case letters in the replacement string are NEVER converted to lower case.
+This may seem strange, but in practice, chances are good that this is the
+behavior you want.
+<p>
+If the "Whole words only" checkbox is checked, occurrences of the pattern will
+be replaced only if they are delimited by characters that cannot appear in a
+Java identifier. Generally speaking, Java identifiers can contain letters,
+digits, and the characters '$' and '_'.
+<p>
+If the "Regular expressions" checkbox is checked, the pattern is interpreted
+as a regular expression rather than as a literal string. In addition, the
+replacement string can refer to all or part of what is matched by the pattern.
+"\&amp;" in the replacement string will be replaced with the entire string
+that matched the pattern. "\<i>n</i>", where <i>n</i> is a digit from 1 to 9,
+will be replaced by whatever matched the <i>n</i>th parenthesized grouping in
+the pattern. See <a href="regexp.html">Regular Expressions</a>.
+<p>
+For example, if you specify this pattern:
+<pre>
+        foo\((.*), (.*)\)
+</pre>
+and this replacement:
+<pre>
+        foo(\2, \1)
+</pre>
+the effect is to reverse the order of the arguments in every call to the
+function foo. Note that you need to escape the literal parentheses in the
+pattern, but not in the replacement string.
+<p>
+If the "Confirm changes" checkbox is checked, you will be prompted to confirm
+each replacement.
+<p>
+<b>Default key mapping:</b> Ctrl Shift R
+<p>
+<b>See also:</b> <a href="#findInFiles">findInFiles</a>, <a href="#replace">replace</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="resetDisplay">resetDisplay</a><dl><dd>
+<p>
+Resets and repaints all edit windows.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="resetLisp">resetLisp</a><dl><dd>
+<p>
+Resets the current Lisp shell so that it returns to the outermost read-eval-
+print loop.
+<p>
+This command works with Lisp shells running CMUCL, SBCL, CLISP, Allegro Common
+Lisp, or j's built-in Lisp.
+<p>
+<b>Default key mapping:</b> Ctrl R in Lisp Shell mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="revertBuffer">revertBuffer</a><dl><dd>
+<p>
+Reloads the current buffer. If the buffer has unsaved changes, you will be
+prompted for confirmation before they are discarded.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="right">right</a><dl><dd>
+<p>
+Moves the caret one character to the right.
+<p>
+<b>Default key mapping:</b> Right arrow key
+<br><br>
+</dl><!--<hr>-->
+
+<a name="save">save</a><dl><dd>
+<p>
+Saves the current buffer, if it has been modified. If it's a new buffer,
+<b>saveAs</b> is invoked so you can provide a filename.
+<p>
+<b>Default key mapping:</b> Ctrl S
+<br><br>
+</dl><!--<hr>-->
+
+<a name="saveAll">saveAll</a><dl><dd>
+<p>
+Saves all modified buffers. <code>saveAs</code> is invoked for new buffers so
+you can provide filenames if necessary.
+<p>
+<b>Default key mapping:</b> F2
+<br><br>
+</dl><!--<hr>-->
+
+<a name="saveAllExit">saveAllExit</a><dl><dd>
+<p>
+Saves all modified buffers and shuts down the editor. <code>saveAs</code> is
+invoked for new buffers so you can provide filenames if necessary.
+<p>
+<b>Default key mapping:</b> Ctrl Shift Q
+<p>
+<b>See also:</b> <a href="#quit">quit</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="saveAs">saveAs</a><dl><dd>
+<p>
+Saves the current buffer under a new name. The file (if any) that was
+previously associated with the buffer is not deleted, but the buffer is
+henceforth associated with the new file. The buffer's mode is changed, if
+necessary, to match the new filename.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift S
+<br><br>
+</dl><!--<hr>-->
+
+<a name="saveCopy">saveCopy</a><dl><dd>
+<p>
+Saves a copy of the current buffer under a new name. The buffer continues to be
+associated with its original file.
+<br><br>
+<b>Default key mapping:</b> Ctrl Alt S
+<br><br>
+</dl><!--<hr>-->
+
+<a name="saveSession">saveSession</a><dl><dd>
+<p>
+Saves information about the current editing session in the active named
+session file.
+<p>
+If no named session is active, you will be prompted for a name for the current
+session.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="sessions.html">Sessions</a>,
+<a href="#loadSession">loadSession</a>,
+<a href="preferences.html#autosaveNamedSessions">autosaveNamedSessions</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="saveToRegister">saveToRegister</a><dl><dd>
+<p>
+Prompts for a register name and saves the selected region in the specified
+register.
+<p>
+Register names must be lower case letters (a-z). The contents of registers
+persist automatically from one j session to the next.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>Abbreviation:</b> sr
+<p>
+<b>See also:</b> <a href="#clearRegister">clearRegister</a>,
+<a href="#editRegister">editRegister</a>,
+<a href="#insertRegister">insertRegister</a>
+<a href="#listRegisters">listRegisters</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectAll">selectAll</a><dl><dd>
+<p>
+Selects the entire buffer. The current location of the caret is first saved on
+the marker stack as a temporary bookmark, so you can use
+<a href="#popPosition">popPosition</a>, mapped by default to Shift F5, to get
+back where you came from.
+<p>
+<b>Default key mapping:</b> Ctrl A
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectBob">selectBob</a><dl><dd>
+<p>
+Extends the selection to the beginning of the buffer.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift Home
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectDown">selectDown</a><dl><dd>
+<p>
+Extends the selection down one line.
+<br><br>
+<b>Default key mapping:</b> Shift down arrow
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectEnd">selectEnd</a><dl><dd>
+<p>
+Extends the selection to the end of the current line.
+<br><br>
+<b>Default key mapping:</b> Shift End
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectEob">selectEob</a><dl><dd>
+<p>
+Extends the selection to the end of the buffer.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift End
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectHome">selectHome</a><dl><dd>
+<p>
+Extends the selection to the beginning of the current line.
+<br><br>
+<b>Default key mapping:</b> Shift Home
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectLeft">selectLeft</a><dl><dd>
+<p>
+Extends the selection one character to the left.
+<p>
+<b>Default key mapping:</b> Shift Left
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectPageDown">selectPageDown</a><dl><dd>
+<p>
+Extends the selection down one full screen.
+<p>
+<b>Default key mapping:</b> Shift Page Down
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectPageUp">selectPageUp</a><dl><dd>
+<p>
+Extends the selection up one full screen.
+<p>
+<b>Default key mapping:</b> Shift Page Up
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectRight">selectRight</a><dl><dd>
+<p>
+Extends the selection one character to the right.
+<p>
+<b>Default key mapping:</b> Shift Right
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectSyntax">selectSyntax</a><dl><dd>
+<p>
+Selects the syntactic expression in the vicinity of the caret.
+<p>
+<b>Default key mapping:</b> Ctrl Shift M
+<p>
+<b>See also:</b> <a href="#lispSelectSyntax">lispSelectSyntax</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectToMarker">selectToMarker</a><dl><dd>
+<p>
+Selects the region from the current location of the caret to the specified
+marker (bookmark).
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="#dropBookmark">dropBookmark</a>,
+<a href="#gotoBookmark">gotoBookmark</a>,
+<a href="#selectToTemporaryMarker">selectToTemporaryMarker</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectToTemporaryMarker">selectToTemporaryMarker</a><dl><dd>
+<p>
+Selects the region from the current location of the caret to the temporary
+marker.
+<p>
+<b>Default key mapping:</b> Ctrl Shift \
+<p>
+<b>See also:</b> <a href="#dropTemporaryMarker">dropTemporaryMarker</a>,
+<a href="#gotoTemporaryMarker">gotoTemporaryMarker</a>,
+<a href="#selectToMarker">selectToMarker</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectUp">selectUp</a><dl><dd>
+<p>
+Extends the selection up one line.
+<br><br>
+<b>Default key mapping:</b> Shift up arrow
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectWord">selectWord</a><dl><dd>
+<p>
+Selects the word at the location of the caret or mouse click.
+<p>
+<b>Default key mapping:</b> Alt W or Double Mouse-1
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectWordLeft">selectWordLeft</a><dl><dd>
+<p>
+Extends the selection to the left by one word.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift Left
+<br><br>
+</dl><!--<hr>-->
+
+<a name="selectWordRight">selectWordRight</a><dl><dd>
+<p>
+Extends the selection to the right by one word.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift Right
+<br><br>
+</dl><!--<hr>-->
+
+<a name="send">send</a><dl><dd>
+<p>
+In a mail composition buffer, sends the current message.
+<br><br>
+<b>Default key mapping:</b> None.
+<br><br>
+<b>See also:</b> <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="sendMailBackTab">sendMailBackTab</a><dl><dd>
+<p>
+Goes back to the previous field in the header area of a mail composition buffer.
+<p>
+<b>Default key mapping:</b> Shift Tab in mail composition buffers
+<p>
+<b>See also:</b> <a href="#sendMailTab">sendMailTab</a>, <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="sendMailTab">sendMailTab</a><dl><dd>
+<p>
+Advances to the next field in the header area of a mail composition buffer.
+<p>
+<b>Default key mapping:</b> Tab in mail composition buffers
+<p>
+<b>See also:</b> <a href="#sendMailBackTab">sendMailBackTab</a>, <a href="mail.html">Mail</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="setEncoding">setEncoding</a><dl><dd>
+<p>
+Sets the character encoding to be used when the current buffer is saved. The
+encoding name that you specify (e.g. "ISO-8859-1", "UTF-8", "UTF-16",
+"UnicodeBig", etc.) must be supported by the version of Java that you're
+using; the string is not case-sensitive.
+<p>
+Java recognizes both canonical names and aliases for a variety of encodings,
+and to make things more interesting, there are significant variations in this
+area among the different versions of Java. More information from the
+perspective of Java 1.4 is available here:
+<pre>
+        http://java.sun.com/j2se/1.4/docs/guide/intl/encoding.doc.html</pre>
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="shellCommand">shellCommand</a><dl><dd>
+<p>
+Prompts for a shell command and then executes that command using /bin/sh. The
+output of the command (if any) is presented in a transient output buffer.
+<p>
+The specified shell command is executed in the editor's current directory,
+which is normally the parent directory of the file associated with the current
+buffer, or the user's home directory if the current file is remote or if there
+is no file associated with the current buffer.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="shellEscape">shellEscape</a><dl><dd>
+<p>
+In a shell buffer, if a selection is marked, clears it.  Otherwise, if the
+caret is on the command line, clears any text past the end of the command
+prompt and moves the caret to the end of the prompt.
+<p>
+<b>Default key mapping:</b> Escape in Shell mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="shellHome">shellHome</a><dl><dd>
+<p>
+In a shell buffer, if the current line begins with a prompt, and if the caret
+is to the right of the prompt, moves the caret to the end of prompt.  Otherwise,
+moves the caret to the beginning of the current line.
+<p>
+<b>Default key mapping:</b> Home in Shell mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="shellNextInput">shellNextInput</a><dl><dd>
+<p>
+Retrieves the next command from input history in a shell buffer.
+<p>
+<b>Default key mapping:</b> Ctrl N in Shell mode
+<p>
+<b>See also:</b> <a href="#shellPreviousInput">shellPreviousInput</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="shellNextPrompt">shellNextPrompt</a><dl><dd>
+<p>
+Moves the caret to the next prompt in a shell buffer.
+<p>
+<b>Default key mapping:</b> Ctrl Alt N in Shell mode
+<p>
+<b>See also:</b> <a href="#shellPreviousPrompt">shellPreviousPrompt</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="shellPreviousInput">shellPreviousInput</a><dl><dd>
+<p>
+Retrieves the previous command from input history in a shell buffer.
+<p>
+<b>Default key mapping:</b> Ctrl P in Shell mode
+<p>
+<b>See also:</b> <a href="#shellNextInput">shellNextInput</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="shellPreviousPrompt">shellPreviousPrompt</a><dl><dd>
+<p>
+Moves the caret to the previous prompt in a shell buffer.
+<p>
+<b>Default key mapping:</b> Ctrl Alt P in Shell mode
+<p>
+<b>See also:</b> <a href="#shellNextPrompt">shellNextPrompt</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="shellTab">shellTab</a><dl><dd>
+<p>
+Completes pending input.
+<br><br>
+<b>Default key mapping:</b> Tab in Shell mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="showMessage">showMessage</a><dl><dd>
+<p>
+Displays the current compiler or XML parser error message.
+<p>
+<b>Default key mapping:</b> Ctrl Alt M
+<p>
+<b>See also:</b> <a href="#xmlParseBuffer">xmlParseBuffer</a>,
+<a href="#xmlValidateBuffer">xmlValidateBuffer</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="sidebarListBuffers">sidebarListBuffers</a><dl><dd>
+<p>
+Displays (and sets keyboard focus to) the sidebar buffer list.
+<br><br>
+<b>Default key mapping:</b> Alt B
+<br><br>
+</dl><!--<hr>-->
+
+<a name="sidebarListTags">sidebarListTags</a><dl><dd>
+<p>
+Displays (and sets keyboard focus to) the sidebar tag list, if the current
+buffer supports tags.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift T
+<br><br>
+</dl><!--<hr>-->
+
+<a name="slideIn">slideIn</a><dl><dd>
+<p>
+Moves all text in the marked region <code>indentSize</code> columns to the right.
+<code>indentSize</code> is a buffer-specific setting and may be inspected and
+modified in the Properties dialog (see <a href="#properties">properties</a>).
+<br><br>
+<b>Default key mapping:</b> Alt ]
+<br><br>
+</dl><!--<hr>-->
+
+<a name="slideOut">slideOut</a><dl><dd>
+<p>
+Moves all text in the marked region <code>indentSize</code> columns to the left.
+<code>indentSize</code> is a buffer-specific setting and may be inspected and
+modified in the Properties dialog (see <a href="#properties">properties</a>).
+<br><br>
+<b>Default key mapping:</b> Alt [
+<br><br>
+</dl><!--<hr>-->
+
+<a name="sortLines">sortLines</a><dl><dd>
+<p>
+Sorts the lines in the selected region in ascending lexicographic order, based
+on the Unicode value of the characters in each line.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="source">source</a><dl><dd>
+<p>
+Finds the source of the Java class at the current location of the caret.
+<p>
+You can also use <a href="commands.html#executeCommand">executeCommand</a> and
+specify the name of the class along with the command:
+<pre>
+        source javax.swing.JFrame</pre>
+If the class is properly imported in the current buffer, the simple name is
+enough:
+<pre>
+        source JFrame</pre>
+<p>
+For this command to work properly, you need to specify the location of the JDK
+source on your system by adding a line like this to your
+<a href="preferences.html">preferences</a> file:
+<pre>
+        jdkSourcePath = /home/peter/sun/j2sdk1.4.0/src</pre>
+<b>Default key mapping:</b> Ctrl F1 in Java mode
+<p>
+<b>See also:</b> <a href="preferences.html#jdkSourcePath">jdkSourcePath</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="splitWindow">splitWindow</a><dl><dd>
+<p>
+Splits the current window horizontally. Only one split per frame is currently
+supported.
+<p>
+<b>Default key mapping:</b> F10
+<br><br>
+</dl><!--<hr>-->
+
+<a name="stamp">stamp</a><dl><dd>
+<p>
+Inserts the current date and time at the location of the caret.
+<p>
+The format of the inserted string is controlled by the
+<a href="preferences.html#stampFormat">stampFormat</a> property.
+<p>
+<b>Default key mapping:</b> Shift F2
+<br><br>
+</dl><!--<hr>-->
+
+<a name="tab">tab</a><dl><dd>
+<p>
+If a multi-line region is selected, or if the property <a href="preferences.html#tabAlwaysIndent">tabAlwaysIndent</a>
+is true, this command simply calls <a href="commands.html#indentLineOrRegion">indentLineOrRegion</a>.
+<p>
+Otherwise (i.e. no multi-line selection, <a href="preferences.html#tabAlwaysIndent">tabAlwaysIndent</a> is
+false), the behavior depends on the location of the caret.
+<p>
+If the caret is at the very beginning of the text on the line, or in the
+whitespace to the left of the text, <a href="commands.html#tab">tab</a> calls <a href="commands.html#indentLine">indentLine</a>.
+If the caret is in the midst of the actual text on the line, <a href="commands.html#tab">tab</a>
+inserts either a single tab character or the equivalent number of spaces,
+depending on the setting of the <a href="preferences.html#useTabs">useTabs</a> property.
+<p>
+<b>Default key mapping:</b> Tab (in programming modes)
+<p>
+<b>See also:</b> <a href="#insertTab">insertTab</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="tempBufferQuit">tempBufferQuit</a><dl><dd>
+<p>
+Closes the current temporary output buffer and (if applicable) its window.
+<p>
+<b>Default key mapping:</b> 'q' in most temporary output buffers
+<br><br>
+</dl><!--<hr>-->
+
+<a name="thisError">thisError</a><dl><dd>
+<p>
+Jumps to the location in the source file that corresponds to the error message
+at the current location in the compilation buffer.
+<p>
+<b>Default key mapping:</b> Enter, Ctrl Shift G, Double Mouse-1 or Mouse-2 in
+compilation buffers
+<p>
+<b>See also:</b> <a href="#nextError">nextError</a>,
+<a href="#previousError">previousError</a>,
+<a href="compilation.html">Compilation Buffers</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="toCenter">toCenter</a><dl><dd>
+<p>
+Moves the line containing the caret to the center of the window.
+<br><br>
+<b>Default key mapping:</b> Ctrl -
+<br><br>
+</dl><!--<hr>-->
+
+<a name="toggleGroupByThread">toggleGroupByThread</a><dl><dd>
+<p>
+Toggles the grouping of entries by thread in the current mailbox.
+<p>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="toggleSidebar">toggleSidebar</a><dl><dd>
+<p>
+Toggles the sidebar.
+<br><br>
+<b>Default key mapping:</b> Alt =
+<br><br>
+</dl><!--<hr>-->
+
+<a name="toggleWrap">toggleWrap</a><dl><dd>
+<p>
+Toggles automatic word wrap in the current buffer. When automatic wrap is on,
+j automatically wraps long lines as you type them, when your caret advances
+past the wrap column.
+<br><br>
+<b>Default key mapping:</b> Ctrl F12
+<br><br>
+<b>See also:</b> <a href="preferences.html#wrapCol">wrapCol</a>,
+<a href="#wrapParagraph">wrapParagraph</a>, <a href="#wrapRegion">wrapRegion</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="top">top</a><dl><dd>
+<p>
+Moves the caret to the top line of the display, keeping it in the same column.
+<br><br>
+<b>Default key mapping:</b> Ctrl Page Up
+<br><br>
+</dl><!--<hr>-->
+
+<a name="toTop">toTop</a><dl><dd>
+<p>
+Moves the line containing the caret to the top of the window.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift -
+<br><br>
+</dl><!--<hr>-->
+
+<a name="uncommentRegion">uncommentRegion</a><dl><dd>
+<p>
+Uncomments each line in the selected region, or the current line if no region is selected.
+<br><br>
+<b>Default key mapping:</b> Shift F11
+<br><br>
+<b>See also:</b> <a href="#commentRegion">commentRegion</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="undo">undo</a><dl><dd>
+<p>
+Undoes the last editing action or actions. Generally speaking, movement within
+the buffer and simple edits on the same line are grouped for the purposes of
+undo.
+<p>
+If you undo through a save, the file saved on disk will not be affected by the
+undo.
+<p>
+<b>Default key mapping:</b> Ctrl Z, Alt Backspace
+<p>
+<b>See also:</b> <a href="#redo">redo</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="unfold">unfold</a><dl><dd>
+<p>
+Unfolds the current fold.
+<br><br>
+<b>Default key mapping:</b> Ctrl ] in Java, C, C++ and Perl modes
+<br><br>
+<b>See also:</b> <a href="#fold">fold</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="unfoldAll">unfoldAll</a><dl><dd>
+<p>
+Unfolds all the folds in the current buffer.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="#fold">fold</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="unsplitWindow">unsplitWindow</a><dl><dd>
+<p>
+Makes the current window fill its frame, closing the other window in the
+current frame.
+<br><br>
+<b>Default key mapping:</b> Shift F10
+<br><br>
+</dl><!--<hr>-->
+
+<a name="unwrapParagraph">unwrapParagraph</a><dl><dd>
+<p>
+Removes line breaks from the current paragraph, making it into one lone line.
+<br><br>
+<b>Default key mapping:</b> Shift F12
+<br><br>
+<b>See also:</b> <a href="#wrapParagraph">wrapParagraph</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="up">up</a><dl><dd>
+<p>
+Moves the caret up one line.
+<br><br>
+<b>Default key mapping:</b> Up arrow
+<br><br>
+</dl><!--<hr>-->
+
+<a name="upperCaseRegion">upperCaseRegion</a><dl><dd>
+<p>
+Converts all upper case characters in the selected region to lower case.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="#lowerCaseRegion">lowerCaseRegion</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="visibleTabs">visibleTabs</a><dl><dd>
+<p>
+Toggles the visibility of tab characters in the buffer. By default, tabs are
+not visible, and are displayed using the appropriate number of space
+characters, as you would expect. When you turn on visible tabs, tab characters
+are indicated by the character '^'.
+<br><br>
+<b>Default key mapping:</b> Ctrl Alt T
+<br><br>
+</dl><!--<hr>-->
+
+<a name="whatChar">whatChar</a><dl><dd>
+<p>
+Displays decimal, hex and character equivalents for the character at
+the current location of the caret.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="whereIs">whereIs</a><dl><dd>
+<p>
+Displays information about the keys mapped to a particular command.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="windowDown">windowDown</a><dl><dd>
+<p>
+Moves the window down one line (so that the text seems to move up one line),
+without changing the location of the caret.
+<br><br>
+<b>Default key mapping:</b> Ctrl Down
+<br><br>
+</dl><!--<hr>-->
+
+<a name="windowUp">windowUp</a><dl><dd>
+<p>
+Moves the window up one line (so that the text seems to move down one line),
+without changing the location of the caret.
+<br><br>
+<b>Default key mapping:</b> Ctrl Up
+<br><br>
+</dl><!--<hr>-->
+
+<a name="wordLeft">wordLeft</a><dl><dd>
+<p>
+Moves the caret to the beginning of the current word, or, if the caret is
+already at the beginning of the current word, to the beginning of the previous word.
+<br><br>
+<b>Default key mapping:</b> Ctrl Left
+<br><br>
+</dl><!--<hr>-->
+
+<a name="wordRight">wordRight</a><dl><dd>
+<p>
+Moves the caret to the beginning of the next word.
+<br><br>
+<b>Default key mapping:</b> Ctrl Right
+<br><br>
+</dl><!--<hr>-->
+
+<a name="wrapComment">wrapComment</a><dl><dd>
+<p>
+Wraps all the lines in the current multi-line comment at the wrap column,
+which by default is column 80. The wrap column is controlled by the property
+<a href="preferences.html#wrapCol">wrapCol</a>, which is a buffer-specific
+setting that may be inspected and modified in the Properties dialog (see
+<a href="#properties">properties</a>). You can set global and mode-specific
+defaults for <a href="preferences.html#wrapCol">wrapCol</a> in your
+<a href="preferences.html">preferences</a> file.
+<br><br>
+<b>Default key mapping:</b> F12 in Java, Lisp, C, C++ and Perl modes
+<br><br>
+<b>See also:</b> <a href="#wrapParagraph">wrapParagraph</a>,
+<a href="#wrapRegion">wrapRegion</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="wrapParagraph">wrapParagraph</a><dl><dd>
+<p>
+Wraps all the lines in the current paragraph at the wrap column, which by
+default is column 80. The wrap column is controlled by the property
+<a href="preferences.html#wrapCol">wrapCol</a>, which is a buffer-specific
+setting that may be inspected and modified in the Properties dialog (see
+<a href="#properties">properties</a>). You can set global and mode-specific
+defaults for <a href="preferences.html#wrapCol">wrapCol</a> in your
+<a href="preferences.html">preferences</a> file.
+<p>
+A paragraph is basically defined as a block of contiguous lines with blank
+lines before and after it. To make the definition a bit more flexible,
+a line starting with &lt;p&gt;, &lt;br&gt; or &lt;pre&gt; is recognized as the
+first line of a paragraph, even if the line before it is not blank. Similarly,
+a line ending with &lt;p&gt;, &lt;/p&gt;, &lt;br&gt; or
+&lt;/pre&gt; is recognized as the last line of a paragraph, even if the line after it is not
+blank.
+<p>
+This function does not move the caret, so you can reformat the
+paragraph and immediately continue typing right where you left off.
+<p>
+<b>Default key mapping:</b> F12
+<p>
+<b>See also:</b> <a href="#unwrapParagraph">unwrapParagraph</a>,
+<a href="#wrapComment">wrapComment</a>, <a href="#wrapRegion">wrapRegion</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="wrapParagraphsInRegion">wrapParagraphsInRegion</a><dl><dd>
+<p>
+Calls <a href="#wrapParagraph">wrapParagraph</a> on all the paragraphs in the
+selected region (or on all the paragraphs in the buffer if no region is
+selected).
+<p>
+<b>Default key mapping:</b> Ctrl Shift F12 in plain text and mail composition buffers
+<br><br>
+<b>See also:</b> <a href="#wrapParagraph">wrapParagraph</a>,
+<a href="#wrapRegion">wrapRegion</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="wrapRegion">wrapRegion</a><dl><dd>
+<p>
+Wraps all the lines in the selected region at the wrap column, which by
+default is column 80. The wrap column is controlled by the property
+<a href="preferences.html#wrapCol">wrapCol</a>, which is a buffer-specific
+setting that may be inspected and modified in the Properties dialog (see
+<a href="#properties">properties</a>). You can set global and mode-specific
+defaults for <a href="preferences.html#wrapCol">wrapCol</a> in your
+<a href="preferences.html">preferences</a> file.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+<b>See also:</b> <a href="#wrapComment">wrapComment</a>,
+<a href="#wrapParagraph">wrapParagraph</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="writeGlobalKeyMap">writeGlobalKeyMap</a><dl><dd>
+<p>
+Prompts for a filename and writes out the current global key map to the
+specifed file, in human-readable form.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="writeLocalKeyMap">writeLocalKeyMap</a><dl><dd>
+<p>
+Prompts for a filename and writes out the local key map for the current buffer
+to the specifed file, in human-readable form. The local key map supplements
+(and possible overrides) global key assignments, based on the mode (Java, HTML,
+etc.) of the buffer.
+<br><br>
+<b>Default key mapping:</b> None
+<br><br>
+</dl><!--<hr>-->
+
+<a name="xmlElectricEquals">xmlElectricEquals</a><dl><dd>
+<p>
+Inserts '=' at the current location of the caret.
+<br><br>
+In XML mode, if the '=' immediately follows an attribute name, and if the
+character following the '=' is either whitespace or '>', this command inserts
+a pair of double quotation marks after the '=' and positions the caret between
+the quotation marks.
+<p>
+The effect of this is to make it possible to enclose attribute values in
+quotation marks without having to type the quotation marks themselves.
+<p>
+<b>Default key mapping:</b> '=' in XML mode
+<p>
+<b>See also:</b> <a href="#htmlElectricEquals">htmlElectricEquals</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="xmlElectricSlash">xmlElectricSlash</a><dl><dd>
+<p>
+Inserts '/' at the current location of the caret.
+<p>
+In XML mode, if the '/' immediately follows '&lt;', and if there is an
+unmatched start tag before the current location of the caret, the
+corresponding end tag is automatically inserted. The line is then
+automatically re-indented if
+<a href="preferences.html#autoIndent">autoIndent</a> is true for the current
+buffer.
+<p>
+<b>Default key mapping:</b> '/' in XML mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="xmlFindCurrentNode">xmlFindCurrentNode</a><dl><dd>
+<p>
+In XML mode, if XML parser support is available and the document tree is
+displayed in the sidebar, forces the tree to expand all the way down to the
+node corresponding to the location of the caret in the edit buffer.
+<br><br>
+<b>Default key mapping:</b> Ctrl = in XML mode
+<br><br>
+<b>See also:</b> <a href="xmlmode.html">XML Mode</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="xmlFindMatch">xmlFindMatch</a><dl><dd>
+<p>
+Finds the match to the XML tag at the location of the caret.  Nested tags are
+handled correctly.
+<br><br>
+<b>Default key mapping:</b> Ctrl M in XML mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="xmlInsertEmptyElementTag">xmlInsertEmptyElementTag</a><dl><dd>
+<p>
+Inserts an XML empty element tag.
+<br><br>
+If the property <a href="preferences.html#XmlMode.fixCase">XmlMode.fixCase</a>
+is true, the tag name is converted to the preferred case (as specified by
+<a href="preferences.html#XmlMode.upperCaseTagNames">XmlMode.upperCaseTagNames</a>)
+when it is inserted in the buffer.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift . (Ctrl Shift period) in XML mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="xmlInsertMatchingEndTag">xmlInsertMatchingEndTag</a><dl><dd>
+<p>
+If there is an unmatched start tag before the current location of the caret,
+automatically inserts the corresponding end tag.
+<p>
+<b>Default key mapping:</b> Ctrl E in XML mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="xmlInsertTag">xmlInsertTag</a><dl><dd>
+<p>
+Inserts an XML start tag and the corresponding end tag, enclosing the current
+selection. If no selection is marked, the start and end tags enclose the word
+at the current location of the caret, if any.
+<br><br>
+If the property <a href="preferences.html#XmlMode.fixCase">XmlMode.fixCase</a>
+is true, the tag name is converted to the preferred case (as specified by
+<a href="preferences.html#XmlMode.upperCaseTagNames">XmlMode.upperCaseTagNames</a>)
+when it is inserted in the buffer.
+<br><br>
+<b>Default key mapping:</b> Ctrl Shift , (Ctrl Shift comma) in XML mode
+<br><br>
+</dl><!--<hr>-->
+
+<a name="xmlParseBuffer">xmlParseBuffer</a><dl><dd>
+<p>
+In XML mode, parses the current buffer. If the operation succeeds, the document
+tree in the sidebar is updated.
+<p>
+If there are errors or warnings, the parser's error messages are displayed in a
+transient output buffer. You can use the commands
+<a href="commands.html#nextError">nextError</a>,
+<a href="commands.html#previousError">previousError</a> and
+<a href="commands.html#thisError">thisError</a> to jump to the location of each
+error in the source.
+<p>
+<b>Default key mapping:</b> Ctrl P in XML mode
+<p>
+<b>See also:</b>
+<a href="commands.html#xmlValidateBuffer">xmlValidateBuffer</a>,
+<a href="xmlmode.html">XML Mode</a>,
+<a href="preferences.html#enableTree">enableTree</a>,
+<a href="preferences.html#org.xml.sax.driver">org.xml.sax.driver</a>,
+<a href="compilation.html">Compilation Buffers</a>
+<br><br>
+</dl><!--<hr>-->
+
+<a name="xmlValidateBuffer">xmlValidateBuffer</a><dl><dd>
+<p>
+In XML mode, validates the current buffer.
+<p>
+If there are errors or warnings, the parser's error messages are displayed in a
+transient output buffer. You can use the commands
+<a href="commands.html#nextError">nextError</a>,
+<a href="commands.html#previousError">previousError</a> and
+<a href="commands.html#thisError">thisError</a> to jump to the location of each
+error in the source.
+<p>
+<b>Default key mapping:</b> None
+<p>
+<b>See also:</b> <a href="commands.html#xmlParseBuffer">xmlParseBuffer</a>,
+<a href="xmlmode.html">XML Mode</a>,
+<a href="preferences.html#enableTree">enableTree</a>,
+<a href="preferences.html#org.xml.sax.driver">org.xml.sax.driver</a>,
+<a href="compilation.html">Compilation Buffers</a>
+<br><br>
+</dl><!--<hr>-->
+
+</body>
+
+</html>

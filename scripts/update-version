@@ -1,0 +1,53 @@
+#!/bin/sh
+
+# $Id: update-version,v 1.2 2003-10-23 01:00:43 piso Exp $
+
+# Usage: update-version old-version new-version
+
+if [[ -z $1 || -z $2 ]]; then
+    echo "Usage: update-version old-version new-version"; exit 1;
+fi
+
+echo Old version is $1
+echo New version is $2
+
+if [ -f Version.java ]; then
+    grep $1 Version.java > /dev/null ||
+        { echo "Error: current version of Version.java is not $1"; exit 1; }
+    p4 edit Version.java
+    sed -e "s/$1/$2/g" Version.java > Version.java.new
+    mv Version.java Version.java~
+    mv Version.java.new Version.java
+    cvs commit -m "$2" Version.java
+    exit 0;
+fi
+
+grep $1 build.xml > /dev/null ||
+    { echo "Error: current version of build.xml is not $1"; exit 1; }
+grep $1 configure.ac > /dev/null ||
+    { echo "Error: current version of configure.ac is not $1"; exit 1; }
+grep $1 configure > /dev/null ||
+    { echo "Error: current version of configure is not $1"; exit 1; }
+
+p4 edit build.xml
+sed -e "s/$1/$2/g" build.xml > build.xml.new
+mv build.xml build.xml~
+mv build.xml.new build.xml
+cvs commit -m "$2" build.xml ||
+{ echo "Error: unable to commit build.xml"; exit 1; }
+
+p4 edit configure.ac
+p4 edit configure
+sed -e "s/$1/$2/g" configure.ac > configure.ac.new
+mv configure.ac configure.ac~
+mv configure.ac.new configure.ac
+cvs commit -m "$2" configure.ac ||
+{ echo "Error: unable to commit configure.ac"; exit 1; }
+mv configure configure~
+autoconf
+cvs commit -m "$2" configure ||
+{ echo "Error: unable to commit configure"; exit 1; }
+
+# Note that the files are left open for edit in Perforce at this point.
+
+exit 0;

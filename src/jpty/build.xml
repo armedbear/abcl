@@ -1,0 +1,14 @@
+<project name="jpty" default="all" basedir="..">
+
+  <!-- Set global properties for this build -->
+  <property name="topdir" value="${basedir}/.."/>
+  <property file="${topdir}/build.properties"/>
+
+  <target name="all">
+    <exec executable="gcc" dir="${basedir}/jpty">
+      <arg line="-Wall -O2 jpty.c -o jpty"/>
+    </exec>
+  </target>
+
+</project>
+

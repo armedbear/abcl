@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - Installation</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Installation</h1>
+
+<hr>
+
+<p>
+Java 1.4 or later is required.
+<p>
+<a href="http://www.blackdown.org/">Blackdown Java 1.4.1-01</a> or
+<a href="http://java.sun.com/j2se/1.4.1/download.html">Sun Java 1.4.1_03</a>
+is recommended for Linux.
+<p>
+<a href="http://java.sun.com/j2se/1.4.1/download.html">Sun Java 1.4.1_03</a>
+is recommended for Windows.
+<p>
+Support for platforms other than Linux and Windows is purely accidental.
+<p>
+Simply untar or unzip the binary distribution, cd into the j directory, and
+run the jar file:
+<pre>
+    $ tar xvfz j-0.19.0-binary.tar.gz
+    $ cd j-0.19.0
+    $ java -jar j.jar
+</pre>
+Or on Windows:
+<pre>
+    c:\&gt; unzip j-0.19.0-binary.zip
+    c:\&gt; cd j-0.19.0
+    c:\j-0.19.0&gt; java -jar j.jar
+</pre>
+You should be able to bring up j's help from within the editor by pressing F1.
+If this doesn't work right out of the box, you may need to create a
+<a href="preferences.html">preferences</a> file and add a line to it to tell j
+where the documentation is located:
+<pre>
+    docPath=C:\\j\\doc
+</pre>
+<code><a href="preferences.html#docPath">docPath</a></code> should point to
+the directory containing j's HTML documentation (including the file you're
+reading now). On Windows, you'll need to use double backslashes in your
+filenames, as shown.
+
+</body>
+</html>

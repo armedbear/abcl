@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<title>J User's Guide - Key Mappings</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+<body>
+<a href="contents.html">Top</a>
+<hr>
+<h1>Key Mappings</h1>
+<hr>
+<p>
+J has both global and local key maps. There is a single global key map that
+provides the default key mappings for all buffers. Each buffer also has a local
+key map that depends on the <a href="modes.html">mode</a> of the buffer. A key
+assignment defined in the local key map for a given buffer overrides any
+assignment of the same key (or key combination) in the global key map.
+<p>
+Each entry in a key map defines a binding between a "key combination" and one
+of j's commands. A key combination may be just a single keystroke, like
+Backspace or Enter or F2. A key combination may also involve one or more of the
+four modifier keys (Ctrl, Shift, Alt, and Meta), as in Shift F2 or Ctrl Alt S.
+<p>
+Every time you type a key or key combination, j begins by looking it up in the
+local key map.  If there's no entry for that key or key combination in
+the local key map, j then looks in the global key map. If it's not found
+there either, and if the key or key combination corresponds (in j's opinion) to
+a "normal" character, that character is inserted in the buffer at the
+location of the caret.
+<p>
+You can use the command <a href="commands.html#describeKey">describeKey</a>,
+mapped by default to Alt K and available on the Help menu, to see what command
+is mapped to a specific key or key combination in the current buffer.
+<p>
+Not all commands have key mappings by default. Even if a command is not mapped
+to any key or key combination, you can use still execute it with
+<a href="commands.html#executeCommand">executeCommand</a>, which is mapped by
+default to Alt X and available on the File menu ("Execute Command..."). You
+will be prompted to enter the name of the command in the location bar.
+<p>
+The commands <a href="commands.html#writeGlobalKeyMap">writeGlobalKeyMap</a> and
+<a href="commands.html#writeLocalKeyMap">writeLocalKeyMap</a> may be used to
+write out the current global or local key map, as the case may be, to a file
+you specify, as ordinary text.
+<p>
+The command <a href="commands.html#listBindings">listBindings</a>, available
+on the Help menu ("Key Bindings"), displays a list of all the key bindings in
+effect in the current buffer.
+<p>
+All of j's key assignments may be changed by the user. To replace the global
+key map, for example, add a line like this to your
+<a href="preferences.html">preferences</a> file:
+<pre>
+    globalKeyMap=/home/peter/.j/globalkeys
+</pre>
+This line instructs j to read its global key map from the specified file. This
+file must be in the format written out by
+<a href="commands.html#writeGlobalKeyMap">writeGlobalKeyMap</a> and
+<a href="commands.html#writeLocalKeyMap">writeLocalKeyMap</a>.
+<p>
+You can also replace mode-specific key maps:
+<pre>
+    JavaMode.keyMap=/home/peter/.j/javakeys
+</pre>
+If there's no entry in your preferences file for a particular key map, j will
+use its built-in defaults.
+<p>
+The easiest way to customize a key map is to write out the corresponding
+default key map using
+<a href="commands.html#writeGlobalKeyMap">writeGlobalKeyMap</a> or
+<a href="commands.html#writeLocalKeyMap">writeLocalKeyMap</a>, edit the
+resulting file, and then add a line to your
+<a href="preferences.html">preferences</a> file pointing to the modified key
+map (as in the examples above).
+<p>
+Sometimes it may not be obvious what text string to use to specify a particular key
+combination.  You can use <a href="commands.html#insertKeyText">insertKeyText</a>
+to insert the appropriate text string in the key map you're editing.
+<p>
+A very small number of commands (currently only
+<a href="commands.html#insertString">insertString</a> and
+<a href="commands.html#help">help</a>, but there will be more in the future)
+require (or accept) an argument (which in the current implementation must be a
+quoted string). Such commands can be added to a key map like this:
+<pre>
+    Ctrl Alt X                      insertString("e.printStackTrace();")
+</pre>
+<p>
+Key maps can contain blank lines and comments. A comment is any line whose
+first non-whitespace character is '#'.
+<p>
+You can use the command
+<a href="commands.html#reloadKeyMaps">reloadKeyMaps</a> to force j to reload
+your key maps after you have edited them.
+<p>
+J will reload your key maps automatically after you edit them (and save the
+changes) if you add this line to your
+<a href="preferences.html">preferences</a> file:
+<pre>
+    autoReloadKeyMaps = true</pre>
+<p>
+The command <a href="commands.html#defaultKeyMaps">defaultKeyMaps</a> discards
+all custom key mappings and returns to j's internal defaults.
+<p>
+You can also use <a href="init.lisp.html">init.lisp</a> to make changes to
+the default key mappings without having to define a full set of custom key
+maps.
+<p>
+If you combine custom key maps with ad hoc mappings in init.lisp, note that
+reloading a key map will discard any ad hoc mappings in the same scope.
+</body>
+</html>

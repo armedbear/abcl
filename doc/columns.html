@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+
+<head>
+<title>J User's Guide - Columns</title>
+<LINK REL="stylesheet" HREF="j.css" TYPE="text/css">
+</head>
+
+<body>
+
+<a href="contents.html">Top</a>
+
+<hr>
+
+<h1>Columns</h1>
+
+<hr>
+
+<p>
+    Cut, copy and paste operations are supported on columns (rectangular areas
+    of text), as well as on ordinary regions.
+</p>
+<p>
+    To mark a column, put the caret at one corner of the desired area and
+    control shift left click with the mouse at the opposite corner. If things
+    go well, the column will be highlighted appropriately.
+</p>
+<p>
+    Once a column is marked, the commands 
+    <a href="commands.html#copyRegion">copyRegion</a>, mapped by default to
+    Ctrl C, <a href="commands.html#killRegion">killRegion</a>, mapped by
+    default to Ctrl X, and <a href="commands.html#delete">delete</a>, mapped
+    by default to Delete, act on the marked column.
+</p>
+<p>
+    The contents of the last column to be copied or killed are saved, and can
+    subsequently be retrieved with the command 
+    <a href="commands.html#pasteColumn">pasteColumn</a>.
+</p>
+<p>
+    Copied or killed columns are not stored in the kill ring, so 
+    <a href="commands.html#cyclePaste">cyclePaste</a> cannot be used with
+    columns.
+</p>
+</body>
+
+</html>
