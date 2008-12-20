@@ -2643,7 +2643,11 @@ representation, based on the derived type of the LispObject."
 
 (defknown process-args (t) t)
 (defun process-args (args)
-  ""
+  "Compiles forms specified as function call arguments.
+
+The results are either accumulated on the stack or in an array
+in order to call the relevant `execute' form. The function call
+itself is *not* compiled by this function."
   (when args
     (let ((numargs (length args)))
       (let ((must-clear-values nil))
@@ -2750,6 +2754,10 @@ representation, based on the derived type of the LispObject."
       (emit-move-from-stack target representation))))
 
 (defun compile-call (args)
+  "Compiles a function call.
+
+Depending on the `*speed*' and `*debug*' settings, a stack frame
+is registered (or not)."
   (let ((numargs (length args)))
     (cond ((> *speed* *debug*)
            (process-args args)
@@ -2879,6 +2887,10 @@ representation, based on the derived type of the LispObject."
 
 (defknown compile-local-function-call (t t t) t)
 (defun compile-local-function-call (form target representation)
+  "Compiles a call to a function marked as `*child-p*'; a local function.
+
+Functions this applies to can be FLET, LABELS, LAMBDA or NAMED-LAMBDA.
+Note: DEFUN implies a named lambda."
   (let* ((compiland *current-compiland*)
          (op (car form))
          (args (cdr form))
