@@ -4838,7 +4838,7 @@ Note: DEFUN implies a named lambda."
     (emit-push-nil)
     (emit-move-from-stack target)))
 
-(defun do-write-class-file (class-file compiland)
+(defun compile-and-write-to-file (class-file compiland)
   (with-class-file class-file
     (let ((*current-compiland* compiland))
       (with-saved-compiler-policy
@@ -4847,7 +4847,7 @@ Note: DEFUN implies a named lambda."
 
 (defun set-compiland-and-write-class-file (class-file compiland)
   (setf (compiland-class-file compiland) class-file)
-  (do-write-class-file class-file compiland))
+  (compile-and-write-to-file class-file compiland))
 
 (defknown p2-flet-process-compiland (t) t)
 (defun p2-flet-process-compiland (local-function)
@@ -5015,7 +5015,7 @@ Note: DEFUN implies a named lambda."
                  (make-class-file :pathname (sys::next-classfile-name)
                                   :lambda-list lambda-list))
            (let ((class-file (compiland-class-file compiland)))
-	     (do-write-class-file class-file compiland)
+	     (compile-and-write-to-file class-file compiland)
              (emit 'getstatic *this-class*
                    (declare-local-function (make-local-function :class-file class-file))
                    +lisp-object+)))
@@ -5026,7 +5026,7 @@ Note: DEFUN implies a named lambda."
                                     :lambda-list lambda-list))
              (unwind-protect
                  (progn
-		   (do-write-class-file (compiland-class-file compiland) compiland)
+		   (compile-and-write-to-file (compiland-class-file compiland) compiland)
                    (emit 'getstatic *this-class*
                          (declare-object (load-compiled-function pathname))
                          +lisp-object+))
