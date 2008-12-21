@@ -594,6 +594,13 @@
       (emit 'clear-values)
       (return))))
 
+(defun compile-forms-and-maybe-emit-clear-values (&rest forms-and-compile-args)
+  (let ((forms-for-emit-clear
+	 (loop for (form arg1 arg2) on forms-and-compile-args by #'cdddr
+	    do (compile-form form arg1 arg2)
+	    collecting form)))
+    (maybe-emit-clear-values forms-for-emit-clear)))
+
 (defknown emit-unbox-fixnum () t)
 (defun emit-unbox-fixnum ()
   (declare (optimize speed))
@@ -2239,8 +2246,7 @@ representation, based on the derived type of the LispObject."
          (unboxed-method-name (cdr info)))
     (cond ((and boxed-method-name unboxed-method-name)
            (let ((arg (cadr form)))
-             (compile-form arg 'stack nil)
-             (maybe-emit-clear-values arg)
+	     (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
              (case representation
                (:boolean
                 (emit-invokevirtual +lisp-object-class+
@@ -2278,8 +2284,7 @@ representation, based on the derived type of the LispObject."
       (return-from compile-function-call-1 t))
     (let ((s (gethash1 op (the hash-table *unary-operators*))))
       (cond (s
-             (compile-form arg 'stack nil)
-             (maybe-emit-clear-values arg)
+	     (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
              (emit-invoke-method s target representation)
              t)
             (t
@@ -2314,13 +2319,12 @@ representation, based on the derived type of the LispObject."
 (defun compile-binary-operation (op args target representation)
   (let ((arg1 (car args))
         (arg2 (cadr args)))
-  (compile-form arg1 'stack nil)
-  (compile-form arg2 'stack nil)
-  (maybe-emit-clear-values arg1 arg2)
-  (emit-invokevirtual +lisp-object-class+ op
-                      (lisp-object-arg-types 1) +lisp-object+)
-  (fix-boxing representation nil)
-  (emit-move-from-stack target representation)))
+    (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+					       arg2 'stack nil)
+    (emit-invokevirtual +lisp-object-class+ op
+			(lisp-object-arg-types 1) +lisp-object+)
+    (fix-boxing representation nil)
+    (emit-move-from-stack target representation)))
 
 (declaim (ftype (function (t t t t) t) compile-function-call-2))
 (defun compile-function-call-2 (op args target representation)
@@ -2368,9 +2372,8 @@ representation, based on the derived type of the LispObject."
          (args (%cdr form))
          (arg1 (%car args))
          (arg2 (%cadr args)))
-     (compile-form arg1 'stack nil)
-     (compile-form arg2 'stack nil)
-     (maybe-emit-clear-values arg1 arg2)
+    (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+					       arg2 'stack nil)
      (let ((LABEL1 (gensym))
            (LABEL2 (gensym)))
        (emit (if (eq op 'EQ) 'if_acmpne 'if_acmpeq) `,LABEL1)
@@ -2394,9 +2397,8 @@ representation, based on the derived type of the LispObject."
          (type2 (derive-compiler-type arg2)))
     (cond ((and (fixnum-type-p type1)
                 (fixnum-type-p type2))
-           (compile-form arg1 'stack :int)
-           (compile-form arg2 'stack :int)
-           (maybe-emit-clear-values arg1 arg2)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+						      arg2 'stack :int)
            (let ((label1 (gensym))
                  (label2 (gensym)))
              (emit 'if_icmpeq `,label1)
@@ -2406,9 +2408,8 @@ representation, based on the derived type of the LispObject."
              (emit-push-true representation)
              (emit 'label `,label2)))
           ((fixnum-type-p type2)
-           (compile-form arg1 'stack nil)
-           (compile-form arg2 'stack :int)
-           (maybe-emit-clear-values arg1 arg2)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						      arg2 'stack :int)
            (emit-invokevirtual +lisp-object-class+ "eql" '("I") "Z")
            (case representation
              (:boolean)
@@ -2422,9 +2423,8 @@ representation, based on the derived type of the LispObject."
                 (emit-push-t)
                 (emit 'label `,label2)))))
           ((fixnum-type-p type1)
-           (compile-form arg1 'stack :int)
-           (compile-form arg2 'stack nil)
-           (maybe-emit-clear-values arg1 arg2)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+						      arg2 'stack nil)
            (emit 'swap)
            (emit-invokevirtual +lisp-object-class+ "eql" '("I") "Z")
            (case representation
@@ -2439,9 +2439,8 @@ representation, based on the derived type of the LispObject."
                 (emit-push-t)
                 (emit 'label `,label2)))))
           ((eq type2 'CHARACTER)
-           (compile-form arg1 'stack nil)
-           (compile-form arg2 'stack :char)
-           (maybe-emit-clear-values arg1 arg2)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						      arg2 'stack :char)
            (emit-invokevirtual +lisp-object-class+ "eql" '("C") "Z")
            (case representation
              (:boolean)
@@ -2455,9 +2454,8 @@ representation, based on the derived type of the LispObject."
                 (emit-push-t)
                 (emit 'label `,label2)))))
           ((eq type1 'CHARACTER)
-           (compile-form arg1 'stack :char)
-           (compile-form arg2 'stack nil)
-           (maybe-emit-clear-values arg1 arg2)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack :char
+						      arg2 'stack nil)
            (emit 'swap)
            (emit-invokevirtual +lisp-object-class+ "eql" '("C") "Z")
            (case representation
@@ -2472,9 +2470,8 @@ representation, based on the derived type of the LispObject."
                 (emit-push-t)
                 (emit 'label `,label2)))))
           (t
-           (compile-form arg1 'stack nil)
-           (compile-form arg2 'stack nil)
-           (maybe-emit-clear-values arg1 arg2)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						      arg2 'stack nil)
            (case representation
              (:boolean
               (emit-invokevirtual +lisp-object-class+ "eql"
@@ -2567,10 +2564,9 @@ representation, based on the derived type of the LispObject."
        (let ((arg1 (first args))
              (arg2 (second args))
              (arg3 (third args)))
-         (compile-form arg1 'stack nil)
-         (compile-form arg2 'stack nil)
-         (compile-form arg3 'stack nil)
-         (maybe-emit-clear-values arg1 arg2 arg3)
+	 (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						    arg2 'stack nil
+						    arg3 'stack nil)
          (emit-invokestatic +lisp-class+ "getf"
                             (lisp-object-arg-types 3) +lisp-object+)
          (fix-boxing representation nil)
@@ -2846,8 +2842,7 @@ is registered (or not)."
     (return-from p2-funcall))
   (when (> *debug* *speed*)
     (return-from p2-funcall (compile-function-call form target representation)))
-  (compile-form (cadr form) 'stack nil)
-  (maybe-emit-clear-values (cadr form))
+  (compile-forms-and-maybe-emit-clear-values (cadr form) 'stack nil)
   (compile-call (cddr form))
 ;;   (case representation
 ;;     (:int (emit-unbox-fixnum))
@@ -2969,9 +2964,8 @@ Note: DEFUN implies a named lambda."
                      (fixnum-type-p type2))
                 (let ((LABEL1 (gensym))
                       (LABEL2 (gensym)))
-                  (compile-form arg1 'stack :int)
-                  (compile-form arg2 'stack :int)
-                  (maybe-emit-clear-values arg1 arg2)
+		  (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+							     arg2 'stack :int)
                   (emit (case op
                           (<  'if_icmpge)
                           (<= 'if_icmpgt)
@@ -2990,9 +2984,8 @@ Note: DEFUN implies a named lambda."
                      (java-long-type-p type2))
                 (let ((LABEL1 (gensym))
                       (LABEL2 (gensym)))
-                  (compile-form arg1 'stack :long)
-                  (compile-form arg2 'stack :long)
-                  (maybe-emit-clear-values arg1 arg2)
+		  (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
+							     arg2 'stack :long)
                   (emit 'lcmp)
                   (emit (case op
                           (<  'ifge)
@@ -3009,8 +3002,7 @@ Note: DEFUN implies a named lambda."
                 (emit-move-from-stack target representation)
                 (return-from p2-numeric-comparison))
                ((fixnump arg2)
-                (compile-form arg1 'stack nil)
-                (maybe-emit-clear-values arg1)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
                 (emit-push-constant-int arg2)
                 (emit-invokevirtual +lisp-object-class+
                                     (case op
@@ -3156,8 +3148,7 @@ Note: DEFUN implies a named lambda."
 (defun p2-test-predicate (form java-predicate)
   (when (check-arg-count form 1)
     (let ((arg (%cadr form)))
-      (compile-form arg 'stack nil)
-      (maybe-emit-clear-values arg)
+      (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
       (emit-invokevirtual +lisp-object-class+ java-predicate nil "Z")
       'ifeq)))
 
@@ -3165,8 +3156,7 @@ Note: DEFUN implies a named lambda."
 (defun p2-test-instanceof-predicate (form java-class)
   (when (check-arg-count form 1)
     (let ((arg (%cadr form)))
-      (compile-form arg 'stack nil)
-      (maybe-emit-clear-values arg)
+      (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
       (emit 'instanceof java-class)
       'ifeq)))
 
@@ -3180,8 +3170,7 @@ Note: DEFUN implies a named lambda."
 (defun p2-test-constantp (form)
   (when (= (length form) 2)
     (let ((arg (%cadr form)))
-      (compile-form arg 'stack nil)
-      (maybe-emit-clear-values arg)
+      (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
       (emit-invokevirtual +lisp-object-class+ "constantp" nil "Z")
       'ifeq)))
 
@@ -3192,8 +3181,7 @@ Note: DEFUN implies a named lambda."
   (when (check-arg-count form 1)
     (let ((arg (%cadr form)))
       (cond ((fixnum-type-p (derive-compiler-type arg))
-             (compile-form arg 'stack :int)
-             (maybe-emit-clear-values arg)
+	     (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
              (emit-push-constant-int 1)
              (emit 'iand)
              'ifne)
@@ -3204,8 +3192,7 @@ Note: DEFUN implies a named lambda."
   (when (check-arg-count form 1)
     (let ((arg (%cadr form)))
       (cond ((fixnum-type-p (derive-compiler-type arg))
-             (compile-form arg 'stack :int)
-             (maybe-emit-clear-values arg)
+	     (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
              (emit-push-constant-int 1)
              (emit 'iand)
              'ifeq)
@@ -3223,12 +3210,10 @@ Note: DEFUN implies a named lambda."
     (let* ((arg (%cadr form))
            (arg-type (derive-compiler-type arg)))
       (cond ((memq arg-type '(CONS LIST NULL))
-             (compile-form arg nil nil) ; for effect
-             (maybe-emit-clear-values arg)
+	     (compile-forms-and-maybe-emit-clear-values arg nil nil)
              :consequent)
             ((neq arg-type t)
-             (compile-form arg nil nil) ; for effect
-             (maybe-emit-clear-values arg)
+	     (compile-forms-and-maybe-emit-clear-values arg nil nil)
              :alternate)
             (t
              (p2-test-predicate form "listp"))))))
@@ -3237,8 +3222,7 @@ Note: DEFUN implies a named lambda."
   (when (check-arg-count form 1)
     (let ((arg (%cadr form)))
       (cond ((fixnum-type-p (derive-compiler-type arg))
-             (compile-form arg 'stack :int)
-             (maybe-emit-clear-values arg)
+	     (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
              'ifge)
             (t
              (p2-test-predicate form "minusp"))))))
@@ -3247,8 +3231,7 @@ Note: DEFUN implies a named lambda."
   (when (check-arg-count form 1)
     (let ((arg (%cadr form)))
       (cond ((fixnum-type-p (derive-compiler-type arg))
-             (compile-form arg 'stack :int)
-             (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
              'ifle)
             (t
              (p2-test-predicate form "plusp"))))))
@@ -3257,8 +3240,7 @@ Note: DEFUN implies a named lambda."
   (when (check-arg-count form 1)
     (let ((arg (%cadr form)))
       (cond ((fixnum-type-p (derive-compiler-type arg))
-             (compile-form arg 'stack :int)
-             (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
              'ifne)
             (t
              (p2-test-predicate form "zerop"))))))
@@ -3319,12 +3301,10 @@ Note: DEFUN implies a named lambda."
         ((null test-form)
          :alternate)
         ((eq (derive-compiler-type test-form) 'BOOLEAN)
-         (compile-form test-form 'stack :boolean)
-         (maybe-emit-clear-values test-form)
+	 (compile-forms-and-maybe-emit-clear-values test-form 'stack :boolean)
          'ifeq)
         (t
-         (compile-form test-form 'stack nil)
-         (maybe-emit-clear-values test-form)
+	 (compile-forms-and-maybe-emit-clear-values test-form 'stack nil)
          (emit-push-nil)
          'if_acmpeq)))
 
@@ -3354,18 +3334,16 @@ Note: DEFUN implies a named lambda."
   (when (check-arg-count form 2)
     (let* ((arg1 (%cadr form))
            (arg2 (%caddr form)))
-      (compile-form arg1 'stack :char)
-      (compile-form arg2 'stack :char)
-      (maybe-emit-clear-values arg1 arg2)
+      (compile-forms-and-maybe-emit-clear-values arg1 'stack :char
+						 arg2 'stack :char)
       'if_icmpne)))
 
 (defun p2-test-eq (form)
   (when (check-arg-count form 2)
     (let ((arg1 (%cadr form))
           (arg2 (%caddr form)))
-      (compile-form arg1 'stack nil)
-      (compile-form arg2 'stack nil)
-      (maybe-emit-clear-values arg1 arg2)
+      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						 arg2 'stack nil)
      'if_acmpne)))
 
 (defun p2-test-and (form)
@@ -3379,8 +3357,7 @@ Note: DEFUN implies a named lambda."
        (compile-form form 'stack :boolean)
        'ifeq)
       (t
-       (compile-form form 'stack nil)
-       (maybe-emit-clear-values form)
+       (compile-forms-and-maybe-emit-clear-values form 'stack nil)
        (emit-push-nil)
        'if_acmpeq))))
 
@@ -3395,45 +3372,38 @@ Note: DEFUN implies a named lambda."
            (type1 (derive-compiler-type arg1))
            (type2 (derive-compiler-type arg2)))
       (cond ((and (fixnum-type-p type1) (fixnum-type-p type2))
-             (compile-form arg1 'stack :int)
-             (compile-form arg2 'stack :int)
-             (maybe-emit-clear-values arg1 arg2)
+	     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+							arg2 'stack :int)
              'if_icmpne)
             ((and (eq type1 'CHARACTER) (eq type2 'CHARACTER))
-             (compile-form arg1 'stack :char)
-             (compile-form arg2 'stack :char)
-             (maybe-emit-clear-values arg1 arg2)
+	     (compile-forms-and-maybe-emit-clear-values arg1 'stack :char
+							arg2 'stack :char)
              'if_icmpne)
             ((eq type2 'CHARACTER)
-             (compile-form arg1 'stack nil)
-             (compile-form arg2 'stack :char)
-             (maybe-emit-clear-values arg1 arg2)
+	     (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							arg2 'stack :char)
              (emit-invokevirtual +lisp-object-class+ "eql" '("C") "Z")
              'ifeq)
             ((eq type1 'CHARACTER)
-             (compile-form arg1 'stack :char)
-             (compile-form arg2 'stack nil)
-             (maybe-emit-clear-values arg1 arg2)
+	     (compile-forms-and-maybe-emit-clear-values arg1 'stack :char
+							arg2 'stack nil)
              (emit 'swap)
              (emit-invokevirtual +lisp-object-class+ "eql" '("C") "Z")
              'ifeq)
             ((fixnum-type-p type2)
-             (compile-form arg1 'stack nil)
-             (compile-form arg2 'stack :int)
-             (maybe-emit-clear-values arg1 arg2)
+	     (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							arg2 'stack :int)
              (emit-invokevirtual +lisp-object-class+ "eql" '("I") "Z")
              'ifeq)
             ((fixnum-type-p type1)
-             (compile-form arg1 'stack :int)
-             (compile-form arg2 'stack nil)
-             (maybe-emit-clear-values arg1 arg2)
+	     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+							arg2 'stack nil)
              (emit 'swap)
              (emit-invokevirtual +lisp-object-class+ "eql" '("I") "Z")
              'ifeq)
             (t
-             (compile-form arg1 'stack nil)
-             (compile-form arg2 'stack nil)
-             (maybe-emit-clear-values arg1 arg2)
+	     (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							arg2 'stack nil)
              (emit-invokevirtual +lisp-object-class+ "eql"
                                  (lisp-object-arg-types 1) "Z")
              'ifeq)))))
@@ -3449,16 +3419,14 @@ Note: DEFUN implies a named lambda."
            (arg1 (%cadr form))
            (arg2 (%caddr form)))
       (cond ((fixnum-type-p (derive-compiler-type arg2))
-             (compile-form arg1 'stack nil)
-             (compile-form arg2 'stack :int)
-             (maybe-emit-clear-values arg1 arg2)
+	     (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							arg2 'stack :int)
              (emit-invokevirtual +lisp-object-class+
                                  translated-op
                                  '("I") "Z"))
             (t
-             (compile-form arg1 'stack nil)
-             (compile-form arg2 'stack nil)
-             (maybe-emit-clear-values arg1 arg2)
+	     (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							arg2 'stack nil)
              (emit-invokevirtual +lisp-object-class+
                                  translated-op
                                  (lisp-object-arg-types 1) "Z")))
@@ -3468,9 +3436,8 @@ Note: DEFUN implies a named lambda."
   (when (check-arg-count form 2)
     (let ((arg1 (%cadr form))
           (arg2 (%caddr form)))
-      (compile-form arg1 'stack nil)
-      (compile-form arg2 'stack nil)
-      (maybe-emit-clear-values arg1 arg2)
+      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						 arg2 'stack nil)
       (emit-invokevirtual +lisp-object-class+ "typep"
                           (lisp-object-arg-types 1) +lisp-object+)
       (emit-push-nil)
@@ -3480,9 +3447,8 @@ Note: DEFUN implies a named lambda."
   (when (check-arg-count form 2)
     (let ((arg1 (%cadr form))
           (arg2 (%caddr form)))
-      (compile-form arg1 'stack nil)
-      (compile-form arg2 'stack nil)
-      (maybe-emit-clear-values arg1 arg2)
+      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						 arg2 'stack nil)
       (emit-invokestatic +lisp-class+ "memq"
                          (lisp-object-arg-types 2) "Z")
       'ifeq)))
@@ -3491,9 +3457,8 @@ Note: DEFUN implies a named lambda."
   (when (check-arg-count form 2)
     (let ((arg1 (%cadr form))
           (arg2 (%caddr form)))
-      (compile-form arg1 'stack nil)
-      (compile-form arg2 'stack nil)
-      (maybe-emit-clear-values arg1 arg2)
+      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						 arg2 'stack nil)
       (emit-invokestatic +lisp-class+ "memql"
                          (lisp-object-arg-types 2) "Z")
       'ifeq)))
@@ -3508,29 +3473,25 @@ Note: DEFUN implies a named lambda."
              (if (/= arg1 arg2) :consequent :alternate))
             ((and (fixnum-type-p type1)
                   (fixnum-type-p type2))
-             (compile-form arg1 'stack :int)
-             (compile-form arg2 'stack :int)
-             (maybe-emit-clear-values arg1 arg2)
+	     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+							arg2 'stack :int)
              'if_icmpeq)
             ((fixnum-type-p type2)
-             (compile-form arg1 'stack nil)
-             (compile-form arg2 'stack :int)
-             (maybe-emit-clear-values arg1 arg2)
+	     (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							arg2 'stack :int)
              (emit-invokevirtual +lisp-object-class+ "isNotEqualTo" '("I") "Z")
              'ifeq)
             ((fixnum-type-p type1)
              ;; FIXME Compile the args in reverse order and avoid the swap if
              ;; either arg is a fixnum or a lexical variable.
-             (compile-form arg1 'stack :int)
-             (compile-form arg2 'stack nil)
-             (maybe-emit-clear-values arg1 arg2)
+	     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+							arg2 'stack nil)
              (emit 'swap)
              (emit-invokevirtual +lisp-object-class+ "isNotEqualTo" '("I") "Z")
              'ifeq)
             (t
-             (compile-form arg1 'stack nil)
-             (compile-form arg2 'stack nil)
-             (maybe-emit-clear-values arg1 arg2)
+	     (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							arg2 'stack nil)
              (emit-invokevirtual +lisp-object-class+ "isNotEqualTo"
                                  (lisp-object-arg-types 1) "Z")
              'ifeq)))))
@@ -3547,9 +3508,8 @@ Note: DEFUN implies a named lambda."
         (cond ((and (fixnump arg1) (fixnump arg2))
                (if (funcall op arg1 arg2) :consequent :alternate))
               ((and (fixnum-type-p type1) (fixnum-type-p type2))
-               (compile-form arg1 'stack :int)
-               (compile-form arg2 'stack :int)
-               (maybe-emit-clear-values arg1 arg2)
+	       (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+							  arg2 'stack :int)
                (ecase op
                  (<  'if_icmpge)
                  (<= 'if_icmpgt)
@@ -3557,9 +3517,8 @@ Note: DEFUN implies a named lambda."
                  (>= 'if_icmplt)
                  (=  'if_icmpne)))
               ((and (java-long-type-p type1) (java-long-type-p type2))
-               (compile-form arg1 'stack :long)
-               (compile-form arg2 'stack :long)
-               (maybe-emit-clear-values arg1 arg2)
+	       (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
+							  arg2 'stack :long)
                (emit 'lcmp)
                (ecase op
                  (<  'ifge)
@@ -3568,9 +3527,8 @@ Note: DEFUN implies a named lambda."
                  (>= 'iflt)
                  (=  'ifne)))
               ((fixnum-type-p type2)
-               (compile-form arg1 'stack nil)
-               (compile-form arg2 'stack :int)
-               (maybe-emit-clear-values arg1 arg2)
+	       (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							  arg2 'stack :int)
                (emit-invokevirtual +lisp-object-class+
                                    (ecase op
                                      (<  "isLessThan")
@@ -3583,9 +3541,8 @@ Note: DEFUN implies a named lambda."
               ((fixnum-type-p type1)
                ;; FIXME We can compile the args in reverse order and avoid
                ;; the swap if either arg is a fixnum or a lexical variable.
-               (compile-form arg1 'stack :int)
-               (compile-form arg2 'stack nil)
-               (maybe-emit-clear-values arg1 arg2)
+	       (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+							  arg2 'stack nil)
                (emit 'swap)
                (emit-invokevirtual +lisp-object-class+
                                    (ecase op
@@ -3597,9 +3554,8 @@ Note: DEFUN implies a named lambda."
                                    '("I") "Z")
                'ifeq)
               (t
-               (compile-form arg1 'stack nil)
-               (compile-form arg2 'stack nil)
-               (maybe-emit-clear-values arg1 arg2)
+	       (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							  arg2 'stack nil)
                (emit-invokevirtual +lisp-object-class+
                                    (ecase op
                                      (<  "isLessThan")
@@ -3630,17 +3586,14 @@ Note: DEFUN implies a named lambda."
                   ;; ERROR CHECKING HERE!
                   (let ((arg1 (second arg))
                         (arg2 (third arg)))
-                    (compile-form arg1 'stack nil)
-                    (compile-form arg2 'stack nil)
-                    (maybe-emit-clear-values arg1 arg2)
+		    (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							       arg2 'stack nil)
                     (emit 'if_acmpeq LABEL1)))
                  ((eq (derive-compiler-type arg) 'BOOLEAN)
-                  (compile-form arg 'stack :boolean)
-                  (maybe-emit-clear-values arg)
+		  (compile-forms-and-maybe-emit-clear-values arg 'stack :boolean)
                   (emit 'ifne LABEL1))
                  (t
-                  (compile-form arg 'stack nil)
-                  (maybe-emit-clear-values arg)
+		  (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
                   (emit-push-nil)
                   (emit 'if_acmpne LABEL1))))
          (compile-form alternate target representation)
@@ -3668,9 +3621,8 @@ Note: DEFUN implies a named lambda."
 ;;            (let ((type (derive-compiler-type arg)))
 ;;              (cond
 ;;               ((eq type 'BOOLEAN)
-                    (compile-form arg 'stack :boolean)
-                    (maybe-emit-clear-values arg)
-                    (emit 'ifeq LABEL1)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack :boolean)
+	   (emit 'ifeq LABEL1)
 ;;                )
 ;;                    (t
 ;;                     (compile-form arg 'stack nil)
@@ -3709,12 +3661,10 @@ Note: DEFUN implies a named lambda."
          (dolist (arg args)
            (let ((type (derive-compiler-type arg)))
              (cond ((eq type 'BOOLEAN)
-                    (compile-form arg 'stack :boolean)
-                    (maybe-emit-clear-values arg)
+		    (compile-forms-and-maybe-emit-clear-values arg 'stack :boolean)
                     (emit 'ifeq LABEL1))
                    (t
-                    (compile-form arg 'stack nil)
-                    (maybe-emit-clear-values arg)
+		    (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
                     (emit-push-nil)
                     (emit 'if_acmpeq LABEL1)))))
          (compile-form alternate target representation)
@@ -3737,8 +3687,7 @@ Note: DEFUN implies a named lambda."
           ((numberp test)
            (compile-form consequent target representation))
           ((equal (derive-compiler-type test) +true-type+)
-           (compile-form test nil nil) ; for effect
-           (maybe-emit-clear-values test)
+	   (compile-forms-and-maybe-emit-clear-values test nil nil)
            (compile-form consequent target representation))
           ((and (consp test) (eq (car test) 'OR))
            (p2-if-or form target representation))
@@ -3935,8 +3884,7 @@ Note: DEFUN implies a named lambda."
     ;; Bind the variables.
     (aver (= (length vars) (length variables)))
     (cond ((= (length vars) 1)
-           (compile-form (third form) 'stack nil)
-           (maybe-emit-clear-values (third form))
+	   (compile-forms-and-maybe-emit-clear-values (third form) 'stack nil)
            (compile-binding (car variables)))
           (t
            (let* ((*register* *register*)
@@ -4452,8 +4400,7 @@ Note: DEFUN implies a named lambda."
   (unless (check-arg-count form 1)
     (compile-function-call form target representation)
     (return-from p2-atom))
-  (compile-form (cadr form) 'stack nil)
-  (maybe-emit-clear-values (cadr form))
+  (compile-forms-and-maybe-emit-clear-values (cadr form) 'stack nil)
   (emit 'instanceof +lisp-cons-class+)
   (let ((LABEL1 (gensym))
         (LABEL2 (gensym)))
@@ -4480,11 +4427,9 @@ Note: DEFUN implies a named lambda."
     (return-from p2-instanceof-predicate))
   (let ((arg (%cadr form)))
     (cond ((null target)
-           (compile-form arg nil nil) ; for effect
-           (maybe-emit-clear-values arg))
+	   (compile-forms-and-maybe-emit-clear-values arg nil nil))
           (t
-           (compile-form arg 'stack nil)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
            (emit 'instanceof java-class)
            (case representation
              (:boolean)
@@ -4536,8 +4481,7 @@ Note: DEFUN implies a named lambda."
   (unless (check-arg-count form 1)
     (compile-function-call form target representation)
     (return-from p2-coerce-to-function))
-  (compile-form (%cadr form) 'stack nil)
-  (maybe-emit-clear-values (%cadr form))
+  (compile-forms-and-maybe-emit-clear-values (%cadr form) 'stack nil)
   (emit-invokestatic +lisp-class+ "coerceToFunction"
                      (lisp-object-arg-types 1) +lisp-object+)
   (emit-move-from-stack target))
@@ -4665,8 +4609,7 @@ Note: DEFUN implies a named lambda."
     (cond ((and (null target) (< *safety* 3))
            (compile-form arg target nil))
           ((and (consp arg) (eq (%car arg) 'cdr) (= (length arg) 2))
-           (compile-form (second arg) 'stack nil)
-           (maybe-emit-clear-values (second arg))
+	   (compile-forms-and-maybe-emit-clear-values (second arg) 'stack nil)
            (emit-invoke-method "cadr" target representation))
           ((eq (derive-type arg) 'CONS)
            (compile-form arg 'stack nil)
@@ -4675,8 +4618,7 @@ Note: DEFUN implies a named lambda."
            (fix-boxing representation nil)
            (emit-move-from-stack target representation))
           (t
-           (compile-form arg 'stack nil)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
            (emit-invoke-method "car" target representation)))))
 
 (defun p2-cdr (form target representation)
@@ -4691,8 +4633,7 @@ Note: DEFUN implies a named lambda."
            (fix-boxing representation nil)
            (emit-move-from-stack target representation))
           (t
-           (compile-form arg 'stack nil)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
            (emit-invoke-method "cdr" target representation)))))
 
 (defun p2-cons (form target representation)
@@ -4704,9 +4645,8 @@ Note: DEFUN implies a named lambda."
   (let* ((args (%cdr form))
          (arg1 (%car args))
          (arg2 (%cadr args)))
-    (compile-form arg1 'stack nil)
-    (compile-form arg2 'stack nil)
-    (maybe-emit-clear-values arg1 arg2))
+    (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+					       arg2 'stack nil))
   (emit-invokespecial-init +lisp-cons-class+ (lisp-object-arg-types 2))
   (emit-move-from-stack target))
 
@@ -5200,9 +5140,8 @@ Note: DEFUN implies a named lambda."
            (when (null representation)
              (emit 'new +lisp-fixnum-class+)
              (emit 'dup))
-           (compile-form arg1 'stack :int)
-           (compile-form arg2 'stack :int)
-           (maybe-emit-clear-values arg1 arg2)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+						      arg2 'stack :int)
            (emit 'ineg)
            (emit 'ishr)
            (case representation
@@ -5216,17 +5155,15 @@ Note: DEFUN implies a named lambda."
            (cond ((and low2 high2 (<= 0 low2 high2 63) ; Non-negative shift.
                        (java-long-type-p type1)
                        (java-long-type-p result-type))
-                  (compile-form arg1 'stack :long)
-                  (compile-form arg2 'stack :int)
-                  (maybe-emit-clear-values arg1 arg2)
+		  (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
+							     arg2 'stack :int)
                   (emit 'lshl)
                   (convert-long representation))
                  ((and low2 high2 (<= -63 low2 high2 0) ; Negative shift.
                        (java-long-type-p type1)
                        (java-long-type-p result-type))
-                  (compile-form arg1 'stack :long)
-                  (compile-form arg2 'stack :int)
-                  (maybe-emit-clear-values arg1 arg2)
+		  (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
+							     arg2 'stack :int)
                   (emit 'ineg)
                   (emit 'lshr)
                   (convert-long representation))
@@ -5234,9 +5171,8 @@ Note: DEFUN implies a named lambda."
 ;;                   (format t "p2-ash call to LispObject.ash(int)~%")
 ;;                   (format t "p2-ash type1 = ~S type2 = ~S~%" type1 type2)
 ;;                   (format t "p2-ash result-type = ~S~%" result-type)
-                  (compile-form arg1 'stack nil)
-                  (compile-form arg2 'stack :int)
-                  (maybe-emit-clear-values arg1 arg2)
+		  (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							     arg2 'stack :int)
                   (emit-invokevirtual +lisp-object-class+ "ash" '("I") +lisp-object+)
                   (fix-boxing representation result-type)))
            (emit-move-from-stack target representation))
@@ -5267,26 +5203,22 @@ Note: DEFUN implies a named lambda."
          (cond ((and (integerp arg1) (integerp arg2))
                 (compile-constant (logand arg1 arg2) target representation))
                ((and (integer-type-p type1) (eql arg2 0))
-                (compile-form arg1 nil nil) ; for effect
-                (maybe-emit-clear-values arg1)
+		(compile-forms-and-maybe-emit-clear-values arg1 nil nil)
                 (compile-constant 0 target representation))
                ((eql (fixnum-constant-value type1) -1)
-                (compile-form arg1 nil nil) ; for effect
-                (compile-form arg2 target representation)
-                (maybe-emit-clear-values arg1 arg2))
+		(compile-forms-and-maybe-emit-clear-values arg1 nil nil
+							   arg2 target representation))
                ((eql (fixnum-constant-value type2) -1)
-                (compile-form arg1 target representation)
-                (compile-form arg2 nil nil) ; for effect
-                (maybe-emit-clear-values arg1 arg2))
+		(compile-forms-and-maybe-emit-clear-values arg1 target representation
+							   arg2 nil nil))
                ((and (fixnum-type-p type1) (fixnum-type-p type2))
                 ;;                     (format t "p2-logand fixnum case~%")
                 ;; Both arguments are fixnums.
                 (when (null representation)
                   (emit 'new +lisp-fixnum-class+)
                   (emit 'dup))
-                (compile-form arg1 'stack :int)
-                (compile-form arg2 'stack :int)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+							   arg2 'stack :int)
                 (emit 'iand)
                 (case representation
                   (:int)
@@ -5303,9 +5235,8 @@ Note: DEFUN implies a named lambda."
                 (when (null representation)
                   (emit 'new +lisp-fixnum-class+)
                   (emit 'dup))
-                (compile-form arg1 'stack :int)
-                (compile-form arg2 'stack :int)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+							   arg2 'stack :int)
                 (emit 'iand)
                 (case representation
                   (:int)
@@ -5316,9 +5247,8 @@ Note: DEFUN implies a named lambda."
                 (emit-move-from-stack target representation))
                ((and (java-long-type-p type1) (java-long-type-p type2))
                 ;; Both arguments are longs.
-                (compile-form arg1 'stack :long)
-                (compile-form arg2 'stack :long)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack :long
+							   arg2 'stack :long)
                 (emit 'land)
                 (case representation
                   (:int
@@ -5332,9 +5262,8 @@ Note: DEFUN implies a named lambda."
                     (and (java-long-type-p type2)
                          (compiler-subtypep type2 'unsigned-byte)))
                 ;; One of the arguments is a positive long.
-                (compile-form arg1 'stack :long)
-                (compile-form arg2 'stack :long)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack :long
+							   arg2 'stack :long)
                 (emit 'land)
                 (case representation
                   (:int
@@ -5345,18 +5274,16 @@ Note: DEFUN implies a named lambda."
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type2)
                 ;;                     (format t "p2-logand LispObject.LOGAND(int) 1~%")
-                (compile-form arg1 'stack nil)
-                (compile-form arg2 'stack :int)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							   arg2 'stack :int)
                 (emit-invokevirtual +lisp-object-class+ "LOGAND" '("I") +lisp-object+)
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type1)
                 ;;                     (format t "p2-logand LispObject.LOGAND(int) 2~%")
                 ;; arg1 is a fixnum, but arg2 is not
-                (compile-form arg1 'stack :int)
-                (compile-form arg2 'stack 'nil)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+							   arg2 'stack nil)
                 ;; swap args
                 (emit 'swap)
                 (emit-invokevirtual +lisp-object-class+ "LOGAND" '("I") +lisp-object+)
@@ -5364,9 +5291,8 @@ Note: DEFUN implies a named lambda."
                 (emit-move-from-stack target representation))
                (t
                 ;;                     (format t "p2-logand LispObject.LOGAND(LispObject)~%")
-                (compile-form arg1 'stack nil)
-                (compile-form arg2 'stack nil)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							   arg2 'stack nil)
                 (emit-invokevirtual +lisp-object-class+ "LOGAND"
                                     (lisp-object-arg-types 1) +lisp-object+)
                 (fix-boxing representation result-type)
@@ -5382,8 +5308,7 @@ Note: DEFUN implies a named lambda."
        (compile-constant 0 target representation))
       (1
        (let ((arg (%car args)))
-         (compile-form arg target representation)
-         (maybe-emit-clear-values arg)))
+	 (compile-forms-and-maybe-emit-clear-values arg target representation)))
       (2
        (let* ((arg1 (%car args))
               (arg2 (%cadr args))
@@ -5398,9 +5323,8 @@ Note: DEFUN implies a named lambda."
                type2 (derive-compiler-type arg2)
                result-type (derive-compiler-type form))
          (cond ((and (fixnum-constant-value type1) (fixnum-constant-value type2))
-                (compile-form arg1 nil nil) ; for effect
-                (compile-form arg2 nil nil) ; for effect
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 nil nil
+							   arg2 nil nil)
                 (compile-constant (logior (fixnum-constant-value type1)
                                           (fixnum-constant-value type2))
                                   target representation))
@@ -5408,9 +5332,8 @@ Note: DEFUN implies a named lambda."
                 (when (null representation)
                   (emit 'new +lisp-fixnum-class+)
                   (emit 'dup))
-                (compile-form arg1 'stack :int)
-                (compile-form arg2 'stack :int)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+							   arg2 'stack :int)
                 (emit 'ior)
                 (case representation
                   (:int)
@@ -5420,42 +5343,36 @@ Note: DEFUN implies a named lambda."
                    (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
                 (emit-move-from-stack target representation))
                ((and (eql (fixnum-constant-value type1) 0) (< *safety* 3))
-                (compile-form arg1 nil nil) ; for effect
-                (compile-form arg2 target representation)
-                (maybe-emit-clear-values arg1 arg2))
+		(compile-forms-and-maybe-emit-clear-values arg1 nil nil
+							   arg2 target representation))
                ((and (eql (fixnum-constant-value type2) 0) (< *safety* 3))
-                (compile-form arg1 target representation)
-                (compile-form arg2 nil nil) ; for effect
-                (maybe-emit-clear-values arg1 arg2))
+		(compile-forms-and-maybe-emit-clear-values arg1 target representation
+							   arg2 nil nil))
                ((or (eq representation :long)
                     (and (java-long-type-p type1) (java-long-type-p type2)))
-                (compile-form arg1 'stack :long)
-                (compile-form arg2 'stack :long)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack :long
+							   arg2 'stack :long)
                 (emit 'lor)
                 (convert-long representation)
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type2)
-                (compile-form arg1 'stack nil)
-                (compile-form arg2 'stack :int)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							   arg2 'stack :int)
                 (emit-invokevirtual +lisp-object-class+ "LOGIOR" '("I") +lisp-object+)
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type1)
                 ;; arg1 is of fixnum type, but arg2 is not
-                (compile-form arg1 'stack :int)
-                (compile-form arg2 'stack 'nil)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+							   arg2 'stack nil)
                 ;; swap args
                 (emit 'swap)
                 (emit-invokevirtual +lisp-object-class+ "LOGIOR" '("I") +lisp-object+)
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
                (t
-                (compile-form arg1 'stack nil)
-                (compile-form arg2 'stack nil)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							   arg2 'stack nil)
                 (emit-invokevirtual +lisp-object-class+ "LOGIOR"
                                     (lisp-object-arg-types 1) +lisp-object+)
                 (fix-boxing representation result-type)
@@ -5474,8 +5391,7 @@ Note: DEFUN implies a named lambda."
        (compile-constant 0 target representation))
       (1
        (let ((arg (%car args)))
-         (compile-form arg target representation)
-         (maybe-emit-clear-values arg)))
+	 (compile-forms-and-maybe-emit-clear-values arg target representation)))
       (2
        (let* ((arg1 (%car args))
               (arg2 (%cadr args))
@@ -5490,18 +5406,16 @@ Note: DEFUN implies a named lambda."
                type2       (derive-compiler-type arg2)
                result-type (derive-compiler-type form))
          (cond ((eq representation :int)
-                (compile-form arg1 'stack :int)
-                (compile-form arg2 'stack :int)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+							   arg2 'stack :int)
                 (emit 'ixor))
                ((and (fixnum-type-p type1) (fixnum-type-p type2))
 ;;                 (format t "p2-logxor case 2~%")
                 (when (null representation)
                   (emit 'new +lisp-fixnum-class+)
                   (emit 'dup))
-                (compile-form arg1 'stack :int)
-                (compile-form arg2 'stack :int)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+							   arg2 'stack :int)
                 (emit 'ixor)
                 (case representation
                   (:int)
@@ -5510,21 +5424,18 @@ Note: DEFUN implies a named lambda."
                   (t
                    (emit-invokespecial-init +lisp-fixnum-class+ '("I")))))
                ((and (java-long-type-p type1) (java-long-type-p type2))
-                (compile-form arg1 'stack :long)
-                (compile-form arg2 'stack :long)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack :long
+							   arg2 'stack :long)
                 (emit 'lxor)
                 (convert-long representation))
                ((fixnum-type-p type2)
-                (compile-form arg1 'stack nil)
-                (compile-form arg2 'stack :int)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							   arg2 'stack :int)
                 (emit-invokevirtual +lisp-object-class+ "LOGXOR" '("I") +lisp-object+)
                 (fix-boxing representation result-type))
                (t
-                (compile-form arg1 'stack nil)
-                (compile-form arg2 'stack nil)
-                (maybe-emit-clear-values arg1 arg2)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							   arg2 'stack nil)
                 (emit-invokevirtual +lisp-object-class+ "LOGXOR"
                                     (lisp-object-arg-types 1) +lisp-object+)
                 (fix-boxing representation result-type)))
@@ -5544,8 +5455,7 @@ Note: DEFUN implies a named lambda."
            (when (null representation)
              (emit 'new +lisp-fixnum-class+)
              (emit 'dup))
-           (compile-form arg 'stack :int)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
            (emit 'iconst_m1)
            (emit 'ixor)
            (case representation
@@ -5557,8 +5467,7 @@ Note: DEFUN implies a named lambda."
            (emit-move-from-stack target representation)))
         (t
          (let ((arg (%cadr form)))
-           (compile-form arg 'stack nil)
-           (maybe-emit-clear-values arg))
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil))
          (emit-invokevirtual +lisp-object-class+ "LOGNOT" nil +lisp-object+)
          (fix-boxing representation nil)
          (emit-move-from-stack target representation))))
@@ -5582,20 +5491,18 @@ Note: DEFUN implies a named lambda."
     ;; FIXME Add LispObject.ldb(), returning a Java int, for the case where we
     ;; need an unboxed fixnum result.
     (cond ((eql size 0)
-           (compile-form size-arg nil nil) ; for effect
-           (compile-form position-arg nil nil) ; for effect
-           (compile-form arg3 nil nil) ; for effect)
-           (maybe-emit-clear-values size-arg position-arg arg3)
+	   (compile-forms-and-maybe-emit-clear-values size-arg nil nil
+						      position-arg nil nil
+						      arg3 nil nil)
            (compile-constant 0 target representation))
           ((and size position)
            (cond ((<= (+ position size) 31)
                   (when (null representation)
                     (emit 'new +lisp-fixnum-class+)
                     (emit 'dup))
-                  (compile-form size-arg nil nil) ; for effect
-                  (compile-form position-arg nil nil) ; for effect
-                  (compile-form arg3 'stack :int)
-                  (maybe-emit-clear-values size-arg position-arg arg3)
+		  (compile-forms-and-maybe-emit-clear-values size-arg nil nil
+							     position-arg nil nil
+							     arg3 'stack :int)
                   (unless (zerop position)
                     (emit-push-constant-int position)
                     (emit 'ishr))
@@ -5613,10 +5520,9 @@ Note: DEFUN implies a named lambda."
                     ;; Result is a fixnum.
                     (emit 'new +lisp-fixnum-class+)
                     (emit 'dup))
-                  (compile-form size-arg nil nil) ; for effect
-                  (compile-form position-arg nil nil) ; for effect
-                  (compile-form arg3 'stack :long)
-                  (maybe-emit-clear-values size-arg position-arg arg3)
+		  (compile-forms-and-maybe-emit-clear-values size-arg nil nil
+							     position-arg nil nil
+							     arg3 'stack :long)
                   (unless (zerop position)
                     (emit-push-constant-int position)
                     (emit 'lshr))
@@ -5636,8 +5542,7 @@ Note: DEFUN implies a named lambda."
                          (convert-long representation)))
                   (emit-move-from-stack target representation))
                  (t
-                  (compile-form arg3 'stack nil)
-                  (maybe-emit-clear-values arg3)
+		  (compile-forms-and-maybe-emit-clear-values arg3 'stack nil)
                   (emit-push-constant-int size)
                   (emit-push-constant-int position)
                   (emit-invokevirtual +lisp-object-class+ "LDB" '("I" "I") +lisp-object+)
@@ -5645,10 +5550,9 @@ Note: DEFUN implies a named lambda."
                   (emit-move-from-stack target representation))))
           ((and (fixnum-type-p size-type)
                 (fixnum-type-p position-type))
-           (compile-form size-arg 'stack :int)
-           (compile-form position-arg 'stack :int)
-           (compile-form arg3 'stack nil)
-           (maybe-emit-clear-values size-arg position-arg arg3)
+	   (compile-forms-and-maybe-emit-clear-values size-arg 'stack :int
+						      position-arg 'stack :int
+						      arg3 'stack nil)
            (emit 'dup_x2)
            (emit 'pop)
            (emit-invokevirtual +lisp-object-class+ "LDB" '("I" "I") +lisp-object+)
@@ -5670,22 +5574,19 @@ Note: DEFUN implies a named lambda."
     (cond ((and (eq representation :int)
                 (fixnum-type-p type1)
                 (fixnum-type-p type2))
-           (compile-form arg1 'stack :int)
-           (compile-form arg2 'stack :int)
-           (maybe-emit-clear-values arg1 arg2)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+						      arg2 'stack :int)
            (emit-invokestatic +lisp-class+ "mod" '("I" "I") "I")
            (emit-move-from-stack target representation))
           ((fixnum-type-p type2)
-           (compile-form arg1 'stack nil)
-           (compile-form arg2 'stack :int)
-           (maybe-emit-clear-values arg1 arg2)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						      arg2 'stack :int)
            (emit-invokevirtual +lisp-object-class+ "MOD" '("I") +lisp-object+)
            (fix-boxing representation nil) ; FIXME use derived result type
            (emit-move-from-stack target representation))
           (t
-           (compile-form arg1 'stack nil)
-           (compile-form arg2 'stack nil)
-           (maybe-emit-clear-values arg1 arg2)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						      arg2 'stack nil)
            (emit-invokevirtual +lisp-object-class+ "MOD"
                                (lisp-object-arg-types 1) +lisp-object+)
            (fix-boxing representation nil) ; FIXME use derived result type
@@ -5730,8 +5631,7 @@ Note: DEFUN implies a named lambda."
   (let* ((arg (cadr form))
          (type (derive-compiler-type arg)))
     (cond ((fixnum-type-p type)
-           (compile-form arg 'stack :int)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
            (let ((LABEL1 (gensym))
                  (LABEL2 (gensym)))
              (emit 'ifne LABEL1)
@@ -5750,8 +5650,7 @@ Note: DEFUN implies a named lambda."
              (label LABEL2)
              (emit-move-from-stack target representation)))
           ((java-long-type-p type)
-           (compile-form arg 'stack :long)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack :long)
            (emit 'lconst_0)
            (emit 'lcmp)
            (let ((LABEL1 (gensym))
@@ -5764,8 +5663,7 @@ Note: DEFUN implies a named lambda."
              (label LABEL2)
              (emit-move-from-stack target representation)))
           (t
-           (compile-form arg 'stack nil)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
            (emit-invoke-method "ZEROP" target representation)))))
 
 ;; find-class symbol &optional errorp environment => class
@@ -5787,8 +5685,7 @@ Note: DEFUN implies a named lambda."
     (case arg-count
       (1
        ;; errorp is true
-       (compile-form arg1 'stack nil)
-       (maybe-emit-clear-values arg1)
+       (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
        (emit-push-constant-int 1) ; errorp
        (emit-invokestatic +lisp-class-class+ "findClass"
                           (list +lisp-object+ "Z") +lisp-object+)
@@ -5796,9 +5693,8 @@ Note: DEFUN implies a named lambda."
        (emit-move-from-stack target representation))
       (2
        (let ((arg2 (second args)))
-         (compile-form arg1 'stack nil)
-         (compile-form arg2 'stack :boolean)
-         (maybe-emit-clear-values arg1 arg2)
+	 (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						    arg2 'stack :boolean)
          (emit-invokestatic +lisp-class-class+ "findClass"
                             (list +lisp-object+ "Z") +lisp-object+)
          (fix-boxing representation nil)
@@ -5814,9 +5710,8 @@ Note: DEFUN implies a named lambda."
          (arg2 (second args)))
     (case arg-count
       (2
-       (compile-form arg1 'stack nil)
-       (compile-form arg2 'stack nil)
-       (maybe-emit-clear-values arg1 arg2)
+       (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						  arg2 'stack nil)
        (emit 'swap)
        (cond (target
               (emit-invokevirtual +lisp-object-class+ "VECTOR_PUSH_EXTEND"
@@ -5837,9 +5732,8 @@ Note: DEFUN implies a named lambda."
   (let* ((args (cdr form))
          (arg1 (first args))
          (arg2 (second args)))
-    (compile-form arg1 'stack nil)
-    (compile-form arg2 'stack nil)
-    (maybe-emit-clear-values arg1 arg2)
+    (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+					       arg2 'stack nil)
     (emit-invokevirtual +lisp-object-class+ "SLOT_VALUE"
                         (lisp-object-arg-types 1) +lisp-object+)
     (fix-boxing representation nil)
@@ -5857,10 +5751,9 @@ Note: DEFUN implies a named lambda."
          (arg3 (third args))
          (*register* *register*)
          (value-register (when target (allocate-register))))
-    (compile-form arg1 'stack nil)
-    (compile-form arg2 'stack nil)
-    (compile-form arg3 'stack nil)
-    (maybe-emit-clear-values arg1 arg2 arg3)
+    (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+					       arg2 'stack nil
+					       arg3 'stack nil)
     (when value-register
       (emit 'dup)
       (emit 'astore value-register))
@@ -5881,8 +5774,7 @@ Note: DEFUN implies a named lambda."
          (let ((arg (second form)))
            (emit 'new +lisp-simple-vector-class+)
            (emit 'dup)
-           (compile-form arg 'stack :int)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
            (emit-invokespecial-init +lisp-simple-vector-class+ '("I"))
            (emit-move-from-stack target representation)))
         (t
@@ -5913,8 +5805,7 @@ Note: DEFUN implies a named lambda."
         (when class
           (emit 'new class)
           (emit 'dup)
-          (compile-form arg2 'stack :int)
-          (maybe-emit-clear-values arg2)
+	  (compile-forms-and-maybe-emit-clear-values arg2 'stack :int)
           (emit-invokespecial-init class '("I"))
           (emit-move-from-stack target representation)
           (return-from p2-make-sequence)))))
@@ -5929,8 +5820,7 @@ Note: DEFUN implies a named lambda."
          (let ((arg (second form)))
            (emit 'new +lisp-simple-string-class+)
            (emit 'dup)
-           (compile-form arg 'stack :int)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
            (emit-invokespecial-init +lisp-simple-string-class+ '("I"))
            (emit-move-from-stack target representation)))
         (t
@@ -5990,8 +5880,7 @@ Note: DEFUN implies a named lambda."
     (return-from p2-stream-element-type))
   (let ((arg (%cadr form)))
     (cond ((eq (derive-compiler-type arg) 'STREAM)
-           (compile-form arg 'stack nil)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
            (emit 'checkcast +lisp-stream-class+)
            (emit-invokevirtual +lisp-stream-class+ "getElementType"
                                nil +lisp-object+)
@@ -6042,8 +5931,7 @@ Note: DEFUN implies a named lambda."
               (type1 (derive-compiler-type arg1)))
          (cond ((compiler-subtypep type1 'stream)
 ;;                 (format t "p2-read-line optimized case 1~%")
-                (compile-form arg1 'stack nil)
-                (maybe-emit-clear-values arg1)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
                 (emit 'checkcast +lisp-stream-class+)
                 (emit-push-constant-int 1)
                 (emit-push-nil)
@@ -6059,8 +5947,7 @@ Note: DEFUN implies a named lambda."
               (arg2 (%cadr args)))
          (cond ((and (compiler-subtypep type1 'stream) (null arg2))
 ;;                 (format t "p2-read-line optimized case 2~%")
-                (compile-form arg1 'stack nil)
-                (maybe-emit-clear-values arg1)
+		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
                 (emit 'checkcast +lisp-stream-class+)
                 (emit-push-constant-int 0)
                 (emit-push-nil)
@@ -6581,8 +6468,7 @@ Note: DEFUN implies a named lambda."
     (compile-function-call form target representation)
     (return-from p2-length))
   (let ((arg (cadr form)))
-    (compile-form arg 'stack nil)
-    (maybe-emit-clear-values arg)
+    (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
     (case representation
       (:int
        (emit-invokevirtual +lisp-object-class+ "length" nil "I"))
@@ -6645,8 +6531,7 @@ Note: DEFUN implies a named lambda."
   (let* ((args (cdr form))
          (length (length args)))
     (cond ((= length 1)
-           (compile-form (first args) 'stack nil)
-           (maybe-emit-clear-values (first args))
+	   (compile-forms-and-maybe-emit-clear-values (first args) 'stack nil)
            (emit-move-from-stack target representation))
           ((= length 2)
            (let ((arg1 (first args))
@@ -6702,9 +6587,8 @@ Note: DEFUN implies a named lambda."
     (return-from compile-nth))
   (let ((index-form (second form))
         (list-form (third form)))
-    (compile-form index-form 'stack :int)
-    (compile-form list-form 'stack nil)
-    (maybe-emit-clear-values index-form list-form)
+    (compile-forms-and-maybe-emit-clear-values index-form 'stack :int
+					       list-form 'stack nil)
     (emit 'swap)
     (emit-invokevirtual +lisp-object-class+ "NTH" '("I") +lisp-object+)
     (fix-boxing representation nil) ; FIXME use derived result type
@@ -6734,9 +6618,8 @@ Note: DEFUN implies a named lambda."
                      (unless (eq representation :int)
                        (emit 'new +lisp-fixnum-class+)
                        (emit 'dup))
-                     (compile-form arg1 'stack :int)
-                     (compile-form arg2 'stack :int)
-                     (maybe-emit-clear-values arg1 arg2)
+		     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+								arg2 'stack :int)
                      (emit 'imul)
                      (unless (eq representation :int)
                        (emit-invokespecial-init +lisp-fixnum-class+ '("I"))
@@ -6754,16 +6637,14 @@ Note: DEFUN implies a named lambda."
              ((and (java-long-type-p type1)
                    (java-long-type-p type2)
                    (java-long-type-p result-type))
-              (compile-form arg1 'stack :long)
-              (compile-form arg2 'stack :long)
-              (maybe-emit-clear-values arg1 arg2)
+	      (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
+							 arg2 'stack :long)
               (emit 'lmul)
               (convert-long representation)
               (emit-move-from-stack target representation))
              ((fixnump arg2)
 ;;               (format t "p2-times case 3~%")
-              (compile-form arg1 'stack nil)
-              (maybe-emit-clear-values arg1)
+	      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
               (emit-push-int arg2)
               (emit-invokevirtual +lisp-object-class+ "multiplyBy" '("I") +lisp-object+)
 ;;               (when (eq representation :int)
@@ -6785,9 +6666,8 @@ Note: DEFUN implies a named lambda."
                 (arg1 (%car args))
                 (arg2 (%cadr args)))
            (when (null target)
-             (compile-form arg1 nil nil)
-             (compile-form arg2 nil nil)
-             (maybe-emit-clear-values arg1 arg2)
+	     (compile-forms-and-maybe-emit-clear-values arg1 nil nil
+							arg2 nil nil)
              (return-from p2-min/max))
            (when (notinline-p op)
              (compile-function-call form target representation)
@@ -6890,14 +6770,12 @@ Note: DEFUN implies a named lambda."
        (cond ((and (numberp arg1) (numberp arg2))
               (compile-constant (+ arg1 arg2) target representation))
              ((and (numberp arg1) (eql arg1 0))
-              (compile-form arg1 nil nil) ; for effect
-              (compile-form arg2 'stack representation)
-              (maybe-emit-clear-values arg1 arg2)
+	      (compile-forms-and-maybe-emit-clear-values arg1 nil nil
+							 arg2 'stack representation)
               (emit-move-from-stack target representation))
              ((and (numberp arg2) (eql arg2 0))
-              (compile-form arg1 'stack representation)
-              (compile-form arg2 nil nil) ; for effect
-              (maybe-emit-clear-values arg1 arg2)
+	      (compile-forms-and-maybe-emit-clear-values arg1 'stack representation
+							 arg2 nil nil)
               (emit-move-from-stack target representation))
              ((and (fixnum-type-p type1) (fixnum-type-p type2))
               (cond ((or (eq representation :int)
@@ -6905,9 +6783,8 @@ Note: DEFUN implies a named lambda."
                      (when (null representation)
                        (emit 'new +lisp-fixnum-class+)
                        (emit 'dup))
-                     (compile-form arg1 'stack :int)
-                     (compile-form arg2 'stack :int)
-                     (maybe-emit-clear-values arg1 arg2)
+		     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+								arg2 'stack :int)
                      (emit 'iadd)
                      (case representation
                        (:int)
@@ -6942,17 +6819,14 @@ Note: DEFUN implies a named lambda."
               (convert-long representation)
               (emit-move-from-stack target representation))
              ((eql arg2 1)
-              (compile-form arg1 'stack nil)
-              (maybe-emit-clear-values arg1)
+	      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
               (emit-invoke-method "incr" target representation))
              ((eql arg1 1)
-              (compile-form arg2 'stack nil)
-              (maybe-emit-clear-values arg2)
+	      (compile-forms-and-maybe-emit-clear-values arg2 'stack nil)
               (emit-invoke-method "incr" target representation))
              ((fixnum-type-p type1)
-              (compile-form arg1 'stack :int)
-              (compile-form arg2 'stack nil)
-              (maybe-emit-clear-values arg1 arg2)
+	      (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+							 arg2 'stack nil)
               (emit 'swap)
               (emit-invokevirtual +lisp-object-class+ "add" '("I") +lisp-object+)
               (fix-boxing representation result-type)
@@ -7015,8 +6889,7 @@ Note: DEFUN implies a named lambda."
                  (emit-box-long)))
               (emit-move-from-stack target representation))
              (t
-              (compile-form arg 'stack nil)
-              (maybe-emit-clear-values arg)
+	      (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
               (emit-invokevirtual +lisp-object-class+ "negate"
                                   nil +lisp-object+)
               (fix-boxing representation nil)
@@ -7036,9 +6909,8 @@ Note: DEFUN implies a named lambda."
                      (when (null representation)
                        (emit 'new +lisp-fixnum-class+)
                        (emit 'dup))
-                     (compile-form arg1 'stack :int)
-                     (compile-form arg2 'stack :int)
-                     (maybe-emit-clear-values arg1 arg2)
+		     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+								arg2 'stack :int)
                      (emit 'isub)
                      (case representation
                        (:int)
@@ -7057,16 +6929,14 @@ Note: DEFUN implies a named lambda."
               (emit-move-from-stack target representation))
              ((and (java-long-type-p type1) (java-long-type-p type2)
                    (java-long-type-p result-type))
-              (compile-form arg1 'stack :long)
-              (compile-form arg2 'stack :long)
-              (maybe-emit-clear-values arg1 arg2)
+	      (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
+							 arg2 'stack :long)
               (emit 'lsub)
               (convert-long representation)
               (emit-move-from-stack target representation))
              ((fixnum-type-p type2)
-              (compile-form arg1 'stack nil)
-              (compile-form arg2 'stack :int)
-              (maybe-emit-clear-values arg1 arg2)
+	      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							 arg2 'stack :int)
               (emit-invokevirtual +lisp-object-class+ "subtract" '("I") +lisp-object+)
               (fix-boxing representation result-type)
               (emit-move-from-stack target representation))
@@ -7112,9 +6982,8 @@ Note: DEFUN implies a named lambda."
                                '("I") "C")
            (emit-move-from-stack target representation))
           ((fixnum-type-p type2)
-           (compile-form arg1 'stack nil)
-           (compile-form arg2 'stack :int)
-           (maybe-emit-clear-values arg1 arg2)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						      arg2 'stack :int)
            (emit-invokevirtual +lisp-object-class+
                                (symbol-name op) ;; "CHAR" or "SCHAR"
                                '("I") +lisp-object+)
@@ -7181,9 +7050,8 @@ Note: DEFUN implies a named lambda."
               (neq representation :char)) ; FIXME
          (let ((arg1 (%cadr form))
                (arg2 (%caddr form)))
-           (compile-form arg1 'stack nil) ; vector
-           (compile-form arg2 'stack :int) ; index
-           (maybe-emit-clear-values arg1 arg2)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						      arg2 'stack :int)
            (emit-invokevirtual +lisp-object-class+ "SVREF" '("I") +lisp-object+)
            (fix-boxing representation nil)
            (emit-move-from-stack target representation)))
@@ -7258,14 +7126,12 @@ Note: DEFUN implies a named lambda."
             (type1 (derive-compiler-type arg1)))
        (case representation
          (:int
-          (compile-form arg1 'stack nil) ; array
-          (compile-form arg2 'stack :int) ; index
-          (maybe-emit-clear-values arg1 arg2)
+	  (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						     arg2 'stack :int)
           (emit-invokevirtual +lisp-object-class+ "aref" '("I") "I"))
          (:long
-          (compile-form arg1 'stack nil) ; array
-          (compile-form arg2 'stack :int) ; index
-          (maybe-emit-clear-values arg1 arg2)
+	  (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						     arg2 'stack :int)
           (emit-invokevirtual +lisp-object-class+ "aref_long" '("I") "J"))
          (:char
           (cond ((compiler-subtypep type1 'string)
@@ -7276,15 +7142,13 @@ Note: DEFUN implies a named lambda."
                  (emit-invokevirtual +lisp-abstract-string-class+
                                      "charAt" '("I") "C"))
                 (t
-                 (compile-form arg1 'stack nil) ; array
-                 (compile-form arg2 'stack :int) ; index
-                 (maybe-emit-clear-values arg1 arg2)
+		 (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							    arg2 'stack :int)
                  (emit-invokevirtual +lisp-object-class+ "AREF" '("I") +lisp-object+)
                  (emit-unbox-character))))
          (t
-          (compile-form arg1 'stack nil) ; array
-          (compile-form arg2 'stack :int) ; index
-          (maybe-emit-clear-values arg1 arg2)
+	  (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						     arg2 'stack :int)
           (emit-invokevirtual +lisp-object-class+ "AREF" '("I") +lisp-object+)
           (fix-boxing representation nil)))
        (emit-move-from-stack target representation)))
@@ -7376,8 +7240,7 @@ Note: DEFUN implies a named lambda."
          (arg2 (second args)))
     (cond ((and (fixnump arg2)
                 (null representation))
-           (compile-form arg1 'stack nil)
-           (maybe-emit-clear-values arg1)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
            (case arg2
              (0
               (emit-invokevirtual +lisp-object-class+ "getSlotValue_0"
@@ -7397,8 +7260,7 @@ Note: DEFUN implies a named lambda."
                                   '("I") +lisp-object+)))
            (emit-move-from-stack target representation))
           ((fixnump arg2)
-           (compile-form arg1 'stack nil)
-           (maybe-emit-clear-values arg1)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
            (emit 'sipush arg2)
            (case representation
              (:int
@@ -7436,9 +7298,8 @@ Note: DEFUN implies a named lambda."
                (<= 0 arg2 3))
           (let* ((*register* *register*)
                  (value-register (when target (allocate-register))))
-            (compile-form arg1 'stack nil)
-            (compile-form arg3 'stack nil)
-            (maybe-emit-clear-values arg1 arg3)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+						      arg3 'stack nil)
             (when value-register
               (emit 'dup)
               (emit 'astore value-register))
@@ -7481,8 +7342,7 @@ Note: DEFUN implies a named lambda."
            (emit-push-false representation))
           ((and (consp arg)
                 (memq (%car arg) '(NOT NULL)))
-           (compile-form (second arg) 'stack nil)
-           (maybe-emit-clear-values (second arg))
+	   (compile-forms-and-maybe-emit-clear-values (second arg) 'stack nil)
            (emit-push-nil)
            (let ((LABEL1 (gensym))
                  (LABEL2 (gensym)))
@@ -7493,13 +7353,11 @@ Note: DEFUN implies a named lambda."
              (emit-push-false representation)
              (emit 'label LABEL2)))
           ((eq representation :boolean)
-           (compile-form arg 'stack :boolean)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack :boolean)
            (emit 'iconst_1)
            (emit 'ixor))
           ((eq (derive-compiler-type arg) 'BOOLEAN)
-           (compile-form arg 'stack :boolean)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack :boolean)
            (let ((LABEL1 (gensym))
                  (LABEL2 (gensym)))
              (emit 'ifeq LABEL1)
@@ -7509,8 +7367,7 @@ Note: DEFUN implies a named lambda."
              (emit-push-t)
              (emit 'label LABEL2)))
           (t
-           (compile-form arg 'stack nil)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
            (let ((LABEL1 (gensym))
                  (LABEL2 (gensym)))
              (emit-push-nil)
@@ -7530,9 +7387,8 @@ Note: DEFUN implies a named lambda."
          (arg1 (%car args))
          (arg2 (%cadr args)))
     (cond ((fixnum-type-p (derive-compiler-type arg1))
-           (compile-form arg1 'stack :int)
-           (compile-form arg2 'stack nil)
-           (maybe-emit-clear-values arg1 arg2)
+	   (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+						      arg2 'stack nil)
            (emit 'swap)
            (emit-invokevirtual +lisp-object-class+ "nthcdr" '("I") +lisp-object+)
            (fix-boxing representation nil)
@@ -7554,13 +7410,11 @@ Note: DEFUN implies a named lambda."
              (arg2 (%cadr args))
              (FAIL (gensym))
              (DONE (gensym)))
-         (compile-form arg1 'stack :boolean)
-         (maybe-emit-clear-values arg1)
+	 (compile-forms-and-maybe-emit-clear-values arg1 'stack :boolean)
          (emit 'ifeq FAIL)
          (case representation
            (:boolean
-            (compile-form arg2 'stack :boolean)
-            (maybe-emit-clear-values arg2)
+	    (compile-forms-and-maybe-emit-clear-values arg2 'stack :boolean)
             (emit 'goto DONE)
             (label FAIL)
             (emit 'iconst_0))
@@ -7590,8 +7444,7 @@ Note: DEFUN implies a named lambda."
              (arg2 (%cadr args))
              (LABEL1 (gensym))
              (LABEL2 (gensym)))
-         (compile-form arg1 'stack nil)
-         (maybe-emit-clear-values arg1)
+	 (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
          (emit 'dup)
          (emit-push-nil)
          (emit 'if_acmpne LABEL1)
@@ -7617,8 +7470,7 @@ Note: DEFUN implies a named lambda."
        (emit-move-from-stack target))
       (1
        (let ((arg (%car args)))
-         (compile-form arg target representation)
-         (maybe-emit-clear-values arg)))
+	 (compile-forms-and-maybe-emit-clear-values arg target representation)))
       (2
        (emit-push-current-thread)
        (let ((arg1 (%car args))
@@ -7815,13 +7667,11 @@ Note: DEFUN implies a named lambda."
                   (eq (variable-name (var-ref-variable (third value-form))) name))
              ;; (push thing *special*) => (setq *special* (cons thing *special*))
 ;;              (format t "compiling pushSpecial~%")
-             (compile-form (second value-form) 'stack nil)
-             (maybe-emit-clear-values (second value-form))
+	     (compile-forms-and-maybe-emit-clear-values (second value-form) 'stack nil)
              (emit-invokevirtual +lisp-thread-class+ "pushSpecial"
                                  (list +lisp-symbol+ +lisp-object+) +lisp-object+))
             (t
-             (compile-form value-form 'stack nil)
-             (maybe-emit-clear-values value-form)
+	     (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
              (emit-invokevirtual +lisp-thread-class+ "setSpecialVariable"
                                  (list +lisp-symbol+ +lisp-object+) +lisp-object+)))
       (fix-boxing representation nil)
@@ -7831,8 +7681,7 @@ Note: DEFUN implies a named lambda."
     (when (zerop (variable-reads variable))
       ;; If we never read the variable, we don't have to set it.
       (cond (target
-             (compile-form value-form 'stack nil)
-             (maybe-emit-clear-values value-form)
+	     (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
              (fix-boxing representation nil)
              (emit-move-from-stack target representation))
             (t
@@ -7919,8 +7768,7 @@ Note: DEFUN implies a named lambda."
           ((eq (variable-representation variable) :int)
            (dformat t "p2-setq :int case value-form = ~S~%"
                     value-form)
-           (compile-form value-form 'stack :int)
-           (maybe-emit-clear-values value-form)
+	   (compile-forms-and-maybe-emit-clear-values value-form 'stack :int)
            (when target
              (emit 'dup))
            (emit 'istore (variable-register variable))
@@ -7939,8 +7787,7 @@ Note: DEFUN implies a named lambda."
              (emit-move-from-stack target representation)))
           ((eq (variable-representation variable) :char)
            (dformat t "p2-setq :char case~%")
-           (compile-form value-form 'stack :char)
-           (maybe-emit-clear-values value-form)
+	   (compile-forms-and-maybe-emit-clear-values value-form 'stack :char)
            (when target
              (emit 'dup))
            (emit 'istore (variable-register variable))
@@ -7954,8 +7801,7 @@ Note: DEFUN implies a named lambda."
                (emit-invokespecial-init +lisp-character-class+ '("C")) ; stack: character
                (emit-move-from-stack target representation))))
           ((eq (variable-representation variable) :long)
-           (compile-form value-form 'stack :long)
-           (maybe-emit-clear-values value-form)
+	   (compile-forms-and-maybe-emit-clear-values value-form 'stack :long)
            (when target
              (emit 'dup2))
            (emit 'lstore (variable-register variable))
@@ -7969,8 +7815,7 @@ Note: DEFUN implies a named lambda."
                 (emit-box-long)))
              (emit-move-from-stack target representation)))
           ((eq (variable-representation variable) :boolean)
-           (compile-form value-form 'stack :boolean)
-           (maybe-emit-clear-values value-form)
+	   (compile-forms-and-maybe-emit-clear-values value-form 'stack :boolean)
            (when target
              (emit 'dup))
            (emit 'istore (variable-register variable))
@@ -7982,8 +7827,7 @@ Note: DEFUN implies a named lambda."
                 (emit-box-boolean)))
              (emit-move-from-stack target representation)))
           (t
-           (compile-form value-form 'stack nil)
-           (maybe-emit-clear-values value-form)
+	   (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
            (when target
              (emit 'dup))
            (emit 'var-set variable)
@@ -7997,8 +7841,7 @@ Note: DEFUN implies a named lambda."
            (unless (eq representation :int)
              (emit 'new +lisp-fixnum-class+)
              (emit 'dup))
-           (compile-form arg 'stack nil)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
            (emit-invokevirtual +lisp-object-class+ "sxhash" nil "I")
            (unless (eq representation :int)
              (emit-invokespecial-init +lisp-fixnum-class+ '("I"))
@@ -8014,8 +7857,7 @@ Note: DEFUN implies a named lambda."
     (return-from p2-symbol-name))
   (let ((arg (%cadr form)))
     (cond ((and (eq (derive-compiler-type arg) 'SYMBOL) (< *safety* 3))
-           (compile-form arg 'stack nil)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
            (emit 'checkcast +lisp-symbol-class+)
            (emit 'getfield  +lisp-symbol-class+ "name" +lisp-simple-string+)
            (emit-move-from-stack target representation))
@@ -8029,8 +7871,7 @@ Note: DEFUN implies a named lambda."
     (return-from p2-symbol-package))
   (let ((arg (%cadr form)))
     (cond ((and (eq (derive-compiler-type arg) 'SYMBOL) (< *safety* 3))
-           (compile-form arg 'stack nil)
-           (maybe-emit-clear-values arg)
+	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
            (emit 'checkcast +lisp-symbol-class+)
            (emit-invokevirtual +lisp-symbol-class+ "getPackage"
                                nil +lisp-object+)
@@ -8044,8 +7885,7 @@ Note: DEFUN implies a named lambda."
   (when (check-arg-count form 1)
     (let ((arg (%cadr form)))
       (when (eq (derive-compiler-type arg) 'SYMBOL)
-        (compile-form arg 'stack nil)
-        (maybe-emit-clear-values arg)
+	(compile-forms-and-maybe-emit-clear-values arg 'stack nil)
         (emit 'checkcast +lisp-symbol-class+)
         (emit-push-current-thread)
         (emit-invokevirtual +lisp-symbol-class+ "symbolValue"
@@ -8207,16 +8047,13 @@ Note: DEFUN implies a named lambda."
         (return-from p2-char=))
       (cond ((characterp arg1)
              (emit-push-constant-int (char-code arg1))
-             (compile-form arg2 'stack :char)
-             (maybe-emit-clear-values arg2))
+	     (compile-forms-and-maybe-emit-clear-values arg2 'stack :char))
             ((characterp arg2)
-             (compile-form arg1 'stack :char)
-             (maybe-emit-clear-values arg1)
+	     (compile-forms-and-maybe-emit-clear-values arg1 'stack :char)
              (emit-push-constant-int (char-code arg2)))
             (t
-             (compile-form arg1 'stack :char)
-             (compile-form arg2 'stack :char)
-             (maybe-emit-clear-values arg1 arg2)))
+	     (compile-forms-and-maybe-emit-clear-values arg1 'stack :char
+							arg2 'stack :char)))
       (let ((LABEL1 (gensym))
             (LABEL2 (gensym)))
         (emit 'if_icmpeq LABEL1)
@@ -8433,6 +8270,8 @@ Note: DEFUN implies a named lambda."
         (t
          (compiler-unsupported "COMPILE-FORM unhandled case ~S" form)))
   t)
+
+
 
 ;; Returns descriptor.
 (defun analyze-args (compiland)
