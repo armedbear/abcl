@@ -4838,6 +4838,17 @@ Note: DEFUN implies a named lambda."
     (emit-push-nil)
     (emit-move-from-stack target)))
 
+(defun do-write-class-file (class-file compiland)
+  (with-class-file class-file
+    (let ((*current-compiland* compiland))
+      (with-saved-compiler-policy
+	  (p2-compiland compiland)
+	(write-class-file (compiland-class-file compiland))))))
+
+(defun set-compiland-and-write-class-file (class-file compiland)
+  (setf (compiland-class-file compiland) class-file)
+  (do-write-class-file class-file compiland))
+
 (defknown p2-flet-process-compiland (t) t)
 (defun p2-flet-process-compiland (local-function)
   (let* ((compiland (local-function-compiland local-function))
@@ -4846,12 +4857,7 @@ Note: DEFUN implies a named lambda."
            (let* ((pathname (sys::next-classfile-name))
                   (class-file (make-class-file :pathname pathname
                                                :lambda-list lambda-list)))
-             (setf (compiland-class-file compiland) class-file)
-             (with-class-file class-file
-               (let ((*current-compiland* compiland))
-                 (with-saved-compiler-policy
-                   (p2-compiland compiland)
-                   (write-class-file (compiland-class-file compiland)))))
+	     (set-compiland-and-write-class-file class-file compiland)
              ;; Verify that the class file is loadable.
              (let ((*load-truename* (pathname pathname)))
                (unless (ignore-errors (load-compiled-function pathname))
@@ -4878,14 +4884,9 @@ Note: DEFUN implies a named lambda."
            (let* ((pathname (make-temp-file))
                   (class-file (make-class-file :pathname pathname
                                                :lambda-list lambda-list)))
-             (setf (compiland-class-file compiland) class-file)
              (unwind-protect
                  (progn
-                   (with-class-file class-file
-                     (let ((*current-compiland* compiland))
-                       (with-saved-compiler-policy
-                         (p2-compiland compiland)
-                         (write-class-file (compiland-class-file compiland)))))
+		   (set-compiland-and-write-class-file class-file compiland)
                    (setf (local-function-class-file local-function) class-file)
                    (setf (local-function-function local-function) (load-compiled-function pathname))
 
@@ -4914,12 +4915,7 @@ Note: DEFUN implies a named lambda."
            (let* ((pathname (sys::next-classfile-name))
                   (class-file (make-class-file :pathname pathname
                                                :lambda-list lambda-list)))
-             (setf (compiland-class-file compiland) class-file)
-             (with-class-file class-file
-               (let ((*current-compiland* compiland))
-                 (with-saved-compiler-policy
-                   (p2-compiland compiland)
-                   (write-class-file (compiland-class-file compiland)))))
+	     (set-compiland-and-write-class-file class-file compiland)
              ;; Verify that the class file is loadable.
              (let ((*load-truename* (pathname pathname)))
                (unless (ignore-errors (load-compiled-function pathname))
@@ -4944,14 +4940,9 @@ Note: DEFUN implies a named lambda."
            (let* ((pathname (make-temp-file))
                   (class-file (make-class-file :pathname pathname
                                                :lambda-list lambda-list)))
-             (setf (compiland-class-file compiland) class-file)
              (unwind-protect
                  (progn
-                   (with-class-file class-file
-                     (let ((*current-compiland* compiland))
-                       (with-saved-compiler-policy
-                         (p2-compiland compiland)
-                         (write-class-file (compiland-class-file compiland)))))
+		   (set-compiland-and-write-class-file class-file compiland)
                    (setf (local-function-class-file local-function) class-file)
                    (let ((g (declare-object (load-compiled-function pathname))))
                      (emit 'getstatic *this-class* g +lisp-object+)
@@ -5023,12 +5014,8 @@ Note: DEFUN implies a named lambda."
            (setf (compiland-class-file compiland)
                  (make-class-file :pathname (sys::next-classfile-name)
                                   :lambda-list lambda-list))
-           (with-class-file (compiland-class-file compiland)
-             (let ((*current-compiland* compiland))
-               (with-saved-compiler-policy
-                 (p2-compiland compiland)
-                 (write-class-file (compiland-class-file compiland)))))
            (let ((class-file (compiland-class-file compiland)))
+	     (do-write-class-file class-file compiland)
              (emit 'getstatic *this-class*
                    (declare-local-function (make-local-function :class-file class-file))
                    +lisp-object+)))
@@ -5039,11 +5026,7 @@ Note: DEFUN implies a named lambda."
                                     :lambda-list lambda-list))
              (unwind-protect
                  (progn
-                   (with-class-file (compiland-class-file compiland)
-                     (let ((*current-compiland* compiland))
-                       (with-saved-compiler-policy
-                         (p2-compiland compiland)
-                         (write-class-file (compiland-class-file compiland)))))
+		   (do-write-class-file (compiland-class-file compiland) compiland)
                    (emit 'getstatic *this-class*
                          (declare-object (load-compiled-function pathname))
                          +lisp-object+))
