@@ -479,26 +479,17 @@
 
 (defknown generate-type-check-for-variable (t) t)
 (defun generate-type-check-for-variable (variable)
-  (let ((declared-type (variable-declared-type variable)))
-    (cond ((eq declared-type :none)) ; Nothing to do.
-          ((eq declared-type 'SYMBOL)
-           (generate-instanceof-type-check-for-variable variable 'SYMBOL))
-          ((eq declared-type 'CHARACTER)
-           (generate-instanceof-type-check-for-variable variable 'CHARACTER))
-          ((eq declared-type 'CONS)
-           (generate-instanceof-type-check-for-variable variable 'CONS))
-          ((eq declared-type 'HASH-TABLE)
-           (generate-instanceof-type-check-for-variable variable 'HASH-TABLE))
-          ((fixnum-type-p declared-type)
-           (generate-instanceof-type-check-for-variable variable 'FIXNUM))
-          ((subtypep declared-type 'STRING)
-           (generate-instanceof-type-check-for-variable variable 'STRING))
-          ((subtypep declared-type 'VECTOR)
-           (generate-instanceof-type-check-for-variable variable 'VECTOR))
-          ((eq declared-type 'STREAM)
-           (generate-instanceof-type-check-for-variable variable 'STREAM))
-          (t
-           nil))))
+  (let* ((declared-type (variable-declared-type variable))
+	 (type-to-use
+	  (if (eq declared-type :none) nil
+	      (or
+	       (when (fixnum-type-p declared-type) 'FIXNUM)
+	       (find-if #'(lambda (type) (eq type declared-type))
+			`(SYMBOL CHARACTER CONS HASH-TABLE STREAM))
+	       (find-if #'(lambda (type) (subtypep declared-type type)) 
+			`(STRING VECTOR))))))
+    (when type-to-use
+      (generate-instanceof-type-check-for-variable variable type-to-use))))
 
 (defknown maybe-generate-type-check (t) t)
 (defun maybe-generate-type-check (variable)
