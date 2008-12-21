@@ -53,32 +53,32 @@ public class CompiledClosure extends Function
 
     public LispObject execute() throws ConditionThrowable
     {
-        return ctf.execute(context);
+        return ctf._execute(context);
     }
 
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
-        return ctf.execute(context, arg);
+        return ctf._execute(context, arg);
     }
 
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {
-        return ctf.execute(context, first, second);
+        return ctf._execute(context, first, second);
     }
 
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third)
         throws ConditionThrowable
     {
-        return ctf.execute(context, first, second, third);
+        return ctf._execute(context, first, second, third);
     }
 
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth)
         throws ConditionThrowable
     {
-        return ctf.execute(context, first, second, third, fourth);
+        return ctf._execute(context, first, second, third, fourth);
     }
 
     public LispObject execute(LispObject first, LispObject second,
@@ -86,7 +86,7 @@ public class CompiledClosure extends Function
                               LispObject fifth)
         throws ConditionThrowable
     {
-        return ctf.execute(context, first, second, third, fourth, fifth);
+        return ctf._execute(context, first, second, third, fourth, fifth);
     }
 
     public LispObject execute(LispObject first, LispObject second,
@@ -94,7 +94,7 @@ public class CompiledClosure extends Function
                               LispObject fifth, LispObject sixth)
         throws ConditionThrowable
     {
-        return ctf.execute(context, first, second, third, fourth, fifth, sixth);
+        return ctf._execute(context, first, second, third, fourth, fifth, sixth);
     }
 
     public LispObject execute(LispObject first, LispObject second,
@@ -103,7 +103,7 @@ public class CompiledClosure extends Function
                               LispObject seventh)
         throws ConditionThrowable
     {
-        return ctf.execute(context, first, second, third, fourth, fifth, sixth,
+        return ctf._execute(context, first, second, third, fourth, fifth, sixth,
                            seventh);
     }
 
@@ -113,12 +113,12 @@ public class CompiledClosure extends Function
                               LispObject seventh, LispObject eighth)
         throws ConditionThrowable
     {
-        return ctf.execute(context, first, second, third, fourth, fifth, sixth,
+        return ctf._execute(context, first, second, third, fourth, fifth, sixth,
                            seventh, eighth);
     }
 
     public LispObject execute(LispObject[] args) throws ConditionThrowable
     {
-        return ctf.execute(context, args);
+        return ctf._execute(context, args);
     }
 }

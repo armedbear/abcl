@@ -33,42 +33,62 @@
 
 package org.armedbear.lisp;
 
-public abstract class ClosureTemplateFunction extends Closure
+public class ClosureTemplateFunction extends Closure
+        implements Cloneable
 {
+
+  public LispObject[] ctx;
+
   public ClosureTemplateFunction(LispObject lambdaList)
     throws ConditionThrowable
   {
     super(list2(Symbol.LAMBDA, lambdaList), null);
   }
 
+  public ClosureTemplateFunction setContext(LispObject[] context)
+  {
+    ctx = context;
+    return this;
+  }
+
+  public ClosureTemplateFunction dup()
+      throws CloneNotSupportedException
+  {
+      return (ClosureTemplateFunction)super.clone();
+  }
+
+
+
+    // execute methods have the semantic meaning
+    // "evaluate this object"
   public final LispObject execute() throws ConditionThrowable
   {
-    return notImplemented();
+      return _execute(ctx);
   }
 
   public final LispObject execute(LispObject arg) throws ConditionThrowable
   {
-    return notImplemented();
+      return _execute(ctx);
   }
 
   public final LispObject execute(LispObject first, LispObject second)
     throws ConditionThrowable
   {
-    return notImplemented();
+      return _execute(ctx, first, second);
   }
 
   public final LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
     throws ConditionThrowable
   {
-    return notImplemented();
+      return _execute(ctx, first, second, third);
   }
 
   public final LispObject execute(LispObject first, LispObject second,
                                   LispObject third, LispObject fourth)
     throws ConditionThrowable
   {
-    return notImplemented();
+      return _execute(ctx, first, second, third, fourth);
   }
 
   public final LispObject execute(LispObject first, LispObject second,
@@ -76,7 +96,7 @@ public abstract class ClosureTemplateFunction extends Closure
                                   LispObject fifth)
     throws ConditionThrowable
   {
-    return notImplemented();
+      return _execute(ctx, first, second, third, fourth, fifth);
   }
 
   public final LispObject execute(LispObject first, LispObject second,
@@ -84,7 +104,7 @@ public abstract class ClosureTemplateFunction extends Closure
                                   LispObject fifth, LispObject sixth)
     throws ConditionThrowable
   {
-    return notImplemented();
+      return _execute(ctx, first, second, third, fourth, fifth, sixth);
   }
 
   public final LispObject execute(LispObject first, LispObject second,
@@ -93,7 +113,7 @@ public abstract class ClosureTemplateFunction extends Closure
                                   LispObject seventh)
     throws ConditionThrowable
   {
-    return notImplemented();
+      return _execute(ctx, first, second, third, fourth, fifth, sixth, seventh);
   }
 
   public final LispObject execute(LispObject first, LispObject second,
@@ -102,7 +122,14 @@ public abstract class ClosureTemplateFunction extends Closure
                                   LispObject seventh, LispObject eighth)
     throws ConditionThrowable
   {
-    return notImplemented();
+      return _execute(ctx, first, second, third, fourth, fifth,
+              sixth, seventh, eighth);
+  }
+
+  public final LispObject execute(LispObject[] args)
+    throws ConditionThrowable
+  {
+    return _execute(ctx, args);
   }
 
   private final LispObject notImplemented() throws ConditionThrowable
@@ -110,35 +137,39 @@ public abstract class ClosureTemplateFunction extends Closure
     return error(new WrongNumberOfArgumentsException(this));
   }
 
+
+    // _execute methods have the semantic meaning
+    // "evaluate this template with these values"
+
   // Zero args.
-  public LispObject execute(LispObject[] context) throws ConditionThrowable
+  public LispObject _execute(LispObject[] context) throws ConditionThrowable
   {
     LispObject[] args = new LispObject[0];
-    return execute(context, args);
+    return _execute(context, args);
   }
 
   // One arg.
-  public LispObject execute(LispObject[] context, LispObject first)
+  public LispObject _execute(LispObject[] context, LispObject first)
     throws ConditionThrowable
   {
     LispObject[] args = new LispObject[1];
     args[0] = first;
-    return execute(context, args);
+    return _execute(context, args);
   }
 
   // Two args.
-  public LispObject execute(LispObject[] context, LispObject first,
+  public LispObject _execute(LispObject[] context, LispObject first,
                             LispObject second)
     throws ConditionThrowable
   {
     LispObject[] args = new LispObject[2];
     args[0] = first;
     args[1] = second;
-    return execute(context, args);
+    return _execute(context, args);
   }
 
   // Three args.
-  public LispObject execute(LispObject[] context, LispObject first,
+  public LispObject _execute(LispObject[] context, LispObject first,
                             LispObject second, LispObject third)
     throws ConditionThrowable
   {
@@ -146,11 +177,11 @@ public abstract class ClosureTemplateFunction extends Closure
     args[0] = first;
     args[1] = second;
     args[2] = third;
-    return execute(context, args);
+    return _execute(context, args);
   }
 
   // Four args.
-  public LispObject execute(LispObject[] context, LispObject first,
+  public LispObject _execute(LispObject[] context, LispObject first,
                             LispObject second, LispObject third,
                             LispObject fourth)
     throws ConditionThrowable
@@ -160,11 +191,11 @@ public abstract class ClosureTemplateFunction extends Closure
     args[1] = second;
     args[2] = third;
     args[3] = fourth;
-    return execute(context, args);
+    return _execute(context, args);
   }
 
   // Five args.
-  public LispObject execute(LispObject[] context, LispObject first,
+  public LispObject _execute(LispObject[] context, LispObject first,
                             LispObject second, LispObject third,
                             LispObject fourth, LispObject fifth)
     throws ConditionThrowable
@@ -175,11 +206,11 @@ public abstract class ClosureTemplateFunction extends Closure
     args[2] = third;
     args[3] = fourth;
     args[4] = fifth;
-    return execute(context, args);
+    return _execute(context, args);
   }
 
   // Six args.
-  public LispObject execute(LispObject[] context, LispObject first,
+  public LispObject _execute(LispObject[] context, LispObject first,
                             LispObject second, LispObject third,
                             LispObject fourth, LispObject fifth,
                             LispObject sixth)
@@ -192,11 +223,11 @@ public abstract class ClosureTemplateFunction extends Closure
     args[3] = fourth;
     args[4] = fifth;
     args[5] = sixth;
-    return execute(context, args);
+    return _execute(context, args);
   }
 
   // Seven args.
-  public LispObject execute(LispObject[] context, LispObject first,
+  public LispObject _execute(LispObject[] context, LispObject first,
                             LispObject second, LispObject third,
                             LispObject fourth, LispObject fifth,
                             LispObject sixth, LispObject seventh)
@@ -210,11 +241,11 @@ public abstract class ClosureTemplateFunction extends Closure
     args[4] = fifth;
     args[5] = sixth;
     args[6] = seventh;
-    return execute(context, args);
+    return _execute(context, args);
   }
 
   // Eight args.
-  public LispObject execute(LispObject[] context, LispObject first,
+  public LispObject _execute(LispObject[] context, LispObject first,
                             LispObject second, LispObject third,
                             LispObject fourth, LispObject fifth,
                             LispObject sixth, LispObject seventh,
@@ -230,11 +261,11 @@ public abstract class ClosureTemplateFunction extends Closure
     args[5] = sixth;
     args[6] = seventh;
     args[7] = eighth;
-    return execute(context, args);
+    return _execute(context, args);
   }
 
   // Arg array.
-  public LispObject execute(LispObject[] context, LispObject[] args)
+  public LispObject _execute(LispObject[] context, LispObject[] args)
     throws ConditionThrowable
   {
     return notImplemented();

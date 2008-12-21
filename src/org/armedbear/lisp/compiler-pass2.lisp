@@ -8939,7 +8939,14 @@ Note: DEFUN implies a named lambda."
                  super)
                 (*child-p*
                  (if *closure-variables*
-                     +lisp-ctf-class+
+                     (progn
+                       (setf execute-method-name
+                             (setf (method-name execute-method) "_execute"))
+                       (setf (method-name-index execute-method)
+                             (pool-name (method-name execute-method)))
+                       (setf (method-descriptor-index execute-method)
+                             (pool-name (method-descriptor execute-method)))
+                       +lisp-ctf-class+)
                      (if *hairy-arglist-p*
                          +lisp-compiled-function-class+
                          +lisp-primitive-class+)))
