@@ -7926,22 +7926,15 @@ Note: DEFUN implies a named lambda."
 
 (declaim (ftype (function (t) t) generate-type-check-for-value))
 (defun generate-type-check-for-value (declared-type)
-  (cond ((eq declared-type 'SYMBOL)
-         (generate-instanceof-type-check-for-value 'SYMBOL))
-        ((eq declared-type 'CHARACTER)
-         (generate-instanceof-type-check-for-value 'CHARACTER))
-        ((eq declared-type 'CONS)
-         (generate-instanceof-type-check-for-value 'CONS))
-        ((eq declared-type 'HASH-TABLE)
-         (generate-instanceof-type-check-for-value 'HASH-TABLE))
-        ((fixnum-type-p declared-type)
-         (generate-instanceof-type-check-for-value 'FIXNUM))
-        ((subtypep declared-type 'STRING)
-         (generate-instanceof-type-check-for-value 'STRING))
-        ((subtypep declared-type 'VECTOR)
-         (generate-instanceof-type-check-for-value 'VECTOR))
-        (t
-         nil)))
+  (let* ((type-to-use
+	  (or
+	   (when (fixnum-type-p declared-type) 'FIXNUM)
+	   (find-if #'(lambda (type) (eq type declared-type))
+		    `(SYMBOL CHARACTER CONS HASH-TABLE STREAM))
+	   (find-if #'(lambda (type) (subtypep declared-type type)) 
+		    `(STRING VECTOR)))))
+    (when type-to-use
+      (generate-instanceof-type-check-for-value type-to-use))))
 
 (defun p2-the (form target representation)
   (let ((type-form (second form))
