@@ -2388,6 +2388,20 @@ representation, based on the derived type of the LispObject."
      (emit-move-from-stack target representation))
    t)
 
+(defun emit-ifne-for-eql (representation instruction-type)
+  (emit-invokevirtual +lisp-object-class+ "eql" instruction-type "Z")
+  (case representation
+    (:boolean)
+    (t
+     (let ((label1 (gensym))
+	   (label2 (gensym)))
+       (emit 'ifne `,label1)
+       (emit-push-nil)
+       (emit 'goto `,label2)
+       (emit 'label `,label1)
+       (emit-push-t)
+       (emit 'label `,label2)))))
+
 (defknown p2-eql (t t t) t)
 (defun p2-eql (form target representation)
   (aver (or (null representation) (eq representation :boolean)))
@@ -2413,65 +2427,21 @@ representation, based on the derived type of the LispObject."
           ((fixnum-type-p type2)
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						      arg2 'stack :int)
-           (emit-invokevirtual +lisp-object-class+ "eql" '("I") "Z")
-           (case representation
-             (:boolean)
-             (t
-              (let ((label1 (gensym))
-                    (label2 (gensym)))
-                (emit 'ifne `,label1)
-                (emit-push-nil)
-                (emit 'goto `,label2)
-                (emit 'label `,label1)
-                (emit-push-t)
-                (emit 'label `,label2)))))
+	   (emit-ifne-for-eql representation '("I")))
           ((fixnum-type-p type1)
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 						      arg2 'stack nil)
            (emit 'swap)
-           (emit-invokevirtual +lisp-object-class+ "eql" '("I") "Z")
-           (case representation
-             (:boolean)
-             (t
-              (let ((label1 (gensym))
-                    (label2 (gensym)))
-                (emit 'ifne `,label1)
-                (emit-push-nil)
-                (emit 'goto `,label2)
-                (emit 'label `,label1)
-                (emit-push-t)
-                (emit 'label `,label2)))))
+	   (emit-ifne-for-eql representation '("I")))
           ((eq type2 'CHARACTER)
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						      arg2 'stack :char)
-           (emit-invokevirtual +lisp-object-class+ "eql" '("C") "Z")
-           (case representation
-             (:boolean)
-             (t
-              (let ((label1 (gensym))
-                    (label2 (gensym)))
-                (emit 'ifne `,label1)
-                (emit-push-nil)
-                (emit 'goto `,label2)
-                (emit 'label `,label1)
-                (emit-push-t)
-                (emit 'label `,label2)))))
+	   (emit-ifne-for-eql representation '("C")))
           ((eq type1 'CHARACTER)
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack :char
 						      arg2 'stack nil)
            (emit 'swap)
-           (emit-invokevirtual +lisp-object-class+ "eql" '("C") "Z")
-           (case representation
-             (:boolean)
-             (t
-              (let ((label1 (gensym))
-                    (label2 (gensym)))
-                (emit 'ifne `,label1)
-                (emit-push-nil)
-                (emit 'goto `,label2)
-                (emit 'label `,label1)
-                (emit-push-t)
-                (emit 'label `,label2)))))
+	   (emit-ifne-for-eql representation '("C")))
           (t
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						      arg2 'stack nil)
