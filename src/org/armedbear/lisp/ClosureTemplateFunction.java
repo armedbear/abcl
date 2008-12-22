@@ -68,7 +68,7 @@ public class ClosureTemplateFunction extends Closure
 
   public final LispObject execute(LispObject arg) throws ConditionThrowable
   {
-      return _execute(ctx);
+      return _execute(ctx, arg);
   }
 
   public final LispObject execute(LispObject first, LispObject second)
