@@ -2395,12 +2395,12 @@ representation, based on the derived type of the LispObject."
     (t
      (let ((label1 (gensym))
 	   (label2 (gensym)))
-       (emit 'ifne `,label1)
+       (emit 'ifne label1)
        (emit-push-nil)
-       (emit 'goto `,label2)
-       (emit 'label `,label1)
+       (emit 'goto label2)
+       (emit 'label label1)
        (emit-push-t)
-       (emit 'label `,label2)))))
+       (emit 'label label2)))))
 
 (defknown p2-eql (t t t) t)
 (defun p2-eql (form target representation)
