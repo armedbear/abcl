@@ -477,17 +477,20 @@
     (label LABEL1))
   t)
 
+(defun find-type-for-type-check (declared-type)
+  (if (eq declared-type :none) nil
+    (or
+     (when (fixnum-type-p declared-type) 'FIXNUM)
+     (find-if #'(lambda (type) (eq type declared-type))
+	      `(SYMBOL CHARACTER CONS HASH-TABLE STREAM))
+     (find-if #'(lambda (type) (subtypep declared-type type)) 
+	      `(STRING VECTOR)))))
+
+
 (defknown generate-type-check-for-variable (t) t)
 (defun generate-type-check-for-variable (variable)
-  (let* ((declared-type (variable-declared-type variable))
-	 (type-to-use
-	  (if (eq declared-type :none) nil
-	      (or
-	       (when (fixnum-type-p declared-type) 'FIXNUM)
-	       (find-if #'(lambda (type) (eq type declared-type))
-			`(SYMBOL CHARACTER CONS HASH-TABLE STREAM))
-	       (find-if #'(lambda (type) (subtypep declared-type type)) 
-			`(STRING VECTOR))))))
+  (let ((type-to-use 
+	 (find-type-for-type-check (variable-declared-type variable))))
     (when type-to-use
       (generate-instanceof-type-check-for-variable variable type-to-use))))
 
@@ -7926,13 +7929,7 @@ Note: DEFUN implies a named lambda."
 
 (declaim (ftype (function (t) t) generate-type-check-for-value))
 (defun generate-type-check-for-value (declared-type)
-  (let* ((type-to-use
-	  (or
-	   (when (fixnum-type-p declared-type) 'FIXNUM)
-	   (find-if #'(lambda (type) (eq type declared-type))
-		    `(SYMBOL CHARACTER CONS HASH-TABLE STREAM))
-	   (find-if #'(lambda (type) (subtypep declared-type type)) 
-		    `(STRING VECTOR)))))
+  (let ((type-to-use (find-type-for-type-check declared-type)))
     (when type-to-use
       (generate-instanceof-type-check-for-value type-to-use))))
 
