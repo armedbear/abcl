@@ -191,6 +191,7 @@
 (defconstant +lisp-return-class+ "org/armedbear/lisp/Return")
 (defconstant +lisp-go-class+ "org/armedbear/lisp/Go")
 (defconstant +lisp-ctf-class+ "org/armedbear/lisp/ClosureTemplateFunction")
+(defconstant +lisp-ctf+ "Lorg/armedbear/lisp/ClosureTemplateFunction;")
 (defconstant +lisp-compiled-closure-class+ "org/armedbear/lisp/CompiledClosure")
 (defconstant +lisp-compiled-function-class+ "org/armedbear/lisp/CompiledFunction")
 (defconstant +lisp-primitive-class+ "org/armedbear/lisp/Primitive")
@@ -2844,6 +2845,15 @@ is registered (or not)."
       (emit 'aload register)
       (emit 'aastore))))
 
+
+(defun emit-dup-ctf-and-set-context (compiland)
+  (emit 'checkcast +lisp-ctf-class+)
+  (emit-invokevirtual +lisp-ctf-class+ "dup" nil +lisp-ctf+)
+  (emit 'aload (compiland-closure-register compiland))
+  (emit-invokevirtual +lisp-ctf-class+ "setContext"
+                      (list +lisp-object-array+)
+                      +lisp-ctf+))
+
 (defknown compile-local-function-call (t t t) t)
 (defun compile-local-function-call (form target representation)
   "Compiles a call to a function marked as `*child-p*'; a local function.
@@ -2874,11 +2884,7 @@ Note: DEFUN implies a named lambda."
                          (declare-object (local-function-function local-function)))))
              (emit 'getstatic *this-class* g +lisp-object+) ; Stack: template-function
              (when *closure-variables*
-               (emit 'checkcast +lisp-ctf-class+)
-               (emit 'aload (compiland-closure-register compiland))
-               (emit-invokestatic +lisp-class+ "makeCompiledClosure"
-                                  (list +lisp-object+ +lisp-object-array+)
-                                  +lisp-object+)))))
+               (emit-dup-ctf-and-set-context compiland)))))
     (let ((must-clear-values nil))
       (declare (type boolean must-clear-values))
       (cond ((> (length args) call-registers-limit)
@@ -4783,13 +4789,7 @@ Note: DEFUN implies a named lambda."
 
                (let ((parent (compiland-parent compiland)))
                  (when (compiland-closure-register parent)
-                   (dformat t "(compiland-closure-register parent) = ~S~%"
-                            (compiland-closure-register parent))
-                   (emit 'checkcast +lisp-ctf-class+)
-                   (emit 'aload (compiland-closure-register parent))
-                   (emit-invokestatic +lisp-class+ "makeCompiledClosure"
-                                      (list +lisp-object+ +lisp-object-array+)
-                                      +lisp-object+)))
+                   (emit-dup-ctf-and-set-context parent)))
 
                (dformat t "p2-flet-process-compiland var-set ~S~%" (variable-name (local-function-variable local-function)))
                (emit 'var-set (local-function-variable local-function)))))
@@ -4809,13 +4809,7 @@ Note: DEFUN implies a named lambda."
 
                        (let ((parent (compiland-parent compiland)))
                          (when (compiland-closure-register parent)
-                           (dformat t "(compiland-closure-register parent) = ~S~%"
-                                    (compiland-closure-register parent))
-                           (emit 'checkcast +lisp-ctf-class+)
-                           (emit 'aload (compiland-closure-register parent))
-                           (emit-invokestatic +lisp-class+ "makeCompiledClosure"
-                                              (list +lisp-object+ +lisp-object-array+)
-                                              +lisp-object+)))
+                           (emit-dup-ctf-and-set-context parent)))
 
                        (emit 'var-set (local-function-variable local-function)))))
                (delete-file pathname)))))))
@@ -4839,13 +4833,7 @@ Note: DEFUN implies a named lambda."
 
                (let ((parent (compiland-parent compiland)))
                  (when (compiland-closure-register parent)
-                   (dformat t "(compiland-closure-register parent) = ~S~%"
-                            (compiland-closure-register parent))
-                   (emit 'checkcast +lisp-ctf-class+)
-                   (emit 'aload (compiland-closure-register parent))
-                   (emit-invokestatic +lisp-class+ "makeCompiledClosure"
-                                      (list +lisp-object+ +lisp-object-array+)
-                                      +lisp-object+)))
+                   (emit-dup-ctf-and-set-context parent)))
 
 
                (emit 'var-set (local-function-variable local-function)))))
@@ -4862,13 +4850,7 @@ Note: DEFUN implies a named lambda."
 
                      (let ((parent (compiland-parent compiland)))
                        (when (compiland-closure-register parent)
-                         (dformat t "(compiland-closure-register parent) = ~S~%"
-                                  (compiland-closure-register parent))
-                         (emit 'checkcast +lisp-ctf-class+)
-                         (emit 'aload (compiland-closure-register parent))
-                         (emit-invokestatic +lisp-class+ "makeCompiledClosure"
-                                            (list +lisp-object+ +lisp-object-array+)
-                                            +lisp-object+)))
+                         (emit-dup-ctf-and-set-context parent)))
 
                      (emit 'var-set (local-function-variable local-function))))
                (delete-file pathname)))))))
@@ -4946,11 +4928,9 @@ Note: DEFUN implies a named lambda."
                (delete-file pathname)))))
     (cond ((null *closure-variables*)) ; Nothing to do.
           ((compiland-closure-register *current-compiland*)
-           (emit 'aload (compiland-closure-register *current-compiland*))
-           (emit-invokestatic +lisp-class+ "makeCompiledClosure"
-                              (list +lisp-object+ +lisp-object-array+)
-                              +lisp-object+)
-           (emit 'checkcast +lisp-compiled-closure-class+)) ; Stack: compiled-closure
+           (emit-dup-ctf-and-set-context *current-compiland*)
+           ; Stack: cloned template function
+           )
           (t
            (aver nil))) ;; Shouldn't happen.
     (emit-move-from-stack target)))
@@ -4977,11 +4957,7 @@ Note: DEFUN implies a named lambda."
                            (emit 'getstatic *this-class* g +lisp-object+) ; Stack: template-function
 
                            (when (compiland-closure-register *current-compiland*)
-                             (emit 'checkcast +lisp-ctf-class+)
-                             (emit 'aload (compiland-closure-register *current-compiland*))
-                             (emit-invokestatic +lisp-class+ "makeCompiledClosure"
-                                                (list +lisp-object+ +lisp-object-array+)
-                                                +lisp-object+)))))
+                             (emit-dup-ctf-and-set-context *current-compiland*)))))
                   (emit-move-from-stack target))
                  ((inline-ok name)
                   (emit 'getstatic *this-class*
