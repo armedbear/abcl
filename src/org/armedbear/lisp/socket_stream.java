@@ -43,6 +43,7 @@ public final class socket_stream extends Primitive
         super("%socket-stream", PACKAGE_SYS, false, "socket element-type external-format");
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second, LispObject third)
         throws ConditionThrowable
     {

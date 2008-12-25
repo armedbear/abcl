@@ -95,6 +95,7 @@ public class Symbol extends LispObject
     this.pkg = pkg;
   }
 
+  @Override
   public LispObject typeOf()
   {
     if (pkg == PACKAGE_KEYWORD)
@@ -104,11 +105,13 @@ public class Symbol extends LispObject
     return Symbol.SYMBOL;
   }
 
+  @Override
   public LispObject classOf()
   {
     return BuiltInClass.SYMBOL;
   }
 
+  @Override
   public LispObject getDescription() throws ConditionThrowable
   {
     final LispThread thread = LispThread.currentThread();
@@ -137,6 +140,7 @@ public class Symbol extends LispObject
       }
   }
 
+  @Override
   public LispObject getParts() throws ConditionThrowable
   {
     LispObject parts = NIL;
@@ -150,6 +154,7 @@ public class Symbol extends LispObject
     return parts.nreverse();
   }
 
+  @Override
   public LispObject typep(LispObject type) throws ConditionThrowable
   {
     if (type == Symbol.SYMBOL)
@@ -163,16 +168,19 @@ public class Symbol extends LispObject
     return super.typep(type);
   }
 
+  @Override
   public final LispObject SYMBOLP()
   {
     return T;
   }
 
+  @Override
   public boolean constantp()
   {
     return (flags & FLAG_CONSTANT) != 0;
   }
 
+  @Override
   public final LispObject STRING()
   {
     return name;
@@ -188,11 +196,13 @@ public class Symbol extends LispObject
     pkg = obj;
   }
 
+  @Override
   public final boolean isSpecialOperator()
   {
     return (function instanceof SpecialOperator);
   }
 
+  @Override
   public final boolean isSpecialVariable()
   {
     return (flags & FLAG_SPECIAL) != 0;
@@ -274,6 +284,7 @@ public class Symbol extends LispObject
   }
 
   // Raw accessor.
+  @Override
   public LispObject getSymbolValue()
   {
     return value;
@@ -326,11 +337,13 @@ public class Symbol extends LispObject
     return value;
   }
 
+  @Override
   public LispObject getSymbolFunction()
   {
     return function;
   }
 
+  @Override
   public final LispObject getSymbolFunctionOrDie() throws ConditionThrowable
   {
     if (function == null)
@@ -359,6 +372,7 @@ public class Symbol extends LispObject
     this.function = obj;
   }
 
+  @Override
   public final LispObject getPropertyList()
   {
     if (propertyList == null)
@@ -366,6 +380,7 @@ public class Symbol extends LispObject
     return propertyList;
   }
 
+  @Override
   public final void setPropertyList(LispObject obj)
   {
     if (obj == null)
@@ -373,6 +388,7 @@ public class Symbol extends LispObject
     propertyList = obj;
   }
 
+  @Override
   public String writeToString() throws ConditionThrowable
   {
     final String n = name.getStringValue();
@@ -685,6 +701,7 @@ public class Symbol extends LispObject
     return sb.toString();
   }
 
+  @Override
   public final int sxhash()
   {
     int h = hash;
@@ -696,11 +713,7 @@ public class Symbol extends LispObject
     return h;
   }
 
-  public final boolean equals(Object obj)
-  {
-    return this == obj;
-  }
-
+  @Override
   public LispObject execute() throws ConditionThrowable
   {
     try
@@ -713,6 +726,7 @@ public class Symbol extends LispObject
       }
   }
 
+  @Override
   public LispObject execute(LispObject arg) throws ConditionThrowable
   {
     try
@@ -725,6 +739,7 @@ public class Symbol extends LispObject
       }
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second)
     throws ConditionThrowable
   {
@@ -738,6 +753,7 @@ public class Symbol extends LispObject
       }
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third)
     throws ConditionThrowable
@@ -752,6 +768,7 @@ public class Symbol extends LispObject
       }
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth)
     throws ConditionThrowable
@@ -766,6 +783,7 @@ public class Symbol extends LispObject
       }
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth)
@@ -781,6 +799,7 @@ public class Symbol extends LispObject
       }
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth)
@@ -797,6 +816,7 @@ public class Symbol extends LispObject
       }
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
@@ -816,6 +836,7 @@ public class Symbol extends LispObject
       }
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
@@ -835,6 +856,7 @@ public class Symbol extends LispObject
       }
   }
 
+  @Override
   public LispObject execute(LispObject[] args) throws ConditionThrowable
   {
     try
@@ -850,15 +872,6 @@ public class Symbol extends LispObject
       }
   }
 
-  private final LispObject signalNPE(NullPointerException e)
-    throws ConditionThrowable
-  {
-    if (function == null)
-      return error(new UndefinedFunction(this));
-    Debug.trace(e);
-    return error(new LispError("Null pointer exception"));
-  }
-
   private final LispObject handleNPE(NullPointerException e, LispObject args)
     throws ConditionThrowable
   {
@@ -869,6 +882,7 @@ public class Symbol extends LispObject
     return error(new LispError("Null pointer exception"));
   }
 
+  @Override
   public void incrementCallCount()
   {
     if (function != null)

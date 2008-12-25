@@ -45,16 +45,19 @@ public final class SocketStream extends TwoWayStream
         this.socket = socket;
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.SOCKET_STREAM;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.SOCKET_STREAM;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.SOCKET_STREAM)
@@ -64,6 +67,7 @@ public final class SocketStream extends TwoWayStream
         return super.typep(type);
     }
 
+    @Override
     public LispObject close(LispObject abort) throws ConditionThrowable
     {
 	try {
@@ -75,6 +79,7 @@ public final class SocketStream extends TwoWayStream
 	}
     }
 
+    @Override
     public String toString()
     {
         return unreadableString("SOCKET-STREAM");

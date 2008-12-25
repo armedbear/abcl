@@ -1933,6 +1933,7 @@ public abstract class Lisp
   public static final Primitive REMEMBER =
     new Primitive("remember", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject key, LispObject value)
         throws ConditionThrowable
       {
@@ -2479,6 +2480,7 @@ public abstract class Lisp
 
   public static final LispObject UNBOUND_VALUE = new LispObject()
     {
+      @Override
       public String writeToString()
       {
         return "#<UNBOUND>";
@@ -2487,6 +2489,7 @@ public abstract class Lisp
 
   public static final LispObject NULL_VALUE = new LispObject()
     {
+      @Override
       public String writeToString()
       {
         return "null";

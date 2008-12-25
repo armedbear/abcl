@@ -59,6 +59,7 @@ public abstract class Operator extends LispObject
         lambdaList = obj;
     }
 
+    @Override
     public LispObject getParts() throws ConditionThrowable
     {
         LispObject result = NIL;

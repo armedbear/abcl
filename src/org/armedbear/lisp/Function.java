@@ -136,16 +136,19 @@ public abstract class Function extends Operator
         setLambdaList(lambdaList);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.FUNCTION;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.FUNCTION;
     }
 
+    @Override
     public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
     {
         if (typeSpecifier == Symbol.FUNCTION)
@@ -157,6 +160,7 @@ public abstract class Function extends Operator
         return super.typep(typeSpecifier);
     }
 
+    @Override
     public final LispObject getPropertyList()
     {
         if (propertyList == null)
@@ -164,6 +168,7 @@ public abstract class Function extends Operator
         return propertyList;
     }
 
+    @Override
     public final void setPropertyList(LispObject obj)
     {
         if (obj == null)
@@ -177,22 +182,26 @@ public abstract class Function extends Operator
                             new JavaObject(bytes));
     }
 
+    @Override
     public LispObject execute() throws ConditionThrowable
     {
         return error(new WrongNumberOfArgumentsException(this));
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         return error(new WrongNumberOfArgumentsException(this));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {
         return error(new WrongNumberOfArgumentsException(this));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third)
         throws ConditionThrowable
@@ -200,6 +209,7 @@ public abstract class Function extends Operator
         return error(new WrongNumberOfArgumentsException(this));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth)
         throws ConditionThrowable
@@ -207,6 +217,7 @@ public abstract class Function extends Operator
         return error(new WrongNumberOfArgumentsException(this));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth)
@@ -215,6 +226,7 @@ public abstract class Function extends Operator
         return error(new WrongNumberOfArgumentsException(this));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth)
@@ -223,6 +235,7 @@ public abstract class Function extends Operator
         return error(new WrongNumberOfArgumentsException(this));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
@@ -232,6 +245,7 @@ public abstract class Function extends Operator
         return error(new WrongNumberOfArgumentsException(this));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
@@ -241,11 +255,13 @@ public abstract class Function extends Operator
         return error(new WrongNumberOfArgumentsException(this));
     }
 
+    @Override
     public LispObject execute(LispObject[] args) throws ConditionThrowable
     {
         return error(new WrongNumberOfArgumentsException(this));
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         LispObject name = getLambdaName();
@@ -290,17 +306,20 @@ public abstract class Function extends Operator
         error(new WrongNumberOfArgumentsException(this));
     }
 
+    @Override
     // Profiling.
     public final int getCallCount()
     {
         return callCount;
     }
 
+    @Override
     public void setCallCount(int n)
     {
         callCount = n;
     }
 
+    @Override
     public final void incrementCallCount()
     {
         ++callCount;
