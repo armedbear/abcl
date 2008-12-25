@@ -959,7 +959,20 @@
       ((null body) (cons 'TAGBODY (nreverse result)))
     (if (atom (car body))
         (push (car body) result)
-        (push (precompile1 (car body)) result))))
+        (push (let* ((first-form (car body))
+                     (expanded (precompile1 first-form)))
+                (if (and (symbolp expanded)
+                         (neq expanded first-form))
+                    ;; Workaround:
+                    ;;  Since our expansion/compilation order
+                    ;;   is out of sync with the definition of
+                    ;;   TAGBODY (which requires the compiler
+                    ;;   to look for tags before expanding),
+                    ;;   we need to disguise anything which might
+                    ;;   look like a tag. We do this by wrapping
+                    ;;   it in a PROGN form.
+                    (list 'PROGN expanded)
+                    expanded)) result))))
 
 (defun precompile-eval-when (form)
   (list* 'EVAL-WHEN (cadr form) (mapcar #'precompile1 (cddr form))))
