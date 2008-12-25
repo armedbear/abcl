@@ -45,13 +45,13 @@ public class ClosureTemplateFunction extends Closure
     super(list2(Symbol.LAMBDA, lambdaList), null);
   }
 
-  public ClosureTemplateFunction setContext(LispObject[] context)
+  final public ClosureTemplateFunction setContext(LispObject[] context)
   {
     ctx = context;
     return this;
   }
 
-  public ClosureTemplateFunction dup()
+  final public ClosureTemplateFunction dup()
       throws CloneNotSupportedException
   {
       return (ClosureTemplateFunction)super.clone();
