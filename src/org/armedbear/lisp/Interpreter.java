@@ -446,7 +446,7 @@ public final class Interpreter extends Lisp
                 thread.backtrace();
         }
         catch (Throwable t) {
-            ;
+            
         }
     }
 
@@ -481,6 +481,7 @@ public final class Interpreter extends Lisp
         interpreter = null;
     }
 
+    @Override
     protected void finalize() throws Throwable
     {
         System.err.println("Interpreter.finalize");
@@ -489,6 +490,7 @@ public final class Interpreter extends Lisp
     private static final Primitive _DEBUGGER_HOOK_FUNCTION =
         new Primitive("%debugger-hook-function", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
