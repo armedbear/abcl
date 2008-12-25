@@ -70,16 +70,19 @@ public final class Package extends LispObject
         lispName = new SimpleString(name);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.PACKAGE;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.PACKAGE;
     }
 
+    @Override
     public LispObject getDescription()
     {
         if (name != null) {
@@ -91,6 +94,7 @@ public final class Package extends LispObject
         return new SimpleString("PACKAGE");
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.PACKAGE)
@@ -110,6 +114,7 @@ public final class Package extends LispObject
         return lispName != null ? lispName : NIL;
     }
 
+    @Override
     public final LispObject getPropertyList()
     {
         if (propertyList == null)
@@ -117,6 +122,7 @@ public final class Package extends LispObject
         return propertyList;
     }
 
+    @Override
     public final void setPropertyList(LispObject obj)
     {
         if (obj == null)
@@ -261,22 +267,6 @@ public final class Package extends LispObject
         catch (Throwable t) {
             Debug.trace(t); // FIXME
         }
-    }
-
-    private synchronized Symbol addSymbol(SimpleString name)
-    {
-        Symbol symbol = new Symbol(name, this);
-        try {
-            if (this == PACKAGE_KEYWORD) {
-                symbol.initializeConstant(symbol);
-                externalSymbols.put(name, symbol);
-            } else
-                internalSymbols.put(name, symbol);
-        }
-        catch (Throwable t) {
-            Debug.trace(t); // FIXME
-        }
-        return symbol;
     }
 
     private synchronized Symbol addSymbol(SimpleString name, int hash)
@@ -507,7 +497,7 @@ public final class Package extends LispObject
                     if (sym != null && sym != symbol) {
                         if (pkg.shadowingSymbols != null &&
                             pkg.shadowingSymbols.get(symbolName) == sym) {
-                            ; // OK.
+                            // OK.
                         } else {
                             FastStringBuffer sb = new FastStringBuffer("The symbol ");
                             sb.append(sym.getQualifiedName());
@@ -789,7 +779,7 @@ public final class Package extends LispObject
         LispObject list = NIL;
         List symbols = internalSymbols.getSymbols();
         for (int i = symbols.size(); i-- > 0;)
-            list = new Cons((Symbol)symbols.get(i), list);;
+            list = new Cons((Symbol)symbols.get(i), list);
         return list;
     }
 
@@ -798,7 +788,7 @@ public final class Package extends LispObject
         LispObject list = NIL;
         List symbols = externalSymbols.getSymbols();
         for (int i = symbols.size(); i-- > 0;)
-            list = new Cons((Symbol)symbols.get(i), list);;
+            list = new Cons((Symbol)symbols.get(i), list);
         return list;
     }
 
@@ -858,6 +848,7 @@ public final class Package extends LispObject
         return array;
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         if (_PRINT_FASL_.symbolValue() != NIL && name != null) {
