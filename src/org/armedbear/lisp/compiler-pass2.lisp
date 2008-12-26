@@ -482,9 +482,9 @@
     (or
      (when (fixnum-type-p declared-type) 'FIXNUM)
      (find-if #'(lambda (type) (eq type declared-type))
-	      `(SYMBOL CHARACTER CONS HASH-TABLE STREAM))
+	      '(SYMBOL CHARACTER CONS HASH-TABLE))
      (find-if #'(lambda (type) (subtypep declared-type type)) 
-	      `(STRING VECTOR)))))
+	      '(STRING VECTOR)))))
 
 
 (defknown generate-type-check-for-variable (t) t)
