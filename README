@@ -39,12 +39,14 @@ If you want to build ABCL, you have 2 options. The first option
 applies when you come from a lisp background. The second option is more
 appropriate when you come from Java development:
 
- I) Bootstrap ABCL using a Common Lisp implementation
-    Supported implementations for this process: SBCL, CMUCL, OpenMCL,
-    Allegro CL, LispWorks or CLISP
+ I)  Bootstrap ABCL using a Common Lisp implementation
+     Supported implementations for this process: SBCL, CMUCL, OpenMCL,
+     Allegro CL, LispWorks or CLISP.
 
-II) Use the Ant make-like build tool for Java environments
-    The tested lowest working version is Ant 1.7.0
+II)  Use the Ant make-like build tool for Java environments
+     The tested lowest working version is Ant 1.7.0.
+
+III) Use the Netbeans 6.x IDE to open ABCL as a project.
 
 
 In both cases you need a supported JDK version (1.5 and 1.6 have been
@@ -94,6 +96,12 @@ With Ant in your path, executing
 from the directory containing this README file will create an
 executable wrapper ('abcl' under UNIX, 'abcl.bat' under Windows).
 Use this wrapper to start the ABCL Java program.
+
+
+III. Netbeans-based build
+-------------------------
+
+One should be able to open the project as a project in Netbeans 6.x.
 
 
 BUGS
