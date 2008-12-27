@@ -299,6 +299,18 @@ public final class Package extends LispObject
         return symbol;
     }
 
+    /** Initializes the symbol as a special variables and assigns it
+        a value, just like DEFVAR would.
+    */
+    public synchronized Symbol addExternalSymbol(String symbolName,
+                                                 LispObject specialValue)
+    {
+        final Symbol symbol = addExternalSymbol(symbolName);
+        symbol.initializeSpecial(specialValue);
+
+        return symbol;
+    }
+
     public synchronized Symbol intern(String symbolName)
     {
         return intern(new SimpleString(symbolName));

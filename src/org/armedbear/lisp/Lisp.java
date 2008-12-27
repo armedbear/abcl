@@ -2529,11 +2529,6 @@ public abstract class Lisp
   protected static boolean TRAP_UNDERFLOW = true;
 
 
-  // Extentions
-  static {
-    Symbol._INSPECTOR_HOOK_.initializeSpecial(NIL);
-  }
-
   private static final void loadClass(String className)
   {
     try

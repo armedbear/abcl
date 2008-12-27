@@ -3013,6 +3013,6 @@ public class Symbol extends LispObject
 
   // CDR6
   public static final Symbol _INSPECTOR_HOOK_ =
-    PACKAGE_EXT.addExternalSymbol("*INSPECTOR-HOOK*");
+    PACKAGE_EXT.addExternalSymbol("*INSPECTOR-HOOK*", NIL);
 
 }
