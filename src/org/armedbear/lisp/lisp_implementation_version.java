@@ -44,6 +44,7 @@ public final class lisp_implementation_version extends Primitive
         super("lisp-implementation-version","");
     }
 
+    @Override
     public LispObject execute()
     {
         return new SimpleString(Version.getVersion());

@@ -46,6 +46,7 @@ public class CellError extends LispError
         initialize(initArgs);
     }
 
+    @Override
     protected void initialize(LispObject initArgs) throws ConditionThrowable
     {
         super.initialize(initArgs);
@@ -72,16 +73,19 @@ public class CellError extends LispError
         setInstanceSlotValue(Symbol.NAME, name);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.CELL_ERROR;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.CELL_ERROR;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.CELL_ERROR)
@@ -91,6 +95,7 @@ public class CellError extends LispError
         return super.typep(type);
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         if (Symbol.PRINT_ESCAPE.symbolValue() == NIL)

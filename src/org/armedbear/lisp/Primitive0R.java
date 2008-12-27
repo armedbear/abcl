@@ -77,27 +77,32 @@ public class Primitive0R extends Function
         super(name, pkg, exported, arglist, docstring);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.COMPILED_FUNCTION;
     }
 
+    @Override
     public LispObject execute() throws ConditionThrowable
     {
         return _execute(NIL);
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         return _execute(new Cons(arg));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {
         return _execute(list2(first, second));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third)
         throws ConditionThrowable
@@ -105,6 +110,7 @@ public class Primitive0R extends Function
         return _execute(list3(first, second, third));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth)
         throws ConditionThrowable
@@ -112,6 +118,7 @@ public class Primitive0R extends Function
         return _execute(list4(first, second, third, fourth));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth)
@@ -120,6 +127,7 @@ public class Primitive0R extends Function
         return _execute(list5(first, second, third, fourth, fifth));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth)
@@ -128,6 +136,7 @@ public class Primitive0R extends Function
         return _execute(list6(first, second, third, fourth, fifth, sixth));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
@@ -138,6 +147,7 @@ public class Primitive0R extends Function
                               seventh));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
@@ -148,6 +158,7 @@ public class Primitive0R extends Function
                               seventh, eighth));
     }
 
+    @Override
     public LispObject execute(LispObject[] args) throws ConditionThrowable
     {
         LispObject list = NIL;

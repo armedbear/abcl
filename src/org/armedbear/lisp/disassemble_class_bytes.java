@@ -45,6 +45,7 @@ public final class disassemble_class_bytes extends Primitive
         super("disassemble-class-bytes", PACKAGE_SYS, true, "java-object");
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         if (arg instanceof JavaObject) {

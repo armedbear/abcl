@@ -53,6 +53,7 @@ public final class EchoStream extends Stream
         setInteractive(interactive);
     }
 
+    @Override
     public LispObject getElementType() throws ConditionThrowable
     {
         LispObject itype = in.getElementType();
@@ -72,16 +73,19 @@ public final class EchoStream extends Stream
         return out;
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.ECHO_STREAM;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.ECHO_STREAM;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.ECHO_STREAM)
@@ -91,37 +95,44 @@ public final class EchoStream extends Stream
         return super.typep(type);
     }
 
+    @Override
     public boolean isInputStream()
     {
         return true;
     }
 
+    @Override
     public boolean isOutputStream()
     {
         return true;
     }
 
+    @Override
     public boolean isCharacterInputStream() throws ConditionThrowable
     {
         return in.isCharacterInputStream();
     }
 
+    @Override
     public boolean isBinaryInputStream() throws ConditionThrowable
     {
         return in.isBinaryInputStream();
     }
 
+    @Override
     public boolean isCharacterOutputStream() throws ConditionThrowable
     {
         return out.isCharacterOutputStream();
     }
 
+    @Override
     public boolean isBinaryOutputStream() throws ConditionThrowable
     {
         return out.isBinaryOutputStream();
     }
 
     // Returns -1 at end of file.
+    @Override
     protected int _readChar() throws ConditionThrowable
     {
         int n = in._readChar();
@@ -135,39 +146,46 @@ public final class EchoStream extends Stream
         return n;
     }
 
+    @Override
     protected void _unreadChar(int n) throws ConditionThrowable
     {
         in._unreadChar(n);
         unreadChar = n;
     }
 
+    @Override
     protected boolean _charReady() throws ConditionThrowable
     {
         return in._charReady();
     }
 
+    @Override
     public void _writeChar(char c) throws ConditionThrowable
     {
         out._writeChar(c);
     }
 
+    @Override
     public void _writeChars(char[] chars, int start, int end)
         throws ConditionThrowable
     {
         out._writeChars(chars, start, end);
     }
 
+    @Override
     public void _writeString(String s) throws ConditionThrowable
     {
         out._writeString(s);
     }
 
+    @Override
     public void _writeLine(String s) throws ConditionThrowable
     {
         out._writeLine(s);
     }
 
     // Reads an 8-bit byte.
+    @Override
     public int _readByte() throws ConditionThrowable
     {
         int n = in._readByte();
@@ -177,21 +195,25 @@ public final class EchoStream extends Stream
     }
 
     // Writes an 8-bit byte.
+    @Override
     public void _writeByte(int n) throws ConditionThrowable
     {
         out._writeByte(n);
     }
 
+    @Override
     public void _finishOutput() throws ConditionThrowable
     {
         out._finishOutput();
     }
 
+    @Override
     public void _clearInput() throws ConditionThrowable
     {
         in._clearInput();
     }
 
+    @Override
     public LispObject close(LispObject abort) throws ConditionThrowable
     {
         // "The effect of CLOSE on a constructed stream is to close the
@@ -201,16 +223,19 @@ public final class EchoStream extends Stream
         return T;
     }
 
+    @Override
     public LispObject listen() throws ConditionThrowable
     {
         return in.listen();
     }
 
+    @Override
     public LispObject freshLine() throws ConditionThrowable
     {
         return out.freshLine();
     }
 
+    @Override
     public String toString()
     {
         return unreadableString("ECHO-STREAM");
@@ -221,6 +246,7 @@ public final class EchoStream extends Stream
     private static final Primitive MAKE_ECHO_STREAM =
         new Primitive("make-echo-stream", "input-stream output-stream")
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -237,6 +263,7 @@ public final class EchoStream extends Stream
     private static final Primitive ECHO_STREAM_INPUT_STREAM =
         new Primitive("echo-stream-input-stream", "echo-stream")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             if (arg instanceof EchoStream)
@@ -250,6 +277,7 @@ public final class EchoStream extends Stream
     private static final Primitive ECHO_STREAM_OUTPUT_STREAM =
         new Primitive("echo-stream-output-stream", "echo-stream")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             if (arg instanceof EchoStream)

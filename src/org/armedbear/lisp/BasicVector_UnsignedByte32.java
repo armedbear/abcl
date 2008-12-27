@@ -56,17 +56,20 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
       elements[i] = array[i].longValue();
   }
 
+  @Override
   public LispObject typeOf()
   {
     return list3(Symbol.SIMPLE_ARRAY, UNSIGNED_BYTE_32,
                  new Cons(new Fixnum(capacity)));
   }
 
+  @Override
   public LispObject classOf()
   {
     return BuiltInClass.VECTOR;
   }
 
+  @Override
   public LispObject typep(LispObject type) throws ConditionThrowable
   {
     if (type == Symbol.SIMPLE_ARRAY)
@@ -76,36 +79,43 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
     return super.typep(type);
   }
 
+  @Override
   public LispObject getElementType()
   {
     return UNSIGNED_BYTE_32;
   }
 
+  @Override
   public boolean isSimpleVector()
   {
     return false;
   }
 
+  @Override
   public boolean hasFillPointer()
   {
     return false;
   }
 
+  @Override
   public boolean isAdjustable()
   {
     return false;
   }
 
+  @Override
   public int capacity()
   {
     return capacity;
   }
 
+  @Override
   public int length()
   {
     return capacity;
   }
 
+  @Override
   public LispObject elt(int index) throws ConditionThrowable
   {
     try
@@ -119,6 +129,7 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
       }
   }
 
+  @Override
   public int aref(int index) throws ConditionThrowable
   {
     try
@@ -132,6 +143,7 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
       }
   }
 
+  @Override
   public long aref_long(int index) throws ConditionThrowable
   {
     try
@@ -145,6 +157,7 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
       }
   }
 
+  @Override
   public LispObject AREF(int index) throws ConditionThrowable
   {
     try
@@ -158,6 +171,7 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
       }
   }
 
+  @Override
   public LispObject AREF(LispObject index) throws ConditionThrowable
   {
     try
@@ -175,6 +189,7 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
       }
   }
 
+  @Override
   public void aset(int index, LispObject newValue) throws ConditionThrowable
   {
     try
@@ -187,6 +202,7 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
       }
   }
 
+  @Override
   public LispObject subseq(int start, int end) throws ConditionThrowable
   {
     BasicVector_UnsignedByte32 v = new BasicVector_UnsignedByte32(end - start);
@@ -204,12 +220,14 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
       }
   }
 
+  @Override
   public void fill(LispObject obj) throws ConditionThrowable
   {
     for (int i = capacity; i-- > 0;)
       elements[i] = obj.longValue();
   }
 
+  @Override
   public void shrink(int n) throws ConditionThrowable
   {
     if (n < capacity)
@@ -225,6 +243,7 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
     error(new LispError());
   }
 
+  @Override
   public LispObject reverse() throws ConditionThrowable
   {
     BasicVector_UnsignedByte32 result = new BasicVector_UnsignedByte32(capacity);
@@ -234,6 +253,7 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
     return result;
   }
 
+  @Override
   public LispObject nreverse() throws ConditionThrowable
   {
     int i = 0;
@@ -249,6 +269,7 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
     return this;
   }
 
+  @Override
   public AbstractVector adjustVector(int newCapacity,
                                      LispObject initialElement,
                                      LispObject initialContents)
@@ -288,6 +309,7 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
     return this;
   }
 
+  @Override
   public AbstractVector adjustVector(int newCapacity,
                                      AbstractArray displacedTo,
                                      int displacement)

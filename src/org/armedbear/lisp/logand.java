@@ -43,11 +43,13 @@ public final class logand extends Primitive
         super("logand", "&rest integers");
     }
 
+    @Override
     public LispObject execute()
     {
         return Fixnum.MINUS_ONE;
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         if (arg instanceof Fixnum || arg instanceof Bignum)
@@ -55,12 +57,14 @@ public final class logand extends Primitive
         return type_error(arg, Symbol.INTEGER);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {
         return first.LOGAND(second);
     }
 
+    @Override
     public LispObject execute(LispObject[] args) throws ConditionThrowable
     {
         LispObject result = Fixnum.MINUS_ONE;

@@ -68,22 +68,26 @@ public class SpecialOperator extends Operator
         }
     }
 
+    @Override
     public LispObject execute() throws ConditionThrowable
     {
         return error(new UndefinedFunction(getLambdaName()));
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         return error(new UndefinedFunction(getLambdaName()));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {
         return error(new UndefinedFunction(getLambdaName()));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third)
         throws ConditionThrowable
@@ -91,6 +95,7 @@ public class SpecialOperator extends Operator
         return error(new UndefinedFunction(getLambdaName()));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth)
         throws ConditionThrowable
@@ -98,6 +103,7 @@ public class SpecialOperator extends Operator
         return error(new UndefinedFunction(getLambdaName()));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth)
@@ -106,6 +112,7 @@ public class SpecialOperator extends Operator
         return error(new UndefinedFunction(getLambdaName()));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth)
@@ -114,6 +121,7 @@ public class SpecialOperator extends Operator
         return error(new UndefinedFunction(getLambdaName()));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
@@ -123,6 +131,7 @@ public class SpecialOperator extends Operator
         return error(new UndefinedFunction(getLambdaName()));
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
@@ -132,11 +141,13 @@ public class SpecialOperator extends Operator
         return error(new UndefinedFunction(getLambdaName()));
     }
 
+    @Override
     public LispObject execute(LispObject[] args) throws ConditionThrowable
     {
         return error(new UndefinedFunction(getLambdaName()));
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         StringBuffer sb = new StringBuffer("#<SPECIAL-OPERATOR ");
@@ -146,16 +157,19 @@ public class SpecialOperator extends Operator
     }
 
     // Profiling.
+    @Override
     public final int getCallCount()
     {
         return callCount;
     }
 
+    @Override
     public final void setCallCount(int n)
     {
         callCount = n;
     }
 
+    @Override
     public final void incrementCallCount()
     {
         ++callCount;

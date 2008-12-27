@@ -41,6 +41,7 @@ public final class stream_element_type extends Primitive
         super("stream-element-type", "stream");
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         try {

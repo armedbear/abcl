@@ -49,6 +49,7 @@ public class SeriousCondition extends Condition
         super(initArgs);
     }
 
+    @Override
     protected void initialize(LispObject initArgs) throws ConditionThrowable
     {
         super.initialize(initArgs);
@@ -59,16 +60,19 @@ public class SeriousCondition extends Condition
         super(message);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.SERIOUS_CONDITION;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.SERIOUS_CONDITION;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.SERIOUS_CONDITION)

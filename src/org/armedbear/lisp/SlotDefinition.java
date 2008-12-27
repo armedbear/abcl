@@ -92,6 +92,7 @@ public final class SlotDefinition extends StandardObject
     slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = new Fixnum(i);
   }
 
+  @Override
   public String writeToString() throws ConditionThrowable
   {
     FastStringBuffer sb =
@@ -109,6 +110,7 @@ public final class SlotDefinition extends StandardObject
   private static final Primitive MAKE_SLOT_DEFINITION =
     new Primitive("make-slot-definition", PACKAGE_SYS, true, "")
     {
+      @Override
       public LispObject execute() throws ConditionThrowable
       {
         return new SlotDefinition();
@@ -119,6 +121,7 @@ public final class SlotDefinition extends StandardObject
   private static final Primitive _SLOT_DEFINITION_NAME =
     new Primitive(Symbol._SLOT_DEFINITION_NAME, "slot-definition")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -137,6 +140,7 @@ public final class SlotDefinition extends StandardObject
     new Primitive("set-slot-definition-name", PACKAGE_SYS, true,
                   "slot-definition name")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -156,6 +160,7 @@ public final class SlotDefinition extends StandardObject
   private static final Primitive _SLOT_DEFINITION_INITFUNCTION =
     new Primitive(Symbol._SLOT_DEFINITION_INITFUNCTION, "slot-definition")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -174,6 +179,7 @@ public final class SlotDefinition extends StandardObject
     new Primitive("set-slot-definition-initfunction", PACKAGE_SYS, true,
                   "slot-definition initfunction")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -194,6 +200,7 @@ public final class SlotDefinition extends StandardObject
     new Primitive("%slot-definition-initform", PACKAGE_SYS, true,
                   "slot-definition")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -212,6 +219,7 @@ public final class SlotDefinition extends StandardObject
     new Primitive("set-slot-definition-initform", PACKAGE_SYS, true,
                   "slot-definition initform")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -231,6 +239,7 @@ public final class SlotDefinition extends StandardObject
   private static final Primitive _SLOT_DEFINITION_INITARGS =
     new Primitive(Symbol._SLOT_DEFINITION_INITARGS, "slot-definition")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -249,6 +258,7 @@ public final class SlotDefinition extends StandardObject
     new Primitive("set-slot-definition-initargs", PACKAGE_SYS, true,
                   "slot-definition initargs")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -269,6 +279,7 @@ public final class SlotDefinition extends StandardObject
     new Primitive("%slot-definition-readers", PACKAGE_SYS, true,
                   "slot-definition")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -287,6 +298,7 @@ public final class SlotDefinition extends StandardObject
     new Primitive("set-slot-definition-readers", PACKAGE_SYS, true,
                   "slot-definition readers")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -307,6 +319,7 @@ public final class SlotDefinition extends StandardObject
     new Primitive("%slot-definition-writers", PACKAGE_SYS, true,
                   "slot-definition")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -325,6 +338,7 @@ public final class SlotDefinition extends StandardObject
     new Primitive("set-slot-definition-writers", PACKAGE_SYS, true,
                   "slot-definition writers")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -345,6 +359,7 @@ public final class SlotDefinition extends StandardObject
     new Primitive("%slot-definition-allocation", PACKAGE_SYS, true,
                   "slot-definition")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -363,6 +378,7 @@ public final class SlotDefinition extends StandardObject
     new Primitive("set-slot-definition-allocation", PACKAGE_SYS, true,
                   "slot-definition allocation")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -383,6 +399,7 @@ public final class SlotDefinition extends StandardObject
     new Primitive("%slot-definition-allocation-class", PACKAGE_SYS, true,
                   "slot-definition")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -401,6 +418,7 @@ public final class SlotDefinition extends StandardObject
     new Primitive("set-slot-definition-allocation-class", PACKAGE_SYS, true,
                   "slot-definition allocation-class")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -420,6 +438,7 @@ public final class SlotDefinition extends StandardObject
   private static final Primitive _SLOT_DEFINITION_LOCATION =
     new Primitive("%slot-definition-location", PACKAGE_SYS, true, "slot-definition")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -437,6 +456,7 @@ public final class SlotDefinition extends StandardObject
   private static final Primitive SET_SLOT_DEFINITION_LOCATION =
     new Primitive("set-slot-definition-location", PACKAGE_SYS, true, "slot-definition location")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {

@@ -46,16 +46,19 @@ public class StandardClass extends SlotClass
     setClassLayout(new Layout(this, NIL, NIL));
   }
 
+  @Override
   public LispObject typeOf()
   {
     return Symbol.STANDARD_CLASS;
   }
 
+  @Override
   public LispObject classOf()
   {
     return STANDARD_CLASS;
   }
 
+  @Override
   public LispObject typep(LispObject type) throws ConditionThrowable
   {
     if (type == Symbol.STANDARD_CLASS)
@@ -79,6 +82,7 @@ public class StandardClass extends SlotClass
     return new StandardObject(this, layout.getLength());
   }
 
+  @Override
   public String writeToString() throws ConditionThrowable
   {
     FastStringBuffer sb =

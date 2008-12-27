@@ -42,6 +42,7 @@ public abstract class AbstractBitVector extends AbstractVector
     // For non-displaced bit-vectors.
     protected long[] bits;
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.BIT_VECTOR)
@@ -51,21 +52,25 @@ public abstract class AbstractBitVector extends AbstractVector
         return super.typep(type);
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.BIT_VECTOR;
     }
 
+    @Override
     public final int capacity()
     {
         return capacity;
     }
 
+    @Override
     public final LispObject getElementType()
     {
         return Symbol.BIT;
     }
 
+    @Override
     public boolean equal(LispObject obj) throws ConditionThrowable
     {
         if (this == obj)
@@ -83,6 +88,7 @@ public abstract class AbstractBitVector extends AbstractVector
         return false;
     }
 
+    @Override
     public boolean equalp(LispObject obj) throws ConditionThrowable
     {
         if (this == obj)
@@ -104,6 +110,7 @@ public abstract class AbstractBitVector extends AbstractVector
         return false;
     }
 
+    @Override
     public void fill(LispObject obj) throws ConditionThrowable
     {
         try {
@@ -134,6 +141,7 @@ public abstract class AbstractBitVector extends AbstractVector
         error(new TypeError(obj, Symbol.BIT));
     }
 
+    @Override
     public LispObject subseq(int start, int end) throws ConditionThrowable
     {
         SimpleBitVector v = new SimpleBitVector(end - start);
@@ -152,6 +160,7 @@ public abstract class AbstractBitVector extends AbstractVector
         }
     }
 
+    @Override
     public int hashCode()
     {
         int hashCode = 1;
@@ -168,6 +177,7 @@ public abstract class AbstractBitVector extends AbstractVector
         return hashCode;
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         final LispThread thread = LispThread.currentThread();
@@ -192,6 +202,7 @@ public abstract class AbstractBitVector extends AbstractVector
     }
 
     // Ignores fill pointer.
+    @Override
     public LispObject AREF(LispObject index) throws ConditionThrowable
     {
         try {
@@ -202,6 +213,7 @@ public abstract class AbstractBitVector extends AbstractVector
         }
     }
 
+    @Override
     public LispObject reverse() throws ConditionThrowable
     {
         int length = length();

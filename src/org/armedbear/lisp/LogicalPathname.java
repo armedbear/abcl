@@ -172,16 +172,19 @@ public final class LogicalPathname extends Pathname
         return result.nreverse();
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.LOGICAL_PATHNAME;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.LOGICAL_PATHNAME;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.LOGICAL_PATHNAME)
@@ -191,6 +194,7 @@ public final class LogicalPathname extends Pathname
         return super.typep(type);
     }
 
+    @Override
     protected String getDirectoryNamestring() throws ConditionThrowable
     {
         FastStringBuffer sb = new FastStringBuffer();
@@ -229,6 +233,7 @@ public final class LogicalPathname extends Pathname
         return sb.toString();
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         final LispThread thread = LispThread.currentThread();
@@ -275,6 +280,7 @@ public final class LogicalPathname extends Pathname
     private static final Primitive CANONICALIZE_LOGICAL_HOST =
         new Primitive("canonicalize-logical-host", PACKAGE_SYS, true, "host")
     {
+        @Override
         public LispObject execute(LispObject arg)
             throws ConditionThrowable
         {
@@ -298,6 +304,7 @@ public final class LogicalPathname extends Pathname
     private static final Primitive _MAKE_LOGICAL_PATHNAME =
         new Primitive("%make-logical-pathname", PACKAGE_SYS, true, "namestring")
     {
+        @Override
         public LispObject execute(LispObject arg)
             throws ConditionThrowable
         {

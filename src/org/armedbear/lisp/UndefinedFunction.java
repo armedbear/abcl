@@ -45,16 +45,19 @@ public final class UndefinedFunction extends CellError
       setCellName(obj);
   }
 
+  @Override
   public LispObject typeOf()
   {
     return Symbol.UNDEFINED_FUNCTION;
   }
 
+  @Override
   public LispObject classOf()
   {
     return StandardClass.UNDEFINED_FUNCTION;
   }
 
+  @Override
   public LispObject typep(LispObject type) throws ConditionThrowable
   {
     if (type == Symbol.UNDEFINED_FUNCTION)
@@ -64,6 +67,7 @@ public final class UndefinedFunction extends CellError
     return super.typep(type);
   }
 
+  @Override
   public String getMessage() throws ConditionThrowable
   {
     FastStringBuffer sb = new FastStringBuffer("The function ");

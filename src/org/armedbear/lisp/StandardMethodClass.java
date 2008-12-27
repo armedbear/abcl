@@ -61,6 +61,7 @@ public final class StandardMethodClass extends StandardClass
     setFinalized(true);
   }
 
+  @Override
   public LispObject allocateInstance()
   {
     return new StandardMethod();

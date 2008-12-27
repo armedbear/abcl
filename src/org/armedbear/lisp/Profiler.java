@@ -64,6 +64,7 @@ public class Profiler extends Lisp
     public static final Primitive _START_PROFILER =
         new Primitive("%start-profiler", PACKAGE_PROF, false)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -122,6 +123,7 @@ public class Profiler extends Lisp
     public static final Primitive STOP_PROFILER =
         new Primitive("stop-profiler", PACKAGE_PROF, true)
     {
+        @Override
         public LispObject execute() throws ConditionThrowable
         {
             Stream out = getStandardOutput();

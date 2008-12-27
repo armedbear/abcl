@@ -59,16 +59,19 @@ public class ProgramError extends LispError
         setFormatArguments(NIL);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.PROGRAM_ERROR;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.PROGRAM_ERROR;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.PROGRAM_ERROR)

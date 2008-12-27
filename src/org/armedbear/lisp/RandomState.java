@@ -69,16 +69,19 @@ public final class RandomState extends LispObject
         }
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.RANDOM_STATE;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.RANDOM_STATE;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.RANDOM_STATE)
@@ -88,6 +91,7 @@ public final class RandomState extends LispObject
         return super.typep(type);
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         return unreadableString(Symbol.RANDOM_STATE);
@@ -131,12 +135,14 @@ public final class RandomState extends LispObject
     private static final Primitive RANDOM =
         new Primitive(Symbol.RANDOM, "limit &optional random-state")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             RandomState randomState =
                 (RandomState) Symbol._RANDOM_STATE_.symbolValue();
             return randomState.random(arg);
         }
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -152,10 +158,12 @@ public final class RandomState extends LispObject
     private static final Primitive MAKE_RANDOM_STATE =
         new Primitive(Symbol.MAKE_RANDOM_STATE, "&optional state")
     {
+        @Override
         public LispObject execute() throws ConditionThrowable
         {
             return new RandomState((RandomState)Symbol._RANDOM_STATE_.symbolValue());
         }
+        @Override
         public LispObject execute(LispObject arg)
             throws ConditionThrowable
         {
@@ -173,6 +181,7 @@ public final class RandomState extends LispObject
     private static final Primitive RANDOM_STATE_P =
         new Primitive(Symbol.RANDOM_STATE_P, "object")
     {
+        @Override
         public LispObject execute(LispObject arg)
         {
             return arg instanceof RandomState ? T : NIL;

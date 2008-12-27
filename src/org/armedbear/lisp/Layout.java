@@ -103,6 +103,7 @@ public final class Layout extends LispObject
     return ht;
   }
 
+  @Override
   public LispObject getParts() throws ConditionThrowable
   {
     LispObject result = NIL;
@@ -140,6 +141,7 @@ public final class Layout extends LispObject
     return sharedSlots;
   }
 
+  @Override
   public String writeToString() throws ConditionThrowable
   {
     return unreadableString(Symbol.LAYOUT);
@@ -167,6 +169,7 @@ public final class Layout extends LispObject
     new Primitive("make-layout", PACKAGE_SYS, true,
                   "class instance-slots class-slots")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
         throws ConditionThrowable
@@ -188,6 +191,7 @@ public final class Layout extends LispObject
   private static final Primitive LAYOUT_CLASS =
     new Primitive("layout-class", PACKAGE_SYS, true, "layout")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -205,6 +209,7 @@ public final class Layout extends LispObject
   private static final Primitive LAYOUT_LENGTH =
     new Primitive("layout-length", PACKAGE_SYS, true, "layout")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -244,6 +249,7 @@ public final class Layout extends LispObject
   private static final Primitive LAYOUT_SLOT_INDEX =
     new Primitive("layout-slot-index", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -268,6 +274,7 @@ public final class Layout extends LispObject
   private static final Primitive LAYOUT_SLOT_LOCATION =
     new Primitive("layout-slot-location", PACKAGE_SYS, true, "layout slot-name")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -302,6 +309,7 @@ public final class Layout extends LispObject
   private static final Primitive _MAKE_INSTANCES_OBSOLETE =
     new Primitive("%make-instances-obsolete", PACKAGE_SYS, true, "class")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         final LispClass lispClass;

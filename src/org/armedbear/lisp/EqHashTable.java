@@ -47,11 +47,13 @@ public final class EqHashTable extends HashTable
         mask = buckets.length - 1;
     }
 
+    @Override
     public Symbol getTest()
     {
         return Symbol.EQ;
     }
 
+    @Override
     public LispObject get(LispObject key)
     {
         final int index;
@@ -71,6 +73,7 @@ public final class EqHashTable extends HashTable
         return null;
     }
 
+    @Override
     public void put(LispObject key, LispObject value)
     {
         int index;
@@ -102,6 +105,7 @@ public final class EqHashTable extends HashTable
         buckets[index] = e;
     }
 
+    @Override
     public LispObject remove(LispObject key)
     {
         final int index;
@@ -129,6 +133,7 @@ public final class EqHashTable extends HashTable
         return null;
     }
 
+    @Override
     protected void rehash()
     {
         cachedKey = null; // Invalidate the cache!

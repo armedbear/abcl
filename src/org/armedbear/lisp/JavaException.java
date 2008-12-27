@@ -49,16 +49,19 @@ public class JavaException extends LispError
         setInstanceSlotValue(Symbol.CAUSE, new JavaObject(throwable));
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.JAVA_EXCEPTION;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.JAVA_EXCEPTION;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.JAVA_EXCEPTION)
@@ -68,6 +71,7 @@ public class JavaException extends LispError
         return super.typep(type);
     }
 
+    @Override
     public String getMessage()
     {
         StringWriter sw = new StringWriter();
@@ -86,6 +90,7 @@ public class JavaException extends LispError
 "Returns the cause of JAVA-EXCEPTION. (The cause is the Java Throwable\n" +
 "  object that caused JAVA-EXCEPTION to be signalled.)")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return Symbol.STD_SLOT_VALUE.execute(arg, Symbol.CAUSE);

@@ -45,6 +45,7 @@ public final class StandardReaderMethod extends StandardMethod
   private static final Primitive READER_METHOD_SLOT_NAME =
       new Primitive("reader-method-slot-name", PACKAGE_MOP, false, "reader-method")
   {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
           try
@@ -63,6 +64,7 @@ public final class StandardReaderMethod extends StandardMethod
       new Primitive("set-reader-method-slot-name", PACKAGE_MOP, false,
                     "reader-method slot-name")
   {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
           throws ConditionThrowable
       {

@@ -152,18 +152,21 @@ public class Autoload extends Function
         return symbol.getName().toLowerCase();
     }
 
+    @Override
     public LispObject execute() throws ConditionThrowable
     {
         load();
         return symbol.execute();
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         load();
         return symbol.execute(arg);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {
@@ -171,6 +174,7 @@ public class Autoload extends Function
         return symbol.execute(first, second);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third)
         throws ConditionThrowable
@@ -179,6 +183,7 @@ public class Autoload extends Function
         return symbol.execute(first, second, third);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth)
         throws ConditionThrowable
@@ -187,6 +192,7 @@ public class Autoload extends Function
         return symbol.execute(first, second, third, fourth);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth)
@@ -196,6 +202,7 @@ public class Autoload extends Function
         return symbol.execute(first, second, third, fourth, fifth);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth)
@@ -205,6 +212,7 @@ public class Autoload extends Function
         return symbol.execute(first, second, third, fourth, fifth, sixth);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
@@ -216,6 +224,7 @@ public class Autoload extends Function
                               seventh);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
@@ -227,12 +236,14 @@ public class Autoload extends Function
                               seventh, eighth);
     }
 
+    @Override
     public LispObject execute(LispObject[] args) throws ConditionThrowable
     {
         load();
         return symbol.execute(args);
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         StringBuffer sb = new StringBuffer("#<AUTOLOAD ");
@@ -255,6 +266,7 @@ public class Autoload extends Function
     private static final Primitive AUTOLOAD =
         new Primitive("autoload", PACKAGE_EXT, true)
     {
+        @Override
         public LispObject execute(LispObject first) throws ConditionThrowable
         {
             if (first instanceof Symbol) {
@@ -271,6 +283,7 @@ public class Autoload extends Function
             }
             return error(new TypeError(first));
         }
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -296,6 +309,7 @@ public class Autoload extends Function
     private static final Primitive RESOLVE =
         new Primitive("resolve", PACKAGE_EXT, true, "symbol")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             Symbol symbol = checkSymbol(arg);
@@ -313,6 +327,7 @@ public class Autoload extends Function
     private static final Primitive AUTOLOADP =
         new Primitive("autoloadp", PACKAGE_EXT, true, "symbol")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             if (arg instanceof Symbol) {

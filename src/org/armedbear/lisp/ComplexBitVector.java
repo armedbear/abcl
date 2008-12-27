@@ -59,26 +59,31 @@ public final class ComplexBitVector extends AbstractBitVector
         isDisplaced = true;
     }
 
+    @Override
     public LispObject typeOf()
     {
         return list2(Symbol.BIT_VECTOR, new Fixnum(capacity));
     }
 
+    @Override
     public boolean hasFillPointer()
     {
         return fillPointer >= 0;
     }
 
+    @Override
     public int getFillPointer()
     {
         return fillPointer;
     }
 
+    @Override
     public void setFillPointer(int n)
     {
         fillPointer = n;
     }
 
+    @Override
     public void setFillPointer(LispObject obj) throws ConditionThrowable
     {
         if (obj == T)
@@ -102,6 +107,7 @@ public final class ComplexBitVector extends AbstractBitVector
         }
     }
 
+    @Override
     public LispObject arrayDisplacement() throws ConditionThrowable
     {
         LispObject value1, value2;
@@ -115,11 +121,13 @@ public final class ComplexBitVector extends AbstractBitVector
         return LispThread.currentThread().setValues(value1, value2);
     }
 
+    @Override
     public int length()
     {
         return fillPointer >= 0 ? fillPointer : capacity;
     }
 
+    @Override
     public LispObject elt(int index) throws ConditionThrowable
     {
         if (index >= length())
@@ -127,6 +135,7 @@ public final class ComplexBitVector extends AbstractBitVector
         return AREF(index);
     }
 
+    @Override
     public LispObject AREF(int index) throws ConditionThrowable
     {
         if (index < 0 || index >= capacity)
@@ -140,6 +149,7 @@ public final class ComplexBitVector extends AbstractBitVector
         }
     }
 
+    @Override
     protected int getBit(int index) throws ConditionThrowable
     {
         if (bits != null) {
@@ -149,6 +159,7 @@ public final class ComplexBitVector extends AbstractBitVector
             return Fixnum.getValue(array.AREF(index + displacement));
     }
 
+    @Override
     public void aset(int index, LispObject newValue) throws ConditionThrowable
     {
         if (index < 0 || index >= capacity)
@@ -177,6 +188,7 @@ public final class ComplexBitVector extends AbstractBitVector
         type_error(newValue, Symbol.BIT);
     }
 
+    @Override
     protected void setBit(int index) throws ConditionThrowable
     {
         if (bits != null) {
@@ -186,6 +198,7 @@ public final class ComplexBitVector extends AbstractBitVector
             array.aset(index + displacement, Fixnum.ONE);
     }
 
+    @Override
     protected void clearBit(int index) throws ConditionThrowable
     {
         if (bits != null) {
@@ -195,6 +208,7 @@ public final class ComplexBitVector extends AbstractBitVector
             array.aset(index + displacement, Fixnum.ZERO);
     }
 
+    @Override
     public void shrink(int n) throws ConditionThrowable
     {
         if (bits != null) {
@@ -216,12 +230,14 @@ public final class ComplexBitVector extends AbstractBitVector
         error(new LispError());
     }
 
+    @Override
     public boolean isSimpleVector()
     {
         return false;
     }
 
     // FIXME
+    @Override
     public void vectorPushExtend(LispObject element) throws ConditionThrowable
     {
         final int fp = getFillPointer();
@@ -236,6 +252,7 @@ public final class ComplexBitVector extends AbstractBitVector
     }
 
     // FIXME
+    @Override
     public LispObject VECTOR_PUSH_EXTEND(LispObject element)
         throws ConditionThrowable
     {
@@ -244,6 +261,7 @@ public final class ComplexBitVector extends AbstractBitVector
     }
 
     // FIXME
+    @Override
     public LispObject VECTOR_PUSH_EXTEND(LispObject element, LispObject extension)
         throws ConditionThrowable
     {
@@ -300,6 +318,7 @@ public final class ComplexBitVector extends AbstractBitVector
         }
     }
 
+    @Override
     public AbstractVector adjustVector(int newCapacity,
                                        LispObject initialElement,
                                        LispObject initialContents)
@@ -360,6 +379,7 @@ public final class ComplexBitVector extends AbstractBitVector
         return this;
     }
 
+    @Override
     public AbstractVector adjustVector(int size, AbstractArray displacedTo,
                                        int displacement)
         throws ConditionThrowable

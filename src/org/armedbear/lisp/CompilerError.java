@@ -40,16 +40,19 @@ public class CompilerError extends Condition
         super(initArgs);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.COMPILER_ERROR;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.COMPILER_ERROR;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.COMPILER_ERROR)

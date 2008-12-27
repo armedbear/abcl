@@ -49,16 +49,19 @@ public final class SimpleWarning extends Warning
         setFormatArguments(formatArguments);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.SIMPLE_WARNING;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.SIMPLE_WARNING;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.SIMPLE_WARNING)

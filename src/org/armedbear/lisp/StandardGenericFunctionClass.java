@@ -68,6 +68,7 @@ public final class StandardGenericFunctionClass extends StandardClass
     setFinalized(true);
   }
 
+  @Override
   public LispObject allocateInstance()
   {
     return new StandardGenericFunction();

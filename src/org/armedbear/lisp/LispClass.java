@@ -122,6 +122,7 @@ public abstract class LispClass extends StandardObject
     this.directSuperclasses = directSuperclasses;
   }
 
+  @Override
   public LispObject getParts() throws ConditionThrowable
   {
     LispObject result = NIL;
@@ -135,6 +136,7 @@ public abstract class LispClass extends StandardObject
     return result.nreverse();
   }
 
+  @Override
   public final int sxhash()
   {
     return sxhash;
@@ -145,6 +147,7 @@ public abstract class LispClass extends StandardObject
     return symbol;
   }
 
+  @Override
   public final LispObject getPropertyList()
   {
     if (propertyList == null)
@@ -152,6 +155,7 @@ public abstract class LispClass extends StandardObject
     return propertyList;
   }
 
+  @Override
   public final void setPropertyList(LispObject obj)
   {
     if (obj == null)
@@ -292,16 +296,19 @@ public abstract class LispClass extends StandardObject
     return symbol.getName();
   }
 
+  @Override
   public LispObject typeOf()
   {
     return Symbol.CLASS;
   }
 
+  @Override
   public LispObject classOf()
   {
     return StandardClass.CLASS;
   }
 
+  @Override
   public LispObject typep(LispObject type) throws ConditionThrowable
   {
     if (type == Symbol.CLASS)
@@ -327,15 +334,18 @@ public abstract class LispClass extends StandardObject
   private static final Primitive FIND_CLASS =
     new Primitive(Symbol.FIND_CLASS, "symbol &optional errorp environment")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return findClass(arg, true);
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
         return findClass(first, second != NIL);
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
         throws ConditionThrowable
@@ -349,6 +359,7 @@ public abstract class LispClass extends StandardObject
   private static final Primitive _SET_FIND_CLASS =
     new Primitive("%set-find-class", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -384,6 +395,7 @@ public abstract class LispClass extends StandardObject
   private static final Primitive SUBCLASSP =
     new Primitive(Symbol.SUBCLASSP, "class")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {

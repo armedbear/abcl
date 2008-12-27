@@ -45,11 +45,13 @@ public class CompiledFunction extends Closure
               env);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.COMPILED_FUNCTION;
     }
 
+    @Override
     public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
     {
         if (typeSpecifier == Symbol.COMPILED_FUNCTION)
@@ -57,12 +59,14 @@ public class CompiledFunction extends Closure
         return super.typep(typeSpecifier);
     }
 
+    @Override
     public LispObject execute() throws ConditionThrowable
     {
         LispObject[] args = new LispObject[0];
         return execute(args);
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         LispObject[] args = new LispObject[1];
@@ -70,6 +74,7 @@ public class CompiledFunction extends Closure
         return execute(args);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {
@@ -79,6 +84,7 @@ public class CompiledFunction extends Closure
         return execute(args);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third)
         throws ConditionThrowable
@@ -90,6 +96,7 @@ public class CompiledFunction extends Closure
         return execute(args);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth)
         throws ConditionThrowable
@@ -102,6 +109,7 @@ public class CompiledFunction extends Closure
         return execute(args);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth)
@@ -116,6 +124,7 @@ public class CompiledFunction extends Closure
         return execute(args);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth)
@@ -131,6 +140,7 @@ public class CompiledFunction extends Closure
         return execute(args);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
@@ -148,6 +158,7 @@ public class CompiledFunction extends Closure
         return execute(args);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
@@ -166,6 +177,7 @@ public class CompiledFunction extends Closure
         return execute(args);
     }
 
+    @Override
     public LispObject execute(LispObject[] args) throws ConditionThrowable
     {
         return error(new LispError("Not implemented."));
@@ -175,6 +187,7 @@ public class CompiledFunction extends Closure
     private static final Primitive LOAD_COMPILED_FUNCTION =
         new Primitive("load-compiled-function", PACKAGE_SYS, true, "pathname")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             String namestring = null;
@@ -192,6 +205,7 @@ public class CompiledFunction extends Closure
     private static final Primitive VARLIST =
         new Primitive("varlist", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             if (arg instanceof Closure)

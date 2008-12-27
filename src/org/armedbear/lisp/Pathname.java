@@ -243,6 +243,7 @@ public class Pathname extends LispObject
         return result.nreverse();
     }
 
+    @Override
     public LispObject getParts() throws ConditionThrowable
     {
         LispObject parts = NIL;
@@ -255,16 +256,19 @@ public class Pathname extends LispObject
         return parts.nreverse();
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.PATHNAME;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.PATHNAME;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.PATHNAME)
@@ -410,6 +414,7 @@ public class Pathname extends LispObject
         return sb.toString();
     }
 
+    @Override
     public boolean equal(LispObject obj) throws ConditionThrowable
     {
         if (this == obj)
@@ -451,11 +456,13 @@ public class Pathname extends LispObject
         return false;
     }
 
+    @Override
     public boolean equalp(LispObject obj) throws ConditionThrowable
     {
         return equal(obj);
     }
 
+    @Override
     public int sxhash()
     {
         return ((host.sxhash() ^
@@ -465,6 +472,7 @@ public class Pathname extends LispObject
                  type.sxhash()) & 0x7fffffff);
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         try {
@@ -629,6 +637,7 @@ public class Pathname extends LispObject
     private static final Primitive _PATHNAME_HOST =
         new Primitive("%pathname-host", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -641,6 +650,7 @@ public class Pathname extends LispObject
     private static final Primitive _PATHNAME_DEVICE =
         new Primitive("%pathname-device", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -653,6 +663,7 @@ public class Pathname extends LispObject
     private static final Primitive _PATHNAME_DIRECTORY =
         new Primitive("%pathname-directory", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -665,6 +676,7 @@ public class Pathname extends LispObject
     private static final Primitive _PATHNAME_NAME =
         new Primitive("%pathname-name", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -677,6 +689,7 @@ public class Pathname extends LispObject
     private static final Primitive _PATHNAME_TYPE =
         new Primitive("%pathname-type", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -689,6 +702,7 @@ public class Pathname extends LispObject
     private static final Primitive PATHNAME_VERSION =
         new Primitive("pathname-version", "pathname")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return coerceToPathname(arg).version;
@@ -700,6 +714,7 @@ public class Pathname extends LispObject
     private static final Primitive NAMESTRING =
         new Primitive("namestring", "pathname")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             Pathname pathname = coerceToPathname(arg);
@@ -716,6 +731,7 @@ public class Pathname extends LispObject
     private static final Primitive DIRECTORY_NAMESTRING =
         new Primitive("directory-namestring", "pathname")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return new SimpleString(coerceToPathname(arg).getDirectoryNamestring());
@@ -726,6 +742,7 @@ public class Pathname extends LispObject
     private static final Primitive PATHNAME =
         new Primitive("pathname", "pathspec")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return coerceToPathname(arg);
@@ -737,6 +754,7 @@ public class Pathname extends LispObject
         new Primitive("%parse-namestring", PACKAGE_SYS, false,
                       "namestring host default-pathname")
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
             throws ConditionThrowable
@@ -781,6 +799,7 @@ public class Pathname extends LispObject
         new Primitive("make-pathname",
                       "&key host device directory name type version defaults case")
     {
+        @Override
         public LispObject execute(LispObject[] args)
             throws ConditionThrowable
         {
@@ -959,6 +978,7 @@ public class Pathname extends LispObject
     private static final Primitive PATHNAMEP =
         new Primitive("pathnamep", "object")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return arg instanceof Pathname ? T : NIL;
@@ -969,6 +989,7 @@ public class Pathname extends LispObject
     private static final Primitive LOGICAL_PATHNAME_P =
         new Primitive("logical-pathname-p", PACKAGE_SYS, true, "object")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return arg instanceof LogicalPathname ? T : NIL;
@@ -979,6 +1000,7 @@ public class Pathname extends LispObject
     private static final Primitive USER_HOMEDIR_PATHNAME =
         new Primitive("user-homedir-pathname", "&optional host")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             switch (args.length) {
@@ -1000,6 +1022,7 @@ public class Pathname extends LispObject
     private static final Primitive LIST_DIRECTORY =
         new Primitive("list-directory", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             Pathname pathname = coerceToPathname(arg);
@@ -1057,6 +1080,7 @@ public class Pathname extends LispObject
     private static final Primitive _WILD_PATHNAME_P =
         new Primitive("%wild-pathname-p", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -1098,6 +1122,7 @@ public class Pathname extends LispObject
         new Primitive("merge-pathnames",
                       "pathname &optional default-pathname default-version")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             Pathname pathname = coerceToPathname(arg);
@@ -1106,6 +1131,7 @@ public class Pathname extends LispObject
             LispObject defaultVersion = Keyword.NEWEST;
             return mergePathnames(pathname, defaultPathname, defaultVersion);
         }
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -1115,6 +1141,7 @@ public class Pathname extends LispObject
             LispObject defaultVersion = Keyword.NEWEST;
             return mergePathnames(pathname, defaultPathname, defaultVersion);
         }
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
             throws ConditionThrowable
@@ -1264,6 +1291,7 @@ public class Pathname extends LispObject
     private static final Primitive MKDIR =
         new Primitive("mkdir", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             final Pathname pathname = coerceToPathname(arg);
@@ -1282,6 +1310,7 @@ public class Pathname extends LispObject
     public static final Primitive RENAME_FILE =
         new Primitive("rename-file", "filespec new-name")
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -1319,6 +1348,7 @@ public class Pathname extends LispObject
     private static final Primitive FILE_NAMESTRING =
         new Primitive("file-namestring", "pathname")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             Pathname p = coerceToPathname(arg);
@@ -1342,6 +1372,7 @@ public class Pathname extends LispObject
     private static final Primitive HOST_NAMESTRING =
         new Primitive("host-namestring", "pathname")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return coerceToPathname(arg).host;

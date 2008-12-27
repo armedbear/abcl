@@ -42,6 +42,7 @@ public final class peek_char extends Primitive
               "&optional peek-type input-stream eof-error-p eof-value recursive-p");
     }
 
+    @Override
     public LispObject execute(LispObject[] args) throws ConditionThrowable
     {
         int length = args.length;

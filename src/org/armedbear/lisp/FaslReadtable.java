@@ -40,6 +40,7 @@ public final class FaslReadtable extends Readtable
         super();
     }
 
+    @Override
     protected void initialize()
     {
         syntax[9]    = SYNTAX_TYPE_WHITESPACE; // tab

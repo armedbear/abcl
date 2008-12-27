@@ -63,6 +63,7 @@ public final class LispCharacter extends LispObject
     this.value = c;
   }
 
+  @Override
   public LispObject typeOf()
   {
     if (isStandardChar())
@@ -70,11 +71,13 @@ public final class LispCharacter extends LispObject
     return Symbol.CHARACTER;
   }
 
+  @Override
   public LispObject classOf()
   {
     return BuiltInClass.CHARACTER;
   }
 
+  @Override
   public LispObject getDescription()
   {
     FastStringBuffer sb = new FastStringBuffer("character #\\");
@@ -84,6 +87,7 @@ public final class LispCharacter extends LispObject
     return new SimpleString(sb);
   }
 
+  @Override
   public LispObject typep(LispObject type) throws ConditionThrowable
   {
     if (type == Symbol.CHARACTER)
@@ -97,16 +101,19 @@ public final class LispCharacter extends LispObject
     return super.typep(type);
   }
 
+  @Override
   public LispObject CHARACTERP()
   {
     return T;
   }
 
+  @Override
   public boolean characterp()
   {
     return true;
   }
 
+  @Override
   public LispObject STRING()
   {
     return new SimpleString(value);
@@ -121,11 +128,13 @@ public final class LispCharacter extends LispObject
     return false;
   }
 
+  @Override
   public boolean eql(char c)
   {
     return value == c;
   }
 
+  @Override
   public boolean eql(LispObject obj)
   {
     if (this == obj)
@@ -138,6 +147,7 @@ public final class LispCharacter extends LispObject
     return false;
   }
 
+  @Override
   public boolean equal(LispObject obj)
   {
     if (this == obj)
@@ -150,6 +160,7 @@ public final class LispCharacter extends LispObject
     return false;
   }
 
+  @Override
   public boolean equalp(LispObject obj)
   {
     if (this == obj)
@@ -182,26 +193,31 @@ public final class LispCharacter extends LispObject
     return value;
   }
 
+  @Override
   public Object javaInstance()
   {
     return Character.valueOf(value);
   }
 
+  @Override
   public Object javaInstance(Class c)
   {
     return javaInstance();
   }
 
+  @Override
   public int sxhash()
   {
     return value;
   }
 
+  @Override
   public int psxhash()
   {
     return Character.toUpperCase(value);
   }
 
+  @Override
   public final String writeToString() throws ConditionThrowable
   {
     final LispThread thread = LispThread.currentThread();
@@ -258,6 +274,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive CHARACTER =
     new Primitive(Symbol.CHARACTER, "character")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         if (arg instanceof LispCharacter)
@@ -281,6 +298,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive WHITESPACEP =
     new Primitive("whitespacep", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -298,6 +316,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive CHAR_CODE =
     new Primitive(Symbol.CHAR_CODE, "character")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -316,6 +335,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive CHAR_INT =
     new Primitive(Symbol.CHAR_INT, "character")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -334,6 +354,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive CODE_CHAR =
     new Primitive(Symbol.CODE_CHAR, "code")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -356,6 +377,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive CHARACTERP =
     new Primitive(Symbol.CHARACTERP, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg instanceof LispCharacter ? T : NIL;
@@ -366,6 +388,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive BOTH_CASE_P =
     new Primitive(Symbol.BOTH_CASE_P, "character")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         char c = getValue(arg);
@@ -379,6 +402,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive LOWER_CASE_P =
     new Primitive(Symbol.LOWER_CASE_P, "character")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return Character.isLowerCase(getValue(arg)) ? T : NIL;
@@ -389,6 +413,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive UPPER_CASE_P =
     new Primitive(Symbol.UPPER_CASE_P, "character")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return Character.isUpperCase(getValue(arg)) ? T : NIL;
@@ -399,6 +424,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive CHAR_DOWNCASE =
     new Primitive(Symbol.CHAR_DOWNCASE, "character")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         char c;
@@ -420,6 +446,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive CHAR_UPCASE =
     new Primitive(Symbol.CHAR_UPCASE, "character")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         final char c;
@@ -441,6 +468,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive DIGIT_CHAR =
     new Primitive(Symbol.DIGIT_CHAR, "weight &optional radix")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         int weight;
@@ -458,6 +486,7 @@ public final class LispCharacter extends LispObject
           return constants['0' + weight];
         return NIL;
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -497,6 +526,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive DIGIT_CHAR_P =
     new Primitive(Symbol.DIGIT_CHAR_P, "char &optional radix")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -509,6 +539,7 @@ public final class LispCharacter extends LispObject
             return type_error(arg, Symbol.CHARACTER);
           }
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -541,6 +572,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive STANDARD_CHAR_P =
     new Primitive(Symbol.STANDARD_CHAR_P, "character")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -558,6 +590,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive GRAPHIC_CHAR_P =
     new Primitive(Symbol.GRAPHIC_CHAR_P, "char")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -578,6 +611,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive ALPHA_CHAR_P =
     new Primitive(Symbol.ALPHA_CHAR_P, "character")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -595,6 +629,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive ALPHANUMERICP =
     new Primitive(Symbol.ALPHANUMERICP, "character")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -639,6 +674,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive NAME_CHAR =
     new Primitive(Symbol.NAME_CHAR, "name")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         String s = arg.STRING().getStringValue();
@@ -677,6 +713,7 @@ public final class LispCharacter extends LispObject
   private static final Primitive CHAR_NAME =
     new Primitive(Symbol.CHAR_NAME, "character")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         String name = charToName(LispCharacter.getValue(arg));

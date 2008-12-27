@@ -42,6 +42,7 @@ public final class ash extends Primitive
         super("ash", "integer count");
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {

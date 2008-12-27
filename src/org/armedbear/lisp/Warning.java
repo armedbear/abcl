@@ -44,16 +44,19 @@ public class Warning extends Condition
         super(initArgs);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.WARNING;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.WARNING;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.WARNING)

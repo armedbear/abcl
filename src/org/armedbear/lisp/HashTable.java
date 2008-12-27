@@ -99,16 +99,19 @@ public abstract class HashTable extends LispObject
 
   public abstract Symbol getTest();
 
+  @Override
   public LispObject typeOf()
   {
     return Symbol.HASH_TABLE;
   }
 
+  @Override
   public LispObject classOf()
   {
     return BuiltInClass.HASH_TABLE;
   }
 
+  @Override
   public LispObject typep(LispObject type) throws ConditionThrowable
   {
     if (type == Symbol.HASH_TABLE)
@@ -118,6 +121,7 @@ public abstract class HashTable extends LispObject
     return super.typep(type);
   }
 
+  @Override
   public boolean equalp(LispObject obj) throws ConditionThrowable
   {
     if (this == obj)
@@ -144,6 +148,7 @@ public abstract class HashTable extends LispObject
     return false;
   }
 
+  @Override
   public LispObject getParts() throws ConditionThrowable
   {
     LispObject parts = NIL;
@@ -219,6 +224,7 @@ public abstract class HashTable extends LispObject
     return remove(key) != null ? T : NIL;
   }
 
+  @Override
   public String writeToString() throws ConditionThrowable
   {
     if (Symbol.PRINT_READABLY.symbolValue(LispThread.currentThread()) != NIL)
@@ -294,6 +300,7 @@ public abstract class HashTable extends LispObject
   }
 
   // For EQUALP hash tables.
+  @Override
   public int psxhash()
   {
     long result = 2062775257; // Chosen at random.

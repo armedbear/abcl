@@ -55,17 +55,20 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
             elements[i] = Fixnum.getValue(array[i]);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return list3(Symbol.SIMPLE_ARRAY, UNSIGNED_BYTE_16,
                      new Cons(new Fixnum(capacity)));
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.VECTOR;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.SIMPLE_ARRAY)
@@ -75,36 +78,43 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
         return super.typep(type);
     }
 
+    @Override
     public LispObject getElementType()
     {
         return UNSIGNED_BYTE_16;
     }
 
+    @Override
     public boolean isSimpleVector()
     {
         return false;
     }
 
+    @Override
     public boolean hasFillPointer()
     {
         return false;
     }
 
+    @Override
     public boolean isAdjustable()
     {
         return false;
     }
 
+    @Override
     public int capacity()
     {
         return capacity;
     }
 
+    @Override
     public int length()
     {
         return capacity;
     }
 
+    @Override
     public LispObject elt(int index) throws ConditionThrowable
     {
         try {
@@ -117,6 +127,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
     }
 
     // Ignores fill pointer.
+    @Override
     public int aref(int index) throws ConditionThrowable
     {
         try {
@@ -130,6 +141,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
     }
 
     // Ignores fill pointer.
+    @Override
     public LispObject AREF(int index) throws ConditionThrowable
     {
         try {
@@ -142,6 +154,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
     }
 
     // Ignores fill pointer.
+    @Override
     public LispObject AREF(LispObject index) throws ConditionThrowable
     {
         try {
@@ -156,6 +169,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
         }
     }
 
+    @Override
     public void aset(int index, int n) throws ConditionThrowable
     {
         try {
@@ -166,6 +180,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
         }
     }
 
+    @Override
     public void aset(int index, LispObject obj) throws ConditionThrowable
     {
         try {
@@ -179,6 +194,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
         }
     }
 
+    @Override
     public LispObject subseq(int start, int end) throws ConditionThrowable
     {
         BasicVector_UnsignedByte16 v = new BasicVector_UnsignedByte16(end - start);
@@ -193,6 +209,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
         }
     }
 
+    @Override
     public void fill(LispObject obj) throws ConditionThrowable
     {
         int n = Fixnum.getValue(obj);
@@ -200,6 +217,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
             elements[i] = n;
     }
 
+    @Override
     public void shrink(int n) throws ConditionThrowable
     {
         if (n < capacity) {
@@ -214,6 +232,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
         error(new LispError());
     }
 
+    @Override
     public LispObject reverse() throws ConditionThrowable
     {
         BasicVector_UnsignedByte16 result = new BasicVector_UnsignedByte16(capacity);
@@ -223,6 +242,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
         return result;
     }
 
+    @Override
     public LispObject nreverse() throws ConditionThrowable
     {
         int i = 0;
@@ -237,6 +257,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
         return this;
     }
 
+    @Override
     public AbstractVector adjustVector(int newCapacity,
                                        LispObject initialElement,
                                        LispObject initialContents)
@@ -269,6 +290,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
         return this;
     }
 
+    @Override
     public AbstractVector adjustVector(int newCapacity,
                                        AbstractArray displacedTo,
                                        int displacement)

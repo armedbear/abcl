@@ -41,6 +41,7 @@ public final class float_sign extends Primitive
         super("float-sign", "float-1 &optional float-2");
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         if (arg instanceof SingleFloat) {
@@ -56,6 +57,7 @@ public final class float_sign extends Primitive
         return type_error(arg, Symbol.FLOAT);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {

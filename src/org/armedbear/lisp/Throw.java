@@ -53,6 +53,7 @@ public final class Throw extends ConditionThrowable
         return result;
     }
 
+    @Override
     public LispObject getCondition() throws ConditionThrowable
     {
         try {

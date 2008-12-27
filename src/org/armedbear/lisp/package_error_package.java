@@ -41,6 +41,7 @@ public final class package_error_package extends Primitive
         super("package-error-package");
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         try {

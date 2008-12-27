@@ -44,11 +44,13 @@ public final class EqualHashTable extends HashTable
     mask = buckets.length - 1;
   }
 
+  @Override
   public Symbol getTest()
   {
     return Symbol.EQUAL;
   }
 
+  @Override
   public LispObject get(LispObject key)
   {
     HashEntry e = buckets[key.sxhash() & mask];
@@ -68,6 +70,7 @@ public final class EqualHashTable extends HashTable
     return null;
   }
 
+  @Override
   public void put(LispObject key, LispObject value) throws ConditionThrowable
   {
     int index = key.sxhash() & mask;
@@ -93,6 +96,7 @@ public final class EqualHashTable extends HashTable
     buckets[index] = e;
   }
 
+  @Override
   public LispObject remove(LispObject key) throws ConditionThrowable
   {
     final int index = key.sxhash() & mask;
@@ -115,6 +119,7 @@ public final class EqualHashTable extends HashTable
     return null;
   }
 
+  @Override
   protected void rehash()
   {
     HashEntry[] oldBuckets = buckets;

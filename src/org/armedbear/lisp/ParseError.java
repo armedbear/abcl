@@ -48,16 +48,19 @@ public final class ParseError extends LispError
         initialize(initArgs);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.PARSE_ERROR;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.PARSE_ERROR;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.PARSE_ERROR)

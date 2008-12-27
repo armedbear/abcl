@@ -42,6 +42,7 @@ public final class NilVector extends AbstractString
         this.capacity = capacity;
     }
 
+    @Override
     public char[] chars() throws ConditionThrowable
     {
         if (capacity != 0)
@@ -49,6 +50,7 @@ public final class NilVector extends AbstractString
         return new char[0];
     }
 
+    @Override
     public char[] getStringChars() throws ConditionThrowable
     {
         if (capacity != 0)
@@ -56,6 +58,7 @@ public final class NilVector extends AbstractString
         return new char[0];
     }
 
+    @Override
     public String getStringValue() throws ConditionThrowable
     {
         if (capacity != 0)
@@ -63,16 +66,19 @@ public final class NilVector extends AbstractString
         return "";
     }
 
+    @Override
     public LispObject typeOf()
     {
         return list2(Symbol.NIL_VECTOR, new Fixnum(capacity));
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.NIL_VECTOR;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.NIL_VECTOR)
@@ -90,11 +96,13 @@ public final class NilVector extends AbstractString
         return super.typep(type);
     }
 
+    @Override
     public LispObject SIMPLE_STRING_P()
     {
         return T;
     }
 
+    @Override
     public boolean equal(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof NilVector) {
@@ -129,41 +137,49 @@ public final class NilVector extends AbstractString
         return null;
     }
 
+    @Override
     public int length()
     {
         return capacity;
     }
 
+    @Override
     public int capacity()
     {
         return capacity;
     }
 
+    @Override
     public LispObject getElementType()
     {
         return NIL;
     }
 
+    @Override
     public LispObject CHAR(int index) throws ConditionThrowable
     {
         return accessError();
     }
 
+    @Override
     public LispObject SCHAR(int index) throws ConditionThrowable
     {
         return accessError();
     }
 
+    @Override
     public LispObject AREF(int index) throws ConditionThrowable
     {
         return accessError();
     }
 
+    @Override
     public void aset(int index, LispObject newValue) throws ConditionThrowable
     {
         storeError(newValue);
     }
 
+    @Override
     public char charAt(int index) throws ConditionThrowable
     {
         accessError();
@@ -171,11 +187,13 @@ public final class NilVector extends AbstractString
         return 0;
     }
 
+    @Override
     public void setCharAt(int index, char c) throws ConditionThrowable
     {
         storeError(LispCharacter.getInstance(c));
     }
 
+    @Override
     public LispObject subseq(int start, int end) throws ConditionThrowable
     {
         if (capacity == 0 && start == 0 && end == 0)
@@ -183,20 +201,24 @@ public final class NilVector extends AbstractString
         return accessError();
     }
 
+    @Override
     public void fill(LispObject obj) throws ConditionThrowable
     {
         storeError(obj);
     }
 
+    @Override
     public void fill(char c) throws ConditionThrowable
     {
         storeError(LispCharacter.getInstance(c));
     }
 
+    @Override
     public void shrink(int n) throws ConditionThrowable
     {
     }
 
+    @Override
     public LispObject reverse() throws ConditionThrowable
     {
         return accessError();
@@ -212,16 +234,19 @@ public final class NilVector extends AbstractString
         error(new TypeError(String.valueOf(obj) + " is not of type NIL."));
     }
 
+    @Override
     public String toString()
     {
         return unreadableString("NIL-VECTOR");
     }
 
+    @Override
     public int sxhash()
     {
         return 0;
     }
 
+    @Override
     public AbstractVector adjustVector(int newCapacity,
                                        LispObject initialElement,
                                        LispObject initialContents)
@@ -232,6 +257,7 @@ public final class NilVector extends AbstractString
         return null;
     }
 
+    @Override
     public AbstractVector adjustVector(int size, AbstractArray displacedTo,
                                        int displacement)
         throws ConditionThrowable

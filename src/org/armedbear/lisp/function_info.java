@@ -42,6 +42,7 @@ public final class function_info extends Lisp
     private static final Primitive FUNCTION_INFO =
         new Primitive("function-info", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             LispObject info = FUNCTION_TABLE.get(arg);
@@ -53,6 +54,7 @@ public final class function_info extends Lisp
     private static final Primitive _SET_FUNCTION_INFO =
         new Primitive("%set-function-info", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject name, LispObject info)
             throws ConditionThrowable
         {
@@ -69,6 +71,7 @@ public final class function_info extends Lisp
         new Primitive("get-function-info-value", PACKAGE_SYS, true,
                       "name indicator")
     {
+        @Override
         public LispObject execute(LispObject name, LispObject indicator)
             throws ConditionThrowable
         {
@@ -96,6 +99,7 @@ public final class function_info extends Lisp
         new Primitive("set-function-info-value", PACKAGE_SYS, true,
                       "name indicator value")
     {
+        @Override
         public LispObject execute(LispObject name, LispObject indicator,
                                   LispObject value)
             throws ConditionThrowable

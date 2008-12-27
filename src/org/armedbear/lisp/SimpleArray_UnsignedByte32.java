@@ -125,16 +125,19 @@ public final class SimpleArray_UnsignedByte32 extends AbstractArray
         return index;
     }
 
+    @Override
     public LispObject typeOf()
     {
         return list3(Symbol.SIMPLE_ARRAY, UNSIGNED_BYTE_32, getDimensions());
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.SIMPLE_ARRAY;
     }
 
+    @Override
     public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
     {
         if (typeSpecifier == Symbol.SIMPLE_ARRAY)
@@ -144,11 +147,13 @@ public final class SimpleArray_UnsignedByte32 extends AbstractArray
         return super.typep(typeSpecifier);
     }
 
+    @Override
     public int getRank()
     {
         return dimv.length;
     }
 
+    @Override
     public LispObject getDimensions()
     {
         LispObject result = NIL;
@@ -157,6 +162,7 @@ public final class SimpleArray_UnsignedByte32 extends AbstractArray
         return result;
     }
 
+    @Override
     public int getDimension(int n) throws ConditionThrowable
     {
         try {
@@ -168,21 +174,25 @@ public final class SimpleArray_UnsignedByte32 extends AbstractArray
         }
     }
 
+    @Override
     public LispObject getElementType()
     {
         return UNSIGNED_BYTE_32;
     }
 
+    @Override
     public int getTotalSize()
     {
         return totalSize;
     }
 
+    @Override
     public boolean isAdjustable()
     {
         return false;
     }
 
+    @Override
     public LispObject AREF(int index) throws ConditionThrowable
     {
         try {
@@ -193,6 +203,7 @@ public final class SimpleArray_UnsignedByte32 extends AbstractArray
         }
     }
 
+    @Override
     public void aset(int index, LispObject newValue) throws ConditionThrowable
     {
         try {
@@ -203,6 +214,7 @@ public final class SimpleArray_UnsignedByte32 extends AbstractArray
         }
     }
 
+    @Override
     public int getRowMajorIndex(int[] subscripts) throws ConditionThrowable
     {
         final int rank = dimv.length;
@@ -234,6 +246,7 @@ public final class SimpleArray_UnsignedByte32 extends AbstractArray
         return sum;
     }
 
+    @Override
     public LispObject get(int[] subscripts) throws ConditionThrowable
     {
         try {
@@ -245,6 +258,7 @@ public final class SimpleArray_UnsignedByte32 extends AbstractArray
         }
     }
 
+    @Override
     public void set(int[] subscripts, LispObject newValue)
         throws ConditionThrowable
     {
@@ -257,12 +271,14 @@ public final class SimpleArray_UnsignedByte32 extends AbstractArray
         }
     }
 
+    @Override
     public void fill(LispObject obj)
     {
         for (int i = totalSize; i-- > 0;)
             data[i] = obj;
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         if (Symbol.PRINT_READABLY.symbolValue() != NIL) {

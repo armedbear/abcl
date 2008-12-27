@@ -41,6 +41,7 @@ public final class UnboundSlot extends CellError
         initialize(initArgs);
     }
 
+    @Override
     protected void initialize(LispObject initArgs) throws ConditionThrowable
     {
         super.initialize(initArgs);
@@ -65,6 +66,7 @@ public final class UnboundSlot extends CellError
         setInstanceSlotValue(Symbol.INSTANCE, instance);
     }
 
+    @Override
     public String getMessage() throws ConditionThrowable
     {
         final LispThread thread = LispThread.currentThread();
@@ -83,16 +85,19 @@ public final class UnboundSlot extends CellError
         }
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.UNBOUND_SLOT;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.UNBOUND_SLOT;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.UNBOUND_SLOT)

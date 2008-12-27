@@ -41,6 +41,7 @@ public final class listen extends Primitive
         super("listen", "&optional input-stream");
     }
 
+    @Override
     public LispObject execute() throws ConditionThrowable
     {
         Stream stream =
@@ -48,6 +49,7 @@ public final class listen extends Primitive
         return stream.listen();
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         return inSynonymOf(arg).listen();

@@ -64,6 +64,7 @@ public final class ThreadLock extends LispObject
         }
     }
 
+    @Override
     public String writeToString()
     {
         return unreadableString("THREAD-LOCK");
@@ -73,6 +74,7 @@ public final class ThreadLock extends LispObject
     private static final Primitive MAKE_THREAD_LOCK =
         new Primitive("make-thread-lock", PACKAGE_EXT, true)
     {
+        @Override
         public LispObject execute() throws ConditionThrowable
         {
             return new ThreadLock();
@@ -83,6 +85,7 @@ public final class ThreadLock extends LispObject
     private static final Primitive THREAD_LOCK =
         new Primitive("thread-lock", PACKAGE_EXT, true)
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             ThreadLock threadLock = (ThreadLock) arg;
@@ -95,6 +98,7 @@ public final class ThreadLock extends LispObject
     private static final Primitive THREAD_UNLOCK =
         new Primitive("thread-unlock", PACKAGE_EXT, true)
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             ThreadLock threadLock = (ThreadLock) arg;

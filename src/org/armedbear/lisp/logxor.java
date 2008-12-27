@@ -41,11 +41,13 @@ public final class logxor extends Primitive
         super("logxor", "&rest integers");
     }
 
+    @Override
     public LispObject execute()
     {
         return Fixnum.ZERO;
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         if (arg instanceof Fixnum || arg instanceof Bignum)
@@ -53,12 +55,14 @@ public final class logxor extends Primitive
         return type_error(arg, Symbol.INTEGER);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {
         return first.LOGXOR(second);
     }
 
+    @Override
     public LispObject execute(LispObject[] args) throws ConditionThrowable
     {
         LispObject result = Fixnum.ZERO;

@@ -56,16 +56,19 @@ public final class ReaderError extends StreamError
         initialize(initArgs);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.READER_ERROR;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.READER_ERROR;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.READER_ERROR)
@@ -79,6 +82,7 @@ public final class ReaderError extends StreamError
         return super.typep(type);
     }
 
+    @Override
     public String getMessage()
     {
         return message;

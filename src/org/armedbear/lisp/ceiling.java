@@ -41,11 +41,13 @@ public final class ceiling extends Primitive
         super("ceiling", "number &optional divisor");
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         return execute(arg, Fixnum.ONE);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {

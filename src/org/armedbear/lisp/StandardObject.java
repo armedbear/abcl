@@ -59,6 +59,7 @@ public class StandardObject extends LispObject
       slots[i] = UNBOUND_VALUE;
   }
 
+  @Override
   public LispObject getParts() throws ConditionThrowable
   {
     LispObject parts = NIL;
@@ -90,6 +91,7 @@ public class StandardObject extends LispObject
     return layout.lispClass;
   }
 
+  @Override
   public LispObject typeOf()
   {
     // "For objects of metaclass STRUCTURE-CLASS or STANDARD-CLASS, and for
@@ -110,11 +112,13 @@ public class StandardObject extends LispObject
     return c1;
   }
 
+  @Override
   public LispObject classOf()
   {
     return layout.lispClass;
   }
 
+  @Override
   public LispObject typep(LispObject type) throws ConditionThrowable
   {
     if (type == Symbol.STANDARD_OBJECT)
@@ -141,6 +145,7 @@ public class StandardObject extends LispObject
     return super.typep(type);
   }
 
+  @Override
   public String writeToString() throws ConditionThrowable
   {
     final LispThread thread = LispThread.currentThread();
@@ -271,6 +276,7 @@ public class StandardObject extends LispObject
   private static final Primitive SWAP_SLOTS =
     new Primitive("swap-slots", PACKAGE_SYS, true, "instance-1 instance-2")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -302,6 +308,7 @@ public class StandardObject extends LispObject
   private static final Primitive STD_INSTANCE_LAYOUT =
     new Primitive("std-instance-layout", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         final StandardObject instance;
@@ -327,6 +334,7 @@ public class StandardObject extends LispObject
   private static final Primitive _SET_STD_INSTANCE_LAYOUT =
     new Primitive("%set-std-instance-layout", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -351,6 +359,7 @@ public class StandardObject extends LispObject
   private static final Primitive STD_INSTANCE_CLASS =
     new Primitive("std-instance-class", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -369,6 +378,7 @@ public class StandardObject extends LispObject
     new Primitive("standard-instance-access", PACKAGE_SYS, true,
                   "instance location")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -418,6 +428,7 @@ public class StandardObject extends LispObject
   private static final Primitive _SET_STANDARD_INSTANCE_ACCESS =
     new Primitive("%set-standard-instance-access", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
         throws ConditionThrowable
@@ -438,6 +449,7 @@ public class StandardObject extends LispObject
   private static final Primitive STD_SLOT_BOUNDP =
     new Primitive(Symbol.STD_SLOT_BOUNDP, "instance slot-name")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -478,6 +490,7 @@ public class StandardObject extends LispObject
       }
     };
 
+  @Override
   public LispObject SLOT_VALUE(LispObject slotName) throws ConditionThrowable
   {
     if (layout.isInvalid())
@@ -513,6 +526,7 @@ public class StandardObject extends LispObject
   private static final Primitive STD_SLOT_VALUE =
     new Primitive(Symbol.STD_SLOT_VALUE, "instance slot-name")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -520,6 +534,7 @@ public class StandardObject extends LispObject
       }
     };
 
+  @Override
   public void setSlotValue(LispObject slotName, LispObject newValue)
     throws ConditionThrowable
   {
@@ -555,6 +570,7 @@ public class StandardObject extends LispObject
   private static final Primitive SET_STD_SLOT_VALUE =
     new Primitive(Symbol.SET_STD_SLOT_VALUE, "instance slot-name new-value")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
         throws ConditionThrowable

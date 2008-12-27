@@ -66,6 +66,7 @@ public final class arglist extends Lisp
     private static final Primitive ARGLIST =
         new Primitive("arglist", PACKAGE_EXT, true)
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             LispThread thread = LispThread.currentThread();
@@ -105,6 +106,7 @@ public final class arglist extends Lisp
     private static final Primitive _SET_ARGLIST =
         new Primitive("%set-arglist", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {

@@ -41,6 +41,7 @@ public final class open_stream_p extends Primitive
         super("open-stream-p");
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         try {

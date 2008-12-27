@@ -67,6 +67,7 @@ public final class StandardReaderMethodClass extends StandardClass
     setFinalized(true);
   }
 
+  @Override
   public LispObject allocateInstance()
   {
     return new StandardReaderMethod();

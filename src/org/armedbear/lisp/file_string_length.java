@@ -41,6 +41,7 @@ public final class file_string_length extends Primitive
         super("file-string-length", "stream object");
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {

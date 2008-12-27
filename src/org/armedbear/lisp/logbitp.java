@@ -43,6 +43,7 @@ public final class logbitp extends Primitive
         super("logbitp", "index integer");
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {

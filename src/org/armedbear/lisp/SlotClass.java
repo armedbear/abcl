@@ -49,6 +49,7 @@ public class SlotClass extends LispClass
         super(symbol, directSuperclasses);
     }
 
+    @Override
     public LispObject getParts() throws ConditionThrowable
     {
         LispObject result = super.getParts().nreverse();
@@ -59,6 +60,7 @@ public class SlotClass extends LispClass
         return result.nreverse();
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         return super.typep(type);
@@ -162,6 +164,7 @@ public class SlotClass extends LispClass
     private static final Primitive CLASS_DIRECT_SLOTS =
         new Primitive("class-direct-slots", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject arg)
             throws ConditionThrowable
         {
@@ -177,6 +180,7 @@ public class SlotClass extends LispClass
     private static final Primitive _SET_CLASS_DIRECT_SLOTS =
         new Primitive("%set-class-direct-slots", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -194,6 +198,7 @@ public class SlotClass extends LispClass
     private static final Primitive _CLASS_SLOTS =
         new Primitive(Symbol._CLASS_SLOTS, "class")
     {
+        @Override
         public LispObject execute(LispObject arg)
             throws ConditionThrowable
         {
@@ -209,6 +214,7 @@ public class SlotClass extends LispClass
     private static final Primitive SET_CLASS_SLOTS =
         new Primitive(Symbol.SET_CLASS_SLOTS, "class slot-definitions")
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -226,6 +232,7 @@ public class SlotClass extends LispClass
     private static final Primitive CLASS_DIRECT_DEFAULT_INITARGS =
         new Primitive("class-direct-default-initargs", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject arg)
             throws ConditionThrowable
         {
@@ -241,6 +248,7 @@ public class SlotClass extends LispClass
     private static final Primitive _SET_CLASS_DIRECT_DEFAULT_INITARGS =
         new Primitive("%set-class-direct-default-initargs", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -258,6 +266,7 @@ public class SlotClass extends LispClass
     private static final Primitive CLASS_DEFAULT_INITARGS =
         new Primitive("class-default-initargs", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject arg)
             throws ConditionThrowable
         {
@@ -273,6 +282,7 @@ public class SlotClass extends LispClass
     private static final Primitive _SET_CLASS_DEFAULT_INITARGS =
         new Primitive("%set-class-default-initargs", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -288,6 +298,7 @@ public class SlotClass extends LispClass
     private static final Primitive COMPUTE_CLASS_DEFAULT_INITARGS =
         new Primitive("compute-class-default-initargs", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject arg)
             throws ConditionThrowable
         {

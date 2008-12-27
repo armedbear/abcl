@@ -52,6 +52,7 @@ public class TwoWayStream extends Stream
         setInteractive(interactive);
     }
 
+    @Override
     public LispObject getElementType() throws ConditionThrowable
     {
         LispObject itype = in.getElementType();
@@ -71,36 +72,43 @@ public class TwoWayStream extends Stream
         return out;
     }
 
+    @Override
     public boolean isCharacterInputStream() throws ConditionThrowable
     {
         return in.isCharacterInputStream();
     }
 
+    @Override
     public boolean isBinaryInputStream() throws ConditionThrowable
     {
         return in.isBinaryInputStream();
     }
 
+    @Override
     public boolean isCharacterOutputStream() throws ConditionThrowable
     {
         return out.isCharacterOutputStream();
     }
 
+    @Override
     public boolean isBinaryOutputStream() throws ConditionThrowable
     {
         return out.isBinaryOutputStream();
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.TWO_WAY_STREAM;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.TWO_WAY_STREAM;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.TWO_WAY_STREAM)
@@ -111,74 +119,88 @@ public class TwoWayStream extends Stream
     }
 
     // Returns -1 at end of file.
+    @Override
     protected int _readChar() throws ConditionThrowable
     {
         return in._readChar();
     }
 
+    @Override
     protected void _unreadChar(int n) throws ConditionThrowable
     {
         in._unreadChar(n);
     }
 
+    @Override
     protected boolean _charReady() throws ConditionThrowable
     {
         return in._charReady();
     }
 
+    @Override
     public void _writeChar(char c) throws ConditionThrowable
     {
         out._writeChar(c);
     }
 
+    @Override
     public void _writeChars(char[] chars, int start, int end)
         throws ConditionThrowable
     {
         out._writeChars(chars, start, end);
     }
 
+    @Override
     public void _writeString(String s) throws ConditionThrowable
     {
         out._writeString(s);
     }
 
+    @Override
     public void _writeLine(String s) throws ConditionThrowable
     {
         out._writeLine(s);
     }
 
     // Reads an 8-bit byte.
+    @Override
     public int _readByte() throws ConditionThrowable
     {
         return in._readByte();
     }
 
     // Writes an 8-bit byte.
+    @Override
     public void _writeByte(int n) throws ConditionThrowable
     {
         out._writeByte(n);
     }
 
+    @Override
     public void _finishOutput() throws ConditionThrowable
     {
         out._finishOutput();
     }
 
+    @Override
     public void _clearInput() throws ConditionThrowable
     {
         in._clearInput();
     }
 
+    @Override
     public LispObject listen() throws ConditionThrowable
     {
         return in.listen();
     }
 
+    @Override
     public LispObject freshLine() throws ConditionThrowable
     {
         return out.freshLine();
     }
 
+    @Override
     public LispObject close(LispObject abort) throws ConditionThrowable
     {
         // "The effect of CLOSE on a constructed stream is to close the
@@ -188,6 +210,7 @@ public class TwoWayStream extends Stream
         return T;
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         return unreadableString(Symbol.TWO_WAY_STREAM);
@@ -197,6 +220,7 @@ public class TwoWayStream extends Stream
     private static final Primitive MAKE_TWO_WAY_STREAM =
         new Primitive(Symbol.MAKE_TWO_WAY_STREAM, "input-stream output-stream")
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -228,6 +252,7 @@ public class TwoWayStream extends Stream
     private static final Primitive TWO_WAY_STREAM_INPUT_STREAM =
         new Primitive(Symbol.TWO_WAY_STREAM_INPUT_STREAM, "two-way-stream")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             try {
@@ -243,6 +268,7 @@ public class TwoWayStream extends Stream
     private static final Primitive TWO_WAY_STREAM_OUTPUT_STREAM =
         new Primitive(Symbol.TWO_WAY_STREAM_OUTPUT_STREAM, "two-way-stream")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             try {

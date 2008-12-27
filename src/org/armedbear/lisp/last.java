@@ -41,6 +41,7 @@ public final class last extends Primitive
     super("last", "list &optional n");
   }
 
+  @Override
   public LispObject execute(LispObject arg) throws ConditionThrowable
   {
     if (arg == NIL)
@@ -59,6 +60,7 @@ public final class last extends Primitive
       return type_error(arg, Symbol.LIST);
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second)
     throws ConditionThrowable
   {

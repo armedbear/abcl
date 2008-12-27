@@ -44,6 +44,7 @@ public final class delete_file extends Primitive
     }
 
     // ### delete-file filespec => t
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         // Don't follow symlinks! We want to delete the symlink itself, not

@@ -61,22 +61,26 @@ public class ClosureTemplateFunction extends Closure
 
     // execute methods have the semantic meaning
     // "evaluate this object"
+  @Override
   public final LispObject execute() throws ConditionThrowable
   {
       return _execute(ctx);
   }
 
+  @Override
   public final LispObject execute(LispObject arg) throws ConditionThrowable
   {
       return _execute(ctx, arg);
   }
 
+  @Override
   public final LispObject execute(LispObject first, LispObject second)
     throws ConditionThrowable
   {
       return _execute(ctx, first, second);
   }
 
+  @Override
   public final LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
     throws ConditionThrowable
@@ -84,6 +88,7 @@ public class ClosureTemplateFunction extends Closure
       return _execute(ctx, first, second, third);
   }
 
+  @Override
   public final LispObject execute(LispObject first, LispObject second,
                                   LispObject third, LispObject fourth)
     throws ConditionThrowable
@@ -91,6 +96,7 @@ public class ClosureTemplateFunction extends Closure
       return _execute(ctx, first, second, third, fourth);
   }
 
+  @Override
   public final LispObject execute(LispObject first, LispObject second,
                                   LispObject third, LispObject fourth,
                                   LispObject fifth)
@@ -99,6 +105,7 @@ public class ClosureTemplateFunction extends Closure
       return _execute(ctx, first, second, third, fourth, fifth);
   }
 
+  @Override
   public final LispObject execute(LispObject first, LispObject second,
                                   LispObject third, LispObject fourth,
                                   LispObject fifth, LispObject sixth)
@@ -107,6 +114,7 @@ public class ClosureTemplateFunction extends Closure
       return _execute(ctx, first, second, third, fourth, fifth, sixth);
   }
 
+  @Override
   public final LispObject execute(LispObject first, LispObject second,
                                   LispObject third, LispObject fourth,
                                   LispObject fifth, LispObject sixth,
@@ -116,6 +124,7 @@ public class ClosureTemplateFunction extends Closure
       return _execute(ctx, first, second, third, fourth, fifth, sixth, seventh);
   }
 
+  @Override
   public final LispObject execute(LispObject first, LispObject second,
                                   LispObject third, LispObject fourth,
                                   LispObject fifth, LispObject sixth,
@@ -126,6 +135,7 @@ public class ClosureTemplateFunction extends Closure
               sixth, seventh, eighth);
   }
 
+  @Override
   public final LispObject execute(LispObject[] args)
     throws ConditionThrowable
   {

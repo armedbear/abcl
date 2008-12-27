@@ -41,6 +41,7 @@ public final class gc extends Primitive
         super("gc", PACKAGE_EXT);
     }
 
+    @Override
     public LispObject execute()
     {
         Runtime runtime = Runtime.getRuntime();

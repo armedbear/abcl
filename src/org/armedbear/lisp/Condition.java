@@ -139,6 +139,7 @@ public class Condition extends StandardObject
     return message;
   }
 
+  @Override
   public LispObject typeOf()
   {
     LispClass c = getLispClass();
@@ -147,6 +148,7 @@ public class Condition extends StandardObject
     return Symbol.CONDITION;
   }
 
+  @Override
   public LispObject classOf()
   {
     LispClass c = getLispClass();
@@ -155,6 +157,7 @@ public class Condition extends StandardObject
     return StandardClass.CONDITION;
   }
 
+  @Override
   public LispObject typep(LispObject type) throws ConditionThrowable
   {
     if (type == Symbol.CONDITION)
@@ -181,6 +184,7 @@ public class Condition extends StandardObject
     return unreadableString(typeOf().writeToString());
   }
 
+  @Override
   public String writeToString() throws ConditionThrowable
   {
     final LispThread thread = LispThread.currentThread();

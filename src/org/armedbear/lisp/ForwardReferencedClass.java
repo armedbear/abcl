@@ -40,16 +40,19 @@ public class ForwardReferencedClass extends LispClass
         super(name);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.FORWARD_REFERENCED_CLASS;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.FORWARD_REFERENCED_CLASS;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.FORWARD_REFERENCED_CLASS)
@@ -59,6 +62,7 @@ public class ForwardReferencedClass extends LispClass
         return super.typep(type);
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         StringBuffer sb =
@@ -74,6 +78,7 @@ public class ForwardReferencedClass extends LispClass
     private static final Primitive MAKE_FORWARD_REFERENCED_CLASS =
         new Primitive("make-forward-referenced-class", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject arg)
             throws ConditionThrowable
         {

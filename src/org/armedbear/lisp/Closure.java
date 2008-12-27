@@ -378,6 +378,7 @@ public class Closure extends Function
                          " may not be used as a variable in a lambda list."));
   }
 
+  @Override
   public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
   {
     if (typeSpecifier == Symbol.COMPILED_FUNCTION)
@@ -404,6 +405,7 @@ public class Closure extends Function
     return environment;
   }
 
+  @Override
   public LispObject execute() throws ConditionThrowable
   {
     if (arity == 0)
@@ -459,6 +461,7 @@ public class Closure extends Function
     return execute(objects);
   }
 
+  @Override
   public LispObject execute(LispObject arg) throws ConditionThrowable
   {
     if (minArgs == 1)
@@ -476,6 +479,7 @@ public class Closure extends Function
       }
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second)
     throws ConditionThrowable
   {
@@ -494,6 +498,7 @@ public class Closure extends Function
       }
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third)
     throws ConditionThrowable
@@ -513,6 +518,7 @@ public class Closure extends Function
       }
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth)
     throws ConditionThrowable
@@ -532,6 +538,7 @@ public class Closure extends Function
       }
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth)
@@ -553,6 +560,7 @@ public class Closure extends Function
       }
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth)
@@ -575,6 +583,7 @@ public class Closure extends Function
       }
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
@@ -598,6 +607,7 @@ public class Closure extends Function
       }
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
@@ -621,6 +631,7 @@ public class Closure extends Function
       }
   }
 
+  @Override
   public LispObject execute(LispObject[] args) throws ConditionThrowable
   {
     final LispThread thread = LispThread.currentThread();
@@ -1110,6 +1121,7 @@ public class Closure extends Function
       this.keyword = keyword;
     }
 
+    @Override
     public String toString()
     {
       if (type == REQUIRED)
@@ -1150,6 +1162,7 @@ public class Closure extends Function
   private static final Primitive LAMBDA_LIST_NAMES =
       new Primitive("lambda-list-names", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         Closure closure = new Closure(list3(Symbol.LAMBDA, arg, NIL), new Environment());

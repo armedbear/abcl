@@ -41,6 +41,7 @@ public final class assql extends Primitive
         super("assql", PACKAGE_EXT);
     }
 
+    @Override
     public LispObject execute(LispObject item, LispObject alist)
         throws ConditionThrowable
     {

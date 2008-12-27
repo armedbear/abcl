@@ -40,6 +40,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _STRING_EQUAL =
         new Primitive("%string=", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third, LispObject fourth,
                                   LispObject fifth, LispObject sixth)
@@ -102,6 +103,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive __STRING_EQUAL =
         new Primitive("%%string=", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -122,6 +124,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _STRING_NOT_EQUAL =
         new Primitive("%string/=", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length != 6)
@@ -158,6 +161,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _STRING_EQUAL_IGNORE_CASE =
         new Primitive("%string-equal", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third, LispObject fourth,
                                   LispObject fifth, LispObject sixth)
@@ -192,6 +196,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _STRING_NOT_EQUAL_IGNORE_CASE =
         new Primitive("%string-not-equal", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length != 6)
@@ -235,6 +240,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _STRING_LESS_THAN =
         new Primitive("%string<", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length != 6)
@@ -278,6 +284,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _STRING_GREATER_THAN =
         new Primitive("%string>", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length != 6)
@@ -319,6 +326,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _STRING_LE =
         new Primitive("%string<=", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length != 6)
@@ -360,6 +368,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _STRING_GE =
         new Primitive("%string>=", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length != 6)
@@ -403,6 +412,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _STRING_LESSP =
         new Primitive("%string-lessp", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length != 6)
@@ -446,6 +456,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _STRING_GREATERP =
         new Primitive("%string-greaterp", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length != 6)
@@ -487,6 +498,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _STRING_NOT_LESSP =
         new Primitive("%string-not-lessp", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length != 6)
@@ -530,6 +542,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _STRING_NOT_GREATERP =
         new Primitive("%string-not-greaterp", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length != 6)
@@ -570,6 +583,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _STRING_UPCASE =
         new Primitive("%string-upcase", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
             throws ConditionThrowable
@@ -605,6 +619,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _STRING_DOWNCASE =
         new Primitive("%string-downcase", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third) throws
         ConditionThrowable
@@ -640,6 +655,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _STRING_CAPITALIZE=
         new Primitive("%string-capitalize", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
             throws ConditionThrowable
@@ -687,6 +703,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _NSTRING_UPCASE =
         new Primitive("%nstring-upcase", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
             throws ConditionThrowable
@@ -721,6 +738,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _NSTRING_DOWNCASE =
         new Primitive("%nstring-downcase", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
             throws ConditionThrowable
@@ -755,6 +773,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _NSTRING_CAPITALIZE =
         new Primitive("%nstring-capitalize", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
             throws ConditionThrowable
@@ -800,6 +819,7 @@ public final class StringFunctions extends Lisp
     // ### stringp
     public static final Primitive STRINGP = new Primitive("stringp", "object")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return arg.STRINGP();
@@ -810,6 +830,7 @@ public final class StringFunctions extends Lisp
     public static final Primitive SIMPLE_STRING_P =
         new Primitive("simple-string-p", "object")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return arg.SIMPLE_STRING_P();
@@ -822,6 +843,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive _MAKE_STRING =
         new Primitive("%make-string", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject size, LispObject initialElement,
                                   LispObject elementType)
             throws ConditionThrowable
@@ -861,6 +883,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive CHAR =
         new Primitive(Symbol.CHAR, "string index")
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -877,6 +900,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive SCHAR =
         new Primitive(Symbol.SCHAR, "string index")
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -893,6 +917,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive SET_CHAR =
         new Primitive(Symbol.SET_CHAR, "string index character")
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
             throws ConditionThrowable
@@ -917,6 +942,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive SET_SCHAR =
         new Primitive(Symbol.SET_SCHAR, "string index character")
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
             throws ConditionThrowable
@@ -940,6 +966,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive STRING_POSITION =
         new Primitive("string-position", PACKAGE_EXT, true)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
             throws ConditionThrowable
@@ -963,6 +990,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive STRING_FIND =
         new Primitive("string-find", PACKAGE_EXT, true, "char string")
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -990,6 +1018,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive SIMPLE_STRING_SEARCH =
         new Primitive("simple-string-search", PACKAGE_EXT, true)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -1003,6 +1032,7 @@ public final class StringFunctions extends Lisp
     private static final Primitive STRING_FILL =
         new Primitive("simple-string-fill", PACKAGE_EXT, true)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {

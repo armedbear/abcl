@@ -41,6 +41,7 @@ public final class cell_error_name extends Primitive
         super(Symbol.CELL_ERROR_NAME, "condition");
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         final StandardObject obj;

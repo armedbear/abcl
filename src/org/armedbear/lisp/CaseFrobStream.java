@@ -44,21 +44,25 @@ public abstract class CaseFrobStream extends Stream
         this.target = target;
     }
 
+    @Override
     public LispObject getElementType() throws ConditionThrowable
     {
         return target.getElementType();
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.CASE_FROB_STREAM;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.CASE_FROB_STREAM;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.CASE_FROB_STREAM)
@@ -68,47 +72,56 @@ public abstract class CaseFrobStream extends Stream
         return super.typep(type);
     }
 
+    @Override
     public boolean isInputStream()
     {
         return false;
     }
 
+    @Override
     public boolean isOutputStream()
     {
         return true;
     }
 
+    @Override
     public boolean isCharacterInputStream() throws ConditionThrowable
     {
         return false;
     }
 
+    @Override
     public boolean isBinaryInputStream() throws ConditionThrowable
     {
         return false;
     }
 
+    @Override
     public boolean isCharacterOutputStream() throws ConditionThrowable
     {
         return true;
     }
 
+    @Override
     public boolean isBinaryOutputStream() throws ConditionThrowable
     {
         return false;
     }
 
+    @Override
     public int getCharPos()
     {
         return target.getCharPos();
     }
 
+    @Override
     public void setCharPos(int n)
     {
         target.setCharPos(n);
     }
 
     // Returns -1 at end of file.
+    @Override
     protected int _readChar() throws ConditionThrowable
     {
         notSupported();
@@ -116,11 +129,13 @@ public abstract class CaseFrobStream extends Stream
         return -1;
     }
 
+    @Override
     protected void _unreadChar(int n) throws ConditionThrowable
     {
         notSupported();
     }
 
+    @Override
     protected boolean _charReady() throws ConditionThrowable
     {
         notSupported();
@@ -128,6 +143,7 @@ public abstract class CaseFrobStream extends Stream
         return false;
     }
 
+    @Override
     public void _writeChars(char[] chars, int start, int end)
         throws ConditionThrowable
     {
@@ -135,6 +151,7 @@ public abstract class CaseFrobStream extends Stream
     }
 
     // Reads an 8-bit byte.
+    @Override
     public int _readByte() throws ConditionThrowable
     {
         notSupported();
@@ -143,27 +160,32 @@ public abstract class CaseFrobStream extends Stream
     }
 
     // Writes an 8-bit byte.
+    @Override
     public void _writeByte(int n) throws ConditionThrowable
     {
         notSupported();
     }
 
+    @Override
     public void _finishOutput() throws ConditionThrowable
     {
         target._finishOutput();
     }
 
+    @Override
     public void _clearInput() throws ConditionThrowable
     {
         notSupported();
     }
 
+    @Override
     public LispObject close(LispObject abort) throws ConditionThrowable
     {
         setOpen(false);
         return T;
     }
 
+    @Override
     public LispObject listen() throws ConditionThrowable
     {
         notSupported();
@@ -171,16 +193,19 @@ public abstract class CaseFrobStream extends Stream
         return NIL;
     }
 
+    @Override
     public LispObject terpri() throws ConditionThrowable
     {
         return target.terpri();
     }
 
+    @Override
     public LispObject freshLine() throws ConditionThrowable
     {
         return target.freshLine();
     }
 
+    @Override
     public String writeToString()
     {
         return unreadableString("CASE-FROB-STREAM");
@@ -195,6 +220,7 @@ public abstract class CaseFrobStream extends Stream
     private static final Primitive MAKE_CASE_FROB_STREAM =
         new Primitive("make-case-frob-stream", PACKAGE_SYS, false, "target kind")
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {

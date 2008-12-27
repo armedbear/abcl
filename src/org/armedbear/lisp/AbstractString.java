@@ -35,6 +35,7 @@ package org.armedbear.lisp;
 
 public abstract class AbstractString extends AbstractVector
 {
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type instanceof Symbol) {
@@ -50,26 +51,31 @@ public abstract class AbstractString extends AbstractVector
         return super.typep(type);
     }
 
+    @Override
     public final LispObject STRINGP()
     {
         return T;
     }
 
+    @Override
     public final boolean stringp()
     {
         return true;
     }
 
+    @Override
     public LispObject getElementType()
     {
         return Symbol.CHARACTER;
     }
 
+    @Override
     public final boolean isSimpleVector()
     {
         return false;
     }
 
+    @Override
     public final LispObject STRING()
     {
         return this;
@@ -107,6 +113,7 @@ public abstract class AbstractString extends AbstractVector
             return getStringValue().substring(beginIndex, endIndex);
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         return writeToString(0, length());

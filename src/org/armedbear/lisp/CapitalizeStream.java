@@ -42,6 +42,7 @@ public final class CapitalizeStream extends CaseFrobStream
         super(target);
     }
 
+    @Override
     public void _writeChar(char c) throws ConditionThrowable
     {
         if (inWord) {
@@ -64,6 +65,7 @@ public final class CapitalizeStream extends CaseFrobStream
         target._writeChar(c);
     }
 
+    @Override
     public void _writeString(String s) throws ConditionThrowable
     {
         final int limit = s.length();
@@ -71,6 +73,7 @@ public final class CapitalizeStream extends CaseFrobStream
             _writeChar(s.charAt(i));
     }
 
+    @Override
     public void _writeLine(String s) throws ConditionThrowable
     {
         target._writeString(s);

@@ -35,6 +35,7 @@ package org.armedbear.lisp;
 
 public abstract class AbstractArray extends LispObject
 {
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.ARRAY)
@@ -44,6 +45,7 @@ public abstract class AbstractArray extends LispObject
         return super.typep(type);
     }
 
+    @Override
     public boolean equalp(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof AbstractArray) {
@@ -99,6 +101,7 @@ public abstract class AbstractArray extends LispObject
 
     public abstract int getTotalSize();
 
+    @Override
     public abstract void aset(int index, LispObject newValue)
         throws ConditionThrowable;
 
@@ -281,6 +284,7 @@ public abstract class AbstractArray extends LispObject
     }
 
     // For EQUALP hash tables.
+    @Override
     public int psxhash()
     {
         try {

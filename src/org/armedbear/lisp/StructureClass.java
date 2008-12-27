@@ -45,16 +45,19 @@ public class StructureClass extends SlotClass
         super(symbol, directSuperclasses);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.STRUCTURE_CLASS;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.STRUCTURE_CLASS;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.STRUCTURE_CLASS)
@@ -64,11 +67,13 @@ public class StructureClass extends SlotClass
         return super.typep(type);
     }
 
+    @Override
     public LispObject getDescription() throws ConditionThrowable
     {
         return new SimpleString(writeToString());
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         StringBuffer sb = new StringBuffer("#<STRUCTURE-CLASS ");
@@ -81,6 +86,7 @@ public class StructureClass extends SlotClass
     private static final Primitive MAKE_STRUCTURE_CLASS =
         new Primitive("make-structure-class", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third, LispObject fourth)
             throws ConditionThrowable

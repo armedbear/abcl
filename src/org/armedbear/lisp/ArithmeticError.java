@@ -46,6 +46,7 @@ public class ArithmeticError extends LispError
         initialize(initArgs);
     }
 
+    @Override
     protected void initialize(LispObject initArgs) throws ConditionThrowable
     {
         super.initialize(initArgs);
@@ -75,16 +76,19 @@ public class ArithmeticError extends LispError
         setOperands(NIL);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.ARITHMETIC_ERROR;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.ARITHMETIC_ERROR;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.ARITHMETIC_ERROR)
@@ -120,6 +124,7 @@ public class ArithmeticError extends LispError
     private static final Primitive ARITHMETIC_ERROR_OPERATION =
         new Primitive("arithmetic-error-operation", "condition")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             try {
@@ -134,6 +139,7 @@ public class ArithmeticError extends LispError
     private static final Primitive ARITHMETIC_ERROR_OPERANDS =
         new Primitive("arithmetic-error-operands", "condition")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             try {

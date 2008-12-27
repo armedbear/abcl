@@ -40,16 +40,19 @@ public class BuiltInClass extends LispClass
     super(symbol);
   }
 
+  @Override
   public LispObject typeOf()
   {
     return Symbol.BUILT_IN_CLASS;
   }
 
+  @Override
   public LispObject classOf()
   {
     return StandardClass.BUILT_IN_CLASS;
   }
 
+  @Override
   public LispObject typep(LispObject type) throws ConditionThrowable
   {
     if (type == Symbol.BUILT_IN_CLASS)
@@ -59,11 +62,13 @@ public class BuiltInClass extends LispClass
     return super.typep(type);
   }
 
+  @Override
   public LispObject getDescription() throws ConditionThrowable
   {
     return new SimpleString(writeToString());
   }
 
+  @Override
   public String writeToString() throws ConditionThrowable
   {
     FastStringBuffer sb = new FastStringBuffer("#<BUILT-IN-CLASS ");

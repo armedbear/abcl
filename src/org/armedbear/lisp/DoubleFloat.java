@@ -60,16 +60,19 @@ public final class DoubleFloat extends LispObject
         this.value = value;
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.DOUBLE_FLOAT;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.DOUBLE_FLOAT;
     }
 
+    @Override
     public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
     {
         if (typeSpecifier == Symbol.FLOAT)
@@ -89,21 +92,25 @@ public final class DoubleFloat extends LispObject
         return super.typep(typeSpecifier);
     }
 
+    @Override
     public LispObject NUMBERP()
     {
         return T;
     }
 
+    @Override
     public boolean numberp()
     {
         return true;
     }
 
+    @Override
     public boolean realp()
     {
         return true;
     }
 
+    @Override
     public boolean eql(LispObject obj)
     {
         if (this == obj)
@@ -122,6 +129,7 @@ public final class DoubleFloat extends LispObject
         return false;
     }
 
+    @Override
     public boolean equal(LispObject obj)
     {
         if (this == obj)
@@ -139,12 +147,14 @@ public final class DoubleFloat extends LispObject
         return false;
     }
 
+    @Override
     public boolean equalp(int n)
     {
         // "If two numbers are the same under =."
         return value == n;
     }
 
+    @Override
     public boolean equalp(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof SingleFloat)
@@ -160,6 +170,7 @@ public final class DoubleFloat extends LispObject
         return false;
     }
 
+    @Override
     public LispObject ABS()
     {
         if (value > 0)
@@ -169,26 +180,31 @@ public final class DoubleFloat extends LispObject
         return new DoubleFloat(- value);
     }
 
+    @Override
     public boolean plusp()
     {
         return value > 0;
     }
 
+    @Override
     public boolean minusp()
     {
         return value < 0;
     }
 
+    @Override
     public boolean zerop()
     {
         return value == 0;
     }
 
+    @Override
     public LispObject FLOATP()
     {
         return T;
     }
 
+    @Override
     public boolean floatp()
     {
         return true;
@@ -211,11 +227,13 @@ public final class DoubleFloat extends LispObject
         return value;
     }
 
+    @Override
     public Object javaInstance()
     {
         return Double.valueOf(value);
     }
 
+    @Override
     public Object javaInstance(Class c)
     {
         String cn = c.getName();
@@ -224,16 +242,19 @@ public final class DoubleFloat extends LispObject
         return javaInstance();
     }
 
+    @Override
     public final LispObject incr()
     {
         return new DoubleFloat(value + 1);
     }
 
+    @Override
     public final LispObject decr()
     {
         return new DoubleFloat(value - 1);
     }
 
+    @Override
     public LispObject negate()
     {
         if (value == 0) {
@@ -243,6 +264,7 @@ public final class DoubleFloat extends LispObject
         return new DoubleFloat(-value);
     }
 
+    @Override
     public LispObject add(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum)
@@ -262,6 +284,7 @@ public final class DoubleFloat extends LispObject
         return type_error(obj, Symbol.NUMBER);
     }
 
+    @Override
     public LispObject subtract(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum)
@@ -282,6 +305,7 @@ public final class DoubleFloat extends LispObject
         return type_error(obj, Symbol.NUMBER);
     }
 
+    @Override
     public LispObject multiplyBy(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum)
@@ -302,6 +326,7 @@ public final class DoubleFloat extends LispObject
         return type_error(obj, Symbol.NUMBER);
     }
 
+    @Override
     public LispObject divideBy(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum)
@@ -327,6 +352,7 @@ public final class DoubleFloat extends LispObject
         return type_error(obj, Symbol.NUMBER);
     }
 
+    @Override
     public boolean isEqualTo(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum)
@@ -346,11 +372,13 @@ public final class DoubleFloat extends LispObject
         return false;
     }
 
+    @Override
     public boolean isNotEqualTo(LispObject obj) throws ConditionThrowable
     {
         return !isEqualTo(obj);
     }
 
+    @Override
     public boolean isLessThan(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum)
@@ -368,6 +396,7 @@ public final class DoubleFloat extends LispObject
         return false;
     }
 
+    @Override
     public boolean isGreaterThan(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum)
@@ -385,6 +414,7 @@ public final class DoubleFloat extends LispObject
         return false;
     }
 
+    @Override
     public boolean isLessThanOrEqualTo(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum)
@@ -402,6 +432,7 @@ public final class DoubleFloat extends LispObject
         return false;
     }
 
+    @Override
     public boolean isGreaterThanOrEqualTo(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum)
@@ -419,6 +450,7 @@ public final class DoubleFloat extends LispObject
         return false;
     }
 
+    @Override
     public LispObject truncate(LispObject obj) throws ConditionThrowable
     {
         // "When rationals and floats are combined by a numerical function,
@@ -511,12 +543,14 @@ public final class DoubleFloat extends LispObject
         return type_error(obj, Symbol.REAL);
     }
 
+    @Override
     public int hashCode()
     {
         long bits = Double.doubleToLongBits(value);
         return (int) (bits ^ (bits >>> 32));
     }
 
+    @Override
     public int psxhash()
     {
         if ((value % 1) == 0)
@@ -525,6 +559,7 @@ public final class DoubleFloat extends LispObject
             return (hashCode() & 0x7fffffff);
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         if (value == Double.POSITIVE_INFINITY) {

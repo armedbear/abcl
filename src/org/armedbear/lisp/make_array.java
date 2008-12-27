@@ -43,6 +43,7 @@ public final class make_array extends Primitive
     super("%make-array", PACKAGE_SYS, false);
   }
 
+  @Override
   public LispObject execute(LispObject[] args) throws ConditionThrowable
   {
     if (args.length != 9)

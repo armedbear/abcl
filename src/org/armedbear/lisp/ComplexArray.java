@@ -125,21 +125,25 @@ public final class ComplexArray extends AbstractArray
         return index;
     }
 
+    @Override
     public LispObject typeOf()
     {
         return list3(Symbol.ARRAY, elementType, getDimensions());
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.ARRAY;
     }
 
+    @Override
     public int getRank()
     {
         return dimv.length;
     }
 
+    @Override
     public LispObject getDimensions()
     {
         LispObject result = NIL;
@@ -148,6 +152,7 @@ public final class ComplexArray extends AbstractArray
         return result;
     }
 
+    @Override
     public int getDimension(int n) throws ConditionThrowable
     {
         try {
@@ -159,16 +164,19 @@ public final class ComplexArray extends AbstractArray
         }
     }
 
+    @Override
     public LispObject getElementType()
     {
         return elementType;
     }
 
+    @Override
     public int getTotalSize()
     {
         return totalSize;
     }
 
+    @Override
     public LispObject arrayDisplacement() throws ConditionThrowable
     {
         LispObject value1, value2;
@@ -182,6 +190,7 @@ public final class ComplexArray extends AbstractArray
         return LispThread.currentThread().setValues(value1, value2);
     }
 
+    @Override
     public LispObject AREF(int index) throws ConditionThrowable
     {
         if (data != null) {
@@ -195,6 +204,7 @@ public final class ComplexArray extends AbstractArray
             return array.AREF(index + displacement);
     }
 
+    @Override
     public void aset(int index, LispObject newValue) throws ConditionThrowable
     {
         if (data != null) {
@@ -208,6 +218,7 @@ public final class ComplexArray extends AbstractArray
             array.aset(index + displacement, newValue);
     }
 
+    @Override
     public void fill(LispObject obj) throws ConditionThrowable
     {
         if (data != null) {
@@ -219,6 +230,7 @@ public final class ComplexArray extends AbstractArray
         }
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         return writeToString(dimv);

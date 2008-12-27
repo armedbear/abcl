@@ -48,6 +48,7 @@ public final class WrongNumberOfArgumentsException extends ProgramError
         setFormatArguments(NIL);
     }
 
+    @Override
     public String getMessage()
     {
         FastStringBuffer sb =

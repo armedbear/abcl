@@ -46,6 +46,7 @@ public final class machine_version extends Primitive
         super("machine-version");
     }
 
+    @Override
     public LispObject execute() throws ConditionThrowable
     {
         String osName = System.getProperty("os.name");

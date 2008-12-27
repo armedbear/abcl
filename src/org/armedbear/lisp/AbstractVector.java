@@ -34,6 +34,7 @@ package org.armedbear.lisp;
 
 public abstract class AbstractVector extends AbstractArray
 {
+  @Override
   public LispObject typep(LispObject type) throws ConditionThrowable
   {
     if (type == Symbol.VECTOR)
@@ -47,16 +48,19 @@ public abstract class AbstractVector extends AbstractArray
     return super.typep(type);
   }
 
+  @Override
   public final LispObject VECTORP()
   {
     return T;
   }
 
+  @Override
   public final boolean vectorp()
   {
     return true;
   }
 
+  @Override
   public boolean equalp(LispObject obj) throws ConditionThrowable
   {
     if (obj instanceof AbstractVector)
@@ -72,16 +76,19 @@ public abstract class AbstractVector extends AbstractArray
     return false;
   }
 
+  @Override
   public final int getRank()
   {
     return 1;
   }
 
+  @Override
   public final LispObject getDimensions()
   {
     return new Cons(new Fixnum(capacity()));
   }
 
+  @Override
   public final int getDimension(int n) throws ConditionThrowable
   {
     if (n != 0)
@@ -93,6 +100,7 @@ public abstract class AbstractVector extends AbstractArray
     return capacity();
   }
 
+  @Override
   public final int getTotalSize()
   {
     return capacity();
@@ -180,8 +188,10 @@ public abstract class AbstractVector extends AbstractArray
     return false;
   }
 
+  @Override
   public abstract LispObject reverse() throws ConditionThrowable;
 
+  @Override
   public LispObject nreverse() throws ConditionThrowable
   {
     int i = 0;
@@ -197,6 +207,7 @@ public abstract class AbstractVector extends AbstractArray
     return this;
   }
 
+  @Override
   public String writeToString() throws ConditionThrowable
   {
     final LispThread thread = LispThread.currentThread();
@@ -266,6 +277,7 @@ public abstract class AbstractVector extends AbstractArray
   }
 
   // For EQUALP hash tables.
+  @Override
   public int psxhash()
   {
     try

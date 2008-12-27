@@ -58,16 +58,19 @@ public class SimpleCondition extends Condition
         super(message);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.SIMPLE_CONDITION;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.SIMPLE_CONDITION;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.SIMPLE_CONDITION)
@@ -81,6 +84,7 @@ public class SimpleCondition extends Condition
     private static final Primitive SIMPLE_CONDITION_FORMAT_CONTROL =
         new Primitive(Symbol.SIMPLE_CONDITION_FORMAT_CONTROL, "condition")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return Symbol.STD_SLOT_VALUE.execute(arg, Symbol.FORMAT_CONTROL);
@@ -91,6 +95,7 @@ public class SimpleCondition extends Condition
     private static final Primitive SIMPLE_CONDITION_FORMAT_ARGUMENTS =
         new Primitive(Symbol.SIMPLE_CONDITION_FORMAT_ARGUMENTS, "condition")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return Symbol.STD_SLOT_VALUE.execute(arg, Symbol.FORMAT_ARGUMENTS);

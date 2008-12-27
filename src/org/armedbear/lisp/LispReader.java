@@ -40,6 +40,7 @@ public final class LispReader extends Lisp
         new ReaderMacroFunction("read-comment", PACKAGE_SYS, false,
                                 "stream character")
     {
+        @Override
         public LispObject execute(Stream stream, char ignored)
             throws ConditionThrowable
         {
@@ -58,6 +59,7 @@ public final class LispReader extends Lisp
         new ReaderMacroFunction("read-string", PACKAGE_SYS, false,
                                 "stream character")
     {
+        @Override
         public LispObject execute(Stream stream, char terminator)
             throws ConditionThrowable
         {
@@ -115,6 +117,7 @@ public final class LispReader extends Lisp
         new ReaderMacroFunction("read-list", PACKAGE_SYS, false,
                                 "stream character")
     {
+        @Override
         public LispObject execute(Stream stream, char ignored)
             throws ConditionThrowable
         {
@@ -127,6 +130,7 @@ public final class LispReader extends Lisp
         new ReaderMacroFunction("read-right-paren", PACKAGE_SYS, false,
                                 "stream character")
     {
+        @Override
         public LispObject execute(Stream stream, char ignored)
             throws ConditionThrowable
         {
@@ -139,6 +143,7 @@ public final class LispReader extends Lisp
         new ReaderMacroFunction("read-quote", PACKAGE_SYS, false,
                                 "stream character")
     {
+        @Override
         public LispObject execute(Stream stream, char ignored)
             throws ConditionThrowable
         {
@@ -153,6 +158,7 @@ public final class LispReader extends Lisp
         new ReaderMacroFunction("read-dispatch-char", PACKAGE_SYS, false,
                                 "stream character")
     {
+        @Override
         public LispObject execute(Stream stream, char c)
             throws ConditionThrowable
         {
@@ -165,6 +171,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-left-paren", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char c, int n)
             throws ConditionThrowable
         {
@@ -191,6 +198,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-star", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char ignored, int n)
             throws ConditionThrowable
         {
@@ -250,6 +258,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-dot", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char c, int n)
             throws ConditionThrowable
         {
@@ -268,6 +277,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-colon", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char c, int n)
             throws ConditionThrowable
         {
@@ -280,6 +290,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-a", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char c, int n)
             throws ConditionThrowable
         {
@@ -292,6 +303,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-b", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char c, int n)
             throws ConditionThrowable
         {
@@ -304,6 +316,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-c", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char c, int n)
             throws ConditionThrowable
         {
@@ -316,6 +329,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-o", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char c, int n)
             throws ConditionThrowable
         {
@@ -328,6 +342,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-p", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char c, int n)
             throws ConditionThrowable
         {
@@ -340,6 +355,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-r", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char c, int n)
             throws ConditionThrowable
         {
@@ -352,6 +368,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-s", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char c, int n)
             throws ConditionThrowable
         {
@@ -364,6 +381,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-x", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char c, int n)
             throws ConditionThrowable
         {
@@ -376,6 +394,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-quote", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char c, int n)
             throws ConditionThrowable
         {
@@ -390,6 +409,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-backslash", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char c, int n)
             throws ConditionThrowable
         {
@@ -404,6 +424,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-vertical-bar", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char c, int n)
             throws ConditionThrowable
         {
@@ -417,6 +438,7 @@ public final class LispReader extends Lisp
         new DispatchMacroFunction("sharp-illegal", PACKAGE_SYS, false,
                                   "stream sub-char numarg")
     {
+        @Override
         public LispObject execute(Stream stream, char c, int n)
             throws ConditionThrowable
         {

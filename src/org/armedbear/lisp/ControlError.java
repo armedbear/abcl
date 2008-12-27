@@ -48,16 +48,19 @@ public final class ControlError extends LispError
         setFormatArguments(NIL);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.CONTROL_ERROR;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.CONTROL_ERROR;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.CONTROL_ERROR)

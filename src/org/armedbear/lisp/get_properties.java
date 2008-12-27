@@ -41,6 +41,7 @@ public final class get_properties extends Primitive
     super(Symbol.GET_PROPERTIES, "plist indicator-list");
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second)
     throws ConditionThrowable
   {

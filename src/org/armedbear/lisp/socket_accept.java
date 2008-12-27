@@ -44,6 +44,7 @@ public final class socket_accept extends Primitive
         super("%socket-accept", PACKAGE_SYS, false, "socket");
     }
 
+    @Override
     public LispObject execute(LispObject first)
         throws ConditionThrowable
     {

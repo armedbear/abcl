@@ -267,6 +267,7 @@ public abstract class Lisp
   private static final Primitive INTERACTIVE_EVAL =
     new Primitive("interactive-eval", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject object) throws ConditionThrowable
       {
         final LispThread thread = LispThread.currentThread();

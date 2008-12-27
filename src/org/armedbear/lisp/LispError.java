@@ -56,16 +56,19 @@ public class LispError extends SeriousCondition
     setFormatControl(message);
   }
 
+  @Override
   public LispObject typeOf()
   {
     return Symbol.ERROR;
   }
 
+  @Override
   public LispObject classOf()
   {
     return StandardClass.ERROR;
   }
 
+  @Override
   public LispObject typep(LispObject type) throws ConditionThrowable
   {
     if (type == Symbol.ERROR)

@@ -43,6 +43,7 @@ public final class socket_close extends Primitive
         super("%socket-close", PACKAGE_SYS, false, "socket");
     }
 
+    @Override
     public LispObject execute(LispObject first)
         throws ConditionThrowable
     {

@@ -41,6 +41,7 @@ public final class interactive_stream_p extends Primitive
         super("interactive-stream-p", "stream");
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         if (arg instanceof Stream)

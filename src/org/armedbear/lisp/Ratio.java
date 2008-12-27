@@ -51,6 +51,7 @@ public final class Ratio extends LispObject
         return numerator;
     }
 
+    @Override
     public LispObject NUMERATOR()
     {
         return number(numerator);
@@ -61,21 +62,25 @@ public final class Ratio extends LispObject
         return denominator;
     }
 
+    @Override
     public LispObject DENOMINATOR()
     {
         return number(denominator);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.RATIO;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.RATIO;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.RATIO)
@@ -91,26 +96,31 @@ public final class Ratio extends LispObject
         return super.typep(type);
     }
 
+    @Override
     public LispObject NUMBERP()
     {
         return T;
     }
 
+    @Override
     public boolean numberp()
     {
         return true;
     }
 
+    @Override
     public boolean rationalp()
     {
         return true;
     }
 
+    @Override
     public boolean realp()
     {
         return true;
     }
 
+    @Override
     public boolean eql(LispObject obj)
     {
         if (this == obj)
@@ -122,11 +132,13 @@ public final class Ratio extends LispObject
         return false;
     }
 
+    @Override
     public boolean equal(LispObject obj)
     {
         return eql(obj);
     }
 
+    @Override
     public boolean equalp(LispObject obj)
     {
         if (obj instanceof Ratio) {
@@ -142,6 +154,7 @@ public final class Ratio extends LispObject
         return false;
     }
 
+    @Override
     public LispObject ABS()
     {
         if (numerator.signum() > 0 && denominator.signum() > 0)
@@ -151,16 +164,19 @@ public final class Ratio extends LispObject
         return new Ratio(numerator.negate(), denominator);
     }
 
+    @Override
     public boolean plusp()
     {
         return numerator.signum() == denominator.signum();
     }
 
+    @Override
     public boolean minusp()
     {
         return numerator.signum() != denominator.signum();
     }
 
+    @Override
     public boolean zerop()
     {
         return false;
@@ -206,16 +222,19 @@ public final class Ratio extends LispObject
         return negative ? -result : result;
     }
 
+    @Override
     public final LispObject incr() throws ConditionThrowable
     {
         return new Ratio(numerator.add(denominator), denominator);
     }
 
+    @Override
     public final LispObject decr() throws ConditionThrowable
     {
         return new Ratio(numerator.subtract(denominator), denominator);
     }
 
+    @Override
     public LispObject add(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum) {
@@ -250,6 +269,7 @@ public final class Ratio extends LispObject
         return error(new TypeError(obj, Symbol.NUMBER));
     }
 
+    @Override
     public LispObject subtract(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum) {
@@ -285,6 +305,7 @@ public final class Ratio extends LispObject
         return error(new TypeError(obj, Symbol.NUMBER));
     }
 
+    @Override
     public LispObject multiplyBy(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum) {
@@ -314,6 +335,7 @@ public final class Ratio extends LispObject
         return error(new TypeError(obj, Symbol.NUMBER));
     }
 
+    @Override
     public LispObject divideBy(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum) {
@@ -355,6 +377,7 @@ public final class Ratio extends LispObject
         return error(new TypeError(obj, Symbol.NUMBER));
     }
 
+    @Override
     public boolean isEqualTo(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Ratio)
@@ -371,11 +394,13 @@ public final class Ratio extends LispObject
         return false;
     }
 
+    @Override
     public boolean isNotEqualTo(LispObject obj) throws ConditionThrowable
     {
         return !isEqualTo(obj);
     }
 
+    @Override
     public boolean isLessThan(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum) {
@@ -400,6 +425,7 @@ public final class Ratio extends LispObject
         return false;
     }
 
+    @Override
     public boolean isGreaterThan(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum) {
@@ -424,6 +450,7 @@ public final class Ratio extends LispObject
         return false;
     }
 
+    @Override
     public boolean isLessThanOrEqualTo(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum) {
@@ -448,6 +475,7 @@ public final class Ratio extends LispObject
         return false;
     }
 
+    @Override
     public boolean isGreaterThanOrEqualTo(LispObject obj) throws ConditionThrowable
     {
         if (obj instanceof Fixnum) {
@@ -472,6 +500,7 @@ public final class Ratio extends LispObject
         return false;
     }
 
+    @Override
     public LispObject truncate(LispObject obj) throws ConditionThrowable
     {
         // "When rationals and floats are combined by a numerical function,
@@ -512,11 +541,13 @@ public final class Ratio extends LispObject
         }
     }
 
+    @Override
     public int hashCode()
     {
         return numerator.hashCode() ^ denominator.hashCode();
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         final LispThread thread = LispThread.currentThread();

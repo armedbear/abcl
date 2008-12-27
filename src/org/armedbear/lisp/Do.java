@@ -39,6 +39,7 @@ public final class Do extends Lisp
   private static final SpecialOperator DO =
     new SpecialOperator(Symbol.DO, "varlist endlist &body body")
     {
+      @Override
       public LispObject execute(LispObject args, Environment env)
         throws ConditionThrowable
       {
@@ -50,6 +51,7 @@ public final class Do extends Lisp
   private static final SpecialOperator DO_STAR =
     new SpecialOperator(Symbol.DO_STAR, "varlist endlist &body body")
     {
+      @Override
       public LispObject execute(LispObject args, Environment env)
         throws ConditionThrowable
       {

@@ -132,16 +132,19 @@ public final class LispThread extends LispObject
         javaThread.start();
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.THREAD;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.THREAD;
     }
 
+    @Override
     public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
     {
         if (typeSpecifier == Symbol.THREAD)
@@ -607,6 +610,7 @@ public final class LispThread extends LispObject
         stack = NIL;
     }
 
+    @Override
     public LispObject execute(LispObject function) throws ConditionThrowable
     {
         if (use_fast_calls)
@@ -626,6 +630,7 @@ public final class LispThread extends LispObject
         }
     }
 
+    @Override
     public LispObject execute(LispObject function, LispObject arg)
         throws ConditionThrowable
     {
@@ -646,6 +651,7 @@ public final class LispThread extends LispObject
         }
     }
 
+    @Override
     public LispObject execute(LispObject function, LispObject first,
                               LispObject second)
         throws ConditionThrowable
@@ -667,6 +673,7 @@ public final class LispThread extends LispObject
         }
     }
 
+    @Override
     public LispObject execute(LispObject function, LispObject first,
                               LispObject second, LispObject third)
         throws ConditionThrowable
@@ -688,6 +695,7 @@ public final class LispThread extends LispObject
         }
     }
 
+    @Override
     public LispObject execute(LispObject function, LispObject first,
                               LispObject second, LispObject third,
                               LispObject fourth)
@@ -715,6 +723,7 @@ public final class LispThread extends LispObject
         }
     }
 
+    @Override
     public LispObject execute(LispObject function, LispObject first,
                               LispObject second, LispObject third,
                               LispObject fourth, LispObject fifth)
@@ -743,6 +752,7 @@ public final class LispThread extends LispObject
         }
     }
 
+    @Override
     public LispObject execute(LispObject function, LispObject first,
                               LispObject second, LispObject third,
                               LispObject fourth, LispObject fifth,
@@ -773,6 +783,7 @@ public final class LispThread extends LispObject
         }
     }
 
+    @Override
     public LispObject execute(LispObject function, LispObject first,
                               LispObject second, LispObject third,
                               LispObject fourth, LispObject fifth,
@@ -991,6 +1002,7 @@ public final class LispThread extends LispObject
         }
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         StringBuffer sb = new StringBuffer("THREAD");
@@ -1006,6 +1018,7 @@ public final class LispThread extends LispObject
     private static final Primitive MAKE_THREAD =
         new Primitive("make-thread", PACKAGE_EXT, true, "function &key name")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             final int length = args.length;
@@ -1031,6 +1044,7 @@ public final class LispThread extends LispObject
     private static final Primitive THREADP =
         new Primitive("threadp", PACKAGE_EXT, true, "object")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return arg instanceof LispThread ? T : NIL;
@@ -1041,6 +1055,7 @@ public final class LispThread extends LispObject
     private static final Primitive THREAD_ALIVE_P =
         new Primitive("thread-alive-p", PACKAGE_EXT, true, "thread")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             final LispThread lispThread;
@@ -1058,6 +1073,7 @@ public final class LispThread extends LispObject
     private static final Primitive THREAD_NAME =
         new Primitive("thread-name", PACKAGE_EXT, true, "thread")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             try {
@@ -1072,6 +1088,7 @@ public final class LispThread extends LispObject
     // ### sleep
     private static final Primitive SLEEP = new Primitive("sleep", "seconds")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             double d =
@@ -1093,6 +1110,7 @@ public final class LispThread extends LispObject
     private static final Primitive MAPCAR_THREADS =
         new Primitive("mapcar-threads", PACKAGE_EXT, true)
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             Function fun = checkFunction(arg);
@@ -1112,6 +1130,7 @@ public final class LispThread extends LispObject
     private static final Primitive DESTROY_THREAD =
         new Primitive("destroy-thread", PACKAGE_EXT, true)
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             final LispThread thread;
@@ -1134,6 +1153,7 @@ public final class LispThread extends LispObject
     private static final Primitive INTERRUPT_THREAD =
         new Primitive("interrupt-thread", PACKAGE_EXT, true)
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length < 2)
@@ -1158,6 +1178,7 @@ public final class LispThread extends LispObject
     private static final Primitive CURRENT_THREAD =
         new Primitive("current-thread", PACKAGE_EXT, true)
     {
+        @Override
         public LispObject execute() throws ConditionThrowable
         {
             return currentThread();
@@ -1168,6 +1189,7 @@ public final class LispThread extends LispObject
     private static final Primitive BACKTRACE_AS_LIST =
         new Primitive("backtrace-as-list", PACKAGE_EXT, true)
     {
+        @Override
         public LispObject execute(LispObject[] args)
             throws ConditionThrowable
         {
@@ -1182,6 +1204,7 @@ public final class LispThread extends LispObject
     private static final Primitive USE_FAST_CALLS =
         new Primitive("use-fast-calls", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             use_fast_calls = (arg != NIL);

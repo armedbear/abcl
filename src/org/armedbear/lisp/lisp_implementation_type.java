@@ -41,6 +41,7 @@ public final class lisp_implementation_type extends Primitive
         super("lisp-implementation-type", "");
     }
 
+    @Override
     public LispObject execute()
     {
         return new SimpleString("Armed Bear Common Lisp");

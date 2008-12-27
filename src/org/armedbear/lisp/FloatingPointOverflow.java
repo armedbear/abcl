@@ -42,16 +42,19 @@ public final class FloatingPointOverflow extends ArithmeticError
         initialize(initArgs);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.FLOATING_POINT_OVERFLOW;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.FLOATING_POINT_OVERFLOW;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.FLOATING_POINT_OVERFLOW)

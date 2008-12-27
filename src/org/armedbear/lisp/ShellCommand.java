@@ -195,6 +195,7 @@ public final class ShellCommand extends Lisp implements Runnable
             reader = new BufferedReader(new InputStreamReader(inputStream));
         }
 
+        @Override
         public void run()
         {
             while (!done) {
@@ -243,6 +244,7 @@ public final class ShellCommand extends Lisp implements Runnable
     private static final Primitive _RUN_SHELL_COMMAND =
         new Primitive("%run-shell-command", PACKAGE_SYS, false)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
             throws ConditionThrowable

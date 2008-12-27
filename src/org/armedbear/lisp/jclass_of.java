@@ -44,6 +44,7 @@ public final class jclass_of extends Primitive
 "  of the class or nil is always returned as a second value.");
     }
 
+    @Override
     public LispObject execute(LispObject arg)
         throws ConditionThrowable
     {
@@ -59,6 +60,7 @@ public final class jclass_of extends Primitive
         return LispThread.currentThread().setValues(value, value);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {

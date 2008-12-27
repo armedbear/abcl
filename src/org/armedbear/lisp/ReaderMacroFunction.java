@@ -61,6 +61,7 @@ public abstract class ReaderMacroFunction extends Function
         super(name, pkg, exported, arglist);
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {

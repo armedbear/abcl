@@ -40,16 +40,19 @@ public final class UpcaseStream extends CaseFrobStream
         super(target);
     }
 
+    @Override
     public void _writeChar(char c) throws ConditionThrowable
     {
         target._writeChar(LispCharacter.toUpperCase(c));
     }
 
+    @Override
     public void _writeString(String s) throws ConditionThrowable
     {
         target._writeString(s.toUpperCase());
     }
 
+    @Override
     public void _writeLine(String s) throws ConditionThrowable
     {
         target._writeLine(s.toUpperCase());

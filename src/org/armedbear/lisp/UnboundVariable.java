@@ -45,6 +45,7 @@ public final class UnboundVariable extends CellError
       setCellName(obj);
   }
 
+  @Override
   public String getMessage()
   {
     LispThread thread = LispThread.currentThread();
@@ -62,16 +63,19 @@ public final class UnboundVariable extends CellError
     return sb.toString();
   }
 
+  @Override
   public LispObject typeOf()
   {
     return Symbol.UNBOUND_VARIABLE;
   }
 
+  @Override
   public LispObject classOf()
   {
     return StandardClass.UNBOUND_VARIABLE;
   }
 
+  @Override
   public LispObject typep(LispObject type) throws ConditionThrowable
   {
     if (type == Symbol.UNBOUND_VARIABLE)

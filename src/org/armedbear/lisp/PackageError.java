@@ -41,6 +41,7 @@ public final class PackageError extends LispError
         initialize(initArgs);
     }
 
+    @Override
     protected void initialize(LispObject initArgs) throws ConditionThrowable
     {
         super.initialize(initArgs);
@@ -81,16 +82,19 @@ public final class PackageError extends LispError
         setFormatControl(message);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.PACKAGE_ERROR;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.PACKAGE_ERROR;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.PACKAGE_ERROR)

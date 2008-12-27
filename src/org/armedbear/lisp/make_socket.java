@@ -43,6 +43,7 @@ public final class make_socket extends Primitive
         super("%make-socket", PACKAGE_SYS, false, "host port");
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {

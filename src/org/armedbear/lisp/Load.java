@@ -351,6 +351,7 @@ public final class Load extends Lisp
     private static final Primitive INIT_FASL =
         new Primitive("init-fasl", PACKAGE_SYS, true, "&key version")
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -538,6 +539,7 @@ public final class Load extends Lisp
         new Primitive("%load", PACKAGE_SYS, false,
                       "filespec verbose print if-does-not-exist")
     {
+        @Override
         public LispObject execute(LispObject filespec, LispObject verbose,
                                   LispObject print, LispObject ifDoesNotExist)
             throws ConditionThrowable
@@ -578,6 +580,7 @@ public final class Load extends Lisp
     private static final Primitive LOAD_SYSTEM_FILE =
         new Primitive("load-system-file", PACKAGE_SYS, true)
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             final LispThread thread = LispThread.currentThread();

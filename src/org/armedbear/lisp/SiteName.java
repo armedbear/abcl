@@ -52,6 +52,7 @@ public final class SiteName extends Lisp
     private static final Primitive MACHINE_INSTANCE =
         new Primitive("machine-instance")
     {
+        @Override
         public LispObject execute()
         {
             return getHostName();
@@ -61,6 +62,7 @@ public final class SiteName extends Lisp
     private static final Primitive LONG_SITE_NAME =
         new Primitive("long-site-name")
     {
+        @Override
         public LispObject execute()
         {
             return getHostName();
@@ -70,6 +72,7 @@ public final class SiteName extends Lisp
     private static final Primitive SHORT_SITE_NAME =
         new Primitive("short-site-name")
     {
+        @Override
         public LispObject execute()
         {
             return getHostName();

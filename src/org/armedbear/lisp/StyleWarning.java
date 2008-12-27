@@ -41,16 +41,19 @@ public final class StyleWarning extends Warning
         initialize(initArgs);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.STYLE_WARNING;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.STYLE_WARNING;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.STYLE_WARNING)

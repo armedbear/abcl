@@ -40,16 +40,19 @@ public final class Mailbox extends LispObject
 {
   private LinkedList<LispObject> box = new LinkedList<LispObject>();
 
+  @Override
   public LispObject typeOf()
   {
     return Symbol.MAILBOX;
   }
 
+  @Override
   public LispObject classOf()
   {
     return BuiltInClass.MAILBOX;
   }
 
+  @Override
   public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
   {
     if (typeSpecifier == Symbol.MAILBOX)
@@ -107,6 +110,7 @@ public final class Mailbox extends LispObject
     return box.isEmpty() ? T : NIL;
   }
 
+  @Override
   public String writeToString() throws ConditionThrowable
   {
     return unreadableString(Symbol.MAILBOX);
@@ -116,6 +120,7 @@ public final class Mailbox extends LispObject
   private static final Primitive MAKE_MAILBOX =
     new Primitive("make-mailbox", PACKAGE_EXT, true, "")
     {
+      @Override
       public LispObject execute() throws ConditionThrowable
       {
         return new Mailbox();
@@ -126,6 +131,7 @@ public final class Mailbox extends LispObject
   private static final Primitive MAILBOX_SEND =
     new Primitive("mailbox-send", PACKAGE_EXT, true, "mailbox object")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -144,6 +150,7 @@ public final class Mailbox extends LispObject
   private static final Primitive MAILBOX_READ =
     new Primitive("mailbox-read", PACKAGE_EXT, true, "mailbox")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         if (arg instanceof Mailbox)
@@ -160,6 +167,7 @@ public final class Mailbox extends LispObject
   private static final Primitive MAILBOX_PEEK =
     new Primitive("mailbox-peek", PACKAGE_EXT, true, "mailbox")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         if (arg instanceof Mailbox)
@@ -176,6 +184,7 @@ public final class Mailbox extends LispObject
   private static final Primitive MAILBOX_EMPTY_P =
     new Primitive("mailbox-empty-p", PACKAGE_EXT, true, "mailbox")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         if (arg instanceof Mailbox)

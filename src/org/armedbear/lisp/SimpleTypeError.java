@@ -41,16 +41,19 @@ public final class SimpleTypeError extends TypeError
         initialize(initArgs);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.SIMPLE_TYPE_ERROR;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.SIMPLE_TYPE_ERROR;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.SIMPLE_TYPE_ERROR)
@@ -64,6 +67,7 @@ public final class SimpleTypeError extends TypeError
         return super.typep(type);
     }
 
+    @Override
     public String getMessage()
     {
         try {

@@ -47,16 +47,19 @@ public final class EndOfFile extends StreamError
         initialize(initArgs);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.END_OF_FILE;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.END_OF_FILE;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.END_OF_FILE)
@@ -66,6 +69,7 @@ public final class EndOfFile extends StreamError
         return super.typep(type);
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         return unreadableString(Symbol.END_OF_FILE);

@@ -51,16 +51,19 @@ public final class SlimeOutputStream extends Stream
         this.f = f;
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.SLIME_OUTPUT_STREAM;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.SLIME_OUTPUT_STREAM;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.SLIME_OUTPUT_STREAM)
@@ -74,6 +77,7 @@ public final class SlimeOutputStream extends Stream
         return super.typep(type);
     }
 
+    @Override
     public void _writeChar(char c) throws ConditionThrowable
     {
         if (elementType == NIL)
@@ -81,6 +85,7 @@ public final class SlimeOutputStream extends Stream
         super._writeChar(c);
     }
 
+    @Override
     public void _writeChars(char[] chars, int start, int end)
         throws ConditionThrowable
     {
@@ -89,6 +94,7 @@ public final class SlimeOutputStream extends Stream
         super._writeChars(chars, start, end);
     }
 
+    @Override
     public void _writeString(String s) throws ConditionThrowable
     {
         if (elementType == NIL)
@@ -96,6 +102,7 @@ public final class SlimeOutputStream extends Stream
         super._writeString(s);
     }
 
+    @Override
     public void _writeLine(String s) throws ConditionThrowable
     {
         if (elementType == NIL)
@@ -108,6 +115,7 @@ public final class SlimeOutputStream extends Stream
         error(new TypeError("Attempt to write to a string output stream of element type NIL."));
     }
 
+    @Override
     protected long _getFilePosition() throws ConditionThrowable
     {
         if (elementType == NIL)
@@ -115,6 +123,7 @@ public final class SlimeOutputStream extends Stream
         return stringWriter.toString().length();
     }
 
+    @Override
     public void _finishOutput() throws ConditionThrowable
     {
         super._finishOutput ();
@@ -125,6 +134,7 @@ public final class SlimeOutputStream extends Stream
         }
     }
 
+    @Override
     public String toString()
     {
         return unreadableString("SLIME-OUTPUT-STREAM");
@@ -135,6 +145,7 @@ public final class SlimeOutputStream extends Stream
     private static final Primitive MAKE_SLIME_OUTPUT_STREAM =
         new Primitive("make-slime-output-stream", PACKAGE_EXT, true, "function")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             final Function fun;

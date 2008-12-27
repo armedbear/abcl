@@ -47,6 +47,7 @@ public final class Go extends ConditionThrowable
         return tag;
     }
 
+    @Override
     public LispObject getCondition() throws ConditionThrowable
     {
         try {

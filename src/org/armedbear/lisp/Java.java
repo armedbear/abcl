@@ -59,6 +59,7 @@ public final class Java extends Lisp
         new Primitive("register-java-exception", PACKAGE_JAVA, true,
                       "exception-name condition-symbol")
     {
+        @Override
         public LispObject execute(LispObject className, LispObject symbol)
             throws ConditionThrowable
         {
@@ -78,6 +79,7 @@ public final class Java extends Lisp
         new Primitive("unregister-java-exception", PACKAGE_JAVA, true,
                       "exception-name")
     {
+        @Override
         public LispObject execute(LispObject className)
             throws ConditionThrowable
         {
@@ -103,6 +105,7 @@ public final class Java extends Lisp
         new Primitive(Symbol.JCLASS, "name-or-class-ref",
 "Returns a reference to the Java class designated by NAME-OR-CLASS-REF.")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return new JavaObject(javaClass(arg));
@@ -141,6 +144,7 @@ public final class Java extends Lisp
         new Primitive("jfield", PACKAGE_JAVA, true,
                       "class-ref-or-field field-or-instance &optional instance value")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             return makeLispObject((JFIELD_RAW.execute(args)).javaInstance());
@@ -152,6 +156,7 @@ public final class Java extends Lisp
         new Primitive("jfield-raw", PACKAGE_JAVA, true,
                       "class-ref-or-field field-or-instance &optional instance value")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length < 2 || args.length > 4)
@@ -232,6 +237,7 @@ public final class Java extends Lisp
         new Primitive("jconstructor", PACKAGE_JAVA, true,
                       "class-ref &rest parameter-class-refs")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length < 1)
@@ -276,6 +282,7 @@ public final class Java extends Lisp
         new Primitive("jmethod", PACKAGE_JAVA, true,
                       "class-ref name &rest parameter-class-refs")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length < 2)
@@ -332,6 +339,7 @@ public final class Java extends Lisp
     private static final Primitive JSTATIC =
         new Primitive("jstatic", PACKAGE_JAVA, true, "method class &rest args")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             return makeLispObject((JSTATIC_RAW.execute(args)).javaInstance());
@@ -343,6 +351,7 @@ public final class Java extends Lisp
         new Primitive("jstatic-raw", PACKAGE_JAVA, true,
                       "method class &rest args")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length < 2)
@@ -410,6 +419,7 @@ public final class Java extends Lisp
     private static final Primitive JNEW =
         new Primitive("jnew", PACKAGE_JAVA, true, "constructor &rest args")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length < 1)
@@ -453,6 +463,7 @@ public final class Java extends Lisp
         new Primitive("jnew-array", PACKAGE_JAVA, true,
                       "element-type &rest dimensions")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length < 2)
@@ -477,6 +488,7 @@ public final class Java extends Lisp
         new Primitive("jarray-ref", PACKAGE_JAVA, true,
                       "java-array &rest indices")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             return makeLispObject((JARRAY_REF_RAW.execute(args)).javaInstance());
@@ -488,6 +500,7 @@ public final class Java extends Lisp
         new Primitive("jarray-ref-raw", PACKAGE_JAVA, true,
                       "java-array &rest indices")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length < 2)
@@ -520,6 +533,7 @@ public final class Java extends Lisp
         new Primitive("jarray-set", PACKAGE_JAVA, true,
                       "java-array new-value &rest indices")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length < 3)
@@ -554,6 +568,7 @@ public final class Java extends Lisp
     private static final Primitive JCALL =
         new Primitive(Symbol.JCALL, "method-ref instance &rest args")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length < 2)
@@ -568,6 +583,7 @@ public final class Java extends Lisp
     private static final Primitive JCALL_RAW =
         new Primitive(Symbol.JCALL_RAW, "method-ref instance &rest args")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length < 2)
@@ -652,6 +668,7 @@ public final class Java extends Lisp
         new Primitive("make-immediate-object", PACKAGE_JAVA, true,
                       "object &optional type")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             if (args.length < 1)
@@ -688,6 +705,7 @@ public final class Java extends Lisp
     private static final Primitive JAVA_OBJECT_P =
         new Primitive("java-object-p", PACKAGE_JAVA, true, "object")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return (arg instanceof JavaObject) ? T : NIL;
@@ -698,6 +716,7 @@ public final class Java extends Lisp
     private static final Primitive JOBJECT_LISP_VALUE =
         new Primitive("jobject-lisp-value", PACKAGE_JAVA, true, "java-object")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return makeLispObject(arg.javaInstance());

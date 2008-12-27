@@ -55,11 +55,13 @@ public final class AutoloadMacro extends Autoload
             symbol.setSymbolFunction(am);
     }
 
+    @Override
     public void load() throws ConditionThrowable
     {
         Load.loadSystemFile(getFileName(), true);
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         StringBuffer sb = new StringBuffer("#<AUTOLOAD-MACRO ");
@@ -74,6 +76,7 @@ public final class AutoloadMacro extends Autoload
     private static final Primitive AUTOLOAD_MACRO =
         new Primitive("autoload-macro", PACKAGE_EXT, true)
     {
+        @Override
         public LispObject execute(LispObject first) throws ConditionThrowable
         {
             if (first instanceof Symbol) {
@@ -90,6 +93,7 @@ public final class AutoloadMacro extends Autoload
             }
             return error(new TypeError(first));
         }
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {

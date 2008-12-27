@@ -46,6 +46,7 @@ public final class jclass_name extends Primitive
 
     // When called with one argument, JCLASS-NAME returns the name of the class
     // referenced by CLASS-REF.
+    @Override
     public LispObject execute(LispObject arg)
         throws ConditionThrowable
     {
@@ -68,6 +69,7 @@ public final class jclass_name extends Primitive
 
     // When called with two arguments, JCLASS-NAME tests whether CLASS-REF
     // matches NAME.
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {

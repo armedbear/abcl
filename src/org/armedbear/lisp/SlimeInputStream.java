@@ -51,16 +51,19 @@ public class SlimeInputStream extends Stream
         this.ostream = ostream;
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.SLIME_INPUT_STREAM;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.SLIME_INPUT_STREAM;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.SLIME_INPUT_STREAM)
@@ -74,17 +77,20 @@ public class SlimeInputStream extends Stream
         return super.typep(type);
     }
 
+    @Override
     public LispObject close(LispObject abort) throws ConditionThrowable
     {
         setOpen(false);
         return T;
     }
 
+    @Override
     public LispObject listen()
     {
         return offset < length ? T : NIL;
     }
 
+    @Override
     protected int _readChar()
     {
         if (offset >= length) {
@@ -107,6 +113,7 @@ public class SlimeInputStream extends Stream
         return n;
     }
 
+    @Override
     protected void _unreadChar(int n)
     {
         if (offset > 0) {
@@ -116,12 +123,14 @@ public class SlimeInputStream extends Stream
         }
     }
 
+    @Override
     protected boolean _charReady()
     {
         return offset < length ? true : false;
     }
 
 
+    @Override
     public void _clearInput() throws ConditionThrowable
     {
         super._clearInput();
@@ -132,6 +141,7 @@ public class SlimeInputStream extends Stream
     }
 
 
+    @Override
     public String toString()
     {
         return unreadableString("SLIME-INPUT-STREAM");
@@ -143,6 +153,7 @@ public class SlimeInputStream extends Stream
         new Primitive("make-slime-input-stream", PACKAGE_EXT, true,
                       "function output-stream")
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {

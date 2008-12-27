@@ -42,6 +42,7 @@ public final class CapitalizeFirstStream extends CaseFrobStream
         super(target);
     }
 
+    @Override
     public void _writeChar(char c) throws ConditionThrowable
     {
         if (virgin) {
@@ -54,6 +55,7 @@ public final class CapitalizeFirstStream extends CaseFrobStream
         target._writeChar(c);
     }
 
+    @Override
     public void _writeString(String s) throws ConditionThrowable
     {
         final int length = s.length();
@@ -61,6 +63,7 @@ public final class CapitalizeFirstStream extends CaseFrobStream
             _writeChar(s.charAt(i));
     }
 
+    @Override
     public void _writeLine(String s) throws ConditionThrowable
     {
         _writeString(s);

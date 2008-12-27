@@ -82,26 +82,31 @@ public final class SimpleString extends AbstractString
         capacity = chars.length;
     }
 
+    @Override
     public char[] chars()
     {
         return chars;
     }
 
+    @Override
     public char[] getStringChars()
     {
         return chars;
     }
 
+    @Override
     public LispObject typeOf()
     {
         return list2(Symbol.SIMPLE_STRING, new Fixnum(capacity));
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.SIMPLE_STRING;
     }
 
+    @Override
     public LispObject getDescription()
     {
         FastStringBuffer sb = new FastStringBuffer("A simple-string (");
@@ -112,6 +117,7 @@ public final class SimpleString extends AbstractString
         return new SimpleString(sb);
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.SIMPLE_STRING)
@@ -129,21 +135,25 @@ public final class SimpleString extends AbstractString
         return super.typep(type);
     }
 
+    @Override
     public LispObject SIMPLE_STRING_P()
     {
         return T;
     }
 
+    @Override
     public boolean hasFillPointer()
     {
         return false;
     }
 
+    @Override
     public boolean isAdjustable()
     {
         return false;
     }
 
+    @Override
     public boolean equal(LispObject obj) throws ConditionThrowable
     {
         if (this == obj)
@@ -171,6 +181,7 @@ public final class SimpleString extends AbstractString
         return false;
     }
 
+    @Override
     public boolean equalp(LispObject obj) throws ConditionThrowable
     {
         if (this == obj)
@@ -228,22 +239,26 @@ public final class SimpleString extends AbstractString
         }
     }
 
+    @Override
     public final LispObject subseq(int start, int end) throws ConditionThrowable
     {
         return substring(start, end);
     }
 
+    @Override
     public void fill(LispObject obj) throws ConditionThrowable
     {
         fill(LispCharacter.getValue(obj));
     }
 
+    @Override
     public void fill(char c)
     {
         for (int i = capacity; i-- > 0;)
             chars[i] = c;
     }
 
+    @Override
     public void shrink(int n) throws ConditionThrowable
     {
         if (n < capacity) {
@@ -258,6 +273,7 @@ public final class SimpleString extends AbstractString
         error(new LispError());
     }
 
+    @Override
     public LispObject reverse() throws ConditionThrowable
     {
         SimpleString result = new SimpleString(capacity);
@@ -267,6 +283,7 @@ public final class SimpleString extends AbstractString
         return result;
     }
 
+    @Override
     public LispObject nreverse() throws ConditionThrowable
     {
         int i = 0;
@@ -281,31 +298,37 @@ public final class SimpleString extends AbstractString
         return this;
     }
 
+    @Override
     public String getStringValue()
     {
         return String.valueOf(chars);
     }
 
+    @Override
     public Object javaInstance()
     {
         return String.valueOf(chars);
     }
 
+    @Override
     public Object javaInstance(Class c)
     {
         return javaInstance();
     }
 
+    @Override
     public final int capacity()
     {
         return capacity;
     }
 
+    @Override
     public final int length()
     {
         return capacity;
     }
 
+    @Override
     public char charAt(int index) throws ConditionThrowable
     {
         try {
@@ -317,6 +340,7 @@ public final class SimpleString extends AbstractString
         }
     }
 
+    @Override
     public void setCharAt(int index, char c) throws ConditionThrowable
     {
         try {
@@ -327,6 +351,7 @@ public final class SimpleString extends AbstractString
         }
     }
 
+    @Override
     public LispObject elt(int index) throws ConditionThrowable
     {
         try {
@@ -338,6 +363,7 @@ public final class SimpleString extends AbstractString
         }
     }
 
+    @Override
     public LispObject CHAR(int index) throws ConditionThrowable
     {
         try {
@@ -349,6 +375,7 @@ public final class SimpleString extends AbstractString
         }
     }
 
+    @Override
     public LispObject SCHAR(int index) throws ConditionThrowable
     {
         try {
@@ -360,6 +387,7 @@ public final class SimpleString extends AbstractString
         }
     }
 
+    @Override
     public LispObject AREF(int index) throws ConditionThrowable
     {
         try {
@@ -371,6 +399,7 @@ public final class SimpleString extends AbstractString
         }
     }
 
+    @Override
     public LispObject AREF(LispObject index) throws ConditionThrowable
     {
         try {
@@ -385,6 +414,7 @@ public final class SimpleString extends AbstractString
         }
     }
 
+    @Override
     public void aset(int index, LispObject obj) throws ConditionThrowable
     {
         try {
@@ -398,6 +428,7 @@ public final class SimpleString extends AbstractString
         }
     }
 
+    @Override
     public int sxhash()
     {
         int hashCode = 0;
@@ -413,6 +444,7 @@ public final class SimpleString extends AbstractString
     }
 
     // For EQUALP hash tables.
+    @Override
     public int psxhash()
     {
         int hashCode = 0;
@@ -427,6 +459,7 @@ public final class SimpleString extends AbstractString
         return (hashCode & 0x7fffffff);
     }
 
+    @Override
     public AbstractVector adjustVector(int newCapacity,
                                        LispObject initialElement,
                                        LispObject initialContents)
@@ -461,6 +494,7 @@ public final class SimpleString extends AbstractString
         return this;
     }
 
+    @Override
     public AbstractVector adjustVector(int newCapacity,
                                        AbstractArray displacedTo,
                                        int displacement)

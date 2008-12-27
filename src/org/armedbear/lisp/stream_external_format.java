@@ -41,6 +41,7 @@ public final class stream_external_format extends Primitive
         super("stream-external-format", "stream");
     }
 
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         if (arg instanceof Stream)

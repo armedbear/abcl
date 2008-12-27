@@ -39,6 +39,7 @@ public class StandardObjectFunctions extends Lisp
   private static final Primitive STD_ALLOCATE_INSTANCE =
     new Primitive("std-allocate-instance", PACKAGE_SYS, true, "class")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         if (arg == StandardClass.STANDARD_CLASS)

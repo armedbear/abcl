@@ -47,16 +47,19 @@ public final class DivisionByZero extends ArithmeticError
         initialize(initArgs);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.DIVISION_BY_ZERO;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.DIVISION_BY_ZERO;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.DIVISION_BY_ZERO)

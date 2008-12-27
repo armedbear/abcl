@@ -41,11 +41,13 @@ public final class EqualpHashTable extends HashTable
     super(size, rehashSize, rehashThreshold);
   }
 
+  @Override
   public Symbol getTest()
   {
     return Symbol.EQUALP;
   }
 
+  @Override
   public LispObject get(LispObject key)
   {
     final int index = key.psxhash() % buckets.length;
@@ -66,6 +68,7 @@ public final class EqualpHashTable extends HashTable
     return null;
   }
 
+  @Override
   public void put(LispObject key, LispObject value) throws ConditionThrowable
   {
     int index = key.psxhash() % buckets.length;
@@ -91,6 +94,7 @@ public final class EqualpHashTable extends HashTable
     buckets[index] = e;
   }
 
+  @Override
   public LispObject remove(LispObject key) throws ConditionThrowable
   {
     final int index = key.psxhash() % buckets.length;
@@ -113,6 +117,7 @@ public final class EqualpHashTable extends HashTable
     return null;
   }
 
+  @Override
   protected void rehash()
   {
     HashEntry[] oldBuckets = buckets;

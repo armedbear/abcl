@@ -127,16 +127,19 @@ public final class StructureObject extends LispObject
       slots[i] = obj.slots[i];
   }
 
+  @Override
   public LispObject typeOf()
   {
     return structureClass.getSymbol();
   }
 
+  @Override
   public LispObject classOf()
   {
     return structureClass;
   }
 
+  @Override
   public LispObject getParts() throws ConditionThrowable
   {
     LispObject result = NIL;
@@ -153,6 +156,7 @@ public final class StructureObject extends LispObject
     return result.nreverse();
   }
 
+  @Override
   public LispObject typep(LispObject type) throws ConditionThrowable
   {
     if (type instanceof StructureClass)
@@ -172,6 +176,7 @@ public final class StructureObject extends LispObject
     return super.typep(type);
   }
 
+  @Override
   public boolean equalp(LispObject obj) throws ConditionThrowable
   {
     if (this == obj)
@@ -191,6 +196,7 @@ public final class StructureObject extends LispObject
     return false;
   }
 
+  @Override
   public LispObject getSlotValue_0() throws ConditionThrowable
   {
     try
@@ -203,6 +209,7 @@ public final class StructureObject extends LispObject
       }
   }
 
+  @Override
   public LispObject getSlotValue_1() throws ConditionThrowable
   {
     try
@@ -215,6 +222,7 @@ public final class StructureObject extends LispObject
       }
   }
 
+  @Override
   public LispObject getSlotValue_2() throws ConditionThrowable
   {
     try
@@ -227,6 +235,7 @@ public final class StructureObject extends LispObject
       }
   }
 
+  @Override
   public LispObject getSlotValue_3() throws ConditionThrowable
   {
     try
@@ -239,6 +248,7 @@ public final class StructureObject extends LispObject
       }
   }
 
+  @Override
   public LispObject getSlotValue(int index) throws ConditionThrowable
   {
     try
@@ -251,6 +261,7 @@ public final class StructureObject extends LispObject
       }
   }
 
+  @Override
   public int getFixnumSlotValue(int index) throws ConditionThrowable
   {
     try
@@ -271,6 +282,7 @@ public final class StructureObject extends LispObject
       }
   }
 
+  @Override
   public boolean getSlotValueAsBoolean(int index) throws ConditionThrowable
   {
     try
@@ -285,6 +297,7 @@ public final class StructureObject extends LispObject
       }
   }
 
+  @Override
   public void setSlotValue_0(LispObject value)
     throws ConditionThrowable
   {
@@ -298,6 +311,7 @@ public final class StructureObject extends LispObject
       }
   }
 
+  @Override
   public void setSlotValue_1(LispObject value)
     throws ConditionThrowable
   {
@@ -311,6 +325,7 @@ public final class StructureObject extends LispObject
       }
   }
 
+  @Override
   public void setSlotValue_2(LispObject value)
     throws ConditionThrowable
   {
@@ -324,6 +339,7 @@ public final class StructureObject extends LispObject
       }
   }
 
+  @Override
   public void setSlotValue_3(LispObject value)
     throws ConditionThrowable
   {
@@ -337,6 +353,7 @@ public final class StructureObject extends LispObject
       }
   }
 
+  @Override
   public void setSlotValue(int index, LispObject value)
     throws ConditionThrowable
   {
@@ -359,11 +376,13 @@ public final class StructureObject extends LispObject
     return error(new LispError(sb.toString()));
   }
 
+  @Override
   public final int psxhash()
   {
     return psxhash(4);
   }
 
+  @Override
   public final int psxhash(int depth)
   {
     int result = mix(structureClass.sxhash(), 7814971);
@@ -378,6 +397,7 @@ public final class StructureObject extends LispObject
     return result & 0x7fffffff;
   }
 
+  @Override
   public String writeToString() throws ConditionThrowable
   {
     try
@@ -455,6 +475,7 @@ public final class StructureObject extends LispObject
   private static final Primitive STRUCTURE_OBJECT_P =
     new Primitive("structure-object-p", PACKAGE_SYS, true, "object")
     {
+      @Override
       public LispObject execute(LispObject arg)
       {
         return arg instanceof StructureObject ? T : NIL;
@@ -465,6 +486,7 @@ public final class StructureObject extends LispObject
   private static final Primitive STRUCTURE_LENGTH =
     new Primitive("structure-length", PACKAGE_SYS, true, "instance")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -482,6 +504,7 @@ public final class StructureObject extends LispObject
   private static final Primitive STRUCTURE_REF =
     new Primitive("structure-ref", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -508,6 +531,7 @@ public final class StructureObject extends LispObject
   private static final Primitive STRUCTURE_SET =
     new Primitive("structure-set", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
         throws ConditionThrowable
@@ -536,6 +560,7 @@ public final class StructureObject extends LispObject
   private static final Primitive MAKE_STRUCTURE =
     new Primitive("make-structure", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -548,6 +573,7 @@ public final class StructureObject extends LispObject
             return type_error(first, Symbol.SYMBOL);
           }
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
         throws ConditionThrowable
@@ -561,6 +587,7 @@ public final class StructureObject extends LispObject
             return type_error(first, Symbol.SYMBOL);
           }
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third, LispObject fourth)
         throws ConditionThrowable
@@ -574,6 +601,7 @@ public final class StructureObject extends LispObject
             return type_error(first, Symbol.SYMBOL);
           }
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third, LispObject fourth,
                                 LispObject fifth)
@@ -589,6 +617,7 @@ public final class StructureObject extends LispObject
             return type_error(first, Symbol.SYMBOL);
           }
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third, LispObject fourth,
                                 LispObject fifth, LispObject sixth)
@@ -604,6 +633,7 @@ public final class StructureObject extends LispObject
             return type_error(first, Symbol.SYMBOL);
           }
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third, LispObject fourth,
                                 LispObject fifth, LispObject sixth,
@@ -626,6 +656,7 @@ public final class StructureObject extends LispObject
   private static final Primitive _MAKE_STRUCTURE =
     new Primitive("%make-structure", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -644,6 +675,7 @@ public final class StructureObject extends LispObject
   private static final Primitive COPY_STRUCTURE =
     new Primitive(Symbol.COPY_STRUCTURE, "structure")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try

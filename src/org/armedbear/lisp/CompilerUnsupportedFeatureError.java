@@ -40,16 +40,19 @@ public class CompilerUnsupportedFeatureError extends Condition
         super(initArgs);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.COMPILER_UNSUPPORTED_FEATURE_ERROR;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.COMPILER_UNSUPPORTED_FEATURE_ERROR;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.COMPILER_UNSUPPORTED_FEATURE_ERROR)

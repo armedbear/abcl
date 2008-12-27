@@ -45,6 +45,7 @@ public final class FileError extends LispError
             setPathname(initArgs);
     }
 
+    @Override
     protected void initialize(LispObject initArgs) throws ConditionThrowable
     {
         super.initialize(initArgs);
@@ -87,16 +88,19 @@ public final class FileError extends LispError
         setInstanceSlotValue(Symbol.PATHNAME, pathname);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.FILE_ERROR;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.FILE_ERROR;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.FILE_ERROR)

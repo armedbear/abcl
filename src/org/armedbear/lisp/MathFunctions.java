@@ -40,6 +40,7 @@ public final class MathFunctions extends Lisp
     // ### sin
     private static final Primitive SIN = new Primitive("sin", "radians")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return sin(arg);
@@ -66,6 +67,7 @@ public final class MathFunctions extends Lisp
     // ### cos
     private static final Primitive COS = new Primitive("cos", "radians")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return cos(arg);
@@ -91,6 +93,7 @@ public final class MathFunctions extends Lisp
     // ### tan
     private static final Primitive TAN = new Primitive("tan", "radians")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             if (arg instanceof DoubleFloat)
@@ -104,6 +107,7 @@ public final class MathFunctions extends Lisp
     // ### asin
     private static final Primitive ASIN = new Primitive("asin", "number")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return asin(arg);
@@ -144,6 +148,7 @@ public final class MathFunctions extends Lisp
     // ### acos
     private static final Primitive ACOS = new Primitive("acos", "number")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return acos(arg);
@@ -180,6 +185,7 @@ public final class MathFunctions extends Lisp
     private static final Primitive ATAN =
         new Primitive("atan", "number1 &optional number2")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             if (arg.numberp())
@@ -194,6 +200,7 @@ public final class MathFunctions extends Lisp
         // y = -0     x = +0       -0
         // y = +0     x = -0       +<PI>
         // y = -0     x = -0       -<PI>
+        @Override
         public LispObject execute(LispObject y, LispObject x)
             throws ConditionThrowable
         {
@@ -239,6 +246,7 @@ public final class MathFunctions extends Lisp
     // ### sinh
     private static final Primitive SINH = new Primitive("sinh", "number")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return sinh(arg);
@@ -309,6 +317,7 @@ public final class MathFunctions extends Lisp
     // ### cosh
     private static final Primitive COSH = new Primitive("cosh", "number")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return cosh(arg);
@@ -390,6 +399,7 @@ public final class MathFunctions extends Lisp
     // ### tanh
     private static final Primitive TANH = new Primitive("tanh", "number")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             if (arg instanceof SingleFloat) {
@@ -428,6 +438,7 @@ public final class MathFunctions extends Lisp
     // ### asinh
     private static final Primitive ASINH = new Primitive("asinh", "number")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return asinh(arg);
@@ -460,6 +471,7 @@ public final class MathFunctions extends Lisp
     // ### acosh
     private static final Primitive ACOSH = new Primitive("acosh", "number")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return acosh(arg);
@@ -496,6 +508,7 @@ public final class MathFunctions extends Lisp
     // ### atanh
     private static final Primitive ATANH = new Primitive("atanh", "number")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return atanh(arg);
@@ -527,6 +540,7 @@ public final class MathFunctions extends Lisp
     // ### cis
     private static final Primitive CIS = new Primitive("cis", "radians")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return cis(arg);
@@ -543,6 +557,7 @@ public final class MathFunctions extends Lisp
     // ### exp
     private static final Primitive EXP = new Primitive("exp", "number")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return exp(arg);
@@ -578,6 +593,7 @@ public final class MathFunctions extends Lisp
     // ### sqrt
     private static final Primitive SQRT = new Primitive("sqrt", "number")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return sqrt(arg);
@@ -625,10 +641,12 @@ public final class MathFunctions extends Lisp
     private static final Primitive LOG =
         new Primitive("log", "number &optional base")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return log(arg);
         }
+        @Override
         public LispObject execute(LispObject number, LispObject base)
             throws ConditionThrowable
         {
@@ -709,6 +727,7 @@ public final class MathFunctions extends Lisp
     public static final Primitive EXPT =
         new Primitive("expt", "base-number power-number")
     {
+        @Override
         public LispObject execute(LispObject base, LispObject power)
             throws ConditionThrowable
         {

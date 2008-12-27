@@ -48,11 +48,13 @@ public final class EqlHashTable extends HashTable
     mask = buckets.length - 1;
   }
 
+  @Override
   public Symbol getTest()
   {
     return Symbol.EQL;
   }
 
+  @Override
   public LispObject get(LispObject key)
   {
     HashEntry e = buckets[key.sxhash() & mask];
@@ -65,6 +67,7 @@ public final class EqlHashTable extends HashTable
     return null;
   }
 
+  @Override
   public void put(LispObject key, LispObject value)
   {
     int index = key.sxhash() & mask;
@@ -90,6 +93,7 @@ public final class EqlHashTable extends HashTable
     buckets[index] = e;
   }
 
+  @Override
   public LispObject remove(LispObject key)
   {
     final int index = key.sxhash() & mask;
@@ -112,6 +116,7 @@ public final class EqlHashTable extends HashTable
     return null;
   }
 
+  @Override
   protected void rehash()
   {
     HashEntry[] oldBuckets = buckets;

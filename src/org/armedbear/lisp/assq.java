@@ -41,6 +41,7 @@ public final class assq extends Primitive
         super("assq", PACKAGE_EXT, true);
     }
 
+    @Override
     public LispObject execute(LispObject item, LispObject alist)
         throws ConditionThrowable
     {

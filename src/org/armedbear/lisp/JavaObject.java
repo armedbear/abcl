@@ -42,16 +42,19 @@ public final class JavaObject extends LispObject
         this.obj = obj;
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.JAVA_OBJECT;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.JAVA_OBJECT;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.JAVA_OBJECT)
@@ -66,11 +69,13 @@ public final class JavaObject extends LispObject
         return obj;
     }
 
+    @Override
     public Object javaInstance()
     {
         return obj;
     }
 
+    @Override
     public Object javaInstance(Class c)
     {
         return javaInstance();
@@ -89,6 +94,7 @@ public final class JavaObject extends LispObject
         }
     }
 
+    @Override
     public final boolean equal(LispObject other)
     {
         if (this == other)
@@ -98,16 +104,19 @@ public final class JavaObject extends LispObject
         return false;
     }
 
+    @Override
     public final boolean equalp(LispObject other)
     {
         return equal(other);
     }
 
+    @Override
     public int sxhash()
     {
         return obj == null ? 0 : (obj.hashCode() & 0x7ffffff);
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         if (obj instanceof ConditionThrowable)
@@ -123,6 +132,7 @@ public final class JavaObject extends LispObject
     private static final Primitive DESCRIBE_JAVA_OBJECT =
         new Primitive("describe-java-object", PACKAGE_JAVA, true)
     {
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {

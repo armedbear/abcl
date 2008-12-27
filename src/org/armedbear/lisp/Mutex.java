@@ -50,16 +50,19 @@ public final class Mutex extends LispObject
 {
     private boolean inUse;
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.MUTEX;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.MUTEX;
     }
 
+    @Override
     public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
     {
         if (typeSpecifier == Symbol.MUTEX)
@@ -92,6 +95,7 @@ public final class Mutex extends LispObject
     }
 
 
+    @Override
     public String writeToString()
     {
         return unreadableString("MUTEX");
@@ -101,6 +105,7 @@ public final class Mutex extends LispObject
     private static final Primitive MAKE_MUTEX =
         new Primitive("make-mutex", PACKAGE_EXT, true, "")
     {
+        @Override
         public LispObject execute() throws ConditionThrowable
         {
             return new Mutex();
@@ -111,6 +116,7 @@ public final class Mutex extends LispObject
     private static final Primitive GET_MUTEX =
         new Primitive("get-mutex", PACKAGE_EXT, true, "mutex")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             try {
@@ -133,6 +139,7 @@ public final class Mutex extends LispObject
     private static final Primitive RELEASE_MUTEX =
         new Primitive("release-mutex", PACKAGE_EXT, true, "mutex")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             try {

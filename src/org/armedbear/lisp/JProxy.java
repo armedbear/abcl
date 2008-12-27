@@ -49,6 +49,7 @@ public final class JProxy extends Lisp
     new Primitive("%jnew-proxy", PACKAGE_JAVA, false,
                   "interface &rest method-names-and-defs")
     {
+      @Override
       public LispObject execute(LispObject[] args) throws ConditionThrowable
       {
         int length = args.length;

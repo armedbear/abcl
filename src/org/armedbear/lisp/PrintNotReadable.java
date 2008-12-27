@@ -54,16 +54,19 @@ public class PrintNotReadable extends LispError
             setInstanceSlotValue(Symbol.OBJECT, object);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.PRINT_NOT_READABLE;
     }
 
+    @Override
     public LispObject classOf()
     {
         return StandardClass.PRINT_NOT_READABLE;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.PRINT_NOT_READABLE)
@@ -73,6 +76,7 @@ public class PrintNotReadable extends LispError
         return super.typep(type);
     }
 
+    @Override
     public String getMessage()
     {
         FastStringBuffer sb = new FastStringBuffer();
@@ -107,6 +111,7 @@ public class PrintNotReadable extends LispError
     private static final Primitive PRINT_NOT_READABLE_OBJECT =
         new Primitive("print-not-readable-object", "condition")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             try {

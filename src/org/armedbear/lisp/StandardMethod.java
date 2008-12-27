@@ -66,6 +66,7 @@ public class StandardMethod extends StandardObject
   private static final Primitive METHOD_LAMBDA_LIST =
     new Primitive("method-lambda-list", PACKAGE_SYS, true, "method")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -84,6 +85,7 @@ public class StandardMethod extends StandardObject
     new Primitive("set-method-lambda-list", PACKAGE_SYS, true,
                   "method lambda-list")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -103,6 +105,7 @@ public class StandardMethod extends StandardObject
   private static final Primitive _METHOD_QUALIFIERS =
     new Primitive("%method-qualifiers", PACKAGE_SYS, true, "method")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -121,6 +124,7 @@ public class StandardMethod extends StandardObject
     new Primitive("set-method-qualifiers", PACKAGE_SYS, true,
                   "method qualifiers")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -140,6 +144,7 @@ public class StandardMethod extends StandardObject
   private static final Primitive METHOD_DOCUMENTATION =
     new Primitive("method-documentation", PACKAGE_SYS, true, "method")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -158,6 +163,7 @@ public class StandardMethod extends StandardObject
     new Primitive("set-method-documentation", PACKAGE_SYS, true,
                   "method documentation")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -178,6 +184,7 @@ public class StandardMethod extends StandardObject
     return slots[StandardMethodClass.SLOT_INDEX_FUNCTION];
   }
 
+  @Override
   public String writeToString() throws ConditionThrowable
   {
     LispObject genericFunction =
@@ -220,6 +227,7 @@ public class StandardMethod extends StandardObject
   private static final Primitive _METHOD_GENERIC_FUNCTION =
     new Primitive("%method-generic-function", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -237,6 +245,7 @@ public class StandardMethod extends StandardObject
   private static final Primitive _SET_METHOD_GENERICFUNCTION =
     new Primitive("%set-method-generic-function", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -256,6 +265,7 @@ public class StandardMethod extends StandardObject
   private static final Primitive _METHOD_FUNCTION =
     new Primitive("%method-function", PACKAGE_SYS, true, "method")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -274,6 +284,7 @@ public class StandardMethod extends StandardObject
     new Primitive("%set-method-function", PACKAGE_SYS, true,
                   "method function")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -293,6 +304,7 @@ public class StandardMethod extends StandardObject
   private static final Primitive _METHOD_FAST_FUNCTION =
     new Primitive("%method-fast-function", PACKAGE_SYS, true, "method")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -311,6 +323,7 @@ public class StandardMethod extends StandardObject
     new Primitive("%set-method-fast-function", PACKAGE_SYS, true,
                   "method fast-function")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -330,6 +343,7 @@ public class StandardMethod extends StandardObject
   private static final Primitive _METHOD_SPECIALIZERS =
     new Primitive("%method-specializers", PACKAGE_SYS, true, "method")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -348,6 +362,7 @@ public class StandardMethod extends StandardObject
     new Primitive("%set-method-specializers", PACKAGE_SYS, true,
                   "method specializers")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {

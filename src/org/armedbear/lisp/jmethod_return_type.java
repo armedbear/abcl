@@ -44,6 +44,7 @@ public final class jmethod_return_type extends Primitive
 "Returns a reference to the Class object that represents the formal return type of METHOD.");
     }
 
+    @Override
     public LispObject execute(LispObject arg)
         throws ConditionThrowable
     {

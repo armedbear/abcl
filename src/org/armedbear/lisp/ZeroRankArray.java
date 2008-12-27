@@ -48,6 +48,7 @@ public final class ZeroRankArray extends AbstractArray
         this.adjustable = adjustable;
     }
 
+    @Override
     public LispObject typeOf()
     {
         if (adjustable)
@@ -56,11 +57,13 @@ public final class ZeroRankArray extends AbstractArray
             return list3(Symbol.SIMPLE_ARRAY, elementType, NIL);
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.ARRAY;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.SIMPLE_ARRAY)
@@ -68,16 +71,19 @@ public final class ZeroRankArray extends AbstractArray
         return super.typep(type);
     }
 
+    @Override
     public int getRank()
     {
         return 0;
     }
 
+    @Override
     public LispObject getDimensions()
     {
         return NIL;
     }
 
+    @Override
     public int getDimension(int n) throws ConditionThrowable
     {
         error(new TypeError("Bad array dimension (" + n + ") for array of rank 0."));
@@ -85,16 +91,19 @@ public final class ZeroRankArray extends AbstractArray
         return -1;
     }
 
+    @Override
     public LispObject getElementType()
     {
         return elementType;
     }
 
+    @Override
     public int getTotalSize()
     {
         return 1;
     }
 
+    @Override
     public LispObject AREF(int index) throws ConditionThrowable
     {
         if (index == 0)
@@ -103,6 +112,7 @@ public final class ZeroRankArray extends AbstractArray
             return error(new TypeError("Bad row major index " + index + "."));
     }
 
+    @Override
     public void aset(int index, LispObject obj) throws ConditionThrowable
     {
         if (obj.typep(elementType) == NIL)
@@ -113,6 +123,7 @@ public final class ZeroRankArray extends AbstractArray
             error(new TypeError("Bad row major index " + index + "."));
     }
 
+    @Override
     public void fill(LispObject obj) throws ConditionThrowable
     {
         if (obj.typep(elementType) == NIL)
@@ -120,6 +131,7 @@ public final class ZeroRankArray extends AbstractArray
         data = obj;
     }
 
+    @Override
     public String writeToString() throws ConditionThrowable
     {
         final LispThread thread = LispThread.currentThread();

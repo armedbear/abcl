@@ -48,6 +48,7 @@ public final class zip extends Primitive
         super("zip", PACKAGE_SYS, true, "pathname pathnames");
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {

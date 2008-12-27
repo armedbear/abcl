@@ -42,26 +42,31 @@ public final class Nil extends Symbol
         initializeConstant(this);
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.NULL;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.NULL;
     }
 
+    @Override
     public LispObject getDescription()
     {
         return new SimpleString("The symbol NIL");
     }
 
+    @Override
     public boolean getBooleanValue()
     {
         return false;
     }
 
+    @Override
     public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
     {
         if (typeSpecifier == Symbol.NULL)
@@ -85,41 +90,49 @@ public final class Nil extends Symbol
         return super.typep(typeSpecifier);
     }
 
+    @Override
     public boolean constantp()
     {
         return true;
     }
 
+    @Override
     public final LispObject getSymbolValue()
     {
         return this;
     }
 
+    @Override
     public LispObject car()
     {
         return this;
     }
 
+    @Override
     public LispObject cdr()
     {
         return this;
     }
 
+    @Override
     public final LispObject cadr()
     {
         return this;
     }
 
+    @Override
     public final LispObject cddr()
     {
         return this;
     }
 
+    @Override
     public final LispObject caddr()
     {
         return this;
     }
 
+    @Override
     public LispObject nthcdr(int n) throws ConditionThrowable
     {
         if (n < 0)
@@ -128,16 +141,19 @@ public final class Nil extends Symbol
         return this;
     }
 
+    @Override
     public int length()
     {
         return 0;
     }
 
+    @Override
     public LispObject push(LispObject obj)
     {
         return new Cons(obj);
     }
 
+    @Override
     public LispObject NTH(int index) throws ConditionThrowable
     {
         if (index < 0)
@@ -146,6 +162,7 @@ public final class Nil extends Symbol
         return NIL;
     }
 
+    @Override
     public LispObject NTH(LispObject arg) throws ConditionThrowable
     {
         int index;
@@ -165,56 +182,67 @@ public final class Nil extends Symbol
         return NIL;
     }
 
+    @Override
     public LispObject elt(int index) throws ConditionThrowable
     {
         return error(new TypeError("ELT: invalid index " + index + " for " + this + "."));
     }
 
+    @Override
     public LispObject reverse()
     {
         return this;
     }
 
+    @Override
     public LispObject nreverse()
     {
         return this;
     }
 
+    @Override
     public LispObject[] copyToArray()
     {
         return new LispObject[0];
     }
 
+    @Override
     public boolean listp()
     {
         return true;
     }
 
+    @Override
     public LispObject LISTP()
     {
         return T;
     }
 
+    @Override
     public boolean endp()
     {
         return true;
     }
 
+    @Override
     public LispObject ENDP()
     {
         return T;
     }
 
+    @Override
     public LispObject NOT()
     {
         return T;
     }
 
+    @Override
     public final LispObject getSymbolFunction()
     {
         return null;
     }
 
+    @Override
     public String toString()
     {
         if (Symbol.PRINT_READABLY.symbolValueNoThrow() != NIL)

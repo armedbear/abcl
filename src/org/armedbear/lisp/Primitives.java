@@ -42,21 +42,25 @@ public final class Primitives extends Lisp
   public static final Primitive MULTIPLY =
     new Primitive(Symbol.STAR, "&rest numbers")
     {
+      @Override
       public LispObject execute()
       {
         return Fixnum.ONE;
       }
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         if (arg.numberp())
           return arg;
         return type_error(arg, Symbol.NUMBER);
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
         return first.multiplyBy(second);
       }
+      @Override
       public LispObject execute(LispObject[] args) throws ConditionThrowable
       {
         LispObject result = Fixnum.ONE;
@@ -70,19 +74,23 @@ public final class Primitives extends Lisp
   public static final Primitive DIVIDE =
     new Primitive(Symbol.SLASH, "numerator &rest denominators")
     {
+      @Override
       public LispObject execute() throws ConditionThrowable
       {
         return error(new WrongNumberOfArgumentsException(this));
       }
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return Fixnum.ONE.divideBy(arg);
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
         return first.divideBy(second);
       }
+      @Override
       public LispObject execute(LispObject[] args) throws ConditionThrowable
       {
         LispObject result = args[0];
@@ -96,21 +104,25 @@ public final class Primitives extends Lisp
   public static final Primitive MIN =
     new Primitive(Symbol.MIN, "&rest reals")
     {
+      @Override
       public LispObject execute() throws ConditionThrowable
       {
         return error(new WrongNumberOfArgumentsException(this));
       }
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         if (arg.realp())
           return arg;
         return type_error(arg, Symbol.REAL);
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
         return first.isLessThan(second) ? first : second;
       }
+      @Override
       public LispObject execute(LispObject[] args) throws ConditionThrowable
       {
         LispObject result = args[0];
@@ -129,21 +141,25 @@ public final class Primitives extends Lisp
   public static final Primitive MAX =
     new Primitive(Symbol.MAX, "&rest reals")
     {
+      @Override
       public LispObject execute() throws ConditionThrowable
       {
         return error(new WrongNumberOfArgumentsException(this));
       }
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         if (arg.realp())
           return arg;
         return type_error(arg, Symbol.REAL);
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
         return first.isGreaterThan(second) ? first : second;
       }
+      @Override
       public LispObject execute(LispObject[] args) throws ConditionThrowable
       {
         LispObject result = args[0];
@@ -162,6 +178,7 @@ public final class Primitives extends Lisp
   private static final Primitive IDENTITY =
     new Primitive(Symbol.IDENTITY, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg;
@@ -172,6 +189,7 @@ public final class Primitives extends Lisp
   private static final Primitive COMPILED_FUNCTION_P =
     new Primitive(Symbol.COMPILED_FUNCTION_P, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.typep(Symbol.COMPILED_FUNCTION);
@@ -182,6 +200,7 @@ public final class Primitives extends Lisp
   private static final Primitive CONSP =
     new Primitive(Symbol.CONSP, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg instanceof Cons ? T : NIL;
@@ -192,6 +211,7 @@ public final class Primitives extends Lisp
   private static final Primitive LISTP =
     new Primitive(Symbol.LISTP, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.LISTP();
@@ -202,6 +222,7 @@ public final class Primitives extends Lisp
   private static final Primitive ABS =
     new Primitive(Symbol.ABS, "number")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.ABS();
@@ -212,6 +233,7 @@ public final class Primitives extends Lisp
   private static final Primitive ARRAYP =
     new Primitive(Symbol.ARRAYP, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg instanceof AbstractArray ? T : NIL;
@@ -222,6 +244,7 @@ public final class Primitives extends Lisp
   private static final Primitive ARRAY_HAS_FILL_POINTER_P =
     new Primitive(Symbol.ARRAY_HAS_FILL_POINTER_P, "array")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -239,6 +262,7 @@ public final class Primitives extends Lisp
   private static final Primitive VECTORP =
     new Primitive(Symbol.VECTORP, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.VECTORP();
@@ -249,6 +273,7 @@ public final class Primitives extends Lisp
   private static final Primitive SIMPLE_VECTOR_P =
     new Primitive(Symbol.SIMPLE_VECTOR_P, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg instanceof SimpleVector ? T : NIL;
@@ -259,6 +284,7 @@ public final class Primitives extends Lisp
   private static final Primitive BIT_VECTOR_P =
     new Primitive(Symbol.BIT_VECTOR_P, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg instanceof AbstractBitVector ? T : NIL;
@@ -269,6 +295,7 @@ public final class Primitives extends Lisp
   private static final Primitive SIMPLE_BIT_VECTOR_P =
     new Primitive(Symbol.SIMPLE_BIT_VECTOR_P, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.typep(Symbol.SIMPLE_BIT_VECTOR);
@@ -279,6 +306,7 @@ public final class Primitives extends Lisp
   private static final Primitive _EVAL =
     new Primitive("%eval", PACKAGE_SYS, false, "form")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return eval(arg, new Environment(), LispThread.currentThread());
@@ -288,6 +316,7 @@ public final class Primitives extends Lisp
   // ### eq
   private static final Primitive EQ = new Primitive(Symbol.EQ, "x y")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -298,6 +327,7 @@ public final class Primitives extends Lisp
   // ### eql
   private static final Primitive EQL = new Primitive(Symbol.EQL, "x y")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -308,6 +338,7 @@ public final class Primitives extends Lisp
   // ### equal
   private static final Primitive EQUAL = new Primitive(Symbol.EQUAL, "x y")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -318,6 +349,7 @@ public final class Primitives extends Lisp
   // ### equalp
   private static final Primitive EQUALP = new Primitive(Symbol.EQUALP, "x y")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -329,29 +361,35 @@ public final class Primitives extends Lisp
   private static final Primitive VALUES =
     new Primitive(Symbol.VALUES, "&rest object")
     {
+      @Override
       public LispObject execute()
       {
         return LispThread.currentThread().setValues();
       }
+      @Override
       public LispObject execute(LispObject arg)
       {
         return LispThread.currentThread().setValues(arg);
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
       {
         return LispThread.currentThread().setValues(first, second);
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
       {
         return LispThread.currentThread().setValues(first, second, third);
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third, LispObject fourth)
       {
         return LispThread.currentThread().setValues(first, second, third,
                                                     fourth);
       }
+      @Override
       public LispObject execute(LispObject[] args)
       {
         return LispThread.currentThread().setValues(args);
@@ -363,6 +401,7 @@ public final class Primitives extends Lisp
   private static final Primitive VALUES_LIST =
     new Primitive(Symbol.VALUES_LIST, "list")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         if (arg == NIL)
@@ -377,6 +416,7 @@ public final class Primitives extends Lisp
   private static final Primitive CONS =
     new Primitive(Symbol.CONS, "object-1 object-2")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -388,6 +428,7 @@ public final class Primitives extends Lisp
   private static final Primitive LENGTH =
     new Primitive(Symbol.LENGTH, "sequence")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.LENGTH();
@@ -398,6 +439,7 @@ public final class Primitives extends Lisp
   private static final Primitive ELT =
     new Primitive(Symbol.ELT, "sequence index")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -415,6 +457,7 @@ public final class Primitives extends Lisp
   // ### atom
   private static final Primitive ATOM = new Primitive(Symbol.ATOM, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg instanceof Cons ? NIL : T;
@@ -425,10 +468,12 @@ public final class Primitives extends Lisp
   private static final Primitive CONSTANTP =
     new Primitive(Symbol.CONSTANTP, "form &optional environment")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.constantp() ? T : NIL;
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -440,6 +485,7 @@ public final class Primitives extends Lisp
   private static final Primitive FUNCTIONP =
     new Primitive(Symbol.FUNCTIONP, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return (arg instanceof Function || arg instanceof StandardGenericFunction) ? T : NIL;
@@ -450,6 +496,7 @@ public final class Primitives extends Lisp
   private static final Primitive SPECIAL_OPERATOR_P =
     new Primitive(Symbol.SPECIAL_OPERATOR_P, "symbol")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.isSpecialOperator() ? T : NIL;
@@ -460,6 +507,7 @@ public final class Primitives extends Lisp
   private static final Primitive SYMBOLP =
     new Primitive(Symbol.SYMBOLP, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg instanceof Symbol ? T : NIL;
@@ -469,6 +517,7 @@ public final class Primitives extends Lisp
   // ### endp
   private static final Primitive ENDP = new Primitive(Symbol.ENDP, "list")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.endp() ? T : NIL;
@@ -478,6 +527,7 @@ public final class Primitives extends Lisp
   // ### null
   private static final Primitive NULL = new Primitive(Symbol.NULL, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg == NIL ? T : NIL;
@@ -487,6 +537,7 @@ public final class Primitives extends Lisp
   // ### not
   private static final Primitive NOT = new Primitive(Symbol.NOT, "x")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg == NIL ? T : NIL;
@@ -496,6 +547,7 @@ public final class Primitives extends Lisp
   // ### plusp
   private static final Primitive PLUSP = new Primitive(Symbol.PLUSP, "real")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.PLUSP();
@@ -506,6 +558,7 @@ public final class Primitives extends Lisp
   private static final Primitive MINUSP =
     new Primitive(Symbol.MINUSP, "real")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.MINUSP();
@@ -516,6 +569,7 @@ public final class Primitives extends Lisp
   private static final Primitive ZEROP =
     new Primitive(Symbol.ZEROP, "number")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.ZEROP();
@@ -526,6 +580,7 @@ public final class Primitives extends Lisp
   private static final Primitive FIXNUMP =
     new Primitive("fixnump", PACKAGE_EXT, true)
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg instanceof Fixnum ? T : NIL;
@@ -536,6 +591,7 @@ public final class Primitives extends Lisp
   private static final Primitive SYMBOL_VALUE =
     new Primitive(Symbol.SYMBOL_VALUE, "symbol")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         final LispObject value;
@@ -558,6 +614,7 @@ public final class Primitives extends Lisp
   private static final Primitive SET =
     new Primitive(Symbol.SET, "symbol value")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -577,6 +634,7 @@ public final class Primitives extends Lisp
   private static final Primitive RPLACA =
     new Primitive(Symbol.RPLACA, "cons object")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -589,6 +647,7 @@ public final class Primitives extends Lisp
   private static final Primitive RPLACD =
     new Primitive(Symbol.RPLACD, "cons object")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -601,27 +660,32 @@ public final class Primitives extends Lisp
   private static final Primitive ADD =
     new Primitive(Symbol.PLUS, "&rest numbers")
     {
+      @Override
       public LispObject execute()
       {
         return Fixnum.ZERO;
       }
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         if (arg.numberp())
           return arg;
         return type_error(arg, Symbol.NUMBER);
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
         return first.add(second);
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
         throws ConditionThrowable
       {
         return first.add(second).add(third);
       }
+      @Override
       public LispObject execute(LispObject[] args) throws ConditionThrowable
       {
         LispObject result = Fixnum.ZERO;
@@ -636,6 +700,7 @@ public final class Primitives extends Lisp
   private static final Primitive ONE_PLUS =
     new Primitive(Symbol.ONE_PLUS, "number")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.incr();
@@ -646,19 +711,23 @@ public final class Primitives extends Lisp
   private static final Primitive SUBTRACT =
     new Primitive(Symbol.MINUS, "minuend &rest subtrahends")
     {
+      @Override
       public LispObject execute() throws ConditionThrowable
       {
         return error(new WrongNumberOfArgumentsException(this));
       }
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.negate();
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
         return first.subtract(second);
       }
+      @Override
       public LispObject execute(LispObject[] args) throws ConditionThrowable
       {
         LispObject result = args[0];
@@ -672,6 +741,7 @@ public final class Primitives extends Lisp
   private static final Primitive ONE_MINUS =
     new Primitive(Symbol.ONE_MINUS, "number")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.decr();
@@ -682,6 +752,7 @@ public final class Primitives extends Lisp
   private static final SpecialOperator WHEN =
     new SpecialOperator(Symbol.WHEN)
     {
+      @Override
       public LispObject execute(LispObject args, Environment env)
         throws ConditionThrowable
       {
@@ -702,6 +773,7 @@ public final class Primitives extends Lisp
   private static final SpecialOperator UNLESS =
     new SpecialOperator(Symbol.UNLESS)
     {
+      @Override
       public LispObject execute(LispObject args, Environment env)
         throws ConditionThrowable
       {
@@ -722,6 +794,7 @@ public final class Primitives extends Lisp
   private static final Primitive _STREAM_OUTPUT_OBJECT =
     new Primitive("%stream-output-object", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -741,6 +814,7 @@ public final class Primitives extends Lisp
   private static final Primitive _OUTPUT_OBJECT =
     new Primitive("%output-object", PACKAGE_SYS, true)
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -767,6 +841,7 @@ public final class Primitives extends Lisp
   private static final Primitive _WRITE_TO_STRING =
     new Primitive("%write-to-string", PACKAGE_SYS, false)
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return new SimpleString(arg.writeToString());
@@ -777,6 +852,7 @@ public final class Primitives extends Lisp
   private static final Primitive _STREAM_TERPRI =
     new Primitive("%stream-terpri", PACKAGE_SYS, true, "output-stream")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -795,6 +871,7 @@ public final class Primitives extends Lisp
   private static final Primitive _TERPRI =
     new Primitive("%terpri", PACKAGE_SYS, false, "output-stream")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         if (arg == T)
@@ -819,6 +896,7 @@ public final class Primitives extends Lisp
   private static final Primitive _FRESH_LINE =
     new Primitive("%fresh-line", PACKAGE_SYS, false, "output-stream")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         if (arg == T)
@@ -844,6 +922,7 @@ public final class Primitives extends Lisp
   private static final Primitive BOUNDP =
     new Primitive(Symbol.BOUNDP, "symbol")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         final Symbol symbol;
@@ -871,6 +950,7 @@ public final class Primitives extends Lisp
   private static final Primitive FBOUNDP =
     new Primitive(Symbol.FBOUNDP, "name")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         if (arg instanceof Symbol)
@@ -888,6 +968,7 @@ public final class Primitives extends Lisp
   private static final Primitive FMAKUNBOUND =
     new Primitive(Symbol.FMAKUNBOUND, "name")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         if (arg instanceof Symbol)
@@ -908,6 +989,7 @@ public final class Primitives extends Lisp
   private static final Primitive SETF_FUNCTION_NAME_P =
     new Primitive("setf-function-name-p", PACKAGE_SYS, true, "thing")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return isValidSetfFunctionName(arg) ? T : NIL;
@@ -918,6 +1000,7 @@ public final class Primitives extends Lisp
   private static final Primitive REMPROP =
     new Primitive(Symbol.REMPROP, "symbol indicator")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -929,14 +1012,17 @@ public final class Primitives extends Lisp
   public static final Primitive APPEND =
     new Primitive(Symbol.APPEND, "&rest lists")
     {
+      @Override
       public LispObject execute()
       {
         return NIL;
       }
+      @Override
       public LispObject execute(LispObject arg)
       {
         return arg;
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -956,6 +1042,7 @@ public final class Primitives extends Lisp
         splice.cdr = second;
         return result;
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
         throws ConditionThrowable
@@ -982,6 +1069,7 @@ public final class Primitives extends Lisp
         splice.cdr = third;
         return result;
       }
+      @Override
       public LispObject execute(LispObject[] args) throws ConditionThrowable
       {
         Cons result = null;
@@ -1027,14 +1115,17 @@ public final class Primitives extends Lisp
   private static final Primitive NCONC =
     new Primitive(Symbol.NCONC, "&rest lists")
     {
+      @Override
       public LispObject execute()
       {
         return NIL;
       }
+      @Override
       public LispObject execute(LispObject arg)
       {
         return arg;
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -1054,6 +1145,7 @@ public final class Primitives extends Lisp
           }
         return type_error(first, Symbol.LIST);
       }
+      @Override
       public LispObject execute(LispObject[] array) throws ConditionThrowable
       {
         LispObject result = null;
@@ -1099,19 +1191,23 @@ public final class Primitives extends Lisp
   private static final Primitive EQUALS =
     new Primitive(Symbol.EQUALS, "&rest numbers")
     {
+      @Override
       public LispObject execute() throws ConditionThrowable
       {
         return error(new WrongNumberOfArgumentsException(this));
       }
+      @Override
       public LispObject execute(LispObject arg)
       {
         return T;
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
         return first.isEqualTo(second) ? T : NIL;
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
         throws ConditionThrowable
@@ -1121,6 +1217,7 @@ public final class Primitives extends Lisp
         else
           return NIL;
       }
+      @Override
       public LispObject execute(LispObject[] array) throws ConditionThrowable
       {
         final int length = array.length;
@@ -1139,14 +1236,17 @@ public final class Primitives extends Lisp
   private static final Primitive NOT_EQUALS =
     new Primitive(Symbol.NOT_EQUALS, "&rest numbers")
     {
+      @Override
       public LispObject execute() throws ConditionThrowable
       {
         return error(new WrongNumberOfArgumentsException(this));
       }
+      @Override
       public LispObject execute(LispObject arg)
       {
         return T;
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {

@@ -44,6 +44,7 @@ public final class logtest extends Primitive
         super("logtest", "integer-1 integer-2");
     }
 
+    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {

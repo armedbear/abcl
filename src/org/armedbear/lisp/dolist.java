@@ -41,6 +41,7 @@ public final class dolist extends SpecialOperator
     super(Symbol.DOLIST);
   }
 
+  @Override
   public LispObject execute(LispObject args, Environment env)
     throws ConditionThrowable
   {

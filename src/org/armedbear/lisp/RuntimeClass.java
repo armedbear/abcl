@@ -48,6 +48,7 @@ public class RuntimeClass extends Lisp
     private static final Primitive _JNEW_RUNTIME_CLASS =
         new Primitive("%jnew-runtime-class", PACKAGE_JAVA, false, "class-name &rest method-names-and-defs")
     {
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             int length = args.length;
@@ -70,6 +71,7 @@ public class RuntimeClass extends Lisp
         new Primitive("%jredefine-method", PACKAGE_JAVA, false,
                       "class-name method-name method-def")
     {
+        @Override
         public LispObject execute(LispObject className, LispObject methodName,
                                   LispObject methodDef)
             throws ConditionThrowable
@@ -96,6 +98,7 @@ public class RuntimeClass extends Lisp
         new Primitive("%load-java-class-from-byte-array", PACKAGE_JAVA, false,
                       "classname bytearray")
     {
+        @Override
         public LispObject execute(LispObject className, LispObject classBytes)
             throws ConditionThrowable
         {

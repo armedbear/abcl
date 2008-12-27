@@ -59,16 +59,19 @@ public final class Cons extends LispObject
     ++count;
   }
 
+  @Override
   public LispObject typeOf()
   {
     return Symbol.CONS;
   }
 
+  @Override
   public LispObject classOf()
   {
     return BuiltInClass.CONS;
   }
 
+  @Override
   public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
   {
     if (typeSpecifier instanceof Symbol)
@@ -96,6 +99,7 @@ public final class Cons extends LispObject
     return NIL;
   }
 
+  @Override
   public final boolean constantp()
   {
     if (car == Symbol.QUOTE)
@@ -107,63 +111,75 @@ public final class Cons extends LispObject
     return false;
   }
 
+  @Override
   public LispObject ATOM()
   {
     return NIL;
   }
 
+  @Override
   public boolean atom()
   {
     return false;
   }
 
+  @Override
   public final LispObject car()
   {
     return car;
   }
 
+  @Override
   public final LispObject cdr()
   {
     return cdr;
   }
 
+  @Override
   public final void setCar(LispObject obj)
   {
     car = obj;
   }
 
+  @Override
   public LispObject RPLACA(LispObject obj) throws ConditionThrowable
   {
     car = obj;
     return this;
   }
 
+  @Override
   public final void setCdr(LispObject obj)
   {
     cdr = obj;
   }
 
+  @Override
   public LispObject RPLACD(LispObject obj) throws ConditionThrowable
   {
     cdr = obj;
     return this;
   }
 
+  @Override
   public final LispObject cadr() throws ConditionThrowable
   {
     return cdr.car();
   }
 
+  @Override
   public final LispObject cddr() throws ConditionThrowable
   {
     return cdr.cdr();
   }
 
+  @Override
   public final LispObject caddr() throws ConditionThrowable
   {
     return cdr.cadr();
   }
 
+  @Override
   public LispObject nthcdr(int n) throws ConditionThrowable
   {
     if (n < 0)
@@ -179,11 +195,13 @@ public final class Cons extends LispObject
     return result;
   }
 
+  @Override
   public final LispObject push(LispObject obj)
   {
     return new Cons(obj, this);
   }
 
+  @Override
   public final int sxhash()
   {
     return computeHash(this, 4);
@@ -211,6 +229,7 @@ public final class Cons extends LispObject
       return obj.sxhash();
   }
 
+  @Override
   public final int psxhash() //throws ConditionThrowable
   {
     return computeEqualpHash(this, 4);
@@ -233,6 +252,7 @@ public final class Cons extends LispObject
       return obj.psxhash();
   }
 
+  @Override
   public final boolean equal(LispObject obj) throws ConditionThrowable
   {
     if (this == obj)
@@ -245,6 +265,7 @@ public final class Cons extends LispObject
     return false;
   }
 
+  @Override
   public final boolean equalp(LispObject obj) throws ConditionThrowable
   {
     if (this == obj)
@@ -257,6 +278,7 @@ public final class Cons extends LispObject
     return false;
   }
 
+  @Override
   public final int length() throws ConditionThrowable
   {
     int length = 0;
@@ -276,6 +298,7 @@ public final class Cons extends LispObject
     return length;
   }
 
+  @Override
   public LispObject NTH(int index) throws ConditionThrowable
   {
     if (index < 0)
@@ -293,6 +316,7 @@ public final class Cons extends LispObject
       }
   }
 
+  @Override
   public LispObject NTH(LispObject arg) throws ConditionThrowable
   {
     int index;
@@ -326,6 +350,7 @@ public final class Cons extends LispObject
       }
   }
 
+  @Override
   public LispObject elt(int index) throws ConditionThrowable
   {
     if (index < 0)
@@ -361,6 +386,7 @@ public final class Cons extends LispObject
       }
   }
 
+  @Override
   public LispObject reverse() throws ConditionThrowable
   {
     Cons cons = this;
@@ -375,6 +401,7 @@ public final class Cons extends LispObject
     return result;
   }
 
+  @Override
   public final LispObject nreverse() throws ConditionThrowable
   {
     if (cdr instanceof Cons)
@@ -408,26 +435,31 @@ public final class Cons extends LispObject
     return this;
   }
 
+  @Override
   public final boolean listp()
   {
     return true;
   }
 
+  @Override
   public final LispObject LISTP()
   {
     return T;
   }
 
+  @Override
   public final boolean endp()
   {
     return false;
   }
 
+  @Override
   public final LispObject ENDP()
   {
     return NIL;
   }
 
+  @Override
   public final LispObject[] copyToArray() throws ConditionThrowable
   {
     final int length = length();
@@ -441,6 +473,7 @@ public final class Cons extends LispObject
     return array;
   }
 
+  @Override
   public LispObject execute() throws ConditionThrowable
   {
     if (car == Symbol.LAMBDA)
@@ -451,6 +484,7 @@ public final class Cons extends LispObject
     return signalExecutionError();
   }
 
+  @Override
   public LispObject execute(LispObject arg) throws ConditionThrowable
   {
     if (car == Symbol.LAMBDA)
@@ -461,6 +495,7 @@ public final class Cons extends LispObject
     return signalExecutionError();
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second)
     throws ConditionThrowable
   {
@@ -472,6 +507,7 @@ public final class Cons extends LispObject
     return signalExecutionError();
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third)
     throws ConditionThrowable
@@ -484,6 +520,7 @@ public final class Cons extends LispObject
     return signalExecutionError();
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth)
     throws ConditionThrowable
@@ -496,6 +533,7 @@ public final class Cons extends LispObject
     return signalExecutionError();
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth)
@@ -509,6 +547,7 @@ public final class Cons extends LispObject
     return signalExecutionError();
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth)
@@ -522,6 +561,7 @@ public final class Cons extends LispObject
     return signalExecutionError();
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
@@ -537,6 +577,7 @@ public final class Cons extends LispObject
     return signalExecutionError();
   }
 
+  @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
@@ -552,6 +593,7 @@ public final class Cons extends LispObject
     return signalExecutionError();
   }
 
+  @Override
   public LispObject execute(LispObject[] args) throws ConditionThrowable
   {
     if (car == Symbol.LAMBDA)
@@ -568,6 +610,7 @@ public final class Cons extends LispObject
                                        Symbol.SYMBOL));
   }
 
+  @Override
   public String writeToString() throws ConditionThrowable
   {
     final LispThread thread = LispThread.currentThread();

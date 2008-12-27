@@ -47,6 +47,7 @@ public final class Extensions extends Lisp
   private static final SpecialOperator TRULY_THE =
     new SpecialOperator("truly-the", PACKAGE_EXT, true, "type value")
     {
+      @Override
       public LispObject execute(LispObject args, Environment env)
         throws ConditionThrowable
       {
@@ -60,6 +61,7 @@ public final class Extensions extends Lisp
   private static final Primitive NEQ =
     new Primitive(Symbol.NEQ, "obj1 obj2")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -71,6 +73,7 @@ public final class Extensions extends Lisp
   private static final Primitive MEMQ =
     new Primitive(Symbol.MEMQ, "item list")
     {
+      @Override
       public LispObject execute(LispObject item, LispObject list)
         throws ConditionThrowable
       {
@@ -90,6 +93,7 @@ public final class Extensions extends Lisp
   private static final Primitive MEMQL =
     new Primitive(Symbol.MEMQL, "item list")
     {
+      @Override
       public LispObject execute(LispObject item, LispObject list)
         throws ConditionThrowable
       {
@@ -109,6 +113,7 @@ public final class Extensions extends Lisp
   private static final Primitive ADJOIN_EQL =
     new Primitive(Symbol.ADJOIN_EQL, "item list")
     {
+      @Override
       public LispObject execute(LispObject item, LispObject list)
         throws ConditionThrowable
       {
@@ -120,6 +125,7 @@ public final class Extensions extends Lisp
   private static final Primitive SPECIAL_VARIABLE_P =
     new Primitive("special-variable-p", PACKAGE_EXT, true)
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg.isSpecialVariable() ? T : NIL;
@@ -130,6 +136,7 @@ public final class Extensions extends Lisp
   private static final Primitive SOURCE =
     new Primitive("source", PACKAGE_EXT, true)
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return get(arg, Symbol._SOURCE, NIL);
@@ -140,6 +147,7 @@ public final class Extensions extends Lisp
   private static final Primitive SOURCE_FILE_POSITION =
     new Primitive("source-file-position", PACKAGE_EXT, true)
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         LispObject obj = get(arg, Symbol._SOURCE, NIL);
@@ -153,6 +161,7 @@ public final class Extensions extends Lisp
   public static final Primitive SOURCE_PATHNAME =
     new Primitive("source-pathname", PACKAGE_EXT, true)
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         LispObject obj = get(arg, Symbol._SOURCE, NIL);
@@ -166,11 +175,13 @@ public final class Extensions extends Lisp
   private static final Primitive EXIT =
     new Primitive("exit", PACKAGE_EXT, true, "&key status")
     {
+      @Override
       public LispObject execute() throws ConditionThrowable
       {
         exit(0);
         return LispThread.currentThread().nothing();
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -189,11 +200,13 @@ public final class Extensions extends Lisp
   private static final Primitive QUIT =
     new Primitive("quit", PACKAGE_EXT, true, "&key status")
     {
+      @Override
       public LispObject execute() throws ConditionThrowable
       {
         exit(0);
         return LispThread.currentThread().nothing();
       }
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -212,6 +225,7 @@ public final class Extensions extends Lisp
   private static final Primitive DUMP_JAVA_STACK =
     new Primitive("dump-java-stack", PACKAGE_EXT, true)
     {
+      @Override
       public LispObject execute() throws ConditionThrowable
       {
         Thread.dumpStack();
@@ -223,6 +237,7 @@ public final class Extensions extends Lisp
   private static final Primitive MAKE_TEMP_FILE =
     new Primitive("make-temp-file", PACKAGE_EXT, true, "")
     {
+      @Override
       public LispObject execute() throws ConditionThrowable
       {
         try
@@ -243,6 +258,7 @@ public final class Extensions extends Lisp
   private static final Primitive INTERRUPT_LISP =
     new Primitive("interrupt-lisp", PACKAGE_EXT, true, "")
     {
+      @Override
       public LispObject execute() throws ConditionThrowable
       {
         setInterrupted(true);
@@ -254,6 +270,7 @@ public final class Extensions extends Lisp
   private static final Primitive GETENV =
       new Primitive("getenv", PACKAGE_EXT, true)
   {
+    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
       AbstractString string;

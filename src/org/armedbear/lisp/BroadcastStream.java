@@ -59,16 +59,19 @@ public final class BroadcastStream extends Stream
         return streams;
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.BROADCAST_STREAM;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.BROADCAST_STREAM;
     }
 
+    @Override
     public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
     {
         if (typeSpecifier == Symbol.BROADCAST_STREAM)
@@ -78,6 +81,7 @@ public final class BroadcastStream extends Stream
         return super.typep(typeSpecifier);
     }
 
+    @Override
     public LispObject listen() throws ConditionThrowable
     {
         notSupported();
@@ -85,6 +89,7 @@ public final class BroadcastStream extends Stream
         return NIL;
     }
 
+    @Override
     public LispObject fileLength() throws ConditionThrowable
     {
         if (streams.length > 0)
@@ -93,6 +98,7 @@ public final class BroadcastStream extends Stream
             return Fixnum.ZERO;
     }
 
+    @Override
     public LispObject fileStringLength(LispObject arg) throws ConditionThrowable
     {
         if (streams.length > 0)
@@ -102,6 +108,7 @@ public final class BroadcastStream extends Stream
     }
 
     // Returns -1 at end of file.
+    @Override
     protected int _readChar() throws ConditionThrowable
     {
         notSupported();
@@ -109,11 +116,13 @@ public final class BroadcastStream extends Stream
         return -1;
     }
 
+    @Override
     protected void _unreadChar(int n) throws ConditionThrowable
     {
         notSupported();
     }
 
+    @Override
     protected boolean _charReady() throws ConditionThrowable
     {
         notSupported();
@@ -121,12 +130,14 @@ public final class BroadcastStream extends Stream
         return false;
     }
 
+    @Override
     public void _writeChar(char c) throws ConditionThrowable
     {
         for (int i = 0; i < streams.length; i++)
             streams[i]._writeChar(c);
     }
 
+    @Override
     public void _writeChars(char[] chars, int start, int end)
         throws ConditionThrowable
     {
@@ -134,12 +145,14 @@ public final class BroadcastStream extends Stream
             streams[i]._writeChars(chars, start, end);
     }
 
+    @Override
     public void _writeString(String s) throws ConditionThrowable
     {
         for (int i = 0; i < streams.length; i++)
             streams[i]._writeString(s);
     }
 
+    @Override
     public void _writeLine(String s) throws ConditionThrowable
     {
         for (int i = 0; i < streams.length; i++)
@@ -147,6 +160,7 @@ public final class BroadcastStream extends Stream
     }
 
     // Reads an 8-bit byte.
+    @Override
     public int _readByte() throws ConditionThrowable
     {
         notSupported();
@@ -155,23 +169,27 @@ public final class BroadcastStream extends Stream
     }
 
     // Writes an 8-bit byte.
+    @Override
     public void _writeByte(int n) throws ConditionThrowable
     {
         for (int i = 0; i < streams.length; i++)
             streams[i]._writeByte(n);
     }
 
+    @Override
     public void _finishOutput() throws ConditionThrowable
     {
         for (int i = 0; i < streams.length; i++)
             streams[i]._finishOutput();
     }
 
+    @Override
     public void _clearInput() throws ConditionThrowable
     {
         notSupported();
     }
 
+    @Override
     protected long _getFilePosition() throws ConditionThrowable
     {
         if (streams.length == 0)
@@ -180,11 +198,13 @@ public final class BroadcastStream extends Stream
             return streams[streams.length-1]._getFilePosition();
     }
 
+    @Override
     protected boolean _setFilePosition(LispObject arg) throws ConditionThrowable
     {
         return false;
     }
 
+    @Override
     public void _close() throws ConditionThrowable
     {
         setOpen(false);
@@ -195,6 +215,7 @@ public final class BroadcastStream extends Stream
         error(new TypeError("Operation is not supported for streams of type BROADCAST-STREAM."));
     }
 
+    @Override
     public String writeToString()
     {
         return unreadableString("BROADCAST-STREAM");
@@ -204,10 +225,12 @@ public final class BroadcastStream extends Stream
     private static final Primitive MAKE_BROADCAST_STREAM =
         new Primitive("make-broadcast-stream", "&rest streams")
     {
+        @Override
         public LispObject execute() throws ConditionThrowable
         {
             return new BroadcastStream(new Stream[0]);
         }
+        @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             Stream[] streams = new Stream[args.length];
@@ -231,6 +254,7 @@ public final class BroadcastStream extends Stream
     private static final Primitive BROADCAST_STREAM_STREAMS =
         new Primitive("broadcast-stream-streams", "broadcast-stream")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             try {

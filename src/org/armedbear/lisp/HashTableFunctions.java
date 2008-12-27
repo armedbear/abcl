@@ -48,6 +48,7 @@ public final class HashTableFunctions extends Lisp
   private static final Primitive _MAKE_HASH_TABLE =
     new Primitive("%make-hash-table", PACKAGE_SYS, false)
     {
+      @Override
       public LispObject execute(LispObject test, LispObject size,
                                 LispObject rehashSize, LispObject rehashThreshold)
         throws ConditionThrowable
@@ -78,6 +79,7 @@ public final class HashTableFunctions extends Lisp
   private static final Primitive GETHASH =
     new Primitive(Symbol.GETHASH, "key hash-table &optional default")
     {
+      @Override
       public LispObject execute(LispObject key, LispObject ht)
         throws ConditionThrowable
       {
@@ -90,6 +92,7 @@ public final class HashTableFunctions extends Lisp
             return type_error(ht, Symbol.HASH_TABLE);
           }
       }
+      @Override
       public LispObject execute(LispObject key, LispObject ht,
                                 LispObject defaultValue)
         throws ConditionThrowable
@@ -109,6 +112,7 @@ public final class HashTableFunctions extends Lisp
   private static final Primitive GETHASH1 =
     new Primitive(Symbol.GETHASH1, "key hash-table")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
@@ -134,6 +138,7 @@ public final class HashTableFunctions extends Lisp
     new Primitive(Symbol.PUTHASH,
                   "key hash-table new-value &optional default")
     {
+      @Override
       public LispObject execute(LispObject key, LispObject ht,
                                 LispObject value)
         throws ConditionThrowable
@@ -147,6 +152,7 @@ public final class HashTableFunctions extends Lisp
             return type_error(ht, Symbol.HASH_TABLE);
           }
       }
+      @Override
       public LispObject execute(LispObject key, LispObject ht,
                                 LispObject ignored, LispObject value)
         throws ConditionThrowable
@@ -166,6 +172,7 @@ public final class HashTableFunctions extends Lisp
   private static final Primitive REMHASH =
     new Primitive(Symbol.REMHASH, "key hash-table")
     {
+      @Override
       public LispObject execute(LispObject key, LispObject ht)
         throws ConditionThrowable
       {
@@ -184,6 +191,7 @@ public final class HashTableFunctions extends Lisp
   private static final Primitive CLRHASH =
     new Primitive(Symbol.CLRHASH, "hash-table")
     {
+      @Override
       public LispObject execute(LispObject ht) throws ConditionThrowable
       {
         try
@@ -202,6 +210,7 @@ public final class HashTableFunctions extends Lisp
   private static final Primitive HASH_TABLE_COUNT =
     new Primitive(Symbol.HASH_TABLE_COUNT, "hash-table")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -219,6 +228,7 @@ public final class HashTableFunctions extends Lisp
   private static final Primitive SXHASH =
     new Primitive(Symbol.SXHASH, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return new Fixnum(arg.sxhash());
@@ -230,6 +240,7 @@ public final class HashTableFunctions extends Lisp
   private static final Primitive PSXHASH =
     new Primitive("psxhash", PACKAGE_SYS, true, "object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return new Fixnum(arg.psxhash());
@@ -240,6 +251,7 @@ public final class HashTableFunctions extends Lisp
   private static final Primitive HASH_TABLE_P =
     new Primitive(Symbol.HASH_TABLE_P,"object")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         return arg instanceof HashTable ? T : NIL;
@@ -250,6 +262,7 @@ public final class HashTableFunctions extends Lisp
   private static final Primitive HASH_TABLE_ENTRIES =
     new Primitive("hash-table-entries", PACKAGE_SYS, false)
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -267,6 +280,7 @@ public final class HashTableFunctions extends Lisp
   private static final Primitive HASH_TABLE_TEST =
     new Primitive(Symbol.HASH_TABLE_TEST, "hash-table")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -284,6 +298,7 @@ public final class HashTableFunctions extends Lisp
   private static final Primitive HASH_TABLE_SIZE =
     new Primitive(Symbol.HASH_TABLE_SIZE, "hash-table")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -301,6 +316,7 @@ public final class HashTableFunctions extends Lisp
   private static final Primitive HASH_TABLE_REHASH_SIZE =
     new Primitive(Symbol.HASH_TABLE_REHASH_SIZE, "hash-table")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -318,6 +334,7 @@ public final class HashTableFunctions extends Lisp
   private static final Primitive HASH_TABLE_REHASH_THRESHOLD =
     new Primitive(Symbol.HASH_TABLE_REHASH_THRESHOLD, "hash-table")
     {
+      @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         try
@@ -335,6 +352,7 @@ public final class HashTableFunctions extends Lisp
   private static final Primitive MAPHASH =
     new Primitive(Symbol.MAPHASH, "function hash-table")
     {
+      @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
