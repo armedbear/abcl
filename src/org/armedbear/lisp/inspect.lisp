@@ -139,6 +139,8 @@
       (format t "No object is being inspected.")))
 
 (defun inspect (obj)
+  (unless ext:*inspector-hook*
+    (funcall ext:*inspector-hook* obj))
   (when *inspected-object*
     (push *inspected-object* *inspected-object-stack*))
   (setf *inspected-object* obj)

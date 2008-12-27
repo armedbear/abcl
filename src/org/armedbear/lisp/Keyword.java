@@ -144,5 +144,6 @@ public final class Keyword extends Lisp
         WILD_INFERIORS      = internKeyword("WILD-INFERIORS"),
         WINDOWS             = internKeyword("WINDOWS"),
         X86                 = internKeyword("X86"),
-        X86_64              = internKeyword("X86-64");
+        X86_64              = internKeyword("X86-64"),
+        CDR6                = internKeyword("CDR6");
 }

@@ -3010,4 +3010,9 @@ public class Symbol extends LispObject
     PACKAGE_SYS.addInternalSymbol("STRING-INPUT-STREAM");
   public static final Symbol STRING_OUTPUT_STREAM =
     PACKAGE_SYS.addInternalSymbol("STRING-OUTPUT-STREAM");
+
+  // CDR6
+  public static final Symbol _INSPECTOR_HOOK_ =
+    PACKAGE_EXT.addExternalSymbol("*INSPECTOR-HOOK*");
+
 }

@@ -2120,54 +2120,60 @@ public abstract class Lisp
     String osName = System.getProperty("os.name");
     if (osName.startsWith("Linux"))
       {
-        Symbol.FEATURES.setSymbolValue(list6(Keyword.ARMEDBEAR,
+        Symbol.FEATURES.setSymbolValue(list7(Keyword.ARMEDBEAR,
                                              Keyword.ABCL,
                                              Keyword.COMMON_LISP,
                                              Keyword.ANSI_CL,
                                              Keyword.UNIX,
-                                             Keyword.LINUX));
+                                             Keyword.LINUX,
+                                             Keyword.CDR6));
       }
     else if (osName.startsWith("SunOS"))
       {
-        Symbol.FEATURES.setSymbolValue(list6(Keyword.ARMEDBEAR,
+        Symbol.FEATURES.setSymbolValue(list7(Keyword.ARMEDBEAR,
                                              Keyword.ABCL,
                                              Keyword.COMMON_LISP,
                                              Keyword.ANSI_CL,
                                              Keyword.UNIX,
-                                             Keyword.SUNOS));
+                                             Keyword.SUNOS,
+                                             Keyword.CDR6));
       }
     else if (osName.startsWith("Mac OS X"))
       {
-        Symbol.FEATURES.setSymbolValue(list6(Keyword.ARMEDBEAR,
+        Symbol.FEATURES.setSymbolValue(list7(Keyword.ARMEDBEAR,
                                              Keyword.ABCL,
                                              Keyword.COMMON_LISP,
                                              Keyword.ANSI_CL,
                                              Keyword.UNIX,
-                                             Keyword.DARWIN));
+                                             Keyword.DARWIN,
+                                             Keyword.CDR6));
       }
     else if (osName.startsWith("FreeBSD"))
+      {
+        Symbol.FEATURES.setSymbolValue(list7(Keyword.ARMEDBEAR,
+                                             Keyword.ABCL,
+                                             Keyword.COMMON_LISP,
+                                             Keyword.ANSI_CL,
+                                             Keyword.UNIX,
+                                             Keyword.FREEBSD,
+                                             Keyword.CDR6));
+      }
+    else if (osName.startsWith("Windows"))
       {
         Symbol.FEATURES.setSymbolValue(list6(Keyword.ARMEDBEAR,
                                              Keyword.ABCL,
                                              Keyword.COMMON_LISP,
                                              Keyword.ANSI_CL,
-                                             Keyword.UNIX,
-                                             Keyword.FREEBSD));
+                                             Keyword.WINDOWS,
+                                             Keyword.CDR6));
       }
-    else if (osName.startsWith("Windows"))
+    else
       {
         Symbol.FEATURES.setSymbolValue(list5(Keyword.ARMEDBEAR,
                                              Keyword.ABCL,
                                              Keyword.COMMON_LISP,
                                              Keyword.ANSI_CL,
-                                             Keyword.WINDOWS));
-      }
-    else
-      {
-        Symbol.FEATURES.setSymbolValue(list4(Keyword.ARMEDBEAR,
-                                             Keyword.ABCL,
-                                             Keyword.COMMON_LISP,
-                                             Keyword.ANSI_CL));
+                                             Keyword.CDR6));
       }
   }
   static
@@ -2521,6 +2527,12 @@ public abstract class Lisp
   // Floating point traps.
   protected static boolean TRAP_OVERFLOW  = true;
   protected static boolean TRAP_UNDERFLOW = true;
+
+
+  // Extentions
+  static {
+    Symbol._INSPECTOR_HOOK_.initializeSpecial(NIL);
+  }
 
   private static final void loadClass(String className)
   {
