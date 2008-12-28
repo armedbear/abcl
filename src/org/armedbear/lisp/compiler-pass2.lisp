@@ -468,6 +468,10 @@ Special variables are not considered local."
         (emit-push-constant-int (variable-index variable))
         (emit 'aaload))))
 
+(defun emit-push-variable-name (variable)
+  (emit 'getstatic *this-class* (declare-symbol (variable-name variable))
+        +lisp-symbol+))
+
 (defknown generate-instanceof-type-check-for-variable (t t) t)
 (defun generate-instanceof-type-check-for-variable (variable expected-type)
   "Generate a type check for `variable'.
@@ -3799,8 +3803,7 @@ Note: DEFUN implies a named lambda."
         ((variable-special-p variable)
          (emit-push-current-thread)
          (emit 'swap)
-         (emit 'getstatic *this-class*
-               (declare-symbol (variable-name variable)) +lisp-symbol+)
+         (emit-push-variable-name variable)
          (emit 'swap)
          (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
                              (list +lisp-symbol+ +lisp-object+) nil))
@@ -4087,8 +4090,7 @@ Note: DEFUN implies a named lambda."
                       (eq initform (variable-name variable)))
                  ;; The special case of binding a special to its current value.
                  (emit-push-current-thread)
-                 (emit 'getstatic *this-class*
-                       (declare-symbol (variable-name variable)) +lisp-symbol+)
+                 (emit-push-variable-name variable)
                  (emit-invokevirtual +lisp-thread-class+
                                      "bindSpecialToCurrentValue"
                                      (list +lisp-symbol+)
@@ -8671,17 +8673,14 @@ Note: DEFUN implies a named lambda."
       (when (variable-special-p variable)
         (cond ((variable-register variable)
                (emit-push-current-thread)
-               (emit 'getstatic *this-class*
-                     (declare-symbol (variable-name variable))
-                     +lisp-symbol+)
+               (emit-push-variable-name variable)
                (emit 'aload (variable-register variable))
                (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
                                    (list +lisp-symbol+ +lisp-object+) nil)
                (setf (variable-register variable) nil))
               ((variable-index variable)
                (emit-push-current-thread)
-               (emit 'getstatic *this-class*
-                     (declare-symbol (variable-name variable)) +lisp-symbol+)
+               (emit-push-variable-name variable)
                (emit 'aload (compiland-argument-register compiland))
                (emit-push-constant-int (variable-index variable))
                (emit 'aaload)
