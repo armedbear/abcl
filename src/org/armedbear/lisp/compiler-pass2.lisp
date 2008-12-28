@@ -473,10 +473,10 @@ before the emitted code: the code is 'stack-neutral'."
                                           (t
                                            (symbol-name expected-type))))
         (LABEL1 (gensym)))
-    (emit-load-variable variable)
+    (emit-load-local-variable variable)
     (emit 'instanceof instanceof-class)
     (emit 'ifne LABEL1)
-    (emit-load-variable variable)
+    (emit-load-local-variable variable)
     (emit 'getstatic +lisp-symbol-class+ expected-type-java-symbol-name
           +lisp-symbol+)
     (emit-invokestatic +lisp-class+ "type_error"
