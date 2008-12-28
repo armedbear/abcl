@@ -35,9 +35,9 @@ exception statement from your version.
 BUILDING
 ========
 
-If you want to build ABCL, you have 2 options. The first option
-applies when you come from a lisp background. The second option is more
-appropriate when you come from Java development:
+If you want to build ABCL, you have 3 options. The first option
+applies when you come from a lisp background. The second and thirds
+options are more appropriate when you come from Java development:
 
  I)  Bootstrap ABCL using a Common Lisp implementation
      Supported implementations for this process: SBCL, CMUCL, OpenMCL,
