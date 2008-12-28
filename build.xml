@@ -82,9 +82,13 @@
 	<arg value="(progn (format t (lisp-implementation-version)) (finish-output) (quit))"/>
       </java>
 
+      <exec command="svn info | grep Revision: | awk '{print $2}'"
+	    outputproperty="abcl.svn.common-lisp.net"/>
+
       <echo>Building ABCL version: ${abcl.version}</echo>
       <mkdir dir="${abcl.version.path}/.."/>
       <echo message="${abcl.version}" file="${abcl.version.path}"/> 
+      <echo message="built from ${abcl.svn.common-lisp.net}"/>
     </target>
 
     <target name="abcl.stamp.hostname">
@@ -290,6 +294,8 @@
 	    <attribute name="Implementation-Version"  
 		       value="${abcl.version}"/>
 	    <attribute name="Implementation-Build" 
+		       value="${build}"/>
+	    <attribute name="Build-Version" 
 		       value="${build}"/>
 	  </section>
 	</manifest>
