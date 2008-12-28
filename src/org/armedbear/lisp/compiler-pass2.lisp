@@ -7889,7 +7889,7 @@ Note: DEFUN implies a named lambda."
                             (CONS       +lisp-cons-class+)
                             (HASH-TABLE +lisp-hash-table-class+)
                             (FIXNUM     +lisp-fixnum-class+)
-			    (STREAM     +lisp-abstract-stream-class+)
+			    (STREAM     +lisp-stream-class+)
                             (STRING     +lisp-abstract-string-class+)
                             (VECTOR     +lisp-abstract-vector-class+)))
         (expected-type-java-symbol-name (case expected-type
