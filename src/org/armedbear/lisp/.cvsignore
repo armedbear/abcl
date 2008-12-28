@@ -1,7 +1,0 @@
-*.abcl
-*.cls
-*.class
-build
-lisp
-native.h
-Makefile
