@@ -281,9 +281,27 @@
 
 (defknown emit-push-constant-int (fixnum) t)
 (defun emit-push-constant-int (n)
-  (if (<= -32768 n 32767)
-      (emit 'sipush n)
-      (emit 'ldc (pool-int n))))
+  (case n
+    (-1
+     (emit 'iconst_m1))
+    (0
+     (emit 'iconst_0))
+    (1
+     (emit 'iconst_1))
+    (2
+     (emit 'iconst_2))
+    (3
+     (emit 'iconst_3))
+    (4
+     (emit 'iconst_4))
+    (5
+     (emit 'iconst_5))
+    (t
+     (if (<= -128 n 127)
+         (emit 'bipush n)
+         (if (<= -32768 n 32767)
+             (emit 'sipush n)
+             (emit 'ldc (pool-int n)))))))
 
 (defknown emit-push-constant-long (integer) t)
 (defun emit-push-constant-long (n)
@@ -527,7 +545,7 @@ before the emitted code: the code is 'stack-neutral'."
   (let ((label1 (gensym)))
     (emit 'aload (compiland-argument-register *current-compiland*))
     (emit 'arraylength)
-    (emit 'bipush arity)
+    (emit-push-constant-int arity)
     (emit 'if_icmpeq `,label1)
     (emit 'aload 0) ; this
     (emit-invokevirtual *this-class* "argCountError" nil nil)
@@ -1188,7 +1206,7 @@ representation, based on the derived type of the LispObject."
                   (aver (not (null (compiland-closure-register *current-compiland*))))
                   (emit 'aload (compiland-closure-register *current-compiland*))
                   (emit 'swap) ; array value
-                  (emit 'bipush (variable-closure-index variable))
+                  (emit-push-constant-int (variable-closure-index variable))
                   (emit 'swap) ; array index value
                   (emit 'aastore))
                  (t
@@ -1196,7 +1214,7 @@ representation, based on the derived type of the LispObject."
                   (aver (not (null (compiland-argument-register *current-compiland*))))
                   (emit 'aload (compiland-argument-register *current-compiland*)) ; Stack: value array
                   (emit 'swap) ; array value
-                  (emit 'bipush (variable-index variable)) ; array value index
+                  (emit-push-constant-int (variable-index variable)) ; array value index
                   (emit 'swap) ; array index value
                   (emit 'aastore)))))
         (t
@@ -1906,28 +1924,12 @@ representation, based on the derived type of the LispObject."
         (declare-field g +lisp-fixnum+)
         (cond ((<= 0 n 255)
                (emit 'getstatic +lisp-fixnum-class+ "constants" +lisp-fixnum-array+)
-               (emit 'sipush n)
+               (emit-push-constant-int n)
                (emit 'aaload))
               (t
                (emit 'new +lisp-fixnum-class+)
                (emit 'dup)
-               (case n
-                 (-1
-                  (emit 'iconst_m1))
-                 (0
-                  (emit 'iconst_0))
-                 (1
-                  (emit 'iconst_1))
-                 (2
-                  (emit 'iconst_2))
-                 (3
-                  (emit 'iconst_3))
-                 (4
-                  (emit 'iconst_4))
-                 (5
-                  (emit 'iconst_5))
-                 (t
-                  (emit-push-constant-int n)))
+               (emit-push-constant-int n)
                (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
         (emit 'putstatic *this-class* g +lisp-fixnum+)
         (setf *static-code* *code*)
@@ -1961,7 +1963,7 @@ representation, based on the derived type of the LispObject."
                (emit 'new +lisp-bignum-class+)
                (emit 'dup)
                (emit 'ldc (pool-string s))
-               (emit 'bipush 10)
+               (emit-push-constant-int 10)
                (emit-invokespecial-init +lisp-bignum-class+ (list +java-string+ "I"))
                (emit 'putstatic *this-class* g +lisp-bignum+)
                (setf *static-code* *code*))))
@@ -1976,7 +1978,7 @@ representation, based on the derived type of the LispObject."
     (declare-field g +lisp-character+)
     (cond ((<= 0 n 255)
            (emit 'getstatic +lisp-character-class+ "constants" +lisp-character-array+)
-           (emit 'sipush n)
+           (emit-push-constant-int n)
            (emit 'aaload))
           (t
            (emit 'new +lisp-character-class+)
@@ -2627,12 +2629,12 @@ itself is *not* compiled by this function."
                    (unless (single-valued-p arg)
                      (setf must-clear-values t)))))
               (t
-               (emit 'sipush numargs)
+               (emit-push-constant-int numargs)
                (emit 'anewarray +lisp-object-class+)
                (let ((i 0))
                  (dolist (arg args)
                    (emit 'dup)
-                   (emit 'sipush i)
+                   (emit-push-constant-int i)
                    (compile-form arg 'stack nil)
                    (emit 'aastore) ; store value in array
                    (unless must-clear-values
@@ -3886,7 +3888,7 @@ Note: DEFUN implies a named lambda."
              ;; the slow path if we have more variables than values.
              (emit 'aload values-register)
              (emit 'arraylength)
-             (emit 'bipush (length vars))
+             (emit-push-constant-int (length vars))
              (emit 'if_icmplt LABEL1)
              ;; Reaching here, we have enough values for all the variables. We can use
              ;; the values we have. This is the fast path.
@@ -3895,7 +3897,7 @@ Note: DEFUN implies a named lambda."
              (label LABEL1)
              (emit-push-current-thread)
              (emit 'aload result-register)
-             (emit 'bipush (length vars))
+             (emit-push-constant-int (length vars))
              (emit-invokevirtual +lisp-thread-class+ "getValues"
                                  (list +lisp-object+ "I") +lisp-object-array+)
              ;; Values array is now on the stack at runtime.
@@ -3904,7 +3906,7 @@ Note: DEFUN implies a named lambda."
                (dolist (variable variables)
                  (when (< index (1- (length vars)))
                    (emit 'dup))
-                 (emit 'bipush index)
+                 (emit-push-constant-int index)
                  (incf index)
                  (emit 'aaload)
                  ;; Value is on the runtime stack at this point.
@@ -7236,13 +7238,13 @@ Note: DEFUN implies a named lambda."
               (emit-invokevirtual +lisp-object-class+ "getSlotValue_3"
                                   nil +lisp-object+))
              (t
-              (emit 'sipush arg2)
+              (emit-push-constant-int arg2)
               (emit-invokevirtual +lisp-object-class+ "getSlotValue"
                                   '("I") +lisp-object+)))
            (emit-move-from-stack target representation))
           ((fixnump arg2)
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
-           (emit 'sipush arg2)
+           (emit-push-constant-int arg2)
            (case representation
              (:int
               (emit-invokevirtual +lisp-object-class+ "getFixnumSlotValue"
@@ -7295,7 +7297,7 @@ Note: DEFUN implies a named lambda."
           (let* ((*register* *register*)
                  (value-register (when target (allocate-register))))
             (compile-form arg1 'stack nil)
-            (emit 'sipush arg2)
+            (emit-push-constant-int arg2)
             (compile-form arg3 'stack nil)
             (maybe-emit-clear-values arg1 arg3)
             (when value-register
@@ -8652,7 +8654,7 @@ Note: DEFUN implies a named lambda."
           (when (variable-reserved-register variable)
             (aver (not (variable-special-p variable)))
             (emit 'aload (compiland-argument-register compiland))
-            (emit 'bipush (variable-index variable))
+            (emit-push-constant-int (variable-index variable))
             (emit 'aaload)
             (emit 'astore (variable-reserved-register variable))
             (setf (variable-register variable) (variable-reserved-register variable))
@@ -8681,7 +8683,7 @@ Note: DEFUN implies a named lambda."
                (emit 'getstatic *this-class*
                      (declare-symbol (variable-name variable)) +lisp-symbol+)
                (emit 'aload (compiland-argument-register compiland))
-               (emit 'bipush (variable-index variable))
+               (emit-push-constant-int (variable-index variable))
                (emit 'aaload)
                (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
                                    (list +lisp-symbol+ +lisp-object+) nil)
