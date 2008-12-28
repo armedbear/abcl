@@ -433,9 +433,32 @@
   (ensure-thread-var-initialized)
   (emit 'aload *thread*))
 
+(defun local-variable-p (variable)
+  "Return non-NIL if `variable' is a local variable.
+
+Special variables are not considered local."
+  (or (variable-register variable) ;; either register or index
+      (variable-index variable)))  ;; is non-nil for local variables
+
+(defun emit-load-local-variable (variable)
+  "Loads a local variable in the top stack position."
+  (aver (local-variable-p variable))
+  (if (variable-register variable)
+      (emit 'aload (variable-register variable))
+      (progn
+        (emit 'aload (compiland-argument-register *current-compiland*))
+        (emit-push-constant-int (variable-index variable))
+        (emit 'aaload))))
+
 (defknown generate-instanceof-type-check-for-variable (t t) t)
 (defun generate-instanceof-type-check-for-variable (variable expected-type)
+  "Generate a type check for `variable'.
+
+The stack pointer is returned to the position from
+before the emitted code: the code is 'stack-neutral'."
   (declare (type symbol expected-type))
+  (unless (local-variable-p variable)
+    (return-from generate-instanceof-type-check-for-variable))
   (let ((instanceof-class (ecase expected-type
                             (SYMBOL     +lisp-symbol-class+)
                             (CHARACTER  +lisp-character-class+)
@@ -449,28 +472,13 @@
                                           (HASH-TABLE "HASH_TABLE")
                                           (t
                                            (symbol-name expected-type))))
-        (LABEL1 (gensym))
-        register
-        index)
-    (cond ((setf register (variable-register variable))
-           (emit 'aload register)
-           (emit 'instanceof instanceof-class)
-           (emit 'ifne LABEL1)
-           (emit 'aload register)) ; datum
-          ((setf index (variable-index variable))
-           (let ((argument-register (compiland-argument-register *current-compiland*)))
-             (aver (not (null argument-register)))
-             (emit 'aload argument-register)
-             (emit-push-constant-int index)
-             (emit 'aaload)
-             (emit 'instanceof instanceof-class)
-             (emit 'ifne LABEL1)
-             (emit 'aload argument-register)
-             (emit-push-constant-int index)
-             (emit 'aaload))) ; datum
-          (t
-           (return-from generate-instanceof-type-check-for-variable)))
-    (emit 'getstatic +lisp-symbol-class+ expected-type-java-symbol-name +lisp-symbol+)
+        (LABEL1 (gensym)))
+    (emit-load-variable variable)
+    (emit 'instanceof instanceof-class)
+    (emit 'ifne LABEL1)
+    (emit-load-variable variable)
+    (emit 'getstatic +lisp-symbol-class+ expected-type-java-symbol-name
+          +lisp-symbol+)
     (emit-invokestatic +lisp-class+ "type_error"
                        (lisp-object-arg-types 2) +lisp-object+)
     (emit 'pop) ; Needed for JVM stack consistency.
