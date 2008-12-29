@@ -251,6 +251,24 @@
   (emit 'label symbol)
   (setf (symbol-value symbol) nil))
 
+(defknown aload (fixnum) t)
+(defun aload (index)
+  (case index
+    (0 (emit 'aload_0))
+    (1 (emit 'aload_1))
+    (2 (emit 'aload_2))
+    (3 (emit 'aload_3))
+    (t (emit 'aload index))))
+
+(defknown astore (fixnum) t)
+(defun astore (index)
+  (case index
+    (0 (emit 'astore_0))
+    (1 (emit 'astore_1))
+    (2 (emit 'astore_2))
+    (3 (emit 'astore_3))
+    (t (emit 'astore index))))
+
 (defknown emit-push-nil () t)
 (declaim (inline emit-push-nil))
 (defun emit-push-nil ()
@@ -437,7 +455,7 @@
 (defun maybe-initialize-thread-var ()
   (when *initialize-thread-var*
     (emit-invokestatic +lisp-thread-class+ "currentThread" nil +lisp-thread+)
-    (emit 'astore *thread*)
+    (astore *thread*)
     (setf *initialize-thread-var* nil)))
 
 (defknown ensure-thread-var-initialized () t)
@@ -449,7 +467,7 @@
 (defun emit-push-current-thread ()
   (declare (optimize speed))
   (ensure-thread-var-initialized)
-  (emit 'aload *thread*))
+  (aload *thread*))
 
 (defun local-variable-p (variable)
   "Return non-NIL if `variable' is a local variable.
@@ -462,9 +480,9 @@ Special variables are not considered local."
   "Loads a local variable in the top stack position."
   (aver (local-variable-p variable))
   (if (variable-register variable)
-      (emit 'aload (variable-register variable))
+      (aload (variable-register variable))
       (progn
-        (emit 'aload (compiland-argument-register *current-compiland*))
+        (aload (compiland-argument-register *current-compiland*))
         (emit-push-constant-int (variable-index variable))
         (emit 'aaload))))
 
@@ -547,11 +565,11 @@ before the emitted code: the code is 'stack-neutral'."
   (aver (not (minusp arity)))
   (aver (not (null (compiland-argument-register *current-compiland*))))
   (let ((label1 (gensym)))
-    (emit 'aload (compiland-argument-register *current-compiland*))
+    (aload (compiland-argument-register *current-compiland*))
     (emit 'arraylength)
     (emit-push-constant-int arity)
     (emit 'if_icmpeq `,label1)
-    (emit 'aload 0) ; this
+    (aload 0) ; this
     (emit-invokevirtual *this-class* "argCountError" nil nil)
     (emit 'label `,label1)))
 
@@ -1204,11 +1222,11 @@ representation, based on the derived type of the LispObject."
            (aver (not (variable-special-p variable)))
            (cond ((variable-register variable)
                   (dformat t "register = ~S~%" (variable-register variable))
-                  (emit 'astore (variable-register variable)))
+                  (astore (variable-register variable)))
                  ((variable-closure-index variable)
                   (dformat t "closure-index = ~S~%" (variable-closure-index variable))
                   (aver (not (null (compiland-closure-register *current-compiland*))))
-                  (emit 'aload (compiland-closure-register *current-compiland*))
+                  (aload (compiland-closure-register *current-compiland*))
                   (emit 'swap) ; array value
                   (emit-push-constant-int (variable-closure-index variable))
                   (emit 'swap) ; array index value
@@ -1216,7 +1234,7 @@ representation, based on the derived type of the LispObject."
                  (t
                   (dformat t "var-set fall-through case~%")
                   (aver (not (null (compiland-argument-register *current-compiland*))))
-                  (emit 'aload (compiland-argument-register *current-compiland*)) ; Stack: value array
+                  (aload (compiland-argument-register *current-compiland*)) ; Stack: value array
                   (emit 'swap) ; array value
                   (emit-push-constant-int (variable-index variable)) ; array value index
                   (emit 'swap) ; array index value
@@ -1650,7 +1668,7 @@ representation, based on the derived type of the LispObject."
     (setf (method-name-index constructor) (pool-name (method-name constructor)))
     (setf (method-descriptor-index constructor) (pool-name (method-descriptor constructor)))
     (setf (method-max-locals constructor) 1)
-    (emit 'aload_0) ;; this
+    (aload 0) ;; this
     (cond ((equal super +lisp-compiled-function-class+)
            (emit-constructor-lambda-name lambda-name)
            (emit-constructor-lambda-list args)
@@ -2709,7 +2727,7 @@ itself is *not* compiled by this function."
       (cond ((eq op (compiland-name *current-compiland*)) ; recursive call
              (if (notinline-p op)
                  (emit 'getstatic *this-class* (declare-symbol op) +lisp-symbol+)
-                 (emit 'aload 0)))
+                 (aload 0)))
             ((null (symbol-package op))
              (let ((g (if *compile-file-truename*
                           (declare-object-as-string op)
@@ -2842,10 +2860,10 @@ is registered (or not)."
     (dolist (variable variables)
       (when (variable-closure-index variable)
         (let ((register (allocate-register)))
-          (emit 'aload (compiland-closure-register *current-compiland*))
+          (aload (compiland-closure-register *current-compiland*))
           (emit-push-constant-int (variable-closure-index variable))
           (emit 'aaload)
-          (emit 'astore register)
+          (astore register)
           (push (cons variable register) saved-vars))))
     saved-vars))
 
@@ -2853,9 +2871,9 @@ is registered (or not)."
   (dolist (saved-var saved-vars)
     (let ((variable (car saved-var))
           (register (cdr saved-var)))
-      (emit 'aload (compiland-closure-register *current-compiland*))
+      (aload (compiland-closure-register *current-compiland*))
       (emit-push-constant-int (variable-closure-index variable))
-      (emit 'aload register)
+      (aload register)
       (emit 'aastore))))
 
 (defknown compile-local-function-call (t t t) t)
@@ -2889,7 +2907,7 @@ Note: DEFUN implies a named lambda."
              (emit 'getstatic *this-class* g +lisp-object+) ; Stack: template-function
              (when *closure-variables*
                (emit 'checkcast +lisp-ctf-class+)
-               (emit 'aload (compiland-closure-register compiland))
+               (aload (compiland-closure-register compiland))
                (emit-invokestatic +lisp-class+ "makeCompiledClosure"
                                   (list +lisp-object+ +lisp-object-array+)
                                   +lisp-object+)))))
@@ -3692,15 +3710,15 @@ Note: DEFUN implies a named lambda."
     ;; Save multiple values returned by first subform.
     (emit-push-current-thread)
     (emit 'getfield +lisp-thread-class+ "_values" "[Lorg/armedbear/lisp/LispObject;")
-    (emit 'astore values-register)
+    (astore values-register)
     (dolist (subform subforms)
       (compile-form subform nil nil))
     ;; Restore multiple values returned by first subform.
     (emit-push-current-thread)
-    (emit 'aload values-register)
+    (aload values-register)
     (emit 'putfield +lisp-thread-class+ "_values" "[Lorg/armedbear/lisp/LispObject;")
     ;; Result.
-    (emit 'aload result-register)
+    (aload result-register)
     (fix-boxing representation nil)
     (emit-move-from-stack target)))
 
@@ -3720,7 +3738,7 @@ Note: DEFUN implies a named lambda."
             (function-register (allocate-register)))
        (compile-form (second form) function-register nil)
        (compile-form (third form) 'stack nil)
-       (emit 'aload function-register)
+       (aload function-register)
        (emit-push-current-thread)
        (emit-invokestatic +lisp-class+ "multipleValueCall1"
                           (list +lisp-object+ +lisp-object+ +lisp-thread+)
@@ -3735,19 +3753,19 @@ Note: DEFUN implies a named lambda."
                           (lisp-object-arg-types 1) +lisp-object+)
        (emit-move-from-stack function-register)
        (emit 'aconst_null)
-       (emit 'astore values-register)
+       (astore values-register)
        (dolist (values-form (cddr form))
          (compile-form values-form 'stack nil)
          (emit-push-current-thread)
          (emit 'swap)
-         (emit 'aload values-register)
+         (aload values-register)
          (emit-invokevirtual +lisp-thread-class+ "accumulateValues"
                              (list +lisp-object+ +lisp-object-array+)
                              +lisp-object-array+)
-         (emit 'astore values-register)
+         (astore values-register)
          (maybe-emit-clear-values values-form))
-       (emit 'aload function-register)
-       (emit 'aload values-register)
+       (aload function-register)
+       (aload values-register)
        (emit-invokevirtual +lisp-object-class+ "dispatch"
                            (list +lisp-object-array+) +lisp-object+))))
   (fix-boxing representation nil)
@@ -3772,7 +3790,7 @@ Note: DEFUN implies a named lambda."
 (declaim (ftype (function (t) t) compile-binding))
 (defun compile-binding (variable)
   (cond ((variable-register variable)
-         (emit 'astore (variable-register variable)))
+         (astore (variable-register variable)))
         ((variable-special-p variable)
          (emit-push-current-thread)
          (emit 'swap)
@@ -3781,7 +3799,7 @@ Note: DEFUN implies a named lambda."
          (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
                              (list +lisp-symbol+ +lisp-object+) nil))
         ((variable-closure-index variable)
-         (emit 'aload (compiland-closure-register *current-compiland*))
+         (aload (compiland-closure-register *current-compiland*))
          (emit 'swap) ; array value
          (emit-push-constant-int (variable-closure-index variable))
          (emit 'swap) ; array index value
@@ -3837,7 +3855,7 @@ Note: DEFUN implies a named lambda."
       (setf (block-environment-register block) (allocate-register))
       (emit-push-current-thread)
       (emit 'getfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
-      (emit 'astore (block-environment-register block)))
+      (astore (block-environment-register block)))
     ;; Make sure there are no leftover values from previous calls.
     (emit-clear-values)
     ;; Bind the variables.
@@ -3858,21 +3876,21 @@ Note: DEFUN implies a named lambda."
              (emit 'getfield +lisp-thread-class+ "_values" "[Lorg/armedbear/lisp/LispObject;")
              (emit-move-from-stack values-register)
              ;; Did we get just one value?
-             (emit 'aload values-register)
+             (aload values-register)
              (emit 'ifnull LABEL1)
              ;; Reaching here, we have multiple values (or no values at all). We need
              ;; the slow path if we have more variables than values.
-             (emit 'aload values-register)
+             (aload values-register)
              (emit 'arraylength)
              (emit-push-constant-int (length vars))
              (emit 'if_icmplt LABEL1)
              ;; Reaching here, we have enough values for all the variables. We can use
              ;; the values we have. This is the fast path.
-             (emit 'aload values-register)
+             (aload values-register)
              (emit 'goto LABEL2)
              (label LABEL1)
              (emit-push-current-thread)
-             (emit 'aload result-register)
+             (aload result-register)
              (emit-push-constant-int (length vars))
              (emit-invokevirtual +lisp-thread-class+ "getValues"
                                  (list +lisp-object+ "I") +lisp-object-array+)
@@ -3895,8 +3913,8 @@ Note: DEFUN implies a named lambda."
     (compile-progn-body (cdddr form) target)
     (when bind-special-p
       ;; Restore dynamic environment.
-      (emit 'aload *thread*)
-      (emit 'aload (block-environment-register block))
+      (aload *thread*)
+      (aload (block-environment-register block))
       (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+))))
 
 (defun propagate-vars (block)
@@ -4036,7 +4054,7 @@ Note: DEFUN implies a named lambda."
     (dolist (variable (block-vars block))
       (when (variable-temp-register variable)
         (aver (variable-special-p variable))
-        (emit 'aload (variable-temp-register variable))
+        (aload (variable-temp-register variable))
         (compile-binding variable))))
   ;; Now make the variables visible.
   (dolist (variable (block-vars block))
@@ -4184,7 +4202,7 @@ Note: DEFUN implies a named lambda."
       (setf (block-environment-register block) (allocate-register))
       (emit-push-current-thread)
       (emit 'getfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
-      (emit 'astore (block-environment-register block)))
+      (astore (block-environment-register block)))
     (propagate-vars block)
     (ecase (car form)
       (LET
@@ -4200,8 +4218,8 @@ Note: DEFUN implies a named lambda."
       (compile-progn-body (cddr form) target representation))
     (when specialp
       ;; Restore dynamic environment.
-      (emit 'aload *thread*)
-      (emit 'aload (block-environment-register block))
+      (aload *thread*)
+      (aload (block-environment-register block))
       (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+))))
 
 (defun p2-locally (form target representation)
@@ -4240,7 +4258,7 @@ Note: DEFUN implies a named lambda."
       (setf environment-register (allocate-register))
       (emit-push-current-thread)
       (emit 'getfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
-      (emit 'astore environment-register))
+      (astore environment-register))
     (label BEGIN-BLOCK)
     (do* ((rest body (cdr rest))
           (subform (car rest) (car rest)))
@@ -4268,14 +4286,14 @@ Note: DEFUN implies a named lambda."
         (label HANDLER)
         ;; The Go object is on the runtime stack. Stack depth is 1.
         (emit 'dup)
-        (emit 'astore go-register)
+        (astore go-register)
         ;; Get the tag.
         (emit 'checkcast +lisp-go-class+)
         (emit 'getfield +lisp-go-class+ "tag" +lisp-object+) ; Stack depth is still 1.
-        (emit 'astore tag-register)
+        (astore tag-register)
         (dolist (tag local-tags)
           (let ((NEXT (gensym)))
-            (emit 'aload tag-register)
+            (aload tag-register)
             (emit 'getstatic *this-class*
                   (if *compile-file-truename*
                       (declare-object-as-string (tag-label tag))
@@ -4285,12 +4303,12 @@ Note: DEFUN implies a named lambda."
             ;; Restore dynamic environment.
             (emit-push-current-thread)
             (aver (fixnump environment-register))
-            (emit 'aload environment-register)
+            (aload environment-register)
             (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
             (emit 'goto (tag-label tag))
             (label NEXT)))
         ;; Not found. Re-throw Go.
-        (emit 'aload go-register)
+        (aload go-register)
         (emit 'athrow)
         ;; Finally...
         (push (make-handler :from BEGIN-BLOCK
@@ -4334,8 +4352,8 @@ Note: DEFUN implies a named lambda."
                 (setf register (or (block-environment-register block) register))))
           (when register
             ;; Restore dynamic environment.
-            (emit 'aload *thread*)
-            (emit 'aload register)
+            (aload *thread*)
+            (aload register)
             (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+))
           (maybe-generate-interrupt-check)
           (emit 'goto (tag-label tag))
@@ -4459,7 +4477,7 @@ Note: DEFUN implies a named lambda."
                   (setf (block-environment-register block) (allocate-register))
                   (emit-push-current-thread)
                   (emit 'getfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
-                  (emit 'astore (block-environment-register block)))
+                  (astore (block-environment-register block)))
                  (t
                   (dformat t "no specials~%")))
            (setf (block-catch-tag block) (gensym))
@@ -4498,8 +4516,8 @@ Note: DEFUN implies a named lambda."
              (label BLOCK-EXIT))
            (when (block-environment-register block)
              ;; We saved the dynamic environment above. Restore it now.
-             (emit 'aload *thread*)
-             (emit 'aload (block-environment-register block))
+             (aload *thread*)
+             (aload (block-environment-register block))
              (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+))
            (fix-boxing representation nil)
            )
@@ -4550,7 +4568,7 @@ Note: DEFUN implies a named lambda."
              (emit 'new +lisp-return-class+)
              (emit 'dup)
              (compile-form `',(block-catch-tag block) 'stack nil) ; Tag.
-             (emit 'aload temp-register))))
+             (aload temp-register))))
     (emit-invokespecial-init +lisp-return-class+ (lisp-object-arg-types 2))
     (emit 'athrow)
     ;; Following code will not be reached, but is needed for JVM stack
@@ -4638,16 +4656,16 @@ Note: DEFUN implies a named lambda."
       (emit-clear-values))
     (emit-push-current-thread)
     (emit 'getfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
-    (emit 'astore environment-register)
+    (astore environment-register)
     ;; Compile call to Lisp.progvBindVars().
-    (emit 'aload *thread*)
+    (aload *thread*)
     (emit-invokestatic +lisp-class+ "progvBindVars"
                        (list +lisp-object+ +lisp-object+ +lisp-thread+) nil)
     ;; Implicit PROGN.
     (compile-progn-body (cdddr form) target)
     ;; Restore dynamic environment.
-    (emit 'aload *thread*)
-    (emit 'aload environment-register)
+    (aload *thread*)
+    (aload environment-register)
     (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
     (fix-boxing representation nil)))
 
@@ -4767,7 +4785,7 @@ Note: DEFUN implies a named lambda."
                    (dformat t "(compiland-closure-register parent) = ~S~%"
                             (compiland-closure-register parent))
                    (emit 'checkcast +lisp-ctf-class+)
-                   (emit 'aload (compiland-closure-register parent))
+                   (aload (compiland-closure-register parent))
                    (emit-invokestatic +lisp-class+ "makeCompiledClosure"
                                       (list +lisp-object+ +lisp-object-array+)
                                       +lisp-object+)))
@@ -4793,7 +4811,7 @@ Note: DEFUN implies a named lambda."
                            (dformat t "(compiland-closure-register parent) = ~S~%"
                                     (compiland-closure-register parent))
                            (emit 'checkcast +lisp-ctf-class+)
-                           (emit 'aload (compiland-closure-register parent))
+                           (aload (compiland-closure-register parent))
                            (emit-invokestatic +lisp-class+ "makeCompiledClosure"
                                               (list +lisp-object+ +lisp-object-array+)
                                               +lisp-object+)))
@@ -4823,7 +4841,7 @@ Note: DEFUN implies a named lambda."
                    (dformat t "(compiland-closure-register parent) = ~S~%"
                             (compiland-closure-register parent))
                    (emit 'checkcast +lisp-ctf-class+)
-                   (emit 'aload (compiland-closure-register parent))
+                   (aload (compiland-closure-register parent))
                    (emit-invokestatic +lisp-class+ "makeCompiledClosure"
                                       (list +lisp-object+ +lisp-object-array+)
                                       +lisp-object+)))
@@ -4846,7 +4864,7 @@ Note: DEFUN implies a named lambda."
                          (dformat t "(compiland-closure-register parent) = ~S~%"
                                   (compiland-closure-register parent))
                          (emit 'checkcast +lisp-ctf-class+)
-                         (emit 'aload (compiland-closure-register parent))
+                         (aload (compiland-closure-register parent))
                          (emit-invokestatic +lisp-class+ "makeCompiledClosure"
                                             (list +lisp-object+ +lisp-object-array+)
                                             +lisp-object+)))
@@ -4927,7 +4945,7 @@ Note: DEFUN implies a named lambda."
                (delete-file pathname)))))
     (cond ((null *closure-variables*)) ; Nothing to do.
           ((compiland-closure-register *current-compiland*)
-           (emit 'aload (compiland-closure-register *current-compiland*))
+           (aload (compiland-closure-register *current-compiland*))
            (emit-invokestatic +lisp-class+ "makeCompiledClosure"
                               (list +lisp-object+ +lisp-object-array+)
                               +lisp-object+)
@@ -4959,7 +4977,7 @@ Note: DEFUN implies a named lambda."
 
                            (when (compiland-closure-register *current-compiland*)
                              (emit 'checkcast +lisp-ctf-class+)
-                             (emit 'aload (compiland-closure-register *current-compiland*))
+                             (aload (compiland-closure-register *current-compiland*))
                              (emit-invokestatic +lisp-class+ "makeCompiledClosure"
                                                 (list +lisp-object+ +lisp-object-array+)
                                                 +lisp-object+)))))
@@ -4980,7 +4998,7 @@ Note: DEFUN implies a named lambda."
            (cond ((setf local-function (find-local-function name))
                   (dformat t "p2-function 1~%")
                   (when (eq (local-function-compiland local-function) *current-compiland*)
-                    (emit 'aload 0) ; this
+                    (aload 0) ; this
                     (emit-move-from-stack target)
                     (return-from p2-function))
                   (cond ((local-function-variable local-function)
@@ -5710,11 +5728,11 @@ Note: DEFUN implies a named lambda."
 					       arg3 'stack nil)
     (when value-register
       (emit 'dup)
-      (emit 'astore value-register))
+      (astore value-register))
     (emit-invokevirtual +lisp-object-class+ "setSlotValue"
                         (lisp-object-arg-types 2) nil)
     (when value-register
-      (emit 'aload value-register)
+      (aload value-register)
       (fix-boxing representation nil)
       (emit-move-from-stack target representation))))
 
@@ -6683,10 +6701,10 @@ Note: DEFUN implies a named lambda."
                            (reg2 (allocate-register)))
                       (compile-form arg1 'stack nil)
                       (emit 'dup)
-                      (emit 'astore reg1)
+                      (astore reg1)
                       (compile-form arg2 'stack nil)
                       (emit 'dup)
-                      (emit 'astore reg2)
+                      (astore reg2)
                       (emit-invokevirtual +lisp-object-class+
                                           (if (eq op 'min)
                                               "isLessThanOrEqualTo"
@@ -6695,10 +6713,10 @@ Note: DEFUN implies a named lambda."
                       (let ((LABEL1 (gensym))
                             (LABEL2 (gensym)))
                         (emit 'ifeq LABEL1)
-                        (emit 'aload reg1)
+                        (aload reg1)
                         (emit 'goto LABEL2)
                         (label LABEL1)
-                        (emit 'aload reg2)
+                        (aload reg2)
                         (label LABEL2)))
                     (fix-boxing representation nil)
                     (emit-move-from-stack target representation))))))
@@ -7028,7 +7046,7 @@ Note: DEFUN implies a named lambda."
            (maybe-emit-clear-values arg1 arg2 arg3)
            (emit-invokevirtual +lisp-object-class+ "svset" (list "I" +lisp-object+) nil)
            (when value-register
-             (emit 'aload value-register)
+             (aload value-register)
              (emit-move-from-stack target nil))))
         (t
          (compile-function-call form target representation))))
@@ -7178,7 +7196,7 @@ Note: DEFUN implies a named lambda."
                       (t
                        (emit-invokespecial-init +lisp-fixnum-class+ '("I")))))
                    (t
-                    (emit 'aload value-register)
+                    (aload value-register)
                     (fix-boxing representation type3)))
              (emit-move-from-stack target representation))))
         (t
@@ -7256,12 +7274,12 @@ Note: DEFUN implies a named lambda."
 						      arg3 'stack nil)
             (when value-register
               (emit 'dup)
-              (emit 'astore value-register))
+              (astore value-register))
             (emit-invokevirtual +lisp-object-class+
                                 (format nil "setSlotValue_~D" arg2)
                                 (lisp-object-arg-types 1) nil)
             (when value-register
-              (emit 'aload value-register)
+              (aload value-register)
               (fix-boxing representation nil)
               (emit-move-from-stack target representation))))
          ((fixnump arg2)
@@ -7273,11 +7291,11 @@ Note: DEFUN implies a named lambda."
             (maybe-emit-clear-values arg1 arg3)
             (when value-register
               (emit 'dup)
-              (emit 'astore value-register))
+              (astore value-register))
             (emit-invokevirtual +lisp-object-class+ "setSlotValue"
                                 (list "I" +lisp-object+) nil)
             (when value-register
-              (emit 'aload value-register)
+              (aload value-register)
               (fix-boxing representation nil)
               (emit-move-from-stack target representation))))
          (t
@@ -7549,19 +7567,19 @@ Note: DEFUN implies a named lambda."
                     (emit-box-boolean)))
                  (emit-move-from-stack target representation))
                 ((variable-register variable)
-                 (emit 'aload (variable-register variable))
+                 (aload (variable-register variable))
                  (fix-boxing representation (variable-derived-type variable))
                  (emit-move-from-stack target representation))
                 ((variable-closure-index variable)
                  (aver (not (null (compiland-closure-register *current-compiland*))))
-                 (emit 'aload (compiland-closure-register *current-compiland*))
+                 (aload (compiland-closure-register *current-compiland*))
                  (emit-push-constant-int (variable-closure-index variable))
                  (emit 'aaload)
                  (fix-boxing representation (derive-type ref))
                  (emit-move-from-stack target representation))
                 ((variable-index variable)
                  (aver (not (null (compiland-argument-register *current-compiland*))))
-                 (emit 'aload (compiland-argument-register *current-compiland*))
+                 (aload (compiland-argument-register *current-compiland*))
                  (emit-push-constant-int (variable-index variable))
                  (emit 'aaload)
                  (fix-boxing representation (variable-derived-type variable))
@@ -8023,7 +8041,7 @@ Note: DEFUN implies a named lambda."
            (EXIT (gensym)))
       (compile-form (second form) tag-register nil) ; Tag.
       (emit-push-current-thread)
-      (emit 'aload tag-register)
+      (aload tag-register)
       (emit-invokevirtual +lisp-thread-class+ "pushCatchTag"
                           (lisp-object-arg-types 1) nil)
       ; Stack depth is 0.
@@ -8035,23 +8053,23 @@ Note: DEFUN implies a named lambda."
       ;; The Throw object is on the runtime stack. Stack depth is 1.
       (emit 'dup) ; Stack depth is 2.
       (emit 'getfield +lisp-throw-class+ "tag" +lisp-object+) ; Still 2.
-      (emit 'aload tag-register) ; Stack depth is 3.
+      (aload tag-register) ; Stack depth is 3.
       ;; If it's not the tag we're looking for, we branch to the start of the
       ;; catch-all handler, which will do a re-throw.
       (emit 'if_acmpne DEFAULT-HANDLER) ; Stack depth is 1.
-      (emit 'aload *thread*)
+      (aload *thread*)
       (emit-invokevirtual +lisp-throw-class+ "getResult"
                           (list +lisp-thread+) +lisp-object+)
       (emit-move-from-stack target) ; Stack depth is 0.
       (emit 'goto EXIT)
       (label DEFAULT-HANDLER) ; Start of handler for all other Throwables.
       ;; A Throwable object is on the runtime stack here. Stack depth is 1.
-      (emit 'aload *thread*)
+      (aload *thread*)
       (emit-invokevirtual +lisp-thread-class+ "popCatchTag" nil nil)
       (emit 'athrow) ; Re-throw.
       (label EXIT)
       ;; Finally...
-      (emit 'aload *thread*)
+      (aload *thread*)
       (emit-invokevirtual +lisp-thread-class+ "popCatchTag" nil nil)
       (let ((handler1 (make-handler :from BEGIN-PROTECTED-RANGE
                                     :to END-PROTECTED-RANGE
@@ -8104,30 +8122,30 @@ Note: DEFUN implies a named lambda."
         (compile-form protected-form result-register nil)
         (emit-push-current-thread)
         (emit 'getfield +lisp-thread-class+ "_values" "[Lorg/armedbear/lisp/LispObject;")
-        (emit 'astore values-register)
+        (astore values-register)
         (label END-PROTECTED-RANGE))
       (emit 'jsr CLEANUP)
       (emit 'goto EXIT) ; Jump over handler.
       (label HANDLER) ; Start of exception handler.
       ;; The Throwable object is on the runtime stack. Stack depth is 1.
-      (emit 'astore exception-register)
+      (astore exception-register)
       (emit 'jsr CLEANUP) ; Call cleanup forms.
       (emit-clear-values)
-      (emit 'aload exception-register)
+      (aload exception-register)
       (emit 'athrow) ; Re-throw exception.
       (label CLEANUP) ; Cleanup forms.
       ;; Return address is on stack here.
-      (emit 'astore return-address-register)
+      (astore return-address-register)
       (dolist (subform cleanup-forms)
         (compile-form subform nil nil))
       (emit 'ret return-address-register)
       (label EXIT)
       ;; Restore multiple values returned by protected form.
       (emit-push-current-thread)
-      (emit 'aload values-register)
+      (aload values-register)
       (emit 'putfield +lisp-thread-class+ "_values" "[Lorg/armedbear/lisp/LispObject;")
       ;; Result.
-      (emit 'aload result-register)
+      (aload result-register)
       (emit-move-from-stack target)
       (let ((handler (make-handler :from BEGIN-PROTECTED-RANGE
                                    :to END-PROTECTED-RANGE
@@ -8356,7 +8374,7 @@ Note: DEFUN implies a named lambda."
 
 (defun p2-%call-internal (form target representation)
   (dformat t "p2-%call-internal~%")
-  (emit 'aload_0) ; this
+  (aload 0) ; this
   (let ((args (cdr form))
         (must-clear-values nil))
     (dformat t "args = ~S~%" args)
@@ -8406,19 +8424,19 @@ Note: DEFUN implies a named lambda."
                (zerop (compiland-children *current-compiland*)))
       (let ((type (variable-declared-type variable)))
         (cond ((fixnum-type-p type)
-               (emit 'aload register)
+               (aload register)
                (emit-unbox-fixnum)
                (emit 'istore register)
                (setf (variable-representation variable) :int))
               ((java-long-type-p type)
                (let ((new-register (allocate-register-pair)))
-                 (emit 'aload register)
+                 (aload register)
                  (emit-invokevirtual +lisp-object-class+ "longValue" nil "J")
                  (emit 'lstore new-register)
                  (setf (variable-register variable) new-register)
                  (setf (variable-representation variable) :long)))
               ((eq type 'CHARACTER)
-               (emit 'aload register)
+               (aload register)
                (emit-unbox-character)
                (emit 'istore register)
                (setf (variable-representation variable) :char))))))
@@ -8580,7 +8598,7 @@ Note: DEFUN implies a named lambda."
       (cond (*child-p*
              (aver (eql (compiland-closure-register compiland) 1))
              (when (some #'variable-closure-index parameters)
-               (emit 'aload (compiland-closure-register compiland))))
+               (aload (compiland-closure-register compiland))))
             (t
              (emit-push-constant-int (length *closure-variables*))
              (dformat t "p2-compiland ~S anewarray 1~%" (compiland-name compiland))
@@ -8598,13 +8616,13 @@ Note: DEFUN implies a named lambda."
                           (variable-register variable)))
                  (emit 'dup) ; array
                  (emit-push-constant-int (variable-closure-index variable))
-                 (emit 'aload (variable-register variable))
+                 (aload (variable-register variable))
                  (emit 'aastore)
                  (setf (variable-register variable) nil)) ; The variable has moved.
                 ((variable-index variable)
                  (emit 'dup) ; array
                  (emit-push-constant-int (variable-closure-index variable))
-                 (emit 'aload (compiland-argument-register compiland))
+                 (aload (compiland-argument-register compiland))
                  (emit-push-constant-int (variable-index variable))
                  (emit 'aaload)
                  (emit 'aastore)
@@ -8614,7 +8632,7 @@ Note: DEFUN implies a named lambda."
              (when (some #'variable-closure-index parameters)
                (emit 'pop)))
             (t
-             (emit 'astore (compiland-closure-register compiland))))
+             (astore (compiland-closure-register compiland))))
       (dformat t "~S done moving arguments to closure array~%"
                (compiland-name compiland)))
 
@@ -8624,10 +8642,10 @@ Note: DEFUN implies a named lambda."
         (dolist (variable (reverse parameters))
           (when (variable-reserved-register variable)
             (aver (not (variable-special-p variable)))
-            (emit 'aload (compiland-argument-register compiland))
+            (aload (compiland-argument-register compiland))
             (emit-push-constant-int (variable-index variable))
             (emit 'aaload)
-            (emit 'astore (variable-reserved-register variable))
+            (astore (variable-reserved-register variable))
             (setf (variable-register variable) (variable-reserved-register variable))
             (setf (variable-index variable) nil)))))
 
@@ -8643,14 +8661,14 @@ Note: DEFUN implies a named lambda."
         (cond ((variable-register variable)
                (emit-push-current-thread)
                (emit-push-variable-name variable)
-               (emit 'aload (variable-register variable))
+               (aload (variable-register variable))
                (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
                                    (list +lisp-symbol+ +lisp-object+) nil)
                (setf (variable-register variable) nil))
               ((variable-index variable)
                (emit-push-current-thread)
                (emit-push-variable-name variable)
-               (emit 'aload (compiland-argument-register compiland))
+               (aload (compiland-argument-register compiland))
                (emit-push-constant-int (variable-index variable))
                (emit 'aaload)
                (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
@@ -8677,13 +8695,13 @@ Note: DEFUN implies a named lambda."
           (generate-arg-count-check arity)))
 
       (when *hairy-arglist-p*
-        (emit 'aload_0) ; this
+        (aload 0) ; this
         (aver (not (null (compiland-argument-register compiland))))
-        (emit 'aload (compiland-argument-register compiland)) ; arg vector
+        (aload (compiland-argument-register compiland)) ; arg vector
         (cond ((or (memq '&OPTIONAL args) (memq '&KEY args))
                (ensure-thread-var-initialized)
                (maybe-initialize-thread-var)
-               (emit 'aload *thread*)
+               (aload *thread*)
                (emit-invokevirtual *this-class* "processArgs"
                                    (list +lisp-object-array+ +lisp-thread+)
                                    +lisp-object-array+))
@@ -8691,7 +8709,7 @@ Note: DEFUN implies a named lambda."
                (emit-invokevirtual *this-class* "fastProcessArgs"
                                    (list +lisp-object-array+)
                                    +lisp-object-array+)))
-        (emit 'astore (compiland-argument-register compiland)))
+        (astore (compiland-argument-register compiland)))
 
       (maybe-initialize-thread-var)
       (setf *code* (nconc code *code*)))
