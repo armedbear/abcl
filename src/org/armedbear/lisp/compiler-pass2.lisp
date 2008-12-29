@@ -2893,29 +2893,7 @@ Note: DEFUN implies a named lambda."
                (emit-invokestatic +lisp-class+ "makeCompiledClosure"
                                   (list +lisp-object+ +lisp-object-array+)
                                   +lisp-object+)))))
-    (let ((must-clear-values nil))
-      (declare (type boolean must-clear-values))
-      (cond ((> (length args) call-registers-limit)
-             (emit-push-constant-int (length args))
-             (emit 'anewarray +lisp-object-class+)
-             (let ((i 0))
-               (dolist (arg args)
-                 (emit 'dup)
-                 (emit-push-constant-int i)
-                 (compile-form arg 'stack nil)
-                 (emit 'aastore) ; store value in array
-                 (unless must-clear-values
-                   (unless (single-valued-p arg)
-                     (setf must-clear-values t)))
-                 (incf i)))) ; array left on stack here
-            (t
-             (dolist (arg args)
-               (compile-form arg 'stack nil)
-               (unless must-clear-values
-                 (unless (single-valued-p arg)
-                   (setf must-clear-values t)))))) ; args left on stack here
-      (when must-clear-values
-        (emit-clear-values)))
+    (process-args args)
     (let* ((arg-count (length args))
            (arg-types (if (<= arg-count call-registers-limit)
                           (lisp-object-arg-types arg-count)
