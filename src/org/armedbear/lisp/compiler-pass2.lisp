@@ -4578,15 +4578,8 @@ Note: DEFUN implies a named lambda."
       (emit-move-from-stack target))))
 
 (defun emit-car/cdr (arg target representation field)
-  (cond ((eq (derive-type arg) 'CONS)
-	 (compile-form arg 'stack nil)
-	 (emit 'checkcast +lisp-cons-class+)
-	 (emit 'getfield +lisp-cons-class+ field +lisp-object+)
-	 (fix-boxing representation nil)
-	 (emit-move-from-stack target representation))
-	(t
-	 (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
-	 (emit-invoke-method field target representation))))
+  (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
+  (emit-invoke-method field target representation))
 
 (defun p2-car (form target representation)
   (unless (check-arg-count form 1)
