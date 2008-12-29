@@ -4586,12 +4586,16 @@ Note: DEFUN implies a named lambda."
       (emit-push-nil)
       (emit-move-from-stack target))))
 
-(defun emit-cast/getfield-for-car/cdr (arg target representation field)
-  (compile-form arg 'stack nil)
-  (emit 'checkcast +lisp-cons-class+)
-  (emit 'getfield +lisp-cons-class+ field +lisp-object+)
-  (fix-boxing representation nil)
-  (emit-move-from-stack target representation))
+(defun emit-car/cdr (arg target representation field)
+  (cond ((eq (derive-type arg) 'CONS)
+	 (compile-form arg 'stack nil)
+	 (emit 'checkcast +lisp-cons-class+)
+	 (emit 'getfield +lisp-cons-class+ field +lisp-object+)
+	 (fix-boxing representation nil)
+	 (emit-move-from-stack target representation))
+	(t
+	 (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
+	 (emit-invoke-method field target representation))))
 
 (defun p2-car (form target representation)
   (unless (check-arg-count form 1)
@@ -4603,22 +4607,15 @@ Note: DEFUN implies a named lambda."
           ((and (consp arg) (eq (%car arg) 'cdr) (= (length arg) 2))
 	   (compile-forms-and-maybe-emit-clear-values (second arg) 'stack nil)
            (emit-invoke-method "cadr" target representation))
-          ((eq (derive-type arg) 'CONS)
-	   (emit-cast/getfield-for-car/cdr arg target representation "car"))
           (t
-	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
-           (emit-invoke-method "car" target representation)))))
+	   (emit-car/cdr arg target representation "car")))))
 
 (defun p2-cdr (form target representation)
   (unless (check-arg-count form 1)
     (compile-function-call form target representation)
     (return-from p2-cdr))
   (let ((arg (%cadr form)))
-    (cond ((eq (derive-type arg) 'CONS)
-	   (emit-cast/getfield-for-car/cdr arg target representation "cdr"))
-          (t
-	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
-           (emit-invoke-method "cdr" target representation)))))
+    (emit-car/cdr arg target representation "cdr")))
 
 (defun p2-cons (form target representation)
   (unless (check-arg-count form 2)
