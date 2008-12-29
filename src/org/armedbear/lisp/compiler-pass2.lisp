@@ -2894,12 +2894,7 @@ Note: DEFUN implies a named lambda."
                                   (list +lisp-object+ +lisp-object-array+)
                                   +lisp-object+)))))
     (process-args args)
-    (let* ((arg-count (length args))
-           (arg-types (if (<= arg-count call-registers-limit)
-                          (lisp-object-arg-types arg-count)
-                          (list +lisp-object-array+))) ;; FIXME
-           (result-type +lisp-object+))
-      (emit-invokevirtual +lisp-object-class+ "execute" arg-types result-type))
+    (emit-call-execute (length args))
     (fix-boxing representation nil)
     (emit-move-from-stack target representation)
     (when saved-vars
