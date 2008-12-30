@@ -236,15 +236,17 @@
   name
   initform
   temp-register
-  special-p
   (declared-type :none)
   (derived-type :none)
   ignore-p
   ignorable-p
   representation
-  register ; register number or NIL
-  index
-  closure-index
+  special-p     ; indicates whether a variable is special
+  register      ; register number for a local variable
+  index         ; index number for a variable in the argument array
+  closure-index ; index number for a variable in the closure context array
+    ;; a variable can be either special-p *or* have a register *or*
+    ;; have an index *or a closure-index
   reserved-register
   (reads 0 :type fixnum)
   (writes 0 :type fixnum)
