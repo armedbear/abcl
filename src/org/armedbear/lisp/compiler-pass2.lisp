@@ -8466,40 +8466,34 @@ Note: DEFUN implies a named lambda."
       (when (memq '&REST args)
         (unless (or (memq '&OPTIONAL args) (memq '&KEY args))
           (let ((arg-count (length args)))
-            (cond ((and (= arg-count 2) (eq (%car args) '&REST))
-                   (setf *using-arg-array* nil)
-                   (setf *hairy-arglist-p* nil)
-                   (setf descriptor (get-descriptor (lisp-object-arg-types 1)
-                                                    +lisp-object+))
-                   (setf (compiland-kind compiland) :internal)
-                   (setf super "org/armedbear/lisp/Primitive0R")
-                   (setf args (cdr args))
-                   (setf execute-method-name "_execute")
-                   (setf execute-method (make-method :name execute-method-name
-                                                     :descriptor descriptor)))
-                  ((and (= arg-count 3) (eq (%cadr args) '&REST))
-                   (setf *using-arg-array* nil)
-                   (setf *hairy-arglist-p* nil)
-                   (setf descriptor (get-descriptor (lisp-object-arg-types 2)
-                                                    +lisp-object+))
-                   (setf (compiland-kind compiland) :internal)
-                   (setf super "org/armedbear/lisp/Primitive1R")
-                   (setf args (list (first args) (third args)))
-                   (setf execute-method-name "_execute")
-                   (setf execute-method (make-method :name execute-method-name
-                                                     :descriptor descriptor)))
-                  ((and (= arg-count 4) (eq (%caddr args) '&REST))
-                   (setf *using-arg-array* nil)
-                   (setf *hairy-arglist-p* nil)
-                   (setf descriptor (get-descriptor (list +lisp-object+ +lisp-object+ +lisp-object+)
-                                                    +lisp-object+))
-                   (setf (compiland-kind compiland) :internal)
-                   (setf super "org/armedbear/lisp/Primitive2R")
-                   (setf args (list (first args) (second args) (fourth args)))
-                   (setf execute-method-name "_execute")
-                   (setf execute-method (make-method :name execute-method-name
-                                                     :descriptor descriptor)))
-                  )))))
+	    (when 
+		(cond ((and (= arg-count 2) (eq (%car args) '&REST))
+		       (setf descriptor (get-descriptor 
+					 (lisp-object-arg-types 1)
+					 +lisp-object+)
+			     super "org/armedbear/lisp/Primitive0R"
+			     args (cdr args)))
+		      ((and (= arg-count 3) (eq (%cadr args) '&REST))
+		       (setf descriptor (get-descriptor 
+					 (lisp-object-arg-types 2)
+					 +lisp-object+)
+			     super "org/armedbear/lisp/Primitive1R"
+			     args (list (first args) (third args))))
+		      ((and (= arg-count 4) (eq (%caddr args) '&REST))
+		       (setf descriptor (get-descriptor 
+					 (list +lisp-object+ 
+					       +lisp-object+ +lisp-object+)
+					 +lisp-object+)
+			     super "org/armedbear/lisp/Primitive2R"
+			     args (list (first args) 
+					(second args) (fourth args)))))
+	      (setf *using-arg-array* nil
+		    *hairy-arglist-p* nil
+		    (compiland-kind compiland) :internal
+		    execute-method-name "_execute"
+		    execute-method (make-method 
+				    :name execute-method-name
+				    :descriptor descriptor)))))))
 
     (dolist (var (compiland-arg-vars compiland))
       (push var *visible-variables*))
