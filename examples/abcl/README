@@ -1,24 +1,33 @@
-Building and running instructions
-=================================
+ABCL Examples Building and Running Instructions
+===============================================
 
-by Blake McBride
+code by Ville Voutilainen
+instructions by Blake McBride
+updated by Mark Evenson
 
-In general, to compile a Java class file (like Main.java for example)
-use:
+In general, to compile a Java class file (like Main.java for example
+in the 'java_exception_in_lisp' subdirectory) use:
 
-	javac  -cp  ../../../abcl.jar  Main.java
+	cmd$ cd java_exception_in_lisp
+	cmd$ javac  -cp ../../../dist/abcl.jar  Main.java
 
-where the "../../../" represents the path to your abcl.jar file.
+where the "../../../dist/abcl.jar" represents the path to your
+abcl.jar file, which is built via the Ant based build.  This path
+could be slightly different depending on how the system was
+constructed, and possibly due to operating system conventions for
+specifying relative paths.  However you resolve this locally, we'll
+refer to this as '$ABCL_ROOT/dist/abcl.jar' for the rest of these
+instructions.
 
 This compiles the Java source file "Main.java" into a JVM runtime or
 class file named "Main.class".
 
 To run the example (Main.class for example) from a Unix-like OS use:
 
-	java  -cp  ../../../abcl.jar:.  Main
+	cmd$ java  -cp $ABCL_ROOT/dist/abcl.jar:.  Main
 
 or in Windows use:
 
-	java  -cp  ../../../abcl.jar;.  Main
+	cmd$  java  -cp  $ABCL_ROOT/dist/abcl.jar;.  Main
 
 where "Main" is the initial class to run in your Java program.
