@@ -258,7 +258,7 @@
 ;; (define-opcode push-value 203 nil 1)
 ;; (define-opcode store-value 204 nil -1)
 (define-opcode clear-values 205 0 0)
-(define-opcode var-ref 206 0 0)
+;;(define-opcode var-ref 206 0 0)
 (define-opcode var-set 207 0 0)
 
 (defparameter *last-opcode* 207)

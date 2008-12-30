@@ -1213,9 +1213,6 @@ representation, based on the derived type of the LispObject."
     (setf *code* nil)
     (dolist (instruction code)
       (case (instruction-opcode instruction)
-        (206 ; VAR-REF
-         ;; obsolete
-         (aver nil))
         (207 ; VAR-SET
          (let ((variable (car (instruction-args instruction))))
            (aver (variable-p variable))
