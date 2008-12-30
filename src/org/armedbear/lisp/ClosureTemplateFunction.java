@@ -52,9 +52,13 @@ public class ClosureTemplateFunction extends Closure
   }
 
   final public ClosureTemplateFunction dup()
-      throws CloneNotSupportedException
   {
-      return (ClosureTemplateFunction)super.clone();
+      ClosureTemplateFunction result = null;
+      try {
+	  result = (ClosureTemplateFunction)super.clone();
+      } catch (CloneNotSupportedException e) {
+      }
+      return result;
   }
 
 

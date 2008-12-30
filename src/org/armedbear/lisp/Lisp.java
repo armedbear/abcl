@@ -1164,7 +1164,8 @@ public abstract class Lisp
                                                      LispObject[] context)
     throws ConditionThrowable
   {
-    ClosureTemplateFunction ctf = (ClosureTemplateFunction) template;
+    ClosureTemplateFunction ctf = ((ClosureTemplateFunction) template).dup();
+    ctf.setContext(context);
     CompiledClosure result = new CompiledClosure(ctf, context);
     LispObject classBytes =
       getf(ctf.getPropertyList(), Symbol.CLASS_BYTES, NIL);
