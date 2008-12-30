@@ -1098,7 +1098,7 @@ representation, based on the derived type of the LispObject."
                    (inst 'aload *thread*)
                    (inst 'aconst_null)
                    (inst 'putfield (list +lisp-thread-class+ "_values"
-                                         "[Lorg/armedbear/lisp/LispObject;")))))
+                                         +lisp-object-array+)))))
              (dolist (instruction instructions)
                (vector-push-extend (resolve-instruction instruction) vector))))
           (t
@@ -3709,14 +3709,14 @@ Note: DEFUN implies a named lambda."
     (compile-form first-subform result-register nil)
     ;; Save multiple values returned by first subform.
     (emit-push-current-thread)
-    (emit 'getfield +lisp-thread-class+ "_values" "[Lorg/armedbear/lisp/LispObject;")
+    (emit 'getfield +lisp-thread-class+ "_values" +lisp-object-array+)
     (astore values-register)
     (dolist (subform subforms)
       (compile-form subform nil nil))
     ;; Restore multiple values returned by first subform.
     (emit-push-current-thread)
     (aload values-register)
-    (emit 'putfield +lisp-thread-class+ "_values" "[Lorg/armedbear/lisp/LispObject;")
+    (emit 'putfield +lisp-thread-class+ "_values" +lisp-object-array+)
     ;; Result.
     (aload result-register)
     (fix-boxing representation nil)
@@ -3873,7 +3873,7 @@ Note: DEFUN implies a named lambda."
              (compile-form (third form) result-register nil)
              ;; Store values from values form in values register.
              (emit-push-current-thread)
-             (emit 'getfield +lisp-thread-class+ "_values" "[Lorg/armedbear/lisp/LispObject;")
+             (emit 'getfield +lisp-thread-class+ "_values" +lisp-object-array+)
              (emit-move-from-stack values-register)
              ;; Did we get just one value?
              (aload values-register)
@@ -8114,7 +8114,7 @@ Note: DEFUN implies a named lambda."
         (label BEGIN-PROTECTED-RANGE)
         (compile-form protected-form result-register nil)
         (emit-push-current-thread)
-        (emit 'getfield +lisp-thread-class+ "_values" "[Lorg/armedbear/lisp/LispObject;")
+        (emit 'getfield +lisp-thread-class+ "_values" +lisp-object-array+)
         (astore values-register)
         (label END-PROTECTED-RANGE))
       (emit 'jsr CLEANUP)
@@ -8136,7 +8136,7 @@ Note: DEFUN implies a named lambda."
       ;; Restore multiple values returned by protected form.
       (emit-push-current-thread)
       (aload values-register)
-      (emit 'putfield +lisp-thread-class+ "_values" "[Lorg/armedbear/lisp/LispObject;")
+      (emit 'putfield +lisp-thread-class+ "_values" +lisp-object-array+)
       ;; Result.
       (aload result-register)
       (emit-move-from-stack target)
