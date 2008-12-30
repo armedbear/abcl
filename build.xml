@@ -17,8 +17,6 @@
 	      value="${basedir}/dist"/>
     <property name="abcl.jar.path"
 	      value="${dist.dir}/abcl.jar"/>
-    <property name="j.jar.path"
-	      value="${dist.dir}/j.jar"/>
 
     <target name="help">
       <echo>Main Ant targets:
@@ -32,18 +30,13 @@
     -- create source distributions in ${dist.dir}
  abcl.clean 
     -- remove ABCL intermediate files</echo>
-      <echo>Corresponding targets for J exist, but currently aren't as well tested.
-      </echo>
+      <echo>Corresponding targets for J have been removed.</echo>
     </target>
 
     <property name="abcl.version.path"
 	      value="${build.classes.dir}/org/armedbear/lisp/version"/>
     <property name="abcl.build.path"
 	      value="${build.classes.dir}/org/armedbear/lisp/build"/>
-    <property name="j.version.path"
-	      value="${build.classes.dir}/org/armedbear/j/version"/>
-    <property name="j.build.path"
-	      value="${build.classes.dir}/org/armedbear/j/build"/>
 
     <target name="abcl.stamp" depends="abcl.compile">
       <tstamp>
@@ -67,10 +60,6 @@
       <antcall target="abcl.stamp.hostname"/>
     </target>
 
-    <target name="j.stamp" depends="abcl.stamp,j.compile">
-      <echo message="${build}" file="${j.build.path}"/>    
-    </target>
-
     <target name="abcl.stamp.version" depends="abcl.compile">
       <java fork="true"
 	    classpath="${build.classes.dir}"
@@ -85,30 +74,34 @@
       <echo>Building ABCL version: ${abcl.version}</echo>
       <mkdir dir="${abcl.version.path}/.."/>
       <echo message="${abcl.version}" file="${abcl.version.path}"/> 
+
+      <!-- Set from commandline via -D or in 'build.properties' -->
+      <property name="build.version" value="abcl.svn"/>
+      <echo>Build-Version: ${build.version}</echo>
     </target>
 
     <target name="abcl.stamp.hostname">
-      <property name="j.build.path"
-		value="${build.classes.dir}/org/armedbear/j/build"/>
       <exec executable="hostname" outputproperty="abcl.hostname"/>
       <echo>abcl.hostname: ${abcl.hostname}</echo>
-    </target>
-
-    <target name="j.stamp.hostname">
-      <echo message="${abcl.hostname}" file="${j.build.path}" append="yes"/>
     </target>
 
     <patternset id="abcl.source.java">
       <include name="org/armedbear/lisp/*.java"/>
       <include name="org/armedbear/lisp/util/*.java"/>
-      <include name="org/armedbear/Main.java"/>
     </patternset>
-    
+
     <patternset id="abcl.source.lisp">
       <include name="org/armedbear/lisp/*.lisp"/>
       <include name="org/armedbear/lisp/tests/*.lisp"/>
-      <include name="org/armedbear/lisp/java/awt/*.lisp"/>
-      <include name="org/armedbear/lisp/java/awt/*.java"/>
+    </patternset>
+
+    <patternset id="abcl.scripting.source.java">
+      <include name="org/armedbear/lisp/scripting/*.java"/>
+      <include name="org/armedbear/lisp/scripting/util/*.java"/>
+    </patternset>
+
+    <patternset id="abcl.scripting.source.lisp">
+      <include name="org/armedbear/lisp/scripting/lisp/*.lisp"/>
     </patternset>
 
     <!-- Lisp files required at runtime -->
@@ -124,39 +117,6 @@
       <patternset refid="abcl.source.lisp.dist"/>
     </patternset>
     
-    <patternset id="j.source">
-      <include name="Main.java"/>
-      <include name="gnu/regexp/*.java"/>
-      <include name="org/armedbear/j/**/*.java"/>
-      <!-- Assumed to need the org.armedbear.lisp.awt.* classes as ABCL
-           itself doesn't seem to need them. -->
-      <include name="org/armedbear/lisp/awt/*.class"/>
-    </patternset>
-
-    <patternset id="j.objects">
-      <patternset refid="abcl.objects"/>
-      <include name="Main.class"/>
-      <include name="gnu/regexp/*.class"/>
-      <include name="org/armedbear/j/**/*.class"/>
-    </patternset>
-
-    <patternset id="j.resources.src">
-      <include name="**/*.keywords"/>
-      <include name="org/armedbear/j/version"/>
-      <include name="org/armedbear/j/build"/>
-      <include name="org/armedbear/j/snapshot"/>
-      <include name="org/armedbear/j/images/*.png"/>
-      <include name="gnu/regexp/MessagesBundle.properties"/>
-    </patternset>
-
-    <patternset id="j.resources.top">
-      <include name="COPYING"/>
-      <include name="doc/*.html"/>
-      <include name="doc/*.css"/>
-      <include name="themes/*"/>
-      <include name="examples/*"/>
-    </patternset>
-
     <path id="abcl.classpath.dist">
       <pathelement location="${abcl.jar.path}"/>
     </path>
@@ -169,16 +129,11 @@
       <echo>Compiled ABCL with java version: ${java.version}</echo>
     </target>
 
-    <target name="j.pre-compile" depends="abcl.pre-compile"/>
-
     <target name="abcl.pre-compile">
       <!--- antversion fails in ant 1.7.1 <antversion property="ant.version" 
 	                                              atleast="1.7"/> -->
       <mkdir dir="${build.dir}"/>
       <mkdir dir="${build.classes.dir}"/>
-
-      <property name="j.compile.version.path"
-		value="${build.classes.dir}/org/armedbear/j/version"/>
 
       <property name="java.path"
 		value="${java.home}/bin/java"/>
@@ -223,15 +178,6 @@
 	    file="${build.classes.dir}/org/armedbear/lisp/build"/>
     </target>
 
-    <target name="j.compile" depends="j.pre-compile">
-      <javac destdir="${build.classes.dir}"
-	     debug="true"
-	     target="1.5">
-	<src path="${src.dir}"/>
-	<patternset refid="j.source"/>
-      </javac>
-    </target>
-
     <target name="abcl.copy.lisp">
       <copy todir="${build.classes.dir}" preservelastmodified="yes">
 	<fileset dir="${src.dir}">
@@ -250,7 +196,6 @@
       <exclude name="org/armedbear/lisp/emacs.lisp"/>
       <exclude name="org/armedbear/lisp/runtime-class.lisp"/>
       <exclude name="org/armedbear/lisp/run-benchmarks.lisp"/>
-      <exclude name="org/armedbear/lisp/j.lisp"/>
     </patternset>
 
     <target name="abcl.fasls.uptodate">
@@ -355,37 +300,6 @@
       <property name="abcl.wrapper.in.file" value="abcl.bat.in"/>
     </target>
 
-    <target name="j.jar" depends="j.compile,j.stamp">
-      <copy todir="${build.classes.dir}">
-	<fileset dir="${basedir}/src">
-	  <patternset refid="j.objects"/>
-	  <patternset refid="j.resources.src"/>
-	</fileset>
-      </copy>
-      <jar destfile="${j.jar.path}" 
-	   compress="true"
-	   basedir="${build.classes.dir}">
-	<patternset refid="j.objects"/>
-	<patternset refid="j.resources.src"/>
-	<manifest>
-	  <attribute name="Main-Class" value="Main"/>
-	  <section name="org/armedbear/lisp">
-	    <attribute name="Implementation-Title" value="ABCL"/>
-	    <attribute name="Implementation-Version"  value="${abcl.version}"/>
-	  </section>
-	</manifest>
-      </jar>
-    </target>
-
-    <target name="j.dist" depends="j.jar">
-      <mkdir dir="${dist.dir}"/>
-      <copy todir="dist">
-	<fileset dir="${basedir}">
-	  <patternset refid="j.resources.top"/>
-	</fileset>
-      </copy>
-    </target>
-
     <target name="abcl.clean">
       <delete dir="${build.dir}"/>
       <delete file="abcl"/>
@@ -409,64 +323,6 @@
 	  <patternset refid="abcl.source.lisp"/>
 	</fileset>
       </apply>
-    </target>
-
-    <target name="j.jpty" depends="j.jpty.compile"/>
-
-    <target name="j.jpty.compile" if="unix">
-      <exec executable="gcc" dir="${src.dir}/jpty">
-	<arg line="-Wall -O2 jpty.c -o jpty"/>
-      </exec>
-    </target>
-
-    <target name="j.install" depends="j.jar,j.install.unix,j.install.windows">
-      <property name="j.install.data.dir" value="${j.install.root}/share"/>
-      <property name="j.install.bin.dir" value="${j.install.root}/bin"/>
-
-      <mkdir dir="${j.install.data.dir}/j"/>
-      <copy file="${dist.dir}/j.jar" todir="${j.install.data.dir}/j"/>
-      <!-- set via '-Djava.options=JAVA_OPTIONS' or in 'build.properties -->
-      <property name="java.options" value=""/>
-      <copy file="${j.wrapper.file}.in" toFile="${j.install.bin.dir}/${j.wrapper.file}">
-	<filterset>
-	  <filter token="JAVA" 
-		  value="${java.path}"/>
-	  <filter token="JAVA_OPTIONS" 
-		  value="${java.options}"/>
-	  <filter token="CLASSPATH"
-		  value="${j.install.data.dir}/j/j.jar"/>
-	</filterset>
-      </copy>
-      <chmod file="${j.install.bin.dir}/j" perm="ugo+rx"/>
-
-      <property name="j.install.themes.path"
-		value="${j.install.data.dir}/j/themes"/>
-      <mkdir dir="${j.install.themes.dir}"/>
-      <copy todir="{j.install.themes.dir}">
-	<fileset dir="${basedir}/themes"/>
-      </copy>
-
-      <property name="j.install.doc.path"
-		value="${j.install.data.dir}/doc/j"/>
-      <mkdir dir="${j.install.doc.dir}" />
-
-      <copy file="${basedir}/src/jpty/jpty" 
-            todir="${j.install.bin.dir}"
-	    failonerror="false"/>
-      <chmod file="${j.install.bin.dir}/jpty" perm="ugo+rx"/>
-      <copy todir="${j.install.data.dir}/doc/j">
-	<fileset dir="${basedir}/doc"/>
-      </copy>
-    </target>
-
-    <target name="j.install.unix" depends="j.jpty" if="unix">
-      <property name="j.install.root" value="/usr/local"/>
-      <property name="j.wrapper.file" value="j"/>
-    </target>
-
-    <target name="j.install.windows" depends="j.jpty" if="windows">
-      <property name="j.install.root" value="c:/j"/>
-      <property name="j.wrapper.file" value="j.bat"/>
     </target>
 
     <patternset id="abcl.dist.misc"
