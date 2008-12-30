@@ -49,6 +49,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
+import java.nio.charset.CodingErrorAction;
 
 public class RandomAccessCharacterFile {
 
@@ -276,6 +277,8 @@ public class RandomAccessCharacterFile {
 	
 	cset = (encoding == null) ? Charset.defaultCharset() : Charset.forName(encoding);
 	cdec = cset.newDecoder();
+	cdec.onMalformedInput(CodingErrorAction.REPLACE); 
+	cdec.onUnmappableCharacter(CodingErrorAction.REPLACE); 
 	cenc = cset.newEncoder(); 
 		
 	bbuf = ByteBuffer.allocate(BUFSIZ);
