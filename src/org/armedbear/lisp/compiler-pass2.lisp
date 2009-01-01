@@ -7905,7 +7905,7 @@ Note: DEFUN implies a named lambda."
            ;; signals an error if the slot's value is not a fixnum.
            (compile-form value-form target representation))
           ((and (> *safety* 0)
-                (not (subtypep (derive-type value-form) type-form)))
+                (not (compiler-subtypep (derive-type value-form) type-form)))
            (compile-form value-form 'stack nil)
            (generate-type-check-for-value type-form)
            ;; The value is left on the stack here if the type check succeeded.
