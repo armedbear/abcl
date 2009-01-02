@@ -4751,6 +4751,21 @@ Note: DEFUN implies a named lambda."
   (setf (compiland-class-file compiland) class-file)
   (compile-and-write-to-file class-file compiland))
 
+
+(defun emit-make-compiled-closure-for-flet/labels (local-function compiland g)
+  (emit 'getstatic *this-class* g +lisp-object+)
+  (let ((parent (compiland-parent compiland)))
+    (when (compiland-closure-register parent)
+      (dformat t "(compiland-closure-register parent) = ~S~%"
+	       (compiland-closure-register parent))
+      (emit 'checkcast +lisp-ctf-class+)
+      (aload (compiland-closure-register parent))
+      (emit-invokestatic +lisp-class+ "makeCompiledClosure"
+			 (list +lisp-object+ +lisp-object-array+)
+			 +lisp-object+)))
+  (emit 'var-set (local-function-variable local-function)))
+
+
 (defknown p2-flet-process-compiland (t) t)
 (defun p2-flet-process-compiland (local-function)
   (let* ((compiland (local-function-compiland local-function))
@@ -4768,20 +4783,8 @@ Note: DEFUN implies a named lambda."
 
            (when (local-function-variable local-function)
              (let ((g (declare-local-function local-function)))
-               (emit 'getstatic *this-class* g +lisp-object+)
-
-               (let ((parent (compiland-parent compiland)))
-                 (when (compiland-closure-register parent)
-                   (dformat t "(compiland-closure-register parent) = ~S~%"
-                            (compiland-closure-register parent))
-                   (emit 'checkcast +lisp-ctf-class+)
-                   (aload (compiland-closure-register parent))
-                   (emit-invokestatic +lisp-class+ "makeCompiledClosure"
-                                      (list +lisp-object+ +lisp-object-array+)
-                                      +lisp-object+)))
-
-               (dformat t "p2-flet-process-compiland var-set ~S~%" (variable-name (local-function-variable local-function)))
-               (emit 'var-set (local-function-variable local-function)))))
+	       (emit-make-compiled-closure-for-flet/labels 
+		local-function compiland g))))
           (t
            (let* ((pathname (make-temp-file))
                   (class-file (make-class-file :pathname pathname
@@ -4794,20 +4797,9 @@ Note: DEFUN implies a named lambda."
 
                    (when (local-function-variable local-function)
                      (let ((g (declare-object (load-compiled-function pathname))))
-                       (emit 'getstatic *this-class* g +lisp-object+)
-
-                       (let ((parent (compiland-parent compiland)))
-                         (when (compiland-closure-register parent)
-                           (dformat t "(compiland-closure-register parent) = ~S~%"
-                                    (compiland-closure-register parent))
-                           (emit 'checkcast +lisp-ctf-class+)
-                           (aload (compiland-closure-register parent))
-                           (emit-invokestatic +lisp-class+ "makeCompiledClosure"
-                                              (list +lisp-object+ +lisp-object-array+)
-                                              +lisp-object+)))
-
-                       (emit 'var-set (local-function-variable local-function)))))
-               (delete-file pathname)))))))
+		       (emit-make-compiled-closure-for-flet/labels 
+			local-function compiland g))))
+	       (delete-file pathname)))))))
 
 (defknown p2-labels-process-compiland (t) t)
 (defun p2-labels-process-compiland (local-function)
@@ -4824,20 +4816,8 @@ Note: DEFUN implies a named lambda."
                  (error "Unable to load ~S." pathname)))
              (setf (local-function-class-file local-function) class-file)
              (let ((g (declare-local-function local-function)))
-               (emit 'getstatic *this-class* g +lisp-object+)
-
-               (let ((parent (compiland-parent compiland)))
-                 (when (compiland-closure-register parent)
-                   (dformat t "(compiland-closure-register parent) = ~S~%"
-                            (compiland-closure-register parent))
-                   (emit 'checkcast +lisp-ctf-class+)
-                   (aload (compiland-closure-register parent))
-                   (emit-invokestatic +lisp-class+ "makeCompiledClosure"
-                                      (list +lisp-object+ +lisp-object-array+)
-                                      +lisp-object+)))
-
-
-               (emit 'var-set (local-function-variable local-function)))))
+	       (emit-make-compiled-closure-for-flet/labels 
+		local-function compiland g))))
           (t
            (let* ((pathname (make-temp-file))
                   (class-file (make-class-file :pathname pathname
@@ -4847,19 +4827,8 @@ Note: DEFUN implies a named lambda."
 		   (set-compiland-and-write-class-file class-file compiland)
                    (setf (local-function-class-file local-function) class-file)
                    (let ((g (declare-object (load-compiled-function pathname))))
-                     (emit 'getstatic *this-class* g +lisp-object+)
-
-                     (let ((parent (compiland-parent compiland)))
-                       (when (compiland-closure-register parent)
-                         (dformat t "(compiland-closure-register parent) = ~S~%"
-                                  (compiland-closure-register parent))
-                         (emit 'checkcast +lisp-ctf-class+)
-                         (aload (compiland-closure-register parent))
-                         (emit-invokestatic +lisp-class+ "makeCompiledClosure"
-                                            (list +lisp-object+ +lisp-object-array+)
-                                            +lisp-object+)))
-
-                     (emit 'var-set (local-function-variable local-function))))
+		     (emit-make-compiled-closure-for-flet/labels 
+		      local-function compiland g)))
                (delete-file pathname)))))))
 
 (defknown p2-flet (t t t) t)
