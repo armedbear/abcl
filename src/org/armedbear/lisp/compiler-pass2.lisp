@@ -4991,6 +4991,14 @@ Note: DEFUN implies a named lambda."
           (t
            (compiler-unsupported "p2-function: unsupported case: ~S" form)))))
 
+(defun emit-fixnum-init (representation)
+  (case representation
+    (:int)
+    (:long
+     (emit 'i2l))
+    (t
+     (emit-invokespecial-init +lisp-fixnum-class+ '("I")))))
+
 (defknown p2-ash (t t t) t)
 (defun p2-ash (form target representation)
   (unless (check-arg-count form 2)
@@ -5034,12 +5042,7 @@ Note: DEFUN implies a named lambda."
                   (emit 'ishr))
                  ((zerop constant-shift)
                   (compile-form arg2 nil nil))) ; for effect
-           (case representation
-             (:int)
-             (:long
-              (emit 'i2l))
-             (t
-              (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
+	   (emit-fixnum-init representation)
            (emit-move-from-stack target representation))
           ((and constant-shift
                 ;; lshl/lshr only use the low six bits of the mask.
@@ -5072,12 +5075,7 @@ Note: DEFUN implies a named lambda."
 						      arg2 'stack :int)
            (emit 'ineg)
            (emit 'ishr)
-           (case representation
-             (:int)
-             (:long
-              (emit 'i2l))
-             (t
-              (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
+	   (emit-fixnum-init representation)
            (emit-move-from-stack target representation))
           ((fixnum-type-p type2)
            (cond ((and low2 high2 (<= 0 low2 high2 63) ; Non-negative shift.
@@ -5148,12 +5146,7 @@ Note: DEFUN implies a named lambda."
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 							   arg2 'stack :int)
                 (emit 'iand)
-                (case representation
-                  (:int)
-                  (:long
-                   (emit 'i2l))
-                  (t
-                   (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
+		(emit-fixnum-init representation)
                 (emit-move-from-stack target representation))
                ((or (and (fixnum-type-p type1)
                          (compiler-subtypep type1 'unsigned-byte))
@@ -5166,12 +5159,7 @@ Note: DEFUN implies a named lambda."
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 							   arg2 'stack :int)
                 (emit 'iand)
-                (case representation
-                  (:int)
-                  (:long
-                   (emit 'i2l))
-                  (t
-                   (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
+		(emit-fixnum-init representation)
                 (emit-move-from-stack target representation))
                ((and (java-long-type-p type1) (java-long-type-p type2))
                 ;; Both arguments are longs.
@@ -5263,12 +5251,7 @@ Note: DEFUN implies a named lambda."
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 							   arg2 'stack :int)
                 (emit 'ior)
-                (case representation
-                  (:int)
-                  (:long
-                   (emit 'i2l))
-                  (t
-                   (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
+		(emit-fixnum-init representation)
                 (emit-move-from-stack target representation))
                ((and (eql (fixnum-constant-value type1) 0) (< *safety* 3))
 		(compile-forms-and-maybe-emit-clear-values arg1 nil nil
@@ -5345,12 +5328,7 @@ Note: DEFUN implies a named lambda."
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 							   arg2 'stack :int)
                 (emit 'ixor)
-                (case representation
-                  (:int)
-                  (:long
-                   (emit 'i2l))
-                  (t
-                   (emit-invokespecial-init +lisp-fixnum-class+ '("I")))))
+		(emit-fixnum-init representation))
                ((and (java-long-type-p type1) (java-long-type-p type2))
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :long
 							   arg2 'stack :long)
@@ -5386,12 +5364,7 @@ Note: DEFUN implies a named lambda."
 	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
            (emit 'iconst_m1)
            (emit 'ixor)
-           (case representation
-             (:int)
-             (:long
-              (emit 'i2l))
-             (t
-              (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
+	   (emit-fixnum-init representation)
            (emit-move-from-stack target representation)))
         (t
          (let ((arg (%cadr form)))
@@ -5436,12 +5409,7 @@ Note: DEFUN implies a named lambda."
                     (emit 'ishr))
                   (emit-push-constant-int (1- (expt 2 size))) ; mask
                   (emit 'iand)
-                  (case representation
-                    (:int)
-                    (:long
-                     (emit 'i2l))
-                    (t
-                     (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
+		  (emit-fixnum-init representation)
                   (emit-move-from-stack target representation))
                  ((<= (+ position size) 63)
                   (when (and (null representation) (<= size 31))
@@ -5458,12 +5426,7 @@ Note: DEFUN implies a named lambda."
                          (emit 'l2i)
                          (emit-push-constant-int (1- (expt 2 size)))
                          (emit 'iand)
-                         (case representation
-                           (:int)
-                           (:long
-                            (emit 'i2l))
-                           (t
-                            (emit-invokespecial-init +lisp-fixnum-class+ '("I")))))
+			 (emit-fixnum-init representation))
                         (t
                          (emit-push-constant-long (1- (expt 2 size))) ; mask
                          (emit 'land)
@@ -6625,12 +6588,7 @@ body is the body to invoke. "
                         (label LABEL1)
                         (emit 'iload reg2)
                         (label LABEL2)))
-                    (case representation
-                      (:int)
-                      (:long
-                       (emit 'i2l))
-                      (t
-                       (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
+		    (emit-fixnum-init representation)
                     (emit-move-from-stack target representation))
                    ((and (java-long-type-p type1) (java-long-type-p type2))
                     (let* ((*register* *register*)
@@ -6716,12 +6674,7 @@ body is the body to invoke. "
 		     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 								arg2 'stack :int)
                      (emit 'iadd)
-                     (case representation
-                       (:int)
-                       (:long
-                        (emit 'i2l))
-                       (t
-                        (emit-invokespecial-init +lisp-fixnum-class+ '("I")))))
+		     (emit-fixnum-init representation))
                     (t
                      (compile-form arg1 'stack :int)
                      (emit 'i2l)
@@ -6799,12 +6752,7 @@ body is the body to invoke. "
                 (emit 'dup))
               (compile-form arg 'stack :int)
               (emit 'ineg)
-              (case representation
-                (:int)
-                (:long
-                 (emit 'i2l))
-                (t
-                 (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
+	      (emit-fixnum-init representation)
               (emit-move-from-stack target representation))
              ((and (java-long-type-p type)
                    (integer-type-low type)
@@ -6842,12 +6790,7 @@ body is the body to invoke. "
 		     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 								arg2 'stack :int)
                      (emit 'isub)
-                     (case representation
-                       (:int)
-                       (:long
-                        (emit 'i2l))
-                       (t
-                        (emit-invokespecial-init +lisp-fixnum-class+ '("I")))))
+		     (emit-fixnum-init representation))
                     (t
                      (compile-form arg1 'stack :int)
                      (emit 'i2l)
@@ -7147,12 +7090,7 @@ body is the body to invoke. "
                       (emit 'new +lisp-fixnum-class+)
                       (emit 'dup))
                     (emit 'iload value-register)
-                    (case representation
-                      (:int)
-                      (:long
-                       (emit 'i2l))
-                      (t
-                       (emit-invokespecial-init +lisp-fixnum-class+ '("I")))))
+		    (emit-fixnum-init representation))
                    (t
                     (aload value-register)
                     (fix-boxing representation type3)))
@@ -7899,12 +7837,7 @@ body is the body to invoke. "
              (emit 'new +lisp-fixnum-class+)
              (emit 'dup))
            (compile-form arg 'stack :char)
-           (case representation
-             (:int)
-             (:long
-              (emit 'i2l))
-             (t
-              (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
+	   (emit-fixnum-init representation)
            (emit-move-from-stack target representation))
           (t
            (compile-function-call form target representation)))))
