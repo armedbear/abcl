@@ -4774,7 +4774,11 @@ Note: DEFUN implies a named lambda."
 	  (progn ,@body)
        (delete-file pathname))))
 
-
+(defun verify-class-file-loadable (pathname)
+  (let ((*load-truename* (pathname pathname)))
+    (unless (ignore-errors (load-compiled-function pathname))
+      (error "Unable to load ~S." pathname))))
+  
 (defknown p2-flet-process-compiland (t) t)
 (defun p2-flet-process-compiland (local-function)
   (let* ((compiland (local-function-compiland local-function))
@@ -4784,12 +4788,8 @@ Note: DEFUN implies a named lambda."
                   (class-file (make-class-file :pathname pathname
                                                :lambda-list lambda-list)))
 	     (set-compiland-and-write-class-file class-file compiland)
-             ;; Verify that the class file is loadable.
-             (let ((*load-truename* (pathname pathname)))
-               (unless (ignore-errors (load-compiled-function pathname))
-                 (error "Unable to load ~S." pathname)))
+	     (verify-class-file-loadable pathname)
              (setf (local-function-class-file local-function) class-file))
-
            (when (local-function-variable local-function)
              (let ((g (declare-local-function local-function)))
 	       (emit-make-compiled-closure-for-flet/labels 
@@ -4814,10 +4814,7 @@ Note: DEFUN implies a named lambda."
                   (class-file (make-class-file :pathname pathname
                                                :lambda-list lambda-list)))
 	     (set-compiland-and-write-class-file class-file compiland)
-             ;; Verify that the class file is loadable.
-             (let ((*load-truename* (pathname pathname)))
-               (unless (ignore-errors (load-compiled-function pathname))
-                 (error "Unable to load ~S." pathname)))
+	     (verify-class-file-loadable pathname)
              (setf (local-function-class-file local-function) class-file)
              (let ((g (declare-local-function local-function)))
 	       (emit-make-compiled-closure-for-flet/labels 
