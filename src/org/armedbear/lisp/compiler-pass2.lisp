@@ -4752,8 +4752,9 @@ Note: DEFUN implies a named lambda."
   (compile-and-write-to-file class-file compiland))
 
 
-(defun emit-make-compiled-closure-for-flet/labels (local-function compiland g)
-  (emit 'getstatic *this-class* g +lisp-object+)
+(defun emit-make-compiled-closure-for-flet/labels 
+    (local-function compiland declaration)
+  (emit 'getstatic *this-class* declaration +lisp-object+)
   (let ((parent (compiland-parent compiland)))
     (when (compiland-closure-register parent)
       (dformat t "(compiland-closure-register parent) = ~S~%"
@@ -4764,6 +4765,14 @@ Note: DEFUN implies a named lambda."
 			 (list +lisp-object+ +lisp-object-array+)
 			 +lisp-object+)))
   (emit 'var-set (local-function-variable local-function)))
+
+(defmacro with-temp-class-file (pathname class-file lambda-list &body body)
+  `(let* ((,pathname (make-temp-file))
+	  (,class-file (make-class-file :pathname ,pathname
+				       :lambda-list ,lambda-list)))
+     (unwind-protect
+	  (progn ,@body)
+       (delete-file pathname))))
 
 
 (defknown p2-flet-process-compiland (t) t)
@@ -4786,20 +4795,15 @@ Note: DEFUN implies a named lambda."
 	       (emit-make-compiled-closure-for-flet/labels 
 		local-function compiland g))))
           (t
-           (let* ((pathname (make-temp-file))
-                  (class-file (make-class-file :pathname pathname
-                                               :lambda-list lambda-list)))
-             (unwind-protect
-                 (progn
-		   (set-compiland-and-write-class-file class-file compiland)
-                   (setf (local-function-class-file local-function) class-file)
-                   (setf (local-function-function local-function) (load-compiled-function pathname))
-
-                   (when (local-function-variable local-function)
-                     (let ((g (declare-object (load-compiled-function pathname))))
-		       (emit-make-compiled-closure-for-flet/labels 
-			local-function compiland g))))
-	       (delete-file pathname)))))))
+	   (with-temp-class-file 
+	       pathname class-file lambda-list
+	       (set-compiland-and-write-class-file class-file compiland)
+	       (setf (local-function-class-file local-function) class-file)
+	       (setf (local-function-function local-function) (load-compiled-function pathname))
+	       (when (local-function-variable local-function)
+		 (let ((g (declare-object (load-compiled-function pathname))))
+		   (emit-make-compiled-closure-for-flet/labels 
+		    local-function compiland g))))))))
 
 (defknown p2-labels-process-compiland (t) t)
 (defun p2-labels-process-compiland (local-function)
@@ -4819,17 +4823,13 @@ Note: DEFUN implies a named lambda."
 	       (emit-make-compiled-closure-for-flet/labels 
 		local-function compiland g))))
           (t
-           (let* ((pathname (make-temp-file))
-                  (class-file (make-class-file :pathname pathname
-                                               :lambda-list lambda-list)))
-             (unwind-protect
-                 (progn
-		   (set-compiland-and-write-class-file class-file compiland)
-                   (setf (local-function-class-file local-function) class-file)
-                   (let ((g (declare-object (load-compiled-function pathname))))
-		     (emit-make-compiled-closure-for-flet/labels 
-		      local-function compiland g)))
-               (delete-file pathname)))))))
+	   (with-temp-class-file
+	       pathname class-file lambda-list
+	       (set-compiland-and-write-class-file class-file compiland)
+	       (setf (local-function-class-file local-function) class-file)
+	       (let ((g (declare-object (load-compiled-function pathname))))
+		 (emit-make-compiled-closure-for-flet/labels 
+		  local-function compiland g)))))))
 
 (defknown p2-flet (t t t) t)
 (defun p2-flet (form target representation)
