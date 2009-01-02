@@ -6108,32 +6108,55 @@ Note: DEFUN implies a named lambda."
         (return-from derive-type-%ldb (list 'INTEGER 0 (1- (expt 2 size-arg)))))))
   (list 'INTEGER 0 '*))
 
+(defmacro when-args-integer (args typenames decls &body body)
+  "Checks types of the args provided, if all args are
+integer, splits them into high/low bytes and invokes the body.
+
+args contains the arguments for which the type check is done.
+typenames contains names of variables to which the type, low byte
+and high byte of the provided arg is stored, to be used in
+the body.
+decls contains declarations used in the body, similar to let.
+body is the body to invoke. "
+  (labels ((build-let-when (body args typenames)
+	   (when args
+	     (let ((type (third typenames))
+		   (low (second typenames))
+		   (high (first typenames)))
+	       (setf body 
+		     `(let ((,type (derive-compiler-type ,(first args))))
+			(when (integer-type-p ,type)
+			  (let ((,low (integer-type-low ,type))
+				(,high (integer-type-high ,type)))
+			    ,body)))))
+	     (let ((tmpbody 
+		    (build-let-when body (cdr args) (cdddr typenames))))
+	       (if tmpbody
+		   tmpbody
+		   body)))))
+    (build-let-when 
+     `(let (,@decls) ,@body)
+     (reverse args) (reverse typenames))))
+
 (defknown derive-type-minus (t) t)
 (defun derive-type-minus (form)
   (let ((args (cdr form))
         (result-type t))
     (case (length args)
       (1
-       (let ((type1 (derive-compiler-type (%car args))))
-         (when (integer-type-p type1)
-           (let* ((low1 (integer-type-low type1))
-                  (high1 (integer-type-high type1))
-                  (low (and high1 (- high1)))
-                  (high (and low1 (- low1))))
-             (setf result-type (%make-integer-type low high))))))
+       (when-args-integer 
+	((%car args))
+	(type1 low1 high1)
+	((low (and high1 (- high1)))
+	 (high (and low1 (- low1))))
+	(setf result-type (%make-integer-type low high))))
       (2
-       (let ((type1 (derive-compiler-type (%car args))))
-         (when (integer-type-p type1)
-           (let ((type2 (derive-compiler-type (%cadr args))))
-             (when (integer-type-p type2)
-               ;; Both integer types.
-               (let* ((low1 (integer-type-low type1))
-                      (high1 (integer-type-high type1))
-                      (low2 (integer-type-low type2))
-                      (high2 (integer-type-high type2))
-                      (low (and low1 high2 (- low1 high2)))
-                      (high (and high1 low2 (- high1 low2))))
-                 (setf result-type (%make-integer-type low high)))))))))
+       (when-args-integer 
+	((%car args) (%cadr args))
+	(type1 low1 high1 type2 low2 high2)
+	((low (and low1 high2 (- low1 high2)))
+	 (high (and high1 low2 (- high1 low2))))
+	(setf result-type (%make-integer-type low high)))))
     result-type))
 
 (defknown derive-type-plus (t) t)
@@ -6141,18 +6164,12 @@ Note: DEFUN implies a named lambda."
   (let ((args (cdr form))
         (result-type t))
     (when (= (length args) 2)
-      (let ((type1 (derive-compiler-type (%car args))))
-        (when (integer-type-p type1)
-          (let ((type2 (derive-compiler-type (%cadr args))))
-            (when (integer-type-p type2)
-              ;; Both integer types.
-              (let* ((low1 (integer-type-low type1))
-                     (high1 (integer-type-high type1))
-                     (low2 (integer-type-low type2))
-                     (high2 (integer-type-high type2))
-                     (low (and low1 low2 (+ low1 low2)))
-                     (high (and high1 high2 (+ high1 high2))))
-                (setf result-type (%make-integer-type low high))))))))
+      (when-args-integer 
+       ((%car args) (%cadr args))
+       (type1 low1 high1 type2 low2 high2)
+       ((low (and low1 low2 (+ low1 low2)))
+	(high (and high1 high2 (+ high1 high2))))
+       (setf result-type (%make-integer-type low high))))
     result-type))
 
 (defun derive-type-times (form)
@@ -6164,32 +6181,26 @@ Note: DEFUN implies a named lambda."
         (when (and (integerp arg1) (integerp arg2))
           (let ((n (* arg1 arg2)))
             (return-from derive-type-times (%make-integer-type n n))))
-      (let ((type1 (derive-compiler-type arg1)))
-        (when (integer-type-p type1)
-          (let ((type2 (derive-compiler-type arg2)))
-            (when (integer-type-p type2)
-              ;; Both integer types.
-              (let ((low1 (integer-type-low type1))
-                    (high1 (integer-type-high type1))
-                    (low2 (integer-type-low type2))
-                    (high2 (integer-type-high type2))
-                    (low nil)
-                    (high nil))
-                (cond ((not (and low1 low2))
-                       ;; Nothing to do.
-                       )
-                      ((or (minusp low1) (minusp low2))
-                       (when (and high1 high2)
-                         (let ((max (* (max (abs low1) (abs high1))
-                                       (max (abs low2) (abs high2)))))
-                           (setf low (- max)
-                                 high max))))
-                      (t
-                       (setf low (* low1 low2))
-                       (when (and high1 high2)
-                         (setf high (* high1 high2)))))
-                (setf result-type (%make-integer-type low high)))))))))
-    result-type))
+	(when-args-integer 
+	 (arg1 arg2)
+	 (type1 low1 high1 type2 low2 high2)
+	 ((low nil)
+		(high nil))
+	 (cond ((not (and low1 low2))
+		;; Nothing to do.
+		)
+	       ((or (minusp low1) (minusp low2))
+		(when (and high1 high2)
+		  (let ((max (* (max (abs low1) (abs high1))
+				(max (abs low2) (abs high2)))))
+		    (setf low (- max)
+			  high max))))
+	       (t
+		(setf low (* low1 low2))
+		(when (and high1 high2)
+		  (setf high (* high1 high2)))))
+	 (setf result-type (%make-integer-type low high)))))
+  result-type))
 
 (declaim (ftype (function (t) t) derive-type-max))
 (defun derive-type-max (form)
@@ -6202,23 +6213,17 @@ Note: DEFUN implies a named lambda."
   (let ((args (cdr form))
         (result-type t))
     (when (= (length form) 3)
-      (let* ((type1 (derive-compiler-type (%car args))))
-        (when (integer-type-p type1)
-          (let ((type2 (derive-compiler-type (%cadr args))))
-            (when (integer-type-p type2)
-              ;; Both integer types.
-              (let ((low1 (integer-type-low type1))
-                    (high1 (integer-type-high type1))
-                    (low2 (integer-type-low type2))
-                    (high2 (integer-type-high type2))
-                    low high)
-                (setf low (if (and low1 low2)
-                              (min low1 low2)
-                              nil)
-                      high (if (and high1 high2)
-                               (min high1 high2)
-                               nil))
-                (setf result-type (%make-integer-type low high))))))))
+      (when-args-integer 
+       ((%car args) (%cadr args))
+       (type1 low1 high1 type2 low2 high2)
+       (low high)
+       (setf low (if (and low1 low2)
+		     (min low1 low2)
+		     nil)
+	     high (if (and high1 high2)
+		      (min high1 high2)
+		      nil))
+       (setf result-type (%make-integer-type low high))))
     result-type))
 
 ;; read-char &optional input-stream eof-error-p eof-value recursive-p => char
@@ -6234,35 +6239,32 @@ Note: DEFUN implies a named lambda."
   (let* ((args (cdr form))
          (arg1 (first args))
          (arg2 (second args))
-         (type1 (derive-compiler-type arg1))
-         (type2 (derive-compiler-type arg2))
          (result-type 'INTEGER))
-    (when (and (integer-type-p type1) (integer-type-p type2))
-      (let ((low1 (integer-type-low type1))
-            (high1 (integer-type-high type1))
-            (low2 (integer-type-low type2))
-            (high2 (integer-type-high type2)))
-        (when (and low1 high1 low2 high2)
-          (cond ((fixnum-constant-value type2)
-                 (setf arg2 (fixnum-constant-value type2))
-                 (cond ((<= -64 arg2 64)
-                        (setf result-type
-                              (list 'INTEGER (ash low1 arg2) (ash high1 arg2))))
-                       ((minusp arg2)
-                        (setf result-type
-                              (list 'INTEGER
-                                    (if (minusp low1) -1 0)
-                                    (if (minusp high1) -1 0))))))
-                ((and (>= low1 0) (>= high1 0) (>= low2 0) (>= high2 0))
-                 ;; Everything is non-negative.
-                 (setf result-type (list 'INTEGER
-                                         (ash low1 low2)
-                                         (ash high1 high2))))
-                ((and (>= low1 0) (>= high1 0) (<= low2 0) (<= high2 0))
-                 ;; Negative (or zero) second argument.
-                 (setf result-type (list 'INTEGER
-                                         (ash low1 low2)
-                                         (ash high1 high2))))))))
+    (when-args-integer 
+     (arg1 arg2)
+     (type1 low1 high1 type2 low2 high2)
+     ()
+     (when (and low1 high1 low2 high2)
+       (cond ((fixnum-constant-value type2)
+	      (setf arg2 (fixnum-constant-value type2))
+	      (cond ((<= -64 arg2 64)
+		     (setf result-type
+			   (list 'INTEGER (ash low1 arg2) (ash high1 arg2))))
+		    ((minusp arg2)
+		     (setf result-type
+			   (list 'INTEGER
+				 (if (minusp low1) -1 0)
+				 (if (minusp high1) -1 0))))))
+	     ((and (>= low1 0) (>= high1 0) (>= low2 0) (>= high2 0))
+	      ;; Everything is non-negative.
+	      (setf result-type (list 'INTEGER
+				      (ash low1 low2)
+				      (ash high1 high2))))
+	     ((and (>= low1 0) (>= high1 0) (<= low2 0) (<= high2 0))
+	      ;; Negative (or zero) second argument.
+	      (setf result-type (list 'INTEGER
+				      (ash low1 low2)
+				      (ash high1 high2)))))))
     (make-compiler-type result-type)))
 
 (defknown derive-type (t) t)
