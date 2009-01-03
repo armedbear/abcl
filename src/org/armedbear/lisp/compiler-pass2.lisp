@@ -3193,32 +3193,23 @@ Note: DEFUN implies a named lambda."
             (t
              (p2-test-predicate form "listp"))))))
 
-(defun p2-test-minusp (form)
+(defun p2-test-minusp/plusp/zerop (form instruction predicate)
   (when (check-arg-count form 1)
     (let ((arg (%cadr form)))
       (cond ((fixnum-type-p (derive-compiler-type arg))
 	     (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
-             'ifge)
+             instruction)
             (t
-             (p2-test-predicate form "minusp"))))))
+             (p2-test-predicate form predicate))))))
+
+(defun p2-test-minusp (form)
+  (p2-test-minusp/plusp/zerop form 'ifge "minusp"))
 
 (defun p2-test-plusp (form)
-  (when (check-arg-count form 1)
-    (let ((arg (%cadr form)))
-      (cond ((fixnum-type-p (derive-compiler-type arg))
-	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
-             'ifle)
-            (t
-             (p2-test-predicate form "plusp"))))))
+  (p2-test-minusp/plusp/zerop form 'ifle "plusp"))
 
 (defun p2-test-zerop (form)
-  (when (check-arg-count form 1)
-    (let ((arg (%cadr form)))
-      (cond ((fixnum-type-p (derive-compiler-type arg))
-	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
-             'ifne)
-            (t
-             (p2-test-predicate form "zerop"))))))
+  (p2-test-minusp/plusp/zerop form 'ifne "zerop"))
 
 (defun p2-test-numberp (form)
   (p2-test-predicate form "numberp"))
