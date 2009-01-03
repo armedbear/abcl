@@ -3152,27 +3152,28 @@ Note: DEFUN implies a named lambda."
 (defun p2-test-endp (form)
   (p2-test-predicate form "endp"))
 
+(defmacro p2-test-integer-predicate (form predicate &body instructions)
+  (let ((tmpform (gensym)))
+    `(let ((,tmpform ,form))
+       (when (check-arg-count ,tmpform 1)
+	 (let ((arg (%cadr ,tmpform)))
+	   (cond ((fixnum-type-p (derive-compiler-type arg))
+		  (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
+		  ,@instructions)
+		 (t
+		  (p2-test-predicate ,tmpform ,predicate))))))))
+
 (defun p2-test-evenp (form)
-  (when (check-arg-count form 1)
-    (let ((arg (%cadr form)))
-      (cond ((fixnum-type-p (derive-compiler-type arg))
-	     (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
-             (emit-push-constant-int 1)
-             (emit 'iand)
-             'ifne)
-            (t
-             (p2-test-predicate form "evenp"))))))
+  (p2-test-integer-predicate form "evenp"
+			     (emit-push-constant-int 1)
+			     (emit 'iand)
+			     'ifne))
 
 (defun p2-test-oddp (form)
-  (when (check-arg-count form 1)
-    (let ((arg (%cadr form)))
-      (cond ((fixnum-type-p (derive-compiler-type arg))
-	     (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
-             (emit-push-constant-int 1)
-             (emit 'iand)
-             'ifeq)
-            (t
-             (p2-test-predicate form "oddp"))))))
+  (p2-test-integer-predicate form "oddp"
+			     (emit-push-constant-int 1)
+			     (emit 'iand)
+			     'ifeq))
 
 (defun p2-test-floatp (form)
   (p2-test-predicate form "floatp"))
@@ -3193,23 +3194,14 @@ Note: DEFUN implies a named lambda."
             (t
              (p2-test-predicate form "listp"))))))
 
-(defun p2-test-minusp/plusp/zerop (form instruction predicate)
-  (when (check-arg-count form 1)
-    (let ((arg (%cadr form)))
-      (cond ((fixnum-type-p (derive-compiler-type arg))
-	     (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
-             instruction)
-            (t
-             (p2-test-predicate form predicate))))))
-
 (defun p2-test-minusp (form)
-  (p2-test-minusp/plusp/zerop form 'ifge "minusp"))
+  (p2-test-integer-predicate form "minusp" 'ifge))
 
 (defun p2-test-plusp (form)
-  (p2-test-minusp/plusp/zerop form 'ifle "plusp"))
+  (p2-test-integer-predicate form "plusp" 'ifle))
 
 (defun p2-test-zerop (form)
-  (p2-test-minusp/plusp/zerop form 'ifne "zerop"))
+  (p2-test-integer-predicate form "zerop" 'ifne))
 
 (defun p2-test-numberp (form)
   (p2-test-predicate form "numberp"))
