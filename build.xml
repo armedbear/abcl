@@ -17,19 +17,24 @@
 	      value="${basedir}/dist"/>
     <property name="abcl.jar.path"
 	      value="${dist.dir}/abcl.jar"/>
+    <property name="abcl.ext.dir"
+	      value="${basedir}/ext"/>
+
 
     <target name="help">
       <echo>Main Ant targets:
  abcl.compile  
-   -- compile ABCL to ${build.classes.dir}
+   -- compile ABCL to ${build.classes.dir}.
  abcl.jar      
-   -- create packaged ${abcl.jar.path}
+   -- create packaged ${abcl.jar.path}.
  abcl.wrapper  
-   -- create executable wrapper for ABCL
+   -- create executable wrapper for ABCL.
  abcl.source.zip abcl.source.tar
-    -- create source distributions in ${dist.dir}
+   -- create source distributions in ${dist.dir}.
+ acbl.test.java
+   -- Run junit tests under ${abcl.test.src.dir}.
  abcl.clean 
-    -- remove ABCL intermediate files</echo>
+   -- remove ABCL intermediate files</echo>
       <echo>Corresponding targets for J have been removed.</echo>
     </target>
 
@@ -391,6 +396,56 @@
 	   compress="true">
 	<zipfileset dir="${abcl.build.src.dir}" prefix="abcl-src-${abcl.version}"/>
       </zip>
+    </target>
+
+    <property name="abcl.test.classes.dir"
+	      value="${build.dir}/classes-test"/>
+
+    <property name="abcl.test.src.dir"
+	      value="${basedir}/test/src"/>
+
+    <patternset id="abcl.test.source.java">
+      <!-- For now, we list tests explicitly, because we have to
+           enumerate them later to the JUnit test runner. -->
+      <include name="org/armedbear/lisp/FastStringBufferTest.java"/>
+    </patternset>
+
+    <property name="junit-4.5.path"
+	      value="${abcl.ext.dir}/junit-4.5.jar"/>
+
+    <path id="abcl.test.compile.classpath">
+      <pathelement location="${junit-4.5.path}"/>
+      <pathelement location="${build.classes.dir}"/>
+    </path>
+
+    <target name="abcl.test.pre-compile">
+      <mkdir dir="${abcl.ext.dir}"/>
+      <get src="http://downloads.sourceforge.net/junit/junit-4.5.jar?modtime=1218209625"
+	  dest="${junit-4.5.path}"/>
+    </target>
+	
+    <target name="abcl.test.compile" depends="abcl.test.pre-compile,abcl.compile">
+      <mkdir dir="${abcl.test.classes.dir}"/>
+      <javac destdir="${abcl.test.classes.dir}"
+	     classpathref="abcl.test.compile.classpath"
+	     debug="true"
+	     target="1.5">
+	<src path="${abcl.test.src.dir}"/>
+	<patternset refid="abcl.test.source.java"/>
+      </javac>
+    </target>
+
+    <path id="abcl.test.run.classpath">
+      <path refid="abcl.test.compile.classpath"/>
+      <pathelement location="${abcl.test.classes.dir}"/>
+    </path>
+	
+    <target name="abcl.test.java" depends="abcl.test.compile">
+      <java fork="true"
+	    classpathref="abcl.test.run.classpath"
+	    classname="org.junit.runner.JUnitCore">
+	<arg value="org.armedbear.lisp.FastStringBufferTest"/>
+      </java>
     </target>
 
     <import file="netbeans-build.xml" optional="true"/> 

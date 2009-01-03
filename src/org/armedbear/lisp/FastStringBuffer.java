@@ -2,6 +2,7 @@
  * FastStringBuffer.java
  *
  * Copyright (C) 1998-2005 Peter Graves
+ * Copyright (C) 2008 Phil Hudson
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -33,128 +34,84 @@
 
 package org.armedbear.lisp;
 
-public final class FastStringBuffer
+/** 
+ * An adaptor of the Java 1.5 java.lang.StringBuilder.
+ * 
+ * "This class should be removed with all references to it replaced
+ *  with java.lang.StringBuilder once enough confidence in this change
+ *  has been gained." -- Phil Hudson 20090202 via <armedbear-j-devel>.
+ */
+public final class FastStringBuffer implements Appendable, CharSequence
 {
   private static final int SPARE_CAPACITY = 128;
 
-  private char[] buffer;
-  private int used;
+  private final StringBuilder builder;
 
   public FastStringBuffer()
   {
-    buffer = new char[SPARE_CAPACITY];
+    this(SPARE_CAPACITY);
   }
 
-  public FastStringBuffer(String s)
+  public FastStringBuffer(String s) 
   {
-    used = s.length();
-    buffer = new char[used + SPARE_CAPACITY];
-    s.getChars(0, used, buffer, 0);
+    builder = new StringBuilder(s);
   }
 
   public FastStringBuffer(char c)
   {
-    used = 1;
-    buffer = new char[1 + SPARE_CAPACITY];
-    buffer[0] = c;
+    this(String.valueOf(c));
   }
 
   public FastStringBuffer(int length) throws NegativeArraySizeException
   {
-    if (length < 0)
-      throw new NegativeArraySizeException();
-    buffer = new char[length];
+    builder = new StringBuilder(length);
   }
 
   public final int length()
   {
-    return used;
+    return builder.length();
   }
 
   public final int capacity()
   {
-    return buffer.length;
+    return builder.capacity();
   }
 
   public final char charAt(int index)
   {
-    try
-      {
-        return buffer[index];
-      }
-    catch (ArrayIndexOutOfBoundsException e)
-      {
-        throw new StringIndexOutOfBoundsException();
-      }
+    return builder.charAt(index);
   }
 
   public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin)
   {
-    if (srcBegin < 0 || srcBegin > srcEnd || srcEnd > used)
-      throw new StringIndexOutOfBoundsException();
-    System.arraycopy(buffer, srcBegin, dst, dstBegin, srcEnd - srcBegin);
+    builder.getChars(srcBegin, srcEnd, dst, dstBegin);
   }
 
   public void setCharAt(int index, char c)
   {
-    try
-      {
-        buffer[index] = c;
-      }
-    catch (ArrayIndexOutOfBoundsException e)
-      {
-        throw new StringIndexOutOfBoundsException();
-      }
+    builder.setCharAt(index, c);
   }
 
   public void ensureCapacity(int minimumCapacity)
   {
-    if (buffer.length < minimumCapacity)
-      {
-        int newCapacity = buffer.length * 2 + 2;
-        if (newCapacity < minimumCapacity)
-          newCapacity = minimumCapacity;
-        char newBuffer[] = new char[newCapacity];
-        System.arraycopy(buffer, 0, newBuffer, 0, used);
-        buffer = newBuffer;
-      }
-  }
-
-  public void setText(String s)
-  {
-    used = 0;
-    append(s);
+    builder.ensureCapacity(minimumCapacity);
   }
 
   public FastStringBuffer append(String s)
   {
-    if (s == null)
-      s = "null";
-    int addedLength = s.length();
-    int combinedLength = used + addedLength;
-    ensureCapacity(combinedLength);
-    s.getChars(0, addedLength, buffer, used);
-    used = combinedLength;
+    builder.append(s);
     return this;
   }
 
   public FastStringBuffer append(char[] chars)
   {
-    if (used + chars.length > buffer.length)
-      ensureCapacity(used + chars.length);
-    System.arraycopy(chars, 0, buffer, used, chars.length);
-    used += chars.length;
+    builder.append(chars);
     return this;
   }
 
   public FastStringBuffer append(char[] chars, int offset, int len)
   {
-    if (offset < 0 || len < 0 || offset + len > chars.length)
-      throw new StringIndexOutOfBoundsException();
-    if (used + len > buffer.length)
-      ensureCapacity(used + len);
-    System.arraycopy(chars, offset, buffer, used, len);
-    used += len;
+    builder.append(chars, offset, len);
     return this;
   }
 
@@ -165,9 +122,7 @@ public final class FastStringBuffer
 
   public FastStringBuffer append(char c)
   {
-    if (used + 1 > buffer.length)
-      ensureCapacity(used + 1);
-    buffer[used++] = c;
+    builder.append(c);
     return this;
   }
 
@@ -183,34 +138,40 @@ public final class FastStringBuffer
 
   public void setLength(int newLength) throws IndexOutOfBoundsException
   {
-    if (newLength < 0)
-      throw new StringIndexOutOfBoundsException(newLength);
-    ensureCapacity(newLength);
-    used = newLength;
+    builder.setLength(newLength);
   }
 
   public FastStringBuffer reverse()
   {
-    final int limit = used / 2;
-    for (int i = 0; i < limit; ++i)
-      {
-        char c = buffer[i];
-        buffer[i] = buffer[used - i - 1];
-        buffer[used - i - 1] = c;
-      }
-    return this;
+    builder.reverse();
+    return this; 
   }
 
   @Override
   public final String toString()
   {
-    return new String(buffer, 0, used);
+    return builder.toString();
   }
 
   public final char[] toCharArray()
   {
-    char[] copy = new char[used];
-    System.arraycopy(buffer, 0, copy, 0, used);
-    return copy;
+    return toString().toCharArray();
   }
+
+   public CharSequence subSequence(int start, int end)
+  {
+    return builder.subSequence(start, end);
+   }
+ 
+   public FastStringBuffer append(CharSequence seq)
+   {
+     builder.append(seq);
+     return this;
+   }
+ 
+   public FastStringBuffer append(CharSequence seq, int start, int end)
+   {
+     builder.append(seq, start, end);
+     return this;
+   }
 }
