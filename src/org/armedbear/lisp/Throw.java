@@ -58,7 +58,7 @@ public final class Throw extends ConditionThrowable
     {
         try {
             return new ControlError("Attempt to throw to the nonexistent tag " +
-                                    tag + ".");
+                                    tag.writeToString() + ".");
         }
         catch (Throwable t) {
             Debug.trace(t);
