@@ -82,7 +82,7 @@
 
       <!-- Set from commandline via -D or in 'build.properties' -->
       <property name="build.version" value="abcl.svn"/>
-      <echo>Build-Version: ${build.version}</echo>
+      <echo>Implementation-Source: ${version.src}</echo>
     </target>
 
     <target name="abcl.stamp.hostname">
@@ -421,6 +421,7 @@
     <target name="abcl.test.pre-compile">
       <mkdir dir="${abcl.ext.dir}"/>
       <get src="http://downloads.sourceforge.net/junit/junit-4.5.jar?modtime=1218209625"
+	   usetimestamp="true"
 	  dest="${junit-4.5.path}"/>
     </target>
 	
@@ -439,6 +440,8 @@
       <path refid="abcl.test.compile.classpath"/>
       <pathelement location="${abcl.test.classes.dir}"/>
     </path>
+
+    <target name="abcl.test" depends="abcl.test.java,abcl.test.lisp"/>
 	
     <target name="abcl.test.java" depends="abcl.test.compile">
       <java fork="true"
@@ -447,6 +450,30 @@
 	<arg value="org.armedbear.lisp.FastStringBufferTest"/>
       </java>
     </target>
+
+    <target name="abcl.test.lisp" depends="abcl.test.lisp.asdf"/>
+
+    <target name="abcl.test.lisp.asdf" depends="abcl.jar">
+    </target>
+
+    <target name="abcl.test.ansi.interpreted">
+      <java fork="true"
+	    classpathref="abcl.classpath.dist"
+	    classname="org.armedbear.lisp.Main">
+	<arg value="--noinit"/>
+	<arg value="--load scripts/ansi-tests-interpreted.lisp "/>
+      </java>
+    </target>
+
+    <target name="abcl.test.ansi.interpreted">
+      <java fork="true"
+	    classpathref="abcl.classpath.dist"
+	    classname="org.armedbear.lisp.Main">
+	<arg value="--noinit"/>
+	<arg value="--load scripts/ansi-tests-compiled.lisp "/>
+      </java>
+    </target>
+
 
     <import file="netbeans-build.xml" optional="true"/> 
 <!--    <import file="j-build.xml" optional="true"/>  -->
