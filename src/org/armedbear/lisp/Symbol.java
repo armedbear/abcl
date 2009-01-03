@@ -2900,6 +2900,8 @@ public class Symbol extends LispObject
     PACKAGE_JAVA.addExternalSymbol("JAVA-EXCEPTION-CAUSE");
   public static final Symbol JAVA_OBJECT =
     PACKAGE_JAVA.addExternalSymbol("JAVA-OBJECT");
+  public static final Symbol JAVA_CLASS =
+    PACKAGE_JAVA.addExternalSymbol("JAVA-CLASS");
   public static final Symbol JCALL =
     PACKAGE_JAVA.addExternalSymbol("JCALL");
   public static final Symbol JCALL_RAW =

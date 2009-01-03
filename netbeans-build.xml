@@ -5,6 +5,7 @@
 <!-- XXX need way to autodetect NetBeans as installed, as this will
      probably fail otherwise.  -->
   <import file="nbproject/build-impl.xml"/>
+  <import file="nbproject/profiler-build-impl.xml" optional="true"/>
 
   <target name="-post-compile">
     <echo>build.classes.dir: ${build.classes.dir}</echo>

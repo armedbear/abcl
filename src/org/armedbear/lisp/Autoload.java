@@ -452,6 +452,8 @@ public class Autoload extends Function
         autoload("print-not-readable-object", "PrintNotReadable");
         autoload("probe-file", "probe_file");
         autoload("rational", "FloatFunctions");
+	autoload("read-char-no-hang", "read_char_no_hang");
+	autoload("read-delimited-list", "read_delimited_list");
         autoload("rem", "rem");
         autoload("remhash", "HashTableFunctions");
         autoload("remhash", "HashTableFunctions");
@@ -513,6 +515,9 @@ public class Autoload extends Function
         autoload(PACKAGE_EXT, "thread-lock", "ThreadLock", true);
         autoload(PACKAGE_EXT, "thread-unlock", "ThreadLock", true);
         autoload(PACKAGE_JAVA, "%jnew-proxy", "JProxy");
+	autoload(PACKAGE_JAVA, "%find-java-class", "JavaClass");
+	autoload(PACKAGE_JAVA, "%jmake-invocation-handler", "JProxy");
+	autoload(PACKAGE_JAVA, "%jmake-proxy", "JProxy");
         autoload(PACKAGE_JAVA, "%jnew-runtime-class", "RuntimeClass");
         autoload(PACKAGE_JAVA, "%jredefine-method", "RuntimeClass");
         autoload(PACKAGE_JAVA, "%jregister-handler", "JHandler");

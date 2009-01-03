@@ -1,2 +1,10 @@
 # build.properties
 # $Id: build.properties,v 1.23 2007-03-03 19:19:11 piso Exp $
+
+#additional.jars=${user.home}/work/lsw/lib/bsh-2.0b4.jar:${user.home}/work/lsw/lib/jscheme.jar
+#java.options=-Xmx2g
+
+#abcl.src.version=r14888+possibly-scripting
+
+
+#abcl.build.module=scripting
