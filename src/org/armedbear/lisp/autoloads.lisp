@@ -201,8 +201,6 @@
 (autoload 'jinterface-implementation "java")
 (export 'jobject-class "JAVA")
 (autoload 'jobject-class "java")
-(export 'jproperty-value "JAVA")
-(autoload 'jproperty-value "java")
 (export 'jclass-superclass "JAVA")
 (autoload 'jclass-superclass "java")
 (export 'jclass-interfaces "JAVA")

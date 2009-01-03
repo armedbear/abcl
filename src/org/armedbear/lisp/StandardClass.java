@@ -123,9 +123,6 @@ public class StandardClass extends SlotClass
   public static final StandardClass BUILT_IN_CLASS =
     addStandardClass(Symbol.BUILT_IN_CLASS, list1(CLASS));
 
-  public static final StandardClass JAVA_CLASS =
-    addStandardClass(Symbol.JAVA_CLASS, list1(CLASS));
-
   public static final StandardClass FORWARD_REFERENCED_CLASS =
     addStandardClass(Symbol.FORWARD_REFERENCED_CLASS, list1(CLASS));
 
@@ -282,8 +279,6 @@ public class StandardClass extends SlotClass
             new SlotDefinition(Symbol.OPERANDS,
                                list1(PACKAGE_CL.intern("ARITHMETIC-ERROR-OPERANDS")))));
     BUILT_IN_CLASS.setCPL(BUILT_IN_CLASS, CLASS, STANDARD_OBJECT,
-                          BuiltInClass.CLASS_T);
-    JAVA_CLASS.setCPL(JAVA_CLASS, CLASS, STANDARD_OBJECT,
                           BuiltInClass.CLASS_T);
     CELL_ERROR.setCPL(CELL_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
                       STANDARD_OBJECT, BuiltInClass.CLASS_T);

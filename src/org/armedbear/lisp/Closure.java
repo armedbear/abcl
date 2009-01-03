@@ -595,8 +595,6 @@ public class Closure extends Function
         final LispThread thread = LispThread.currentThread();
         SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
         Environment ext = new Environment(environment);
-	for (Symbol special: specials)
-	  ext.declareSpecial(special);
         bindRequiredParameters(ext, thread, first, second, third, fourth,
                                fifth, sixth, seventh);
         return bindParametersAndExecute(ext, thread, 
