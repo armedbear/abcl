@@ -6715,9 +6715,8 @@ body is the body to invoke. "
               (fix-boxing representation result-type)
               (emit-move-from-stack target representation))
              ((fixnum-type-p type2)
-              (compile-form arg1 'stack nil)
-              (maybe-emit-clear-values arg1 arg2)
-              (compile-form arg2 'stack :int)
+	      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
+							 arg2 'stack :int)
               (emit-invokevirtual +lisp-object-class+ "add" '("I") +lisp-object+)
               (fix-boxing representation result-type)
               (emit-move-from-stack target representation))
