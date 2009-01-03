@@ -1,6 +1,7 @@
 ;;; compiler-pass2.lisp
 ;;;
 ;;; Copyright (C) 2003-2008 Peter Graves
+;;; Copyright (C) 2008 Ville Voutilainen
 ;;; $Id$
 ;;;
 ;;; This program is free software; you can redistribute it and/or
@@ -1929,6 +1930,11 @@ representation, based on the derived type of the LispObject."
         (setf (gethash local-function ht) g)))
     g))
 
+(defun new-fixnum (&optional (test-val t))
+  (when test-val
+    (emit 'new +lisp-fixnum-class+)
+    (emit 'dup)))
+
 (defknown declare-fixnum (fixnum) string)
 (defun declare-fixnum (n)
   (declare (type fixnum n))
@@ -1946,8 +1952,7 @@ representation, based on the derived type of the LispObject."
                (emit-push-constant-int n)
                (emit 'aaload))
               (t
-               (emit 'new +lisp-fixnum-class+)
-               (emit 'dup)
+	       (new-fixnum)
                (emit-push-constant-int n)
                (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
         (emit 'putstatic *this-class* g +lisp-fixnum+)
@@ -5007,9 +5012,7 @@ Note: DEFUN implies a named lambda."
                 (<= -31 constant-shift 31)
                 (fixnum-type-p type1)
                 (fixnum-type-p result-type))
-           (when (null representation)
-             (emit 'new +lisp-fixnum-class+)
-             (emit 'dup))
+	   (new-fixnum (null representation))
            (compile-form arg1 'stack :int)
            (cond ((plusp constant-shift)
                   (compile-form arg2 'stack :int)
@@ -5051,9 +5054,7 @@ Note: DEFUN implies a named lambda."
            (emit-move-from-stack target representation))
           ((and (fixnum-type-p type1)
                 low2 high2 (<= -31 low2 high2 0)) ; Negative shift.
-           (when (null representation)
-             (emit 'new +lisp-fixnum-class+)
-             (emit 'dup))
+	   (new-fixnum (null representation))
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 						      arg2 'stack :int)
            (emit 'ineg)
@@ -5123,9 +5124,7 @@ Note: DEFUN implies a named lambda."
                ((and (fixnum-type-p type1) (fixnum-type-p type2))
                 ;;                     (format t "p2-logand fixnum case~%")
                 ;; Both arguments are fixnums.
-                (when (null representation)
-                  (emit 'new +lisp-fixnum-class+)
-                  (emit 'dup))
+		(new-fixnum (null representation))
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 							   arg2 'stack :int)
                 (emit 'iand)
@@ -5136,9 +5135,7 @@ Note: DEFUN implies a named lambda."
                     (and (fixnum-type-p type2)
                          (compiler-subtypep type2 'unsigned-byte)))
                 ;; One of the arguments is a positive fixnum.
-                (when (null representation)
-                  (emit 'new +lisp-fixnum-class+)
-                  (emit 'dup))
+		(new-fixnum (null representation))
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 							   arg2 'stack :int)
                 (emit 'iand)
@@ -5228,9 +5225,7 @@ Note: DEFUN implies a named lambda."
                                           (fixnum-constant-value type2))
                                   target representation))
                ((and (fixnum-type-p type1) (fixnum-type-p type2))
-                (when (null representation)
-                  (emit 'new +lisp-fixnum-class+)
-                  (emit 'dup))
+		(new-fixnum (null representation))
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 							   arg2 'stack :int)
                 (emit 'ior)
@@ -5305,9 +5300,7 @@ Note: DEFUN implies a named lambda."
                 (emit 'ixor))
                ((and (fixnum-type-p type1) (fixnum-type-p type2))
 ;;                 (format t "p2-logxor case 2~%")
-                (when (null representation)
-                  (emit 'new +lisp-fixnum-class+)
-                  (emit 'dup))
+		(new-fixnum (null representation))
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 							   arg2 'stack :int)
                 (emit 'ixor)
@@ -5341,9 +5334,7 @@ Note: DEFUN implies a named lambda."
     (return-from p2-lognot))
   (cond ((and (fixnum-type-p (derive-compiler-type form)))
          (let ((arg (%cadr form)))
-           (when (null representation)
-             (emit 'new +lisp-fixnum-class+)
-             (emit 'dup))
+	   (new-fixnum (null representation))
 	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
            (emit 'iconst_m1)
            (emit 'ixor)
@@ -5381,9 +5372,7 @@ Note: DEFUN implies a named lambda."
            (compile-constant 0 target representation))
           ((and size position)
            (cond ((<= (+ position size) 31)
-                  (when (null representation)
-                    (emit 'new +lisp-fixnum-class+)
-                    (emit 'dup))
+		  (new-fixnum (null representation))
 		  (compile-forms-and-maybe-emit-clear-values size-arg nil nil
 							     position-arg nil nil
 							     arg3 'stack :int)
@@ -5395,10 +5384,7 @@ Note: DEFUN implies a named lambda."
 		  (emit-fixnum-init representation)
                   (emit-move-from-stack target representation))
                  ((<= (+ position size) 63)
-                  (when (and (null representation) (<= size 31))
-                    ;; Result is a fixnum.
-                    (emit 'new +lisp-fixnum-class+)
-                    (emit 'dup))
+		  (new-fixnum (and (null representation) (<= size 31)))
 		  (compile-forms-and-maybe-emit-clear-values size-arg nil nil
 							     position-arg nil nil
 							     arg3 'stack :long)
@@ -6492,8 +6478,7 @@ body is the body to invoke. "
                    (fixnum-type-p type2))
               (cond ((fixnum-type-p result-type)
                      (unless (eq representation :int)
-                       (emit 'new +lisp-fixnum-class+)
-                       (emit 'dup))
+		       (new-fixnum))
 		     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 								arg2 'stack :int)
                      (emit 'imul)
@@ -6554,9 +6539,7 @@ body is the body to invoke. "
                     (let* ((*register* *register*)
                            (reg1 (allocate-register))
                            (reg2 (allocate-register)))
-                      (when (null representation)
-                        (emit 'new +lisp-fixnum-class+)
-                        (emit 'dup))
+		      (new-fixnum (null representation))
                       (compile-form arg1 'stack :int)
                       (emit 'dup)
                       (emit 'istore reg1)
@@ -6651,9 +6634,7 @@ body is the body to invoke. "
              ((and (fixnum-type-p type1) (fixnum-type-p type2))
               (cond ((or (eq representation :int)
                          (fixnum-type-p result-type))
-                     (when (null representation)
-                       (emit 'new +lisp-fixnum-class+)
-                       (emit 'dup))
+		     (new-fixnum (null representation))
 		     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 								arg2 'stack :int)
                      (emit 'iadd)
@@ -6729,9 +6710,7 @@ body is the body to invoke. "
              ((and (fixnum-type-p type)
                    (integer-type-low type)
                    (> (integer-type-low type) most-negative-fixnum))
-              (when (null representation)
-                (emit 'new +lisp-fixnum-class+)
-                (emit 'dup))
+	      (new-fixnum (null representation))
               (compile-form arg 'stack :int)
               (emit 'ineg)
 	      (emit-fixnum-init representation)
@@ -6766,9 +6745,7 @@ body is the body to invoke. "
              ((and (fixnum-type-p type1) (fixnum-type-p type2))
               (cond ((or (eq representation :int)
                          (fixnum-type-p result-type))
-                     (when (null representation)
-                       (emit 'new +lisp-fixnum-class+)
-                       (emit 'dup))
+		     (new-fixnum (null representation))
 		     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 								arg2 'stack :int)
                      (emit 'isub)
@@ -6886,9 +6863,7 @@ body is the body to invoke. "
              (maybe-emit-clear-values arg1 arg2 arg3)
              (emit-invokevirtual class "setCharAt" '("I" "C") nil)
              (when target
-               (when (null representation)
-                 (emit 'new +lisp-fixnum-class+)
-                 (emit 'dup))
+	       (new-fixnum (null representation))
                (emit 'iload value-register)
                (case representation
                  (:char)
@@ -7068,9 +7043,7 @@ body is the body to invoke. "
                   (emit-invokevirtual +lisp-object-class+ "aset" (list "I" +lisp-object+) nil)))
            (when value-register
              (cond ((fixnum-type-p type3)
-                    (when (null representation)
-                      (emit 'new +lisp-fixnum-class+)
-                      (emit 'dup))
+		    (new-fixnum (null representation))
                     (emit 'iload value-register)
 		    (emit-fixnum-init representation))
                    (t
@@ -7400,8 +7373,7 @@ body is the body to invoke. "
                    (:boolean
                     (emit 'iconst_1))
                    (t
-                    (emit 'new +lisp-fixnum-class+)
-                    (emit 'dup)
+		    (new-fixnum)
                     (emit 'iload (variable-register variable))
                     (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
                  (emit-move-from-stack target representation))
@@ -7570,8 +7542,7 @@ body is the body to invoke. "
              (emit 'iload (variable-register variable))
              (emit 'i2l))
             (t
-             (emit 'new +lisp-fixnum-class+)
-             (emit 'dup)
+	     (new-fixnum)
              (aver (variable-register variable))
              (emit 'iload (variable-register variable))
              (emit-invokespecial-init +lisp-fixnum-class+ '("I"))
@@ -7592,8 +7563,7 @@ body is the body to invoke. "
                    (t
                     (dformat t "p2-setq constructing boxed fixnum for ~S~%"
                              (variable-name variable))
-                    (emit 'new +lisp-fixnum-class+)
-                    (emit 'dup)
+		    (new-fixnum)
                     (aver (variable-register variable))
                     (emit 'iload (variable-register variable))
                     (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
@@ -7609,8 +7579,7 @@ body is the body to invoke. "
                    (t
                     (dformat t "p2-setq constructing boxed fixnum for ~S~%"
                              (variable-name variable))
-                    (emit 'new +lisp-fixnum-class+)
-                    (emit 'dup)
+		    (new-fixnum)
                     (aver (variable-register variable))
                     (emit 'iload (variable-register variable))
                     (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
@@ -7689,8 +7658,7 @@ body is the body to invoke. "
   (cond ((check-arg-count form 1)
          (let ((arg (%cadr form)))
            (unless (eq representation :int)
-             (emit 'new +lisp-fixnum-class+)
-             (emit 'dup))
+	     (new-fixnum))
 	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
            (emit-invokevirtual +lisp-object-class+ "sxhash" nil "I")
            (unless (eq representation :int)
@@ -7815,9 +7783,7 @@ body is the body to invoke. "
            (compile-constant (char-code arg) target representation))
           ((and (< *safety* 3)
                 (eq (derive-compiler-type arg) 'character))
-           (when (null representation)
-             (emit 'new +lisp-fixnum-class+)
-             (emit 'dup))
+	   (new-fixnum (null representation))
            (compile-form arg 'stack :char)
 	   (emit-fixnum-init representation)
            (emit-move-from-stack target representation))
