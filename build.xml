@@ -453,24 +453,26 @@
 
     <target name="abcl.test.lisp" depends="abcl.test.lisp.asdf"/>
 
-    <target name="abcl.test.lisp.asdf" depends="abcl.jar">
+    <target name="abcl.test.lisp.asdf" depends="abcl.jar,abcl.test.ansi.interpreted">
     </target>
 
     <target name="abcl.test.ansi.interpreted">
-      <java fork="true"
+      <java fork="true" dir="${basedir}"
 	    classpathref="abcl.classpath.dist"
 	    classname="org.armedbear.lisp.Main">
 	<arg value="--noinit"/>
-	<arg value="--load scripts/ansi-tests-interpreted.lisp "/>
+	<arg value="--load"/>
+	<arg value="scripts/ansi-tests-interpreted.lisp "/>
       </java>
     </target>
 
-    <target name="abcl.test.ansi.interpreted">
-      <java fork="true"
+    <target name="abcl.test.ansi.compiled">
+      <java fork="true" dir="${basedir}"
 	    classpathref="abcl.classpath.dist"
 	    classname="org.armedbear.lisp.Main">
 	<arg value="--noinit"/>
-	<arg value="--load scripts/ansi-tests-compiled.lisp "/>
+	<arg value="--load"/>
+	<arg value="scripts/ansi-tests-compiled.lisp "/>
       </java>
     </target>
 
