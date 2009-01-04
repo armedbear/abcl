@@ -6401,6 +6401,15 @@ body is the body to invoke. "
     (fix-boxing representation nil) ; FIXME use derived result type
     (emit-move-from-stack target representation)))
 
+(defun two-long-ints-times/plus/minus (arg1 arg2 instruction representation)
+  (compile-form arg1 'stack :int)
+  (emit 'i2l)
+  (compile-form arg2 'stack :int)
+  (emit 'i2l)
+  (maybe-emit-clear-values arg1 arg2)
+  (emit instruction)
+  (convert-long representation))
+
 (defun p2-times (form target representation)
   (case (length form)
     (3
@@ -6429,17 +6438,11 @@ body is the body to invoke. "
                      (emit 'imul)
                      (unless (eq representation :int)
                        (emit-invokespecial-init +lisp-fixnum-class+ '("I"))
-                       (fix-boxing representation 'fixnum))
-                     (emit-move-from-stack target representation))
+                       (fix-boxing representation 'fixnum)))
                     (t
-                     (compile-form arg1 'stack :int)
-                     (emit 'i2l)
-                     (compile-form arg2 'stack :int)
-                     (emit 'i2l)
-                     (maybe-emit-clear-values arg1 arg2)
-                     (emit 'lmul)
-                     (convert-long representation)
-                     (emit-move-from-stack target representation))))
+		     (two-long-ints-times/plus/minus 
+		      arg1 arg2 'lmul representation)))
+	      (emit-move-from-stack target representation))
              ((and (java-long-type-p type1)
                    (java-long-type-p type2)
                    (java-long-type-p result-type))
@@ -6585,13 +6588,8 @@ body is the body to invoke. "
                      (emit 'iadd)
 		     (emit-fixnum-init representation))
                     (t
-                     (compile-form arg1 'stack :int)
-                     (emit 'i2l)
-                     (compile-form arg2 'stack :int)
-                     (emit 'i2l)
-                     (maybe-emit-clear-values arg1 arg2)
-                     (emit 'ladd)
-                     (convert-long representation)))
+		     (two-long-ints-times/plus/minus 
+		      arg1 arg2 'ladd representation)))
               (emit-move-from-stack target representation))
              ((and (java-long-type-p type1)
                    (java-long-type-p type2)
@@ -6696,13 +6694,8 @@ body is the body to invoke. "
                      (emit 'isub)
 		     (emit-fixnum-init representation))
                     (t
-                     (compile-form arg1 'stack :int)
-                     (emit 'i2l)
-                     (compile-form arg2 'stack :int)
-                     (emit 'i2l)
-                     (maybe-emit-clear-values arg1 arg2)
-                     (emit 'lsub)
-                     (convert-long representation)))
+		     (two-long-ints-times/plus/minus 
+		      arg1 arg2 'lsub representation)))
               (emit-move-from-stack target representation))
              ((and (java-long-type-p type1) (java-long-type-p type2)
                    (java-long-type-p result-type))
