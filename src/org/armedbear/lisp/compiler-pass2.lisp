@@ -6586,6 +6586,20 @@ body is the body to invoke. "
          (t
           (compile-function-call form target representation))))
 
+(defun fixnum-result-plus/minus (target representation result-type arg1 arg2
+				 int-op long-op)
+  (cond ((or (eq representation :int)
+	     (fixnum-type-p result-type))
+	 (new-fixnum (null representation))
+	 (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
+						    arg2 'stack :int)
+	 (emit int-op)
+	 (emit-fixnum-init representation))
+	(t
+	 (two-long-ints-times/plus/minus 
+	  arg1 arg2 long-op representation)))
+  (emit-move-from-stack target representation))
+
 (defun p2-plus (form target representation)
   (case (length form)
     (3
@@ -6613,17 +6627,8 @@ body is the body to invoke. "
 							 arg2 nil nil)
               (emit-move-from-stack target representation))
              ((and (fixnum-type-p type1) (fixnum-type-p type2))
-              (cond ((or (eq representation :int)
-                         (fixnum-type-p result-type))
-		     (new-fixnum (null representation))
-		     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-								arg2 'stack :int)
-                     (emit 'iadd)
-		     (emit-fixnum-init representation))
-                    (t
-		     (two-long-ints-times/plus/minus 
-		      arg1 arg2 'ladd representation)))
-              (emit-move-from-stack target representation))
+	      (fixnum-result-plus/minus target representation result-type 
+					arg1 arg2 'iadd 'ladd))
              ((and (java-long-type-p type1)
                    (java-long-type-p type2)
                    (java-long-type-p result-type))
@@ -6719,17 +6724,8 @@ body is the body to invoke. "
        (cond ((and (numberp arg1) (numberp arg2))
               (compile-constant (- arg1 arg2) target representation))
              ((and (fixnum-type-p type1) (fixnum-type-p type2))
-              (cond ((or (eq representation :int)
-                         (fixnum-type-p result-type))
-		     (new-fixnum (null representation))
-		     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-								arg2 'stack :int)
-                     (emit 'isub)
-		     (emit-fixnum-init representation))
-                    (t
-		     (two-long-ints-times/plus/minus 
-		      arg1 arg2 'lsub representation)))
-              (emit-move-from-stack target representation))
+	      (fixnum-result-plus/minus target representation result-type 
+					arg1 arg2 'isub 'lsub))
              ((and (java-long-type-p type1) (java-long-type-p type2)
                    (java-long-type-p result-type))
 	      (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
