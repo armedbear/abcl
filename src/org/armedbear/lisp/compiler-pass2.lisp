@@ -931,16 +931,13 @@ representation, based on the derived type of the LispObject."
 
 (defmacro define-resolver (opcodes args &body body)
   (let ((name (gensym)))
-    (if (listp opcodes)
-        `(progn
-           (defun ,name ,args ,@body)
-           (eval-when (:load-toplevel :execute)
-             (dolist (op ',opcodes)
-               (setf (gethash op +resolvers+) (symbol-function ',name)))))
-        `(progn
-           (defun ,name ,args ,@body)
-           (eval-when (:load-toplevel :execute)
-             (setf (gethash ,opcodes +resolvers+) (symbol-function ',name)))))))
+    `(progn
+       (defun ,name ,args ,@body)
+       (eval-when (:load-toplevel :execute)
+	 ,(if (listp opcodes)
+	      `(dolist (op ',opcodes)
+		 (setf (gethash op +resolvers+) (symbol-function ',name)))
+	      `(setf (gethash ,opcodes +resolvers+) (symbol-function ',name)))))))
 
 ;; aload
 (define-resolver 25 (instruction)
