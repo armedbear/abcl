@@ -1,4 +1,5 @@
 (require 'asdf)
 (asdf:oos 'asdf:load-op :abcl)
-(asdf:oos 'asdf:test-op :abcl :force t)
+(asdf:oos 'asdf:load-op :test-abcl)
+(asdf:oos 'asdf:test-op :ansi-test-interpreted :force t)
 (ext:exit)

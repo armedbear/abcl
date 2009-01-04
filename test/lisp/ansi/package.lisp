@@ -13,7 +13,7 @@
    #p"../ansi-tests/"
    (asdf:component-pathname (asdf:find-system :abcl))))
 
-(defun run (&optional (compile-tests nil)) 
+(defun run (&key (compile-tests nil)) 
   "Run the ANSI-TESTS suite, found in *ANSI-TESTS-DIRECTORY*.
 Possibly running the compiled version of the tests if COMPILE-TESTS is non-NIL."
   (let ((original-pathname-defaults *default-pathname-defaults*)
