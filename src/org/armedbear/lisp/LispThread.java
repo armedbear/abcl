@@ -108,7 +108,7 @@ public final class LispThread extends LispObject
                     funcall(fun, new LispObject[0], LispThread.this);
                 }
                 catch (ThreadDestroyed ignored) {
-                    ; // Might happen.
+                      // Might happen.
                 }
                 catch (Throwable t) {
                     if (isInterrupted()) {

@@ -467,8 +467,7 @@ public class Symbol extends LispObject
     String symbolName = escapeSymbolName ? multipleEscape(n) : n;
     if (!escapeSymbolName)
       {
-        if (readtableCase == Keyword.PRESERVE)
-          ;
+        if (readtableCase == Keyword.PRESERVE) { }
         else if (readtableCase == Keyword.INVERT)
           symbolName = invert(symbolName);
         else if (printCase == Keyword.DOWNCASE)

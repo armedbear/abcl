@@ -205,9 +205,8 @@ public final class LogicalPathname extends Pathname
         if (directory != NIL) {
             LispObject temp = directory;
             LispObject part = temp.car();
-            if (part == Keyword.ABSOLUTE)
-                ;
-            else if (part == Keyword.RELATIVE)
+            if (part == Keyword.ABSOLUTE) {
+            } else if (part == Keyword.RELATIVE)
                 sb.append(';');
             else
                 error(new FileError("Unsupported directory component " + part.writeToString() + ".",

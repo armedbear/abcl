@@ -55,7 +55,7 @@ public class CellError extends LispError
             LispObject first = initArgs.car();
             initArgs = initArgs.cdr();
             if (first == Keyword.NAME) {
-                name = initArgs.car();;
+                name = initArgs.car();
                 break;
             }
             initArgs = initArgs.cdr();

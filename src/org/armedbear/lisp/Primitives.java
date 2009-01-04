@@ -3329,9 +3329,9 @@ public final class Primitives extends Lisp
             while (list != NIL)
               {
                 LispObject obj = list.car();
-                if (obj instanceof Package)
-                  ; // OK.
-                else
+                if (obj instanceof Package) {
+                  // OK.
+                } else
                   {
                     String s = javaString(obj);
                     Package p = Packages.findPackage(s);

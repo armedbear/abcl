@@ -367,7 +367,7 @@ public final class LispCharacter extends LispObject
           }
         catch (ClassCastException e)
           {
-            ; // SBCL signals a type-error here: "not of type (UNSIGNED-BYTE 8)"
+              // SBCL signals a type-error here: "not of type (UNSIGNED-BYTE 8)"
           }
         return NIL;
       }

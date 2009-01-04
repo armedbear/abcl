@@ -308,11 +308,9 @@ public class Pathname extends LispObject
             else
               sb.append(File.separatorChar);
         }
-        if (device == NIL)
-            ;
-        else if (device == Keyword.UNSPECIFIC)
-            ;
-        else if (device instanceof AbstractString) {
+        if (device == NIL) {
+        } else if (device == Keyword.UNSPECIFIC) {
+        } else if (device instanceof AbstractString) {
             sb.append(device.getStringValue());
             if (this instanceof LogicalPathname
                 || host == NIL)
@@ -387,8 +385,8 @@ public class Pathname extends LispObject
                     // #p"./"
                     sb.append('.');
                     sb.append(separatorChar);
-                } else
-                    ; // Nothing to do.
+                }
+                // else: Nothing to do.
             } else {
                 error(new FileError("Unsupported directory component " +
                                     part.writeToString() + ".",
@@ -855,7 +853,7 @@ public class Pathname extends LispObject
             } else if (key == Keyword.DEFAULTS) {
                 defaults = coerceToPathname(value);
             } else if (key == Keyword.CASE) {
-                ; // Ignored.
+                  // Ignored.
             }
         }
         if (defaults != null) {

@@ -295,8 +295,7 @@ public class Stream extends LispObject
           else if (eol == keywordCRLF)
               eolStyle = EolStyle.CRLF;
           else if (eol != keywordRAW)
-              //###FIXME: raise an error
-              ;
+              ; //###FIXME: raise an error
           
       } else
         enc = format;
@@ -314,8 +313,7 @@ public class Stream extends LispObject
       else if (enc instanceof Symbol)
           encoding = ((Symbol)enc).getName();
       else
-          //###FIXME: raise an error!
-          ;
+          ; //###FIXME: raise an error!
       
       if (encIsCp)
           encoding = "Cp" + encoding;

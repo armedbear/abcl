@@ -54,9 +54,8 @@ public final class SimpleBitVector extends AbstractBitVector
         this(s.length());
         for (int i = capacity; i-- > 0;) {
             char c = s.charAt(i);
-            if (c == '0')
-                ;
-            else if (c == '1')
+            if (c == '0') {
+            } else if (c == '1')
                 setBit(i);
             else
                 Debug.assertTrue(false);
