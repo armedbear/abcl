@@ -1805,127 +1805,123 @@ representation, based on the derived type of the LispObject."
     (when (plusp (length output))
       output)))
 
+(defmacro declare-with-hashtable (declared-item hashtable hashtable-var
+				  item-var &body body)
+  `(let* ((,hashtable-var ,hashtable)
+	  (,item-var (gethash1 ,declared-item ,hashtable-var)))
+     (declare (type hash-table ,hashtable-var))
+     (unless ,item-var
+       ,@body)
+     ,item-var))
+
+
 (defknown declare-symbol (symbol) string)
 (defun declare-symbol (symbol)
   (declare (type symbol symbol))
-  (let* ((ht *declared-symbols*)
-         (g (gethash1 symbol ht)))
-    (declare (type hash-table ht))
-    (unless g
-      (cond ((null (symbol-package symbol))
-             (setf g (if *compile-file-truename*
-                         (declare-object-as-string symbol)
-                         (declare-object symbol))))
-            (t
-             (let ((*code* *static-code*)
-                   (s (sanitize symbol)))
-               (setf g (symbol-name (gensym)))
-               (when s
-                 (setf g (concatenate 'string g "_" s)))
-               (declare-field g +lisp-symbol+)
-               (emit 'ldc (pool-string (symbol-name symbol)))
-               (emit 'ldc (pool-string (package-name (symbol-package symbol))))
-               (emit-invokestatic +lisp-class+ "internInPackage"
-                                  (list +java-string+ +java-string+) +lisp-symbol+)
-               (emit 'putstatic *this-class* g +lisp-symbol+)
-               (setf *static-code* *code*)
-               (setf (gethash symbol ht) g)))))
-    g))
+  (declare-with-hashtable
+   symbol *declared-symbols* ht g
+   (cond ((null (symbol-package symbol))
+	  (setf g (if *compile-file-truename*
+		      (declare-object-as-string symbol)
+		      (declare-object symbol))))
+	 (t
+	  (let ((*code* *static-code*)
+		(s (sanitize symbol)))
+	    (setf g (symbol-name (gensym)))
+	    (when s
+	      (setf g (concatenate 'string g "_" s)))
+	    (declare-field g +lisp-symbol+)
+	    (emit 'ldc (pool-string (symbol-name symbol)))
+	    (emit 'ldc (pool-string (package-name (symbol-package symbol))))
+	    (emit-invokestatic +lisp-class+ "internInPackage"
+			       (list +java-string+ +java-string+) +lisp-symbol+)
+	    (emit 'putstatic *this-class* g +lisp-symbol+)
+	    (setf *static-code* *code*)
+	    (setf (gethash symbol ht) g))))))
 
 (defknown declare-keyword (symbol) string)
 (defun declare-keyword (symbol)
   (declare (type symbol symbol))
-  (let* ((ht *declared-symbols*)
-         (g (gethash1 symbol ht)))
-    (declare (type hash-table ht))
-    (unless g
-      (let ((*code* *static-code*))
-        (setf g (symbol-name (gensym)))
-        (declare-field g +lisp-symbol+)
-        (emit 'ldc (pool-string (symbol-name symbol)))
-        (emit-invokestatic +lisp-class+ "internKeyword"
-                           (list +java-string+) +lisp-symbol+)
-        (emit 'putstatic *this-class* g +lisp-symbol+)
-        (setf *static-code* *code*)
-        (setf (gethash symbol ht) g)))
-    g))
+  (declare-with-hashtable
+   symbol *declared-symbols* ht g
+   (let ((*code* *static-code*))
+     (setf g (symbol-name (gensym)))
+     (declare-field g +lisp-symbol+)
+     (emit 'ldc (pool-string (symbol-name symbol)))
+     (emit-invokestatic +lisp-class+ "internKeyword"
+			(list +java-string+) +lisp-symbol+)
+     (emit 'putstatic *this-class* g +lisp-symbol+)
+     (setf *static-code* *code*)
+     (setf (gethash symbol ht) g))))
 
 (defknown declare-function (symbol) string)
 (defun declare-function (symbol)
   (declare (type symbol symbol))
-  (let* ((ht *declared-functions*)
-         (f (gethash1 symbol ht)))
-    (declare (type hash-table ht))
-    (unless f
-      (setf f (symbol-name (gensym)))
-      (let ((s (sanitize symbol)))
-        (when s
-          (setf f (concatenate 'string f "_" s))))
-      (let ((*code* *static-code*)
-            (g (gethash1 symbol (the hash-table *declared-symbols*))))
-        (cond (g
-               (emit 'getstatic *this-class* g +lisp-symbol+))
-              (t
-               (emit 'ldc (pool-string (symbol-name symbol)))
-               (emit 'ldc (pool-string (package-name (symbol-package symbol))))
-               (emit-invokestatic +lisp-class+ "internInPackage"
-                                  (list +java-string+ +java-string+)
-                                  +lisp-symbol+)))
-        (declare-field f +lisp-object+)
-        (emit-invokevirtual +lisp-symbol-class+ "getSymbolFunctionOrDie"
-                            nil +lisp-object+)
-        (emit 'putstatic *this-class* f +lisp-object+)
-        (setf *static-code* *code*)
-        (setf (gethash symbol ht) f)))
-    f))
+  (declare-with-hashtable
+   symbol *declared-functions* ht f
+   (setf f (symbol-name (gensym)))
+   (let ((s (sanitize symbol)))
+     (when s
+       (setf f (concatenate 'string f "_" s))))
+   (let ((*code* *static-code*)
+	 (g (gethash1 symbol (the hash-table *declared-symbols*))))
+     (cond (g
+	    (emit 'getstatic *this-class* g +lisp-symbol+))
+	   (t
+	    (emit 'ldc (pool-string (symbol-name symbol)))
+	    (emit 'ldc (pool-string (package-name (symbol-package symbol))))
+	    (emit-invokestatic +lisp-class+ "internInPackage"
+			       (list +java-string+ +java-string+)
+			       +lisp-symbol+)))
+     (declare-field f +lisp-object+)
+     (emit-invokevirtual +lisp-symbol-class+ "getSymbolFunctionOrDie"
+			 nil +lisp-object+)
+     (emit 'putstatic *this-class* f +lisp-object+)
+     (setf *static-code* *code*)
+     (setf (gethash symbol ht) f))))
 
 (defknown declare-setf-function (name) string)
 (defun declare-setf-function (name)
-  (let* ((ht *declared-functions*)
-         (f (gethash1 name ht)))
-    (declare (type hash-table ht))
-    (unless f
-      (let ((symbol (cadr name)))
-        (declare (type symbol symbol))
-        (setf f (symbol-name (gensym)))
-        (let ((s (sanitize symbol)))
-          (when s
-            (setf f (concatenate 'string f "_SETF_" s))))
-        (let ((*code* *static-code*)
-              (g (gethash1 symbol (the hash-table *declared-symbols*))))
-          (cond (g
-                 (emit 'getstatic *this-class* g +lisp-symbol+))
-                (t
-                 (emit 'ldc (pool-string (symbol-name symbol)))
-                 (emit 'ldc (pool-string (package-name (symbol-package symbol))))
-                 (emit-invokestatic +lisp-class+ "internInPackage"
-                                    (list +java-string+ +java-string+)
-                                    +lisp-symbol+)))
-          (declare-field f +lisp-object+)
-          (emit-invokevirtual +lisp-symbol-class+ "getSymbolSetfFunctionOrDie"
-                              nil +lisp-object+)
-          (emit 'putstatic *this-class* f +lisp-object+)
-          (setf *static-code* *code*)
-          (setf (gethash name ht) f))))
-    f))
+  (declare-with-hashtable
+   name *declared-functions* ht f
+   (let ((symbol (cadr name)))
+     (declare (type symbol symbol))
+     (setf f (symbol-name (gensym)))
+     (let ((s (sanitize symbol)))
+       (when s
+	 (setf f (concatenate 'string f "_SETF_" s))))
+     (let ((*code* *static-code*)
+	   (g (gethash1 symbol (the hash-table *declared-symbols*))))
+       (cond (g
+	      (emit 'getstatic *this-class* g +lisp-symbol+))
+	     (t
+	      (emit 'ldc (pool-string (symbol-name symbol)))
+	      (emit 'ldc (pool-string (package-name (symbol-package symbol))))
+	      (emit-invokestatic +lisp-class+ "internInPackage"
+				 (list +java-string+ +java-string+)
+				 +lisp-symbol+)))
+       (declare-field f +lisp-object+)
+       (emit-invokevirtual +lisp-symbol-class+ "getSymbolSetfFunctionOrDie"
+			   nil +lisp-object+)
+       (emit 'putstatic *this-class* f +lisp-object+)
+       (setf *static-code* *code*)
+       (setf (gethash name ht) f)))))
+
 
 (defknown declare-local-function (local-function) string)
 (defun declare-local-function (local-function)
-  (let* ((ht *declared-functions*)
-         (g (gethash1 local-function ht)))
-    (declare (type hash-table ht))
-    (unless g
-      (setf g (symbol-name (gensym)))
-      (let* ((pathname (class-file-pathname (local-function-class-file local-function)))
-             (*code* *static-code*))
-        (declare-field g +lisp-object+)
-        (emit 'ldc (pool-string (file-namestring pathname)))
-        (emit-invokestatic +lisp-class+ "loadCompiledFunction"
-                           (list +java-string+) +lisp-object+)
-        (emit 'putstatic *this-class* g +lisp-object+)
-        (setf *static-code* *code*)
-        (setf (gethash local-function ht) g)))
-    g))
+  (declare-with-hashtable
+   local-function *declared-functions* ht g
+   (setf g (symbol-name (gensym)))
+   (let* ((pathname (class-file-pathname (local-function-class-file local-function)))
+	  (*code* *static-code*))
+     (declare-field g +lisp-object+)
+     (emit 'ldc (pool-string (file-namestring pathname)))
+     (emit-invokestatic +lisp-class+ "loadCompiledFunction"
+			(list +java-string+) +lisp-object+)
+     (emit 'putstatic *this-class* g +lisp-object+)
+     (setf *static-code* *code*)
+     (setf (gethash local-function ht) g))))
 
 (defun new-fixnum (&optional (test-val t))
   (when test-val
@@ -1935,61 +1931,55 @@ representation, based on the derived type of the LispObject."
 (defknown declare-fixnum (fixnum) string)
 (defun declare-fixnum (n)
   (declare (type fixnum n))
-  (let* ((ht *declared-integers*)
-         (g (gethash1 n ht)))
-    (declare (type hash-table ht))
-    (unless g
-      (let ((*code* *static-code*))
-        (setf g (format nil "FIXNUM_~A~D"
-                        (if (minusp n) "MINUS_" "")
-                        (abs n)))
-        (declare-field g +lisp-fixnum+)
-        (cond ((<= 0 n 255)
-               (emit 'getstatic +lisp-fixnum-class+ "constants" +lisp-fixnum-array+)
-               (emit-push-constant-int n)
-               (emit 'aaload))
-              (t
-	       (new-fixnum)
-               (emit-push-constant-int n)
-               (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
-        (emit 'putstatic *this-class* g +lisp-fixnum+)
-        (setf *static-code* *code*)
-        (setf (gethash n ht) g)))
-    g))
+  (declare-with-hashtable
+   n *declared-integers* ht g
+   (let ((*code* *static-code*))
+     (setf g (format nil "FIXNUM_~A~D"
+		     (if (minusp n) "MINUS_" "")
+		     (abs n)))
+     (declare-field g +lisp-fixnum+)
+     (cond ((<= 0 n 255)
+	    (emit 'getstatic +lisp-fixnum-class+ "constants" +lisp-fixnum-array+)
+	    (emit-push-constant-int n)
+	    (emit 'aaload))
+	   (t
+	    (new-fixnum)
+	    (emit-push-constant-int n)
+	    (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
+     (emit 'putstatic *this-class* g +lisp-fixnum+)
+     (setf *static-code* *code*)
+     (setf (gethash n ht) g))))
 
 (defknown declare-bignum (integer) string)
 (defun declare-bignum (n)
-  (let* ((ht *declared-integers*)
-         (g (gethash1 n ht)))
-    (declare (type hash-table ht))
-    (unless g
-      (cond ((<= most-negative-java-long n most-positive-java-long)
-             (let ((*code* *static-code*))
-               (setf g (format nil "BIGNUM_~A~D"
-                               (if (minusp n) "MINUS_" "")
-                               (abs n)))
-               (declare-field g +lisp-bignum+)
-               (emit 'new +lisp-bignum-class+)
-               (emit 'dup)
-               (emit 'ldc2_w (pool-long n))
-               (emit-invokespecial-init +lisp-bignum-class+ '("J"))
-               (emit 'putstatic *this-class* g +lisp-bignum+)
-               (setf *static-code* *code*)))
-            (t
-             (let* ((*print-base* 10)
-                    (s (with-output-to-string (stream) (dump-form n stream)))
-                    (*code* *static-code*))
-               (setf g (concatenate 'string "BIGNUM_" (symbol-name (gensym))))
-               (declare-field g +lisp-bignum+)
-               (emit 'new +lisp-bignum-class+)
-               (emit 'dup)
-               (emit 'ldc (pool-string s))
-               (emit-push-constant-int 10)
-               (emit-invokespecial-init +lisp-bignum-class+ (list +java-string+ "I"))
-               (emit 'putstatic *this-class* g +lisp-bignum+)
-               (setf *static-code* *code*))))
-      (setf (gethash n ht) g))
-    g))
+  (declare-with-hashtable
+   n *declared-integers* ht g
+   (cond ((<= most-negative-java-long n most-positive-java-long)
+	  (let ((*code* *static-code*))
+	    (setf g (format nil "BIGNUM_~A~D"
+			    (if (minusp n) "MINUS_" "")
+			    (abs n)))
+	    (declare-field g +lisp-bignum+)
+	    (emit 'new +lisp-bignum-class+)
+	    (emit 'dup)
+	    (emit 'ldc2_w (pool-long n))
+	    (emit-invokespecial-init +lisp-bignum-class+ '("J"))
+	    (emit 'putstatic *this-class* g +lisp-bignum+)
+	    (setf *static-code* *code*)))
+	 (t
+	  (let* ((*print-base* 10)
+		 (s (with-output-to-string (stream) (dump-form n stream)))
+		 (*code* *static-code*))
+	    (setf g (concatenate 'string "BIGNUM_" (symbol-name (gensym))))
+	    (declare-field g +lisp-bignum+)
+	    (emit 'new +lisp-bignum-class+)
+	    (emit 'dup)
+	    (emit 'ldc (pool-string s))
+	    (emit-push-constant-int 10)
+	    (emit-invokespecial-init +lisp-bignum-class+ (list +java-string+ "I"))
+	    (emit 'putstatic *this-class* g +lisp-bignum+)
+	    (setf *static-code* *code*))))
+   (setf (gethash n ht) g)))
 
 (defknown declare-character (t) string)
 (defun declare-character (c)
@@ -2102,11 +2092,9 @@ representation, based on the derived type of the LispObject."
     g))
 
 (defun declare-string (string)
-  (let* ((ht *declared-strings*)
-         (g (gethash1 string ht)))
-    (declare (type hash-table ht))
-    (unless g
-      (let ((*code* *static-code*))
+  (declare-with-hashtable
+   string *declared-strings* ht g
+   (let ((*code* *static-code*))
         (setf g (symbol-name (gensym)))
         (declare-field g +lisp-simple-string+)
         (emit 'new +lisp-simple-string-class+)
@@ -2115,9 +2103,7 @@ representation, based on the derived type of the LispObject."
         (emit-invokespecial-init +lisp-simple-string-class+ (list +java-string+))
         (emit 'putstatic *this-class* g +lisp-simple-string+)
         (setf *static-code* *code*)
-        (setf (gethash string ht) g)))
-    g))
-
+        (setf (gethash string ht) g))))
      
 (defknown compile-constant (t t t) t)
 (defun compile-constant (form target representation)
