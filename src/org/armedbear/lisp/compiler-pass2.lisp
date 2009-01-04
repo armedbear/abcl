@@ -156,8 +156,30 @@
 (defun u2 (n)
   (declare (optimize speed))
   (declare (type (unsigned-byte 16) n))
+  (when (not (<= 0 n 65535))
+    (error "u2 argument ~A out of 65k range." n))
   (list (logand (ash n -8) #xff)
         (logand n #xff)))
+
+(defknown s1 (fixnum) fixnum)
+(defun s1 (n)
+  (declare (optimize speed))
+  (declare (type (signed-byte 8) n))
+  (when (not (<= -128 n 127))
+    (error "s2 argument ~A out of 16-bit signed range." n))
+  (if (< n 0)
+      (1+ (logxor (- n) #xFF))
+      n))
+
+
+(defknown s2 (fixnum) cons)
+(defun s2 (n)
+  (declare (optimize speed))
+  (declare (type (signed-byte 16) n))
+  (when (not (<= -32768 n 32767))
+    (error "s2 argument ~A out of 16-bit signed range." n))
+  (u2 (if (< n 0) (1+ (logxor (- n) #xFFFF))
+          n)))
 
 (defconstant +java-string+ "Ljava/lang/String;")
 (defconstant +lisp-class+ "org/armedbear/lisp/Lisp")
@@ -201,11 +223,20 @@
 (defconstant +lisp-readtable-class+ "org/armedbear/lisp/Readtable")
 (defconstant +lisp-stream-class+ "org/armedbear/lisp/Stream")
 
-(defstruct (instruction (:constructor make-instruction (opcode args)))
+(defstruct (instruction (:constructor %make-instruction (opcode args)))
   (opcode 0 :type (integer 0 255))
   args
   stack
-  depth)
+  depth
+  wide)
+
+(defun make-instruction (opcode args)
+  (let ((inst (apply #'%make-instruction
+                     (list opcode
+                           (remove :wide-prefix args)))))
+    (when (memq :wide-prefix args)
+      (setf (inst-wide inst) t))
+    inst))
 
 (defun print-instruction (instruction)
   (sys::%format nil "~A ~A stack = ~S depth = ~S"
@@ -1027,7 +1058,7 @@ representation, based on the derived type of the LispObject."
           ((<= -128 n 127)
            (inst 16 (logand n #xff))) ; BIPUSH
           (t ; SIPUSH
-           (inst 17 (u2 n))))))
+           (inst 17 (s2 n))))))
 
 ;; invokevirtual, invokespecial, invokestatic class-name method-name descriptor
 (define-resolver (182 183 184) (instruction)
@@ -1074,7 +1105,9 @@ representation, based on the derived type of the LispObject."
   (let* ((args (instruction-args instruction))
          (register (first args))
          (n (second args)))
-    (inst 132 (list register (logand n #xff)))))
+    (when (not (<= -128 n 127))
+      (error "IINC argument ~A out of bounds." n))
+    (inst 132 (list register (s1 n)))))
 
 (defknown resolve-instruction (t) t)
 (defun resolve-instruction (instruction)
@@ -1490,7 +1523,7 @@ representation, based on the derived type of the LispObject."
           (when (branch-opcode-p (instruction-opcode instruction))
             (let* ((label (car (instruction-args instruction)))
                    (offset (- (the (unsigned-byte 16) (symbol-value (the symbol label))) index)))
-              (setf (instruction-args instruction) (u2 offset))))
+              (setf (instruction-args instruction) (s2 offset))))
           (unless (= (instruction-opcode instruction) 202) ; LABEL
             (incf index (opcode-size (instruction-opcode instruction)))))))
     ;; Expand instructions into bytes, skipping LABEL pseudo-instructions.
