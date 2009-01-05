@@ -34,7 +34,7 @@
 package org.armedbear.lisp;
 
 import java.util.ArrayList;
-
+import java.util.LinkedList;
 public final class SpecialOperators extends Lisp
 {
   // ### quote
@@ -109,6 +109,24 @@ public final class SpecialOperators extends Lisp
       }
     };
 
+  private static final void bindArg(LispObject specials, Symbol symbol,
+			       LispObject value, Environment ext)
+    throws ConditionThrowable
+    {
+      final LispThread thread = LispThread.currentThread();
+      if (specials != NIL && memq(symbol, specials))
+	{
+	  thread.bindSpecial(symbol, value);
+	  ext.declareSpecial(symbol);
+	}
+      else if (symbol.isSpecialVariable())
+	{
+	  thread.bindSpecial(symbol, value);
+	}
+      else
+	  ext.bind(symbol, value);
+    }
+
   private static final LispObject _let(LispObject args, Environment env,
                                        boolean sequential)
     throws ConditionThrowable
@@ -147,6 +165,7 @@ public final class SpecialOperators extends Lisp
               break;
           }
         Environment ext = new Environment(env);
+	LinkedList<Cons> nonSequentialVars = new LinkedList<Cons>();
         while (varList != NIL)
           {
             final Symbol symbol;
@@ -180,19 +199,19 @@ public final class SpecialOperators extends Lisp
                   }
                 value = NIL;
               }
-            if (specials != NIL && memq(symbol, specials))
-              {
-                thread.bindSpecial(symbol, value);
-                ext.declareSpecial(symbol);
-              }
-            else if (symbol.isSpecialVariable())
-              {
-                thread.bindSpecial(symbol, value);
-              }
-            else
-              ext.bind(symbol, value);
+	    if (sequential)
+		bindArg(specials, symbol, value, ext);
+	    else
+		nonSequentialVars.add(new Cons(symbol, value));
             varList = ((Cons)varList).cdr;
           }
+	if (!sequential)
+	  {
+	    for (Cons x : nonSequentialVars)
+	      {
+		bindArg(specials, (Symbol)x.car(), x.cdr(), ext);
+	      }
+	  }
         // Make sure free special declarations are visible in the body.
         // "The scope of free declarations specifically does not include
         // initialization forms for bindings established by the form
