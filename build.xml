@@ -460,9 +460,9 @@
       <java fork="true" dir="${basedir}"
 	    classpathref="abcl.classpath.dist"
 	    classname="org.armedbear.lisp.Main">
-	<arg value="--noinit"/>
+ 	<arg value="--noinit"/> 
 	<arg value="--load"/>
-	<arg value="${basedir}/scripts/ansi-tests-interpreted.lisp "/>
+	<arg line="${basedir}/scripts/ansi-tests-interpreted.lisp"/>
       </java>
     </target>
 
@@ -470,9 +470,9 @@
       <java fork="true" dir="${basedir}"
 	    classpathref="abcl.classpath.dist"
 	    classname="org.armedbear.lisp.Main">
-	<arg value="--noinit"/>
+	<arg value="--noinit"/> 
 	<arg value="--load"/>
-	<arg value="${basedir}/scripts/ansi-tests-compiled.lisp "/>
+ 	<arg line="${basedir}/scripts/ansi-tests-compiled.lisp "/> 
       </java>
     </target>
 

@@ -10,14 +10,12 @@
   :documentation "Wrapper for all ABCL ASDF definitions."
   :version "0.2.0")
 
-(defmethod perform :around ((o load-op) (c (eql (find-system 'abcl))))
-  (call-next-method)
-  (format t "DEBUG: load-op around :abcl.~%")
-  (asdf:oos 'asdf:load-op :test-abcl))
+(defmethod perform :after ((o load-op) (c (eql (find-system 'abcl))))
+  ;;; Additional test suite loads would go here.
+  (asdf:oos 'asdf:load-op :test-abcl :force t))
 
 (defmethod perform ((o test-op) (c (eql (find-system 'abcl))))
-  (format t "DEBUG: test-op :abcl.~%")
-  (asdf:oos 'asdf:load-op :test-abcl :force t)
+  ;;; Additional test suite invocations would go here.
   (asdf:oos 'asdf:test-op :ansi-test-compiled :force t))
 
 (defsystem :test-abcl
