@@ -109,24 +109,6 @@ public final class SpecialOperators extends Lisp
       }
     };
 
-  private static final void bindArg(LispObject specials, Symbol symbol,
-			       LispObject value, Environment ext)
-    throws ConditionThrowable
-    {
-      final LispThread thread = LispThread.currentThread();
-      if (specials != NIL && memq(symbol, specials))
-	{
-	  thread.bindSpecial(symbol, value);
-	  ext.declareSpecial(symbol);
-	}
-      else if (symbol.isSpecialVariable())
-	{
-	  thread.bindSpecial(symbol, value);
-	}
-      else
-	  ext.bind(symbol, value);
-    }
-
   private static final LispObject _let(LispObject args, Environment env,
                                        boolean sequential)
     throws ConditionThrowable
@@ -138,7 +120,7 @@ public final class SpecialOperators extends Lisp
         LispObject varList = checkList(args.car());
         LispObject body = args.cdr();
         // Process declarations.
-        LispObject specials = NIL;
+        ArrayList<Symbol> specials = new ArrayList<Symbol>();
         while (body != NIL)
           {
             LispObject obj = body.car();
@@ -153,7 +135,7 @@ public final class SpecialOperators extends Lisp
                         LispObject vars = ((Cons)decl).cdr;
                         while (vars != NIL)
                           {
-                            specials = new Cons(vars.car(), specials);
+			    specials.add(0, (Symbol) vars.car());
                             vars = ((Cons)vars).cdr;
                           }
                       }
@@ -166,6 +148,7 @@ public final class SpecialOperators extends Lisp
           }
         Environment ext = new Environment(env);
 	LinkedList<Cons> nonSequentialVars = new LinkedList<Cons>();
+	Symbol[] arrayToUseForSpecials = new Symbol[0];
         while (varList != NIL)
           {
             final Symbol symbol;
@@ -200,7 +183,8 @@ public final class SpecialOperators extends Lisp
                 value = NIL;
               }
 	    if (sequential)
-		bindArg(specials, symbol, value, ext);
+		bindArg(specials.toArray(arrayToUseForSpecials), 
+			symbol, value, ext, thread);
 	    else
 		nonSequentialVars.add(new Cons(symbol, value));
             varList = ((Cons)varList).cdr;
@@ -209,18 +193,17 @@ public final class SpecialOperators extends Lisp
 	  {
 	    for (Cons x : nonSequentialVars)
 	      {
-		bindArg(specials, (Symbol)x.car(), x.cdr(), ext);
+		bindArg(specials.toArray(arrayToUseForSpecials), 
+			(Symbol)x.car(), x.cdr(), ext, thread);
 	      }
 	  }
         // Make sure free special declarations are visible in the body.
         // "The scope of free declarations specifically does not include
         // initialization forms for bindings established by the form
         // containing the declarations." (3.3.4)
-        while (specials != NIL)
+        for (Symbol symbol : specials)
           {
-            Symbol symbol = (Symbol) specials.car();
             ext.declareSpecial(symbol);
-            specials = ((Cons)specials).cdr;
           }
         return progn(body, ext, thread);
       }
@@ -264,7 +247,7 @@ public final class SpecialOperators extends Lisp
                               symbol.writeToString() +
                               " with SYMBOL-MACROLET."));
                           }
-                        bind(symbol, new SymbolMacro(obj.cadr()), ext);
+                        bindArg(null, symbol, new SymbolMacro(obj.cadr()), ext, thread);
                       }
                     else
                       {

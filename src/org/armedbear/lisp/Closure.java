@@ -427,7 +427,7 @@ public class Closure extends Function
       {
         bindParameterDefaults(optionalParameters, ext, thread);
         if (restVar != null)
-          bindArg(restVar, NIL, ext, thread);
+          bindArg(specials, restVar, NIL, ext, thread);
         bindParameterDefaults(keywordParameters, ext, thread);
       }
     bindAuxVars(ext, thread);
@@ -448,10 +448,10 @@ public class Closure extends Function
   {
     // &whole and &environment before anything
     if (envVar != null)
-      bindArg(envVar, environment, ext, thread);
+      bindArg(specials, envVar, environment, ext, thread);
     for (int i = 0; i < objects.length; ++i)
       {
-        bindArg(requiredParameters[i].var, objects[i], ext, thread);
+        bindArg(specials, requiredParameters[i].var, objects[i], ext, thread);
       }
   }
 
@@ -644,12 +644,12 @@ public class Closure extends Function
     Debug.assertTrue(args.length == variables.length);
     if (envVar != null)
       {
-        bindArg(envVar, environment, ext, thread);
+        bindArg(specials, envVar, environment, ext, thread);
       }
     for (int i = 0; i < variables.length; i++)
       {
         Symbol sym = variables[i];
-        bindArg(sym, args[i], ext, thread);
+        bindArg(specials, sym, args[i], ext, thread);
       }
     bindAuxVars(ext, thread);
     special:
@@ -670,18 +670,6 @@ public class Closure extends Function
       {
         thread.lastSpecialBinding = lastSpecialBinding;
       }
-  }
-
-  private final boolean isSpecial(Symbol sym)
-  {
-    if (sym.isSpecialVariable())
-      return true;
-    for (Symbol special : specials)
-      {
-        if (sym == special)
-            return true;
-      }
-    return false;
   }
 
   protected final LispObject[] processArgs(LispObject[] args, LispThread thread)
@@ -711,12 +699,12 @@ public class Closure extends Function
     // &whole before any other variables in the lambda list..."
     if (bindInitForms)
       if (envVar != null)
-          bindArg(envVar, environment, ext, thread);
+	bindArg(specials, envVar, environment, ext, thread);
     // Required parameters.
     for (int i = 0; i < minArgs; i++)
       {
         if (bindInitForms)
-          bindArg(requiredParameters[i].var, args[i], ext, thread);
+          bindArg(specials, requiredParameters[i].var, args[i], ext, thread);
         array[index++] = args[i];
       }
     int i = minArgs;
@@ -727,13 +715,13 @@ public class Closure extends Function
         if (i < argsLength)
           {
             if (bindInitForms)
-              bindArg(parameter.var, args[i], ext, thread);
+              bindArg(specials, parameter.var, args[i], ext, thread);
             array[index++] = args[i];
             ++argsUsed;
             if (parameter.svar != NIL)
               {
                 if (bindInitForms)
-                  bindArg((Symbol)parameter.svar, T, ext, thread);
+                  bindArg(specials, (Symbol)parameter.svar, T, ext, thread);
                 array[index++] = T;
               }
           }
@@ -746,12 +734,12 @@ public class Closure extends Function
             else
               value = eval(parameter.initForm, ext, thread);
             if (bindInitForms)
-              bindArg(parameter.var, value, ext, thread);
+              bindArg(specials, parameter.var, value, ext, thread);
             array[index++] = value;
             if (parameter.svar != NIL)
               {
                 if (bindInitForms)
-                  bindArg((Symbol)parameter.svar, NIL, ext, thread);
+                  bindArg(specials, (Symbol)parameter.svar, NIL, ext, thread);
                 array[index++] = NIL;
               }
           }
@@ -764,7 +752,7 @@ public class Closure extends Function
         for (int j = argsLength; j-- > argsUsed;)
           rest = new Cons(args[j], rest);
         if (bindInitForms)
-            bindArg(restVar, rest, ext, thread);
+	  bindArg(specials, restVar, rest, ext, thread);
         array[index++] = rest;
       }
     // Keyword parameters.
@@ -784,12 +772,12 @@ public class Closure extends Function
                 else
                   value = eval(parameter.initForm, ext, thread);
                 if (bindInitForms)
-                    bindArg(parameter.var, value, ext, thread);
+		  bindArg(specials, parameter.var, value, ext, thread);
                 array[index++] = value;
                 if (parameter.svar != NIL)
                   {
                     if (bindInitForms)
-                        bindArg((Symbol)parameter.svar, NIL, ext, thread);
+		      bindArg(specials, (Symbol)parameter.svar, NIL, ext, thread);
                     array[index++] = NIL;
                   }
               }
@@ -809,12 +797,12 @@ public class Closure extends Function
                     if (args[j] == keyword)
                       {
                         if (bindInitForms)
-                            bindArg(parameter.var, args[j+1], ext, thread);
+			  bindArg(specials, parameter.var, args[j+1], ext, thread);
                         value = array[index++] = args[j+1];
                         if (parameter.svar != NIL)
                           {
                             if (bindInitForms)
-                                bindArg((Symbol)parameter.svar, T, ext, thread);
+			      bindArg(specials,(Symbol)parameter.svar, T, ext, thread);
                             array[index++] = T;
                           }
                         args[j] = null;
@@ -830,12 +818,12 @@ public class Closure extends Function
                     else
                       value = eval(parameter.initForm, ext, thread);
                     if (bindInitForms)
-                        bindArg(parameter.var, value, ext, thread);
+		      bindArg(specials, parameter.var, value, ext, thread);
                     array[index++] = value;
                     if (parameter.svar != NIL)
                       {
                         if (bindInitForms)
-                            bindArg((Symbol)parameter.svar, NIL, ext, thread);
+			  bindArg(specials, (Symbol)parameter.svar, NIL, ext, thread);
                         array[index++] = NIL;
                       }
                   }
@@ -1029,23 +1017,11 @@ public class Closure extends Function
           value = parameter.initVal;
         else
           value = eval(parameter.initForm, env, thread);
-        bindArg(parameter.var, value, env, thread);
+        bindArg(specials, parameter.var, value, env, thread);
         if (parameter.svar != NIL)
-            bindArg((Symbol)parameter.svar, NIL, env, thread);
+	  bindArg(specials, (Symbol)parameter.svar, NIL, env, thread);
       }
   }
-
-    private final void bindArg(Symbol sym, LispObject value,
-                               Environment env, LispThread thread)
-        throws ConditionThrowable
-    {
-        if (isSpecial(sym)) {
-            env.declareSpecial(sym);
-            thread.bindSpecial(sym, value);
-        }
-        else
-            env.bind(sym, value);
-    }
 
   private final void bindAuxVars(Environment env, LispThread thread)
     throws ConditionThrowable
@@ -1061,7 +1037,7 @@ public class Closure extends Function
         else
           value = eval(parameter.initForm, env, thread);
 
-        bindArg(sym, value, env, thread);
+        bindArg(specials, sym, value, env, thread);
       }
   }
 

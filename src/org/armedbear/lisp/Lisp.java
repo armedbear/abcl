@@ -562,14 +562,32 @@ public abstract class Lisp
   }
 
   // Environment wrappers.
-  public static final void bind(Symbol symbol, LispObject value,
-                                Environment env)
+  private static final boolean isSpecial(Symbol sym, Symbol[] ownSpecials,
+					 Environment env)
+  {
+    if (ownSpecials != null)
+      {
+	if (sym.isSpecialVariable())
+	  return true;
+	for (Symbol special : ownSpecials)
+	  {
+	    if (sym == special)
+	      return true;
+	  }
+      }
+    return false;
+  }
+  protected static final void bindArg(Symbol[] ownSpecials,
+				      Symbol sym, LispObject value,
+				      Environment env, LispThread thread)
     throws ConditionThrowable
   {
-    if (symbol.isSpecialVariable() || env.isDeclaredSpecial(symbol))
-      LispThread.currentThread().bindSpecial(symbol, value);
+    if (isSpecial(sym, ownSpecials, env)) {
+      env.declareSpecial(sym);
+      thread.bindSpecial(sym, value);
+    }
     else
-      env.bind(symbol, value);
+      env.bind(sym, value);
   }
 
   public static final Cons list1(LispObject obj1)
