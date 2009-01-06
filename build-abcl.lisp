@@ -13,6 +13,14 @@
 
 (in-package #:build-abcl)
 
+(defun safe-namestring (pathname)
+  (let ((string (namestring pathname)))
+    (when (position #\space string)
+      (setf string (concatenate 'string "\"" string "\"")))
+    string))
+
+
+
 ;; Platform detection.
 
 (defun platform ()
@@ -438,12 +446,6 @@
     (delete-files '("native.h" "libabcl.so" "build")))
   (with-current-directory ((merge-pathnames "java/awt/" *abcl-dir*))
     (delete-files (directory "*.class"))))
-
-(defun safe-namestring (pathname)
-  (let ((string (namestring pathname)))
-    (when (position #\space string)
-      (setf string (concatenate 'string "\"" string "\"")))
-    string))
 
 (defun build-abcl (&key force
                         (batch t)
