@@ -244,10 +244,16 @@ public final class Environment extends LispObject
     vars.specialp = true;
   }
 
+    /** Return true if a symbol is declared special.
+     *
+     * If there is no binding in the current (lexical) environment,
+     * the current dynamic environment (thread) is checked.
+     */
   public boolean isDeclaredSpecial(LispObject var)
   {
     Binding binding = getBinding(var);
-    return binding != null ? binding.specialp : false;
+    return (binding != null) ? binding.specialp :
+        (LispThread.currentThread().getSpecialBinding(var) != null);
   }
 
   @Override
