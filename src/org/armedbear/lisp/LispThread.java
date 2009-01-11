@@ -33,59 +33,34 @@
 
 package org.armedbear.lisp;
 
-import java.util.WeakHashMap;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class LispThread extends LispObject
 {
     private static boolean use_fast_calls = false;
 
-    private static final Object lock = new Object();
+    // use a concurrent hashmap: we may want to add threads
+    // while at the same time iterating the hash
+    final private static ConcurrentHashMap<Thread,LispThread> map =
+       new ConcurrentHashMap<Thread,LispThread>();
 
-    private static WeakHashMap<Thread,LispThread> map =
-       new WeakHashMap<Thread,LispThread>();
-
-    private static Thread currentJavaThread;
-    private static LispThread currentLispThread;
+    private static ThreadLocal<LispThread> threads = new ThreadLocal<LispThread>(){
+        @Override
+        public LispThread initialValue() {
+            Thread thisThread = Thread.currentThread();
+            LispThread newThread = new LispThread(thisThread);
+            LispThread.map.put(thisThread,newThread);
+            return newThread;
+        }
+    };
 
     public static final LispThread currentThread()
     {
-        Thread javaThread = Thread.currentThread();
-        synchronized (lock) {
-            if (javaThread == currentJavaThread)
-                return currentLispThread;
-        }
-        LispThread lispThread = (LispThread) map.get(javaThread);
-        if (lispThread == null) {
-            lispThread = new LispThread(javaThread);
-            put(javaThread, lispThread);
-        }
-        synchronized (lock) {
-            currentJavaThread = javaThread;
-            currentLispThread = lispThread;
-        }
-        return lispThread;
+        return threads.get();
     }
 
-    private static void put(Thread javaThread, LispThread lispThread)
-    {
-        synchronized (lock) {
-            WeakHashMap<Thread,LispThread> m = new WeakHashMap<Thread,LispThread>(map);
-            m.put(javaThread, lispThread);
-            map = m;
-        }
-    }
-
-    public static void remove(Thread javaThread)
-    {
-        synchronized (lock) {
-            WeakHashMap<Thread,LispThread> m = new WeakHashMap<Thread,LispThread>(map);
-            m.remove(javaThread);
-            map = m;
-        }
-    }
-
-    private final Thread javaThread;
+   private final Thread javaThread;
     private boolean destroyed;
     private final LispObject name;
     public SpecialBinding lastSpecialBinding;
@@ -121,12 +96,12 @@ public final class LispThread extends LispObject
                     }
                 }
                 finally {
-                    remove(javaThread);
+                    // make sure the thread is *always* removed from the hash again
+                    map.remove(Thread.currentThread());
                 }
             }
         };
         javaThread = new Thread(r);
-        put(javaThread, this);
         this.name = name;
         javaThread.setDaemon(true);
         javaThread.start();
