@@ -682,7 +682,7 @@ before the emitted code: the code is 'stack-neutral'."
 	 (loop for (form arg1 arg2) on forms-and-compile-args by #'cdddr
 	    do (compile-form form arg1 arg2)
 	    collecting form)))
-    (maybe-emit-clear-values forms-for-emit-clear)))
+    (apply #'maybe-emit-clear-values forms-for-emit-clear)))
 
 (defknown emit-unbox-fixnum () t)
 (defun emit-unbox-fixnum ()
