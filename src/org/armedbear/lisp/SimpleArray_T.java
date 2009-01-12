@@ -46,7 +46,6 @@ public final class SimpleArray_T extends AbstractArray
     this.elementType = elementType;
     totalSize = computeTotalSize(dimv);
     data = new LispObject[totalSize];
-    final LispObject initialElement;
     for (int i = totalSize; i-- > 0;)
       data[i] = Fixnum.ZERO;
   }
