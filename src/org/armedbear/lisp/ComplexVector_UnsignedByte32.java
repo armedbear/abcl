@@ -367,7 +367,7 @@ public final class ComplexVector_UnsignedByte32 extends AbstractVector
     }
 
     @Override
-    public AbstractVector adjustVector(int newCapacity,
+    public AbstractVector adjustArray(int newCapacity,
                                        LispObject initialElement,
                                        LispObject initialContents)
         throws ConditionThrowable
@@ -416,7 +416,7 @@ public final class ComplexVector_UnsignedByte32 extends AbstractVector
     }
 
     @Override
-    public AbstractVector adjustVector(int newCapacity,
+    public AbstractVector adjustArray(int newCapacity,
                                        AbstractArray displacedTo,
                                        int displacement)
         throws ConditionThrowable

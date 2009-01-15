@@ -67,9 +67,8 @@ public final class adjust_array extends Primitive
             return error(new LispError("ADJUST-ARRAY: incompatible element type."));
         }
         if (array.getRank() == 0) {
-            if (initialContentsProvided != NIL)
-                array.aset(0, initialContents);
-            return array;
+            return array.adjustArray(new int[0], NIL,
+                    (initialContentsProvided != NIL) ? initialContents : initialElement);
         }
         if (initialElementProvided == NIL && array.getElementType() == T)
             initialElement = Fixnum.ZERO;
@@ -81,18 +80,18 @@ public final class adjust_array extends Primitive
                 newSize = Fixnum.getValue(dimensions);
             if (array instanceof AbstractVector) {
                 AbstractVector v = (AbstractVector) array;
-                AbstractVector v2;
+                AbstractArray v2;
                 if (displacedTo != NIL) {
                     final int displacement;
                     if (displacedIndexOffset == NIL)
                         displacement = 0;
                     else
                         displacement = Fixnum.getValue(displacedIndexOffset);
-                    v2 = v.adjustVector(newSize,
+                    v2 = v.adjustArray(newSize,
                                         checkArray(displacedTo),
                                         displacement);
                 } else {
-                    v2 = v.adjustVector(newSize,
+                    v2 = v.adjustArray(newSize,
                                         initialElement,
                                         initialContents);
                 }
@@ -112,24 +111,21 @@ public final class adjust_array extends Primitive
             }
         } else
             dimv[0] = Fixnum.getValue(dimensions);
-        if (array instanceof SimpleArray_T) {
-            SimpleArray_T a = (SimpleArray_T) array;
-            if (displacedTo != NIL) {
-                final int displacement;
-                if (displacedIndexOffset == NIL)
-                    displacement = 0;
-                else
-                    displacement = Fixnum.getValue(displacedIndexOffset);
-                return a.adjustArray(dimv,
+
+        if (displacedTo != NIL) {
+            final int displacement;
+            if (displacedIndexOffset == NIL)
+                displacement = 0;
+            else
+                displacement = Fixnum.getValue(displacedIndexOffset);
+            return array.adjustArray(dimv,
                                      checkArray(displacedTo),
                                      displacement);
-            } else {
-                return a.adjustArray(dimv,
+        } else {
+            return array.adjustArray(dimv,
                                      initialElement,
                                      initialContents);
-            }
         }
-        return error(new LispError("ADJUST-ARRAY: unsupported case."));
     }
 
     private static final Primitive _ADJUST_ARRAY = new adjust_array();

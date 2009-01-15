@@ -36,7 +36,7 @@ package org.armedbear.lisp;
 public final class ComplexArray_UnsignedByte8 extends AbstractArray
 {
     private final int[] dimv;
-    private final int totalSize;
+    private int totalSize;
 
     // For non-displaced arrays.
     private byte[] data;
@@ -232,5 +232,59 @@ public final class ComplexArray_UnsignedByte8 extends AbstractArray
             return null;
         }
         return writeToString(dimv);
+    }
+
+
+    @Override
+    public AbstractArray adjustArray(int[] dims,
+                                              LispObject initialElement,
+                                              LispObject initialContents)
+            throws ConditionThrowable {
+        if (isAdjustable()) {
+            if (initialContents != NIL)
+                setInitialContents(0, dims, initialContents, 0);
+            else {
+                //### FIXME Take the easy way out: we don't want to reorganize
+                // all of the array code yet
+                SimpleArray_UnsignedByte8 tempArray = new SimpleArray_UnsignedByte8(dims, getElementType());
+                tempArray.fill(initialElement);
+                SimpleArray_UnsignedByte8.copyArray(this, tempArray);
+                this.data = tempArray.data;
+
+                for (int i = 0; i < dims.length; i++)
+                    dimv[i] = dims[i];
+            }
+            return this;
+        } else {
+            if (initialContents != NIL)
+                return new ComplexArray_UnsignedByte8(dims, initialContents);
+            else {
+                ComplexArray_UnsignedByte8 newArray = new ComplexArray_UnsignedByte8(dims);
+                newArray.fill(initialElement);
+                return newArray;
+            }
+        }
+    }
+
+    @Override
+    public AbstractArray adjustArray(int[] dims,
+                                              AbstractArray displacedTo,
+                                              int displacement)
+            throws ConditionThrowable {
+        if (isAdjustable()) {
+            for (int i = 0; i < dims.length; i++)
+                dimv[i] = dims[i];
+
+            this.data = null;
+            this.array = displacedTo;
+            this.displacement = displacement;
+            this.totalSize = computeTotalSize(dims);
+
+            return this;
+        } else {
+            ComplexArray_UnsignedByte8 a = new ComplexArray_UnsignedByte8(dims, displacedTo, displacement);
+
+            return a;
+        }
     }
 }

@@ -36,7 +36,7 @@ package org.armedbear.lisp;
 public final class ComplexArray_UnsignedByte32 extends AbstractArray
 {
     private final int[] dimv;
-    private final int totalSize;
+    private int totalSize;
 
     // For non-displaced arrays.
     // FIXME We should really use an array of unboxed values!
@@ -230,5 +230,59 @@ public final class ComplexArray_UnsignedByte32 extends AbstractArray
     public String writeToString() throws ConditionThrowable
     {
         return writeToString(dimv);
+    }
+
+
+    @Override
+    public AbstractArray adjustArray(int[] dims,
+                                              LispObject initialElement,
+                                              LispObject initialContents)
+            throws ConditionThrowable {
+        if (isAdjustable()) {
+            if (initialContents != NIL)
+                setInitialContents(0, dims, initialContents, 0);
+            else {
+                //### FIXME Take the easy way out: we don't want to reorganize
+                // all of the array code yet
+                SimpleArray_UnsignedByte32 tempArray = new SimpleArray_UnsignedByte32(dims, getElementType());
+                tempArray.fill(initialElement);
+                SimpleArray_UnsignedByte32.copyArray(this, tempArray);
+                this.data = tempArray.data;
+
+                for (int i = 0; i < dims.length; i++)
+                    dimv[i] = dims[i];
+            }
+            return this;
+        } else {
+            if (initialContents != NIL)
+                return new ComplexArray_UnsignedByte32(dims, initialContents);
+            else {
+                ComplexArray_UnsignedByte32 newArray = new ComplexArray_UnsignedByte32(dims);
+                newArray.fill(initialElement);
+                return newArray;
+            }
+        }
+    }
+
+    @Override
+    public AbstractArray adjustArray(int[] dims,
+                                              AbstractArray displacedTo,
+                                              int displacement)
+            throws ConditionThrowable {
+        if (isAdjustable()) {
+            for (int i = 0; i < dims.length; i++)
+                dimv[i] = dims[i];
+
+            this.data = null;
+            this.array = displacedTo;
+            this.displacement = displacement;
+            this.totalSize = computeTotalSize(dims);
+
+            return this;
+        } else {
+            ComplexArray_UnsignedByte32 a = new ComplexArray_UnsignedByte32(dims, displacedTo, displacement);
+
+            return a;
+        }
     }
 }

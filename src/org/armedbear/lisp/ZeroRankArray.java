@@ -162,4 +162,31 @@ public final class ZeroRankArray extends AbstractArray
         sb.append(" NIL");
         return unreadableString(sb.toString());
     }
+
+  @Override
+  public AbstractArray adjustArray(int[] dims,
+                                              LispObject initialElement,
+                                              LispObject initialContents)
+    throws ConditionThrowable {
+      if (isAdjustable()) {
+          if (initialContents != NIL)
+              data = initialContents;
+          else
+              data = initialElement;
+          return this;
+      } else {
+          return new ZeroRankArray(elementType,
+                  initialContents != NIL ? initialContents : initialElement,
+                  false);
+      }
+  }
+
+  @Override
+  public AbstractArray adjustArray(int[] dims,
+                                              AbstractArray displacedTo,
+                                              int displacement)
+    throws ConditionThrowable {
+      error(new TypeError("Displacement not supported for array of rank 0."));
+      return null;
+  }
 }

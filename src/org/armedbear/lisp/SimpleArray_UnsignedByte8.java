@@ -37,7 +37,7 @@ public final class SimpleArray_UnsignedByte8 extends AbstractArray
 {
     private final int[] dimv;
     private final int totalSize;
-    private final byte[] data;
+    final byte[] data;
 
     public SimpleArray_UnsignedByte8(int[] dimv)
     {
@@ -306,7 +306,7 @@ public final class SimpleArray_UnsignedByte8 extends AbstractArray
     }
 
     // Copy a1 to a2 for index tuples that are valid for both arrays.
-    private static void copyArray(AbstractArray a1, AbstractArray a2)
+    static void copyArray(AbstractArray a1, AbstractArray a2)
         throws ConditionThrowable
     {
         Debug.assertTrue(a1.getRank() == a2.getRank());

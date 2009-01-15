@@ -37,7 +37,7 @@ public final class ComplexArray extends AbstractArray
 {
     private final int[] dimv;
     private final LispObject elementType;
-    private final int totalSize;
+    private int totalSize;
 
     // For non-displaced arrays.
     private LispObject[] data;
@@ -234,5 +234,58 @@ public final class ComplexArray extends AbstractArray
     public String writeToString() throws ConditionThrowable
     {
         return writeToString(dimv);
+    }
+
+    @Override
+    public AbstractArray adjustArray(int[] dims,
+                                              LispObject initialElement,
+                                              LispObject initialContents)
+            throws ConditionThrowable {
+        if (isAdjustable()) {
+            if (initialContents != NIL)
+                setInitialContents(0, dims, initialContents, 0);
+            else {
+                //### FIXME Take the easy way out: we don't want to reorganize
+                // all of the array code yet
+                SimpleArray_T tempArray = new SimpleArray_T(dims, elementType);
+                tempArray.fill(initialElement);
+                SimpleArray_T.copyArray(this, tempArray);
+                this.data = tempArray.data;
+
+                for (int i = 0; i < dims.length; i++)
+                    dimv[i] = dims[i];
+            }
+            return this;
+        } else {
+            if (initialContents != NIL)
+                return new ComplexArray(dims, elementType, initialContents);
+            else {
+                ComplexArray newArray = new ComplexArray(dims, elementType);
+                newArray.fill(initialElement);
+                return newArray;
+            }
+        }
+    }
+
+    @Override
+    public AbstractArray adjustArray(int[] dims,
+                                              AbstractArray displacedTo,
+                                              int displacement)
+            throws ConditionThrowable {
+        if (isAdjustable()) {
+            for (int i = 0; i < dims.length; i++)
+                dimv[i] = dims[i];
+
+            this.data = null;
+            this.array = displacedTo;
+            this.displacement = displacement;
+            this.totalSize = computeTotalSize(dims);
+
+            return this;
+        } else {
+            ComplexArray a = new ComplexArray(dims, displacedTo, displacement);
+            
+            return a;
+        }
     }
 }

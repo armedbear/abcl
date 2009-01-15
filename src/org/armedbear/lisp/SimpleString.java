@@ -460,7 +460,7 @@ public final class SimpleString extends AbstractString
     }
 
     @Override
-    public AbstractVector adjustVector(int newCapacity,
+    public AbstractVector adjustArray(int newCapacity,
                                        LispObject initialElement,
                                        LispObject initialContents)
         throws ConditionThrowable
@@ -495,7 +495,7 @@ public final class SimpleString extends AbstractString
     }
 
     @Override
-    public AbstractVector adjustVector(int newCapacity,
+    public AbstractVector adjustArray(int newCapacity,
                                        AbstractArray displacedTo,
                                        int displacement)
         throws ConditionThrowable

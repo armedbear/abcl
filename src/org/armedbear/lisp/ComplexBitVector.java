@@ -319,7 +319,7 @@ public final class ComplexBitVector extends AbstractBitVector
     }
 
     @Override
-    public AbstractVector adjustVector(int newCapacity,
+    public AbstractVector adjustArray(int newCapacity,
                                        LispObject initialElement,
                                        LispObject initialContents)
         throws ConditionThrowable
@@ -380,7 +380,7 @@ public final class ComplexBitVector extends AbstractBitVector
     }
 
     @Override
-    public AbstractVector adjustVector(int size, AbstractArray displacedTo,
+    public AbstractVector adjustArray(int size, AbstractArray displacedTo,
                                        int displacement)
         throws ConditionThrowable
     {

@@ -365,7 +365,7 @@ public final class ComplexVector extends AbstractVector
     }
 
     @Override
-    public AbstractVector adjustVector(int newCapacity,
+    public AbstractVector adjustArray(int newCapacity,
                                        LispObject initialElement,
                                        LispObject initialContents)
         throws ConditionThrowable
@@ -412,7 +412,7 @@ public final class ComplexVector extends AbstractVector
     }
 
     @Override
-    public AbstractVector adjustVector(int newCapacity,
+    public AbstractVector adjustArray(int newCapacity,
                                        AbstractArray displacedTo,
                                        int displacement)
         throws ConditionThrowable

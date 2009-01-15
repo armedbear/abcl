@@ -86,6 +86,16 @@ public abstract class AbstractArray extends LispObject
         return -1; // Not reached.
     }
 
+    public void setFillPointer(LispObject fillPointer) throws ConditionThrowable
+    {
+        setFillPointer(fillPointer.intValue());
+    }
+
+    public void setFillPointer(int fillPointer) throws ConditionThrowable
+    {
+        noFillPointer();
+    }
+
     public boolean isAdjustable()
     {
         return true;
@@ -211,7 +221,7 @@ public abstract class AbstractArray extends LispObject
         sb.append('(');
         if (this instanceof SimpleArray_T)
             sb.append("SIMPLE-");
-        sb.append("ARRAY T (");
+        sb.append("ARRAY " + getElementType().writeToString() + " (");
         for (int i = 0; i < dimv.length; i++) {
             sb.append(dimv[i]);
             if (i < dimv.length - 1)
@@ -305,4 +315,14 @@ public abstract class AbstractArray extends LispObject
             return 0;
         }
     }
+
+  public abstract AbstractArray adjustArray(int[] dims,
+                                              LispObject initialElement,
+                                              LispObject initialContents)
+    throws ConditionThrowable;
+
+  public abstract AbstractArray adjustArray(int[] dims,
+                                              AbstractArray displacedTo,
+                                              int displacement)
+    throws ConditionThrowable;
 }

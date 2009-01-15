@@ -38,7 +38,7 @@ public final class SimpleArray_T extends AbstractArray
   private final int[] dimv;
   private final LispObject elementType;
   private final int totalSize;
-  private final LispObject[] data;
+  final LispObject[] data;
 
   public SimpleArray_T(int[] dimv, LispObject elementType)
   {
@@ -87,6 +87,14 @@ public final class SimpleArray_T extends AbstractArray
     totalSize = computeTotalSize(dimv);
     data = new LispObject[totalSize];
     setInitialContents(0, dimv, initialContents, 0);
+  }
+
+  public SimpleArray_T(final int[] dimv, final LispObject[] initialData,
+          final LispObject elementType) {
+      this.dimv = dimv;
+      this.elementType = elementType;
+      this.data = initialData;
+      this.totalSize = computeTotalSize(dimv);
   }
 
   private int setInitialContents(int axis, int[] dims, LispObject contents,
@@ -314,6 +322,7 @@ public final class SimpleArray_T extends AbstractArray
     return writeToString(dimv);
   }
 
+  @Override
   public AbstractArray adjustArray(int[] dimv, LispObject initialElement,
                                    LispObject initialContents)
     throws ConditionThrowable
@@ -330,12 +339,13 @@ public final class SimpleArray_T extends AbstractArray
             return newArray;
           }
       }
-    // New dimensions are identical to old dimensions.
-    return this;
+    // New dimensions are identical to old dimensions, yet
+    // we're not mutable, so, we need to return a new array
+    return new SimpleArray_T(dimv, data.clone(), elementType);
   }
 
   // Copy a1 to a2 for index tuples that are valid for both arrays.
-  private static void copyArray(AbstractArray a1, AbstractArray a2)
+  static void copyArray(AbstractArray a1, AbstractArray a2)
     throws ConditionThrowable
   {
     Debug.assertTrue(a1.getRank() == a2.getRank());
@@ -366,6 +376,7 @@ public final class SimpleArray_T extends AbstractArray
       }
   }
 
+  @Override
   public AbstractArray adjustArray(int[] dimv, AbstractArray displacedTo,
                                    int displacement)
   {
