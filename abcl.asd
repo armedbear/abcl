@@ -6,8 +6,8 @@
   (:use :cl :asdf))
 (in-package :abcl-asdf)
 
+;;; Wrapper for all ABCL ASDF definitions.
 (defsystem :abcl
-  :documentation "Wrapper for all ABCL ASDF definitions."
   :version "0.2.0")
 
 (defmethod perform :after ((o load-op) (c (eql (find-system 'abcl))))
@@ -18,8 +18,9 @@
   ;;; Additional test suite invocations would go here.
   (asdf:oos 'asdf:test-op :ansi-test-compiled :force t))
 
+;;; A collection of test suites for ABCL.
 (defsystem :test-abcl
-  :documentation "A collection of test suites for ABCL." 
+
   :version "0.3"
   :depends-on (:ansi-test-compiled :ansi-test-interpreted))
 
@@ -28,10 +29,9 @@
   (asdf:oos 'asdf:load-op :ansi-test-compiled :force t))
 
 (defsystem :ansi-test :version "0.1" :components
-     ((:module ansi-tests :pathname "test/lisp/ansi/"
-	       :documentation "GCL ANSI test suite."
-	       :components
-	      ((:file "package")))))
+     ;;; GCL ANSI test suite.
+     ((:module ansi-tests :pathname "test/lisp/ansi/" :components
+	       ((:file "package")))))
 (defsystem :ansi-test-interpreted :version "0,1" :depends-on (ansi-test))
 (defsystem :ansi-test-compiled :version "0.1" :depends-on (ansi-test))
 
@@ -43,9 +43,9 @@
   (funcall (intern (symbol-name 'run) :abcl.tests.ansi-tests)
 	   :compile-tests t))
 
-;;; Works for: abcl, sbcl, clisp
+;;; Build ABCL from a Lisp.
+;;; Works for: abcl, sbcl, clisp, cmu, lispworks, allegro, openmcl
 (defsystem :build-abcl 
-  :documentation "Build ABCL from a Lisp."
   :components 
 	   ((:module build :pathname ""  :components
 		     ((:file "build-abcl") 

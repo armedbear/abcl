@@ -258,7 +258,7 @@
   (let* ((source-files
           (append (with-current-directory (*abcl-dir*)
                     (directory "*.java"))
-                  (with-current-directory ((merge-pathnames "java/awt/" *abcl-dir*))
+                  (with-current-directory ((merge-pathnames "util/" *abcl-dir*))
                     (directory "*.java"))))
          (to-do ()))
     (if force

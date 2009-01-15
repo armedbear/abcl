@@ -27,12 +27,12 @@
 (case *platform*
   (:windows
    (setq *jdk*           "C:\\Program Files\\Java\\jdk1.5.0_16\\")
-   #+(or) (setq *java-compiler* "jikes")
+   #+nil  (setq *java-compiler* "jikes")
    )
   (:darwin
    (setq *jdk*           "/usr/")
-   (setq *java-compiler* "jikes")
-   #+(or) (setq *jar*    "jar"))
+   #+nil (setq *java-compiler* "jikes")
+   #+nil (setq *jar*    "jar"))
   ((:linux :unknown)
    (setq *jdk*           "/home/peter/sun/jdk1.5.0_16/")
    (setq *jar*           "fastjar")))
