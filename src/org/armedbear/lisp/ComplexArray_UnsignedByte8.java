@@ -246,7 +246,7 @@ public final class ComplexArray_UnsignedByte8 extends AbstractArray
             else {
                 //### FIXME Take the easy way out: we don't want to reorganize
                 // all of the array code yet
-                SimpleArray_UnsignedByte8 tempArray = new SimpleArray_UnsignedByte8(dims, getElementType());
+                SimpleArray_UnsignedByte8 tempArray = new SimpleArray_UnsignedByte8(dims);
                 tempArray.fill(initialElement);
                 SimpleArray_UnsignedByte8.copyArray(this, tempArray);
                 this.data = tempArray.data;
