@@ -58,7 +58,7 @@ public final class adjust_array extends Primitive
         LispObject fillPointer = args[7];
         LispObject displacedTo = args[8];
         LispObject displacedIndexOffset = args[9];
-        if (initialElementProvided != NIL && initialContents != NIL) {
+        if (initialElementProvided != NIL && initialContentsProvided != NIL) {
             return error(new LispError("ADJUST-ARRAY: cannot specify both initial element and initial contents."));
         }
         if (elementType != array.getElementType() &&
