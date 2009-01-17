@@ -241,13 +241,14 @@ public final class ComplexArray_UnsignedByte8 extends AbstractArray
                                               LispObject initialContents)
             throws ConditionThrowable {
         if (isAdjustable()) {
-            if (initialContents != NIL)
+            if (initialContents != null)
                 setInitialContents(0, dims, initialContents, 0);
             else {
                 //### FIXME Take the easy way out: we don't want to reorganize
                 // all of the array code yet
                 SimpleArray_UnsignedByte8 tempArray = new SimpleArray_UnsignedByte8(dims);
-                tempArray.fill(initialElement);
+                if (initialElement != null)
+                    tempArray.fill(initialElement);
                 SimpleArray_UnsignedByte8.copyArray(this, tempArray);
                 this.data = tempArray.data;
 
@@ -256,11 +257,12 @@ public final class ComplexArray_UnsignedByte8 extends AbstractArray
             }
             return this;
         } else {
-            if (initialContents != NIL)
+            if (initialContents != null)
                 return new ComplexArray_UnsignedByte8(dims, initialContents);
             else {
                 ComplexArray_UnsignedByte8 newArray = new ComplexArray_UnsignedByte8(dims);
-                newArray.fill(initialElement);
+                if (initialElement != null)
+                    newArray.fill(initialElement);
                 return newArray;
             }
         }

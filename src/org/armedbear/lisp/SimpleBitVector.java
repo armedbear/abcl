@@ -199,7 +199,7 @@ public final class SimpleBitVector extends AbstractBitVector
                                        LispObject initialContents)
         throws ConditionThrowable
     {
-        if (initialContents != NIL) {
+        if (initialContents != null) {
             SimpleBitVector v = new SimpleBitVector(newCapacity);
             if (initialContents.listp()) {
                 LispObject list = initialContents;
@@ -223,7 +223,7 @@ public final class SimpleBitVector extends AbstractBitVector
                 else
                     v.clearBit(i);
             }
-            if (initialElement != NIL && capacity < newCapacity) {
+            if (initialElement != null && capacity < newCapacity) {
                 int n = Fixnum.getValue(initialElement);
                 if (n == 1)
                     for (int i = capacity; i < newCapacity; i++)

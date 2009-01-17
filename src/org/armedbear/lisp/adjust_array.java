@@ -51,14 +51,14 @@ public final class adjust_array extends Primitive
         AbstractArray array = checkArray(args[0]);
         LispObject dimensions = args[1];
         LispObject elementType = args[2];
-        LispObject initialElement = args[3];
-        LispObject initialElementProvided = args[4];
-        LispObject initialContents = args[5];
-        LispObject initialContentsProvided = args[6];
+        boolean initialElementProvided = args[4] != NIL;
+        boolean initialContentsProvided = args[6] != NIL;
+        LispObject initialElement = initialElementProvided ? args[3] : null;
+        LispObject initialContents = initialContentsProvided ? args[5] : null;
         LispObject fillPointer = args[7];
         LispObject displacedTo = args[8];
         LispObject displacedIndexOffset = args[9];
-        if (initialElementProvided != NIL && initialContentsProvided != NIL) {
+        if (initialElementProvided && initialContentsProvided) {
             return error(new LispError("ADJUST-ARRAY: cannot specify both initial element and initial contents."));
         }
         if (elementType != array.getElementType() &&
@@ -67,10 +67,9 @@ public final class adjust_array extends Primitive
             return error(new LispError("ADJUST-ARRAY: incompatible element type."));
         }
         if (array.getRank() == 0) {
-            return array.adjustArray(new int[0], NIL,
-                    (initialContentsProvided != NIL) ? initialContents : initialElement);
+            return array.adjustArray(new int[0], initialElement, initialContents);
         }
-        if (initialElementProvided == NIL && array.getElementType() == T)
+        if (!initialElementProvided && array.getElementType() == T)
             initialElement = Fixnum.ZERO;
         if (array.getRank() == 1) {
             final int newSize;

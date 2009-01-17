@@ -169,15 +169,15 @@ public final class ZeroRankArray extends AbstractArray
                                               LispObject initialContents)
     throws ConditionThrowable {
       if (isAdjustable()) {
-          if (initialContents != NIL)
+          // initial element doesn't matter:
+          // we're not creating new elements
+          if (initialContents != null)
               data = initialContents;
-          else
-              data = initialElement;
           return this;
       } else {
           return new ZeroRankArray(elementType,
-                  initialContents != NIL ? initialContents : initialElement,
-                  false);
+                  initialContents != null ? initialContents :
+                      initialElement != null ? initialElement : data, false);
       }
   }
 

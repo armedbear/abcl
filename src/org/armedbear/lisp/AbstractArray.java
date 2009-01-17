@@ -316,13 +316,30 @@ public abstract class AbstractArray extends LispObject
         }
     }
 
-  public abstract AbstractArray adjustArray(int[] dims,
+    /** Returns a newly allocated array or the current array with
+     * adjusted dimensions.
+     *
+     * @param dims
+     * @param initialElement @c null if none
+     * @param initialContents @c null if none
+     * @return @c this or a new array
+     * @throws org.armedbear.lisp.ConditionThrowable
+     */
+    public abstract AbstractArray adjustArray(int[] dims,
                                               LispObject initialElement,
                                               LispObject initialContents)
-    throws ConditionThrowable;
+        throws ConditionThrowable;
 
-  public abstract AbstractArray adjustArray(int[] dims,
+    /**
+     * 
+     * @param dims
+     * @param displacedTo
+     * @param displacement
+     * @return
+     * @throws org.armedbear.lisp.ConditionThrowable
+     */
+    public abstract AbstractArray adjustArray(int[] dims,
                                               AbstractArray displacedTo,
                                               int displacement)
-    throws ConditionThrowable;
+        throws ConditionThrowable;
 }

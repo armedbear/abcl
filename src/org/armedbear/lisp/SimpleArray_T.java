@@ -327,14 +327,15 @@ public final class SimpleArray_T extends AbstractArray
                                    LispObject initialContents)
     throws ConditionThrowable
   {
-    if (initialContents != NIL)
+    if (initialContents != null)
       return new SimpleArray_T(dimv, elementType, initialContents);
     for (int i = 0; i < dimv.length; i++)
       {
         if (dimv[i] != this.dimv[i])
           {
             SimpleArray_T newArray = new SimpleArray_T(dimv, elementType);
-            newArray.fill(initialElement);
+            if (initialElement != null)
+                newArray.fill(initialElement);
             copyArray(this, newArray);
             return newArray;
           }

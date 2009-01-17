@@ -290,13 +290,14 @@ public final class SimpleArray_UnsignedByte8 extends AbstractArray
                                      LispObject initialContents)
         throws ConditionThrowable
     {
-        if (initialContents != NIL)
+        if (initialContents != null)
             return new SimpleArray_UnsignedByte8(dimv, initialContents);
         for (int i = 0; i < dimv.length; i++) {
             if (dimv[i] != this.dimv[i]) {
                 SimpleArray_UnsignedByte8 newArray =
                     new SimpleArray_UnsignedByte8(dimv);
-                newArray.fill(initialElement);
+                if (initialElement != null)
+                    newArray.fill(initialElement);
                 copyArray(this, newArray);
                 return newArray;
             }

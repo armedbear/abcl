@@ -602,7 +602,7 @@ public final class ComplexString extends AbstractString
                                      LispObject initialContents)
     throws ConditionThrowable
   {
-    if (initialContents != NIL)
+    if (initialContents != null)
       {
         // "If INITIAL-CONTENTS is supplied, it is treated as for MAKE-
         // ARRAY. In this case none of the original contents of array
@@ -658,7 +658,7 @@ public final class ComplexString extends AbstractString
                              Math.min(capacity, newCapacity));
             chars = newElements;
           }
-        if (initialElement != NIL && capacity < newCapacity)
+        if (initialElement != null && capacity < newCapacity)
           {
             // Initialize new elements.
             final char c = LispCharacter.getValue(initialElement);

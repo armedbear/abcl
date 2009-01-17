@@ -372,7 +372,7 @@ public final class ComplexVector_UnsignedByte32 extends AbstractVector
                                        LispObject initialContents)
         throws ConditionThrowable
     {
-        if (initialContents != NIL) {
+        if (initialContents != null) {
             // "If INITIAL-CONTENTS is supplied, it is treated as for MAKE-
             // ARRAY. In this case none of the original contents of array
             // appears in the resulting array."
@@ -403,7 +403,7 @@ public final class ComplexVector_UnsignedByte32 extends AbstractVector
                 elements = newElements;
             }
             // Initialize new elements (if aapplicable).
-            if (initialElement != NIL) {
+            if (initialElement != null) {
                 for (int i = capacity; i < newCapacity; i++)
                     elements[i] = initialElement;
             }

@@ -242,13 +242,14 @@ public final class ComplexArray extends AbstractArray
                                               LispObject initialContents)
             throws ConditionThrowable {
         if (isAdjustable()) {
-            if (initialContents != NIL)
+            if (initialContents != null)
                 setInitialContents(0, dims, initialContents, 0);
             else {
                 //### FIXME Take the easy way out: we don't want to reorganize
                 // all of the array code yet
                 SimpleArray_T tempArray = new SimpleArray_T(dims, elementType);
-                tempArray.fill(initialElement);
+                if (initialElement != null)
+                    tempArray.fill(initialElement);
                 SimpleArray_T.copyArray(this, tempArray);
                 this.data = tempArray.data;
 
@@ -257,11 +258,12 @@ public final class ComplexArray extends AbstractArray
             }
             return this;
         } else {
-            if (initialContents != NIL)
+            if (initialContents != null)
                 return new ComplexArray(dims, elementType, initialContents);
             else {
                 ComplexArray newArray = new ComplexArray(dims, elementType);
-                newArray.fill(initialElement);
+                if (initialElement != null)
+                    newArray.fill(initialElement);
                 return newArray;
             }
         }

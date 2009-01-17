@@ -336,7 +336,7 @@ public final class SimpleVector extends AbstractVector
                                      LispObject initialContents)
     throws ConditionThrowable
   {
-    if (initialContents != NIL)
+    if (initialContents != null)
       {
         LispObject[] newData = new LispObject[newCapacity];
         if (initialContents.listp())
@@ -362,8 +362,9 @@ public final class SimpleVector extends AbstractVector
         LispObject[] newData = new LispObject[newCapacity];
         System.arraycopy(data, 0, newData, 0,
                          Math.min(capacity, newCapacity));
-        for (int i = capacity; i < newCapacity; i++)
-          newData[i] = initialElement;
+        if (initialElement != null)
+            for (int i = capacity; i < newCapacity; i++)
+                newData[i] = initialElement;
         return new SimpleVector(newData);
       }
     // No change.

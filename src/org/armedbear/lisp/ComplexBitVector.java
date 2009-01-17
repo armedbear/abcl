@@ -345,7 +345,7 @@ public final class ComplexBitVector extends AbstractBitVector
             int size = newCapacity >>> 6;
             if ((newCapacity & LONG_MASK) != 0)
                 ++size;
-            if (initialContents != NIL) {
+            if (initialContents != null) {
                 bits = new long[size];
                 capacity = newCapacity;
                 if (initialContents.listp()) {
@@ -364,7 +364,7 @@ public final class ComplexBitVector extends AbstractBitVector
                 System.arraycopy(bits, 0, newBits, 0,
                                  Math.min(bits.length, newBits.length));
                 bits = newBits;
-                if (newCapacity > capacity) {
+                if (newCapacity > capacity && initialElement != null) {
                     int n = Fixnum.getValue(initialElement);
                     if (n == 1)
                         for (int i = capacity; i < newCapacity; i++)

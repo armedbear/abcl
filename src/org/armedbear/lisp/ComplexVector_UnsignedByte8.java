@@ -384,7 +384,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
                                        LispObject initialContents)
         throws ConditionThrowable
     {
-        if (initialContents != NIL) {
+        if (initialContents != null) {
             // "If INITIAL-CONTENTS is supplied, it is treated as for MAKE-
             // ARRAY. In this case none of the original contents of array
             // appears in the resulting array."
@@ -415,7 +415,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
                 elements = newElements;
             }
             // Initialize new elements (if aapplicable).
-            if (initialElement != NIL) {
+            if (initialElement != null) {
                 byte b = coerceLispObjectToJavaByte(initialElement);
                 for (int i = capacity; i < newCapacity; i++)
                     elements[i] = b;

@@ -465,7 +465,7 @@ public final class SimpleString extends AbstractString
                                        LispObject initialContents)
         throws ConditionThrowable
     {
-        if (initialContents != NIL) {
+        if (initialContents != null) {
             char[] newChars = new char[newCapacity];
             if (initialContents.listp()) {
                 LispObject list = initialContents;
@@ -483,7 +483,7 @@ public final class SimpleString extends AbstractString
         if (capacity != newCapacity) {
             char[] newChars = new char[newCapacity];
             System.arraycopy(chars, 0, newChars, 0, Math.min(newCapacity, capacity));
-            if (initialElement != NIL && capacity < newCapacity) {
+            if (initialElement != null && capacity < newCapacity) {
                 final char c = LispCharacter.getValue(initialElement);
                 for (int i = capacity; i < newCapacity; i++)
                     newChars[i] = c;

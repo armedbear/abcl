@@ -275,7 +275,7 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
                                      LispObject initialContents)
     throws ConditionThrowable
   {
-    if (initialContents != NIL)
+    if (initialContents != null)
       {
         LispObject[] newElements = new LispObject[newCapacity];
         if (initialContents.listp())
@@ -301,8 +301,9 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
         LispObject[] newElements = new LispObject[newCapacity];
         System.arraycopy(elements, 0, newElements, 0,
                          Math.min(capacity, newCapacity));
-        for (int i = capacity; i < newCapacity; i++)
-          newElements[i] = initialElement;
+        if (initialElement != null)
+            for (int i = capacity; i < newCapacity; i++)
+                newElements[i] = initialElement;
         return new BasicVector_UnsignedByte32(newElements);
       }
     // No change.
