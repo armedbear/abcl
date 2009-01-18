@@ -252,6 +252,11 @@
              (incf index))
            (concatenate 'string (subseq s 0 index) "." (subseq s index))))))
 
+
+(eval-when (:compile-toplevel :execute)
+    ;; the code below needs to its floats to be read as long-floats
+    (setf *read-default-float-format* 'double-float))
+
 (defun scale-exponent (original-x)
   (let* ((x (coerce original-x 'long-float)))
     (multiple-value-bind (sig exponent) (decode-float x)
