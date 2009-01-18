@@ -418,6 +418,8 @@
         (with-compilation-unit ()
           (with-open-file (out temp-file :direction :output :if-exists :supersede)
             (let ((*readtable* *readtable*)
+                  (*read-default-float-format* *read-default-float-format*)
+                  (*read-base* *read-base*)
                   (*package* *package*)
                   (*speed* *speed*)
                   (*space* *space*)
