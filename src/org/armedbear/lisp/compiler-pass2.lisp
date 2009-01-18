@@ -6139,7 +6139,8 @@ body is the body to invoke. "
 	      ;; Everything is non-negative.
 	      (setf result-type (list 'INTEGER
 				      (ash low1 low2)
-				      (ash high1 high2))))
+                                      (if (<= 64 high2)
+                                          '* (ash high1 high2)))))
 	     ((and (>= low1 0) (>= high1 0) (<= low2 0) (<= high2 0))
 	      ;; Negative (or zero) second argument.
 	      (setf result-type (list 'INTEGER
