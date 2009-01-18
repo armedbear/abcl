@@ -112,7 +112,10 @@
         (*print-level* nil)
         (*print-length* nil)
         (*print-circle* nil)
-        (*print-structure* t))
+        (*print-structure* t)
+        ;; make sure to write all floats with their exponent marker:
+        ;; the dump-time default may not be the same at load-time
+        (*read-default-float-format* nil))
     (dump-object form stream)))
 
 (provide 'dump-form)
