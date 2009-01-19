@@ -85,6 +85,8 @@
 (defvar *declared-functions* nil)
 (defvar *declared-strings* nil)
 (defvar *declared-integers* nil)
+(defvar *declared-floats* nil)
+(defvar *declared-doubles* nil)
 
 (defstruct (class-file (:constructor %make-class-file))
   pathname ; pathname of output file
@@ -101,7 +103,9 @@
   (symbols (make-hash-table :test 'eq))
   (functions (make-hash-table :test 'equal))
   (strings (make-hash-table :test 'eq))
-  (integers (make-hash-table :test 'eql)))
+  (integers (make-hash-table :test 'eql))
+  (floats (make-hash-table :test 'eql))
+  (doubles (make-hash-table :test 'eql)))
 
 (defun class-name-from-filespec (filespec)
   (let* ((name (pathname-name filespec)))
@@ -131,7 +135,9 @@
             (*declared-symbols*   (class-file-symbols ,var))
             (*declared-functions* (class-file-functions ,var))
             (*declared-strings*   (class-file-strings ,var))
-            (*declared-integers*  (class-file-integers ,var)))
+            (*declared-integers*  (class-file-integers ,var))
+            (*declared-floats*    (class-file-floats ,var))
+            (*declared-doubles*   (class-file-doubles ,var)))
        (progn ,@body)
        (setf (class-file-pool ,var)         *pool*
              (class-file-pool-count ,var)   *pool-count*
@@ -141,7 +147,9 @@
              (class-file-symbols ,var)      *declared-symbols*
              (class-file-functions ,var)    *declared-functions*
              (class-file-strings ,var)      *declared-strings*
-             (class-file-integers ,var)     *declared-integers*))))
+             (class-file-integers ,var)     *declared-integers*
+             (class-file-floats ,var)       *declared-floats*
+             (class-file-doubles ,var)      *declared-doubles*))))
 
 (defstruct compiland
   name

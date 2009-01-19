@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import java.math.BigInteger;
+
 public final class FloatFunctions extends Lisp
 {
     // ### set-floating-point-modes &key traps => <no values>
@@ -137,6 +139,27 @@ public final class FloatFunctions extends Lisp
                 return LispThread.currentThread().setValues(significand,
                                                             exponent,
                                                             sign);
+            }
+            return type_error(arg, Symbol.FLOAT);
+        }
+    };
+
+    // ### %float-bits float => integer
+    private static final Primitive _FLOAT_BITS =
+        new Primitive("%float-bits", "integer")
+    {
+        @Override
+        public LispObject execute(LispObject arg) throws ConditionThrowable
+        {
+            if (arg instanceof SingleFloat) {
+                int bits = Float.floatToIntBits(((SingleFloat)arg).value);
+                BigInteger big = BigInteger.valueOf(bits >> 1);
+                return new Bignum(big.shiftLeft(1).add(((bits & 1) == 1) ? BigInteger.ONE : BigInteger.ZERO));
+            }
+            if (arg instanceof DoubleFloat) {
+                long bits = Double.doubleToLongBits(((DoubleFloat)arg).value);
+                BigInteger big = BigInteger.valueOf(bits >> 1);
+                return new Bignum(big.shiftLeft(1).add(((bits & 1) == 1) ? BigInteger.ONE : BigInteger.ZERO));
             }
             return type_error(arg, Symbol.FLOAT);
         }

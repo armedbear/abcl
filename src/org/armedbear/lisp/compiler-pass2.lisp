@@ -129,11 +129,39 @@
   (declare (optimize speed))
   (pool-get (list 3 n)))
 
+(defknown pool-float (single-float) (integer 1 65535))
+(defun pool-float (n)
+  (declare (optimize speed))
+  (pool-get (list 4 (%float-bits n))))
+
 (defknown pool-long (integer) (integer 1 65535))
 (defun pool-long (n)
   (declare (optimize speed))
   (declare (type java-long n))
   (let* ((entry (list 5
+                      (logand (ash n -32) #xffffffff)
+                      (logand n #xffffffff)))
+         (ht *pool-entries*)
+         (index (gethash1 entry ht)))
+    (declare (type hash-table ht))
+    (unless index
+      (setf index *pool-count*)
+      (push entry *pool*)
+      (setf (gethash entry ht) index)
+      ;; The Java Virtual Machine Specification, Section 4.4.5: "All 8-byte
+      ;; constants take up two entries in the constant_pool table of the class
+      ;; file. If a CONSTANT_Long_info or CONSTANT_Double_info structure is the
+      ;; item in the constant_pool table at index n, then the next usable item in
+      ;; the pool is located at index n+2. The constant_pool index n+1 must be
+      ;; valid but is considered unusable." So:
+      (setf *pool-count* (+ index 2)))
+    index))
+
+(defknown pool-double (double-float) (integer 1 65535))
+(defun pool-double (n)
+  (declare (optimize speed))
+  (let* ((n (%float-bits n))
+         (entry (list 6
                       (logand (ash n -32) #xffffffff)
                       (logand n #xffffffff)))
          (ht *pool-entries*)
@@ -199,6 +227,10 @@
 (defconstant +lisp-fixnum-array+ "[Lorg/armedbear/lisp/Fixnum;")
 (defconstant +lisp-bignum-class+ "org/armedbear/lisp/Bignum")
 (defconstant +lisp-bignum+ "Lorg/armedbear/lisp/Bignum;")
+(defconstant +lisp-single-float-class+ "org/armedbear/lisp/SingleFloat")
+(defconstant +lisp-single-float+ "Lorg/armedbear/lisp/SingleFloat;")
+(defconstant +lisp-double-float-class+ "org/armedbear/lisp/DoubleFloat")
+(defconstant +lisp-double-float+ "Lorg/armedbear/lisp/DoubleFloat;")
 (defconstant +lisp-character-class+ "org/armedbear/lisp/LispCharacter")
 (defconstant +lisp-character+ "Lorg/armedbear/lisp/LispCharacter;")
 (defconstant +lisp-character-array+ "[Lorg/armedbear/lisp/LispCharacter;")
@@ -1553,14 +1585,14 @@ representation, based on the derived type of the LispObject."
   (declare (optimize speed))
   (declare (type (unsigned-byte 16) n))
   (declare (type stream stream))
-  (write-8-bits (ash n -8) stream)
+  (write-8-bits (logand (ash n -8) #xFF) stream)
   (write-8-bits (logand n #xFF) stream))
 
 (defknown write-u4 (integer stream) t)
 (defun write-u4 (n stream)
   (declare (optimize speed))
   (declare (type (unsigned-byte 32) n))
-  (write-u2 (ash n -16) stream)
+  (write-u2 (logand (ash n -16) #xFFFF) stream)
   (write-u2 (logand n #xFFFF) stream))
 
 (declaim (ftype (function (t t) t) write-s4))
@@ -1630,15 +1662,15 @@ representation, based on the derived type of the LispObject."
     (case tag
       (1 ; UTF8
        (write-utf8 (third entry) stream))
-      (3 ; int
-       (write-s4 (second entry) stream))
-      ((5 6)
+      ((3 4) ; int
+       (write-u4 (second entry) stream))
+      ((5 6) ; long double
        (write-u4 (second entry) stream)
        (write-u4 (third entry) stream))
-      ((9 10 11 12)
+      ((9 10 11 12) ; fieldref methodref InterfaceMethodref nameAndType
        (write-u2 (second entry) stream)
        (write-u2 (third entry) stream))
-      ((7 8)
+      ((7 8) ; class string
        (write-u2 (second entry) stream))
       (t
        (error "write-constant-pool-entry unhandled tag ~D~%" tag)))))
@@ -2014,6 +2046,36 @@ representation, based on the derived type of the LispObject."
 	    (setf *static-code* *code*))))
    (setf (gethash n ht) g)))
 
+(defknown declare-float (single-float) string)
+(defun declare-float (s)
+  (declare-with-hashtable
+   s *declared-floats* ht g
+   (let* ((*code* *static-code*))
+     (setf g (concatenate 'string "FLOAT_" (symbol-name (gensym))))
+     (declare-field g +lisp-single-float+)
+     (emit 'new +lisp-single-float-class+)
+     (emit 'dup)
+     (emit 'ldc (pool-float s))
+     (emit-invokespecial-init +lisp-single-float-class+ '("F"))
+     (emit 'putstatic *this-class* g +lisp-single-float+)
+     (setf *static-code* *code*))
+   (setf (gethash s ht) g)))
+
+(defknown declare-double (double-float) string)
+(defun declare-double (d)
+  (declare-with-hashtable
+   d *declared-doubles* ht g
+   (let ((*code* *static-code*))
+     (setf g (concatenate 'string "DOUBLE_" (symbol-name (gensym))))
+     (declare-field g +lisp-double-float+)
+     (emit 'new +lisp-double-float-class+)
+     (emit 'dup)
+     (emit 'ldc2_w (pool-double d))
+     (emit-invokespecial-init +lisp-double-float-class+ '("D"))
+     (emit 'putstatic *this-class* g +lisp-double-float+)
+     (setf *static-code* *code*))
+   (setf (gethash d ht) g)))
+
 (defknown declare-character (t) string)
 (defun declare-character (c)
   (let ((g (symbol-name (gensym)))
@@ -2201,6 +2263,12 @@ representation, based on the derived type of the LispObject."
         ((integerp form)
          ;; A bignum.
          (emit 'getstatic *this-class* (declare-bignum form) +lisp-bignum+))
+        ((typep form 'single-float)
+         (emit 'getstatic *this-class*
+               (declare-float form) +lisp-single-float+))
+        ((typep form 'double-float)
+         (emit 'getstatic *this-class*
+               (declare-double form) +lisp-double-float+))
         ((numberp form)
          ;; A number, but not a fixnum.
          (emit 'getstatic *this-class*
