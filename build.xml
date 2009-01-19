@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="antlib:org.apache.tools.ant"
 	 name="abcl-master" default="help" basedir=".">
-    <description>Armed Bear Common Lisp</description>
+    <description>Compiling, testing, and packaging Armed Bear Common Lisp</description>
 
     <target name="abcl" depends="abcl.wrapper"/>
 
@@ -20,7 +20,6 @@
     <property name="abcl.ext.dir"
 	      value="${basedir}/ext"/>
 
-
     <target name="help">
       <echo>Main Ant targets:
  abcl.compile  
@@ -38,58 +37,6 @@
       <echo>Corresponding targets for J have been removed.</echo>
     </target>
 
-    <property name="abcl.version.path"
-	      value="${build.classes.dir}/org/armedbear/lisp/version"/>
-    <property name="abcl.build.path"
-	      value="${build.classes.dir}/org/armedbear/lisp/build"/>
-
-    <target name="abcl.stamp" depends="abcl.compile">
-      <tstamp>
-         <format property="build" pattern="EEE MMM dd yyyy HH:mm:ss zzz"/>
-      </tstamp>
-      <mkdir dir="${abcl.build.path}/.."/>
-      <echo message="${build}" file="${abcl.build.path}"/>    
-      <condition property="unix"> 
-	<or>
-	  <os family="unix"/>
-	  <os family="mac"/>
-	</or>
-      </condition>
-
-      <condition property="windows"> <os family="windows"/></condition>
-
-      <available file="${src.dir}org/armedbear/lisp/Interpreter.java" 
-		 property="abcl.lisp.p"/>
-
-      <antcall target="abcl.stamp.version"/>
-      <antcall target="abcl.stamp.hostname"/>
-    </target>
-
-    <target name="abcl.stamp.version" depends="abcl.compile">
-      <java fork="true"
-	    classpath="${build.classes.dir}"
-	    outputproperty="abcl.version"
-	    classname="org.armedbear.lisp.Main">
-	<arg value="--noinit"/>
-	<arg value="--noinform"/>
-	<arg value="--eval"/>
-	<arg value="(progn (format t (lisp-implementation-version)) (finish-output) (quit))"/>
-      </java>
-
-      <echo>Building ABCL version: ${abcl.version}</echo>
-      <mkdir dir="${abcl.version.path}/.."/>
-      <echo message="${abcl.version}" file="${abcl.version.path}"/> 
-
-      <!-- Set from commandline via -D or in 'build.properties' -->
-      <property name="build.version" value="abcl.svn"/>
-      <echo>Implementation-Source: ${version.src}</echo>
-    </target>
-
-    <target name="abcl.stamp.hostname">
-      <exec executable="hostname" outputproperty="abcl.hostname"/>
-      <echo>abcl.hostname: ${abcl.hostname}</echo>
-    </target>
-
     <patternset id="abcl.source.java">
       <include name="org/armedbear/lisp/*.java"/>
       <include name="org/armedbear/lisp/util/*.java"/>
@@ -98,6 +45,7 @@
     <patternset id="abcl.source.lisp">
       <include name="org/armedbear/lisp/*.lisp"/>
       <include name="org/armedbear/lisp/tests/*.lisp"/>
+      <exclude name="org/armedbear/lisp/j.lisp"/>
     </patternset>
 
     <patternset id="abcl.scripting.source.java">
@@ -130,49 +78,59 @@
       <pathelement location="${build.classes.dir}"/>
     </path>
 
-    <target name="abcl.compile" depends="abcl.pre-compile,abcl.compile.lisp">
-      <echo>Compiled ABCL with java version: ${java.version}</echo>
+    <target name="abcl.compile" depends="abcl.compile.lisp">
+      <echo>Compiled ABCL with Java version: ${java.version}</echo>
     </target>
 
-    <target name="abcl.pre-compile">
+    <target name="abcl.init">
+      <tstamp>
+	<format property="build" pattern="EEE MMM dd yyyy HH:mm:ss zzz"/>
+      </tstamp>
+
       <!--- antversion fails in ant 1.7.1 <antversion property="ant.version" 
 	                                              atleast="1.7"/> -->
-      <mkdir dir="${build.dir}"/>
-      <mkdir dir="${build.classes.dir}"/>
-
       <property name="java.path"
 		value="${java.home}/bin/java"/>
 
-      <exec executable="hostname" os="unix" 
-	    outputproperty="abcl.compile.hostname"/>
-      <exec executable="uname" os="unix" 
-	    outputproperty="abcl.compile.uname">
-	<arg value="-a"/>
-      </exec>
+      <!-- Deprecated. Two main types of build environents: 'unix' or 'windows'. -->
+      <condition property="unix"> 
+	<or>
+	  <os family="unix"/>
+	  <os family="mac"/>
+	</or>
+      </condition>
+      <condition property="windows"> 
+	<os family="windows"/>
+      </condition>
 
-      <exec executable="hostname" os="Linux" outputproperty="hostname"/>
+      <!-- Deprecated. -->
+      <available file="${src.dir}org/armedbear/lisp/Interpreter.java" 
+		 property="abcl.lisp.p"/>
 
-      <condition property="abcl.java.version">
+      <echo>java.version: ${java.version}</echo>
+      <condition property="abcl.java.version.p">
 	<or>
 	  <matches string="${java.version}" pattern="1\.5"/>
 	  <matches string="${java.version}" pattern="1\.6\.0_1[0-9]"/>
 	</or>  
       </condition>
-      <echo>java.version: ${java.version}</echo>
+
+      <!-- Set from commandline via -D or in 'build.properties' -->
+      <property name="build.version" value="abcl.svn"/>
+      <echo>Implementation-Source: ${version.src}</echo>
+
     </target>
     
     <target name="abcl.java.warning" 
-	    depends="abcl.pre-compile"
-	    unless="abcl.java.version">
-      <echo>WARNING: Java version ${java.version} not recommended.</echo>
+	    depends="abcl.init"
+	    unless="abcl.java.version.p">
+      <echo>WARNING: Use of Java version ${java.version} not recommended.</echo>
     </target>
 	
     <target name="abcl.compile.java" 
-	    depends="abcl.pre-compile,abcl.java.warning">
-      <tstamp>
-	<format property="build" pattern="EEE MMM dd yyyy HH:mm:ss zzz"/>
-      </tstamp>
-
+	    depends="abcl.init,abcl.java.warning">
+      <mkdir dir="${build.dir}"/>
+      <mkdir dir="${build.classes.dir}"/>
       <javac destdir="${build.classes.dir}"
 	     debug="true"
 	     target="1.5">
@@ -193,7 +151,8 @@
 
     <!-- Adjust the patternset for ABCL source to use the much faster
          Ant 'uptodate' task to check if we need to compile the system
-         fasls. -->
+         fasls.  Highly inter-dependent with the behavior specified in
+         'compile-system.lisp'.-->
     <patternset id="abcl.source.lisp.fasls">
       <patternset refid="abcl.source.lisp"/>
       <exclude name="org/armedbear/lisp/tests/*.lisp"/>
@@ -224,7 +183,39 @@
       </java>
     </target>
 
-    <target name="abcl.jar" depends="abcl.compile,abcl.stamp">
+    <property name="abcl.build.path"
+	      value="${build.classes.dir}/org/armedbear/lisp/build"/>
+    <target name="abcl.stamp" depends="abcl.compile,abcl.stamp.version,abcl.stamp.hostname">
+      <mkdir dir="${abcl.build.path}/.."/>
+      <echo message="${build}" file="${abcl.build.path}"/>    
+    </target>
+
+    <property name="abcl.version.path"
+	      value="${build.classes.dir}/org/armedbear/lisp/version"/>
+    <target name="abcl.stamp.version" depends="abcl.compile">
+      <!-- Determine which ABCL version we have just built by parsing
+           the output of LISP-IMPLEMENTATION-VERSION. -->
+      <java fork="true"
+	    classpath="${build.classes.dir}"
+	    outputproperty="abcl.version"
+	    classname="org.armedbear.lisp.Main">
+	<arg value="--noinit"/>
+	<arg value="--noinform"/>
+	<arg value="--eval"/>
+	<arg value="(progn (format t (lisp-implementation-version)) (finish-output) (quit))"/>
+      </java>
+
+      <echo>Built ABCL version: ${abcl.version}</echo>
+      <mkdir dir="${abcl.version.path}/.."/>
+      <echo message="${abcl.version}" file="${abcl.version.path}"/> 
+    </target>
+
+    <target name="abcl.stamp.hostname" if="unix">
+      <exec executable="hostname" outputproperty="abcl.hostname"/>
+      <echo>abcl.hostname: ${abcl.hostname}</echo>
+    </target>
+
+    <target name="abcl.jar" depends="abcl.stamp">
       <mkdir dir="${dist.dir}"/>
       <loadfile property="abcl.version"
 		  srcFile="${abcl.version.path}"/>
@@ -241,30 +232,13 @@
 		       value="${abcl.version}"/>
 	    <attribute name="Implementation-Build" 
 		       value="${build}"/>
-	    <attribute name="Build-Version" 
-		       value="${version}"/>
+	    <attribute name="Implementation-Source" 
+		       value="${version.src}"/>
 	  </section>
 	</manifest>
       </jar>
     </target>
     
-    <target name="abcl.debug.jpda" depends="abcl.jar">
-      <description>Invoke ABCL with JPDA listener on port 6789</description>
-      <java fork="true"
-	    classpathref="abcl.classpath.dist"
-	    classname="org.armedbear.lisp.Main">
-	<jvmarg 
-	    value="-agentlib:jdwp=transport=dt_socket,address=6789,server=y"/>
-      </java>
-    </target>
-
-    <target name="abcl.run" depends="abcl.jar">
-      <java fork="true"
-	    classpathref="abcl.classpath.dist"
-	    classname="org.armedbear.lisp.Main">
-      </java>
-    </target>
-
     <target name="abcl.wrapper" 
 	    depends="abcl.jar,abcl.wrapper.unix,abcl.wrapper.windows">
       <description>
@@ -292,6 +266,8 @@
 	</filterset>
       </copy>
       <chmod file="${abcl.wrapper.file}" perm="a+x"/>
+
+      <echo>Created executable ABCL wrapper in '${abcl.wrapper.file}'</echo>
       <echo>N.B. This wrapper requires '${abcl.jar.path}' not be moved.</echo>
     </target>
 
@@ -305,9 +281,28 @@
       <property name="abcl.wrapper.in.file" value="abcl.bat.in"/>
     </target>
 
+    <target name="abcl.debug.jpda" depends="abcl.jar">
+      <description>Invoke ABCL with JPDA listener on port 6789</description>
+      <java fork="true"
+	    classpathref="abcl.classpath.dist"
+	    classname="org.armedbear.lisp.Main">
+	<jvmarg 
+	    value="-agentlib:jdwp=transport=dt_socket,address=6789,server=y"/>
+      </java>
+    </target>
+
+    <target name="abcl.run" depends="abcl.jar">
+      <java fork="true"
+	    classpathref="abcl.classpath.dist"
+	    classname="org.armedbear.lisp.Main">
+      </java>
+    </target>
+
     <target name="abcl.clean">
       <delete dir="${build.dir}"/>
+      <delete file="${abcl.jar.path}"/>
       <delete file="abcl"/>
+      <delete file="abcl.bat"/>
     </target>
 
     <target name="abcl.dist" depends="abcl.jar">
@@ -318,7 +313,7 @@
     <target name="abcl.distclean" depends="abcl.clean">
       <delete dir="${dist.dir}"/>
       <delete file="abcl"/>
-      <delete file="j"/>
+      <delete file="abcl.bat"/>
     </target>
 
     <target name="TAGS">
@@ -339,9 +334,9 @@
       <include name="abcl.in"/>
       <include name="abcl.bat.in"/>
       
-      <!-- The remainder of these files are used by BUILD-ABCL to
-           build ABCL from Lisp but not used by Ant, include them in
-           the source distribution. -->
+      <!-- The remainder of these files are used by the Lisp hosted
+           build in 'build-abcl.lisp' but not used by Ant, so include
+           them in the source distribution. -->
       <include name="make-jar.in"/>
       <include name="make-jar.bat.in"/>
 
@@ -360,7 +355,8 @@
     
     <target name="abcl.source.prepare" depends="abcl.stamp.version">
       <property name="abcl.source.eol" value="asis"/>
-      <echo>Using '${abcl.source.eol}' to drive line-ending transformations.</echo>
+      <echo>Using abcl.source.eol='${abcl.source.eol}' to drive
+      source code line-ending transformations.</echo>
       <property name="abcl.build.src.dir"
 		value="${build.dir}/abcl-src-${abcl.version}"/>
       <mkdir dir="${abcl.build.src.dir}/src"/>
