@@ -764,12 +764,29 @@ representation, based on the derived type of the LispObject."
         ((eq required-representation :boolean)
          (emit-unbox-boolean))
         ((eq required-representation :long)
-         (emit-invokevirtual +lisp-object-class+ "longValue" nil "J"))))
+         (emit-invokevirtual +lisp-object-class+ "longValue" nil "J"))
+        ((eq required-representation :float)
+         (emit-invokevirtual +lisp-object-class+ "floatValue" nil "F"))
+        ((eq required-representation :double)
+         (emit-invokevirtual +lisp-object-class+ "doubleValue" nil "D"))
+        (t (assert nil))))
 
 (defknown emit-box-long () t)
 (defun emit-box-long ()
   (declare (optimize speed))
   (emit-invokestatic +lisp-class+ "number" '("J") +lisp-object+))
+
+(defknown emit-box-float () t)
+(defun emit-box-float ()
+  (emit 'new +lisp-single-float-class+)
+  (emit 'dup_x1)
+  (emit-invokespecial-init +lisp-single-float-class+ '("F")))
+
+(defknown emit-box-double () t)
+(defun emit-box-double ()
+  (emit 'new +lisp-double-float-class+)
+  (emit 'dup_x2)
+  (emit-invokespecial-init +lisp-double-float-class+ '("D")))
 
 (defknown convert-long (t) t)
 (defun convert-long (representation)
@@ -795,7 +812,11 @@ representation, based on the derived type of the LispObject."
 (defun emit-move-from-stack (target &optional representation)
   (declare (optimize speed))
   (cond ((null target)
-         (emit 'pop))
+         (case representation
+           ((:long :double)
+            (emit 'pop2))
+           (t
+            (emit 'pop))))
         ((eq target 'stack)) ; Nothing to do.
         ((fixnump target)
          ;; A register.
@@ -805,6 +826,10 @@ representation, based on the derived type of the LispObject."
              'istore)
             (:long
              'lstore)
+            (:float
+             'fstore)
+            (:double
+             'dstore)
             (t
              'astore))
           target))
@@ -2249,7 +2274,47 @@ representation, based on the derived type of the LispObject."
     (:boolean
      (emit (if form 'iconst_1 'iconst_0))
      (emit-move-from-stack target representation)
-     (return-from compile-constant)))
+     (return-from compile-constant))
+    (:float
+     (cond ((fixnump form)
+            (compile-constant form 'stack :int)
+            (emit 'i2f))
+           ((and (integerp form)
+                 (<= most-negative-java-long form most-positive-java-long))
+            (compile-constant form 'stack :long)
+            (emit 'l2f))
+           ((integerp form)
+            (emit 'getfield *this-class* (declare-bignum form)
+                  +lisp-bignum+)
+            (emit-invokevirtual +lisp-bignum-class+ "floatValue" nil "F"))
+           ((typep form 'single-float)
+            (emit 'ldc (declare-float form)))
+           ((typep form 'double-float)
+            (emit 'ldc2_w (declare-double form))
+            (emit 'd2f))
+           (t (assert nil)))
+     (emit-move-from-stack target representation)
+     (return-from compile-constant))
+    (:double
+     (cond ((fixnump form)
+            (compile-constant form 'stack :int)
+            (emit 'i2d))
+           ((and (integerp form)
+                 (<= most-negative-java-long form most-positive-java-long))
+            (compile-constant form 'stack :long)
+            (emit 'l2d))
+           ((integerp form)
+            (emit 'getfield *this-class* (declare-bignum form)
+                  +lisp-bignum+)
+            (emit-invokevirtual +lisp-bignum-class+ "doubleValue" nil "D")
+           ((typep form 'single-float)
+            (emit 'ldc (declare-float form))
+            (emit 'f2d))
+           ((typep form 'double-float)
+            (emit 'ldc2_w (declare-double form)))
+           (t (assert nil)))
+     (emit-move-from-stack target representation)
+     (return-from compile-constant))))
   (cond ((fixnump form)
          (let ((translation (case form
                               (0  "ZERO")
