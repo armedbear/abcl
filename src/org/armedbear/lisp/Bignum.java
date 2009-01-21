@@ -35,15 +35,12 @@ package org.armedbear.lisp;
 
 import java.math.BigInteger;
 
-public final class Bignum extends LispObject
+public final class Bignum extends LispInteger
 {
   public final BigInteger value;
 
-  public static LispObject getInstance(long l) {
-      if (Integer.MIN_VALUE <= l && l <= Integer.MAX_VALUE)
-          return Fixnum.getInstance((int)l);
-      else
-          return new Bignum(l);
+  public static Bignum getInstance(long l) {
+    return new Bignum(l);
   }
 
   public Bignum(long l)

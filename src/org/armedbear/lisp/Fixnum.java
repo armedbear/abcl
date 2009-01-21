@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 import java.math.BigInteger;
 
-public final class Fixnum extends LispObject
+public final class Fixnum extends LispInteger
 {
   public static final Fixnum[] constants = new Fixnum[256];
   static
