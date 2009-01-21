@@ -288,7 +288,7 @@ public final class LispCharacter extends LispObject
           {
             String name = ((Symbol)arg).getName();
             if (name.length() == 1)
-              return getInstance(name.charAt(0));
+              return LispCharacter.getInstance(name.charAt(0));
           }
         return type_error(arg, Symbol.CHARACTER_DESIGNATOR);
       }
@@ -438,7 +438,7 @@ public final class LispCharacter extends LispObject
           }
         if (c < 128)
           return constants[LOWER_CASE_CHARS[c]];
-        return getInstance(toLowerCase(c));
+        return LispCharacter.getInstance(toLowerCase(c));
       }
     };
 
@@ -460,7 +460,7 @@ public final class LispCharacter extends LispObject
           }
         if (c < 128)
           return constants[UPPER_CASE_CHARS[c]];
-        return getInstance(toUpperCase(c));
+        return LispCharacter.getInstance(toUpperCase(c));
       }
     };
 

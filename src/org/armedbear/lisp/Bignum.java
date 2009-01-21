@@ -39,6 +39,13 @@ public final class Bignum extends LispObject
 {
   public final BigInteger value;
 
+  public static LispObject getInstance(long l) {
+      if (Integer.MIN_VALUE <= l && l <= Integer.MAX_VALUE)
+          return Fixnum.getInstance((int)l);
+      else
+          return new Bignum(l);
+  }
+
   public Bignum(long l)
   {
     value = BigInteger.valueOf(l);

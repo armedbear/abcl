@@ -40,6 +40,10 @@ public class LispObject extends Lisp
     return T;
   }
 
+  static public LispObject getInstance(boolean b) {
+      return b ? T : NIL;
+  }
+
   public LispObject classOf()
   {
     return BuiltInClass.CLASS_T;

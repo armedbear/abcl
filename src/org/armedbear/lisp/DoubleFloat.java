@@ -53,6 +53,19 @@ public final class DoubleFloat extends LispObject
         Symbol.DOUBLE_FLOAT_NEGATIVE_INFINITY.initializeConstant(DOUBLE_FLOAT_NEGATIVE_INFINITY);
     }
 
+    public static DoubleFloat getInstance(double d) {
+        if (d == 0)
+            return ZERO;
+        else if (d == -0.0d )
+            return MINUS_ZERO;
+        else if (d == 1)
+            return ONE;
+        else if (d == -1)
+            return MINUS_ONE;
+        else
+            return new DoubleFloat(d);
+    }
+
     public final double value;
 
     public DoubleFloat(double value)

@@ -53,6 +53,19 @@ public final class SingleFloat extends LispObject
         Symbol.SINGLE_FLOAT_NEGATIVE_INFINITY.initializeConstant(SINGLE_FLOAT_NEGATIVE_INFINITY);
     }
 
+    public static SingleFloat getInstance(float f) {
+        if (f == 0)
+            return ZERO;
+        else if (f == -0.0f )
+            return MINUS_ZERO;
+        else if (f == 1)
+            return ONE;
+        else if (f == -1)
+            return MINUS_ONE;
+        else
+            return new SingleFloat(f);
+    }
+
     public final float value;
 
     public SingleFloat(float value)
