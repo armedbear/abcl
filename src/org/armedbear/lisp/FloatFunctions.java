@@ -146,7 +146,7 @@ public final class FloatFunctions extends Lisp
 
     // ### %float-bits float => integer
     private static final Primitive _FLOAT_BITS =
-        new Primitive("%float-bits", "integer")
+        new Primitive("%float-bits", PACKAGE_SYS, true, "integer")
     {
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
