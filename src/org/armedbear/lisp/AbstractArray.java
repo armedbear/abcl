@@ -142,13 +142,10 @@ public abstract class AbstractArray extends LispObject
     {
         final int rank = getRank();
         if (rank != subscripts.length) {
-            FastStringBuffer sb =
-                new FastStringBuffer("Wrong number of subscripts (");
-            sb.append(subscripts.length);
-            sb.append(") for array of rank ");
-            sb.append(rank);
-            sb.append('.');
-            error(new ProgramError(sb.toString()));
+            // ### i18n
+            final String errorMsg =
+                "Wrong number of subscripts (%d) for array of rank %d.";
+            error(new ProgramError(String.format(errorMsg, subscripts.length, rank)));
         }
         int sum = 0;
         int size = 1;
@@ -158,12 +155,10 @@ public abstract class AbstractArray extends LispObject
             size *= dim;
             final int n = subscripts[i];
             if (n < 0 || n >= dim) {
-                FastStringBuffer sb = new FastStringBuffer("Invalid index ");
-                sb.append(n);
-                sb.append(" for array ");
-                sb.append(writeToString());
-                sb.append('.');
-                error(new ProgramError(sb.toString()));
+                // ### i18n
+                final String errorMsg =
+                    "Invalid index %d for array %s.";
+                error(new ProgramError(String.format(errorMsg, n, writeToString())));
             }
             sum += n * lastSize;
         }
@@ -185,7 +180,7 @@ public abstract class AbstractArray extends LispObject
 
     public String writeToString(int[] dimv) throws ConditionThrowable
     {
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         LispThread thread = LispThread.currentThread();
         LispObject printReadably = Symbol.PRINT_READABLY.symbolValue(thread);
         if (printReadably != NIL || Symbol.PRINT_ARRAY.symbolValue(thread) != NIL) {
@@ -232,7 +227,7 @@ public abstract class AbstractArray extends LispObject
     }
 
     // Helper for writeToString().
-    private void appendContents(int[] dimensions, int index, FastStringBuffer sb,
+    private void appendContents(int[] dimensions, int index, StringBuilder sb,
                                 LispThread thread)
         throws ConditionThrowable
     {
@@ -331,7 +326,7 @@ public abstract class AbstractArray extends LispObject
         throws ConditionThrowable;
 
     /**
-     * 
+     *
      * @param dims
      * @param displacedTo
      * @param displacement

@@ -185,19 +185,15 @@ public abstract class AbstractBitVector extends AbstractVector
         if (Symbol.PRINT_READABLY.symbolValue(thread) != NIL ||
             Symbol.PRINT_ARRAY.symbolValue(thread) != NIL)
         {
-            FastStringBuffer sb = new FastStringBuffer(length + 2);
+            StringBuilder sb = new StringBuilder(length + 2);
             sb.append("#*");
             for (int i = 0; i < length; i++)
                 sb.append(getBit(i) == 1 ? '1' : '0');
             return sb.toString();
         } else {
-            FastStringBuffer sb = new FastStringBuffer("(");
-            if (this instanceof SimpleBitVector)
-                sb.append("SIMPLE-");
-            sb.append("BIT-VECTOR ");
-            sb.append(length);
-            sb.append(")");
-            return unreadableString(sb.toString());
+            final String str = "(%sBIT-VECTOR %d)";
+            final String pre = (this instanceof SimpleBitVector) ? "SIMPLE-" : "";
+            return unreadableString(String.format(str, pre, length));
         }
     }
 
