@@ -51,13 +51,46 @@
 (defun wild-pathname-p (pathname &optional field-key)
   (%wild-pathname-p pathname field-key))
 
+(defun component-match-wild-p (thing wild ignore-case)
+  (let ((testfunc (if ignore-case #'equalp #'equal)))
+    (labels ((split-string (delim str)
+	       (flet ((finder (char) (find char delim)))
+		 (loop  for x = (position-if-not #'finder str) then
+		      (position-if-not #'finder str :start (or y (length str)))
+		    for y = (position-if #'finder str :start x) then
+		      (position-if #'finder str :start (or x (length str))) while x 
+		    collect (subseq str x y))))
+	     (positions-larger (thing substrings previous-pos)
+	       (let ((new-pos (search (car substrings) 
+				      thing 
+				      :start2 previous-pos
+				      :test testfunc)))
+		 (or 
+		  (not substrings)
+		  (and new-pos
+		       (>= new-pos previous-pos)
+		       (positions-larger thing 
+					 (cdr substrings) 
+					 new-pos))))))
+      (let ((split-result (split-string "*" wild)))
+	(and (positions-larger thing split-result 0)
+	     (if (eql (elt wild 0) #\*)
+		 t
+		 (eql (search (first split-result) thing :test testfunc) 0))
+	     (if (eql (elt wild (1- (length wild))) #\*)
+		 t
+		 (let ((last-split-result (first (last split-result))))
+		   (eql (search last-split-result thing :from-end t 
+				:test testfunc)
+			(- (length thing) (length last-split-result))))))))))
+
 (defun component-match-p (thing wild ignore-case)
   (cond ((eq wild :wild)
          t)
         ((null wild)
          t)
         ((and (stringp wild) (position #\* wild))
-         (error "Unsupported wildcard pattern: ~S" wild))
+	 (component-match-wild-p thing wild ignore-case))
         (ignore-case
          (equalp thing wild))
         (t

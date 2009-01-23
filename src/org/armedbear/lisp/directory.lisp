@@ -70,7 +70,8 @@
   (let ((pathname (merge-pathnames pathspec)))
     (when (logical-pathname-p pathname)
       (setq pathname (translate-logical-pathname pathname)))
-    (if (wild-pathname-p pathname)
+    (if (or (position #\* (namestring pathname))
+	    (wild-pathname-p pathname))
         (let ((namestring (directory-namestring pathname)))
           (when (and namestring (> (length namestring) 0))
             #+windows
