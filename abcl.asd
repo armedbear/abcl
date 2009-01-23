@@ -35,6 +35,26 @@
 (defsystem :ansi-test-interpreted :version "0,1" :depends-on (ansi-test))
 (defsystem :ansi-test-compiled :version "0.1" :depends-on (ansi-test))
 
+
+(defsystem :abcl-tests
+  :version "1.0"
+  :components
+    ((:module rt :serial t  :pathname "test/lisp/abcl/" :components
+	      ((:file "rt-package") (:file "rt") (:file "test-utilities")))
+     (:module tests :depends-on (rt)
+	      :pathname "test/lisp/abcl/" :components
+	      ((:file "compiler-tests") 
+	       (:file "condition-tests")
+	       (:file "file-system-tests") 
+#+nil	       (:file "math-tests")
+	       (:file "java-tests")
+	       (:file "misc-tests")
+	       (:file "pathname-tests")))))
+
+(defmethod perform ((o test-op) (c (eql (find-system 'abcl-tests))))
+  "Invoke tests with:  (asdf:operate 'asdf:test-op :abcl-tests)."
+  (funcall (intern (symbol-name 'do-tests) :test)))
+
 (defmethod perform ((o test-op) (c (eql (find-system 'ansi-test-interpreted))))
   (funcall (intern (symbol-name 'run) :abcl.tests.ansi-tests)
 	   :compile-tests nil))
