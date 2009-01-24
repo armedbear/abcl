@@ -389,7 +389,26 @@
 
 (defknown emit-push-constant-long (integer) t)
 (defun emit-push-constant-long (n)
-  (emit 'ldc2_w (pool-long n)))
+  (case n
+    (0 (emit 'lconst_0))
+    (1 (emit 'lconst_1))
+    (t
+     (emit 'ldc2_w (pool-long n)))))
+
+(defknown emit-push-constant-float (single-float) t)
+(defun emit-push-constant-float (n)
+  (case n
+    (0.0s0 (emit 'fconst_0))
+    (1.0s0 (emit 'fconst_1))
+    (2.0s0 (emit 'fconst_2))
+    (t (emit 'ldc (pool-float n)))))
+
+(defknown emit-push-constant-double (double-float) t)
+(defun emit-push-constant-double (n)
+  (case n
+    (0.0d0 (emit 'dconst_0))
+    (1.0d0 (emit 'dconst_1))
+    (t (emit 'ldc2_w (pool-double n)))))
 
 (declaim (ftype (function (t t) cons) make-descriptor-info))
 (defun make-descriptor-info (arg-types return-type)
@@ -987,6 +1006,11 @@ representation, based on the derived type of the LispObject."
                  8 ; iconst_5
                  9 ; lconst_0
                  10 ; lconst_1
+                 11 ; fconst_0
+                 12 ; fconst_1
+                 13 ; fconst_2
+                 14 ; dconst_0
+                 15 ; dconst_1
                  42 ; aload_0
                  43 ; aload_1
                  44 ; aload_2
@@ -2326,9 +2350,9 @@ representation, based on the derived type of the LispObject."
                   +lisp-bignum+)
             (emit-invokevirtual +lisp-bignum-class+ "floatValue" nil "F"))
            ((typep form 'single-float)
-            (emit 'ldc (pool-float form)))
+            (emit-push-constant-float form))
            ((typep form 'double-float)
-            (emit 'ldc2_w (pool-double form))
+            (emit-push-constant-double form)
             (emit 'd2f))
            (t
             (sys::%format t "compile-constant :float representation~%")
@@ -2348,10 +2372,10 @@ representation, based on the derived type of the LispObject."
                   +lisp-bignum+)
             (emit-invokevirtual +lisp-bignum-class+ "doubleValue" nil "D"))
            ((typep form 'single-float)
-            (emit 'ldc (pool-float form))
+            (emit-push-constant-float form)
             (emit 'f2d))
            ((typep form 'double-float)
-            (emit 'ldc2_w (pool-double form)))
+            (emit-push-constant-double form))
            (t
             (sys::%format t "compile-constant :double representation~%")
             (assert nil)))
