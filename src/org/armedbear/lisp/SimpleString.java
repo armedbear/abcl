@@ -97,13 +97,13 @@ public final class SimpleString extends AbstractString
     @Override
     public LispObject typeOf()
     {
-        return list2(Symbol.SIMPLE_STRING, new Fixnum(capacity));
+        return list2(Symbol.SIMPLE_BASE_STRING, new Fixnum(capacity));
     }
 
     @Override
     public LispObject classOf()
     {
-        return BuiltInClass.SIMPLE_STRING;
+        return BuiltInClass.SIMPLE_BASE_STRING;
     }
 
     @Override
