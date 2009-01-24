@@ -6862,7 +6862,8 @@ body is the body to invoke. "
                     arg2 'stack (when (fixnum-type-p type2) :int))
               (when (fixnum-type-p type1)
                 (emit 'swap))
-              (emit-invokevirtual +lisp-object-class+ "add" '("I") +lisp-object+)
+              (emit-invokevirtual +lisp-object-class+ "add"
+                                  '("I") +lisp-object+)
               (fix-boxing representation result-type)
               (emit-move-from-stack target representation))
              (t
@@ -6933,13 +6934,12 @@ body is the body to invoke. "
               (emit 'lsub)
               (convert-long representation)
               (emit-move-from-stack target representation))
-             ((or (fixnum-type-p type1) (fixnum-type-p type2))
+             ((fixnum-type-p type2)
 	      (compile-forms-and-maybe-emit-clear-values
-                    arg1 'stack (when (fixnum-type-p type1) :int)
-                    arg2 'stack (when (fixnum-type-p type2) :int))
-              (when (fixnum-type-p type1)
-                (emit 'swap))
-              (emit-invokevirtual +lisp-object-class+ "subtract"
+                    arg1 'stack nil
+                    arg2 'stack :int)
+              (emit-invokevirtual +lisp-object-class+
+                                  "subtract"
                                   '("I") +lisp-object+)
               (fix-boxing representation result-type)
               (emit-move-from-stack target representation))
