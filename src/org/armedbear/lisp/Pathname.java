@@ -1031,8 +1031,8 @@ public class Pathname extends LispObject
             if (s != null) {
                 File f = new File(s);
                 if (f.isDirectory()) {
-                    File[] files = f.listFiles();
                     try {
+			File[] files = f.listFiles();
                         for (int i = files.length; i-- > 0;) {
                             File file = files[i];
                             Pathname p;
@@ -1046,6 +1046,10 @@ public class Pathname extends LispObject
                     catch (IOException e) {
                         return error(new FileError("Unable to list directory " + pathname.writeToString() + ".",
                                                    pathname));
+                    }
+                    catch (SecurityException e) {
+                    }
+                    catch (NullPointerException e) {
                     }
                 }
             }
