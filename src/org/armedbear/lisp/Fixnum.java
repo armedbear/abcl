@@ -311,6 +311,16 @@ public final class Fixnum extends LispInteger
       }
   }
 
+  @Override
+  public float floatValue() {
+    return (float)value;
+  }
+
+  @Override
+  public double doubleValue() {
+    return (double)value;
+  }
+
   public static int getInt(LispObject obj) throws ConditionThrowable
   {
     try

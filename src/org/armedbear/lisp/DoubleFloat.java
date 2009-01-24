@@ -241,6 +241,11 @@ public final class DoubleFloat extends LispObject
     }
 
     @Override
+    public double doubleValue() {
+        return value;
+    }
+
+    @Override
     public Object javaInstance()
     {
         return Double.valueOf(value);

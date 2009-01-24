@@ -775,6 +775,20 @@ public class LispObject extends Lisp
     return 0;
   }
 
+  public float floatValue() throws ConditionThrowable
+  {
+    type_error(this, Symbol.SINGLE_FLOAT);
+    // Not reached
+    return 0;
+  }
+
+  public double doubleValue() throws ConditionThrowable
+  {
+    type_error(this, Symbol.DOUBLE_FLOAT);
+    // Not reached
+    return 0;
+  }
+
   public LispObject incr() throws ConditionThrowable
   {
     return type_error(this, Symbol.NUMBER);

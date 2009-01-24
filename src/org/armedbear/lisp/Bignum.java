@@ -262,6 +262,7 @@ public final class Bignum extends LispInteger
     return value.longValue();
   }
 
+  @Override
   public float floatValue() throws ConditionThrowable
   {
     float f = value.floatValue();
@@ -271,6 +272,7 @@ public final class Bignum extends LispInteger
     return f;
   }
 
+  @Override
   public double doubleValue() throws ConditionThrowable
   {
     double d = value.doubleValue();

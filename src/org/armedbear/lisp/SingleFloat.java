@@ -241,6 +241,16 @@ public final class SingleFloat extends LispObject
     }
 
     @Override
+    public float floatValue() {
+        return value;
+    }
+
+    @Override
+    public double doubleValue() {
+        return value;
+    }
+
+    @Override
     public Object javaInstance()
     {
         return Float.valueOf(value);

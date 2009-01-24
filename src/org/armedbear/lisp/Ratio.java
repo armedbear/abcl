@@ -182,11 +182,13 @@ public final class Ratio extends LispObject
         return false;
     }
 
+    @Override
     public float floatValue()
     {
         return (float) doubleValue();
     }
 
+    @Override
     public double doubleValue()
     {
         double result = numerator.doubleValue() / denominator.doubleValue();
