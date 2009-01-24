@@ -222,6 +222,8 @@
 (defconstant +lisp-thread+ "Lorg/armedbear/lisp/LispThread;")
 (defconstant +lisp-cons-class+ "org/armedbear/lisp/Cons")
 (defconstant +lisp-cons+ "Lorg/armedbear/lisp/Cons;")
+(defconstant +lisp-integer-class+ "org/armedbear/lisp/LispInteger")
+(defconstant +lisp-integer+ "Lorg/armedbear/lisp/LispInteger;")
 (defconstant +lisp-fixnum-class+ "org/armedbear/lisp/Fixnum")
 (defconstant +lisp-fixnum+ "Lorg/armedbear/lisp/Fixnum;")
 (defconstant +lisp-fixnum-array+ "[Lorg/armedbear/lisp/Fixnum;")
@@ -735,6 +737,31 @@ before the emitted code: the code is 'stack-neutral'."
          (emit 'checkcast +lisp-character-class+)
          (emit 'getfield +lisp-character-class+ "value" "C"))))
 
+(defknown emit-unbox-long () t)
+(defun emit-unbox-long ()
+  (emit-invokestatic +lisp-bignum-class+ "longValue"
+                     (lisp-object-arg-types 1) "J"))
+
+(defknown emit-unbox-float () t)
+(defun emit-unbox-float ()
+  (declare (optimize speed))
+  (cond ((= *safety* 3)
+         (emit-invokestatic +lisp-single-float-class+ "getValue"
+                            (lisp-object-arg-types 1) "F"))
+        (t
+         (emit 'checkcast +lisp-single-float-class+)
+         (emit 'getfield +lisp-single-float-class+ "value" "F"))))
+
+(defknown emit-unbox-double () t)
+(defun emit-unbox-double ()
+  (declare (optimize speed))
+  (cond ((= *safety* 3)
+         (emit-invokestatic +lisp-double-float-class+ "getValue"
+                            (lisp-object-arg-types 1) "D"))
+        (t
+         (emit 'checkcast +lisp-double-float-class+)
+         (emit 'getfield +lisp-double-float-class+ "value" "D"))))
+
 (defknown emit-unbox-boolean () t)
 (defun emit-unbox-boolean ()
   (let ((LABEL1 (gensym))
@@ -770,6 +797,13 @@ representation, based on the derived type of the LispObject."
         ((eq required-representation :double)
          (emit-invokevirtual +lisp-object-class+ "doubleValue" nil "D"))
         (t (assert nil))))
+
+(defknown emit-box-int () t)
+(defun emit-box-int ()
+  (declare (optimize speed))
+  (new-fixnum)
+  (emit 'dup_x1)
+  (emit-fixnum-init nil))
 
 (defknown emit-box-long () t)
 (defun emit-box-long ()
@@ -834,6 +868,7 @@ representation, based on the derived type of the LispObject."
              'astore))
           target))
         (t
+         (sys::%format t "emit-move-from-stack general case~%")
          (aver nil))))
 
 ;; Expects value on stack.
@@ -2241,6 +2276,7 @@ representation, based on the derived type of the LispObject."
             (emit-move-from-stack target representation)
             (return-from compile-constant))
            (t
+            (sys::%format t "compile-constant int representation~%")
             (assert nil))))
     (:long
      (cond ((fixnump form)
@@ -2263,6 +2299,7 @@ representation, based on the derived type of the LispObject."
             (emit-move-from-stack target representation)
             (return-from compile-constant))
            (t
+            (sys::%format t "compile-constant long representation~%")
             (assert nil))))
     (:char
      (cond ((characterp form)
@@ -2270,6 +2307,7 @@ representation, based on the derived type of the LispObject."
             (emit-move-from-stack target representation)
             (return-from compile-constant))
            (t
+            (sys::%format t "compile-constant :char representation~%")
             (assert nil))))
     (:boolean
      (emit (if form 'iconst_1 'iconst_0))
@@ -2292,7 +2330,9 @@ representation, based on the derived type of the LispObject."
            ((typep form 'double-float)
             (emit 'ldc2_w (pool-double form))
             (emit 'd2f))
-           (t (assert nil)))
+           (t
+            (sys::%format t "compile-constant :float representation~%")
+            (assert nil)))
      (emit-move-from-stack target representation)
      (return-from compile-constant))
     (:double
@@ -2312,7 +2352,9 @@ representation, based on the derived type of the LispObject."
             (emit 'f2d))
            ((typep form 'double-float)
             (emit 'ldc2_w (pool-double form)))
-           (t (assert nil)))
+           (t
+            (sys::%format t "compile-constant :double representation~%")
+            (assert nil)))
      (emit-move-from-stack target representation)
      (return-from compile-constant)))
   (cond ((fixnump form)
@@ -2540,7 +2582,9 @@ representation, based on the derived type of the LispObject."
       (let ((variable (unboxed-fixnum-variable arg)))
         (if variable
             (emit 'iload (variable-register variable))
-            (aver nil)))))
+            (progn
+              (sys::%format t "emit-push-int~%")
+              (aver nil))))))
 
 (declaim (ftype (function (t) t) emit-push-long))
 (defun emit-push-long (arg)
@@ -3940,6 +3984,7 @@ Note: DEFUN implies a named lambda."
          (emit 'swap) ; array index value
          (emit 'aastore))
         (t
+         (sys::%format t "compile-binding~%")
          (aver nil))))
 
 (defknown compile-progn-body (t t &optional t) t)
@@ -6457,6 +6502,7 @@ body is the body to invoke. "
        (emit 'pop)
        (emit 'iconst_1))
       (:char
+       (sys::%format t "p2-length: :char case~%")
        (aver nil))
       (t
        (emit-invokevirtual +lisp-object-class+ "LENGTH" nil +lisp-object+)))
@@ -7454,6 +7500,7 @@ body is the body to invoke. "
                    (:int
                     (emit 'iload (variable-register variable)))
                    (:char
+                    (sys::%format t "compile-var-ref :char case~%")
                     (aver nil))
                    (:long
                     (emit 'iload (variable-register variable))
@@ -7486,6 +7533,7 @@ body is the body to invoke. "
                     (emit 'lload (variable-register variable))
                     (emit 'l2i))
                    (:char
+                    (sys::%format t "compile-var-ref :char case 2~%")
                     (aver nil))
                    (:long
                     (emit 'lload (variable-register variable)))
@@ -7523,6 +7571,7 @@ body is the body to invoke. "
                  (fix-boxing representation (variable-derived-type variable))
                  (emit-move-from-stack target representation))
                 (t
+                 (sys::%format t "compile-var-ref general case~%")
                  (aver nil)))))))
 
 (defun p2-set (form target representation)
