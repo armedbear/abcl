@@ -1025,10 +1025,13 @@ representation, based on the derived type of the LispObject."
                  78 ; astore_3
                  83 ; aastore
                  87 ; pop
+                 88 ; pop2
                  89 ; dup
                  90 ; dup_x1
                  91 ; dup_x2
                  92 ; dup2
+                 93 ; dup2_x1
+                 94 ; dup2_x2
                  95 ; swap
                  96 ; iadd
                  97 ; ladd
@@ -6724,70 +6727,47 @@ body is the body to invoke. "
            (let ((type1 (derive-compiler-type arg1))
                  (type2 (derive-compiler-type arg2)))
              (cond ((and (fixnum-type-p type1) (fixnum-type-p type2))
-                    (let* ((*register* *register*)
-                           (reg1 (allocate-register))
-                           (reg2 (allocate-register)))
-		      (new-fixnum (null representation))
-                      (compile-form arg1 'stack :int)
-                      (emit 'dup)
-                      (emit 'istore reg1)
-                      (compile-form arg2 'stack :int)
-                      (emit 'dup)
-                      (emit 'istore reg2)
-                      (let ((LABEL1 (gensym))
-                            (LABEL2 (gensym)))
-                        (emit (if (eq op 'min) 'if_icmpge 'if_icmple) LABEL1)
-                        (emit 'iload reg1)
-                        (emit 'goto LABEL2)
-                        (label LABEL1)
-                        (emit 'iload reg2)
-                        (label LABEL2)))
+                    (new-fixnum (null representation))
+                    (compile-form arg1 'stack :int)
+                    (emit 'dup)
+                    (compile-form arg2 'stack :int)
+                    (emit 'dup_x1)
+                    (let ((LABEL1 (gensym)))
+                      (emit (if (eq op 'max) 'if_icmpge 'if_icmple) LABEL1)
+                      (emit 'swap)  ;; The lower stack value is greater-or-equal
+                      (label LABEL1)
+                      (emit 'pop))  ;; Throw away the lower stack value
 		    (emit-fixnum-init representation)
                     (emit-move-from-stack target representation))
                    ((and (java-long-type-p type1) (java-long-type-p type2))
-                    (let* ((*register* *register*)
-                           (reg1 (allocate-register-pair))
-                           (reg2 (allocate-register-pair)))
-                      (compile-form arg1 'stack :long)
-                      (emit 'dup2)
-                      (emit 'lstore reg1)
-                      (compile-form arg2 'stack :long)
-                      (emit 'dup2)
-                      (emit 'lstore reg2)
-                      (emit 'lcmp)
-                      (let ((LABEL1 (gensym))
-                            (LABEL2 (gensym)))
-                        (emit (if (eq op 'min) 'ifge 'ifle) LABEL1)
-                        (emit 'lload reg1)
-                        (emit 'goto LABEL2)
-                        (label LABEL1)
-                        (emit 'lload reg2)
-                        (label LABEL2)))
+                    (compile-form arg1 'stack :long)
+                    (emit 'dup2)
+                    (compile-form arg2 'stack :long)
+                    (emit 'dup2_x2)
+                    (emit 'lcmp)
+                    (let ((LABEL1 (gensym)))
+                      (emit (if (eq op 'max) 'ifge 'ifle) LABEL1)
+                      (emit 'dup2_x2) ;; pour-mans swap2
+                      (emit 'pop2)
+                      (label LABEL1)
+                      (emit 'pop2))
                     (convert-long representation)
                     (emit-move-from-stack target representation))
                    (t
-                    (let* ((*register* *register*)
-                           (reg1 (allocate-register))
-                           (reg2 (allocate-register)))
-                      (compile-form arg1 'stack nil)
-                      (emit 'dup)
-                      (astore reg1)
-                      (compile-form arg2 'stack nil)
-                      (emit 'dup)
-                      (astore reg2)
-                      (emit-invokevirtual +lisp-object-class+
-                                          (if (eq op 'min)
-                                              "isLessThanOrEqualTo"
-                                              "isGreaterThanOrEqualTo")
-                                          (lisp-object-arg-types 1) "Z")
-                      (let ((LABEL1 (gensym))
-                            (LABEL2 (gensym)))
+                    (compile-form arg1 'stack nil)
+                    (emit 'dup)
+                    (compile-form arg2 'stack nil)
+                    (emit 'dup_x1)
+                    (emit-invokevirtual +lisp-object-class+
+                                        (if (eq op 'max)
+                                            "isLessThanOrEqualTo"
+                                            "isGreaterThanOrEqualTo")
+                                        (lisp-object-arg-types 1) "Z")
+                      (let ((LABEL1 (gensym)))
                         (emit 'ifeq LABEL1)
-                        (aload reg1)
-                        (emit 'goto LABEL2)
+                        (emit 'swap)
                         (label LABEL1)
-                        (aload reg2)
-                        (label LABEL2)))
+                        (emit 'pop))
                     (fix-boxing representation nil)
                     (emit-move-from-stack target representation))))))
          (t
