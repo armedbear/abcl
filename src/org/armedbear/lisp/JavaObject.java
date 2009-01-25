@@ -51,7 +51,11 @@ public final class JavaObject extends LispObject
     @Override
     public LispObject classOf()
     {
-        return BuiltInClass.JAVA_OBJECT;
+    	if(obj == null) {
+    		return BuiltInClass.JAVA_OBJECT;
+    	} else {
+    		return JavaClass.findJavaClass(obj.getClass());
+    	}
     }
 
     @Override
@@ -61,6 +65,9 @@ public final class JavaObject extends LispObject
             return T;
         if (type == BuiltInClass.JAVA_OBJECT)
             return T;
+        if(type instanceof JavaClass && obj != null) {
+        	return ((JavaClass) type).getJavaClass().isAssignableFrom(obj.getClass()) ? T : NIL;
+        }
         return super.typep(type);
     }
 

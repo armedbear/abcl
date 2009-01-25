@@ -19,7 +19,7 @@
 	      value="${dist.dir}/abcl.jar"/>
     <property name="abcl.ext.dir"
 	      value="${basedir}/ext"/>
-
+	
     <target name="help">
       <echo>Main Ant targets:
  abcl.compile  
@@ -37,15 +37,23 @@
       <echo>Corresponding targets for J have been removed.</echo>
     </target>
 
+    <!-- Checks if JSR-223 support is available - thanks to Mark Everson -->
+    <available property="abcl.jsr-223.p"
+	       classname="javax.script.ScriptEngine"/>
+
     <patternset id="abcl.source.java">
       <include name="org/armedbear/lisp/*.java"/>
       <include name="org/armedbear/lisp/util/*.java"/>
+      <include name="org/armedbear/lisp/scripting/*.java" if="abcl.jsr-223.p"/>
+      <include name="org/armedbear/lisp/scripting/util/*.java" if="abcl.jsr-223.p"/>
+      <include name="org/armedbear/Main.java"/>
     </patternset>
 
     <patternset id="abcl.source.lisp">
       <include name="org/armedbear/lisp/*.lisp"/>
       <include name="org/armedbear/lisp/tests/*.lisp"/>
       <exclude name="org/armedbear/lisp/j.lisp"/>
+      <include name="org/armedbear/lisp/scripting/lisp/*.lisp" if="abcl.jsr-223.p"/>
     </patternset>
 
     <patternset id="abcl.scripting.source.java">
@@ -60,6 +68,7 @@
     <!-- Lisp files required at runtime -->
     <patternset id="abcl.source.lisp.dist">
       <include name="org/armedbear/lisp/boot.lisp"/>
+	  <include name="org/armedbear/lisp/scripting/lisp/*.lisp" if="abcl.jsr-223.p"/>
     </patternset>
 
     <patternset id="abcl.objects">
@@ -67,6 +76,8 @@
       <include name="org/armedbear/lisp/util/*.class"/>
       <include name="org/armedbear/lisp/*.cls"/> 
       <include name="org/armedbear/lisp/*.abcl"/>
+      <include name="org/armedbear/lisp/scripting/*.class" if="abcl.jsr-223.p"/>
+      <include name="org/armedbear/lisp/scripting/util/*.class" if="abcl.jsr-223.p"/>
       <patternset refid="abcl.source.lisp.dist"/>
     </patternset>
     
@@ -127,8 +138,14 @@
       <echo>WARNING: Use of Java version ${java.version} not recommended.</echo>
     </target>
 	
+    <target name="abcl.jsr-223.notice"
+	    depends="abcl.init"
+	    unless="abcl.jsr-223.p">
+      <echo>Notice: JSR-223 support won't be built since it is not supported, neither natively by your JVM nor by libraries in the CLASSPATH.</echo>
+    </target>
+
     <target name="abcl.compile.java" 
-	    depends="abcl.init,abcl.java.warning">
+	    depends="abcl.init,abcl.java.warning,abcl.jsr-223.notice">
       <mkdir dir="${build.dir}"/>
       <mkdir dir="${build.classes.dir}"/>
       <javac destdir="${build.classes.dir}"
@@ -236,6 +253,8 @@
 		       value="${version.src}"/>
 	  </section>
 	</manifest>
+      	<metainf dir="${src.dir}/META-INF">
+      	</metainf>
       </jar>
     </target>
     

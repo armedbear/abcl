@@ -33,14 +33,18 @@
 
 package org.armedbear.lisp;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 public final class Java extends Lisp
 {
@@ -722,7 +726,72 @@ public final class Java extends Lisp
             return makeLispObject(arg.javaInstance());
         }
     };
-
+    
+    private static final Primitive JGET_PROPERTY_VALUE =
+	    new Primitive("%jget-property-value", PACKAGE_JAVA, true,
+	                  "java-object property-name") {
+    	
+    	public LispObject execute(LispObject javaObject, LispObject propertyName) throws ConditionThrowable {
+			try {
+				Object obj = javaObject.javaInstance();
+				PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
+				Object value = pd.getReadMethod().invoke(obj);
+				if(value instanceof LispObject) {
+				    return (LispObject) value;
+				} else if(value != null) {
+				    return new JavaObject(value);
+				} else {
+				    return NIL;
+				}
+			} catch (Exception e) {
+				ConditionThrowable t = new ConditionThrowable("Exception reading property");
+				t.initCause(e);
+				throw t;
+			}
+        }
+    };
+    
+    private static final Primitive JSET_PROPERTY_VALUE =
+	    new Primitive("%jset-property-value", PACKAGE_JAVA, true,
+	                  "java-object property-name value") {
+    	
+    	public LispObject execute(LispObject javaObject, LispObject propertyName, LispObject value) throws ConditionThrowable {
+	    Object obj = null;
+	    try {
+		obj = javaObject.javaInstance();
+		PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
+		Object jValue;
+		if(value == NIL) {
+		    if(Boolean.TYPE.equals(pd.getPropertyType()) ||
+		       Boolean.class.equals(pd.getPropertyType())) {
+			jValue = false;
+		    } else {
+			jValue = null;
+		    }
+		} else {
+		    jValue = value.javaInstance();
+		}
+		pd.getWriteMethod().invoke(obj, jValue);
+		return value;
+	    } catch (Exception e) {
+		ConditionThrowable t = new ConditionThrowable("Exception writing property " + propertyName.writeToString() + " in object " + obj + " to " + value.writeToString());
+		t.initCause(e);
+		throw t;
+	    }
+        }
+    };
+    
+    private static PropertyDescriptor getPropertyDescriptor(Object obj, LispObject propertyName) throws ConditionThrowable, IntrospectionException {
+        String prop = ((AbstractString) propertyName).getStringValue();
+        BeanInfo beanInfo = Introspector.getBeanInfo(obj.getClass());
+        for(PropertyDescriptor pd : beanInfo.getPropertyDescriptors()) {
+        	if(pd.getName().equals(prop)) {
+        		return pd;
+        	}
+        }
+		throw new ConditionThrowable("Property " + prop + " not found in " + obj);
+    }
+    
     private static Class classForName(String className) throws ConditionThrowable
     {
         try {

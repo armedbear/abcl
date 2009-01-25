@@ -101,8 +101,9 @@ public class LispObject extends Lisp
 
   public Object javaInstance() throws ConditionThrowable
   {
-    return error(new LispError("The value " + writeToString() +
-                                " is not of primitive type."));
+	return this;
+    /*return error(new LispError("The value " + writeToString() +
+                                " is not of primitive type."));*/
   }
 
   public Object javaInstance(Class c) throws ConditionThrowable

@@ -50,6 +50,9 @@
     (format stream "~S" (class-name (class-of object))))
   object)
 
+(defmethod print-object ((class java:java-class) stream)
+  (write-string (%write-to-string class) stream))
+
 (defmethod print-object ((class class) stream)
   (print-unreadable-object (class stream :identity t)
     (format stream "~S ~S"

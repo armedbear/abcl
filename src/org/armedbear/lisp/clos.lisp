@@ -908,6 +908,13 @@
                       (eq (car object) 'quote))
              (setf object (cadr object)))
            (intern-eql-specializer object)))
+	((and (consp specializer)
+              (eq (car specializer) 'java:jclass))
+         (let ((class-name (cadr specializer)))
+           (when (and (consp class-name)
+                      (eq (car class-name) 'quote))
+             (setf class-name (cadr class-name)))
+           (java::%find-java-class class-name)))
         (t
          (error "Unknown specializer: ~S" specializer))))
 

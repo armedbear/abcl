@@ -134,4 +134,114 @@ public final class JProxy extends Lisp
       return null;
     }
   }
+  
+  	//NEW IMPLEMENTATION by Alessio Stalla 
+  
+  	/**
+  	 * A weak map associating each proxy instance with a "Lisp-this" object. 
+  	 */
+  	private static final Map<Object, LispObject> proxyMap = new WeakHashMap<Object, LispObject>();
+  
+  	public static class LispInvocationHandler implements InvocationHandler {
+  		
+  		private Function function;
+  		private static Method hashCodeMethod;
+  		private static Method equalsMethod;
+  		private static Method toStringMethod;
+  		
+  		static {
+  			try {
+				hashCodeMethod = Object.class.getMethod("hashCode", new Class[] {});
+				equalsMethod = Object.class.getMethod("equals", new Class[] { Object.class });
+				toStringMethod = Object.class.getMethod("toString", new Class[] {});
+			} catch (Exception e) {
+				throw new Error("Something got horribly wrong - can't get a method from Object.class", e);
+			}
+  		}
+
+  		public LispInvocationHandler(Function function) {
+  			this.function = function;
+  		}
+  		
+		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+	    	if(hashCodeMethod.equals(method)) {
+	    		return System.identityHashCode(proxy);
+	    	}
+	    	if(equalsMethod.equals(method)) {
+	    		return proxy == args[0];
+	    	}
+	    	if(toStringMethod.equals(method)) {
+	    		return proxy.getClass().getName() + '@' + Integer.toHexString(proxy.hashCode());
+	    	}
+	    	
+	    	if(args == null) {
+	    		args = new Object[0];
+	    	}
+			LispObject[] lispArgs = new LispObject[args.length + 2];
+			synchronized(proxyMap) {
+				lispArgs[0] = toLispObject(proxyMap.get(proxy));
+			}
+			lispArgs[1] = new SimpleString(method.getName());
+			for(int i = 0; i < args.length; i++) {
+				lispArgs[i + 2] = toLispObject(args[i]);
+			}
+			Object retVal = (function.execute(lispArgs)).javaInstance();
+			/* DOES NOT WORK due to autoboxing!
+			if(retVal != null && !method.getReturnType().isAssignableFrom(retVal.getClass())) {
+				return error(new TypeError(new JavaObject(retVal), new JavaObject(method.getReturnType())));
+			}*/
+			return retVal;
+		}
+	}
+  
+  	private static final Primitive _JMAKE_INVOCATION_HANDLER =
+	    new Primitive("%jmake-invocation-handler", PACKAGE_JAVA, false,
+	                  "function") {
+		
+	      	public LispObject execute(LispObject[] args) throws ConditionThrowable {
+	      		int length = args.length;
+	      		if (length != 1) {
+	      			return error(new WrongNumberOfArgumentsException(this));
+	      		}
+	      		if(!(args[0] instanceof Function)) {
+	      			return error(new TypeError(args[0], Symbol.FUNCTION));
+	      		}
+	      		return new JavaObject(new LispInvocationHandler((Function) args[0]));
+	      	}
+	    };
+
+    private static final Primitive _JMAKE_PROXY =
+	    new Primitive("%jmake-proxy", PACKAGE_JAVA, false,
+	                  "interface invocation-handler") {
+		
+	      	public LispObject execute(final LispObject[] args) throws ConditionThrowable {
+	      		int length = args.length;
+	      		if (length != 3) {
+	      			return error(new WrongNumberOfArgumentsException(this));
+	      		}
+	      		if(!(args[0] instanceof JavaObject) ||
+	      		   !(((JavaObject) args[0]).javaInstance() instanceof Class)) {
+	      			return error(new TypeError(args[0], new SimpleString(Class.class.getName())));
+	      		}
+	      		if(!(args[1] instanceof JavaObject) ||
+ 	      		   !(((JavaObject) args[1]).javaInstance() instanceof InvocationHandler)) {
+ 	      			return error(new TypeError(args[1], new SimpleString(InvocationHandler.class.getName())));
+ 	      		}
+	      		Class<?> iface = (Class<?>) ((JavaObject) args[0]).javaInstance();
+	      		InvocationHandler invocationHandler = (InvocationHandler) ((JavaObject) args[1]).javaInstance();
+	      		Object proxy = Proxy.newProxyInstance(
+	      				iface.getClassLoader(),
+	      				new Class[] { iface },
+	      				invocationHandler);
+	      		synchronized(proxyMap) {
+	      			proxyMap.put(proxy, args[2]);
+	      		}
+	      		return new JavaObject(proxy);
+	      	}
+	    };    
+	    
+	private static LispObject toLispObject(Object obj) {
+		return (obj instanceof LispObject) ? (LispObject) obj : new JavaObject(obj);
+	}
+	    
 }
