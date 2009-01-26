@@ -498,6 +498,60 @@
       (setf pretty-string (concatenate 'string pretty-string "[]")))
     pretty-string))
 
+;;                     source type /
+;;                         targets   :boolean :char    :int :long :float :double
+(defvar rep-conversion '((:boolean . #( NIL    :err    :err  :err  :err   :err))
+                         (:char    . #(  1     NIL     :err  :err  :err   :err))
+                         (:int     . #(  1     :err     NIL  i2l   i2f    i2d))
+                         (:long    . #(  1     :err     l2i  NIL   l2f    l2d))
+                         (:float   . #(  1     :err    :err  :err  NIL    f2d))
+                         (:double  . #(  1     :err    :err  :err  d2f    NIL)))
+  "Contains a table with operations to be performed to do
+internal representation conversion.")
+
+(defvar rep-classes
+  '((:boolean  #.+lisp-object-class+        #.+lisp-object+)
+    (:char     #.+lisp-character-class+     #.+lisp-character+)
+    (:int      #.+lisp-integer-class+       #.+lisp-integer+)
+    (:long     #.+lisp-integer-class+       #.+lisp-integer+)
+    (:float    #.+lisp-single-float-class+  #.+lisp-single-float+)
+    (:double   #.+lisp-double-float-class+  #.+lisp-double-float+))
+  "Lists the class on which to call the `getInstance' method on,
+when converting the internal representation to a LispObject.")
+
+(defvar rep-arg-chars
+  '((:boolean . "Z")
+    (:char    . "C")
+    (:int     . "I")
+    (:long    . "J")
+    (:float   . "F")
+    (:double  . "D"))
+  "Lists the argument type identifiers for each
+of the internal representations.")
+
+(defun convert-representation (in out)
+  "Converts the value on the stack in the `in' representation
+to a value on the stack in the `out' representation."
+  (when (null out)
+    ;; Convert back to a lisp object
+    (when in
+      (let ((class (cdr (assoc in rep-classes)))
+            (arg-spec (cdr (assoc in rep-arg-chars))))
+        (emit-invokestatic (first class) "getInstance" (list arg-spec)
+                           (second class))))
+    (return-from convert-representation))
+  (let* ((in-map (cdr (assoc in rep-conversion)))
+         (op-num (position out '(:boolean :char :int :long :float :double)))
+         (op (aref in-map op-num)))
+    (when op
+      ;; Convert from one internal representation into another
+      (assert (neq op :err))
+      (if (eql op 1)
+          (progn
+            (emit-move-from-stack nil in)
+            (emit 'iconst_1))
+          (emit op)))))
+
 (declaim (ftype (function t string) pretty-java-class))
 (defun pretty-java-class (class)
   (cond ((equal class +lisp-object-class+)
@@ -819,50 +873,6 @@ representation, based on the derived type of the LispObject."
         ((eq required-representation :double)
          (emit-invokevirtual +lisp-object-class+ "doubleValue" nil "D"))
         (t (assert nil))))
-
-(defknown emit-box-int () t)
-(defun emit-box-int ()
-  (declare (optimize speed))
-  (new-fixnum)
-  (emit 'dup_x1)
-  (emit-fixnum-init nil))
-
-(defknown emit-box-long () t)
-(defun emit-box-long ()
-  (declare (optimize speed))
-  (emit-invokestatic +lisp-class+ "number" '("J") +lisp-object+))
-
-(defknown emit-box-float () t)
-(defun emit-box-float ()
-  (emit 'new +lisp-single-float-class+)
-  (emit 'dup_x1)
-  (emit-invokespecial-init +lisp-single-float-class+ '("F")))
-
-(defknown emit-box-double () t)
-(defun emit-box-double ()
-  (emit 'new +lisp-double-float-class+)
-  (emit 'dup_x2)
-  (emit-invokespecial-init +lisp-double-float-class+ '("D")))
-
-(defknown convert-long (t) t)
-(defun convert-long (representation)
-  (case representation
-    (:int
-     (emit 'l2i))
-    (:long)
-    (t
-     (emit-box-long))))
-
-(defknown emit-box-boolean () t)
-(defun emit-box-boolean ()
-  (let ((LABEL1 (gensym))
-        (LABEL2 (gensym)))
-    (emit 'ifeq LABEL1)
-    (emit-push-t)
-    (emit 'goto LABEL2)
-    (label LABEL1)
-    (emit-push-nil)
-    (label LABEL2)))
 
 (defknown emit-move-from-stack (t &optional t) t)
 (defun emit-move-from-stack (target &optional representation)
@@ -5259,7 +5269,7 @@ Note: DEFUN implies a named lambda."
                   (emit 'lshr))
                  ((zerop constant-shift)
                   (compile-form arg2 nil nil))) ; for effect
-           (convert-long representation)
+           (convert-representation :long representation)
            (emit-move-from-stack target representation))
           ((and (fixnum-type-p type1)
                 low2 high2 (<= -31 low2 high2 0)) ; Negative shift.
@@ -5277,7 +5287,7 @@ Note: DEFUN implies a named lambda."
 		  (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
 							     arg2 'stack :int)
                   (emit 'lshl)
-                  (convert-long representation))
+                  (convert-representation :long representation))
                  ((and low2 high2 (<= -63 low2 high2 0) ; Negative shift.
                        (java-long-type-p type1)
                        (java-long-type-p result-type))
@@ -5285,7 +5295,7 @@ Note: DEFUN implies a named lambda."
 							     arg2 'stack :int)
                   (emit 'ineg)
                   (emit 'lshr)
-                  (convert-long representation))
+                  (convert-representation :long representation))
                  (t
 ;;                   (format t "p2-ash call to LispObject.ash(int)~%")
 ;;                   (format t "p2-ash type1 = ~S type2 = ~S~%" type1 type2)
@@ -5360,7 +5370,7 @@ Note: DEFUN implies a named lambda."
                    (emit 'l2i))
                   (:long)
                   (t
-                   (emit-box-long)))
+                   (convert-representation :long nil)))
                 (emit-move-from-stack target representation))
                ((or (and (java-long-type-p type1)
                          (compiler-subtypep type1 'unsigned-byte))
@@ -5375,7 +5385,7 @@ Note: DEFUN implies a named lambda."
                    (emit 'l2i))
                   (:long)
                   (t
-                   (emit-box-long)))
+                   (convert-representation :long nil)))
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type2)
                 ;;                     (format t "p2-logand LispObject.LOGAND(int) 1~%")
@@ -5451,7 +5461,7 @@ Note: DEFUN implies a named lambda."
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :long
 							   arg2 'stack :long)
                 (emit 'lor)
-                (convert-long representation)
+                (convert-representation :long representation)
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type2)
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil
@@ -5518,7 +5528,7 @@ Note: DEFUN implies a named lambda."
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :long
 							   arg2 'stack :long)
                 (emit 'lxor)
-                (convert-long representation))
+                (convert-representation :long representation))
                ((fixnum-type-p type2)
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 							   arg2 'stack :int)
@@ -5603,7 +5613,7 @@ Note: DEFUN implies a named lambda."
                         (t
                          (emit-push-constant-long (1- (expt 2 size))) ; mask
                          (emit 'land)
-                         (convert-long representation)))
+                         (convert-representation :long representation)))
                   (emit-move-from-stack target representation))
                  (t
 		  (compile-forms-and-maybe-emit-clear-values arg3 'stack nil)
@@ -6651,7 +6661,7 @@ body is the body to invoke. "
   (emit 'i2l)
   (maybe-emit-clear-values arg1 arg2)
   (emit instruction)
-  (convert-long representation))
+  (convert-representation :long representation))
 
 (defun p2-times (form target representation)
   (case (length form)
@@ -6682,7 +6692,7 @@ body is the body to invoke. "
                      (unless (eq representation :int)
                        (emit-invokespecial-init +lisp-fixnum-class+ '("I"))
                        (fix-boxing representation 'fixnum)))
-                    (t
+                      (t
 		     (two-long-ints-times/plus/minus 
 		      arg1 arg2 'lmul representation)))
 	      (emit-move-from-stack target representation))
@@ -6692,7 +6702,7 @@ body is the body to invoke. "
 	      (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
 							 arg2 'stack :long)
               (emit 'lmul)
-              (convert-long representation)
+              (convert-representation :long representation)
               (emit-move-from-stack target representation))
              ((fixnump arg2)
 ;;               (format t "p2-times case 3~%")
@@ -6727,31 +6737,31 @@ body is the body to invoke. "
            (let ((type1 (derive-compiler-type arg1))
                  (type2 (derive-compiler-type arg2)))
              (cond ((and (fixnum-type-p type1) (fixnum-type-p type2))
-                    (new-fixnum (null representation))
-                    (compile-form arg1 'stack :int)
-                    (emit 'dup)
-                    (compile-form arg2 'stack :int)
+		      (new-fixnum (null representation))
+                      (compile-form arg1 'stack :int)
+                      (emit 'dup)
+                      (compile-form arg2 'stack :int)
                     (emit 'dup_x1)
                     (let ((LABEL1 (gensym)))
                       (emit (if (eq op 'max) 'if_icmpge 'if_icmple) LABEL1)
                       (emit 'swap)  ;; The lower stack value is greater-or-equal
-                      (label LABEL1)
+                        (label LABEL1)
                       (emit 'pop))  ;; Throw away the lower stack value
 		    (emit-fixnum-init representation)
                     (emit-move-from-stack target representation))
                    ((and (java-long-type-p type1) (java-long-type-p type2))
-                    (compile-form arg1 'stack :long)
-                    (emit 'dup2)
-                    (compile-form arg2 'stack :long)
+                      (compile-form arg1 'stack :long)
+                      (emit 'dup2)
+                      (compile-form arg2 'stack :long)
                     (emit 'dup2_x2)
-                    (emit 'lcmp)
+                      (emit 'lcmp)
                     (let ((LABEL1 (gensym)))
                       (emit (if (eq op 'max) 'ifge 'ifle) LABEL1)
                       (emit 'dup2_x2) ;; pour-mans swap2
                       (emit 'pop2)
-                      (label LABEL1)
+                        (label LABEL1)
                       (emit 'pop2))
-                    (convert-long representation)
+                    (convert-representation :long representation)
                     (emit-move-from-stack target representation))
                    (t
                     (compile-form arg1 'stack nil)
@@ -6763,11 +6773,11 @@ body is the body to invoke. "
                                             "isLessThanOrEqualTo"
                                             "isGreaterThanOrEqualTo")
                                         (lisp-object-arg-types 1) "Z")
-                      (let ((LABEL1 (gensym)))
-                        (emit 'ifeq LABEL1)
-                        (emit 'swap)
-                        (label LABEL1)
-                        (emit 'pop))
+                    (let ((LABEL1 (gensym)))
+                      (emit 'ifeq LABEL1)
+                      (emit 'swap)
+                      (label LABEL1)
+                      (emit 'pop))
                     (fix-boxing representation nil)
                     (emit-move-from-stack target representation))))))
          (t
@@ -6831,7 +6841,7 @@ body is the body to invoke. "
                      (compile-form arg2 'stack :long)))
               (maybe-emit-clear-values arg1 arg2)
               (emit 'ladd)
-              (convert-long representation)
+              (convert-representation :long representation)
               (emit-move-from-stack target representation))
              ((eql arg2 1)
 	      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
@@ -6890,7 +6900,7 @@ body is the body to invoke. "
                  (emit 'l2i))
                 (:long)
                 (t
-                 (emit-box-long)))
+                 (convert-representation :long nil)))
               (emit-move-from-stack target representation))
              (t
 	      (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
@@ -6915,7 +6925,7 @@ body is the body to invoke. "
 	      (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
 							 arg2 'stack :long)
               (emit 'lsub)
-              (convert-long representation)
+              (convert-representation :long representation)
               (emit-move-from-stack target representation))
              ((fixnum-type-p type2)
 	      (compile-forms-and-maybe-emit-clear-values
@@ -7548,7 +7558,7 @@ body is the body to invoke. "
                     (emit 'iconst_1))
                    (t
                     (emit 'lload (variable-register variable))
-                    (emit-box-long)))
+                    (convert-representation :long nil)))
                  (emit-move-from-stack target representation))
                 ((eq (variable-representation variable) :boolean)
                  (aver (variable-register variable))
@@ -7557,7 +7567,7 @@ body is the body to invoke. "
                  (case representation
                    (:boolean)
                    (t
-                    (emit-box-boolean)))
+                    (convert-representation :boolean nil)))
                  (emit-move-from-stack target representation))
                 ((variable-register variable)
                  (aload (variable-register variable))
@@ -7775,7 +7785,7 @@ body is the body to invoke. "
                 (emit 'l2i))
                (:long)
                (t
-                (emit-box-long)))
+                (convert-representation :long nil)))
              (emit-move-from-stack target representation)))
           ((eq (variable-representation variable) :boolean)
 	   (compile-forms-and-maybe-emit-clear-values value-form 'stack :boolean)
@@ -7787,7 +7797,7 @@ body is the body to invoke. "
              (case representation
                (:boolean)
                (t
-                (emit-box-boolean)))
+                (convert-representation :boolean nil)))
              (emit-move-from-stack target representation)))
           (t
 	   (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
