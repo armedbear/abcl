@@ -211,6 +211,7 @@
 
 (defconstant +java-string+ "Ljava/lang/String;")
 (defconstant +lisp-class+ "org/armedbear/lisp/Lisp")
+(defconstant +lisp-nil-class+ "org/armedbear/lisp/Nil")
 (defconstant +lisp-class-class+ "org/armedbear/lisp/LispClass")
 (defconstant +lisp-object-class+ "org/armedbear/lisp/LispObject")
 (defconstant +lisp-object+ "Lorg/armedbear/lisp/LispObject;")
@@ -840,15 +841,9 @@ before the emitted code: the code is 'stack-neutral'."
 
 (defknown emit-unbox-boolean () t)
 (defun emit-unbox-boolean ()
-  (let ((LABEL1 (gensym))
-        (LABEL2 (gensym)))
-    (emit-push-nil)
-    (emit 'if_acmpeq LABEL1)
-    (emit 'iconst_1)
-    (emit 'goto LABEL2)
-    (label LABEL1)
-    (emit 'iconst_0)
-    (label LABEL2)))
+  (emit 'instanceof +lisp-nil-class+)
+  (emit 'iconst_1)
+  (emit 'ixor))  ;; 1 -> 0 && 0 -> 1: in other words, negate the low bit
 
 (defknown fix-boxing (t t) t)
 (defun fix-boxing (required-representation derived-type)
