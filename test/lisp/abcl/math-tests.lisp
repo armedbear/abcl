@@ -463,5 +463,3 @@
   #-(or cmu sbcl)
   (signals-error (read-from-string "1.0f-1000") 'reader-error)
   t)
-
-(do-tests)

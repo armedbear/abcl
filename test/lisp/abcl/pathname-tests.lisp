@@ -1654,5 +1654,3 @@
            #-windows "/foo"
            #+windows "\\foo")
   t)
-
-(do-tests)

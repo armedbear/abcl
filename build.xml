@@ -141,7 +141,11 @@
     <target name="abcl.jsr-223.notice"
 	    depends="abcl.init"
 	    unless="abcl.jsr-223.p">
-      <echo>Notice: JSR-223 support won't be built since it is not supported, neither natively by your JVM nor by libraries in the CLASSPATH.</echo>
+      <echo>
+	Notice: JSR-223 support won't be built since it is not
+	        supported, neither natively by your JVM nor by 
+		libraries in the CLASSPATH.
+      </echo>
     </target>
 
     <target name="abcl.compile.java" 
@@ -232,7 +236,16 @@
       <echo>abcl.hostname: ${abcl.hostname}</echo>
     </target>
 
-    <target name="abcl.jar" depends="abcl.stamp">
+    <target name="abcl.jar.uptodate" depends="abcl.compile">
+      <uptodate property="abcl.jar.uptodate.p" targetfile="${abcl.jar.path}">
+	<srcfiles dir="${build.classes.dir}">
+	  <patternset refid="abcl.objects"/>
+	</srcfiles>
+      </uptodate>
+    </target>
+
+    <target name="abcl.jar" depends="abcl.stamp,abcl.jar.uptodate"
+	    unless="abcl.jar.uptodate.p">
       <mkdir dir="${dist.dir}"/>
       <loadfile property="abcl.version"
 		  srcFile="${abcl.version.path}"/>
@@ -433,14 +446,22 @@
       <pathelement location="${build.classes.dir}"/>
     </path>
 
-    <target name="abcl.test.pre-compile">
+    <target name="abcl.test.pre-compile" depends="abcl.ext"/>
+
+    <target name="abcl.ext.p">
+      <!--XXX generalize over enumeration of all contributions to abcl.ext -->
+      <available file="${junit-4.5.path}" property="abcl.ext.p"/>
+    </target>
+    <target name="abcl.ext" depends="abcl.ext.p" unless="abcl.ext.p">
+
       <mkdir dir="${abcl.ext.dir}"/>
       <get src="http://downloads.sourceforge.net/junit/junit-4.5.jar?modtime=1218209625"
 	   usetimestamp="true"
-	  dest="${junit-4.5.path}"/>
+	   dest="${junit-4.5.path}"/>
     </target>
 	
-    <target name="abcl.test.compile" depends="abcl.test.pre-compile,abcl.compile">
+    <target name="abcl.test.compile" 
+	    depends="abcl.test.pre-compile,abcl.compile">
       <mkdir dir="${abcl.test.classes.dir}"/>
       <javac destdir="${abcl.test.classes.dir}"
 	     classpathref="abcl.test.compile.classpath"
@@ -456,7 +477,8 @@
       <pathelement location="${abcl.test.classes.dir}"/>
     </path>
 
-    <target name="abcl.test" depends="abcl.test.java,abcl.test.lisp"/>
+    <target name="abcl.test" 
+	    depends="abcl.test.java,abcl.test.lisp"/>
 	
     <target name="abcl.test.java" depends="abcl.test.compile">
       <java fork="true"
@@ -466,9 +488,11 @@
       </java>
     </target>
 
-    <target name="abcl.test.lisp" depends="abcl.test.lisp.asdf"/>
+    <target name="abcl.test.lisp" 
+	    depends="abcl.test.lisp.asdf"/>
 
-    <target name="abcl.test.lisp.asdf" depends="abcl.jar,abcl.test.ansi.interpreted">
+    <target name="abcl.test.lisp.asdf" 
+	    depends="abcl.jar,abcl.test.ansi.compiled">
     </target>
 
     <target name="abcl.test.ansi.interpreted">
@@ -477,20 +501,27 @@
 	    classname="org.armedbear.lisp.Main">
  	<arg value="--noinit"/> 
 	<arg value="--load"/>
-	<arg line="${basedir}/scripts/ansi-tests-interpreted.lisp"/>
+	<arg line="${basedir}/test/lisp/ansi/ansi-tests-interpreted.lisp"/>
       </java>
     </target>
 
+    <property name="abcl.test.log.file"
+	      value="abcl.test.ansi.compiled.${version.src}"/>
+
     <target name="abcl.test.ansi.compiled">
+      <echo>Recording test output in ${abcl.test.log.file}.</echo>
+      <record name="${abcl.test.log.file}" emacsmode="true" action="start"/>
       <java fork="true" dir="${basedir}"
 	    classpathref="abcl.classpath.dist"
 	    classname="org.armedbear.lisp.Main">
 	<arg value="--noinit"/> 
 	<arg value="--load"/>
- 	<arg line="${basedir}/scripts/ansi-tests-compiled.lisp "/> 
+ 	<arg line="${basedir}/test/lisp/ansi/ansi-tests-compiled.lisp "/> 
       </java>
-    </target>
+      <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
+      <echo>Finished ecording test output in ${abcl.test.log.file}.</echo>
 
+    </target>
 
     <import file="netbeans-build.xml" optional="true"/> 
 <!--    <import file="j-build.xml" optional="true"/>  -->

@@ -433,7 +433,5 @@
        'illegal-argument-exception)))
   t)
 
-(do-tests)
-
 ;;#+allegro
 ;;(jlinker-end)

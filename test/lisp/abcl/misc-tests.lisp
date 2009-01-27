@@ -98,5 +98,3 @@
   (read-from-string "(1 2 #+nil #k(3 4))")
   (1 2)
   19)
-
-(do-tests)

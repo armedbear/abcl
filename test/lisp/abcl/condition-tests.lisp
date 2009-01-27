@@ -310,5 +310,3 @@
                              :format-arguments (list "The bear" "armed"))))
       (write-to-string c :escape nil)))
   "The bear is armed.")
-
-(do-tests)

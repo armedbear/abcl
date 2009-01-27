@@ -431,4 +431,3 @@
   :args (#.most-positive-java-long #.most-negative-java-long)
   :results #.most-positive-java-long)
 
-(do-tests)

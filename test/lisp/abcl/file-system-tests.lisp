@@ -513,5 +513,3 @@
          (delete-directory directory-namestring))
        )))
   t t t t)
-
-(do-tests)
