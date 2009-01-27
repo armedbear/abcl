@@ -40,6 +40,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.math.BigInteger;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Hashtable;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -999,24 +1000,8 @@ public abstract class Lisp
                             // "/C:/Documents%20and%20Settings/peter/Desktop/j.jar"
                             if (zipFileName.length() > 0 && zipFileName.charAt(0) == '/')
                               zipFileName = zipFileName.substring(1);
-                            // "C:/Documents%20and%20Settings/peter/Desktop/j.jar"
-                            int i = zipFileName.indexOf("%20");
-                            if (i >= 0)
-                              {
-                                int begin = 0;
-                                FastStringBuffer sb = new FastStringBuffer();
-                                while (i >= 0)
-                                  {
-                                    sb.append(zipFileName.substring(begin, i));
-                                    sb.append(' ');
-                                    begin = i + 3;
-                                    i = zipFileName.indexOf("%20", begin);
-                                  }
-                                sb.append(zipFileName.substring(begin));
-                                zipFileName = sb.toString();
-                                // "C:/Documents and Settings/peter/Desktop/j.jar"
-                              }
-                          }
+			  }
+			zipFileName = URLDecoder.decode(zipFileName, "UTF-8");
                         ZipFile zipFile = new ZipFile(zipFileName);
                         try
                           {
