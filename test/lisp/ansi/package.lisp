@@ -47,8 +47,7 @@ To resolve, please locally obtain ~A,
 and set the value of *ANSI-TESTS-DIRECTORY* to that location."
 		 ansi-tests-directory e 
 		 *ansi-tests-master-source-location*))))
-    (setf *default-pathname-defaults*
-	  original-pathname-defaults)))
+    (setf *default-pathname-defaults* original-pathname-defaults)))
 		   
 	     
 
