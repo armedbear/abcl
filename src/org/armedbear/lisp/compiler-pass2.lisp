@@ -6860,7 +6860,7 @@ body is the body to invoke. "
              ((or (fixnum-type-p type1) (fixnum-type-p type2))
 	      (compile-forms-and-maybe-emit-clear-values
                     arg1 'stack (when (fixnum-type-p type1) :int)
-                    arg2 'stack (when (fixnum-type-p type2) :int))
+                    arg2 'stack (when (null (fixnum-type-p type1)) :int))
               (when (fixnum-type-p type1)
                 (emit 'swap))
               (emit-invokevirtual +lisp-object-class+ "add"
