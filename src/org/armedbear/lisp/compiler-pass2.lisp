@@ -1040,12 +1040,18 @@ representation, based on the derived type of the LispObject."
                  95 ; swap
                  96 ; iadd
                  97 ; ladd
+                 98 ; fadd
+                 99 ; dadd
                  100 ; isub
                  101 ; lsub
+                 102 ; fsub
+                 103 ; dsub
                  104 ; imul
                  105 ; lmul
                  116 ; ineg
                  117 ; lneg
+                 118 ; fneg
+                 119 ; dneg
                  120 ; ishl
                  121 ; lshl
                  122 ; ishr
@@ -1057,6 +1063,7 @@ representation, based on the derived type of the LispObject."
                  130 ; ixor
                  131 ; lxor
                  133 ; i2l
+                 134 ; i2f
                  136 ; l2i
                  148 ; lcmp
                  153 ; ifeq
@@ -6804,14 +6811,16 @@ body is the body to invoke. "
             (arg2 (%cadr args))
             (type1 (derive-compiler-type arg1))
             (type2 (derive-compiler-type arg2))
-            (result-type (derive-compiler-type form)))
-;;        (let ((*print-structure* nil))
-;;          (format t "~&p2-plus arg1 = ~S~%" arg1)
-;;          (format t "p2-plus arg2 = ~S~%" arg2))
-;;        (format t "~&p2-plus type1 = ~S~%" type1)
-;;        (format t "p2-plus type2 = ~S~%" type2)
-;;        (format t "p2-plus result-type = ~S~%" result-type)
-;;        (format t "p2-plus representation = ~S~%" representation)
+            (result-type (derive-compiler-type form))
+            (result-rep (type-representation result-type)))
+;;         (let ((*print-structure* nil))
+;;           (format t "~&p2-plus arg1 = ~S~%" arg1)
+;;           (format t "p2-plus arg2 = ~S~%" arg2))
+;;         (format t "~&p2-plus type1 = ~S~%" type1)
+;;         (format t "p2-plus type2 = ~S~%" type2)
+;;         (format t "p2-plus result-type = ~S~%" result-type)
+;;         (format t "p2-plus result-rep = ~S~%" result-rep)
+;;         (format t "p2-plus representation = ~S~%" representation)
        (cond ((and (numberp arg1) (numberp arg2))
               (compile-constant (+ arg1 arg2) target representation))
              ((and (numberp arg1) (eql arg1 0))
@@ -6831,7 +6840,7 @@ body is the body to invoke. "
               (cond ((fixnum-type-p type1)
                      (compile-form arg1 'stack :int)
                      (emit 'i2l))
-                    (t
+                      (t
                      (compile-form arg1 'stack :long)))
               (cond ((fixnum-type-p type2)
                      (compile-form arg2 'stack :int)
@@ -6898,7 +6907,7 @@ body is the body to invoke. "
                 (:int
                  (emit 'l2i))
                 (:long)
-                (t
+                      (t
                  (convert-representation :long nil)))
               (emit-move-from-stack target representation))
              (t
