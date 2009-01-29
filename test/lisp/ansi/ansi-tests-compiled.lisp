@@ -1,6 +1,10 @@
 (require 'asdf)
-(asdf:oos 'asdf:load-op :abcl)
-(asdf:oos 'asdf:load-op :test-abcl)
-(asdf:oos 'asdf:load-op :ansi-abcl-compiled :force t)
-(asdf:oos 'asdf:test-op :ansi-test-compiled :force t)
+(handler-case 
+    (progn
+      (asdf:oos 'asdf:load-op :abcl :force t)
+      (asdf:oos 'asdf:test-op :ansi-compiled :force t))
+  (t (e) (warn "Exiting after catching ~A" e)))
 (ext:exit)
+  
+      
+

@@ -19,9 +19,7 @@
 #+sbcl
 (require '#:sb-posix)
 
-(load "test-utilities.lisp")
-
-(in-package #:test)
+(in-package #:abcl.test.lisp)
 
 (export '(pathnames-equal-p run-shell-command copy-file make-symbolic-link
           touch make-temporary-directory delete-directory-and-files))

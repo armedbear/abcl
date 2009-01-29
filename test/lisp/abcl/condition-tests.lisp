@@ -18,7 +18,7 @@
 
 (load (merge-pathnames "test-utilities.lisp" *load-truename*))
 
-(in-package #:test)
+(in-package #:abcl.test.lisp)
 
 (defun filter (string)
   "If STRING is unreadable, return \"#<>\"; otherwise return STRING unchanged."

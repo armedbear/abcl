@@ -24,7 +24,7 @@
 ;This was the December 19, 1990 version of the regression tester, but
 ;has since been modified.
 
-(in-package :regression-test)
+(in-package :abcl-regression-test)
 
 (declaim (ftype (function (t) t) get-entry expanded-eval do-entries))
 (declaim (type list *entries*))

@@ -19,9 +19,7 @@
 
 ;;; Some of these tests are based on tests in the CLISP test suite.
 
-(load "test-utilities.lisp")
-
-(in-package #:test)
+(in-package #:abcl.test.lisp)
 
 #+(or abcl cmu sbcl)
 (defmacro set-floating-point-modes (&rest args)

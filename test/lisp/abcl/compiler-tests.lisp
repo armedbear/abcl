@@ -20,9 +20,7 @@
 #+abcl
 (require '#:jvm)
 
-(load (merge-pathnames "test-utilities.lisp" *load-truename*))
-
-(in-package #:test)
+(in-package #:abcl.test.lisp)
 
 (defconstant most-positive-java-long 9223372036854775807)
 (defconstant most-negative-java-long -9223372036854775808)

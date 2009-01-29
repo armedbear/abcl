@@ -26,10 +26,10 @@
      #:disable-note
      ))
  |#
- (let* ((name (symbol-name :regression-test))
+ (let* ((name (symbol-name :abcl-regression-test))
 	(pkg (find-package name)))
    (unless pkg (setq pkg (make-package name
-				       :nicknames (mapcar #'symbol-name '(:rtest #-lispworks :rt))
+				       :nicknames (mapcar #'symbol-name '(:abcl-rtest #-lispworks :abcl-rt))
 				       :use '(#-wcl :cl #+wcl :lisp)
 				       )))
    (let ((*package* pkg))
