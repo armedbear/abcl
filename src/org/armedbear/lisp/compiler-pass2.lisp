@@ -499,6 +499,28 @@
       (setf pretty-string (concatenate 'string pretty-string "[]")))
     pretty-string))
 
+(defvar type-representations '((:int fixnum)
+                               (:long (integer #.most-negative-java-long
+                                               #.most-positive-java-long))
+                               (:float single-float)
+                               (:double double-float)
+                               (:char base-char character)
+                               (:boolean boolean)
+                               )
+  "Lists the widest Lisp types to be stored in each of the Java primitives
+supported (and used) by the compiler.")
+
+(defun type-representation (the-type)
+  "Converts a type specification or compiler type into a representation."
+  (do* ((types type-representations (cdr types)))
+       ((endp types) nil)
+    (do* ((type-list (cdr (car types)) (cdr type-list))
+          (type (car type-list) (car type-list)))
+         ((endp type-list))
+      (when (or (subtypep the-type type)
+                (compiler-subtypep the-type (make-compiler-type type)))
+        (return-from type-representation (caar types))))))
+
 ;;                     source type /
 ;;                         targets   :boolean :char    :int :long :float :double
 (defvar rep-conversion '((:boolean . #( NIL    :err    :err  :err  :err   :err))
@@ -6831,25 +6853,21 @@ body is the body to invoke. "
 	      (compile-forms-and-maybe-emit-clear-values arg1 'stack representation
 							 arg2 nil nil)
               (emit-move-from-stack target representation))
-             ((and (fixnum-type-p type1) (fixnum-type-p type2))
-	      (fixnum-result-plus/minus target representation result-type 
-					arg1 arg2 'iadd 'ladd))
-             ((and (java-long-type-p type1)
-                   (java-long-type-p type2)
-                   (java-long-type-p result-type))
-              (cond ((fixnum-type-p type1)
-                     (compile-form arg1 'stack :int)
-                     (emit 'i2l))
+             (result-rep
+              (compile-forms-and-maybe-emit-clear-values
+                        arg1 'stack result-rep
+                        arg2 'stack result-rep)
+              (emit (case result-rep
+                      (:int 'iadd)
+                      (:long 'ladd)
+                      (:float 'fadd)
+                      (:double 'dadd)
                       (t
-                     (compile-form arg1 'stack :long)))
-              (cond ((fixnum-type-p type2)
-                     (compile-form arg2 'stack :int)
-                     (emit 'i2l))
-                    (t
-                     (compile-form arg2 'stack :long)))
-              (maybe-emit-clear-values arg1 arg2)
-              (emit 'ladd)
-              (convert-representation :long representation)
+                       (sys::format
+                        t "p2-plus: Unexpected result-rep ~S for form ~S."
+                        result-rep form)
+                       (assert nil))))
+              (convert-representation result-rep representation)
               (emit-move-from-stack target representation))
              ((eql arg2 1)
 	      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
@@ -6880,35 +6898,24 @@ body is the body to invoke. "
   (case (length form)
     (2
      (let* ((arg (%cadr form))
-            (type (derive-compiler-type arg)))
-       (cond ((eql (fixnum-constant-value type) 0)
-              (case representation
-                (:int
-                 (emit 'iconst_0))
-                (:long
-                 (emit 'lconst_0))
-                (t
-                 (emit 'getstatic +lisp-fixnum-class+ "ZERO" +lisp-fixnum+)))
+            (type (derive-compiler-type form))
+            (type-rep (type-representation type)))
+       (cond ((numberp arg)
+              (compile-constant (- arg) 'stack representation)
               (emit-move-from-stack target representation))
-             ((and (fixnum-type-p type)
-                   (integer-type-low type)
-                   (> (integer-type-low type) most-negative-fixnum))
-	      (new-fixnum (null representation))
-              (compile-form arg 'stack :int)
-              (emit 'ineg)
-	      (emit-fixnum-init representation)
-              (emit-move-from-stack target representation))
-             ((and (java-long-type-p type)
-                   (integer-type-low type)
-                   (> (integer-type-low type) most-negative-java-long))
-              (compile-form arg 'stack :long)
-              (emit 'lneg)
-              (case representation
-                (:int
-                 (emit 'l2i))
-                (:long)
+             (type-rep
+              (compile-form arg 'stack type-rep)
+              (emit (case type-rep
+                      (:int    'ineg)
+                      (:long   'lneg)
+                      (:float  'fneg)
+                      (:double 'dneg)
                       (t
-                 (convert-representation :long nil)))
+                       (sys::format t
+                                    "p2-minus: unsupported rep (~S) for '~S'~%"
+                                    type-rep form)
+                       (assert nil))))
+              (convert-representation type-rep representation)
               (emit-move-from-stack target representation))
              (t
 	      (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
@@ -6920,20 +6927,25 @@ body is the body to invoke. "
      (let* ((args (cdr form))
             (arg1 (first args))
             (arg2 (second args))
-            (type1 (derive-compiler-type arg1))
             (type2 (derive-compiler-type arg2))
-            (result-type (derive-compiler-type form)))
+            (result-type (derive-compiler-type form))
+            (result-rep (type-representation result-type)))
        (cond ((and (numberp arg1) (numberp arg2))
               (compile-constant (- arg1 arg2) target representation))
-             ((and (fixnum-type-p type1) (fixnum-type-p type2))
-	      (fixnum-result-plus/minus target representation result-type 
-					arg1 arg2 'isub 'lsub))
-             ((and (java-long-type-p type1) (java-long-type-p type2)
-                   (java-long-type-p result-type))
-	      (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
-							 arg2 'stack :long)
-              (emit 'lsub)
-              (convert-representation :long representation)
+             (result-rep
+	      (compile-forms-and-maybe-emit-clear-values
+                        arg1 'stack result-rep
+                        arg2 'stack result-rep)
+              (emit (case result-rep
+                      (:int 'isub)
+                      (:long 'lsub)
+                      (:float 'fsub)
+                      (:double 'dsub)
+                      (t
+                       (sys::%format t "p2-minus sub-instruction (rep: ~S); form: ~S~%"
+                                     result-rep form)
+                       (assert nil))))
+              (convert-representation result-rep representation)
               (emit-move-from-stack target representation))
              ((fixnum-type-p type2)
 	      (compile-forms-and-maybe-emit-clear-values
