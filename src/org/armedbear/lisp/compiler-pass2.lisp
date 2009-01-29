@@ -7533,61 +7533,24 @@ body is the body to invoke. "
                  (compile-special-reference (variable-name variable) target representation))
                 ((eq (variable-representation variable) :int)
                  (aver (variable-register variable))
-                 (case representation
-                   (:int
-                    (emit 'iload (variable-register variable)))
-                   (:char
-                    (sys::%format t "compile-var-ref :char case~%")
-                    (aver nil))
-                   (:long
-                    (emit 'iload (variable-register variable))
-                    (emit 'i2l))
-                   (:boolean
-                    (emit 'iconst_1))
-                   (t
-		    (new-fixnum)
-                    (emit 'iload (variable-register variable))
-                    (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
+                 (emit 'iload (variable-register variable))
+                 (convert-representation :int representation)
                  (emit-move-from-stack target representation))
                 ((eq (variable-representation variable) :char)
-                 (case representation
-                   (:char
-                    (aver (variable-register variable))
-                    (emit 'iload (variable-register variable)))
-                   (:boolean
-                    (emit 'iconst_1))
-                   (t
-                    (emit 'new +lisp-character-class+)
-                    (emit 'dup)
-                    (aver (variable-register variable))
-                    (emit 'iload (variable-register variable))
-                    (emit-invokespecial-init +lisp-character-class+ '("C"))))
+                 (aver (variable-register variable))
+                 (emit 'iload (variable-register variable))
+                 (convert-representation :char representation)
                  (emit-move-from-stack target representation))
                 ((eq (variable-representation variable) :long)
                  (aver (variable-register variable))
-                 (case representation
-                   (:int
-                    (emit 'lload (variable-register variable))
-                    (emit 'l2i))
-                   (:char
-                    (sys::%format t "compile-var-ref :char case 2~%")
-                    (aver nil))
-                   (:long
-                    (emit 'lload (variable-register variable)))
-                   (:boolean
-                    (emit 'iconst_1))
-                   (t
-                    (emit 'lload (variable-register variable))
-                    (convert-representation :long nil)))
+                 (emit 'lload (variable-register variable))
+                 (convert-representation :long representation)
                  (emit-move-from-stack target representation))
                 ((eq (variable-representation variable) :boolean)
                  (aver (variable-register variable))
                  (aver (or (null representation) (eq representation :boolean)))
                  (emit 'iload (variable-register variable))
-                 (case representation
-                   (:boolean)
-                   (t
-                    (convert-representation :boolean nil)))
+                 (convert-representation :boolean representation)
                  (emit-move-from-stack target representation))
                 ((variable-register variable)
                  (aload (variable-register variable))
