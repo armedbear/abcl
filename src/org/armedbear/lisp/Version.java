@@ -41,6 +41,6 @@ public final class Version
 
   public static String getVersion()
   {
-    return "0.13.0-dev";
+    return "0.12.37";
   }
 }

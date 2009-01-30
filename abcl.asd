@@ -47,7 +47,10 @@
 	   :compile-tests t))
 
 (defsystem :abcl-test-lisp :version "1.0" :components
-	   ((:module package  :pathname "test/lisp/abcl/" :components
+	   ((:module abcl-rt :pathname "test/lisp/abcl/" :serial t :components
+		     ((:file "rt-package") (:file "rt")))
+	    (:module package  :depends (abcl-rt)
+		     :pathname "test/lisp/abcl/" :components
 		     ((:file "package")))))
 (defmethod perform ((o test-op) (c (eql (find-system 'abcl-test-lisp))))
    "Invoke tests with:  (asdf:oos 'asdf:test-op :abcl-tests :force t)."

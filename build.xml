@@ -37,7 +37,7 @@
       <echo>Corresponding targets for J have been removed.</echo>
     </target>
 
-    <!-- Checks if JSR-223 support is available - thanks to Mark Everson -->
+    <!-- Checks if JSR-223 support is available - thanks to Mark Evenson -->
     <available property="abcl.jsr-223.p"
 	       classname="javax.script.ScriptEngine"/>
 
@@ -97,6 +97,13 @@
       <tstamp>
 	<format property="build" pattern="EEE MMM dd yyyy HH:mm:ss zzz"/>
       </tstamp>
+
+      <tstamp>
+	<format property="build.stamp" pattern="yyyymmdd-HHmm"/>
+      </tstamp>
+
+      <property name="abcl.test.log.file"
+		value="abcl-test-${build.stamp}.log"/>
 
       <!--- antversion fails in ant 1.7.1 <antversion property="ant.version" 
 	                                              atleast="1.7"/> -->
@@ -489,13 +496,12 @@
     </target>
 
     <target name="abcl.test.lisp" 
-	    depends="abcl.test.lisp.asdf"/>
+	    depends="test.ansi.compiled,test.abcl"/>
 
-    <target name="abcl.test.lisp.asdf" 
-	    depends="abcl.jar,abcl.test.ansi.compiled">
-    </target>
 
-    <target name="abcl.test.ansi.interpreted">
+    <target name="test.ansi.interpreted" depends="abcl.jar">
+      <echo>Recording test output in ${abcl.test.log.file}.</echo>
+      <record name="${abcl.test.log.file}" emacsmode="true" action="start" append="yes"/>
       <java fork="true" dir="${basedir}"
 	    classpathref="abcl.classpath.dist"
 	    classname="org.armedbear.lisp.Main">
@@ -503,14 +509,13 @@
 	<arg value="--load"/>
 	<arg line="${basedir}/test/lisp/ansi/ansi-tests-interpreted.lisp"/>
       </java>
+      <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
+      <echo>Finished recording test output in ${abcl.test.log.file}.</echo>
     </target>
 
-    <property name="abcl.test.log.file"
-	      value="abcl.test.ansi.compiled.${version.src}"/>
-
-    <target name="abcl.test.ansi.compiled">
+    <target name="test.ansi.compiled" depends="abcl.jar">
       <echo>Recording test output in ${abcl.test.log.file}.</echo>
-      <record name="${abcl.test.log.file}" emacsmode="true" action="start"/>
+      <record name="${abcl.test.log.file}" emacsmode="true" action="start" append="yes"/>
       <java fork="true" dir="${basedir}"
 	    classpathref="abcl.classpath.dist"
 	    classname="org.armedbear.lisp.Main">
@@ -519,8 +524,21 @@
  	<arg line="${basedir}/test/lisp/ansi/ansi-tests-compiled.lisp "/> 
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
-      <echo>Finished ecording test output in ${abcl.test.log.file}.</echo>
+      <echo>Finished recording test output in ${abcl.test.log.file}.</echo>
+    </target>
 
+    <target name="test.abcl" depends="abcl.jar">
+      <echo>Recording test output in ${abcl.test.log.file}.</echo>
+      <record name="${abcl.test.log.file}" emacsmode="true" action="start" append="yes"/>
+      <java fork="true" dir="${basedir}"
+	    classpathref="abcl.classpath.dist"
+	    classname="org.armedbear.lisp.Main">
+	<arg value="--noinit"/> 
+	<arg value="--load"/>
+ 	<arg line="${basedir}/test/lisp/abcl/abcl-test.lisp"/>
+      </java>
+      <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
+      <echo>Finished recording test output in ${abcl.test.log.file}.</echo>
     </target>
 
     <import file="netbeans-build.xml" optional="true"/> 

@@ -19,8 +19,8 @@
 
 (in-package #:abcl.test.lisp)
 
-;#+abcl
-;(use-package '#:java)
+#+abcl
+(use-package '#:java)
 
 #+allegro
 (require :jlinker)
