@@ -711,6 +711,7 @@ before the emitted code: the code is 'stack-neutral'."
 (defun maybe-generate-type-check (variable)
   (unless (or (zerop *safety*)
               (variable-special-p variable)
+              ;###
               (eq (variable-representation variable) :int))
     (let ((declared-type (variable-declared-type variable)))
       (unless (eq declared-type :none)
@@ -2323,7 +2324,7 @@ representation, based on the derived type of the LispObject."
         (emit 'putstatic *this-class* g +lisp-simple-string+)
         (setf *static-code* *code*)
         (setf (gethash string ht) g))))
-     
+
 (defknown compile-constant (t t t) t)
 (defun compile-constant (form target representation)
   (unless target
@@ -6260,38 +6261,119 @@ body is the body to invoke. "
      `(let (,@decls) ,@body)
      (reverse args) (reverse typenames))))
 
+
+(defmacro define-int-bounds-derivation (name (low1 high1 low2 high2)
+                                        &body body)
+  "Associates an integer-bounds calculation function with a numeric
+operator `name', assuming 2 integer arguments."
+  `(setf (get ',name 'int-bounds)
+         #'(lambda (,low1 ,high1 ,low2 ,high2)
+             (declare (ignorable ,low1 ,high1 ,low2 ,high2))
+             ,@body)))
+
+
+(defun derive-integer-type (op type1 type2)
+  "Derives the composed integer type of operation `op' given integer
+types `type1' and `type2'."
+  (let ((low1 (integer-type-low type1))
+        (high1 (integer-type-high type1))
+        (low2 (integer-type-low type2))
+        (high2 (integer-type-high type2))
+        (op-fn (get op 'int-bounds)))
+    (assert op-fn)
+    (multiple-value-bind
+          (low high non-int-p)
+        (funcall op-fn low1 high1 low2 high2)
+      (if non-int-p
+          non-int-p
+          (%make-integer-type low high)))))
+
+(defvar numeric-op-type-derivation
+  `(((+ - * /)
+     (integer integer ,#'derive-integer-type)
+     (integer single-float single-float)
+     (integer double-float double-float)
+     (single-float integer single-float)
+     (single-float double-float double-float)
+     (double-float integer double-float)
+     (double-float single-float double-float))
+    ((min max)
+     (integer integer ,#'derive-integer-type)
+     (integer single-float single-float)
+     (integer double-float double-float)
+     (single-float double-float double-float)
+     (double-float single-float double-float)))
+  "Table used to derive the return type of a numeric operation,
+based on the types of the arguments.")
+
+(defun derive-type-numeric-op (op &rest types)
+  "Returns the result type of the numeric operation `op' and the types
+of the operation arguments given in `types'."
+  (let ((types-table
+         (cdr (assoc op numeric-op-type-derivation :test #'member))))
+    (assert types-table)
+    (flet ((match (type1 type2)
+             (do* ((remaining-types types-table (cdr remaining-types)))
+                  ((endp remaining-types)
+                   ;; when we don't find a matching type, return T
+                   T)
+               (destructuring-bind
+                     (t1 t2 result-type)
+                   (car remaining-types)
+                 (when (and (or (subtypep type1 t1)
+                                (compiler-subtypep type1 t1))
+                            (or (subtypep type2 t2)
+                                (compiler-subtypep type2 t2)))
+                   (return-from match
+                     (if (functionp result-type)
+                         (funcall result-type op type1 type2)
+                         result-type)))))))
+      (let ((type1 (car types))
+            (type2 (cadr types)))
+        (when (and (eq type1 type2)
+                   (memq type1 '(SINGLE-FLOAT DOUBLE-FLOAT)))
+          (return-from derive-type-numeric-op type1))
+        (match type1 type2)))))
+
+(defvar zero-integer-type (%make-integer-type 0 0)
+  "Integer type representing the 0 (zero)
+value for use with derive-type-minus.")
+
+(define-int-bounds-derivation - (low1 high1 low2 high2)
+    (values (and low1 low2 (- low1 low2))
+            (and high1 high2 (- high1 high2))))
+
 (defknown derive-type-minus (t) t)
 (defun derive-type-minus (form)
   (let ((args (cdr form))
         (result-type t))
     (case (length args)
       (1
-       (when-args-integer 
-	((%car args))
-	(type1 low1 high1)
-	((low (and high1 (- high1)))
-	 (high (and low1 (- low1))))
-	(setf result-type (%make-integer-type low high))))
+       (setf result-type
+             (derive-type-numeric-op (car form)
+                                     zero-integer-type
+                                     (derive-compiler-type (%car args)))))
       (2
-       (when-args-integer 
-	((%car args) (%cadr args))
-	(type1 low1 high1 type2 low2 high2)
-	((low (and low1 high2 (- low1 high2)))
-	 (high (and high1 low2 (- high1 low2))))
-	(setf result-type (%make-integer-type low high)))))
+       (setf result-type
+             (derive-type-numeric-op (car form)
+                                     (derive-compiler-type (car args))
+                                     (derive-compiler-type (cadr args))))))
     result-type))
+
+
+(define-int-bounds-derivation + (low1 high1 low2 high2)
+    (values (and low1 low2 (+ low1 low2))
+            (and high1 high2 (+ high1 high2))))
 
 (defknown derive-type-plus (t) t)
 (defun derive-type-plus (form)
   (let ((args (cdr form))
         (result-type t))
     (when (= (length args) 2)
-      (when-args-integer 
-       ((%car args) (%cadr args))
-       (type1 low1 high1 type2 low2 high2)
-       ((low (and low1 low2 (+ low1 low2)))
-	(high (and high1 high2 (+ high1 high2))))
-       (setf result-type (%make-integer-type low high))))
+      (setf result-type
+            (derive-type-numeric-op (car form)
+                                    (derive-compiler-type (car args))
+                                    (derive-compiler-type (cadr args)))))
     result-type))
 
 (defun derive-type-times (form)
@@ -6858,9 +6940,9 @@ body is the body to invoke. "
                         arg1 'stack result-rep
                         arg2 'stack result-rep)
               (emit (case result-rep
-                      (:int 'iadd)
-                      (:long 'ladd)
-                      (:float 'fadd)
+                      (:int    'iadd)
+                      (:long   'ladd)
+                      (:float  'fadd)
                       (:double 'dadd)
                       (t
                        (sys::format
@@ -6937,9 +7019,9 @@ body is the body to invoke. "
                         arg1 'stack result-rep
                         arg2 'stack result-rep)
               (emit (case result-rep
-                      (:int 'isub)
-                      (:long 'lsub)
-                      (:float 'fsub)
+                      (:int    'isub)
+                      (:long   'lsub)
+                      (:float  'fsub)
                       (:double 'dsub)
                       (t
                        (sys::%format t "p2-minus sub-instruction (rep: ~S); form: ~S~%"
