@@ -512,6 +512,8 @@ supported (and used) by the compiler.")
 
 (defun type-representation (the-type)
   "Converts a type specification or compiler type into a representation."
+  (when (null the-type)
+    (return-from type-representation))
   (do* ((types type-representations (cdr types)))
        ((endp types) nil)
     (do* ((type-list (cdr (car types)) (cdr type-list))
@@ -1071,6 +1073,8 @@ representation, based on the derived type of the LispObject."
                  103 ; dsub
                  104 ; imul
                  105 ; lmul
+                 106 ; fmul
+                 107 ; dmul
                  116 ; ineg
                  117 ; lneg
                  118 ; fneg
@@ -1087,6 +1091,7 @@ representation, based on the derived type of the LispObject."
                  131 ; lxor
                  133 ; i2l
                  134 ; i2f
+                 135 ; i2d
                  136 ; l2i
                  148 ; lcmp
                  153 ; ifeq
@@ -6289,8 +6294,15 @@ types `type1' and `type2'."
           (%make-integer-type low high)))))
 
 (defvar numeric-op-type-derivation
-  `(((+ - * /)
+  `(((+ - *)
      (integer integer ,#'derive-integer-type)
+     (integer single-float single-float)
+     (integer double-float double-float)
+     (single-float integer single-float)
+     (single-float double-float double-float)
+     (double-float integer double-float)
+     (double-float single-float double-float))
+    ((/)
      (integer single-float single-float)
      (integer double-float double-float)
      (single-float integer single-float)
@@ -6376,34 +6388,29 @@ value for use with derive-type-minus.")
                                     (derive-compiler-type (cadr args)))))
     result-type))
 
+(define-int-bounds-derivation * (low1 high1 low2 high2)
+  (cond ((or (null low1) (null low2))
+         (values nil nil))
+        ((or (null high1) (null high2))
+         (values (if (or (minusp low1) (minusp low2))
+                     (- (* (abs low1) (abs low2)))
+                     (* low1 low2))
+                 nil))
+        ((or (minusp low1) (minusp low2))
+         (let ((max (* (max (abs low1) (abs high1))
+                       (max (abs low2) (abs high2)))))
+           (values (- max) max)))
+        (t
+         (values (* low1 low2) (* high1 high2)))))
+
 (defun derive-type-times (form)
   (let ((args (cdr form))
         (result-type t))
     (when (= (length args) 2)
-      (let ((arg1 (%car args))
-            (arg2 (%cadr args)))
-        (when (and (integerp arg1) (integerp arg2))
-          (let ((n (* arg1 arg2)))
-            (return-from derive-type-times (%make-integer-type n n))))
-	(when-args-integer 
-	 (arg1 arg2)
-	 (type1 low1 high1 type2 low2 high2)
-	 ((low nil)
-		(high nil))
-	 (cond ((not (and low1 low2))
-		;; Nothing to do.
-		)
-	       ((or (minusp low1) (minusp low2))
-		(when (and high1 high2)
-		  (let ((max (* (max (abs low1) (abs high1))
-				(max (abs low2) (abs high2)))))
-		    (setf low (- max)
-			  high max))))
-	       (t
-		(setf low (* low1 low2))
-		(when (and high1 high2)
-		  (setf high (* high1 high2)))))
-	 (setf result-type (%make-integer-type low high)))))
+      (setf result-type
+            (derive-type-numeric-op (car form)
+                                    (derive-compiler-type (car args))
+                                    (derive-compiler-type (cadr args)))))
   result-type))
 
 (declaim (ftype (function (t) t) derive-type-max))
@@ -6764,56 +6771,36 @@ value for use with derive-type-minus.")
     (fix-boxing representation nil) ; FIXME use derived result type
     (emit-move-from-stack target representation)))
 
-(defun two-long-ints-times/plus/minus (arg1 arg2 instruction representation)
-  (compile-form arg1 'stack :int)
-  (emit 'i2l)
-  (compile-form arg2 'stack :int)
-  (emit 'i2l)
-  (maybe-emit-clear-values arg1 arg2)
-  (emit instruction)
-  (convert-representation :long representation))
-
 (defun p2-times (form target representation)
   (case (length form)
     (3
      (let* ((args (cdr form))
             (arg1 (%car args))
             (arg2 (%cadr args))
-            type1 type2 result-type value)
+            result-type result-rep value)
        (when (fixnump arg1)
          (rotatef arg1 arg2))
-       (setf type1 (make-integer-type (derive-type arg1))
-             type2 (make-integer-type (derive-type arg2))
-             result-type (make-integer-type (derive-type form)))
+       (setf result-type (derive-compiler-type form)
+             result-rep (type-representation result-type))
        (cond ((and (numberp arg1) (numberp arg2))
               (dformat t "p2-times case 1~%")
               (compile-constant (* arg1 arg2) target representation))
              ((setf value (fixnum-constant-value result-type))
               (dformat t "p2-times case 1a~%")
               (compile-constant value target representation))
-             ((and (fixnum-type-p type1)
-                   (fixnum-type-p type2))
-              (cond ((fixnum-type-p result-type)
-                     (unless (eq representation :int)
-		       (new-fixnum))
-		     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-								arg2 'stack :int)
-                     (emit 'imul)
-                     (unless (eq representation :int)
-                       (emit-invokespecial-init +lisp-fixnum-class+ '("I"))
-                       (fix-boxing representation 'fixnum)))
+             (result-rep
+              (compile-forms-and-maybe-emit-clear-values
+                          arg1 'stack result-rep
+                          arg2 'stack result-rep)
+              (emit (case result-rep
+                      (:int    'imul)
+                      (:long   'lmul)
+                      (:float  'fmul)
+                      (:double 'dmul)
                       (t
-		     (two-long-ints-times/plus/minus 
-		      arg1 arg2 'lmul representation)))
+                       (sys::format t "p2-times: unsupported rep case"))))
+              (convert-representation result-rep representation)
 	      (emit-move-from-stack target representation))
-             ((and (java-long-type-p type1)
-                   (java-long-type-p type2)
-                   (java-long-type-p result-type))
-	      (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
-							 arg2 'stack :long)
-              (emit 'lmul)
-              (convert-representation :long representation)
-              (emit-move-from-stack target representation))
              ((fixnump arg2)
 ;;               (format t "p2-times case 3~%")
 	      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
@@ -6892,20 +6879,6 @@ value for use with derive-type-minus.")
                     (emit-move-from-stack target representation))))))
          (t
           (compile-function-call form target representation))))
-
-(defun fixnum-result-plus/minus (target representation result-type arg1 arg2
-				 int-op long-op)
-  (cond ((or (eq representation :int)
-	     (fixnum-type-p result-type))
-	 (new-fixnum (null representation))
-	 (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-						    arg2 'stack :int)
-	 (emit int-op)
-	 (emit-fixnum-init representation))
-	(t
-	 (two-long-ints-times/plus/minus 
-	  arg1 arg2 long-op representation)))
-  (emit-move-from-stack target representation))
 
 (defun p2-plus (form target representation)
   (case (length form)
