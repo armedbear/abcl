@@ -6905,6 +6905,9 @@ value for use with derive-type-minus.")
 
 (defun p2-minus (form target representation)
   (case (length form)
+    (1
+     ;; generates "Insufficient arguments" error
+     (compile-function-call form target representation))
     (2
      (let* ((arg (%cadr form))
             (type (derive-compiler-type form))
@@ -6967,12 +6970,9 @@ value for use with derive-type-minus.")
               (emit-move-from-stack target representation))
              (t
               (compile-binary-operation "subtract" args target representation)))))
-    (4
-     ;; (- a b c) => (- (- a b) c)
-     (let ((new-form `(- (- ,(second form) ,(third form)) ,(fourth form))))
-       (p2-minus new-form target representation)))
     (t
-     (compile-function-call form target representation))))
+     (let ((new-form `(- (- ,(second form) ,(third form)) ,@(nthcdr 3 form))))
+       (p2-minus new-form target representation)))))
 
 ;; char/schar string index => character
 (defknown p2-char/schar (t t t) t)
