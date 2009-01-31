@@ -577,6 +577,29 @@ to a value on the stack in the `out' representation."
             (emit 'iconst_1))
           (emit op)))))
 
+(defvar common-representations '((:int :long :long)
+                                 (:int :float :double)
+                                 (:int :double :double)
+                                 (:float :int :double)
+                                 (:float :double :double)
+                                 (:double :int :double)
+                                 (:double :float :double))
+  "Representations to convert unequal representations to, in order
+to get the correct (exact where required) comparisons.")
+
+(defun common-representation (rep1 rep2)
+  (when (eq rep1 rep2)
+    (return-from common-representation rep1))
+  (do* ((remaining common-representations (cdr remaining))
+        (rep (car remaining) (car remaining)))
+       ((endp remaining))
+    (destructuring-bind
+          (r1 r2 result) rep
+      (when (and (eq rep1 r1) (eq rep2 r2))
+        (return-from common-representation result)))))
+
+
+
 (declaim (ftype (function t string) pretty-java-class))
 (defun pretty-java-class (class)
   (cond ((equal class +lisp-object-class+)
@@ -1094,6 +1117,10 @@ representation, based on the derived type of the LispObject."
                  135 ; i2d
                  136 ; l2i
                  148 ; lcmp
+                 149 ; fcmpd
+                 150 ; fcmpg
+                 151 ; dcmpd
+                 152 ; dcmpg
                  153 ; ifeq
                  154 ; ifne
                  155 ; ifge
@@ -3185,6 +3212,21 @@ Note: DEFUN implies a named lambda."
       (restore-variables saved-vars)))
   t)
 
+
+;;                            <        <=         >        >=         =
+(defvar comparison-ops '(< <= > >= =))
+(defvar comparison-ins
+  '((:int  . #(if_icmpge if_icmpgt if_icmple if_icmplt if_icmpne))
+    (:long . #((lcmp ifge) (lcmp ifgt) (lcmp ifle)
+               (lcmp iflt) (lcmp ifne)))
+    (:float . #((fcmpg ifge) (fcmpg ifgt) (fcmpl ifle)
+                (fcmpl iflt) (fcmpl ifne)))
+    (:double . #((dcmpg ifge) (dcmpg ifgt) (dcmpl ifle)
+                 (dcmpl iflt) (dcmpl ifne))))
+  "Instructions to be generated upon each comparison operation,
+given a specific common representation.")
+
+
 ;; Note that /= is not transitive, so we don't handle it here.
 (defknown p2-numeric-comparison (t t t) t)
 (defun p2-numeric-comparison (form target representation)
@@ -3196,7 +3238,9 @@ Note: DEFUN implies a named lambda."
        (let* ((arg1 (%car args))
               (arg2 (%cadr args))
               (type1 (derive-compiler-type arg1))
-              (type2 (derive-compiler-type arg2)))
+              (type2 (derive-compiler-type arg2))
+              (common-rep (common-representation (type-representation type1)
+                                                 (type-representation type2))))
          (cond ((and (integerp arg1) (integerp arg2))
                 (let ((result (funcall op arg1 arg2)))
                   (if result
@@ -3204,40 +3248,20 @@ Note: DEFUN implies a named lambda."
                       (emit-push-false representation)))
                 (emit-move-from-stack target representation)
                 (return-from p2-numeric-comparison))
-               ((and (fixnum-type-p type1)
-                     (fixnum-type-p type2))
+               (common-rep
                 (let ((LABEL1 (gensym))
                       (LABEL2 (gensym)))
-		  (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-							     arg2 'stack :int)
-                  (emit (case op
-                          (<  'if_icmpge)
-                          (<= 'if_icmpgt)
-                          (>  'if_icmple)
-                          (>= 'if_icmplt)
-                          (=  'if_icmpne))
-                        LABEL1)
-                  (emit-push-true representation)
-                  (emit 'goto LABEL2)
-                  (label LABEL1)
-                  (emit-push-false representation)
-                  (label LABEL2))
-                (emit-move-from-stack target representation)
-                (return-from p2-numeric-comparison))
-               ((and (java-long-type-p type1)
-                     (java-long-type-p type2))
-                (let ((LABEL1 (gensym))
-                      (LABEL2 (gensym)))
-		  (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
-							     arg2 'stack :long)
-                  (emit 'lcmp)
-                  (emit (case op
-                          (<  'ifge)
-                          (<= 'ifgt)
-                          (>  'ifle)
-                          (>= 'iflt)
-                          (=  'ifne))
-                        LABEL1)
+		  (compile-forms-and-maybe-emit-clear-values
+                          arg1 'stack common-rep
+                          arg2 'stack common-rep)
+                  (let* ((pos (position op comparison-ops))
+                         (ops-table (cdr (assoc common-rep comparison-ins)))
+                         (ops (aref ops-table pos)))
+                    (if (listp ops)
+                        (progn
+                          (emit (car ops))
+                          (emit (cadr ops) LABEL1))
+                        (emit ops LABEL1)))
                   (emit-push-true representation)
                   (emit 'goto LABEL2)
                   (label LABEL1)
