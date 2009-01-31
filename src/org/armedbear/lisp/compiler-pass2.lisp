@@ -2722,17 +2722,7 @@ representation, based on the derived type of the LispObject."
 
 (defun emit-ifne-for-eql (representation instruction-type)
   (emit-invokevirtual +lisp-object-class+ "eql" instruction-type "Z")
-  (case representation
-    (:boolean)
-    (t
-     (let ((label1 (gensym))
-	   (label2 (gensym)))
-       (emit 'ifne label1)
-       (emit-push-nil)
-       (emit 'goto label2)
-       (label label1)
-       (emit-push-t)
-       (label label2)))))
+  (convert-representation :boolean representation))
 
 (defknown p2-eql (t t t) t)
 (define-inlined-function p2-eql (form target representation)
@@ -3282,17 +3272,7 @@ given a specific common representation.")
                                     '("I")
                                     "Z")
                 ;; Java boolean on stack here
-                (case representation
-                  (:boolean)
-                  (t
-                   (let ((LABEL1 (gensym))
-                         (LABEL2 (gensym)))
-                     (emit 'ifeq LABEL1)
-                     (emit-push-t)
-                     (emit 'goto LABEL2)
-                     (label LABEL1)
-                     (emit-push-nil)
-                     (label LABEL2))))
+                (convert-representation :boolean representation)
                 (emit-move-from-stack target representation)
                 (return-from p2-numeric-comparison)))))
       (3
@@ -4679,18 +4659,8 @@ given a specific common representation.")
           (t
 	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
            (emit 'instanceof java-class)
-           (case representation
-             (:boolean)
-             (t
-              (let ((LABEL1 (gensym))
-                    (LABEL2 (gensym)))
-                (emit 'ifeq LABEL1)
-                (emit-push-t)
-                (emit 'goto LABEL2)
-                (label LABEL1)
-                (emit-push-nil)
-                (label LABEL2)
-                (emit-move-from-stack target representation))))))))
+           (convert-representation :boolean representation)
+           (emit-move-from-stack target representation)))))
 
 (defun p2-bit-vector-p (form target representation)
   (p2-instanceof-predicate form target representation +lisp-abstract-bit-vector-class+))
@@ -5419,12 +5389,7 @@ given a specific common representation.")
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :long
 							   arg2 'stack :long)
                 (emit 'land)
-                (case representation
-                  (:int
-                   (emit 'l2i))
-                  (:long)
-                  (t
-                   (convert-representation :long nil)))
+                (convert-representation :long representation)
                 (emit-move-from-stack target representation))
                ((or (and (java-long-type-p type1)
                          (compiler-subtypep type1 'unsigned-byte))
@@ -5434,12 +5399,7 @@ given a specific common representation.")
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :long
 							   arg2 'stack :long)
                 (emit 'land)
-                (case representation
-                  (:int
-                   (emit 'l2i))
-                  (:long)
-                  (t
-                   (convert-representation :long nil)))
+                (convert-representation :long representation)
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type2)
                 ;;                     (format t "p2-logand LispObject.LOGAND(int) 1~%")
