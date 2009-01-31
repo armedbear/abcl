@@ -6834,6 +6834,10 @@ value for use with derive-type-minus.")
 
 (defun p2-plus (form target representation)
   (case (length form)
+    (1
+     (compile-constant 0 target representation))
+    (2
+     (compile-form (cadr form) target representation))
     (3
      (let* ((args (%cdr form))
             (arg1 (%car args))
