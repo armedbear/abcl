@@ -1806,6 +1806,8 @@ public class Stream extends LispObject
                 _unreadChar(n);
                 return '\r';
             }
+            else
+              return '\n';
         }
 
         if (n == eolChar) {
