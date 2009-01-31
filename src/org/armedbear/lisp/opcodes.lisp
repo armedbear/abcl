@@ -196,7 +196,7 @@
 (define-opcode f2d 141 1 1)
 (define-opcode d2i 142 1 nil)
 (define-opcode d2l 143 1 nil)
-(define-opcode d2f 144 1 nil)
+(define-opcode d2f 144 1 -1)
 (define-opcode i2b 145 1 nil)
 (define-opcode i2c 146 1 nil)
 (define-opcode i2s 147 1 nil)

@@ -1116,6 +1116,8 @@ representation, based on the derived type of the LispObject."
                  134 ; i2f
                  135 ; i2d
                  136 ; l2i
+                 141 ; f2d
+                 144 ; d2f
                  148 ; lcmp
                  149 ; fcmpd
                  150 ; fcmpg
