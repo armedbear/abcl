@@ -44,11 +44,11 @@
 (defun list-directories-with-wildcards (pathname)
   (let* ((directory (pathname-directory pathname))
 	 (first-wild (position-if #'wild-p directory))
-	 (wild (and first-wild (nthcdr first-wild directory)))
-	 (non-wild (or (and first-wild
-			    (nbutlast directory
-				      (- (length directory) first-wild))
-			    directory)))
+	 (wild (when first-wild (nthcdr first-wild directory)))
+	 (non-wild (if first-wild
+		       (nbutlast directory
+				 (- (length directory) first-wild))
+		       directory))
 	 (newpath (make-pathname :directory non-wild
 				 :name nil :type nil :defaults pathname))
 	 (entries (list-directory newpath)))
@@ -57,12 +57,13 @@
                           (let* ((pathname (pathname entry))
                                  (directory (pathname-directory pathname))
                                  (rest-wild (cdr wild)))
-                            (unless (file-namestring pathname)
-                              (when rest-wild
-                                (setf directory (nconc directory rest-wild)))
-                              (list-directories-with-wildcards
-                               (make-pathname :directory directory
-                                              :defaults newpath)))))
+                            (unless (pathname-name pathname)
+			      (when (pathname-match-p (first (last directory)) (if (eql (car wild) :wild) "*" (car wild)))
+				(when rest-wild
+				  (setf directory (nconc directory rest-wild)))
+  				(list-directories-with-wildcards
+				 (make-pathname :directory directory
+						:defaults newpath))))))
                         entries))))
 
 
