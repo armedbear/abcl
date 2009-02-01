@@ -7681,18 +7681,8 @@ value for use with derive-type-minus.")
         (aver (variable-register variable))
         (emit 'iinc (variable-register variable) 1)
         (when target
-          (case representation
-            (:int
-             (emit 'iload (variable-register variable)))
-            (:long
-             (emit 'iload (variable-register variable))
-             (emit 'i2l))
-            (t
-	     (new-fixnum)
-             (aver (variable-register variable))
-             (emit 'iload (variable-register variable))
-             (emit-invokespecial-init +lisp-fixnum-class+ '("I"))
-             (fix-boxing representation nil)))
+          (emit 'iload (variable-register variable))
+          (convert-representation :int representation)
           (emit-move-from-stack target representation))
         (return-from p2-setq)))
 
@@ -7704,15 +7694,7 @@ value for use with derive-type-minus.")
            ;; this case once the new code is stable.
            (emit 'iinc (variable-register variable) 1)
            (when target
-             (cond ((eq representation :int)
-                    (emit 'iload (variable-register variable)))
-                   (t
-                    (dformat t "p2-setq constructing boxed fixnum for ~S~%"
-                             (variable-name variable))
-		    (new-fixnum)
-                    (aver (variable-register variable))
-                    (emit 'iload (variable-register variable))
-                    (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
+             (convert-representation :int representation)
              (emit-move-from-stack target representation)))
           ((and (eq (variable-representation variable) :int)
                 (or (equal value-form (list '1- (variable-name variable)))
@@ -7720,15 +7702,7 @@ value for use with derive-type-minus.")
            (dformat t "p2-setq decf :int case~%")
            (emit 'iinc (variable-register variable) -1)
            (when target
-             (cond ((eq representation :int)
-                    (emit 'iload (variable-register variable)))
-                   (t
-                    (dformat t "p2-setq constructing boxed fixnum for ~S~%"
-                             (variable-name variable))
-		    (new-fixnum)
-                    (aver (variable-register variable))
-                    (emit 'iload (variable-register variable))
-                    (emit-invokespecial-init +lisp-fixnum-class+ '("I"))))
+             (convert-representation :int representation)
              (emit-move-from-stack target representation)))
           ((eq (variable-representation variable) :int)
            (dformat t "p2-setq :int case value-form = ~S~%"
@@ -7739,16 +7713,7 @@ value for use with derive-type-minus.")
            (emit 'istore (variable-register variable))
            (when target
              ;; int on stack here
-             (case representation
-               (:int)
-               (:long
-                (emit 'i2l))
-               (t
-                ;; need to box int
-                (emit 'new +lisp-fixnum-class+) ; stack: int new-fixnum
-                (emit 'dup_x1)                  ; stack: new-fixnum int new-fixnum
-                (emit 'swap)                    ; stack: new-fixnum new-fixnum int
-                (emit-invokespecial-init +lisp-fixnum-class+ '("I")))) ; stack: fixnum
+             (convert-representation :int representation)
              (emit-move-from-stack target representation)))
           ((eq (variable-representation variable) :char)
            (dformat t "p2-setq :char case~%")
@@ -7758,13 +7723,8 @@ value for use with derive-type-minus.")
            (emit 'istore (variable-register variable))
            (when target
              ;; char on stack here
-             (when (null representation)
-               ;; need to box char
-               (emit 'new +lisp-character-class+) ; stack: char new-character
-               (emit 'dup_x1)                  ; stack: new-character char new-character
-               (emit 'swap)                    ; stack: new-character new-character char
-               (emit-invokespecial-init +lisp-character-class+ '("C")) ; stack: character
-               (emit-move-from-stack target representation))))
+             (convert-representation :char representation)
+             (emit-move-from-stack target representation)))
           ((eq (variable-representation variable) :long)
 	   (compile-forms-and-maybe-emit-clear-values value-form 'stack :long)
            (when target
@@ -7772,12 +7732,7 @@ value for use with derive-type-minus.")
            (emit 'lstore (variable-register variable))
            (when target
              ;; long on stack here
-             (case representation
-               (:int
-                (emit 'l2i))
-               (:long)
-               (t
-                (convert-representation :long nil)))
+             (convert-representation :long representation)
              (emit-move-from-stack target representation)))
           ((eq (variable-representation variable) :boolean)
 	   (compile-forms-and-maybe-emit-clear-values value-form 'stack :boolean)
@@ -7786,10 +7741,7 @@ value for use with derive-type-minus.")
            (emit 'istore (variable-register variable))
            (when target
              ;; int on stack here
-             (case representation
-               (:boolean)
-               (t
-                (convert-representation :boolean nil)))
+             (convert-representation :boolean representation)
              (emit-move-from-stack target representation)))
           (t
 	   (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
