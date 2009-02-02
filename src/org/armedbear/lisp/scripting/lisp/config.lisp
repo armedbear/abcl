@@ -1,4 +1,4 @@
-;;; packages.lisp
+;;; config.lisp
 ;;;
 ;;; Copyright (C) 2008 Alessio Stalla
 ;;;
@@ -28,23 +28,33 @@
 ;;; obligated to do so.  If you do not wish to do so, delete this
 ;;; exception statement from your version.
 
-(defpackage :abcl-script
-  (:use :cl :java)
-  (:export 
-   #:*abcl-debug*
-   #:eval-script
-   #:compile-script
-   #:*compile-using-temp-files*
-   #:configure-abcl
-   #:eval-compiled-script
-   #:define-java-interface-implementation
-   #:find-java-interface-implementation
-   #:register-java-interface-implementation
-   #:remove-java-interface-implementation
-   #:+standard-debugger-hook+
-   #:*swank-dir*
-   #:*swank-port*
-   #:*use-throwing-debugger*))
 
-(defpackage :abcl-script-user
-  (:use :cl :ext :java :abcl-script))
+(in-package :abcl-script)
+
+(defparameter *abcl-debug* nil)
+
+(defparameter *swank-dir* nil)
+
+(defparameter *swank-port* 4005)
+
+(defparameter *use-throwing-debugger* t)
+
+(defparameter *compile-using-temp-files* nil)
+
+(defconstant +standard-debugger-hook+ *debugger-hook*)
+
+(defun configure-abcl ()
+  (setq *debugger-hook*
+	(if *use-throwing-debugger*
+	    #'sys::%debugger-hook-function
+	    +standard-debugger-hook+))
+  (when *abcl-debug*
+    (unless *swank-dir*
+      (error "Swank directory not specified, please set *swank-dir*"))
+    (pushnew *swank-dir* asdf:*central-registry* :test #'equal)
+    (asdf:oos 'asdf:load-op :swank)
+    (ext:make-thread (lambda () (funcall (find-symbol
+					  (symbol-name '#:create-server)
+					  :swank)
+					 :port *swank-port*))
+		     :name "ABCL script - Swank thread")))

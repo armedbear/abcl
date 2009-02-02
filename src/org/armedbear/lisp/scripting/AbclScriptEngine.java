@@ -27,36 +27,11 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.util.Map;
+import java.util.Properties;
 
-import javax.script.AbstractScriptEngine;
-import javax.script.Bindings;
-import javax.script.Compilable;
-import javax.script.CompiledScript;
-import javax.script.Invocable;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
+import javax.script.*;
 
-import org.armedbear.lisp.Bignum;
-import org.armedbear.lisp.ConditionThrowable;
-import org.armedbear.lisp.Cons;
-import org.armedbear.lisp.DoubleFloat;
-import org.armedbear.lisp.Fixnum;
-import org.armedbear.lisp.Function;
-import org.armedbear.lisp.Interpreter;
-import org.armedbear.lisp.JavaObject;
-import org.armedbear.lisp.Keyword;
-import org.armedbear.lisp.Lisp;
-import org.armedbear.lisp.LispCharacter;
-import org.armedbear.lisp.LispObject;
-import org.armedbear.lisp.LispThread;
-import org.armedbear.lisp.SimpleString;
-import org.armedbear.lisp.SimpleVector;
-import org.armedbear.lisp.SingleFloat;
-import org.armedbear.lisp.Stream;
-import org.armedbear.lisp.Symbol;
+import org.armedbear.lisp.*;
 import org.armedbear.lisp.scripting.util.ReaderInputStream;
 import org.armedbear.lisp.scripting.util.WriterOutputStream;
 
@@ -68,43 +43,44 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	private Function evalScript;
 	private Function compileScript;
 	private Function evalCompiledScript;
+	private boolean configured = false;
 
-	public AbclScriptEngine(Interpreter interpreter, boolean enableThrowingDebugger) {
-		
-		this.interpreter = interpreter;
-		Interpreter.initializeLisp();
-		final LispThread thread = LispThread.currentThread();
-		this.nonThrowingDebugHook = Symbol.DEBUGGER_HOOK.getSymbolValue();
+	public AbclScriptEngine(boolean enableThrowingDebugger) {
+		this();
 		if (enableThrowingDebugger) {
 			try {
-				installThrowingDebuggerHook(thread);
+				installThrowingDebuggerHook(LispThread.currentThread());
 			} catch (ConditionThrowable e) {
 				throw new InternalError("Can't set throwing debugger hook!");
 			}
 		}
+	}
+
+	public AbclScriptEngine() {
+		interpreter = Interpreter.createInstance();
+		interpreter.initializeLisp();
+		this.nonThrowingDebugHook = Symbol.DEBUGGER_HOOK.getSymbolValue();
 		try {
 			loadFromClasspath("/org/armedbear/lisp/scripting/lisp/packages.lisp");
 			loadFromClasspath("/org/armedbear/lisp/scripting/lisp/abcl-script.lisp");
+			loadFromClasspath("/org/armedbear/lisp/scripting/lisp/config.lisp");
+			if(getClass().getResource("/abcl-script-config.lisp") != null) {
+			    System.out.println("ABCL: loading configuration from " + getClass().getResource("/abcl-script-config.lisp"));
+			    loadFromClasspath("/abcl-script-config.lisp");
+			}
+			interpreter.eval("(abcl-script:configure-abcl)");
 			evalScript = (Function) this.findSymbol("EVAL-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
 			compileScript = (Function) this.findSymbol("COMPILE-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
 			evalCompiledScript = (Function) this.findSymbol("EVAL-COMPILED-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
 		} catch (ConditionThrowable e) {
-			throw new Error(e);
+			throw new RuntimeException(e);
 		}
 	}
-
-	public AbclScriptEngine(Interpreter interpreter) {
-		this(interpreter, false);
+	
+	public boolean isConfigured() {
+		return configured;
 	}
-
-	public AbclScriptEngine(boolean enableThrowingDebugger) {
-		this(Interpreter.createInstance(), enableThrowingDebugger);
-	}
-
-	public AbclScriptEngine() {
-		this(Interpreter.createInstance(), true);
-	}
-
+	
 	public Interpreter getInterpreter() {
 		return interpreter;
 	}
