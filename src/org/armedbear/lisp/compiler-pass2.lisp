@@ -523,6 +523,11 @@ supported (and used) by the compiler.")
                 (compiler-subtypep the-type (make-compiler-type type)))
         (return-from type-representation (caar types))))))
 
+(defun representation-size (representation)
+  (ecase representation
+    ((NIL :int :boolean :float :char) 1)
+    ((:long :double) 2)))
+
 ;;                     source type /
 ;;                         targets   :boolean :char    :int :long :float :double
 (defvar rep-conversion '((:boolean . #( NIL    :err    :err  :err  :err   :err))
@@ -4186,6 +4191,83 @@ given a specific common representation.")
       (dolist (variable removed)
         (setf (block-vars block) (remove variable (block-vars block)))))))
 
+(defun derive-variable-representation (variable block
+                                       &key (type nil type-supplied-p))
+  (when (not (null (variable-representation variable)))
+    ;; representation already derived
+    (return-from derive-variable-representation))
+  (when type-supplied-p
+    (setf (variable-declared-type variable) type))
+  (let ((type (variable-declared-type variable)))
+    (when (and (eq (variable-declared-type variable) :none)
+               (eql (variable-writes variable) 0))
+      (setf type (variable-derived-type variable)))
+    (cond ((neq type :none)
+           (setf (variable-representation variable)
+                 (type-representation type))
+           (unless (memq (variable-representation variable) '(:int :long))
+             ;; We don't support unboxed variables other than INT and LONG (yet)
+             (setf (variable-representation variable) NIL)))
+          ((zerop (variable-writes variable))
+           (when (eq :none (variable-derived-type variable))
+             (setf (variable-derived-type variable)
+                   (derive-compiler-type (variable-initform variable))))
+           (let ((derived-type (variable-derived-type variable)))
+             (setf (variable-derived-type variable) derived-type)
+             (setf (variable-representation variable)
+                   (type-representation derived-type))
+             (unless (memq (variable-representation variable) '(:int :long))
+               ;; We don't support unboxed variables other than INT and LONG (yet)
+               (setf (variable-representation variable) NIL))))
+          ((and block
+                (get (variable-name variable) 'sys::dotimes-index-variable-p))
+           ;; DOTIMES index variable.
+           (let* ((name (get (variable-name variable)
+                             'sys::dotimes-limit-variable-name))
+                  (limit-variable (and name
+                                       (or (find-variable name
+                                                          (block-vars block))
+                                           (find-visible-variable name)))))
+             (derive-variable-representation limit-variable block)
+             (setf (variable-representation variable)
+                   (variable-representation limit-variable)))))))
+
+(defun allocate-variable-register (variable)
+  (setf (variable-register variable)
+        (if (= 2 (representation-size (variable-representation variable)))
+            (allocate-register-pair)
+            (allocate-register))))
+
+(defun emit-move-to-variable (variable)
+  (flet ((emit-array-store (representation)
+           (emit (or (case representation
+                       ((:int :boolean :char)
+                                'iastore)
+                       (:long   'lastore)
+                       (:float  'fastore)
+                       (:double 'dastore))
+                   'aastore))))
+    (cond ((variable-register variable)
+           (emit (or (case (variable-representation variable)
+                       ((:int :boolean :char)
+                                'istore)
+                       (:long   'lstore)
+                       (:float  'fstore)
+                       (:double 'dstore))
+                     'astore)
+                 (variable-register variable)))
+          ((variable-index variable)
+           (aload (compiland-argument-register *current-compiland*))
+           (emit-push-constant-int (variable-index variable))
+           (emit-array-store (variable-representation variable)))
+          ((variable-closure-index variable)
+           (aload (compiland-closure-register *current-compiland*))
+           (emit-push-constant-int (variable-closure-index variable))
+           (emit-array-store (variable-representation variable)))
+          (t ;;###FIXME: We might want to address the "temp-register" case too.
+           (assert nil)))))
+
+
 (defknown p2-let-bindings (t) t)
 (defun p2-let-bindings (block)
   (dolist (variable (block-vars block))
@@ -4212,40 +4294,9 @@ given a specific common representation.")
               (t
                (cond (initform
                       (when (eq (variable-register variable) t)
-                        (let ((declared-type (variable-declared-type variable)))
-                          (cond ((neq declared-type :none)
-                                 (cond ((fixnum-type-p declared-type)
-                                        (setf (variable-representation variable) :int))
-                                       ((java-long-type-p declared-type)
-                                        (setf (variable-representation variable) :long))))
-                                ((zerop (variable-writes variable))
-                                 (let ((derived-type (derive-compiler-type initform)))
-                                   (setf (variable-derived-type variable) derived-type)
-                                   (cond ((fixnum-type-p derived-type)
-                                          (setf (variable-representation variable) :int))
-                                         ((java-long-type-p derived-type)
-                                          (setf (variable-representation variable) :long)))))
-                                ((get (variable-name variable) 'sys::dotimes-index-variable-p)
-                                 ;; DOTIMES index variable.
-                                 (let* ((name (get (variable-name variable) 'sys::dotimes-limit-variable-name))
-                                        (limit-variable (and name
-                                                             (or (find-variable name (block-vars block))
-                                                                 (find-visible-variable name)))))
-                                   (when limit-variable
-                                     (let ((type (variable-derived-type limit-variable)))
-                                       (when (eq type :none)
-                                         (setf type (variable-declared-type limit-variable)))
-                                       (cond ((fixnum-type-p type)
-                                              (setf (variable-representation variable) :int
-;;                                                     (variable-derived-type variable) 'FIXNUM
-                                                    (variable-derived-type variable) type
-                                                    ))
-                                             ((java-long-type-p type)
-                                              (setf (variable-representation variable) :long
-;;                                                     (variable-derived-type variable) 'JAVA-LONG
-                                                    (variable-derived-type variable) type
-                                                    ))))))))))
-                      (compile-form initform 'stack (variable-representation variable))
+                        (derive-variable-representation variable block))
+                      (compile-form initform 'stack
+                                    (variable-representation variable))
                       (unless must-clear-values
                         (unless (single-valued-p initform)
                           (setf must-clear-values t))))
@@ -4254,19 +4305,11 @@ given a specific common representation.")
                       (emit-push-nil)))
                (when (eq (variable-register variable) t)
                  ;; Now allocate the register.
-                 (setf (variable-register variable)
-                       (case (variable-representation variable)
-                         (:long
-                          ;; We need two registers for a long.
-                          (allocate-register-pair))
-                         (t
-                          (allocate-register)))))
+                 (allocate-variable-register variable))
                (cond ((variable-special-p variable)
                       (emit-move-from-stack (setf (variable-temp-register variable) (allocate-register))))
-                     ((eq (variable-representation variable) :int)
-                      (emit 'istore (variable-register variable)))
-                     ((eq (variable-representation variable) :long)
-                      (emit 'lstore (variable-register variable)))
+                     ((variable-representation variable)
+                      (emit-move-to-variable variable))
                      (t
                       (compile-binding variable)))))))
     (when must-clear-values
@@ -4327,76 +4370,29 @@ given a specific common representation.")
                        (t
                         (emit-push-nil))))
                 (t
-                  (cond (unused-p
-                         (compile-form initform nil nil) ; for effect
-                         (update-must-clear-values)
-                         (setf boundp t))
-                        ((and (null (variable-closure-index variable))
-                              (not (variable-special-p variable)))
-                         (let ((declared-type (variable-declared-type variable)))
-                           (cond ((and (neq declared-type :none)
-                                       (fixnum-type-p declared-type))
-                                  (setf (variable-representation variable) :int)
-                                  (compile-form initform 'stack :int)
-                                  (update-must-clear-values)
-                                  (setf (variable-register variable) (allocate-register))
-                                  (emit 'istore (variable-register variable))
-                                  (setf boundp t))
-                                 ((and (neq declared-type :none)
-                                       (java-long-type-p declared-type))
-                                  (setf (variable-representation variable) :long)
-                                  (compile-form initform 'stack :long)
-                                  (update-must-clear-values)
-                                  (setf (variable-register variable)
-                                        ;; We need two registers for a long.
-                                        (allocate-register-pair))
-                                  (emit 'lstore (variable-register variable))
-                                  (setf boundp t))
-                                 ((and (neq declared-type :none)
-                                       (eq declared-type 'BOOLEAN))
-                                  (setf (variable-representation variable) :boolean)
-                                  (compile-form initform 'stack :boolean)
-                                  (update-must-clear-values)
-                                  (setf (variable-register variable) (allocate-register))
-                                  (emit 'istore (variable-register variable))
-                                  (setf boundp t))
-                                 ((eql (variable-writes variable) 0)
-                                  (let ((type (derive-compiler-type initform)))
-                                    (setf (variable-derived-type variable) type)
-                                    (cond ((fixnum-type-p type)
-                                           (setf (variable-representation variable) :int)
-                                           (setf (variable-register variable) (allocate-register))
-                                           (compile-form initform 'stack :int)
-                                           (update-must-clear-values)
-                                           (emit 'istore (variable-register variable))
-                                           (setf boundp t))
-                                          ((java-long-type-p type)
-                                           (setf (variable-representation variable) :long)
-                                           (setf (variable-register variable)
-                                                 ;; We need two registers for a long.
-                                                 (allocate-register-pair))
-                                           (compile-form initform 'stack :long)
-                                           (update-must-clear-values)
-                                           (emit 'lstore (variable-register variable))
-                                           (setf boundp t))
-                                          ((eq type 'CHARACTER)
-                                           (setf (variable-representation variable) :char)
-                                           (setf (variable-register variable) (allocate-register))
-                                           (compile-form initform 'stack :char)
-                                           (update-must-clear-values)
-                                           (emit 'istore (variable-register variable))
-                                           (setf boundp t))
-                                          (t
-                                           (compile-form initform 'stack nil)
-                                           (update-must-clear-values)))))
-                                 (t
-                                  (compile-form initform 'stack nil)
-                                  (update-must-clear-values)))))
-                        (t
-                         (compile-form initform 'stack nil)
-                         (update-must-clear-values))))))
+                 (cond (unused-p
+                        (compile-form initform nil nil) ; for effect
+                        (update-must-clear-values)
+                        (setf boundp t))
+                       ((and (null (variable-closure-index variable))
+                             (not (variable-special-p variable)))
+                        (when (and (eq (variable-declared-type variable) :none)
+                                   (eql (variable-writes variable) 0))
+                          (setf (variable-derived-type variable)
+                                (derive-compiler-type initform)))
+                        (derive-variable-representation variable block)
+                        (allocate-variable-register variable)
+                        (compile-form initform 'stack
+                                      (variable-representation variable))
+                        (update-must-clear-values)
+                        (emit-move-to-variable variable)
+                        (setf boundp t))
+                       (t
+                        (compile-form initform 'stack nil)
+                        (update-must-clear-values))))))
         (unless (or boundp (variable-special-p variable))
-          (unless (or (variable-closure-index variable) (variable-register variable))
+          (unless (or (variable-closure-index variable)
+                      (variable-register variable))
             (setf (variable-register variable) (allocate-register))))
         (push variable *visible-variables*)
         (unless boundp
