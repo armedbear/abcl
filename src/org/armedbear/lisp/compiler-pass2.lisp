@@ -411,6 +411,34 @@
     (1.0d0 (emit 'dconst_1))
     (t (emit 'ldc2_w (pool-double n)))))
 
+(defknown emit-dup (symbol) t)
+(defun emit-dup (representation)
+  (ecase (representation-size representation)
+    (1 (emit 'dup))
+    (2 (emit 'dup2))))
+
+(defknown emit-swap (symbol symbol) t)
+(defun emit-swap (rep1 rep2)
+  "Swaps 2 values on the stack,
+the top-most value's representation being 'rep1'."
+  (let ((r1-size (representation-size rep1))
+        (r2-size (representation-size rep2)))
+    (cond ((and (= 1 r1-size)
+                (= 1 r2-size))
+           (emit 'swap))
+          ((and (= 1 r1-size)
+                (= 2 r2-size))
+           (emit 'dup2_x1)
+           (emit 'pop2))
+          ((and (= 2 r1-size)
+                (= 1 r2-size))
+           (emit 'dup_x2)
+           (emit 'pop))
+          ((and (= 2 r1-size)
+                (= 2 r2-size))
+           (emit 'dup2_x2)
+           (emit 'pop2)))))
+
 (declaim (ftype (function (t t) cons) make-descriptor-info))
 (defun make-descriptor-info (arg-types return-type)
   (let ((descriptor (with-standard-io-syntax
@@ -528,9 +556,29 @@ supported (and used) by the compiler.")
     ((NIL :int :boolean :float :char) 1)
     ((:long :double) 2)))
 
+
+(defknown emit-unbox-boolean () t)
+(defun emit-unbox-boolean ()
+  (emit 'instanceof +lisp-nil-class+)
+  (emit 'iconst_1)
+  (emit 'ixor))  ;; 1 -> 0 && 0 -> 1: in other words, negate the low bit
+
+(defknown emit-unbox-character () t)
+(defun emit-unbox-character ()
+  (cond ((> *safety* 0)
+         (emit-invokestatic +lisp-character-class+ "getValue"
+                            (lisp-object-arg-types 1) "C"))
+        (t
+         (emit 'checkcast +lisp-character-class+)
+         (emit 'getfield +lisp-character-class+ "value" "C"))))
+
 ;;                     source type /
 ;;                         targets   :boolean :char    :int :long :float :double
-(defvar rep-conversion '((:boolean . #( NIL    :err    :err  :err  :err   :err))
+(defvar rep-conversion `((NIL      . #( ,#'emit-unbox-boolean
+                                        ,#'emit-unbox-character
+                                       "intValue" "longValue"
+                                       "floatValue" "doubleValue"))
+                         (:boolean . #( NIL    :err    :err  :err  :err   :err))
                          (:char    . #(  1     NIL     :err  :err  :err   :err))
                          (:int     . #(  1     :err     NIL  i2l   i2f    i2d))
                          (:long    . #(  1     :err     l2i  NIL   l2f    l2d))
@@ -576,11 +624,16 @@ to a value on the stack in the `out' representation."
     (when op
       ;; Convert from one internal representation into another
       (assert (neq op :err))
-      (if (eql op 1)
-          (progn
-            (emit-move-from-stack nil in)
-            (emit 'iconst_1))
-          (emit op)))))
+      (cond ((eql op 1)
+             (emit-move-from-stack nil in)
+             (emit 'iconst_1))
+            ((functionp op)
+             (funcall op))
+            ((stringp op)
+             (emit-invokevirtual +lisp-object-class+ op nil
+                                 (cdr (assoc out rep-arg-chars))))
+            (t
+             (emit op))))))
 
 (defvar common-representations '((:int :long :long)
                                  (:int :float :double)
@@ -858,15 +911,6 @@ before the emitted code: the code is 'stack-neutral'."
          (emit 'checkcast +lisp-fixnum-class+)
          (emit 'getfield +lisp-fixnum-class+ "value" "I"))))
 
-(defknown emit-unbox-character () t)
-(defun emit-unbox-character ()
-  (cond ((> *safety* 0)
-         (emit-invokestatic +lisp-character-class+ "getValue"
-                            (lisp-object-arg-types 1) "C"))
-        (t
-         (emit 'checkcast +lisp-character-class+)
-         (emit 'getfield +lisp-character-class+ "value" "C"))))
-
 (defknown emit-unbox-long () t)
 (defun emit-unbox-long ()
   (emit-invokestatic +lisp-bignum-class+ "longValue"
@@ -891,12 +935,6 @@ before the emitted code: the code is 'stack-neutral'."
         (t
          (emit 'checkcast +lisp-double-float-class+)
          (emit 'getfield +lisp-double-float-class+ "value" "D"))))
-
-(defknown emit-unbox-boolean () t)
-(defun emit-unbox-boolean ()
-  (emit 'instanceof +lisp-nil-class+)
-  (emit 'iconst_1)
-  (emit 'ixor))  ;; 1 -> 0 && 0 -> 1: in other words, negate the low bit
 
 (defknown fix-boxing (t t) t)
 (defun fix-boxing (required-representation derived-type)
@@ -4239,22 +4277,57 @@ given a specific common representation.")
             (allocate-register))))
 
 (defun emit-move-to-variable (variable)
+  (let ((representation (variable-representation variable)))
+    (flet ((emit-array-store (representation)
+             (emit (or (case representation
+                         ((:int :boolean :char)
+                                  'iastore)
+                         (:long   'lastore)
+                         (:float  'fastore)
+                         (:double 'dastore))
+                       'aastore))))
+      (cond ((variable-register variable)
+             (emit (or (case (variable-representation variable)
+                         ((:int :boolean :char)
+                                  'istore)
+                         (:long   'lstore)
+                         (:float  'fstore)
+                         (:double 'dstore))
+                       'astore)
+                   (variable-register variable)))
+            ((variable-index variable)
+             (aload (compiland-argument-register *current-compiland*))
+             (emit-swap representation nil)
+             (emit-push-constant-int (variable-index variable))
+             (emit-swap representation :int)
+             (emit-array-store (variable-representation variable)))
+            ((variable-closure-index variable)
+             (aload (compiland-closure-register *current-compiland*))
+             (emit-swap representation nil)
+             (emit-push-constant-int (variable-closure-index variable))
+             (emit-swap representation :int)
+             (emit-array-store (variable-representation variable)))
+            (t
+             ;;###FIXME: We might want to address the "temp-register" case too.
+             (assert nil))))))
+
+(defun emit-push-variable (variable)
   (flet ((emit-array-store (representation)
            (emit (or (case representation
                        ((:int :boolean :char)
-                                'iastore)
-                       (:long   'lastore)
-                       (:float  'fastore)
-                       (:double 'dastore))
-                   'aastore))))
+                                'iaload)
+                       (:long   'laload)
+                       (:float  'faload)
+                       (:double 'daload))
+                   'aaload))))
     (cond ((variable-register variable)
            (emit (or (case (variable-representation variable)
                        ((:int :boolean :char)
-                                'istore)
-                       (:long   'lstore)
-                       (:float  'fstore)
-                       (:double 'dstore))
-                     'astore)
+                                'iload)
+                       (:long   'lload)
+                       (:float  'fload)
+                       (:double 'dload))
+                     'aload)
                  (variable-register variable)))
           ((variable-index variable)
            (aload (compiland-argument-register *current-compiland*))
@@ -7536,44 +7609,13 @@ value for use with derive-type-minus.")
         (let ((variable (var-ref-variable ref)))
           (cond ((variable-special-p variable)
                  (compile-special-reference (variable-name variable) target representation))
-                ((eq (variable-representation variable) :int)
-                 (aver (variable-register variable))
-                 (emit 'iload (variable-register variable))
-                 (convert-representation :int representation)
-                 (emit-move-from-stack target representation))
-                ((eq (variable-representation variable) :char)
-                 (aver (variable-register variable))
-                 (emit 'iload (variable-register variable))
-                 (convert-representation :char representation)
-                 (emit-move-from-stack target representation))
-                ((eq (variable-representation variable) :long)
-                 (aver (variable-register variable))
-                 (emit 'lload (variable-register variable))
-                 (convert-representation :long representation)
-                 (emit-move-from-stack target representation))
-                ((eq (variable-representation variable) :boolean)
-                 (aver (variable-register variable))
-                 (aver (or (null representation) (eq representation :boolean)))
-                 (emit 'iload (variable-register variable))
-                 (convert-representation :boolean representation)
-                 (emit-move-from-stack target representation))
-                ((variable-register variable)
-                 (aload (variable-register variable))
-                 (fix-boxing representation (variable-derived-type variable))
-                 (emit-move-from-stack target representation))
-                ((variable-closure-index variable)
-                 (aver (not (null (compiland-closure-register *current-compiland*))))
-                 (aload (compiland-closure-register *current-compiland*))
-                 (emit-push-constant-int (variable-closure-index variable))
-                 (emit 'aaload)
-                 (fix-boxing representation (derive-type ref))
-                 (emit-move-from-stack target representation))
-                ((variable-index variable)
-                 (aver (not (null (compiland-argument-register *current-compiland*))))
-                 (aload (compiland-argument-register *current-compiland*))
-                 (emit-push-constant-int (variable-index variable))
-                 (emit 'aaload)
-                 (fix-boxing representation (variable-derived-type variable))
+                ((or (variable-representation variable)
+                     (variable-register variable)
+                     (variable-closure-index variable)
+                     (variable-index variable))
+                 (emit-push-variable variable)
+                 (convert-representation (variable-representation variable)
+                                         representation)
                  (emit-move-from-stack target representation))
                 (t
                  (sys::%format t "compile-var-ref general case~%")
@@ -7700,53 +7742,16 @@ value for use with derive-type-minus.")
            (when target
              (convert-representation :int representation)
              (emit-move-from-stack target representation)))
-          ((eq (variable-representation variable) :int)
-           (dformat t "p2-setq :int case value-form = ~S~%"
-                    value-form)
-	   (compile-forms-and-maybe-emit-clear-values value-form 'stack :int)
-           (when target
-             (emit 'dup))
-           (emit 'istore (variable-register variable))
-           (when target
-             ;; int on stack here
-             (convert-representation :int representation)
-             (emit-move-from-stack target representation)))
-          ((eq (variable-representation variable) :char)
-           (dformat t "p2-setq :char case~%")
-	   (compile-forms-and-maybe-emit-clear-values value-form 'stack :char)
-           (when target
-             (emit 'dup))
-           (emit 'istore (variable-register variable))
-           (when target
-             ;; char on stack here
-             (convert-representation :char representation)
-             (emit-move-from-stack target representation)))
-          ((eq (variable-representation variable) :long)
-	   (compile-forms-and-maybe-emit-clear-values value-form 'stack :long)
-           (when target
-             (emit 'dup2))
-           (emit 'lstore (variable-register variable))
-           (when target
-             ;; long on stack here
-             (convert-representation :long representation)
-             (emit-move-from-stack target representation)))
-          ((eq (variable-representation variable) :boolean)
-	   (compile-forms-and-maybe-emit-clear-values value-form 'stack :boolean)
-           (when target
-             (emit 'dup))
-           (emit 'istore (variable-register variable))
-           (when target
-             ;; int on stack here
-             (convert-representation :boolean representation)
-             (emit-move-from-stack target representation)))
           (t
-	   (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
-           (when target
-             (emit 'dup))
-           (emit 'var-set variable)
-           (when target
-             (fix-boxing representation nil)
-             (emit-move-from-stack target representation))))))
+           (let ((rep (variable-representation variable)))
+             (dformat t "p2-setq ~A case value-form = ~S~%" rep value-form)
+             (compile-forms-and-maybe-emit-clear-values value-form 'stack rep)
+             (when target
+               (emit-dup rep))
+             (emit-move-to-variable variable)
+             (when target
+               (convert-representation rep representation)
+               (emit-move-from-stack target representation)))))))
 
 (defun p2-sxhash (form target representation)
   (cond ((check-arg-count form 1)
