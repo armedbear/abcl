@@ -1473,36 +1473,6 @@ representation, based on the derived type of the LispObject."
 ;;         (print-code))
       max-stack)))
 
-(defun resolve-variables ()
-  (let ((code (nreverse *code*)))
-    (setf *code* nil)
-    (dolist (instruction code)
-      (case (instruction-opcode instruction)
-        (207 ; VAR-SET
-         (let ((variable (car (instruction-args instruction))))
-           (aver (variable-p variable))
-           (aver (not (variable-special-p variable)))
-           (cond ((variable-register variable)
-                  (dformat t "register = ~S~%" (variable-register variable))
-                  (astore (variable-register variable)))
-                 ((variable-closure-index variable)
-                  (dformat t "closure-index = ~S~%" (variable-closure-index variable))
-                  (aver (not (null (compiland-closure-register *current-compiland*))))
-                  (aload (compiland-closure-register *current-compiland*))
-                  (emit 'swap) ; array value
-                  (emit-push-constant-int (variable-closure-index variable))
-                  (emit 'swap) ; array index value
-                  (emit 'aastore))
-                 (t
-                  (dformat t "var-set fall-through case~%")
-                  (aver (not (null (compiland-argument-register *current-compiland*))))
-                  (aload (compiland-argument-register *current-compiland*)) ; Stack: value array
-                  (emit 'swap) ; array value
-                  (emit-push-constant-int (variable-index variable)) ; array value index
-                  (emit 'swap) ; array index value
-                  (emit 'aastore)))))
-        (t
-         (push instruction *code*))))))
 
 (defun finalize-code ()
   (setf *code* (nreverse (coerce *code* 'vector))))
@@ -5034,7 +5004,7 @@ given a specific common representation.")
       (emit-invokestatic +lisp-class+ "makeCompiledClosure"
 			 (list +lisp-object+ +lisp-object-array+)
 			 +lisp-object+)))
-  (emit 'var-set (local-function-variable local-function)))
+  (emit-move-to-variable (local-function-variable local-function)))
 
 (defmacro with-temp-class-file (pathname class-file lambda-list &body body)
   `(let* ((,pathname (make-temp-file))
@@ -8348,24 +8318,12 @@ value for use with derive-type-minus.")
                (not (variable-special-p variable))
                (not (variable-used-non-locally-p variable))
                (zerop (compiland-children *current-compiland*)))
-      (let ((type (variable-declared-type variable)))
-        (cond ((fixnum-type-p type)
-               (aload register)
-               (emit-unbox-fixnum)
-               (emit 'istore register)
-               (setf (variable-representation variable) :int))
-              ((java-long-type-p type)
-               (let ((new-register (allocate-register-pair)))
-                 (aload register)
-                 (emit-invokevirtual +lisp-object-class+ "longValue" nil "J")
-                 (emit 'lstore new-register)
-                 (setf (variable-register variable) new-register)
-                 (setf (variable-representation variable) :long)))
-              ((eq type 'CHARACTER)
-               (aload register)
-               (emit-unbox-character)
-               (emit 'istore register)
-               (setf (variable-representation variable) :char))))))
+      (emit-push-variable variable)
+      (derive-variable-representation variable nil) ;; nil == no block
+      (when (< 1 (representation-size (variable-representation variable)))
+        (allocate-variable-register variable))
+      (convert-representation nil (variable-representation variable))
+      (emit-move-to-variable variable)))
   t)
 
 (defknown p2-compiland (t) t)
@@ -8601,8 +8559,6 @@ value for use with derive-type-minus.")
       (emit-push-nil))
 
     (emit 'areturn)
-
-    (resolve-variables)
 
     ;; Warn if any unused args. (Is this the right place?)
     (check-for-unused-variables (compiland-arg-vars compiland))
