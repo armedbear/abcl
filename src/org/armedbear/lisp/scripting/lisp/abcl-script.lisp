@@ -95,13 +95,28 @@
     `((funcall ,function))))
 
 (defun compile-script (code-string)
-  (eval 
-   `(compile
-     nil
-     (lambda ()
-       ,@(let ((*package* (find-package :abcl-script-user)))
-	      (read-from-string (concatenate 'string "(" code-string ")")))))))
-
+  (if *compile-using-temp-files*
+      (let* ((tmp-file (jstatic (jmethod "java.io.File" "createTempFile" "java.lang.String" "java.lang.String")
+				nil "abcl-src-file-" ".lisp"))
+	     (tmp-file-path (jcall (jmethod "java.io.File" "getAbsolutePath") tmp-file)))
+	(jcall (jmethod "java.io.File" "deleteOnExit") tmp-file) ;to be really-really-really sure...
+	(unwind-protect
+	     (progn
+	       (with-open-file (stream tmp-file-path :direction :output :if-exists :overwrite)
+		 (prin1 code-string stream)
+		 (finish-output stream))
+	       (let ((compiled-file (compile-file tmp-file-path)))
+		 (jcall (jmethod "java.io.File" "deleteOnExit")
+			(jnew (jconstructor "java.io.File" "java.lang.String")
+			      (namestring compiled-file)))
+		 (lambda () (load compiled-file))))
+	  (delete-file tmp-file-path)))
+      (eval 
+       `(compile
+	 nil
+	 (lambda ()
+	   ,@(let ((*package* (find-package :abcl-script-user)))
+		  (read-from-string (concatenate 'string "(" code-string ")"))))))))
 
 ;;Java interface implementation
 

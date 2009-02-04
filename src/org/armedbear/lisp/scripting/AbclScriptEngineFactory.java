@@ -28,7 +28,7 @@ import javax.script.ScriptEngineFactory;
 
 public class AbclScriptEngineFactory implements ScriptEngineFactory {
 
-	private static final AbclScriptEngine THE_ONLY_ONE_ENGINE = new AbclScriptEngine(true);
+    private static final AbclScriptEngine THE_ONLY_ONE_ENGINE = new AbclScriptEngine();
 	
 	@Override
 	public String getEngineName() {

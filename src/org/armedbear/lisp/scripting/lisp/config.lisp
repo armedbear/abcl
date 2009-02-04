@@ -31,7 +31,7 @@
 
 (in-package :abcl-script)
 
-(defparameter *abcl-debug* nil)
+(defparameter *launch-swank-at-startup* nil)
 
 (defparameter *swank-dir* nil)
 
@@ -39,7 +39,9 @@
 
 (defparameter *use-throwing-debugger* t)
 
-(defparameter *compile-using-temp-files* nil)
+(defparameter *compile-using-temp-files* t)
+
+;(defparameter *compiler-temp-dir* #P".abcl.d/tmp/")
 
 (defconstant +standard-debugger-hook+ *debugger-hook*)
 
@@ -48,7 +50,7 @@
 	(if *use-throwing-debugger*
 	    #'sys::%debugger-hook-function
 	    +standard-debugger-hook+))
-  (when *abcl-debug*
+  (when *launch-swank-at-startup*
     (unless *swank-dir*
       (error "Swank directory not specified, please set *swank-dir*"))
     (pushnew *swank-dir* asdf:*central-registry* :test #'equal)

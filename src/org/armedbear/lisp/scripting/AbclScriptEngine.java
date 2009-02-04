@@ -43,18 +43,6 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	private Function evalScript;
 	private Function compileScript;
 	private Function evalCompiledScript;
-	private boolean configured = false;
-
-	public AbclScriptEngine(boolean enableThrowingDebugger) {
-		this();
-		if (enableThrowingDebugger) {
-			try {
-				installThrowingDebuggerHook(LispThread.currentThread());
-			} catch (ConditionThrowable e) {
-				throw new InternalError("Can't set throwing debugger hook!");
-			}
-		}
-	}
 
 	public AbclScriptEngine() {
 		interpreter = Interpreter.createInstance();
@@ -76,11 +64,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 			throw new RuntimeException(e);
 		}
 	}
-	
-	public boolean isConfigured() {
-		return configured;
-	}
-	
+		
 	public Interpreter getInterpreter() {
 		return interpreter;
 	}
