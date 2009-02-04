@@ -1892,7 +1892,8 @@ representation, based on the derived type of the LispObject."
       (emit-push-nil)))
 
 (defun make-constructor (super lambda-name args)
-  (let* ((*compiler-debug* nil) ; We don't normally need to see debugging output for constructors.
+  (let* ((*compiler-debug* nil)
+         ;; We don't normally need to see debugging output for constructors.
          (constructor (make-method :name "<init>"
                                    :descriptor "()V"))
          (*code* ())
@@ -2169,7 +2170,7 @@ representation, based on the derived type of the LispObject."
      (setf g (format nil "FIXNUM_~A~D"
 		     (if (minusp n) "MINUS_" "")
 		     (abs n)))
-     (declare-field g +lisp-fixnum+)
+     (declare-field g +lisp-integer+)
      (cond ((<= 0 n 255)
 	    (emit 'getstatic +lisp-fixnum-class+ "constants" +lisp-fixnum-array+)
 	    (emit-push-constant-int n)
@@ -2177,7 +2178,7 @@ representation, based on the derived type of the LispObject."
 	   (t
 	    (emit-push-constant-int n)
             (convert-representation :int nil)))
-     (emit 'putstatic *this-class* g +lisp-fixnum+)
+     (emit 'putstatic *this-class* g +lisp-integer+)
      (setf *static-code* *code*)
      (setf (gethash n ht) g))))
 
@@ -2185,31 +2186,26 @@ representation, based on the derived type of the LispObject."
 (defun declare-bignum (n)
   (declare-with-hashtable
    n *declared-integers* ht g
-   (cond ((<= most-negative-java-long n most-positive-java-long)
-	  (let ((*code* *static-code*))
-	    (setf g (format nil "BIGNUM_~A~D"
-			    (if (minusp n) "MINUS_" "")
-			    (abs n)))
-	    (declare-field g +lisp-bignum+)
-	    (emit 'new +lisp-bignum-class+)
-	    (emit 'dup)
+   (setf g (concatenate 'string "BIGNUM_" (symbol-name (gensym))))
+   (let ((*code* *static-code*))
+     (declare-field g +lisp-integer+)
+     (emit 'new +lisp-bignum-class+)
+     (emit 'dup)
+     (cond ((<= most-negative-java-long n most-positive-java-long)
+;;	    (setf g (format nil "BIGNUM_~A~D"
+;;			    (if (minusp n) "MINUS_" "")
+;;			    (abs n)))
 	    (emit 'ldc2_w (pool-long n))
-	    (emit-invokespecial-init +lisp-bignum-class+ '("J"))
-	    (emit 'putstatic *this-class* g +lisp-bignum+)
-	    (setf *static-code* *code*)))
+	    (emit-invokespecial-init +lisp-bignum-class+ '("J")))
 	 (t
 	  (let* ((*print-base* 10)
-		 (s (with-output-to-string (stream) (dump-form n stream)))
-		 (*code* *static-code*))
-	    (setf g (concatenate 'string "BIGNUM_" (symbol-name (gensym))))
-	    (declare-field g +lisp-bignum+)
-	    (emit 'new +lisp-bignum-class+)
-	    (emit 'dup)
+		 (s (with-output-to-string (stream) (dump-form n stream))))
 	    (emit 'ldc (pool-string s))
 	    (emit-push-constant-int 10)
-	    (emit-invokespecial-init +lisp-bignum-class+ (list +java-string+ "I"))
-	    (emit 'putstatic *this-class* g +lisp-bignum+)
-	    (setf *static-code* *code*))))
+	    (emit-invokespecial-init +lisp-bignum-class+
+                                     (list +java-string+ "I")))))
+     (emit 'putstatic *this-class* g +lisp-integer+)
+     (setf *static-code* *code*))
    (setf (gethash n ht) g)))
 
 (defknown declare-float (single-float) string)
@@ -2375,7 +2371,7 @@ representation, based on the derived type of the LispObject."
      (cond ((fixnump form)
             (emit-push-constant-int form))
            ((integerp form)
-            (emit 'getstatic *this-class* (declare-bignum form) +lisp-bignum+)
+            (emit 'getstatic *this-class* (declare-bignum form) +lisp-integer+)
             (emit-invokevirtual +lisp-object-class+ "intValue" nil "I"))
            (t
             (sys::%format t "compile-constant int representation~%")
@@ -2386,7 +2382,7 @@ representation, based on the derived type of the LispObject."
      (cond ((<= most-negative-java-long form most-positive-java-long)
             (emit-push-constant-long form))
            ((integerp form)
-            (emit 'getstatic *this-class* (declare-bignum form) +lisp-bignum+)
+            (emit 'getstatic *this-class* (declare-bignum form) +lisp-integer+)
             (emit-invokevirtual +lisp-object-class+ "longValue" nil "J"))
            (t
             (sys::%format t "compile-constant long representation~%")
@@ -2438,10 +2434,11 @@ representation, based on the derived type of the LispObject."
                               (-1 "MINUS_ONE"))))
            (if translation
                (emit 'getstatic +lisp-fixnum-class+ translation +lisp-fixnum+)
-               (emit 'getstatic *this-class* (declare-fixnum form) +lisp-fixnum+))))
+               (emit 'getstatic *this-class* (declare-fixnum form)
+                     +lisp-integer+))))
         ((integerp form)
          ;; A bignum.
-         (emit 'getstatic *this-class* (declare-bignum form) +lisp-bignum+))
+         (emit 'getstatic *this-class* (declare-bignum form) +lisp-integer+))
         ((typep form 'single-float)
          (emit 'getstatic *this-class*
                (declare-float form) +lisp-single-float+))
