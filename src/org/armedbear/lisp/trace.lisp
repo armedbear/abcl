@@ -35,14 +35,9 @@
 
 (require "FORMAT")
 
-;;(require "CLOS")
-
 (defvar *trace-info-hashtable* (make-hash-table :test #'equal))
 
 (defstruct trace-info name untraced-function breakp)
-
-;;(defmethod make-load-form ((object trace-info) &optional environment)
-;;   (make-load-form-saving-slots object :environment environment))
 
 (defvar *trace-depth* 0)
 
