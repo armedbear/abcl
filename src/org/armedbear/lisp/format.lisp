@@ -255,6 +255,7 @@
 
 (eval-when (:compile-toplevel :execute)
     ;; the code below needs to its floats to be read as long-floats
+    (defvar *saved-default-float-format* *read-default-float-format*)
     (setf *read-default-float-format* 'double-float))
 
 (defun scale-exponent (original-x)
@@ -2871,5 +2872,10 @@
              (apply (fdefinition symbol) stream (next-arg) colonp atsignp (args)))))
 
 (setf sys::*simple-format-function* #'format)
+
+(eval-when (:compile-toplevel :execute)
+    ;; the code below needs to its floats to be read as long-floats
+    (setf *read-default-float-format* *saved-default-float-format*))
+
 
 (provide 'format)
