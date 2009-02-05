@@ -4230,9 +4230,10 @@ given a specific common representation.")
                                        (or (find-variable name
                                                           (block-vars block))
                                            (find-visible-variable name)))))
-             (derive-variable-representation limit-variable block)
-             (setf (variable-representation variable)
-                   (variable-representation limit-variable)))))))
+             (when limit-variable
+               (derive-variable-representation limit-variable block)
+               (setf (variable-representation variable)
+                     (variable-representation limit-variable))))))))
 
 (defun allocate-variable-register (variable)
   (setf (variable-register variable)
