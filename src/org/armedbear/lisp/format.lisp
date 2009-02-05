@@ -253,33 +253,28 @@
            (concatenate 'string (subseq s 0 index) "." (subseq s index))))))
 
 
-(eval-when (:compile-toplevel :execute)
-    ;; the code below needs to its floats to be read as long-floats
-    (defvar *saved-default-float-format* *read-default-float-format*)
-    (setf *read-default-float-format* 'double-float))
-
 (defun scale-exponent (original-x)
   (let* ((x (coerce original-x 'long-float)))
     (multiple-value-bind (sig exponent) (decode-float x)
       (declare (ignore sig))
-      (if (= x 0.0e0)
-	  (values (float 0.0e0 original-x) 1)
+      (if (= x 0.0l0)
+	  (values (float 0.0l0 original-x) 1)
 	  (let* ((ex (locally (declare (optimize (safety 0)))
                        (the fixnum
-                            (round (* exponent (log 2e0 10))))))
+                            (round (* exponent (log 2l0 10))))))
 		 (x (if (minusp ex)
 			(if (float-denormalized-p x)
-			    (* x 1.0e16 (expt 10.0e0 (- (- ex) 16)))
-			    (* x 10.0e0 (expt 10.0e0 (- (- ex) 1))))
-			(/ x 10.0e0 (expt 10.0e0 (1- ex))))))
-	    (do ((d 10.0e0 (* d 10.0e0))
+			    (* x 1.0l16 (expt 10.0l0 (- (- ex) 16)))
+			    (* x 10.0l0 (expt 10.0l0 (- (- ex) 1))))
+			(/ x 10.0l0 (expt 10.0l0 (1- ex))))))
+	    (do ((d 10.0l0 (* d 10.0l0))
 		 (y x (/ x d))
 		 (ex ex (1+ ex)))
-		((< y 1.0e0)
-		 (do ((m 10.0e0 (* m 10.0e0))
+		((< y 1.0l0)
+		 (do ((m 10.0l0 (* m 10.0l0))
 		      (z y (* y m))
 		      (ex ex (1- ex)))
-		     ((>= z 0.1e0)
+		     ((>= z 0.1l0)
 		      (values (float z original-x) ex))
                    (declare (long-float m) (integer ex))))
               (declare (long-float d))))))))
@@ -2872,10 +2867,6 @@
              (apply (fdefinition symbol) stream (next-arg) colonp atsignp (args)))))
 
 (setf sys::*simple-format-function* #'format)
-
-(eval-when (:compile-toplevel :execute)
-    ;; the code below needs to its floats to be read as long-floats
-    (setf *read-default-float-format* *saved-default-float-format*))
 
 
 (provide 'format)
