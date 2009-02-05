@@ -610,6 +610,9 @@ of the internal representations.")
 (defun convert-representation (in out)
   "Converts the value on the stack in the `in' representation
 to a value on the stack in the `out' representation."
+  (when (eql in out)
+    ;; no-op
+    (return-from convert-representation))
   (when (null out)
     ;; Convert back to a lisp object
     (when in
