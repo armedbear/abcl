@@ -35,14 +35,14 @@
 
 (require "FORMAT")
 
-(require "CLOS")
+;;(require "CLOS")
 
 (defvar *trace-info-hashtable* (make-hash-table :test #'equal))
 
 (defstruct trace-info name untraced-function breakp)
 
-(defmethod make-load-form ((object trace-info) &optional environment)
-   (make-load-form-saving-slots object :environment environment))
+;;(defmethod make-load-form ((object trace-info) &optional environment)
+;;   (make-load-form-saving-slots object :environment environment))
 
 (defvar *trace-depth* 0)
 
@@ -89,21 +89,23 @@
       (with-standard-io-syntax
         (let ((*print-readably* nil)
               (*print-structure* nil))
-          (format *trace-output* (indent "~D: ~S~%") *trace-depth*
+          (%format *trace-output* (indent "~D: ~S~%") *trace-depth*
                   (cons name args))))
       (when breakp
         (break))
       (incf *trace-depth*)
-      (let ((results (multiple-value-list (apply untraced-function args))))
-        (decf *trace-depth*)
+      (let ((results (multiple-value-list
+                      (unwind-protect
+                           (apply untraced-function args)
+                        (decf *trace-depth*)))))
         (with-standard-io-syntax
           (let ((*print-readably* nil)
                 (*print-structure* nil))
-            (format *trace-output* (indent "~D: ~A returned") *trace-depth* name)
+            (%format *trace-output* (indent "~D: ~A returned") *trace-depth* name)
             (if results
                 (dolist (result results)
-                  (format *trace-output* " ~S" result))
-                (format *trace-output* " no values"))
+                  (%format *trace-output* " ~S" result))
+                (%format *trace-output* " no values"))
             (terpri *trace-output*)))
         (values-list results)))))
 
