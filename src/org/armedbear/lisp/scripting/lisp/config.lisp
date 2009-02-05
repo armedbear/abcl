@@ -41,8 +41,6 @@
 
 (defparameter *compile-using-temp-files* t)
 
-;(defparameter *compiler-temp-dir* #P".abcl.d/tmp/")
-
 (defconstant +standard-debugger-hook+ *debugger-hook*)
 
 (defun configure-abcl ()

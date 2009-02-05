@@ -57,6 +57,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 			    loadFromClasspath("/abcl-script-config.lisp");
 			}
 			interpreter.eval("(abcl-script:configure-abcl)");
+			System.out.println("ABCL: configured");
 			evalScript = (Function) this.findSymbol("EVAL-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
 			compileScript = (Function) this.findSymbol("COMPILE-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
 			evalCompiledScript = (Function) this.findSymbol("EVAL-COMPILED-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();

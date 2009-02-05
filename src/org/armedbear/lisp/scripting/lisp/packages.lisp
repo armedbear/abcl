@@ -31,7 +31,6 @@
 (defpackage :abcl-script
   (:use :cl :java)
   (:export 
-   #:*abcl-debug*
    #:eval-script
    #:compile-script
    #:*compile-using-temp-files*
@@ -39,6 +38,7 @@
    #:eval-compiled-script
    #:define-java-interface-implementation
    #:find-java-interface-implementation
+   #:*launch-swank-at-startup*
    #:register-java-interface-implementation
    #:remove-java-interface-implementation
    #:+standard-debugger-hook+
