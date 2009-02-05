@@ -2023,7 +2023,8 @@ representation, based on the derived type of the LispObject."
 (defknown declare-field (t t) t)
 (defun declare-field (name descriptor)
   (let ((field (make-field name descriptor)))
-    (setf (field-access-flags field) (logior #x8 #x2)) ; private static
+    ;; final private static
+    (setf (field-access-flags field) (logior #x10 #x8 #x2))
     (setf (field-name-index field) (pool-name (field-name field)))
     (setf (field-descriptor-index field) (pool-name (field-descriptor field)))
     (push field *fields*)))
