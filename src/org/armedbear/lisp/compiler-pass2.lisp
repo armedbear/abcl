@@ -6206,36 +6206,6 @@ given a specific common representation.")
         (return-from derive-type-%ldb (list 'INTEGER 0 (1- (expt 2 size-arg)))))))
   (list 'INTEGER 0 '*))
 
-(defmacro when-args-integer (args typenames decls &body body)
-  "Checks types of the args provided, if all args are
-integer, splits them into high/low bytes and invokes the body.
-
-args contains the arguments for which the type check is done.
-typenames contains names of variables to which the type, low byte
-and high byte of the provided arg is stored, to be used in
-the body.
-decls contains declarations used in the body, similar to let.
-body is the body to invoke. "
-  (labels ((build-let-when (body args typenames)
-	   (when args
-	     (let ((type (third typenames))
-		   (low (second typenames))
-		   (high (first typenames)))
-	       (setf body 
-		     `(let ((,type (derive-compiler-type ,(first args))))
-			(when (integer-type-p ,type)
-			  (let ((,low (integer-type-low ,type))
-				(,high (integer-type-high ,type)))
-			    ,body)))))
-	     (let ((tmpbody 
-		    (build-let-when body (cdr args) (cdddr typenames))))
-	       (if tmpbody
-		   tmpbody
-		   body)))))
-    (build-let-when 
-     `(let (,@decls) ,@body)
-     (reverse args) (reverse typenames))))
-
 
 (defmacro define-int-bounds-derivation (name (low1 high1 low2 high2)
                                         &body body)
@@ -6245,7 +6215,6 @@ operator `name', assuming 2 integer arguments."
          #'(lambda (,low1 ,high1 ,low2 ,high2)
              (declare (ignorable ,low1 ,high1 ,low2 ,high2))
              ,@body)))
-
 
 (defun derive-integer-type (op type1 type2)
   "Derives the composed integer type of operation `op' given integer
@@ -6279,6 +6248,8 @@ types `type1' and `type2'."
      (single-float double-float double-float)
      (double-float integer double-float)
      (double-float single-float double-float))
+    ((ash)
+     (integer integer ,#'derive-integer-type))
     ((min max)
      (integer integer ,#'derive-integer-type)
      (integer single-float single-float)
@@ -6385,27 +6356,21 @@ value for use with derive-type-minus.")
 
 (declaim (ftype (function (t) t) derive-type-max))
 (defun derive-type-max (form)
-  (dolist (arg (cdr form) (make-compiler-type 'FIXNUM))
-    (unless (fixnum-type-p (derive-compiler-type arg))
-      (return t))))
+  (let ((op (car form))
+        (args (cdr form)))
+    (flet ((combine (x y)
+             (derive-type-numeric-op op x y)))
+      (reduce #'combine (cdr args)
+              :initial-value (car args)))))
 
 (defknown derive-type-min (t) t)
 (defun derive-type-min (form)
-  (let ((args (cdr form))
-        (result-type t))
-    (when (= (length form) 3)
-      (when-args-integer 
-       ((%car args) (%cadr args))
-       (type1 low1 high1 type2 low2 high2)
-       (low high)
-       (setf low (if (and low1 low2)
-		     (min low1 low2)
-		     nil)
-	     high (if (and high1 high2)
-		      (min high1 high2)
-		      nil))
-       (setf result-type (%make-integer-type low high))))
-    result-type))
+  (let ((op (car form))
+        (args (cdr form)))
+    (flet ((combine (x y)
+             (derive-type-numeric-op op x y)))
+      (reduce #'combine (cdr args)
+              :initial-value (car args)))))
 
 ;; read-char &optional input-stream eof-error-p eof-value recursive-p => char
 (declaim (ftype (function (t) t) derive-type-read-char))
@@ -6414,40 +6379,26 @@ value for use with derive-type-minus.")
       'CHARACTER
       t))
 
+
+(define-int-bounds-derivation ash (low1 high1 low2 high2)
+  (when (and low1 high1 low2 high2)
+    (cond
+      ((and (>= low1 0) (>= high1 0) (>= low2 0) (>= high2 0))
+       ;; Everything is non-negative.
+       (values (ash low1 low2)
+               (unless (<= 64 high2)
+                 (ash high1 high2))))
+      ((and (>= low1 0) (>= high1 0) (<= low2 0) (<= high2 0))
+       ;; Negative (or zero) second argument.
+       (values (ash low1 low2)
+               (ash high1 high2))))))
+
 ;; ash integer count => shifted-integer
 (defknown derive-type-ash (t) t)
 (defun derive-type-ash (form)
-  (let* ((args (cdr form))
-         (arg1 (first args))
-         (arg2 (second args))
-         (result-type 'INTEGER))
-    (when-args-integer 
-     (arg1 arg2)
-     (type1 low1 high1 type2 low2 high2)
-     ()
-     (when (and low1 high1 low2 high2)
-       (cond ((fixnum-constant-value type2)
-	      (setf arg2 (fixnum-constant-value type2))
-	      (cond ((<= -64 arg2 64)
-		     (setf result-type
-			   (list 'INTEGER (ash low1 arg2) (ash high1 arg2))))
-		    ((minusp arg2)
-		     (setf result-type
-			   (list 'INTEGER
-				 (if (minusp low1) -1 0)
-				 (if (minusp high1) -1 0))))))
-	     ((and (>= low1 0) (>= high1 0) (>= low2 0) (>= high2 0))
-	      ;; Everything is non-negative.
-	      (setf result-type (list 'INTEGER
-				      (ash low1 low2)
-                                      (if (<= 64 high2)
-                                          '* (ash high1 high2)))))
-	     ((and (>= low1 0) (>= high1 0) (<= low2 0) (<= high2 0))
-	      ;; Negative (or zero) second argument.
-	      (setf result-type (list 'INTEGER
-				      (ash low1 low2)
-				      (ash high1 high2)))))))
-    (make-compiler-type result-type)))
+  (derive-type-numeric-op (car form)
+                          (derive-compiler-type (cadr form))
+                          (derive-compiler-type (caddr form))))
 
 (defknown derive-type (t) t)
 (defun derive-type (form)
