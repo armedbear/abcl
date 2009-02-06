@@ -412,10 +412,18 @@
     (t (emit 'ldc2_w (pool-double n)))))
 
 (defknown emit-dup (symbol) t)
-(defun emit-dup (representation)
-  (ecase (representation-size representation)
-    (1 (emit 'dup))
-    (2 (emit 'dup2))))
+(defun emit-dup (representation &key (past nil past-supplied-p))
+  "Emits the 'dup' instruction required to duplicate `representation'.
+
+If `past' is specified, the newly duplicated value is inserted on the
+stack past the top-most value, which is assumed to be of the representation
+passed in `past'."
+  (emit
+   (nth (if past-supplied-p
+            (representation-size past) 0)
+        (ecase (representation-size representation)
+          (1 '(dup  dup_x1  dup_x2))
+          (2 '(dup2 dup2_x1 dup2_x2))))))
 
 (defknown emit-swap (symbol symbol) t)
 (defun emit-swap (rep1 rep2)
@@ -4964,7 +4972,7 @@ given a specific common representation.")
     (compile-form (%car args) 'stack nil)
     (compile-form (%cadr args) 'stack nil)
     (when target
-      (emit 'dup_x1))
+      (emit-dup nil :past nil))
     (emit-invokevirtual +lisp-object-class+
                         (if (eq op 'sys:set-car) "setCar" "setCdr")
                         (lisp-object-arg-types 1)
@@ -5630,7 +5638,7 @@ given a specific common representation.")
 	   (compile-forms-and-maybe-emit-clear-values size-arg 'stack :int
 						      position-arg 'stack :int
 						      arg3 'stack nil)
-           (emit 'dup_x2)
+           (emit 'dup_x2) ;; use not supported by emit-dup: 3 values involved
            (emit 'pop)
            (emit-invokevirtual +lisp-object-class+ "LDB" '("I" "I") +lisp-object+)
            (fix-boxing representation nil)
@@ -6767,8 +6775,7 @@ value for use with derive-type-minus.")
                     (compile-form arg1 'stack common-rep)
                     (emit-dup common-rep)
                     (compile-form arg2 'stack common-rep)
-                    (emit (if (eq common-rep :long)
-                              'dup2_x2 'dup_x1))
+                    (emit-dup common-rep :past common-rep)
                     (emit-numeric-comparison (if (eq op 'max) '<= '>=)
                                              common-rep LABEL1)
                     (emit-swap common-rep common-rep)
@@ -6778,9 +6785,9 @@ value for use with derive-type-minus.")
                     (emit-move-from-stack target representation)))
                  (t
                   (compile-form arg1 'stack nil)
-                  (emit 'dup)
+                  (emit-dup nil)
                   (compile-form arg2 'stack nil)
-                  (emit 'dup_x1)
+                  (emit-dup nil :past nil)
                   (emit-invokevirtual +lisp-object-class+
                                       (if (eq op 'max)
                                           "isLessThanOrEqualTo"
