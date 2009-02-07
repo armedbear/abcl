@@ -6801,7 +6801,7 @@ value for use with derive-type-minus.")
                   (fix-boxing representation nil)
                   (emit-move-from-stack target representation))))))
     (t
-     (p2-min/max `(,(car form) (,(car form) (second form) (third form))
+     (p2-min/max `(,(car form) (,(car form) ,(second form) ,(third form))
                     ,@(nthcdr 3 form)) target representation))))
 
 (defun p2-plus (form target representation)
