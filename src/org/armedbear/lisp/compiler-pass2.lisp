@@ -349,19 +349,19 @@
 (defknown emit-push-false (t) t)
 (defun emit-push-false (representation)
   (declare (optimize speed (safety 0)))
-  (case representation
+  (ecase representation
     (:boolean
      (emit 'iconst_0))
-    (t
+    ((nil)
      (emit-push-nil))))
 
 (defknown emit-push-true (t) t)
 (defun emit-push-true (representation)
   (declare (optimize speed (safety 0)))
-  (case representation
+  (ecase representation
     (:boolean
      (emit 'iconst_1))
-    (t
+    ((nil)
      (emit-push-t))))
 
 (defknown emit-push-constant-int (fixnum) t)
@@ -975,16 +975,16 @@ representation, based on the derived type of the LispObject."
 (defun emit-move-from-stack (target &optional representation)
   (declare (optimize speed))
   (cond ((null target)
-         (case representation
+         (ecase representation
            ((:long :double)
             (emit 'pop2))
-           (t
+           ((NIL :int :boolean :char :float)
             (emit 'pop))))
         ((eq target 'stack)) ; Nothing to do.
         ((fixnump target)
          ;; A register.
          (emit
-          (case representation
+          (ecase representation
             ((:int :boolean :char)
              'istore)
             (:long
@@ -993,7 +993,7 @@ representation, based on the derived type of the LispObject."
              'fstore)
             (:double
              'dstore)
-            (t
+            ((nil)
              'astore))
           target))
         (t
@@ -2380,7 +2380,7 @@ representation, based on the derived type of the LispObject."
 (defun compile-constant (form target representation)
   (unless target
     (return-from compile-constant))
-  (case representation
+  (ecase representation
     (:int
      (cond ((fixnump form)
             (emit-push-constant-int form))
@@ -2438,7 +2438,8 @@ representation, based on the derived type of the LispObject."
             (sys::%format t "compile-constant :double representation~%")
             (assert nil)))
      (emit-move-from-stack target representation)
-     (return-from compile-constant)))
+     (return-from compile-constant))
+    ((NIL)))
   (cond ((fixnump form)
          (let ((translation (case form
                               (0  "ZERO")
@@ -2568,12 +2569,12 @@ representation, based on the derived type of the LispObject."
     (cond ((and boxed-method-name unboxed-method-name)
            (let ((arg (cadr form)))
 	     (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
-             (case representation
+             (ecase representation
                (:boolean
                 (emit-invokevirtual +lisp-object-class+
                                     unboxed-method-name
                                     nil "Z"))
-               (t
+               ((NIL)
                 (emit-invokevirtual +lisp-object-class+
                                     boxed-method-name
                                     nil +lisp-object+)))
@@ -2751,11 +2752,11 @@ representation, based on the derived type of the LispObject."
           (t
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						      arg2 'stack nil)
-           (case representation
+           (ecase representation
              (:boolean
               (emit-invokevirtual +lisp-object-class+ "eql"
                                   (lisp-object-arg-types 1) "Z"))
-             (t
+             ((NIL)
               (emit-invokevirtual +lisp-object-class+ "EQL"
                                   (lisp-object-arg-types 1) +lisp-object+)))))
     (emit-move-from-stack target representation)))
@@ -4258,21 +4259,21 @@ given a specific common representation.")
 (defun emit-move-to-variable (variable)
   (let ((representation (variable-representation variable)))
     (flet ((emit-array-store (representation)
-             (emit (or (case representation
-                         ((:int :boolean :char)
-                                  'iastore)
-                         (:long   'lastore)
-                         (:float  'fastore)
-                         (:double 'dastore))
-                       'aastore))))
+             (emit (ecase representation
+                     ((:int :boolean :char)
+                              'iastore)
+                     (:long   'lastore)
+                     (:float  'fastore)
+                     (:double 'dastore)
+                     ((nil)   'aastore)))))
       (cond ((variable-register variable)
-             (emit (or (case (variable-representation variable)
-                         ((:int :boolean :char)
-                                  'istore)
-                         (:long   'lstore)
-                         (:float  'fstore)
-                         (:double 'dstore))
-                       'astore)
+             (emit (ecase (variable-representation variable)
+                     ((:int :boolean :char)
+                              'istore)
+                     (:long   'lstore)
+                     (:float  'fstore)
+                     (:double 'dstore)
+                     ((nil)   'astore))
                    (variable-register variable)))
             ((variable-index variable)
              (aload (compiland-argument-register *current-compiland*))
@@ -4292,21 +4293,21 @@ given a specific common representation.")
 
 (defun emit-push-variable (variable)
   (flet ((emit-array-store (representation)
-           (emit (or (case representation
+           (emit (ecase representation
                        ((:int :boolean :char)
                                 'iaload)
                        (:long   'laload)
                        (:float  'faload)
-                       (:double 'daload))
-                   'aaload))))
+                       (:double 'daload)
+                       ((nil)   'aaload)))))
     (cond ((variable-register variable)
-           (emit (or (case (variable-representation variable)
+           (emit (ecase (variable-representation variable)
                        ((:int :boolean :char)
                                 'iload)
                        (:long   'lload)
                        (:float  'fload)
-                       (:double 'dload))
-                     'aload)
+                       (:double 'dload)
+                       ((nil)   'aload))
                  (variable-register variable)))
           ((variable-index variable)
            (aload (compiland-argument-register *current-compiland*))
@@ -4649,17 +4650,17 @@ given a specific common representation.")
   (let ((LABEL1 (gensym))
         (LABEL2 (gensym)))
     (emit 'ifeq LABEL1)
-    (case representation
+    (ecase representation
       (:boolean
        (emit 'iconst_0))
-      (t
+      ((nil)
        (emit-push-nil)))
     (emit 'goto LABEL2)
     (label LABEL1)
-    (case representation
+    (ecase representation
       (:boolean
        (emit 'iconst_1))
-      (t
+      ((nil)
        (emit-push-t)))
     (label LABEL2)
     (emit-move-from-stack target representation)))
@@ -5718,17 +5719,17 @@ given a specific common representation.")
            (let ((LABEL1 (gensym))
                  (LABEL2 (gensym)))
              (emit 'ifne LABEL1)
-             (case representation
+             (ecase representation
                (:boolean
                 (emit 'iconst_1))
-               (t
+               ((nil)
                 (emit-push-t)))
              (emit 'goto LABEL2)
              (label LABEL1)
-             (case representation
+             (ecase representation
                (:boolean
                 (emit 'iconst_0))
-               (t
+               ((nil)
                 (emit-push-nil)))
              (label LABEL2)
              (emit-move-from-stack target representation)))
@@ -6589,7 +6590,7 @@ for use with derive-type-times.")
   ((check-arg-count form 1))
   (let ((arg (cadr form)))
     (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
-    (case representation
+    (ecase representation
       (:int
        (emit-invokevirtual +lisp-object-class+ "length" nil "I"))
       ((:long :float :double)
@@ -6603,7 +6604,7 @@ for use with derive-type-times.")
       (:char
        (sys::%format t "p2-length: :char case~%")
        (aver nil))
-      (t
+      ((nil)
        (emit-invokevirtual +lisp-object-class+ "LENGTH" nil +lisp-object+)))
     (emit-move-from-stack target representation)))
 
@@ -7117,18 +7118,15 @@ for use with derive-type-times.")
      (let* ((arg1 (%cadr form))
             (arg2 (%caddr form))
             (type1 (derive-compiler-type arg1)))
-       (case representation
+       (ecase representation
          (:int
 	  (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						     arg2 'stack :int)
           (emit-invokevirtual +lisp-object-class+ "aref" '("I") "I"))
-         ((:long :float :double)
+         (:long
 	  (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						     arg2 'stack :int)
-          (emit-invokevirtual +lisp-object-class+ "aref_long" '("I") "J")
-          (when (or (eq representation :float)
-                    (eq representation :double))
-            (convert-represenation :long representation)))
+          (emit-invokevirtual +lisp-object-class+ "aref_long" '("I") "J"))
          (:char
           (cond ((compiler-subtypep type1 'string)
                  (compile-form arg1 'stack nil) ; array
@@ -7142,11 +7140,13 @@ for use with derive-type-times.")
 							    arg2 'stack :int)
                  (emit-invokevirtual +lisp-object-class+ "AREF" '("I") +lisp-object+)
                  (emit-unbox-character))))
-         (t
+         ((nil :float :double :boolean)
+          ;;###FIXME for float and double, we probably want
+          ;; separate java methods to retrieve the values.
 	  (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						     arg2 'stack :int)
           (emit-invokevirtual +lisp-object-class+ "AREF" '("I") +lisp-object+)
-          (fix-boxing representation nil)))
+          (convert-representation nil representation)))
        (emit-move-from-stack target representation)))
     (t
      (compile-function-call form target representation))))
@@ -7248,25 +7248,18 @@ for use with derive-type-times.")
           ((fixnump arg2)
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
            (emit-push-constant-int arg2)
-           (case representation
+           (ecase representation
              (:int
               (emit-invokevirtual +lisp-object-class+ "getFixnumSlotValue"
                                   '("I") "I"))
-             (:long
+             ((nil :char :long :float :double)
               (emit-invokevirtual +lisp-object-class+ "getSlotValue"
                                   '("I") +lisp-object+)
-              (emit-invokevirtual +lisp-object-class+ "longValue"
-                                  nil "J"))
-             (:char
-              (emit-invokevirtual +lisp-object-class+ "getSlotValue"
-                                  '("I") +lisp-object+)
-              (emit-unbox-character))
+              ;; (convert-representation NIL NIL) is a no-op
+              (convert-representation nil representation))
              (:boolean
               (emit-invokevirtual +lisp-object-class+ "getSlotValueAsBoolean"
-                                  '("I") "Z"))
-             (t
-              (emit-invokevirtual +lisp-object-class+ "getSlotValue"
-                                  '("I") +lisp-object+)))
+                                  '("I") "Z")))
            (emit-move-from-stack target representation))
           (t
            (compile-function-call form target representation)))))
@@ -7392,13 +7385,13 @@ for use with derive-type-times.")
              (DONE (gensym)))
 	 (compile-forms-and-maybe-emit-clear-values arg1 'stack :boolean)
          (emit 'ifeq FAIL)
-         (case representation
+         (ecase representation
            (:boolean
 	    (compile-forms-and-maybe-emit-clear-values arg2 'stack :boolean)
             (emit 'goto DONE)
             (label FAIL)
             (emit 'iconst_0))
-           (t
+           ((nil)
             (compile-form arg2 'stack nil)
             (emit 'goto DONE)
             (label FAIL)
@@ -8011,10 +8004,10 @@ for use with derive-type-times.")
                 (emit-push-true representation)
                 (emit-move-from-stack target representation))
                ((keywordp form)
-                (case representation
+                (ecase representation
                   (:boolean
                    (emit 'iconst_1))
-                  (t
+                  ((nil)
                    (let ((name (lookup-known-keyword form)))
                      (if name
                          (emit 'getstatic "org/armedbear/lisp/Keyword" name +lisp-symbol+)
