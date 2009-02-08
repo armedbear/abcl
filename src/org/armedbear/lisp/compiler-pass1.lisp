@@ -141,47 +141,48 @@
           (t
            (p1-default form)))))
 
+
+(defmacro p1-let/let*-vars 
+    (varlist variables-var var body1 body2)
+  (let ((varspec (gensym))
+	(initform (gensym))
+	(name (gensym)))
+    `(let ((,variables-var ()))
+       (dolist (,varspec ,varlist)
+	 (cond ((consp ,varspec)
+              ;; FIXME Currently this error is signalled by the precompiler.
+		(unless (= (length ,varspec) 2)
+		  (compiler-error "The LET/LET* binding specification ~S is invalid."
+				  ,varspec))
+		(let* ((,name (%car ,varspec))
+		       (,initform (p1 (%cadr ,varspec)))
+		       (,var (make-variable :name (check-name ,name) :initform ,initform)))
+		  (push ,var ,variables-var)
+		  ,@body1))
+	       (t
+		(let ((,var (make-variable :name (check-name ,varspec))))
+		  (push ,var ,variables-var)
+		  ,@body1))))
+       ,@body2)))
+
 (defknown p1-let-vars (t) t)
 (defun p1-let-vars (varlist)
-  (let ((vars ()))
-    (dolist (varspec varlist)
-      (cond ((consp varspec)
-              ;; FIXME Currently this error is signalled by the precompiler.
-             (unless (= (length varspec) 2)
-               (compiler-error "The LET binding specification ~S is invalid."
-                               varspec))
-             (let ((name (check-name (%car varspec)))
-                   (initform (p1 (%cadr varspec))))
-               (push (make-variable :name name :initform initform) vars)))
-            (t
-             (push (make-variable :name (check-name varspec)) vars))))
-    (setf vars (nreverse vars))
+  (p1-let/let*-vars 
+   varlist vars var
+   ()
+   ((setf vars (nreverse vars))
     (dolist (variable vars)
       (push variable *visible-variables*)
       (push variable *all-variables*))
-    vars))
+    vars)))
 
 (defknown p1-let*-vars (t) t)
 (defun p1-let*-vars (varlist)
-  (let ((vars ()))
-    (dolist (varspec varlist)
-      (cond ((consp varspec)
-              ;; FIXME Currently this error is signalled by the precompiler.
-             (unless (= (length varspec) 2)
-               (compiler-error "The LET* binding specification ~S is invalid."
-                               varspec))
-             (let* ((name (%car varspec))
-                    (initform (p1 (%cadr varspec)))
-                    (var (make-variable :name (check-name name) :initform initform)))
-               (push var vars)
-               (push var *visible-variables*)
-               (push var *all-variables*)))
-            (t
-             (let ((var (make-variable :name (check-name varspec))))
-               (push var vars)
-               (push var *visible-variables*)
-               (push var *all-variables*)))))
-    (nreverse vars)))
+  (p1-let/let*-vars 
+   varlist vars var
+   ((push var *visible-variables*)
+    (push var *all-variables*))
+   ((nreverse vars))))
 
 (defun p1-let/let* (form)
   (declare (type cons form))
