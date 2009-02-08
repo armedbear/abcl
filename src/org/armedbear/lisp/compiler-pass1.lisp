@@ -407,6 +407,12 @@
 						  :parent *current-compiland*)))
 		  ,@body1)))
 	    (setf ,local-functions-var (nreverse ,local-functions-var))
+	    ;; Make the local functions visible.
+	    (dolist (local-function ,local-functions-var)
+	      (push local-function *local-functions*)
+	      (let ((variable (local-function-variable local-function)))
+		(when variable
+		  (push variable *visible-variables*))))
 	    ,@body2)))
 
 (defun p1-flet (form)
@@ -430,13 +436,7 @@
 	     (setf (local-function-variable local-function) variable)
 	     (push variable *all-variables*)))
 	 (push local-function local-functions)))
-      ;; Make the local functions visible.
-      ((dolist (local-function local-functions)
-	 (push local-function *local-functions*)
-	 (let ((variable (local-function-variable local-function)))
-	   (when variable
-	     (push variable *visible-variables*))))
-       (with-saved-compiler-policy
+      ((with-saved-compiler-policy
 	   (process-optimization-declarations (cddr form))
 	 (list* (car form) local-functions (p1-body (cddr form)))))))
 
@@ -453,11 +453,7 @@
 		 `(lambda ,lambda-list ,@decls (block ,name ,@body))))
 	 (push variable *all-variables*)
 	 (push local-function local-functions)))
-      ;; Make the local functions visible.
       ((dolist (local-function local-functions)
-	 (push local-function *local-functions*)
-	 (push (local-function-variable local-function) *visible-variables*))
-       (dolist (local-function local-functions)
 	 (let ((*visible-variables* *visible-variables*)
 	       (*current-compiland* (local-function-compiland local-function)))
 	   (p1-compiland (local-function-compiland local-function))))
