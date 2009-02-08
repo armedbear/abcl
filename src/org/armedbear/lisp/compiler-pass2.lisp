@@ -6592,9 +6592,9 @@ for use with derive-type-times.")
     (case representation
       (:int
        (emit-invokevirtual +lisp-object-class+ "length" nil "I"))
-      (:long
+      ((:long :float :double)
        (emit-invokevirtual +lisp-object-class+ "length" nil "I")
-       (emit 'i2l))
+       (convert-representation :int representation))
       (:boolean
        ;; FIXME We could optimize this all away in unsafe calls.
        (emit-invokevirtual +lisp-object-class+ "length" nil "I")
@@ -7122,10 +7122,13 @@ for use with derive-type-times.")
 	  (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						     arg2 'stack :int)
           (emit-invokevirtual +lisp-object-class+ "aref" '("I") "I"))
-         (:long
+         ((:long :float :double)
 	  (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						     arg2 'stack :int)
-          (emit-invokevirtual +lisp-object-class+ "aref_long" '("I") "J"))
+          (emit-invokevirtual +lisp-object-class+ "aref_long" '("I") "J")
+          (when (or (eq representation :float)
+                    (eq representation :double))
+            (convert-represenation :long representation)))
          (:char
           (cond ((compiler-subtypep type1 'string)
                  (compile-form arg1 'stack nil) ; array
