@@ -983,19 +983,14 @@ representation, based on the derived type of the LispObject."
         ((eq target 'stack)) ; Nothing to do.
         ((fixnump target)
          ;; A register.
-         (emit
-          (ecase representation
-            ((:int :boolean :char)
-             'istore)
-            (:long
-             'lstore)
-            (:float
-             'fstore)
-            (:double
-             'dstore)
-            ((nil)
-             'astore))
-          target))
+         (emit (ecase representation
+                 ((:int :boolean :char)
+                          'istore)
+                 (:long   'lstore)
+                 (:float  'fstore)
+                 (:double 'dstore)
+                 ((nil)   'astore))
+               target))
         (t
          (sys::%format t "emit-move-from-stack general case~%")
          (aver nil))))
