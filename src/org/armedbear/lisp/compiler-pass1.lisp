@@ -390,80 +390,78 @@
                   context
                   (if (eq state '&optional) "optional" "keyword")))))))))
 
+(defmacro with-local-functions-for-flet/labels 
+    (form local-functions-var lambda-name lambda-list-var name-var body-var body1 body2)
+  `(progn (incf (compiland-children *current-compiland*) (length (cadr ,form)))
+	  (let ((*visible-variables* *visible-variables*)
+		(*local-functions* *local-functions*)
+		(*current-compiland* *current-compiland*)
+		(,local-functions-var '()))
+	    (dolist (definition (cadr ,form))
+	      (let ((,name-var (car definition))
+		    (,lambda-list-var (cadr definition)))
+		(validate-name-and-lambda-list ,name-var ,lambda-list-var ,lambda-name)
+	
+		(let* ((,body-var (cddr definition))
+		       (compiland (make-compiland :name ,name-var
+						  :parent *current-compiland*)))
+		  ,@body1)))
+	    (setf ,local-functions-var (nreverse ,local-functions-var))
+	    ,@body2)))
+
 (defun p1-flet (form)
-  (incf (compiland-children *current-compiland*) (length (cadr form)))
-  (let ((*visible-variables* *visible-variables*)
-        (*local-functions* *local-functions*)
-        (*current-compiland* *current-compiland*)
-        (local-functions '()))
-    (dolist (definition (cadr form))
-      (let ((name (car definition))
-            (lambda-list (cadr definition)))
-        (validate-name-and-lambda-list name lambda-list 'FLET)
-        (let* ((body (cddr definition))
-               (compiland (make-compiland :name name
-                                          :parent *current-compiland*))
-               (local-function (make-local-function :name name
-                                                    :compiland compiland)))
-          (multiple-value-bind (body decls) (parse-body body)
-            (let* ((block-name (fdefinition-block-name name))
-                   (lambda-expression
-                    `(lambda ,lambda-list ,@decls (block ,block-name ,@body)))
-                   (*visible-variables* *visible-variables*)
-                   (*local-functions* *local-functions*)
-                   (*current-compiland* compiland))
-              (setf (compiland-lambda-expression compiland) lambda-expression)
-              (setf (local-function-inline-expansion local-function)
-                    (generate-inline-expansion block-name lambda-list body))
-              (p1-compiland compiland)))
-          (when *closure-variables*
-            (let ((variable (make-variable :name (gensym))))
-              (setf (local-function-variable local-function) variable)
-              (push variable *all-variables*)))
-          (push local-function local-functions))))
-    (setf local-functions (nreverse local-functions))
-    ;; Make the local functions visible.
-    (dolist (local-function local-functions)
-      (push local-function *local-functions*)
-      (let ((variable (local-function-variable local-function)))
-        (when variable
-          (push variable *visible-variables*))))
-    (with-saved-compiler-policy
-      (process-optimization-declarations (cddr form))
-      (list* (car form) local-functions (p1-body (cddr form))))))
+  (with-local-functions-for-flet/labels 
+      form local-functions 'FLET lambda-list name body
+      ((let ((local-function (make-local-function :name name
+						 :compiland compiland)))
+	 (multiple-value-bind (body decls) (parse-body body)
+	   (let* ((block-name (fdefinition-block-name name))
+		  (lambda-expression
+		   `(lambda ,lambda-list ,@decls (block ,block-name ,@body)))
+		  (*visible-variables* *visible-variables*)
+		  (*local-functions* *local-functions*)
+		  (*current-compiland* compiland))
+	     (setf (compiland-lambda-expression compiland) lambda-expression)
+	     (setf (local-function-inline-expansion local-function)
+		   (generate-inline-expansion block-name lambda-list body))
+	     (p1-compiland compiland)))
+	 (when *closure-variables*
+	   (let ((variable (make-variable :name (gensym))))
+	     (setf (local-function-variable local-function) variable)
+	     (push variable *all-variables*)))
+	 (push local-function local-functions)))
+      ;; Make the local functions visible.
+      ((dolist (local-function local-functions)
+	 (push local-function *local-functions*)
+	 (let ((variable (local-function-variable local-function)))
+	   (when variable
+	     (push variable *visible-variables*))))
+       (with-saved-compiler-policy
+	   (process-optimization-declarations (cddr form))
+	 (list* (car form) local-functions (p1-body (cddr form)))))))
+
 
 (defun p1-labels (form)
-  (incf (compiland-children *current-compiland*) (length (cadr form)))
-  (let ((*visible-variables* *visible-variables*)
-        (*local-functions* *local-functions*)
-        (*current-compiland* *current-compiland*)
-        (local-functions '()))
-    (dolist (definition (cadr form))
-      (let ((name (car definition))
-            (lambda-list (cadr definition)))
-        (validate-name-and-lambda-list name lambda-list 'LABELS)
-        (let* ((body (cddr definition))
-               (compiland (make-compiland :name name
-                                          :parent *current-compiland*))
-               (variable (make-variable :name (gensym)))
-               (local-function (make-local-function :name name
-                                                    :compiland compiland
-                                                    :variable variable)))
-          (multiple-value-bind (body decls) (parse-body body)
-            (setf (compiland-lambda-expression compiland)
-                  `(lambda ,lambda-list ,@decls (block ,name ,@body))))
-          (push variable *all-variables*)
-          (push local-function local-functions))))
-    (setf local-functions (nreverse local-functions))
-    ;; Make the local functions visible.
-    (dolist (local-function local-functions)
-      (push local-function *local-functions*)
-      (push (local-function-variable local-function) *visible-variables*))
-    (dolist (local-function local-functions)
-      (let ((*visible-variables* *visible-variables*)
-            (*current-compiland* (local-function-compiland local-function)))
-        (p1-compiland (local-function-compiland local-function))))
-    (list* (car form) local-functions (p1-body (cddr form)))))
+  (with-local-functions-for-flet/labels 
+      form local-functions 'LABELS lambda-list name body
+      ((let* ((variable (make-variable :name (gensym)))
+	      (local-function (make-local-function :name name
+						   :compiland compiland
+						   :variable variable)))
+	 (multiple-value-bind (body decls) (parse-body body)
+	   (setf (compiland-lambda-expression compiland)
+		 `(lambda ,lambda-list ,@decls (block ,name ,@body))))
+	 (push variable *all-variables*)
+	 (push local-function local-functions)))
+      ;; Make the local functions visible.
+      ((dolist (local-function local-functions)
+	 (push local-function *local-functions*)
+	 (push (local-function-variable local-function) *visible-variables*))
+       (dolist (local-function local-functions)
+	 (let ((*visible-variables* *visible-variables*)
+	       (*current-compiland* (local-function-compiland local-function)))
+	   (p1-compiland (local-function-compiland local-function))))
+       (list* (car form) local-functions (p1-body (cddr form))))))
 
 (defknown p1-funcall (t) t)
 (defun p1-funcall (form)
