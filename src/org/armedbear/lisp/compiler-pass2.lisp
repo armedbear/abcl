@@ -6303,7 +6303,7 @@ of the operation arguments given in `types'."
 
 (defvar zero-integer-type (%make-integer-type 0 0)
   "Integer type representing the 0 (zero)
-value for use with derive-type-minus.")
+value for use with derive-type-minus and derive-type-plus.")
 
 (define-int-bounds-derivation - (low1 high1 low2 high2)
     (values (and low1 low2 (- low1 low2))
@@ -6331,10 +6331,12 @@ value for use with derive-type-minus.")
 (defun derive-type-plus (form)
   (let ((op (car form))
         (args (cdr form)))
-    (flet ((combine (x y)
-             (derive-type-numeric-op op x y)))
-      (reduce #'combine (cdr args) :key #'derive-compiler-type
-              :initial-value (derive-compiler-type (car args))))))
+    (if (null args)
+        zero-integer-type
+        (flet ((combine (x y)
+                 (derive-type-numeric-op op x y)))
+          (reduce #'combine (cdr args) :key #'derive-compiler-type
+                  :initial-value (derive-compiler-type (car args)))))))
 
 (define-int-bounds-derivation * (low1 high1 low2 high2)
   (cond ((or (null low1) (null low2))
@@ -6351,13 +6353,23 @@ value for use with derive-type-minus.")
         (t
          (values (* low1 low2) (* high1 high2)))))
 
+(defvar one-integer-type (%make-integer-type 1 1)
+  "Integer type representing the value 1 (one)
+for use with derive-type-times.")
+
 (defun derive-type-times (form)
   (let ((op (car form))
         (args (cdr form)))
-    (flet ((combine (x y)
-             (derive-type-numeric-op op x y)))
-      (reduce #'combine (cdr args) :key #'derive-compiler-type
-              :initial-value (derive-compiler-type (car args))))))
+    (if (null args)
+        one-integer-type
+        (flet ((combine (x y)
+                 (derive-type-numeric-op op x y)))
+          (reduce #'combine (cdr args) :key #'derive-compiler-type
+                  :initial-value (derive-compiler-type (car args)))))))
+
+(define-int-bounds-derivation max (low1 low2 high1 high2)
+  (values (or (when (and low1 low2) (max low1 low2)) low1 low2)
+          (or (when (and high1 high2) (max high1 high2)) high1 high2)))
 
 (declaim (ftype (function (t) t) derive-type-max))
 (defun derive-type-max (form)
@@ -6367,6 +6379,10 @@ value for use with derive-type-minus.")
              (derive-type-numeric-op op x y)))
       (reduce #'combine (cdr args) :key #'derive-compiler-type
               :initial-value (derive-compiler-type (car args))))))
+
+(define-int-bounds-derivation min (low1 high1 low2 high2)
+  (values (or (when (and low1 low2) (min low1 low2)) low1 low2)
+          (or (when (and high1 high2) (min high1 high2)) high1 hig2)))
 
 (defknown derive-type-min (t) t)
 (defun derive-type-min (form)
@@ -6699,6 +6715,7 @@ value for use with derive-type-minus.")
 
 (defun p2-times (form target representation)
   (case (length form)
+    (1 (compile-constant 1 target representation))
     (2 (compile-form (cadr form) target representation))
     (3
      (let* ((args (cdr form))
