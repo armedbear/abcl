@@ -1170,6 +1170,8 @@ representation, based on the derived type of the LispObject."
                  134 ; i2f
                  135 ; i2d
                  136 ; l2i
+                 137 ; l2f
+                 138 ; l2d
                  141 ; f2d
                  144 ; d2f
                  148 ; lcmp
@@ -6309,20 +6311,16 @@ value for use with derive-type-minus.")
 
 (defknown derive-type-minus (t) t)
 (defun derive-type-minus (form)
-  (let ((args (cdr form))
-        (result-type t))
+  (let ((op (car form))
+        (args (cdr form)))
     (case (length args)
-      (1
-       (setf result-type
-             (derive-type-numeric-op (car form)
-                                     zero-integer-type
-                                     (derive-compiler-type (%car args)))))
-      (2
-       (setf result-type
-             (derive-type-numeric-op (car form)
-                                     (derive-compiler-type (car args))
-                                     (derive-compiler-type (cadr args))))))
-    result-type))
+      (1 (derive-type-numeric-op (car form)
+                                 zero-integer-type
+                                 (derive-compiler-type (%car args))))
+      (2 (flet ((combine (x y)
+                  (derive-type-numeric-op op x y)))
+           (reduce #'combine (cdr args) :key #'derive-compiler-type
+                   :initial-value (derive-compiler-type (car args))))))))
 
 
 (define-int-bounds-derivation + (low1 high1 low2 high2)
@@ -6331,14 +6329,12 @@ value for use with derive-type-minus.")
 
 (defknown derive-type-plus (t) t)
 (defun derive-type-plus (form)
-  (let ((args (cdr form))
-        (result-type t))
-    (when (= (length args) 2)
-      (setf result-type
-            (derive-type-numeric-op (car form)
-                                    (derive-compiler-type (car args))
-                                    (derive-compiler-type (cadr args)))))
-    result-type))
+  (let ((op (car form))
+        (args (cdr form)))
+    (flet ((combine (x y)
+             (derive-type-numeric-op op x y)))
+      (reduce #'combine (cdr args) :key #'derive-compiler-type
+              :initial-value (derive-compiler-type (car args))))))
 
 (define-int-bounds-derivation * (low1 high1 low2 high2)
   (cond ((or (null low1) (null low2))
@@ -6356,14 +6352,12 @@ value for use with derive-type-minus.")
          (values (* low1 low2) (* high1 high2)))))
 
 (defun derive-type-times (form)
-  (let ((args (cdr form))
-        (result-type t))
-    (when (= (length args) 2)
-      (setf result-type
-            (derive-type-numeric-op (car form)
-                                    (derive-compiler-type (car args))
-                                    (derive-compiler-type (cadr args)))))
-  result-type))
+  (let ((op (car form))
+        (args (cdr form)))
+    (flet ((combine (x y)
+             (derive-type-numeric-op op x y)))
+      (reduce #'combine (cdr args) :key #'derive-compiler-type
+              :initial-value (derive-compiler-type (car args))))))
 
 (declaim (ftype (function (t) t) derive-type-max))
 (defun derive-type-max (form)
@@ -6371,8 +6365,8 @@ value for use with derive-type-minus.")
         (args (cdr form)))
     (flet ((combine (x y)
              (derive-type-numeric-op op x y)))
-      (reduce #'combine (cdr args)
-              :initial-value (car args)))))
+      (reduce #'combine (cdr args) :key #'derive-compiler-type
+              :initial-value (derive-compiler-type (car args))))))
 
 (defknown derive-type-min (t) t)
 (defun derive-type-min (form)
@@ -6380,8 +6374,8 @@ value for use with derive-type-minus.")
         (args (cdr form)))
     (flet ((combine (x y)
              (derive-type-numeric-op op x y)))
-      (reduce #'combine (cdr args)
-              :initial-value (car args)))))
+      (reduce #'combine (cdr args) :key #'derive-compiler-type
+              :initial-value (derive-compiler-type (car args))))))
 
 ;; read-char &optional input-stream eof-error-p eof-value recursive-p => char
 (declaim (ftype (function (t) t) derive-type-read-char))
@@ -6705,6 +6699,7 @@ value for use with derive-type-minus.")
 
 (defun p2-times (form target representation)
   (case (length form)
+    (2 (compile-form (cadr form) target representation))
     (3
      (let* ((args (cdr form))
             (arg1 (%car args))
@@ -6747,7 +6742,8 @@ value for use with derive-type-minus.")
               (compile-binary-operation "multiplyBy" args target representation)))))
     (t
      (dformat t "p2-times case 5~%")
-     (compile-function-call form target representation))))
+     (p2-times `(,(car form) (,(car form) ,(second form) ,(third form))
+                    ,@(nthcdr 3 form)) target representation))))
 
 (defknown p2-min/max (t t t) t)
 (defun p2-min/max (form target representation)
