@@ -189,7 +189,7 @@
 (define-opcode i2f 134 1 0)
 (define-opcode i2d 135 1 1)
 (define-opcode l2i 136 1 -1)
-(define-opcode l2f 137 1 nil)
+(define-opcode l2f 137 1 -1)
 (define-opcode l2d 138 1 0)
 (define-opcode f2i 139 1 nil)
 (define-opcode f2l 140 1 nil)
