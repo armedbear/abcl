@@ -65,6 +65,21 @@ public final class Bignum extends LispInteger
   }
 
   @Override
+  public Object javaInstance(Class c) {
+    String cn = c.getName();
+    if (cn.equals("java.lang.Byte") || cn.equals("byte"))
+      return Byte.valueOf((byte)value.intValue());
+    if (cn.equals("java.lang.Short") || cn.equals("short"))
+      return Short.valueOf((short)value.intValue());
+    if (cn.equals("java.lang.Integer") || cn.equals("int"))
+      return Integer.valueOf(value.intValue());
+    if (cn.equals("java.lang.Long") || cn.equals("long"))
+      return Long.valueOf((long)value.longValue());
+    return javaInstance();
+  }
+
+
+  @Override
   public LispObject typeOf()
   {
     if (value.signum() > 0)
