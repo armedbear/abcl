@@ -2070,11 +2070,11 @@ representation, based on the derived type of the LispObject."
    (cond ((null (symbol-package symbol))
 	  (setf g (if *compile-file-truename*
 		      (declare-object-as-string symbol)
-		      (declare-object symbol))))
+		      (declare-object symbol +lisp-symbol+))))
 	 (t
 	  (let ((*code* *static-code*)
 		(s (sanitize symbol)))
-	    (setf g (symbol-name (gensym)))
+	    (setf g (symbol-name (gensym "SYM")))
 	    (when s
 	      (setf g (concatenate 'string g "_" s)))
 	    (declare-field g +lisp-symbol+)
@@ -2092,7 +2092,7 @@ representation, based on the derived type of the LispObject."
   (declare-with-hashtable
    symbol *declared-symbols* ht g
    (let ((*code* *static-code*))
-     (setf g (symbol-name (gensym)))
+     (setf g (symbol-name (gensym "KEY")))
      (declare-field g +lisp-symbol+)
      (emit 'ldc (pool-string (symbol-name symbol)))
      (emit-invokestatic +lisp-class+ "internKeyword"
@@ -2106,7 +2106,7 @@ representation, based on the derived type of the LispObject."
   (declare (type symbol symbol))
   (declare-with-hashtable
    symbol *declared-functions* ht f
-   (setf f (symbol-name (gensym)))
+   (setf f (symbol-name (gensym "FUN")))
    (let ((s (sanitize symbol)))
      (when s
        (setf f (concatenate 'string f "_" s))))
@@ -2159,7 +2159,7 @@ representation, based on the derived type of the LispObject."
 (defun declare-local-function (local-function)
   (declare-with-hashtable
    local-function *declared-functions* ht g
-   (setf g (symbol-name (gensym)))
+   (setf g (symbol-name (gensym "LFUN")))
    (let* ((pathname (class-file-pathname (local-function-class-file local-function)))
 	  (*code* *static-code*))
      (declare-field g +lisp-object+)
@@ -2249,7 +2249,7 @@ representation, based on the derived type of the LispObject."
 
 (defknown declare-character (t) string)
 (defun declare-character (c)
-  (let ((g (symbol-name (gensym)))
+  (let ((g (symbol-name (gensym "CHAR")))
         (n (char-code c))
         (*code* *static-code*))
     (declare-field g +lisp-character+)
@@ -2266,21 +2266,23 @@ representation, based on the derived type of the LispObject."
     (setf *static-code* *code*)
     g))
 
-(defknown declare-object-as-string (t) string)
-(defun declare-object-as-string (obj)
-  (let* ((g (symbol-name (gensym)))
+(defknown declare-object-as-string (t &optional t) string)
+(defun declare-object-as-string (obj &optional (obj-class +lisp-object+))
+  (let* ((g (symbol-name (gensym "OBJSTR")))
          (s (with-output-to-string (stream) (dump-form obj stream)))
          (*code* *static-code*))
-    (declare-field g +lisp-object+)
+    (declare-field g obj-class)
     (emit 'ldc (pool-string s))
     (emit-invokestatic +lisp-class+ "readObjectFromString"
                        (list +java-string+) +lisp-object+)
-    (emit 'putstatic *this-class* g +lisp-object+)
+    (when (string/= obj-class +lisp-object+)
+      (emit 'checkcast obj-class))
+    (emit 'putstatic *this-class* g obj-class)
     (setf *static-code* *code*)
     g))
 
 (defun declare-load-time-value (obj)
-  (let* ((g (symbol-name (gensym)))
+  (let* ((g (symbol-name (gensym "LTV")))
          (s (with-output-to-string (stream) (dump-form obj stream)))
          (*code* *static-code*))
     (declare-field g +lisp-object+)
@@ -2298,7 +2300,7 @@ representation, based on the derived type of the LispObject."
   (aver (not (null *compile-file-truename*)))
   (aver (or (structure-object-p obj) (standard-object-p obj)
             (java:java-object-p obj)))
-  (let* ((g (symbol-name (gensym)))
+  (let* ((g (symbol-name (gensym "INSTANCE")))
          (s (with-output-to-string (stream) (dump-form obj stream)))
          (*code* *static-code*))
     (declare-field g +lisp-object+)
@@ -2312,7 +2314,7 @@ representation, based on the derived type of the LispObject."
     g))
 
 (defun declare-package (obj)
-  (let* ((g (symbol-name (gensym)))
+  (let* ((g (symbol-name (gensym "PKG")))
          (*print-level* nil)
          (*print-length* nil)
          (s (format nil "#.(FIND-PACKAGE ~S)" (package-name obj)))
@@ -2325,23 +2327,26 @@ representation, based on the derived type of the LispObject."
     (setf *static-code* *code*)
     g))
 
-(declaim (ftype (function (t) string) declare-object))
-(defun declare-object (obj)
-  (let ((key (symbol-name (gensym))))
+(declaim (ftype (function (t &optional t) string) declare-object))
+(defun declare-object (obj &optional (obj-class +lisp-object+))
+  (let ((key (symbol-name (gensym "OBJ"))))
     (remember key obj)
     (let* ((g1 (declare-string key))
-           (g2 (symbol-name (gensym)))
+           (g2 (symbol-name (gensym "O2BJ"))))
+      (let* (
            (*code* *static-code*))
-      (declare-field g2 +lisp-object+)
+      (declare-field g2 obj-class)
       (emit 'getstatic *this-class* g1 +lisp-simple-string+)
       (emit-invokestatic +lisp-class+ "recall"
                          (list +lisp-simple-string+) +lisp-object+)
-      (emit 'putstatic *this-class* g2 +lisp-object+)
+      (when (string/= obj-class +lisp-object+)
+        (emit 'checkcast obj-class))
+      (emit 'putstatic *this-class* g2 obj-class)
       (setf *static-code* *code*)
-      g2)))
+      g2))))
 
 (defun declare-lambda (obj)
-  (let* ((g (symbol-name (gensym)))
+  (let* ((g (symbol-name (gensym "LAMBDA")))
          (*print-level* nil)
          (*print-length* nil)
          (s (format nil "~S" obj))
@@ -2361,7 +2366,7 @@ representation, based on the derived type of the LispObject."
   (declare-with-hashtable
    string *declared-strings* ht g
    (let ((*code* *static-code*))
-        (setf g (symbol-name (gensym)))
+        (setf g (symbol-name (gensym "STR")))
         (declare-field g +lisp-simple-string+)
         (emit 'new +lisp-simple-string-class+)
         (emit 'dup)
