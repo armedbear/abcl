@@ -2069,7 +2069,7 @@ representation, based on the derived type of the LispObject."
    symbol *declared-symbols* ht g
    (cond ((null (symbol-package symbol))
 	  (setf g (if *compile-file-truename*
-		      (declare-object-as-string symbol)
+		      (declare-object-as-string symbol +lisp-symbol+)
 		      (declare-object symbol +lisp-symbol+))))
 	 (t
 	  (let ((*code* *static-code*)
