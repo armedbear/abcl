@@ -2069,8 +2069,10 @@ representation, based on the derived type of the LispObject."
    symbol *declared-symbols* ht g
    (cond ((null (symbol-package symbol))
 	  (setf g (if *compile-file-truename*
-		      (declare-object-as-string symbol +lisp-symbol+)
-		      (declare-object symbol +lisp-symbol+))))
+		      (declare-object-as-string symbol +lisp-symbol+
+                                                +lisp-symbol-class+)
+		      (declare-object symbol +lisp-symbol+
+                                      +lisp-symbol-class+))))
 	 (t
 	  (let ((*code* *static-code*)
 		(s (sanitize symbol)))
@@ -2267,17 +2269,18 @@ representation, based on the derived type of the LispObject."
     g))
 
 (defknown declare-object-as-string (t &optional t) string)
-(defun declare-object-as-string (obj &optional (obj-class +lisp-object+))
+(defun declare-object-as-string (obj &optional (obj-ref +lisp-object+)
+                                     obj-class)
   (let* ((g (symbol-name (gensym "OBJSTR")))
          (s (with-output-to-string (stream) (dump-form obj stream)))
          (*code* *static-code*))
-    (declare-field g obj-class)
+    (declare-field g obj-ref)
     (emit 'ldc (pool-string s))
     (emit-invokestatic +lisp-class+ "readObjectFromString"
                        (list +java-string+) +lisp-object+)
-    (when (string/= obj-class +lisp-object+)
+    (when (and obj-class (string/= obj-class +lisp-object+))
       (emit 'checkcast obj-class))
-    (emit 'putstatic *this-class* g obj-class)
+    (emit 'putstatic *this-class* g obj-ref)
     (setf *static-code* *code*)
     g))
 
@@ -2328,20 +2331,21 @@ representation, based on the derived type of the LispObject."
     g))
 
 (declaim (ftype (function (t &optional t) string) declare-object))
-(defun declare-object (obj &optional (obj-class +lisp-object+))
+(defun declare-object (obj &optional (obj-ref +lisp-object+)
+                           obj-class)
   (let ((key (symbol-name (gensym "OBJ"))))
     (remember key obj)
     (let* ((g1 (declare-string key))
            (g2 (symbol-name (gensym "O2BJ"))))
       (let* (
            (*code* *static-code*))
-      (declare-field g2 obj-class)
+      (declare-field g2 obj-ref)
       (emit 'getstatic *this-class* g1 +lisp-simple-string+)
       (emit-invokestatic +lisp-class+ "recall"
                          (list +lisp-simple-string+) +lisp-object+)
-      (when (string/= obj-class +lisp-object+)
+      (when (and obj-class (string/= obj-class +lisp-object-class+))
         (emit 'checkcast obj-class))
-      (emit 'putstatic *this-class* g2 obj-class)
+      (emit 'putstatic *this-class* g2 obj-ref)
       (setf *static-code* *code*)
       g2))))
 
