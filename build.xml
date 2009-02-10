@@ -161,7 +161,8 @@
       <mkdir dir="${build.classes.dir}"/>
       <javac destdir="${build.classes.dir}"
 	     debug="true"
-	     target="1.5">
+	     target="1.5"
+	     failonerror="true">
 	<src path="${src.dir}"/>
 	<patternset refid="abcl.source.java"/>
       </javac>
@@ -204,6 +205,7 @@
 	    unless="abcl.fasls.uptodate.p">
       <java classpath="${build.classes.dir}"
 	    fork="true"
+	    failonerror="true"
 	    classname="org.armedbear.lisp.Main">
 	<arg value="--noinit"/>
 	<arg value="--eval"/>
