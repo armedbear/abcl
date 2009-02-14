@@ -34,12 +34,18 @@
 (export 'untraced-function) ;; For FIND-GENERIC-FUNCTION in clos.lisp.
 
 (require "FORMAT")
+(require "CLOS") ;; XXX This eventually blows up in the compiler, but
+		 ;; works for a while.
 
 (defvar *trace-info-hashtable* (make-hash-table :test #'equal))
 
 (defstruct trace-info name untraced-function breakp)
 
-(defvar *trace-depth* 0)
+(defvar *trace-depth* 0
+  "Current depth of stack push for use of TRACE facility.")
+;;  XXX How can we "punt" on this form ???
+(defmethod make-load-form ((object trace-info) &optional environment)
+  (make-load-form-saving-slots object :environment environment))
 
 (defun list-traced-functions ()
   (copy-list *traced-names*))
