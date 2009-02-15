@@ -106,7 +106,7 @@
         (ext:cd old-directory)))
     (cond ((numberp status)
            status)
-          ((eq status t)
+          ((or (eq status t) (null status)) ;; clisp 2.47 returns NIL on success
            0)
           (t
            -1))))
