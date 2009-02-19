@@ -1010,39 +1010,8 @@ public abstract class Lisp
                               {
                                 long size = entry.getSize();
                                 InputStream in = zipFile.getInputStream(entry);
-                                byte[] bytes = new byte[(int)size];
-                                int bytesRemaining = (int) size;
-                                int bytesRead = 0;
-                                while (bytesRemaining > 0)
-                                  {
-                                    int n;
-                                    if (bytesRemaining >= 4096)
-                                      n = in.read(bytes, bytesRead, 4096);
-                                    else
-                                      n = in.read(bytes, bytesRead, bytesRemaining);
-                                    if (n < 0)
-                                      break;
-                                    bytesRead += n;
-                                    bytesRemaining -= n;
-                                  }
-                                in.close();
-                                if (bytesRemaining > 0)
-                                  Debug.trace("bytesRemaining = " + bytesRemaining);
-                                JavaClassLoader loader = new JavaClassLoader();
-                                Class c =
-                                  loader.loadClassFromByteArray(null, bytes, 0, bytes.length);
-                                if (c != null)
-                                  {
-                                    Class[] parameterTypes = new Class[0];
-                                    Constructor constructor =
-                                      c.getConstructor(parameterTypes);
-                                    Object[] initargs = new Object[0];
-                                    LispObject obj =
-                                      (LispObject) constructor.newInstance(initargs);
-                                    if (obj instanceof Function)
-                                      ((Function)obj).setClassBytes(bytes);
-                                    return obj != null ? obj : NIL;
-                                  }
+                                LispObject obj = loadCompiledFunction(in, (int) size);
+                                return obj != null ? obj : NIL;
                               }
                           }
                         finally
