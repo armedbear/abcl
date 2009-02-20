@@ -245,25 +245,24 @@
 
 (defun make-classes (force batch)
   (let* ((source-files
-          (mapcan #'(lambda (default)
-                      (directory (merge-pathnames "*.java" default)))
-                  (list *abcl-dir*
-                        (merge-pathnames "util/" *abcl-dir*))))
-         (to-do ()))
-    (if force
-        (setf to-do source-files)
-        (dolist (source-file source-files)
-          (let ((class-file (merge-pathnames (make-pathname :type "class"
-                                                            :defaults source-file))))
-            (when (or (null (probe-file class-file))
-                      (>= (file-write-date source-file)
-                          (file-write-date class-file)))
-              (push source-file to-do)))))
+          (remove-if-not #'(lambda (name)
+                             (let ((output-name
+                                    (make-pathname :type "class"
+                                                     :defaults name)))
+                               (or force
+                                   (null (probe-file output-name))
+                                   (>= (file-write-date name)
+                                       (file-write-date output-name)))))
+                         (mapcan #'(lambda (default)
+                                     (directory (merge-pathnames "*.java"
+                                                                 default)))
+                                 (list *abcl-dir*
+                                       (merge-pathnames "util/" *abcl-dir*))))))
     (format t "~&JDK: ~A~%" *jdk*)
     (format t "Java compiler: ~A~%" *java-compiler*)
     (format t "Compiler options: ~A~%~%" (if *java-compiler-options* *java-compiler-options* ""))
     (finish-output)
-    (cond ((null to-do)
+    (cond ((null source-files)
            (format t "Classes are up to date.~%")
            (finish-output)
            t)
@@ -272,7 +271,7 @@
                   (let* ((dir (pathname-directory *abcl-dir*))
                          (cmdline (with-output-to-string (s)
                                     (princ *java-compiler-command-line-prefix* s)
-                                    (dolist (source-file to-do)
+                                    (dolist (source-file source-files)
                                       (princ
                                        (if (equal (pathname-directory source-file) dir)
                                            (file-namestring source-file)
@@ -282,7 +281,7 @@
                          (status (run-shell-command cmdline :directory *abcl-dir*)))
                     (zerop status)))
                  (t
-                  (dolist (source-file to-do t)
+                  (dolist (source-file source-files t)
                     (unless (java-compile-file source-file)
                       (format t "Build failed.~%")
                       (return nil)))))))))
