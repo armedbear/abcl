@@ -53,17 +53,6 @@
 (defparameter *path-separator-char*
   (if (eq *platform* :windows) #\; #\:))
 
-(defmacro with-current-directory ((directory) &body body)
-  `(let ((*default-pathname-defaults* ,directory)
-         #+clisp
-         (old-directory (ext:cd)))
-     #+clisp
-     (ext:cd ,directory)
-     (unwind-protect
-         (progn ,@body)
-       #+clisp
-       (ext:cd old-directory)
-       )))
 
 #+sbcl
 (defun run-shell-command (command &key directory (output *standard-output*))
@@ -256,10 +245,10 @@
 
 (defun make-classes (force batch)
   (let* ((source-files
-          (append (with-current-directory (*abcl-dir*)
-                    (directory "*.java"))
-                  (with-current-directory ((merge-pathnames "util/" *abcl-dir*))
-                    (directory "*.java"))))
+          (mapcan #'(lambda (default)
+                      (directory (merge-pathnames "*.java" default)))
+                  (list *abcl-dir*
+                        (merge-pathnames "util/" *abcl-dir*))))
          (to-do ()))
     (if force
         (setf to-do source-files)
@@ -437,15 +426,15 @@
         (delete-file truename)))))
 
 (defun clean ()
-  (with-current-directory (*build-root*)
-    (delete-files (list "abcl.jar")))
-  (with-current-directory (*abcl-dir*)
-    (delete-files (directory "*.class"))
-    (delete-files (directory "*.abcl"))
-    (delete-files (directory "*.cls"))
-    (delete-files '("native.h" "libabcl.so" "build")))
-  (with-current-directory ((merge-pathnames "java/awt/" *abcl-dir*))
-    (delete-files (directory "*.class"))))
+  (dolist (f (list (list *build-root* "abcl.jar")
+                   (list *abcl-dir* "*.class" "*.abcl" "*.cls"
+                                    "native.h" "libabcl.so" "build")
+                   (list (merge-pathnames "java/awt/" *abcl-dir*)
+                         "*.class")))
+    (let ((default (car f)))
+      (delete-files (mapcan #'(lambda (name)
+                                (directory (merge-pathnames name default)))
+                            (cdr f))))))
 
 (defun build-abcl (&key force
                         (batch t)
