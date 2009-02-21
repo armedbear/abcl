@@ -79,192 +79,201 @@
        (dolist (file files)
          (grovel-java-definitions-in-file file stream))))))
 
-(defun %compile-system ()
+(defun %compile-system (&key output-path)
   (let ((*default-pathname-defaults* (pathname *lisp-home*))
-         (*warn-on-redefinition* nil))
-    (load (compile-file-if-needed "coerce.lisp"))
-    (load (compile-file-if-needed "open.lisp"))
-    (load (compile-file-if-needed "dump-form.lisp"))
-    (load (compile-file-if-needed "compiler-types.lisp"))
-    (load (compile-file-if-needed "compile-file.lisp"))
-    (load (compile-file-if-needed "precompiler.lisp"))
-    (load (compile-file-if-needed "compiler-pass1.lisp"))
-    (load (compile-file-if-needed "compiler-pass2.lisp"))
-    (load (compile-file-if-needed "jvm.lisp"))
-    (load (compile-file-if-needed "source-transform.lisp"))
-    (load (compile-file-if-needed "compiler-macro.lisp"))
-    (load (compile-file-if-needed "opcodes.lisp"))
-    (load (compile-file-if-needed "setf.lisp"))
-    (load (compile-file-if-needed "substitute.lisp"))
-    (load (compile-file-if-needed "clos.lisp"))
-    ;; Order matters for these files.
-    (mapc #'compile-file-if-needed '("collect.lisp"
-                                     "macros.lisp"
-                                     "loop.lisp"))
-    (load (compile-file-if-needed "backquote.lisp"))
-    (load (compile-file-if-needed "early-defuns.lisp"))
-    (load (compile-file-if-needed "typep.lisp"))
-    (load (compile-file-if-needed "subtypep.lisp"))
-    (load (compile-file-if-needed "find.lisp"))
-    (load (compile-file-if-needed "print.lisp"))
-    (load (compile-file-if-needed "pprint-dispatch.lisp"))
-    (load (compile-file-if-needed "pprint.lisp"))
-    (load (compile-file-if-needed "format.lisp"))
-    (load (compile-file-if-needed "delete.lisp"))
-    (load (compile-file-if-needed "concatenate.lisp"))
-    (load (compile-file-if-needed "ldb.lisp"))
-    (load (compile-file-if-needed "destructuring-bind.lisp"))
-    ;; But not for these.
-    (mapc #'compile-file-if-needed '("adjoin.lisp"
-                                     "and.lisp"
-                                     "apropos.lisp"
-                                     "arrays.lisp"
-                                     "asdf.lisp"
-                                     "assert.lisp"
-                                     "assoc.lisp"
-                                     "autoloads.lisp"
-                                     "aver.lisp"
-                                     "bit-array-ops.lisp"
-                                     "boole.lisp"
-                                     ;;"boot.lisp"
-                                     "butlast.lisp"
-                                     "byte-io.lisp"
-                                     "case.lisp"
-                                     "chars.lisp"
-                                     "check-type.lisp"
-                                     "compile-file-pathname.lisp"
-                                     "compile-system.lisp"
-                                     "compiler-error.lisp"
-                                     "cond.lisp"
-                                     "copy-seq.lisp"
-                                     "copy-symbol.lisp"
-                                     "count.lisp"
-                                     "debug.lisp"
-                                     "define-modify-macro.lisp"
-                                     "define-symbol-macro.lisp"
-                                     "defmacro.lisp"
-                                     "defpackage.lisp"
-                                     "defsetf.lisp"
-                                     "defstruct.lisp"
-                                     "deftype.lisp"
-                                     "delete-duplicates.lisp"
-                                     "deposit-field.lisp"
-                                     "describe.lisp"
-                                     "describe-compiler-policy.lisp"
-                                     "directory.lisp"
-                                     "disassemble.lisp"
-                                     "do-all-symbols.lisp"
-                                     "do-external-symbols.lisp"
-                                     "do-symbols.lisp"
-                                     "do.lisp"
-                                     "dolist.lisp"
-                                     "dotimes.lisp"
-                                     "dribble.lisp"
-                                     "dump-class.lisp"
-                                     "ed.lisp"
-                                     "enough-namestring.lisp"
-                                     "ensure-directories-exist.lisp"
-                                     "error.lisp"
-                                     "featurep.lisp"
-                                     "fdefinition.lisp"
-                                     "fill.lisp"
-                                     "find-all-symbols.lisp"
-                                     "gentemp.lisp"
-                                     "gray-streams.lisp"
-                                     "inline.lisp"
-                                     "inspect.lisp"
-                                     ;;"j.lisp"
-                                     "java.lisp"
-                                     "known-functions.lisp"
-                                     "known-symbols.lisp"
-                                     "late-setf.lisp"
-                                     "lcm.lisp"
-                                     "ldiff.lisp"
-                                     "list-length.lisp"
-                                     "list.lisp"
-                                     "load.lisp"
-                                     "make-hash-table.lisp"
-                                     "make-load-form-saving-slots.lisp"
-                                     "make-sequence.lisp"
-                                     "make-string-output-stream.lisp"
-                                     "make-string.lisp"
-                                     "map-into.lisp"
-                                     "map.lisp"
-                                     "map1.lisp"
-                                     "mask-field.lisp"
-                                     "member-if.lisp"
-                                     "mismatch.lisp"
-                                     "multiple-value-bind.lisp"
-                                     "multiple-value-list.lisp"
-                                     "multiple-value-setq.lisp"
-                                     "nsubstitute.lisp"
-                                     "nth-value.lisp"
-                                     "numbers.lisp"
-                                     "or.lisp"
-                                     "parse-integer.lisp"
-                                     "parse-lambda-list.lisp"
-                                     "pathnames.lisp"
-                                     "package.lisp"
-                                     "print-object.lisp"
-                                     "print-unreadable-object.lisp"
-                                     "proclaim.lisp"
-                                     "profiler.lisp"
-                                     "prog.lisp"
-                                     "psetf.lisp"
-                                     "query.lisp"
-                                     "read-conditional.lisp"
-                                     "read-from-string.lisp"
-                                     "read-sequence.lisp"
-                                     "reduce.lisp"
-                                     "remf.lisp"
-                                     "remove-duplicates.lisp"
-                                     "remove.lisp"
-                                     "replace.lisp"
-                                     "require.lisp"
-                                     "restart.lisp"
-                                     "revappend.lisp"
-                                     "rotatef.lisp"
-                                     "rt.lisp"
-                                     ;;"run-benchmarks.lisp"
-                                     "run-shell-command.lisp"
-                                     ;;"runtime-class.lisp"
-                                     "search.lisp"
-                                     "sequences.lisp"
-                                     "sets.lisp"
-                                     "shiftf.lisp"
-                                     "signal.lisp"
-                                     "socket.lisp"
-                                     "sort.lisp"
-                                     "step.lisp"
-                                     "strings.lisp"
-                                     "sublis.lisp"
-                                     "subst.lisp"
-                                     "tailp.lisp"
-                                     "time.lisp"
-                                     "top-level.lisp"
-                                     "trace.lisp"
-                                     "tree-equal.lisp"
-                                     "upgraded-complex-part-type.lisp"
-                                     "with-accessors.lisp"
-                                     "with-hash-table-iterator.lisp"
-                                     "with-input-from-string.lisp"
-                                     "with-mutex.lisp"
-                                     "with-open-file.lisp"
-                                     "with-output-to-string.lisp"
-                                     "with-package-iterator.lisp"
-                                     "with-slots.lisp"
-                                     "with-standard-io-syntax.lisp"
-                                     "with-thread-lock.lisp"
-                                     "write-sequence.lisp"))
+        (*warn-on-redefinition* nil))
+    (unless output-path
+      (setf output-path *default-pathname-defaults*))
+    (flet ((do-compile (file)
+             (print file)
+             (print output-path)
+             (let ((out (make-pathname :type "abcl"
+                                       :defaults (print (merge-pathnames
+                                                  file output-path)))))
+               (compile-file-if-needed file :output-file out))))
+      (load (do-compile "coerce.lisp"))
+      (load (do-compile "open.lisp"))
+      (load (do-compile "dump-form.lisp"))
+      (load (do-compile "compiler-types.lisp"))
+      (load (do-compile "compile-file.lisp"))
+      (load (do-compile "precompiler.lisp"))
+      (load (do-compile "compiler-pass1.lisp"))
+      (load (do-compile "compiler-pass2.lisp"))
+      (load (do-compile "jvm.lisp"))
+      (load (do-compile "source-transform.lisp"))
+      (load (do-compile "compiler-macro.lisp"))
+      (load (do-compile "opcodes.lisp"))
+      (load (do-compile "setf.lisp"))
+      (load (do-compile "substitute.lisp"))
+      (load (do-compile "clos.lisp"))
+      ;; Order matters for these files.
+      (mapc #'do-compile '("collect.lisp"
+                           "macros.lisp"
+                           "loop.lisp"))
+      (load (do-compile "backquote.lisp"))
+      (load (do-compile "early-defuns.lisp"))
+      (load (do-compile "typep.lisp"))
+      (load (do-compile "subtypep.lisp"))
+      (load (do-compile "find.lisp"))
+      (load (do-compile "print.lisp"))
+      (load (do-compile "pprint-dispatch.lisp"))
+      (load (do-compile "pprint.lisp"))
+      (load (do-compile "format.lisp"))
+      (load (do-compile "delete.lisp"))
+      (load (do-compile "concatenate.lisp"))
+      (load (do-compile "ldb.lisp"))
+      (load (do-compile "destructuring-bind.lisp"))
+      ;; But not for these.
+      (mapc #'do-compile '("adjoin.lisp"
+                           "and.lisp"
+                           "apropos.lisp"
+                           "arrays.lisp"
+                           "asdf.lisp"
+                           "assert.lisp"
+                           "assoc.lisp"
+                           "autoloads.lisp"
+                           "aver.lisp"
+                           "bit-array-ops.lisp"
+                           "boole.lisp"
+                           ;;"boot.lisp"
+                           "butlast.lisp"
+                           "byte-io.lisp"
+                           "case.lisp"
+                           "chars.lisp"
+                           "check-type.lisp"
+                           "compile-file-pathname.lisp"
+                           "compile-system.lisp"
+                           "compiler-error.lisp"
+                           "cond.lisp"
+                           "copy-seq.lisp"
+                           "copy-symbol.lisp"
+                           "count.lisp"
+                           "debug.lisp"
+                           "define-modify-macro.lisp"
+                           "define-symbol-macro.lisp"
+                           "defmacro.lisp"
+                           "defpackage.lisp"
+                           "defsetf.lisp"
+                           "defstruct.lisp"
+                           "deftype.lisp"
+                           "delete-duplicates.lisp"
+                           "deposit-field.lisp"
+                           "describe.lisp"
+                           "describe-compiler-policy.lisp"
+                           "directory.lisp"
+                           "disassemble.lisp"
+                           "do-all-symbols.lisp"
+                           "do-external-symbols.lisp"
+                           "do-symbols.lisp"
+                           "do.lisp"
+                           "dolist.lisp"
+                           "dotimes.lisp"
+                           "dribble.lisp"
+                           "dump-class.lisp"
+                           "ed.lisp"
+                           "enough-namestring.lisp"
+                           "ensure-directories-exist.lisp"
+                           "error.lisp"
+                           "featurep.lisp"
+                           "fdefinition.lisp"
+                           "fill.lisp"
+                           "find-all-symbols.lisp"
+                           "gentemp.lisp"
+                           "gray-streams.lisp"
+                           "inline.lisp"
+                           "inspect.lisp"
+                           ;;"j.lisp"
+                           "java.lisp"
+                           "known-functions.lisp"
+                           "known-symbols.lisp"
+                           "late-setf.lisp"
+                           "lcm.lisp"
+                           "ldiff.lisp"
+                           "list-length.lisp"
+                           "list.lisp"
+                           "load.lisp"
+                           "make-hash-table.lisp"
+                           "make-load-form-saving-slots.lisp"
+                           "make-sequence.lisp"
+                           "make-string-output-stream.lisp"
+                           "make-string.lisp"
+                           "map-into.lisp"
+                           "map.lisp"
+                           "map1.lisp"
+                           "mask-field.lisp"
+                           "member-if.lisp"
+                           "mismatch.lisp"
+                           "multiple-value-bind.lisp"
+                           "multiple-value-list.lisp"
+                           "multiple-value-setq.lisp"
+                           "nsubstitute.lisp"
+                           "nth-value.lisp"
+                           "numbers.lisp"
+                           "or.lisp"
+                           "parse-integer.lisp"
+                           "parse-lambda-list.lisp"
+                           "pathnames.lisp"
+                           "package.lisp"
+                           "print-object.lisp"
+                           "print-unreadable-object.lisp"
+                           "proclaim.lisp"
+                           "profiler.lisp"
+                           "prog.lisp"
+                           "psetf.lisp"
+                           "query.lisp"
+                           "read-conditional.lisp"
+                           "read-from-string.lisp"
+                           "read-sequence.lisp"
+                           "reduce.lisp"
+                           "remf.lisp"
+                           "remove-duplicates.lisp"
+                           "remove.lisp"
+                           "replace.lisp"
+                           "require.lisp"
+                           "restart.lisp"
+                           "revappend.lisp"
+                           "rotatef.lisp"
+                           "rt.lisp"
+                           ;;"run-benchmarks.lisp"
+                           "run-shell-command.lisp"
+                           ;;"runtime-class.lisp"
+                           "search.lisp"
+                           "sequences.lisp"
+                           "sets.lisp"
+                           "shiftf.lisp"
+                           "signal.lisp"
+                           "socket.lisp"
+                           "sort.lisp"
+                           "step.lisp"
+                           "strings.lisp"
+                           "sublis.lisp"
+                           "subst.lisp"
+                           "tailp.lisp"
+                           "time.lisp"
+                           "top-level.lisp"
+                           "trace.lisp"
+                           "tree-equal.lisp"
+                           "upgraded-complex-part-type.lisp"
+                           "with-accessors.lisp"
+                           "with-hash-table-iterator.lisp"
+                           "with-input-from-string.lisp"
+                           "with-mutex.lisp"
+                           "with-open-file.lisp"
+                           "with-output-to-string.lisp"
+                           "with-package-iterator.lisp"
+                           "with-slots.lisp"
+                           "with-standard-io-syntax.lisp"
+                           "with-thread-lock.lisp"
+                           "write-sequence.lisp")))
     t))
 
-(defun compile-system (&key quit (zip t))
+(defun compile-system (&key quit (zip t) output-path)
   (let ((status -1))
     (check-lisp-home)
     (time
      (with-compilation-unit ()
        (let ((*compile-file-zip* zip))
-         (%compile-system))
+         (%compile-system :output-path output-path))
        (when (zerop (+ jvm::*errors* jvm::*warnings*))
          (setf status 0))))
     (when quit

@@ -478,7 +478,8 @@
           (format t "~&; Wrote ~A (~A seconds)~%" (namestring output-file) elapsed))))
     (values (truename output-file) warnings-p failure-p)))
 
-(defun compile-file-if-needed (input-file &rest allargs &key force-compile)
+(defun compile-file-if-needed (input-file &rest allargs &key force-compile
+                               &allow-other-keys)
   (setf input-file (truename input-file))
   (cond (force-compile
          (remf allargs :force-compile)
