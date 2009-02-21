@@ -56,7 +56,8 @@ public final class Site extends Lisp
                     }
                 }
             }
-        }
+        } else
+            lispHome = System.getProperty("abcl.home");
         LISP_HOME = lispHome;
     }
 
