@@ -85,11 +85,9 @@
     (unless output-path
       (setf output-path *default-pathname-defaults*))
     (flet ((do-compile (file)
-             (print file)
-             (print output-path)
              (let ((out (make-pathname :type "abcl"
-                                       :defaults (print (merge-pathnames
-                                                  file output-path)))))
+                                       :defaults (merge-pathnames
+                                                  file output-path))))
                (compile-file-if-needed file :output-file out))))
       (load (do-compile "coerce.lisp"))
       (load (do-compile "open.lisp"))
