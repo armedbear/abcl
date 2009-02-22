@@ -425,7 +425,9 @@ org.armedbear.lisp.Main --noinit ~
 
 (defun clean ()
   (dolist (f (list (list *build-root* "abcl.jar" "abcl.bat" "make-jar.bat"
-                                      "compile-system.bat")
+                         "compile-system.bat")
+                   ;; as of 0.14 'compile-system.bat' isn't created anymore
+                   ;; as of 0.14 'abcl.jar' is always created in dist/
                    (list *abcl-dir* "*.class" "*.abcl" "*.cls"
                                     "native.h" "libabcl.so" "build")
                    (list (merge-pathnames "build/classes/org/armedbear/lisp/"
