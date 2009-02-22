@@ -248,7 +248,7 @@
   (concatenate 'string
                *java-compiler-command-line-prefix*
                " -d "
-               (princ-to-string *build-root*)
+               (safe-namestring *build-root*)
                " "
                (namestring source-file)))
 
@@ -261,7 +261,10 @@
           (remove-if-not #'(lambda (name)
                              (let ((output-name
                                     (make-pathname :type "class"
-                                                     :defaults name)))
+;;                                                   :name (pathname-name name)
+;;###FIXME: we need defaults from *build-root*,
+;; taking the bit of name which is below *abcl-dir*
+                                                   :defaults name)))
                                (or force
                                    (null (probe-file output-name))
                                    (>= (file-write-date name)
