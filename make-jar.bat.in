@@ -1,7 +1,3 @@
-cd src
-@JAR@ cmf manifest-abcl ..\abcl.jar org\armedbear\lisp\*.class
-@JAR@ uf ..\abcl.jar org\armedbear\lisp\util\*.class
-@JAR@ uf ..\abcl.jar org\armedbear\lisp\LICENSE
-@JAR@ uf ..\abcl.jar org\armedbear\lisp\*.lisp 
-@JAR@ uf ..\abcl.jar org\armedbear\lisp\*.abcl
-@JAR@ uf ..\abcl.jar org\armedbear\lisp\*.cls
+@JAR@ cfm dist\abcl.jar src\manifest-abcl -C src org\armedbear\lisp\LICENSE -C src org\armedbear\lisp\boot.lisp
+@JAR@ uf dist\abcl.jar -C build\classes .
+

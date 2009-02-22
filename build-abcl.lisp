@@ -217,12 +217,15 @@
 
 (defun substitute-in-string (string substitutions-alist)
   (dolist (entry substitutions-alist)
-    (let ((index (search (car entry) string :test #'string=)))
-      (when index
-        (setf string (concatenate 'string
-                                  (subseq string 0 index)
-                                  (cdr entry)
-                                  (subseq string (+ index (length (car entry)))))))))
+    (loop named replace
+         for index = (search (car entry) string :test #'string=)
+         do
+         (unless index
+           (return-from replace))
+         (setf string (concatenate 'string
+                                   (subseq string 0 index)
+                                   (cdr entry)
+                                   (subseq string (+ index (length (car entry))))))))
   string)
 
 (defun copy-with-substitutions (source-file target-file substitutions-alist)
@@ -268,9 +271,14 @@
            t)
           (t
            (cond (batch
+                  (ensure-directories-exist (merge-pathnames "build/classes/" *build-root*))
                   (let* ((dir (pathname-directory *abcl-dir*))
                          (cmdline (with-output-to-string (s)
                                     (princ *java-compiler-command-line-prefix* s)
+                                    (princ " -d " s)
+                                    (princ (merge-pathnames "build/classes/"
+                                                            *build-root*) s)
+                                    (princ #\Space s)
                                     (dolist (source-file source-files)
                                       (princ
                                        (if (equal (pathname-directory source-file) dir)
@@ -281,6 +289,7 @@
                          (status (run-shell-command cmdline :directory *abcl-dir*)))
                     (zerop status)))
                  (t
+                  (ensure-directories-exist (merge-pathnames "build/classes/" *build-root*))
                   (dolist (source-file source-files t)
                     (unless (java-compile-file source-file)
                       (format t "Build failed.~%")
@@ -296,6 +305,7 @@
           (target-file (if (eq *platform* :windows) "make-jar.bat"    "make-jar"))
           (command     (if (eq *platform* :windows) "make-jar.bat"    "sh make-jar")))
       (copy-with-substitutions source-file target-file substitutions-alist)
+      (ensure-directories-exist (merge-pathnames "dist/" *build-root*))
       (let ((status (run-shell-command command :directory *build-root*)))
         (unless (zerop status)
           (format t "~A returned ~S~%" command status))
@@ -305,40 +315,30 @@
   (terpri)
   (finish-output)
   (let* ((java-namestring (safe-namestring *java*))
-         status)
-    (cond ((eq *platform* :windows)
-           (with-open-file (stream
-                            (merge-pathnames "compile-system.bat" *build-root*)
-                            :direction :output
-                            :if-exists :supersede)
-             (princ java-namestring stream)
-             (write-string " -cp " stream)
-             (princ "src" stream)
-             (write-char #\space stream)
-             (write-string
-              (if zip
-                 "org.armedbear.lisp.Main --eval \"(compile-system :zip t :quit t)\""
-                 "org.armedbear.lisp.Main --eval \"(compile-system :zip nil :quit t)\"")
-              stream)
-             (terpri stream))
-           (setf status
-                 (run-shell-command "compile-system.bat"
-                                    :directory *build-root*)))
-          (t ; Linux
-           (let ((cmdline
-                  (with-output-to-string (s)
-                    (princ java-namestring s)
-                    (write-string " -cp " s)
-                    (princ "src" s)
-                    (write-char #\space s)
-                    (write-string
-                     (if zip
-                         "org.armedbear.lisp.Main --eval \"(compile-system :zip t :quit t)\""
-                         "org.armedbear.lisp.Main --eval \"(compile-system :zip nil :quit t)\"")
-                     s))))
-             (setf status
-                   (run-shell-command cmdline
-                                      :directory *build-root*)))))
+         status
+         (abcl-home (substitute-in-string
+                     (namestring *abcl-dir*)
+                     (when (eq *platform* :windows)
+                       '(("\\" . "/")
+                         ("/" . "\\\\")))))
+         (output-path (substitute-in-string
+                       (namestring
+                        (merge-pathnames "build/classes/org/armedbear/lisp/"
+                                         *build-root*))
+                       (when (eq *platform* :windows)
+                         '(("\\" . "/")))))
+         (cmdline (format nil
+                          "~A -cp build\\classes -Dabcl.home=\"~A\" ~
+org.armedbear.lisp.Main --noinit ~
+--eval \"(compile-system :zip ~A :quit t :output-path \\\"~A\\\")\"~%"
+                          java-namestring
+                          abcl-home
+                          (not (not zip)) ;; because that ensures T or NIL
+                          output-path)))
+    (ensure-directories-exist output-path)
+    (setf status
+          (run-shell-command cmdline
+                             :directory *build-root*))
     status))
 
 (defun make-libabcl ()
@@ -376,10 +376,9 @@
                           (merge-pathnames "abcl.bat" *build-root*)
                           :direction :output
                           :if-exists :supersede)
-           (format s "~A -Xss4M -Xmx256M -cp \"~A;~A\" org.armedbear.lisp.Main %1 %2 %3 %4 %5 %6 %7 %8 %9~%"
+           (format s "~A -Xss4M -Xmx256M -cp \"~A\" org.armedbear.lisp.Main %1 %2 %3 %4 %5 %6 %7 %8 %9~%"
                    (safe-namestring *java*)
-                   (namestring (merge-pathnames "src" *build-root*))
-                   (namestring (merge-pathnames "abcl.jar" *build-root*)))))
+                   (namestring (merge-pathnames "dist\\abcl.jar" *build-root*)))))
         (t
          (let ((pathname (merge-pathnames "abcl" *build-root*)))
            (with-open-file (s pathname :direction :output :if-exists :supersede)
@@ -425,15 +424,27 @@
         (delete-file truename)))))
 
 (defun clean ()
-  (dolist (f (list (list *build-root* "abcl.jar")
+  (dolist (f (list (list *build-root* "abcl.jar" "abcl.bat" "make-jar.bat"
+                                      "compile-system.bat")
                    (list *abcl-dir* "*.class" "*.abcl" "*.cls"
                                     "native.h" "libabcl.so" "build")
-                   (list (merge-pathnames "java/awt/" *abcl-dir*)
+                   (list (merge-pathnames "build/classes/org/armedbear/lisp/"
+                                          *build-root*)
+                                    "*.class" "*.abcl" "*.cls"
+                                    "native.h" "libabcl.so" "build")
+                   (list (merge-pathnames
+                          "build/classes/org/armedbear/lisp/util/"
+                          *build-root*)
+                                    "*.class" "*.abcl" "*.cls")
+                   (list (merge-pathnames "dist/" *build-root*)
+                                    "*.jar" "*.class" "*.abcl" "*.cls")
+                  (list (merge-pathnames "java/awt/" *abcl-dir*)
                          "*.class")))
     (let ((default (car f)))
-      (delete-files (mapcan #'(lambda (name)
-                                (directory (merge-pathnames name default)))
-                            (cdr f))))))
+      (when (probe-directory default)
+        (delete-files (mapcan #'(lambda (name)
+                                  (directory (merge-pathnames name default)))
+                              (cdr f)))))))
 
 (defun build-abcl (&key force
                         (batch t)
