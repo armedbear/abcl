@@ -247,6 +247,9 @@
 (defun build-javac-command-line (source-file)
   (concatenate 'string
                *java-compiler-command-line-prefix*
+               " -d "
+               (princ-to-string *build-root*)
+               " "
                (namestring source-file)))
 
 (defun java-compile-file (source-file)
