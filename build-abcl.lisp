@@ -146,15 +146,22 @@
          (eql (char namestring (1- (length namestring))) *file-separator-char*)
          truename)))
 
-(defparameter *build-root*
+(defparameter *tree-root*
   (make-pathname :device (pathname-device *load-truename*)
                  :directory (pathname-directory *load-truename*)))
+(defparameter *build-root*
+  (merge-pathnames "build/classes/" *tree-root*))
+(defparameter *source-root*
+  (merge-pathnames "src/" *tree-root*))
+(defparameter *dist-root*
+  (merge-pathnames "dist/" *tree-root*))
+
 
 (defparameter *customizations-file*
-  (merge-pathnames "customizations.lisp" *build-root*))
+  (merge-pathnames "customizations.lisp" *tree-root*))
 
 (defparameter *abcl-dir*
-  (merge-pathnames "src/org/armedbear/lisp/" *build-root*))
+  (merge-pathnames "src/org/armedbear/lisp/" *tree-root*))
 
 (defparameter *jdk*           nil)
 (defparameter *java-compiler* nil)
@@ -190,7 +197,7 @@
                                      "bin/jar.exe"
                                      "bin/jar")
                                  *jdk*)))
-  (let ((classpath-components (list (merge-pathnames "src" *build-root*)
+  (let ((classpath-components (list *source-root*
                                     (if (eq *platform* :darwin)
                                         #p"/System/Library/Frameworks/JavaVM.framework/Classes/classes.jar"
                                         (merge-pathnames "jre/lib/rt.jar" *jdk*)))))
@@ -271,13 +278,12 @@
            t)
           (t
            (cond (batch
-                  (ensure-directories-exist (merge-pathnames "build/classes/" *build-root*))
+                  (ensure-directories-exist *build-root*)
                   (let* ((dir (pathname-directory *abcl-dir*))
                          (cmdline (with-output-to-string (s)
                                     (princ *java-compiler-command-line-prefix* s)
                                     (princ " -d " s)
-                                    (princ (merge-pathnames "build/classes/"
-                                                            *build-root*) s)
+                                    (princ *build-root* s)
                                     (princ #\Space s)
                                     (dolist (source-file source-files)
                                       (princ
@@ -289,14 +295,14 @@
                          (status (run-shell-command cmdline :directory *abcl-dir*)))
                     (zerop status)))
                  (t
-                  (ensure-directories-exist (merge-pathnames "build/classes/" *build-root*))
+                  (ensure-directories-exist *build-root*)
                   (dolist (source-file source-files t)
                     (unless (java-compile-file source-file)
                       (format t "Build failed.~%")
                       (return nil)))))))))
 
 (defun make-jar ()
-  (let ((*default-pathname-defaults* *build-root*)
+  (let ((*default-pathname-defaults* *tree-root*)
         (jar-namestring (namestring *jar*)))
     (when (position #\space jar-namestring)
       (setf jar-namestring (concatenate 'string "\"" jar-namestring "\"")))
@@ -305,8 +311,8 @@
           (target-file (if (eq *platform* :windows) "make-jar.bat"    "make-jar"))
           (command     (if (eq *platform* :windows) "make-jar.bat"    "sh make-jar")))
       (copy-with-substitutions source-file target-file substitutions-alist)
-      (ensure-directories-exist (merge-pathnames "dist/" *build-root*))
-      (let ((status (run-shell-command command :directory *build-root*)))
+      (ensure-directories-exist *dist-root*)
+      (let ((status (run-shell-command command :directory *tree-root*)))
         (unless (zerop status)
           (format t "~A returned ~S~%" command status))
         status))))
@@ -324,7 +330,7 @@
          (output-path (substitute-in-string
                        (namestring
                         (merge-pathnames "build/classes/org/armedbear/lisp/"
-                                         *build-root*))
+                                         *tree-root*))
                        (when (eq *platform* :windows)
                          '(("\\" . "/")))))
          (cmdline (format nil
@@ -338,7 +344,7 @@ org.armedbear.lisp.Main --noinit ~
     (ensure-directories-exist output-path)
     (setf status
           (run-shell-command cmdline
-                             :directory *build-root*))
+                             :directory *tree-root*))
     status))
 
 (defun make-libabcl ()
@@ -347,7 +353,7 @@ org.armedbear.lisp.Main --noinit ~
                (format nil "~A -o org/armedbear/lisp/native.h org.armedbear.lisp.Native"
                        javah-namestring))
               (status
-               (run-shell-command command :directory (merge-pathnames "src/" *build-root*))))
+               (run-shell-command command :directory *source-root*)))
          (unless (zerop status)
            (format t "~A returned ~S~%" command status))
          (zerop status))
@@ -373,29 +379,29 @@ org.armedbear.lisp.Main --noinit ~
   ;; used to build sbcl.
   (cond ((eq *platform* :windows)
          (with-open-file (s
-                          (merge-pathnames "abcl.bat" *build-root*)
+                          (merge-pathnames "abcl.bat" *tree-root*)
                           :direction :output
                           :if-exists :supersede)
            (format s "~A -Xss4M -Xmx256M -cp \"~A\" org.armedbear.lisp.Main %1 %2 %3 %4 %5 %6 %7 %8 %9~%"
                    (safe-namestring *java*)
-                   (namestring (merge-pathnames "dist\\abcl.jar" *build-root*)))))
+                   (namestring (merge-pathnames "dist\\abcl.jar" *tree-root*)))))
         (t
-         (let ((pathname (merge-pathnames "abcl" *build-root*)))
+         (let ((pathname (merge-pathnames "abcl" *tree-root*)))
            (with-open-file (s pathname :direction :output :if-exists :supersede)
              (if (eq *platform* :linux)
                  ;; On Linux, set java.library.path for libabcl.so.
                  (format s "#!/bin/sh~%exec ~A -Xss4M -Xmx256M -Xrs -Djava.library.path=~A -cp ~A:~A org.armedbear.lisp.Main \"$@\"~%"
                          (safe-namestring *java*)
                          (safe-namestring *abcl-dir*)
-                         (safe-namestring (merge-pathnames "src" *build-root*))
-                         (safe-namestring (merge-pathnames "abcl.jar" *build-root*)))
+                         (safe-namestring *source-root*)
+                         (safe-namestring (merge-pathnames "abcl.jar" *tree-root*)))
                  ;; Not Linux.
                  (format s "#!/bin/sh~%exec ~A -Xss4M -Xmx256M -cp ~A:~A org.armedbear.lisp.Main \"$@\"~%"
                          (safe-namestring *java*)
-                         (safe-namestring (merge-pathnames "src" *build-root*))
-                         (safe-namestring (merge-pathnames "abcl.jar" *build-root*)))))
+                         (safe-namestring *source-root*)
+                         (safe-namestring (merge-pathnames "abcl.jar" *tree-root*)))))
            (run-shell-command (format nil "chmod +x ~A" (safe-namestring pathname))
-                              :directory *build-root*)))))
+                              :directory *tree-root*)))))
 
 (defun build-stamp ()
   (multiple-value-bind
@@ -424,22 +430,21 @@ org.armedbear.lisp.Main --noinit ~
         (delete-file truename)))))
 
 (defun clean ()
-  (dolist (f (list (list *build-root* "abcl.jar" "abcl.bat" "make-jar.bat"
+  (dolist (f (list (list *tree-root* "abcl.jar" "abcl.bat" "make-jar.bat"
                          "compile-system.bat")
                    ;; as of 0.14 'compile-system.bat' isn't created anymore
                    ;; as of 0.14 'abcl.jar' is always created in dist/
                    (list *abcl-dir* "*.class" "*.abcl" "*.cls"
                                     "native.h" "libabcl.so" "build")
                    (list (merge-pathnames "build/classes/org/armedbear/lisp/"
-                                          *build-root*)
+                                          *tree-root*)
                                     "*.class" "*.abcl" "*.cls"
                                     "native.h" "libabcl.so" "build")
                    (list (merge-pathnames
                           "build/classes/org/armedbear/lisp/util/"
-                          *build-root*)
+                          *tree-root*)
                                     "*.class" "*.abcl" "*.cls")
-                   (list (merge-pathnames "dist/" *build-root*)
-                                    "*.jar" "*.class" "*.abcl" "*.cls")
+                   (list *dist-root* "*.jar" "*.class" "*.abcl" "*.cls")
                   (list (merge-pathnames "java/awt/" *abcl-dir*)
                          "*.class")))
     (let ((default (car f)))
@@ -545,7 +550,7 @@ org.armedbear.lisp.Main --noinit ~
   (let ((target-root (pathname (concatenate 'string "/var/tmp/" version-string "/"))))
     (when (probe-directory target-root)
       (error "Target directory ~S already exists." target-root))
-    (let* ((source-dir *build-root*)
+    (let* ((source-dir *tree-root*)
            (target-dir target-root)
            (files (list "README"
                         "COPYING"
@@ -554,14 +559,13 @@ org.armedbear.lisp.Main --noinit ~
                         "make-jar.bat.in"
                         "make-jar.in")))
       (copy-files files source-dir target-dir))
-    (let* ((source-dir (merge-pathnames "examples/" *build-root*))
+    (let* ((source-dir (merge-pathnames "examples/" *tree-root*))
            (target-dir (merge-pathnames "examples/" target-root))
            (files '("hello.java")))
       (copy-files files source-dir target-dir))
-    (let* ((source-dir (merge-pathnames "src/" *build-root*))
-           (target-dir (merge-pathnames "src/" target-root))
+    (let* ((target-dir (merge-pathnames "src/" target-root))
            (files '("manifest-abcl")))
-      (copy-files files source-dir target-dir))
+      (copy-files files *source-root* target-dir))
     (let* ((source-dir *abcl-dir*)
            (target-dir (merge-pathnames "src/org/armedbear/lisp/" target-root))
            (*default-pathname-defaults* source-dir)
