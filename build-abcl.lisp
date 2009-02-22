@@ -334,7 +334,7 @@
                        (when (eq *platform* :windows)
                          '(("\\" . "/")))))
          (cmdline (format nil
-                          "~A -cp build\\classes -Dabcl.home=\"~A\" ~
+                          "~A -cp build/classes -Dabcl.home=\"~A\" ~
 org.armedbear.lisp.Main --noinit ~
 --eval \"(compile-system :zip ~A :quit t :output-path \\\"~A\\\")\"~%"
                           java-namestring
@@ -390,16 +390,14 @@ org.armedbear.lisp.Main --noinit ~
            (with-open-file (s pathname :direction :output :if-exists :supersede)
              (if (eq *platform* :linux)
                  ;; On Linux, set java.library.path for libabcl.so.
-                 (format s "#!/bin/sh~%exec ~A -Xss4M -Xmx256M -Xrs -Djava.library.path=~A -cp ~A:~A org.armedbear.lisp.Main \"$@\"~%"
+                 (format s "#!/bin/sh~%exec ~A -Xss4M -Xmx256M -Xrs -Djava.library.path=~A -cp ~A org.armedbear.lisp.Main \"$@\"~%"
                          (safe-namestring *java*)
-                         (safe-namestring *abcl-dir*)
-                         (safe-namestring *source-root*)
-                         (safe-namestring (merge-pathnames "abcl.jar" *tree-root*)))
+                         (safe-namestring (merge-pathnames "org/armedbear/lisp/" *build-root*))
+                         (safe-namestring (merge-pathnames "abcl.jar" *dist-root*)))
                  ;; Not Linux.
-                 (format s "#!/bin/sh~%exec ~A -Xss4M -Xmx256M -cp ~A:~A org.armedbear.lisp.Main \"$@\"~%"
+                 (format s "#!/bin/sh~%exec ~A -Xss4M -Xmx256M -cp ~A org.armedbear.lisp.Main \"$@\"~%"
                          (safe-namestring *java*)
-                         (safe-namestring *source-root*)
-                         (safe-namestring (merge-pathnames "abcl.jar" *tree-root*)))))
+                         (safe-namestring (merge-pathnames "abcl.jar" *dist-root*)))))
            (run-shell-command (format nil "chmod +x ~A" (safe-namestring pathname))
                               :directory *tree-root*)))))
 
