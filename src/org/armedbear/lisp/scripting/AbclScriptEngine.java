@@ -45,8 +45,10 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	private Function evalCompiledScript;
 
 	public AbclScriptEngine() {
-		interpreter = Interpreter.createInstance();
-		interpreter.initializeLisp();
+		interpreter = Interpreter.getInstance();
+		if(interpreter == null) {
+		    interpreter = Interpreter.createInstance();
+		}
 		this.nonThrowingDebugHook = Symbol.DEBUGGER_HOOK.getSymbolValue();
 		try {
 			loadFromClasspath("/org/armedbear/lisp/scripting/lisp/packages.lisp");
