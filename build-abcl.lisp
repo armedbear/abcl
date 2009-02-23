@@ -20,6 +20,27 @@
     string))
 
 
+(defun child-pathname (pathname parent)
+  "Returns `pathname' relative to `parent', assuming that it
+is infact a child of it while being rooted at the same root as `parent'."
+  (let ((path-dir (pathname-directory pathname))
+        (parent-dir (pathname-directory parent)))
+    (do ((p1 path-dir (cdr p1))
+         (p2 parent-dir (cdr p2)))
+        ((or (endp p2) (not (equal (car p1) (car p2))))
+         (when (endp p2)
+           (make-pathname :directory (cons :relative p1)
+                          :defaults pathname))))))
+
+
+(defun file-newer (orig artifact)
+  "Compares file date/time of `orig' and `artifact', returning
+`NIL' if `orig' is newer than `artifact'."
+  (or (null (probe-file artifact))
+      (> (file-write-date orig)
+         (file-write-date artifact))))
+
+
 
 ;; Platform detection.
 
@@ -258,22 +279,21 @@
 
 (defun make-classes (force batch)
   (let* ((source-files
-          (remove-if-not #'(lambda (name)
-                             (let ((output-name
-                                    (make-pathname :type "class"
-;;                                                   :name (pathname-name name)
-;;###FIXME: we need defaults from *build-root*,
-;; taking the bit of name which is below *abcl-dir*
-                                                   :defaults name)))
-                               (or force
-                                   (null (probe-file output-name))
-                                   (>= (file-write-date name)
-                                       (file-write-date output-name)))))
-                         (mapcan #'(lambda (default)
-                                     (directory (merge-pathnames "*.java"
-                                                                 default)))
-                                 (list *abcl-dir*
-                                       (merge-pathnames "util/" *abcl-dir*))))))
+          (remove-if-not
+           #'(lambda (name)
+               (let ((output-name
+                      (merge-pathnames
+                       (make-pathname :type "class"
+                                      :defaults (child-pathname name
+                                                                *source-root*))
+                       *build-root*)))
+                 (or force
+                     (file-newer name output-name))))
+           (mapcan #'(lambda (default)
+                       (directory (merge-pathnames "*.java"
+                                                   default)))
+                   (list *abcl-dir*
+                         (merge-pathnames "util/" *abcl-dir*))))))
     (format t "~&JDK: ~A~%" *jdk*)
     (format t "Java compiler: ~A~%" *java-compiler*)
     (format t "Compiler options: ~A~%~%" (if *java-compiler-options* *java-compiler-options* ""))
@@ -440,6 +460,7 @@ org.armedbear.lisp.Main --noinit ~
                    ;; as of 0.14 'abcl.jar' is always created in dist/
                    (list *abcl-dir* "*.class" "*.abcl" "*.cls"
                                     "native.h" "libabcl.so" "build")
+                   (list (merge-pathnames "util/" *abcl-dir*) "*.class")
                    (list (merge-pathnames "build/classes/org/armedbear/lisp/"
                                           *tree-root*)
                                     "*.class" "*.abcl" "*.cls"
