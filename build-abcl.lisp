@@ -373,31 +373,6 @@ org.armedbear.lisp.Main --noinit ~
                              :directory *tree-root*))
     status))
 
-(defun make-libabcl ()
-  (and (let* ((javah-namestring (namestring (probe-file (merge-pathnames "bin/javah" *jdk*))))
-              (command
-               (format nil "~A -o org/armedbear/lisp/native.h org.armedbear.lisp.Native"
-                       javah-namestring))
-              (status
-               (run-shell-command command :directory *source-root*)))
-         (unless (zerop status)
-           (format t "~A returned ~S~%" command status))
-         (zerop status))
-       (let* ((jdk-namestring (namestring *jdk*))
-              (command
-               (format nil "gcc -shared -o libabcl.so -O -D_REENTRANT -fpic -I~Ainclude -I~Ainclude/~A native.c"
-                       jdk-namestring jdk-namestring
-                       (cond ((eq *platform* :linux)
-                              "linux")
-                             ((search "SunOS" (software-type))
-                              "solaris")
-                             ((search "FreeBSD" (software-type))
-                              "freebsd"))))
-              (status
-               (run-shell-command command :directory *abcl-dir*)))
-         (unless (zerop status)
-           (format t "~A returned ~S~%" command status))
-         (zerop status))))
 
 ;; abcl/abcl.bat
 (defun make-launch-script ()
@@ -414,16 +389,9 @@ org.armedbear.lisp.Main --noinit ~
         (t
          (let ((pathname (merge-pathnames "abcl" *tree-root*)))
            (with-open-file (s pathname :direction :output :if-exists :supersede)
-             (if (eq *platform* :linux)
-                 ;; On Linux, set java.library.path for libabcl.so.
-                 (format s "#!/bin/sh~%exec ~A -Xss4M -Xmx256M -Xrs -Djava.library.path=~A -cp ~A org.armedbear.lisp.Main \"$@\"~%"
-                         (safe-namestring *java*)
-                         (safe-namestring (merge-pathnames "org/armedbear/lisp/" *build-root*))
-                         (safe-namestring (merge-pathnames "abcl.jar" *dist-root*)))
-                 ;; Not Linux.
-                 (format s "#!/bin/sh~%exec ~A -Xss4M -Xmx256M -cp ~A org.armedbear.lisp.Main \"$@\"~%"
-                         (safe-namestring *java*)
-                         (safe-namestring (merge-pathnames "abcl.jar" *dist-root*)))))
+             (format s "#!/bin/sh~%exec ~A -Xss4M -Xmx256M -cp ~A org.armedbear.lisp.Main \"$@\"~%"
+                     (safe-namestring *java*)
+                     (safe-namestring (merge-pathnames "abcl.jar" *dist-root*))))
            (run-shell-command (format nil "chmod +x ~A" (safe-namestring pathname))
                               :directory *tree-root*)))))
 
@@ -460,6 +428,7 @@ org.armedbear.lisp.Main --noinit ~
                    ;; as of 0.14 'abcl.jar' is always created in dist/
                    (list *abcl-dir* "*.class" "*.abcl" "*.cls"
                                     "native.h" "libabcl.so" "build")
+                   ;; as of 0.14, native.h and libabcl.so have been removed
                    (list (merge-pathnames "util/" *abcl-dir*) "*.class")
                    (list (merge-pathnames "build/classes/org/armedbear/lisp/"
                                           *tree-root*)
@@ -483,7 +452,6 @@ org.armedbear.lisp.Main --noinit ~
                         compile-system
                         jar
                         clean
-                        libabcl
                         full)
   (let ((start (get-internal-real-time)))
 
@@ -519,13 +487,6 @@ org.armedbear.lisp.Main --noinit ~
         (unless (zerop status)
           (format t "Build failed.~%")
           (return-from build-abcl nil))))
-    ;; libabcl.so
-    (when (and (or full libabcl)
-               (or (eq *platform* :linux)
-                   (search "SunOS" (software-type))
-                   (search "FreeBSD" (software-type))))
-      ;; A failure here is not fatal.
-      (make-libabcl))
     ;; abcl/abcl.bat
     (make-launch-script)
     (make-build-stamp)
