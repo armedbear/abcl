@@ -591,6 +591,14 @@ public abstract class Lisp
       env.bind(sym, value);
   }
 
+  public static final Cons list(LispObject... objects)
+  {
+    Cons theList = new Cons(objects[objects.length-1]);
+    for (int i = objects.length - 2; i >= 0; i--)
+        theList = new Cons(objects[i], theList);
+    return theList;
+  }
+
   public static final Cons list1(LispObject obj1)
   {
     return new Cons(obj1);
