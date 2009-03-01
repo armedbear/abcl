@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import java.math.BigInteger;
+
 public final class JavaObject extends LispObject
 {
     private final Object obj;
@@ -74,6 +76,92 @@ public final class JavaObject extends LispObject
     public final Object getObject()
     {
         return obj;
+    }
+
+    /** Encapsulates obj, if required.
+     * If obj is a {@link  LispObject}, it's returned as-is.
+     * 
+     * @param obj Any java object
+     * @return obj or a new JavaObject encapsulating obj
+     */
+    public final static LispObject getInstance(Object obj) {
+        if (obj == null)
+            return new JavaObject(null);
+        
+        if (obj instanceof LispObject)
+            return (LispObject)obj;
+
+        return new JavaObject(obj);
+    }
+
+    /** Encapsulates obj, if required.
+     * If obj is a {@link LispObject}, it's returned as-is.
+     * If obj is of a type which can be mapped to a lisp type,
+     * an object of the mapped type is returned, if translated is true.
+     *
+     * @param obj
+     * @param translated
+     * @return a LispObject representing or encapsulating obj
+     */
+    public final static LispObject getInstance(Object obj, boolean translated)
+            throws ConditionThrowable
+    {
+        if (! translated)
+            return getInstance(obj);
+
+        if (obj == null) return NIL;
+
+        if (obj instanceof LispObject)
+            return (LispObject)obj;
+
+        if (obj instanceof String)
+            return new SimpleString((String)obj);
+
+        if (obj instanceof Number) {
+            // Number types ordered according to decreasing
+            // estimated chances of occurrance
+
+            if (obj instanceof Integer)
+                return Fixnum.getInstance(((Integer)obj).intValue());
+
+            if (obj instanceof Float)
+                return new SingleFloat((Float)obj);
+
+            if (obj instanceof Double)
+                return new DoubleFloat((Double)obj);
+
+            if (obj instanceof Long)
+                return LispInteger.getInstance(((Long)obj).longValue());
+
+            if (obj instanceof BigInteger)
+                return new Bignum((BigInteger)obj);
+
+            if (obj instanceof Short)
+                return Fixnum.getInstance(((Short)obj).shortValue());
+
+            if (obj instanceof Byte)
+                return Fixnum.getInstance(((Byte)obj).byteValue());
+            // We don't handle BigDecimal: it doesn't map to a Lisp type
+        }
+
+        if (obj instanceof Boolean)
+            return ((Boolean)obj).booleanValue() ? T : NIL;
+
+        if (obj instanceof Character)
+            return new LispCharacter((Character)obj);
+
+        if (obj instanceof Object[]) {
+            Object[] array = (Object[]) obj;
+            SimpleVector v = new SimpleVector(array.length);
+            for (int i = array.length; i-- > 0;)
+                v.aset(i, JavaObject.getInstance(array[i]));
+            return v;
+        }
+        // TODO
+        // We might want to handle:
+        //  - streams
+        //  - others?
+        return new JavaObject(obj);
     }
 
     @Override
