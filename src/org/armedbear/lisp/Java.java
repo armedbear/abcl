@@ -144,6 +144,82 @@ public final class Java extends Lisp
     //               to store value in a field of the instance. The class is
     //               derived from the instance.
     //
+
+    private static final LispObject jfield(Primitive fun, LispObject[] args, boolean translate)
+            throws ConditionThrowable
+    {
+        if (args.length < 2 || args.length > 4)
+            error(new WrongNumberOfArgumentsException(fun));
+        String fieldName = null;
+        Class c;
+        Field f;
+        Class fieldType;
+        Object instance = null;
+        try {
+            if (args[1] instanceof AbstractString) {
+                // Cases 1-5.
+                fieldName = args[1].getStringValue();
+                c = javaClass(args[0]);
+            } else {
+                // Cases 6 and 7.
+                fieldName = args[0].getStringValue();
+                instance = JavaObject.getObject(args[1]);
+                c = instance.getClass();
+            }
+            f = c.getField(fieldName);
+            fieldType = f.getType();
+            switch (args.length) {
+                case 2:
+                    // Cases 1 and 6.
+                    break;
+                case 3:
+                    // Cases 2,3, and 7.
+                    if (instance == null) {
+                        // Cases 2 and 3.
+                        if (args[2] instanceof JavaObject) {
+                            // Case 2.
+                            instance = JavaObject.getObject(args[2]);
+                            break;
+                        } else {
+                            // Case 3.
+                            f.set(null,args[2].javaInstance(fieldType));
+                            return args[2];
+                        }
+                    } else {
+                        // Case 7.
+                        f.set(instance,args[2].javaInstance(fieldType));
+                        return args[2];
+                    }
+                case 4:
+                    // Cases 4 and 5.
+                    if (args[2] != NIL) {
+                        // Case 4.
+                        instance = JavaObject.getObject(args[2]);
+                    }
+                    f.set(instance,args[3].javaInstance(fieldType));
+                    return args[3];
+            }
+            return JavaObject.getInstance(f.get(instance), translate);
+        }
+        catch (NoSuchFieldException e) {
+            error(new LispError("no such field"));
+        }
+        catch (SecurityException e) {
+            error(new LispError("inaccessible field"));
+        }
+        catch (IllegalAccessException e) {
+            error(new LispError("illegal access"));
+        }
+        catch (IllegalArgumentException e) {
+            error(new LispError("illegal argument"));
+        }
+        catch (Throwable t) {
+            error(new LispError(getMessage(t)));
+        }
+        // Not reached.
+        return NIL;
+    }
+
     private static final Primitive JFIELD =
         new Primitive("jfield", PACKAGE_JAVA, true,
                       "class-ref-or-field field-or-instance &optional instance value")
@@ -151,7 +227,7 @@ public final class Java extends Lisp
         @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
-            return JavaObject.getInstance((JFIELD_RAW.execute(args)).javaInstance(), true);
+            return jfield(this, args, true);
         }
     };
 
@@ -163,76 +239,7 @@ public final class Java extends Lisp
         @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
-            if (args.length < 2 || args.length > 4)
-                error(new WrongNumberOfArgumentsException(this));
-            String fieldName = null;
-            Class c;
-            Field f;
-            Class fieldType;
-            Object instance = null;
-            try {
-                if (args[1] instanceof AbstractString) {
-                    // Cases 1-5.
-                    fieldName = args[1].getStringValue();
-                    c = javaClass(args[0]);
-                } else {
-                    // Cases 6 and 7.
-                    fieldName = args[0].getStringValue();
-                    instance = JavaObject.getObject(args[1]);
-                    c = instance.getClass();
-                }
-                f = c.getField(fieldName);
-                fieldType = f.getType();
-                switch (args.length) {
-                    case 2:
-                        // Cases 1 and 6.
-                        break;
-                    case 3:
-                        // Cases 2,3, and 7.
-                        if (instance == null) {
-                            // Cases 2 and 3.
-                            if (args[2] instanceof JavaObject) {
-                                // Case 2.
-                                instance = JavaObject.getObject(args[2]);
-                                break;
-                            } else {
-                                // Case 3.
-                                f.set(null,args[2].javaInstance(fieldType));
-                                return args[2];
-                            }
-                        } else {
-                            // Case 7.
-                            f.set(instance,args[2].javaInstance(fieldType));
-                            return args[2];
-                        }
-                    case 4:
-                        // Cases 4 and 5.
-                        if (args[2] != NIL) {
-                            // Case 4.
-                            instance = JavaObject.getObject(args[2]);
-                        }
-                        f.set(instance,args[3].javaInstance(fieldType));
-                        return args[3];
-                }
-                return JavaObject.getInstance(f.get(instance));
-            }
-            catch (NoSuchFieldException e) {
-                error(new LispError("no such field"));
-            }
-            catch (SecurityException e) {
-                error(new LispError("inaccessible field"));
-            }
-            catch (IllegalAccessException e) {
-                error(new LispError("illegal access"));
-            }
-            catch (IllegalArgumentException e) {
-                error(new LispError("illegal argument"));
-            }
-            catch (Throwable t) {
-                error(new LispError(getMessage(t)));
-            }
-            // Not reached.
-            return NIL;
+            return jfield(this, args, false);
         }
     };
 
@@ -339,6 +346,69 @@ public final class Java extends Lisp
         }
     };
 
+    private static final LispObject jstatic(Primitive fun, LispObject[] args, boolean translate)
+            throws ConditionThrowable
+    {
+        if (args.length < 2)
+            error(new WrongNumberOfArgumentsException(fun));
+        try {
+            Method m = null;
+            LispObject methodRef = args[0];
+            if (methodRef instanceof JavaObject) {
+                Object obj = ((JavaObject)methodRef).getObject();
+                if (obj instanceof Method)
+                    m = (Method) obj;
+            } else if (methodRef instanceof AbstractString) {
+                Class c = javaClass(args[1]);
+                if (c != null) {
+                    String methodName = methodRef.getStringValue();
+                    Method[] methods = c.getMethods();
+                    int argCount = args.length - 2;
+                    for (int i = 0; i < methods.length; i++) {
+                        Method method = methods[i];
+                        if (!Modifier.isStatic(method.getModifiers())
+                            || method.getParameterTypes().length != argCount)
+                            continue;
+                        if (method.getName().equals(methodName)) {
+                            m = method;
+                            break;
+                        }
+                    }
+                    if (m == null)
+                        error(new LispError("no such method"));
+                }
+            } else
+                error(new TypeError("wrong type: " + methodRef));
+            Object[] methodArgs = new Object[args.length-2];
+            Class[] argTypes = m.getParameterTypes();
+            for (int i = 2; i < args.length; i++) {
+                LispObject arg = args[i];
+                if (arg == NIL)
+                    methodArgs[i-2] = null;
+                else
+                    methodArgs[i-2] = arg.javaInstance(argTypes[i-2]);
+            }
+            Object result = m.invoke(null, methodArgs);
+            return JavaObject.getInstance(result, translate);
+        }
+        catch (Throwable t) {
+            if (t instanceof InvocationTargetException)
+                t = t.getCause();
+            Symbol condition = getCondition(t.getClass());
+            if (condition == null)
+                error(new JavaException(t));
+            else
+                Symbol.SIGNAL.execute(
+                    condition,
+                    Keyword.CAUSE,
+                    JavaObject.getInstance(t),
+                    Keyword.FORMAT_CONTROL,
+                    new SimpleString(getMessage(t)));
+        }
+        // Not reached.
+        return NIL;
+    }
+
     // ### jstatic method class &rest args
     private static final Primitive JSTATIC =
         new Primitive("jstatic", PACKAGE_JAVA, true, "method class &rest args")
@@ -346,7 +416,7 @@ public final class Java extends Lisp
         @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
-            return JavaObject.getInstance((JSTATIC_RAW.execute(args)).javaInstance(), true);
+            return jstatic(this, args, true);
         }
     };
 
@@ -358,64 +428,7 @@ public final class Java extends Lisp
         @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
-            if (args.length < 2)
-                error(new WrongNumberOfArgumentsException(this));
-            try {
-                Method m = null;
-                LispObject methodRef = args[0];
-                if (methodRef instanceof JavaObject) {
-                    Object obj = ((JavaObject)methodRef).getObject();
-                    if (obj instanceof Method)
-                        m = (Method) obj;
-                } else if (methodRef instanceof AbstractString) {
-                    Class c = javaClass(args[1]);
-                    if (c != null) {
-                        String methodName = methodRef.getStringValue();
-                        Method[] methods = c.getMethods();
-                        int argCount = args.length - 2;
-                        for (int i = 0; i < methods.length; i++) {
-                            Method method = methods[i];
-                            if (!Modifier.isStatic(method.getModifiers())
-                                || method.getParameterTypes().length != argCount)
-                                continue;
-                            if (method.getName().equals(methodName)) {
-                                m = method;
-                                break;
-                            }
-                        }
-                        if (m == null)
-                            error(new LispError("no such method"));
-                    }
-                } else
-                    error(new TypeError("wrong type: " + methodRef));
-                Object[] methodArgs = new Object[args.length-2];
-                Class[] argTypes = m.getParameterTypes();
-                for (int i = 2; i < args.length; i++) {
-                    LispObject arg = args[i];
-                    if (arg == NIL)
-                        methodArgs[i-2] = null;
-                    else
-                        methodArgs[i-2] = arg.javaInstance(argTypes[i-2]);
-                }
-                Object result = m.invoke(null, methodArgs);
-                return JavaObject.getInstance(result);
-            }
-            catch (Throwable t) {
-                if (t instanceof InvocationTargetException)
-                    t = t.getCause();
-                Symbol condition = getCondition(t.getClass());
-                if (condition == null)
-                    error(new JavaException(t));
-                else
-                    Symbol.SIGNAL.execute(
-                        condition,
-                        Keyword.CAUSE,
-                        JavaObject.getInstance(t),
-                        Keyword.FORMAT_CONTROL,
-                        new SimpleString(getMessage(t)));
-            }
-            // Not reached.
-            return NIL;
+            return jstatic(this, args, false);
         }
     };
 
@@ -487,6 +500,34 @@ public final class Java extends Lisp
         }
     };
 
+    private static final LispObject jarray_ref(Primitive fun, LispObject[] args, boolean translate)
+            throws ConditionThrowable
+    {
+        if (args.length < 2)
+            error(new WrongNumberOfArgumentsException(fun));
+        try {
+            Object a = args[0].javaInstance();
+            for (int i = 1; i<args.length - 1; i++)
+                a = Array.get(a, ((Integer)args[i].javaInstance()).intValue());
+            return JavaObject.getInstance(Array.get(a,
+                    ((Integer)args[args.length - 1].javaInstance()).intValue()), translate);
+        }
+        catch (Throwable t) {
+            Symbol condition = getCondition(t.getClass());
+            if (condition == null)
+                error(new JavaException(t));
+            else
+                Symbol.SIGNAL.execute(
+                    condition,
+                    Keyword.CAUSE,
+                    JavaObject.getInstance(t),
+                    Keyword.FORMAT_CONTROL,
+                    new SimpleString(getMessage(t)));
+        }
+        // Not reached.
+        return NIL;
+    }
+
     // ### jarray-ref java-array &rest indices
     private static final Primitive JARRAY_REF =
         new Primitive("jarray-ref", PACKAGE_JAVA, true,
@@ -495,7 +536,7 @@ public final class Java extends Lisp
         @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
-            return JavaObject.getInstance((JARRAY_REF_RAW.execute(args)).javaInstance(), true);
+            return jarray_ref(this, args, true);
         }
     };
 
@@ -507,28 +548,7 @@ public final class Java extends Lisp
         @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
-            if (args.length < 2)
-                error(new WrongNumberOfArgumentsException(this));
-            try {
-                Object a = args[0].javaInstance();
-                for (int i = 1; i<args.length - 1; i++)
-                    a = Array.get(a, ((Integer)args[i].javaInstance()).intValue());
-                return JavaObject.getInstance(Array.get(a, ((Integer)args[args.length - 1].javaInstance()).intValue()));
-            }
-            catch (Throwable t) {
-                Symbol condition = getCondition(t.getClass());
-                if (condition == null)
-                    error(new JavaException(t));
-                else
-                    Symbol.SIGNAL.execute(
-                        condition,
-                        Keyword.CAUSE,
-                        JavaObject.getInstance(t),
-                        Keyword.FORMAT_CONTROL,
-                        new SimpleString(getMessage(t)));
-            }
-            // Not reached.
-            return NIL;
+            return jarray_ref(this, args, false);
         }
     };
 
@@ -575,9 +595,7 @@ public final class Java extends Lisp
         @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
-            if (args.length < 2)
-                error(new WrongNumberOfArgumentsException(this));
-            return JavaObject.getInstance(jcall(args), true);
+            return jcall(this, args, true);
         }
     };
 
@@ -590,15 +608,15 @@ public final class Java extends Lisp
         @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
-            if (args.length < 2)
-                error(new WrongNumberOfArgumentsException(this));
-            return JavaObject.getInstance(jcall(args));
+            return jcall(this, args, false);
         }
     };
 
-    private static Object jcall(LispObject[] args) throws ConditionThrowable
+    private static LispObject jcall(Primitive fun, LispObject[] args, boolean translate)
+            throws ConditionThrowable
     {
-        Debug.assertTrue(args.length >= 2); // Verified by callers.
+        if (args.length < 2)
+            error(new WrongNumberOfArgumentsException(fun));
         final LispObject methodArg = args[0];
         final LispObject instanceArg = args[1];
         final Object instance;
@@ -630,7 +648,7 @@ public final class Java extends Lisp
                 else
                     methodArgs[i-2] = arg.javaInstance(argTypes[i-2]);
             }
-            return method.invoke(instance, methodArgs);
+            return JavaObject.getInstance(method.invoke(instance, methodArgs), translate);
         }
         catch (ConditionThrowable t) {
             throw t;
