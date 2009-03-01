@@ -731,7 +731,8 @@ public final class Java extends Lisp
 	    new Primitive("%jget-property-value", PACKAGE_JAVA, true,
 	                  "java-object property-name") {
     	
-    	public LispObject execute(LispObject javaObject, LispObject propertyName) throws ConditionThrowable {
+        @Override
+        public LispObject execute(LispObject javaObject, LispObject propertyName) throws ConditionThrowable {
 			try {
 				Object obj = javaObject.javaInstance();
 				PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
@@ -755,7 +756,8 @@ public final class Java extends Lisp
 	    new Primitive("%jset-property-value", PACKAGE_JAVA, true,
 	                  "java-object property-name value") {
     	
-    	public LispObject execute(LispObject javaObject, LispObject propertyName, LispObject value) throws ConditionThrowable {
+        @Override
+        public LispObject execute(LispObject javaObject, LispObject propertyName, LispObject value) throws ConditionThrowable {
 	    Object obj = null;
 	    try {
 		obj = javaObject.javaInstance();
