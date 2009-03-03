@@ -30,6 +30,8 @@
 ;;; exception statement from your version.
 
 (defun adjoin (item list &key key (test #'eql testp) (test-not nil notp))
+  "Add `item' to `list' unless it is already a member (as determined by
+the test function `test'."
   (when (and testp notp)
     (error "test and test-not both supplied"))
   (if (let ((key-val (sys::apply-key key item)))

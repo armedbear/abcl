@@ -1183,4 +1183,7 @@
                (setf env nil))
              (when (null env)
                (setf lambda-expression (precompile-form lambda-expression nil)))
-             `(%defun ',name ,lambda-expression))))))
+             `(progn
+                (%defun ',name ,lambda-expression)
+                ,@(when doc
+                    `((%set-documentation ',name 'function ,doc)))))))))
