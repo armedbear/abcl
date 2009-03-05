@@ -69,12 +69,12 @@ public class Stream extends LispObject
   private boolean open = true;
   
   // Character input.
-  protected PushbackReader reader;
+  protected transient PushbackReader reader; //provvisorio finché non capisco chi serializza lo stream
   protected int offset;
   protected int lineNumber;
 
   // Character output.
-  private Writer writer;
+    private transient Writer writer;
 
   /** The number of characters on the current line of output
    * 
@@ -110,10 +110,10 @@ public class Stream extends LispObject
   protected char lastChar = 0;
   
   // Binary input.
-  private InputStream in;
+  private transient InputStream in;
 
   // Binary output.
-  private OutputStream out;
+  private transient OutputStream out;
 
   protected Stream()
   {
@@ -3024,4 +3024,21 @@ public class Stream extends LispObject
         return second;
       }
     };
+
+    public OutputStream getJavaOutputStream() {
+	return out;
+    }
+
+    public InputStream getJavaInputStream() {
+	return in;
+    }
+
+    public Writer getJavaWriter() {
+	return writer;
+    }
+
+    public Reader getJavaReader() {
+	return reader;
+    }
+
 }

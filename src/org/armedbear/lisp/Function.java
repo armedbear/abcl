@@ -324,4 +324,20 @@ public abstract class Function extends Operator
     {
         ++callCount;
     }
+
+    protected Object writeReplace() throws java.io.ObjectStreamException {
+	if(getClass().getSimpleName().contains("ABCL_GENERATED_")) {
+	    try {
+		return new ExternalizedCompiledFunction((byte[] ) getf(propertyList, Symbol.CLASS_BYTES,
+								       new JavaObject(new byte[0])).javaInstance(),
+							lambdaName.writeToString(),
+							getClass().getName());
+	    } catch(ConditionThrowable c) {
+		throw new java.io.InvalidClassException(getClass().getName());
+	    }
+	} else {
+	    return this;
+	}
+    }
+
 }

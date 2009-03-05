@@ -828,7 +828,7 @@ public final class StandardGenericFunction extends StandardObject
                                 list1(Symbol.GENERIC_FUNCTION),
                                 list1(StandardClass.STANDARD_GENERIC_FUNCTION));
 
-  private static class CacheEntry
+  private static class CacheEntry implements java.io.Serializable
   {
     final LispObject[] array;
 

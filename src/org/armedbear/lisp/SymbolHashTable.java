@@ -36,7 +36,7 @@ package org.armedbear.lisp;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class SymbolHashTable
+public final class SymbolHashTable implements java.io.Serializable
 {
     private static final float LOAD_FACTOR = 0.75f;
 
@@ -221,7 +221,7 @@ public final class SymbolHashTable
         return list;
     }
 
-    private static class HashEntry
+    private static class HashEntry implements java.io.Serializable
     {
         Symbol symbol;
         HashEntry next;

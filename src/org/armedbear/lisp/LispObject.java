@@ -33,7 +33,7 @@
 
 package org.armedbear.lisp;
 
-public class LispObject extends Lisp
+public class LispObject extends Lisp implements java.io.Serializable
 {
   public LispObject typeOf()
   {
@@ -108,10 +108,11 @@ public class LispObject extends Lisp
 
   public Object javaInstance(Class c) throws ConditionThrowable
   {
-    if (c == LispObject.class)
-      return this;
-    return error(new LispError("The value " + writeToString() +
-                                " is not of primitive type."));
+      if (c.isAssignableFrom(this.getClass())) {
+	  return this;
+      }
+      return error(new LispError("The value " + writeToString() +
+				 " is not of type " + c.getName()));
   }
 
   public LispObject car() throws ConditionThrowable
@@ -1159,4 +1160,5 @@ public class LispObject extends Lisp
   public void incrementCallCount()
   {
   }
+
 }

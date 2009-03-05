@@ -34,7 +34,7 @@
 package org.armedbear.lisp;
 
 // Package accessibility.
-final class Binding
+final class Binding implements java.io.Serializable
 {
     final LispObject symbol;
     LispObject value;

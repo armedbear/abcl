@@ -338,6 +338,16 @@ public class Autoload extends Function
         }
     };
 
+    /*
+    public void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
+	try {
+	    load();
+	} catch(ConditionThrowable t) {
+	    throw new java.io.InvalidObjectException("Couldn't resolve autoload: " + t);
+	}
+	stream.defaultWriteObject();
+	}*/
+
     static {
         autoload("acos", "MathFunctions");
         autoload("acosh", "MathFunctions");

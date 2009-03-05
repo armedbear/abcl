@@ -57,7 +57,7 @@ public class Symbol extends LispObject
 
   public final SimpleString name;
   private int hash = -1;
-  private LispObject pkg; // Either a package object or NIL.
+  private transient LispObject pkg; // Either a package object or NIL.
   private LispObject value;
   private LispObject function;
   private LispObject propertyList;
@@ -887,6 +887,35 @@ public class Symbol extends LispObject
     if (function != null)
       function.incrementCallCount();
   }
+
+    private void readObject(java.io.ObjectInputStream stream) throws java.io.IOException, ClassNotFoundException {
+	stream.defaultReadObject();
+	Object pkg = stream.readObject();
+	if(pkg == NIL) {
+	    this.pkg = NIL;
+	} else {
+	    this.pkg = Packages.findPackage(pkg.toString());
+	}
+    }
+    
+    public Object readResolve() throws java.io.ObjectStreamException {
+	if(pkg instanceof Package) {
+	    Symbol s = ((Package) pkg).intern(name.getStringValue());
+	    s.value = value;
+	    s.function = function;
+	    s.propertyList = propertyList;
+	    s.hash = hash;
+	    s.flags = flags;
+	    return s;
+	}
+	return this;
+    }
+
+    private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
+	stream.defaultWriteObject();
+	stream.writeObject(this.pkg == NIL ? NIL : ((Package) pkg).getName());
+    }
+
 
   // External symbols in CL package.
   public static final Symbol AND_ALLOW_OTHER_KEYS =
