@@ -33,7 +33,10 @@
 
 package org.armedbear.lisp;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.math.BigInteger;
 import java.net.URL;
@@ -981,43 +984,51 @@ public abstract class Lisp
       }
     if (device instanceof Pathname)
       {
-        // We're loading a fasl from a jar.
+        // We're loading a fasl from j.jar.
         URL url = Lisp.class.getResource(namestring);
-        if (url != null) {
-            try {
+        if (url != null)
+          {
+            try
+              {
                 String s = url.toString();
-		InputStream input = url.openStream();
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		
-		byte[] bytes = new byte[4096];
-		int n = 0;
-		while (n >= 0) {
-		    n = input.read(bytes, 0, 4096);
-		    if(n >= 0) {
-			baos.write(bytes, 0, n);
-		    }
-		}
-		input.close();
-		bytes = baos.toByteArray();
-		baos.close();
-		JavaClassLoader loader = new JavaClassLoader();
-		Class c =
-		    loader.loadClassFromByteArray(null, bytes, 0, bytes.length);
-		if (c != null) {
-		    Class[] parameterTypes = new Class[0];
-		    Constructor constructor =
-			c.getConstructor(parameterTypes);
-		    Object[] initargs = new Object[0];
-		    LispObject obj =
-			(LispObject) constructor.newInstance(initargs);
-		    if (obj instanceof Function)
-			((Function)obj).setClassBytes(bytes);
-		    else {
-			System.out.println("obj: " + obj);
-		    }
-		    return obj != null ? obj : NIL;
-		}
-	    }
+                String zipFileName;
+                String entryName;
+                if (s.startsWith("jar:file:"))
+                  {
+                    s = s.substring(9);
+                    int index = s.lastIndexOf('!');
+                    if (index >= 0)
+                      {
+                        zipFileName = s.substring(0, index);
+                        entryName = s.substring(index + 1);
+                        if (entryName.length() > 0 && entryName.charAt(0) == '/')
+                          entryName = entryName.substring(1);
+                        if (Utilities.isPlatformWindows)
+                          {
+                            // "/C:/Documents%20and%20Settings/peter/Desktop/j.jar"
+                            if (zipFileName.length() > 0 && zipFileName.charAt(0) == '/')
+                              zipFileName = zipFileName.substring(1);
+			  }
+			zipFileName = URLDecoder.decode(zipFileName, "UTF-8");
+                        ZipFile zipFile = new ZipFile(zipFileName);
+                        try
+                          {
+                            ZipEntry entry = zipFile.getEntry(entryName);
+                            if (entry != null)
+                              {
+                                long size = entry.getSize();
+                                InputStream in = zipFile.getInputStream(entry);
+                                LispObject obj = loadCompiledFunction(in, (int) size);
+                                return obj != null ? obj : NIL;
+                              }
+                          }
+                        finally
+                          {
+                            zipFile.close();
+                          }
+                      }
+                  }
+              }
             catch (VerifyError e)
               {
                 return error(new LispError("Class verification failed: " +
@@ -1090,7 +1101,7 @@ public abstract class Lisp
                                 new Pathname(namestring)));
   }
 
-  protected static final LispObject loadCompiledFunction(InputStream in, int size)
+  private static final LispObject loadCompiledFunction(InputStream in, int size)
   {
     try
       {
@@ -1110,7 +1121,17 @@ public abstract class Lisp
           Debug.trace("bytesRemaining = " + bytesRemaining);
 
         //JavaClassLoader loader = new JavaClassLoader();
-        return loadCompiledFunction(bytes);
+        Class c =
+          (new JavaClassLoader()).loadClassFromByteArray(null, bytes, 0, bytes.length);
+        if (c != null)
+          {
+            Constructor constructor = c.getConstructor((Class[])null);
+            LispObject obj =
+                  (LispObject) constructor.newInstance((Object[])null);
+            if (obj instanceof Function)
+              ((Function)obj).setClassBytes(bytes);
+            return obj;
+          }
       }
     catch (Throwable t)
       {
@@ -1118,21 +1139,6 @@ public abstract class Lisp
       }
     return null;
   }
-
-    protected static final LispObject loadCompiledFunction(byte[] bytes) throws Throwable {
-	Class c = (new JavaClassLoader()).loadClassFromByteArray(null, bytes, 0, bytes.length);
-        if (c != null) {
-	    Class sc = c.getSuperclass();
-            Constructor constructor = c.getConstructor((Class[])null);
-            LispObject obj = (LispObject) constructor.newInstance((Object[])null);
-            if (obj instanceof Function) {
-              ((Function)obj).setClassBytes(bytes);
-	    }
-            return obj;
-	} else {
-	    return null;
-	}
-    }
 
   public static final LispObject makeCompiledClosure(LispObject template,
                                                      LispObject[] context)

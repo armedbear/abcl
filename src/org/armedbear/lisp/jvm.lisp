@@ -114,7 +114,7 @@
       (declare (type fixnum i))
       (when (char= (char name i) #\-)
         (setf (char name i) #\_)))
-    (concatenate 'string "org/armedbear/lisp/ABCL_GENERATED_" name)))
+    (concatenate 'string "org/armedbear/lisp/" name)))
 
 (defun make-class-file (&key pathname lambda-name lambda-list)
   (aver (not (null pathname)))

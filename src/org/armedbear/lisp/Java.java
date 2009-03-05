@@ -620,10 +620,13 @@ public final class Java extends Lisp
         final LispObject methodArg = args[0];
         final LispObject instanceArg = args[1];
         final Object instance;
-        if (instanceArg != null) {
-            instance = instanceArg.javaInstance();
-        } else {
-            type_error(instanceArg, Symbol.T);
+        if (instanceArg instanceof AbstractString)
+            instance = instanceArg.getStringValue();
+        else if (instanceArg instanceof JavaObject)
+            instance = ((JavaObject)instanceArg).getObject();
+        else {
+            type_error(instanceArg,
+                            list3(Symbol.OR, Symbol.STRING, Symbol.JAVA_OBJECT));
             // Not reached.
             return null;
         }

@@ -306,7 +306,7 @@ public class Readtable extends LispObject
     dispatchTable.functions[LispCharacter.toUpperCase(subChar)] = function;
   }
 
-    protected static class DispatchTable implements java.io.Serializable
+  protected static class DispatchTable
   {
     public LispObject[] functions = new LispObject[CHAR_MAX];
 

@@ -1041,7 +1041,7 @@ public class Closure extends Function
       }
   }
 
-  private static class Parameter implements java.io.Serializable
+  private static class Parameter
   {
     private final Symbol var;
     private final LispObject initForm;

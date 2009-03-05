@@ -286,7 +286,7 @@ public abstract class HashTable extends LispObject
     return NIL;
   }
 
-  protected static class HashEntry implements java.io.Serializable
+  protected static class HashEntry
   {
     LispObject key;
     LispObject value;

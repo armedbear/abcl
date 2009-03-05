@@ -288,8 +288,7 @@ public final class Load extends Lisp
                     if (url != null) {
                         try {
                             in = url.openStream();
-                            if ("jar".equals(url.getProtocol()) &&
-				url.getPath().startsWith("file:"))
+                            if ("jar".equals(url.getProtocol()))
                                 pathname = new Pathname(url);
                             truename = getPath(url);
                         }
@@ -454,7 +453,7 @@ public final class Load extends Lisp
                 LispObject obj = in.read(false, EOF, false, thread);
                 if (obj == EOF)
                     break;
-		LispObject result = eval(obj, env, thread);
+                LispObject result = eval(obj, env, thread);
                 if (print) {
                     Stream out =
                         checkCharacterOutputStream(Symbol.STANDARD_OUTPUT.symbolValue(thread));
