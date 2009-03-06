@@ -249,25 +249,31 @@ public final class ShellCommand extends Lisp implements Runnable
                                   LispObject third)
             throws ConditionThrowable
         {
-            String command = first.getStringValue();
-            String namestring = null;
-            Stream outputStream = null;
-            if (second != NIL) {
-                Pathname pathname = coerceToPathname(second);
-                namestring = pathname.getNamestring();
-                if (namestring == null) {
-                    return error(new FileError("Pathname has no namestring: " + pathname.writeToString(),
-                                                pathname));
-                }
+            if (!(Utilities.isPlatformUnix || Utilities.isPlatformWindows)) {
+              return error(new LispError("run-shell-command not implemented for "
+                                       + System.getProperty("os.name")));
             }
-            if (third != NIL)
-                outputStream = checkStream(third);
-            ShellCommand shellCommand = new ShellCommand(command, namestring,
-                                                         outputStream);
-            shellCommand.run();
-            if (outputStream != null)
-                outputStream._finishOutput();
-            return number(shellCommand.exitValue());
+            else {
+                String command = first.getStringValue();
+                String namestring = null;
+                Stream outputStream = null;
+                if (second != NIL) {
+                    Pathname pathname = coerceToPathname(second);
+                    namestring = pathname.getNamestring();
+                    if (namestring == null) {
+                        return error(new FileError("Pathname has no namestring: " + pathname.writeToString(),
+                                                    pathname));
+                    }
+                }
+                if (third != NIL)
+                    outputStream = checkStream(third);
+                ShellCommand shellCommand = new ShellCommand(command, namestring,
+                                                             outputStream);
+                shellCommand.run();
+                if (outputStream != null)
+                    outputStream._finishOutput();
+                return number(shellCommand.exitValue());
+            }
         }
     };
 }

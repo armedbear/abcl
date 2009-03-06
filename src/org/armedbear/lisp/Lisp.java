@@ -2139,6 +2139,26 @@ public abstract class Lisp
                                              Keyword.FREEBSD,
                                              Keyword.CDR6));
       }
+    else if (osName.startsWith("OpenBSD"))
+      {
+        Symbol.FEATURES.setSymbolValue(list7(Keyword.ARMEDBEAR,
+                                             Keyword.ABCL,
+                                             Keyword.COMMON_LISP,
+                                             Keyword.ANSI_CL,
+                                             Keyword.UNIX,
+                                             Keyword.OPENBSD,
+                                             Keyword.CDR6));
+      }
+    else if (osName.startsWith("NetBSD"))
+      {
+        Symbol.FEATURES.setSymbolValue(list7(Keyword.ARMEDBEAR,
+                                             Keyword.ABCL,
+                                             Keyword.COMMON_LISP,
+                                             Keyword.ANSI_CL,
+                                             Keyword.UNIX,
+                                             Keyword.NETBSD,
+                                             Keyword.CDR6));
+      }
     else if (osName.startsWith("Windows"))
       {
         Symbol.FEATURES.setSymbolValue(list6(Keyword.ARMEDBEAR,

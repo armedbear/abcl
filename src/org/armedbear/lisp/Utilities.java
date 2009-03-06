@@ -46,7 +46,8 @@ public final class Utilities extends Lisp
         isPlatformUnix = osName.startsWith("Linux") ||
             osName.startsWith("Mac OS X") || osName.startsWith("Solaris") ||
             osName.startsWith("SunOS") || osName.startsWith("AIX") ||
-            osName.startsWith("FreeBSD");
+            osName.startsWith("FreeBSD") || osName.startsWith("OpenBSD") ||
+            osName.startsWith("NetBSD");
         isPlatformWindows = osName.startsWith("Windows");
     }
 
