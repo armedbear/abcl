@@ -4468,7 +4468,10 @@ given a specific common representation.")
          (*register* *register*)
          (form (block-form block))
          (*visible-variables* *visible-variables*)
-         (specialp nil))
+         (specialp nil)
+         (label-START (gensym))
+         (label-END (gensym))
+         (label-EXIT (gensym)))
     ;; Walk the variable list looking for special bindings and unused lexicals.
     (dolist (variable (block-vars block))
       (cond ((variable-special-p variable)
@@ -4481,7 +4484,8 @@ given a specific common representation.")
       (setf (block-environment-register block) (allocate-register))
       (emit-push-current-thread)
       (emit 'getfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
-      (astore (block-environment-register block)))
+      (astore (block-environment-register block))
+      (label label-START))
     (propagate-vars block)
     (ecase (car form)
       (LET
@@ -4496,10 +4500,25 @@ given a specific common representation.")
       (process-optimization-declarations (cddr form))
       (compile-progn-body (cddr form) target representation))
     (when specialp
+      (emit 'goto label-EXIT)
+      (label label-END)
       ;; Restore dynamic environment.
       (aload *thread*)
       (aload (block-environment-register block))
-      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+))))
+      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
+            +lisp-special-binding+)
+      (emit 'athrow)
+
+      (label label-EXIT)
+      (aload *thread*)
+      (aload (block-environment-register block))
+      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
+            +lisp-special-binding+)
+
+      (push (make-handler :from label-START
+                          :to label-END
+                          :code label-END
+                          :catch-type 0) *handlers*))))
 
 (defun p2-locally (form target representation)
   (with-saved-compiler-policy
