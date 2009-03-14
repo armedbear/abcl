@@ -4955,6 +4955,7 @@ given a specific common representation.")
                        (list +lisp-object+ +lisp-object+ +lisp-thread+) nil)
     ;; Implicit PROGN.
     (compile-progn-body (cdddr form) target)
+    (emit 'goto label-EXIT)
     (label label-END)
     (aload *thread*)
     (aload environment-register)
