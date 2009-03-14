@@ -4088,7 +4088,10 @@ given a specific common representation.")
          (*visible-variables* *visible-variables*)
          (vars (second form))
          (bind-special-p nil)
-         (variables (block-vars block)))
+         (variables (block-vars block))
+         (label-START (gensym))
+         (label-END (gensym))
+         (label-EXIT (gensym)))
     (dolist (variable variables)
       (let ((special-p (variable-special-p variable)))
         (cond (special-p
@@ -4103,7 +4106,8 @@ given a specific common representation.")
       (setf (block-environment-register block) (allocate-register))
       (emit-push-current-thread)
       (emit 'getfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
-      (astore (block-environment-register block)))
+      (astore (block-environment-register block))
+      (label label-START))
     ;; Make sure there are no leftover values from previous calls.
     (emit-clear-values)
     ;; Bind the variables.
@@ -4160,10 +4164,23 @@ given a specific common representation.")
     ;; Body.
     (compile-progn-body (cdddr form) target)
     (when bind-special-p
-      ;; Restore dynamic environment.
+      (emit 'goto label-EXIT)
+      (label label-END)
       (aload *thread*)
       (aload (block-environment-register block))
-      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+))))
+      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
+            +lisp-special-binding+)
+      (emit 'athrow)
+
+      ;; Restore dynamic environment.
+      (label label-EXIT)
+      (aload *thread*)
+      (aload (block-environment-register block))
+      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
+      (push (make-handler :from label-START
+                          :to label-END
+                          :code label-END
+                          :catch-type 0) *handlers*))))
 
 (defun propagate-vars (block)
   (let ((removed '()))
