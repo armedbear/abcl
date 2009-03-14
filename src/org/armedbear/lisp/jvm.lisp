@@ -162,6 +162,7 @@
   (children 0 :type fixnum) ; Number of local functions defined with FLET or LABELS.
   argument-register
   closure-register
+  environment-register
   class-file ; class-file object
   (%single-valued-p t))
 

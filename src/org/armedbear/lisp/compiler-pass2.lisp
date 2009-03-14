@@ -8344,7 +8344,10 @@ for use with derive-type-times.")
 
          (*thread* nil)
          (*initialize-thread-var* nil)
-         (super nil))
+         (super nil)
+         (label-START (gensym))
+         (label-END (gensym))
+         (label-EXIT (gensym)))
 
     (unless *child-p*
       (when (memq '&REST args)
@@ -8524,6 +8527,15 @@ for use with derive-type-times.")
       (p2-compiland-unbox-variable variable))
 
     ;; Establish dynamic bindings for any variables declared special.
+    (when (some #'variable-special-p parameters)
+      ;; Save the dynamic environment
+      (setf (compiland-environment-register compiland)
+            (allocate-register))
+      (emit-push-current-thread)
+      (emit 'getfield +lisp-thread-class+ "lastSpecialBinding"
+            +lisp-special-binding+)
+      (astore (compiland-environment-register compiland))
+      (label label-START))
     (dolist (variable parameters)
       (when (variable-special-p variable)
         (cond ((variable-register variable)
@@ -8545,9 +8557,29 @@ for use with derive-type-times.")
 
     (compile-progn-body body 'stack)
 
+    (when (compiland-environment-register compiland)
+      (emit 'goto label-EXIT)
+      (label label-END)
+      (emit-push-current-thread)
+      (aload (compiland-environment-register compiland))
+      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
+            +lisp-special-binding+)
+      (emit 'athrow)
+
+      ;; Restore dynamic environment
+      (label label-EXIT)
+      (emit-push-current-thread)
+      (aload (compiland-environment-register compiland))
+      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
+            +lisp-special-binding+)
+
+      (push (make-handler :from label-START
+                          :to label-END
+                          :code label-END
+                          :catch-type 0) *handlers*))
+
     (unless *code*
       (emit-push-nil))
-
     (emit 'areturn)
 
     ;; Warn if any unused args. (Is this the right place?)
