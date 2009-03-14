@@ -4936,7 +4936,10 @@ given a specific common representation.")
   (let* ((symbols-form (cadr form))
          (values-form (caddr form))
          (*register* *register*)
-         (environment-register (allocate-register)))
+         (environment-register (allocate-register))
+         (label-START (gensym))
+         (label-END (gensym))
+         (label-EXIT (gensym)))
     (compile-form symbols-form 'stack nil)
     (compile-form values-form 'stack nil)
     (unless (and (single-valued-p symbols-form)
@@ -4945,17 +4948,29 @@ given a specific common representation.")
     (emit-push-current-thread)
     (emit 'getfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
     (astore environment-register)
+    (label label-START)
     ;; Compile call to Lisp.progvBindVars().
     (aload *thread*)
     (emit-invokestatic +lisp-class+ "progvBindVars"
                        (list +lisp-object+ +lisp-object+ +lisp-thread+) nil)
     ;; Implicit PROGN.
     (compile-progn-body (cdddr form) target)
-    ;; Restore dynamic environment.
+    (label label-END)
     (aload *thread*)
     (aload environment-register)
     (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
-    (fix-boxing representation nil)))
+    (emit 'athrow)
+
+    ;; Restore dynamic environment.
+    (label label-EXIT)
+    (aload *thread*)
+    (aload environment-register)
+    (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
+    (fix-boxing representation nil)
+    (push (make-handler :from label-START
+                          :to label-END
+                          :code label-END
+                          :catch-type 0) *handlers*)))
 
 (defun p2-quote (form target representation)
   (aver (or (null representation) (eq representation :boolean)))
