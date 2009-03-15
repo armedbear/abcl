@@ -591,30 +591,38 @@ public abstract class Lisp
       env.bind(sym, value);
   }
 
-  public static final Cons list(LispObject... objects)
+
+  public static final Cons list(LispObject obj1, LispObject... remaining)
   {
-    Cons theList = new Cons(objects[objects.length-1]);
-    for (int i = objects.length - 2; i >= 0; i--)
-        theList = new Cons(objects[i], theList);
-    return theList;
+    Cons theList = null;
+    if (remaining.length > 0) {
+      theList = new Cons(remaining[remaining.length-1]);
+      for (int i = remaining.length - 2; i >= 0; i--)
+        theList = new Cons(remaining[i], theList);
+    }
+    return (theList == null) ? new Cons(obj1) : new Cons(obj1, theList);
   }
 
+  @Deprecated
   public static final Cons list1(LispObject obj1)
   {
     return new Cons(obj1);
   }
 
+  @Deprecated
   public static final Cons list2(LispObject obj1, LispObject obj2)
   {
     return new Cons(obj1, new Cons(obj2));
   }
 
+  @Deprecated
   public static final Cons list3(LispObject obj1, LispObject obj2,
                                  LispObject obj3)
   {
     return new Cons(obj1, new Cons(obj2, new Cons(obj3)));
   }
 
+  @Deprecated
   public static final Cons list4(LispObject obj1, LispObject obj2,
                                  LispObject obj3, LispObject obj4)
   {
@@ -624,6 +632,7 @@ public abstract class Lisp
                                       new Cons(obj4))));
   }
 
+  @Deprecated
   public static final Cons list5(LispObject obj1, LispObject obj2,
                                  LispObject obj3, LispObject obj4,
                                  LispObject obj5)
@@ -635,6 +644,7 @@ public abstract class Lisp
                                                new Cons(obj5)))));
   }
 
+  @Deprecated
   public static final Cons list6(LispObject obj1, LispObject obj2,
                                  LispObject obj3, LispObject obj4,
                                  LispObject obj5, LispObject obj6)
@@ -647,6 +657,7 @@ public abstract class Lisp
                                                         new Cons(obj6))))));
   }
 
+  @Deprecated
   public static final Cons list7(LispObject obj1, LispObject obj2,
                                  LispObject obj3, LispObject obj4,
                                  LispObject obj5, LispObject obj6,
@@ -661,6 +672,7 @@ public abstract class Lisp
                                                                  new Cons(obj7)))))));
   }
 
+  @Deprecated
   public static final Cons list8(LispObject obj1, LispObject obj2,
                                  LispObject obj3, LispObject obj4,
                                  LispObject obj5, LispObject obj6,
@@ -676,6 +688,7 @@ public abstract class Lisp
                                                                           new Cons(obj8))))))));
   }
 
+  @Deprecated
   public static final Cons list9(LispObject obj1, LispObject obj2,
                                  LispObject obj3, LispObject obj4,
                                  LispObject obj5, LispObject obj6,
