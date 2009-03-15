@@ -932,7 +932,8 @@
              (syms (sys::varlist closure))
              (vars nil))
         (dolist (sym syms)
-          (let ((var (make-variable :name sym)))
+          (let ((var (make-variable :name sym
+                                    :special-p (special-variable-p sym))))
             (push var vars)
             (push var *all-variables*)))
         (setf (compiland-arg-vars compiland) (nreverse vars))
