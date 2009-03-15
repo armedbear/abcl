@@ -137,7 +137,7 @@ public final class Nil extends Symbol
     {
         if (n < 0)
             return type_error(new Fixnum(n),
-                                   list2(Symbol.INTEGER, Fixnum.ZERO));
+                                   list(Symbol.INTEGER, Fixnum.ZERO));
         return this;
     }
 

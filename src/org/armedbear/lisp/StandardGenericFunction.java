@@ -75,7 +75,7 @@ public final class StandardGenericFunction extends StandardObject
         StandardMethod method =
           new StandardMethod(this, function, lambdaList, specializers);
         slots[StandardGenericFunctionClass.SLOT_INDEX_METHODS] =
-          list1(method);
+          list(method);
         slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS] =
           StandardClass.STANDARD_METHOD;
         slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION] =
@@ -825,8 +825,8 @@ public final class StandardGenericFunction extends StandardObject
                                 PACKAGE_MOP,
                                 true,
                                 _GENERIC_FUNCTION_NAME,
-                                list1(Symbol.GENERIC_FUNCTION),
-                                list1(StandardClass.STANDARD_GENERIC_FUNCTION));
+                                list(Symbol.GENERIC_FUNCTION),
+                                list(StandardClass.STANDARD_GENERIC_FUNCTION));
 
   private static class CacheEntry
   {

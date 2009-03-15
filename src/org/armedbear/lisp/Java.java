@@ -626,7 +626,7 @@ public final class Java extends Lisp
             instance = ((JavaObject)instanceArg).getObject();
         else {
             type_error(instanceArg,
-                            list3(Symbol.OR, Symbol.STRING, Symbol.JAVA_OBJECT));
+                            list(Symbol.OR, Symbol.STRING, Symbol.JAVA_OBJECT));
             // Not reached.
             return null;
         }
@@ -859,7 +859,7 @@ public final class Java extends Lisp
             javaObject = (JavaObject) obj;
         }
         catch (ClassCastException e) {
-            type_error(obj, list3(Symbol.OR, Symbol.STRING,
+            type_error(obj, list(Symbol.OR, Symbol.STRING,
                                        Symbol.JAVA_OBJECT));
             // Not reached.
             return null;

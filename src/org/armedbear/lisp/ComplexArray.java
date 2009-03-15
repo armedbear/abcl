@@ -128,7 +128,7 @@ public final class ComplexArray extends AbstractArray
     @Override
     public LispObject typeOf()
     {
-        return list3(Symbol.ARRAY, elementType, getDimensions());
+        return list(Symbol.ARRAY, elementType, getDimensions());
     }
 
     @Override

@@ -128,7 +128,7 @@ public final class SimpleArray_UnsignedByte32 extends AbstractArray
     @Override
     public LispObject typeOf()
     {
-        return list3(Symbol.SIMPLE_ARRAY, UNSIGNED_BYTE_32, getDimensions());
+        return list(Symbol.SIMPLE_ARRAY, UNSIGNED_BYTE_32, getDimensions());
     }
 
     @Override
@@ -282,7 +282,7 @@ public final class SimpleArray_UnsignedByte32 extends AbstractArray
     public String writeToString() throws ConditionThrowable
     {
         if (Symbol.PRINT_READABLY.symbolValue() != NIL) {
-            error(new PrintNotReadable(list2(Keyword.OBJECT, this)));
+            error(new PrintNotReadable(list(Keyword.OBJECT, this)));
             // Not reached.
             return null;
         }

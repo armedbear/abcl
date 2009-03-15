@@ -64,7 +64,7 @@ public final class ComplexString extends AbstractString
   @Override
   public LispObject typeOf()
   {
-    return list2(Symbol.STRING, number(capacity()));
+    return list(Symbol.STRING, number(capacity()));
   }
 
   @Override

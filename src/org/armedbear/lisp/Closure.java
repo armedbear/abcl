@@ -1141,7 +1141,7 @@ public class Closure extends Function
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        Closure closure = new Closure(list3(Symbol.LAMBDA, arg, NIL), new Environment());
+        Closure closure = new Closure(list(Symbol.LAMBDA, arg, NIL), new Environment());
         return closure.getVariableList();
       }
     };

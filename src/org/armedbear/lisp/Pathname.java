@@ -102,7 +102,7 @@ public class Pathname extends LispObject
             return;
         }
         if (s.equals("..") || s.equals("../")) {
-            directory = list2(Keyword.RELATIVE, Keyword.UP);
+            directory = list(Keyword.RELATIVE, Keyword.UP);
             return;
         }
         if (Utilities.isPlatformWindows) {
@@ -627,7 +627,7 @@ public class Pathname extends LispObject
         throws ConditionThrowable
     {
         if (arg != Keyword.COMMON && arg != Keyword.LOCAL)
-            type_error(arg, list3(Symbol.MEMBER, Keyword.COMMON,
+            type_error(arg, list(Symbol.MEMBER, Keyword.COMMON,
                                        Keyword.LOCAL));
     }
 
@@ -837,9 +837,9 @@ public class Pathname extends LispObject
                 deviceSupplied = true;
             } else if (key == Keyword.DIRECTORY) {
                 if (value instanceof AbstractString)
-                    directory = list2(Keyword.ABSOLUTE, value);
+                    directory = list(Keyword.ABSOLUTE, value);
                 else if (value == Keyword.WILD)
-                    directory = list2(Keyword.ABSOLUTE, Keyword.WILD);
+                    directory = list(Keyword.ABSOLUTE, Keyword.WILD);
                 else
                     directory = value;
             } else if (key == Keyword.NAME) {

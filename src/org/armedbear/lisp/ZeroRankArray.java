@@ -52,9 +52,9 @@ public final class ZeroRankArray extends AbstractArray
     public LispObject typeOf()
     {
         if (adjustable)
-            return list3(Symbol.ARRAY, elementType, NIL);
+            return list(Symbol.ARRAY, elementType, NIL);
         else
-            return list3(Symbol.SIMPLE_ARRAY, elementType, NIL);
+            return list(Symbol.SIMPLE_ARRAY, elementType, NIL);
     }
 
     @Override
@@ -138,7 +138,7 @@ public final class ZeroRankArray extends AbstractArray
         boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);
         if (printReadably) {
             if (elementType != T) {
-                error(new PrintNotReadable(list2(Keyword.OBJECT, this)));
+                error(new PrintNotReadable(list(Keyword.OBJECT, this)));
                 // Not reached.
                 return null;
             }

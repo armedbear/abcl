@@ -153,7 +153,7 @@ public final class SimpleArray_T extends AbstractArray
   @Override
   public LispObject typeOf()
   {
-    return list3(Symbol.SIMPLE_ARRAY, elementType, getDimensions());
+    return list(Symbol.SIMPLE_ARRAY, elementType, getDimensions());
   }
 
   @Override

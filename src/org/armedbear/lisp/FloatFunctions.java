@@ -85,7 +85,7 @@ public final class FloatFunctions extends Lisp
                 traps = traps.push(Keyword.UNDERFLOW);
             if (TRAP_OVERFLOW)
                 traps = traps.push(Keyword.OVERFLOW);
-            return list2(Keyword.TRAPS, traps);
+            return list(Keyword.TRAPS, traps);
         }
     };
 

@@ -1516,7 +1516,7 @@ public final class Primitives extends Lisp
           }
         if (index < 0)
           return type_error(first,
-                                 list2(Symbol.INTEGER, Fixnum.ZERO));
+                                 list(Symbol.INTEGER, Fixnum.ZERO));
         for (int i = 0; i < index; i++)
           {
             second = second.cdr();
@@ -1832,14 +1832,14 @@ public final class Primitives extends Lisp
         LispObject body = args.cddr();
         LispObject block = new Cons(Symbol.BLOCK, new Cons(symbol, body));
         LispObject toBeApplied =
-          list2(Symbol.FUNCTION, list3(Symbol.LAMBDA, lambdaList, block));
+          list(Symbol.FUNCTION, list(Symbol.LAMBDA, lambdaList, block));
         final LispThread thread = LispThread.currentThread();
         LispObject formArg = gensym("FORM-", thread);
         LispObject envArg = gensym("ENV-", thread); // Ignored.
         LispObject expander =
-          list3(Symbol.LAMBDA, list2(formArg, envArg),
-                list3(Symbol.APPLY, toBeApplied,
-                      list2(Symbol.CDR, formArg)));
+          list(Symbol.LAMBDA, list(formArg, envArg),
+                list(Symbol.APPLY, toBeApplied,
+                      list(Symbol.CDR, formArg)));
         Closure expansionFunction = new Closure(expander, env);
         MacroObject macroObject =
           new MacroObject(symbol, expansionFunction);
@@ -2550,8 +2550,8 @@ public final class Primitives extends Lisp
           }
         catch (ClassCastException e)
           {
-            return type_error(arg, list3(Symbol.AND, Symbol.VECTOR,
-                                              list2(Symbol.SATISFIES,
+            return type_error(arg, list(Symbol.AND, Symbol.VECTOR,
+                                              list(Symbol.SATISFIES,
                                                     Symbol.ARRAY_HAS_FILL_POINTER_P)));
           }
       }
@@ -2576,8 +2576,8 @@ public final class Primitives extends Lisp
           }
         catch (ClassCastException e)
           {
-            return type_error(first, list3(Symbol.AND, Symbol.VECTOR,
-                                                list2(Symbol.SATISFIES,
+            return type_error(first, list(Symbol.AND, Symbol.VECTOR,
+                                                list(Symbol.SATISFIES,
                                                       Symbol.ARRAY_HAS_FILL_POINTER_P)));
           }
       }
@@ -3192,7 +3192,7 @@ public final class Primitives extends Lisp
         else if (arg instanceof AbstractString)
           return gensym(arg.getStringValue(), LispThread.currentThread());
         return type_error(arg,
-                               list3(Symbol.OR,
+                               list(Symbol.OR,
                                      Symbol.STRING,
                                      Symbol.UNSIGNED_BYTE));
       }
@@ -3733,14 +3733,14 @@ public final class Primitives extends Lisp
         LispObject block =
           new Cons(Symbol.BLOCK, new Cons(symbol, body));
         LispObject toBeApplied =
-          list3(Symbol.LAMBDA, lambdaList, block);
+          list(Symbol.LAMBDA, lambdaList, block);
         final LispThread thread = LispThread.currentThread();
         LispObject formArg = gensym("WHOLE-", thread);
         LispObject envArg = gensym("ENVIRONMENT-", thread); // Ignored.
         LispObject expander =
-          list3(Symbol.LAMBDA, list2(formArg, envArg),
-                list3(Symbol.APPLY, toBeApplied,
-                      list2(Symbol.CDR, formArg)));
+          list(Symbol.LAMBDA, list(formArg, envArg),
+                list(Symbol.APPLY, toBeApplied,
+                      list(Symbol.CDR, formArg)));
         return expander;
       }
     };
@@ -4883,7 +4883,7 @@ public final class Primitives extends Lisp
       {
         int size = Fixnum.getValue(first);
         if (size < 0)
-          return type_error(first, list3(Symbol.INTEGER, Fixnum.ZERO,
+          return type_error(first, list(Symbol.INTEGER, Fixnum.ZERO,
                                               Symbol.MOST_POSITIVE_FIXNUM.getSymbolValue()));
         LispObject result = NIL;
         for (int i = size; i-- > 0;)

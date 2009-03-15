@@ -501,7 +501,7 @@ public final class LispCharacter extends LispObject
           }
         if (radix < 2 || radix > 36)
           return type_error(second,
-                                 list3(Symbol.INTEGER, Fixnum.TWO,
+                                 list(Symbol.INTEGER, Fixnum.TWO,
                                        Fixnum.constants[36]));
         int weight;
         try
@@ -563,7 +563,7 @@ public final class LispCharacter extends LispObject
           }
         catch (ClassCastException e) {}
         return type_error(second,
-                               list3(Symbol.INTEGER, Fixnum.TWO,
+                               list(Symbol.INTEGER, Fixnum.TWO,
                                      Fixnum.constants[36]));
       }
     };

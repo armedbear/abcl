@@ -391,7 +391,7 @@ public final class SpecialOperators extends Lisp
         LispObject lambda_expression =
           new Cons(Symbol.LAMBDA, new Cons(parameters, body));
         LispObject lambda_name =
-          list2(recursive ? Symbol.LABELS : Symbol.FLET, name);
+          list(recursive ? Symbol.LABELS : Symbol.FLET, name);
         Closure closure =
           new Closure(lambda_name, lambda_expression,
                       recursive ? ext : env);
@@ -534,7 +534,7 @@ public final class SpecialOperators extends Lisp
                 return type_error(name, FUNCTION_NAME);
               }
           }
-        return error(new UndefinedFunction(list2(Keyword.NAME, arg)));
+        return error(new UndefinedFunction(list(Keyword.NAME, arg)));
       }
     };
 
@@ -566,7 +566,7 @@ public final class SpecialOperators extends Lisp
                       {
                         LispObject expansion =
                           ((SymbolMacro)binding.value).getExpansion();
-                        LispObject form = list3(Symbol.SETF, expansion, args.car());
+                        LispObject form = list(Symbol.SETF, expansion, args.car());
                         value = eval(form, env, thread);
                       }
                     else
@@ -581,7 +581,7 @@ public final class SpecialOperators extends Lisp
                       {
                         LispObject expansion =
                           ((SymbolMacro)symbol.getSymbolValue()).getExpansion();
-                        LispObject form = list3(Symbol.SETF, expansion, args.car());
+                        LispObject form = list(Symbol.SETF, expansion, args.car());
                         value = eval(form, env, thread);
                       }
                     else
@@ -601,7 +601,7 @@ public final class SpecialOperators extends Lisp
                       {
                         LispObject expansion =
                           ((SymbolMacro)binding.value).getExpansion();
-                        LispObject form = list3(Symbol.SETF, expansion, args.car());
+                        LispObject form = list(Symbol.SETF, expansion, args.car());
                         value = eval(form, env, thread);
                       }
                     else
@@ -616,7 +616,7 @@ public final class SpecialOperators extends Lisp
                       {
                         LispObject expansion =
                           ((SymbolMacro)symbol.getSymbolValue()).getExpansion();
-                        LispObject form = list3(Symbol.SETF, expansion, args.car());
+                        LispObject form = list(Symbol.SETF, expansion, args.car());
                         value = eval(form, env, thread);
                       }
                     else

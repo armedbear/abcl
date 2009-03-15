@@ -163,7 +163,7 @@ public class LispObject extends Lisp
   {
     if (n < 0)
       return type_error(new Fixnum(n),
-                             list2(Symbol.INTEGER, Fixnum.ZERO));
+                             list(Symbol.INTEGER, Fixnum.ZERO));
     return type_error(this, Symbol.LIST);
   }
 
@@ -516,8 +516,8 @@ public class LispObject extends Lisp
 
   public final LispObject noFillPointer() throws ConditionThrowable
   {
-    return type_error(this, list3(Symbol.AND, Symbol.VECTOR,
-                                       list2(Symbol.SATISFIES,
+    return type_error(this, list(Symbol.AND, Symbol.VECTOR,
+                                       list(Symbol.SATISFIES,
                                              Symbol.ARRAY_HAS_FILL_POINTER_P)));
   }
 

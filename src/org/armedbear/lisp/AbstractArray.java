@@ -190,7 +190,7 @@ public abstract class AbstractArray extends LispObject
                     if (dimv[i] == 0) {
                         for (int j = i + 1; j < dimv.length; j++) {
                             if (dimv[j] != 0) {
-                                error(new PrintNotReadable(list2(Keyword.OBJECT,
+                                error(new PrintNotReadable(list(Keyword.OBJECT,
                                                                   this)));
                                 return null; // Not reached.
                             }

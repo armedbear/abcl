@@ -870,7 +870,7 @@ public abstract class Lisp
       return ((Symbol)arg).getName();
     if (arg instanceof LispCharacter)
       return String.valueOf(new char[] {((LispCharacter)arg).value});
-    type_error(arg, list4(Symbol.OR, Symbol.STRING, Symbol.SYMBOL,
+    type_error(arg, list(Symbol.OR, Symbol.STRING, Symbol.SYMBOL,
                                Symbol.CHARACTER));
     // Not reached.
     return null;
@@ -1163,7 +1163,7 @@ public abstract class Lisp
     LispObject classBytes =
       getf(ctf.getPropertyList(), Symbol.CLASS_BYTES, NIL);
     if (classBytes != NIL)
-      result.setPropertyList(list2(Symbol.CLASS_BYTES, classBytes));
+      result.setPropertyList(list(Symbol.CLASS_BYTES, classBytes));
     return result;
   }
 
@@ -1199,20 +1199,20 @@ public abstract class Lisp
   }
 
   public static final LispObject FUNCTION_NAME =
-    list3(Symbol.OR,
+    list(Symbol.OR,
           Symbol.SYMBOL,
-          list3(Symbol.CONS,
-                list2(Symbol.EQL, Symbol.SETF),
-                list3(Symbol.CONS, Symbol.SYMBOL, Symbol.NULL)));
+          list(Symbol.CONS,
+                list(Symbol.EQL, Symbol.SETF),
+                list(Symbol.CONS, Symbol.SYMBOL, Symbol.NULL)));
 
   public static final LispObject UNSIGNED_BYTE_8 =
-    list2(Symbol.UNSIGNED_BYTE, Fixnum.constants[8]);
+    list(Symbol.UNSIGNED_BYTE, Fixnum.constants[8]);
 
   public static final LispObject UNSIGNED_BYTE_16 =
-    list2(Symbol.UNSIGNED_BYTE, Fixnum.constants[16]);
+    list(Symbol.UNSIGNED_BYTE, Fixnum.constants[16]);
 
   public static final LispObject UNSIGNED_BYTE_32 =
-    list2(Symbol.UNSIGNED_BYTE, Fixnum.constants[32]);
+    list(Symbol.UNSIGNED_BYTE, Fixnum.constants[32]);
 
   public static final LispObject UNSIGNED_BYTE_32_MAX_VALUE =
     new Bignum(4294967296L);
@@ -1618,7 +1618,7 @@ public abstract class Lisp
       return Pathname.parseNamestring((AbstractString)arg);
     if (arg instanceof FileStream)
       return ((FileStream)arg).getPathname();
-    type_error(arg, list4(Symbol.OR, Symbol.PATHNAME,
+    type_error(arg, list(Symbol.OR, Symbol.PATHNAME,
                                Symbol.STRING, Symbol.FILE_STREAM));
     // Not reached.
     return null;
@@ -2114,7 +2114,7 @@ public abstract class Lisp
     String osName = System.getProperty("os.name");
     if (osName.startsWith("Linux"))
       {
-        Symbol.FEATURES.setSymbolValue(list7(Keyword.ARMEDBEAR,
+        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
                                              Keyword.ABCL,
                                              Keyword.COMMON_LISP,
                                              Keyword.ANSI_CL,
@@ -2124,7 +2124,7 @@ public abstract class Lisp
       }
     else if (osName.startsWith("SunOS"))
       {
-        Symbol.FEATURES.setSymbolValue(list7(Keyword.ARMEDBEAR,
+        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
                                              Keyword.ABCL,
                                              Keyword.COMMON_LISP,
                                              Keyword.ANSI_CL,
@@ -2134,7 +2134,7 @@ public abstract class Lisp
       }
     else if (osName.startsWith("Mac OS X"))
       {
-        Symbol.FEATURES.setSymbolValue(list7(Keyword.ARMEDBEAR,
+        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
                                              Keyword.ABCL,
                                              Keyword.COMMON_LISP,
                                              Keyword.ANSI_CL,
@@ -2144,7 +2144,7 @@ public abstract class Lisp
       }
     else if (osName.startsWith("FreeBSD"))
       {
-        Symbol.FEATURES.setSymbolValue(list7(Keyword.ARMEDBEAR,
+        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
                                              Keyword.ABCL,
                                              Keyword.COMMON_LISP,
                                              Keyword.ANSI_CL,
@@ -2154,7 +2154,7 @@ public abstract class Lisp
       }
     else if (osName.startsWith("OpenBSD"))
       {
-        Symbol.FEATURES.setSymbolValue(list7(Keyword.ARMEDBEAR,
+        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
                                              Keyword.ABCL,
                                              Keyword.COMMON_LISP,
                                              Keyword.ANSI_CL,
@@ -2164,7 +2164,7 @@ public abstract class Lisp
       }
     else if (osName.startsWith("NetBSD"))
       {
-        Symbol.FEATURES.setSymbolValue(list7(Keyword.ARMEDBEAR,
+        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
                                              Keyword.ABCL,
                                              Keyword.COMMON_LISP,
                                              Keyword.ANSI_CL,
@@ -2174,7 +2174,7 @@ public abstract class Lisp
       }
     else if (osName.startsWith("Windows"))
       {
-        Symbol.FEATURES.setSymbolValue(list6(Keyword.ARMEDBEAR,
+        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
                                              Keyword.ABCL,
                                              Keyword.COMMON_LISP,
                                              Keyword.ANSI_CL,
@@ -2183,7 +2183,7 @@ public abstract class Lisp
       }
     else
       {
-        Symbol.FEATURES.setSymbolValue(list5(Keyword.ARMEDBEAR,
+        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
                                              Keyword.ABCL,
                                              Keyword.COMMON_LISP,
                                              Keyword.ANSI_CL,
@@ -2532,7 +2532,7 @@ public abstract class Lisp
 
   // ### *bq-vector-flag*
   public static final Symbol _BQ_VECTOR_FLAG_ =
-    internSpecial("*BQ-VECTOR-FLAG*", PACKAGE_SYS, list1(new Symbol("bqv")));
+    internSpecial("*BQ-VECTOR-FLAG*", PACKAGE_SYS, list(new Symbol("bqv")));
 
   // ### *traced-names*
   public static final Symbol _TRACED_NAMES_ =

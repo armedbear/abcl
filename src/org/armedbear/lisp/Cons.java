@@ -184,7 +184,7 @@ public final class Cons extends LispObject
   {
     if (n < 0)
       return type_error(new Fixnum(n),
-                             list2(Symbol.INTEGER, Fixnum.ZERO));
+                             list(Symbol.INTEGER, Fixnum.ZERO));
     LispObject result = this;
     for (int i = n; i-- > 0;)
       {
@@ -371,7 +371,7 @@ public final class Cons extends LispObject
               {
                 // Index too large.
                 type_error(new Fixnum(index),
-                                list3(Symbol.INTEGER, Fixnum.ZERO,
+                                list(Symbol.INTEGER, Fixnum.ZERO,
                                       new Fixnum(length() - 1)));
               }
             else
@@ -606,7 +606,7 @@ public final class Cons extends LispObject
 
   private final LispObject signalExecutionError() throws ConditionThrowable
   {
-    return type_error(this, list3(Symbol.OR, Symbol.FUNCTION,
+    return type_error(this, list(Symbol.OR, Symbol.FUNCTION,
                                        Symbol.SYMBOL));
   }
 

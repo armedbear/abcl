@@ -144,7 +144,7 @@ public class BuiltInClass extends LispClass
   public static final BuiltInClass VECTOR               = addClass(Symbol.VECTOR);
 
   public static final StructureClass STRUCTURE_OBJECT =
-    new StructureClass(Symbol.STRUCTURE_OBJECT, list1(CLASS_T));
+    new StructureClass(Symbol.STRUCTURE_OBJECT, list(CLASS_T));
   static
   {
     addClass(Symbol.STRUCTURE_OBJECT, STRUCTURE_OBJECT);
@@ -229,17 +229,17 @@ public class BuiltInClass extends LispClass
     SEQUENCE.setCPL(SEQUENCE, CLASS_T);
     SIMPLE_ARRAY.setDirectSuperclass(ARRAY);
     SIMPLE_ARRAY.setCPL(SIMPLE_ARRAY, ARRAY, CLASS_T);
-    SIMPLE_BASE_STRING.setDirectSuperclasses(list2(BASE_STRING, SIMPLE_STRING));
+    SIMPLE_BASE_STRING.setDirectSuperclasses(list(BASE_STRING, SIMPLE_STRING));
     SIMPLE_BASE_STRING.setCPL(SIMPLE_BASE_STRING, BASE_STRING, SIMPLE_STRING,
                               STRING, VECTOR, SIMPLE_ARRAY, ARRAY, SEQUENCE,
                               CLASS_T);
-    SIMPLE_BIT_VECTOR.setDirectSuperclasses(list2(BIT_VECTOR, SIMPLE_ARRAY));
+    SIMPLE_BIT_VECTOR.setDirectSuperclasses(list(BIT_VECTOR, SIMPLE_ARRAY));
     SIMPLE_BIT_VECTOR.setCPL(SIMPLE_BIT_VECTOR, BIT_VECTOR, VECTOR,
                              SIMPLE_ARRAY, ARRAY, SEQUENCE, CLASS_T);
-    SIMPLE_STRING.setDirectSuperclasses(list3(BASE_STRING, STRING, SIMPLE_ARRAY));
+    SIMPLE_STRING.setDirectSuperclasses(list(BASE_STRING, STRING, SIMPLE_ARRAY));
     SIMPLE_STRING.setCPL(SIMPLE_STRING, BASE_STRING, STRING, VECTOR,
                          SIMPLE_ARRAY, ARRAY, SEQUENCE, CLASS_T);
-    SIMPLE_VECTOR.setDirectSuperclasses(list2(VECTOR, SIMPLE_ARRAY));
+    SIMPLE_VECTOR.setDirectSuperclasses(list(VECTOR, SIMPLE_ARRAY));
     SIMPLE_VECTOR.setCPL(SIMPLE_VECTOR, VECTOR, SIMPLE_ARRAY, ARRAY, SEQUENCE,
                          CLASS_T);
     SINGLE_FLOAT.setDirectSuperclass(FLOAT);
@@ -273,7 +273,7 @@ public class BuiltInClass extends LispClass
     THREAD.setCPL(THREAD, CLASS_T);
     TWO_WAY_STREAM.setDirectSuperclass(STREAM);
     TWO_WAY_STREAM.setCPL(TWO_WAY_STREAM, STREAM, CLASS_T);
-    VECTOR.setDirectSuperclasses(list2(ARRAY, SEQUENCE));
+    VECTOR.setDirectSuperclasses(list(ARRAY, SEQUENCE));
     VECTOR.setCPL(VECTOR, ARRAY, SEQUENCE, CLASS_T);
   }
 

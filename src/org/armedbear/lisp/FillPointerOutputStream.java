@@ -60,8 +60,8 @@ public final class FillPointerOutputStream extends Stream
                 if (string.getFillPointer() >= 0)
                     return new FillPointerOutputStream(string);
             }
-            return type_error(arg, list3(Symbol.AND, Symbol.STRING,
-                                              list2(Symbol.SATISFIES,
+            return type_error(arg, list(Symbol.AND, Symbol.STRING,
+                                              list(Symbol.SATISFIES,
                                                     Symbol.ARRAY_HAS_FILL_POINTER_P)));
         }
     };

@@ -580,7 +580,7 @@ public class Readtable extends LispObject
                 readtable.readtableCase = second;
                 return second;
               }
-            return type_error(second, list5(Symbol.MEMBER,
+            return type_error(second, list(Symbol.MEMBER,
                                                  Keyword.INVERT,
                                                  Keyword.PRESERVE,
                                                  Keyword.DOWNCASE,

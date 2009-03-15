@@ -41,7 +41,7 @@ public final class Extensions extends Lisp
   // ### *ed-functions*
   public static final Symbol _ED_FUNCTIONS_ =
     exportSpecial("*ED-FUNCTIONS*", PACKAGE_EXT,
-                  list1(intern("DEFAULT-ED-FUNCTION", PACKAGE_SYS)));
+                  list(intern("DEFAULT-ED-FUNCTION", PACKAGE_SYS)));
 
   // ### truly-the value-type form => result*
   private static final SpecialOperator TRULY_THE =

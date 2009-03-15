@@ -229,7 +229,7 @@ public abstract class HashTable extends LispObject
   {
     if (Symbol.PRINT_READABLY.symbolValue(LispThread.currentThread()) != NIL)
       {
-        error(new PrintNotReadable(list2(Keyword.OBJECT, this)));
+        error(new PrintNotReadable(list(Keyword.OBJECT, this)));
         return null; // Not reached.
       }
     FastStringBuffer sb = new FastStringBuffer(getTest().writeToString());

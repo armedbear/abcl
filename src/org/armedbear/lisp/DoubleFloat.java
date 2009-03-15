@@ -596,7 +596,7 @@ public final class DoubleFloat extends LispObject
         LispThread thread = LispThread.currentThread();
         if (Symbol.PRINT_READABLY.symbolValue(thread) != NIL ||
             !memq(Symbol.READ_DEFAULT_FLOAT_FORMAT.symbolValue(thread),
-                  list2(Symbol.DOUBLE_FLOAT, Symbol.LONG_FLOAT)))
+                  list(Symbol.DOUBLE_FLOAT, Symbol.LONG_FLOAT)))
         {
             if (s1.indexOf('E') >= 0)
                 return s1.replace('E', 'd');

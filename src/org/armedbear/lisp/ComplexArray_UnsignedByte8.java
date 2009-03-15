@@ -120,7 +120,7 @@ public final class ComplexArray_UnsignedByte8 extends AbstractArray
     @Override
     public LispObject typeOf()
     {
-        return list3(Symbol.ARRAY, UNSIGNED_BYTE_8, getDimensions());
+        return list(Symbol.ARRAY, UNSIGNED_BYTE_8, getDimensions());
     }
 
     @Override
@@ -227,7 +227,7 @@ public final class ComplexArray_UnsignedByte8 extends AbstractArray
     public String writeToString() throws ConditionThrowable
     {
         if (Symbol.PRINT_READABLY.symbolValue() != NIL) {
-            error(new PrintNotReadable(list2(Keyword.OBJECT, this)));
+            error(new PrintNotReadable(list(Keyword.OBJECT, this)));
             // Not reached.
             return null;
         }

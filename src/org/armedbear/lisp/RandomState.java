@@ -126,9 +126,9 @@ public final class RandomState extends LispObject
                 return new DoubleFloat(rand * limit);
             }
         }
-        return type_error(arg, list3(Symbol.OR,
-                                          list2(Symbol.INTEGER, Fixnum.ONE),
-                                          list2(Symbol.FLOAT, list1(Fixnum.ZERO))));
+        return type_error(arg, list(Symbol.OR,
+                                          list(Symbol.INTEGER, Fixnum.ONE),
+                                          list(Symbol.FLOAT, list(Fixnum.ZERO))));
     }
 
     // ### random limit &optional random-state => random-number

@@ -83,7 +83,7 @@ public final class Bignum extends LispInteger
   public LispObject typeOf()
   {
     if (value.signum() > 0)
-      return list2(Symbol.INTEGER,
+      return list(Symbol.INTEGER,
                    new Bignum((long)Integer.MAX_VALUE + 1));
     return Symbol.BIGNUM;
   }

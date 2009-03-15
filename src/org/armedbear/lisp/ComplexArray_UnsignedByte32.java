@@ -124,7 +124,7 @@ public final class ComplexArray_UnsignedByte32 extends AbstractArray
     @Override
     public LispObject typeOf()
     {
-        return list3(Symbol.ARRAY, UNSIGNED_BYTE_32, getDimensions());
+        return list(Symbol.ARRAY, UNSIGNED_BYTE_32, getDimensions());
     }
 
     @Override

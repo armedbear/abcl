@@ -361,8 +361,8 @@ public class Symbol extends LispObject
   {
     LispObject obj = get(this, Symbol.SETF_FUNCTION, null);
     if (obj == null)
-      error(new UndefinedFunction(list2(Keyword.NAME,
-                                         list2(Symbol.SETF,
+      error(new UndefinedFunction(list(Keyword.NAME,
+                                         list(Symbol.SETF,
                                                this))));
     return obj;
   }
@@ -734,7 +734,7 @@ public class Symbol extends LispObject
       }
     catch (NullPointerException e)
       {
-        return handleNPE(e, list1(arg));
+        return handleNPE(e, list(arg));
       }
   }
 
@@ -748,7 +748,7 @@ public class Symbol extends LispObject
       }
     catch (NullPointerException e)
       {
-        return handleNPE(e, list2(first, second));
+        return handleNPE(e, list(first, second));
       }
   }
 
@@ -763,7 +763,7 @@ public class Symbol extends LispObject
       }
     catch (NullPointerException e)
       {
-        return handleNPE(e, list3(first, second, third));
+        return handleNPE(e, list(first, second, third));
       }
   }
 
@@ -778,7 +778,7 @@ public class Symbol extends LispObject
       }
     catch (NullPointerException e)
       {
-        return handleNPE(e, list4(first, second, third, fourth));
+        return handleNPE(e, list(first, second, third, fourth));
       }
   }
 
@@ -794,7 +794,7 @@ public class Symbol extends LispObject
       }
     catch (NullPointerException e)
       {
-        return handleNPE(e, list5(first, second, third, fourth, fifth));
+        return handleNPE(e, list(first, second, third, fourth, fifth));
       }
   }
 
@@ -810,7 +810,7 @@ public class Symbol extends LispObject
       }
     catch (NullPointerException e)
       {
-        return handleNPE(e, list6(first, second, third, fourth, fifth,
+        return handleNPE(e, list(first, second, third, fourth, fifth,
                                   sixth));
       }
   }
@@ -830,7 +830,7 @@ public class Symbol extends LispObject
     catch (NullPointerException e)
       {
         return handleNPE(e,
-                         list7(first, second, third, fourth, fifth, sixth,
+                         list(first, second, third, fourth, fifth, sixth,
                                seventh));
       }
   }
@@ -850,7 +850,7 @@ public class Symbol extends LispObject
     catch (NullPointerException e)
       {
         return handleNPE(e,
-                         list8(first, second, third, fourth, fifth, sixth,
+                         list(first, second, third, fourth, fifth, sixth,
                                seventh, eighth));
       }
   }

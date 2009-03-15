@@ -167,7 +167,7 @@ public abstract class AbstractVector extends AbstractArray
       }
     error(new TypeError(sb.toString(),
                          new Fixnum(index),
-                         list3(Symbol.INTEGER,
+                         list(Symbol.INTEGER,
                                Fixnum.ZERO,
                                new Fixnum(limit - 1))));
 

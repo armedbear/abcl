@@ -240,7 +240,7 @@ public final class BroadcastStream extends Stream
                         streams[i] = (Stream) args[i];
                         continue;
                     } else
-                        return error(new TypeError(args[i], list2(Symbol.SATISFIES,
+                        return error(new TypeError(args[i], list(Symbol.SATISFIES,
                                                                    Symbol.OUTPUT_STREAM_P)));
                 } else
                     return error(new TypeError(args[i], Symbol.STREAM));

@@ -99,7 +99,7 @@ public class Primitive0R extends Function
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {
-        return _execute(list2(first, second));
+        return _execute(list(first, second));
     }
 
     @Override
@@ -107,7 +107,7 @@ public class Primitive0R extends Function
                               LispObject third)
         throws ConditionThrowable
     {
-        return _execute(list3(first, second, third));
+        return _execute(list(first, second, third));
     }
 
     @Override
@@ -115,7 +115,7 @@ public class Primitive0R extends Function
                               LispObject third, LispObject fourth)
         throws ConditionThrowable
     {
-        return _execute(list4(first, second, third, fourth));
+        return _execute(list(first, second, third, fourth));
     }
 
     @Override
@@ -124,7 +124,7 @@ public class Primitive0R extends Function
                               LispObject fifth)
         throws ConditionThrowable
     {
-        return _execute(list5(first, second, third, fourth, fifth));
+        return _execute(list(first, second, third, fourth, fifth));
     }
 
     @Override
@@ -133,7 +133,7 @@ public class Primitive0R extends Function
                               LispObject fifth, LispObject sixth)
         throws ConditionThrowable
     {
-        return _execute(list6(first, second, third, fourth, fifth, sixth));
+        return _execute(list(first, second, third, fourth, fifth, sixth));
     }
 
     @Override
@@ -143,7 +143,7 @@ public class Primitive0R extends Function
                               LispObject seventh)
         throws ConditionThrowable
     {
-        return _execute(list7(first, second, third, fourth, fifth, sixth,
+        return _execute(list(first, second, third, fourth, fifth, sixth,
                               seventh));
     }
 
@@ -154,7 +154,7 @@ public class Primitive0R extends Function
                               LispObject seventh, LispObject eighth)
         throws ConditionThrowable
     {
-        return _execute(list8(first, second, third, fourth, fifth, sixth,
+        return _execute(list(first, second, third, fourth, fifth, sixth,
                               seventh, eighth));
     }
 

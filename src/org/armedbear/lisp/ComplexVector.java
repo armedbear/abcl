@@ -67,7 +67,7 @@ public final class ComplexVector extends AbstractVector
     @Override
     public LispObject typeOf()
     {
-        return list3(Symbol.VECTOR, T, new Fixnum(capacity));
+        return list(Symbol.VECTOR, T, new Fixnum(capacity));
     }
 
     @Override

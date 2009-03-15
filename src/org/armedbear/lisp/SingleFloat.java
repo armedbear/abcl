@@ -585,7 +585,7 @@ public final class SingleFloat extends LispObject
         LispThread thread = LispThread.currentThread();
         if (Symbol.PRINT_READABLY.symbolValue(thread) != NIL ||
             !memq(Symbol.READ_DEFAULT_FLOAT_FORMAT.symbolValue(thread),
-                  list2(Symbol.SINGLE_FLOAT, Symbol.SHORT_FLOAT)))
+                  list(Symbol.SINGLE_FLOAT, Symbol.SHORT_FLOAT)))
         {
             if (s1.indexOf('E') >= 0)
                 return s1.replace('E', 'f');

@@ -383,15 +383,15 @@ public class StandardMethod extends StandardObject
                                 PACKAGE_MOP,
                                 true,
                                 _METHOD_SPECIALIZERS,
-                                list1(Symbol.METHOD),
-                                list1(StandardClass.STANDARD_METHOD));
+                                list(Symbol.METHOD),
+                                list(StandardClass.STANDARD_METHOD));
 
   private static final StandardGenericFunction METHOD_QUALIFIERS =
     new StandardGenericFunction("method-qualifiers",
                                 PACKAGE_MOP,
                                 true,
                                 _METHOD_QUALIFIERS,
-                                list1(Symbol.METHOD),
-                                list1(StandardClass.STANDARD_METHOD));
+                                list(Symbol.METHOD),
+                                list(StandardClass.STANDARD_METHOD));
 
 }

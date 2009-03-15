@@ -59,7 +59,7 @@ public class TwoWayStream extends Stream
         LispObject otype = out.getElementType();
         if (itype.equal(otype))
             return itype;
-        return list3(Symbol.AND, itype, otype);
+        return list(Symbol.AND, itype, otype);
     }
 
     public Stream getInputStream()
@@ -239,10 +239,10 @@ public class TwoWayStream extends Stream
                 return type_error(second, Symbol.STREAM);
             }
             if (!in.isInputStream())
-                return type_error(in, list2(Symbol.SATISFIES,
+                return type_error(in, list(Symbol.SATISFIES,
                                                  Symbol.INPUT_STREAM_P));
             if (!out.isOutputStream())
-                return type_error(out, list2(Symbol.SATISFIES,
+                return type_error(out, list(Symbol.SATISFIES,
                                                   Symbol.OUTPUT_STREAM_P));
             return new TwoWayStream(in, out);
         }

@@ -69,7 +69,7 @@ public final class NilVector extends AbstractString
     @Override
     public LispObject typeOf()
     {
-        return list2(Symbol.NIL_VECTOR, new Fixnum(capacity));
+        return list(Symbol.NIL_VECTOR, new Fixnum(capacity));
     }
 
     @Override

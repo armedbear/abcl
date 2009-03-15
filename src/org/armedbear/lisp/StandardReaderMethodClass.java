@@ -50,7 +50,7 @@ public final class StandardReaderMethodClass extends StandardClass
   public StandardReaderMethodClass()
   {
     super(Symbol.STANDARD_READER_METHOD,
-          list1(StandardClass.STANDARD_READER_METHOD));
+          list(StandardClass.STANDARD_READER_METHOD));
     Package pkg = PACKAGE_SYS;
     LispObject[] instanceSlotNames =
       {

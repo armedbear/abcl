@@ -88,7 +88,7 @@ public final class Fixnum extends LispInteger
     if (value == 0 || value == 1)
       return Symbol.BIT;
     if (value > 1)
-      return list3(Symbol.INTEGER, ZERO, new Fixnum(Integer.MAX_VALUE));
+      return list(Symbol.INTEGER, ZERO, new Fixnum(Integer.MAX_VALUE));
     return Symbol.FIXNUM;
   }
 

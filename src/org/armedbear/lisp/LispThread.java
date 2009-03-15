@@ -1069,7 +1069,7 @@ public final class LispThread extends LispObject
             double d =
                 ((DoubleFloat)arg.multiplyBy(new DoubleFloat(1000))).getValue();
             if (d < 0)
-                return type_error(arg, list2(Symbol.REAL, Fixnum.ZERO));
+                return type_error(arg, list(Symbol.REAL, Fixnum.ZERO));
             long millis = d < Long.MAX_VALUE ? (long) d : Long.MAX_VALUE;
             try {
                 Thread.sleep(millis);

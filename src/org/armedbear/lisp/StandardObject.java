@@ -399,7 +399,7 @@ public class StandardObject extends LispObject
         catch (ClassCastException e)
           {
             return type_error(second,
-                                   list3(Symbol.INTEGER, Fixnum.ZERO,
+                                   list(Symbol.INTEGER, Fixnum.ZERO,
                                          new Fixnum(instance.slots.length)));
           }
         LispObject value;
@@ -410,7 +410,7 @@ public class StandardObject extends LispObject
         catch (ArrayIndexOutOfBoundsException e)
           {
             return type_error(second,
-                                   list3(Symbol.INTEGER, Fixnum.ZERO,
+                                   list(Symbol.INTEGER, Fixnum.ZERO,
                                          new Fixnum(instance.slots.length)));
           }
         if (value == UNBOUND_VALUE)

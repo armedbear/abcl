@@ -103,7 +103,7 @@ public class Primitive2R extends Function
                               LispObject third, LispObject fourth)
         throws ConditionThrowable
     {
-        return _execute(first, second, list2(third, fourth));
+        return _execute(first, second, list(third, fourth));
     }
 
     @Override
@@ -112,7 +112,7 @@ public class Primitive2R extends Function
                               LispObject fifth)
         throws ConditionThrowable
     {
-        return _execute(first, second, list3(third, fourth, fifth));
+        return _execute(first, second, list(third, fourth, fifth));
     }
 
     @Override
@@ -121,7 +121,7 @@ public class Primitive2R extends Function
                               LispObject fifth, LispObject sixth)
         throws ConditionThrowable
     {
-        return _execute(first, second, list4(third, fourth, fifth, sixth));
+        return _execute(first, second, list(third, fourth, fifth, sixth));
     }
 
     @Override
@@ -131,7 +131,7 @@ public class Primitive2R extends Function
                               LispObject seventh)
         throws ConditionThrowable
     {
-        return _execute(first, second, list5(third, fourth, fifth, sixth,
+        return _execute(first, second, list(third, fourth, fifth, sixth,
                                              seventh));
     }
 
@@ -142,7 +142,7 @@ public class Primitive2R extends Function
                               LispObject seventh, LispObject eighth)
         throws ConditionThrowable
     {
-        return _execute(first, second, list6(third, fourth, fifth, sixth,
+        return _execute(first, second, list(third, fourth, fifth, sixth,
                                              seventh, eighth));
     }
 

@@ -66,7 +66,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
     @Override
     public LispObject typeOf()
     {
-        return list3(Symbol.VECTOR, UNSIGNED_BYTE_8, new Fixnum(capacity));
+        return list(Symbol.VECTOR, UNSIGNED_BYTE_8, new Fixnum(capacity));
     }
 
     @Override

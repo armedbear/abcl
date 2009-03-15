@@ -42,7 +42,7 @@ public class ClosureTemplateFunction extends Closure
   public ClosureTemplateFunction(LispObject lambdaList)
     throws ConditionThrowable
   {
-    super(list2(Symbol.LAMBDA, lambdaList), null);
+    super(list(Symbol.LAMBDA, lambdaList), null);
   }
 
   final public ClosureTemplateFunction setContext(LispObject[] context)

@@ -2924,7 +2924,7 @@ public class Stream extends LispObject
         int start = Fixnum.getValue(third);
         int end = Fixnum.getValue(fourth);
         if (!v.getElementType().equal(UNSIGNED_BYTE_8))
-          return type_error(first, list2(Symbol.VECTOR,
+          return type_error(first, list(Symbol.VECTOR,
                                               UNSIGNED_BYTE_8));
         for (int i = start; i < end; i++)
           {

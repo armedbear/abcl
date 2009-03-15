@@ -62,7 +62,7 @@ public final class ComplexBitVector extends AbstractBitVector
     @Override
     public LispObject typeOf()
     {
-        return list2(Symbol.BIT_VECTOR, new Fixnum(capacity));
+        return list(Symbol.BIT_VECTOR, new Fixnum(capacity));
     }
 
     @Override

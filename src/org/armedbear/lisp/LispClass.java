@@ -235,34 +235,34 @@ public abstract class LispClass extends StandardObject
   public final void setCPL(LispObject obj1, LispObject obj2)
   {
     Debug.assertTrue(obj1 == this);
-    classPrecedenceList = list2(obj1, obj2);
+    classPrecedenceList = list(obj1, obj2);
   }
 
   public final void setCPL(LispObject obj1, LispObject obj2, LispObject obj3)
   {
     Debug.assertTrue(obj1 == this);
-    classPrecedenceList = list3(obj1, obj2, obj3);
+    classPrecedenceList = list(obj1, obj2, obj3);
   }
 
   public final void setCPL(LispObject obj1, LispObject obj2, LispObject obj3,
                            LispObject obj4)
   {
     Debug.assertTrue(obj1 == this);
-    classPrecedenceList = list4(obj1, obj2, obj3, obj4);
+    classPrecedenceList = list(obj1, obj2, obj3, obj4);
   }
 
   public final void setCPL(LispObject obj1, LispObject obj2, LispObject obj3,
                            LispObject obj4, LispObject obj5)
   {
     Debug.assertTrue(obj1 == this);
-    classPrecedenceList = list5(obj1, obj2, obj3, obj4, obj5);
+    classPrecedenceList = list(obj1, obj2, obj3, obj4, obj5);
   }
 
   public final void setCPL(LispObject obj1, LispObject obj2, LispObject obj3,
                            LispObject obj4, LispObject obj5, LispObject obj6)
   {
     Debug.assertTrue(obj1 == this);
-    classPrecedenceList = list6(obj1, obj2, obj3, obj4, obj5, obj6);
+    classPrecedenceList = list(obj1, obj2, obj3, obj4, obj5, obj6);
   }
 
   public final void setCPL(LispObject obj1, LispObject obj2, LispObject obj3,
@@ -270,7 +270,7 @@ public abstract class LispClass extends StandardObject
                            LispObject obj7)
   {
     Debug.assertTrue(obj1 == this);
-    classPrecedenceList = list7(obj1, obj2, obj3, obj4, obj5, obj6, obj7);
+    classPrecedenceList = list(obj1, obj2, obj3, obj4, obj5, obj6, obj7);
   }
 
   public final void setCPL(LispObject obj1, LispObject obj2, LispObject obj3,
@@ -279,7 +279,7 @@ public abstract class LispClass extends StandardObject
   {
     Debug.assertTrue(obj1 == this);
     classPrecedenceList =
-      list8(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8);
+      list(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8);
   }
 
   public final void setCPL(LispObject obj1, LispObject obj2, LispObject obj3,
@@ -288,7 +288,7 @@ public abstract class LispClass extends StandardObject
   {
     Debug.assertTrue(obj1 == this);
     classPrecedenceList =
-      list9(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9);
+      list(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9);
   }
 
   public String getName()
