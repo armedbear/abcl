@@ -168,8 +168,14 @@ public final class MathFunctions extends Lisp
                 return new SingleFloat((float)Math.acos(f));
         }
         LispObject result = new DoubleFloat(Math.PI/2);
-        if (!(arg instanceof DoubleFloat))
-            result = new SingleFloat((float)((DoubleFloat)result).value);
+        if (!(arg instanceof DoubleFloat)) {
+            if (arg instanceof Complex &&
+                    ((Complex)arg).getRealPart() instanceof DoubleFloat) {
+                    // do nothing; we want to keep the double float value
+            }
+            else
+                result = new SingleFloat((float)((DoubleFloat)result).value);
+        }
         result = result.subtract(asin(arg));
         if (result instanceof Complex) {
             if (arg instanceof Complex)
