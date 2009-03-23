@@ -668,7 +668,7 @@ public final class Bignum extends LispInteger
   public LispObject LOGAND(int n) throws ConditionThrowable
   {
     if (n >= 0)
-      return new Fixnum(value.intValue() & n);
+      return Fixnum.getInstance(value.intValue() & n);
     else
       return number(value.and(BigInteger.valueOf(n)));
   }
@@ -680,7 +680,7 @@ public final class Bignum extends LispInteger
       {
         int n = ((Fixnum)obj).value;
         if (n >= 0)
-          return new Fixnum(value.intValue() & n);
+          return Fixnum.getInstance(value.intValue() & n);
         else
           return number(value.and(BigInteger.valueOf(n)));
       }

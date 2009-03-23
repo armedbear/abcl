@@ -104,7 +104,7 @@ public class Autoload extends Function
             final LispThread thread = LispThread.currentThread();
             final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
             int loadDepth = Fixnum.getValue(_LOAD_DEPTH_.symbolValue());
-            thread.bindSpecial(_LOAD_DEPTH_, new Fixnum(++loadDepth));
+            thread.bindSpecial(_LOAD_DEPTH_, Fixnum.getInstance(++loadDepth));
             try {
                 if (_AUTOLOAD_VERBOSE_.symbolValue(thread) != NIL) {
                     final String prefix = Load.getLoadVerbosePrefix(loadDepth);

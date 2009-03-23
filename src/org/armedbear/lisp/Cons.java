@@ -183,7 +183,7 @@ public final class Cons extends LispObject
   public LispObject nthcdr(int n) throws ConditionThrowable
   {
     if (n < 0)
-      return type_error(new Fixnum(n),
+      return type_error(Fixnum.getInstance(n),
                              list(Symbol.INTEGER, Fixnum.ZERO));
     LispObject result = this;
     for (int i = n; i-- > 0;)
@@ -302,7 +302,7 @@ public final class Cons extends LispObject
   public LispObject NTH(int index) throws ConditionThrowable
   {
     if (index < 0)
-      type_error(new Fixnum(index), Symbol.UNSIGNED_BYTE);
+      type_error(Fixnum.getInstance(index), Symbol.UNSIGNED_BYTE);
     int i = 0;
     LispObject obj = this;
     while (true)
@@ -354,7 +354,7 @@ public final class Cons extends LispObject
   public LispObject elt(int index) throws ConditionThrowable
   {
     if (index < 0)
-      type_error(new Fixnum(index), Symbol.UNSIGNED_BYTE);
+      type_error(Fixnum.getInstance(index), Symbol.UNSIGNED_BYTE);
     int i = 0;
     Cons cons = this;
     while (true)
@@ -370,9 +370,9 @@ public final class Cons extends LispObject
             if (cons.cdr == NIL)
               {
                 // Index too large.
-                type_error(new Fixnum(index),
+                type_error(Fixnum.getInstance(index),
                                 list(Symbol.INTEGER, Fixnum.ZERO,
-                                      new Fixnum(length() - 1)));
+                                      Fixnum.getInstance(length() - 1)));
               }
             else
               {

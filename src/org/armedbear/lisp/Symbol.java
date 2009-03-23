@@ -149,8 +149,8 @@ public class Symbol extends LispObject
     parts = parts.push(new Cons("value", value));
     parts = parts.push(new Cons("function", function));
     parts = parts.push(new Cons("plist", propertyList));
-    parts = parts.push(new Cons("flags", new Fixnum(flags)));
-    parts = parts.push(new Cons("hash", new Fixnum(hash)));
+    parts = parts.push(new Cons("flags", Fixnum.getInstance(flags)));
+    parts = parts.push(new Cons("hash", Fixnum.getInstance(hash)));
     return parts.nreverse();
   }
 

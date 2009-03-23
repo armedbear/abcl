@@ -85,7 +85,7 @@ public abstract class AbstractVector extends AbstractArray
   @Override
   public final LispObject getDimensions()
   {
-    return new Cons(new Fixnum(capacity()));
+    return new Cons(Fixnum.getInstance(capacity()));
   }
 
   @Override
@@ -166,10 +166,10 @@ public abstract class AbstractVector extends AbstractArray
         sb.append(").");
       }
     error(new TypeError(sb.toString(),
-                         new Fixnum(index),
+                         Fixnum.getInstance(index),
                          list(Symbol.INTEGER,
                                Fixnum.ZERO,
-                               new Fixnum(limit - 1))));
+                               Fixnum.getInstance(limit - 1))));
 
   }
 

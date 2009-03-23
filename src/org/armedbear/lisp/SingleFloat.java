@@ -494,7 +494,7 @@ public final class SingleFloat extends LispObject
             float quotient = value / divisor;
             if (quotient >= Integer.MIN_VALUE && quotient <= Integer.MAX_VALUE) {
                 int q = (int) quotient;
-                return thread.setValues(new Fixnum(q),
+                return thread.setValues(Fixnum.getInstance(q),
                                         new SingleFloat(value - q * divisor));
             }
             // We need to convert the quotient to a bignum.
@@ -507,8 +507,8 @@ public final class SingleFloat extends LispObject
             else
                 m = (bits & 0x7fffff) | 0x800000;
             LispObject significand = number(m);
-            Fixnum exponent = new Fixnum(e - 150);
-            Fixnum sign = new Fixnum(s);
+            Fixnum exponent = Fixnum.getInstance(e - 150);
+            Fixnum sign = Fixnum.getInstance(s);
             LispObject result = significand;
             result =
                 result.multiplyBy(MathFunctions.EXPT.execute(Fixnum.TWO, exponent));
@@ -524,7 +524,7 @@ public final class SingleFloat extends LispObject
             double quotient = value / divisor;
             if (quotient >= Integer.MIN_VALUE && quotient <= Integer.MAX_VALUE) {
                 int q = (int) quotient;
-                return thread.setValues(new Fixnum(q),
+                return thread.setValues(Fixnum.getInstance(q),
                                         new DoubleFloat(value - q * divisor));
             }
             // We need to convert the quotient to a bignum.
@@ -537,8 +537,8 @@ public final class SingleFloat extends LispObject
             else
                 m = (bits & 0xfffffffffffffL) | 0x10000000000000L;
             LispObject significand = number(m);
-            Fixnum exponent = new Fixnum(e - 1075);
-            Fixnum sign = new Fixnum(s);
+            Fixnum exponent = Fixnum.getInstance(e - 1075);
+            Fixnum sign = Fixnum.getInstance(s);
             LispObject result = significand;
             result =
                 result.multiplyBy(MathFunctions.EXPT.execute(Fixnum.TWO, exponent));

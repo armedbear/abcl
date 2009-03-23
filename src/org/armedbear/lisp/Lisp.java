@@ -879,7 +879,7 @@ public abstract class Lisp
   public static final LispObject number(long n)
   {
     if (n >= Integer.MIN_VALUE && n <= Integer.MAX_VALUE)
-      return new Fixnum((int)n);
+      return Fixnum.getInstance((int)n);
     else
       return new Bignum(n);
   }
@@ -913,7 +913,7 @@ public abstract class Lisp
   public static final LispObject number(BigInteger n)
   {
     if (n.compareTo(INT_MIN) >= 0 && n.compareTo(INT_MAX) <= 0)
-      return new Fixnum(n.intValue());
+      return Fixnum.getInstance(n.intValue());
     else
       return new Bignum(n);
   }
@@ -1495,7 +1495,7 @@ public abstract class Lisp
     throws ConditionThrowable
   {
     if (n < 0 || n > 255)
-      type_error(new Fixnum(n), UNSIGNED_BYTE_8);
+      type_error(Fixnum.getInstance(n), UNSIGNED_BYTE_8);
     try
       {
         ((Stream)obj)._writeByte(n);
@@ -2082,8 +2082,8 @@ public abstract class Lisp
 
   static
   {
-    Symbol.MOST_POSITIVE_FIXNUM.initializeConstant(new Fixnum(Integer.MAX_VALUE));
-    Symbol.MOST_NEGATIVE_FIXNUM.initializeConstant(new Fixnum(Integer.MIN_VALUE));
+    Symbol.MOST_POSITIVE_FIXNUM.initializeConstant(Fixnum.getInstance(Integer.MAX_VALUE));
+    Symbol.MOST_NEGATIVE_FIXNUM.initializeConstant(Fixnum.getInstance(Integer.MIN_VALUE));
     Symbol.MOST_POSITIVE_JAVA_LONG.initializeConstant(new Bignum(Long.MAX_VALUE));
     Symbol.MOST_NEGATIVE_JAVA_LONG.initializeConstant(new Bignum(Long.MIN_VALUE));
   }
@@ -2281,7 +2281,7 @@ public abstract class Lisp
   static
   {
     // ### array-dimension-limit
-    Symbol.ARRAY_DIMENSION_LIMIT.initializeConstant(new Fixnum(ARRAY_DIMENSION_MAX));
+    Symbol.ARRAY_DIMENSION_LIMIT.initializeConstant(Fixnum.getInstance(ARRAY_DIMENSION_MAX));
   }
 
   // ### char-code-limit
@@ -2289,7 +2289,7 @@ public abstract class Lisp
   public static final int CHAR_MAX = 256;
   static
   {
-    Symbol.CHAR_CODE_LIMIT.initializeConstant(new Fixnum(CHAR_MAX));
+    Symbol.CHAR_CODE_LIMIT.initializeConstant(Fixnum.getInstance(CHAR_MAX));
   }
 
   static
@@ -2434,7 +2434,7 @@ public abstract class Lisp
   static
   {
     // ### internal-time-units-per-second
-    Symbol.INTERNAL_TIME_UNITS_PER_SECOND.initializeConstant(new Fixnum(1000));
+    Symbol.INTERNAL_TIME_UNITS_PER_SECOND.initializeConstant(Fixnum.getInstance(1000));
   }
 
   // ### call-registers-limit

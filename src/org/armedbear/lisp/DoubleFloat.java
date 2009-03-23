@@ -489,7 +489,7 @@ public final class DoubleFloat extends LispObject
             double quotient = value / divisor;
             if (quotient >= Integer.MIN_VALUE && quotient <= Integer.MAX_VALUE) {
                 int q = (int) quotient;
-                return thread.setValues(new Fixnum(q),
+                return thread.setValues(Fixnum.getInstance(q),
                                         new DoubleFloat(value - q * divisor));
             }
             // We need to convert the quotient to a bignum.
@@ -502,8 +502,8 @@ public final class DoubleFloat extends LispObject
             else
                 m = (bits & 0xfffffffffffffL) | 0x10000000000000L;
             LispObject significand = number(m);
-            Fixnum exponent = new Fixnum(e - 1075);
-            Fixnum sign = new Fixnum(s);
+            Fixnum exponent = Fixnum.getInstance(e - 1075);
+            Fixnum sign = Fixnum.getInstance(s);
             LispObject result = significand;
             result =
                 result.multiplyBy(MathFunctions.EXPT.execute(Fixnum.TWO, exponent));
@@ -522,7 +522,7 @@ public final class DoubleFloat extends LispObject
 //             Debug.trace("quotient = " + quotient);
             if (quotient >= Integer.MIN_VALUE && quotient <= Integer.MAX_VALUE) {
                 int q = (int) quotient;
-                return thread.setValues(new Fixnum(q),
+                return thread.setValues(Fixnum.getInstance(q),
                                         new DoubleFloat(value - q * divisor));
             }
             // We need to convert the quotient to a bignum.
@@ -536,9 +536,9 @@ public final class DoubleFloat extends LispObject
                 m = (bits & 0xfffffffffffffL) | 0x10000000000000L;
             LispObject significand = number(m);
 //             Debug.trace("significand = " + significand.writeToString());
-            Fixnum exponent = new Fixnum(e - 1075);
+            Fixnum exponent = Fixnum.getInstance(e - 1075);
 //             Debug.trace("exponent = " + exponent.writeToString());
-            Fixnum sign = new Fixnum(s);
+            Fixnum sign = Fixnum.getInstance(s);
 //             Debug.trace("sign = " + sign.writeToString());
             LispObject result = significand;
 //             Debug.trace("result = " + result.writeToString());

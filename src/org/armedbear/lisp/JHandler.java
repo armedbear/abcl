@@ -71,7 +71,7 @@ public final class JHandler extends Lisp
                 Fixnum count = ((Entry)entryTable.get(s)).getCount();
                 Fixnum[] lispAi = new Fixnum[ai.length];
                 for (int i = 0; i < ai.length; i++) {
-                    lispAi[i] = new Fixnum(ai[i]);
+                    lispAi[i] = Fixnum.getInstance(ai[i]);
                 }
                 LispObject lispAiVector = new SimpleVector(lispAi);
                 SimpleString[] lispAs = new SimpleString[as.length];
@@ -158,7 +158,7 @@ public final class JHandler extends Lisp
         {
             if (count == 0)
                 entryTable.remove(event);
-            return (new Fixnum (count--));
+            return (Fixnum.getInstance (count--));
         }
     }
 }

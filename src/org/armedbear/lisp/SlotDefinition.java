@@ -89,7 +89,7 @@ public final class SlotDefinition extends StandardObject
 
   public final void setLocation(int i)
   {
-    slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = new Fixnum(i);
+    slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = Fixnum.getInstance(i);
   }
 
   @Override

@@ -136,7 +136,7 @@ public final class Nil extends Symbol
     public LispObject nthcdr(int n) throws ConditionThrowable
     {
         if (n < 0)
-            return type_error(new Fixnum(n),
+            return type_error(Fixnum.getInstance(n),
                                    list(Symbol.INTEGER, Fixnum.ZERO));
         return this;
     }

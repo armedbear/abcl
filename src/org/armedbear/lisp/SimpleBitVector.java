@@ -65,7 +65,7 @@ public final class SimpleBitVector extends AbstractBitVector
     @Override
     public LispObject typeOf()
     {
-        return list(Symbol.SIMPLE_BIT_VECTOR, new Fixnum(capacity));
+        return list(Symbol.SIMPLE_BIT_VECTOR, Fixnum.getInstance(capacity));
     }
 
     @Override

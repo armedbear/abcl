@@ -59,7 +59,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
     public LispObject typeOf()
     {
         return list(Symbol.SIMPLE_ARRAY, UNSIGNED_BYTE_16,
-                     new Cons(new Fixnum(capacity)));
+                     new Cons(Fixnum.getInstance(capacity)));
     }
 
     @Override
@@ -118,7 +118,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
     public LispObject elt(int index) throws ConditionThrowable
     {
         try {
-            return new Fixnum(elements[index]);
+            return Fixnum.getInstance(elements[index]);
         }
         catch (ArrayIndexOutOfBoundsException e) {
             badIndex(index, capacity);
@@ -145,7 +145,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
     public LispObject AREF(int index) throws ConditionThrowable
     {
         try {
-            return new Fixnum(elements[index]);
+            return Fixnum.getInstance(elements[index]);
         }
         catch (ArrayIndexOutOfBoundsException e) {
             badIndex(index, elements.length);
@@ -158,7 +158,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
     public LispObject AREF(LispObject index) throws ConditionThrowable
     {
         try {
-            return new Fixnum(elements[((Fixnum)index).value]);
+            return Fixnum.getInstance(elements[((Fixnum)index).value]);
         }
         catch (ClassCastException e) {
             return error(new TypeError(index, Symbol.FIXNUM));

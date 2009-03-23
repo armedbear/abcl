@@ -142,14 +142,14 @@ public final class StringFunctions extends Lisp
                     // Reached end of string1.
                     if (j == end2)
                         return NIL; // Strings are identical.
-                    return new Fixnum(i);
+                    return Fixnum.getInstance(i);
                 }
                 if (j == end2) {
                     // Reached end of string2 before end of string1.
-                    return new Fixnum(i);
+                    return Fixnum.getInstance(i);
                 }
                 if (array1[i] != array2[j])
-                    return new Fixnum(i);
+                    return Fixnum.getInstance(i);
                 ++i;
                 ++j;
             }
@@ -214,11 +214,11 @@ public final class StringFunctions extends Lisp
                     // Reached end of string1.
                     if (j == end2)
                         return NIL; // Strings are identical.
-                    return new Fixnum(i);
+                    return Fixnum.getInstance(i);
                 }
                 if (j == end2) {
                     // Reached end of string2.
-                    return new Fixnum(i);
+                    return Fixnum.getInstance(i);
                 }
                 char c1 = array1[i];
                 char c2 = array2[j];
@@ -230,7 +230,7 @@ public final class StringFunctions extends Lisp
                     ++j;
                     continue;
                 }
-                return new Fixnum(i);
+                return Fixnum.getInstance(i);
             }
         }
     };
@@ -258,7 +258,7 @@ public final class StringFunctions extends Lisp
                     // Reached end of string1.
                     if (j == end2)
                         return NIL; // Strings are identical.
-                    return new Fixnum(i);
+                    return Fixnum.getInstance(i);
                 }
                 if (j == end2) {
                     // Reached end of string2.
@@ -272,7 +272,7 @@ public final class StringFunctions extends Lisp
                     continue;
                 }
                 if (c1 < c2)
-                    return new Fixnum(i);
+                    return Fixnum.getInstance(i);
                 // c1 > c2
                 return NIL;
             }
@@ -304,7 +304,7 @@ public final class StringFunctions extends Lisp
                 }
                 if (j == end2) {
                     // Reached end of string2.
-                    return new Fixnum(i);
+                    return Fixnum.getInstance(i);
                 }
                 char c1 = array1[i];
                 char c2 = array2[j];
@@ -316,7 +316,7 @@ public final class StringFunctions extends Lisp
                 if (c1 < c2)
                     return NIL;
                 // c1 > c2
-                return new Fixnum(i);
+                return Fixnum.getInstance(i);
             }
         }
     };
@@ -342,7 +342,7 @@ public final class StringFunctions extends Lisp
             while (true) {
                 if (i == end1) {
                     // Reached end of string1.
-                    return new Fixnum(i);
+                    return Fixnum.getInstance(i);
                 }
                 if (j == end2) {
                     // Reached end of string2.
@@ -358,7 +358,7 @@ public final class StringFunctions extends Lisp
                 if (c1 > c2)
                     return NIL;
                 // c1 < c2
-                return new Fixnum(i);
+                return Fixnum.getInstance(i);
             }
         }
     };
@@ -385,12 +385,12 @@ public final class StringFunctions extends Lisp
                 if (i == end1) {
                     // Reached end of string1.
                     if (j == end2)
-                        return new Fixnum(i); // Strings are identical.
+                        return Fixnum.getInstance(i); // Strings are identical.
                     return NIL;
                 }
                 if (j == end2) {
                     // Reached end of string2.
-                    return new Fixnum(i);
+                    return Fixnum.getInstance(i);
                 }
                 char c1 = array1[i];
                 char c2 = array2[j];
@@ -402,7 +402,7 @@ public final class StringFunctions extends Lisp
                 if (c1 < c2)
                     return NIL;
                 // c1 > c2
-                return new Fixnum(i);
+                return Fixnum.getInstance(i);
             }
         }
     };
@@ -430,7 +430,7 @@ public final class StringFunctions extends Lisp
                     // Reached end of string1.
                     if (j == end2)
                         return NIL; // Strings are identical.
-                    return new Fixnum(i);
+                    return Fixnum.getInstance(i);
                 }
                 if (j == end2) {
                     // Reached end of string2.
@@ -446,7 +446,7 @@ public final class StringFunctions extends Lisp
                 if (c1 > c2)
                     return NIL;
                 // c1 < c2
-                return new Fixnum(i);
+                return Fixnum.getInstance(i);
             }
         }
     };
@@ -476,7 +476,7 @@ public final class StringFunctions extends Lisp
                 }
                 if (j == end2) {
                     // Reached end of string2.
-                    return new Fixnum(i);
+                    return Fixnum.getInstance(i);
                 }
                 char c1 = LispCharacter.toUpperCase(array1[i]);
                 char c2 = LispCharacter.toUpperCase(array2[j]);
@@ -488,7 +488,7 @@ public final class StringFunctions extends Lisp
                 if (c1 < c2)
                     return NIL;
                 // c1 > c2
-                return new Fixnum(i);
+                return Fixnum.getInstance(i);
             }
         }
     };
@@ -515,12 +515,12 @@ public final class StringFunctions extends Lisp
                 if (i == end1) {
                     // Reached end of string1.
                     if (j == end2)
-                        return new Fixnum(i); // Strings are identical.
+                        return Fixnum.getInstance(i); // Strings are identical.
                     return NIL;
                 }
                 if (j == end2) {
                     // Reached end of string2.
-                    return new Fixnum(i);
+                    return Fixnum.getInstance(i);
                 }
                 char c1 = LispCharacter.toUpperCase(array1[i]);
                 char c2 = LispCharacter.toUpperCase(array2[j]);
@@ -530,7 +530,7 @@ public final class StringFunctions extends Lisp
                     continue;
                 }
                 if (c1 > c2)
-                    return new Fixnum(i);
+                    return Fixnum.getInstance(i);
                 // c1 < c2
                 return NIL;
             }
@@ -558,7 +558,7 @@ public final class StringFunctions extends Lisp
             while (true) {
                 if (i == end1) {
                     // Reached end of string1.
-                    return new Fixnum(i);
+                    return Fixnum.getInstance(i);
                 }
                 if (j == end2) {
                     // Reached end of string2.
@@ -574,7 +574,7 @@ public final class StringFunctions extends Lisp
                 if (c1 > c2)
                     return NIL;
                 // c1 < c2
-                return new Fixnum(i);
+                return Fixnum.getInstance(i);
             }
         }
     };
@@ -1024,7 +1024,7 @@ public final class StringFunctions extends Lisp
         {
             // FIXME Don't call getStringValue() here! (Just look at the chars.)
             int index = second.getStringValue().indexOf(first.getStringValue());
-            return index >= 0 ? new Fixnum(index) : NIL;
+            return index >= 0 ? Fixnum.getInstance(index) : NIL;
         }
     };
 

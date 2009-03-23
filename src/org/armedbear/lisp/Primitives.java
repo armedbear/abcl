@@ -2143,7 +2143,7 @@ public final class Primitives extends Lisp
       {
         try
           {
-            return new Fixnum(((AbstractArray)arg).getRank());
+            return Fixnum.getInstance(((AbstractArray)arg).getRank());
           }
         catch (ClassCastException e)
           {
@@ -2197,7 +2197,7 @@ public final class Primitives extends Lisp
           {
             return type_error(second, Symbol.FIXNUM);
           }
-        return new Fixnum(array.getDimension(n));
+        return Fixnum.getInstance(array.getDimension(n));
       }
     };
 
@@ -2210,7 +2210,7 @@ public final class Primitives extends Lisp
       {
         try
           {
-            return new Fixnum(((AbstractArray)arg).getTotalSize());
+            return Fixnum.getInstance(((AbstractArray)arg).getTotalSize());
           }
         catch (ClassCastException e)
           {
@@ -2546,7 +2546,7 @@ public final class Primitives extends Lisp
       {
         try
           {
-            return new Fixnum(((AbstractArray)arg).getFillPointer());
+            return Fixnum.getInstance(((AbstractArray)arg).getFillPointer());
           }
         catch (ClassCastException e)
           {
@@ -2607,7 +2607,7 @@ public final class Primitives extends Lisp
           return NIL;
         v.aset(fillPointer, first);
         v.setFillPointer(fillPointer + 1);
-        return new Fixnum(fillPointer);
+        return Fixnum.getInstance(fillPointer);
       }
     };
 
@@ -4330,7 +4330,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        return new Fixnum(arg.getCallCount());
+        return Fixnum.getInstance(arg.getCallCount());
       }
     };
 
@@ -5192,10 +5192,10 @@ public final class Primitives extends Lisp
                 n = n >>> 1;
                 ++count;
               }
-            return new Fixnum(count);
+            return Fixnum.getInstance(count);
           }
         if (arg instanceof Bignum)
-          return new Fixnum(((Bignum)arg).value.bitLength());
+          return Fixnum.getInstance(((Bignum)arg).value.bitLength());
         return type_error(arg, Symbol.INTEGER);
       }
     };
@@ -5232,7 +5232,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        return new Fixnum(System.identityHashCode(arg));
+        return Fixnum.getInstance(System.identityHashCode(arg));
       }
     };
 
@@ -5275,7 +5275,7 @@ public final class Primitives extends Lisp
                           }
                       }
                     if (match)
-                      return new Fixnum(i);
+                      return Fixnum.getInstance(i);
                   }
               }
           }
@@ -5304,7 +5304,7 @@ public final class Primitives extends Lisp
                           }
                       }
                     if (match)
-                      return new Fixnum(i);
+                      return Fixnum.getInstance(i);
                   }
               }
           }
@@ -5867,7 +5867,7 @@ public final class Primitives extends Lisp
             int n = bytes[i];
             if (n < 0)
               n += 256;
-            objects[i] = new Fixnum(n);
+            objects[i] = Fixnum.getInstance(n);
           }
         return new SimpleVector(objects);
       }

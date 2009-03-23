@@ -141,7 +141,7 @@ public final class StringInputStream extends Stream
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             if (arg instanceof StringInputStream)
-                return new Fixnum(((StringInputStream)arg).getOffset());
+                return Fixnum.getInstance(((StringInputStream)arg).getOffset());
             return error(new TypeError(String.valueOf(arg) +
                                         " is not a string input stream."));
         }

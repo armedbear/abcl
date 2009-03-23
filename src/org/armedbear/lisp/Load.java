@@ -340,7 +340,7 @@ public final class Load extends Lisp
     // ### *fasl-version*
     // internal symbol
     private static final Symbol _FASL_VERSION_ =
-        exportConstant("*FASL-VERSION*", PACKAGE_SYS, new Fixnum(29));
+        exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(29));
 
     // ### *fasl-anonymous-package*
     // internal symbol
@@ -384,7 +384,7 @@ public final class Load extends Lisp
         thread.bindSpecialToCurrentValue(Symbol.CURRENT_READTABLE);
         thread.bindSpecialToCurrentValue(Symbol._PACKAGE_);
         int loadDepth = Fixnum.getValue(_LOAD_DEPTH_.symbolValue(thread));
-        thread.bindSpecial(_LOAD_DEPTH_, new Fixnum(++loadDepth));
+        thread.bindSpecial(_LOAD_DEPTH_, Fixnum.getInstance(++loadDepth));
         // Compiler policy.
         thread.bindSpecialToCurrentValue(_SPEED_);
         thread.bindSpecialToCurrentValue(_SPACE_);
@@ -449,7 +449,7 @@ public final class Load extends Lisp
         try {
             final Environment env = new Environment();
             while (true) {
-                sourcePositionBinding.value = new Fixnum(in.getOffset());
+                sourcePositionBinding.value = Fixnum.getInstance(in.getOffset());
                 LispObject obj = in.read(false, EOF, false, thread);
                 if (obj == EOF)
                     break;

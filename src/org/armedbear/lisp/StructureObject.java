@@ -491,7 +491,7 @@ public final class StructureObject extends LispObject
       {
         try
           {
-            return new Fixnum(((StructureObject)arg).slots.length);
+            return Fixnum.getInstance(((StructureObject)arg).slots.length);
           }
         catch (ClassCastException e)
           {

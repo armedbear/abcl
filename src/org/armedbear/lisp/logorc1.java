@@ -51,7 +51,7 @@ public final class logorc1 extends Primitive
     {
         if (first instanceof Fixnum) {
             if (second instanceof Fixnum)
-                return new Fixnum(~((Fixnum)first).value |
+                return Fixnum.getInstance(~((Fixnum)first).value |
                                   ((Fixnum)second).value);
             if (second instanceof Bignum) {
                 BigInteger n1 = ((Fixnum)first).getBigInteger();

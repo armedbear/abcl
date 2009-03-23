@@ -156,17 +156,17 @@ public class RuntimeClass extends Lisp
 
     public static final Fixnum makeLispObject(byte i) throws ConditionThrowable
     {
-        return new Fixnum(i);
+        return Fixnum.getInstance(i);
     }
 
     public static final Fixnum makeLispObject(short i) throws ConditionThrowable
     {
-        return new Fixnum(i);
+        return Fixnum.getInstance(i);
     }
 
     public static final Fixnum makeLispObject(int i) throws ConditionThrowable
     {
-        return new Fixnum(i);
+        return Fixnum.getInstance(i);
     }
 
     public static final Bignum makeLispObject(long i) throws ConditionThrowable

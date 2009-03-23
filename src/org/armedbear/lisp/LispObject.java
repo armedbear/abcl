@@ -162,7 +162,7 @@ public class LispObject extends Lisp
   public LispObject nthcdr(int n) throws ConditionThrowable
   {
     if (n < 0)
-      return type_error(new Fixnum(n),
+      return type_error(Fixnum.getInstance(n),
                              list(Symbol.INTEGER, Fixnum.ZERO));
     return type_error(this, Symbol.LIST);
   }
@@ -396,7 +396,7 @@ public class LispObject extends Lisp
 
   public final LispObject LENGTH() throws ConditionThrowable
   {
-    return new Fixnum(length());
+    return Fixnum.getInstance(length());
   }
 
   public LispObject CHAR(int index) throws ConditionThrowable
@@ -464,7 +464,7 @@ public class LispObject extends Lisp
   public void aset(int index, int n)
     throws ConditionThrowable
   {
-    aset(index, new Fixnum(n));
+    aset(index, Fixnum.getInstance(n));
   }
 
   public void aset(int index, LispObject newValue)
@@ -807,7 +807,7 @@ public class LispObject extends Lisp
 
   public LispObject add(int n) throws ConditionThrowable
   {
-    return add(new Fixnum(n));
+    return add(Fixnum.getInstance(n));
   }
 
   public LispObject add(LispObject obj) throws ConditionThrowable
@@ -817,7 +817,7 @@ public class LispObject extends Lisp
 
   public LispObject subtract(int n) throws ConditionThrowable
   {
-    return subtract(new Fixnum(n));
+    return subtract(Fixnum.getInstance(n));
   }
 
   public LispObject subtract(LispObject obj) throws ConditionThrowable
@@ -827,7 +827,7 @@ public class LispObject extends Lisp
 
   public LispObject multiplyBy(int n) throws ConditionThrowable
   {
-    return multiplyBy(new Fixnum(n));
+    return multiplyBy(Fixnum.getInstance(n));
   }
 
   public LispObject multiplyBy(LispObject obj) throws ConditionThrowable
@@ -842,7 +842,7 @@ public class LispObject extends Lisp
 
   public boolean isEqualTo(int n) throws ConditionThrowable
   {
-    return isEqualTo(new Fixnum(n));
+    return isEqualTo(Fixnum.getInstance(n));
   }
 
   public boolean isEqualTo(LispObject obj) throws ConditionThrowable
@@ -859,7 +859,7 @@ public class LispObject extends Lisp
 
   public boolean isNotEqualTo(int n) throws ConditionThrowable
   {
-    return isNotEqualTo(new Fixnum(n));
+    return isNotEqualTo(Fixnum.getInstance(n));
   }
 
   public boolean isNotEqualTo(LispObject obj) throws ConditionThrowable
@@ -876,7 +876,7 @@ public class LispObject extends Lisp
 
   public boolean isLessThan(int n) throws ConditionThrowable
   {
-    return isLessThan(new Fixnum(n));
+    return isLessThan(Fixnum.getInstance(n));
   }
 
   public boolean isLessThan(LispObject obj) throws ConditionThrowable
@@ -893,7 +893,7 @@ public class LispObject extends Lisp
 
   public boolean isGreaterThan(int n) throws ConditionThrowable
   {
-    return isGreaterThan(new Fixnum(n));
+    return isGreaterThan(Fixnum.getInstance(n));
   }
 
   public boolean isGreaterThan(LispObject obj) throws ConditionThrowable
@@ -910,7 +910,7 @@ public class LispObject extends Lisp
 
   public boolean isLessThanOrEqualTo(int n) throws ConditionThrowable
   {
-    return isLessThanOrEqualTo(new Fixnum(n));
+    return isLessThanOrEqualTo(Fixnum.getInstance(n));
   }
 
   public boolean isLessThanOrEqualTo(LispObject obj) throws ConditionThrowable
@@ -927,7 +927,7 @@ public class LispObject extends Lisp
 
   public boolean isGreaterThanOrEqualTo(int n) throws ConditionThrowable
   {
-    return isGreaterThanOrEqualTo(new Fixnum(n));
+    return isGreaterThanOrEqualTo(Fixnum.getInstance(n));
   }
 
   public boolean isGreaterThanOrEqualTo(LispObject obj) throws ConditionThrowable
@@ -971,12 +971,12 @@ public class LispObject extends Lisp
 
   public LispObject MOD(int divisor) throws ConditionThrowable
   {
-    return MOD(new Fixnum(divisor));
+    return MOD(Fixnum.getInstance(divisor));
   }
 
   public LispObject ash(int shift) throws ConditionThrowable
   {
-    return ash(new Fixnum(shift));
+    return ash(Fixnum.getInstance(shift));
   }
 
   public LispObject ash(LispObject obj) throws ConditionThrowable
@@ -991,7 +991,7 @@ public class LispObject extends Lisp
 
   public LispObject LOGAND(int n) throws ConditionThrowable
   {
-    return LOGAND(new Fixnum(n));
+    return LOGAND(Fixnum.getInstance(n));
   }
 
   public LispObject LOGAND(LispObject obj) throws ConditionThrowable
@@ -1001,7 +1001,7 @@ public class LispObject extends Lisp
 
   public LispObject LOGIOR(int n) throws ConditionThrowable
   {
-    return LOGIOR(new Fixnum(n));
+    return LOGIOR(Fixnum.getInstance(n));
   }
 
   public LispObject LOGIOR(LispObject obj) throws ConditionThrowable
@@ -1011,7 +1011,7 @@ public class LispObject extends Lisp
 
   public LispObject LOGXOR(int n) throws ConditionThrowable
   {
-    return LOGXOR(new Fixnum(n));
+    return LOGXOR(Fixnum.getInstance(n));
   }
 
   public LispObject LOGXOR(LispObject obj) throws ConditionThrowable

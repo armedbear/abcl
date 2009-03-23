@@ -62,7 +62,7 @@ public final class ComplexBitVector extends AbstractBitVector
     @Override
     public LispObject typeOf()
     {
-        return list(Symbol.BIT_VECTOR, new Fixnum(capacity));
+        return list(Symbol.BIT_VECTOR, Fixnum.getInstance(capacity));
     }
 
     @Override
@@ -113,7 +113,7 @@ public final class ComplexBitVector extends AbstractBitVector
         LispObject value1, value2;
         if (array != null) {
             value1 = array;
-            value2 = new Fixnum(displacement);
+            value2 = Fixnum.getInstance(displacement);
         } else {
             value1 = NIL;
             value2 = Fixnum.ZERO;
@@ -257,7 +257,7 @@ public final class ComplexBitVector extends AbstractBitVector
         throws ConditionThrowable
     {
         vectorPushExtend(element);
-        return new Fixnum(getFillPointer() - 1);
+        return Fixnum.getInstance(getFillPointer() - 1);
     }
 
     // FIXME
@@ -276,7 +276,7 @@ public final class ComplexBitVector extends AbstractBitVector
         }
         aset(fp, element);
         setFillPointer(fp + 1);
-        return new Fixnum(fp);
+        return Fixnum.getInstance(fp);
     }
 
     private final void ensureCapacity(int minCapacity) throws ConditionThrowable

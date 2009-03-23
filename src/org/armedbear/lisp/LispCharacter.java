@@ -322,7 +322,7 @@ public final class LispCharacter extends LispObject
         try
           {
             int n = ((LispCharacter)arg).value;
-            return n < 256 ? Fixnum.constants[n] : new Fixnum(n);
+            return Fixnum.getInstance(n);
           }
         catch (ClassCastException e)
           {
@@ -341,7 +341,7 @@ public final class LispCharacter extends LispObject
         try
           {
             int n = ((LispCharacter)arg).value;
-            return n < 256 ? Fixnum.constants[n] : new Fixnum(n);
+            return Fixnum.getInstance(n);
           }
         catch (ClassCastException e)
           {

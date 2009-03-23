@@ -117,8 +117,8 @@ public final class FloatFunctions extends Lisp
                 else
                     m = (bits & 0x7fffff) | 0x800000;
                 LispObject significand = number(m);
-                Fixnum exponent = new Fixnum(e - 150);
-                Fixnum sign = new Fixnum(s);
+                Fixnum exponent = Fixnum.getInstance(e - 150);
+                Fixnum sign = Fixnum.getInstance(s);
                 return LispThread.currentThread().setValues(significand,
                                                             exponent,
                                                             sign);
@@ -134,8 +134,8 @@ public final class FloatFunctions extends Lisp
                 else
                     m = (bits & 0xfffffffffffffL) | 0x10000000000000L;
                 LispObject significand = number(m);
-                Fixnum exponent = new Fixnum(e - 1075);
-                Fixnum sign = new Fixnum(s);
+                Fixnum exponent = Fixnum.getInstance(e - 1075);
+                Fixnum sign = Fixnum.getInstance(s);
                 return LispThread.currentThread().setValues(significand,
                                                             exponent,
                                                             sign);
@@ -196,8 +196,8 @@ public final class FloatFunctions extends Lisp
         }
     };
 
-    private static final Fixnum FIXNUM_24 = new Fixnum(24);
-    private static final Fixnum FIXNUM_53 = new Fixnum(53);
+    private static final Fixnum FIXNUM_24 = Fixnum.getInstance(24);
+    private static final Fixnum FIXNUM_53 = Fixnum.getInstance(53);
 
     // ### float-digits
     // float-digits float => float-digits
@@ -307,7 +307,7 @@ public final class FloatFunctions extends Lisp
         {
             if (arg instanceof SingleFloat) {
                 SingleFloat f = (SingleFloat) arg;
-                return new Fixnum(Float.floatToIntBits(f.value));
+                return Fixnum.getInstance(Float.floatToIntBits(f.value));
             }
             return type_error(arg, Symbol.FLOAT);
         }

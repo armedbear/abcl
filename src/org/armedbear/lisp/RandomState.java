@@ -103,7 +103,7 @@ public final class RandomState extends LispObject
             int limit = ((Fixnum)arg).value;
             if (limit > 0) {
                 int n = random.nextInt((int)limit);
-                return new Fixnum(n);
+                return Fixnum.getInstance(n);
             }
         } else if (arg instanceof Bignum) {
             BigInteger limit = ((Bignum)arg).value;

@@ -656,7 +656,7 @@ public final class MathFunctions extends Lisp
         public LispObject execute(LispObject number, LispObject base)
             throws ConditionThrowable
         {
-            if (number.realp() && !number.minusp() && base.isEqualTo(new Fixnum(10))) {
+            if (number.realp() && !number.minusp() && base.isEqualTo(Fixnum.getInstance(10))) {
                 double d = DoubleFloat.coerceToFloat(number).value;
                 try {
                    if (log10Method != null) {

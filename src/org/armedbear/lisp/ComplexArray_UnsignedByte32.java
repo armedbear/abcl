@@ -144,7 +144,7 @@ public final class ComplexArray_UnsignedByte32 extends AbstractArray
     {
         LispObject result = NIL;
         for (int i = dimv.length; i-- > 0;)
-            result = new Cons(new Fixnum(dimv[i]), result);
+            result = new Cons(Fixnum.getInstance(dimv[i]), result);
         return result;
     }
 
@@ -178,7 +178,7 @@ public final class ComplexArray_UnsignedByte32 extends AbstractArray
         LispObject value1, value2;
         if (array != null) {
             value1 = array;
-            value2 = new Fixnum(displacement);
+            value2 = Fixnum.getInstance(displacement);
         } else {
             value1 = NIL;
             value2 = Fixnum.ZERO;

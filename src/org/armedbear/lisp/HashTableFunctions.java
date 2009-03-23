@@ -215,7 +215,7 @@ public final class HashTableFunctions extends Lisp
       {
         try
           {
-            return new Fixnum(((HashTable)arg).getCount());
+            return Fixnum.getInstance(((HashTable)arg).getCount());
           }
         catch (ClassCastException e)
           {
@@ -231,7 +231,7 @@ public final class HashTableFunctions extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        return new Fixnum(arg.sxhash());
+        return Fixnum.getInstance(arg.sxhash());
       }
     };
 
@@ -243,7 +243,7 @@ public final class HashTableFunctions extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        return new Fixnum(arg.psxhash());
+        return Fixnum.getInstance(arg.psxhash());
       }
     };
 
@@ -303,7 +303,7 @@ public final class HashTableFunctions extends Lisp
       {
         try
           {
-            return new Fixnum(((HashTable)arg).getSize());
+            return Fixnum.getInstance(((HashTable)arg).getSize());
           }
         catch (ClassCastException e)
           {

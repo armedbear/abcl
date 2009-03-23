@@ -305,11 +305,11 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		} else if(javaObject instanceof Boolean) {
             return ((Boolean)javaObject).booleanValue() ? Lisp.T : Lisp.NIL;
 		} else if(javaObject instanceof Byte) {
-            return new Fixnum(((Byte)javaObject).intValue());
+            return Fixnum.getInstance(((Byte)javaObject).intValue());
 		} else if(javaObject instanceof Integer) {
-            return new Fixnum(((Integer)javaObject).intValue());
+            return Fixnum.getInstance(((Integer)javaObject).intValue());
 		} else if(javaObject instanceof Short) {
-            return new Fixnum(((Short)javaObject).shortValue());
+            return Fixnum.getInstance(((Short)javaObject).shortValue());
 		} else if(javaObject instanceof Long) {
             return new Bignum((Long)javaObject);
 		} else if(javaObject instanceof BigInteger) {

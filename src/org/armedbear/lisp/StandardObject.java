@@ -400,7 +400,7 @@ public class StandardObject extends LispObject
           {
             return type_error(second,
                                    list(Symbol.INTEGER, Fixnum.ZERO,
-                                         new Fixnum(instance.slots.length)));
+                                         Fixnum.getInstance(instance.slots.length)));
           }
         LispObject value;
         try
@@ -411,7 +411,7 @@ public class StandardObject extends LispObject
           {
             return type_error(second,
                                    list(Symbol.INTEGER, Fixnum.ZERO,
-                                         new Fixnum(instance.slots.length)));
+                                         Fixnum.getInstance(instance.slots.length)));
           }
         if (value == UNBOUND_VALUE)
           {

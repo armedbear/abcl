@@ -76,7 +76,7 @@ public final class SimpleVector extends AbstractVector
   @Override
   public LispObject typeOf()
   {
-    return list(Symbol.SIMPLE_VECTOR, new Fixnum(capacity));
+    return list(Symbol.SIMPLE_VECTOR, Fixnum.getInstance(capacity));
   }
 
   @Override
