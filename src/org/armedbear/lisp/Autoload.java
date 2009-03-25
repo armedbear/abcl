@@ -533,7 +533,9 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%finalize-generic-function", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%generic-function-lambda-list", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%generic-function-name", "StandardGenericFunction", true);
+        autoload(PACKAGE_SYS, "%get-output-stream-bytes", "ByteArrayOutputStream"); //AS 20090325
         autoload(PACKAGE_SYS, "%make-array", "make_array");
+        autoload(PACKAGE_SYS, "%make-byte-array-output-stream", "ByteArrayOutputStream"); //AS 20090325
         autoload(PACKAGE_SYS, "%make-condition", "make_condition", true);
         autoload(PACKAGE_SYS, "%make-hash-table", "HashTableFunctions");
         autoload(PACKAGE_SYS, "%make-hash-table", "HashTableFunctions");
