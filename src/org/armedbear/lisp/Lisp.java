@@ -1133,18 +1133,7 @@ public abstract class Lisp
         if (bytesRemaining > 0)
           Debug.trace("bytesRemaining = " + bytesRemaining);
 
-        //JavaClassLoader loader = new JavaClassLoader();
-        Class c =
-          (new JavaClassLoader()).loadClassFromByteArray(null, bytes, 0, bytes.length);
-        if (c != null)
-          {
-            Constructor constructor = c.getConstructor((Class[])null);
-            LispObject obj =
-                  (LispObject) constructor.newInstance((Object[])null);
-            if (obj instanceof Function)
-              ((Function)obj).setClassBytes(bytes);
-            return obj;
-          }
+	return loadCompiledFunction(bytes);
       }
     catch (Throwable t)
       {
@@ -1152,6 +1141,21 @@ public abstract class Lisp
       }
     return null;
   }
+
+    public static final LispObject loadCompiledFunction(byte[] bytes) throws Throwable {
+	Class c = (new JavaClassLoader()).loadClassFromByteArray(null, bytes, 0, bytes.length);
+        if (c != null) {
+	    Class sc = c.getSuperclass();
+            Constructor constructor = c.getConstructor((Class[])null);
+            LispObject obj = (LispObject) constructor.newInstance((Object[])null);
+            if (obj instanceof Function) {
+              ((Function)obj).setClassBytes(bytes);
+	    }
+            return obj;
+	} else {
+	    return null;
+	}
+    }
 
   public static final LispObject makeCompiledClosure(LispObject template,
                                                      LispObject[] context)
