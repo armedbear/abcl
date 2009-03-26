@@ -221,11 +221,12 @@ public final class Complex extends LispObject
         LispObject d = ((Complex)obj).getImaginaryPart();
         // xy = (ac - bd) + i(ad + bc)
         // real part = ac - bd
-        // imag part = (a + b)(c + d) - ac - bd
+        // imag part = ad + bc
         LispObject ac = a.multiplyBy(c);
         LispObject bd = b.multiplyBy(d);
-        return Complex.getInstance(ac.subtract(bd),
-                                   a.add(b).multiplyBy(c.add(d)).subtract(ac).subtract(bd));
+        LispObject ad = a.multiplyBy(d);
+        LispObject bc = b.multiplyBy(c);
+        return Complex.getInstance(ac.subtract(bd), ad.add(bc));
       }
     return Complex.getInstance(realpart.multiplyBy(obj),
                                imagpart.multiplyBy(obj));
