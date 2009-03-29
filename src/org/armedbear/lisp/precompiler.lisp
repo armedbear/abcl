@@ -1124,7 +1124,7 @@
     (let* ((block-name (fdefinition-block-name name))
            (lambda-expression `(named-lambda ,name ,lambda-list ,@decls ,@(when doc `(,doc))
                                              (block ,block-name ,@body))))
-      (cond (*compile-file-truename*
+      (cond (*file-compilation*
              `(fset ',name ,lambda-expression))
             (t
              (when (and env (empty-environment-p env))

@@ -408,8 +408,18 @@
                 (t
                  (setf (variable-ignorable-p variable) t))))))))
 
+(defvar *file-compilation* nil)
+(defvar *pathnames-generator* #'make-temp-file)
+
 (defun compile (name &optional definition)
-  (jvm-compile name definition))
+  (let ((*file-compilation* nil)
+        (*pathnames-generator* #'make-temp-file))
+    (jvm-compile name definition)))
+
+(defmacro with-file-compilation (&body body)
+  `(let ((*file-compilation* t)
+         (*pathnames-generator* #'sys::next-classfile-name))
+     ,@body))
 
 (defun finalize-generic-functions ()
   (dolist (sym '(make-instance

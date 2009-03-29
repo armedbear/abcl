@@ -2068,7 +2068,7 @@ representation, based on the derived type of the LispObject."
   (declare-with-hashtable
    symbol *declared-symbols* ht g
    (cond ((null (symbol-package symbol))
-	  (setf g (if *compile-file-truename*
+	  (setf g (if *file-compilation*
 		      (declare-object-as-string symbol +lisp-symbol+
                                                 +lisp-symbol-class+)
 		      (declare-object symbol +lisp-symbol+
@@ -2300,7 +2300,7 @@ representation, based on the derived type of the LispObject."
 
 (defknown declare-instance (t) t)
 (defun declare-instance (obj)
-  (aver (not (null *compile-file-truename*)))
+  (aver (not (null *file-compilation*)))
   (aver (or (structure-object-p obj) (standard-object-p obj)
             (java:java-object-p obj)))
   (let* ((g (symbol-name (gensym "INSTANCE")))
@@ -2469,13 +2469,13 @@ representation, based on the derived type of the LispObject."
          (emit 'getstatic *this-class*
                (declare-object-as-string form) +lisp-object+))
         ((stringp form)
-         (if *compile-file-truename*
+         (if *file-compilation*
              (emit 'getstatic *this-class*
                    (declare-string form) +lisp-simple-string+)
              (emit 'getstatic *this-class*
                    (declare-object form) +lisp-object+)))
         ((vectorp form)
-         (if *compile-file-truename*
+         (if *file-compilation*
              (emit 'getstatic *this-class*
                    (declare-object-as-string form) +lisp-object+)
              (emit 'getstatic *this-class*
@@ -2487,24 +2487,24 @@ representation, based on the derived type of the LispObject."
          (emit 'getstatic *this-class*
                (declare-object form) +lisp-object+))
         ((pathnamep form)
-         (let ((g (if *compile-file-truename*
+         (let ((g (if *file-compilation*
                       (declare-object-as-string form)
                       (declare-object form))))
            (emit 'getstatic *this-class* g +lisp-object+)))
         ((packagep form)
-         (let ((g (if *compile-file-truename*
+         (let ((g (if *file-compilation*
                       (declare-package form)
                       (declare-object form))))
            (emit 'getstatic *this-class* g +lisp-object+)))
         ((or (structure-object-p form)
              (standard-object-p form)
              (java:java-object-p form))
-         (let ((g (if *compile-file-truename*
+         (let ((g (if *file-compilation*
                       (declare-instance form)
                       (declare-object form))))
            (emit 'getstatic *this-class* g +lisp-object+)))
         (t
-         (if *compile-file-truename*
+         (if *file-compilation*
              (error "COMPILE-CONSTANT unhandled case ~S" form)
              (emit 'getstatic *this-class*
                    (declare-object form) +lisp-object+))))
@@ -3003,7 +3003,7 @@ itself is *not* compiled by this function."
                  (emit 'getstatic *this-class* (declare-symbol op) +lisp-symbol+)
                  (aload 0)))
             ((null (symbol-package op))
-             (let ((g (if *compile-file-truename*
+             (let ((g (if *file-compilation*
                           (declare-object-as-string op)
                           (declare-object op))))
                (emit 'getstatic *this-class* g +lisp-object+)))
@@ -3175,7 +3175,7 @@ Note: DEFUN implies a named lambda."
            (compile-var-ref (make-var-ref (local-function-variable local-function)) 'stack nil))
           (t
            (dformat t "compile-local-function-call default case~%")
-           (let* ((g (if *compile-file-truename*
+           (let* ((g (if *file-compilation*
                          (declare-local-function local-function)
                          (declare-object (local-function-function local-function)))))
              (emit 'getstatic *this-class* g +lisp-object+) ; Stack: template-function
@@ -4603,7 +4603,7 @@ given a specific common representation.")
           (let ((NEXT (gensym)))
             (aload tag-register)
             (emit 'getstatic *this-class*
-                  (if *compile-file-truename*
+                  (if *file-compilation*
                       (declare-object-as-string (tag-label tag))
                       (declare-object (tag-label tag)))
                   +lisp-object+)
@@ -4913,7 +4913,7 @@ given a specific common representation.")
          (emit-move-from-stack target))))
 
 (defun p2-load-time-value (form target representation)
-  (cond (*compile-file-truename*
+  (cond (*file-compilation*
          (emit 'getstatic *this-class*
                (declare-load-time-value (second form)) +lisp-object+)
          (fix-boxing representation nil)
@@ -4986,13 +4986,13 @@ given a specific common representation.")
                     (emit 'getstatic *this-class* (declare-symbol obj) +lisp-symbol+))
                    (t
                     ;; An uninterned symbol.
-                    (let ((g (if *compile-file-truename*
+                    (let ((g (if *file-compilation*
                                  (declare-object-as-string obj)
                                  (declare-object obj))))
                       (emit 'getstatic *this-class* g +lisp-object+))))
              (emit-move-from-stack target representation)))
           ((listp obj)
-           (let ((g (if *compile-file-truename*
+           (let ((g (if *file-compilation*
                         (declare-object-as-string obj)
                         (declare-object obj))))
              (emit 'getstatic *this-class* g +lisp-object+)
@@ -5082,8 +5082,8 @@ given a specific common representation.")
 (defun p2-flet-process-compiland (local-function)
   (let* ((compiland (local-function-compiland local-function))
          (lambda-list (cadr (compiland-lambda-expression compiland))))
-    (cond (*compile-file-truename*
-           (let* ((pathname (sys::next-classfile-name))
+    (cond (*file-compilation*
+           (let* ((pathname (funcall *pathnames-generator*))
                   (class-file (make-class-file :pathname pathname
                                                :lambda-list lambda-list)))
 	     (set-compiland-and-write-class-file class-file compiland)
@@ -5108,8 +5108,8 @@ given a specific common representation.")
 (defun p2-labels-process-compiland (local-function)
   (let* ((compiland (local-function-compiland local-function))
          (lambda-list (cadr (compiland-lambda-expression compiland))))
-    (cond (*compile-file-truename*
-           (let* ((pathname (sys::next-classfile-name))
+    (cond (*file-compilation*
+           (let* ((pathname (funcall *pathnames-generator*))
                   (class-file (make-class-file :pathname pathname
                                                :lambda-list lambda-list)))
 	     (set-compiland-and-write-class-file class-file compiland)
@@ -5177,9 +5177,9 @@ given a specific common representation.")
 (defun p2-lambda (compiland target)
   (let* ((lambda-list (cadr (compiland-lambda-expression compiland))))
     (aver (null (compiland-class-file compiland)))
-    (cond (*compile-file-truename*
+    (cond (*file-compilation*
            (setf (compiland-class-file compiland)
-                 (make-class-file :pathname (sys::next-classfile-name)
+                 (make-class-file :pathname (funcall *pathnames-generator*)
                                   :lambda-list lambda-list))
            (let ((class-file (compiland-class-file compiland)))
 	     (compile-and-write-to-file class-file compiland)
@@ -5187,7 +5187,7 @@ given a specific common representation.")
                    (declare-local-function (make-local-function :class-file class-file))
                    +lisp-object+)))
           (t
-           (let ((pathname (make-temp-file)))
+           (let ((pathname (funcall *pathnames-generator*)))
              (setf (compiland-class-file compiland)
                    (make-class-file :pathname pathname
                                     :lambda-list lambda-list))
@@ -5225,7 +5225,7 @@ given a specific common representation.")
                          (compile-var-ref (make-var-ref (local-function-variable local-function)) 'stack nil)
                          )
                         (t
-                         (let ((g (if *compile-file-truename*
+                         (let ((g (if *file-compilation*
                                       (declare-local-function local-function)
                                       (declare-object (local-function-function local-function)))))
                            (emit 'getstatic *this-class* g +lisp-object+) ; Stack: template-function
@@ -5262,7 +5262,7 @@ given a specific common representation.")
                          (compile-var-ref (make-var-ref (local-function-variable local-function)) 'stack nil)
                          )
                         (t
-                         (let ((g (if *compile-file-truename*
+                         (let ((g (if *file-compilation*
                                       (declare-local-function local-function)
                                       (declare-object (local-function-function local-function)))))
                            (emit 'getstatic *this-class*
@@ -5271,7 +5271,7 @@ given a specific common representation.")
                   (emit 'getstatic *this-class*
                         (declare-setf-function name) +lisp-object+)
                   (emit-move-from-stack target))
-                 ((and (null *compile-file-truename*)
+                 ((and (null *file-compilation*)
                        (fboundp name)
                        (fdefinition name))
                   (emit 'getstatic *this-class*
@@ -7532,7 +7532,7 @@ for use with derive-type-times.")
 (defun compile-special-reference (name target representation)
   (when (constantp name)
     (let ((value (symbol-value name)))
-      (when (or (null *compile-file-truename*)
+      (when (or (null *file-compilation*)
                 (stringp value)
                 (numberp value)
                 (packagep value))
@@ -8166,7 +8166,7 @@ for use with derive-type-times.")
                                         (class-file-lambda-list class-file))))
     (pool-name "Code") ; Must be in pool!
 
-    (when *compile-file-truename*
+    (when *file-compilation*
       (pool-name "SourceFile") ; Must be in pool!
       (pool-name (file-namestring *compile-file-truename*)))
     (when (and (boundp '*source-line-number*)
@@ -8200,7 +8200,7 @@ for use with derive-type-times.")
         (write-method method stream))
       (write-method constructor stream)
       ;; attributes count
-      (cond (*compile-file-truename*
+      (cond (*file-compilation*
              ;; attributes count
              (write-u2 1 stream)
              ;; attributes table
