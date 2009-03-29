@@ -109,7 +109,7 @@ public final class ByteArrayOutputStream extends Stream
     };
 
     // ### %get-output-stream-bytes
-    // %get-output-stream-string byte-array-output-stream => java-byte-array
+    // %get-output-stream-bytes byte-array-output-stream => java-byte-array
     private static final Primitive GET_OUTPUT_STREAM_STRING =
         new Primitive("%get-output-stream-bytes", PACKAGE_SYS, false,
                        "byte-array-output-stream")
