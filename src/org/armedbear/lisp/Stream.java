@@ -1356,7 +1356,7 @@ public class Stream extends LispObject
     // parseInt() failed.
     try
       {
-        return new Bignum(token, radix);
+        return Bignum.getInstance(token, radix);
       }
     catch (NumberFormatException e) {}
     // Not a number.
@@ -1493,7 +1493,7 @@ public class Stream extends LispObject
     // parseInt() failed.
     try
       {
-        return new Bignum(s, radix);
+        return Bignum.getInstance(s, radix);
       }
     catch (NumberFormatException e) {}
     // Not a number.
@@ -1522,7 +1522,7 @@ public class Stream extends LispObject
     // parseInt() failed.
     try
       {
-        return new Bignum(s, radix);
+        return Bignum.getInstance(s, radix);
       }
     catch (NumberFormatException e) {}
     // Not a number.

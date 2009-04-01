@@ -43,7 +43,7 @@ public class LispInteger extends LispObject
       if (Integer.MIN_VALUE <= l && l <= Integer.MAX_VALUE)
           return Fixnum.getInstance((int)l);
       else
-          return new Bignum(l);
+          return Bignum.getInstance(l);
   }
 
   public static LispInteger getInstance(int i) {

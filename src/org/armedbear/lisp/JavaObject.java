@@ -134,7 +134,7 @@ public final class JavaObject extends LispObject
                 return LispInteger.getInstance(((Long)obj).longValue());
 
             if (obj instanceof BigInteger)
-                return new Bignum((BigInteger)obj);
+                return Bignum.getInstance((BigInteger)obj);
 
             if (obj instanceof Short)
                 return Fixnum.getInstance(((Short)obj).shortValue());

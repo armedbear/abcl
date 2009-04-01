@@ -169,9 +169,9 @@ public class RuntimeClass extends Lisp
         return Fixnum.getInstance(i);
     }
 
-    public static final Bignum makeLispObject(long i) throws ConditionThrowable
+    public static final LispInteger makeLispObject(long i) throws ConditionThrowable
     {
-        return new Bignum(i);
+        return Bignum.getInstance(i);
     }
 
     public static final SingleFloat makeLispObject(float i) throws ConditionThrowable

@@ -881,7 +881,7 @@ public abstract class Lisp
     if (n >= Integer.MIN_VALUE && n <= Integer.MAX_VALUE)
       return Fixnum.getInstance((int)n);
     else
-      return new Bignum(n);
+      return Bignum.getInstance(n);
   }
 
   private static final BigInteger INT_MIN = BigInteger.valueOf(Integer.MIN_VALUE);
@@ -915,7 +915,7 @@ public abstract class Lisp
     if (n.compareTo(INT_MIN) >= 0 && n.compareTo(INT_MAX) <= 0)
       return Fixnum.getInstance(n.intValue());
     else
-      return new Bignum(n);
+      return Bignum.getInstance(n);
   }
 
   public static final int mod(int number, int divisor)
@@ -1219,7 +1219,7 @@ public abstract class Lisp
     list(Symbol.UNSIGNED_BYTE, Fixnum.constants[32]);
 
   public static final LispObject UNSIGNED_BYTE_32_MAX_VALUE =
-    new Bignum(4294967296L);
+    Bignum.getInstance(4294967296L);
 
   public static final LispObject getUpgradedArrayElementType(LispObject type)
     throws ConditionThrowable
@@ -2088,8 +2088,8 @@ public abstract class Lisp
   {
     Symbol.MOST_POSITIVE_FIXNUM.initializeConstant(Fixnum.getInstance(Integer.MAX_VALUE));
     Symbol.MOST_NEGATIVE_FIXNUM.initializeConstant(Fixnum.getInstance(Integer.MIN_VALUE));
-    Symbol.MOST_POSITIVE_JAVA_LONG.initializeConstant(new Bignum(Long.MAX_VALUE));
-    Symbol.MOST_NEGATIVE_JAVA_LONG.initializeConstant(new Bignum(Long.MIN_VALUE));
+    Symbol.MOST_POSITIVE_JAVA_LONG.initializeConstant(Bignum.getInstance(Long.MAX_VALUE));
+    Symbol.MOST_NEGATIVE_JAVA_LONG.initializeConstant(Bignum.getInstance(Long.MIN_VALUE));
   }
 
   public static void exit(int status)

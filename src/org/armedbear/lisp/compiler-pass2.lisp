@@ -2200,21 +2200,20 @@ representation, based on the derived type of the LispObject."
    (setf g (concatenate 'string "BIGNUM_" (symbol-name (gensym))))
    (let ((*code* *static-code*))
      (declare-field g +lisp-integer+)
-     (emit 'new +lisp-bignum-class+)
-     (emit 'dup)
      (cond ((<= most-negative-java-long n most-positive-java-long)
 ;;	    (setf g (format nil "BIGNUM_~A~D"
 ;;			    (if (minusp n) "MINUS_" "")
 ;;			    (abs n)))
 	    (emit 'ldc2_w (pool-long n))
-	    (emit-invokespecial-init +lisp-bignum-class+ '("J")))
+	    (emit-invokestatic +lisp-bignum-class+ "getInstance"
+                               '("J") +lisp-integer+))
 	 (t
 	  (let* ((*print-base* 10)
 		 (s (with-output-to-string (stream) (dump-form n stream))))
 	    (emit 'ldc (pool-string s))
 	    (emit-push-constant-int 10)
-	    (emit-invokespecial-init +lisp-bignum-class+
-                                     (list +java-string+ "I")))))
+	    (emit-invokestatic +lisp-bignum-class+ "getInstance"
+                               (list +java-string+ "I") +lisp-integer+))))
      (emit 'putstatic *this-class* g +lisp-integer+)
      (setf *static-code* *code*))
    (setf (gethash n ht) g)))
