@@ -421,13 +421,13 @@
 
 (defun precompile-dolist (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form))
+      (precompile1 (macroexpand form *compile-file-environment*))
       (cons 'DOLIST (cons (mapcar #'precompile1 (cadr form))
                           (mapcar #'precompile1 (cddr form))))))
 
 (defun precompile-dotimes (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form))
+      (precompile1 (macroexpand form *compile-file-environment*))
       (cons 'DOTIMES (cons (mapcar #'precompile1 (cadr form))
                            (mapcar #'precompile1 (cddr form))))))
 
@@ -463,7 +463,7 @@
 
 (defun precompile-do/do* (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form))
+      (precompile1 (macroexpand form *compile-file-environment*))
       (list* (car form)
              (precompile-do/do*-vars (cadr form))
              (precompile-do/do*-end-form (caddr form))
@@ -646,15 +646,6 @@
         (parse-body (cddr form) nil)
       `(locally ,@decls ,@(mapcar #'precompile1 body)))))
 
-;; "If the restartable-form is a list whose car is any of the symbols SIGNAL,
-;; ERROR, CERROR, or WARN (or is a macro form which macroexpands into such a
-;; list), then WITH-CONDITION-RESTARTS is used implicitly to associate the
-;; indicated restarts with the condition to be signaled." So we need to
-;; precompile the restartable form before macroexpanding RESTART-CASE.
-(defun precompile-restart-case (form)
-  (let ((new-form (list* 'RESTART-CASE (precompile1 (cadr form)) (cddr form))))
-    (precompile1 (macroexpand new-form sys:*compile-file-environment*))))
-
 (defun precompile-symbol-macrolet (form)
   (let ((*local-variables* *local-variables*)
         (*compile-file-environment*
@@ -746,7 +737,7 @@
 
 (defun precompile-case (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form))
+      (precompile1 (macroexpand form *compile-file-environment*))
       (let* ((keyform (cadr form))
              (clauses (cddr form))
              (result (list (precompile1 keyform))))
@@ -761,7 +752,7 @@
 
 (defun precompile-cond (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form))
+      (precompile1 (macroexpand form *compile-file-environment*))
       (let ((clauses (cdr form))
             (result nil))
         (dolist (clause clauses)
@@ -866,12 +857,12 @@
 
 (defun precompile-when (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form))
+      (precompile1 (macroexpand form *compile-file-environment*))
       (precompile-cons form)))
 
 (defun precompile-unless (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form))
+      (precompile1 (macroexpand form *compile-file-environment*))
       (precompile-cons form)))
 
 ;; MULTIPLE-VALUE-BIND is handled explicitly by the JVM compiler.
@@ -890,12 +881,12 @@
 
 (defun precompile-nth-value (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form))
+      (precompile1 (macroexpand form *compile-file-environment*))
       form))
 
 (defun precompile-return (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form))
+      (precompile1 (macroexpand form *compile-file-environment*))
       (list 'RETURN (precompile1 (cadr form)))))
 
 (defun precompile-return-from (form)
@@ -981,7 +972,6 @@
                               PROGV
                               PSETF
                               PSETQ
-                              RESTART-CASE
                               RETURN
                               RETURN-FROM
                               SETF
