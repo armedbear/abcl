@@ -163,8 +163,8 @@
 ;; ERROR, CERROR, or WARN (or is a macro form which macroexpands into such a
 ;; list), then WITH-CONDITION-RESTARTS is used implicitly to associate the
 ;; indicated restarts with the condition to be signaled."
-(defun munge-restart-case-expression (expression)
-  (let ((exp (macroexpand expression)))
+(defun munge-restart-case-expression (expression env)
+  (let ((exp (macroexpand expression env)))
     (if (consp exp)
 	(let* ((name (car exp))
 	       (args (if (eq name 'cerror) (cddr exp) (cdr exp))))
@@ -186,7 +186,7 @@
               expression))
         expression)))
 
-(defmacro restart-case (expression &body clauses)
+(defmacro restart-case (expression &body clauses &environment env)
   (let ((block-tag (gensym))
         (temp-var (gensym))
         (data
@@ -215,7 +215,8 @@
                                          (go ,tag))
                                       ,@keys)))
                          data)
-                (return-from ,block-tag ,(munge-restart-case-expression expression)))
+                (return-from ,block-tag
+                  ,(munge-restart-case-expression expression env)))
                ,@(mapcan #'(lambda (datum)
                             (let ((tag  (nth 1 datum))
                                   (bvl  (nth 3 datum))
