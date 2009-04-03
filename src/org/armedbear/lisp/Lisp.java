@@ -78,9 +78,7 @@ public abstract class Lisp
     Packages.createPackage("JAVA");
 
   // ### nil
-  // Constructing NIL forces the Symbol class to be loaded (since Nil extends
-  // Symbol).
-  public static final LispObject NIL = new Nil(PACKAGE_CL);
+  public static final LispObject NIL = Nil.NIL;
 
   // We need NIL before we can call usePackage().
   static

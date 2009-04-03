@@ -35,6 +35,8 @@ package org.armedbear.lisp;
 
 public final class Nil extends Symbol
 {
+    final static Nil NIL = new Nil(PACKAGE_CL);
+
     public Nil(Package pkg)
     {
         super("NIL", pkg);
