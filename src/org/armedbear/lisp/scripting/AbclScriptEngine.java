@@ -311,9 +311,9 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		} else if(javaObject instanceof Short) {
             return Fixnum.getInstance(((Short)javaObject).shortValue());
 		} else if(javaObject instanceof Long) {
-            return new Bignum((Long)javaObject);
+            return Bignum.getInstance((Long)javaObject);
 		} else if(javaObject instanceof BigInteger) {
-			return new Bignum((BigInteger) javaObject);
+			return Bignum.getInstance((BigInteger) javaObject);
 		} else if(javaObject instanceof Float) {
             return new SingleFloat(((Float)javaObject).floatValue());
 		} else if(javaObject instanceof Double) {
