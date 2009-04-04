@@ -747,60 +747,27 @@ public final class MathFunctions extends Lisp
             }
             if (base.zerop())
                 return base;
-            if (power instanceof Fixnum) {
-                if (base.rationalp())
-                    return intexp(base, power);
-                LispObject result;
-                if (base instanceof SingleFloat)
-                    result = SingleFloat.ONE;
-                else if (base instanceof DoubleFloat)
-                    result = DoubleFloat.ONE;
-                else
-                    // base is complex
-                    result = Fixnum.ONE;
-                int pow = ((Fixnum)power).value;
-                if (pow > 0) {
-                    LispObject term = base;
-                    while (pow != 0) {
-                        if ((pow & 1) == 1)
-                           result = result.multiplyBy(term);
-
-                        term = term.multiplyBy(term);
-                        pow = pow >> 1;
-                    }
-                } else if (pow < 0) {
-                    LispObject term = base;
-                    pow = -pow;
-                    while (pow != 0) {
-                        if ((pow & 1) == 1)
-                           result = result.divideBy(term);
-
-                        term = term.multiplyBy(term);
-                        pow = pow >> 1;
-                    }
-                }
-                if (TRAP_OVERFLOW) {
-                    if (result instanceof SingleFloat)
-                        if (Float.isInfinite(((SingleFloat)result).value))
-                            return error(new FloatingPointOverflow(NIL));
-                    if (result instanceof DoubleFloat)
-                        if (Double.isInfinite(((DoubleFloat)result).value))
-                            return error(new FloatingPointOverflow(NIL));
-                }
-                if (TRAP_UNDERFLOW) {
-                    if (result.zerop())
-                        return error(new FloatingPointUnderflow(NIL));
-                }
-                return result;
+            if (base.isEqualTo(1))
+                return base;
+            
+            if ((power instanceof Fixnum
+                 || power instanceof Bignum)
+                 && (base.rationalp()
+                     || (base instanceof Complex
+                         && ((Complex)base).realpart.rationalp()))) {
+                // exact math version
+                return intexp(base, power);
             }
-            if (base instanceof Fixnum && power instanceof Bignum)
-                return ((Fixnum)base).pow(power);
+            // for anything not a rational or complex rational, use
+            // float approximation.
             if (base instanceof Complex || power instanceof Complex)
                 return exp(power.multiplyBy(log(base)));
             final double x; // base
             final double y; // power
             if (base instanceof Fixnum)
                 x = ((Fixnum)base).value;
+            else if (base instanceof Bignum)
+                x = ((Bignum)base).doubleValue();
             else if (base instanceof Ratio)
                 x = ((Ratio)base).doubleValue();
             else if (base instanceof SingleFloat)
@@ -810,7 +777,12 @@ public final class MathFunctions extends Lisp
             else
                 return error(new LispError("EXPT: unsupported case: base is of type " +
                                             base.typeOf().writeToString()));
-            if (power instanceof Ratio)
+
+            if (power instanceof Fixnum)
+                y = ((Fixnum)power).value;
+            else if (power instanceof Bignum)
+                y = ((Bignum)power).doubleValue();
+            else if (power instanceof Ratio)
                 y = ((Ratio)power).doubleValue();
             else if (power instanceof SingleFloat)
                 y = ((SingleFloat)power).value;
@@ -826,30 +798,76 @@ public final class MathFunctions extends Lisp
                     double realPart = r * Math.cos(y * Math.PI);
                     double imagPart = r * Math.sin(y * Math.PI);
                     if (base instanceof DoubleFloat || power instanceof DoubleFloat)
-                        return Complex.getInstance(new DoubleFloat(realPart),
-                                                   new DoubleFloat(imagPart));
+                        return Complex
+                            .getInstance(OverUnderFlowCheck(new DoubleFloat(realPart)),
+                                         OverUnderFlowCheck(new DoubleFloat(imagPart)));
                     else
-                        return Complex.getInstance(new SingleFloat((float)realPart),
-                                                   new SingleFloat((float)imagPart));
+                        return Complex
+                            .getInstance(OverUnderFlowCheck(new SingleFloat((float)realPart)),
+                                         OverUnderFlowCheck(new SingleFloat((float)imagPart)));
                 }
             }
             if (base instanceof DoubleFloat || power instanceof DoubleFloat)
-                return new DoubleFloat(r);
+                return OverUnderFlowCheck(new DoubleFloat(r));
             else
-                return new SingleFloat((float)r);
+                return OverUnderFlowCheck(new SingleFloat((float)r));
         }
     };
 
+    /** Checks number for over- or underflow values.
+     *
+     * @param number
+     * @return number or signals an appropriate error
+     * @throws org.armedbear.lisp.ConditionThrowable
+     */
+    private final static LispObject OverUnderFlowCheck(LispObject number)
+            throws ConditionThrowable
+    {
+        if (number instanceof Complex) {
+            OverUnderFlowCheck(((Complex)number).realpart);
+            OverUnderFlowCheck(((Complex)number).imagpart);
+            return number;
+        }
+
+        if (TRAP_OVERFLOW) {
+            if (number instanceof SingleFloat)
+                if (Float.isInfinite(((SingleFloat)number).value))
+                    return error(new FloatingPointOverflow(NIL));
+            if (number instanceof DoubleFloat)
+                if (Double.isInfinite(((DoubleFloat)number).value))
+                    return error(new FloatingPointOverflow(NIL));
+        }
+        if (TRAP_UNDERFLOW) {
+            if (number.zerop())
+                return error(new FloatingPointUnderflow(NIL));
+        }
+        return number;
+    }
+
     // Adapted from SBCL.
+    /** Return the exponent of base taken to the integer exponent power
+     *
+     * @param base A value of any type
+     * @param power An integer (fixnum or bignum) value
+     * @throws org.armedbear.lisp.ConditionThrowable
+     */
     private static final LispObject intexp(LispObject base, LispObject power)
         throws ConditionThrowable
     {
+        if (power.isEqualTo(0))
+            return Fixnum.ONE;
+        if (base.isEqualTo(1))
+            return base;
+        if (base.isEqualTo(0))
+            return base;
+
         if (power.minusp()) {
             power = Fixnum.ZERO.subtract(power);
             return Fixnum.ONE.divideBy(intexp(base, power));
         }
         if (base.eql(Fixnum.TWO))
             return Fixnum.ONE.ash(power);
+
         LispObject nextn = power.ash(Fixnum.MINUS_ONE);
         LispObject total;
         if (power.oddp())
@@ -860,10 +878,10 @@ public final class MathFunctions extends Lisp
             if (nextn.zerop())
                 return total;
             base = base.multiplyBy(base);
-            power = nextn;
-            nextn = power.ash(Fixnum.MINUS_ONE);
-            if (power.oddp())
+
+            if (nextn.oddp())
                 total = base.multiplyBy(total);
+            nextn = nextn.ash(Fixnum.MINUS_ONE);
         }
     }
 }
