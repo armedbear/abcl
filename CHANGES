@@ -1,0 +1,52 @@
+Version 0.14.0
+(?? Apr, 2009)
+svn://common-lisp.net/project/armedbear/svn/tags/0.14.0/abcl
+
+ Summary of changes:
+  * Increased clarity on licensing (Classpath exception
+     mentioned in COPYING, removed LICENSE)
+  * Resolved infinite recursion on TRACEing the compiler
+  * Changes on the lisp based build system for parity with Ant
+  * Fixed interpreter creation in Java Scripting
+  * libabcl.so no longer created; it was solely about installing
+     a SIGINT handler. Libraries should not do that.
+  * boxing of LispObject descendants in JCALL/JCALL-RAW fixed
+  * OpenBSD and NetBSD platform detection
+  * fixed special bindings restores in compiled code for
+     MULTIPLE-VALUE-BIND/LET/LET*/PROGV and function bodies
+  * introduced variadic list() function to replace list1() ... list9()
+  * fix return value type of ACOS with complex argument
+  * fixed precision of multiplication of complex values
+  * fixed use of COMPILE inside file compilation (i.e. COMPILE-FILE)
+  * fix expansion of macros inside RESTART-CASE
+     (fixes RESTART-CASE ANSI failures)
+  * fix macroexpansion in the precompiler
+  * Fixnum and Bignum now use a static factory method;
+      constructors are now private -> increases chances of numbers
+      being EQ
+
+
+Version 0.13.0
+(28 Feb, 2009)
+svn://common-lisp.net/project/armedbear/svn/tags/0.13.0/abcl
+
+ Summary of changes:
+  * Separated J and ABCL into two trees
+  * Many many compiler code cleanups
+  * NetBeans project files
+  * Support for CDR6 (See http://cdr.eurolisp.org/document/6/)
+  * More efficient code emission in the compiler
+  * Ant build targets for testing (abcl.test)
+  * Use ConcurrentHashMap to store the lisp threads for increased performance
+  * Fix adjustability of expressly adjustable arrays (ticket #28)
+  * Fix calculation of upperbound on ASH in the compiler
+     (don't calculate numbers too big, instead, return '*')
+  * Introduce LispInteger as the super type of Bignum and Fixnum
+  * Boxing/unboxing for SingleFloat and DoubleFloat values,
+      inclusive of unboxed calculations
+  * Fixed URL decoding bug in loadCompiledFunction (use java.net.URLDecoder)
+  * Fixed line number counting
+  * Inlining of simple calculations (+/-/*)
+  * All static fields declared 'final'
+  * Add support for java.lang.Long based on Bignum to our FFI
+
