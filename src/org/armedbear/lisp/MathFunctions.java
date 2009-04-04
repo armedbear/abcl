@@ -33,8 +33,6 @@
 
 package org.armedbear.lisp;
 
-import java.lang.reflect.Method;
-
 public final class MathFunctions extends Lisp
 {
     // ### sin
@@ -259,17 +257,6 @@ public final class MathFunctions extends Lisp
         }
     };
 
-    private static Method sinhMethod = null;
-    static {
-        try {
-            sinhMethod = Class.forName("java.lang.Math")
-                    .getMethod("sinh", new Class[] { Double.TYPE });
-        }
-        catch (Throwable t) {
-            Debug.trace(t);
-        }
-    }
-
     private static LispObject sinh(LispObject arg) throws ConditionThrowable
     {
         if (arg instanceof Complex) {
@@ -280,13 +267,8 @@ public final class MathFunctions extends Lisp
         }
         if (arg instanceof SingleFloat) {
             try {
-                if (sinhMethod != null) {
-                    Object[] args;
-                    args = new Object[1];
-                    args[0] = new Double(((SingleFloat)arg).value);
-                    Double d = (Double) sinhMethod.invoke(null, args);
-                    return new SingleFloat((float)d.doubleValue());
-                }
+                double d = Math.sinh(((SingleFloat)arg).value);
+                return new SingleFloat((float)d);
             }
             catch (Throwable t) {
                 Debug.trace(t);
@@ -294,13 +276,8 @@ public final class MathFunctions extends Lisp
             }
         } else if (arg instanceof DoubleFloat) {
             try {
-                if (sinhMethod != null) {
-                    Object[] args;
-                    args = new Object[1];
-                    args[0] = new Double(((DoubleFloat)arg).value);
-                    Double d = (Double) sinhMethod.invoke(null, args);
-                    return new DoubleFloat(d.doubleValue());
-                }
+                double d = Math.sinh(((DoubleFloat)arg).value);
+                return new DoubleFloat(d);
             }
             catch (Throwable t) {
                 Debug.trace(t);
@@ -330,17 +307,6 @@ public final class MathFunctions extends Lisp
         }
     };
 
-    private static Method coshMethod = null;
-    static {
-        try {
-            coshMethod = Class.forName("java.lang.Math")
-                    .getMethod("cosh", new Class[] { Double.TYPE });
-        }
-        catch (Throwable t) {
-            Debug.trace(t);
-        }
-    }
-
     private static LispObject cosh(LispObject arg) throws ConditionThrowable
     {
         if (arg instanceof Complex) {
@@ -351,13 +317,8 @@ public final class MathFunctions extends Lisp
         }
         if (arg instanceof SingleFloat) {
             try {
-                if (coshMethod != null) {
-                    Object[] args;
-                    args = new Object[1];
-                    args[0] = new Double(((SingleFloat)arg).value);
-                    Double d = (Double) coshMethod.invoke(null, args);
-                    return new SingleFloat((float)d.doubleValue());
-                }
+                double d = Math.cosh(((SingleFloat)arg).value);
+                return new SingleFloat((float)d);
             }
             catch (Throwable t) {
                 Debug.trace(t);
@@ -365,13 +326,8 @@ public final class MathFunctions extends Lisp
             }
         } else if (arg instanceof DoubleFloat) {
             try {
-                if (coshMethod != null) {
-                    Object[] args;
-                    args = new Object[1];
-                    args[0] = new Double(((DoubleFloat)arg).value);
-                    Double d = (Double) coshMethod.invoke(null, args);
-                    return new DoubleFloat(d.doubleValue());
-                }
+                double d = Math.cosh(((DoubleFloat)arg).value);
+                return new DoubleFloat(d);
             }
             catch (Throwable t) {
                 Debug.trace(t);
@@ -391,17 +347,6 @@ public final class MathFunctions extends Lisp
         return result;
     }
 
-    private static Method tanhMethod = null;
-    static {
-        try {
-            tanhMethod = Class.forName("java.lang.Math")
-                    .getMethod("tanh", new Class[] { Double.TYPE });
-        }
-        catch (Throwable t) {
-            Debug.trace(t);
-        }
-    }
-
     // ### tanh
     private static final Primitive TANH = new Primitive("tanh", "number")
     {
@@ -410,13 +355,8 @@ public final class MathFunctions extends Lisp
         {
             if (arg instanceof SingleFloat) {
                 try {
-                    if (tanhMethod != null) {
-                        Object[] args;
-                        args = new Object[1];
-                        args[0] = new Double(((SingleFloat)arg).value);
-                        Double d = (Double) tanhMethod.invoke(null, args);
-                        return new SingleFloat((float)d.doubleValue());
-                    }
+                    double d = Math.tanh(((SingleFloat)arg).value);
+                    return new SingleFloat((float)d);
                 }
                 catch (Throwable t) {
                     Debug.trace(t);
@@ -424,13 +364,8 @@ public final class MathFunctions extends Lisp
                 }
             } else if (arg instanceof DoubleFloat) {
                 try {
-                    if (tanhMethod != null) {
-                        Object[] args;
-                        args = new Object[1];
-                        args[0] = new Double(((DoubleFloat)arg).value);
-                        Double d = (Double) tanhMethod.invoke(null, args);
-                        return new DoubleFloat(d.doubleValue());
-                    }
+                    double d = Math.tanh(((DoubleFloat)arg).value);
+                    return new DoubleFloat(d);
                 }
                 catch (Throwable t) {
                     Debug.trace(t);
