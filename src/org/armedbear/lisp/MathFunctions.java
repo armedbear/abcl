@@ -510,18 +510,10 @@ public final class MathFunctions extends Lisp
         if (arg.realp()) {
             if (arg instanceof DoubleFloat) {
                 double d = Math.pow(Math.E, ((DoubleFloat)arg).value);
-                if (TRAP_OVERFLOW && Double.isInfinite(d))
-                    return error(new FloatingPointOverflow(NIL));
-                if (d == 0 && TRAP_UNDERFLOW)
-                    return error(new FloatingPointUnderflow(NIL));
-                return new DoubleFloat(d);
+                return OverUnderFlowCheck(new DoubleFloat(d));
             } else {
                 float f = (float) Math.pow(Math.E, SingleFloat.coerceToFloat(arg).value);
-                if (TRAP_OVERFLOW && Float.isInfinite(f))
-                    return error(new FloatingPointOverflow(NIL));
-                if (f == 0 && TRAP_UNDERFLOW)
-                    return error(new FloatingPointUnderflow(NIL));
-                return new SingleFloat(f);
+                return OverUnderFlowCheck(new SingleFloat(f));
             }
         }
         if (arg instanceof Complex) {
