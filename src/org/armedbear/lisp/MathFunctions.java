@@ -632,17 +632,6 @@ public final class MathFunctions extends Lisp
         return type_error(obj, Symbol.NUMBER);
     }
 
-    private static Method log10Method = null;
-    static {
-        try {
-            log10Method = Class.forName("java.lang.Math")
-                    .getMethod("log10", new Class[] { Double.TYPE });
-        }
-        catch (Throwable t) {
-            Debug.trace(t);
-        }
-    }
-
     // ### log
     private static final Primitive LOG =
         new Primitive("log", "number &optional base")
@@ -656,19 +645,16 @@ public final class MathFunctions extends Lisp
         public LispObject execute(LispObject number, LispObject base)
             throws ConditionThrowable
         {
-            if (number.realp() && !number.minusp() && base.isEqualTo(Fixnum.getInstance(10))) {
-                double d = DoubleFloat.coerceToFloat(number).value;
+            if (number.realp() && !number.minusp()
+                && base.isEqualTo(Fixnum.getInstance(10))) {
                 try {
-                   if (log10Method != null) {
-                        Object[] args;
-                        args = new Object[1];
-                        args[0] = new Double(d);
-                        Double result = (Double) log10Method.invoke(null, args);
-                        if (number instanceof DoubleFloat || base instanceof DoubleFloat)
-                            return new DoubleFloat(result.doubleValue());
-                        else
-                            return new SingleFloat((float)result.doubleValue());
-                    }
+                    double d =
+                        Math.log10(DoubleFloat.coerceToFloat(number).value);
+                    if (number instanceof DoubleFloat
+                        || base instanceof DoubleFloat)
+                        return new DoubleFloat(d);
+                    else
+                        return new SingleFloat((float)d);
                 }
                 catch (Throwable t) {
                     Debug.trace(t);
