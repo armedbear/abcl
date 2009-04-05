@@ -24,6 +24,7 @@ svn://common-lisp.net/project/armedbear/svn/tags/0.14.0/abcl
   * Fixnum and Bignum now use a static factory method;
       constructors are now private -> increases chances of numbers
       being EQ
+  * Code cleanup in EXPT to fix (EXPT <any-number> <Bignum>)
 
 
 Version 0.13.0
