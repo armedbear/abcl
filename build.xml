@@ -372,6 +372,7 @@
       <include name="build.properties.in"/>
       <include name="COPYING"/>
       <include name="README"/>
+      <include name="CHANGES"/>
       <include name="abcl.in"/>
       <include name="abcl.bat.in"/>
       
@@ -392,6 +393,7 @@
 		description="Additional includes in the source distribution relative to source root">
       <include name="org/armedbear/lisp/LICENSE"/>
       <include name="manifest-abcl"/>
+      <include name="META-INF/services/javax.script.ScriptEngineFactory"/>
     </patternset>
     
     <target name="abcl.source.prepare" depends="abcl.stamp.version">
