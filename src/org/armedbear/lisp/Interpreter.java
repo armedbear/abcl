@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.lang.reflect.Method;
 
 public final class Interpreter extends Lisp
 {
@@ -81,17 +80,6 @@ public final class Interpreter extends Lisp
                 Stream out = getStandardOutput();
                 out._writeString(banner());
                 out._finishOutput();
-            }
-            if (Utilities.isPlatformUnix) {
-                try {
-                    System.loadLibrary("abcl");
-                    Class c = Class.forName("org.armedbear.lisp.Native");
-                    Method m = c.getMethod("initialize", (Class[]) null);
-                    m.invoke((Object) null, (Object[]) null);
-                    if (!noinform)
-                        getStandardOutput()._writeString("Control-C handler installed.\n");
-                }
-                catch (Throwable t) {}
             }
             if (noinform)
                 _NOINFORM_.setSymbolValue(T);
