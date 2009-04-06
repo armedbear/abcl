@@ -49,8 +49,8 @@ public final class Interpreter extends Lisp
     private final InputStream inputStream;
     private final OutputStream outputStream;
 
-    private static boolean noinit;
-    private static boolean noinform;
+    private static boolean noinit = false;
+    private static boolean noinform = false;
 
     public static synchronized Interpreter getInstance()
     {
@@ -220,29 +220,6 @@ public final class Interpreter extends Lisp
             String userHome = System.getProperty("user.home");
             File file = new File(userHome, ".abclrc");
             if (file.isFile()) {
-                Load.load(file.getCanonicalPath());
-                return;
-            }
-            if (Utilities.isPlatformWindows) {
-                file = new File("C:\\.abclrc");
-                if (file.isFile()) {
-                    Load.load(file.getCanonicalPath());
-                    return;
-                }
-            }
-            file = new File(userHome, ".ablrc");
-            if (file.isFile()) {
-                String message =
-                    "Warning: use of .ablrc is deprecated; use .abclrc instead.";
-                getStandardOutput()._writeLine(message);
-                Load.load(file.getCanonicalPath());
-                return;
-            }
-            file = new File(userHome, ".ablisprc");
-            if (file.isFile()) {
-                String message =
-                    "Warning: use of .ablisprc is deprecated; use .abclrc instead.";
-                getStandardOutput()._writeLine(message);
                 Load.load(file.getCanonicalPath());
                 return;
             }
