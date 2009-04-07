@@ -154,14 +154,18 @@
 ;; substitutes in arrays and structures as well as lists. The first arg is an
 ;; alist of the things to be replaced assoc'd with the things to replace them.
 (defun circle-subst (old-new-alist tree)
-  (cond ((not (typep tree
-                     '(or cons (array t) structure-object standard-object)))
-         (let ((entry (find tree old-new-alist :key #'second)))
-           (if entry (third entry) tree)))
+  (macrolet ((recursable-element-p (subtree)
+                `(typep ,subtree
+                       '(or cons (array t) structure-object standard-object)))
+             (element-replacement (subtree)
+               `(let ((entry (find ,subtree old-new-alist :key #'second)))
+                  (if entry (third entry) ,subtree))))
+  (cond ((not (recursable-element-p tree))
+         (element-replacement tree))
         ((null (gethash tree *sharp-equal-circle-table*))
-         (setf (gethash tree *sharp-equal-circle-table*) t)
          (cond
           ((typep tree 'structure-object)
+           (setf (gethash tree *sharp-equal-circle-table*) t)
            (do ((i 0 (1+ i))
                 (end (structure-length tree)))
                ((= i end))
@@ -170,6 +174,7 @@
                (unless (eq old new)
                  (structure-set tree i new)))))
 ;;           ((typep tree 'standard-object)
+;;            (setf (gethash tree *sharp-equal-circle-table*) t)
 ;;            (do ((i 1 (1+ i))
 ;;                 (end (%instance-length tree)))
 ;;                ((= i end))
@@ -178,6 +183,7 @@
 ;;                (unless (eq old new)
 ;;                  (setf (%instance-ref tree i) new)))))
           ((arrayp tree)
+           (setf (gethash tree *sharp-equal-circle-table*) t)
            (do ((i 0 (1+ i))
                 (end (array-total-size tree)))
                ((>= i end))
@@ -185,15 +191,35 @@
                     (new (circle-subst old-new-alist old)))
                (unless (eq old new)
                  (setf (row-major-aref tree i) new)))))
-         (t
-          (let ((a (circle-subst old-new-alist (car tree)))
-                (d (circle-subst old-new-alist (cdr tree))))
-            (unless (eq a (car tree))
-              (rplaca tree a))
-            (unless (eq d (cdr tree))
-              (rplacd tree d)))))
+         (t ;; being CONSP as all the other cases have been handled
+            (do ((subtree tree (cdr subtree)))
+                ((or (not (consp subtree))
+                     (gethash subtree *sharp-equal-circle-table*)))
+                ;; CDR no longer a CONS; no need to recurse any further:
+                ;; the case where the CDR is a symbol to be replaced
+                ;; has been handled in the last iteration
+              (setf (gethash subtree *sharp-equal-circle-table*) t)
+              (let* ((c (car subtree))
+                     (d (cdr subtree))
+                     (a (if (recursable-element-p c)
+                            (circle-subst old-new-alist c)
+                            (element-replacement c)))
+                     (b (cond
+                         ((consp d) ;; CONSes handled in the loop
+                          (setf (gethash d *sharp-equal-circle-table*) t)
+                          d)
+                         ((recursable-element-p d)
+                          ;; ARRAY, STRUCTURE-OBJECT and STANDARD-OBJECT
+                          ;; handled in recursive calls
+                          (circle-subst old-new-alist d))
+                         (t
+                          (element-replacement d)))))
+                (unless (eq a c)
+                  (rplaca subtree a))
+                (unless (eq d b)
+                  (rplacd subtree b))))))
         tree)
-  (t tree)))
+  (t tree))))
 
 ;;; Sharp-equal works as follows. When a label is assigned (i.e. when
 ;;; #= is called) we GENSYM a symbol is which is used as an
