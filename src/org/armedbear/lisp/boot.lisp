@@ -205,9 +205,7 @@
                             (circle-subst old-new-alist c)
                             (element-replacement c)))
                      (b (cond
-                         ((consp d) ;; CONSes handled in the loop
-                          (setf (gethash d *sharp-equal-circle-table*) t)
-                          d)
+                         ((consp d) d) ;; CONSes handled in the loop
                          ((recursable-element-p d)
                           ;; ARRAY, STRUCTURE-OBJECT and STANDARD-OBJECT
                           ;; handled in recursive calls
