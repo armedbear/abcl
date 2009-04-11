@@ -45,7 +45,9 @@ public final class machine_type extends Primitive
   public LispObject execute() throws ConditionThrowable
   {
     String s = System.getProperty("os.arch");
-    if (s.equals("amd64"))
+    if (s == null)
+      s = "UNKNOWN";
+    else if (s.equals("amd64"))
       s = "X86-64";
     else
       s = s.toUpperCase();

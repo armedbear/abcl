@@ -2214,12 +2214,14 @@ public abstract class Lisp
   static
   {
     String os_arch = System.getProperty("os.arch");
-    if (os_arch.equals("amd64"))
-      Symbol.FEATURES.setSymbolValue(new Cons(Keyword.X86_64,
-                                              Symbol.FEATURES.getSymbolValue()));
-    else if (os_arch.equals("x86"))
-      Symbol.FEATURES.setSymbolValue(new Cons(Keyword.X86,
-                                              Symbol.FEATURES.getSymbolValue()));
+    if(os_arch != null) {
+      if (os_arch.equals("amd64"))
+        Symbol.FEATURES.setSymbolValue(new Cons(Keyword.X86_64,
+                                                Symbol.FEATURES.getSymbolValue()));
+      else if (os_arch.equals("x86"))
+        Symbol.FEATURES.setSymbolValue(new Cons(Keyword.X86,
+                                                Symbol.FEATURES.getSymbolValue()));
+    }
   }
 
   static
