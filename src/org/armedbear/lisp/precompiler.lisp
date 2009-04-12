@@ -1018,6 +1018,19 @@
 
 (in-package #:system)
 
+(defun macroexpand-all (form &optional env)
+  (let ((*compile-file-environment* env))
+    (precompile-form form nil)))
+
+(defmacro compiler-let (bindings &body forms &environment env)
+  (let ((bindings (mapcar #'(lambda (binding)
+                              (if (atom binding) (list binding) binding))
+                          bindings)))
+    (progv (mapcar #'car bindings)
+           (mapcar #'(lambda (binding)
+                       (eval (cadr binding))) bindings)
+      (macroexpand-all `(progn ,@forms) env))))
+
 (defun precompile (name &optional definition)
   (unless definition
     (setq definition (or (and (symbolp name) (macro-function name))
