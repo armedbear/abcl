@@ -228,7 +228,8 @@
       <java fork="true"
 	    classpath="${build.classes.dir}"
 	    outputproperty="abcl.version"
-	    classname="org.armedbear.lisp.Main">
+	    classname="org.armedbear.lisp.Main"
+        logerror="yes"> <!-- Don't catch stderr output -->
 	<arg value="--noinit"/>
 	<arg value="--noinform"/>
 	<arg value="--eval"/>
