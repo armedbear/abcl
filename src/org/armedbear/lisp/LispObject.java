@@ -101,7 +101,7 @@ public class LispObject extends Lisp
 
   public Object javaInstance() throws ConditionThrowable
   {
-	return this;
+        return this;
     /*return error(new LispError("The value " + writeToString() +
                                 " is not of primitive type."));*/
   }
@@ -451,20 +451,13 @@ public class LispObject extends Lisp
 
   public LispObject AREF(LispObject index) throws ConditionThrowable
   {
-    try
-      {
-        return AREF(((Fixnum)index).value);
-      }
-    catch (ClassCastException e)
-      {
-        return type_error(index, Symbol.FIXNUM);
-      }
+      return AREF(Fixnum.getValue(index));
   }
 
   public void aset(int index, int n)
     throws ConditionThrowable
-  {
-    aset(index, Fixnum.getInstance(n));
+  {    
+          aset(index, Fixnum.getInstance(n));
   }
 
   public void aset(int index, LispObject newValue)
@@ -476,14 +469,7 @@ public class LispObject extends Lisp
   public void aset(LispObject index, LispObject newValue)
     throws ConditionThrowable
   {
-    try
-      {
-        aset(((Fixnum)index).value, newValue);
-      }
-    catch (ClassCastException e)
-      {
-        type_error(index, Symbol.FIXNUM);
-      }
+      aset(Fixnum.getValue(index), newValue);
   }
 
   public LispObject SVREF(int index) throws ConditionThrowable

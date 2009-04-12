@@ -44,16 +44,9 @@ public class StandardObjectFunctions extends Lisp
       {
         if (arg == StandardClass.STANDARD_CLASS)
           return new StandardClass();
-        final StandardClass c;
-        try
-          {
-            c = (StandardClass) arg;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.STANDARD_CLASS);
-          }
-        return c.allocateInstance();
+        if (arg instanceof StandardClass)
+                return ((StandardClass)arg).allocateInstance();
+        return type_error(arg, Symbol.STANDARD_CLASS);
       }
     };
 }

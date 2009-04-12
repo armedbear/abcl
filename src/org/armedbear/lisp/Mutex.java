@@ -119,20 +119,18 @@ public final class Mutex extends LispObject
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            try {
-                ((Mutex)arg).acquire();
-                return T;
-            }
-            catch (ClassCastException e) {
-                return error(new TypeError("The value " + arg.writeToString() +
-                                            " is not a mutex."));
-            }
-            catch (InterruptedException e) {
-                return error(new LispError(
-                    "The thread " + LispThread.currentThread().writeToString() +
-                    " was interrupted."));
-            }
-        }
+                        if (arg instanceof Mutex)
+                                try {
+                                        ((Mutex) arg).acquire();
+                                        return T;
+                                } catch (InterruptedException e) {
+                                        return error(new LispError("The thread "
+                                                        + LispThread.currentThread().writeToString()
+                                                        + " was interrupted."));
+                                }
+                        return error(new TypeError("The value " + arg.writeToString()
+                                        + " is not a mutex."));
+                }
     };
 
     // ### release-mutex mutex
@@ -142,14 +140,12 @@ public final class Mutex extends LispObject
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            try {
+                if (arg instanceof Mutex) {
                 ((Mutex)arg).release();
                 return T;
             }
-            catch (ClassCastException e) {
                 return error(new TypeError("The value " + arg.writeToString() +
                                             " is not a mutex."));
-            }
         }
     };
 }

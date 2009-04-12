@@ -44,12 +44,7 @@ public final class stream_element_type extends Primitive
     @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
-        try {
-            return ((Stream)arg).getElementType();
-        }
-        catch (ClassCastException e) {
-            return type_error(arg, Symbol.STREAM);
-        }
+        return checkStream(arg).getElementType();
     }
 
     private static final Primitive STREAM_ELEMENT_TYPE = new stream_element_type();

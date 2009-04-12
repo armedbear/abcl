@@ -758,13 +758,7 @@ public class Pathname extends LispObject
             throws ConditionThrowable
         {
             final LispThread thread = LispThread.currentThread();
-            final AbstractString namestring;
-            try {
-                namestring = (AbstractString) first;
-            }
-            catch (ClassCastException e) {
-                return type_error(first, Symbol.STRING);
-            }
+            final AbstractString namestring = checkString(first);
             // The HOST parameter must be a string or NIL.
             if (second == NIL) {
                 // "If HOST is NIL, DEFAULT-PATHNAME is a logical pathname, and
@@ -780,13 +774,7 @@ public class Pathname extends LispObject
                                             namestring.LENGTH());
             }
             Debug.assertTrue(second != NIL);
-            final AbstractString host;
-            try {
-                host = (AbstractString) second;
-            }
-            catch (ClassCastException e) {
-                return type_error(second, Symbol.STRING);
-            }
+            final AbstractString host = checkString(second);
             return thread.setValues(parseNamestring(namestring, host),
                                     namestring.LENGTH());
         }

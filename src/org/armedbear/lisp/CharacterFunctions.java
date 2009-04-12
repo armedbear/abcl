@@ -55,17 +55,7 @@ public final class CharacterFunctions extends Lisp
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
-            try {
-                return ((LispCharacter)first).value == ((LispCharacter)second).value ? T : NIL;
-            }
-            catch (ClassCastException e) {
-                LispObject datum;
-                if (first instanceof LispCharacter)
-                    datum = second;
-                else
-                    datum = first;
-                return type_error(datum, Symbol.CHARACTER);
-            }
+            return LispCharacter.getValue(first) == LispCharacter.getValue(second) ? T : NIL;
         }
         @Override
         public LispObject execute(LispObject[] array) throws ConditionThrowable
@@ -101,18 +91,8 @@ public final class CharacterFunctions extends Lisp
             throws ConditionThrowable
         {
             final char c1, c2;
-            try {
-                c1 = ((LispCharacter)first).value;
-            }
-            catch (ClassCastException e) {
-                return type_error(first, Symbol.CHARACTER);
-            }
-            try {
-                c2 = ((LispCharacter)second).value;
-            }
-            catch (ClassCastException e) {
-                return type_error(second, Symbol.CHARACTER);
-            }
+            c1 = LispCharacter.getValue(first);
+            c2 = LispCharacter.getValue(second);
             if (c1 == c2)
                 return T;
             if (LispCharacter.toUpperCase(c1) == LispCharacter.toUpperCase(c2))
@@ -238,30 +218,15 @@ public final class CharacterFunctions extends Lisp
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
-            try {
-                return ((LispCharacter)first).value < ((LispCharacter)second).value ? T : NIL;
-            }
-            catch (ClassCastException e) {
-                LispObject datum;
-                if (first instanceof LispCharacter)
-                    datum = second;
-                else
-                    datum = first;
-                return type_error(datum, Symbol.CHARACTER);
-            }
-        }
+            return LispCharacter.getValue(first) < LispCharacter.getValue(second) ? T : NIL;
+       }
         @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
         {
             final int length = args.length;
             char[] chars = new char[length];
             for (int i = 0; i < length; i++) {
-                try {
-                    chars[i] = ((LispCharacter)args[i]).value;
-                }
-                catch (ClassCastException e) {
-                    return type_error(args[i], Symbol.CHARACTER);
-                }
+                chars[i] = LispCharacter.getValue(args[i]);
             }
             for (int i = 1; i < length; i++) {
                 if (chars[i-1] >= chars[i])
@@ -291,40 +256,18 @@ public final class CharacterFunctions extends Lisp
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
-            try {
-                return ((LispCharacter)first).value <= ((LispCharacter)second).value ? T : NIL;
-            }
-            catch (ClassCastException e) {
-                LispObject datum;
-                if (first instanceof LispCharacter)
-                    datum = second;
-                else
-                    datum = first;
-                return type_error(datum, Symbol.CHARACTER);
-            }
+            return LispCharacter.getValue(first) <= LispCharacter.getValue(second) ? T : NIL;
         }
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
             throws ConditionThrowable
         {
-            try {
-                if (((LispCharacter)first).value > ((LispCharacter)second).value)
-                    return NIL;
-                if (((LispCharacter)second).value > ((LispCharacter)third).value)
-                    return NIL;
-                return T;
-            }
-            catch (ClassCastException e) {
-                LispObject datum;
-                if (!(first instanceof LispCharacter))
-                    datum = first;
-                else if (!(second instanceof LispCharacter))
-                    datum = second;
-                else
-                    datum = third;
-                return type_error(datum, Symbol.CHARACTER);
-            }
+            if (LispCharacter.getValue(first) > LispCharacter.getValue(second))
+                return NIL;
+            if (LispCharacter.getValue(second) > LispCharacter.getValue(third))
+                return NIL;
+            return T;
         }
         @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
@@ -332,12 +275,7 @@ public final class CharacterFunctions extends Lisp
             final int length = args.length;
             char[] chars = new char[length];
             for (int i = 0; i < length; i++) {
-                try {
-                    chars[i] = ((LispCharacter)args[i]).value;
-                }
-                catch (ClassCastException e) {
-                    return type_error(args[i], Symbol.CHARACTER);
-                }
+                chars[i] = LispCharacter.getValue(args[i]);
             }
             for (int i = 1; i < length; i++) {
                 if (chars[i-1] > chars[i])

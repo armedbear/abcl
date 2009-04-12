@@ -224,20 +224,8 @@ public class TwoWayStream extends Stream
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
-            final Stream in;
-            try {
-                in = (Stream) first;
-            }
-            catch (ClassCastException e) {
-                return type_error(first, Symbol.STREAM);
-            }
-            final Stream out;
-            try {
-                out = (Stream) second;
-            }
-            catch (ClassCastException e) {
-                return type_error(second, Symbol.STREAM);
-            }
+            final Stream in = checkStream(first);
+            final Stream out = checkStream(second);
             if (!in.isInputStream())
                 return type_error(in, list(Symbol.SATISFIES,
                                                  Symbol.INPUT_STREAM_P));
@@ -255,12 +243,9 @@ public class TwoWayStream extends Stream
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            try {
-                return ((TwoWayStream)arg).in;
-            }
-            catch (ClassCastException e) {
-                return type_error(arg, Symbol.TWO_WAY_STREAM);
-            }
+           if (arg instanceof TwoWayStream) 
+               return ((TwoWayStream)arg).in;                
+           return type_error(arg, Symbol.TWO_WAY_STREAM);
         }
     };
 
@@ -271,12 +256,9 @@ public class TwoWayStream extends Stream
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            try {
-                return ((TwoWayStream)arg).out;
-            }
-            catch (ClassCastException e) {
-                return type_error(arg, Symbol.TWO_WAY_STREAM);
-            }
+           if (arg instanceof TwoWayStream) 
+               return ((TwoWayStream)arg).out;                
+           return type_error(arg, Symbol.TWO_WAY_STREAM);
         }
     };
 }

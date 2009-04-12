@@ -174,15 +174,8 @@ public final class Layout extends LispObject
                                 LispObject third)
         throws ConditionThrowable
       {
-        try
-          {
-            return new Layout((LispClass)first, checkList(second),
+          return new Layout(checkClass(first), checkList(second),
                               checkList(third));
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.CLASS);
-          }
       }
 
     };
@@ -194,14 +187,7 @@ public final class Layout extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((Layout)arg).lispClass;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.LAYOUT);
-          }
+          return checkLayout(arg).lispClass;
       }
     };
 
@@ -212,14 +198,7 @@ public final class Layout extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return Fixnum.getInstance(((Layout)arg).slotNames.length);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.LAYOUT);
-          }
+          return Fixnum.getInstance(checkLayout(arg).slotNames.length);
       }
     };
 
@@ -253,20 +232,13 @@ public final class Layout extends LispObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            final LispObject slotNames[] = ((Layout)first).slotNames;
-            for (int i = slotNames.length; i-- > 0;)
-              {
-                if (slotNames[i] == second)
-                  return Fixnum.getInstance(i);
-              }
-            return NIL;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.LAYOUT);
-          }
+          final LispObject slotNames[] = checkLayout(first).slotNames;
+          for (int i = slotNames.length; i-- > 0;)
+            {
+              if (slotNames[i] == second)
+                return Fixnum.getInstance(i);
+            }
+          return NIL;
       }
     };
 
@@ -278,9 +250,8 @@ public final class Layout extends LispObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            final LispObject slotNames[] = ((Layout)first).slotNames;
+                final Layout layOutFirst = checkLayout(first);
+            final LispObject slotNames[] = layOutFirst.slotNames;
             final int limit = slotNames.length;
             for (int i = 0; i < limit; i++)
               {
@@ -288,7 +259,7 @@ public final class Layout extends LispObject
                   return Fixnum.getInstance(i);
               }
             // Reaching here, it's not an instance slot.
-            LispObject rest = ((Layout)first).sharedSlots;
+            LispObject rest = layOutFirst.sharedSlots;
             while (rest != NIL)
               {
                 LispObject location = rest.car();
@@ -298,11 +269,6 @@ public final class Layout extends LispObject
               }
             return NIL;
           }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.LAYOUT);
-          }
-      }
     };
 
   // ### %make-instances-obsolete class => class
@@ -312,15 +278,7 @@ public final class Layout extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        final LispClass lispClass;
-        try
-          {
-            lispClass = (LispClass) arg;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CLASS);
-          }
+        final LispClass lispClass = checkClass(arg);
         Layout oldLayout = lispClass.getClassLayout();
         Layout newLayout = new Layout(oldLayout);
         lispClass.setClassLayout(newLayout);

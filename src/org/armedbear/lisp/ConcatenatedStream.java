@@ -273,12 +273,9 @@ public final class ConcatenatedStream extends Stream
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            try {
+            if (arg instanceof ConcatenatedStream) 
                 return ((ConcatenatedStream)arg).streams;
-            }
-            catch (ClassCastException e) {
-                return error(new TypeError(arg, Symbol.CONCATENATED_STREAM));
-            }
+            return error(new TypeError(arg, Symbol.CONCATENATED_STREAM));
         }
     };
 }

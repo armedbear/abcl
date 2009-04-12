@@ -127,10 +127,10 @@ public class ArithmeticError extends LispError
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            try {
+            if (arg instanceof ArithmeticError) {
                 return ((ArithmeticError)arg).getOperation();
             }
-            catch (ClassCastException e) {
+            else {
                 return error(new TypeError(arg, Symbol.ARITHMETIC_ERROR));
             }
         }
@@ -142,10 +142,10 @@ public class ArithmeticError extends LispError
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            try {
+            if (arg instanceof ArithmeticError) {
                 return ((ArithmeticError)arg).getOperands();
             }
-            catch (ClassCastException e) {
+            else {
                 return error(new TypeError(arg, Symbol.ARITHMETIC_ERROR));
             }
         }

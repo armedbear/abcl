@@ -144,7 +144,7 @@ public class Stream extends LispObject
       {
         isBinaryStream = true;
         InputStream stream = new BufferedInputStream(inputStream);
-	initAsBinaryInputStream(stream);
+        initAsBinaryInputStream(stream);
       }
   }
 
@@ -166,17 +166,17 @@ public class Stream extends LispObject
     setExternalFormat(format);
     if (elementType == Symbol.CHARACTER || elementType == Symbol.BASE_CHAR)
       {
-	Writer w =
+        Writer w =
             (encoding == null) ?
                 new OutputStreamWriter(outputStream)
                 : new OutputStreamWriter(outputStream, 
                     Charset.forName(encoding).newEncoder());
-	initAsCharacterOutputStream(w);
+        initAsCharacterOutputStream(w);
       }
     else
       {
         OutputStream stream = new BufferedOutputStream(outputStream);
-	initAsBinaryOutputStream(stream);
+        initAsBinaryOutputStream(stream);
       }
   }
 
@@ -1280,17 +1280,15 @@ public class Stream extends LispObject
     throws ConditionThrowable
   {
     final int readBase;
-    try
-      {
-        readBase = ((Fixnum)Symbol.READ_BASE.symbolValue(thread)).value;
-      }
-    catch (ClassCastException e)
-      {
+    final LispObject readBaseObject = Symbol.READ_BASE.symbolValue(thread); 
+    if (readBaseObject instanceof Fixnum) {
+        readBase = ((Fixnum)readBaseObject).value;
+    } else {
         // The value of *READ-BASE* is not a Fixnum.
         error(new LispError("The value of *READ-BASE* is not of type '(INTEGER 2 36)."));
         // Not reached.
-        return 10;
-      }
+        return 10;      
+    }
     if (readBase < 2 || readBase > 36)
       {
         error(new LispError("The value of *READ-BASE* is not of type '(INTEGER 2 36)."));
@@ -1891,7 +1889,7 @@ public class Stream extends LispObject
     try
       {
         if (c == '\n') {
-	  if (eolStyle == EolStyle.CRLF && lastChar != '\r')
+          if (eolStyle == EolStyle.CRLF && lastChar != '\r')
               writer.write('\r');
 
           writer.write(eolChar);
@@ -1947,19 +1945,19 @@ public class Stream extends LispObject
               {
                 index = i;
                 break;
-	  }
-	}
+          }
+        }
         if (index < 0)
           {
             // No newline.
             charPos += (end - start);
-	      }
+              }
         else
           {
             charPos = end - (index + 1);
               writer.flush();
-	    }
-	  }
+            }
+          }
     catch (NullPointerException e)
       {
         if (writer == null)
@@ -1983,7 +1981,7 @@ public class Stream extends LispObject
   {
     try
       {
-	_writeChars(s.toCharArray(), 0, s.length());
+        _writeChars(s.toCharArray(), 0, s.length());
       }
     catch (NullPointerException e)
       {
@@ -2212,18 +2210,8 @@ public class Stream extends LispObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((Stream)second)._writeChar(((LispCharacter)first).value);
-          }
-        catch (ClassCastException e)
-          {
-            if (second instanceof Stream)
-              return type_error(first, Symbol.CHARACTER);
-            else
-              return type_error(second, Symbol.STREAM);
-          }
-        return first;
+          checkStream(second)._writeChar(LispCharacter.getValue(first));       
+          return first;
       }
     };
 
@@ -2236,28 +2224,12 @@ public class Stream extends LispObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        final char c;
-        try
-          {
-            c = ((LispCharacter)first).value;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.CHARACTER);
-          }
+        final char c = LispCharacter.getValue(first);
         if (second == T)
           second = Symbol.TERMINAL_IO.symbolValue();
         else if (second == NIL)
           second = Symbol.STANDARD_OUTPUT.symbolValue();
-        final Stream stream;
-        try
-          {
-            stream = (Stream) second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.STREAM);
-          }
+        final Stream stream = checkStream(second);
         stream._writeChar(c);
         return first;
       }
@@ -2273,52 +2245,16 @@ public class Stream extends LispObject
                                 LispObject third, LispObject fourth)
         throws ConditionThrowable
       {
-        final AbstractString s;
-        try
-          {
-            s = (AbstractString) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STRING);
-          }
+        final AbstractString s = checkString(first);
         char[] chars = s.chars();
-        final Stream out;
-        try
-          {
-            if (second == T)
-              out = (Stream) Symbol.TERMINAL_IO.symbolValue();
-            else if (second == NIL)
-              out = (Stream) Symbol.STANDARD_OUTPUT.symbolValue();
-            else
-              out = (Stream) second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.STREAM);
-          }
-        final int start;
-        try
-          {
-            start = ((Fixnum)third).value;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(third, Symbol.FIXNUM);
-          }
+        final Stream out = outSynonymOf(second);
+        final int start = Fixnum.getValue(third);
         final int end;
         if (fourth == NIL)
           end = chars.length;
         else
           {
-            try
-              {
-                end = ((Fixnum)fourth).value;
-              }
-            catch (ClassCastException e)
-              {
-                return type_error(fourth, Symbol.FIXNUM);
-              }
+                end = Fixnum.getValue(fourth);
           }
         checkBounds(start, end, chars.length);
         out._writeChars(chars, start, end);
@@ -2351,21 +2287,14 @@ public class Stream extends LispObject
   private static final LispObject finishOutput(LispObject arg)
     throws ConditionThrowable
   {
-    final Stream out;
-    try
-      {
+    final LispObject out;
         if (arg == T)
-          out = (Stream) Symbol.TERMINAL_IO.symbolValue();
+          out = Symbol.TERMINAL_IO.symbolValue();
         else if (arg == NIL)
-          out = (Stream) Symbol.STANDARD_OUTPUT.symbolValue();
+          out = Symbol.STANDARD_OUTPUT.symbolValue();
         else
-          out = (Stream) arg;
-      }
-    catch (ClassCastException e)
-      {
-        return type_error(arg, Symbol.STREAM);
-      }
-    return out.finishOutput();
+          out = arg;
+    return checkStream(out).finishOutput();
   }
 
   // ### clear-input &optional input-stream => nil
@@ -2413,14 +2342,7 @@ public class Stream extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((Stream)arg).close(NIL);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.STREAM);
-          }
+          return checkStream(arg).close(NIL);
       }
 
       @Override
@@ -2428,19 +2350,11 @@ public class Stream extends LispObject
                                 LispObject third)
         throws ConditionThrowable
       {
-        final Stream stream;
-        try
-          {
-            stream = (Stream) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STREAM);
-          }
-        if (second == Keyword.ABORT)
-          return stream.close(third);
-        return error(new ProgramError("Unrecognized keyword argument " +
-                                       second.writeToString() + "."));
+          final Stream stream = checkStream(first);
+          if (second == Keyword.ABORT)          
+                  return stream.close(third);        
+          return error(new ProgramError("Unrecognized keyword argument " +                                      
+                          second.writeToString() + "."));
       }
     };
 
@@ -2470,26 +2384,11 @@ public class Stream extends LispObject
       public LispObject execute (LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        int n;
-        try
-          {
-            n = ((Fixnum)first).value;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.FIXNUM);
-          }
+        int n = Fixnum.getValue(first);
         if (n < 0 || n > 255)
           return type_error(first, UNSIGNED_BYTE_8);
-        try
-          {
-            ((Stream)second)._writeByte(n);
-            return NIL;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.STREAM);
-          }
+        checkStream(second)._writeByte(n);        
+        return NIL;
       }
     };
 
@@ -2531,15 +2430,7 @@ public class Stream extends LispObject
       public LispObject execute() throws ConditionThrowable
       {
         final LispObject obj = Symbol.STANDARD_INPUT.symbolValue();
-        final Stream stream;
-        try
-          {
-            stream = (Stream) obj;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(obj, Symbol.STREAM);
-          }
+        final Stream stream = checkStream(obj);
         return stream.readLine(true, NIL);
       }
       @Override
@@ -2549,15 +2440,7 @@ public class Stream extends LispObject
           arg = Symbol.TERMINAL_IO.symbolValue();
         else if (arg == NIL)
           arg = Symbol.STANDARD_INPUT.symbolValue();
-        final Stream stream;
-        try
-          {
-            stream = (Stream) arg;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.STREAM);
-          }
+        final Stream stream = checkStream(arg);
         return stream.readLine(true, NIL);
       }
       @Override
@@ -2568,15 +2451,7 @@ public class Stream extends LispObject
           first = Symbol.TERMINAL_IO.symbolValue();
         else if (first == NIL)
           first = Symbol.STANDARD_INPUT.symbolValue();
-        final Stream stream;
-        try
-          {
-            stream = (Stream) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STREAM);
-          }
+        final Stream stream = checkStream(first);
         return stream.readLine(second != NIL, NIL);
       }
       @Override
@@ -2588,15 +2463,7 @@ public class Stream extends LispObject
           first = Symbol.TERMINAL_IO.symbolValue();
         else if (first == NIL)
           first = Symbol.STANDARD_INPUT.symbolValue();
-        final Stream stream;
-        try
-          {
-            stream = (Stream) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STREAM);
-          }
+        final Stream stream = checkStream(first);
         return stream.readLine(second != NIL, third);
       }
       @Override
@@ -2609,15 +2476,7 @@ public class Stream extends LispObject
           first = Symbol.TERMINAL_IO.symbolValue();
         else if (first == NIL)
           first = Symbol.STANDARD_INPUT.symbolValue();
-        final Stream stream;
-        try
-          {
-            stream = (Stream) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STREAM);
-          }
+        final Stream stream = checkStream(first);
         return stream.readLine(second != NIL, third);
       }
     };
@@ -2669,15 +2528,7 @@ public class Stream extends LispObject
       {
         final LispThread thread = LispThread.currentThread();
         final LispObject obj = Symbol.STANDARD_INPUT.symbolValue(thread);
-        final Stream stream;
-        try
-          {
-            stream = (Stream) obj;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(obj, Symbol.STREAM);
-          }
+        final Stream stream = checkStream(obj);
         return stream.read(true, NIL, false, thread);
       }
       @Override
@@ -2688,15 +2539,7 @@ public class Stream extends LispObject
           arg = Symbol.TERMINAL_IO.symbolValue(thread);
         else if (arg == NIL)
           arg = Symbol.STANDARD_INPUT.symbolValue(thread);
-        final Stream stream;
-        try
-          {
-            stream = (Stream) arg;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.STREAM);
-          }
+        final Stream stream = checkStream(arg);
         return stream.read(true, NIL, false, thread);
       }
       @Override
@@ -2708,15 +2551,7 @@ public class Stream extends LispObject
           first = Symbol.TERMINAL_IO.symbolValue(thread);
         else if (first == NIL)
           first = Symbol.STANDARD_INPUT.symbolValue(thread);
-        final Stream stream;
-        try
-          {
-            stream = (Stream) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STREAM);
-          }
+        final Stream stream = checkStream(first);
         return stream.read(second != NIL, NIL, false, thread);
       }
       @Override
@@ -2729,15 +2564,7 @@ public class Stream extends LispObject
           first = Symbol.TERMINAL_IO.symbolValue(thread);
         else if (first == NIL)
           first = Symbol.STANDARD_INPUT.symbolValue(thread);
-        final Stream stream;
-        try
-          {
-            stream = (Stream) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STREAM);
-          }
+        final Stream stream = checkStream(first);
         return stream.read(second != NIL, third, false, thread);
       }
       @Override
@@ -2750,15 +2577,7 @@ public class Stream extends LispObject
           first = Symbol.TERMINAL_IO.symbolValue(thread);
         else if (first == NIL)
           first = Symbol.STANDARD_INPUT.symbolValue(thread);
-        final Stream stream;
-        try
-          {
-            stream = (Stream) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STREAM);
-          }
+        final Stream stream = checkStream(first);
         return stream.read(second != NIL, third, fourth != NIL, thread);
       }
     };
@@ -2892,15 +2711,7 @@ public class Stream extends LispObject
         throws ConditionThrowable
       {
         final AbstractVector v = checkVector(first);
-        final Stream stream;
-        try
-          {
-            stream = (Stream) second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.STREAM);
-          }
+        final Stream stream = checkStream(second);
         int start = Fixnum.getValue(third);
         int end = Fixnum.getValue(fourth);
         for (int i = start; i < end; i++)
@@ -2947,31 +2758,13 @@ public class Stream extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        final Stream stream;
-        try
-          {
-            stream = (Stream) arg;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.STREAM);
-          }
-        return stream.getFilePosition();
+          return checkStream(arg).getFilePosition();
       }
       @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        final Stream stream;
-        try
-          {
-            stream = (Stream) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STREAM);
-          }
-        return stream.setFilePosition(second);
+          return checkStream(first).setFilePosition(second);
       }
     };
 
@@ -2982,8 +2775,7 @@ public class Stream extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        Stream stream = checkStream(arg);
-        return Fixnum.getInstance(stream.getLineNumber() + 1);
+        return Fixnum.getInstance(checkStream(arg).getLineNumber() + 1);
       }
     };
 
@@ -2994,8 +2786,7 @@ public class Stream extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        Stream stream = checkStream(arg);
-        return number(stream.getOffset());
+        return number(checkStream(arg).getOffset());
       }
     };
 

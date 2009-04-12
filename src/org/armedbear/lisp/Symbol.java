@@ -591,11 +591,12 @@ public class Symbol extends LispObject
     if (s.charAt(0) == '#')
       return true;
     int radix;
-    try
+    LispObject printBaseBinding = PRINT_BASE.symbolValue(thread); 
+    if (printBaseBinding instanceof Fixnum)
       {
-        radix = ((Fixnum)PRINT_BASE.symbolValue(thread)).value;
+        radix = ((Fixnum)printBaseBinding).value;
       }
-    catch (ClassCastException e)
+    else
       {
         error(new TypeError("The value of *PRINT-BASE* is not of type (INTEGER 2 36)."));
         // Not reached.

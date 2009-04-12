@@ -274,12 +274,10 @@ public final class Extensions extends Lisp
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
       AbstractString string;
-      try {
+      if (arg instanceof AbstractString) {
         string = (AbstractString) arg;
-      }
-      catch (ClassCastException e) {
+      } else
         return type_error(arg, Symbol.STRING);
-      }
       String result = System.getenv(string.getStringValue());
       if (result != null)
         return new SimpleString(result);

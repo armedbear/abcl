@@ -69,14 +69,7 @@ public class StandardMethod extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((StandardMethod)arg).slots[StandardMethodClass.SLOT_INDEX_LAMBDA_LIST];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.STANDARD_METHOD);
-          }
+          return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_LAMBDA_LIST];
       }
     };
 
@@ -89,15 +82,8 @@ public class StandardMethod extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((StandardMethod)first).slots[StandardMethodClass.SLOT_INDEX_LAMBDA_LIST] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STANDARD_METHOD);
-          }
+          checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_LAMBDA_LIST] = second;
+          return second;
       }
     };
 
@@ -108,14 +94,7 @@ public class StandardMethod extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((StandardMethod)arg).slots[StandardMethodClass.SLOT_INDEX_QUALIFIERS];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.STANDARD_METHOD);
-          }
+          return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_QUALIFIERS];
       }
     };
 
@@ -127,16 +106,9 @@ public class StandardMethod extends StandardObject
       @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
-      {
-        try
-          {
-            ((StandardMethod)first).slots[StandardMethodClass.SLOT_INDEX_QUALIFIERS] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STANDARD_METHOD);
-          }
+      {          
+          checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_QUALIFIERS] = second;
+          return second;
       }
     };
 
@@ -147,14 +119,7 @@ public class StandardMethod extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((StandardMethod)arg).slots[StandardMethodClass.SLOT_INDEX_DOCUMENTATION];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.STANDARD_METHOD);
-          }
+          return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_DOCUMENTATION];
       }
     };
 
@@ -167,15 +132,8 @@ public class StandardMethod extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((StandardMethod)first).slots[StandardMethodClass.SLOT_INDEX_DOCUMENTATION] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STANDARD_METHOD);
-          }
+          checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_DOCUMENTATION] = second;
+          return second;
       }
     };
 
@@ -230,14 +188,7 @@ public class StandardMethod extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((StandardMethod)arg).slots[StandardMethodClass.SLOT_INDEX_GENERIC_FUNCTION];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.METHOD);
-          }
+          return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_GENERIC_FUNCTION];
       }
     };
 
@@ -249,15 +200,8 @@ public class StandardMethod extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((StandardMethod)first).slots[StandardMethodClass.SLOT_INDEX_GENERIC_FUNCTION] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.METHOD);
-          }
+          checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_GENERIC_FUNCTION] = second;
+          return second;
       }
     };
 
@@ -268,14 +212,7 @@ public class StandardMethod extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((StandardMethod)arg).slots[StandardMethodClass.SLOT_INDEX_FUNCTION];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.METHOD);
-          }
+          return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_FUNCTION];
       }
     };
 
@@ -288,15 +225,8 @@ public class StandardMethod extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((StandardMethod)first).slots[StandardMethodClass.SLOT_INDEX_FUNCTION] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.METHOD);
-          }
+          checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_FUNCTION] = second;
+          return second;
       }
     };
 
@@ -307,14 +237,7 @@ public class StandardMethod extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((StandardMethod)arg).slots[StandardMethodClass.SLOT_INDEX_FAST_FUNCTION];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.METHOD);
-          }
+          return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_FAST_FUNCTION];
       }
     };
 
@@ -327,15 +250,8 @@ public class StandardMethod extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((StandardMethod)first).slots[StandardMethodClass.SLOT_INDEX_FAST_FUNCTION] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.METHOD);
-          }
+          checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_FAST_FUNCTION] = second;
+          return second;
       }
     };
 
@@ -346,14 +262,7 @@ public class StandardMethod extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((StandardMethod)arg).slots[StandardMethodClass.SLOT_INDEX_SPECIALIZERS];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.METHOD);
-          }
+          return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_SPECIALIZERS];
       }
     };
 
@@ -366,15 +275,8 @@ public class StandardMethod extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((StandardMethod)first).slots[StandardMethodClass.SLOT_INDEX_SPECIALIZERS] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.METHOD);
-          }
+          checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_SPECIALIZERS] = second;
+          return second;
       }
     };
 
@@ -393,5 +295,12 @@ public class StandardMethod extends StandardObject
                                 _METHOD_QUALIFIERS,
                                 list(Symbol.METHOD),
                                 list(StandardClass.STANDARD_METHOD));
+
+        final public static StandardMethod checkStandardMethod(LispObject first) throws ConditionThrowable
+        {
+                if (first instanceof StandardMethod)
+                        return (StandardMethod) first;
+                return (StandardMethod) type_error(first, Symbol.METHOD);
+        }
 
 }

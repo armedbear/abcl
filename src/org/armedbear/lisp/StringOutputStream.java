@@ -122,12 +122,9 @@ public final class StringOutputStream extends Stream
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            try {
+            if (arg instanceof StringOutputStream)
                 return ((StringOutputStream)arg).getString();
-            }
-            catch (ClassCastException e) {
-                return error(new TypeError(this, Symbol.STRING_OUTPUT_STREAM));
-            }
+            return type_error(this, Symbol.STRING_OUTPUT_STREAM);
         }
     };
 }

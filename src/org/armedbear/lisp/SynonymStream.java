@@ -237,12 +237,9 @@ public final class SynonymStream extends Stream
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            try {
+            if (arg instanceof SynonymStream) 
                 return ((SynonymStream)arg).symbol;
-            }
-            catch (ClassCastException e) {
-                return error(new TypeError(arg, Symbol.SYNONYM_STREAM));
-            }
+            return error(new TypeError(arg, Symbol.SYNONYM_STREAM));
         }
     };
 }

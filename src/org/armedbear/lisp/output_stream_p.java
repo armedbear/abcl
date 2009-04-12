@@ -44,12 +44,7 @@ public final class output_stream_p extends Primitive
     @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
-        try {
-            return ((Stream)arg).isOutputStream() ? T : NIL;
-        }
-        catch (ClassCastException e) {
-            return error(new TypeError(arg, Symbol.STREAM));
-        }
+        return checkStream(arg).isOutputStream() ? T : NIL;
     }
 
     private static final Primitive OUTPUT_STREAM_P = new output_stream_p();

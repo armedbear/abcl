@@ -184,11 +184,11 @@ public class SlotClass extends LispClass
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
-            try {
+                if (first instanceof SlotClass) {
                 ((SlotClass)first).directSlotDefinitions = second;
                 return second;
             }
-            catch (ClassCastException e) {
+                else {
                 return type_error(first, Symbol.STANDARD_CLASS);
             }
         }
@@ -218,11 +218,11 @@ public class SlotClass extends LispClass
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
-            try {
+                if (first instanceof SlotClass) {
                 ((SlotClass)first).slotDefinitions = second;
                 return second;
             }
-            catch (ClassCastException e) {
+                else {
                 return type_error(first, Symbol.STANDARD_CLASS);
             }
         }
@@ -252,13 +252,11 @@ public class SlotClass extends LispClass
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
-            try {
-                ((SlotClass)first).directDefaultInitargs = second;
-                return second;
-            }
-            catch (ClassCastException e) {
-                return type_error(first, Symbol.STANDARD_CLASS);
-            }
+                   if (first instanceof SlotClass) {                
+                           ((SlotClass)first).directDefaultInitargs = second;                
+                           return second;
+                   }
+                   return type_error(first, Symbol.STANDARD_CLASS);
         }
     };
 
@@ -303,10 +301,10 @@ public class SlotClass extends LispClass
             throws ConditionThrowable
         {
             final SlotClass c;
-            try {
+            if (arg instanceof SlotClass) {
                 c = (SlotClass) arg;
             }
-            catch (ClassCastException e) {
+            else {
                 return type_error(arg, Symbol.STANDARD_CLASS);
             }
             return c.computeDefaultInitargs();

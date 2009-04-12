@@ -225,14 +225,11 @@ public final class DoubleFloat extends LispObject
 
     public static double getValue(LispObject obj) throws ConditionThrowable
     {
-        try {
+        if (obj instanceof DoubleFloat) 
             return ((DoubleFloat)obj).value;
-        }
-        catch (ClassCastException e) {
             type_error(obj, Symbol.FLOAT);
             // Not reached.
             return 0;
-        }
     }
 
     public final double getValue()

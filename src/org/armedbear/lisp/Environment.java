@@ -336,14 +336,7 @@ public final class Environment extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((Environment)arg).isEmpty() ? T : NIL;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.ENVIRONMENT);
-          }
+          return checkEnvironment(arg).isEmpty() ? T : NIL;
       }
     };
 
@@ -354,19 +347,12 @@ public final class Environment extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            Environment env = (Environment) arg;
+            Environment env = checkEnvironment(arg);
             LispObject result = NIL;
             for (Binding binding = env.vars; binding != null; binding = binding.next)
               if (!binding.specialp)
                 result = result.push(new Cons(binding.symbol, binding.value));
             return result.nreverse();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.ENVIRONMENT);
-          }
       }
     };
 }

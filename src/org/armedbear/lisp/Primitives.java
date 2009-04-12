@@ -247,15 +247,8 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((AbstractArray)arg).hasFillPointer() ? T : NIL;
+            return checkArray(arg).hasFillPointer() ? T : NIL;
           }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.ARRAY);
-          }
-      }
     };
 
   // ### vectorp
@@ -443,14 +436,7 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            return first.elt(((Fixnum)second).value);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.FIXNUM);
-          }
+            return first.elt(Fixnum.getValue(second));
       }
     };
 
@@ -595,14 +581,7 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         final LispObject value;
-        try
-          {
-            value = ((Symbol)arg).symbolValue();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SYMBOL);
-          }
+        value = checkSymbol(arg).symbolValue();
         if (value instanceof SymbolMacro)
           return error(new LispError(arg.writeToString() +
                                       " has no dynamic value."));
@@ -618,15 +597,8 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            return LispThread.currentThread().setSpecialVariable((Symbol)first,
+            return LispThread.currentThread().setSpecialVariable(checkSymbol(first),
                                                                  second);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SYMBOL);
-          }
       }
     };
 
@@ -798,15 +770,8 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((Stream)second)._writeString(first.writeToString());
+            checkStream(second)._writeString(first.writeToString());
             return first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.STREAM);
-          }
       }
     };
 
@@ -818,21 +783,14 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        final Stream out;
-        try
-          {
+        final LispObject out;
             if (second == T)
-              out = (Stream) Symbol.TERMINAL_IO.symbolValue();
+              out = Symbol.TERMINAL_IO.symbolValue();
             else if (second == NIL)
-              out = (Stream) Symbol.STANDARD_OUTPUT.symbolValue();
+              out = Symbol.STANDARD_OUTPUT.symbolValue();
             else
-              out = (Stream) second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.STREAM);
-          }
-        out._writeString(first.writeToString());
+              out = second;
+        checkStream(out)._writeString(first.writeToString());
         return first;
       }
     };
@@ -855,15 +813,8 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            ((Stream)arg)._writeChar('\n');
+            checkStream(arg)._writeChar('\n');
             return NIL;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.STREAM);
-          }
       }
     };
 
@@ -879,14 +830,7 @@ public final class Primitives extends Lisp
         else if (arg == NIL)
           arg = Symbol.STANDARD_OUTPUT.symbolValue();
         final Stream stream;
-        try
-          {
-            stream = (Stream) arg;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.STREAM);
-          }
+        stream = checkStream(arg);
         return stream.terpri();
       }
     };
@@ -904,14 +848,7 @@ public final class Primitives extends Lisp
         else if (arg == NIL)
           arg = Symbol.STANDARD_OUTPUT.symbolValue();
         final Stream stream;
-        try
-          {
-            stream = (Stream) arg;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.STREAM);
-          }
+        stream = checkStream(arg);
         return stream.freshLine();
       }
     };
@@ -926,14 +863,7 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         final Symbol symbol;
-        try
-          {
-            symbol = (Symbol) arg;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SYMBOL);
-          }
+        symbol = checkSymbol(arg);
         // PROGV: "If too few values are supplied, the remaining symbols
         // are bound and then made to have no value." So BOUNDP must
         // explicitly check for a binding with no value.
@@ -973,7 +903,7 @@ public final class Primitives extends Lisp
       {
         if (arg instanceof Symbol)
           {
-            ((Symbol)arg).setSymbolFunction(null);
+            checkSymbol(arg).setSymbolFunction(null);
             return arg;
           }
         if (isValidSetfFunctionName(arg))
@@ -1505,15 +1435,7 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        final int index;
-        try
-          {
-            index = ((Fixnum)first).value;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.FIXNUM);
-          }
+        final int index = Fixnum.getValue(first);
         if (index < 0)
           return type_error(first,
                                  list(Symbol.INTEGER, Fixnum.ZERO));
@@ -1647,7 +1569,7 @@ public final class Primitives extends Lisp
             Stream out = ((TwoWayStream)destination).getOutputStream();
             if (out instanceof Stream)
               {
-                ((Stream)out)._writeString(s);
+                (out)._writeString(s);
                 return NIL;
               }
             error(new TypeError("The value " +
@@ -1887,14 +1809,7 @@ public final class Primitives extends Lisp
         throws ConditionThrowable
       {
         final Symbol symbol;
-        try
-          {
-            symbol = (Symbol) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SYMBOL);
-          }
+            symbol = checkSymbol(first);
         if (third instanceof AbstractString)
           symbol.setDocumentation(Symbol.VARIABLE, third);
         else if (third != NIL)
@@ -1912,14 +1827,7 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         final Symbol symbol;
-        try
-          {
-            symbol = (Symbol) arg;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SYMBOL);
-          }
+            symbol = checkSymbol(arg);
         symbol.setSpecial(true);
         return symbol;
       }
@@ -1928,14 +1836,7 @@ public final class Primitives extends Lisp
         throws ConditionThrowable
       {
         final Symbol symbol;
-        try
-          {
-            symbol = (Symbol) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SYMBOL);
-          }
+            symbol = checkSymbol(first);
         symbol.initializeSpecial(second);
         return symbol;
       }
@@ -1951,14 +1852,7 @@ public final class Primitives extends Lisp
         throws ConditionThrowable
       {
         final Symbol symbol;
-        try
-          {
-            symbol = (Symbol) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SYMBOL);
-          }
+            symbol = checkSymbol(first);
         if (third != NIL)
           {
             if (third instanceof AbstractString)
@@ -2141,14 +2035,8 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return Fixnum.getInstance(((AbstractArray)arg).getRank());
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.ARRAY);
-          }
+          return Fixnum.getInstance(checkArray(arg).getRank());
+
       }
     };
 
@@ -2160,14 +2048,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((AbstractArray)arg).getDimensions();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.ARRAY);
-          }
+            return checkArray(arg).getDimensions();
       }
     };
 
@@ -2179,25 +2060,8 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        final AbstractArray array;
-        try
-          {
-            array = (AbstractArray) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.ARRAY);
-          }
-        final int n;
-        try
-          {
-            n = ((Fixnum)second).value;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.FIXNUM);
-          }
-        return Fixnum.getInstance(array.getDimension(n));
+        final AbstractArray array = checkArray(first);
+        return Fixnum.getInstance(array.getDimension(Fixnum.getValue(second)));
       }
     };
 
@@ -2208,14 +2072,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return Fixnum.getInstance(((AbstractArray)arg).getTotalSize());
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.ARRAY);
-          }
+          return Fixnum.getInstance(checkArray(arg).getTotalSize());
       }
     };
 
@@ -2228,14 +2085,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((AbstractArray)arg).getElementType();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.ARRAY);
-          }
+            return checkArray(arg).getElementType();
       }
     };
 
@@ -2246,14 +2096,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((AbstractArray)arg).isAdjustable() ? T : NIL;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.ARRAY);
-          }
+            return checkArray(arg).isAdjustable() ? T : NIL;
       }
     };
 
@@ -2264,14 +2107,8 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((AbstractArray)arg).arrayDisplacement();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.ARRAY);
-          }
+            return checkArray(arg).arrayDisplacement();
+
       }
     };
 
@@ -2285,14 +2122,8 @@ public final class Primitives extends Lisp
         if (args.length < 1)
           return error(new WrongNumberOfArgumentsException(this));
         final AbstractArray array;
-        try
-          {
-            array = (AbstractArray) args[0];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(args[0], Symbol.ARRAY);
-          }
+                LispObject r = args[0];
+            array = checkArray(r);
         int rank = array.getRank();
         if (rank != args.length - 1)
           {
@@ -2331,14 +2162,7 @@ public final class Primitives extends Lisp
         throws ConditionThrowable
       {
         final AbstractArray array;
-        try
-          {
-            array = (AbstractArray) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.ARRAY);
-          }
+        array = checkArray(first);
         LispObject[] subscripts = second.copyToArray();
         return number(array.getRowMajorIndex(subscripts));
       }
@@ -2357,14 +2181,7 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         final AbstractArray array;
-        try
-          {
-            array = (AbstractArray) arg;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.ARRAY);
-          }
+        array = checkArray( arg);
         if (array.getRank() == 0)
           return array.AREF(0);
         FastStringBuffer sb =
@@ -2384,57 +2201,16 @@ public final class Primitives extends Lisp
                                 LispObject third)
         throws ConditionThrowable
       {
-        final AbstractArray array;
-        try
-          {
-            array = (AbstractArray) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.ARRAY);
-          }
-        final int[] subs = new int[2];
-        try
-          {
-            subs[0] = ((Fixnum)second).value;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.FIXNUM);
-          }
-        try
-          {
-            subs[1] = ((Fixnum)third).value;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(third, Symbol.FIXNUM);
-          }
-        return array.get(subs);
+        return checkArray(first).get(new int[]{Fixnum.getValue(second),Fixnum.getValue(third)} );
       }
       @Override
       public LispObject execute(LispObject[] args) throws ConditionThrowable
       {
-        final AbstractArray array;
-        try
-          {
-            array = (AbstractArray) args[0];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(args[0], Symbol.ARRAY);
-          }
+        final AbstractArray array = checkArray(args[0]);
         final int[] subs = new int[args.length - 1];
         for (int i = subs.length; i-- > 0;)
           {
-            try
-              {
-                subs[i] = ((Fixnum)args[i+1]).value;
-              }
-            catch (ClassCastException e)
-              {
-                return type_error(args[i+i], Symbol.FIXNUM);
-              }
+            subs[i] = Fixnum.getValue(args[i+1]);
           }
         return array.get(subs);
       }
@@ -2451,11 +2227,10 @@ public final class Primitives extends Lisp
       {
         // Rank zero array.
         final ZeroRankArray array;
-        try
-          {
+          if (first instanceof ZeroRankArray){
             array = (ZeroRankArray) first;
           }
-        catch (ClassCastException e)
+          else
           {
             return error(new TypeError("The value " +
                                         first.writeToString() +
@@ -2475,28 +2250,11 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject[] args) throws ConditionThrowable
       {
-        final AbstractArray array;
-        try
-          {
-            array = (AbstractArray) args[0];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(args[0], Symbol.ARRAY);
-          }
+        final AbstractArray array = checkArray(args[0]);
         final int nsubs = args.length - 2;
         final int[] subs = new int[nsubs];
         for (int i = nsubs; i-- > 0;)
-          {
-            try
-              {
-                subs[i] = ((Fixnum)args[i+1]).value;
-              }
-            catch (ClassCastException e)
-              {
-                type_error(args[i+1], Symbol.FIXNUM);
-              }
-          }
+            subs[i] = Fixnum.getValue(args[i+1]);
         final LispObject newValue = args[args.length - 1];
         array.set(subs, newValue);
         return newValue;
@@ -2510,18 +2268,8 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
-      {
-        try
-          {
-            return ((AbstractArray)first).AREF(((Fixnum)second).value);
-          }
-        catch (ClassCastException e)
-          {
-            if (first instanceof AbstractArray)
-              return type_error(second, Symbol.FIXNUM);
-            else
-              return type_error(first, Symbol.ARRAY);
-          }
+      {          
+            return checkArray(first).AREF(Fixnum.getValue(second));
       }
     };
 
@@ -2544,16 +2292,14 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject arg)
         throws ConditionThrowable
       {
-        try
-          {
-            return Fixnum.getInstance(((AbstractArray)arg).getFillPointer());
+          if (arg instanceof AbstractArray) {
+                  AbstractArray aa = (AbstractArray)arg;
+                  if (aa.hasFillPointer())            
+                          return Fixnum.getInstance(aa.getFillPointer());
           }
-        catch (ClassCastException e)
-          {
             return type_error(arg, list(Symbol.AND, Symbol.VECTOR,
                                               list(Symbol.SATISFIES,
                                                     Symbol.ARRAY_HAS_FILL_POINTER_P)));
-          }
       }
     };
 
@@ -2565,8 +2311,8 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
+
+          if (first instanceof AbstractVector) {
             AbstractVector v = (AbstractVector) first;
             if (v.hasFillPointer())
               v.setFillPointer(second);
@@ -2574,12 +2320,10 @@ public final class Primitives extends Lisp
               v.noFillPointer();
             return second;
           }
-        catch (ClassCastException e)
-          {
+
             return type_error(first, list(Symbol.AND, Symbol.VECTOR,
                                                 list(Symbol.SATISFIES,
-                                                      Symbol.ARRAY_HAS_FILL_POINTER_P)));
-          }
+                                                      Symbol.ARRAY_HAS_FILL_POINTER_P)));          
       }
     };
 
@@ -2591,15 +2335,7 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        final AbstractVector v;
-        try
-          {
-            v = (AbstractVector) second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.VECTOR);
-          }
+        final AbstractVector v = checkVector(second);
         int fillPointer = v.getFillPointer();
         if (fillPointer < 0)
           v.noFillPointer();
@@ -2640,15 +2376,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        final AbstractVector v;
-        try
-          {
-            v = (AbstractVector) arg;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.VECTOR);
-          }
+        final AbstractVector v = checkVector( arg);
         int fillPointer = v.getFillPointer();
         if (fillPointer < 0)
           v.noFillPointer();
@@ -2945,14 +2673,10 @@ public final class Primitives extends Lisp
         while (list != NIL)
           {
             Cons cons;
-            try
-              {
+            if (list instanceof Cons)
                 cons = (Cons) list;
-              }
-            catch (ClassCastException e)
-              {
+            else
                 return type_error(list, Symbol.LIST);
-              }
             LispObject obj = thread.execute(fun, cons.car);
             if (splice == null)
               {
@@ -3050,14 +2774,10 @@ public final class Primitives extends Lisp
         while (list != NIL)
           {
             Cons cons;
-            try
-              {
+            if (list instanceof Cons)
                 cons = (Cons) list;
-              }
-            catch (ClassCastException e)
-              {
+            else
                 return type_error(list, Symbol.LIST);
-              }
             thread.execute(fun, cons.car);
             list = cons.cdr;
           }
@@ -3278,7 +2998,7 @@ public final class Primitives extends Lisp
           }
         if (arg instanceof Symbol)
           {
-            Package pkg = Packages.findPackage(((Symbol)arg).getName());
+            Package pkg = Packages.findPackage(checkSymbol(arg).getName());
             return pkg != null ? pkg : NIL;
           }
         if (arg instanceof LispCharacter)
@@ -3560,7 +3280,7 @@ public final class Primitives extends Lisp
         if (first instanceof Symbol)
           {
             checkRedefinition(first);
-            Symbol symbol = (Symbol) first;
+            Symbol symbol = checkSymbol(first);
             symbol.setSymbolFunction(second);
             final LispThread thread = LispThread.currentThread();
             LispObject sourcePathname = _SOURCE_.symbolValue(thread);
@@ -3656,28 +3376,14 @@ public final class Primitives extends Lisp
                                 LispObject value)
         throws ConditionThrowable
       {
-        try
-          {
-            return put((Symbol)symbol, indicator, value);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(symbol, Symbol.SYMBOL);
-          }
+            return put(checkSymbol(symbol), indicator, value);
       }
       @Override
       public LispObject execute(LispObject symbol, LispObject indicator,
                                 LispObject defaultValue, LispObject value)
         throws ConditionThrowable
       {
-        try
-          {
-            return put((Symbol)symbol, indicator, value);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(symbol, Symbol.SYMBOL);
-          }
+          return put(checkSymbol(symbol), indicator, value);
       }
     };
 
@@ -3848,14 +3554,7 @@ public final class Primitives extends Lisp
         if (args == NIL)
           return error(new WrongNumberOfArgumentsException(this));
         LispObject tag;
-        try
-          {
-            tag = (Symbol) args.car();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(args.car(), Symbol.SYMBOL);
-          }
+            tag = checkSymbol(args.car());
         LispObject body = ((Cons)args).cdr();
         Environment ext = new Environment(env);
         final LispObject block = new LispObject();
@@ -3891,14 +3590,8 @@ public final class Primitives extends Lisp
         if (length < 1 || length > 2)
           return error(new WrongNumberOfArgumentsException(this));
         Symbol symbol;
-        try
-          {
-            symbol = (Symbol) args.car();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(args.car(), Symbol.SYMBOL);
-          }
+            symbol = checkSymbol(args.car());
+
         LispObject block = env.lookupBlock(symbol);
         if (block == null)
           {
@@ -4086,14 +3779,9 @@ public final class Primitives extends Lisp
         while (var != NIL)
           {
             final Symbol sym;
-            try
-              {
-                sym = (Symbol) var;
-              }
-            catch (ClassCastException e)
-              {
-                return type_error(var, Symbol.SYMBOL);
-              }
+
+            sym =  checkSymbol(var);
+
             LispObject val = i < values.length ? values[i] : NIL;
             if (specials != NIL && memq(sym, specials))
               {
@@ -4412,15 +4100,7 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        final int start;
-        try
-          {
-            start = ((Fixnum)second).value;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.FIXNUM);
-          }
+        final int start = Fixnum.getValue(second);
         if (start < 0)
           {
             FastStringBuffer sb = new FastStringBuffer("Bad start index (");
@@ -4442,15 +4122,7 @@ public final class Primitives extends Lisp
                                 LispObject third)
         throws ConditionThrowable
       {
-        final int start;
-        try
-          {
-            start = ((Fixnum)second).value;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.FIXNUM);
-          }
+        final int start = Fixnum.getValue(second);
         if (start < 0)
           {
             FastStringBuffer sb = new FastStringBuffer("Bad start index (");
@@ -4802,15 +4474,8 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject item, LispObject vector)
         throws ConditionThrowable
       {
-        try
-          {
-            ((AbstractVector)vector).deleteEq(item);
-            return vector;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(vector, Symbol.VECTOR);
-          }
+          checkVector(vector).deleteEq(item);
+          return vector;
       }
     };
 
@@ -4822,15 +4487,8 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject item, LispObject vector)
         throws ConditionThrowable
       {
-        try
-          {
-            ((AbstractVector)vector).deleteEql(item);
-            return vector;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(vector, Symbol.VECTOR);
-          }
+          checkVector(vector).deleteEql(item);
+          return vector;
       }
     };
 
@@ -5330,14 +4988,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((Symbol)arg).isBuiltInFunction() ? T : NIL;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SYMBOL);
-          }
+            return checkSymbol(arg).isBuiltInFunction() ? T : NIL;
       }
     };
 
@@ -5370,14 +5021,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((Symbol)arg).name;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SYMBOL);
-          }
+          return checkSymbol(arg).name;
       }
     };
 
@@ -5388,14 +5032,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((Symbol)arg).getPackage();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SYMBOL);
-          }
+          return checkSymbol(arg).getPackage();
       }
     };
 
@@ -5406,17 +5043,11 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            LispObject function = ((Symbol)arg).getSymbolFunction();
+            LispObject function = checkSymbol(arg).getSymbolFunction();
             if (function != null)
               return function;
             return error(new UndefinedFunction(arg));
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SYMBOL);
-          }
+
       }
     };
 
@@ -5428,15 +5059,8 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((Symbol)first).setSymbolFunction(second);
+            checkSymbol(first).setSymbolFunction(second);
             return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SYMBOL);
-          }
       }
     };
 
@@ -5447,14 +5071,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((Symbol)arg).getPropertyList();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SYMBOL);
-          }
+            return checkSymbol(arg).getPropertyList();
       }
     };
 
@@ -5467,7 +5084,7 @@ public final class Primitives extends Lisp
       {
         if (arg instanceof Symbol)
           {
-            if (((Symbol)arg).getPackage() == PACKAGE_KEYWORD)
+            if (checkSymbol(arg).getPackage() == PACKAGE_KEYWORD)
               return T;
           }
         return NIL;
@@ -5497,15 +5114,8 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            ((Symbol)arg).setSymbolValue(null);
+            checkSymbol(arg).setSymbolValue(null);
             return arg;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SYMBOL);
-          }
       }
     };
 
@@ -5516,14 +5126,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((LispClass)arg).symbol;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CLASS);
-          }
+          return checkClass(arg).symbol;
       }
     };
 
@@ -5535,15 +5138,8 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((LispClass)first).symbol = checkSymbol(second);
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.CLASS);
-          }
+          checkClass(first).symbol = checkSymbol(second);
+          return second;
       }
     };
 
@@ -5554,15 +5150,8 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            Layout layout = ((LispClass)arg).getClassLayout();
-            return layout != null ? layout : NIL;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CLASS);
-          }
+          Layout layout = checkClass(arg).getClassLayout();
+          return layout != null ? layout : NIL;
       }
     };
 
@@ -5574,20 +5163,12 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
+        if (second instanceof Layout)
           {
-            ((LispClass)first).setClassLayout((Layout)second);
+            checkClass(first).setClassLayout((Layout)second);
             return second;
           }
-        catch (ClassCastException e)
-          {
-            if (!(first instanceof LispClass))
-              return type_error(first, Symbol.CLASS);
-            if (!(second instanceof Layout))
-              return type_error(second, Symbol.LAYOUT);
-            // Not reached.
-            return NIL;
-          }
+        return type_error(second, Symbol.LAYOUT);
       }
     };
 
@@ -5598,14 +5179,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((LispClass)arg).getDirectSuperclasses();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CLASS);
-          }
+            return checkClass(arg).getDirectSuperclasses();
       }
     };
 
@@ -5617,15 +5191,8 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((LispClass)first).setDirectSuperclasses(second);
+            checkClass(first).setDirectSuperclasses(second);
             return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.CLASS);
-          }
       }
     };
 
@@ -5636,14 +5203,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((LispClass)arg).getDirectSubclasses();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CLASS);
-          }
+            return checkClass(arg).getDirectSubclasses();
       }
     };
 
@@ -5656,15 +5216,8 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((LispClass)first).setDirectSubclasses(second);
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.CLASS);
-          }
+          checkClass(first).setDirectSubclasses(second);
+          return second;
       }
     };
 
@@ -5675,14 +5228,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((LispClass)arg).getCPL();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CLASS);
-          }
+          return checkClass(arg).getCPL();
       }
     };
 
@@ -5694,15 +5240,8 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((LispClass)first).classPrecedenceList = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.CLASS);
-          }
+          checkClass(first).classPrecedenceList = second;
+          return second;
       }
     };
 
@@ -5714,14 +5253,7 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject arg)
         throws ConditionThrowable
       {
-        try
-          {
-            return ((LispClass)arg).directMethods;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CLASS);
-          }
+          return checkClass(arg).directMethods;
       }
     };
 
@@ -5733,15 +5265,8 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((LispClass)first).directMethods = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.CLASS);
-          }
+          checkClass(first).directMethods = second;
+          return second;
       }
     };
 
@@ -5753,14 +5278,7 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject arg)
         throws ConditionThrowable
       {
-        try
-          {
-            return ((LispClass)arg).documentation;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CLASS);
-          }
+          return checkClass(arg).documentation;
       }
     };
 
@@ -5772,15 +5290,8 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((LispClass)first).documentation = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.CLASS);
-          }
+          checkClass(first).documentation = second;
+          return second;
       }
     };
 
@@ -5791,14 +5302,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((LispClass)arg).isFinalized() ? T : NIL;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CLASS);
-          }
+            return checkClass(arg).isFinalized() ? T : NIL;
       }
     };
 
@@ -5810,15 +5314,8 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((LispClass)first).setFinalized(second != NIL);
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.CLASS);
-          }
+          checkClass(first).setFinalized(second != NIL);
+          return second;
       }
     };
 
@@ -5841,14 +5338,7 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         final LispCharacter c;
-        try
-          {
-            c = (LispCharacter) arg;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CHARACTER);
-          }
+        c = checkCharacter( arg);
         char[] chars = new char[1];
         chars[0] = c.value;
         String s = new String(chars);
@@ -5932,14 +5422,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((Function)arg).getPropertyList();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.FUNCTION);
-          }
+          return checkFunction(arg).getPropertyList();
       }
     };
 
@@ -5950,14 +5433,7 @@ public final class Primitives extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return PACKAGE_KEYWORD.intern(((Symbol)arg).name);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SYMBOL);
-          }
+          return PACKAGE_KEYWORD.intern(checkSymbol(arg).name);
       }
     };
 
@@ -5988,4 +5464,5 @@ public final class Primitives extends Lisp
           return arg;
       }
     };
+    
 }

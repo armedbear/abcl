@@ -281,20 +281,15 @@ public final class Cons extends LispObject
   @Override
   public final int length() throws ConditionThrowable
   {
-    int length = 0;
-    LispObject obj = this;
-    try
-      {
+    int length = 1;
+    LispObject obj = cdr;
         while (obj != NIL)
           {
             ++length;
-            obj = ((Cons)obj).cdr;
-          }
-      }
-    catch (ClassCastException e)
-      {
-        type_error(obj, Symbol.LIST);
-      }
+            if (obj instanceof Cons) {
+                obj = ((Cons)obj).cdr;
+            } else  type_error(obj, Symbol.LIST);
+          }      
     return length;
   }
 
@@ -320,12 +315,12 @@ public final class Cons extends LispObject
   public LispObject NTH(LispObject arg) throws ConditionThrowable
   {
     int index;
-    try
+    if (arg instanceof Fixnum)
       {
         index = ((Fixnum)arg).value;
       }
-    catch (ClassCastException e)
-      {
+    else
+        {
         if (arg instanceof Bignum)
           {
             // FIXME (when machines have enough memory for it to matter)
@@ -361,13 +356,14 @@ public final class Cons extends LispObject
       {
         if (i == index)
           return cons.car;
-        try
+        LispObject conscdr = cons.cdr;
+        if (conscdr instanceof Cons)
           {
-            cons = (Cons) cons.cdr;
+            cons = (Cons) conscdr;
           }
-        catch (ClassCastException e)
+        else
           {
-            if (cons.cdr == NIL)
+            if (conscdr == NIL)
               {
                 // Index too large.
                 type_error(Fixnum.getInstance(index),
@@ -377,7 +373,7 @@ public final class Cons extends LispObject
             else
               {
                 // Dotted list.
-                type_error(cons.cdr, Symbol.LIST);
+                type_error(conscdr, Symbol.LIST);
               }
             // Not reached.
             return NIL;

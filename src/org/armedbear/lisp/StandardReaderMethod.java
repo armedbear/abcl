@@ -48,14 +48,9 @@ public final class StandardReaderMethod extends StandardMethod
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-          try
-          {
+          if (arg instanceof StandardReaderMethod)
               return ((StandardReaderMethod)arg).slots[StandardReaderMethodClass.SLOT_INDEX_SLOT_NAME];
-          }
-          catch (ClassCastException e)
-          {
-              return type_error(arg, Symbol.STANDARD_READER_METHOD);
-          }
+          return type_error(arg, Symbol.STANDARD_READER_METHOD);
       }
   };
 
@@ -68,15 +63,12 @@ public final class StandardReaderMethod extends StandardMethod
       public LispObject execute(LispObject first, LispObject second)
           throws ConditionThrowable
       {
-          try
+          if (first instanceof StandardReaderMethod)
           {
               ((StandardReaderMethod)first).slots[StandardReaderMethodClass.SLOT_INDEX_SLOT_NAME] = second;
               return second;
           }
-          catch (ClassCastException e)
-          {
               return type_error(first, Symbol.STANDARD_READER_METHOD);
-          }
       }
   };
 }

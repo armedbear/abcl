@@ -551,14 +551,7 @@ public class Readtable extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((Readtable)arg).readtableCase;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.READTABLE);
-          }
+          return checkReadtable(arg).readtableCase;
       }
     };
 
@@ -571,9 +564,7 @@ public class Readtable extends LispObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            Readtable readtable = (Readtable) first;
+            final Readtable readtable = checkReadtable(first);
             if (second == Keyword.UPCASE || second == Keyword.DOWNCASE ||
                 second == Keyword.INVERT || second == Keyword.PRESERVE)
               {
@@ -585,11 +576,6 @@ public class Readtable extends LispObject
                                                  Keyword.PRESERVE,
                                                  Keyword.DOWNCASE,
                                                  Keyword.UPCASE));
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.READTABLE);
-          }
       }
     };
 }

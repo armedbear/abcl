@@ -81,6 +81,11 @@ public final class SlotDefinition extends StandardObject
         Debug.trace(t);
       }
   }
+  
+  public static SlotDefinition checkSlotDefination(LispObject obj) throws ConditionThrowable {
+          if (obj instanceof SlotDefinition) return (SlotDefinition)obj;
+      return (SlotDefinition)type_error(obj, Symbol.SLOT_DEFINITION);     
+  }
 
   public final LispObject getName()
   {
@@ -124,14 +129,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((SlotDefinition)arg).slots[SlotDefinitionClass.SLOT_INDEX_NAME];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SLOT_DEFINITION);
-          }
+          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_NAME];
       }
     };
 
@@ -144,15 +142,8 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((SlotDefinition)first).slots[SlotDefinitionClass.SLOT_INDEX_NAME] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SLOT_DEFINITION);
-          }
+          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_NAME] = second;
+          return second;
       }
     };
 
@@ -163,14 +154,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((SlotDefinition)arg).slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SLOT_DEFINITION);
-          }
+          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION];
       }
     };
 
@@ -183,15 +167,8 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((SlotDefinition)first).slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SLOT_DEFINITION);
-          }
+          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = second;
+          return second;
       }
     };
 
@@ -203,14 +180,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((SlotDefinition)arg).slots[SlotDefinitionClass.SLOT_INDEX_INITFORM];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SLOT_DEFINITION);
-          }
+          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_INITFORM];
       }
     };
 
@@ -223,15 +193,8 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((SlotDefinition)first).slots[SlotDefinitionClass.SLOT_INDEX_INITFORM] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SLOT_DEFINITION);
-          }
+          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_INITFORM] = second;
+          return second;
       }
     };
 
@@ -242,14 +205,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((SlotDefinition)arg).slots[SlotDefinitionClass.SLOT_INDEX_INITARGS];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SLOT_DEFINITION);
-          }
+          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_INITARGS];
       }
     };
 
@@ -262,15 +218,8 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((SlotDefinition)first).slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SLOT_DEFINITION);
-          }
+          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] = second;
+          return second;
       }
     };
 
@@ -282,14 +231,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((SlotDefinition)arg).slots[SlotDefinitionClass.SLOT_INDEX_READERS];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SLOT_DEFINITION);
-          }
+          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_READERS];
       }
     };
 
@@ -302,15 +244,8 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((SlotDefinition)first).slots[SlotDefinitionClass.SLOT_INDEX_READERS] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SLOT_DEFINITION);
-          }
+          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_READERS] = second;
+          return second;
       }
     };
 
@@ -322,14 +257,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((SlotDefinition)arg).slots[SlotDefinitionClass.SLOT_INDEX_WRITERS];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SLOT_DEFINITION);
-          }
+          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_WRITERS];
       }
     };
 
@@ -342,15 +270,8 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((SlotDefinition)first).slots[SlotDefinitionClass.SLOT_INDEX_WRITERS] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SLOT_DEFINITION);
-          }
+          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_WRITERS] = second;
+          return second;
       }
     };
 
@@ -362,14 +283,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((SlotDefinition)arg).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SLOT_DEFINITION);
-          }
+          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION];
       }
     };
 
@@ -382,15 +296,8 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((SlotDefinition)first).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SLOT_DEFINITION);
-          }
+          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = second;
+          return second;
       }
     };
 
@@ -402,14 +309,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((SlotDefinition)arg).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION_CLASS];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SLOT_DEFINITION);
-          }
+          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION_CLASS];
       }
     };
 
@@ -422,15 +322,8 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((SlotDefinition)first).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION_CLASS] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SLOT_DEFINITION);
-          }
+          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION_CLASS] = second;
+          return second;
       }
     };
 
@@ -441,14 +334,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((SlotDefinition)arg).slots[SlotDefinitionClass.SLOT_INDEX_LOCATION];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.SLOT_DEFINITION);
-          }
+          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_LOCATION];
       }
     };
 
@@ -460,15 +346,8 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((SlotDefinition)first).slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SLOT_DEFINITION);
-          }
+          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = second;
+          return second;
       }
     };
 }

@@ -562,23 +562,23 @@ public abstract class Lisp
 
   // Environment wrappers.
   private static final boolean isSpecial(Symbol sym, Symbol[] ownSpecials,
-					 Environment env)
+                                         Environment env)
   {
     if (ownSpecials != null)
       {
-	if (sym.isSpecialVariable())
-	  return true;
-	for (Symbol special : ownSpecials)
-	  {
-	    if (sym == special)
-	      return true;
-	  }
+        if (sym.isSpecialVariable())
+          return true;
+        for (Symbol special : ownSpecials)
+          {
+            if (sym == special)
+              return true;
+          }
       }
     return false;
   }
   protected static final void bindArg(Symbol[] ownSpecials,
-				      Symbol sym, LispObject value,
-				      Environment env, LispThread thread)
+                                      Symbol sym, LispObject value,
+                                      Environment env, LispThread thread)
     throws ConditionThrowable
   {
     if (isSpecial(sym, ownSpecials, env)) {
@@ -758,19 +758,11 @@ public abstract class Lisp
   }
 
   public static Symbol checkSymbol(LispObject obj) throws ConditionThrowable
-  {
-    if (obj == null)
-      throw new NullPointerException();
-    try
-      {
-        return (Symbol) obj;
-      }
-    catch (ClassCastException e)
-      {
-        type_error(obj, Symbol.SYMBOL);
-        // Not reached.
-        return null;
-      }
+  {             
+          if (obj instanceof Symbol)      
+                  return (Symbol) obj;         
+          return (Symbol)// Not reached.       
+              type_error(obj, Symbol.SYMBOL);
   }
 
   public static final LispObject checkList(LispObject obj)
@@ -784,35 +776,19 @@ public abstract class Lisp
   public static final AbstractArray checkArray(LispObject obj)
     throws ConditionThrowable
   {
-    if (obj == null)
-      throw new NullPointerException();
-    try
-      {
-        return (AbstractArray) obj;
-      }
-    catch (ClassCastException e)
-      {
+          if (obj instanceof AbstractArray)       
+                  return (AbstractArray) obj;         
+          return (AbstractArray)// Not reached.       
         type_error(obj, Symbol.ARRAY);
-        // Not reached.
-        return null;
-      }
   }
 
   public static final AbstractVector checkVector(LispObject obj)
     throws ConditionThrowable
   {
-    if (obj == null)
-      throw new NullPointerException();
-    try
-      {
-        return (AbstractVector) obj;
-      }
-    catch (ClassCastException e)
-      {
+          if (obj instanceof AbstractVector)      
+                  return (AbstractVector) obj;         
+          return (AbstractVector)// Not reached.       
         type_error(obj, Symbol.VECTOR);
-        // Not reached.
-        return null;
-      }
   }
 
   static
@@ -1019,8 +995,8 @@ public abstract class Lisp
                             // "/C:/Documents%20and%20Settings/peter/Desktop/j.jar"
                             if (zipFileName.length() > 0 && zipFileName.charAt(0) == '/')
                               zipFileName = zipFileName.substring(1);
-			  }
-			zipFileName = URLDecoder.decode(zipFileName, "UTF-8");
+                          }
+                        zipFileName = URLDecoder.decode(zipFileName, "UTF-8");
                         ZipFile zipFile = new ZipFile(zipFileName);
                         try
                           {
@@ -1131,7 +1107,7 @@ public abstract class Lisp
         if (bytesRemaining > 0)
           Debug.trace("bytesRemaining = " + bytesRemaining);
 
-	return loadCompiledFunction(bytes);
+        return loadCompiledFunction(bytes);
       }
     catch (Throwable t)
       {
@@ -1141,18 +1117,18 @@ public abstract class Lisp
   }
 
     public static final LispObject loadCompiledFunction(byte[] bytes) throws Throwable {
-	Class c = (new JavaClassLoader()).loadClassFromByteArray(null, bytes, 0, bytes.length);
+        Class c = (new JavaClassLoader()).loadClassFromByteArray(null, bytes, 0, bytes.length);
         if (c != null) {
-	    Class sc = c.getSuperclass();
+            Class sc = c.getSuperclass();
             Constructor constructor = c.getConstructor((Class[])null);
             LispObject obj = (LispObject) constructor.newInstance((Object[])null);
             if (obj instanceof Function) {
               ((Function)obj).setClassBytes(bytes);
-	    }
+            }
             return obj;
-	} else {
-	    return null;
-	}
+        } else {
+            return null;
+        }
     }
 
   public static final LispObject makeCompiledClosure(LispObject template,
@@ -1325,16 +1301,7 @@ public abstract class Lisp
   public static final byte coerceLispObjectToJavaByte(LispObject obj)
     throws ConditionThrowable
   {
-    try
-      {
-        return (byte) ((Fixnum)obj).value;
-      }
-    catch (ClassCastException e)
-      {
-        type_error(obj, Symbol.FIXNUM);
-        // Not reached.
-        return 0;
-      }
+          return (byte)Fixnum.getValue(obj);
   }
 
   public static final LispObject coerceJavaByteToLispObject(byte b)
@@ -1345,138 +1312,83 @@ public abstract class Lisp
   public static final LispCharacter checkCharacter(LispObject obj)
     throws ConditionThrowable
   {
-    if (obj == null)
-      throw new NullPointerException();
-    try
-      {
-        return (LispCharacter) obj;
-      }
-    catch (ClassCastException e)
-      {
+          if (obj instanceof LispCharacter) 
+                  return (LispCharacter) obj;         
+          return (LispCharacter) // Not reached.       
         type_error(obj, Symbol.CHARACTER);
-        // Not reached.
-        return null;
-      }
   }
 
   public static final Package checkPackage(LispObject obj)
     throws ConditionThrowable
   {
-    if (obj == null)
-      throw new NullPointerException();
-    try
-      {
-        return (Package) obj;
-      }
-    catch (ClassCastException e)
-      {
+          if (obj instanceof Package)     
+                  return (Package) obj;         
+          return (Package) // Not reached.       
         type_error(obj, Symbol.PACKAGE);
-        // Not reached.
-        return null;
-      }
   }
 
   public static final Function checkFunction(LispObject obj)
     throws ConditionThrowable
   {
-    if (obj == null)
-      throw new NullPointerException();
-    try
-      {
-        return (Function) obj;
-      }
-    catch (ClassCastException e)
-      {
+          if (obj instanceof Function)    
+                  return (Function) obj;         
+          return (Function) // Not reached.       
         type_error(obj, Symbol.FUNCTION);
-        // Not reached.
-        return null;
-      }
   }
 
   public static final Stream checkStream(LispObject obj)
     throws ConditionThrowable
   {
-    if (obj == null)
-      throw new NullPointerException();
-    try
-      {
-        return (Stream) obj;
-      }
-    catch (ClassCastException e)
-      {
+          if (obj instanceof Stream)      
+                  return (Stream) obj;         
+          return (Stream) // Not reached.       
         type_error(obj, Symbol.STREAM);
-        // Not reached.
-        return null;
-      }
   }
 
   public static final Stream checkCharacterInputStream(LispObject obj)
     throws ConditionThrowable
   {
-    if (obj == null)
-      throw new NullPointerException();
-    try
-      {
-        final Stream stream = (Stream) obj;
-        if (stream.isCharacterInputStream())
-          return stream;
-        error(new TypeError("The value " + obj.writeToString() +
-                             " is not a character input stream."));
-        // Not reached.
-        return null;
-      }
-    catch (ClassCastException e)
-      {
-        type_error(obj, Symbol.STREAM);
-        // Not reached.
-        return null;
-      }
+          final Stream stream = checkStream(obj);
+          if (stream.isCharacterInputStream())      
+                  return stream;                        
+          return (Stream) // Not reached.                      
+          error(new TypeError("The value " + obj.writeToString() +
+                        " is not a character input stream."));
   }
 
   public static final Stream checkCharacterOutputStream(LispObject obj)
     throws ConditionThrowable
   {
-    if (obj == null)
-      throw new NullPointerException();
-    try
-      {
-        final Stream stream = (Stream) obj;
-        if (stream.isCharacterOutputStream())
-          return stream;
+          final Stream stream = checkStream(obj);
+          if (stream.isCharacterOutputStream())      
+                  return stream;                        
+        return (Stream) // Not reached.
         error(new TypeError("The value " + obj.writeToString() +
                             " is not a character output stream."));
-        // Not reached.
-        return null;
-      }
-    catch (ClassCastException e)
-      {
-        type_error(obj, Symbol.STREAM);
-        // Not reached.
-        return null;
-      }
   }
 
   public static final Stream checkBinaryInputStream(LispObject obj)
     throws ConditionThrowable
   {
-    if (obj == null)
-      throw new NullPointerException();
-    try
-      {
-        final Stream stream = (Stream) obj;
-        if (stream.isBinaryInputStream())
-          return stream;
+          final Stream stream = checkStream(obj);
+          if (stream.isBinaryInputStream())      
+                  return stream;                        
+        return (Stream) // Not reached.
         error(new TypeError("The value " + obj.writeToString() +
                              " is not a binary input stream."));
-        // Not reached.
-        return null;
-      }
-    catch (ClassCastException e)
-      {
-        type_error(obj, Symbol.STREAM);
-        // Not reached.
-        return null;
-      }
+  }
+  
+  public static final Stream outSynonymOf(LispObject obj)
+  throws ConditionThrowable
+  {       
+          if (obj instanceof Stream)
+            return (Stream) obj;
+          if (obj == T)
+            return checkCharacterOutputStream(Symbol.TERMINAL_IO.symbolValue());
+          if (obj == NIL)
+            return checkCharacterOutputStream(Symbol.STANDARD_OUTPUT.symbolValue());
+          return (Stream)         // Not reached.
+          type_error(obj, Symbol.STREAM);
   }
 
   public static final Stream inSynonymOf(LispObject obj)
@@ -1488,9 +1400,8 @@ public abstract class Lisp
       return checkCharacterInputStream(Symbol.TERMINAL_IO.symbolValue());
     if (obj == NIL)
       return checkCharacterInputStream(Symbol.STANDARD_INPUT.symbolValue());
-    type_error(obj, Symbol.STREAM);
-    // Not reached.
-    return null;
+          return (Stream)         // Not reached.
+          type_error(obj, Symbol.STREAM);
   }
 
   public static final void writeByte(int n, LispObject obj)
@@ -1498,67 +1409,62 @@ public abstract class Lisp
   {
     if (n < 0 || n > 255)
       type_error(Fixnum.getInstance(n), UNSIGNED_BYTE_8);
-    try
-      {
-        ((Stream)obj)._writeByte(n);
-      }
-    catch (ClassCastException e)
-      {
-        type_error(obj, Symbol.STREAM);
-      }
+    checkStream(obj)._writeByte(n);
   }
 
   public static final Readtable checkReadtable(LispObject obj)
     throws ConditionThrowable
   {
-    if (obj == null)
-      throw new NullPointerException();
-    try
-      {
-        return (Readtable) obj;
-      }
-    catch (ClassCastException e)
-      {
-        type_error(obj, Symbol.READTABLE);
-        // Not reached.
-        return null;
-      }
+          if (obj instanceof Readtable)   
+                  return (Readtable) obj;         
+          return (Readtable)// Not reached.       
+          type_error(obj, Symbol.READTABLE);
+  }
+  
+  public final static AbstractString checkString(LispObject obj) 
+   throws ConditionThrowable 
+  {
+          if (obj instanceof AbstractString)            
+                  return (AbstractString) obj;                    
+          return (AbstractString)// Not reached.               
+              type_error(obj, Symbol.STRING);
+  }
+  
+  public final static LispClass checkClass(LispObject obj) 
+   throws ConditionThrowable 
+   {
+          if (obj instanceof LispClass)         
+                  return (LispClass) obj;                         
+          return (LispClass)// Not reached.                    
+                type_error(obj, Symbol.CLASS);
+   }   
+
+  public final static Layout checkLayout(LispObject obj) 
+   throws ConditionThrowable 
+  {
+          if (obj instanceof Layout)            
+                  return (Layout) obj;                    
+          return (Layout)// Not reached.               
+                type_error(obj, Symbol.LAYOUT);
   }
 
   public static final Readtable designator_readtable(LispObject obj)
     throws ConditionThrowable
   {
-    if (obj == null)
-      throw new NullPointerException();
     if (obj == NIL)
       obj = STANDARD_READTABLE.symbolValue();
-    try
-      {
-        return (Readtable) obj;
-      }
-    catch (ClassCastException e)
-      {
-        type_error(obj, Symbol.READTABLE);
-        // Not reached.
-        return null;
-      }
+    if (obj == null)
+        throw new NullPointerException();
+    return checkReadtable(obj);
   }
 
   public static final Environment checkEnvironment(LispObject obj)
     throws ConditionThrowable
   {
-    if (obj == null)
-      throw new NullPointerException();
-    try
-      {
-        return (Environment) obj;
-      }
-    catch (ClassCastException e)
-      {
+          if (obj instanceof Environment)         
+                  return (Environment) obj;         
+          return (Environment)// Not reached.       
         type_error(obj, Symbol.ENVIRONMENT);
-        // Not reached.
-        return null;
-      }
   }
 
   public static final void checkBounds(int start, int end, int length)
@@ -1696,15 +1602,7 @@ public abstract class Lisp
   public static final LispObject get(LispObject symbol, LispObject indicator)
     throws ConditionThrowable
   {
-    LispObject list;
-    try
-      {
-        list = ((Symbol)symbol).getPropertyList();
-      }
-    catch (ClassCastException e)
-      {
-        return type_error(symbol, Symbol.SYMBOL);
-      }
+    LispObject list = checkSymbol(symbol).getPropertyList();
     while (list != NIL)
       {
         if (list.car() == indicator)
@@ -1718,15 +1616,7 @@ public abstract class Lisp
                                      LispObject defaultValue)
     throws ConditionThrowable
   {
-    LispObject list;
-    try
-      {
-        list = ((Symbol)symbol).getPropertyList();
-      }
-    catch (ClassCastException e)
-      {
-        return type_error(symbol, Symbol.SYMBOL);
-      }
+    LispObject list = checkSymbol(symbol).getPropertyList();
     while (list != NIL)
       {
         if (list.car() == indicator)
@@ -2043,7 +1933,7 @@ public abstract class Lisp
   public static final void resetIO()
   {
     resetIO(new Stream(System.in, Symbol.CHARACTER, true),
-	    new Stream(System.out, Symbol.CHARACTER, true));
+            new Stream(System.out, Symbol.CHARACTER, true));
   }
 
   public static final TwoWayStream getTerminalIO()

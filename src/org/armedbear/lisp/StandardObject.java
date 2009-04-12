@@ -272,6 +272,13 @@ public class StandardObject extends LispObject
     slots[index] = newValue;
   }
 
+        final public static StandardObject checkStandardObject(LispObject first) throws ConditionThrowable
+        {
+                if (first instanceof StandardObject)
+                        return (StandardObject) first;
+                return (StandardObject) type_error(first, Symbol.STANDARD_OBJECT);
+        }
+        
   // ### swap-slots instance-1 instance-2 => nil
   private static final Primitive SWAP_SLOTS =
     new Primitive("swap-slots", PACKAGE_SYS, true, "instance-1 instance-2")
@@ -280,23 +287,8 @@ public class StandardObject extends LispObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        StandardObject obj1, obj2;
-        try
-          {
-            obj1 = (StandardObject) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STANDARD_OBJECT);
-          }
-        try
-          {
-            obj2 = (StandardObject) second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.STANDARD_OBJECT);
-          }
+        final StandardObject obj1 = checkStandardObject(first);
+        final StandardObject obj2 = checkStandardObject(second);
         LispObject[] temp = obj1.slots;
         obj1.slots = obj2.slots;
         obj2.slots = temp;
@@ -311,15 +303,7 @@ public class StandardObject extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        final StandardObject instance;
-        try
-          {
-              instance = (StandardObject) arg;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.STANDARD_OBJECT);
-          }
+        final StandardObject instance = checkStandardObject(arg);
         Layout layout = instance.layout;
         if (layout.isInvalid())
           {
@@ -338,20 +322,8 @@ public class StandardObject extends LispObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            ((StandardObject)first).layout = (Layout) second;
-            return second;
-          }
-        catch (ClassCastException e)
-          {
-            if (!(first instanceof StandardObject))
-              return type_error(first, Symbol.STANDARD_OBJECT);
-            if (!(second instanceof Layout))
-              return type_error(second, Symbol.LAYOUT);
-            // Not reached.
-            return NIL;
-          }
+          checkStandardObject(first).layout = checkLayout(second);          
+          return second;
       }
     };
 
@@ -362,14 +334,7 @@ public class StandardObject extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((StandardObject)arg).layout.lispClass;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.STANDARD_OBJECT);
-          }
+          return checkStandardObject(arg).layout.lispClass;
       }
     };
 
@@ -382,21 +347,13 @@ public class StandardObject extends LispObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        final StandardObject instance;
-        try
-          {
-            instance = (StandardObject) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STANDARD_OBJECT);
-          }
+        final StandardObject instance = checkStandardObject(first);
         final int index;
-        try
+        if (second instanceof Fixnum)
           {
             index = ((Fixnum)second).value;
           }
-        catch (ClassCastException e)
+        else
           {
             return type_error(second,
                                    list(Symbol.INTEGER, Fixnum.ZERO,
@@ -433,15 +390,8 @@ public class StandardObject extends LispObject
                                 LispObject third)
         throws ConditionThrowable
       {
-        try
-          {
-            ((StandardObject)first).slots[Fixnum.getValue(second)] = third; // FIXME
-            return third;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STANDARD_OBJECT);
-          }
+          checkStandardObject(first).slots[Fixnum.getValue(second)] = third; // FIXME
+          return third;
       }
     };
 
@@ -453,15 +403,7 @@ public class StandardObject extends LispObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        final StandardObject instance;
-        try
-          {
-            instance = (StandardObject) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.STANDARD_OBJECT);
-          }
+        final StandardObject instance = checkStandardObject(first);
         Layout layout = instance.layout;
         if (layout.isInvalid())
           {

@@ -285,19 +285,13 @@ public final class FileStream extends Stream
             throws ConditionThrowable
         {
             final Pathname pathname;
-            try {
+            if(first instanceof Pathname) {
                 pathname = (Pathname) first;
             }
-            catch (ClassCastException e) {
+            else {
                 return type_error(first, Symbol.PATHNAME);
             }
-            final LispObject namestring;
-            try {
-                namestring = (AbstractString) second;
-            }
-            catch (ClassCastException e) {
-                return type_error(second, Symbol.STRING);
-            }
+            final LispObject namestring = checkString(second);
             LispObject elementType = third;
             LispObject direction = fourth;
             LispObject ifExists = fifth;

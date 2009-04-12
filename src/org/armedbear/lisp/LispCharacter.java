@@ -175,17 +175,12 @@ public final class LispCharacter extends LispObject
   }
 
   public static char getValue(LispObject obj) throws ConditionThrowable
-  {
-    try
-      {
+  {       
+          if (obj instanceof LispCharacter)
         return ((LispCharacter)obj).value;
-      }
-    catch (ClassCastException e)
-      {
-        type_error(obj, Symbol.CHARACTER);
+      type_error(obj, Symbol.CHARACTER);
         // Not reached.
-        return 0;
-      }
+      return 0;
   }
 
   public final char getValue()
@@ -301,14 +296,7 @@ public final class LispCharacter extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return Character.isWhitespace(((LispCharacter)arg).value) ? T : NIL;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CHARACTER);
-          }
+          return Character.isWhitespace(LispCharacter.getValue(arg)) ? T : NIL;
       }
     };
 
@@ -319,15 +307,8 @@ public final class LispCharacter extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            int n = ((LispCharacter)arg).value;
-            return Fixnum.getInstance(n);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CHARACTER);
-          }
+          int n = LispCharacter.getValue(arg);
+          return Fixnum.getInstance(n);
       }
     };
 
@@ -338,15 +319,8 @@ public final class LispCharacter extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            int n = ((LispCharacter)arg).value;
-            return Fixnum.getInstance(n);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CHARACTER);
-          }
+          int n = LispCharacter.getValue(arg);
+          return Fixnum.getInstance(n);
       }
     };
 
@@ -357,18 +331,12 @@ public final class LispCharacter extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            int n = ((Fixnum)arg).value;
-            if (n < CHAR_MAX)
-              return constants[n];
-            else if (n <= Character.MAX_VALUE)
-              return new LispCharacter((char)n);
-          }
-        catch (ClassCastException e)
-          {
+          int n = Fixnum.getValue(arg);
+          if (n < CHAR_MAX)
+            return constants[n];
+          else if (n <= Character.MAX_VALUE)
+            return new LispCharacter((char)n);
               // SBCL signals a type-error here: "not of type (UNSIGNED-BYTE 8)"
-          }
         return NIL;
       }
     };
@@ -427,17 +395,9 @@ public final class LispCharacter extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        char c;
-        try
-          {
-            c = ((LispCharacter)arg).value;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CHARACTER);
-          }
-        if (c < 128)
-          return constants[LOWER_CASE_CHARS[c]];
+          final char c = LispCharacter.getValue(arg);
+          if (c < 128)
+           return constants[LOWER_CASE_CHARS[c]];
         return LispCharacter.getInstance(toLowerCase(c));
       }
     };
@@ -450,14 +410,7 @@ public final class LispCharacter extends LispObject
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         final char c;
-        try
-          {
-            c = ((LispCharacter)arg).value;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CHARACTER);
-          }
+        c = LispCharacter.getValue(arg);
         if (c < 128)
           return constants[UPPER_CASE_CHARS[c]];
         return LispCharacter.getInstance(toUpperCase(c));
@@ -471,19 +424,12 @@ public final class LispCharacter extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        int weight;
-        try
-          {
-            weight = ((Fixnum)arg).value;
-          }
-        catch (ClassCastException e)
-          {
-            if (arg instanceof Bignum)
+          if (arg instanceof Bignum)
               return NIL;
-            return type_error(arg, Symbol.INTEGER);
-          }
+
+          int weight = Fixnum.getValue(arg);
         if (weight < 10)
-          return constants['0' + weight];
+          return constants['0'+weight];
         return NIL;
       }
       @Override
@@ -491,29 +437,18 @@ public final class LispCharacter extends LispObject
         throws ConditionThrowable
       {
         int radix;
-        try
-          {
+        if (second instanceof Fixnum)
             radix = ((Fixnum)second).value;
-          }
-        catch (ClassCastException e)
-          {
+        else
             radix = -1;
-          }
+        
         if (radix < 2 || radix > 36)
           return type_error(second,
                                  list(Symbol.INTEGER, Fixnum.TWO,
                                        Fixnum.constants[36]));
-        int weight;
-        try
-          {
-            weight = ((Fixnum)first).value;
-          }
-        catch (ClassCastException e)
-          {
-            if (first instanceof Bignum)
-              return NIL;
-            return type_error(first, Symbol.INTEGER);
-          }
+        if (first instanceof Bignum)
+            return NIL;
+        int weight = Fixnum.getValue(first);
         if (weight >= radix)
           return NIL;
         if (weight < 10)
@@ -529,30 +464,16 @@ public final class LispCharacter extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            int n = Character.digit(((LispCharacter)arg).value, 10);
-            return n < 0 ? NIL : Fixnum.constants[n];
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CHARACTER);
-          }
+          final int n = Character.digit(LispCharacter.getValue(arg), 10);
+          return n < 0 ? NIL : Fixnum.getInstance(n);
       }
       @Override
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
         char c;
-        try
-          {
-            c = ((LispCharacter)first).value;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.CHARACTER);
-          }
-        try
+            c = LispCharacter.getValue(first);
+        if (second instanceof Fixnum)
           {
             int radix = ((Fixnum)second).value;
             if (radix >= 2 && radix <= 36)
@@ -561,7 +482,6 @@ public final class LispCharacter extends LispObject
                 return n < 0 ? NIL : Fixnum.constants[n];
               }
           }
-        catch (ClassCastException e) {}
         return type_error(second,
                                list(Symbol.INTEGER, Fixnum.TWO,
                                      Fixnum.constants[36]));
@@ -575,14 +495,7 @@ public final class LispCharacter extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((LispCharacter)arg).isStandardChar() ? T : NIL;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CHARACTER);
-          }
+          return checkCharacter(arg).isStandardChar() ? T : NIL;
       }
     };
 
@@ -593,17 +506,10 @@ public final class LispCharacter extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            char c = ((LispCharacter)arg).value;
-            if (c >= ' ' && c < 127)
-              return T;
-            return Character.isISOControl(c) ? NIL : T;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CHARACTER);
-          }
+          char c = LispCharacter.getValue(arg);
+          if (c >= ' ' && c < 127)
+            return T;
+          return Character.isISOControl(c) ? NIL : T;
       }
     };
 
@@ -614,14 +520,7 @@ public final class LispCharacter extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return Character.isLetter(((LispCharacter)arg).value) ? T : NIL;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CHARACTER);
-          }
+          return Character.isLetter(LispCharacter.getValue(arg)) ? T : NIL;
       }
     };
 
@@ -632,14 +531,7 @@ public final class LispCharacter extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return Character.isLetterOrDigit(((LispCharacter)arg).value) ? T : NIL;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.CHARACTER);
-          }
+          return Character.isLetterOrDigit(LispCharacter.getValue(arg)) ? T : NIL;
       }
     };
 

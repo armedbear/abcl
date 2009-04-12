@@ -403,10 +403,7 @@ public final class SimpleString extends AbstractString
     public LispObject AREF(LispObject index) throws ConditionThrowable
     {
         try {
-            return LispCharacter.getInstance(chars[((Fixnum)index).value]);
-        }
-        catch (ClassCastException e) {
-            return type_error(index, Symbol.FIXNUM);
+            return LispCharacter.getInstance(chars[Fixnum.getValue(index)]);
         }
         catch (ArrayIndexOutOfBoundsException e) {
             badIndex(((Fixnum)index).value, capacity);
@@ -418,13 +415,10 @@ public final class SimpleString extends AbstractString
     public void aset(int index, LispObject obj) throws ConditionThrowable
     {
         try {
-            chars[index] = ((LispCharacter)obj).value;
+            chars[index] = LispCharacter.getValue(obj);
         }
         catch (ArrayIndexOutOfBoundsException e) {
             badIndex(index, capacity);
-        }
-        catch (ClassCastException e) {
-            type_error(obj, Symbol.CHARACTER);
         }
     }
 

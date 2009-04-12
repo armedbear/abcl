@@ -87,13 +87,7 @@ public final class jclass_name extends Primitive
         }
         if (className == null)
             return error(new LispError(first.writeToString() + " does not designate a Java class."));
-        final AbstractString name;
-        try {
-            name = (AbstractString) second;
-        }
-        catch (ClassCastException e) {
-            return type_error(second, Symbol.STRING);
-        }
+        final AbstractString name = checkString(second);
         return LispThread.currentThread().setValues(name.getStringValue().equals(className) ? T : NIL,
                                                     new SimpleString(className));
     }

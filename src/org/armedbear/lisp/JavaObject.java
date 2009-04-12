@@ -53,11 +53,11 @@ public final class JavaObject extends LispObject
     @Override
     public LispObject classOf()
     {
-    	if(obj == null) {
-    		return BuiltInClass.JAVA_OBJECT;
-    	} else {
-    		return JavaClass.findJavaClass(obj.getClass());
-    	}
+        if(obj == null) {
+                return BuiltInClass.JAVA_OBJECT;
+        } else {
+                return JavaClass.findJavaClass(obj.getClass());
+        }
     }
 
     @Override
@@ -68,7 +68,7 @@ public final class JavaObject extends LispObject
         if (type == BuiltInClass.JAVA_OBJECT)
             return T;
         if(type instanceof JavaClass && obj != null) {
-        	return ((JavaClass) type).getJavaClass().isAssignableFrom(obj.getClass()) ? T : NIL;
+                return ((JavaClass) type).getJavaClass().isAssignableFrom(obj.getClass()) ? T : NIL;
         }
         return super.typep(type);
     }
@@ -179,14 +179,10 @@ public final class JavaObject extends LispObject
     public static final Object getObject(LispObject o)
         throws ConditionThrowable
     {
-        try {
-	    return ((JavaObject)o).obj;
-        }
-        catch (ClassCastException e) {
-            type_error(o, Symbol.JAVA_OBJECT);
-            // Not reached.
-            return null;
-        }
+        if (o instanceof JavaObject)
+                return ((JavaObject)o).obj;        
+        return             // Not reached.
+        type_error(o, Symbol.JAVA_OBJECT);       
     }
 
     @Override
@@ -233,13 +229,7 @@ public final class JavaObject extends LispObject
         {
             if (!(first instanceof JavaObject))
                 return type_error(first, Symbol.JAVA_OBJECT);
-            final Stream stream;
-            try {
-                stream = (Stream) second;
-            }
-            catch (ClassCastException e) {
-                return type_error(second, Symbol.STREAM);
-            }
+            final Stream stream = checkStream(second);
             final JavaObject javaObject = (JavaObject) first;
             final Object obj = javaObject.getObject();
             final FastStringBuffer sb =

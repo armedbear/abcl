@@ -168,20 +168,17 @@ public final class Nil extends Symbol
     public LispObject NTH(LispObject arg) throws ConditionThrowable
     {
         int index;
-        try {
-            index = ((Fixnum)arg).value;
-        }
-        catch (ClassCastException e) {
-            if (arg instanceof Bignum) {
-                if (arg.minusp())
-                    return error(new TypeError(arg, Symbol.UNSIGNED_BYTE));
+                if (arg instanceof Fixnum) {
+                        index = ((Fixnum) arg).value;
+                } else if (arg instanceof Bignum) {
+                        if (arg.minusp())
+                                return error(new TypeError(arg, Symbol.UNSIGNED_BYTE));
+                        return NIL;
+                } else
+                        return error(new TypeError(arg, Symbol.UNSIGNED_BYTE));
+                if (index < 0)
+                        error(new TypeError(arg, Symbol.UNSIGNED_BYTE));
                 return NIL;
-            }
-            return error(new TypeError(arg, Symbol.UNSIGNED_BYTE));
-        }
-        if (index < 0)
-            error(new TypeError(arg, Symbol.UNSIGNED_BYTE));
-        return NIL;
     }
 
     @Override

@@ -82,16 +82,14 @@ public class ForwardReferencedClass extends LispClass
         public LispObject execute(LispObject arg)
             throws ConditionThrowable
         {
-            try {
+            if (arg instanceof Symbol) {
                 Symbol name = (Symbol) arg;
                 ForwardReferencedClass c = new ForwardReferencedClass(name);
                 LispClass.addClass(name, c);
                 return c;
             }
-            catch (ClassCastException e) {
                 return error(new TypeError(arg.writeToString() +
                                             " is not a valid class name."));
-            }
         }
     };
 }

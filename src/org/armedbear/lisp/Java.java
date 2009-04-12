@@ -855,22 +855,21 @@ public final class Java extends Lisp
         }
         // It's not a string, so it must be a JavaObject.
         final JavaObject javaObject;
-        try {
+        if (obj instanceof JavaObject) {
             javaObject = (JavaObject) obj;
         }
-        catch (ClassCastException e) {
+        else {
             type_error(obj, list(Symbol.OR, Symbol.STRING,
                                        Symbol.JAVA_OBJECT));
             // Not reached.
             return null;
         }
-        try {
-            return (Class) javaObject.getObject();
+        final Object javaObjectgetObject = javaObject.getObject();
+        if (javaObjectgetObject instanceof Class) {
+            return (Class) javaObjectgetObject;
         }
-        catch (ClassCastException e) {
             error(new LispError(obj.writeToString() + " does not designate a Java class."));
             return null;
-        }
     }
 
     private static final String getMessage(Throwable t)

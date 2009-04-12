@@ -316,16 +316,14 @@ public final class Bignum extends LispInteger
 
   public static BigInteger getValue(LispObject obj) throws ConditionThrowable
   {
-    try
+          
+    if (obj instanceof Bignum)
       {
         return ((Bignum)obj).value;
       }
-    catch (ClassCastException e)
-      {
         type_error(obj, Symbol.BIGNUM);
         // Not reached.
         return null;
-      }
   }
 
   @Override

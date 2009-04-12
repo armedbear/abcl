@@ -257,7 +257,7 @@ public final class BroadcastStream extends Stream
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            try {
+            if (arg instanceof BroadcastStream) {
                 BroadcastStream stream = (BroadcastStream) arg;
                 Stream[] streams = stream.streams;
                 LispObject result = NIL;
@@ -265,9 +265,7 @@ public final class BroadcastStream extends Stream
                     result = new Cons(streams[i], result);
                 return result;
             }
-            catch (ClassCastException e) {
-                return error(new TypeError(arg, Symbol.BROADCAST_STREAM));
-            }
+            return error(new TypeError(arg, Symbol.BROADCAST_STREAM));
         }
     };
 }

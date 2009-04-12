@@ -201,10 +201,10 @@ public class TypeError extends LispError
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             final StandardObject obj;
-            try {
+            if (arg instanceof StandardObject) {
                 obj = (StandardObject) arg;
             }
-            catch (ClassCastException e) {
+            else {
                 return type_error(arg, Symbol.STANDARD_OBJECT);
             }
             return obj.getInstanceSlotValue(Symbol.DATUM);
@@ -219,10 +219,10 @@ public class TypeError extends LispError
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             final StandardObject obj;
-            try {
+            if (arg instanceof StandardObject) {
                 obj = (StandardObject) arg;
             }
-            catch (ClassCastException e) {
+            else {
                 return type_error(arg, Symbol.STANDARD_OBJECT);
             }
             return obj.getInstanceSlotValue(Symbol.EXPECTED_TYPE);

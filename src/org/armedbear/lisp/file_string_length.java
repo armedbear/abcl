@@ -45,12 +45,7 @@ public final class file_string_length extends Primitive
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {
-        try {
-            return ((Stream)first).fileStringLength(second);
-        }
-        catch (ClassCastException e) {
-            return error(new TypeError(first, Symbol.STREAM));
-        }
+        return checkStream(first).fileStringLength(second);
     }
 
     private static final Primitive FILE_STRING_LENGTH =

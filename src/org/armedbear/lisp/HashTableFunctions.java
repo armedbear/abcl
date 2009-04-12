@@ -53,15 +53,7 @@ public final class HashTableFunctions extends Lisp
                                 LispObject rehashSize, LispObject rehashThreshold)
         throws ConditionThrowable
       {
-        final int n;
-        try
-          {
-            n = ((Fixnum)size).value;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(size, Symbol.FIXNUM);
-          }
+        final int n = Fixnum.getValue(size);
         if (test == FUNCTION_EQL || test == NIL)
           return new EqlHashTable(n, rehashSize, rehashThreshold);
         if (test == FUNCTION_EQ)
@@ -83,28 +75,15 @@ public final class HashTableFunctions extends Lisp
       public LispObject execute(LispObject key, LispObject ht)
         throws ConditionThrowable
       {
-        try
-          {
-            return ((HashTable)ht).gethash(key);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(ht, Symbol.HASH_TABLE);
-          }
+          return checkHashTable(ht).gethash(key);
       }
+      
       @Override
       public LispObject execute(LispObject key, LispObject ht,
                                 LispObject defaultValue)
         throws ConditionThrowable
       {
-        try
-          {
-            return ((HashTable)ht).gethash(key, defaultValue);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(ht, Symbol.HASH_TABLE);
-          }
+          return checkHashTable(ht).gethash(key, defaultValue);
       }
     };
 
@@ -116,15 +95,7 @@ public final class HashTableFunctions extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        final HashTable ht;
-        try
-          {
-            ht = (HashTable) second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.HASH_TABLE);
-          }
+        final HashTable ht = checkHashTable(second);
         synchronized (ht)
           {
             final LispObject value = ht.get(first);
@@ -143,28 +114,14 @@ public final class HashTableFunctions extends Lisp
                                 LispObject value)
         throws ConditionThrowable
       {
-        try
-          {
-            return ((HashTable)ht).puthash(key, value);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(ht, Symbol.HASH_TABLE);
-          }
+          return checkHashTable(ht).puthash(key, value);
       }
       @Override
       public LispObject execute(LispObject key, LispObject ht,
                                 LispObject ignored, LispObject value)
         throws ConditionThrowable
       {
-        try
-          {
-            return ((HashTable)ht).puthash(key, value);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(ht, Symbol.HASH_TABLE);
-          }
+          return checkHashTable(ht).puthash(key, value);
       }
     };
 
@@ -176,14 +133,7 @@ public final class HashTableFunctions extends Lisp
       public LispObject execute(LispObject key, LispObject ht)
         throws ConditionThrowable
       {
-        try
-          {
-            return ((HashTable)ht).remhash(key);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(ht, Symbol.HASH_TABLE);
-          }
+            return checkHashTable(ht).remhash(key);
       }
     };
 
@@ -194,15 +144,8 @@ public final class HashTableFunctions extends Lisp
       @Override
       public LispObject execute(LispObject ht) throws ConditionThrowable
       {
-        try
-          {
-            ((HashTable)ht).clear();
-            return ht;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(ht, Symbol.HASH_TABLE);
-          }
+          checkHashTable(ht).clear();
+          return ht;
       }
     };
 
@@ -213,14 +156,7 @@ public final class HashTableFunctions extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return Fixnum.getInstance(((HashTable)arg).getCount());
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.HASH_TABLE);
-          }
+          return Fixnum.getInstance(checkHashTable(arg).getCount());
       }
     };
 
@@ -265,14 +201,7 @@ public final class HashTableFunctions extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((HashTable)arg).ENTRIES();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.HASH_TABLE);
-          }
+          return checkHashTable(arg).ENTRIES();
       }
     };
 
@@ -283,14 +212,7 @@ public final class HashTableFunctions extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((HashTable)arg).getTest();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.HASH_TABLE);
-          }
+          return checkHashTable(arg).getTest();
       }
     };
 
@@ -301,14 +223,7 @@ public final class HashTableFunctions extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return Fixnum.getInstance(((HashTable)arg).getSize());
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.HASH_TABLE);
-          }
+          return Fixnum.getInstance(checkHashTable(arg).getSize());
       }
     };
 
@@ -319,14 +234,7 @@ public final class HashTableFunctions extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((HashTable)arg).getRehashSize();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.HASH_TABLE);
-          }
+          return checkHashTable(arg).getRehashSize();
       }
     };
 
@@ -337,14 +245,7 @@ public final class HashTableFunctions extends Lisp
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
-            return ((HashTable)arg).getRehashThreshold();
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.HASH_TABLE);
-          }
+          return checkHashTable(arg).getRehashThreshold();
       }
     };
 
@@ -356,16 +257,13 @@ public final class HashTableFunctions extends Lisp
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        HashTable ht;
-        try
-          {
-            ht = (HashTable) second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.HASH_TABLE);
-          }
-        return ht.MAPHASH(first);
+        return checkHashTable(second).MAPHASH(first);
       }
     };
+
+protected static HashTable checkHashTable(LispObject ht) throws ConditionThrowable {
+        if (ht instanceof HashTable) return (HashTable)ht;
+    type_error(ht, Symbol.HASH_TABLE);    
+        return null;
+}
 }

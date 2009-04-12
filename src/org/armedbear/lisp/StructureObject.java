@@ -266,17 +266,11 @@ public final class StructureObject extends LispObject
   {
     try
       {
-        return ((Fixnum)slots[index]).value;
+        return Fixnum.getValue(slots[index]);
       }
     catch (ArrayIndexOutOfBoundsException e)
       {
         badIndex(index);
-        // Not reached.
-        return 0;
-      }
-    catch (ClassCastException e)
-      {
-        type_error(slots[index], Symbol.FIXNUM);
         // Not reached.
         return 0;
       }
@@ -489,14 +483,9 @@ public final class StructureObject extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
+          if (arg instanceof StructureObject)
             return Fixnum.getInstance(((StructureObject)arg).slots.length);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.STRUCTURE_OBJECT);
-          }
+        return type_error(arg, Symbol.STRUCTURE_OBJECT);
       }
     };
 
@@ -508,22 +497,17 @@ public final class StructureObject extends LispObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
+    if (first instanceof StructureObject)
         try
           {
-            return ((StructureObject)first).slots[((Fixnum)second).value];
-          }
-        catch (ClassCastException e)
-          {
-            if (first instanceof StructureObject)
-              return type_error(second, Symbol.FIXNUM);
-            else
-              return type_error(first, Symbol.STRUCTURE_OBJECT);
+            return ((StructureObject)first).slots[Fixnum.getValue(second)];
           }
         catch (ArrayIndexOutOfBoundsException e)
           {
             // Shouldn't happen.
             return error(new LispError("Internal error."));
-          }
+          }      
+      return type_error(first, Symbol.STRUCTURE_OBJECT);
       }
     };
 
@@ -536,24 +520,20 @@ public final class StructureObject extends LispObject
                                 LispObject third)
         throws ConditionThrowable
       {
-        try
-          {
-            ((StructureObject)first).slots[((Fixnum)second).value] = third;
-            return third;
-          }
-        catch (ClassCastException e)
-          {
+          
             if (first instanceof StructureObject)
-              return type_error(second, Symbol.FIXNUM);
-            else
+                try
+                  {
+                    ((StructureObject)first).slots[Fixnum.getValue(second)] = third;
+                    return third;
+                  }
+                catch (ArrayIndexOutOfBoundsException e)
+                  {
+                    // Shouldn't happen.
+                    return error(new LispError("Internal error."));
+                  }      
               return type_error(first, Symbol.STRUCTURE_OBJECT);
-          }
-        catch (ArrayIndexOutOfBoundsException e)
-          {
-            // Shouldn't happen.
-            return error(new LispError("Internal error."));
-          }
-      }
+              }      
     };
 
   // ### make-structure
@@ -564,42 +544,21 @@ public final class StructureObject extends LispObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            return new StructureObject(((Symbol)first), second);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SYMBOL);
-          }
+          return new StructureObject(checkSymbol(first), second);
       }
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
         throws ConditionThrowable
       {
-        try
-          {
-            return new StructureObject(((Symbol)first), second, third);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SYMBOL);
-          }
+          return new StructureObject(checkSymbol(first), second, third);
       }
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third, LispObject fourth)
         throws ConditionThrowable
       {
-        try
-          {
-            return new StructureObject(((Symbol)first), second, third, fourth);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SYMBOL);
-          }
+          return new StructureObject(checkSymbol(first), second, third, fourth);
       }
       @Override
       public LispObject execute(LispObject first, LispObject second,
@@ -607,15 +566,8 @@ public final class StructureObject extends LispObject
                                 LispObject fifth)
         throws ConditionThrowable
       {
-        try
-          {
-            return new StructureObject(((Symbol)first), second, third, fourth,
-                                       fifth);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SYMBOL);
-          }
+          return new StructureObject(checkSymbol(first), second, third, fourth,
+                  fifth);
       }
       @Override
       public LispObject execute(LispObject first, LispObject second,
@@ -623,15 +575,8 @@ public final class StructureObject extends LispObject
                                 LispObject fifth, LispObject sixth)
         throws ConditionThrowable
       {
-        try
-          {
-            return new StructureObject(((Symbol)first), second, third, fourth,
-                                       fifth, sixth);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SYMBOL);
-          }
+          return new StructureObject(checkSymbol(first), second, third, fourth,
+                  fifth, sixth);
       }
       @Override
       public LispObject execute(LispObject first, LispObject second,
@@ -640,15 +585,8 @@ public final class StructureObject extends LispObject
                                 LispObject seventh)
         throws ConditionThrowable
       {
-        try
-          {
-            return new StructureObject(((Symbol)first), second, third, fourth,
-                                       fifth, sixth, seventh);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SYMBOL);
-          }
+          return new StructureObject(checkSymbol(first), second, third, fourth,
+                  fifth, sixth, seventh);
       }
     };
 
@@ -660,14 +598,7 @@ public final class StructureObject extends LispObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            return new StructureObject(((Symbol)first), second.copyToArray());
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SYMBOL);
-          }
+          return new StructureObject(checkSymbol(first), second.copyToArray());
       }
     };
 
@@ -678,14 +609,9 @@ public final class StructureObject extends LispObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-        try
-          {
+          if (arg instanceof StructureObject)
             return new StructureObject((StructureObject)arg);
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(arg, Symbol.STRUCTURE_OBJECT);
-          }
+          return type_error(arg, Symbol.STRUCTURE_OBJECT);
       }
     };
 }

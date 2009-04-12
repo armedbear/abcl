@@ -44,12 +44,9 @@ public final class package_error_package extends Primitive
     @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
-        try {
+        if (arg instanceof PackageError)
             return ((PackageError)arg).getPackage();
-        }
-        catch (ClassCastException e) {
-            return error(new TypeError(arg, Symbol.PACKAGE_ERROR));
-        }
+        return type_error(arg, Symbol.PACKAGE_ERROR);
     }
 
     private static final Primitive PACKAGE_ERROR_PACKAGE =

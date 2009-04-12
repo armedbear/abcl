@@ -174,17 +174,14 @@ public final class BasicVector_UnsignedByte32 extends AbstractVector
   @Override
   public LispObject AREF(LispObject index) throws ConditionThrowable
   {
+        final int idx = Fixnum.getValue(index);
     try
       {
-        return number(elements[((Fixnum)index).value]);
-      }
-    catch (ClassCastException e)
-      {
-        return type_error(index, Symbol.FIXNUM);
+        return number(elements[idx]);
       }
     catch (ArrayIndexOutOfBoundsException e)
       {
-        badIndex(Fixnum.getValue(index), elements.length);
+        badIndex(idx, elements.length);
         return NIL; // Not reached.
       }
   }

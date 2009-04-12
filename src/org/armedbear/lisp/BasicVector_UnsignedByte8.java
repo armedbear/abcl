@@ -159,17 +159,14 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   @Override
   public LispObject AREF(LispObject index) throws ConditionThrowable
   {
+          int idx = Fixnum.getValue(index);
     try
       {
-        return coerceJavaByteToLispObject(elements[((Fixnum)index).value]);
-      }
-    catch (ClassCastException e)
-      {
-        return error(new TypeError(index, Symbol.FIXNUM));
+        return coerceJavaByteToLispObject(elements[idx]);
       }
     catch (ArrayIndexOutOfBoundsException e)
       {
-        badIndex(Fixnum.getValue(index), elements.length);
+        badIndex(idx, elements.length);
         return NIL; // Not reached.
       }
   }

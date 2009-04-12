@@ -299,16 +299,10 @@ public final class Fixnum extends LispInteger
 
   public static int getValue(LispObject obj) throws ConditionThrowable
   {
-    try
-      {
-        return ((Fixnum)obj).value;
-      }
-    catch (ClassCastException e)
-      {
-        type_error(obj, Symbol.FIXNUM);
-        // Not reached.
-        return 0;
-      }
+          if (obj instanceof Fixnum) return ((Fixnum)obj).value;
+          type_error(obj, Symbol.FIXNUM);
+      // Not reached.
+          return 0;
   }
 
   @Override
@@ -323,30 +317,18 @@ public final class Fixnum extends LispInteger
 
   public static int getInt(LispObject obj) throws ConditionThrowable
   {
-    try
-      {
-        return (int) ((Fixnum)obj).value;
-      }
-    catch (ClassCastException e)
-      {
-        type_error(obj, Symbol.FIXNUM);
-        // Not reached.
-        return 0;
-      }
+          if (obj instanceof Fixnum) return ((Fixnum)obj).value;
+          type_error(obj, Symbol.FIXNUM);
+      // Not reached.
+          return 0;
   }
 
   public static BigInteger getBigInteger(LispObject obj) throws ConditionThrowable
   {
-    try
-      {
-        return BigInteger.valueOf(((Fixnum)obj).value);
-      }
-    catch (ClassCastException e)
-      {
-        type_error(obj, Symbol.FIXNUM);
-        // Not reached.
-        return null;
-      }
+          if (obj instanceof Fixnum) return BigInteger.valueOf(((Fixnum)obj).value);
+          type_error(obj, Symbol.FIXNUM);
+      // Not reached.
+          return null;
   }
 
   @Override

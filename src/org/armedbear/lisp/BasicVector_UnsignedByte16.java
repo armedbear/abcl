@@ -158,10 +158,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
     public LispObject AREF(LispObject index) throws ConditionThrowable
     {
         try {
-            return Fixnum.getInstance(elements[((Fixnum)index).value]);
-        }
-        catch (ClassCastException e) {
-            return error(new TypeError(index, Symbol.FIXNUM));
+            return Fixnum.getInstance(elements[Fixnum.getValue(index)]);
         }
         catch (ArrayIndexOutOfBoundsException e) {
             badIndex(Fixnum.getValue(index), elements.length);
@@ -183,13 +180,15 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
     @Override
     public void aset(int index, LispObject obj) throws ConditionThrowable
     {
-        try {
+        if (obj instanceof Fixnum) {
+                try {
             elements[index] = ((Fixnum)obj).value;
         }
         catch (ArrayIndexOutOfBoundsException e) {
             badIndex(index, capacity);
         }
-        catch (ClassCastException e) {
+        }
+        else {
             error(new TypeError(obj, UNSIGNED_BYTE_16));
         }
     }

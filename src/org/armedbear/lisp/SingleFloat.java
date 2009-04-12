@@ -225,14 +225,11 @@ public final class SingleFloat extends LispObject
 
     public static double getValue(LispObject obj) throws ConditionThrowable
     {
-        try {
+        if (obj instanceof SingleFloat)
             return ((SingleFloat)obj).value;
-        }
-        catch (ClassCastException e) {
-            error(new TypeError(obj, Symbol.FLOAT));
-            // Not reached.
-            return 0;
-        }
+        type_error(obj, Symbol.FLOAT);
+        // not reached
+        return 0.0D;
     }
 
     public final float getValue()

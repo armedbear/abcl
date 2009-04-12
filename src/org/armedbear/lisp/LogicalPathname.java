@@ -283,8 +283,7 @@ public final class LogicalPathname extends Pathname
         public LispObject execute(LispObject arg)
             throws ConditionThrowable
         {
-            try {
-                AbstractString s = (AbstractString) arg;
+                AbstractString s = checkString(arg);
                 if (s.length() == 0) {
                     // "The null string, "", is not a valid value for any
                     // component of a logical pathname." 19.3.2.2
@@ -292,10 +291,6 @@ public final class LogicalPathname extends Pathname
                                                 s.getStringValue() + '"'));
                 }
                 return canonicalizeStringComponent(s);
-            }
-            catch (ClassCastException e) {
-                return type_error(arg, Symbol.STRING);
-            }
         }
     };
 

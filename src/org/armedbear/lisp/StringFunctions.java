@@ -49,37 +49,17 @@ public final class StringFunctions extends Lisp
             char[] array1 = first.STRING().getStringChars();
             char[] array2 = second.STRING().getStringChars();
             int start1, end1, start2, end2;
-            try {
-                start1 = ((Fixnum)third).value;
-            }
-            catch (ClassCastException e) {
-                return type_error(third, Symbol.FIXNUM);
-            }
+            start1 = Fixnum.getValue(third);
             if (fourth == NIL) {
                 end1 = array1.length;
             } else {
-                try {
-                    end1 = ((Fixnum)fourth).value;
-                }
-                catch (ClassCastException e) {
-                    return type_error(fourth, Symbol.FIXNUM);
-                }
+                end1 = Fixnum.getValue(fourth);
             }
-            try {
-                start2 = ((Fixnum)fifth).value;
-            }
-            catch (ClassCastException e) {
-                return type_error(fifth, Symbol.FIXNUM);
-            }
+            start2 = Fixnum.getValue(fifth);
             if (sixth == NIL) {
                 end2 = array2.length;
             } else {
-                try {
-                    end2 = ((Fixnum)sixth).value;
-                }
-                catch (ClassCastException e) {
-                    return type_error(sixth, Symbol.FIXNUM);
-                }
+                end2 = Fixnum.getValue(sixth);
             }
             if ((end1 - start1) != (end2 - start2))
                 return NIL;
@@ -708,13 +688,7 @@ public final class StringFunctions extends Lisp
                                   LispObject third)
             throws ConditionThrowable
         {
-            AbstractString string;
-            try {
-                string = (AbstractString) first;
-            }
-            catch (ClassCastException e) {
-                return type_error(first, Symbol.STRING);
-            }
+            final AbstractString string = checkString(first);
             final int length = string.length();
             int start = (int) Fixnum.getValue(second);
             if (start < 0 || start > length)
@@ -743,13 +717,7 @@ public final class StringFunctions extends Lisp
                                   LispObject third)
             throws ConditionThrowable
         {
-            AbstractString string;
-            try {
-                string = (AbstractString) first;
-            }
-            catch (ClassCastException e) {
-                return type_error(first, Symbol.STRING);
-            }
+            final AbstractString string = checkString(first);
             final int length = string.length();
             int start = (int) Fixnum.getValue(second);
             if (start < 0 || start > length)
@@ -778,13 +746,7 @@ public final class StringFunctions extends Lisp
                                   LispObject third)
             throws ConditionThrowable
         {
-            AbstractString string;
-            try {
-                string = (AbstractString) first;
-            }
-            catch (ClassCastException e) {
-                return type_error(first, Symbol.STRING);
-            }
+            AbstractString string = checkString(first);
             final int length = string.length();
             int start = (int) Fixnum.getValue(second);
             if (start < 0 || start > length)
@@ -848,13 +810,7 @@ public final class StringFunctions extends Lisp
                                   LispObject elementType)
             throws ConditionThrowable
         {
-            final int n;
-            try {
-                n = ((Fixnum)size).value;
-            }
-            catch (ClassCastException e) {
-                return type_error(size, Symbol.FIXNUM);
-            }
+            final int n = Fixnum.getValue(size);
             if (n < 0 || n >= ARRAY_DIMENSION_MAX) {
                 FastStringBuffer sb = new FastStringBuffer();
                 sb.append("The size specified for this string (");
@@ -887,12 +843,7 @@ public final class StringFunctions extends Lisp
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
-            try {
-                return first.CHAR(((Fixnum)second).value);
-            }
-            catch (ClassCastException e) {
-                return type_error(second, Symbol.FIXNUM);
-            }
+                return first.CHAR(Fixnum.getValue(second));
         }
     };
 
@@ -904,12 +855,7 @@ public final class StringFunctions extends Lisp
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
-            try {
-                return first.SCHAR(((Fixnum)second).value);
-            }
-            catch (ClassCastException e) {
-                return type_error(second, Symbol.FIXNUM);
-            }
+            return first.SCHAR(Fixnum.getValue(second));
         }
     };
 
@@ -922,19 +868,9 @@ public final class StringFunctions extends Lisp
                                   LispObject third)
             throws ConditionThrowable
         {
-            try {
-                ((AbstractString)first).setCharAt(((Fixnum)second).value,
-                                                  ((LispCharacter)third).value);
-                return third;
-            }
-            catch (ClassCastException e) {
-                if (!(first instanceof AbstractString))
-                    return type_error(first, Symbol.STRING);
-                else if (!(second instanceof Fixnum))
-                    return type_error(second, Symbol.FIXNUM);
-                else
-                    return type_error(third, Symbol.CHARACTER);
-            }
+            checkString(first).setCharAt(Fixnum.getValue(second),
+                    LispCharacter.getValue(third));
+            return third;
         }
     };
 
@@ -947,18 +883,12 @@ public final class StringFunctions extends Lisp
                                   LispObject third)
             throws ConditionThrowable
         {
-            try {
-                ((SimpleString)first).setCharAt(((Fixnum)second).value,
-                                                ((LispCharacter)third).value);
+            if (first instanceof SimpleString) {
+                ((SimpleString)first).setCharAt(Fixnum.getValue(second),
+                                                LispCharacter.getValue(third));
                 return third;
             }
-            catch (ClassCastException e) {
-                if (!(first instanceof SimpleString))
-                    return type_error(first, Symbol.SIMPLE_STRING);
-                if (!(second instanceof Fixnum))
-                    return type_error(second, Symbol.FIXNUM);
-                return type_error(third, Symbol.CHARACTER);
-            }
+            return type_error(first, Symbol.SIMPLE_STRING);
         }
     };
 
@@ -972,11 +902,7 @@ public final class StringFunctions extends Lisp
             throws ConditionThrowable
         {
             char c = LispCharacter.getValue(first);
-            AbstractString string;
-            if (second instanceof AbstractString)
-                string = (AbstractString) second;
-            else
-                return type_error(second, Symbol.STRING);
+            AbstractString string = checkString(second);
             int start = Fixnum.getValue(third);
             for (int i = start, limit = string.length(); i < limit; i++) {
                 if (string.charAt(i) == c)
@@ -996,13 +922,7 @@ public final class StringFunctions extends Lisp
         {
             if (first instanceof LispCharacter) {
                 final char c = ((LispCharacter)first).value;
-                final AbstractString string;
-                try {
-                    string = (AbstractString) second;
-                }
-                catch (ClassCastException e) {
-                    return type_error(second, Symbol.STRING);
-                }
+                AbstractString string = Lisp.checkString(second);
                 final int limit = string.length();
                 for (int i = 0; i < limit; i++) {
                     if (string.charAt(i) == c)
@@ -1036,14 +956,13 @@ public final class StringFunctions extends Lisp
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
-            try {
+            if(first instanceof AbstractString) {
                 AbstractString s = (AbstractString) first;
                 s.fill(LispCharacter.getValue(second));
                 return first;
             }
-            catch (ClassCastException e) {
-                return type_error(first, Symbol.SIMPLE_STRING);
-            }
+            return type_error(first, Symbol.SIMPLE_STRING);
         }
     };
+    
 }

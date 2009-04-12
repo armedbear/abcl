@@ -114,12 +114,9 @@ public class PrintNotReadable extends LispError
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            try {
-                return ((PrintNotReadable)arg).getInstanceSlotValue(Symbol.OBJECT);
-            }
-            catch (ClassCastException e) {
+                if (arg instanceof PrintNotReadable) return ((PrintNotReadable)arg).getInstanceSlotValue(Symbol.OBJECT);
                 return type_error(arg, Symbol.PRINT_NOT_READABLE);
-            }
+
         }
     };
 }

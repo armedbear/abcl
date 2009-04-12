@@ -164,7 +164,7 @@ public final class ComplexBitVector extends AbstractBitVector
     {
         if (index < 0 || index >= capacity)
             badIndex(index, capacity);
-        try {
+        if (newValue instanceof Fixnum) {
             switch (((Fixnum)newValue).value) {
                 case 0:
                     if (bits != null) {
@@ -182,9 +182,7 @@ public final class ComplexBitVector extends AbstractBitVector
                     return;
             }
         }
-        catch (ClassCastException e) {
             // Fall through...
-        }
         type_error(newValue, Symbol.BIT);
     }
 

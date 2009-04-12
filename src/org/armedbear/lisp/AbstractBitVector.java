@@ -113,7 +113,7 @@ public abstract class AbstractBitVector extends AbstractVector
     @Override
     public void fill(LispObject obj) throws ConditionThrowable
     {
-        try {
+        if (obj instanceof Fixnum) {
             switch (((Fixnum)obj).value) {
                 case 0:
                     if (bits != null) {
@@ -134,8 +134,6 @@ public abstract class AbstractBitVector extends AbstractVector
                     }
                     return;
             }
-        }
-        catch (ClassCastException e) {
             // Fall through...
         }
         error(new TypeError(obj, Symbol.BIT));
@@ -201,12 +199,7 @@ public abstract class AbstractBitVector extends AbstractVector
     @Override
     public LispObject AREF(LispObject index) throws ConditionThrowable
     {
-        try {
-            return AREF(((Fixnum)index).value);
-        }
-        catch (ClassCastException e) {
-            return error(new TypeError(index, Symbol.FIXNUM));
-        }
+        return AREF(Fixnum.getValue(index));
     }
 
     @Override

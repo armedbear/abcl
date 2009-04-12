@@ -1034,10 +1034,10 @@ public final class LispThread extends LispObject
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             final LispThread lispThread;
-            try {
+            if (arg instanceof LispThread) {
                 lispThread = (LispThread) arg;
             }
-            catch (ClassCastException e) {
+            else {
                 return type_error(arg, Symbol.THREAD);
             }
             return lispThread.javaThread.isAlive() ? T : NIL;
@@ -1051,12 +1051,10 @@ public final class LispThread extends LispObject
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            try {
+                if (arg instanceof LispThread) {
                 return ((LispThread)arg).name;
             }
-            catch (ClassCastException e) {
-                return type_error(arg, Symbol.THREAD);
-            }
+                 return type_error(arg, Symbol.THREAD);
         }
     };
 
@@ -1109,10 +1107,10 @@ public final class LispThread extends LispObject
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             final LispThread thread;
-            try {
+            if (arg instanceof LispThread) {
                 thread = (LispThread) arg;
             }
-            catch (ClassCastException e) {
+            else {
                 return type_error(arg, Symbol.THREAD);
             }
             thread.setDestroyed(true);
@@ -1134,10 +1132,10 @@ public final class LispThread extends LispObject
             if (args.length < 2)
                 return error(new WrongNumberOfArgumentsException(this));
             final LispThread thread;
-            try {
+            if (args[0] instanceof LispThread) {
                 thread = (LispThread) args[0];
             }
-            catch (ClassCastException e) {
+            else {
                 return type_error(args[0], Symbol.THREAD);
             }
             LispObject fun = args[1];

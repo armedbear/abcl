@@ -156,12 +156,9 @@ public class StreamError extends LispError
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            try {
-                return ((StreamError)arg).getStream();
-            }
-            catch (ClassCastException e) {
-                return error(new TypeError(arg, Symbol.STREAM_ERROR));
-            }
+            if (arg instanceof StreamError) 
+                return ((StreamError)arg).getStream();                
+            return error(new TypeError(arg, Symbol.STREAM_ERROR));
         }
     };
 }

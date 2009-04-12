@@ -64,15 +64,7 @@ public abstract class LispClass extends StandardObject
   public static LispObject findClass(LispObject name, boolean errorp)
     throws ConditionThrowable
   {
-    final Symbol symbol;
-    try
-      {
-        symbol = (Symbol) name;
-      }
-    catch (ClassCastException e)
-      {
-        return type_error(name, Symbol.SYMBOL);
-      }
+    final Symbol symbol = checkSymbol(name);
     final LispClass c;
     synchronized (map)
       {
@@ -363,29 +355,13 @@ public abstract class LispClass extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        final Symbol name;
-        try
-          {
-            name = (Symbol) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.SYMBOL);
-          }
+        final Symbol name = checkSymbol(first);
         if (second == NIL)
           {
             removeClass(name);
             return second;
           }
-        final LispClass c;
-        try
-          {
-            c = (LispClass) second;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(second, Symbol.CLASS);
-          }
+        final LispClass c = checkClass(second);
         addClass(name, c);
         return second;
       }
@@ -399,15 +375,7 @@ public abstract class LispClass extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        final LispClass c;
-        try
-          {
-            c = (LispClass) first;
-          }
-        catch (ClassCastException e)
-          {
-            return type_error(first, Symbol.CLASS);
-          }
+        final LispClass c = checkClass(first);
         return c.subclassp(second) ? T : NIL;
       }
     };

@@ -136,7 +136,7 @@ public final class SimpleBitVector extends AbstractBitVector
         if (index < 0 || index >= capacity)
             badIndex(index, capacity);
         final int offset = index >> 6;
-        try {
+        if (newValue instanceof Fixnum) {
             switch (((Fixnum)newValue).value) {
                 case 0:
                     bits[offset] &= ~(1L << (index & LONG_MASK));
@@ -146,10 +146,8 @@ public final class SimpleBitVector extends AbstractBitVector
                     return;
             }
         }
-        catch (ClassCastException e) {
-            // Fall through...
-        }
-        error(new TypeError(newValue, Symbol.BIT));
+        // Fall through...
+        type_error(newValue, Symbol.BIT);
     }
 
     @Override

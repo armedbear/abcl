@@ -45,10 +45,10 @@ public final class cell_error_name extends Primitive
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
         final StandardObject obj;
-        try {
+        if (arg instanceof StandardObject) {
             obj = (StandardObject) arg;
         }
-        catch (ClassCastException e) {
+        else {
             return type_error(arg, Symbol.STANDARD_OBJECT);
         }
         return obj.getInstanceSlotValue(Symbol.NAME);

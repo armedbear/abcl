@@ -137,11 +137,12 @@ public class Closure extends Function
                           "&REST/&BODY must be followed by a variable."));
                       }
                     Debug.assertTrue(restVar == null);
-                    try
+                    final LispObject remainingcar =  remaining.car();
+                    if (remainingcar instanceof Symbol)
                       {
-                        restVar = (Symbol) remaining.car();
+                        restVar = (Symbol) remainingcar;
                       }
-                    catch (ClassCastException e)
+                    else
                       {
                         error(new LispError(
                           "&REST/&BODY must be followed by a variable."));

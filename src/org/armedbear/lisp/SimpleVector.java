@@ -175,17 +175,14 @@ public final class SimpleVector extends AbstractVector
   @Override
   public LispObject AREF(LispObject index) throws ConditionThrowable
   {
+        int idx = Fixnum.getValue(index);
     try
       {
-        return data[((Fixnum)index).value];
-      }
-    catch (ClassCastException e)
-      {
-        return error(new TypeError(index, Symbol.FIXNUM));
+        return data[idx];
       }
     catch (ArrayIndexOutOfBoundsException e)
       {
-        badIndex(((Fixnum)index).value, data.length);
+        badIndex(idx, data.length);
         return NIL; // Not reached.
       }
   }
@@ -388,18 +385,20 @@ public final class SimpleVector extends AbstractVector
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-        try
-          {
-            return ((SimpleVector)first).data[((Fixnum)second).value];
-          }
-        catch (ClassCastException e)
-          {
-            if (first instanceof SimpleVector)
-              return error(new TypeError(second, Symbol.FIXNUM));
-            else
-              return error(new TypeError(first, Symbol.SIMPLE_VECTOR));
-          }
-      }
+                        if (first instanceof SimpleVector) {
+                                final SimpleVector sv = (SimpleVector)first;
+                    int index = Fixnum.getValue(second);
+                                try {
+                                        return sv.data[index];
+                                } catch (ArrayIndexOutOfBoundsException e) {
+                                        int capacity = sv.capacity;
+                                         sv.badIndex(index, capacity);
+                                        // Not reached.
+                                        return NIL;
+                                }
+                        }
+                        return type_error(first, Symbol.SIMPLE_VECTOR);
+                }
     };
 
   // ### svset simple-vector index new-value => new-value
@@ -411,26 +410,20 @@ public final class SimpleVector extends AbstractVector
                                 LispObject third)
         throws ConditionThrowable
       {
-        try
-          {
-            ((SimpleVector)first).data[((Fixnum)second).value] = third;
-            return third;
-          }
-        catch (ClassCastException e)
-          {
-            if (first instanceof SimpleVector)
-              return error(new TypeError(second, Symbol.FIXNUM));
-            else
-              return error(new TypeError(first, Symbol.SIMPLE_VECTOR));
-          }
-        catch (ArrayIndexOutOfBoundsException e)
-          {
-            int index = ((Fixnum)second).value;
-            int capacity = ((SimpleVector)first).capacity;
-            ((SimpleVector)first).badIndex(index, capacity);
-            // Not reached.
-            return NIL;
-          }
+                        if (first instanceof SimpleVector) {
+                                final SimpleVector sv = (SimpleVector)first;
+                    int index = Fixnum.getValue(second);
+                                try {
+                                        sv.data[index] = third;
+                                        return third;
+                                } catch (ArrayIndexOutOfBoundsException e) {
+                                        int capacity = sv.capacity;
+                                         sv.badIndex(index, capacity);
+                                        // Not reached.
+                                        return NIL;
+                                }
+                        }
+                        return type_error(first, Symbol.SIMPLE_VECTOR);
       }
     };
 }

@@ -157,14 +157,7 @@ public final class ComplexString extends AbstractString
         for (int i = 0; i < capacity; i++)
           {
             LispObject obj = array.AREF(displacement + i);
-            try
-              {
-                copy[i] = ((LispCharacter)obj).value;
-              }
-            catch (ClassCastException e)
-              {
-                type_error(obj, Symbol.CHARACTER);
-              }
+            copy[i] = LispCharacter.getValue(obj);
           }
       }
     else
@@ -426,14 +419,7 @@ public final class ComplexString extends AbstractString
   @Override
   public void aset(int index, LispObject newValue) throws ConditionThrowable
   {
-    try
-      {
-        setCharAt(index, ((LispCharacter)newValue).value);
-      }
-    catch (ClassCastException e)
-      {
-        type_error(newValue, Symbol.CHARACTER);
-      }
+      setCharAt(index, LispCharacter.getValue(newValue));
   }
 
   @Override
@@ -449,14 +435,7 @@ public final class ComplexString extends AbstractString
       }
     if (chars != null)
       {
-        try
-          {
-            chars[fillPointer] = ((LispCharacter)element).value;
-          }
-        catch (ClassCastException e)
-          {
-            type_error(element, Symbol.CHARACTER);
-          }
+        chars[fillPointer] = LispCharacter.getValue(element);
       }
     else
       array.aset(fillPointer + displacement, element);
@@ -486,14 +465,7 @@ public final class ComplexString extends AbstractString
       }
     if (chars != null)
       {
-        try
-          {
-            chars[fillPointer] = ((LispCharacter)element).value;
-          }
-        catch (ClassCastException e)
-          {
-            type_error(element, Symbol.CHARACTER);
-          }
+        chars[fillPointer] = LispCharacter.getValue(element);
       }
     else
       array.aset(fillPointer + displacement, element);
