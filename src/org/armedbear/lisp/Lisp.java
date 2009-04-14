@@ -211,7 +211,6 @@ public abstract class Lisp
   {
     if (form instanceof Cons)
       {
-        form.length(); // Force an error if form is not a proper list.
         LispObject car = ((Cons)form).car;
         if (car instanceof Symbol)
           {
