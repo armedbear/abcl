@@ -851,7 +851,11 @@ public final class Java extends Lisp
             if (s.equals("double"))
                 return Double.TYPE;
             // Not a primitive Java type.
-            return classForName(s);
+            Class c = classForName(s);
+            if (c == null)
+                error(new LispError(s + " does not designate a Java class."));
+
+            return c;
         }
         // It's not a string, so it must be a JavaObject.
         final JavaObject javaObject;
