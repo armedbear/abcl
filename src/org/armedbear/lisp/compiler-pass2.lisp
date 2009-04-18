@@ -1002,56 +1002,6 @@ representation, based on the derived type of the LispObject."
   (fix-boxing representation nil)
   (emit-move-from-stack target representation))
 
-(defvar *style-warnings* nil)
-(defvar *warnings* nil)
-(defvar *errors* nil)
-
-(defvar *last-error-context* nil)
-
-(defun note-error-context ()
-  (let ((context *compiler-error-context*))
-    (when (and context (neq context *last-error-context*))
-      (fresh-line *error-output*)
-      (princ "; in " *error-output*)
-      (let ((*print-length* 2)
-            (*print-level* 2)
-            (*print-pretty* nil))
-        (prin1 context *error-output*))
-      (terpri *error-output*)
-      (terpri *error-output*)
-      (setf *last-error-context* context))))
-
-(defvar *resignal-compiler-warnings* nil) ; bind this to t inside slime compilation
-
-(defun handle-style-warning (condition)
-  (cond (*resignal-compiler-warnings*
-         (signal condition))
-        (t
-         (unless *suppress-compiler-warnings*
-           (fresh-line *error-output*)
-           (note-error-context)
-           (format *error-output* "; Caught ~A:~%;   ~A~2%" (type-of condition) condition))
-         (incf *style-warnings*)
-         (muffle-warning))))
-
-(defun handle-warning (condition)
-  (cond (*resignal-compiler-warnings*
-         (signal condition))
-        (t
-         (unless *suppress-compiler-warnings*
-           (fresh-line *error-output*)
-           (note-error-context)
-           (format *error-output* "; Caught ~A:~%;   ~A~2%" (type-of condition) condition))
-         (incf *warnings*)
-         (muffle-warning))))
-
-(defun handle-compiler-error (condition)
-  (fresh-line *error-output*)
-  (note-error-context)
-  (format *error-output* "; Caught ERROR:~%;   ~A~2%" condition)
-  (incf *errors*)
-  (throw 'compile-defun-abort (funcall *compiler-error-bailout*)))
-
 ;; "In addition to situations for which the standard specifies that conditions
 ;; of type WARNING must or might be signaled, warnings might be signaled in
 ;; situations where the compiler can determine that the consequences are
@@ -8697,44 +8647,91 @@ for use with derive-type-times.")
 
 (defvar *catch-errors* t)
 
+(defvar *last-error-context* nil)
+
+(defun note-error-context ()
+  (let ((context *compiler-error-context*))
+    (when (and context (neq context *last-error-context*))
+      (fresh-line *error-output*)
+      (princ "; in " *error-output*)
+      (let ((*print-length* 2)
+            (*print-level* 2)
+            (*print-pretty* nil))
+        (prin1 context *error-output*))
+      (terpri *error-output*)
+      (terpri *error-output*)
+      (setf *last-error-context* context))))
+
+
+(defvar *resignal-compiler-warnings* nil
+  "Bind this to t inside slime compilation")
+
+(defun handle-warning (condition)
+  (cond (*resignal-compiler-warnings*
+         (signal condition))
+        (t
+         (unless *suppress-compiler-warnings*
+           (fresh-line *error-output*)
+           (note-error-context)
+           (format *error-output* "; Caught ~A:~%;   ~A~2%"
+                   (type-of condition) condition))
+         (muffle-warning))))
+
+(defun handle-compiler-error (condition)
+  (fresh-line *error-output*)
+  (note-error-context)
+  (format *error-output* "; Caught ERROR:~%;   ~A~2%" condition)
+  (throw 'compile-defun-abort (funcall *compiler-error-bailout*)))
+
 (defvar *in-compilation-unit* nil)
 
 (defmacro with-compilation-unit (options &body body)
   `(%with-compilation-unit (lambda () ,@body) ,@options))
 
 (defun %with-compilation-unit (fn &key override)
-  (handler-bind ((style-warning 'handle-style-warning)
-                 (warning 'handle-warning)
-                 (compiler-error 'handle-compiler-error))
-    (if (and *in-compilation-unit* (not override))
-        (funcall fn)
-        (let ((*style-warnings* 0)
-              (*warnings* 0)
-              (*errors* 0)
-              (*defined-functions* nil)
-              (*undefined-functions* nil)
-              (*in-compilation-unit* t))
-          (unwind-protect
-              (funcall fn)
-            (unless (or (and *suppress-compiler-warnings* (zerop *errors*))
-                        (and (zerop (+ *errors* *warnings* *style-warnings*))
-                             (null *undefined-functions*)))
-              (format *error-output* "~%; Compilation unit finished~%")
-              (unless (zerop *errors*)
-                (format *error-output* ";   Caught ~D ERROR condition~P~%"
-                        *errors* *errors*))
-              (unless *suppress-compiler-warnings*
-                (unless (zerop *warnings*)
-                  (format *error-output* ";   Caught ~D WARNING condition~P~%"
-                          *warnings* *warnings*))
-                (unless (zerop *style-warnings*)
-                  (format *error-output* ";   Caught ~D STYLE-WARNING condition~P~%"
-                          *style-warnings* *style-warnings*))
-                (when *undefined-functions*
-                  (format *error-output* ";   The following functions were used but not defined:~%")
-                  (dolist (name *undefined-functions*)
-                    (format *error-output* ";     ~S~%" name))))
-              (terpri *error-output*)))))))
+  (if (and *in-compilation-unit* (not override))
+      (funcall fn)
+      (let ((style-warnings 0)
+            (warnings 0)
+            (errors 0)
+            (*defined-functions* nil)
+            (*undefined-functions* nil)
+            (*in-compilation-unit* t))
+        (unwind-protect
+             (handler-bind ((style-warning #'(lambda (c)
+                                               (incf style-warnings)
+                                               (handle-warning c)))
+                            (warning #'(lambda (c)
+                                         (incf warnings)
+                                         (handle-warning c)))
+                            (compiler-error #'(lambda (c)
+                                                (incf errors)
+                                                (handle-compiler-error c))))
+               (funcall fn))
+          (unless (or (and *suppress-compiler-warnings* (zerop errors))
+                      (and (zerop (+ errors warnings style-warnings))
+                           (null *undefined-functions*)))
+            (format *error-output*
+                    "~%; Compilation unit finished~%")
+            (unless (zerop errors)
+              (format *error-output*
+                      ";   Caught ~D ERROR condition~P~%"
+                      errors errors))
+            (unless *suppress-compiler-warnings*
+              (unless (zerop warnings)
+                (format *error-output*
+                        ";   Caught ~D WARNING condition~P~%"
+                        warnings warnings))
+              (unless (zerop style-warnings)
+                (format *error-output*
+                        ";   Caught ~D STYLE-WARNING condition~P~%"
+                        style-warnings style-warnings))
+              (when *undefined-functions*
+                (format *error-output*
+                        ";   The following functions were used but not defined:~%")
+                (dolist (name *undefined-functions*)
+                  (format *error-output* ";     ~S~%" name))))
+            (terpri *error-output*))))))
 
 (defun get-lambda-to-compile (thing)
   (if (and (consp thing)

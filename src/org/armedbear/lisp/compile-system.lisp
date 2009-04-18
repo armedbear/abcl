@@ -270,9 +270,18 @@
     (check-lisp-home)
     (time
      (with-compilation-unit ()
-       (let ((*compile-file-zip* zip))
-         (%compile-system :output-path output-path))
-       (when (zerop (+ jvm::*errors* jvm::*warnings*))
-         (setf status 0))))
+       (let ((*compile-file-zip* zip)
+             failure-p)
+         (handler-bind (((or warning
+                             compiler-error)
+                         #'(lambda (c)
+                             (declare (ignore c))
+                             (setf failure-p t)
+                             ;; only register that we had this type of signal
+                             ;; defer the actual handling to another handler
+                             nil)))
+           (%compile-system :output-path output-path))
+         (unless failure-p
+           (setf status 0)))))
     (when quit
       (quit :status status))))
