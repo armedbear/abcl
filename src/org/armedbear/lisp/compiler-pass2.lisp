@@ -8760,14 +8760,27 @@ for use with derive-type-times.")
                           (symbol-package name)
                           *package*))
            compiled-function
-           (warnings-p t)
-           (failure-p t))
+           (warnings-p nil)
+           (failure-p nil))
       (with-compilation-unit ()
         (with-saved-compiler-policy
           (let* ((tempfile (make-temp-file)))
             (unwind-protect
                  (setf compiled-function
-                       (load-compiled-function (compile-defun name expr env tempfile)))
+                       (load-compiled-function
+                        (handler-bind ((style-warning
+                                        #'(lambda (c)
+                                            (declare (ignore c))
+                                            (setf warnings-p t)
+                                            nil))
+                                       ((or warning
+                                            compiler-error)
+                                        #'(lambda (c)
+                                            (declare (ignore c))
+                                            (setf warnings-p t
+                                                  failure-p t)
+                                            nil)))
+                          (compile-defun name expr env tempfile))))
               (delete-file tempfile))))
         (when (and name (functionp compiled-function))
           (sys::%set-lambda-name compiled-function name)
@@ -8780,11 +8793,7 @@ for use with derive-type-times.")
                    (setf (fdefinition name)
                          (if (macro-function name)
                              (make-macro name compiled-function)
-                             compiled-function))))))
-        (cond ((zerop (+ *errors* *warnings* *style-warnings*))
-               (setf warnings-p nil failure-p nil))
-              ((zerop (+ *errors* *warnings*))
-               (setf failure-p nil))))
+                             compiled-function)))))))
       (values (or name compiled-function) warnings-p failure-p))))
 
 (defun jvm-compile (name &optional definition)
