@@ -459,8 +459,13 @@
         (rename-file temp-file output-file)
 
         (when *compile-file-zip*
-          (let ((zipfile (concatenate 'string (namestring output-file) ".zip"))
-                (pathnames ()))
+          (let* ((type ;; Don't use ".zip", it'll result in an extension
+                       ;;  with a dot, which is rejected by NAMESTRING
+                  (%format nil "~A~A" (pathname-type output-file) "-zip"))
+                 (zipfile (namestring
+                           (merge-pathnames (make-pathname :type type)
+                                            output-file)))
+                 (pathnames ()))
             (dotimes (i *class-number*)
               (let* ((file-namestring (%format nil "~A-~D.cls"
                                                (substitute #\_ #\. (pathname-name output-file))
