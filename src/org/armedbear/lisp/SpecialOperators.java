@@ -209,50 +209,43 @@ public final class SpecialOperators extends Lisp
       {
         LispObject varList = checkList(args.car());
         final LispThread thread = LispThread.currentThread();
-        if (varList != NIL)
-          {
-            SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
-            try
-              {
-                Environment ext = new Environment(env);
-                // Declare our free specials, this will correctly raise
-                LispObject body = ext.processDeclarations(args.cdr());
+        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+        Environment ext = new Environment(env);
+        try
+         {
+             // Declare our free specials, this will correctly raise
+             LispObject body = ext.processDeclarations(args.cdr());
 
-                for (int i = varList.length(); i-- > 0;)
-                  {
-                    LispObject obj = varList.car();
-                    varList = varList.cdr();
-                    if (obj instanceof Cons && obj.length() == 2)
-                      {
-                        Symbol symbol = checkSymbol(obj.car());
-                        if (symbol.isSpecialVariable()
-                             || ext.isDeclaredSpecial(symbol))
-                          {
-                            return error(new ProgramError(
+             for (int i = varList.length(); i-- > 0;)
+               {
+                 LispObject obj = varList.car();
+                 varList = varList.cdr();
+                 if (obj instanceof Cons && obj.length() == 2)
+                   {
+                     Symbol symbol = checkSymbol(obj.car());
+                     if (symbol.isSpecialVariable()
+                         || ext.isDeclaredSpecial(symbol))
+                       {
+                          return error(new ProgramError(
                               "Attempt to bind the special variable " +
                               symbol.writeToString() +
                               " with SYMBOL-MACROLET."));
-                          }
-                        bindArg(null, symbol, new SymbolMacro(obj.cadr()), ext, thread);
-                      }
-                    else
-                      {
-                        return error(new ProgramError(
-                          "Malformed symbol-expansion pair in SYMBOL-MACROLET: " +
-                          obj.writeToString()));
-                      }
-                  }
-                return progn(body, ext, thread);
+                       }
+                     bindArg(null, symbol, new SymbolMacro(obj.cadr()), ext, thread);
+                   }
+                 else
+                   {
+                     return error(new ProgramError(
+                       "Malformed symbol-expansion pair in SYMBOL-MACROLET: " +
+                       obj.writeToString()));
+                   }
+                }
+             return progn(body, ext, thread);
               }
-            finally
-              {
+        finally
+            {
                 thread.lastSpecialBinding = lastSpecialBinding;
-              }
-          }
-        else
-          {
-            return progn(args.cdr(), env, thread);
-          }
+            }
       }
     };
 
@@ -447,21 +440,6 @@ public final class SpecialOperators extends Lisp
       public LispObject execute(LispObject args, Environment env)
         throws ConditionThrowable
       {
-        while (args != NIL)
-          {
-            LispObject decl = args.car();
-            args = args.cdr();
-            if (decl instanceof Cons && decl.car() == Symbol.SPECIAL)
-              {
-                LispObject vars = decl.cdr();
-                while (vars != NIL)
-                  {
-                    Symbol var = checkSymbol(vars.car());
-                    env.declareSpecial(var);
-                    vars = vars.cdr();
-                  }
-              }
-          }
         return NIL;
       }
     };
