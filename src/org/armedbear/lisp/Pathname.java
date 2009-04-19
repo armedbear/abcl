@@ -1152,8 +1152,11 @@ public class Pathname extends LispObject
         Pathname p;
         if (pathname instanceof LogicalPathname)
             p = new LogicalPathname();
-        else
+        else {
             p = new Pathname();
+            if (defaultPathname instanceof LogicalPathname)
+                defaultPathname = LogicalPathname.translateLogicalPathname((LogicalPathname)defaultPathname);
+        }
         if (pathname.host != NIL)
             p.host = pathname.host;
         else
