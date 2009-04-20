@@ -382,7 +382,7 @@ public final class SpecialOperators extends Lisp
         final Environment innerEnv = new Environment(ext);
         LispObject body = args.cdr();
         body = innerEnv.processDeclarations(body);
-        return progn(body, ext, thread);
+        return progn(body, innerEnv, thread);
       }
     finally
       {
