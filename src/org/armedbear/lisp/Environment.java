@@ -57,13 +57,7 @@ public final class Environment extends LispObject
   // value binding.
   public Environment(Environment parent, Symbol symbol, LispObject value)
   {
-    if (parent != null)
-      {
-        vars = parent.vars;
-        lastFunctionBinding = parent.lastFunctionBinding;
-        blocks = parent.blocks;
-        tags = parent.tags;
-      }
+    this(parent);
     vars = new Binding(symbol, value, vars);
   }
 
