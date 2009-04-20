@@ -52,33 +52,11 @@ public final class dotimes extends SpecialOperator
     LispObject resultForm = args.cdr().cdr().car();
     SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
     final LispObject stack = thread.getStack();
-    // Process declarations.
-    LispObject specials = NIL;
-    while (bodyForm != NIL)
-      {
-        LispObject obj = bodyForm.car();
-        if (obj instanceof Cons && obj.car() == Symbol.DECLARE)
-          {
-            LispObject decls = obj.cdr();
-            while (decls != NIL)
-              {
-                LispObject decl = decls.car();
-                if (decl instanceof Cons && decl.car() == Symbol.SPECIAL)
-                  {
-                    LispObject vars = decl.cdr();
-                    while (vars != NIL)
-                      {
-                        specials = new Cons(vars.car(), specials);
-                        vars = vars.cdr();
-                      }
-                  }
-                decls = decls.cdr();
-              }
-            bodyForm = bodyForm.cdr();
-          }
-        else
-          break;
-      }
+
+    LispObject bodyAndDecls = parseBody(bodyForm, false);
+    LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
+    bodyForm = bodyAndDecls.car();
+
     try
       {
         LispObject limit = eval(countForm, env, thread);

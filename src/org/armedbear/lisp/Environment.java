@@ -203,33 +203,12 @@ public final class Environment extends LispObject
   public LispObject processDeclarations(LispObject body)
     throws ConditionThrowable
   {
-    while (body != NIL)
-      {
-        LispObject obj = body.car();
-        if (obj instanceof Cons && ((Cons)obj).car == Symbol.DECLARE)
-          {
-            LispObject decls = ((Cons)obj).cdr;
-            while (decls != NIL)
-              {
-                LispObject decl = decls.car();
-                if (decl instanceof Cons && ((Cons)decl).car == Symbol.SPECIAL)
-                  {
-                    LispObject names = ((Cons)decl).cdr;
-                    while (names != NIL)
-                      {
-                        Symbol var = checkSymbol(names.car());
-                        declareSpecial(var);
-                        names = ((Cons)names).cdr;
-                      }
-                  }
-                decls = ((Cons)decls).cdr;
-              }
-            body = ((Cons)body).cdr;
-          }
-        else
-          break;
-      }
-    return body;
+    LispObject bodyAndDecls = parseBody(body, false);
+    LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
+    for (; specials != NIL; specials = specials.cdr())
+      declareSpecial(checkSymbol(specials.car()));
+
+    return bodyAndDecls.car();
   }
 
   public void declareSpecial(Symbol var)

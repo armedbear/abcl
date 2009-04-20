@@ -546,6 +546,59 @@ public abstract class Lisp
     return thread.execute(function, array);
   }
 
+  public static final LispObject parseBody(LispObject body,
+                                           boolean documentationAllowed)
+    throws ConditionThrowable
+  {
+      LispObject decls = NIL;
+      LispObject doc = NIL;
+
+      while (body != NIL) {
+        LispObject form = body.car();
+        if (documentationAllowed && form instanceof AbstractString
+            && body.cdr() != NIL) {
+          doc = body.car();
+          documentationAllowed = false;
+        } else if (form instanceof Cons && form.car() == Symbol.DECLARE)
+          decls = new Cons(form, decls);
+        else
+          break;
+
+        body = body.cdr();
+      }
+      return list(body, decls.nreverse(), doc);
+  }
+
+  public static final LispObject parseSpecials(LispObject forms)
+    throws ConditionThrowable
+  {
+    LispObject specials = NIL;
+    while (forms != NIL) {
+      LispObject decls = forms.car();
+
+      Debug.assertTrue(decls instanceof Cons);
+      Debug.assertTrue(decls.car() == Symbol.DECLARE);
+      decls = decls.cdr();
+      while (decls != NIL) {
+        LispObject decl = decls.car();
+
+        if (decl instanceof Cons && decl.car() == Symbol.SPECIAL) {
+            decl = decl.cdr();
+            while (decl != NIL) {
+              specials = new Cons(checkSymbol(decl.car()), specials);
+              decl = decl.cdr();
+            }
+        }
+
+        decls = decls.cdr();
+      }
+
+      forms = forms.cdr();
+    }
+
+    return specials;
+  }
+
   public static final LispObject progn(LispObject body, Environment env,
                                        LispThread thread)
     throws ConditionThrowable
@@ -560,22 +613,24 @@ public abstract class Lisp
   }
 
   // Environment wrappers.
-  private static final boolean isSpecial(Symbol sym, Symbol[] ownSpecials,
+  private static final boolean isSpecial(Symbol sym, LispObject ownSpecials,
                                          Environment env)
+    throws ConditionThrowable
   {
     if (ownSpecials != null)
       {
         if (sym.isSpecialVariable())
           return true;
-        for (Symbol special : ownSpecials)
+        for (; ownSpecials != NIL; ownSpecials = ownSpecials.cdr())
           {
-            if (sym == special)
+            if (sym == ownSpecials.car())
               return true;
           }
       }
     return false;
   }
-  protected static final void bindArg(Symbol[] ownSpecials,
+
+  protected static final void bindArg(LispObject ownSpecials,
                                       Symbol sym, LispObject value,
                                       Environment env, LispThread thread)
     throws ConditionThrowable

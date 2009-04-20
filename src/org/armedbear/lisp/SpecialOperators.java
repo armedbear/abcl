@@ -118,37 +118,12 @@ public final class SpecialOperators extends Lisp
     try
       {
         LispObject varList = checkList(args.car());
-        LispObject body = args.cdr();
-        // Process declarations.
-        ArrayList<Symbol> specials = new ArrayList<Symbol>();
-        while (body != NIL)
-          {
-            LispObject obj = body.car();
-            if (obj instanceof Cons && ((Cons)obj).car == Symbol.DECLARE)
-              {
-                LispObject decls = ((Cons)obj).cdr;
-                while (decls != NIL)
-                  {
-                    LispObject decl = decls.car();
-                    if (decl instanceof Cons && ((Cons)decl).car == Symbol.SPECIAL)
-                      {
-                        LispObject vars = ((Cons)decl).cdr;
-                        while (vars != NIL)
-                          {
-                            specials.add(0, (Symbol) vars.car());
-                            vars = ((Cons)vars).cdr;
-                          }
-                      }
-                    decls = ((Cons)decls).cdr;
-                  }
-                body = ((Cons)body).cdr;
-              }
-            else
-              break;
-          }
+        LispObject bodyAndDecls = parseBody(args.cdr(), false);
+        LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
+        LispObject body = bodyAndDecls.car();
+
         Environment ext = new Environment(env);
         LinkedList<Cons> nonSequentialVars = new LinkedList<Cons>();
-        Symbol[] arrayToUseForSpecials = new Symbol[0];
         while (varList != NIL)
           {
             final Symbol symbol;
@@ -169,28 +144,22 @@ public final class SpecialOperators extends Lisp
                 value = NIL;
               }
             if (sequential)
-                bindArg(specials.toArray(arrayToUseForSpecials), 
-                        symbol, value, ext, thread);
+              bindArg(specials, symbol, value, ext, thread);
             else
                 nonSequentialVars.add(new Cons(symbol, value));
             varList = ((Cons)varList).cdr;
           }
         if (!sequential)
-          {
-            for (Cons x : nonSequentialVars)
-              {
-                bindArg(specials.toArray(arrayToUseForSpecials), 
-                        (Symbol)x.car(), x.cdr(), ext, thread);
-              }
-          }
+          for (Cons x : nonSequentialVars)
+            bindArg(specials, (Symbol)x.car(), x.cdr(), ext, thread);
+
         // Make sure free special declarations are visible in the body.
         // "The scope of free declarations specifically does not include
         // initialization forms for bindings established by the form
         // containing the declarations." (3.3.4)
-        for (Symbol symbol : specials)
-          {
-            ext.declareSpecial(symbol);
-          }
+        for (; specials != NIL; specials = specials.cdr())
+          ext.declareSpecial((Symbol)specials.car());
+
         return progn(body, ext, thread);
       }
     finally

@@ -62,6 +62,7 @@ public class Closure extends Function
   private Parameter[] keywordParameters = emptyParameterArray;
   private Parameter[] auxVars = emptyParameterArray;
   private final LispObject body;
+  private final LispObject executionBody;
   private final Environment environment;
   private final boolean andKey;
   private final boolean allowOtherKeys;
@@ -78,7 +79,7 @@ public class Closure extends Function
         emptySymbolArray = new Symbol[0];
     }
   private Symbol[] variables = emptySymbolArray;
-  private Symbol[] specials = emptySymbolArray;
+  private LispObject specials = NIL;
 
   private boolean bindInitForms;
 
@@ -292,6 +293,10 @@ public class Closure extends Function
         maxArgs = 0;
       }
     this.body = lambdaExpression.cddr();
+    LispObject bodyAndDecls = parseBody(this.body, false);
+    this.executionBody = bodyAndDecls.car();
+    this.specials = parseSpecials(bodyAndDecls.NTH(1));
+
     this.environment = env;
     this.andKey = _andKey;
     this.allowOtherKeys = _allowOtherKeys;
@@ -299,7 +304,6 @@ public class Closure extends Function
     if (arity >= 0)
       Debug.assertTrue(arity == minArgs);
     variables = processVariables();
-    specials = processDeclarations();
   }
 
   private final void processParameters(ArrayList<Symbol> vars,
@@ -330,45 +334,6 @@ public class Closure extends Function
     processParameters(vars, keywordParameters);
     Symbol[] array = new Symbol[vars.size()];
     vars.toArray(array);
-    return array;
-  }
-
-  private final Symbol[] processDeclarations() throws ConditionThrowable
-  {
-    ArrayList<Symbol> arrayList = null;
-    LispObject forms = body;
-    while (forms != NIL)
-      {
-        LispObject obj = forms.car();
-        if (obj instanceof Cons && obj.car() == Symbol.DECLARE)
-          {
-            LispObject decls = obj.cdr();
-            while (decls != NIL)
-              {
-                LispObject decl = decls.car();
-                if (decl instanceof Cons && decl.car() == Symbol.SPECIAL)
-                  {
-                    LispObject vars = decl.cdr();
-                    while (vars != NIL)
-                      {
-                        Symbol var = checkSymbol(vars.car());
-                        if (arrayList == null)
-                          arrayList = new ArrayList<Symbol>();
-                        arrayList.add(var);
-                        vars = vars.cdr();
-                      }
-                  }
-                decls = decls.cdr();
-              }
-            forms = forms.cdr();
-          }
-        else
-          break;
-      }
-    if (arrayList == null)
-      return emptySymbolArray;
-    Symbol[] array = new Symbol[arrayList.size()];
-    arrayList.toArray(array);
     return array;
   }
 
@@ -411,7 +376,7 @@ public class Closure extends Function
   {
     if (arity == 0)
       {
-        return progn(body, environment, 
+        return progn(executionBody, environment, 
                      LispThread.currentThread());
       }
     else
@@ -435,7 +400,7 @@ public class Closure extends Function
     bindAuxVars(ext, thread);
     try
       {
-        return progn(body, ext, thread);
+        return progn(executionBody, ext, thread);
       }
     finally
       {
@@ -614,8 +579,11 @@ public class Closure extends Function
         bindArg(specials, sym, args[i], ext, thread);
       }
     bindAuxVars(ext, thread);
+    LispObject s = specials;
     special:
-    for (Symbol special : specials) {
+    while (s != NIL) {
+      Symbol special = (Symbol)s.car();
+      s = s.cdr();
       for (Symbol var : variables)
         if (special == var)
           continue special;
@@ -626,7 +594,7 @@ public class Closure extends Function
     }
     try
       {
-        return progn(body, ext, thread);
+        return progn(executionBody, ext, thread);
       }
     finally
       {

@@ -3746,32 +3746,10 @@ public final class Primitives extends Lisp
             values[0] = value;
           }
         // Process declarations.
-        LispObject specials = NIL;
-        while (body != NIL)
-          {
-            LispObject obj = body.car();
-            if (obj instanceof Cons && ((Cons)obj).car == Symbol.DECLARE)
-              {
-                LispObject decls = ((Cons)obj).cdr;
-                while (decls != NIL)
-                  {
-                    LispObject decl = decls.car();
-                    if (decl instanceof Cons && ((Cons)decl).car == Symbol.SPECIAL)
-                      {
-                        LispObject declvars = ((Cons)decl).cdr;
-                        while (declvars != NIL)
-                          {
-                            specials = new Cons(declvars.car(), specials);
-                            declvars = ((Cons)declvars).cdr;
-                          }
-                      }
-                    decls = ((Cons)decls).cdr;
-                  }
-                body = ((Cons)body).cdr;
-              }
-            else
-              break;
-          }
+        LispObject bodyAndDecls = parseBody(body, false);
+        LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
+        body = bodyAndDecls.car();
+
         final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
         final Environment ext = new Environment(env);
         int i = 0;

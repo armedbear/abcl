@@ -96,32 +96,11 @@ public final class Do extends Lisp
     final LispObject stack = thread.getStack();
     final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
     // Process declarations.
-    LispObject specials = NIL;
-    while (body != NIL)
-      {
-        LispObject obj = body.car();
-        if (obj instanceof Cons && obj.car() == Symbol.DECLARE)
-          {
-            LispObject decls = obj.cdr();
-            while (decls != NIL)
-              {
-                LispObject decl = decls.car();
-                if (decl instanceof Cons && decl.car() == Symbol.SPECIAL)
-                  {
-                    LispObject names = decl.cdr();
-                    while (names != NIL)
-                      {
-                        specials = new Cons(names.car(), specials);
-                        names = names.cdr();
-                      }
-                  }
-                decls = decls.cdr();
-              }
-            body = body.cdr();
-          }
-        else
-          break;
-      }
+
+    final LispObject bodyAndDecls = parseBody(body, false);
+    LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
+    body = bodyAndDecls.car();
+
     final Environment ext = new Environment(env);
     for (int i = 0; i < numvars; i++)
       {
