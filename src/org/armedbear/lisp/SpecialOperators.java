@@ -330,7 +330,7 @@ public final class SpecialOperators extends Lisp
     LispObject defs = checkList(args.car());
     final LispThread thread = LispThread.currentThread();
     final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
-    final Environment ext = new Environment(env);
+    final Environment funEnv = new Environment(env);
     while (defs != NIL)
       {
         final LispObject def = checkList(defs.car());
@@ -373,16 +373,16 @@ public final class SpecialOperators extends Lisp
           list(recursive ? Symbol.LABELS : Symbol.FLET, name);
         Closure closure =
           new Closure(lambda_name, lambda_expression,
-                      recursive ? ext : env);
-        ext.addFunctionBinding(name, closure);
+                      recursive ? funEnv : env);
+        funEnv.addFunctionBinding(name, closure);
         defs = defs.cdr();
       }
     try
       {
-        final Environment innerEnv = new Environment(ext);
+        final Environment ext = new Environment(funEnv);
         LispObject body = args.cdr();
-        body = innerEnv.processDeclarations(body);
-        return progn(body, innerEnv, thread);
+        body = ext.processDeclarations(body);
+        return progn(body, ext, thread);
       }
     finally
       {
