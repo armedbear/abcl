@@ -418,12 +418,13 @@ public class Closure extends Function
       return execute(new LispObject[0]);
   }
     
-  private final LispObject bindParametersAndExecute(
-                                              Environment ext,
-                                              LispThread thread,
-                                              SpecialBinding lastSpecialBinding)
+  private final LispObject bindParametersAndExecute(LispObject... objects)
   throws ConditionThrowable
   {
+    final LispThread thread = LispThread.currentThread();
+    final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+    Environment ext = new Environment(environment);
+    bindRequiredParameters(ext, thread, objects);
     if (arity != minArgs)
       {
         bindParameterDefaults(optionalParameters, ext, thread);
@@ -444,7 +445,7 @@ public class Closure extends Function
 
   private final void bindRequiredParameters(Environment ext,
                                             LispThread thread,
-                                            LispObject... objects)
+                                            LispObject[] objects)
   throws ConditionThrowable
   {
     // &whole and &environment before anything
@@ -467,12 +468,7 @@ public class Closure extends Function
   {
     if (minArgs == 1)
       {
-        final LispThread thread = LispThread.currentThread();
-        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
-        Environment ext = new Environment(environment);
-        bindRequiredParameters(ext, thread, arg);
-        return bindParametersAndExecute(ext, thread, 
-                                        lastSpecialBinding);
+        return bindParametersAndExecute(arg);
       }
     else
       {
@@ -486,12 +482,7 @@ public class Closure extends Function
   {
     if (minArgs == 2)
       {
-        final LispThread thread = LispThread.currentThread();
-        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
-        Environment ext = new Environment(environment);
-        bindRequiredParameters(ext, thread, first, second);
-        return bindParametersAndExecute(ext, thread, 
-                                        lastSpecialBinding);
+        return bindParametersAndExecute(first, second);
       }
     else
       {
@@ -506,12 +497,7 @@ public class Closure extends Function
   {
     if (minArgs == 3)
       {
-        final LispThread thread = LispThread.currentThread();
-        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
-        Environment ext = new Environment(environment);
-        bindRequiredParameters(ext, thread, first, second, third);
-        return bindParametersAndExecute(ext, thread, 
-                                        lastSpecialBinding);
+        return bindParametersAndExecute(first, second, third);
       }
     else
       {
@@ -526,12 +512,7 @@ public class Closure extends Function
   {
     if (minArgs == 4)
       {
-        final LispThread thread = LispThread.currentThread();
-        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
-        Environment ext = new Environment(environment);
-        bindRequiredParameters(ext, thread, first, second, third, fourth);
-        return bindParametersAndExecute(ext, thread, 
-                                        lastSpecialBinding);
+        return bindParametersAndExecute(first, second, third, fourth);
       }
     else
       {
@@ -547,13 +528,8 @@ public class Closure extends Function
   {
     if (minArgs == 5)
       {
-        final LispThread thread = LispThread.currentThread();
-        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
-        Environment ext = new Environment(environment);
-        bindRequiredParameters(ext, thread, first, second, third, fourth,
-                               fifth);
-        return bindParametersAndExecute(ext, thread, 
-                                        lastSpecialBinding);
+        return bindParametersAndExecute(first, second, third, fourth,
+                                        fifth);
       }
     else
       {
@@ -569,13 +545,8 @@ public class Closure extends Function
   {
     if (minArgs == 6)
       {
-        final LispThread thread = LispThread.currentThread();
-        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
-        Environment ext = new Environment(environment);
-        bindRequiredParameters(ext, thread, first, second, third, fourth,
-                               fifth, sixth);
-        return bindParametersAndExecute(ext, thread, 
-                                        lastSpecialBinding);
+        return bindParametersAndExecute(first, second, third, fourth,
+                                        fifth, sixth);
       }
     else
       {
@@ -593,13 +564,8 @@ public class Closure extends Function
   {
     if (minArgs == 7)
       {
-        final LispThread thread = LispThread.currentThread();
-        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
-        Environment ext = new Environment(environment);
-        bindRequiredParameters(ext, thread, first, second, third, fourth,
+        return bindParametersAndExecute(first, second, third, fourth,
                                fifth, sixth, seventh);
-        return bindParametersAndExecute(ext, thread, 
-                                        lastSpecialBinding);
       }
     else
       {
@@ -617,13 +583,8 @@ public class Closure extends Function
   {
     if (minArgs == 8)
       {
-        final LispThread thread = LispThread.currentThread();
-        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
-        Environment ext = new Environment(environment);
-        bindRequiredParameters(ext, thread, first, second, third, fourth,
+        return bindParametersAndExecute(first, second, third, fourth,
                                fifth, sixth, seventh, eighth);
-        return bindParametersAndExecute(ext, thread, 
-                                        lastSpecialBinding);
       }
     else
       {
