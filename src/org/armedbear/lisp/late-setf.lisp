@@ -41,10 +41,12 @@
 			 (parse-defmacro lambda-list whole body access-fn
 					 'define-setf-expander
 					 :environment environment)
-      `(setf (get ',access-fn 'setf-expander)
+      `(progn
+         (setf (get ',access-fn 'setf-expander)
              #'(lambda (,whole ,environment)
                 ,@local-decs
-                (block ,access-fn ,body))))))
+                (block ,access-fn ,body)))
+         ',access-fn))))
 
 (define-setf-expander values (&rest places &environment env)
   (let ((setters ())
