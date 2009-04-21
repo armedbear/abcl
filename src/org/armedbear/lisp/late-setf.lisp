@@ -42,6 +42,8 @@
 					 'define-setf-expander
 					 :environment environment)
       `(progn
+         ,@(when doc
+             `((%set-documentation ',access-fn 'setf ,doc)))
          (setf (get ',access-fn 'setf-expander)
              #'(lambda (,whole ,environment)
                 ,@local-decs
