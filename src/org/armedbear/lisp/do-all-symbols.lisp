@@ -40,12 +40,14 @@
          (flet ((,flet-name (,var)
                  ,@decls
                  (tagbody ,@forms)))
-           (dolist (package (list-all-packages))
-             (flet ((iterate-over-symbols (symbols)
-                      (dolist (symbol symbols)
-                        (,flet-name symbol))))
-               (iterate-over-symbols (package-internal-symbols package))
-               (iterate-over-symbols (package-external-symbols package)))))
+           (mapc #'(lambda (package) 
+                     (flet ((iterate-over-symbols (symbols)
+                              (mapc #',flet-name symbols)))
+                       (iterate-over-symbols
+                        (package-internal-symbols package))
+                       (iterate-over-symbols
+                        (package-external-symbols package))))
+                 (list-all-packages)))
          (let ((,var nil))
            (declare (ignorable ,var))
            ,@decls
