@@ -58,8 +58,10 @@ public final class UnboundVariable extends CellError
         sb.append(getCellName().writeToString());
       }
     catch (Throwable t) {}
+    finally {
+        thread.lastSpecialBinding = lastSpecialBinding;
+    }
     sb.append(" is unbound.");
-    thread.lastSpecialBinding = lastSpecialBinding;
     return sb.toString();
   }
 

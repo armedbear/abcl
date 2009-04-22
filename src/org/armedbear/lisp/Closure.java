@@ -627,234 +627,238 @@ public class Closure extends Function
     Environment ext = new Environment(environment);
     // Section 3.4.4: "...the &environment parameter is bound along with
     // &whole before any other variables in the lambda list..."
-    if (bindInitForms)
-      if (envVar != null)
-	bindArg(specials, envVar, environment, ext, thread);
-    // Required parameters.
-    for (int i = 0; i < minArgs; i++)
-      {
+    try {
         if (bindInitForms)
-          bindArg(specials, requiredParameters[i].var, args[i], ext, thread);
-        array[index++] = args[i];
-      }
-    int i = minArgs;
-    int argsUsed = minArgs;
-    // Optional parameters.
-    for (Parameter parameter : optionalParameters)
-      {
-        if (i < argsLength)
+          if (envVar != null)
+            bindArg(specials, envVar, environment, ext, thread);
+        // Required parameters.
+        for (int i = 0; i < minArgs; i++)
           {
             if (bindInitForms)
-              bindArg(specials, parameter.var, args[i], ext, thread);
+              bindArg(specials, requiredParameters[i].var, args[i], ext, thread);
             array[index++] = args[i];
-            ++argsUsed;
-            if (parameter.svar != NIL)
+          }
+        int i = minArgs;
+        int argsUsed = minArgs;
+        // Optional parameters.
+        for (Parameter parameter : optionalParameters)
+          {
+            if (i < argsLength)
               {
                 if (bindInitForms)
-                  bindArg(specials, (Symbol)parameter.svar, T, ext, thread);
-                array[index++] = T;
+                  bindArg(specials, parameter.var, args[i], ext, thread);
+                array[index++] = args[i];
+                ++argsUsed;
+                if (parameter.svar != NIL)
+                  {
+                    if (bindInitForms)
+                      bindArg(specials, (Symbol)parameter.svar, T, ext, thread);
+                    array[index++] = T;
+                  }
               }
-          }
-        else
-          {
-            // We've run out of arguments.
-            LispObject value;
-            if (parameter.initVal != null)
-              value = parameter.initVal;
             else
-              value = eval(parameter.initForm, ext, thread);
-            if (bindInitForms)
-              bindArg(specials, parameter.var, value, ext, thread);
-            array[index++] = value;
-            if (parameter.svar != NIL)
               {
-                if (bindInitForms)
-                  bindArg(specials, (Symbol)parameter.svar, NIL, ext, thread);
-                array[index++] = NIL;
-              }
-          }
-        ++i;
-      }
-    // &rest parameter.
-    if (restVar != null)
-      {
-        LispObject rest = NIL;
-        for (int j = argsLength; j-- > argsUsed;)
-          rest = new Cons(args[j], rest);
-        if (bindInitForms)
-	  bindArg(specials, restVar, rest, ext, thread);
-        array[index++] = rest;
-      }
-    // Keyword parameters.
-    if (keywordParameters.length > 0)
-      {
-        int argsLeft = argsLength - argsUsed;
-        if (argsLeft == 0)
-          {
-            // No keyword arguments were supplied.
-            // Bind all keyword parameters to their defaults.
-            for (int k = 0; k < keywordParameters.length; k++)
-              {
-                Parameter parameter = keywordParameters[k];
+                // We've run out of arguments.
                 LispObject value;
                 if (parameter.initVal != null)
                   value = parameter.initVal;
                 else
                   value = eval(parameter.initForm, ext, thread);
                 if (bindInitForms)
-		  bindArg(specials, parameter.var, value, ext, thread);
+                  bindArg(specials, parameter.var, value, ext, thread);
                 array[index++] = value;
                 if (parameter.svar != NIL)
                   {
                     if (bindInitForms)
-		      bindArg(specials, (Symbol)parameter.svar, NIL, ext, thread);
+                      bindArg(specials, (Symbol)parameter.svar, NIL, ext, thread);
                     array[index++] = NIL;
                   }
               }
+            ++i;
           }
-        else
+        // &rest parameter.
+        if (restVar != null)
           {
-            if ((argsLeft % 2) != 0)
-              error(new ProgramError("Odd number of keyword arguments."));
-            LispObject allowOtherKeysValue = null;
-            for (Parameter parameter : keywordParameters)
+            LispObject rest = NIL;
+            for (int j = argsLength; j-- > argsUsed;)
+              rest = new Cons(args[j], rest);
+            if (bindInitForms)
+                bindArg(specials, restVar, rest, ext, thread);
+            array[index++] = rest;
+          }
+        // Keyword parameters.
+        if (keywordParameters.length > 0)
+          {
+            int argsLeft = argsLength - argsUsed;
+            if (argsLeft == 0)
               {
-                Symbol keyword = parameter.keyword;
-                LispObject value = null;
-                boolean unbound = true;
-                for (int j = argsUsed; j < argsLength; j += 2)
+                // No keyword arguments were supplied.
+                // Bind all keyword parameters to their defaults.
+                for (int k = 0; k < keywordParameters.length; k++)
                   {
-                    if (args[j] == keyword)
-                      {
-                        if (bindInitForms)
-			  bindArg(specials, parameter.var, args[j+1], ext, thread);
-                        value = array[index++] = args[j+1];
-                        if (parameter.svar != NIL)
-                          {
-                            if (bindInitForms)
-			      bindArg(specials,(Symbol)parameter.svar, T, ext, thread);
-                            array[index++] = T;
-                          }
-                        args[j] = null;
-                        args[j+1] = null;
-                        unbound = false;
-                        break;
-                      }
-                  }
-                if (unbound)
-                  {
+                    Parameter parameter = keywordParameters[k];
+                    LispObject value;
                     if (parameter.initVal != null)
                       value = parameter.initVal;
                     else
                       value = eval(parameter.initForm, ext, thread);
                     if (bindInitForms)
-		      bindArg(specials, parameter.var, value, ext, thread);
+                        bindArg(specials, parameter.var, value, ext, thread);
                     array[index++] = value;
                     if (parameter.svar != NIL)
                       {
                         if (bindInitForms)
-			  bindArg(specials, (Symbol)parameter.svar, NIL, ext, thread);
+                            bindArg(specials, (Symbol)parameter.svar, NIL, ext, thread);
                         array[index++] = NIL;
                       }
                   }
-                if (keyword == Keyword.ALLOW_OTHER_KEYS)
-                  {
-                    if (allowOtherKeysValue == null)
-                      allowOtherKeysValue = value;
-                  }
               }
-            if (!allowOtherKeys)
+            else
               {
-                if (allowOtherKeysValue == null || allowOtherKeysValue == NIL)
+                if ((argsLeft % 2) != 0)
+                  error(new ProgramError("Odd number of keyword arguments."));
+                LispObject allowOtherKeysValue = null;
+                for (Parameter parameter : keywordParameters)
                   {
-                    LispObject unrecognizedKeyword = null;
+                    Symbol keyword = parameter.keyword;
+                    LispObject value = null;
+                    boolean unbound = true;
                     for (int j = argsUsed; j < argsLength; j += 2)
                       {
-                        LispObject keyword = args[j];
-                        if (keyword == null)
-                          continue;
-                        if (keyword == Keyword.ALLOW_OTHER_KEYS)
+                        if (args[j] == keyword)
                           {
-                            if (allowOtherKeysValue == null)
+                            if (bindInitForms)
+                                bindArg(specials, parameter.var, args[j+1], ext, thread);
+                            value = array[index++] = args[j+1];
+                            if (parameter.svar != NIL)
                               {
-                                allowOtherKeysValue = args[j+1];
-                                if (allowOtherKeysValue != NIL)
-                                  break;
+                                if (bindInitForms)
+                                    bindArg(specials,(Symbol)parameter.svar, T, ext, thread);
+                                array[index++] = T;
                               }
-                            continue;
+                            args[j] = null;
+                            args[j+1] = null;
+                            unbound = false;
+                            break;
                           }
-                        // Unused keyword argument.
-                        boolean ok = false;
-                        for (Parameter parameter : keywordParameters)
-                          {
-                            if (parameter.keyword == keyword)
-                              {
-                                // Found it!
-                                ok = true;
-                                break;
-                              }
-                          }
-                        if (ok)
-                          continue;
-                        // Unrecognized keyword argument.
-                        if (unrecognizedKeyword == null)
-                          unrecognizedKeyword = keyword;
                       }
-                    if (unrecognizedKeyword != null)
+                    if (unbound)
                       {
-                        if (!allowOtherKeys &&
-                            (allowOtherKeysValue == null || allowOtherKeysValue == NIL))
-                          error(new ProgramError("Unrecognized keyword argument " +
-                                                  unrecognizedKeyword.writeToString()));
+                        if (parameter.initVal != null)
+                          value = parameter.initVal;
+                        else
+                          value = eval(parameter.initForm, ext, thread);
+                        if (bindInitForms)
+                            bindArg(specials, parameter.var, value, ext, thread);
+                        array[index++] = value;
+                        if (parameter.svar != NIL)
+                          {
+                            if (bindInitForms)
+                                bindArg(specials, (Symbol)parameter.svar, NIL, ext, thread);
+                            array[index++] = NIL;
+                          }
+                      }
+                    if (keyword == Keyword.ALLOW_OTHER_KEYS)
+                      {
+                        if (allowOtherKeysValue == null)
+                          allowOtherKeysValue = value;
+                      }
+                  }
+                if (!allowOtherKeys)
+                  {
+                    if (allowOtherKeysValue == null || allowOtherKeysValue == NIL)
+                      {
+                        LispObject unrecognizedKeyword = null;
+                        for (int j = argsUsed; j < argsLength; j += 2)
+                          {
+                            LispObject keyword = args[j];
+                            if (keyword == null)
+                              continue;
+                            if (keyword == Keyword.ALLOW_OTHER_KEYS)
+                              {
+                                if (allowOtherKeysValue == null)
+                                  {
+                                    allowOtherKeysValue = args[j+1];
+                                    if (allowOtherKeysValue != NIL)
+                                      break;
+                                  }
+                                continue;
+                              }
+                            // Unused keyword argument.
+                            boolean ok = false;
+                            for (Parameter parameter : keywordParameters)
+                              {
+                                if (parameter.keyword == keyword)
+                                  {
+                                    // Found it!
+                                    ok = true;
+                                    break;
+                                  }
+                              }
+                            if (ok)
+                              continue;
+                            // Unrecognized keyword argument.
+                            if (unrecognizedKeyword == null)
+                              unrecognizedKeyword = keyword;
+                          }
+                        if (unrecognizedKeyword != null)
+                          {
+                            if (!allowOtherKeys &&
+                                (allowOtherKeysValue == null || allowOtherKeysValue == NIL))
+                              error(new ProgramError("Unrecognized keyword argument " +
+                                                      unrecognizedKeyword.writeToString()));
+                          }
                       }
                   }
               }
           }
-      }
-    else if (argsUsed < argsLength)
-      {
-        // No keyword parameters.
-        if (argsUsed + 2 <= argsLength)
+        else if (argsUsed < argsLength)
           {
-            // Check for :ALLOW-OTHER-KEYS.
-            LispObject allowOtherKeysValue = NIL;
-            int n = argsUsed;
-            while (n < argsLength)
+            // No keyword parameters.
+            if (argsUsed + 2 <= argsLength)
               {
-                LispObject keyword = args[n];
-                if (keyword == Keyword.ALLOW_OTHER_KEYS)
+                // Check for :ALLOW-OTHER-KEYS.
+                LispObject allowOtherKeysValue = NIL;
+                int n = argsUsed;
+                while (n < argsLength)
                   {
-                    allowOtherKeysValue = args[n+1];
-                    break;
+                    LispObject keyword = args[n];
+                    if (keyword == Keyword.ALLOW_OTHER_KEYS)
+                      {
+                        allowOtherKeysValue = args[n+1];
+                        break;
+                      }
+                    n += 2;
                   }
-                n += 2;
-              }
-            if (allowOtherKeys || allowOtherKeysValue != NIL)
-              {
-                // Skip keyword/value pairs.
-                while (argsUsed + 2 <= argsLength)
-                  argsUsed += 2;
-              }
-            else if (andKey)
-              {
-                LispObject keyword = args[argsUsed];
-                if (keyword == Keyword.ALLOW_OTHER_KEYS)
+                if (allowOtherKeys || allowOtherKeysValue != NIL)
                   {
-                    // Section 3.4.1.4: "Note that if &KEY is present, a
-                    // keyword argument of :ALLOW-OTHER-KEYS is always
-                    // permitted---regardless of whether the associated
-                    // value is true or false."
-                    argsUsed += 2;
+                    // Skip keyword/value pairs.
+                    while (argsUsed + 2 <= argsLength)
+                      argsUsed += 2;
                   }
+                else if (andKey)
+                  {
+                    LispObject keyword = args[argsUsed];
+                    if (keyword == Keyword.ALLOW_OTHER_KEYS)
+                      {
+                        // Section 3.4.1.4: "Note that if &KEY is present, a
+                        // keyword argument of :ALLOW-OTHER-KEYS is always
+                        // permitted---regardless of whether the associated
+                        // value is true or false."
+                        argsUsed += 2;
+                      }
+                  }
+              }
+            if (argsUsed < argsLength)
+              {
+                if (restVar == null)
+                  error(new WrongNumberOfArgumentsException(this));
               }
           }
-        if (argsUsed < argsLength)
-          {
-            if (restVar == null)
-              error(new WrongNumberOfArgumentsException(this));
-          }
-      }
-    thread.lastSpecialBinding = lastSpecialBinding;
+    }
+    finally {
+        thread.lastSpecialBinding = lastSpecialBinding;
+    }
     return array;
   }
 

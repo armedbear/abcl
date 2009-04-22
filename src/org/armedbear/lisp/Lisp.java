@@ -1795,8 +1795,12 @@ public abstract class Lisp
                         LispObject obj = args[j++];
                         SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
                         thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
-                        sb.append(obj.writeToString());
-                        thread.lastSpecialBinding = lastSpecialBinding;
+                        try {
+                            sb.append(obj.writeToString());
+                        }
+                        finally {
+                            thread.lastSpecialBinding = lastSpecialBinding;
+                        }
                       }
                   }
                 else if (c == 'D' || c == 'd')
@@ -1808,8 +1812,12 @@ public abstract class Lisp
                         thread.bindSpecial(Symbol.PRINT_ESCAPE, NIL);
                         thread.bindSpecial(Symbol.PRINT_RADIX, NIL);
                         thread.bindSpecial(Symbol.PRINT_BASE, Fixnum.constants[10]);
-                        sb.append(obj.writeToString());
-                        thread.lastSpecialBinding = lastSpecialBinding;
+                        try {
+                            sb.append(obj.writeToString());
+                        }
+                        finally {
+                            thread.lastSpecialBinding = lastSpecialBinding;
+                        }
                       }
                   }
                 else if (c == 'X' || c == 'x')
@@ -1821,8 +1829,12 @@ public abstract class Lisp
                         thread.bindSpecial(Symbol.PRINT_ESCAPE, NIL);
                         thread.bindSpecial(Symbol.PRINT_RADIX, NIL);
                         thread.bindSpecial(Symbol.PRINT_BASE, Fixnum.constants[16]);
-                        sb.append(obj.writeToString());
-                        thread.lastSpecialBinding = lastSpecialBinding;
+                        try {
+                            sb.append(obj.writeToString());
+                        }
+                        finally {
+                            thread.lastSpecialBinding = lastSpecialBinding;
+                        }
                       }
                   }
                 else if (c == '%')
