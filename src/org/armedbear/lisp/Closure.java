@@ -398,6 +398,7 @@ public class Closure extends Function
         bindParameterDefaults(keywordParameters, ext, thread);
       }
     bindAuxVars(ext, thread);
+    declareFreeSpecials(ext);
     try
       {
         return progn(executionBody, ext, thread);
@@ -558,6 +559,24 @@ public class Closure extends Function
       }
   }
 
+  private final void declareFreeSpecials(Environment ext)
+    throws ConditionThrowable
+  {
+    LispObject s = specials;
+    special:
+    while (s != NIL) {
+      Symbol special = (Symbol)s.car();
+      s = s.cdr();
+      for (Symbol var : variables)
+	if (special == var)
+          continue special;
+      for (Parameter parameter : auxVars)
+        if (special == parameter.var)
+          continue special;
+      ext.declareSpecial(special);
+    }
+  }
+
   @Override
   public LispObject execute(LispObject[] args) throws ConditionThrowable
   {
@@ -579,19 +598,7 @@ public class Closure extends Function
         bindArg(specials, sym, args[i], ext, thread);
       }
     bindAuxVars(ext, thread);
-    LispObject s = specials;
-    special:
-    while (s != NIL) {
-      Symbol special = (Symbol)s.car();
-      s = s.cdr();
-      for (Symbol var : variables)
-        if (special == var)
-          continue special;
-      for (Parameter parameter : auxVars)
-        if (special == parameter.var)
-          continue special;
-      ext.declareSpecial(special);
-    }
+    declareFreeSpecials(ext);
     try
       {
         return progn(executionBody, ext, thread);
