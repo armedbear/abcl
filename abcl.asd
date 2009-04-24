@@ -37,7 +37,7 @@
 (defmethod perform ((o test-op) (c (eql (find-system 'ansi-interpreted))))
    "Invoke tests with:  (asdf:oos 'asdf:test-op :ansi-interpreted :force t)."
    ;;; FIXME needs ASDF:OOS to be invoked with :FORCE t
-  (funcall (intern (symbol-name 'run) :ansi.test.ansi)
+  (funcall (intern (symbol-name 'run) :abcl.test.ansi)
 	   :compile-tests nil))
 
 (defsystem :ansi-compiled :version "1.0" :depends-on (ansi-test))
