@@ -2957,9 +2957,11 @@ itself is *not* compiled by this function."
                           (declare-object op))))
                (emit 'getstatic *this-class* g +lisp-object+)))
             (t
-             (let ((name (lookup-known-symbol op)))
+             (multiple-value-bind
+                   (name class)
+                 (lookup-known-symbol op)
                (if name
-                   (emit 'getstatic +lisp-symbol-class+ name +lisp-symbol+)
+                   (emit 'getstatic class name +lisp-symbol+)
                    (emit 'getstatic *this-class* (declare-symbol op) +lisp-symbol+)))))
       (process-args args)
       (if (or (<= *speed* *debug*) *require-stack-frame*)
@@ -4921,18 +4923,15 @@ given a specific common representation.")
           ((eq representation :boolean)
            (emit 'iconst_1)
            (emit-move-from-stack target representation))
-          ((keywordp obj)
-           (let ((name (lookup-known-keyword obj)))
-              (if name
-                  (emit 'getstatic "org/armedbear/lisp/Keyword" name +lisp-symbol+)
-                  (emit 'getstatic *this-class* (declare-keyword obj) +lisp-symbol+)))
-            (emit-move-from-stack target representation))
           ((symbolp obj)
-           (let ((name (lookup-known-symbol obj)))
+           (multiple-value-bind
+                 (name class)
+               (lookup-known-symbol obj)
              (cond (name
-                    (emit 'getstatic +lisp-symbol-class+ name +lisp-symbol+))
+                    (emit 'getstatic class name +lisp-symbol+))
                    ((symbol-package (truly-the symbol obj))
-                    (emit 'getstatic *this-class* (declare-symbol obj) +lisp-symbol+))
+                    (emit 'getstatic *this-class* (declare-symbol obj)
+                          +lisp-symbol+))
                    (t
                     ;; An uninterned symbol.
                     (let ((g (if *file-compilation*
@@ -8008,10 +8007,13 @@ for use with derive-type-times.")
                   (:boolean
                    (emit 'iconst_1))
                   ((nil)
-                   (let ((name (lookup-known-keyword form)))
+                   (multiple-value-bind
+                         (name class)
+                       (lookup-known-symbol form)
                      (if name
-                         (emit 'getstatic "org/armedbear/lisp/Keyword" name +lisp-symbol+)
-                         (emit 'getstatic *this-class* (declare-keyword form) +lisp-symbol+)))))
+                         (emit 'getstatic class name +lisp-symbol+)
+                         (emit 'getstatic *this-class* (declare-keyword form)
+                               +lisp-symbol+)))))
                 (emit-move-from-stack target representation))
                (t
                 ;; Shouldn't happen.

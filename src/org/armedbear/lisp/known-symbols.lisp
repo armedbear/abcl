@@ -31,13 +31,12 @@
 
 (in-package #:system)
 
-(export '(lookup-known-symbol lookup-known-keyword))
+(export '(lookup-known-symbol))
 
-(let ((symbols (make-hash-table :test 'eq :size 1024))
-      (keywords (make-hash-table :test 'eq :size 128)))
+(let ((symbols (make-hash-table :test 'eq :size 2048)))
   (defun initialize-known-symbols (source ht)
-    (clrhash ht)
     (let* ((source-class (java:jclass source))
+           (class-designator (substitute #\/ #\. source))
            (symbol-class (java:jclass "org.armedbear.lisp.Symbol"))
            (fields (java:jclass-fields source-class :declared t :public t)))
       (dotimes (i (length fields))
@@ -46,16 +45,16 @@
           (when (equal type symbol-class)
             (let* ((name (java:jfield-name field))
                    (symbol (java:jfield source-class name)))
-              (puthash symbol ht name))))))
+              (puthash symbol ht (list name class-designator)))))))
     (hash-table-count ht))
 
   (initialize-known-symbols "org.armedbear.lisp.Symbol" symbols)
-  (initialize-known-symbols "org.armedbear.lisp.Keyword" keywords)
+  (initialize-known-symbols "org.armedbear.lisp.Keyword" symbols)
 
   (defun lookup-known-symbol (symbol)
-    (gethash1 symbol symbols))
+    "Returns the name of the field and its class designator
+which stores the Java object `symbol'."
+    (values-list (gethash1 symbol symbols))))
 
-  (defun lookup-known-keyword (keyword)
-    (gethash1 keyword keywords)))
 
 (provide '#:known-symbols)
