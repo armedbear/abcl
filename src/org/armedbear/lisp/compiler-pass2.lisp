@@ -2065,12 +2065,12 @@ the Java object representing SYMBOL can be retrieved."
      (setf *static-code* *code*)
      (setf (gethash symbol ht) g))))
 
-(defknown declare-function (symbol) string)
-(defun declare-function (symbol)
+(defknown declare-function (symbol &optional setf) string)
+(defun declare-function (symbol &optional setf)
   (declare (type symbol symbol))
   (declare-with-hashtable
    symbol *declared-functions* ht f
-   (setf f (symbol-name (gensym "FUN")))
+   (setf f (symbol-name (if setf (gensym "SETF") (gensym "FUN"))))
    (let ((s (sanitize symbol)))
      (when s
        (setf f (concatenate 'string f "_" s))))
@@ -2080,7 +2080,10 @@ the Java object representing SYMBOL can be retrieved."
        (lookup-or-declare-symbol symbol)
      (let ((*code* *static-code*))
        (emit 'getstatic class name +lisp-symbol+)
-       (emit-invokevirtual +lisp-symbol-class+ "getSymbolFunctionOrDie"
+       (emit-invokevirtual +lisp-symbol-class+
+                           (if setf
+                               "getSymbolSetfFunctionOrDie"
+                               "getSymbolFunctionOrDie")
                            nil +lisp-object+)
        (emit 'putstatic *this-class* f +lisp-object+)
        (setf *static-code* *code*)
@@ -2088,25 +2091,7 @@ the Java object representing SYMBOL can be retrieved."
 
 (defknown declare-setf-function (name) string)
 (defun declare-setf-function (name)
-  (declare-with-hashtable
-   name *declared-functions* ht f
-   (let ((symbol (cadr name)))
-     (declare (type symbol symbol))
-     (setf f (symbol-name (gensym)))
-     (let ((s (sanitize symbol)))
-       (when s
-	 (setf f (concatenate 'string f "_SETF_" s))))
-     (multiple-value-bind
-           (name class)
-         (lookup-or-declare-symbol symbol)
-       (let ((*code* *static-code*))
-         (emit 'getstatic class name +lisp-symbol+)
-         (declare-field f +lisp-object+)
-         (emit-invokevirtual +lisp-symbol-class+ "getSymbolSetfFunctionOrDie"
-                             nil +lisp-object+)
-         (emit 'putstatic *this-class* f +lisp-object+)
-         (setf *static-code* *code*)
-         (setf (gethash name ht) f))))))
+  (declare-function (cadr name) t))
 
 
 (defknown declare-local-function (local-function) string)
