@@ -284,10 +284,7 @@ public final class FaslReader extends Lisp
             LispThread thread = LispThread.currentThread();
             Symbol symbol = (Symbol) stream.readSymbol(FaslReadtable.getInstance());
             LispObject pkg = Load._FASL_ANONYMOUS_PACKAGE_.symbolValue(thread);
-            if (pkg == NIL) {
-                thread.bindSpecial(Load._FASL_ANONYMOUS_PACKAGE_,
-                                   pkg = new Package());
-            }
+            Debug.assertTrue(pkg != NIL);
             symbol = ((Package)pkg).intern(symbol.getName());
             symbol.setPackage(NIL);
             return symbol;

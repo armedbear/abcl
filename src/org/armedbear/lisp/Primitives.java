@@ -3017,6 +3017,20 @@ public final class Primitives extends Lisp
   private static final Primitive _MAKE_PACKAGE =
     new Primitive("%make-package", PACKAGE_SYS, false)
     {
+      /**
+       * This invocation is solely used to be able to create
+       * a package to bind to *FASL-ANONYMOUS-PACKAGE*
+       */
+      @Override
+      public LispObject execute()
+        throws ConditionThrowable
+      {
+        return new Package();
+      }
+
+      /**
+       * This invocation is used by MAKE-PACKAGE to create a package
+       */
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)

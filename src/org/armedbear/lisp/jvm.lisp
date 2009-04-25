@@ -413,7 +413,8 @@
 
 (defun compile (name &optional definition)
   (let ((*file-compilation* nil)
-        (*pathnames-generator* #'make-temp-file))
+        (*pathnames-generator* #'make-temp-file)
+        (sys::*fasl-anonymous-package* (sys::%make-package)))
     (jvm-compile name definition)))
 
 (defmacro with-file-compilation (&body body)

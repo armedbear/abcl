@@ -427,7 +427,8 @@
                   (*debug* *debug*)
                   (*explain* *explain*)
                   (jvm::*functions-defined-in-current-file* '())
-                  (*fbound-names* '()))
+                  (*fbound-names* '())
+                  (*fasl-anonymous-package* (%make-package)))
               (jvm::with-file-compilation
                 (write "; -*- Mode: Lisp -*-" :escape nil :stream out)
                 (%stream-terpri out)

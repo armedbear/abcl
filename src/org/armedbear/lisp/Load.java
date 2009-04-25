@@ -344,6 +344,11 @@ public final class Load extends Lisp
 
     // ### *fasl-anonymous-package*
     // internal symbol
+    /**
+     * This variable gets bound to a package with no name in which the
+     * reader can intern its uninterned symbols.
+     * 
+     */
     public static final Symbol _FASL_ANONYMOUS_PACKAGE_ =
         internSpecial("*FASL-ANONYMOUS-PACKAGE*", PACKAGE_SYS, NIL);
 
@@ -473,11 +478,18 @@ public final class Load extends Lisp
     {
         Stream in = (Stream) _LOAD_STREAM_.symbolValue(thread);
         final Environment env = new Environment();
-        while (true) {
-            LispObject obj = in.faslRead(false, EOF, true, thread);
-            if (obj == EOF)
-                break;
-            eval(obj, env, thread);
+        final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+        try {
+            thread.bindSpecial(_FASL_ANONYMOUS_PACKAGE_, new Package());
+            while (true) {
+                LispObject obj = in.faslRead(false, EOF, true, thread);
+                if (obj == EOF)
+                    break;
+                eval(obj, env, thread);
+            }
+        }
+        finally {
+            thread.lastSpecialBinding = lastSpecialBinding;
         }
         return T;
     }

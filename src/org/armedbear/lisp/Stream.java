@@ -518,8 +518,16 @@ public class Stream extends LispObject
       }
     else
       {
+        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
         thread.bindSpecial(_SHARP_EQUAL_ALIST_, NIL);
-        return faslReadPreservingWhitespace(eofError, eofValue, true, thread);
+        try
+          {
+            return faslReadPreservingWhitespace(eofError, eofValue, true, thread);
+          }
+        finally
+          {
+            thread.lastSpecialBinding = lastSpecialBinding;
+          }
       }
   }
 

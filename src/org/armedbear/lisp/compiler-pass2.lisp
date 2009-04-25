@@ -5019,7 +5019,8 @@ given a specific common representation.")
 	       pathname class-file lambda-list
 	       (set-compiland-and-write-class-file class-file compiland)
 	       (setf (local-function-class-file local-function) class-file)
-	       (setf (local-function-function local-function) (load-compiled-function pathname))
+	       (setf (local-function-function local-function)
+                     (load-compiled-function pathname))
 	       (when (local-function-variable local-function)
 		 (let ((g (declare-object (load-compiled-function pathname))))
 		   (emit-make-compiled-closure-for-flet/labels 
