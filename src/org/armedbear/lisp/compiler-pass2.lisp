@@ -746,8 +746,10 @@ Special variables are not considered local."
         (emit 'aaload))))
 
 (defun emit-push-variable-name (variable)
-  (emit 'getstatic *this-class* (declare-symbol (variable-name variable))
-        +lisp-symbol+))
+  (multiple-value-bind
+        (name class)
+      (lookup-or-declare-symbol (variable-name variable))
+  (emit 'getstatic class name +lisp-symbol+)))
 
 (defknown generate-instanceof-type-check-for-variable (t t) t)
 (defun generate-instanceof-type-check-for-variable (variable expected-type)
@@ -2038,6 +2040,16 @@ representation, based on the derived type of the LispObject."
 	    (setf *static-code* *code*)
 	    (setf (gethash symbol ht) g))))))
 
+(defun lookup-or-declare-symbol (symbol)
+  "Returns the value-pair (VALUES field class) from which
+the Java object representing SYMBOL can be retrieved."
+  (multiple-value-bind
+        (name class)
+      (lookup-known-symbol symbol)
+    (if name
+        (values name class)
+        (values (declare-symbol symbol) *this-class*))))
+
 (defknown declare-keyword (symbol) string)
 (defun declare-keyword (symbol)
   (declare (type symbol symbol))
@@ -2062,22 +2074,17 @@ representation, based on the derived type of the LispObject."
    (let ((s (sanitize symbol)))
      (when s
        (setf f (concatenate 'string f "_" s))))
-   (let ((*code* *static-code*)
-	 (g (gethash1 symbol (the hash-table *declared-symbols*))))
-     (cond (g
-	    (emit 'getstatic *this-class* g +lisp-symbol+))
-	   (t
-	    (emit 'ldc (pool-string (symbol-name symbol)))
-	    (emit 'ldc (pool-string (package-name (symbol-package symbol))))
-	    (emit-invokestatic +lisp-class+ "internInPackage"
-			       (list +java-string+ +java-string+)
-			       +lisp-symbol+)))
-     (declare-field f +lisp-object+)
-     (emit-invokevirtual +lisp-symbol-class+ "getSymbolFunctionOrDie"
-			 nil +lisp-object+)
-     (emit 'putstatic *this-class* f +lisp-object+)
-     (setf *static-code* *code*)
-     (setf (gethash symbol ht) f))))
+   (declare-field f +lisp-object+)
+   (multiple-value-bind
+         (name class)
+       (lookup-or-declare-symbol symbol)
+     (let ((*code* *static-code*))
+       (emit 'getstatic class name +lisp-symbol+)
+       (emit-invokevirtual +lisp-symbol-class+ "getSymbolFunctionOrDie"
+                           nil +lisp-object+)
+       (emit 'putstatic *this-class* f +lisp-object+)
+       (setf *static-code* *code*)
+       (setf (gethash symbol ht) f)))))
 
 (defknown declare-setf-function (name) string)
 (defun declare-setf-function (name)
@@ -2089,22 +2096,17 @@ representation, based on the derived type of the LispObject."
      (let ((s (sanitize symbol)))
        (when s
 	 (setf f (concatenate 'string f "_SETF_" s))))
-     (let ((*code* *static-code*)
-	   (g (gethash1 symbol (the hash-table *declared-symbols*))))
-       (cond (g
-	      (emit 'getstatic *this-class* g +lisp-symbol+))
-	     (t
-	      (emit 'ldc (pool-string (symbol-name symbol)))
-	      (emit 'ldc (pool-string (package-name (symbol-package symbol))))
-	      (emit-invokestatic +lisp-class+ "internInPackage"
-				 (list +java-string+ +java-string+)
-				 +lisp-symbol+)))
-       (declare-field f +lisp-object+)
-       (emit-invokevirtual +lisp-symbol-class+ "getSymbolSetfFunctionOrDie"
-			   nil +lisp-object+)
-       (emit 'putstatic *this-class* f +lisp-object+)
-       (setf *static-code* *code*)
-       (setf (gethash name ht) f)))))
+     (multiple-value-bind
+           (name class)
+         (lookup-or-declare-symbol symbol)
+       (let ((*code* *static-code*))
+         (emit 'getstatic class name +lisp-symbol+)
+         (declare-field f +lisp-object+)
+         (emit-invokevirtual +lisp-symbol-class+ "getSymbolSetfFunctionOrDie"
+                             nil +lisp-object+)
+         (emit 'putstatic *this-class* f +lisp-object+)
+         (setf *static-code* *code*)
+         (setf (gethash name ht) f))))))
 
 
 (defknown declare-local-function (local-function) string)
@@ -2949,20 +2951,16 @@ itself is *not* compiled by this function."
         (emit-push-current-thread))
       (cond ((eq op (compiland-name *current-compiland*)) ; recursive call
              (if (notinline-p op)
-                 (emit 'getstatic *this-class* (declare-symbol op) +lisp-symbol+)
+                 (multiple-value-bind
+                       (name class)
+                     (lookup-or-declare-symbol op)
+                   (emit 'getstatic class name +lisp-symbol+))
                  (aload 0)))
-            ((null (symbol-package op))
-             (let ((g (if *file-compilation*
-                          (declare-object-as-string op)
-                          (declare-object op))))
-               (emit 'getstatic *this-class* g +lisp-object+)))
             (t
              (multiple-value-bind
                    (name class)
-                 (lookup-known-symbol op)
-               (if name
-                   (emit 'getstatic class name +lisp-symbol+)
-                   (emit 'getstatic *this-class* (declare-symbol op) +lisp-symbol+)))))
+                 (lookup-or-declare-symbol op)
+               (emit 'getstatic class name +lisp-symbol+))))
       (process-args args)
       (if (or (<= *speed* *debug*) *require-stack-frame*)
           (emit-call-thread-execute numargs)
@@ -4926,19 +4924,9 @@ given a specific common representation.")
           ((symbolp obj)
            (multiple-value-bind
                  (name class)
-               (lookup-known-symbol obj)
-             (cond (name
-                    (emit 'getstatic class name +lisp-symbol+))
-                   ((symbol-package (truly-the symbol obj))
-                    (emit 'getstatic *this-class* (declare-symbol obj)
-                          +lisp-symbol+))
-                   (t
-                    ;; An uninterned symbol.
-                    (let ((g (if *file-compilation*
-                                 (declare-object-as-string obj)
-                                 (declare-object obj))))
-                      (emit 'getstatic *this-class* g +lisp-object+))))
-             (emit-move-from-stack target representation)))
+               (lookup-or-declare-symbol obj)
+             (emit 'getstatic class name +lisp-symbol+))
+           (emit-move-from-stack target representation))
           ((listp obj)
            (let ((g (if *file-compilation*
                         (declare-object-as-string obj)
@@ -5190,9 +5178,12 @@ given a specific common representation.")
                         (declare-function name) +lisp-object+)
                   (emit-move-from-stack target))
                  (t
-                  (emit 'getstatic *this-class*
-                        (declare-symbol name) +lisp-symbol+)
-                  (emit-invokevirtual +lisp-object-class+ "getSymbolFunctionOrDie"
+                  (multiple-value-bind
+                        (name class)
+                      (lookup-or-declare-symbol name)
+                    (emit 'getstatic class name +lisp-symbol+))
+                  (emit-invokevirtual +lisp-object-class+
+                                      "getSymbolFunctionOrDie"
                                       nil +lisp-object+)
                   (emit-move-from-stack target))))
           ((and (consp name) (eq (%car name) 'SETF))
@@ -5226,8 +5217,10 @@ given a specific common representation.")
                         (declare-object (fdefinition name)) +lisp-object+)
                   (emit-move-from-stack target))
                  (t
-                  (emit 'getstatic *this-class*
-                        (declare-symbol (cadr name)) +lisp-symbol+)
+                  (multiple-value-bind
+                        (name class)
+                      (lookup-or-declare-symbol (cadr name))
+                    (emit 'getstatic class name +lisp-symbol+))
                   (emit-invokevirtual +lisp-symbol-class+
                                       "getSymbolSetfFunctionOrDie"
                                       nil +lisp-object+)
@@ -7486,7 +7479,10 @@ for use with derive-type-times.")
                 (packagep value))
         (compile-constant value target representation)
         (return-from compile-special-reference))))
-  (emit 'getstatic *this-class* (declare-symbol name) +lisp-symbol+)
+  (multiple-value-bind
+        (name class)
+      (lookup-or-declare-symbol name)
+    (emit 'getstatic class name +lisp-symbol+))
   (cond ((constantp name)
          ;; "... a reference to a symbol declared with DEFCONSTANT always
          ;; refers to its global value."
@@ -7561,7 +7557,10 @@ for use with derive-type-times.")
           (return-from p2-setq (compile-form (p1 new-form) target representation))))
       ;; We're setting a special variable.
       (emit-push-current-thread)
-      (emit 'getstatic *this-class* (declare-symbol name) +lisp-symbol+)
+      (multiple-value-bind
+            (name class)
+          (lookup-or-declare-symbol name)
+        (emit 'getstatic class name +lisp-symbol+))
 ;;       (let ((*print-structure* nil))
 ;;         (format t "p2-setq name = ~S value-form = ~S~%" name value-form))
       (cond ((and (consp value-form)
@@ -8009,11 +8008,8 @@ for use with derive-type-times.")
                   ((nil)
                    (multiple-value-bind
                          (name class)
-                       (lookup-known-symbol form)
-                     (if name
-                         (emit 'getstatic class name +lisp-symbol+)
-                         (emit 'getstatic *this-class* (declare-keyword form)
-                               +lisp-symbol+)))))
+                       (lookup-or-declare-symbol form)
+                     (emit 'getstatic class name +lisp-symbol+))))
                 (emit-move-from-stack target representation))
                (t
                 ;; Shouldn't happen.
