@@ -353,7 +353,6 @@
 
 (declaim (ftype (function (t) t) precompile1))
 (defun precompile1 (form)
-;;  (sys::%format t "~S~%" form)
   (cond ((symbolp form)
          (let ((varspec (find-varspec form)))
            (cond ((and varspec (eq (second varspec) :symbol-macro))
@@ -597,32 +596,14 @@
       (setq aux-vars (nreverse aux-vars))
       (setq lambda-list (subseq lambda-list 0 (position '&AUX lambda-list)))
       (multiple-value-bind (lambda-decls let-decls)
-          (rewrite-aux-vars-process-decls decls (lambda-list-names lambda-list) aux-vars)
-        `(lambda ,lambda-list ,@lambda-decls (let* ,lets ,@let-decls ,@body))))))
-
-#|
-(defun split-declarations (related-symbols decls)
-  "Splits IGNORE, IGNORABLE, DYNAMIC-EXTENT, TYPE, FTYPE and <type-specifier>
-into the declarations related to `related-symbols' and the rest."
-  ;; IGNORE, IGNORABLE and DYNAMIC-EXTENT have the same format
-  (let (related-decls other-decls)
-    (dolist (decl-form decls)
-      (dolist (decl (cdr decl-form))
-        (case (car decl)
-          ((IGNORE IGNORABLE DYNAMIC-EXTENT SPECIAL)
-           (let (rel oth)
-             
-           ...)
-          ((TYPE FTYPE) ;; FUNCTION?
-           ...)
-          ((INLINE NOTINLINE OPTIMIZE DECLARATION)
-           (push decl other-decls))
-          (t
-           (if (symbolp (car decl)) ;; a type specifier
-               ...
-               (push decl other-decls))))))
-    (values related-decls other-decls)))
-|#
+          (rewrite-aux-vars-process-decls decls
+                                          (lambda-list-names lambda-list)
+                                          aux-vars)
+        `(lambda ,lambda-list
+           ,@lambda-decls
+           (let* ,lets
+             ,@let-decls
+             ,@body))))))
 
 (defun maybe-rewrite-lambda (form)
   (let* ((lambda-list (cadr form)))
@@ -688,7 +669,6 @@ into the declarations related to `related-symbols' and the rest."
 
 (defun precompile-lambda (form)
   (setq form (maybe-rewrite-lambda form))
-;;  (sys::%format t "~S~%" form)
   (let ((body (cddr form))
         (*inline-declarations* *inline-declarations*))
     (process-optimization-declarations body)
