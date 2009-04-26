@@ -359,6 +359,9 @@
 	  (format-error-control-string condition)
 	  (format-error-offset condition)))
 
+(defun missing-arg ()
+  (error "Missing argument in format directive"))
+
 (defstruct format-directive
   (string (missing-arg) :type simple-string)
   (start (missing-arg) :type (and unsigned-byte fixnum))
