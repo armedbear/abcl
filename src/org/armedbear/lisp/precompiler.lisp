@@ -353,6 +353,7 @@
 
 (declaim (ftype (function (t) t) precompile1))
 (defun precompile1 (form)
+;;  (sys::%format t "~S~%" form)
   (cond ((symbolp form)
          (let ((varspec (find-varspec form)))
            (cond ((and varspec (eq (second varspec) :symbol-macro))
@@ -599,6 +600,30 @@
           (rewrite-aux-vars-process-decls decls (lambda-list-names lambda-list) aux-vars)
         `(lambda ,lambda-list ,@lambda-decls (let* ,lets ,@let-decls ,@body))))))
 
+#|
+(defun split-declarations (related-symbols decls)
+  "Splits IGNORE, IGNORABLE, DYNAMIC-EXTENT, TYPE, FTYPE and <type-specifier>
+into the declarations related to `related-symbols' and the rest."
+  ;; IGNORE, IGNORABLE and DYNAMIC-EXTENT have the same format
+  (let (related-decls other-decls)
+    (dolist (decl-form decls)
+      (dolist (decl (cdr decl-form))
+        (case (car decl)
+          ((IGNORE IGNORABLE DYNAMIC-EXTENT SPECIAL)
+           (let (rel oth)
+             
+           ...)
+          ((TYPE FTYPE) ;; FUNCTION?
+           ...)
+          ((INLINE NOTINLINE OPTIMIZE DECLARATION)
+           (push decl other-decls))
+          (t
+           (if (symbolp (car decl)) ;; a type specifier
+               ...
+               (push decl other-decls))))))
+    (values related-decls other-decls)))
+|#
+
 (defun maybe-rewrite-lambda (form)
   (let* ((lambda-list (cadr form)))
     (when (memq '&AUX lambda-list)
@@ -606,10 +631,64 @@
       (setq lambda-list (cadr form)))
     (multiple-value-bind (body decls doc)
         (parse-body (cddr form))
-        `(lambda ,lambda-list ,@decls ,@(when doc `(,doc)) ,@body))))
+      (let (state let-bindings symbols new-lambda-list
+            (non-constants 0))
+        (do* ((vars lambda-list (cdr vars))
+              (var (car vars) (car vars)))
+             ((endp vars))
+          (push (car vars) new-lambda-list)
+          (let ((replacement (gensym)))
+            (case var
+              (&optional (setf state :optional))
+              (&key (setf state :key))
+              ((&whole &environment &rest &body &allow-other-keys)
+               ;; do nothing
+               )
+              (t
+               (when (and (atom var)
+                          (eq state :key))
+                 (setf var (list var)))
+               (cond
+                 ((and (atom var)
+                       (neq state :key))
+                  (setf (car new-lambda-list) replacement)
+                  (push (list var replacement)
+                        let-bindings)) ;; do nothing
+                 (t ;; "(x (some-function))" "((:x q) (some-function))"
+                  ;; or even "(x (some-function) x-supplied-p)"
+                  (destructuring-bind
+                        (name &optional (initform nil initform-supplied-p)
+                              (supplied-p nil supplied-p-supplied-p))
+                      var
+                    (when (and initform-supplied-p
+                               (not (constantp initform)))
+                      (incf non-constants))
+                    (let* ((symbol (if (listp name) (second name) name))
+                           (keyword (if (listp name) (car name)
+                                        (intern (symbol-name symbol)
+                                                (find-package "KEYWORD"))))
+                           (supplied-p-replacement
+                            (if supplied-p-supplied-p
+                                supplied-p (gensym))))
+                      (setf (car new-lambda-list)
+                            `(,(if (eq state :key)
+                                   (list keyword replacement) replacement)
+                               nil ,supplied-p-replacement))
+                      (push `(,symbol (if ,supplied-p-replacement
+                                          ,replacement ,initform))
+                            let-bindings)
+                      (push symbol symbols)))))))))
+        (if (zerop non-constants)
+            ;; there was no reason to rewrite...
+            form
+            `(lambda ,(nreverse new-lambda-list)
+               ,@(when doc (list doc))
+               (let* ,(nreverse let-bindings)
+                 ,@decls ,@body)))))))
 
 (defun precompile-lambda (form)
   (setq form (maybe-rewrite-lambda form))
+;;  (sys::%format t "~S~%" form)
   (let ((body (cddr form))
         (*inline-declarations* *inline-declarations*))
     (process-optimization-declarations body)
@@ -804,9 +883,14 @@
                 (when (find-use name (cddr local))
                   (setf used-p t)
                   (return))
-                ;; Scope of defined function names includes &AUX parameters (LABELS.7B).
-                (let ((aux-vars (cdr (memq '&aux (cadr local)))))
-                  (when (and aux-vars (find-use name aux-vars)
+                ;; Scope of defined function names includes
+                ;; &OPTIONAL, &KEY and &AUX parameters
+                ;; (LABELS.7B, LABELS.7C and LABELS.7D).
+                (let ((vars (or
+                             (cdr (memq '&optional (cadr local)))
+                             (cdr (memq '&key (cadr local)))
+                             (cdr (memq '&aux (cadr local))))))
+                  (when (and vars (find-use name vars)
                              (setf used-p t)
                              (return))))))))
         (unless used-p
