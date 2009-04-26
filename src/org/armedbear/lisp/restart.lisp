@@ -47,7 +47,7 @@
   function
   report-function
   interactive-function
-  (test-function #'(lambda (c) t)))
+  (test-function #'(lambda (c) (declare (ignore c)) t)))
 
 (defmacro restart-bind (bindings &body forms)
   `(let ((*restart-clusters*
