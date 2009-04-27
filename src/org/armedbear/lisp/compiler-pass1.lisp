@@ -858,6 +858,13 @@
 
 (initialize-p1-handlers)
 
+(defun invoke-compile-xep (xep-lambda-expression compiland)
+  (let ((xep-compiland
+	 (make-compiland :lambda-expression 
+			 (precompile-form xep-lambda-expression t)
+			 :class-file (compiland-class-file compiland))))
+    (compile-xep xep-compiland)))
+
 (defun p1-compiland (compiland)
 ;;   (format t "p1-compiland name = ~S~%" (compiland-name compiland))
   (let ((form (compiland-lambda-expression compiland)))
@@ -901,19 +908,13 @@
                                           (,supplied-p-var nil))
                                      (%call-internal ,@all-args)))))
                            (dformat t "xep-lambda-expression = ~S~%" xep-lambda-expression)
-                           (let ((xep-compiland
-                                  (make-compiland :lambda-expression (precompile-form xep-lambda-expression t)
-                                                  :class-file (compiland-class-file compiland))))
-                             (compile-xep xep-compiland)))
+			   (invoke-compile-xep xep-lambda-expression compiland))
                          (let ((xep-lambda-expression
                                 `(lambda ,(append required-args (list name))
                                    (let* ((,supplied-p-var t))
                                      (%call-internal ,@all-args)))))
                            (dformat t "xep-lambda-expression = ~S~%" xep-lambda-expression)
-                           (let ((xep-compiland
-                                  (make-compiland :lambda-expression (precompile-form xep-lambda-expression t)
-                                                  :class-file (compiland-class-file compiland))))
-                             (compile-xep xep-compiland)))
+			   (invoke-compile-xep xep-lambda-expression compiland))
                          (setf lambda-list all-args)
                          (setf (compiland-kind compiland) :internal))
                         (t
@@ -922,10 +923,7 @@
                                    (let* ((,name ,initform))
                                      (,(compiland-name compiland) ,@all-args)))))
                            (dformat t "xep-lambda-expression = ~S~%" xep-lambda-expression)
-                           (let ((xep-compiland
-                                  (make-compiland :lambda-expression (precompile-form xep-lambda-expression t)
-                                                  :class-file (compiland-class-file compiland))))
-                             (compile-xep xep-compiland)))
+			   (invoke-compile-xep xep-lambda-expression compiland))
                          (setf lambda-list all-args))))))))))
 
       (let* ((closure (make-closure `(lambda ,lambda-list nil) nil))
