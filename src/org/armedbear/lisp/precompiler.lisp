@@ -612,60 +612,99 @@
       (setq lambda-list (cadr form)))
     (multiple-value-bind (body decls doc)
         (parse-body (cddr form))
-      (let (state let-bindings symbols new-lambda-list
+      (let (state let-bindings new-lambda-list
             (non-constants 0))
         (do* ((vars lambda-list (cdr vars))
               (var (car vars) (car vars)))
              ((endp vars))
           (push (car vars) new-lambda-list)
           (let ((replacement (gensym)))
+            (flet ((parse-compound-argument (arg)
+                     "Returns the values NAME, KEYWORD, INITFORM, INITFORM-P,
+   SUPPLIED-P and SUPPLIED-P-P assuming ARG is a compound argument."
+                     (destructuring-bind
+                           (name &optional (initform nil initform-supplied-p)
+                                 (supplied-p nil supplied-p-supplied-p))
+                         (if (listp arg) arg (list arg))
+                       (if (listp name)
+                           (values (cadr name) (car name)
+                                   initform initform-supplied-p
+                                   supplied-p supplied-p-supplied-p)
+                           (values name (make-keyword name)
+                                   initform initform-supplied-p
+                                   supplied-p supplied-p-supplied-p)))))
             (case var
               (&optional (setf state :optional))
               (&key (setf state :key))
               ((&whole &environment &rest &body &allow-other-keys)
-               ;; do nothing
+               ;; do nothing special
                )
               (t
-               (when (and (atom var)
-                          (eq state :key))
-                 (setf var (list var)))
                (cond
-                 ((and (atom var)
-                       (neq state :key))
-                  (setf (car new-lambda-list) replacement)
-                  (push (list var replacement)
-                        let-bindings)) ;; do nothing
-                 (t ;; "(x (some-function))" "((:x q) (some-function))"
-                  ;; or even "(x (some-function) x-supplied-p)"
-                  (destructuring-bind
-                        (name &optional (initform nil initform-supplied-p)
-                              (supplied-p nil supplied-p-supplied-p))
-                      var
-                    (when (and initform-supplied-p
-                               (not (constantp initform)))
-                      (incf non-constants))
-                    (let* ((symbol (if (listp name) (second name) name))
-                           (keyword (if (listp name) (car name)
-                                        (intern (symbol-name symbol)
-                                                (find-package "KEYWORD"))))
-                           (supplied-p-replacement
-                            (if supplied-p-supplied-p
-                                supplied-p (gensym))))
+                 ((atom var)
+                  (setf (car new-lambda-list)
+                        (if (eq state :key)
+                            (list (list (make-keyword var) replacement))
+                            replacement))
+                  (push (list var replacement) let-bindings))
+                 ((constantp (second var))
+                  ;; so, we must have a consp-type var we're looking at
+                  ;; and it has a constantp initform
+                  (multiple-value-bind
+                        (name keyword initform initform-supplied-p
+                              supplied-p supplied-p-supplied-p)
+                      (parse-compound-argument var)
+                    (let ((var-form (if (eq state :key)
+                                        (list keyword replacement)
+                                        replacement))
+                          (supplied-p-replacement (gensym)))
                       (setf (car new-lambda-list)
-                            `(,(if (eq state :key)
-                                   (list keyword replacement) replacement)
-                               nil ,supplied-p-replacement))
-                      (push `(,symbol (if ,supplied-p-replacement
-                                          ,replacement ,initform))
-                            let-bindings)
-                      (push symbol symbols)))))))))
+                            (cond
+                              ((not initform-supplied-p)
+                               (list var-form))
+                              ((not supplied-p-supplied-p)
+                               (list var-form initform))
+                              (t
+                               (list var-form initform
+                                     supplied-p-replacement))))
+                      (push (list name replacement) let-bindings)
+                      ;; if there was a 'supplied-p' variable, it might
+                      ;; be used in the declarations. Since those will be
+                      ;; moved below the LET* block, we need to move the
+                      ;; supplied-p parameter too.
+                      (when supplied-p-supplied-p
+                        (push (list supplied-p supplied-p-replacement)
+                              let-bindings)))))
+                 (t
+                  (incf non-constants)
+                  ;; this is either a keyword or an optional argument
+                  ;; with a non-constantp initform
+                  (multiple-value-bind
+                        (name keyword initform initform-supplied-p
+                              supplied-p supplied-p-supplied-p)
+                      (parse-compound-argument var)
+                    (declare (ignore initform-supplied-p))
+                    (let ((var-form (if (eq state :key)
+                                        (list keyword replacement)
+                                        replacement))
+                          (supplied-p-replacement (gensym)))
+                      (setf (car new-lambda-list)
+                            (list var-form nil supplied-p-replacement))
+                      (push (list name `(if ,supplied-p-replacement
+                                            ,replacement ,initform))
+                                  let-bindings)
+                      (when supplied-p-supplied-p
+                        (push (list supplied-p supplied-p-replacement)
+                              let-bindings)))))))))))
         (if (zerop non-constants)
             ;; there was no reason to rewrite...
             form
-            `(lambda ,(nreverse new-lambda-list)
-               ,@(when doc (list doc))
-               (let* ,(nreverse let-bindings)
-                 ,@decls ,@body)))))))
+            (let ((rv
+                   `(lambda ,(nreverse new-lambda-list)
+                      ,@(when doc (list doc))
+                      (let* ,(nreverse let-bindings)
+                        ,@decls ,@body))))
+              rv))))))
 
 (defun precompile-lambda (form)
   (setq form (maybe-rewrite-lambda form))
@@ -1189,8 +1228,11 @@
   (multiple-value-bind (body decls doc)
       (parse-body body)
     (let* ((block-name (fdefinition-block-name name))
-           (lambda-expression `(named-lambda ,name ,lambda-list ,@decls ,@(when doc `(,doc))
-                                             (block ,block-name ,@body))))
+           (lambda-expression
+            `(named-lambda ,name ,lambda-list
+                           ,@decls
+                           ,@(when doc `(,doc))
+                           (block ,block-name ,@body))))
       (cond ((and (boundp 'jvm::*file-compilation*)
                   ;; when JVM.lisp isn't loaded yet, this variable isn't bound
                   ;; meaning that we're not trying to compile to a file:
@@ -1206,4 +1248,4 @@
              `(progn
                 (%defun ',name ,lambda-expression)
                 ,@(when doc
-                    `((%set-documentation ',name 'function ,doc)))))))))
+                   `((%set-documentation ',name 'function ,doc)))))))))
