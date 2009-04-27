@@ -510,9 +510,8 @@
              (multiple-value-bind (body decls)
                  (parse-body body)
                (setf (compiland-lambda-expression compiland)
-                     (if named-lambda-p
-                         `(lambda ,lambda-list ,@decls (block nil ,@body))
-                         `(lambda ,lambda-list ,@decls ,@body)))
+                     ;; if there still was a doc-string present, remove it
+                     `(lambda ,lambda-list ,@decls ,@body))
                (let ((*visible-variables* *visible-variables*)
                      (*current-compiland* compiland))
                  (p1-compiland compiland)))
