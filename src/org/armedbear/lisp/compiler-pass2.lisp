@@ -1153,77 +1153,40 @@ representation, based on the derived type of the LispObject."
 		 (setf (gethash op +resolvers+) (symbol-function ',name)))
 	      `(setf (gethash ,opcodes +resolvers+) (symbol-function ',name)))))))
 
-;; aload
-(define-resolver 25 (instruction)
+(defun load/store-resolver (instruction inst-index inst-index2 error-text)
  (let* ((args (instruction-args instruction))
         (index (car args)))
    (declare (type (unsigned-byte 16) index))
    (cond ((<= 0 index 3)
-          (inst (+ index 42)))
+          (inst (+ index inst-index)))
          ((<= 0 index 255)
-          (inst 25 index))
+          (inst inst-index2 index))
          (t
-          (error "ALOAD unsupported case")))))
+          (error error-text)))))
+
+;; aload
+(define-resolver 25 (instruction)
+  (load/store-resolver instruction 42 25 "ALOAD unsupported case"))
 
 ;; astore
 (define-resolver 58 (instruction)
-  (let* ((args (instruction-args instruction))
-         (index (car args)))
-    (declare (type (unsigned-byte 16) index))
-    (cond ((<= 0 index 3)
-           (inst (+ index 75)))
-          ((<= 0 index 255)
-           (inst 58 index))
-          (t
-           (error "ASTORE unsupported case")))))
+  (load/store-resolver instruction 75 58 "ASTORE unsupported case"))
 
 ;; iload
 (define-resolver 21 (instruction)
-  (let* ((args (instruction-args instruction))
-         (index (car args)))
-    (declare (type (unsigned-byte 16) index))
-    (cond ((<= 0 index 3)
-           (inst (+ index 26)))
-          ((<= 0 index 255)
-           (inst 21 index))
-          (t
-           (error "ILOAD unsupported case")))))
+  (load/store-resolver instruction 26 21 "ILOAD unsupported case"))
 
 ;; istore
 (define-resolver 54 (instruction)
-  (let* ((args (instruction-args instruction))
-         (index (car args)))
-    (declare (type (unsigned-byte 16) index))
-    (cond ((<= 0 index 3)
-           (inst (+ index 59)))
-          ((<= 0 index 255)
-           (inst 54 index))
-          (t
-           (error "ASTORE unsupported case")))))
+  (load/store-resolver instruction 59 54 "ISTORE unsupported case"))
 
 ;; lload
 (define-resolver 22 (instruction)
-  (let* ((args (instruction-args instruction))
-         (index (car args)))
-    (declare (type (unsigned-byte 16) index))
-    (cond ((<= 0 index 3)
-           (inst (+ index 30)))
-          ((<= 0 index 255)
-           (inst 22 index))
-          (t
-           (error "LLOAD unsupported case")))))
+  (load/store-resolver instruction 30 22 "LLOAD unsupported case"))
 
 ;; lstore
 (define-resolver 55 (instruction)
-  (let* ((args (instruction-args instruction))
-         (index (car args)))
-    (declare (type (unsigned-byte 16) index))
-    (cond ((<= 0 index 3)
-           (inst (+ index 63)))
-          ((<= 0 index 255)
-           (inst 55 index))
-          (t
-           (error "ASTORE unsupported case")))))
+  (load/store-resolver instruction 63 55 "LSTORE unsupported case"))
 
 ;; getstatic, putstatic
 (define-resolver (178 179) (instruction)
