@@ -134,14 +134,8 @@
   (declare (optimize speed))
   (pool-get (list 4 (%float-bits n))))
 
-(defknown pool-long (integer) (integer 1 65535))
-(defun pool-long (n)
-  (declare (optimize speed))
-  (declare (type java-long n))
-  (let* ((entry (list 5
-                      (logand (ash n -32) #xffffffff)
-                      (logand n #xffffffff)))
-         (ht *pool-entries*)
+(defun pool-long/double (n entry)
+  (let* ((ht *pool-entries*)
          (index (gethash1 entry ht)))
     (declare (type hash-table ht))
     (unless index
@@ -157,28 +151,23 @@
       (setf *pool-count* (+ index 2)))
     index))
 
+(defknown pool-long (integer) (integer 1 65535))
+(defun pool-long (n)
+  (declare (optimize speed))
+  (declare (type java-long n))
+  (let* ((entry (list 5
+                      (logand (ash n -32) #xffffffff)
+                      (logand n #xffffffff))))
+    (pool-long/double n entry)))
+
 (defknown pool-double (double-float) (integer 1 65535))
 (defun pool-double (n)
   (declare (optimize speed))
   (let* ((n (%float-bits n))
          (entry (list 6
                       (logand (ash n -32) #xffffffff)
-                      (logand n #xffffffff)))
-         (ht *pool-entries*)
-         (index (gethash1 entry ht)))
-    (declare (type hash-table ht))
-    (unless index
-      (setf index *pool-count*)
-      (push entry *pool*)
-      (setf (gethash entry ht) index)
-      ;; The Java Virtual Machine Specification, Section 4.4.5: "All 8-byte
-      ;; constants take up two entries in the constant_pool table of the class
-      ;; file. If a CONSTANT_Long_info or CONSTANT_Double_info structure is the
-      ;; item in the constant_pool table at index n, then the next usable item in
-      ;; the pool is located at index n+2. The constant_pool index n+1 must be
-      ;; valid but is considered unusable." So:
-      (setf *pool-count* (+ index 2)))
-    index))
+                      (logand n #xffffffff))))
+    (pool-long/double n entry)))
 
 (defknown u2 (fixnum) cons)
 (defun u2 (n)
