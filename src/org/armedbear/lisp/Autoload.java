@@ -606,6 +606,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "cache-slot-location", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "canonicalize-logical-host", "LogicalPathname", true);
         autoload(PACKAGE_SYS, "class-direct-slots", "SlotClass");
+	autoload(PACKAGE_SYS, "%float-bits", "FloatFunctions");
         autoload(PACKAGE_SYS, "coerce-to-double-float", "FloatFunctions");
         autoload(PACKAGE_SYS, "coerce-to-single-float", "FloatFunctions");
         autoload(PACKAGE_SYS, "compute-class-direct-slots", "SlotClass", true);
