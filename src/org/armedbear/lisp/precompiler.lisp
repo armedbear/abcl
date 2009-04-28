@@ -706,20 +706,36 @@
                         ,@decls ,@body))))
               rv))))))
 
+(defun precompile-lambda-list (form)
+  (let (new)
+    (dolist (arg form (nreverse new))
+       (if (or (atom arg) (> 2 (length arg)))
+          (push arg new)
+          ;; must be a cons of more than 1 cell
+          (let ((new-arg (copy-list arg)))
+             (setf (second new-arg)
+                   (precompile1 (second arg)))
+             (push new-arg new))))))
+
 (defun precompile-lambda (form)
   (setq form (maybe-rewrite-lambda form))
   (let ((body (cddr form))
+        (precompiled-lambda-list
+           (precompile-lambda-list (cadr form)))
         (*inline-declarations* *inline-declarations*))
     (process-optimization-declarations body)
-    (list* 'LAMBDA (cadr form) (mapcar #'precompile1 body))))
+    (list* 'LAMBDA precompiled-lambda-list
+           (mapcar #'precompile1 body))))
 
 (defun precompile-named-lambda (form)
   (let ((lambda-form (list* 'LAMBDA (caddr form) (cdddr form))))
     (setf lambda-form (maybe-rewrite-lambda lambda-form))
     (let ((body (cddr lambda-form))
+          (precompiled-lambda-list
+           (precompile-lambda-list (cadr lambda-form)))
           (*inline-declarations* *inline-declarations*))
       (process-optimization-declarations body)
-      (list* 'NAMED-LAMBDA (cadr form) (cadr lambda-form)
+      (list* 'NAMED-LAMBDA (cadr form) precompiled-lambda-list
              (mapcar #'precompile1 body)))))
 
 (defun precompile-defun (form)
