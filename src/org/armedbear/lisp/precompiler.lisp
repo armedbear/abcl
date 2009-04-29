@@ -563,7 +563,9 @@
                     (non-constants 0))
           (do* ((vars lambda-list (cdr vars))
                 (var (car vars) (car vars)))
-               ((or (endp vars) (eq '&aux (car vars))))
+               ((or (endp vars) (eq '&aux (car vars)))
+                (setf new-lambda-list
+                      (append (reverse vars) new-lambda-list)))
             (push (car vars) new-lambda-list)
             (let ((replacement (gensym)))
               (flet ((parse-compound-argument (arg)
