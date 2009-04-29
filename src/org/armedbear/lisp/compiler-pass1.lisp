@@ -479,7 +479,8 @@
 	 (multiple-value-bind (body decls) (parse-body body)
 	   (let* ((block-name (fdefinition-block-name name))
 		  (lambda-expression
-		   `(lambda ,lambda-list ,@decls (block ,block-name ,@body)))
+                   (maybe-rewrite-aux-vars
+		   `(lambda ,lambda-list ,@decls (block ,block-name ,@body))))
 		  (*visible-variables* *visible-variables*)
 		  (*local-functions* *local-functions*)
 		  (*current-compiland* compiland))
@@ -506,7 +507,8 @@
 						   :variable variable)))
 	 (multiple-value-bind (body decls) (parse-body body)
 	   (setf (compiland-lambda-expression compiland)
-		 `(lambda ,lambda-list ,@decls (block ,name ,@body))))
+                 (maybe-rewrite-aux-vars
+		 `(lambda ,lambda-list ,@decls (block ,name ,@body)))))
 	 (push variable *all-variables*)
 	 (push local-function local-functions)))
       ((dolist (local-function local-functions)
