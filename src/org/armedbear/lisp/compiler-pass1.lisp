@@ -416,56 +416,51 @@
 		  (push variable *visible-variables*))))
 	    ,@body2)))
 
-(defun rewrite-aux-vars-process-decls (forms arg-vars aux-vars)
-  (declare (ignore aux-vars))
-  (let ((lambda-decls nil)
-        (let-decls nil))
+(defun split-decls (forms specific-vars)
+  (let ((other-decls nil)
+        (specific-decls nil))
     (dolist (form forms)
       (unless (and (consp form) (eq (car form) 'DECLARE)) ; shouldn't happen
         (return))
       (dolist (decl (cdr form))
         (case (car decl)
           ((OPTIMIZE DECLARATION DYNAMIC-EXTENT FTYPE INLINE NOTINLINE)
-           (push (list 'DECLARE decl) lambda-decls))
+           (push (list 'DECLARE decl) other-decls))
           (SPECIAL
            (dolist (name (cdr decl))
-             (if (memq name arg-vars)
-                 (push (list 'DECLARE (list 'SPECIAL name)) lambda-decls)
-                 (push (list 'DECLARE (list 'SPECIAL name)) let-decls))))
+             (if (memq name specific-vars)
+                 (push `(DECLARE (SPECIAL ,name)) specific-decls)
+                 (push `(DECLARE (SPECIAL ,name)) other-decls))))
           (TYPE
            (dolist (name (cddr decl))
-             (if (memq name arg-vars)
-                 (push (list 'DECLARE (list 'TYPE (cadr decl) name)) lambda-decls)
-                 (push (list 'DECLARE (list 'TYPE (cadr decl) name)) let-decls))))
+             (if (memq name specific-vars)
+                 (push `(DECLARE (TYPE ,(cadr decl) ,name)) specific-decls)
+                 (push `(DECLARE (TYPE ,(cadr decl) ,name)) other-decls))))
           (t
            (dolist (name (cdr decl))
-             (if (memq name arg-vars)
-                 (push (list 'DECLARE (list (car decl) name)) lambda-decls)
-                 (push (list 'DECLARE (list (car decl) name)) let-decls)))))))
-    (setq lambda-decls (nreverse lambda-decls))
-    (setq let-decls (nreverse let-decls))
-    (values lambda-decls let-decls)))
+             (if (memq name specific-vars)
+                 (push `(DECLARE (,(car decl) ,name)) specific-decls)
+                 (push `(DECLARE (,(car decl) ,name)) other-decls)))))))
+    (values (nreverse other-decls)
+            (nreverse specific-decls))))
 
-(defun maybe-rewrite-aux-vars (form)
+(defun rewrite-aux-vars (form)
   (let* ((lambda-list (cadr form))
          (lets (cdr (memq '&AUX lambda-list)))
          aux-vars)
     (unless lets
       ;; no rewriting required
-      (return-from maybe-rewrite-aux-vars form))
+      (return-from rewrite-aux-vars form))
     (multiple-value-bind (body decls)
         (parse-body (cddr form))
       (dolist (form lets)
         (cond ((consp form)
-               (push (%car form) aux-vars))
+               (push (car form) aux-vars))
               (t
                (push form aux-vars))))
-      (setq lambda-list (subseq lambda-list 0 (position '&AUX lambda-list)))
       (multiple-value-bind (lambda-decls let-decls)
-          (rewrite-aux-vars-process-decls decls
-                                          (lambda-list-names lambda-list)
-                                          (nreverse aux-vars))
-        `(lambda ,lambda-list
+          (split-decls decls aux-vars)
+        `(lambda ,(subseq lambda-list 0 (position '&AUX lambda-list))
            ,@lambda-decls
            (let* ,lets
              ,@let-decls
@@ -479,7 +474,7 @@
 	 (multiple-value-bind (body decls) (parse-body body)
 	   (let* ((block-name (fdefinition-block-name name))
 		  (lambda-expression
-                   (maybe-rewrite-aux-vars
+                   (rewrite-aux-vars
 		   `(lambda ,lambda-list ,@decls (block ,block-name ,@body))))
 		  (*visible-variables* *visible-variables*)
 		  (*local-functions* *local-functions*)
@@ -507,7 +502,7 @@
 						   :variable variable)))
 	 (multiple-value-bind (body decls) (parse-body body)
 	   (setf (compiland-lambda-expression compiland)
-                 (maybe-rewrite-aux-vars
+                 (rewrite-aux-vars
 		 `(lambda ,lambda-list ,@decls (block ,name ,@body)))))
 	 (push variable *all-variables*)
 	 (push local-function local-functions)))
@@ -568,7 +563,7 @@
                  (parse-body body)
                (setf (compiland-lambda-expression compiland)
                      ;; if there still was a doc-string present, remove it
-                     (maybe-rewrite-aux-vars
+                     (rewrite-aux-vars
                       `(lambda ,lambda-list ,@decls ,@body)))
                (let ((*visible-variables* *visible-variables*)
                      (*current-compiland* compiland))
@@ -598,7 +593,7 @@
                    (compiler-unsupported
                     "P1-LAMBDA: can't handle optional argument with non-constant initform.")))))))
     (p1-function (list 'FUNCTION
-                        (maybe-rewrite-aux-vars form)))))
+                        (rewrite-aux-vars form)))))
 
 (defun p1-eval-when (form)
   (list* (car form) (cadr form) (mapcar #'p1 (cddr form))))
@@ -915,7 +910,7 @@
 ;;   (format t "p1-compiland name = ~S~%" (compiland-name compiland))
   (let ((form (compiland-lambda-expression compiland)))
     (aver (eq (car form) 'LAMBDA))
-    (setf form (maybe-rewrite-aux-vars form))
+    (setf form (rewrite-aux-vars form))
     (process-optimization-declarations (cddr form))
 
     (let* ((lambda-list (cadr form))
