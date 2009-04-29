@@ -134,7 +134,7 @@
   (declare (optimize speed))
   (pool-get (list 4 (%float-bits n))))
 
-(defun pool-long/double (n entry)
+(defun pool-long/double (entry)
   (let* ((ht *pool-entries*)
          (index (gethash1 entry ht)))
     (declare (type hash-table ht))
@@ -158,7 +158,7 @@
   (let* ((entry (list 5
                       (logand (ash n -32) #xffffffff)
                       (logand n #xffffffff))))
-    (pool-long/double n entry)))
+    (pool-long/double entry)))
 
 (defknown pool-double (double-float) (integer 1 65535))
 (defun pool-double (n)
@@ -167,7 +167,7 @@
          (entry (list 6
                       (logand (ash n -32) #xffffffff)
                       (logand n #xffffffff))))
-    (pool-long/double n entry)))
+    (pool-long/double entry)))
 
 (defknown u2 (fixnum) cons)
 (defun u2 (n)
