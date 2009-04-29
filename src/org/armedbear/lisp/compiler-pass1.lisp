@@ -150,8 +150,10 @@
     `(let ((,variables-var ()))
        (dolist (,varspec ,varlist)
 	 (cond ((consp ,varspec)
-              ;; FIXME Currently this error is signalled by the precompiler.
-		(unless (= (length ,varspec) 2)
+                ;; Even though the precompiler already signals this
+                ;; error, double checking can't hurt; after all, we're
+                ;; also rewriting &AUX into LET* bindings.
+		(unless (<= 1 (length ,varspec) 2)
 		  (compiler-error "The LET/LET* binding specification ~S is invalid."
 				  ,varspec))
 		(let* ((,name (%car ,varspec))
