@@ -446,9 +446,10 @@
 
 (defun rewrite-aux-vars (form)
   (let* ((lambda-list (cadr form))
-         (lets (cdr (memq '&AUX lambda-list)))
+         (aux-p (memq '&AUX lambda-list))
+         (lets (cdr aux-p))
          aux-vars)
-    (unless lets
+    (unless aux-p
       ;; no rewriting required
       (return-from rewrite-aux-vars form))
     (multiple-value-bind (body decls)
