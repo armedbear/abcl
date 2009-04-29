@@ -909,13 +909,6 @@
 
 (initialize-p1-handlers)
 
-(defun invoke-compile-xep (xep-lambda-expression compiland)
-  (let ((xep-compiland
-	 (make-compiland :lambda-expression 
-			 (precompile-form xep-lambda-expression t)
-			 :class-file (compiland-class-file compiland))))
-    (compile-xep xep-compiland)))
-
 (defun p1-compiland (compiland)
 ;;   (format t "p1-compiland name = ~S~%" (compiland-name compiland))
   (let ((form (compiland-lambda-expression compiland)))
@@ -925,54 +918,6 @@
 
     (let* ((lambda-list (cadr form))
            (body (cddr form)))
-
-      (when (and (null (compiland-parent compiland))
-                 ;; FIXME support SETF functions!
-                 (symbolp (compiland-name compiland)))
-        (when (memq '&OPTIONAL lambda-list)
-          (unless (or (memq '&KEY lambda-list) (memq '&REST lambda-list))
-            (let ((required-args (subseq lambda-list 0 (position '&OPTIONAL lambda-list)))
-                  (optional-args (cdr (memq '&OPTIONAL lambda-list))))
-            (dformat t "optional-args = ~S~%" optional-args)
-            (when (= (length optional-args) 1)
-              (let* ((optional-arg (car optional-args))
-                     (name (if (consp optional-arg) (%car optional-arg) optional-arg))
-                     (initform (if (consp optional-arg) (cadr optional-arg) nil))
-                     (supplied-p-var (and (consp optional-arg)
-                                          (= (length optional-arg) 3)
-                                          (third optional-arg)))
-                     (all-args
-                      (append required-args (list name)
-                              (when supplied-p-var (list supplied-p-var)))))
-                (when (<= (length all-args) call-registers-limit)
-                  (dformat t "optional-arg = ~S~%" optional-arg)
-                  (dformat t "supplied-p-var = ~S~%" supplied-p-var)
-                  (dformat t "required-args = ~S~%" required-args)
-                  (dformat t "all-args = ~S~%" all-args)
-                  (cond (supplied-p-var
-                         (let ((xep-lambda-expression
-                                `(lambda ,required-args
-                                   (let* ((,name ,initform)
-                                          (,supplied-p-var nil))
-                                     (%call-internal ,@all-args)))))
-                           (dformat t "xep-lambda-expression = ~S~%" xep-lambda-expression)
-			   (invoke-compile-xep xep-lambda-expression compiland))
-                         (let ((xep-lambda-expression
-                                `(lambda ,(append required-args (list name))
-                                   (let* ((,supplied-p-var t))
-                                     (%call-internal ,@all-args)))))
-                           (dformat t "xep-lambda-expression = ~S~%" xep-lambda-expression)
-			   (invoke-compile-xep xep-lambda-expression compiland))
-                         (setf lambda-list all-args)
-                         (setf (compiland-kind compiland) :internal))
-                        (t
-                         (let ((xep-lambda-expression
-                                `(lambda ,required-args
-                                   (let* ((,name ,initform))
-                                     (,(compiland-name compiland) ,@all-args)))))
-                           (dformat t "xep-lambda-expression = ~S~%" xep-lambda-expression)
-			   (invoke-compile-xep xep-lambda-expression compiland))
-                         (setf lambda-list all-args))))))))))
 
       (let* ((closure (make-closure `(lambda ,lambda-list nil) nil))
              (syms (sys::varlist closure))

@@ -8095,55 +8095,6 @@ for use with derive-type-times.")
              ;; attributes count
              (write-u2 0 stream))))))
 
-(defun compile-xep (xep)
-  (declare (type compiland xep))
-  (let ((*all-variables* ())
-        (*closure-variables* ())
-        (*current-compiland* xep)
-        (*speed* 3)
-        (*safety* 0)
-        (*debug* 0))
-
-    (aver (not (null (compiland-class-file xep))))
-
-    ;; Pass 1.
-    (p1-compiland xep)
-;;     (dformat t "*all-variables* = ~S~%" (mapcar #'variable-name *all-variables*))
-    (setf *closure-variables*
-          (remove-if-not #'variable-used-non-locally-p *all-variables*))
-    (setf *closure-variables*
-          (remove-if #'variable-special-p *closure-variables*))
-;;     (dformat t "*closure-variables* = ~S~%" (mapcar #'variable-name *closure-variables*))
-
-    (when *closure-variables*
-      (let ((i 0))
-        (dolist (var (reverse *closure-variables*))
-          (setf (variable-closure-index var) i)
-          (dformat t "var = ~S closure index = ~S~%" (variable-name var)
-                   (variable-closure-index var))
-          (incf i))))
-
-    ;; Pass 2.
-    (with-class-file (compiland-class-file xep)
-      (p2-compiland xep))))
-
-
-(defun p2-%call-internal (form target representation)
-  (dformat t "p2-%call-internal~%")
-  (aload 0) ; this
-  (let ((args (cdr form))
-        (must-clear-values nil))
-    (dformat t "args = ~S~%" args)
-    (dolist (arg args)
-      (compile-form arg 'stack nil)
-      (unless must-clear-values
-        (unless (single-valued-p arg)
-          (setf must-clear-values t))))
-    (let ((arg-types (lisp-object-arg-types (length args)))
-          (return-type +lisp-object+))
-      (emit-invokevirtual *this-class* "_execute" arg-types return-type))
-    (emit-move-from-stack target representation)))
-
 (defknown p2-compiland-process-type-declarations (list) t)
 (defun p2-compiland-process-type-declarations (body)
   (flet ((process-declaration (name type)
@@ -8764,7 +8715,6 @@ for use with derive-type-times.")
                                multiple-value-prog1
                                nth
                                progn))
-  (install-p2-handler '%call-internal      'p2-%call-internal)
   (install-p2-handler '%ldb                'p2-%ldb)
   (install-p2-handler '%make-structure     'p2-%make-structure)
   (install-p2-handler '*                   'p2-times)
