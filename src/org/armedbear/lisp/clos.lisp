@@ -1737,8 +1737,8 @@
 (defun add-reader-method (class function-name slot-name)
   (let* ((lambda-expression
           (if (eq (class-of class) (find-class 'standard-class))
-              `(lambda (object) (std-slot-value object ',slot-name)))
-              `(lambda (object) (slot-value object ',slot-name)))
+              `(lambda (object) (std-slot-value object ',slot-name))
+              `(lambda (object) (slot-value object ',slot-name))))
          (method-function (compute-method-function lambda-expression))
          (fast-function (compute-method-fast-function lambda-expression)))
     (let ((method-lambda-list '(object))

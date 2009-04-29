@@ -654,12 +654,23 @@
                 rv)))))))
 
 (defun precompile-lambda-list (form)
-  (let (new)
+  (let (new aux-tail)
     (dolist (arg form (nreverse new))
        (if (or (atom arg) (> 2 (length arg)))
-          (push arg new)
+           (progn
+             (when (eq arg '&aux)
+               (setf aux-tail t))
+             (push arg new))
           ;; must be a cons of more than 1 cell
           (let ((new-arg (copy-list arg)))
+            (unless (<= 1 (length arg) (if aux-tail 2 3))
+              ;; the aux-vars have a maximum length of 2 conses
+              ;; optional and key vars may have 3
+              (error 'program-error
+                     :format-control
+                     "The ~A binding specification ~S is invalid."
+                     :format-arguments (list (if aux-tail "&AUX"
+                                                 "&OPTIONAL/&KEY") arg)))
              (setf (second new-arg)
                    (precompile1 (second arg)))
              (push new-arg new))))))
@@ -756,10 +767,11 @@
   (let ((result nil))
     (dolist (var vars)
       (cond ((consp var)
-;;              (when (> (length var) 2)
-;;                (error 'program-error
-;;                       :format-control "The LET/LET* binding specification ~S is invalid."
-;;                       :format-arguments (list var)))
+             (unless (<= 1 (length var) 2)
+               (error 'program-error
+                       :format-control
+                       "The LET/LET* binding specification ~S is invalid."
+                       :format-arguments (list var)))
              (let ((v (%car var))
                    (expr (cadr var)))
                (unless (symbolp v)
