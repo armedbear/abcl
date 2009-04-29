@@ -416,8 +416,63 @@
 		  (push variable *visible-variables*))))
 	    ,@body2)))
 
+(defun rewrite-aux-vars-process-decls (forms arg-vars aux-vars)
+  (declare (ignore aux-vars))
+  (let ((lambda-decls nil)
+        (let-decls nil))
+    (dolist (form forms)
+      (unless (and (consp form) (eq (car form) 'DECLARE)) ; shouldn't happen
+        (return))
+      (dolist (decl (cdr form))
+        (case (car decl)
+          ((OPTIMIZE DECLARATION DYNAMIC-EXTENT FTYPE INLINE NOTINLINE)
+           (push (list 'DECLARE decl) lambda-decls))
+          (SPECIAL
+           (dolist (name (cdr decl))
+             (if (memq name arg-vars)
+                 (push (list 'DECLARE (list 'SPECIAL name)) lambda-decls)
+                 (push (list 'DECLARE (list 'SPECIAL name)) let-decls))))
+          (TYPE
+           (dolist (name (cddr decl))
+             (if (memq name arg-vars)
+                 (push (list 'DECLARE (list 'TYPE (cadr decl) name)) lambda-decls)
+                 (push (list 'DECLARE (list 'TYPE (cadr decl) name)) let-decls))))
+          (t
+           (dolist (name (cdr decl))
+             (if (memq name arg-vars)
+                 (push (list 'DECLARE (list (car decl) name)) lambda-decls)
+                 (push (list 'DECLARE (list (car decl) name)) let-decls)))))))
+    (setq lambda-decls (nreverse lambda-decls))
+    (setq let-decls (nreverse let-decls))
+    (values lambda-decls let-decls)))
+
+(defun maybe-rewrite-aux-vars (form)
+  (let* ((lambda-list (cadr form))
+         (lets (cdr (memq '&AUX lambda-list)))
+         aux-vars)
+    (unless lets
+      ;; no rewriting required
+      (return-from maybe-rewrite-aux-vars form))
+    (multiple-value-bind (body decls)
+        (parse-body (cddr form))
+      (dolist (form lets)
+        (cond ((consp form)
+               (push (%car form) aux-vars))
+              (t
+               (push form aux-vars))))
+      (setq lambda-list (subseq lambda-list 0 (position '&AUX lambda-list)))
+      (multiple-value-bind (lambda-decls let-decls)
+          (rewrite-aux-vars-process-decls decls
+                                          (lambda-list-names lambda-list)
+                                          (nreverse aux-vars))
+        `(lambda ,lambda-list
+           ,@lambda-decls
+           (let* ,lets
+             ,@let-decls
+             ,@body))))))
+
 (defun p1-flet (form)
-  (with-local-functions-for-flet/labels 
+  (with-local-functions-for-flet/labels
       form local-functions 'FLET lambda-list name body
       ((let ((local-function (make-local-function :name name
 						 :compiland compiland)))
@@ -443,7 +498,7 @@
 
 
 (defun p1-labels (form)
-  (with-local-functions-for-flet/labels 
+  (with-local-functions-for-flet/labels
       form local-functions 'LABELS lambda-list name body
       ((let* ((variable (make-variable :name (gensym)))
 	      (local-function (make-local-function :name name
@@ -511,7 +566,8 @@
                  (parse-body body)
                (setf (compiland-lambda-expression compiland)
                      ;; if there still was a doc-string present, remove it
-                     `(lambda ,lambda-list ,@decls ,@body))
+                     (maybe-rewrite-aux-vars
+                      `(lambda ,lambda-list ,@decls ,@body)))
                (let ((*visible-variables* *visible-variables*)
                      (*current-compiland* compiland))
                  (p1-compiland compiland)))
@@ -527,9 +583,7 @@
            form))))
 
 (defun p1-lambda (form)
-  (let* ((lambda-list (cadr form))
-         (body (cddr form))
-         (auxvars (memq '&AUX lambda-list)))
+  (let* ((lambda-list (cadr form)))
     (when (or (memq '&optional lambda-list)
               (memq '&key lambda-list))
       (let ((state nil))
@@ -541,10 +595,8 @@
                             (not (constantp (second arg))))
                    (compiler-unsupported
                     "P1-LAMBDA: can't handle optional argument with non-constant initform.")))))))
-    (when auxvars
-      (setf lambda-list (subseq lambda-list 0 (position '&AUX lambda-list)))
-      (setf body (list (append (list 'LET* (cdr auxvars)) body))))
-    (p1-function (list 'FUNCTION (list* 'LAMBDA lambda-list body)))))
+    (p1-function (list 'FUNCTION
+                        (maybe-rewrite-aux-vars form)))))
 
 (defun p1-eval-when (form)
   (list* (car form) (cadr form) (mapcar #'p1 (cddr form))))
@@ -868,14 +920,11 @@
 ;;   (format t "p1-compiland name = ~S~%" (compiland-name compiland))
   (let ((form (compiland-lambda-expression compiland)))
     (aver (eq (car form) 'LAMBDA))
+    (setf form (maybe-rewrite-aux-vars form))
     (process-optimization-declarations (cddr form))
 
     (let* ((lambda-list (cadr form))
-           (body (cddr form))
-           (auxvars (memq '&AUX lambda-list)))
-      (when auxvars
-        (setf lambda-list (subseq lambda-list 0 (position '&AUX lambda-list)))
-        (setf body (list (append (list 'LET* (cdr auxvars)) body))))
+           (body (cddr form)))
 
       (when (and (null (compiland-parent compiland))
                  ;; FIXME support SETF functions!
