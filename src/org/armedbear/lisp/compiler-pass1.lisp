@@ -377,24 +377,12 @@
              (setf (block-non-local-go-p tag-block) t)))))
   form)
 
-(defun validate-name-and-lambda-list (name lambda-list context)
+(defun validate-function-name (name)
   (unless (or (symbolp name) (setf-function-name-p name))
-    (compiler-error "~S is not a valid function name." name))
-  (when (or (memq '&optional lambda-list)
-            (memq '&key lambda-list))
-    (let ((state nil))
-      (dolist (arg lambda-list)
-        (cond ((memq arg lambda-list-keywords)
-               (setf state arg))
-              ((memq state '(&optional &key))
-               (when (and (consp arg) (not (constantp (second arg))))
-                 (compiler-unsupported
-                  "~A: can't handle ~A argument with non-constant initform."
-                  context
-                  (if (eq state '&optional) "optional" "keyword")))))))))
+    (compiler-error "~S is not a valid function name." name)))
 
-(defmacro with-local-functions-for-flet/labels 
-    (form local-functions-var lambda-name lambda-list-var name-var body-var body1 body2)
+(defmacro with-local-functions-for-flet/labels
+    (form local-functions-var lambda-list-var name-var body-var body1 body2)
   `(progn (incf (compiland-children *current-compiland*) (length (cadr ,form)))
 	  (let ((*visible-variables* *visible-variables*)
 		(*local-functions* *local-functions*)
@@ -403,8 +391,7 @@
 	    (dolist (definition (cadr ,form))
 	      (let ((,name-var (car definition))
 		    (,lambda-list-var (cadr definition)))
-		(validate-name-and-lambda-list ,name-var ,lambda-list-var ,lambda-name)
-	
+		(validate-function-name ,name-var)
 		(let* ((,body-var (cddr definition))
 		       (compiland (make-compiland :name ,name-var
 						  :parent *current-compiland*)))
@@ -574,7 +561,7 @@
 
 (defun p1-flet (form)
   (with-local-functions-for-flet/labels
-      form local-functions 'FLET lambda-list name body
+      form local-functions lambda-list name body
       ((let ((local-function (make-local-function :name name
 						 :compiland compiland)))
 	 (multiple-value-bind (body decls) (parse-body body)
@@ -601,7 +588,7 @@
 
 (defun p1-labels (form)
   (with-local-functions-for-flet/labels
-      form local-functions 'LABELS lambda-list name body
+      form local-functions lambda-list name body
       ((let* ((variable (make-variable :name (gensym)))
 	      (local-function (make-local-function :name name
 						   :compiland compiland
