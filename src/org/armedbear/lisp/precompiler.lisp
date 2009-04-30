@@ -551,109 +551,6 @@
   ;; Delegate to PRECOMPILE-PSETF so symbol macros are handled correctly.
   (precompile-psetf form))
 
-(defun maybe-rewrite-lambda (form)
-  (let* ((lambda-list (cadr form)))
-    (if (not (or (memq '&optional lambda-list)
-                 (memq '&key lambda-list)))
-        ;; no need to rewrite: no arguments with possible initforms anyway
-        form
-      (multiple-value-bind (body decls doc)
-          (parse-body (cddr form))
-        (let (state let-bindings new-lambda-list
-                    (non-constants 0))
-          (do* ((vars lambda-list (cdr vars))
-                (var (car vars) (car vars)))
-               ((or (endp vars) (eq '&aux (car vars)))
-                (setf new-lambda-list
-                      (append (reverse vars) new-lambda-list)))
-            (push (car vars) new-lambda-list)
-            (let ((replacement (gensym)))
-              (flet ((parse-compound-argument (arg)
-                       "Returns the values NAME, KEYWORD, INITFORM, INITFORM-P,
-   SUPPLIED-P and SUPPLIED-P-P assuming ARG is a compound argument."
-                       (destructuring-bind
-                             (name &optional (initform nil initform-supplied-p)
-                                   (supplied-p nil supplied-p-supplied-p))
-                           (if (listp arg) arg (list arg))
-                         (if (listp name)
-                             (values (cadr name) (car name)
-                                     initform initform-supplied-p
-                                     supplied-p supplied-p-supplied-p)
-                             (values name (make-keyword name)
-                                     initform initform-supplied-p
-                                     supplied-p supplied-p-supplied-p)))))
-                (case var
-                  (&optional (setf state :optional))
-                  (&key (setf state :key))
-                  ((&whole &environment &rest &body &allow-other-keys)
-                   ;; do nothing special
-                   )
-                  (t
-                   (cond
-                     ((atom var)
-                      (setf (car new-lambda-list)
-                            (if (eq state :key)
-                                (list (list (make-keyword var) replacement))
-                                replacement))
-                      (push (list var replacement) let-bindings))
-                     ((constantp (second var))
-                      ;; so, we must have a consp-type var we're looking at
-                      ;; and it has a constantp initform
-                      (multiple-value-bind
-                            (name keyword initform initform-supplied-p
-                                  supplied-p supplied-p-supplied-p)
-                          (parse-compound-argument var)
-                        (let ((var-form (if (eq state :key)
-                                            (list keyword replacement)
-                                            replacement))
-                              (supplied-p-replacement (gensym)))
-                          (setf (car new-lambda-list)
-                                (cond
-                                  ((not initform-supplied-p)
-                                   (list var-form))
-                                  ((not supplied-p-supplied-p)
-                                   (list var-form initform))
-                                  (t
-                                   (list var-form initform
-                                         supplied-p-replacement))))
-                          (push (list name replacement) let-bindings)
-                          ;; if there was a 'supplied-p' variable, it might
-                          ;; be used in the declarations. Since those will be
-                          ;; moved below the LET* block, we need to move the
-                          ;; supplied-p parameter too.
-                          (when supplied-p-supplied-p
-                            (push (list supplied-p supplied-p-replacement)
-                                  let-bindings)))))
-                     (t
-                      (incf non-constants)
-                      ;; this is either a keyword or an optional argument
-                      ;; with a non-constantp initform
-                      (multiple-value-bind
-                            (name keyword initform initform-supplied-p
-                                  supplied-p supplied-p-supplied-p)
-                          (parse-compound-argument var)
-                        (declare (ignore initform-supplied-p))
-                        (let ((var-form (if (eq state :key)
-                                            (list keyword replacement)
-                                            replacement))
-                              (supplied-p-replacement (gensym)))
-                          (setf (car new-lambda-list)
-                                (list var-form nil supplied-p-replacement))
-                          (push (list name `(if ,supplied-p-replacement
-                                                ,replacement ,initform))
-                                let-bindings)
-                          (when supplied-p-supplied-p
-                            (push (list supplied-p supplied-p-replacement)
-                                  let-bindings)))))))))))
-          (if (zerop non-constants)
-              ;; there was no reason to rewrite...
-              form
-              (let ((rv
-                     `(lambda ,(nreverse new-lambda-list)
-                        ,@(when doc (list doc))
-                        (let* ,(nreverse let-bindings)
-                          ,@decls ,@body))))
-                rv)))))))
 
 (defun precompile-lambda-list (form)
   (let (new aux-tail)
@@ -678,7 +575,6 @@
              (push new-arg new))))))
 
 (defun precompile-lambda (form)
-  (setq form (maybe-rewrite-lambda form))
   (let ((body (cddr form))
         (precompiled-lambda-list
            (precompile-lambda-list (cadr form)))
@@ -689,7 +585,6 @@
 
 (defun precompile-named-lambda (form)
   (let ((lambda-form (list* 'LAMBDA (caddr form) (cdddr form))))
-    (setf lambda-form (maybe-rewrite-lambda lambda-form))
     (let ((body (cddr lambda-form))
           (precompiled-lambda-list
            (precompile-lambda-list (cadr lambda-form)))
@@ -841,11 +736,10 @@
 
 (defun precompile-local-function-def (def)
   (let ((name (car def))
-        (arglist (cadr def))
         (body (cddr def)))
     ;; Macro names are shadowed by local functions.
     (environment-add-function-definition *compile-file-environment* name body)
-    (list* name arglist (mapcar #'precompile1 body))))
+    (cdr (precompile-named-lambda (list* 'NAMED-LAMBDA def)))))
 
 (defun precompile-local-functions (defs)
   (let ((result nil))
