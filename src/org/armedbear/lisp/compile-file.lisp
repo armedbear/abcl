@@ -258,11 +258,10 @@
                                          stream compile-time-too))
                 (return-from process-toplevel-form))
 
-              (when compile-time-too
-                (eval form))
-
               (cond ((eq operator 'QUOTE)
 ;;                      (setf form (precompile-form form nil))
+                     (when compile-time-too
+                       (eval form))
                      (return-from process-toplevel-form)
                      )
                     ((eq operator 'PUT)
@@ -282,6 +281,8 @@
                      (let ((*package* +keyword-package+))
                        (dump-form form stream))
                      (%stream-terpri stream)
+                     (when compile-time-too
+                       (eval form))
                      (return-from process-toplevel-form))
                     ((and (eq operator '%SET-FDEFINITION)
                           (eq (car (second form)) 'QUOTE)
@@ -309,7 +310,9 @@
                      )))))))
   (when (consp form)
     (dump-form form stream)
-    (%stream-terpri stream)))
+    (%stream-terpri stream))
+  (when compile-time-too
+    (eval form)))
 
 (declaim (ftype (function (t) t) convert-ensure-method))
 (defun convert-ensure-method (form)
