@@ -448,9 +448,10 @@
                (push (car form) aux-vars))
               (t
                (push form aux-vars))))
-      (multiple-value-bind (lambda-decls let-decls)
-          (split-decls decls aux-vars)
-        `(lambda ,(subseq lambda-list 0 (position '&AUX lambda-list))
+      (setf lambda-list (subseq lambda-list 0 (position '&AUX lambda-list)))
+      (multiple-value-bind (let-decls lambda-decls)
+          (split-decls decls (lambda-list-names lambda-list))
+        `(lambda ,lambda-list
            ,@lambda-decls
            (let* ,lets
              ,@let-decls
