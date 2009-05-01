@@ -313,24 +313,18 @@
                     (t
 ;;                      (setf form (precompile-form form nil))
                      (note-toplevel-form form)
-                     (let ((new-form (convert-toplevel-form form)))
-                       ;; The converted form depends on the loader
-                       ;; but since we don't own the loader here,
-                       ;; we'll dump the converted form and eval
-                       ;; the original one (which won't depend on the loader
-                       ;; because it doesn't contain a compiled function)
-                       (when (consp new-form)
-                         (dump-form new-form stream)
-                         (%stream-terpri stream)))
-                     (when compile-time-too
-                       (eval form))
-                     (return-from process-toplevel-form)
+                     (setf form (convert-toplevel-form form))
                      )))))))
   (when (consp form)
     (dump-form form stream)
     (%stream-terpri stream))
-  (when compile-time-too
-    (eval form)))
+  ;; Make sure the compiled-function loader knows where
+  ;; to load the compiled functions. Note that this trickery
+  ;; was already used in verify-load before I used it,
+  ;; however, binding *load-truename* isn't fully compliant, I think.
+  (let ((*load-truename* *output-file-pathname*))
+    (when compile-time-too
+      (eval form))))
 
 (declaim (ftype (function (t) t) convert-ensure-method))
 (defun convert-ensure-method (form)
