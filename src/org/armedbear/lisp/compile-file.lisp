@@ -39,13 +39,20 @@
 
 (defvar *output-file-pathname*)
 
+(declaim (ftype (function (t) t) compute-classfile-name))
+(defun compute-classfile-name (n &optional (output-file-pathname
+                                            *output-file-pathname*))
+  "Computes the name of the class file associated with number `n'."
+  (let ((name
+         (%format nil "~A-~D"
+                  (substitute #\_ #\.
+                              (pathname-name output-file-pathname)) n)))
+    (namestring (merge-pathnames (make-pathname :name name :type "cls")
+                                 output-file-pathname))))
+
 (declaim (ftype (function () t) next-classfile-name))
 (defun next-classfile-name ()
-  (let ((name (%format nil "~A-~D"
-                       (substitute #\_ #\. (pathname-name *output-file-pathname*))
-                       (incf *class-number*))))
-    (namestring (merge-pathnames (make-pathname :name name :type "cls")
-                                 *output-file-pathname*))))
+  (compute-classfile-name (incf *class-number*)))
 
 (defmacro report-error (&rest forms)
   `(handler-case (progn ,@forms)
@@ -471,10 +478,7 @@
                                             output-file)))
                  (pathnames ()))
             (dotimes (i *class-number*)
-              (let* ((file-namestring (%format nil "~A-~D.cls"
-                                               (substitute #\_ #\. (pathname-name output-file))
-                                               (1+ i)))
-                     (pathname (merge-pathnames file-namestring output-file)))
+              (let* ((pathname (compute-classfile-name (1+ i))))
                 (when (probe-file pathname)
                   (push pathname pathnames))))
             (setf pathnames (nreverse pathnames))
