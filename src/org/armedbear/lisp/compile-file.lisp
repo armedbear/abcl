@@ -314,6 +314,11 @@
 ;;                      (setf form (precompile-form form nil))
                      (note-toplevel-form form)
                      (let ((new-form (convert-toplevel-form form)))
+                       ;; The converted form depends on the loader
+                       ;; but since we don't own the loader here,
+                       ;; we'll dump the converted form and eval
+                       ;; the original one (which won't depend on the loader
+                       ;; because it doesn't contain a compiled function)
                        (when (consp new-form)
                          (dump-form new-form stream)
                          (%stream-terpri stream)))
