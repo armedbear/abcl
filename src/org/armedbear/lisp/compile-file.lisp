@@ -313,7 +313,13 @@
                     (t
 ;;                      (setf form (precompile-form form nil))
                      (note-toplevel-form form)
-                     (setf form (convert-toplevel-form form))
+                     (let ((new-form (convert-toplevel-form form)))
+                       (when (consp new-form)
+                         (dump-form new-form stream)
+                         (%stream-terpri stream)))
+                     (when compile-time-too
+                       (eval form))
+                     (return-from process-toplevel-form)
                      )))))))
   (when (consp form)
     (dump-form form stream)
