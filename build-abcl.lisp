@@ -13,10 +13,20 @@
 
 (in-package #:build-abcl)
 
+(defun comp (string char)
+  "Chops off the character at the end of `string' if it matches char"
+  (let ((len (length string)))
+    (if (eql char (char string (1- len)))
+        (subseq string 0 (1- len))
+        string)))
+
 (defun safe-namestring (pathname)
-  (let ((string (namestring pathname)))
+  (let* ((string (namestring pathname))
+         (len (length string)))
     (when (position #\space string)
-      (setf string (concatenate 'string "\"" string "\"")))
+      (setf string (concatenate 'string "\""
+                                (comp string #\\)
+                                "\"")))
     string))
 
 
@@ -309,13 +319,14 @@ is infact a child of it while being rooted at the same root as `parent'."
                          (cmdline (with-output-to-string (s)
                                     (princ *java-compiler-command-line-prefix* s)
                                     (princ " -d " s)
-                                    (princ *build-root* s)
+                                    (princ (safe-namestring *build-root*) s)
                                     (princ #\Space s)
                                     (dolist (source-file source-files)
                                       (princ
-                                       (if (equal (pathname-directory source-file) dir)
-                                           (file-namestring source-file)
-                                           (namestring source-file))
+                                       (safe-namestring
+                                        (if (equal (pathname-directory source-file) dir)
+                                            (file-namestring source-file)
+                                            (namestring source-file)))
                                        s)
                                       (princ #\space s))))
                          (status (run-shell-command cmdline :directory *abcl-dir*)))
@@ -323,7 +334,7 @@ is infact a child of it while being rooted at the same root as `parent'."
                  (t
                   (ensure-directories-exist *build-root*)
                   (dolist (source-file source-files t)
-                    (unless (java-compile-file source-file)
+                    (unless (java-compile-file (safe-namestring source-file))
                       (format t "Build failed.~%")
                       (return nil)))))))))
 
