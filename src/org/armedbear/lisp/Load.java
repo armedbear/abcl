@@ -39,6 +39,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -508,7 +509,15 @@ public final class Load extends Lisp
     private static final String getPath(URL url)
     {
         if (url != null) {
-            String path = url.getPath();
+            String path;
+            try {
+                path = URLDecoder.decode(url.getPath(),"UTF-8");
+            }
+            catch (java.io.UnsupportedEncodingException uee) {
+                // Can't happen: every Java is supposed to support
+                // at least UTF-8 encoding
+                path = null;
+            }
             if (path != null) {
                 if (Utilities.isPlatformWindows) {
                     if (path.length() > 0 && path.charAt(0) == '/')

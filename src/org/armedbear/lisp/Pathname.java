@@ -36,6 +36,7 @@ package org.armedbear.lisp;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.StringTokenizer;
 
 public class Pathname extends LispObject
@@ -66,7 +67,15 @@ public class Pathname extends LispObject
     {
         String protocol = url.getProtocol();
         if ("jar".equals(protocol)) {
-            String s = url.getPath();
+            String s;
+            try {
+                s = URLDecoder.decode(url.getPath(),"UTF-8");
+            }
+            catch (java.io.UnsupportedEncodingException uee) {
+                // Can't happen: every Java is supposed to support
+                // at least UTF-8 encoding
+                s = null;
+            }
             if (s.startsWith("file:")) {
                 int index = s.indexOf("!/");
                 String container = s.substring(5, index);
@@ -83,7 +92,15 @@ public class Pathname extends LispObject
                 return;
             }
         } else if ("file".equals(protocol)) {
-            String s = url.getPath();
+            String s;
+            try {
+                s = URLDecoder.decode(url.getPath(),"UTF-8");
+            }
+            catch (java.io.UnsupportedEncodingException uee) {
+                // Can't happen: every Java is supposed to support
+                // at least UTF-8 encoding
+                s = null;
+            }
             if (s != null && s.startsWith("file:")) {
                 init(s.substring(5));
                 return;
