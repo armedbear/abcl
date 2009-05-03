@@ -3991,7 +3991,8 @@ given a specific common representation.")
       ;; Save current dynamic environment.
       (setf (block-environment-register block) (allocate-register))
       (emit-push-current-thread)
-      (emit 'getfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
+      (emit 'getfield +lisp-thread-class+ "lastSpecialBinding"
+            +lisp-special-binding+)
       (astore (block-environment-register block))
       (label label-START))
     ;; Make sure there are no leftover values from previous calls.
@@ -4016,14 +4017,14 @@ given a specific common representation.")
              ;; Did we get just one value?
              (aload values-register)
              (emit 'ifnull LABEL1)
-             ;; Reaching here, we have multiple values (or no values at all). We need
-             ;; the slow path if we have more variables than values.
+             ;; Reaching here, we have multiple values (or no values at all).
+             ;; We need the slow path if we have more variables than values.
              (aload values-register)
              (emit 'arraylength)
              (emit-push-constant-int (length vars))
              (emit 'if_icmplt LABEL1)
-             ;; Reaching here, we have enough values for all the variables. We can use
-             ;; the values we have. This is the fast path.
+             ;; Reaching here, we have enough values for all the variables.
+             ;; We can use the values we have. This is the fast path.
              (aload values-register)
              (emit 'goto LABEL2)
              (label LABEL1)
@@ -4062,7 +4063,8 @@ given a specific common representation.")
       (label label-EXIT)
       (aload *thread*)
       (aload (block-environment-register block))
-      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
+      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
+            +lisp-special-binding+)
       (push (make-handler :from label-START
                           :to label-END
                           :code label-END
@@ -4092,16 +4094,20 @@ given a specific common representation.")
                               (when (eql (variable-writes source-var) 0)
                                 ;; We can eliminate the variable.
                                 ;; FIXME This may no longer be true when we start tracking writes!
-                                (aver (= (variable-reads variable) (length (variable-references variable))))
+                                (aver (= (variable-reads variable)
+                                         (length (variable-references variable))))
                                 (dolist (ref (variable-references variable))
                                   (aver (eq (var-ref-variable ref) variable))
                                   (setf (var-ref-variable ref) source-var))
                                 ;; Check for DOTIMES limit variable.
-                                (when (get (variable-name variable) 'sys::dotimes-limit-variable-p)
-                                  (let* ((symbol (get (variable-name variable) 'sys::dotimes-index-variable-name))
+                                (when (get (variable-name variable)
+                                           'sys::dotimes-limit-variable-p)
+                                  (let* ((symbol (get (variable-name variable)
+                                                      'sys::dotimes-index-variable-name))
                                          (index-variable (find-variable symbol (block-vars block))))
                                     (when index-variable
-                                      (setf (get (variable-name index-variable) 'sys::dotimes-limit-variable-name)
+                                      (setf (get (variable-name index-variable)
+                                                 'sys::dotimes-limit-variable-name)
                                             (variable-name source-var)))))
                                 (push variable removed)))))))
                   ((fixnump initform)
@@ -4271,7 +4277,9 @@ given a specific common representation.")
                  ;; Now allocate the register.
                  (allocate-variable-register variable))
                (cond ((variable-special-p variable)
-                      (emit-move-from-stack (setf (variable-temp-register variable) (allocate-register))))
+                      (emit-move-from-stack
+                       (setf (variable-temp-register variable)
+                             (allocate-register))))
                      ((variable-representation variable)
                       (emit-move-to-variable variable))
                      (t
@@ -4386,7 +4394,8 @@ given a specific common representation.")
       ;; We need to save current dynamic environment.
       (setf (block-environment-register block) (allocate-register))
       (emit-push-current-thread)
-      (emit 'getfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
+      (emit 'getfield +lisp-thread-class+ "lastSpecialBinding"
+            +lisp-special-binding+)
       (astore (block-environment-register block))
       (label label-START))
     (propagate-vars block)
@@ -4544,7 +4553,8 @@ given a specific common representation.")
             ;; Restore dynamic environment.
             (aload *thread*)
             (aload register)
-            (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+))
+            (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
+                  +lisp-special-binding+))
           (maybe-generate-interrupt-check)
           (emit 'goto (tag-label tag))
           (return-from p2-go))))
@@ -4821,7 +4831,8 @@ given a specific common representation.")
                  (single-valued-p values-form))
       (emit-clear-values))
     (emit-push-current-thread)
-    (emit 'getfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
+    (emit 'getfield +lisp-thread-class+ "lastSpecialBinding"
+          +lisp-special-binding+)
     (astore environment-register)
     (label label-START)
     ;; Compile call to Lisp.progvBindVars().
@@ -4834,14 +4845,16 @@ given a specific common representation.")
     (label label-END)
     (aload *thread*)
     (aload environment-register)
-    (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
+    (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
+          +lisp-special-binding+)
     (emit 'athrow)
 
     ;; Restore dynamic environment.
     (label label-EXIT)
     (aload *thread*)
     (aload environment-register)
-    (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
+    (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
+          +lisp-special-binding+)
     (fix-boxing representation nil)
     (push (make-handler :from label-START
                           :to label-END
