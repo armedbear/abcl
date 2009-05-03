@@ -7871,10 +7871,12 @@ for use with derive-type-times.")
            (exception-register (allocate-register))
            (result-register (allocate-register))
            (values-register (allocate-register))
+           (return-address-register (allocate-register))
            (BEGIN-PROTECTED-RANGE (gensym))
            (END-PROTECTED-RANGE (gensym))
            (HANDLER (gensym))
-           (EXIT (gensym)))
+           (EXIT (gensym))
+           (CLEANUP (gensym)))
       ;; Make sure there are no leftover multiple return values from previous calls.
       (emit-clear-values)
 
@@ -7886,17 +7888,21 @@ for use with derive-type-times.")
           (emit 'getfield +lisp-thread-class+ "_values" +lisp-object-array+)
           (astore values-register))
         (label END-PROTECTED-RANGE))
-      (dolist (subform cleanup-forms)
-        (compile-form subform nil nil))
+      (emit 'jsr CLEANUP)
       (emit 'goto EXIT) ; Jump over handler.
       (label HANDLER) ; Start of exception handler.
       ;; The Throwable object is on the runtime stack. Stack depth is 1.
       (astore exception-register)
-      (dolist (subform cleanup-forms)
-        (compile-form subform nil nil))
+      (emit 'jsr CLEANUP) ; Call cleanup forms.
       (maybe-emit-clear-values cleanup-forms)
       (aload exception-register)
       (emit 'athrow) ; Re-throw exception.
+      (label CLEANUP) ; Cleanup forms.
+      ;; Return address is on stack here.
+      (astore return-address-register)
+      (dolist (subform cleanup-forms)
+        (compile-form subform nil nil))
+      (emit 'ret return-address-register)
       (label EXIT)
       ;; Restore multiple values returned by protected form.
       (unless (single-valued-p protected-form)
