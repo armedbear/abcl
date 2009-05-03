@@ -336,17 +336,21 @@
   (let* ((block (make-block-node '(TAGBODY)))
          (*blocks* (cons block *blocks*))
          (*visible-tags* *visible-tags*)
+         (local-tags '())
          (body (cdr form)))
     ;; Make all the tags visible before processing the body forms.
     (dolist (subform body)
       (when (or (symbolp subform) (integerp subform))
         (let* ((tag (make-tag :name subform :label (gensym) :block block)))
+          (push tag local-tags)
           (push tag *visible-tags*))))
     (let ((new-body '())
           (live t))
       (dolist (subform body)
         (cond ((or (symbolp subform) (integerp subform))
                (push subform new-body)
+               (push (find subform local-tags :key #'tag-name :test #'eql)
+                     (block-tags block))
                (setf live t))
               ((not live)
                ;; Nothing to do.
@@ -367,6 +371,7 @@
          (tag (find-tag name)))
     (unless tag
       (error "p1-go: tag not found: ~S" name))
+    (setf (tag-used tag) t)
     (let ((tag-block (tag-block tag)))
       (cond ((eq (tag-compiland tag) *current-compiland*)
              ;; Does the GO leave an enclosing UNWIND-PROTECT?

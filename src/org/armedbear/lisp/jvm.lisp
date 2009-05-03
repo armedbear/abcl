@@ -370,6 +370,8 @@
   ;; Only used in LET/LET*/M-V-B nodes.
   vars
   free-specials
+  ;; Only used in TAGBODY
+  tags
   )
 
 (defvar *blocks* ())
@@ -431,7 +433,8 @@ be generated.
   label
   ;; The associated TAGBODY
   block
-  (compiland *current-compiland*))
+  (compiland *current-compiland*)
+  used)
 
 (defknown find-tag (t) t)
 (defun find-tag (name)

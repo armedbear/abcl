@@ -4430,7 +4430,6 @@ given a specific common representation.")
          (*register* *register*)
          (form (block-form block))
          (body (cdr form))
-         (local-tags ())
          (BEGIN-BLOCK (gensym))
          (END-BLOCK (gensym))
          (EXIT (gensym))
@@ -4440,11 +4439,8 @@ given a specific common representation.")
       (setf environment-register (allocate-register)
             (block-environment-register block) environment-register))
     ;; Scan for tags.
-    (dolist (subform body)
-      (when (or (symbolp subform) (integerp subform))
-        (let* ((tag (make-tag :name subform :label (gensym) :block block)))
-          (push tag local-tags)
-          (push tag *visible-tags*))))
+    (dolist (tag (block-tags block))
+      (push tag *visible-tags*))
 
     (when environment-register
       ;; Note: we store the environment register,
@@ -4465,10 +4461,12 @@ given a specific common representation.")
           (subform (car rest) (car rest)))
          ((null rest))
       (cond ((or (symbolp subform) (integerp subform))
-             (let ((tag (find-tag subform)))
+             (let ((tag (find subform (block-tags block) :key #'tag-name
+                              :test #'eql)))
                (unless tag
                  (error "COMPILE-TAGBODY: tag not found: ~S~%" subform))
-               (label (tag-label tag))))
+               (when (tag-used tag)
+                 (label (tag-label tag)))))
             (t
              (compile-form subform nil nil)
              (unless must-clear-values
@@ -4492,7 +4490,9 @@ given a specific common representation.")
         (emit 'checkcast +lisp-go-class+)
         (emit 'getfield +lisp-go-class+ "tag" +lisp-object+) ; Stack depth is still 1.
         (astore tag-register)
-        (dolist (tag local-tags)
+        ;; Don't actually generate comparisons for tags
+        ;; to which there is no GO instruction
+        (dolist (tag (remove-if-not #'tag-used (block-tags block)))
           (let ((NEXT (gensym)))
             (aload tag-register)
             (emit 'getstatic *this-class*
