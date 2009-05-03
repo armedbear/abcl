@@ -398,7 +398,9 @@ requires a transfer control exception to be thrown: e.g. Go and Return.
 Non-local exits are required by blocks which do more in their cleanup
 than just restore the lastSpecialBinding (= dynamic environment).
 "
-  (memq (block-name object) '(CATCH UNWIND-PROTECT)))
+  (let ((name (block-name object)))
+    (or (equal name '(CATCH))
+        (equal name '(UNWIND-PROTECT)))))
 
 
 (defknown enclosed-by-protected-block-p (&optional t) boolean)
