@@ -425,8 +425,11 @@ be generated.
       (return t))))
 
 (defstruct tag
+  ;; The symbol (or integer) naming the tag
   name
+  ;; The symbol which is the jump target in JVM byte code
   label
+  ;; The associated TAGBODY
   block
   (compiland *current-compiland*))
 
