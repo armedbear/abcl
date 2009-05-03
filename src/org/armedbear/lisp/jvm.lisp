@@ -368,6 +368,13 @@
   free-specials
   )
 
+(defvar *blocks* ())
+
+(defun find-block (name)
+  (dolist (block *blocks*)
+    (when (eq name (block-name block))
+      (return block))))
+
 (defknown node-constant-p (t) boolean)
 (defun node-constant-p (object)
   (cond ((block-node-p object)
@@ -389,18 +396,31 @@ than just restore the lastSpecialBinding (= dynamic environment).
 "
   (memq (block-name object) '(CATCH UNWIND-PROTECT)))
 
-(defvar *blocks* ())
 
-(defun find-block (name)
-  (dolist (block *blocks*)
-    (when (eq name (block-name block))
-      (return block))))
+(defknown enclosed-by-protected-block-p (&optional outermost-block) boolean)
+(defun enclosed-by-protected-block-p (&optional outermost-block)
+  "Indicates whether the code being compiled/analyzed is enclosed in
+a block which requires a non-local transfer of control exception to
+be generated.
+"
+  (dolist (enclosing-block *blocks*)
+    (when (eq enclosing-block outermost-block)
+      (return-from enclosed-by-protected-block-p nil))
+    (when (block-requires-non-local-exit-p enclosing-block)
+      (return-from enclosed-by-protected-block-p t))))
+
 
 (defstruct tag
   name
   label
   block
   (compiland *current-compiland*))
+
+(defknown find-tag (t) t)
+(defun find-tag (name)
+  (dolist (tag *visible-tags*)
+    (when (eql name (tag-name tag))
+      (return tag))))
 
 (defun process-ignore/ignorable (declaration names variables)
   (when (memq declaration '(IGNORE IGNORABLE))

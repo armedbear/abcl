@@ -4438,12 +4438,6 @@ given a specific common representation.")
       (process-optimization-declarations body)
       (compile-progn-body body target representation))))
 
-(defknown find-tag (t) t)
-(defun find-tag (name)
-  (dolist (tag *visible-tags*)
-    (when (eql name (tag-name tag))
-      (return tag))))
-
 (defknown p2-tagbody-node (t t) t)
 (defun p2-tagbody-node (block target)
   (let* ((*blocks* (cons block *blocks*))
@@ -4534,15 +4528,8 @@ given a specific common representation.")
     (when (eq (tag-compiland tag) *current-compiland*)
       ;; Local case.
       (let* ((tag-block (tag-block tag))
-             (register nil)
-             (protected
-              ;; Does the GO leave an enclosing CATCH or UNWIND-PROTECT?
-              (dolist (enclosing-block *blocks*)
-                (when (eq enclosing-block tag-block)
-                  (return nil))
-                (when (block-requires-non-local-exit-p enclosing-block)
-                  (return t)))))
-        (unless protected
+             (register nil))
+        (unless (enclosed-by-protected-block-p tag-block)
           (dolist (block *blocks*)
             (if (eq block tag-block)
                 (return)
@@ -4722,20 +4709,14 @@ given a specific common representation.")
       (when (eq (block-compiland block) compiland)
         ;; Local case. Is the RETURN nested inside an UNWIND-PROTECT which is
         ;; inside the block we're returning from?
-        (let ((protected
-               (dolist (enclosing-block *blocks*)
-                 (when (eq enclosing-block block)
-                   (return nil))
-                 (when (block-requires-non-local-exit-p enclosing-block)
-                   (return t)))))
-          (unless protected
-            (unless (compiland-single-valued-p *current-compiland*)
+        (unless (enclosed-by-protected-block-p block)
+          (unless (compiland-single-valued-p *current-compiland*)
 ;;               (format t "compiland not single-valued: ~S~%"
 ;;                       (compiland-name *current-compiland*))
-              (emit-clear-values))
-            (compile-form result-form (block-target block) nil)
-            (emit 'goto (block-exit block))
-            (return-from p2-return-from)))))
+            (emit-clear-values))
+          (compile-form result-form (block-target block) nil)
+          (emit 'goto (block-exit block))
+          (return-from p2-return-from))))
     ;; Non-local RETURN.
     (aver (block-non-local-return-p block))
     (cond ((node-constant-p result-form)

@@ -312,12 +312,7 @@
            ;; local return anyway so that UNWIND-PROTECT can catch it and run
            ;; its cleanup forms.
            (dformat t "*blocks* = ~S~%" (mapcar #'block-name *blocks*))
-           (let ((protected
-                  (dolist (enclosing-block *blocks*)
-                    (when (eq enclosing-block block)
-                      (return nil))
-                    (when (block-requires-non-local-exit-p enclosing-block)
-                      (return t)))))
+           (let ((protected (enclosed-by-protected-block-p block)))
              (dformat t "p1-return-from protected = ~S~%" protected)
              (when protected
                (setf (block-non-local-return-p block) t))))
@@ -365,14 +360,8 @@
     (let ((tag-block (tag-block tag)))
       (cond ((eq (tag-compiland tag) *current-compiland*)
              ;; Does the GO leave an enclosing UNWIND-PROTECT?
-             (let ((protected
-                    (dolist (enclosing-block *blocks*)
-                      (when (eq enclosing-block tag-block)
-                        (return nil))
-                      (when (block-requires-non-local-exit-p enclosing-block)
-                        (return t)))))
-               (when protected
-                 (setf (block-non-local-go-p tag-block) t))))
+             (when (enclosed-by-protected-block-p tag-block)
+               (setf (block-non-local-go-p tag-block) t)))
             (t
              (setf (block-non-local-go-p tag-block) t)))))
   form)
