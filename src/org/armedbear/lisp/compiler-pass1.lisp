@@ -360,8 +360,13 @@
     (let ((tag-block (tag-block tag)))
       (cond ((eq (tag-compiland tag) *current-compiland*)
              ;; Does the GO leave an enclosing UNWIND-PROTECT?
-             (when (enclosed-by-protected-block-p tag-block)
-               (setf (block-non-local-go-p tag-block) t)))
+             (if (enclosed-by-protected-block-p tag-block)
+                 (setf (block-non-local-go-p tag-block) t)
+                 ;; non-local GO's ensure environment restoration
+                 ;; find out about this local GO
+                 (when (null (block-needs-environment-restoration tag-block))
+                   (setf (block-needs-environment-restoration tag-block)
+                         (enclosed-by-environment-setting-block-p tag-block)))))
             (t
              (setf (block-non-local-go-p tag-block) t)))))
   form)

@@ -361,6 +361,9 @@
   non-local-return-p
   ;; True if a tag in this tagbody is the target of a non-local GO.
   non-local-go-p
+  ;; If non-nil, the TAGBODY contains local blocks which "contaminate" the
+  ;; environment, with GO forms in them which target tags in this TAGBODY
+  needs-environment-restoration
   ;; If non-nil, register containing saved dynamic environment for this block.
   environment-register
   ;; Only used in LET/LET*/M-V-B nodes.
@@ -409,6 +412,14 @@ be generated.
     (when (block-requires-non-local-exit-p enclosing-block)
       (return-from enclosed-by-protected-block-p t))))
 
+(defknown enclosed-by-environment-setting-block-p (&optional outermost-block)
+  boolean)
+(defun enclosed-by-environment-setting-block-p (&optional outermost-block)
+  (dolist (enclosing-block *blocks*)
+    (when (eq enclosing-block outermost-block)
+      (return nil))
+    (when (block-environment-register enclosing-block)
+      (return t))))
 
 (defstruct tag
   name

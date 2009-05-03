@@ -4449,13 +4449,32 @@ given a specific common representation.")
          (BEGIN-BLOCK (gensym))
          (END-BLOCK (gensym))
          (EXIT (gensym))
-         (must-clear-values nil))
+         (must-clear-values nil)
+         environment-register)
+    (when (block-needs-environment-restoration block)
+      (setf environment-register (allocate-register)
+            (block-environment-register block) environment-register))
     ;; Scan for tags.
     (dolist (subform body)
       (when (or (symbolp subform) (integerp subform))
         (let* ((tag (make-tag :name subform :label (gensym) :block block)))
           (push tag local-tags)
           (push tag *visible-tags*))))
+
+    (when environment-register
+      ;; Note: we store the environment register,
+      ;; but since we don't manipulate the environment,
+      ;; we don't need to restore.
+      ;;
+      ;; It's here so local transfers of control can restore
+      ;; what we started with.
+      ;;
+      ;; Non-local transfers of control restore the environment
+      ;; themselves (in the finally of LET/LET*, etc.
+      (emit-push-current-thread)
+      (emit 'getfield +lisp-thread-class+ "lastSpecialBinding"
+            +lisp-special-binding+)
+      (astore environment-register))
     (label BEGIN-BLOCK)
     (do* ((rest body (cdr rest))
           (subform (car rest) (car rest)))
@@ -4522,27 +4541,23 @@ given a specific common representation.")
   ;; FIXME What if we're called with a non-NIL representation?
   (declare (ignore representation))
   (let* ((name (cadr form))
-         (tag (find-tag name)))
+         (tag (find-tag name))
+         (tag-block (when tag (tag-block tag))))
     (unless tag
       (error "p2-go: tag not found: ~S" name))
-    (when (eq (tag-compiland tag) *current-compiland*)
-      ;; Local case.
-      (let* ((tag-block (tag-block tag))
-             (register nil))
-        (unless (enclosed-by-protected-block-p tag-block)
-          (dolist (block *blocks*)
-            (if (eq block tag-block)
-                (return)
-                (setf register (or (block-environment-register block) register))))
-          (when register
-            ;; Restore dynamic environment.
-            (aload *thread*)
-            (aload register)
-            (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
-                  +lisp-special-binding+))
-          (maybe-generate-interrupt-check)
-          (emit 'goto (tag-label tag))
-          (return-from p2-go))))
+    (when (and (eq (tag-compiland tag) *current-compiland*)
+               (not (enclosed-by-protected-block-p tag-block)))
+      ;; Local case with local transfer of control
+      ;;   Note: Local case with non-local transfer of control handled below
+      (when (block-environment-register tag-block)
+        ;; If there's a dynamic environment to restore, do it.
+        (aload *thread*)
+        (aload (block-environment-register tag-block))
+        (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
+              +lisp-special-binding+))
+      (maybe-generate-interrupt-check)
+      (emit 'goto (tag-label tag))
+      (return-from p2-go))
     ;; Non-local GO.
     (emit 'new +lisp-go-class+)
     (emit 'dup)
