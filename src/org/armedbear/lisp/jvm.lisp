@@ -379,6 +379,16 @@
         (t
          nil)))
 
+(defknown block-requires-non-local-exit-p (t) boolean)
+(defun block-requires-non-local-exit-p (object)
+  "A block which *always* requires a 'non-local-exit' is a block which
+requires a transfer control exception to be thrown: e.g. Go and Return.
+
+Non-local exits are required by blocks which do more in their cleanup
+than just restore the lastSpecialBinding (= dynamic environment).
+"
+  (memq (block-name object) '(CATCH UNWIND-PROTECT)))
+
 (defvar *blocks* ())
 
 (defun find-block (name)

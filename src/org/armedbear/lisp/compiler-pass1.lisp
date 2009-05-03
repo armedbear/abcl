@@ -316,7 +316,7 @@
                   (dolist (enclosing-block *blocks*)
                     (when (eq enclosing-block block)
                       (return nil))
-                    (when (equal (block-name enclosing-block) '(UNWIND-PROTECT))
+                    (when (block-requires-non-local-exit-p enclosing-block)
                       (return t)))))
              (dformat t "p1-return-from protected = ~S~%" protected)
              (when protected
@@ -369,7 +369,7 @@
                     (dolist (enclosing-block *blocks*)
                       (when (eq enclosing-block tag-block)
                         (return nil))
-                      (when (equal (block-name enclosing-block) '(UNWIND-PROTECT))
+                      (when (block-requires-non-local-exit-p enclosing-block)
                         (return t)))))
                (when protected
                  (setf (block-non-local-go-p tag-block) t))))
@@ -695,6 +695,9 @@
 (defknown p1-progv (t) t)
 (defun p1-progv (form)
   ;; We've already checked argument count in PRECOMPILE-PROGV.
+
+  ;; ### FIXME: we need to return a block here, so that
+  ;;  (local) GO in p2 can restore the lastSpecialBinding environment
   (let ((new-form (rewrite-progv form)))
     (when (neq new-form form)
       (return-from p1-progv (p1 new-form))))
