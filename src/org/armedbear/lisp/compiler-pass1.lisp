@@ -272,6 +272,10 @@
 (defun p1-catch (form)
   (let* ((tag (p1 (cadr form)))
          (body (cddr form))
+         (block (make-block-node '(CATCH)))
+         ;; our subform processors need to know
+         ;; they're enclosed in a CATCH block
+         (*blocks* (cons block *blocks*))
          (result '()))
     (dolist (subform body)
       (let ((op (and (consp subform) (%car subform))))
@@ -285,16 +289,22 @@
       (return-from p1-catch (car result)))
     (push tag result)
     (push 'CATCH result)
-    (let ((block (make-block-node '(CATCH))))
-      (setf (block-form block) result)
-      block)))
+    (setf (block-form block) result)
+    block))
 
 (defun p1-unwind-protect (form)
   (if (= (length form) 2)
       (p1 (second form)) ; No cleanup forms: (unwind-protect (...)) => (...)
       (let* ((block (make-block-node '(UNWIND-PROTECT)))
-             (*blocks* (cons block *blocks*)))
-        (setf (block-form block) (p1-default form))
+             ;; a bit of jumping through hoops...
+             (unprotected-forms (p1-body (cddr form)))
+             ;; ... because only the protected form is
+             ;; protected by the UNWIND-PROTECT block
+             (*blocks* (cons block *blocks*))
+             (protected-form (p1 (cadr form))))
+        (setf (block-form block)
+              `(unwind-protect ,protected-form
+                 ,@unprotected-forms))
         block)))
 
 (defknown p1-return-from (t) t)
