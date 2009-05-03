@@ -7792,11 +7792,12 @@ for use with derive-type-times.")
       (aload tag-register)
       (emit-invokevirtual +lisp-thread-class+ "pushCatchTag"
                           (lisp-object-arg-types 1) nil)
-      ; Stack depth is 0.
-      (label BEGIN-PROTECTED-RANGE) ; Start of protected range.
-      (compile-progn-body (cddr form) target) ; Implicit PROGN.
-      (label END-PROTECTED-RANGE) ; End of protected range.
-      (emit 'goto EXIT) ; Jump over handlers.
+      (let ((*blocks* (cons block *blocks*)))
+        ; Stack depth is 0.
+        (label BEGIN-PROTECTED-RANGE) ; Start of protected range.
+        (compile-progn-body (cddr form) target) ; Implicit PROGN.
+        (label END-PROTECTED-RANGE) ; End of protected range.
+        (emit 'goto EXIT)) ; Jump over handlers.
       (label THROW-HANDLER) ; Start of handler for THROW.
       ;; The Throw object is on the runtime stack. Stack depth is 1.
       (emit 'dup) ; Stack depth is 2.
