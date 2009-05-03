@@ -363,6 +363,7 @@
   non-local-go-p
   ;; If non-nil, the TAGBODY contains local blocks which "contaminate" the
   ;; environment, with GO forms in them which target tags in this TAGBODY
+  ;; Non-nil if and only if the block doesn't modify the environment
   needs-environment-restoration
   ;; If non-nil, register containing saved dynamic environment for this block.
   environment-register
@@ -400,7 +401,7 @@ than just restore the lastSpecialBinding (= dynamic environment).
   (memq (block-name object) '(CATCH UNWIND-PROTECT)))
 
 
-(defknown enclosed-by-protected-block-p (&optional outermost-block) boolean)
+(defknown enclosed-by-protected-block-p (&optional t) boolean)
 (defun enclosed-by-protected-block-p (&optional outermost-block)
   "Indicates whether the code being compiled/analyzed is enclosed in
 a block which requires a non-local transfer of control exception to
@@ -412,13 +413,13 @@ be generated.
     (when (block-requires-non-local-exit-p enclosing-block)
       (return-from enclosed-by-protected-block-p t))))
 
-(defknown enclosed-by-environment-setting-block-p (&optional outermost-block)
-  boolean)
+(defknown enclosed-by-environment-setting-block-p (&optional t) boolean)
 (defun enclosed-by-environment-setting-block-p (&optional outermost-block)
   (dolist (enclosing-block *blocks*)
     (when (eq enclosing-block outermost-block)
       (return nil))
-    (when (block-environment-register enclosing-block)
+    (when (and (block-environment-register enclosing-block)
+               (not (block-needs-environment-restoration enclosing-block)))
       (return t))))
 
 (defstruct tag
