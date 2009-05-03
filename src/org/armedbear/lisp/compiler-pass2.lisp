@@ -1826,21 +1826,6 @@ representation, based on the derived type of the LispObject."
            (emit-constructor-lambda-name lambda-name)
            (emit-constructor-lambda-list args)
            (emit-invokespecial-init super (lisp-object-arg-types 2)))
-          ((equal super "org/armedbear/lisp/Primitive0R")
-           (emit-constructor-lambda-name lambda-name)
-           (push '&REST args)
-           (emit-constructor-lambda-list args)
-           (emit-invokespecial-init super (lisp-object-arg-types 2)))
-          ((equal super "org/armedbear/lisp/Primitive1R")
-           (emit-constructor-lambda-name lambda-name)
-           (setf args (list (first args) '&REST (second args)))
-           (emit-constructor-lambda-list args)
-           (emit-invokespecial-init super (lisp-object-arg-types 2)))
-          ((equal super "org/armedbear/lisp/Primitive2R")
-           (emit-constructor-lambda-name lambda-name)
-           (setf args (list (first args) (second args) '&REST (third args)))
-           (emit-constructor-lambda-list args)
-           (emit-invokespecial-init super (lisp-object-arg-types 2)))
           ((equal super +lisp-ctf-class+)
            (emit-constructor-lambda-list args)
            (emit-invokespecial-init super (lisp-object-arg-types 1)))
@@ -8182,39 +8167,6 @@ for use with derive-type-times.")
          (label-START (gensym))
          (label-END (gensym))
          (label-EXIT (gensym)))
-
-    (unless *child-p*
-      (when (memq '&REST args)
-        (unless (or (memq '&OPTIONAL args) (memq '&KEY args))
-          (let ((arg-count (length args)))
-	    (when 
-		(cond ((and (= arg-count 2) (eq (%car args) '&REST))
-		       (setf descriptor (get-descriptor 
-					 (lisp-object-arg-types 1)
-					 +lisp-object+)
-			     super "org/armedbear/lisp/Primitive0R"
-			     args (cdr args)))
-		      ((and (= arg-count 3) (eq (%cadr args) '&REST))
-		       (setf descriptor (get-descriptor 
-					 (lisp-object-arg-types 2)
-					 +lisp-object+)
-			     super "org/armedbear/lisp/Primitive1R"
-			     args (list (first args) (third args))))
-		      ((and (= arg-count 4) (eq (%caddr args) '&REST))
-		       (setf descriptor (get-descriptor 
-					 (list +lisp-object+ 
-					       +lisp-object+ +lisp-object+)
-					 +lisp-object+)
-			     super "org/armedbear/lisp/Primitive2R"
-			     args (list (first args) 
-					(second args) (fourth args)))))
-	      (setf *using-arg-array* nil
-		    *hairy-arglist-p* nil
-		    (compiland-kind compiland) :internal
-		    execute-method-name "_execute"
-		    execute-method (make-method 
-				    :name execute-method-name
-				    :descriptor descriptor)))))))
 
     (dolist (var (compiland-arg-vars compiland))
       (push var *visible-variables*))
