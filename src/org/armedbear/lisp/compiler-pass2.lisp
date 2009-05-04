@@ -4033,6 +4033,8 @@ given a specific common representation.")
     ;; Make the variables visible for the body forms.
     (dolist (variable variables)
       (push variable *visible-variables*))
+    (dolist (variable (block-free-specials block))
+      (push variable *visible-variables*))
     ;; Body.
     (compile-progn-body (cdddr form) target)
     (when bind-special-p
@@ -4419,7 +4421,11 @@ given a specific common representation.")
 
 (defun p2-locally (form target representation)
   (with-saved-compiler-policy
-    (let ((body (cdr form)))
+    (let* ((body (cdr form))
+           (*visible-variables* *visible-variables*)
+           (specials (process-special-declarations body)))
+      (dolist (name specials)
+        (push (make-variable :name name :special-p t) *visible-variables*))
       (process-optimization-declarations body)
       (compile-progn-body body target representation))))
 
