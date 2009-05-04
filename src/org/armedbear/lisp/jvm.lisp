@@ -156,6 +156,7 @@
   (kind :external) ; :INTERNAL or :EXTERNAL
   lambda-expression
   arg-vars
+  free-specials
   arity ; NIL if the number of args can vary.
   p1-result
   parent

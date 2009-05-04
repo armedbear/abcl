@@ -8160,8 +8160,6 @@ for use with derive-type-times.")
          (*handlers* ())
          (*visible-variables* *visible-variables*)
 
-         (parameters ())
-
          (*thread* nil)
          (*initialize-thread-var* nil)
          (super nil)
@@ -8171,54 +8169,34 @@ for use with derive-type-times.")
 
     (dolist (var (compiland-arg-vars compiland))
       (push var *visible-variables*))
+    (dolist (var (compiland-free-specials compiland))
+      (push var *visible-variables*))
 
     (setf (method-name-index execute-method)
           (pool-name (method-name execute-method)))
     (setf (method-descriptor-index execute-method)
           (pool-name (method-descriptor execute-method)))
     (cond (*hairy-arglist-p*
-           (let* ((closure (make-closure p1-result nil))
-                  (parameter-names (sys::varlist closure))
-                  (index 0))
-             (dolist (name parameter-names)
-               (let ((variable (find-visible-variable name)))
-                 (unless variable
-                   (format t "1: unable to find variable ~S~%" name)
-                   (aver nil))
-                 (aver (null (variable-register variable)))
-                 (aver (null (variable-index variable)))
-                 (setf (variable-index variable) index)
-                 (push variable parameters)
-                 (incf index)))))
+           (let ((index 0))
+             (dolist (variable (compiland-arg-vars compiland))
+               (aver (null (variable-register variable)))
+               (aver (null (variable-index variable)))
+               (setf (variable-index variable) index)
+               (incf index))))
           (t
            (let ((register (if (and *closure-variables* *child-p*)
                                2 ; Reg 1 is reserved for closure variables array.
                                1))
                  (index 0))
-             (dolist (arg args)
-               (let ((variable (find-visible-variable arg)))
-                 (when (null variable)
-                   (format t "2: unable to find variable ~S~%" arg)
-                   (aver nil))
-                 (aver (null (variable-register variable)))
-                 (setf (variable-register variable) (if *using-arg-array* nil register))
-                 (aver (null (variable-index variable)))
-                 (if *using-arg-array*
-                     (setf (variable-index variable) index))
-                 (push variable parameters)
-                 (incf register)
-                 (incf index))))))
-
-    (let ((specials (process-special-declarations body)))
-      (dolist (name specials)
-        (dformat t "recognizing ~S as special~%" name)
-        (let ((variable (find-visible-variable name)))
-          (cond ((null variable)
-                 (setf variable (make-variable :name name
-                                               :special-p t))
-                 (push variable *visible-variables*))
-                (t
-                 (setf (variable-special-p variable) t))))))
+             (dolist (variable (compiland-arg-vars compiland))
+               (aver (null (variable-register variable)))
+               (setf (variable-register variable)
+                     (if *using-arg-array* nil register))
+               (aver (null (variable-index variable)))
+               (if *using-arg-array*
+                   (setf (variable-index variable) index))
+               (incf register)
+               (incf index)))))
 
     (p2-compiland-process-type-declarations body)
 
@@ -8232,15 +8210,15 @@ for use with derive-type-times.")
 
            (unless (or *closure-variables* *child-p*)
              ;; Reserve a register for each parameter.
-             (dolist (variable (reverse parameters))
+             (dolist (variable (compiland-arg-vars compiland))
                (aver (null (variable-register variable)))
                (aver (null (variable-reserved-register variable)))
                (unless (variable-special-p variable)
                  (setf (variable-reserved-register variable) (allocate-register))))))
           (t
            ;; Otherwise, one register for each argument.
-           (dolist (arg args)
-             (declare (ignore arg))
+           (dolist (variable (compiland-arg-vars compiland))
+             (declare (ignore variable))
              (allocate-register))))
     (when (and *closure-variables* (not *child-p*))
       (setf (compiland-closure-register compiland) (allocate-register))
@@ -8255,13 +8233,14 @@ for use with derive-type-times.")
                (compiland-name compiland))
       (cond (*child-p*
              (aver (eql (compiland-closure-register compiland) 1))
-             (when (some #'variable-closure-index parameters)
+             (when (some #'variable-closure-index
+                         (compiland-arg-vars compiland))
                (aload (compiland-closure-register compiland))))
             (t
              (emit-push-constant-int (length *closure-variables*))
              (dformat t "p2-compiland ~S anewarray 1~%" (compiland-name compiland))
              (emit 'anewarray "org/armedbear/lisp/LispObject")))
-      (dolist (variable parameters)
+      (dolist (variable (compiland-arg-vars compiland))
         (dformat t "considering ~S ...~%" (variable-name variable))
         (when (variable-closure-index variable)
           (dformat t "moving variable ~S~%" (variable-name variable))
@@ -8287,7 +8266,8 @@ for use with derive-type-times.")
                  (setf (variable-index variable) nil))))) ; The variable has moved.
       (aver (not (null (compiland-closure-register compiland))))
       (cond (*child-p*
-             (when (some #'variable-closure-index parameters)
+             (when (some #'variable-closure-index
+                         (compiland-arg-vars compiland))
                (emit 'pop)))
             (t
              (astore (compiland-closure-register compiland))))
@@ -8297,7 +8277,7 @@ for use with derive-type-times.")
     ;; If applicable, move args from arg array to registers.
     (when *using-arg-array*
       (unless (or *closure-variables* *child-p*)
-        (dolist (variable (reverse parameters))
+        (dolist (variable (compiland-arg-vars compiland))
           (when (variable-reserved-register variable)
             (aver (not (variable-special-p variable)))
             (aload (compiland-argument-register compiland))
@@ -8307,14 +8287,14 @@ for use with derive-type-times.")
             (setf (variable-register variable) (variable-reserved-register variable))
             (setf (variable-index variable) nil)))))
 
-    (generate-type-checks-for-variables (reverse parameters))
+    (generate-type-checks-for-variables (compiland-arg-vars compiland))
 
     ;; Unbox variables.
-    (dolist (variable (reverse parameters))
+    (dolist (variable (compiland-arg-vars compiland))
       (p2-compiland-unbox-variable variable))
 
     ;; Establish dynamic bindings for any variables declared special.
-    (when (some #'variable-special-p parameters)
+    (when (some #'variable-special-p (compiland-arg-vars compiland))
       ;; Save the dynamic environment
       (setf (compiland-environment-register compiland)
             (allocate-register))
@@ -8322,25 +8302,25 @@ for use with derive-type-times.")
       (emit 'getfield +lisp-thread-class+ "lastSpecialBinding"
             +lisp-special-binding+)
       (astore (compiland-environment-register compiland))
-      (label label-START))
-    (dolist (variable parameters)
-      (when (variable-special-p variable)
-        (cond ((variable-register variable)
-               (emit-push-current-thread)
-               (emit-push-variable-name variable)
-               (aload (variable-register variable))
-               (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
-                                   (list +lisp-symbol+ +lisp-object+) nil)
-               (setf (variable-register variable) nil))
-              ((variable-index variable)
-               (emit-push-current-thread)
-               (emit-push-variable-name variable)
-               (aload (compiland-argument-register compiland))
-               (emit-push-constant-int (variable-index variable))
-               (emit 'aaload)
-               (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
-                                   (list +lisp-symbol+ +lisp-object+) nil)
-               (setf (variable-index variable) nil)))))
+      (label label-START)
+      (dolist (variable (compiland-arg-vars compiland))
+        (when (variable-special-p variable)
+          (cond ((variable-register variable)
+                 (emit-push-current-thread)
+                 (emit-push-variable-name variable)
+                 (aload (variable-register variable))
+                 (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
+                                     (list +lisp-symbol+ +lisp-object+) nil)
+                 (setf (variable-register variable) nil))
+                ((variable-index variable)
+                 (emit-push-current-thread)
+                 (emit-push-variable-name variable)
+                 (aload (compiland-argument-register compiland))
+                 (emit-push-constant-int (variable-index variable))
+                 (emit 'aaload)
+                 (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
+                                     (list +lisp-symbol+ +lisp-object+) nil)
+                 (setf (variable-index variable) nil))))))
 
     (compile-progn-body body 'stack)
 
