@@ -3952,6 +3952,18 @@ given a specific common representation.")
                (setq tail (cdr tail)))))))
   t)
 
+(defun restore-dynamic-environment (register)
+  (emit-push-current-thread)
+  (aload register)
+  (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
+	+lisp-special-binding+))
+
+(defun save-dynamic-environment (register)
+  (emit-push-current-thread)
+  (emit 'getfield +lisp-thread-class+ "lastSpecialBinding"
+	+lisp-special-binding+)
+  (astore register))
+
 (defun p2-m-v-b-node (block target)
   (let* ((*blocks* (cons block *blocks*))
          (*register* *register*)
@@ -3975,10 +3987,7 @@ given a specific common representation.")
       (dformat t "p2-m-v-b-node lastSpecialBinding~%")
       ;; Save current dynamic environment.
       (setf (block-environment-register block) (allocate-register))
-      (emit-push-current-thread)
-      (emit 'getfield +lisp-thread-class+ "lastSpecialBinding"
-            +lisp-special-binding+)
-      (astore (block-environment-register block))
+      (save-dynamic-environment (block-environment-register block))
       (label label-START))
     ;; Make sure there are no leftover values from previous calls.
     (emit-clear-values)
@@ -4040,18 +4049,12 @@ given a specific common representation.")
     (when bind-special-p
       (emit 'goto label-EXIT)
       (label label-END)
-      (aload *thread*)
-      (aload (block-environment-register block))
-      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
-            +lisp-special-binding+)
+      (restore-dynamic-environment (block-environment-register block))
       (emit 'athrow)
 
       ;; Restore dynamic environment.
       (label label-EXIT)
-      (aload *thread*)
-      (aload (block-environment-register block))
-      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
-            +lisp-special-binding+)
+      (restore-dynamic-environment (block-environment-register block))
       (push (make-handler :from label-START
                           :to label-END
                           :code label-END
@@ -4380,10 +4383,7 @@ given a specific common representation.")
     (when specialp
       ;; We need to save current dynamic environment.
       (setf (block-environment-register block) (allocate-register))
-      (emit-push-current-thread)
-      (emit 'getfield +lisp-thread-class+ "lastSpecialBinding"
-            +lisp-special-binding+)
-      (astore (block-environment-register block))
+      (save-dynamic-environment (block-environment-register block))
       (label label-START))
     (propagate-vars block)
     (ecase (car form)
@@ -4402,18 +4402,11 @@ given a specific common representation.")
       (emit 'goto label-EXIT)
       (label label-END)
       ;; Restore dynamic environment.
-      (aload *thread*)
-      (aload (block-environment-register block))
-      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
-            +lisp-special-binding+)
+      (restore-dynamic-environment (block-environment-register block))
       (emit 'athrow)
 
       (label label-EXIT)
-      (aload *thread*)
-      (aload (block-environment-register block))
-      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
-            +lisp-special-binding+)
-
+      (restore-dynamic-environment (block-environment-register block))
       (push (make-handler :from label-START
                           :to label-END
                           :code label-END
@@ -4458,10 +4451,7 @@ given a specific common representation.")
       ;;
       ;; Non-local transfers of control restore the environment
       ;; themselves (in the finally of LET/LET*, etc.
-      (emit-push-current-thread)
-      (emit 'getfield +lisp-thread-class+ "lastSpecialBinding"
-            +lisp-special-binding+)
-      (astore environment-register))
+      (save-dynamic-environment environment-register))
     (label BEGIN-BLOCK)
     (do* ((rest body (cdr rest))
           (subform (car rest) (car rest)))
@@ -4542,10 +4532,7 @@ given a specific common representation.")
       ;;   Note: Local case with non-local transfer of control handled below
       (when (block-environment-register tag-block)
         ;; If there's a dynamic environment to restore, do it.
-        (aload *thread*)
-        (aload (block-environment-register tag-block))
-        (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
-              +lisp-special-binding+))
+	(restore-dynamic-environment (block-environment-register tag-block)))
       (maybe-generate-interrupt-check)
       (emit 'goto (tag-label tag))
       (return-from p2-go))
@@ -4652,9 +4639,7 @@ given a specific common representation.")
            (cond ((some #'variable-special-p *all-variables*)
                   ;; Save the current dynamic environment.
                   (setf (block-environment-register block) (allocate-register))
-                  (emit-push-current-thread)
-                  (emit 'getfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+)
-                  (astore (block-environment-register block)))
+		  (save-dynamic-environment (block-environment-register block)))
                  (t
                   (dformat t "no specials~%")))
            (setf (block-catch-tag block) (gensym))
@@ -4693,9 +4678,7 @@ given a specific common representation.")
              (label BLOCK-EXIT))
            (when (block-environment-register block)
              ;; We saved the dynamic environment above. Restore it now.
-             (aload *thread*)
-             (aload (block-environment-register block))
-             (emit 'putfield +lisp-thread-class+ "lastSpecialBinding" +lisp-special-binding+))
+	     (restore-dynamic-environment (block-environment-register block)))
            (fix-boxing representation nil)
            )
           (t
@@ -4815,31 +4798,22 @@ given a specific common representation.")
     (unless (and (single-valued-p symbols-form)
                  (single-valued-p values-form))
       (emit-clear-values))
-    (emit-push-current-thread)
-    (emit 'getfield +lisp-thread-class+ "lastSpecialBinding"
-          +lisp-special-binding+)
-    (astore environment-register)
+    (save-dynamic-environment environment-register)
     (label label-START)
     ;; Compile call to Lisp.progvBindVars().
-    (aload *thread*)
+    (emit-push-current-thread)
     (emit-invokestatic +lisp-class+ "progvBindVars"
                        (list +lisp-object+ +lisp-object+ +lisp-thread+) nil)
     ;; Implicit PROGN.
     (compile-progn-body (cdddr form) target)
     (emit 'goto label-EXIT)
     (label label-END)
-    (aload *thread*)
-    (aload environment-register)
-    (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
-          +lisp-special-binding+)
+    (restore-dynamic-environment environment-register)
     (emit 'athrow)
 
     ;; Restore dynamic environment.
     (label label-EXIT)
-    (aload *thread*)
-    (aload environment-register)
-    (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
-          +lisp-special-binding+)
+    (restore-dynamic-environment environment-register)
     (fix-boxing representation nil)
     (push (make-handler :from label-START
                           :to label-END
@@ -7818,19 +7792,19 @@ for use with derive-type-times.")
       ;; If it's not the tag we're looking for, we branch to the start of the
       ;; catch-all handler, which will do a re-throw.
       (emit 'if_acmpne DEFAULT-HANDLER) ; Stack depth is 1.
-      (aload *thread*)
+      (emit-push-current-thread)
       (emit-invokevirtual +lisp-throw-class+ "getResult"
                           (list +lisp-thread+) +lisp-object+)
       (emit-move-from-stack target) ; Stack depth is 0.
       (emit 'goto EXIT)
       (label DEFAULT-HANDLER) ; Start of handler for all other Throwables.
       ;; A Throwable object is on the runtime stack here. Stack depth is 1.
-      (aload *thread*)
+      (emit-push-current-thread)
       (emit-invokevirtual +lisp-thread-class+ "popCatchTag" nil nil)
       (emit 'athrow) ; Re-throw.
       (label EXIT)
       ;; Finally...
-      (aload *thread*)
+      (emit-push-current-thread)
       (emit-invokevirtual +lisp-thread-class+ "popCatchTag" nil nil)
       (let ((handler1 (make-handler :from BEGIN-PROTECTED-RANGE
                                     :to END-PROTECTED-RANGE
@@ -8310,10 +8284,7 @@ for use with derive-type-times.")
       ;; Save the dynamic environment
       (setf (compiland-environment-register compiland)
             (allocate-register))
-      (emit-push-current-thread)
-      (emit 'getfield +lisp-thread-class+ "lastSpecialBinding"
-            +lisp-special-binding+)
-      (astore (compiland-environment-register compiland))
+      (save-dynamic-environment (compiland-environment-register compiland))
       (label label-START)
       (dolist (variable (compiland-arg-vars compiland))
         (when (variable-special-p variable)
@@ -8339,19 +8310,12 @@ for use with derive-type-times.")
     (when (compiland-environment-register compiland)
       (emit 'goto label-EXIT)
       (label label-END)
-      (emit-push-current-thread)
-      (aload (compiland-environment-register compiland))
-      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
-            +lisp-special-binding+)
+      (restore-dynamic-environment (compiland-environment-register compiland))
       (emit 'athrow)
 
       ;; Restore dynamic environment
       (label label-EXIT)
-      (emit-push-current-thread)
-      (aload (compiland-environment-register compiland))
-      (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
-            +lisp-special-binding+)
-
+      (restore-dynamic-environment (compiland-environment-register compiland))
       (push (make-handler :from label-START
                           :to label-END
                           :code label-END
@@ -8378,7 +8342,7 @@ for use with derive-type-times.")
         (cond ((or (memq '&OPTIONAL args) (memq '&KEY args))
                (ensure-thread-var-initialized)
                (maybe-initialize-thread-var)
-               (aload *thread*)
+	       (emit-push-current-thread)
                (emit-invokevirtual *this-class* "processArgs"
                                    (list +lisp-object-array+ +lisp-thread+)
                                    +lisp-object-array+))
