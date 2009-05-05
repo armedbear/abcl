@@ -789,7 +789,7 @@
                  (new-form
                   (if new-locals
                       (list* operator new-locals body)
-                      (list* 'PROGN body))))
+                      (list* 'LOCALLY body))))
             (return-from precompile-flet/labels (precompile1 new-form))))))
     (list* (car form)
            (precompile-local-functions locals)
