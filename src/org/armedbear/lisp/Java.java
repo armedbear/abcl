@@ -625,10 +625,7 @@ public final class Java extends Lisp
         else if (instanceArg instanceof JavaObject)
             instance = ((JavaObject)instanceArg).getObject();
         else {
-            type_error(instanceArg,
-                            list(Symbol.OR, Symbol.STRING, Symbol.JAVA_OBJECT));
-            // Not reached.
-            return null;
+	    instance = instanceArg.javaInstance();
         }
         try {
             final Method method;
