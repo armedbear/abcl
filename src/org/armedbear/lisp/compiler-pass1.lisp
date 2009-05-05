@@ -210,11 +210,13 @@
       ;; Check for globally declared specials.
       (dolist (variable vars)
         (when (special-variable-p (variable-name variable))
-          (setf (variable-special-p variable) t)))
+          (setf (variable-special-p variable) t
+                (block-environment-register block) t)))
       ;; For processing declarations, we want to walk the variable list from
       ;; last to first, since declarations apply to the last-defined variable
       ;; with the specified name.
-      (setf (block-free-specials block) (process-declarations-for-vars body (reverse vars)))
+      (setf (block-free-specials block)
+            (process-declarations-for-vars body (reverse vars)))
       (setf (block-vars block) vars)
       ;; Make free specials visible.
       (dolist (variable (block-free-specials block))
@@ -255,8 +257,10 @@
       ;; Check for globally declared specials.
       (dolist (variable vars)
         (when (special-variable-p (variable-name variable))
-          (setf (variable-special-p variable) t)))
-      (setf (block-free-specials block) (process-declarations-for-vars body vars))
+          (setf (variable-special-p variable) t
+                (block-environment-register block) t)))
+      (setf (block-free-specials block)
+            (process-declarations-for-vars body vars))
       (setf (block-vars block) (nreverse vars)))
     (setf body (p1-body body))
     (setf (block-form block) (list* 'MULTIPLE-VALUE-BIND varlist values-form body))
@@ -324,8 +328,13 @@
            (dformat t "*blocks* = ~S~%" (mapcar #'block-name *blocks*))
            (let ((protected (enclosed-by-protected-block-p block)))
              (dformat t "p1-return-from protected = ~S~%" protected)
-             (when protected
-               (setf (block-non-local-return-p block) t))))
+             (if protected
+                 (setf (block-non-local-return-p block) t)
+                 ;; non-local GO's ensure environment restoration
+                 ;; find out about this local GO
+                 (when (null (block-needs-environment-restoration block))
+                   (setf (block-needs-environment-restoration block)
+                         (enclosed-by-environment-setting-block-p block))))))
           (t
            (setf (block-non-local-return-p block) t)))
     (when (block-non-local-return-p block)
@@ -374,7 +383,7 @@
     (setf (tag-used tag) t)
     (let ((tag-block (tag-block tag)))
       (cond ((eq (tag-compiland tag) *current-compiland*)
-             ;; Does the GO leave an enclosing UNWIND-PROTECT?
+             ;; Does the GO leave an enclosing UNWIND-PROTECT or CATCH?
              (if (enclosed-by-protected-block-p tag-block)
                  (setf (block-non-local-go-p tag-block) t)
                  ;; non-local GO's ensure environment restoration
@@ -710,10 +719,15 @@
   (let ((new-form (rewrite-progv form)))
     (when (neq new-form form)
       (return-from p1-progv (p1 new-form))))
-  (let ((symbols-form (cadr form))
-        (values-form (caddr form))
-        (body (cdddr form)))
-    `(progv ,(p1 symbols-form) ,(p1 values-form) ,@(p1-body body))))
+  (let* ((symbols-form (p1 (cadr form)))
+         (values-form (p1 (caddr form)))
+         (block (make-block-node '(PROGV)))
+         (*blocks* (cons block *blocks*))
+         (body (cdddr form)))
+    (setf (block-form block)
+          `(progv ,symbols-form ,values-form ,@(p1-body body))
+          (block-environment-register block) t)
+    block))
 
 (defknown rewrite-progv (t) t)
 (defun rewrite-progv (form)
