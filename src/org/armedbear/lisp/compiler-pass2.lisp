@@ -1001,34 +1001,29 @@ representation, based on the derived type of the LispObject."
 ;; the value of a constant defined with DEFCONSTANT, calling built-in Lisp
 ;; functions with a wrong number of arguments or malformed keyword argument
 ;; lists, and using unrecognized declaration specifiers." (3.2.5)
-(defknown check-arg-count (t fixnum) t)
-(defun check-arg-count (form n)
+(defun check-number-of-args (form n &optional (minimum nil))
   (declare (type fixnum n))
   (let* ((op (car form))
          (args (cdr form))
-         (ok (= (length args) n)))
+         (ok (if minimum
+		 (>= (length args) n)
+	       (= (length args) n))))
     (declare (type boolean ok))
     (unless ok
       (funcall (if (eq (symbol-package op) +cl-package+)
                    #'compiler-warn ; See above!
                    #'compiler-style-warn)
-               "Wrong number of arguments for ~A (expected ~D, but received ~D)."
-               op n (length args)))
+               "Wrong number of arguments for ~A (expected~:[~; at least~] ~D, but received ~D)."
+               op minimum n (length args)))
     ok))
+
+(defknown check-arg-count (t fixnum) t)
+(defun check-arg-count (form n)
+  (check-number-of-args form n))
 
 (declaim (ftype (function (t fixnum) t) check-min-args))
 (defun check-min-args (form n)
-  (declare (type fixnum n))
-  (let* ((op (car form))
-         (args (cdr form))
-         (ok (>= (length args) n)))
-    (unless ok
-      (funcall (if (eq (symbol-package op) +cl-package+)
-                   #'compiler-warn ; See above!
-                   #'compiler-style-warn)
-               "Wrong number of arguments for ~A (expected at least ~D, but received ~D)."
-               op n (length args)))
-    ok))
+  (check-number-of-args form n t))
 
 (defun unsupported-opcode (instruction)
   (error "Unsupported opcode ~D." (instruction-opcode instruction)))
