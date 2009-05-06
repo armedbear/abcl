@@ -250,6 +250,9 @@ public final class LispCharacter extends LispObject
           case '\r':
             sb.append("Return");
             break;
+          case 27:
+            sb.append("Escape");
+            break;
           case 127:
             sb.append("Rubout");
             break;
@@ -554,6 +557,8 @@ public final class LispCharacter extends LispObject
       return '\f';
     if (lower.equals("return"))
       return '\r';
+    if (lower.equals("escape"))
+        return 27;
     if (lower.equals("space"))
       return ' ';
     if (lower.equals("rubout"))
@@ -593,6 +598,8 @@ public final class LispCharacter extends LispObject
         return "Page";
       case '\r':
         return "Return";
+      case 27:
+        return "Escape";
       case ' ':
         return "Space";
       case 127:
