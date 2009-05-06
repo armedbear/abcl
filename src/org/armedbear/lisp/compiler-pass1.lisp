@@ -299,8 +299,16 @@
 (defun p1-unwind-protect (form)
   (if (= (length form) 2)
       (p1 (second form)) ; No cleanup forms: (unwind-protect (...)) => (...)
+
+      ;; in order to compile the cleanup forms twice (see
+      ;; p2-unwind-protect-node), we need to p1 them twice; p1 outcomes
+      ;; can be compiled (in the same compiland?) only once.
+      ;;
+      ;; However, p1 transforms the forms being processed, so, we
+      ;; need to copy the forms to create a second copy.
       (let* ((block (make-block-node '(UNWIND-PROTECT)))
              ;; a bit of jumping through hoops...
+             (unwinding-forms (p1-body (copy-tree (cddr form))))
              (unprotected-forms (p1-body (cddr form)))
              ;; ... because only the protected form is
              ;; protected by the UNWIND-PROTECT block
@@ -308,6 +316,7 @@
              (protected-form (p1 (cadr form))))
         (setf (block-form block)
               `(unwind-protect ,protected-form
+                 (progn ,@unwinding-forms)
                  ,@unprotected-forms))
         block)))
 
