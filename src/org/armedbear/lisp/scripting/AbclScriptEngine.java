@@ -38,84 +38,63 @@ import org.armedbear.lisp.scripting.util.WriterOutputStream;
 
 public class AbclScriptEngine extends AbstractScriptEngine implements Invocable, Compilable {
 
-	private Interpreter interpreter;
-	private LispObject nonThrowingDebugHook;
-	private Function evalScript;
-	private Function compileScript;
-	private Function evalCompiledScript;
+    private Interpreter interpreter;
+    private Function evalScript;
+    private Function compileScript;
+    private Function evalCompiledScript;
 
-	public AbclScriptEngine() {
-		interpreter = Interpreter.getInstance();
-		if(interpreter == null) {
-		    interpreter = Interpreter.createInstance();
-		}
-		this.nonThrowingDebugHook = Symbol.DEBUGGER_HOOK.getSymbolValue();
-		try {
-			loadFromClasspath("/org/armedbear/lisp/scripting/lisp/packages.lisp");
-			loadFromClasspath("/org/armedbear/lisp/scripting/lisp/abcl-script.lisp");
-			loadFromClasspath("/org/armedbear/lisp/scripting/lisp/config.lisp");
-			if(getClass().getResource("/abcl-script-config.lisp") != null) {
-			    System.out.println("ABCL: loading configuration from " + getClass().getResource("/abcl-script-config.lisp"));
-			    loadFromClasspath("/abcl-script-config.lisp");
-			}
-			interpreter.eval("(abcl-script:configure-abcl)");
-			System.out.println("ABCL: configured");
-			evalScript = (Function) this.findSymbol("EVAL-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
-			compileScript = (Function) this.findSymbol("COMPILE-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
-			evalCompiledScript = (Function) this.findSymbol("EVAL-COMPILED-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
-		} catch (ConditionThrowable e) {
-			throw new RuntimeException(e);
-		}
+    protected AbclScriptEngine() {
+	interpreter = Interpreter.getInstance();
+	if(interpreter == null) {
+	    interpreter = Interpreter.createInstance();
 	}
-		
-	public Interpreter getInterpreter() {
-		return interpreter;
+	try {
+	    loadFromClasspath("/org/armedbear/lisp/scripting/lisp/packages.lisp");
+	    loadFromClasspath("/org/armedbear/lisp/scripting/lisp/abcl-script.lisp");
+	    loadFromClasspath("/org/armedbear/lisp/scripting/lisp/config.lisp");
+	    if(getClass().getResource("/abcl-script-config.lisp") != null) {
+		System.out.println("ABCL: loading configuration from " + getClass().getResource("/abcl-script-config.lisp"));
+		loadFromClasspath("/abcl-script-config.lisp");
+	    }
+	    ((Function) interpreter.eval("#'abcl-script:configure-abcl")).execute(new JavaObject(this));
+	    System.out.println("ABCL: configured");
+	    evalScript = (Function) this.findSymbol("EVAL-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
+	    compileScript = (Function) this.findSymbol("COMPILE-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
+	    evalCompiledScript = (Function) this.findSymbol("EVAL-COMPILED-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
+	} catch (ConditionThrowable e) {
+	    throw new RuntimeException(e);
 	}
+    }
+    
+    public Interpreter getInterpreter() {
+	return interpreter;
+    }
 
-	public void installNonThrowingDebugHook() {
-		installNonThrowingDebugHook(LispThread.currentThread());
-	}
+    public void setStandardInput(InputStream stream, LispThread thread) {
+	thread.setSpecialVariable(Symbol.STANDARD_INPUT, new Stream(stream,	Symbol.CHARACTER, true));
+    }
+    
+    public void setStandardInput(InputStream stream) {
+	setStandardInput(stream, LispThread.currentThread());
+    }
+    
+    public void setInterpreter(Interpreter interpreter) {
+	this.interpreter = interpreter;
+    }
 
-	public void installNonThrowingDebugHook(LispThread thread) {
-		thread.setSpecialVariable(Symbol.DEBUGGER_HOOK,	this.nonThrowingDebugHook);
+    public static String escape(String s) {
+	StringBuffer b = new StringBuffer();
+	int len = s.length();
+	char c;
+	for (int i = 0; i < len; ++i) {
+	    c = s.charAt(i);
+	    if (c == '\\' || c == '"') {
+		b.append('\\');
+	    }
+	    b.append(c);
 	}
-
-	public void installThrowingDebuggerHook(LispThread thread) throws ConditionThrowable {
-		Symbol dbgrhkfunSym;
-		dbgrhkfunSym = Lisp.PACKAGE_SYS.findAccessibleSymbol("%DEBUGGER-HOOK-FUNCTION");
-		LispObject throwingDebugHook = dbgrhkfunSym.getSymbolFunction();
-		thread.setSpecialVariable(Symbol.DEBUGGER_HOOK, throwingDebugHook);
-	}
-
-	public void installThrowingDebuggerHook() throws ConditionThrowable {
-		installThrowingDebuggerHook(LispThread.currentThread());
-	}
-
-	public void setStandardInput(InputStream stream, LispThread thread) {
-		thread.setSpecialVariable(Symbol.STANDARD_INPUT, new Stream(stream,	Symbol.CHARACTER, true));
-	}
-
-	public void setStandardInput(InputStream stream) {
-		setStandardInput(stream, LispThread.currentThread());
-	}
-
-	public void setInterpreter(Interpreter interpreter) {
-		this.interpreter = interpreter;
-	}
-
-	public static String escape(String s) {
-		StringBuffer b = new StringBuffer();
-		int len = s.length();
-		char c;
-		for (int i = 0; i < len; ++i) {
-			c = s.charAt(i);
-			if (c == '\\' || c == '"') {
-				b.append('\\');
-			}
-			b.append(c);
-		}
-		return b.toString();
-	}
+	return b.toString();
+    }
 
 	public LispObject loadFromClasspath(String classpathResource) throws ConditionThrowable {
 		InputStream istream = getClass().getResourceAsStream(classpathResource);
@@ -244,26 +223,27 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		return super.getContext();
 	}
 
-	private Object eval(Function evaluator, LispObject code, ScriptContext ctx) throws ScriptException {
-		ReaderInputStream in = null;
-		WriterOutputStream out = null;
-		LispObject retVal = null;
-		try {
-			in = new ReaderInputStream(ctx.getReader());
-			out = new WriterOutputStream(ctx.getWriter());
-			Stream outStream = new Stream(out, Symbol.CHARACTER);
-			Stream inStream  = new Stream(in,  Symbol.CHARACTER);
-			retVal = evaluator.execute(makeBindings(ctx.getBindings(ScriptContext.GLOBAL_SCOPE)),
-									   makeBindings(ctx.getBindings(ScriptContext.ENGINE_SCOPE)),
-									   inStream, outStream,
-									   code, new JavaObject(ctx));
-			return toJava(retVal);
-		} catch (ConditionThrowable e) {
-			throw new ScriptException(new Exception(e));
-		} catch (IOException e) {
-			throw new ScriptException(e);
-		}
+    private Object eval(Function evaluator, LispObject code, ScriptContext ctx) throws ScriptException {
+	ReaderInputStream in = null;
+	WriterOutputStream out = null;
+	LispObject retVal = null;
+	try {
+	    in = new ReaderInputStream(ctx.getReader());
+	    out = new WriterOutputStream(ctx.getWriter());
+	    Stream outStream = new Stream(out, Symbol.CHARACTER);
+	    Stream inStream  = new Stream(in,  Symbol.CHARACTER);
+
+	    retVal = evaluator.execute(makeBindings(ctx.getBindings(ScriptContext.GLOBAL_SCOPE)),
+				       makeBindings(ctx.getBindings(ScriptContext.ENGINE_SCOPE)),
+				       inStream, outStream,
+				       code, new JavaObject(ctx));
+	    return toJava(retVal);
+	} catch (ConditionThrowable e) {
+	    throw new ScriptException(new Exception(e));
+	} catch (IOException e) {
+	    throw new ScriptException(e);
 	}
+    }
 	
 	@Override
 	public Object eval(String code, ScriptContext ctx) throws ScriptException {

@@ -57,19 +57,20 @@
 	:collect `(jcall +put-binding+
 		   ,java-bindings ,(car jbinding) ,(car binding))))
 
-(defmacro with-script-context ((global-bindings engine-bindings stdin stdout script-context)
-			       body)
+(defmacro eval-in-script-context ((global-bindings engine-bindings stdin stdout script-context)
+				  body)
+  "Sets up an environment in which to evaluate a piece of code coming from Java through the JSR-223 methods."
   (let ((actual-global-bindings (gensym))
 	(actual-engine-bindings (gensym)))
     `(let ((*package* (find-package :abcl-script-user))
 	   (*standard-input* ,stdin)
 	   (*standard-output* ,stdout)
+	   (*debugger-hook* (if *use-throwing-debugger*
+				#'sys::%debugger-hook-function
+				*debugger-hook*))
 	   (,actual-global-bindings (generate-bindings ,global-bindings))
 	   (,actual-engine-bindings (generate-bindings ,engine-bindings)))
-      (eval `(let ((*standard-input* ,,stdin)
-		   (*standard-output* ,,stdout)
-		   (*package* (find-package :abcl-script-user)))
-	      (let (,@,actual-global-bindings)
+       (eval `(let (,@,actual-global-bindings)
 		(let (,@,actual-engine-bindings)
 		  (prog1
 		      (progn ,@,body)
@@ -81,17 +82,17 @@
 		    ,@(generate-java-bindings
 		       ,engine-bindings 
 		       ,actual-engine-bindings
-		       (jcall +get-bindings+ ,script-context +engine-scope+))))))))))
+		       (jcall +get-bindings+ ,script-context +engine-scope+)))))))))
   
 (defun eval-script (global-bindings engine-bindings stdin stdout
 		    code-string script-context)
-  (with-script-context (global-bindings engine-bindings stdin stdout script-context)
+  (eval-in-script-context (global-bindings engine-bindings stdin stdout script-context)
     (read-from-string
      (concatenate 'string "(" code-string ")"))))
 
 (defun eval-compiled-script (global-bindings engine-bindings stdin stdout
 			     function script-context)
-  (with-script-context (global-bindings engine-bindings stdin stdout script-context)
+  (eval-in-script-context (global-bindings engine-bindings stdin stdout script-context)
     `((funcall ,function))))
 
 (defun compile-script (code-string)
@@ -102,39 +103,39 @@
 	(jcall (jmethod "java.io.File" "deleteOnExit") tmp-file) ;to be really-really-really sure...
 	(unwind-protect
 	     (progn
-	       (with-open-file (stream tmp-file-path :direction :output :if-exists :overwrite)
-		 (prin1 code-string stream)
+	       (with-open-file (stream tmp-file-path :direction :output)
+		 (princ "(in-package :abcl-script-user)" stream)
+		 (princ code-string stream)
 		 (finish-output stream))
 	       (let ((compiled-file (compile-file tmp-file-path)))
 		 (jcall (jmethod "java.io.File" "deleteOnExit")
 			(jnew (jconstructor "java.io.File" "java.lang.String")
 			      (namestring compiled-file)))
-		 (lambda () (load compiled-file))))
+		 (lambda ()
+		   (let ((*package* (find-package :abcl-script-user)))
+		     (load compiled-file :verbose t :print t)))))
 	  (delete-file tmp-file-path)))
       (eval 
        `(compile
 	 nil
 	 (lambda ()
 	   ,@(let ((*package* (find-package :abcl-script-user)))
-		  (read-from-string (concatenate 'string "(" code-string ")"))))))))
+	       (read-from-string
+		(concatenate 'string "(" code-string " cl:t)")))))))) ;return T in conformity of what LOAD does.
 
-;;Java interface implementation
+;;Java interface implementation - TODO
 
 (defvar *interface-implementation-map* (make-hash-table :test #'equal))
 
 (defun find-java-interface-implementation (interface)
   (gethash interface *interface-implementation-map*))
 
-(defun register-java-interface-implementation (interface impl)
-  (setf (gethash interface *interface-implementation-map*) impl))
+(defun register-java-interface-implementation (interface implementation &optional lisp-this)
+  (setf (gethash interface *interface-implementation-map*)
+	(jmake-proxy interface implementation lisp-this)))
 
 (defun remove-java-interface-implementation (interface)
   (remhash interface *interface-implementation-map*))
-
-(defun define-java-interface-implementation (interface implementation &optional lisp-this)
-  (register-java-interface-implementation
-   interface
-   (jmake-proxy interface implementation lisp-this)))
 
 ;Let's load it so asdf package is already defined when loading config.lisp
 (require 'asdf)
