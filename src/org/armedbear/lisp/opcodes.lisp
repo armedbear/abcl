@@ -220,8 +220,8 @@
 (define-opcode if_acmpeq 165 3 -2)
 (define-opcode if_acmpne 166 3 -2)
 (define-opcode goto 167 3 0)
-(define-opcode jsr 168 3 1)
-(define-opcode ret 169 2 0)
+;;(define-opcode jsr 168 3 1) Don't use these 2 opcodes: deprecated
+;;(define-opcode ret 169 2 0) their use results in JVM verifier errors
 (define-opcode tableswitch 170 0 nil)
 (define-opcode lookupswitch 171 0 nil)
 (define-opcode ireturn 172 1 nil)

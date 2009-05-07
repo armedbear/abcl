@@ -1125,8 +1125,6 @@ representation, based on the derived type of the LispObject."
                  165 ; if_acmpeq
                  166 ; if_acmpne
                  167 ; goto
-                 168 ; jsr
-                 169 ; ret
                  176 ; areturn
                  177 ; return
                  190 ; arraylength
@@ -1322,18 +1320,13 @@ representation, based on the derived type of the LispObject."
                    i instruction-depth (+ depth instruction-stack)))
         (return-from walk-code))
       (let ((opcode (instruction-opcode instruction)))
-        (unless (eql opcode 168) ; JSR
-          (setf depth (+ depth instruction-stack)))
+        (setf depth (+ depth instruction-stack))
         (setf (instruction-depth instruction) depth)
-        (if (eql opcode 168) ; JSR
-            (let ((label (car (instruction-args instruction))))
-              (declare (type symbol label))
-              (walk-code code (symbol-value label) (1+ depth)))
-            (when (branch-opcode-p opcode)
-              (let ((label (car (instruction-args instruction))))
-                (declare (type symbol label))
-                (walk-code code (symbol-value label) depth))))
-        (when (member opcode '(167 169 176 191)) ; GOTO RET ARETURN ATHROW
+        (when (branch-opcode-p opcode)
+          (let ((label (car (instruction-args instruction))))
+            (declare (type symbol label))
+            (walk-code code (symbol-value label) depth)))
+        (when (member opcode '(167 176 191)) ; GOTO ARETURN ATHROW
           ;; Current path ends.
           (return-from walk-code))))))
 
