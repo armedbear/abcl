@@ -4620,57 +4620,56 @@ given a specific common representation.")
     (aver (block-node-p block)))
   (let* ((*blocks* (cons block *blocks*))
          (*register* *register*))
-    (cond ((block-return-p block)
-           (setf (block-target block) target)
-           (dformat t "p2-block-node lastSpecialBinding~%")
-           (dformat t "*all-variables* = ~S~%"
-                    (mapcar #'variable-name *all-variables*))
-           (when (block-needs-environment-restoration block)
-             ;; Save the current dynamic environment.
-             (setf (block-environment-register block) (allocate-register))
-             (save-dynamic-environment (block-environment-register block)))
-           (setf (block-catch-tag block) (gensym))
-           (let* ((*register* *register*)
-                  (BEGIN-BLOCK (gensym))
-                  (END-BLOCK (gensym))
-                  (BLOCK-EXIT (block-exit block)))
-             (label BEGIN-BLOCK) ; Start of protected range.
-             ;; Implicit PROGN.
-             (compile-progn-body (cddr (block-form block)) target)
-             (label END-BLOCK) ; End of protected range.
-             (emit 'goto BLOCK-EXIT) ; Jump over handler (if any).
-             (when (block-non-local-return-p block)
-               ; We need a handler to catch non-local RETURNs.
-               (let ((HANDLER (gensym))
-                     (RETHROW (gensym)))
-                 (label HANDLER)
-                 ;; The Return object is on the runtime stack. Stack depth is 1.
-                 (emit 'dup) ; Stack depth is 2.
-                 (emit 'getfield +lisp-return-class+ "tag" +lisp-object+) ; Still 2.
-                 (compile-form `',(block-catch-tag block) 'stack nil) ; Tag. Stack depth is 3.
-                 ;; If it's not the tag we're looking for...
-                 (emit 'if_acmpne RETHROW) ; Stack depth is 1.
-                 (emit 'getfield +lisp-return-class+ "result" +lisp-object+)
-                 (emit-move-from-stack target) ; Stack depth is 0.
-                 (emit 'goto BLOCK-EXIT)
-                 (label RETHROW)
-                 ;; Not the tag we're looking for.
-                 (emit 'athrow)
-                 ;; Finally...
-                 (push (make-handler :from BEGIN-BLOCK
-                                     :to END-BLOCK
-                                     :code HANDLER
-                                     :catch-type (pool-class +lisp-return-class+))
-                       *handlers*)))
-             (label BLOCK-EXIT))
-           (when (block-environment-register block)
-             ;; We saved the dynamic environment above. Restore it now.
-	     (restore-dynamic-environment (block-environment-register block)))
-           (fix-boxing representation nil)
-           )
-          (t
-           ;; No explicit returns.
-           (compile-progn-body (cddr (block-form block)) target representation)))))
+    (if (null (block-return-p block))
+        ;; No explicit returns
+        (compile-progn-body (cddr (block-form block)) target representation)
+        (progn
+          (setf (block-target block) target)
+          (dformat t "p2-block-node lastSpecialBinding~%")
+          (dformat t "*all-variables* = ~S~%"
+                   (mapcar #'variable-name *all-variables*))
+          (when (block-needs-environment-restoration block)
+            ;; Save the current dynamic environment.
+            (setf (block-environment-register block) (allocate-register))
+            (save-dynamic-environment (block-environment-register block)))
+          (setf (block-catch-tag block) (gensym))
+          (let* ((*register* *register*)
+                 (BEGIN-BLOCK (gensym))
+                 (END-BLOCK (gensym))
+                 (BLOCK-EXIT (block-exit block)))
+            (label BEGIN-BLOCK) ; Start of protected range.
+            ;; Implicit PROGN.
+            (compile-progn-body (cddr (block-form block)) target)
+            (label END-BLOCK) ; End of protected range.
+            (emit 'goto BLOCK-EXIT) ; Jump over handler (if any).
+            (when (block-non-local-return-p block)
+              ;; We need a handler to catch non-local RETURNs.
+              (let ((HANDLER (gensym))
+                    (RETHROW (gensym)))
+                (label HANDLER)
+                ;; The Return object is on the runtime stack. Stack depth is 1.
+                (emit 'dup) ; Stack depth is 2.
+                (emit 'getfield +lisp-return-class+ "tag" +lisp-object+) ; Still 2.
+                (compile-form `',(block-catch-tag block) 'stack nil) ; Tag. Stack depth is 3.
+                ;; If it's not the tag we're looking for...
+                (emit 'if_acmpne RETHROW) ; Stack depth is 1.
+                (emit 'getfield +lisp-return-class+ "result" +lisp-object+)
+                (emit-move-from-stack target) ; Stack depth is 0.
+                (emit 'goto BLOCK-EXIT)
+                (label RETHROW)
+                ;; Not the tag we're looking for.
+                (emit 'athrow)
+                ;; Finally...
+                (push (make-handler :from BEGIN-BLOCK
+                                    :to END-BLOCK
+                                    :code HANDLER
+                                    :catch-type (pool-class +lisp-return-class+))
+                      *handlers*)))
+            (label BLOCK-EXIT))
+          (when (block-environment-register block)
+            ;; We saved the dynamic environment above. Restore it now.
+            (restore-dynamic-environment (block-environment-register block)))
+          (fix-boxing representation nil)))))
 
 (defknown p2-return-from (t t t) t)
 (defun p2-return-from (form target representation)
