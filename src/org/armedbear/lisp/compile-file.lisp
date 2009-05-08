@@ -83,12 +83,7 @@
   ;; whether or not references to name appear in the file) and that
   ;; it always evaluates to the same value."
   (eval form)
-  (cond ((structure-object-p (third form))
-         (multiple-value-bind (creation-form initialization-form)
-             (make-load-form (third form))
-           (dump-form (list 'DEFCONSTANT (second form) creation-form) stream)))
-        (t
-         (dump-form form stream)))
+  (dump-form form stream)
   (%stream-terpri stream))
 
 (declaim (ftype (function (t) t) note-toplevel-form))
