@@ -6505,47 +6505,45 @@ for use with derive-type-times.")
        (emit-invokevirtual +lisp-object-class+ "LENGTH" nil +lisp-object+)))
     (emit-move-from-stack target representation)))
 
-(defun cons-for-list/list* (args target representation &optional list-star-p)
-  (let ((cons-heads (if list-star-p
-			(butlast args 1)
-		      args)))
-    (dolist (cons-head cons-heads)
-      (emit 'new +lisp-cons-class+)
-      (emit 'dup)
-      (compile-form cons-head 'stack nil))
-    (when list-star-p
-      (compile-form (first (last args)) 'stack nil))
-    (unless list-star-p
-      (emit-invokespecial-init +lisp-cons-class+ (lisp-object-arg-types 1))
-      (setf cons-heads (nbutlast cons-heads 1)))
-    (dolist (cons-head cons-heads)
-      (declare (ignore cons-head))
-      (emit-invokespecial-init +lisp-cons-class+ (lisp-object-arg-types 2)))
-    (when list-star-p 
-      (apply #'maybe-emit-clear-values args)
-      (emit-move-from-stack target representation))))
+(defun cons-for-list/list* (form target representation &optional list-star-p)
+  (let* ((args (cdr form))
+	 (length (length args))
+	 (cons-heads (if list-star-p
+			 (butlast args 1)
+		       args)))
+    (cond ((>= 4 length 1)
+	   (dolist (cons-head cons-heads)
+	     (emit 'new +lisp-cons-class+)
+	     (emit 'dup)
+	     (compile-form cons-head 'stack nil))
+	   (if list-star-p
+	       (compile-form (first (last args)) 'stack nil)
+	     (progn
+	       (emit-invokespecial-init 
+		+lisp-cons-class+ (lisp-object-arg-types 1))
+	       (pop cons-heads))) ; we've handled one of the args, so remove it
+	   (dolist (cons-head cons-heads)
+	     (declare (ignore cons-head))
+	     (emit-invokespecial-init 
+	      +lisp-cons-class+ (lisp-object-arg-types 2)))
+	   (if list-star-p 
+	       (progn
+		 (apply #'maybe-emit-clear-values args)
+		 (emit-move-from-stack target representation))
+	     (progn 
+	       (unless (every 'single-valued-p args)
+		 (emit-clear-values))
+	       (emit-move-from-stack target))))
+	  (t 
+	   (compile-function-call form target representation)))))
+	   
+	
 
 (defun p2-list (form target representation)
-  (let* ((args (cdr form))
-         (len (length args)))
-    (cond ((> len 4) ; list1() through list9() are defined in Lisp.java.
-           (compile-function-call form target representation))
-          (t
-           (cond ((zerop len)
-                  (emit-push-nil))
-                 ((>= 4 len 1)
-		  (cons-for-list/list* args target representation)))
-           (unless (every 'single-valued-p args)
-             (emit-clear-values))
-           (emit-move-from-stack target)))))
+  (cons-for-list/list* form target representation))
 
 (defun p2-list* (form target representation)
-  (let* ((args (cdr form))
-         (length (length args)))
-     (cond ((>= 4 length 1)
-	    (cons-for-list/list* args target representation t))
-          (t
-           (compile-function-call form target representation)))))
+  (cons-for-list/list* form target representation t))
 
 (define-inlined-function compile-nth (form target representation)
   ((check-arg-count form 2))
