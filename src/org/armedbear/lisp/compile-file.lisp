@@ -137,52 +137,49 @@
            (let* ((name (second form))
                   (block-name (fdefinition-block-name name))
                   (lambda-list (third form))
-                  (body (nthcdr 3 form))
-                  (*speed* *speed*)
-                  (*space* *space*)
-                  (*safety* *safety*)
-                  (*debug* *debug*))
-             (multiple-value-bind (body decls doc)
-                 (parse-body body)
-               (let* ((expr `(lambda ,lambda-list
-                               ,@decls (block ,block-name ,@body)))
-                      (classfile-name (next-classfile-name))
-                      (classfile (report-error
-                                  (jvm:compile-defun name expr nil
-                                                     classfile-name)))
-                      (compiled-function (verify-load classfile)))
-                 (cond
-                   (compiled-function
-                    (setf form
-                          `(fset ',name
-                                 (load-compiled-function ,(file-namestring classfile))
-                                 ,*source-position*
-                                 ',lambda-list
-                                 ,doc))
-                    (when compile-time-too
-                      (fset name compiled-function)))
-                   (t
-                    ;; FIXME Should be a warning or error of some sort...
-                    (format *error-output*
-                            "; Unable to compile function ~A~%" name)
-                    (let ((precompiled-function (precompile-form expr nil)))
+                  (body (nthcdr 3 form)))
+             (jvm::with-saved-compiler-policy
+               (multiple-value-bind (body decls doc)
+                   (parse-body body)
+                 (let* ((expr `(lambda ,lambda-list
+                                 ,@decls (block ,block-name ,@body)))
+                        (classfile-name (next-classfile-name))
+                        (classfile (report-error
+                                    (jvm:compile-defun name expr nil
+                                                       classfile-name)))
+                        (compiled-function (verify-load classfile)))
+                   (cond
+                     (compiled-function
                       (setf form
                             `(fset ',name
-                                   ,precompiled-function
+                                   (load-compiled-function ,(file-namestring classfile))
                                    ,*source-position*
                                    ',lambda-list
-                                   ,doc)))
-                    (when compile-time-too
-                      (eval form)))))
-               (when (and (symbolp name) (eq (get name '%inline) 'INLINE))
+                                   ,doc))
+                      (when compile-time-too
+                        (fset name compiled-function)))
+                     (t
+                      ;; FIXME Should be a warning or error of some sort...
+                      (format *error-output*
+                              "; Unable to compile function ~A~%" name)
+                      (let ((precompiled-function (precompile-form expr nil)))
+                        (setf form
+                              `(fset ',name
+                                     ,precompiled-function
+                                     ,*source-position*
+                                     ',lambda-list
+                                     ,doc)))
+                      (when compile-time-too
+                        (eval form)))))
+                 (when (and (symbolp name) (eq (get name '%inline) 'INLINE))
                  ;; FIXME Need to support SETF functions too!
-                 (setf (inline-expansion name)
-                       (jvm::generate-inline-expansion block-name
-                                                       lambda-list body))
-                 (dump-form `(setf (inline-expansion ',name)
-                                   ',(inline-expansion name))
-                            stream)
-                 (%stream-terpri stream)))
+                   (setf (inline-expansion name)
+                         (jvm::generate-inline-expansion block-name
+                                                         lambda-list body))
+                   (dump-form `(setf (inline-expansion ',name)
+                                     ',(inline-expansion name))
+                              stream)
+                   (%stream-terpri stream))))
              (push name jvm::*functions-defined-in-current-file*)
              (note-name-defined name)
              ;; If NAME is not fbound, provide a dummy definition so that
@@ -238,11 +235,7 @@
            (return-from process-toplevel-form)))
           (LOCALLY
            ;; FIXME Need to handle special declarations too!
-           (let ((*speed* *speed*)
-                 (*safety* *safety*)
-                 (*debug* *debug*)
-                 (*space* *space*)
-                 (*inline-declarations* *inline-declarations*))
+           (jvm::with-saved-compiler-policy
              (multiple-value-bind (forms decls)
                  (parse-body (cdr form) nil)
                (process-optimization-declarations decls)
@@ -255,7 +248,7 @@
            (compiler-style-warn "Misplaced declaration: ~S" form))
           (t
            (when (and (symbolp operator)
-                        (macro-function operator *compile-file-environment*))
+                      (macro-function operator *compile-file-environment*))
              (note-toplevel-form form)
              ;; Note that we want MACROEXPAND-1 and not MACROEXPAND here, in
              ;; case the form being expanded expands into something that needs
@@ -337,10 +330,7 @@
     (when (and function-form (consp function-form)
                (eq (%car function-form) 'FUNCTION))
       (let ((lambda-expression (cadr function-form)))
-        (let* ((*speed* *speed*)
-               (*space* *space*)
-               (*safety* *safety*)
-               (*debug* *debug*))
+        (jvm::with-saved-compiler-policy
           (let* ((classfile-name (next-classfile-name))
                  (classfile (report-error
                              (jvm:compile-defun nil lambda-expression nil classfile-name)))
@@ -429,52 +419,51 @@
         (when *compile-verbose*
           (format t "; Compiling ~A ...~%" namestring))
         (with-compilation-unit ()
-          (with-open-file (out temp-file :direction :output :if-exists :supersede)
+          (with-open-file (out temp-file
+                               :direction :output :if-exists :supersede)
             (let ((*readtable* *readtable*)
                   (*read-default-float-format* *read-default-float-format*)
                   (*read-base* *read-base*)
                   (*package* *package*)
-                  (*speed* *speed*)
-                  (*space* *space*)
-                  (*safety* *safety*)
-                  (*debug* *debug*)
-                  (*explain* *explain*)
                   (jvm::*functions-defined-in-current-file* '())
                   (*fbound-names* '())
                   (*fasl-anonymous-package* (%make-package)))
-              (jvm::with-file-compilation
-                (write "; -*- Mode: Lisp -*-" :escape nil :stream out)
-                (%stream-terpri out)
-                (let ((*package* (find-package '#:cl)))
-                  (write (list 'init-fasl :version *fasl-version*) :stream out)
+              (jvm::with-saved-compiler-policy
+                (jvm::with-file-compilation
+                  (write "; -*- Mode: Lisp -*-" :escape nil :stream out)
                   (%stream-terpri out)
-                  (write (list 'setq '*source* *compile-file-truename*) :stream out)
-                  (%stream-terpri out))
-                (handler-bind ((style-warning #'(lambda (c)
-                                                  (declare (ignore c))
-                                                  (setf warnings-p t)
-                                                  nil))
-                               ((or warning
-                                    compiler-error) #'(lambda (c)
-                                                        (declare (ignore c))
-                                                        (setf warnings-p t
-                                                              failure-p t)
-                                                        nil)))
-                  (loop
-                     (let* ((*source-position* (file-position in))
-                            (jvm::*source-line-number* (stream-line-number in))
-                            (form (read in nil in))
-                            (*compiler-error-context* form))
-                       (when (eq form in)
-                         (return))
-                       (process-toplevel-form form out nil))))
-                (dolist (name *fbound-names*)
-                  (fmakunbound name))))))
+                  (let ((*package* (find-package '#:cl)))
+                    (write (list 'init-fasl :version *fasl-version*)
+                           :stream out)
+                    (%stream-terpri out)
+                    (write (list 'setq '*source* *compile-file-truename*)
+                           :stream out)
+                    (%stream-terpri out))
+                  (handler-bind ((style-warning #'(lambda (c)
+                                                    (declare (ignore c))
+                                                    (setf warnings-p t)
+                                                    nil))
+                                 ((or warning
+                                      compiler-error) #'(lambda (c)
+                                                          (declare (ignore c))
+                                                          (setf warnings-p t
+                                                                failure-p t)
+                                                          nil)))
+                    (loop
+                       (let* ((*source-position* (file-position in))
+                              (jvm::*source-line-number* (stream-line-number in))
+                              (form (read in nil in))
+                              (*compiler-error-context* form))
+                         (when (eq form in)
+                           (return))
+                         (process-toplevel-form form out nil))))
+                  (dolist (name *fbound-names*)
+                    (fmakunbound name)))))))
         (rename-file temp-file output-file)
 
         (when *compile-file-zip*
           (let* ((type ;; Don't use ".zip", it'll result in an extension
-                       ;;  with a dot, which is rejected by NAMESTRING
+                  ;;  with a dot, which is rejected by NAMESTRING
                   (%format nil "~A~A" (pathname-type output-file) "-zip"))
                  (zipfile (namestring
                            (merge-pathnames (make-pathname :type type)
@@ -498,7 +487,8 @@
 
         (setf elapsed (/ (- (get-internal-real-time) start) 1000.0))
         (when *compile-verbose*
-          (format t "~&; Wrote ~A (~A seconds)~%" (namestring output-file) elapsed))))
+          (format t "~&; Wrote ~A (~A seconds)~%"
+                  (namestring output-file) elapsed))))
     (values (truename output-file) warnings-p failure-p)))
 
 (defun compile-file-if-needed (input-file &rest allargs &key force-compile
