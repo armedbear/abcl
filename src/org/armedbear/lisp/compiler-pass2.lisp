@@ -3952,6 +3952,21 @@ given a specific common representation.")
 	+lisp-special-binding+)
   (astore register))
 
+(defun restore-environment-and-make-handler (register label-START)
+  (let ((label-END (gensym))
+	(label-EXIT (gensym)))
+    (emit 'goto label-EXIT)
+    (label label-END)
+    (restore-dynamic-environment register)
+    (emit 'athrow)
+    ;; Restore dynamic environment.
+    (label label-EXIT)
+    (restore-dynamic-environment register)
+    (push (make-handler :from label-START
+			:to label-END
+			:code label-END
+			:catch-type 0) *handlers*)))
+
 (defun p2-m-v-b-node (block target)
   (let* ((*blocks* (cons block *blocks*))
          (*register* *register*)
@@ -3960,9 +3975,7 @@ given a specific common representation.")
          (vars (second form))
          (bind-special-p nil)
          (variables (block-vars block))
-         (label-START (gensym))
-         (label-END (gensym))
-         (label-EXIT (gensym)))
+         (label-START (gensym)))
     (dolist (variable variables)
       (let ((special-p (variable-special-p variable)))
         (cond (special-p
@@ -4035,18 +4048,8 @@ given a specific common representation.")
     ;; Body.
     (compile-progn-body (cdddr form) target)
     (when bind-special-p
-      (emit 'goto label-EXIT)
-      (label label-END)
-      (restore-dynamic-environment (block-environment-register block))
-      (emit 'athrow)
-
-      ;; Restore dynamic environment.
-      (label label-EXIT)
-      (restore-dynamic-environment (block-environment-register block))
-      (push (make-handler :from label-START
-                          :to label-END
-                          :code label-END
-                          :catch-type 0) *handlers*))))
+      (restore-environment-and-make-handler (block-environment-register block)
+					    label-START))))
 
 (defun propagate-vars (block)
   (let ((removed '()))
@@ -4358,9 +4361,7 @@ given a specific common representation.")
          (form (block-form block))
          (*visible-variables* *visible-variables*)
          (specialp nil)
-         (label-START (gensym))
-         (label-END (gensym))
-         (label-EXIT (gensym)))
+         (label-START (gensym)))
     ;; Walk the variable list looking for special bindings and unused lexicals.
     (dolist (variable (block-vars block))
       (cond ((variable-special-p variable)
@@ -4387,18 +4388,8 @@ given a specific common representation.")
       (process-optimization-declarations (cddr form))
       (compile-progn-body (cddr form) target representation))
     (when specialp
-      (emit 'goto label-EXIT)
-      (label label-END)
-      ;; Restore dynamic environment.
-      (restore-dynamic-environment (block-environment-register block))
-      (emit 'athrow)
-
-      (label label-EXIT)
-      (restore-dynamic-environment (block-environment-register block))
-      (push (make-handler :from label-START
-                          :to label-END
-                          :code label-END
-                          :catch-type 0) *handlers*))))
+      (restore-environment-and-make-handler (block-environment-register block)
+					    label-START))))
 
 (defun p2-locally (form target representation)
   (with-saved-compiler-policy
@@ -4772,15 +4763,14 @@ given a specific common representation.")
          (compile-constant (eval (second form)) target representation))))
 
 (defun p2-progv-node (block target representation)
+  (declare (ignore representation))
   (let* ((form (block-form block))
          (symbols-form (cadr form))
          (values-form (caddr form))
          (*register* *register*)
          (environment-register
           (setf (block-environment-register block) (allocate-register)))
-         (label-START (gensym))
-         (label-END (gensym))
-         (label-EXIT (gensym)))
+         (label-START (gensym)))
     (compile-form symbols-form 'stack nil)
     (compile-form values-form 'stack nil)
     (unless (and (single-valued-p symbols-form)
@@ -4794,20 +4784,8 @@ given a specific common representation.")
                        (list +lisp-object+ +lisp-object+ +lisp-thread+) nil)
       ;; Implicit PROGN.
     (let ((*blocks* (cons block *blocks*)))
-      (compile-progn-body (cdddr form) target)
-      (emit 'goto label-EXIT)
-      (label label-END)
-      (restore-dynamic-environment environment-register)
-      (emit 'athrow))
-
-    ;; Restore dynamic environment.
-    (label label-EXIT)
-    (restore-dynamic-environment environment-register)
-    (fix-boxing representation nil)
-    (push (make-handler :from label-START
-                          :to label-END
-                          :code label-END
-                          :catch-type 0) *handlers*)))
+      (compile-progn-body (cdddr form) target))
+    (restore-environment-and-make-handler environment-register label-START)))
 
 (defun p2-quote (form target representation)
   (aver (or (null representation) (eq representation :boolean)))
@@ -8086,9 +8064,7 @@ for use with derive-type-times.")
          (*thread* nil)
          (*initialize-thread-var* nil)
          (super nil)
-         (label-START (gensym))
-         (label-END (gensym))
-         (label-EXIT (gensym)))
+         (label-START (gensym)))
 
     (dolist (var (compiland-arg-vars compiland))
       (push var *visible-variables*))
@@ -8245,18 +8221,8 @@ for use with derive-type-times.")
     (compile-progn-body body 'stack)
 
     (when (compiland-environment-register compiland)
-      (emit 'goto label-EXIT)
-      (label label-END)
-      (restore-dynamic-environment (compiland-environment-register compiland))
-      (emit 'athrow)
-
-      ;; Restore dynamic environment
-      (label label-EXIT)
-      (restore-dynamic-environment (compiland-environment-register compiland))
-      (push (make-handler :from label-START
-                          :to label-END
-                          :code label-END
-                          :catch-type 0) *handlers*))
+      (restore-environment-and-make-handler 
+       (compiland-environment-register compiland) label-START))
 
     (unless *code*
       (emit-push-nil))
