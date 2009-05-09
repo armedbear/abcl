@@ -947,7 +947,8 @@
                     (when (null variable)
 		      (unless (or (special-variable-p form)
                                   (memq form *undefined-variables*))
-			(compiler-style-warn "Undefined variable: ~S" form)
+			(compiler-style-warn
+                         "Undefined variable ~S assumed special" form)
 			(push form *undefined-variables*))
                       (setf variable (make-variable :name form :special-p t))
                       (push variable *visible-variables*))
