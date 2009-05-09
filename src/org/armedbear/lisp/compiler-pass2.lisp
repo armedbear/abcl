@@ -4411,26 +4411,11 @@ given a specific common representation.")
          (BEGIN-BLOCK (gensym))
          (END-BLOCK (gensym))
          (EXIT (gensym))
-         (must-clear-values nil)
-         environment-register)
-    (when (block-needs-environment-restoration block)
-      (setf environment-register (allocate-register)
-            (block-environment-register block) environment-register))
+         (must-clear-values nil))
     ;; Scan for tags.
     (dolist (tag (block-tags block))
       (push tag *visible-tags*))
 
-    (when environment-register
-      ;; Note: we store the environment register,
-      ;; but since we don't manipulate the environment,
-      ;; we don't need to restore.
-      ;;
-      ;; It's here so local transfers of control can restore
-      ;; what we started with.
-      ;;
-      ;; Non-local transfers of control restore the environment
-      ;; themselves (in the finally of LET/LET*, etc.
-      (save-dynamic-environment environment-register))
     (label BEGIN-BLOCK)
     (do* ((rest body (cdr rest))
           (subform (car rest) (car rest)))
@@ -4509,9 +4494,10 @@ given a specific common representation.")
                (not (enclosed-by-protected-block-p tag-block)))
       ;; Local case with local transfer of control
       ;;   Note: Local case with non-local transfer of control handled below
-      (when (block-environment-register tag-block)
+      (when (and (block-needs-environment-restoration tag-block)
+                 (enclosed-by-environment-setting-block-p tag-block))
         ;; If there's a dynamic environment to restore, do it.
-	(restore-dynamic-environment (block-environment-register tag-block)))
+	(restore-dynamic-environment (environment-register-to-restore tag-block)))
       (maybe-generate-interrupt-check)
       (emit 'goto (tag-label tag))
       (return-from p2-go))
@@ -4619,10 +4605,6 @@ given a specific common representation.")
           (dformat t "p2-block-node lastSpecialBinding~%")
           (dformat t "*all-variables* = ~S~%"
                    (mapcar #'variable-name *all-variables*))
-          (when (block-needs-environment-restoration block)
-            ;; Save the current dynamic environment.
-            (setf (block-environment-register block) (allocate-register))
-            (save-dynamic-environment (block-environment-register block)))
           (setf (block-catch-tag block) (gensym))
           (let* ((*register* *register*)
                  (BEGIN-BLOCK (gensym))
@@ -4657,9 +4639,6 @@ given a specific common representation.")
                                     :catch-type (pool-class +lisp-return-class+))
                       *handlers*)))
             (label BLOCK-EXIT))
-          (when (block-environment-register block)
-            ;; We saved the dynamic environment above. Restore it now.
-            (restore-dynamic-environment (block-environment-register block)))
           (fix-boxing representation nil)))))
 
 (defknown p2-return-from (t t t) t)
@@ -4681,6 +4660,9 @@ given a specific common representation.")
 ;;                       (compiland-name *current-compiland*))
             (emit-clear-values))
           (compile-form result-form (block-target block) nil)
+          (when (and (block-needs-environment-restoration block)
+                     (enclosed-by-environment-setting-block-p block))
+            (restore-dynamic-environment (environment-register-to-restore block)))
           (emit 'goto (block-exit block))
           (return-from p2-return-from))))
     ;; Non-local RETURN.

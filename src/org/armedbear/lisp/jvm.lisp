@@ -427,6 +427,20 @@ be generated.
                (not (block-needs-environment-restoration enclosing-block)))
       (return t))))
 
+(defknown environment-register-to-restore (&optional t) t)
+(defun environment-register-to-restore (&optional outermost-block)
+  "Returns the environment register which contains the
+saved environment from the outermost enclosing block:
+
+That's the one which contains the environment used in the outermost block."
+  (flet ((outermost-register (last-register block)
+           (when (eq block outermost-block)
+             (return-from environment-register-to-restore last-register))
+           (or (block-environment-register block)
+               last-register)))
+    (reduce #'outermost-register *blocks*
+            :initial-value nil)))
+
 (defstruct tag
   ;; The symbol (or integer) naming the tag
   name
