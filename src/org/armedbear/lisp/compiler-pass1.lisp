@@ -701,6 +701,7 @@
            form))))
 
 (defun p1-lambda (form)
+  (setf form (rewrite-lambda form))
   (let* ((lambda-list (cadr form)))
     (when (or (memq '&optional lambda-list)
               (memq '&key lambda-list))
@@ -713,8 +714,7 @@
                             (not (constantp (second arg))))
                    (compiler-unsupported
                     "P1-LAMBDA: can't handle optional argument with non-constant initform.")))))))
-    (p1-function (list 'FUNCTION
-                        (rewrite-lambda form)))))
+    (p1-function (list 'FUNCTION form))))
 
 (defun p1-eval-when (form)
   (list* (car form) (cadr form) (mapcar #'p1 (cddr form))))
