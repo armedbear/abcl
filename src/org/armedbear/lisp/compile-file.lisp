@@ -239,7 +239,12 @@
              (multiple-value-bind (forms decls)
                  (parse-body (cdr form) nil)
                (process-optimization-declarations decls)
-               (process-toplevel-progn forms stream compile-time-too)
+               (let* ((jvm::*visible-variables* jvm::*visible-variables*)
+                      (specials (process-special-declarations decls)))
+                 (dolist (special specials)
+                   (push (jvm::make-variable :name special :special-p t)
+                         jvm::*visible-variables*))
+                 (process-toplevel-progn forms stream compile-time-too))
                (return-from process-toplevel-form))))
           (PROGN
            (process-toplevel-progn (cdr form) stream compile-time-too)
