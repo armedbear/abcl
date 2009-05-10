@@ -3020,7 +3020,10 @@ Note: DEFUN implies a named lambda."
          (args (cdr form))
          (local-function (find-local-function op))
          (*register* *register*)
-         (saved-vars '()))
+         (saved-vars '())
+         (label-START (gensym))
+         (label-END (gensym))
+         (label-EXIT (gensym)))
     (cond ((local-function-variable local-function)
            ;; LABELS
            (dformat t "compile-local-function-call LABELS case variable = ~S~%"
@@ -3031,6 +3034,8 @@ Note: DEFUN implies a named lambda."
                                     (compiland-arg-vars (local-function-compiland local-function))
                                     *visible-variables*))))
 ;;            (emit 'var-ref (local-function-variable local-function) 'stack)
+           (when saved-vars
+             (label label-START))
            (compile-var-ref (make-var-ref (local-function-variable local-function)) 'stack nil))
           (t
            (dformat t "compile-local-function-call default case~%")
@@ -3049,7 +3054,16 @@ Note: DEFUN implies a named lambda."
     (fix-boxing representation nil)
     (emit-move-from-stack target representation)
     (when saved-vars
-      (restore-variables saved-vars)))
+      (emit 'goto label-EXIT)
+      (label label-END)
+      (restore-variables saved-vars)
+      (emit 'athrow)
+      (label label-EXIT)
+      (restore-variables saved-vars)
+      (push (make-handler :from label-START
+                          :to label-END
+                          :code label-END
+                          :catch-type 0) *handlers*)))
   t)
 
 
