@@ -8042,8 +8042,8 @@ for use with derive-type-times.")
          (execute-method (make-method :name execute-method-name
                                       :descriptor descriptor))
          (*code* ())
-         (*register* 0)
-         (*registers-allocated* 0)
+         (*register* 1) ;; register 0: "this" pointer
+         (*registers-allocated* 1)
          (*handlers* ())
          (*visible-variables* *visible-variables*)
 
@@ -8061,34 +8061,29 @@ for use with derive-type-times.")
           (pool-name (method-name execute-method)))
     (setf (method-descriptor-index execute-method)
           (pool-name (method-descriptor execute-method)))
-    (cond (*hairy-arglist-p*
-           (let ((index 0))
-             (dolist (variable (compiland-arg-vars compiland))
-               (aver (null (variable-register variable)))
-               (aver (null (variable-index variable)))
-               (setf (variable-index variable) index)
-               (incf index))))
-          (t
-           (let ((register (if (and *closure-variables* *child-p*)
-                               2 ; Reg 1 is reserved for closure variables array.
-                               1))
-                 (index 0))
-             (dolist (variable (compiland-arg-vars compiland))
-               (aver (null (variable-register variable)))
-               (setf (variable-register variable)
-                     (if *using-arg-array* nil register))
-               (aver (null (variable-index variable)))
-               (if *using-arg-array*
-                   (setf (variable-index variable) index))
-               (incf register)
-               (incf index)))))
 
-    (p2-compiland-process-type-declarations body)
-
-    (allocate-register) ;; register 0: "this" pointer
     (when (and *closure-variables* *child-p*)
-      (setf (compiland-closure-register compiland) (allocate-register)) ;; register 1
-      (dformat t "p2-compiland 1 closure register = ~S~%" (compiland-closure-register compiland)))
+      (setf (compiland-closure-register compiland)
+            (allocate-register)) ;; register 1: the closure array
+      (dformat t "p2-compiland 1 closure register = ~S~%"
+               (compiland-closure-register compiland)))
+
+
+    (let ((register *register*)
+          (index 0))
+      (dolist (variable (compiland-arg-vars compiland))
+        (aver (null (variable-register variable)))
+        (aver (null (variable-index variable)))
+        (cond
+          (*hairy-arglist-p*
+           (setf (variable-index variable) index))
+          (*using-arg-array*
+           (setf (variable-index variable) index))
+          (t
+           (setf (variable-register variable) register)))
+        (incf register)
+        (incf index)))
+
     (cond (*using-arg-array*
            ;; One slot for arg array.
            (setf (compiland-argument-register compiland) (allocate-register))
@@ -8099,15 +8094,21 @@ for use with derive-type-times.")
                (aver (null (variable-register variable)))
                (aver (null (variable-reserved-register variable)))
                (unless (variable-special-p variable)
-                 (setf (variable-reserved-register variable) (allocate-register))))))
+                 (setf (variable-reserved-register variable)
+                       (allocate-register))))))
           (t
            ;; Otherwise, one register for each argument.
            (dolist (variable (compiland-arg-vars compiland))
              (declare (ignore variable))
              (allocate-register))))
+
+    (p2-compiland-process-type-declarations body)
+
+
     (when (and *closure-variables* (not *child-p*))
       (setf (compiland-closure-register compiland) (allocate-register))
-       (dformat t "p2-compiland 2 closure register = ~S~%" (compiland-closure-register compiland)))
+       (dformat t "p2-compiland 2 closure register = ~S~%"
+                (compiland-closure-register compiland)))
     ;; Reserve the next available slot for the thread register.
     (setf *thread* (allocate-register))
 
