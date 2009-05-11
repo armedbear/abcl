@@ -8085,55 +8085,37 @@ for use with derive-type-times.")
             (setf (variable-register variable) (allocate-register)))
         (incf index)))
 
-    (when (and *using-arg-array*
-               (not (or *closure-variables* *child-p*)))
-      ;; Reserve a register for each parameter.
-      (dolist (variable (compiland-arg-vars compiland))
-        (aver (null (variable-register variable)))
-        (aver (null (variable-reserved-register variable)))
-        (unless (variable-special-p variable)
-          (setf (variable-reserved-register variable)
-                (allocate-register)))))
-
-    (p2-compiland-process-type-declarations body)
-
+    ;; Reserve the next available slot for the thread register.
+    (setf *thread* (allocate-register))
 
     (when (and *closure-variables* (not *child-p*))
       (setf (compiland-closure-register compiland) (allocate-register))
        (dformat t "p2-compiland 2 closure register = ~S~%"
                 (compiland-closure-register compiland)))
-    ;; Reserve the next available slot for the thread register.
-    (setf *thread* (allocate-register))
 
-    ;; Move args from their original registers to the closure variables array,
-    ;; if applicable.
-    (when *closure-variables*
-      (dformat t "~S moving arguments to closure array (if applicable)~%"
+    ;; Move args from their original registers to the closure variables array
+    (when (or closure-args
+              (and *closure-variables* (not *child-p*)))
+      (dformat t "~S moving arguments to closure array~%"
                (compiland-name compiland))
       (cond (*child-p*
              (aver (eql (compiland-closure-register compiland) 1))
-             (when closure-args
-               (aload (compiland-closure-register compiland))))
-            (t
+             (aload (compiland-closure-register compiland)))
+            (t ;; if we're the ultimate parent: create the closure array
              (emit-push-constant-int (length *closure-variables*))
-             (dformat t "p2-compiland ~S anewarray 1~%" (compiland-name compiland))
+             (dformat t "p2-compiland ~S anewarray 1~%"
+                      (compiland-name compiland))
              (emit 'anewarray "org/armedbear/lisp/LispObject")))
       (dolist (variable closure-args)
-        (dformat t "considering ~S ...~%" (variable-name variable))
         (dformat t "moving variable ~S~%" (variable-name variable))
         (cond ((variable-register variable)
-               (when (eql (variable-register variable)
-                          (compiland-closure-register compiland))
-                 (error "ERROR! compiland closure register = ~S var ~S register = ~S~%"
-                        (compiland-closure-register compiland)
-                        (variable-name variable)
-                        (variable-register variable)))
+               (assert (not (eql (variable-register variable)
+                                 (compiland-closure-register compiland))))
                (emit 'dup) ; array
                (emit-push-constant-int (variable-closure-index variable))
                (aload (variable-register variable))
                (emit 'aastore)
                (setf (variable-register variable) nil))
-              ;; The variable has moved.
               ((variable-index variable)
                (emit 'dup) ; array
                (emit-push-constant-int (variable-closure-index variable))
@@ -8142,30 +8124,29 @@ for use with derive-type-times.")
                (emit 'aaload)
                (emit 'aastore)
                (setf (variable-index variable) nil))))
-      ;; The variable has moved.
 
       (aver (not (null (compiland-closure-register compiland))))
       (cond (*child-p*
-             (when closure-args
-               (emit 'pop)))
+             (emit 'pop))
             (t
              (astore (compiland-closure-register compiland))))
       (dformat t "~S done moving arguments to closure array~%"
                (compiland-name compiland)))
 
     ;; If applicable, move args from arg array to registers.
-    (when *using-arg-array*
-      (unless (or *closure-variables* *child-p*)
-        (dolist (variable (compiland-arg-vars compiland))
-          (when (variable-reserved-register variable)
-            (aver (not (variable-special-p variable)))
+    (when (and *using-arg-array*
+               (not (or *closure-variables* *child-p*)))
+      (dolist (variable (compiland-arg-vars compiland))
+        (unless (variable-special-p variable)
+          (let ((register (allocate-register)))
             (aload (compiland-argument-register compiland))
             (emit-push-constant-int (variable-index variable))
             (emit 'aaload)
-            (astore (variable-reserved-register variable))
-            (setf (variable-register variable) (variable-reserved-register variable))
+            (astore register)
+            (setf (variable-register variable) register)
             (setf (variable-index variable) nil)))))
 
+    (p2-compiland-process-type-declarations body)
     (generate-type-checks-for-variables (compiland-arg-vars compiland))
 
     ;; Unbox variables.
