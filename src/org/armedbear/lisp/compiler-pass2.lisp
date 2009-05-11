@@ -8030,9 +8030,12 @@ for use with derive-type-times.")
          (class-file (compiland-class-file compiland))
          (*this-class* (class-file-class class-file))
          (args (cadr p1-result))
+         (closure-args (intersection *closure-variables*
+                                     (compiland-arg-vars compiland)))
          (body (cddr p1-result))
          (*using-arg-array* nil)
          (*hairy-arglist-p* nil)
+         ;; *hairy-arglist-p* != NIL --> *using-arglist-array* != NIL
 
          (*child-p* (not (null (compiland-parent compiland))))
 
@@ -8068,39 +8071,29 @@ for use with derive-type-times.")
       (dformat t "p2-compiland 1 closure register = ~S~%"
                (compiland-closure-register compiland)))
 
+    (when *using-arg-array*
+      (setf (compiland-argument-register compiland) (allocate-register)))
 
-    (let ((register *register*)
-          (index 0))
+    ;; Assign indices or registers, depending on where the args are
+    ;; located: the arg-array or the call-stack
+    (let ((index 0))
       (dolist (variable (compiland-arg-vars compiland))
         (aver (null (variable-register variable)))
         (aver (null (variable-index variable)))
-        (cond
-          (*hairy-arglist-p*
-           (setf (variable-index variable) index))
-          (*using-arg-array*
-           (setf (variable-index variable) index))
-          (t
-           (setf (variable-register variable) register)))
-        (incf register)
+        (if *using-arg-array*
+            (setf (variable-index variable) index)
+            (setf (variable-register variable) (allocate-register)))
         (incf index)))
 
-    (cond (*using-arg-array*
-           ;; One slot for arg array.
-           (setf (compiland-argument-register compiland) (allocate-register))
-
-           (unless (or *closure-variables* *child-p*)
-             ;; Reserve a register for each parameter.
-             (dolist (variable (compiland-arg-vars compiland))
-               (aver (null (variable-register variable)))
-               (aver (null (variable-reserved-register variable)))
-               (unless (variable-special-p variable)
-                 (setf (variable-reserved-register variable)
-                       (allocate-register))))))
-          (t
-           ;; Otherwise, one register for each argument.
-           (dolist (variable (compiland-arg-vars compiland))
-             (declare (ignore variable))
-             (allocate-register))))
+    (when (and *using-arg-array*
+               (not (or *closure-variables* *child-p*)))
+      ;; Reserve a register for each parameter.
+      (dolist (variable (compiland-arg-vars compiland))
+        (aver (null (variable-register variable)))
+        (aver (null (variable-reserved-register variable)))
+        (unless (variable-special-p variable)
+          (setf (variable-reserved-register variable)
+                (allocate-register)))))
 
     (p2-compiland-process-type-declarations body)
 
@@ -8119,41 +8112,41 @@ for use with derive-type-times.")
                (compiland-name compiland))
       (cond (*child-p*
              (aver (eql (compiland-closure-register compiland) 1))
-             (when (some #'variable-closure-index
-                         (compiland-arg-vars compiland))
+             (when closure-args
                (aload (compiland-closure-register compiland))))
             (t
              (emit-push-constant-int (length *closure-variables*))
              (dformat t "p2-compiland ~S anewarray 1~%" (compiland-name compiland))
              (emit 'anewarray "org/armedbear/lisp/LispObject")))
-      (dolist (variable (compiland-arg-vars compiland))
+      (dolist (variable closure-args)
         (dformat t "considering ~S ...~%" (variable-name variable))
-        (when (variable-closure-index variable)
-          (dformat t "moving variable ~S~%" (variable-name variable))
-          (cond ((variable-register variable)
-                 (when (eql (variable-register variable)
-                            (compiland-closure-register compiland))
-                   (error "ERROR! compiland closure register = ~S var ~S register = ~S~%"
-                          (compiland-closure-register compiland)
-                          (variable-name variable)
-                          (variable-register variable)))
-                 (emit 'dup) ; array
-                 (emit-push-constant-int (variable-closure-index variable))
-                 (aload (variable-register variable))
-                 (emit 'aastore)
-                 (setf (variable-register variable) nil)) ; The variable has moved.
-                ((variable-index variable)
-                 (emit 'dup) ; array
-                 (emit-push-constant-int (variable-closure-index variable))
-                 (aload (compiland-argument-register compiland))
-                 (emit-push-constant-int (variable-index variable))
-                 (emit 'aaload)
-                 (emit 'aastore)
-                 (setf (variable-index variable) nil))))) ; The variable has moved.
+        (dformat t "moving variable ~S~%" (variable-name variable))
+        (cond ((variable-register variable)
+               (when (eql (variable-register variable)
+                          (compiland-closure-register compiland))
+                 (error "ERROR! compiland closure register = ~S var ~S register = ~S~%"
+                        (compiland-closure-register compiland)
+                        (variable-name variable)
+                        (variable-register variable)))
+               (emit 'dup) ; array
+               (emit-push-constant-int (variable-closure-index variable))
+               (aload (variable-register variable))
+               (emit 'aastore)
+               (setf (variable-register variable) nil))
+              ;; The variable has moved.
+              ((variable-index variable)
+               (emit 'dup) ; array
+               (emit-push-constant-int (variable-closure-index variable))
+               (aload (compiland-argument-register compiland))
+               (emit-push-constant-int (variable-index variable))
+               (emit 'aaload)
+               (emit 'aastore)
+               (setf (variable-index variable) nil))))
+      ;; The variable has moved.
+
       (aver (not (null (compiland-closure-register compiland))))
       (cond (*child-p*
-             (when (some #'variable-closure-index
-                         (compiland-arg-vars compiland))
+             (when closure-args
                (emit 'pop)))
             (t
              (astore (compiland-closure-register compiland))))
