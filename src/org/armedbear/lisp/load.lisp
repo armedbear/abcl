@@ -42,3 +42,15 @@
              filespec
              (merge-pathnames (pathname filespec)))
          verbose print if-does-not-exist))
+
+(defun load-returning-last-result (filespec
+             &key
+             (verbose *load-verbose*)
+             (print *load-print*)
+             (if-does-not-exist t)
+             (external-format :default))
+  (declare (ignore external-format)) ; FIXME
+  (%load-returning-last-result (if (streamp filespec)
+             filespec
+             (merge-pathnames (pathname filespec)))
+         verbose print if-does-not-exist))

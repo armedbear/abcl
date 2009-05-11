@@ -90,6 +90,17 @@ public final class Load extends Lisp
                                         boolean verbose,
                                         boolean print,
                                         boolean ifDoesNotExist)
+        throws ConditionThrowable {
+	return load(pathname, filename, verbose, print, ifDoesNotExist, false);
+    }
+
+
+    public static final LispObject load(Pathname pathname,
+                                        String filename,
+                                        boolean verbose,
+                                        boolean print,
+                                        boolean ifDoesNotExist,
+					boolean returnLastResult)
         throws ConditionThrowable
     {
 	String dir = null;
@@ -153,7 +164,7 @@ public final class Load extends Lisp
         try {
             return loadFileFromStream(null, truename,
                                       new Stream(in, Symbol.CHARACTER),
-                                      verbose, print, false);
+                                      verbose, print, false, returnLastResult);
         }
         catch (FaslVersionMismatch e) {
             FastStringBuffer sb =
@@ -380,6 +391,17 @@ public final class Load extends Lisp
                                                        boolean verbose,
                                                        boolean print,
                                                        boolean auto)
+	throws ConditionThrowable {
+	return loadFileFromStream(pathname, truename, in, verbose, print, auto, false);
+    }
+
+    private static final LispObject loadFileFromStream(LispObject pathname,
+                                                       String truename,
+                                                       Stream in,
+                                                       boolean verbose,
+                                                       boolean print,
+                                                       boolean auto,
+						       boolean returnLastResult)
         throws ConditionThrowable
     {
         long start = System.currentTimeMillis();
@@ -415,7 +437,7 @@ public final class Load extends Lisp
                 out._writeString(truename != null ? truename : "stream");
                 out._writeLine(" ...");
                 out._finishOutput();
-                LispObject result = loadStream(in, print, thread);
+                LispObject result = loadStream(in, print, thread, returnLastResult);
                 long elapsed = System.currentTimeMillis() - start;
                 out.freshLine();
                 out._writeString(prefix);
@@ -427,7 +449,7 @@ public final class Load extends Lisp
                 out._finishOutput();
                 return result;
             } else
-                return loadStream(in, print, thread);
+                return loadStream(in, print, thread, returnLastResult);
         }
         finally {
             thread.lastSpecialBinding = lastSpecialBinding;
@@ -444,6 +466,12 @@ public final class Load extends Lisp
 
     private static final LispObject loadStream(Stream in, boolean print,
                                                LispThread thread)
+	throws ConditionThrowable {
+	return loadStream(in, print, thread, false);
+    }
+
+    private static final LispObject loadStream(Stream in, boolean print,
+                                               LispThread thread, boolean returnLastResult)
         throws ConditionThrowable
     {
         SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
@@ -454,12 +482,13 @@ public final class Load extends Lisp
         thread.lastSpecialBinding = sourcePositionBinding;
         try {
             final Environment env = new Environment();
+	    LispObject result = NIL;
             while (true) {
                 sourcePositionBinding.value = Fixnum.getInstance(in.getOffset());
                 LispObject obj = in.read(false, EOF, false, thread);
                 if (obj == EOF)
                     break;
-                LispObject result = eval(obj, env, thread);
+                result = eval(obj, env, thread);
                 if (print) {
                     Stream out =
                         checkCharacterOutputStream(Symbol.STANDARD_OUTPUT.symbolValue(thread));
@@ -467,7 +496,11 @@ public final class Load extends Lisp
                     out._finishOutput();
                 }
             }
-            return T;
+	    if(returnLastResult) {
+		return result;
+	    } else {
+		return T;
+	    }
         }
         finally {
             thread.lastSpecialBinding = lastSpecialBinding;
@@ -480,19 +513,24 @@ public final class Load extends Lisp
         Stream in = (Stream) _LOAD_STREAM_.symbolValue(thread);
         final Environment env = new Environment();
         final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+	LispObject result = NIL;
         try {
             thread.bindSpecial(_FASL_ANONYMOUS_PACKAGE_, new Package());
             while (true) {
                 LispObject obj = in.faslRead(false, EOF, true, thread);
                 if (obj == EOF)
                     break;
-                eval(obj, env, thread);
+                result = eval(obj, env, thread);
             }
         }
         finally {
             thread.lastSpecialBinding = lastSpecialBinding;
         }
-        return T;
+        return result;
+	//There's no point in using here the returnLastResult flag like in
+	//loadStream(): this function is only called from init-fasl, which is
+	//only called from load, which already has its own policy for choosing
+	//whether to return T or the last value.
     }
 
     // Returns extension including leading '.'
@@ -562,40 +600,63 @@ public final class Load extends Lisp
     {
         @Override
         public LispObject execute(LispObject filespec, LispObject verbose,
-                                  LispObject print, LispObject ifDoesNotExist)
-            throws ConditionThrowable
-        {
-            if (filespec instanceof Stream) {
-                if (((Stream)filespec).isOpen()) {
-                    LispObject pathname;
-                    if (filespec instanceof FileStream)
-                        pathname = ((FileStream)filespec).getPathname();
-                    else
-                        pathname = NIL;
-                    String truename;
-                    if (pathname instanceof Pathname)
-                        truename = ((Pathname)pathname).getNamestring();
-                    else
-                        truename = null;
-                    return loadFileFromStream(pathname,
-                                              truename,
-                                              (Stream) filespec,
-                                              verbose != NIL,
-                                              print != NIL,
-                                              false);
-                }
-                // If stream is closed, fall through...
-            }
-            Pathname pathname = coerceToPathname(filespec);
-            if (pathname instanceof LogicalPathname)
-                pathname = LogicalPathname.translateLogicalPathname((LogicalPathname)pathname);
-            return load(pathname,
-                        pathname.getNamestring(),
-                        verbose != NIL,
-                        print != NIL,
-                        ifDoesNotExist != NIL);
-        }
+				  LispObject print, LispObject ifDoesNotExist)
+	    throws ConditionThrowable {
+	    return load(filespec, verbose, print, ifDoesNotExist, NIL);
+	}
     };
+
+    // ### %load-returning-last-result filespec verbose print if-does-not-exist => object
+    private static final Primitive _LOAD_RETURNING_LAST_RESULT =
+        new Primitive("%load-returning-last-result", PACKAGE_SYS, false,
+                      "filespec verbose print if-does-not-exist")
+    {
+        @Override
+        public LispObject execute(LispObject filespec, LispObject verbose,
+				  LispObject print, LispObject ifDoesNotExist)
+	    throws ConditionThrowable {
+	    return load(filespec, verbose, print, ifDoesNotExist, T);
+	}
+    };
+
+    private static final LispObject load(LispObject filespec,
+					 LispObject verbose,
+					 LispObject print,
+					 LispObject ifDoesNotExist,
+					 LispObject returnLastResult)
+	throws ConditionThrowable {
+	if (filespec instanceof Stream) {
+	    if (((Stream)filespec).isOpen()) {
+		LispObject pathname;
+		if (filespec instanceof FileStream)
+		    pathname = ((FileStream)filespec).getPathname();
+		else
+		    pathname = NIL;
+		String truename;
+		if (pathname instanceof Pathname)
+		    truename = ((Pathname)pathname).getNamestring();
+		else
+		    truename = null;
+		return loadFileFromStream(pathname,
+					  truename,
+					  (Stream) filespec,
+					  verbose != NIL,
+					  print != NIL,
+					  false,
+					  returnLastResult != NIL);
+	    }
+	    // If stream is closed, fall through...
+	}
+	Pathname pathname = coerceToPathname(filespec);
+	if (pathname instanceof LogicalPathname)
+	    pathname = LogicalPathname.translateLogicalPathname((LogicalPathname)pathname);
+	return load(pathname,
+		    pathname.getNamestring(),
+		    verbose != NIL,
+		    print != NIL,
+		    ifDoesNotExist != NIL,
+		    returnLastResult != NIL);
+    }
 
     // ### load-system-file
     private static final Primitive LOAD_SYSTEM_FILE =

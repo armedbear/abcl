@@ -51,6 +51,12 @@
 				    (cdr binding)))
 	    bindings)))
 
+(defun generate-special-declarations (bindings)
+  (let ((*package* (find-package :abcl-script-user)))
+    `(declare (special
+	       ,@(mapcar (lambda (binding) (read-from-string (car binding)))
+			 bindings)))))
+
 (defun generate-java-bindings (bindings-list actual-bindings java-bindings)
   (loop :for binding  :in actual-bindings
 	:for jbinding :in bindings-list
@@ -72,6 +78,8 @@
 	   (,actual-engine-bindings (generate-bindings ,engine-bindings)))
        (eval `(let (,@,actual-global-bindings)
 		(let (,@,actual-engine-bindings)
+		  ,(generate-special-declarations ,global-bindings)
+		  ,(generate-special-declarations ,engine-bindings)
 		  (prog1
 		      (progn ,@,body)
 		    (finish-output *standard-output*)
@@ -87,8 +95,8 @@
 (defun eval-script (global-bindings engine-bindings stdin stdout
 		    code-string script-context)
   (eval-in-script-context (global-bindings engine-bindings stdin stdout script-context)
-    (read-from-string
-     (concatenate 'string "(" code-string ")"))))
+    `((with-input-from-string (str ,code-string)
+	(sys::load-returning-last-result str)))))
 
 (defun eval-compiled-script (global-bindings engine-bindings stdin stdout
 			     function script-context)
@@ -96,32 +104,24 @@
     `((funcall ,function))))
 
 (defun compile-script (code-string)
-  (if *compile-using-temp-files*
-      (let* ((tmp-file (jstatic (jmethod "java.io.File" "createTempFile" "java.lang.String" "java.lang.String")
-				nil "abcl-src-file-" ".lisp"))
-	     (tmp-file-path (jcall (jmethod "java.io.File" "getAbsolutePath") tmp-file)))
-	(jcall (jmethod "java.io.File" "deleteOnExit") tmp-file) ;to be really-really-really sure...
-	(unwind-protect
-	     (progn
-	       (with-open-file (stream tmp-file-path :direction :output)
-		 (princ "(in-package :abcl-script-user)" stream)
-		 (princ code-string stream)
-		 (finish-output stream))
-	       (let ((compiled-file (compile-file tmp-file-path)))
-		 (jcall (jmethod "java.io.File" "deleteOnExit")
-			(jnew (jconstructor "java.io.File" "java.lang.String")
-			      (namestring compiled-file)))
-		 (lambda ()
-		   (let ((*package* (find-package :abcl-script-user)))
-		     (load compiled-file :verbose t :print t)))))
-	  (delete-file tmp-file-path)))
-      (eval 
-       `(compile
-	 nil
-	 (lambda ()
-	   ,@(let ((*package* (find-package :abcl-script-user)))
-	       (read-from-string
-		(concatenate 'string "(" code-string " cl:t)")))))))) ;return T in conformity of what LOAD does.
+  (let* ((tmp-file (jstatic (jmethod "java.io.File" "createTempFile" "java.lang.String" "java.lang.String")
+			    nil "abcl-src-file-" ".lisp"))
+	 (tmp-file-path (jcall (jmethod "java.io.File" "getAbsolutePath") tmp-file)))
+    (jcall (jmethod "java.io.File" "deleteOnExit") tmp-file) ;to be really-really-really sure...
+    (unwind-protect
+	 (progn
+	   (with-open-file (stream tmp-file-path :direction :output)
+	     (princ "(in-package :abcl-script-user)" stream)
+	     (princ code-string stream)
+	     (finish-output stream))
+	   (let ((compiled-file (compile-file tmp-file-path)))
+	     (jcall (jmethod "java.io.File" "deleteOnExit")
+		    (jnew (jconstructor "java.io.File" "java.lang.String")
+			  (namestring compiled-file)))
+	     (lambda ()
+	       (let ((*package* (find-package :abcl-script-user)))
+		 (sys::load-returning-last-result compiled-file)))))
+      (delete-file tmp-file-path))))
 
 ;;Java interface implementation - TODO
 

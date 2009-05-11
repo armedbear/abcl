@@ -39,8 +39,6 @@
 
 (defparameter *use-throwing-debugger* t)
 
-(defparameter *compile-using-temp-files* t)
-
 (defun configure-abcl (abcl-script-engine)
   (when *launch-swank-at-startup*
     (unless *swank-dir*

@@ -3,8 +3,19 @@ import javax.script.*;
 public class JSR223Example {
 
 	public static void main(String[] args) {
-		//Script Engine instantiation
-		ScriptEngine lispEngine = new ScriptEngineManager().getEngineByExtension("lisp");
+	    //Script Engine instantiation using ServiceProvider - this will
+	    //look in the classpath for a file
+	    //  /META-INF/services/javax.script.ScriptEngineFactory
+	    //where the AbclScriptEngineFactory is registered
+	    ScriptEngine lispEngine = new ScriptEngineManager().getEngineByExtension("lisp");
+
+	    //Alternatively, you can directly instantiate the script engine:
+	    
+	    //ScriptEngineManager scriptManager = new ScriptEngineManager();
+	    //scriptManager.registerEngineExtension("lisp", new AbclScriptEngineFactory());
+	    //ScriptEngine lispEngine = scriptManager.getEngineByExtension("lisp");
+
+	    //(thanks to Peter Tsenter for suggesting this)
 				
 		//Accessing variables
 		System.out.println();
