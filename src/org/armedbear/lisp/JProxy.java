@@ -142,57 +142,60 @@ public final class JProxy extends Lisp
   	 */
   	private static final Map<Object, LispObject> proxyMap = new WeakHashMap<Object, LispObject>();
   
-  	public static class LispInvocationHandler implements InvocationHandler {
-  		
-  		private Function function;
-  		private static Method hashCodeMethod;
-  		private static Method equalsMethod;
-  		private static Method toStringMethod;
-  		
-  		static {
-  			try {
-				hashCodeMethod = Object.class.getMethod("hashCode", new Class[] {});
-				equalsMethod = Object.class.getMethod("equals", new Class[] { Object.class });
-				toStringMethod = Object.class.getMethod("toString", new Class[] {});
-			} catch (Exception e) {
-				throw new Error("Something got horribly wrong - can't get a method from Object.class", e);
-			}
-  		}
-
-  		public LispInvocationHandler(Function function) {
-  			this.function = function;
-  		}
-  		
-		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-	    	if(hashCodeMethod.equals(method)) {
-	    		return System.identityHashCode(proxy);
-	    	}
-	    	if(equalsMethod.equals(method)) {
-	    		return proxy == args[0];
-	    	}
-	    	if(toStringMethod.equals(method)) {
-	    		return proxy.getClass().getName() + '@' + Integer.toHexString(proxy.hashCode());
-	    	}
-	    	
-	    	if(args == null) {
-	    		args = new Object[0];
-	    	}
-			LispObject[] lispArgs = new LispObject[args.length + 2];
-			synchronized(proxyMap) {
-				lispArgs[0] = toLispObject(proxyMap.get(proxy));
-			}
-			lispArgs[1] = new SimpleString(method.getName());
-			for(int i = 0; i < args.length; i++) {
-				lispArgs[i + 2] = toLispObject(args[i]);
-			}
-			Object retVal = (function.execute(lispArgs)).javaInstance();
-			/* DOES NOT WORK due to autoboxing!
-			if(retVal != null && !method.getReturnType().isAssignableFrom(retVal.getClass())) {
-				return error(new TypeError(new JavaObject(retVal), new JavaObject(method.getReturnType())));
-			}*/
-			return retVal;
-		}
+    public static class LispInvocationHandler implements InvocationHandler {
+	
+	private Function function;
+	private static Method hashCodeMethod;
+	private static Method equalsMethod;
+	private static Method toStringMethod;
+  	
+	static {
+	    try {
+		hashCodeMethod = Object.class.getMethod("hashCode", new Class[] {});
+		equalsMethod = Object.class.getMethod("equals", new Class[] { Object.class });
+		toStringMethod = Object.class.getMethod("toString", new Class[] {});
+	    } catch (Exception e) {
+		throw new Error("Something got horribly wrong - can't get a method from Object.class", e);
+	    }
 	}
+	
+	public LispInvocationHandler(Function function) {
+	    this.function = function;
+	}
+  		
+	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+	    if(hashCodeMethod.equals(method)) {
+		return System.identityHashCode(proxy);
+	    }
+	    if(equalsMethod.equals(method)) {
+		return proxy == args[0];
+	    }
+	    if(toStringMethod.equals(method)) {
+		return proxy.getClass().getName() + '@' + Integer.toHexString(proxy.hashCode());
+	    }
+	    	
+	    if(args == null) {
+		args = new Object[0];
+	    }
+	    LispObject[] lispArgs = new LispObject[args.length + 3];
+	    lispArgs[0] = function;
+	    synchronized(proxyMap) {
+		lispArgs[1] = toLispObject(proxyMap.get(proxy));
+	    }
+	    lispArgs[2] = new SimpleString(method.getName());
+	    for(int i = 0; i < args.length; i++) {
+		lispArgs[i + 3] = toLispObject(args[i]);
+	    }
+	    Object retVal =
+		LispThread.currentThread().execute(Symbol.FUNCALL, lispArgs).javaInstance();
+	    //(function.execute(lispArgs)).javaInstance();
+	    /* DOES NOT WORK due to autoboxing!
+	       if(retVal != null && !method.getReturnType().isAssignableFrom(retVal.getClass())) {
+	       return error(new TypeError(new JavaObject(retVal), new JavaObject(method.getReturnType())));
+	       }*/
+	    return retVal;
+	}
+    }
   
   	private static final Primitive _JMAKE_INVOCATION_HANDLER =
 	    new Primitive("%jmake-invocation-handler", PACKAGE_JAVA, false,
