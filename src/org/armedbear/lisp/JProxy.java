@@ -177,17 +177,17 @@ public final class JProxy extends Lisp
 	    if(args == null) {
 		args = new Object[0];
 	    }
-	    LispObject[] lispArgs = new LispObject[args.length + 3];
-	    lispArgs[0] = function;
+	    LispObject lispArgs = NIL;
 	    synchronized(proxyMap) {
-		lispArgs[1] = toLispObject(proxyMap.get(proxy));
+		lispArgs = lispArgs.push(toLispObject(proxyMap.get(proxy)));
 	    }
-	    lispArgs[2] = new SimpleString(method.getName());
+	    lispArgs = lispArgs.push(new SimpleString(method.getName()));
 	    for(int i = 0; i < args.length; i++) {
-		lispArgs[i + 3] = toLispObject(args[i]);
+		lispArgs = lispArgs.push(toLispObject(args[i]));
 	    }
 	    Object retVal =
-		LispThread.currentThread().execute(Symbol.FUNCALL, lispArgs).javaInstance();
+		LispThread.currentThread().execute
+		(Symbol.APPLY, function, lispArgs.reverse()).javaInstance();
 	    //(function.execute(lispArgs)).javaInstance();
 	    /* DOES NOT WORK due to autoboxing!
 	       if(retVal != null && !method.getReturnType().isAssignableFrom(retVal.getClass())) {
