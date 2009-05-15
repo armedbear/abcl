@@ -37,7 +37,7 @@ public class ClosureTemplateFunction extends Closure
         implements Cloneable
 {
 
-  public LispObject[] ctx;
+  public ClosureBinding[] ctx;
 
   public ClosureTemplateFunction(LispObject lambdaList)
     throws ConditionThrowable
@@ -45,7 +45,7 @@ public class ClosureTemplateFunction extends Closure
     super(list(Symbol.LAMBDA, lambdaList), null);
   }
 
-  final public ClosureTemplateFunction setContext(LispObject[] context)
+  final public ClosureTemplateFunction setContext(ClosureBinding[] context)
   {
     ctx = context;
     return this;
@@ -156,14 +156,14 @@ public class ClosureTemplateFunction extends Closure
     // "evaluate this template with these values"
 
   // Zero args.
-  public LispObject _execute(LispObject[] context) throws ConditionThrowable
+  public LispObject _execute(ClosureBinding[] context) throws ConditionThrowable
   {
     LispObject[] args = new LispObject[0];
     return _execute(context, args);
   }
 
   // One arg.
-  public LispObject _execute(LispObject[] context, LispObject first)
+  public LispObject _execute(ClosureBinding[] context, LispObject first)
     throws ConditionThrowable
   {
     LispObject[] args = new LispObject[1];
@@ -172,7 +172,7 @@ public class ClosureTemplateFunction extends Closure
   }
 
   // Two args.
-  public LispObject _execute(LispObject[] context, LispObject first,
+  public LispObject _execute(ClosureBinding[] context, LispObject first,
                             LispObject second)
     throws ConditionThrowable
   {
@@ -183,7 +183,7 @@ public class ClosureTemplateFunction extends Closure
   }
 
   // Three args.
-  public LispObject _execute(LispObject[] context, LispObject first,
+  public LispObject _execute(ClosureBinding[] context, LispObject first,
                             LispObject second, LispObject third)
     throws ConditionThrowable
   {
@@ -195,7 +195,7 @@ public class ClosureTemplateFunction extends Closure
   }
 
   // Four args.
-  public LispObject _execute(LispObject[] context, LispObject first,
+  public LispObject _execute(ClosureBinding[] context, LispObject first,
                             LispObject second, LispObject third,
                             LispObject fourth)
     throws ConditionThrowable
@@ -209,7 +209,7 @@ public class ClosureTemplateFunction extends Closure
   }
 
   // Five args.
-  public LispObject _execute(LispObject[] context, LispObject first,
+  public LispObject _execute(ClosureBinding[] context, LispObject first,
                             LispObject second, LispObject third,
                             LispObject fourth, LispObject fifth)
     throws ConditionThrowable
@@ -224,7 +224,7 @@ public class ClosureTemplateFunction extends Closure
   }
 
   // Six args.
-  public LispObject _execute(LispObject[] context, LispObject first,
+  public LispObject _execute(ClosureBinding[] context, LispObject first,
                             LispObject second, LispObject third,
                             LispObject fourth, LispObject fifth,
                             LispObject sixth)
@@ -241,7 +241,7 @@ public class ClosureTemplateFunction extends Closure
   }
 
   // Seven args.
-  public LispObject _execute(LispObject[] context, LispObject first,
+  public LispObject _execute(ClosureBinding[] context, LispObject first,
                             LispObject second, LispObject third,
                             LispObject fourth, LispObject fifth,
                             LispObject sixth, LispObject seventh)
@@ -259,7 +259,7 @@ public class ClosureTemplateFunction extends Closure
   }
 
   // Eight args.
-  public LispObject _execute(LispObject[] context, LispObject first,
+  public LispObject _execute(ClosureBinding[] context, LispObject first,
                             LispObject second, LispObject third,
                             LispObject fourth, LispObject fifth,
                             LispObject sixth, LispObject seventh,
@@ -279,7 +279,7 @@ public class ClosureTemplateFunction extends Closure
   }
 
   // Arg array.
-  public LispObject _execute(LispObject[] context, LispObject[] args)
+  public LispObject _execute(ClosureBinding[] context, LispObject[] args)
     throws ConditionThrowable
   {
     return notImplemented();

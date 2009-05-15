@@ -1186,7 +1186,7 @@ public abstract class Lisp
     }
 
   public static final LispObject makeCompiledClosure(LispObject template,
-                                                     LispObject[] context)
+                                                     ClosureBinding[] context)
     throws ConditionThrowable
   {
     ClosureTemplateFunction ctf = ((ClosureTemplateFunction) template).dup();

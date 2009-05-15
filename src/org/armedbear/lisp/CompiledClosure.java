@@ -36,9 +36,9 @@ package org.armedbear.lisp;
 public class CompiledClosure extends Function
 {
     private final ClosureTemplateFunction ctf;
-    private final LispObject[] context;
+    private final ClosureBinding[] context;
 
-    public CompiledClosure(ClosureTemplateFunction ctf, LispObject[] context)
+    public CompiledClosure(ClosureTemplateFunction ctf, ClosureBinding[] context)
     {
         super(ctf.getLambdaName(), ctf.getLambdaList());
         this.ctf = ctf;
