@@ -3025,13 +3025,17 @@ Note: DEFUN implies a named lambda."
            ;; LABELS
            (dformat t "compile-local-function-call LABELS case variable = ~S~%"
                    (variable-name (local-function-variable local-function)))
-           (compile-var-ref (make-var-ref (local-function-variable local-function)) 'stack nil))
+           (compile-var-ref (make-var-ref
+                             (local-function-variable local-function))
+                            'stack nil))
           (t
            (dformat t "compile-local-function-call default case~%")
            (let* ((g (if *file-compilation*
                          (declare-local-function local-function)
-                         (declare-object (local-function-function local-function)))))
-             (emit 'getstatic *this-class* g +lisp-object+) ; Stack: template-function
+                         (declare-object
+                          (local-function-function local-function)))))
+             (emit 'getstatic *this-class* g +lisp-object+)
+                                        ; Stack: template-function
              (when *closure-variables*
                (emit 'checkcast +lisp-ctf-class+)
                (duplicate-closure-array compiland)
@@ -5002,11 +5006,9 @@ given a specific common representation.")
           (cond
             ((local-function-variable local-function)
              (dformat t "p2-function 2 emitting var-ref~%")
-;;;          (emit 'var-ref (local-function-variable local-function) 'stack)
              (compile-var-ref (make-var-ref
                                (local-function-variable local-function))
-                              'stack nil)
-             )
+                              'stack nil))
             (t
              (let ((g (if *file-compilation*
                           (declare-local-function local-function)
@@ -5048,11 +5050,9 @@ given a specific common representation.")
           (cond
             ((local-function-variable local-function)
              (dformat t "p2-function 2~%")
-;;           (emit 'var-ref (local-function-variable local-function) 'stack)
              (compile-var-ref (make-var-ref
                                (local-function-variable local-function))
-                              'stack nil)
-             )
+                              'stack nil))
             (t
              (let ((g (if *file-compilation*
                           (declare-local-function local-function)
