@@ -591,7 +591,7 @@
   (with-local-functions-for-flet/labels
       form local-functions lambda-list name body
       ((let ((local-function (make-local-function :name name
-						 :compiland compiland)))
+                                                  :compiland compiland)))
 	 (multiple-value-bind (body decls) (parse-body body)
 	   (let* ((block-name (fdefinition-block-name name))
 		  (lambda-expression
@@ -604,10 +604,6 @@
 	     (setf (local-function-inline-expansion local-function)
 		   (generate-inline-expansion block-name lambda-list body))
 	     (p1-compiland compiland)))
-	 (when *closure-variables*
-	   (let ((variable (make-variable :name (gensym))))
-	     (setf (local-function-variable local-function) variable)
-	     (push variable *all-variables*)))
 	 (push local-function local-functions)))
       ((with-saved-compiler-policy
 	   (process-optimization-declarations (cddr form))

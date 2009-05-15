@@ -4846,7 +4846,7 @@ given a specific common representation.")
   (compile-and-write-to-file class-file compiland))
 
 
-(defun emit-make-compiled-closure-for-flet/labels 
+(defun emit-make-compiled-closure-for-flet/labels
     (local-function compiland declaration)
   (emit 'getstatic *this-class* declaration +lisp-object+)
   (let ((parent (compiland-parent compiland)))
@@ -4872,7 +4872,7 @@ given a specific common representation.")
   (let ((*load-truename* (pathname pathname)))
     (unless (ignore-errors (load-compiled-function pathname))
       (error "Unable to load ~S." pathname))))
-  
+
 (defknown p2-flet-process-compiland (t) t)
 (defun p2-flet-process-compiland (local-function)
   (let* ((compiland (local-function-compiland local-function))
@@ -4883,22 +4883,14 @@ given a specific common representation.")
                                                :lambda-list lambda-list)))
 	     (set-compiland-and-write-class-file class-file compiland)
 	     (verify-class-file-loadable pathname)
-             (setf (local-function-class-file local-function) class-file))
-           (when (local-function-variable local-function)
-             (let ((g (declare-local-function local-function)))
-	       (emit-make-compiled-closure-for-flet/labels 
-		local-function compiland g))))
+             (setf (local-function-class-file local-function) class-file)))
           (t
-	   (with-temp-class-file 
+	   (with-temp-class-file
 	       pathname class-file lambda-list
 	       (set-compiland-and-write-class-file class-file compiland)
 	       (setf (local-function-class-file local-function) class-file)
 	       (setf (local-function-function local-function)
-                     (load-compiled-function pathname))
-	       (when (local-function-variable local-function)
-		 (let ((g (declare-object (load-compiled-function pathname))))
-		   (emit-make-compiled-closure-for-flet/labels 
-		    local-function compiland g))))))))
+                     (load-compiled-function pathname)))))))
 
 (defknown p2-labels-process-compiland (t) t)
 (defun p2-labels-process-compiland (local-function)
@@ -4912,7 +4904,7 @@ given a specific common representation.")
 	     (verify-class-file-loadable pathname)
              (setf (local-function-class-file local-function) class-file)
              (let ((g (declare-local-function local-function)))
-	       (emit-make-compiled-closure-for-flet/labels 
+	       (emit-make-compiled-closure-for-flet/labels
 		local-function compiland g))))
           (t
 	   (with-temp-class-file
@@ -4920,7 +4912,7 @@ given a specific common representation.")
 	       (set-compiland-and-write-class-file class-file compiland)
 	       (setf (local-function-class-file local-function) class-file)
 	       (let ((g (declare-object (load-compiled-function pathname))))
-		 (emit-make-compiled-closure-for-flet/labels 
+		 (emit-make-compiled-closure-for-flet/labels
 		  local-function compiland g)))))))
 
 (defknown p2-flet (t t t) t)
@@ -4931,12 +4923,6 @@ given a specific common representation.")
         (*visible-variables* *visible-variables*)
         (local-functions (cadr form))
         (body (cddr form)))
-    (dolist (local-function local-functions)
-      (let ((variable (local-function-variable local-function)))
-        (when variable
-          (aver (null (variable-register variable)))
-          (unless (variable-closure-index variable)
-            (setf (variable-register variable) (allocate-register))))))
     (dolist (local-function local-functions)
       (p2-flet-process-compiland local-function))
     (dolist (local-function local-functions)
