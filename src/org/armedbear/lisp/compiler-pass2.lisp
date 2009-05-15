@@ -4959,7 +4959,8 @@ given a specific common representation.")
            (let ((class-file (compiland-class-file compiland)))
 	     (compile-and-write-to-file class-file compiland)
              (emit 'getstatic *this-class*
-                   (declare-local-function (make-local-function :class-file class-file))
+                   (declare-local-function (make-local-function :class-file
+                                                                class-file))
                    +lisp-object+)))
           (t
            (let ((pathname (funcall *pathnames-generator*)))
@@ -4968,18 +4969,20 @@ given a specific common representation.")
                                     :lambda-list lambda-list))
              (unwind-protect
                  (progn
-		   (compile-and-write-to-file (compiland-class-file compiland) compiland)
+		   (compile-and-write-to-file (compiland-class-file compiland)
+                                              compiland)
                    (emit 'getstatic *this-class*
                          (declare-object (load-compiled-function pathname))
                          +lisp-object+))
                (delete-file pathname)))))
-    (cond ((null *closure-variables*)) ; Nothing to do.
+    (cond ((null *closure-variables*))  ; Nothing to do.
           ((compiland-closure-register *current-compiland*)
            (duplicate-closure-array *current-compiland*)
            (emit-invokestatic +lisp-class+ "makeCompiledClosure"
                               (list +lisp-object+ +closure-binding-array+)
                               +lisp-object+)
-           (emit 'checkcast +lisp-compiled-closure-class+)) ; Stack: compiled-closure
+           (emit 'checkcast +lisp-compiled-closure-class+))
+                                        ; Stack: compiled-closure
           (t
            (aver nil))) ;; Shouldn't happen.
     (emit-move-from-stack target)))
@@ -4990,85 +4993,97 @@ given a specific common representation.")
   (declare (ignore representation))
   (let ((name (second form))
         local-function)
-    (cond ((symbolp name)
-           (dformat t "p2-function case 1~%")
-           (cond ((setf local-function (find-local-function name))
-                  (dformat t "p2-function 1~%")
-                  (cond ((local-function-variable local-function)
-                         (dformat t "p2-function 2 emitting var-ref~%")
-;;                          (emit 'var-ref (local-function-variable local-function) 'stack)
-                         (compile-var-ref (make-var-ref (local-function-variable local-function)) 'stack nil)
-                         )
-                        (t
-                         (let ((g (if *file-compilation*
-                                      (declare-local-function local-function)
-                                      (declare-object (local-function-function local-function)))))
-                           (emit 'getstatic *this-class* g +lisp-object+) ; Stack: template-function
+    (cond
+      ((symbolp name)
+       (dformat t "p2-function case 1~%")
+       (cond
+         ((setf local-function (find-local-function name))
+          (dformat t "p2-function 1~%")
+          (cond
+            ((local-function-variable local-function)
+             (dformat t "p2-function 2 emitting var-ref~%")
+;;;          (emit 'var-ref (local-function-variable local-function) 'stack)
+             (compile-var-ref (make-var-ref
+                               (local-function-variable local-function))
+                              'stack nil)
+             )
+            (t
+             (let ((g (if *file-compilation*
+                          (declare-local-function local-function)
+                          (declare-object
+                           (local-function-function local-function)))))
+               (emit 'getstatic *this-class* g +lisp-object+)
+                                        ; Stack: template-function
 
-                           (when (compiland-closure-register *current-compiland*)
-                             (emit 'checkcast +lisp-ctf-class+)
-                             (duplicate-closure-array *current-compiland*)
-                             (emit-invokestatic +lisp-class+ "makeCompiledClosure"
-                                                (list +lisp-object+ +closure-binding-array+)
-                                                +lisp-object+)))))
-                  (emit-move-from-stack target))
-                 ((inline-ok name)
-                  (emit 'getstatic *this-class*
-                        (declare-function name) +lisp-object+)
-                  (emit-move-from-stack target))
-                 (t
-                  (multiple-value-bind
-                        (name class)
-                      (lookup-or-declare-symbol name)
-                    (emit 'getstatic class name +lisp-symbol+))
-                  (emit-invokevirtual +lisp-object-class+
-                                      "getSymbolFunctionOrDie"
-                                      nil +lisp-object+)
-                  (emit-move-from-stack target))))
-          ((and (consp name) (eq (%car name) 'SETF))
-           (dformat t "p2-function case 2~%")
-           ; FIXME Need to check for NOTINLINE declaration!
-           (cond ((setf local-function (find-local-function name))
-                  (dformat t "p2-function 1~%")
-                  (when (eq (local-function-compiland local-function) *current-compiland*)
-                    (aload 0) ; this
-                    (emit-move-from-stack target)
-                    (return-from p2-function))
-                  (cond ((local-function-variable local-function)
-                         (dformat t "p2-function 2~%")
-;;                          (emit 'var-ref (local-function-variable local-function) 'stack)
-                         (compile-var-ref (make-var-ref (local-function-variable local-function)) 'stack nil)
-                         )
-                        (t
-                         (let ((g (if *file-compilation*
-                                      (declare-local-function local-function)
-                                      (declare-object (local-function-function local-function)))))
-                           (emit 'getstatic *this-class*
-                                 g +lisp-object+))))) ; Stack: template-function
-                 ((member name *functions-defined-in-current-file* :test #'equal)
-                  (emit 'getstatic *this-class*
-                        (declare-setf-function name) +lisp-object+)
-                  (emit-move-from-stack target))
-                 ((and (null *file-compilation*)
-                       (fboundp name)
-                       (fdefinition name))
-                  (emit 'getstatic *this-class*
-                        (declare-object (fdefinition name)) +lisp-object+)
-                  (emit-move-from-stack target))
-                 (t
-                  (multiple-value-bind
-                        (name class)
-                      (lookup-or-declare-symbol (cadr name))
-                    (emit 'getstatic class name +lisp-symbol+))
-                  (emit-invokevirtual +lisp-symbol-class+
-                                      "getSymbolSetfFunctionOrDie"
-                                      nil +lisp-object+)
-                  (emit-move-from-stack target))))
-          ((compiland-p name)
-           (dformat t "p2-function case 3~%")
-           (p2-lambda name target))
-          (t
-           (compiler-unsupported "p2-function: unsupported case: ~S" form)))))
+               (when (compiland-closure-register *current-compiland*)
+                 (emit 'checkcast +lisp-ctf-class+)
+                 (duplicate-closure-array *current-compiland*)
+                 (emit-invokestatic +lisp-class+ "makeCompiledClosure"
+                                    (list +lisp-object+ +closure-binding-array+)
+                                    +lisp-object+)))))
+          (emit-move-from-stack target))
+         ((inline-ok name)
+          (emit 'getstatic *this-class*
+                (declare-function name) +lisp-object+)
+          (emit-move-from-stack target))
+         (t
+          (multiple-value-bind
+                (name class)
+              (lookup-or-declare-symbol name)
+            (emit 'getstatic class name +lisp-symbol+))
+          (emit-invokevirtual +lisp-object-class+ "getSymbolFunctionOrDie"
+                              nil +lisp-object+)
+          (emit-move-from-stack target))))
+      ((and (consp name) (eq (%car name) 'SETF))
+       (dformat t "p2-function case 2~%")
+       ;; FIXME Need to check for NOTINLINE declaration!
+       (cond
+         ((setf local-function (find-local-function name))
+          (dformat t "p2-function 1~%")
+          (when (eq (local-function-compiland local-function)
+                    *current-compiland*)
+            (aload 0) ; this
+            (emit-move-from-stack target)
+            (return-from p2-function))
+          (cond
+            ((local-function-variable local-function)
+             (dformat t "p2-function 2~%")
+;;           (emit 'var-ref (local-function-variable local-function) 'stack)
+             (compile-var-ref (make-var-ref
+                               (local-function-variable local-function))
+                              'stack nil)
+             )
+            (t
+             (let ((g (if *file-compilation*
+                          (declare-local-function local-function)
+                          (declare-object
+                           (local-function-function local-function)))))
+               (emit 'getstatic *this-class*
+                     g +lisp-object+))))) ; Stack: template-function
+         ((member name *functions-defined-in-current-file* :test #'equal)
+          (emit 'getstatic *this-class*
+                (declare-setf-function name) +lisp-object+)
+          (emit-move-from-stack target))
+         ((and (null *file-compilation*)
+               (fboundp name)
+               (fdefinition name))
+          (emit 'getstatic *this-class*
+                (declare-object (fdefinition name)) +lisp-object+)
+          (emit-move-from-stack target))
+         (t
+          (multiple-value-bind
+                (name class)
+              (lookup-or-declare-symbol (cadr name))
+            (emit 'getstatic class name +lisp-symbol+))
+          (emit-invokevirtual +lisp-symbol-class+
+                              "getSymbolSetfFunctionOrDie"
+                              nil +lisp-object+)
+          (emit-move-from-stack target))))
+      ((compiland-p name)
+       (dformat t "p2-function case 3~%")
+       (p2-lambda name target))
+      (t
+       (compiler-unsupported "p2-function: unsupported case: ~S" form)))))
 
 (defknown p2-ash (t t t) t)
 (define-inlined-function p2-ash (form target representation)
