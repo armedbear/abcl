@@ -199,6 +199,7 @@
           n)))
 
 (defconstant +java-string+ "Ljava/lang/String;")
+(defconstant +java-object+ "Ljava/lang/Object;")
 (defconstant +lisp-class+ "org/armedbear/lisp/Lisp")
 (defconstant +lisp-nil-class+ "org/armedbear/lisp/Nil")
 (defconstant +lisp-class-class+ "org/armedbear/lisp/LispClass")
@@ -206,7 +207,6 @@
 (defconstant +lisp-object+ "Lorg/armedbear/lisp/LispObject;")
 (defconstant +lisp-object-array+ "[Lorg/armedbear/lisp/LispObject;")
 (defconstant +closure-binding-array+ "[Lorg/armedbear/lisp/ClosureBinding;")
-(defconstant +closure-binding+ "Lorg/armedbear/lisp/ClosureBinding;")
 (defconstant +closure-binding-class+ "org/armedbear/lisp/ClosureBinding")
 (defconstant +lisp-symbol-class+ "org/armedbear/lisp/Symbol")
 (defconstant +lisp-symbol+ "Lorg/armedbear/lisp/Symbol;")
@@ -2998,14 +2998,14 @@ is registered (or not)."
     (aload (compiland-closure-register compiland))        ;; src
     (emit-push-constant-int 0)                            ;; srcPos
     (emit-push-constant-int (length *closure-variables*))
-    (emit 'anewarray "org/armedbear/lisp/ClosureBinding")     ;; dest
+    (emit 'anewarray +closure-binding-class+)             ;; dest
     (emit 'dup)
     (astore register)  ;; save dest value
     (emit-push-constant-int 0)                            ;; destPos
     (emit-push-constant-int (length *closure-variables*)) ;; length
     (emit-invokestatic "java/lang/System" "arraycopy"
-                       (list "Ljava/lang/Object;" "I"
-                             "Ljava/lang/Object;" "I" "I") nil)
+                       (list +java-object+ "I"
+                             +java-object+ "I" "I") nil)
     (aload register))) ;; reload dest value
 
 
@@ -3897,11 +3897,11 @@ given a specific common representation.")
          (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
                              (list +lisp-symbol+ +lisp-object+) nil))
         ((variable-closure-index variable)              ;; stack:
-         (emit 'new "org/armedbear/lisp/ClosureBinding") ;; value c-b
-         (emit 'dup_x1)                                  ;; c-b value c-b
-         (emit 'swap)                                    ;; c-b c-b value
-         (emit-invokespecial-init "org/armedbear/lisp/ClosureBinding"
-                                 (list +lisp-object+))   ;; c-b
+         (emit 'new +closure-binding-class+)            ;; value c-b
+         (emit 'dup_x1)                                 ;; c-b value c-b
+         (emit 'swap)                                   ;; c-b c-b value
+         (emit-invokespecial-init +closure-binding-class+
+                                  (list +lisp-object+)) ;; c-b
          (aload (compiland-closure-register *current-compiland*))
                                                          ;; c-b array
          (emit 'swap)                                    ;; array c-b
@@ -4183,8 +4183,7 @@ given a specific common representation.")
              (emit-push-constant-int (variable-closure-index variable))
              (emit 'aaload)
              (emit-swap representation nil)
-             (emit 'putfield "org/armedbear/lisp/ClosureBinding" "value"
-                   "Lorg/armedbear/lisp/LispObject;"))
+             (emit 'putfield +closure-binding-class+ "value" +lisp-object+))
             (t
              ;;###FIXME: We might want to address the "temp-register" case too.
              (assert nil))))))
@@ -4215,8 +4214,7 @@ given a specific common representation.")
            (aload (compiland-closure-register *current-compiland*))
            (emit-push-constant-int (variable-closure-index variable))
            (emit 'aaload)
-           (emit 'getfield "org/armedbear/lisp/ClosureBinding" "value"
-                 "Lorg/armedbear/lisp/LispObject;"))
+           (emit 'getfield +closure-binding-class+ "value" +lisp-object+))
           (t ;;###FIXME: We might want to address the "temp-register" case too.
            (assert nil)))))
 
@@ -8089,7 +8087,7 @@ for use with derive-type-times.")
         ((not *child-p*)
          ;; if we're the ultimate parent: create the closure array
          (emit-push-constant-int (length *closure-variables*))
-         (emit 'anewarray "org/armedbear/lisp/ClosureBinding"))
+         (emit 'anewarray +closure-binding-class+))
         (local-closure-vars
          (duplicate-closure-array compiland))))
 
@@ -8110,7 +8108,7 @@ for use with derive-type-times.")
             ;; we're the parent, or we have a variable to set.
             (emit 'dup) ; array
             (emit-push-constant-int i)
-            (emit 'new "org/armedbear/lisp/ClosureBinding")
+            (emit 'new +closure-binding-class+)
             (emit 'dup)
             (cond
               ((null variable)
@@ -8128,7 +8126,7 @@ for use with derive-type-times.")
                (setf (variable-index variable) nil))
               (t
                (assert (not "Can't happen!!"))))
-            (emit-invokespecial-init "org/armedbear/lisp/ClosureBinding"
+            (emit-invokespecial-init +closure-binding-class+
                                      (list +lisp-object+))
             (emit 'aastore)))))
 
