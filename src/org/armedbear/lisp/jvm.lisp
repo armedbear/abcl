@@ -245,7 +245,6 @@
                           (:predicate variable-p))
   name
   initform
-  temp-register
   (declared-type :none)
   (derived-type :none)
   ignore-p

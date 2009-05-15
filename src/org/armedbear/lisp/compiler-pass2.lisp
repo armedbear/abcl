@@ -4227,7 +4227,8 @@ given a specific common representation.")
                 (zerop (variable-reads variable)))
       (aver (null (variable-register variable)))
       (setf (variable-register variable) t)))
-  (let ((must-clear-values nil))
+  (let (must-clear-values
+        temporary-storage)
     (declare (type boolean must-clear-values))
     ;; Evaluate each initform. If the variable being bound is special, allocate
     ;; a temporary register for the result; LET bindings must be done in
@@ -4258,9 +4259,12 @@ given a specific common representation.")
                  ;; Now allocate the register.
                  (allocate-variable-register variable))
                (cond ((variable-special-p variable)
-                      (emit-move-from-stack
-                       (setf (variable-temp-register variable)
-                             (allocate-register))))
+                      (let ((temp-register (allocate-register)))
+                        ;; FIXME: this permanently allocates a register
+                        ;; which has only a single local use
+                        (push (cons temp-register variable)
+                              temporary-storage)
+                        (emit-move-from-stack temp-register)))
                      ((variable-representation variable)
                       (emit-move-to-variable variable))
                      (t
@@ -4269,11 +4273,9 @@ given a specific common representation.")
       (emit-clear-values))
     ;; Now that all the initforms have been evaluated, move the results from
     ;; the temporary registers (if any) to their proper destinations.
-    (dolist (variable (block-vars block))
-      (when (variable-temp-register variable)
-        (aver (variable-special-p variable))
-        (aload (variable-temp-register variable))
-        (compile-binding variable))))
+    (dolist (temp temporary-storage)
+      (aload (car temp))
+      (compile-binding (cdr temp))))
   ;; Now make the variables visible.
   (dolist (variable (block-vars block))
     (push variable *visible-variables*))
