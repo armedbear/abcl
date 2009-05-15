@@ -350,7 +350,9 @@
 
 ;; Used to wrap TAGBODYs, UNWIND-PROTECTs and LET/LET*/M-V-B forms as well as
 ;; BLOCKs per se.
-(defstruct (block-node (:conc-name block-) (:include node) (:constructor make-block-node (name)))
+(defstruct (block-node (:conc-name block-)
+                       (:include node)
+                       (:constructor make-block-node (name)))
   (exit (gensym))
   target
   catch-tag
