@@ -4185,7 +4185,6 @@ given a specific common representation.")
              (emit-swap representation nil)
              (emit 'putfield +closure-binding-class+ "value" +lisp-object+))
             (t
-             ;;###FIXME: We might want to address the "temp-register" case too.
              (assert nil))))))
 
 (defun emit-push-variable (variable)
@@ -4215,7 +4214,7 @@ given a specific common representation.")
            (emit-push-constant-int (variable-closure-index variable))
            (emit 'aaload)
            (emit 'getfield +closure-binding-class+ "value" +lisp-object+))
-          (t ;;###FIXME: We might want to address the "temp-register" case too.
+          (t
            (assert nil)))))
 
 
