@@ -257,7 +257,6 @@
   closure-index ; index number for a variable in the closure context array
     ;; a variable can be either special-p *or* have a register *or*
     ;; have an index *or a closure-index
-  reserved-register
   (reads 0 :type fixnum)
   (writes 0 :type fixnum)
   references
