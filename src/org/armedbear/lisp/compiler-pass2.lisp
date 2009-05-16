@@ -241,7 +241,6 @@
 (defconstant +lisp-return-class+ "org/armedbear/lisp/Return")
 (defconstant +lisp-go-class+ "org/armedbear/lisp/Go")
 (defconstant +lisp-ctf-class+ "org/armedbear/lisp/ClosureTemplateFunction")
-(defconstant +lisp-compiled-closure-class+ "org/armedbear/lisp/CompiledClosure")
 (defconstant +lisp-compiled-function-class+ "org/armedbear/lisp/CompiledFunction")
 (defconstant +lisp-primitive-class+ "org/armedbear/lisp/Primitive")
 (defconstant +lisp-hash-table-class+ "org/armedbear/lisp/HashTable")
@@ -4984,8 +4983,7 @@ given a specific common representation.")
            (duplicate-closure-array *current-compiland*)
            (emit-invokestatic +lisp-class+ "makeCompiledClosure"
                               (list +lisp-object+ +closure-binding-array+)
-                              +lisp-object+)
-           (emit 'checkcast +lisp-compiled-closure-class+))
+                              +lisp-object+))
                                         ; Stack: compiled-closure
           (t
            (aver nil))) ;; Shouldn't happen.

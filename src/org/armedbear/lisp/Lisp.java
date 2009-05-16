@@ -1189,14 +1189,7 @@ public abstract class Lisp
                                                      ClosureBinding[] context)
     throws ConditionThrowable
   {
-    ClosureTemplateFunction ctf = ((ClosureTemplateFunction) template).dup();
-    ctf.setContext(context);
-    CompiledClosure result = new CompiledClosure(ctf, context);
-    LispObject classBytes =
-      getf(ctf.getPropertyList(), Symbol.CLASS_BYTES, NIL);
-    if (classBytes != NIL)
-      result.setPropertyList(list(Symbol.CLASS_BYTES, classBytes));
-    return result;
+    return ((ClosureTemplateFunction)template).dup().setContext(context);
   }
 
   public static final String safeWriteToString(LispObject obj)
