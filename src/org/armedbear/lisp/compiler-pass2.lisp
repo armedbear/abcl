@@ -1762,7 +1762,7 @@ representation, based on the derived type of the LispObject."
   name-index
   descriptor-index)
 
-(defstruct (java-method (:conc-name method-) (:constructor make-method))
+(defstruct (java-method (:conc-name method-) (:constructor %make-method))
   access-flags
   name
   descriptor
@@ -1772,6 +1772,14 @@ representation, based on the derived type of the LispObject."
   max-locals
   code
   handlers)
+
+(defun make-method (&rest args &key descriptor name
+                                    descriptor-index name-index
+                               &allow-other-keys)
+  (apply #'%make-method
+         (list* :descriptor-index (or descriptor-index (pool-name descriptor))
+                :name-index (or name-index (pool-name name))
+                args)))
 
 (defun emit-constructor-lambda-name (lambda-name)
   (cond ((and lambda-name (symbolp lambda-name) (symbol-package (truly-the symbol lambda-name)))
@@ -1800,8 +1808,6 @@ representation, based on the derived type of the LispObject."
                                    :descriptor "()V"))
          (*code* ())
          (*handlers* nil))
-    (setf (method-name-index constructor) (pool-name (method-name constructor)))
-    (setf (method-descriptor-index constructor) (pool-name (method-descriptor constructor)))
     (setf (method-max-locals constructor) 1)
     (aload 0) ;; this
     (cond ((equal super +lisp-compiled-function-class+)
@@ -8008,18 +8014,12 @@ for use with derive-type-times.")
 
          (*thread* nil)
          (*initialize-thread-var* nil)
-         (super nil)
          (label-START (gensym)))
 
     (dolist (var (compiland-arg-vars compiland))
       (push var *visible-variables*))
     (dolist (var (compiland-free-specials compiland))
       (push var *visible-variables*))
-
-    (setf (method-name-index execute-method)
-          (pool-name (method-name execute-method)))
-    (setf (method-descriptor-index execute-method)
-          (pool-name (method-descriptor execute-method)))
 
     (when *using-arg-array*
       (setf (compiland-argument-register compiland) (allocate-register)))
@@ -8040,8 +8040,8 @@ for use with derive-type-times.")
 
     (when *closure-variables*
       (setf (compiland-closure-register compiland) (allocate-register))
-       (dformat t "p2-compiland 2 closure register = ~S~%"
-                (compiland-closure-register compiland)))
+      (dformat t "p2-compiland 2 closure register = ~S~%"
+               (compiland-closure-register compiland)))
 
     (when *closure-variables*
       (if (not *child-p*)
@@ -8198,31 +8198,19 @@ for use with derive-type-times.")
 
     ;; Remove handler if its protected range is empty.
     (setf *handlers*
-          (delete-if (lambda (handler) (eql (symbol-value (handler-from handler))
-                                            (symbol-value (handler-to handler))))
+          (delete-if (lambda (handler)
+                       (eql (symbol-value (handler-from handler))
+                            (symbol-value (handler-to handler))))
                      *handlers*))
 
     (setf (method-max-locals execute-method) *registers-allocated*)
     (setf (method-handlers execute-method) (nreverse *handlers*))
 
     (setf (class-file-superclass class-file)
-          (cond (super
-                 super)
-                (*child-p*
-                 (if *closure-variables*
-                     (progn
-                       (setf (method-name-index execute-method)
-                             (pool-name (method-name execute-method)))
-                       (setf (method-descriptor-index execute-method)
-                             (pool-name (method-descriptor execute-method)))
-                       +lisp-compiled-closure-class+)
-                     (if *hairy-arglist-p*
-                         +lisp-compiled-function-class+
-                         +lisp-primitive-class+)))
-                (*hairy-arglist-p*
-                 +lisp-compiled-function-class+)
-                (t
-                 +lisp-primitive-class+)))
+          (cond
+            ((and *child-p* *closure-variables*) +lisp-compiled-closure-class+)
+            (*hairy-arglist-p* +lisp-compiled-function-class+)
+            (t +lisp-primitive-class+)))
 
     (setf (class-file-lambda-list class-file) args)
 
