@@ -8018,9 +8018,9 @@ for use with derive-type-times.")
          (*child-p* (not (null (compiland-parent compiland))))
 
          (descriptor (analyze-args compiland))
-         (execute-method-name (if (eq (compiland-kind compiland) :external)
-                                  "execute" "_execute"))
-         (execute-method (make-method :name execute-method-name
+         (execute-method (make-method :name (if (and *child-p*
+                                                     *closure-variables*)
+                                                "_execute" "execute")
                                       :descriptor descriptor))
          (*code* ())
          (*register* 1) ;; register 0: "this" pointer
@@ -8233,8 +8233,6 @@ for use with derive-type-times.")
                 (*child-p*
                  (if *closure-variables*
                      (progn
-                       (setf execute-method-name
-                             (setf (method-name execute-method) "_execute"))
                        (setf (method-name-index execute-method)
                              (pool-name (method-name execute-method)))
                        (setf (method-descriptor-index execute-method)

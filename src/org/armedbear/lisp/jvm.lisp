@@ -153,7 +153,6 @@
 
 (defstruct compiland
   name
-  (kind :external)  ; :INTERNAL or :EXTERNAL
   lambda-expression
   arg-vars          ; variables for lambda arguments
   free-specials     ;
