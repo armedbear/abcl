@@ -7858,31 +7858,13 @@ for use with derive-type-times.")
         (setf *using-arg-array* t)
         (setf *hairy-arglist-p* t)
         (return-from analyze-args
-                     (if *closure-variables*
-                         (get-descriptor (list +closure-binding-array+
-                                               +lisp-object-array+)
-                                         +lisp-object+)
-                         (get-descriptor (list +lisp-object-array+)
-                                         +lisp-object+))))
-      (cond (*closure-variables*
-             (return-from analyze-args
-                          (cond ((<= arg-count call-registers-limit)
-                                 (get-descriptor (list* +closure-binding-array+
-                                                        (lisp-object-arg-types arg-count))
-                                                 +lisp-object+))
-                                (t (setf *using-arg-array* t)
-                                   (setf (compiland-arity compiland) arg-count)
-                                   (get-descriptor (list +closure-binding-array+ +lisp-object-array+) ;; FIXME
-                                                   +lisp-object+)))))
-            (t
-             (return-from analyze-args
-                          (cond ((<= arg-count call-registers-limit)
-                                 (get-descriptor (lisp-object-arg-types arg-count)
-                                                 +lisp-object+))
-                                (t (setf *using-arg-array* t)
-                                   (setf (compiland-arity compiland) arg-count)
-                                   (get-descriptor (list +lisp-object-array+)
-                                                   +lisp-object+))))))) ;; FIXME
+          (get-descriptor (list +lisp-object-array+) +lisp-object+)))
+      (return-from analyze-args
+        (cond ((<= arg-count call-registers-limit)
+               (get-descriptor (lisp-object-arg-types arg-count) +lisp-object+))
+              (t (setf *using-arg-array* t)
+                 (setf (compiland-arity compiland) arg-count)
+                 (get-descriptor (list +lisp-object-array+) +lisp-object+)))))
     (when (or (memq '&KEY args)
               (memq '&OPTIONAL args)
               (memq '&REST args))
@@ -8016,9 +7998,7 @@ for use with derive-type-times.")
          (*child-p* (not (null (compiland-parent compiland))))
 
          (descriptor (analyze-args compiland))
-         (execute-method (make-method :name (if (and *child-p*
-                                                     *closure-variables*)
-                                                "_execute" "execute")
+         (execute-method (make-method :name "execute"
                                       :descriptor descriptor))
          (*code* ())
          (*register* 1) ;; register 0: "this" pointer
@@ -8041,12 +8021,6 @@ for use with derive-type-times.")
     (setf (method-descriptor-index execute-method)
           (pool-name (method-descriptor execute-method)))
 
-    (when (and *closure-variables* *child-p*)
-      (setf (compiland-closure-register compiland)
-            (allocate-register)) ;; register 1: the closure array
-      (dformat t "p2-compiland 1 closure register = ~S~%"
-               (compiland-closure-register compiland)))
-
     (when *using-arg-array*
       (setf (compiland-argument-register compiland) (allocate-register)))
 
@@ -8064,19 +8038,25 @@ for use with derive-type-times.")
     ;; Reserve the next available slot for the thread register.
     (setf *thread* (allocate-register))
 
-    (when (and *closure-variables* (not *child-p*))
+    (when *closure-variables*
       (setf (compiland-closure-register compiland) (allocate-register))
        (dformat t "p2-compiland 2 closure register = ~S~%"
                 (compiland-closure-register compiland)))
 
     (when *closure-variables*
-      (cond
-        ((not *child-p*)
-         ;; if we're the ultimate parent: create the closure array
-         (emit-push-constant-int (length *closure-variables*))
-         (emit 'anewarray +closure-binding-class+))
-        (local-closure-vars
-         (duplicate-closure-array compiland))))
+      (if (not *child-p*)
+          (progn
+            ;; if we're the ultimate parent: create the closure array
+            (emit-push-constant-int (length *closure-variables*))
+            (emit 'anewarray +closure-binding-class+))
+        (progn
+          (aload 0)
+          (emit 'getfield +lisp-ctf-class+ "ctx"
+                +closure-binding-array+)
+          (when local-closure-vars
+            ;; in all other cases, it gets stored in the register below
+            (emit 'astore (compiland-closure-register compiland))
+            (duplicate-closure-array compiland)))))
 
     ;; Move args from their original registers to the closure variables array
     (when (or closure-args
@@ -8117,7 +8097,7 @@ for use with derive-type-times.")
                                      (list +lisp-object+))
             (emit 'aastore)))))
 
-    (when (or local-closure-vars (and *closure-variables* (not *child-p*)))
+    (when *closure-variables*
       (aver (not (null (compiland-closure-register compiland))))
       (astore (compiland-closure-register compiland))
       (dformat t "~S done moving arguments to closure array~%"
