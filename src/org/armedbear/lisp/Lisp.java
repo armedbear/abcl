@@ -1189,7 +1189,7 @@ public abstract class Lisp
                                                      ClosureBinding[] context)
     throws ConditionThrowable
   {
-    return ((ClosureTemplateFunction)template).dup().setContext(context);
+    return ((CompiledClosure)template).dup().setContext(context);
   }
 
   public static final String safeWriteToString(LispObject obj)

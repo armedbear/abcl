@@ -2439,13 +2439,6 @@ public final class Primitives extends Lisp
             LispObject name = ((CompiledClosure)arg).getLambdaName();
             value3 = name != null ? name : NIL;
           }
-        else if (arg instanceof ClosureTemplateFunction)
-          {
-            value1 = NIL;
-            value2 = T;
-            LispObject name = ((ClosureTemplateFunction)arg).getLambdaName();
-            value3 = name != null ? name : NIL;
-          }
         else if (arg instanceof Closure && !(arg instanceof CompiledFunction))
           {
             Closure closure = (Closure) arg;

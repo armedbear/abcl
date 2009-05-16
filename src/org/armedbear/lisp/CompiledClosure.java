@@ -33,102 +33,168 @@
 
 package org.armedbear.lisp;
 
-public class CompiledClosure extends Function
+public class CompiledClosure extends Closure
+        implements Cloneable
 {
-    private final ClosureTemplateFunction ctf;
-    private final ClosureBinding[] context;
 
-    public CompiledClosure(ClosureTemplateFunction ctf, ClosureBinding[] context)
-    {
-        super(ctf.getLambdaName(), ctf.getLambdaList());
-        this.ctf = ctf;
-        this.context = context;
-    }
+  public ClosureBinding[] ctx;
 
-    protected final LispObject[] processArgs(LispObject[] args, LispThread thread)
-        throws ConditionThrowable
-    {
-        return ctf.processArgs(args, thread);
-    }
+  public CompiledClosure(LispObject lambdaList)
+    throws ConditionThrowable
+  {
+    super(list(Symbol.LAMBDA, lambdaList), null);
+  }
 
-    @Override
-    public LispObject execute() throws ConditionThrowable
-    {
-        return ctf.execute();
-    }
+  final public CompiledClosure setContext(ClosureBinding[] context)
+  {
+    ctx = context;
+    return this;
+  }
 
-    @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
-    {
-        return ctf.execute(arg);
-    }
+  final public CompiledClosure dup()
+  {
+      CompiledClosure result = null;
+      try {
+	  result = (CompiledClosure)super.clone();
+      } catch (CloneNotSupportedException e) {
+      }
+      return result;
+  }
 
-    @Override
-    public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
-    {
-        return ctf.execute(first, second);
-    }
 
-    @Override
-    public LispObject execute(LispObject first, LispObject second,
-                              LispObject third)
-        throws ConditionThrowable
-    {
-        return ctf.execute(first, second, third);
-    }
+  private final LispObject notImplemented() throws ConditionThrowable
+  {
+    return error(new WrongNumberOfArgumentsException(this));
+  }
 
-    @Override
-    public LispObject execute(LispObject first, LispObject second,
-                              LispObject third, LispObject fourth)
-        throws ConditionThrowable
-    {
-        return ctf.execute(first, second, third, fourth);
-    }
 
-    @Override
-    public LispObject execute(LispObject first, LispObject second,
-                              LispObject third, LispObject fourth,
-                              LispObject fifth)
-        throws ConditionThrowable
-    {
-        return ctf.execute(first, second, third, fourth, fifth);
-    }
+  // Zero args.
+  public LispObject execute() throws ConditionThrowable
+  {
+    LispObject[] args = new LispObject[0];
+    return execute(args);
+  }
 
-    @Override
-    public LispObject execute(LispObject first, LispObject second,
-                              LispObject third, LispObject fourth,
-                              LispObject fifth, LispObject sixth)
-        throws ConditionThrowable
-    {
-        return ctf.execute(first, second, third, fourth, fifth, sixth);
-    }
+  // One arg.
+  public LispObject execute( LispObject first)
+    throws ConditionThrowable
+  {
+    LispObject[] args = new LispObject[1];
+    args[0] = first;
+    return execute(args);
+  }
 
-    @Override
-    public LispObject execute(LispObject first, LispObject second,
-                              LispObject third, LispObject fourth,
-                              LispObject fifth, LispObject sixth,
-                              LispObject seventh)
-        throws ConditionThrowable
-    {
-        return ctf.execute(first, second, third, fourth, fifth, sixth,
-                           seventh);
-    }
+  // Two args.
+  public LispObject execute( LispObject first,
+                            LispObject second)
+    throws ConditionThrowable
+  {
+    LispObject[] args = new LispObject[2];
+    args[0] = first;
+    args[1] = second;
+    return execute(args);
+  }
 
-    @Override
-    public LispObject execute(LispObject first, LispObject second,
-                              LispObject third, LispObject fourth,
-                              LispObject fifth, LispObject sixth,
-                              LispObject seventh, LispObject eighth)
-        throws ConditionThrowable
-    {
-        return ctf.execute(first, second, third, fourth, fifth, sixth,
-                           seventh, eighth);
-    }
+  // Three args.
+  public LispObject execute( LispObject first,
+                            LispObject second, LispObject third)
+    throws ConditionThrowable
+  {
+    LispObject[] args = new LispObject[3];
+    args[0] = first;
+    args[1] = second;
+    args[2] = third;
+    return execute(args);
+  }
 
-    @Override
-    public LispObject execute(LispObject[] args) throws ConditionThrowable
-    {
-        return ctf.execute(args);
-    }
+  // Four args.
+  public LispObject execute( LispObject first,
+                            LispObject second, LispObject third,
+                            LispObject fourth)
+    throws ConditionThrowable
+  {
+    LispObject[] args = new LispObject[4];
+    args[0] = first;
+    args[1] = second;
+    args[2] = third;
+    args[3] = fourth;
+    return execute(args);
+  }
+
+  // Five args.
+  public LispObject execute( LispObject first,
+                            LispObject second, LispObject third,
+                            LispObject fourth, LispObject fifth)
+    throws ConditionThrowable
+  {
+    LispObject[] args = new LispObject[5];
+    args[0] = first;
+    args[1] = second;
+    args[2] = third;
+    args[3] = fourth;
+    args[4] = fifth;
+    return execute(args);
+  }
+
+  // Six args.
+  public LispObject execute( LispObject first,
+                            LispObject second, LispObject third,
+                            LispObject fourth, LispObject fifth,
+                            LispObject sixth)
+    throws ConditionThrowable
+  {
+    LispObject[] args = new LispObject[6];
+    args[0] = first;
+    args[1] = second;
+    args[2] = third;
+    args[3] = fourth;
+    args[4] = fifth;
+    args[5] = sixth;
+    return execute(args);
+  }
+
+  // Seven args.
+  public LispObject execute( LispObject first,
+                            LispObject second, LispObject third,
+                            LispObject fourth, LispObject fifth,
+                            LispObject sixth, LispObject seventh)
+    throws ConditionThrowable
+  {
+    LispObject[] args = new LispObject[7];
+    args[0] = first;
+    args[1] = second;
+    args[2] = third;
+    args[3] = fourth;
+    args[4] = fifth;
+    args[5] = sixth;
+    args[6] = seventh;
+    return execute(args);
+  }
+
+  // Eight args.
+  public LispObject execute( LispObject first,
+                            LispObject second, LispObject third,
+                            LispObject fourth, LispObject fifth,
+                            LispObject sixth, LispObject seventh,
+                            LispObject eighth)
+    throws ConditionThrowable
+  {
+    LispObject[] args = new LispObject[8];
+    args[0] = first;
+    args[1] = second;
+    args[2] = third;
+    args[3] = fourth;
+    args[4] = fifth;
+    args[5] = sixth;
+    args[6] = seventh;
+    args[7] = eighth;
+    return execute(args);
+  }
+
+  // Arg array.
+  public LispObject execute(LispObject[] args)
+    throws ConditionThrowable
+  {
+    return notImplemented();
+  }
 }

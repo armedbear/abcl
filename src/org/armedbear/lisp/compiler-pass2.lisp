@@ -240,7 +240,7 @@
 (defconstant +lisp-throw-class+ "org/armedbear/lisp/Throw")
 (defconstant +lisp-return-class+ "org/armedbear/lisp/Return")
 (defconstant +lisp-go-class+ "org/armedbear/lisp/Go")
-(defconstant +lisp-ctf-class+ "org/armedbear/lisp/ClosureTemplateFunction")
+(defconstant +lisp-compiled-closure-class+ "org/armedbear/lisp/CompiledClosure")
 (defconstant +lisp-compiled-function-class+ "org/armedbear/lisp/CompiledFunction")
 (defconstant +lisp-primitive-class+ "org/armedbear/lisp/Primitive")
 (defconstant +lisp-hash-table-class+ "org/armedbear/lisp/HashTable")
@@ -1816,7 +1816,7 @@ representation, based on the derived type of the LispObject."
            (emit-constructor-lambda-name lambda-name)
            (emit-constructor-lambda-list args)
            (emit-invokespecial-init super (lisp-object-arg-types 2)))
-          ((equal super +lisp-ctf-class+)
+          ((equal super +lisp-compiled-closure-class+)
            (emit-constructor-lambda-list args)
            (emit-invokespecial-init super (lisp-object-arg-types 1)))
           (t
@@ -3036,7 +3036,7 @@ Note: DEFUN implies a named lambda."
              (emit 'getstatic *this-class* g +lisp-object+)
                                         ; Stack: template-function
              (when *closure-variables*
-               (emit 'checkcast +lisp-ctf-class+)
+               (emit 'checkcast +lisp-compiled-closure-class+)
                (duplicate-closure-array compiland)
                (emit-invokestatic +lisp-class+ "makeCompiledClosure"
                                   (list +lisp-object+ +closure-binding-array+)
@@ -4856,7 +4856,7 @@ given a specific common representation.")
     (when (compiland-closure-register parent)
       (dformat t "(compiland-closure-register parent) = ~S~%"
 	       (compiland-closure-register parent))
-      (emit 'checkcast +lisp-ctf-class+)
+      (emit 'checkcast +lisp-compiled-closure-class+)
       (duplicate-closure-array parent)
       (emit-invokestatic +lisp-class+ "makeCompiledClosure"
 			 (list +lisp-object+ +closure-binding-array+)
@@ -5016,7 +5016,7 @@ given a specific common representation.")
                                         ; Stack: template-function
 
                (when (compiland-closure-register *current-compiland*)
-                 (emit 'checkcast +lisp-ctf-class+)
+                 (emit 'checkcast +lisp-compiled-closure-class+)
                  (duplicate-closure-array *current-compiland*)
                  (emit-invokestatic +lisp-class+ "makeCompiledClosure"
                                     (list +lisp-object+ +closure-binding-array+)
@@ -8051,7 +8051,7 @@ for use with derive-type-times.")
             (emit 'anewarray +closure-binding-class+))
         (progn
           (aload 0)
-          (emit 'getfield +lisp-ctf-class+ "ctx"
+          (emit 'getfield +lisp-compiled-closure-class+ "ctx"
                 +closure-binding-array+)
           (when local-closure-vars
             ;; in all other cases, it gets stored in the register below
@@ -8215,7 +8215,7 @@ for use with derive-type-times.")
                              (pool-name (method-name execute-method)))
                        (setf (method-descriptor-index execute-method)
                              (pool-name (method-descriptor execute-method)))
-                       +lisp-ctf-class+)
+                       +lisp-compiled-closure-class+)
                      (if *hairy-arglist-p*
                          +lisp-compiled-function-class+
                          +lisp-primitive-class+)))
