@@ -8104,10 +8104,12 @@ for use with derive-type-times.")
                (compiland-name compiland)))
 
     ;; If applicable, move args from arg array to registers.
-    (when (and *using-arg-array*
-               (not (or *closure-variables* *child-p*)))
+    (when *using-arg-array*
       (dolist (variable (compiland-arg-vars compiland))
-        (unless (variable-special-p variable)
+        (unless (or (variable-special-p variable)
+                    (null (variable-index variable)) ;; not in the array anymore
+                    (< (+ (variable-reads variable)
+                          (variable-writes variable)) 2))
           (let ((register (allocate-register)))
             (aload (compiland-argument-register compiland))
             (emit-push-constant-int (variable-index variable))
@@ -8132,27 +8134,23 @@ for use with derive-type-times.")
       (label label-START)
       (dolist (variable (compiland-arg-vars compiland))
         (when (variable-special-p variable)
+          (emit-push-current-thread)
+          (emit-push-variable-name variable)
           (cond ((variable-register variable)
-                 (emit-push-current-thread)
-                 (emit-push-variable-name variable)
                  (aload (variable-register variable))
-                 (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
-                                     (list +lisp-symbol+ +lisp-object+) nil)
                  (setf (variable-register variable) nil))
                 ((variable-index variable)
-                 (emit-push-current-thread)
-                 (emit-push-variable-name variable)
                  (aload (compiland-argument-register compiland))
                  (emit-push-constant-int (variable-index variable))
                  (emit 'aaload)
-                 (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
-                                     (list +lisp-symbol+ +lisp-object+) nil)
-                 (setf (variable-index variable) nil))))))
+                 (setf (variable-index variable) nil)))
+          (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
+                              (list +lisp-symbol+ +lisp-object+) nil))))
 
     (compile-progn-body body 'stack)
 
     (when (compiland-environment-register compiland)
-      (restore-environment-and-make-handler 
+      (restore-environment-and-make-handler
        (compiland-environment-register compiland) label-START))
 
     (unless *code*
