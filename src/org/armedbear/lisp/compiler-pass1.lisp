@@ -46,11 +46,14 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun generate-inline-expansion (block-name lambda-list body)
-    (cond ((intersection lambda-list '(&optional &rest &key &allow-other-keys &aux) :test 'eq)
+    (cond ((intersection lambda-list
+                         '(&optional &rest &key &allow-other-keys &aux)
+                         :test #'eq)
            nil)
           (t
            (setf body (copy-tree body))
-           (list 'LAMBDA lambda-list (precompile-form (list* 'BLOCK block-name body) t)))))
+           (list 'LAMBDA lambda-list
+                 (precompile-form (list* 'BLOCK block-name body) t)))))
   ) ; EVAL-WHEN
 
 ;;; Pass 1.
@@ -76,11 +79,13 @@
                (let ((variable (find-variable name variables)))
                  (cond ((and variable
                              ;; see comment below (and DO-ALL-SYMBOLS.11)
-                             (eq (variable-compiland variable) *current-compiland*))
+                             (eq (variable-compiland variable)
+                                 *current-compiland*))
                         (setf (variable-special-p variable) t))
                        (t
                         (dformat t "adding free special ~S~%" name)
-                        (push (make-variable :name name :special-p t) free-specials))))))
+                        (push (make-variable :name name :special-p t)
+                              free-specials))))))
             (TYPE
              (dolist (name (cddr decl))
                (let ((variable (find-variable name variables)))
@@ -89,7 +94,8 @@
                             ;; a variable defined in its parent. For an example,
                             ;; see CREATE-GREEDY-NO-ZERO-MATCHER in cl-ppcre.
                             ;; FIXME suboptimal, since we ignore the declaration
-                            (eq (variable-compiland variable) *current-compiland*))
+                            (eq (variable-compiland variable)
+                                *current-compiland*))
                    (setf (variable-declared-type variable)
                          (make-compiler-type (cadr decl)))))))
             (t
@@ -158,7 +164,8 @@
 				  ,varspec))
 		(let* ((,name (%car ,varspec))
 		       (,initform (p1 (%cadr ,varspec)))
-		       (,var (make-variable :name (check-name ,name) :initform ,initform)))
+		       (,var (make-variable :name (check-name ,name)
+                                            :initform ,initform)))
 		  (push ,var ,variables-var)
 		  ,@body1))
 	       (t
@@ -263,7 +270,8 @@
             (process-declarations-for-vars body vars))
       (setf (block-vars block) (nreverse vars)))
     (setf body (p1-body body))
-    (setf (block-form block) (list* 'MULTIPLE-VALUE-BIND varlist values-form body))
+    (setf (block-form block)
+          (list* 'MULTIPLE-VALUE-BIND varlist values-form body))
     block))
 
 (defun p1-block (form)
@@ -690,7 +698,8 @@
            (dformat t "p1-function local function ~S~%" (cadr form))
            (let ((variable (local-function-variable local-function)))
              (when variable
-                 (dformat t "p1-function ~S used non-locally~%" (variable-name variable))
+                 (dformat t "p1-function ~S used non-locally~%"
+                          (variable-name variable))
                  (setf (variable-used-non-locally-p variable) t)))
            form)
           (t
@@ -848,7 +857,9 @@
                          (push (list sym arg) lets))
                         (t
                          (push (list 'VALUES-LIST sym) syms)
-                         (push (list sym (list 'MULTIPLE-VALUE-LIST arg)) lets))))))
+                         (push (list sym
+                                     (list 'MULTIPLE-VALUE-LIST arg))
+                               lets))))))
           (list 'LET* (nreverse lets) (list* 'THROW (nreverse syms))))
         form)))
 
@@ -880,7 +891,8 @@
                             (let ((sym (gensym)))
                               (push sym syms)
                               (push (list sym arg) lets)))))
-                   (list 'LET* (nreverse lets) (list* (car form) (nreverse syms)))))))
+                   (list 'LET* (nreverse lets)
+                         (list* (car form) (nreverse syms)))))))
         form)))
 
 (defknown p1-function-call (t) t)
@@ -903,7 +915,8 @@
                  (let ((explain *explain*))
                    (when (and explain (memq :calls explain))
                      (format t ";   inlining call to local function ~S~%" op)))
-                 (return-from p1-function-call (p1 (expand-inline form expansion))))))
+                 (return-from p1-function-call
+                   (p1 (expand-inline form expansion))))))
 
            ;; FIXME
            (dformat t "local function assumed not single-valued~%")
