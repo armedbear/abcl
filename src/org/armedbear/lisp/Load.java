@@ -352,14 +352,14 @@ public final class Load extends Lisp
     // ### *fasl-version*
     // internal symbol
     private static final Symbol _FASL_VERSION_ =
-        exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(30));
+        exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(31));
 
     // ### *fasl-anonymous-package*
     // internal symbol
     /**
      * This variable gets bound to a package with no name in which the
      * reader can intern its uninterned symbols.
-     * 
+     *
      */
     public static final Symbol _FASL_ANONYMOUS_PACKAGE_ =
         internSpecial("*FASL-ANONYMOUS-PACKAGE*", PACKAGE_SYS, NIL);
