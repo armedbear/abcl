@@ -153,14 +153,15 @@
 
 (defstruct compiland
   name
-  (kind :external) ; :INTERNAL or :EXTERNAL
+  (kind :external)  ; :INTERNAL or :EXTERNAL
   lambda-expression
-  arg-vars
-  free-specials
-  arity ; NIL if the number of args can vary.
-  p1-result
-  parent
-  (children 0 :type fixnum) ; Number of local functions defined with FLET or LABELS.
+  arg-vars          ; variables for lambda arguments
+  free-specials     ;
+  arity             ; number of args, or NIL if the number of args can vary.
+  p1-result         ; the parse tree as created in pass 1
+  parent            ; the parent for compilands which defined within another
+  (children 0       ; Number of local functions
+            :type fixnum) ; defined with with FLET, LABELS or LAMBDA
   argument-register
   closure-register
   environment-register
@@ -327,9 +328,11 @@
   name
   compiland
   inline-expansion
-  function
+  function  ;; the function loaded through load-compiled-function
   class-file
-  variable)
+  variable  ;; the variable which contains the loaded compiled function
+            ;; or compiled closure
+  )
 
 (defvar *local-functions* ())
 
