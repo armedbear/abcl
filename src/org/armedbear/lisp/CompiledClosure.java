@@ -204,4 +204,35 @@ public class CompiledClosure extends Closure
   {
     return notImplemented();
   }
+
+  // ### load-compiled-function
+  private static final Primitive LOAD_COMPILED_FUNCTION =
+      new Primitive("load-compiled-function", PACKAGE_SYS, true, "pathname")
+  {
+    @Override
+    public LispObject execute(LispObject arg) throws ConditionThrowable
+    {
+      String namestring = null;
+      if (arg instanceof Pathname)
+        namestring = ((Pathname)arg).getNamestring();
+      else if (arg instanceof AbstractString)
+        namestring = arg.getStringValue();
+      if (namestring != null)
+        return loadCompiledFunction(namestring);
+      return error(new LispError("Unable to load " + arg.writeToString()));
+    }
+  };
+
+  // ### varlist
+  private static final Primitive VARLIST =
+      new Primitive("varlist", PACKAGE_SYS, false)
+  {
+    @Override
+    public LispObject execute(LispObject arg) throws ConditionThrowable
+    {
+      if (arg instanceof Closure)
+        return ((Closure)arg).getVariableList();
+      return type_error(arg, Symbol.COMPILED_FUNCTION);
+    }
+  };
 }

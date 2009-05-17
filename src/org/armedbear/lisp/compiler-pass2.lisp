@@ -241,7 +241,6 @@
 (defconstant +lisp-return-class+ "org/armedbear/lisp/Return")
 (defconstant +lisp-go-class+ "org/armedbear/lisp/Go")
 (defconstant +lisp-compiled-closure-class+ "org/armedbear/lisp/CompiledClosure")
-(defconstant +lisp-compiled-function-class+ "org/armedbear/lisp/CompiledFunction")
 (defconstant +lisp-primitive-class+ "org/armedbear/lisp/Primitive")
 (defconstant +lisp-hash-table-class+ "org/armedbear/lisp/HashTable")
 (defconstant +lisp-eql-hash-table-class+ "org/armedbear/lisp/EqlHashTable")
@@ -1810,15 +1809,7 @@ representation, based on the derived type of the LispObject."
          (*handlers* nil))
     (setf (method-max-locals constructor) 1)
     (aload 0) ;; this
-    (cond ((equal super +lisp-compiled-function-class+)
-           (emit-constructor-lambda-name lambda-name)
-           (emit-constructor-lambda-list args)
-           (emit-push-nil) ;; body
-           (emit 'aconst_null) ;; environment
-           (emit-invokespecial-init super
-                                    (list +lisp-object+ +lisp-object+
-                                          +lisp-object+ +lisp-environment+)))
-          ((equal super +lisp-primitive-class+)
+    (cond ((equal super +lisp-primitive-class+)
            (emit-constructor-lambda-name lambda-name)
            (emit-constructor-lambda-list args)
            (emit-invokespecial-init super (lisp-object-arg-types 2)))
@@ -8207,7 +8198,7 @@ for use with derive-type-times.")
     (setf (class-file-superclass class-file)
           (cond
             ((and *child-p* *closure-variables*) +lisp-compiled-closure-class+)
-            (*hairy-arglist-p* +lisp-compiled-function-class+)
+            (*hairy-arglist-p* +lisp-compiled-closure-class+)
             (t +lisp-primitive-class+)))
 
     (setf (class-file-lambda-list class-file) args)

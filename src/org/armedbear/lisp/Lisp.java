@@ -2518,7 +2518,7 @@ public abstract class Lisp
     loadClass("org.armedbear.lisp.Primitives");
     loadClass("org.armedbear.lisp.SpecialOperators");
     loadClass("org.armedbear.lisp.Extensions");
-    loadClass("org.armedbear.lisp.CompiledFunction");
+    loadClass("org.armedbear.lisp.CompiledClosure");
     loadClass("org.armedbear.lisp.Autoload");
     loadClass("org.armedbear.lisp.AutoloadMacro");
     loadClass("org.armedbear.lisp.cxr");
