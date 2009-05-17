@@ -2193,12 +2193,15 @@ the Java object representing SYMBOL can be retrieved."
 (declaim (ftype (function (t &optional t) string) declare-object))
 (defun declare-object (obj &optional (obj-ref +lisp-object+)
                            obj-class)
+  "Stores the object OBJ in the object-lookup-table,
+loading the object value into a field upon class-creation time.
+
+The field type of the object is specified by OBJ-REF."
   (let ((key (symbol-name (gensym "OBJ"))))
     (remember key obj)
     (let* ((g1 (declare-string key))
            (g2 (symbol-name (gensym "O2BJ"))))
-      (let* (
-           (*code* *static-code*))
+      (let* ((*code* *static-code*))
       (declare-field g2 obj-ref)
       (emit 'getstatic *this-class* g1 +lisp-simple-string+)
       (emit-invokestatic +lisp-class+ "recall"
