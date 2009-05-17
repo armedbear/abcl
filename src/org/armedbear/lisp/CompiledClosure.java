@@ -61,6 +61,13 @@ public class CompiledClosure extends Closure
       return result;
   }
 
+  @Override
+  public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
+  {
+    if (typeSpecifier == Symbol.COMPILED_FUNCTION)
+      return T;
+    return super.typep(typeSpecifier);
+  }
 
   private final LispObject notImplemented() throws ConditionThrowable
   {
