@@ -8196,10 +8196,10 @@ for use with derive-type-times.")
     (setf (method-handlers execute-method) (nreverse *handlers*))
 
     (setf (class-file-superclass class-file)
-          (cond
-            ((and *child-p* *closure-variables*) +lisp-compiled-closure-class+)
-            (*hairy-arglist-p* +lisp-compiled-closure-class+)
-            (t +lisp-primitive-class+)))
+          (if (or *hairy-arglist-p*
+		  (and *child-p* *closure-variables*))
+	      +lisp-compiled-closure-class+
+	    +lisp-primitive-class+))
 
     (setf (class-file-lambda-list class-file) args)
 
