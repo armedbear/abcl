@@ -2197,7 +2197,7 @@ the Java object representing SYMBOL can be retrieved."
 loading the object value into a field upon class-creation time.
 
 The field type of the object is specified by OBJ-REF."
-  (let ((field-name (gethash1 obj *declared-objects*)))
+  (let ((field-name (gethash1 (list obj obj-ref) *declared-objects*)))
     (if field-name
         field-name
       (let ((key (symbol-name (gensym "OBJ"))))
@@ -2213,7 +2213,7 @@ The field type of the object is specified by OBJ-REF."
             (emit 'checkcast obj-class))
           (emit 'putstatic *this-class* g2 obj-ref)
           (setf *static-code* *code*)
-          (setf (gethash obj *declared-objects*) g2))))))
+          (setf (gethash (list obj obj-ref) *declared-objects*) g2))))))
 
 (defun declare-lambda (obj)
   (let* ((g (symbol-name (gensym "LAMBDA")))

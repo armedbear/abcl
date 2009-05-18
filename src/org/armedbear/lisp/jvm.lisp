@@ -107,7 +107,7 @@
   (integers (make-hash-table :test 'eql))
   (floats (make-hash-table :test 'eql))
   (doubles (make-hash-table :test 'eql))
-  (objects (make-hash-table :test 'eq)))
+  (objects (make-hash-table :test 'equal)))
 
 (defun class-name-from-filespec (filespec)
   (let* ((name (pathname-name filespec)))
