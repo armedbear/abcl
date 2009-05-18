@@ -31,11 +31,12 @@
 (defpackage :abcl-script
   (:use :cl :java)
   (:export 
-   #:eval-script
    #:compile-script
    #:*compile-using-temp-files*
    #:configure-abcl
    #:eval-compiled-script
+   #:eval-function
+   #:eval-script
    #:define-java-interface-implementation
    #:find-java-interface-implementation
    #:*launch-swank-at-startup*

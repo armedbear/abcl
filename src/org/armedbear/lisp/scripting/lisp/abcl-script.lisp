@@ -92,6 +92,11 @@
 		       ,actual-engine-bindings
 		       (jcall +get-bindings+ ,script-context +engine-scope+)))))))))
   
+(defun eval-function (global-bindings engine-bindings stdin stdout function-and-args script-context)
+  (eval-in-script-context (global-bindings engine-bindings stdin stdout script-context)
+    `((funcall ,@(mapcar (lambda (arg) `(quote ,arg))
+			 function-and-args)))))
+
 (defun eval-script (global-bindings engine-bindings stdin stdout
 		    code-string script-context)
   (eval-in-script-context (global-bindings engine-bindings stdin stdout script-context)

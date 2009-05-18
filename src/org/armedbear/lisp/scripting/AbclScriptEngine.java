@@ -39,8 +39,21 @@ import org.armedbear.lisp.scripting.util.WriterOutputStream;
 public class AbclScriptEngine extends AbstractScriptEngine implements Invocable, Compilable {
 
     private Interpreter interpreter;
+    /**
+     * The function used to evaluate a string of code.
+     */
     private Function evalScript;
+    /**
+     * The function used to evaluate a Lisp function.
+     */
+    private Function evalFunction;
+    /**
+     * The function used to compile Lisp code.
+     */
     private Function compileScript;
+    /**
+     * The function used to evaluate a compiled script.
+     */
     private Function evalCompiledScript;
 
     protected AbclScriptEngine() {
@@ -61,6 +74,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	    evalScript = (Function) this.findSymbol("EVAL-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
 	    compileScript = (Function) this.findSymbol("COMPILE-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
 	    evalCompiledScript = (Function) this.findSymbol("EVAL-COMPILED-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
+	    evalFunction = (Function) this.findSymbol("EVAL-FUNCTION", "ABCL-SCRIPT").getSymbolFunction();
 	} catch (ConditionThrowable e) {
 	    throw new RuntimeException(e);
 	}
@@ -218,11 +232,6 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		return Symbol.LIST.getSymbolFunction().execute(argList);
 	}
 
-	@Override
-	public ScriptContext getContext() {
-		return super.getContext();
-	}
-
     private Object eval(Function evaluator, LispObject code, ScriptContext ctx) throws ScriptException {
 	ReaderInputStream in = null;
 	WriterOutputStream out = null;
@@ -232,12 +241,11 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	    out = new WriterOutputStream(ctx.getWriter());
 	    Stream outStream = new Stream(out, Symbol.CHARACTER);
 	    Stream inStream  = new Stream(in,  Symbol.CHARACTER);
-
 	    retVal = evaluator.execute(makeBindings(ctx.getBindings(ScriptContext.GLOBAL_SCOPE)),
 				       makeBindings(ctx.getBindings(ScriptContext.ENGINE_SCOPE)),
 				       inStream, outStream,
 				       code, new JavaObject(ctx));
-	    return toJava(retVal);
+	    return retVal.javaInstance();
 	} catch (ConditionThrowable e) {
 	    throw new ScriptException(new Exception(e));
 	} catch (IOException e) {
@@ -273,10 +281,6 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	@Override
 	public ScriptEngineFactory getFactory() {
 		return new AbclScriptEngineFactory();
-	}
-
-	private static Object toJava(LispObject lispObject) throws ConditionThrowable {
-		return lispObject.javaInstance();
 	}
 	
 	public static LispObject toLisp(Object javaObject) {
@@ -341,79 +345,59 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		}
 	}	
 	
-	@Override
-	public Object invokeFunction(String name, Object... args) throws ScriptException, NoSuchMethodException {
-	    try {
-		Symbol s;
-		if(name.indexOf(':') >= 0) {
-		    s = findSymbol(name);
-		} else {
-		    s = findSymbol(name, "ABCL-SCRIPT-USER");
-		}
-		if(s != null) {
-		    LispObject f = s.getSymbolFunction();
-		    if(f != null && f instanceof Function) {
-			LispObject[] wrappedArgs = new LispObject[args.length];
-			for(int i = 0; i < args.length; ++i) {
-			    wrappedArgs[i] = toLisp(args[i]);
-			}
-			switch(args.length) {
-			case 0:
-			    return LispThread.currentThread().execute(f);
-			case 1:
-			    return LispThread.currentThread().execute(f, wrappedArgs[0]);
-			case 2:
-			    return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1]);
-			case 3:
-			    return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2]);							
-			case 4:
-			    return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2], wrappedArgs[3]);
-			case 5:
-			    return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2], wrappedArgs[3], wrappedArgs[4]);
-			case 6:
-			    return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2], wrappedArgs[3], wrappedArgs[4], wrappedArgs[5]);
-			case 7:
-			    return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2], wrappedArgs[3], wrappedArgs[4], wrappedArgs[5], wrappedArgs[6]);
-			case 8:
-			    return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2], wrappedArgs[3], wrappedArgs[4], wrappedArgs[5], wrappedArgs[6], wrappedArgs[7]);
-			default:
-			    return LispThread.currentThread().execute(f, wrappedArgs);
-			} 
-		    } else {
-			throw new NoSuchMethodException(name);
+    @Override
+    public Object invokeFunction(String name, Object... args) throws ScriptException, NoSuchMethodException {
+	try {
+	    Symbol s;
+	    if(name.indexOf(':') >= 0) {
+		s = findSymbol(name);
+	    } else {
+		s = findSymbol(name, "ABCL-SCRIPT-USER");
+	    }
+	    if(s != null) {
+		LispObject f = s.getSymbolFunction();
+		if(f != null && f instanceof Function) {
+		    LispObject functionAndArgs = Lisp.NIL.push(f);
+		    for(int i = 0; i < args.length; ++i) {
+			functionAndArgs = functionAndArgs.push(toLisp(args[i]));
 		    }
+		    functionAndArgs = functionAndArgs.reverse();
+		    return eval(evalFunction, functionAndArgs, getContext());
 		} else {
 		    throw new NoSuchMethodException(name);
 		}
-	    } catch (ConditionThrowable e) {
-		throw new ScriptException(new RuntimeException(e));
+	    } else {
+		throw new NoSuchMethodException(name);
 	    }
+	} catch (ConditionThrowable e) {
+	    throw new ScriptException(new RuntimeException(e));
 	}
+    }
 
+    @Override
+    public Object invokeMethod(Object thiz, String name, Object... args) throws ScriptException, NoSuchMethodException {
+	throw new UnsupportedOperationException("Common Lisp does not have methods in the Java sense.");
+    }
+
+    public class AbclCompiledScript extends CompiledScript {
+
+	private LispObject function;
+	
+	public AbclCompiledScript(LispObject function) {
+	    this.function = function;
+	}
+	
 	@Override
-	public Object invokeMethod(Object thiz, String name, Object... args) throws ScriptException, NoSuchMethodException {
-		throw new UnsupportedOperationException("Common Lisp does not have methods in the Java sense.");
+	public Object eval(ScriptContext context) throws ScriptException {
+	    return AbclScriptEngine.this.eval(evalCompiledScript, function, context);
 	}
-
-	public class AbclCompiledScript extends CompiledScript {
-
-		private LispObject function;
-		
-		public AbclCompiledScript(LispObject function) {
-			this.function = function;
-		}
-		
-		@Override
-		public Object eval(ScriptContext context) throws ScriptException {
-			return AbclScriptEngine.this.eval(evalCompiledScript, function, context);
-		}
-
-		@Override
-		public ScriptEngine getEngine() {
-			return AbclScriptEngine.this;
-		}
-
+	
+	@Override
+	public ScriptEngine getEngine() {
+	    return AbclScriptEngine.this;
 	}
+	
+    }
 
 	
 	@Override
