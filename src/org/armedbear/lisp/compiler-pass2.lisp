@@ -2197,23 +2197,20 @@ the Java object representing SYMBOL can be retrieved."
 loading the object value into a field upon class-creation time.
 
 The field type of the object is specified by OBJ-REF."
-  (let ((field-name (gethash1 (list obj obj-ref) *declared-objects*)))
-    (if field-name
-        field-name
-      (let ((key (symbol-name (gensym "OBJ"))))
-        (remember key obj)
-        (let* ((g1 (declare-string key))
-               (g2 (symbol-name (gensym "O2BJ")))
-               (*code* *static-code*))
-          (declare-field g2 obj-ref)
-          (emit 'getstatic *this-class* g1 +lisp-simple-string+)
-          (emit-invokestatic +lisp-class+ "recall"
-                             (list +lisp-simple-string+) +lisp-object+)
-          (when (and obj-class (string/= obj-class +lisp-object-class+))
-            (emit 'checkcast obj-class))
-          (emit 'putstatic *this-class* g2 obj-ref)
-          (setf *static-code* *code*)
-          (setf (gethash (list obj obj-ref) *declared-objects*) g2))))))
+  (let ((key (symbol-name (gensym "OBJ"))))
+    (remember key obj)
+    (let* ((g1 (declare-string key))
+           (g2 (symbol-name (gensym "O2BJ"))))
+      (let* ((*code* *static-code*))
+      (declare-field g2 obj-ref)
+      (emit 'getstatic *this-class* g1 +lisp-simple-string+)
+      (emit-invokestatic +lisp-class+ "recall"
+                         (list +lisp-simple-string+) +lisp-object+)
+      (when (and obj-class (string/= obj-class +lisp-object-class+))
+        (emit 'checkcast obj-class))
+      (emit 'putstatic *this-class* g2 obj-ref)
+      (setf *static-code* *code*)
+      g2))))
 
 (defun declare-lambda (obj)
   (let* ((g (symbol-name (gensym "LAMBDA")))
