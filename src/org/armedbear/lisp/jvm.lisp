@@ -208,16 +208,22 @@
 (defvar *handlers* ())
 
 (defstruct handler
-  from
-  to
-  code
-  catch-type)
+  from       ;; label indicating the start of the protected block
+  to         ;; label indicating the end of the protected block
+  code       ;; label to jump to if the specified exception occurs
+  catch-type ;; pool index of the class name of the exception, or 0 (zero)
+             ;; for 'all'
+  )
 
 ;; Variables visible at the current point of compilation.
-(defvar *visible-variables* nil)
+(defvar *visible-variables* nil
+  "All variables visible to the form currently being
+processed, including free specials.")
 
 ;; All variables seen so far.
-(defvar *all-variables* nil)
+(defvar *all-variables* nil
+  "All variables in the lexical scope (thus excluding free specials)
+of the compilands being processed (p1: so far; p2: in total).")
 
 ;; Undefined variables that we've already warned about.
 (defvar *undefined-variables* nil)
