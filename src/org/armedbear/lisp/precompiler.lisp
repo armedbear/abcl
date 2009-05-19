@@ -341,6 +341,18 @@
 
 (in-package "PRECOMPILER")
 
+;; No source-transforms and inlining in precompile-function-call
+;; No macro expansion in precompile-dolist and precompile-dotimes
+;; No macro expansion in precompile-do/do*
+;; No macro expansion in precompile-defun
+;; Special precompilation in precompile-case and precompile-cond
+;; Special precompilation in precompile-when and precompile-unless
+;; No precompilation in precompile-nth-value
+;; Special precompilation in precompile-return
+;; Special precompilation in expand-macro
+;;
+;; if *in-jvm-compile* is false
+
 (defvar *in-jvm-compile* nil)
 
 (defvar *local-variables* nil)
