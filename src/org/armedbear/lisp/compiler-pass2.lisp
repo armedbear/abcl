@@ -8350,16 +8350,6 @@ for use with derive-type-times.")
                   (format *error-output* ";     ~S~%" name))))
             (terpri *error-output*))))))
 
-(defun set-function-definition (name new old)
-  (let ((*warn-on-redefinition* nil))
-    (sys::%set-lambda-name new name)
-    (sys:set-call-count new (sys:call-count old))
-    (sys::%set-arglist new (sys::arglist old))
-    (when (macro-function name)
-      (setf new (make-macro name new)))
-    (if (typep old 'standard-generic-function)
-        (mop:set-funcallable-instance-function old new)
-        (setf (fdefinition name) new))))
 
 (defun %jvm-compile (name definition expr env)
   (let* (compiled-function
@@ -8375,6 +8365,18 @@ for use with derive-type-times.")
       (set-function-definition name compiled-function definition))
     (or name compiled-function)))
 
+
+(defvar *file-compilation* nil)
+(defvar *pathnames-generator* #'make-temp-file)
+
+(defun compile (name &optional definition)
+  (jvm-compile name definition))
+
+(defmacro with-file-compilation (&body body)
+  `(let ((*file-compilation* t)
+         (*pathnames-generator* #'sys::next-classfile-name))
+     ,@body))
+
 (defun jvm-compile (name &optional definition)
   (unless definition
     (resolve name) ;; Make sure the symbol has been resolved by the autoloader
@@ -8386,6 +8388,10 @@ for use with derive-type-times.")
         (failure-p nil)
         (*package* (or (and name (symbol-package name)) *package*))
         (expression definition)
+        (*file-compilation* nil)
+        (*visible-variables* nil)
+        (*pathnames-generator* #'make-temp-file)
+        (sys::*fasl-anonymous-package* (sys::%make-package))
         environment)
     (unless (and (consp definition) (eq (car definition) 'LAMBDA))
       (when (typep definition 'standard-generic-function)
@@ -8404,7 +8410,7 @@ for use with derive-type-times.")
                 (sys::%format t "; Unable to compile ~S.~%"
                               (or name "top-level form"))
                 (return-from jvm-compile
-                  (precompiler::precompile name definition))))
+                  (precompiler::precompile name definition)))))
          (style-warning
           #'(lambda (c) (declare (ignore c))
               (setf warnings-p t) nil))

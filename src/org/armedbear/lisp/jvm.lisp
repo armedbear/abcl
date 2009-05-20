@@ -481,20 +481,6 @@ That's the one which contains the environment used in the outermost block."
                 (t
                  (setf (variable-ignorable-p variable) t))))))))
 
-(defvar *file-compilation* nil)
-(defvar *pathnames-generator* #'make-temp-file)
-
-(defun compile (name &optional definition)
-  (let ((*file-compilation* nil)
-        (*pathnames-generator* #'make-temp-file)
-        (sys::*fasl-anonymous-package* (sys::%make-package)))
-    (jvm-compile name definition)))
-
-(defmacro with-file-compilation (&body body)
-  `(let ((*file-compilation* t)
-         (*pathnames-generator* #'sys::next-classfile-name))
-     ,@body))
-
 (defun finalize-generic-functions ()
   (dolist (sym '(make-instance
                  initialize-instance

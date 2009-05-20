@@ -1019,6 +1019,17 @@ of the form being preprocessed.")
                        (eval (cadr binding))) bindings)
       (macroexpand-all `(progn ,@forms) env))))
 
+(defun set-function-definition (name new old)
+  (let ((*warn-on-redefinition* nil))
+    (sys::%set-lambda-name new name)
+    (sys:set-call-count new (sys:call-count old))
+    (sys::%set-arglist new (sys::arglist old))
+    (when (macro-function name)
+      (setf new (make-macro name new)))
+    (if (typep old 'standard-generic-function)
+        (mop:set-funcallable-instance-function old new)
+        (setf (fdefinition name) new))))
+
 (defun precompile (name &optional definition)
   (unless definition
     (setq definition (or (and (symbolp name) (macro-function name))
