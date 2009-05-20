@@ -174,7 +174,7 @@
 (autoload 'dribble)
 (autoload-macro 'step)
 (autoload 'load)
-(autoload 'compile "jvm")
+(autoload '(compile with-file-compilation) "compiler-pass2")
 (autoload-macro 'with-compilation-unit "jvm")
 
 (autoload-macro '(case ccase ecase typecase ctypecase etypecase) "case")
@@ -308,5 +308,5 @@
 
 ;; JVM compiler.
 (in-package "JVM")
-(export '(jvm-compile jvm-compile-package))
+(export '(jvm-compile-package))
 (autoload '%with-compilation-unit "jvm")
