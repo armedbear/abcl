@@ -231,7 +231,6 @@
                            "restart.lisp"
                            "revappend.lisp"
                            "rotatef.lisp"
-                           "rt.lisp"
                            ;;"run-benchmarks.lisp"
                            "run-shell-command.lisp"
                            ;;"runtime-class.lisp"
