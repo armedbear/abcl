@@ -8403,8 +8403,8 @@ for use with derive-type-times.")
                 (sys::%format t "; UNSUPPORTED FEATURE: ~A~%" c)
                 (sys::%format t "; Unable to compile ~S.~%"
                               (or name "top-level form"))
-                (precompiler::precompile name definition)
-                t)))
+                (return-from jvm-compile
+                  (precompiler::precompile name definition))))
          (style-warning
           #'(lambda (c) (declare (ignore c))
               (setf warnings-p t) nil))
