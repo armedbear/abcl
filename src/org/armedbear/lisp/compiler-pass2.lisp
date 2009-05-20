@@ -8350,79 +8350,70 @@ for use with derive-type-times.")
                   (format *error-output* ";     ~S~%" name))))
             (terpri *error-output*))))))
 
-(defun get-lambda-to-compile (thing)
-  (if (and (consp thing)
-           (eq (%car thing) 'LAMBDA))
-      thing
-      (multiple-value-bind (lambda-expression environment)
-          (function-lambda-expression (if (typep thing 'standard-generic-function)
-                                          (mop::funcallable-instance-function thing)
-                                          thing))
-        (unless lambda-expression
-          (error "Can't find a definition for ~S." thing))
-        (values lambda-expression environment))))
-
-(defun %jvm-compile (name definition)
-  (unless definition
-    (resolve name)
-    (setf definition (fdefinition name)))
-  (when (compiled-function-p definition)
-    (return-from %jvm-compile (values name nil nil)))
-  (multiple-value-bind (expr env)
-      (get-lambda-to-compile definition)
-    (let* ((*package* (if (and name (symbol-package name))
-                          (symbol-package name)
-                          *package*))
-           compiled-function
-           (warnings-p nil)
-           (failure-p nil))
-      (with-compilation-unit ()
-        (with-saved-compiler-policy
-          (let* ((tempfile (make-temp-file)))
-            (unwind-protect
-                 (setf compiled-function
-                       (load-compiled-function
-                        (handler-bind ((style-warning
-                                        #'(lambda (c)
-                                            (declare (ignore c))
-                                            (setf warnings-p t)
-                                            nil))
-                                       ((or warning
-                                            compiler-error)
-                                        #'(lambda (c)
-                                            (declare (ignore c))
-                                            (setf warnings-p t
-                                                  failure-p t)
-                                            nil)))
-                          (compile-defun name expr env tempfile))))
-              (delete-file tempfile))))
-        (when (and name (functionp compiled-function))
-          (sys::%set-lambda-name compiled-function name)
-          (sys:set-call-count compiled-function (sys:call-count definition))
-          (sys::%set-arglist compiled-function (sys::arglist definition))
-          (let ((*warn-on-redefinition* nil))
-            (cond ((typep definition 'standard-generic-function)
-                   (mop:set-funcallable-instance-function definition compiled-function))
-                  (t
-                   (setf (fdefinition name)
-                         (if (macro-function name)
-                             (make-macro name compiled-function)
-                             compiled-function)))))))
-      (values (or name compiled-function) warnings-p failure-p))))
+(defun %jvm-compile (name definition expr env)
+  (let* (compiled-function
+         (tempfile (make-temp-file)))
+    (with-compilation-unit ()
+      (with-saved-compiler-policy
+        (unwind-protect
+             (setf compiled-function
+                   (load-compiled-function
+                    (compile-defun name expr env tempfile))))
+        (delete-file tempfile)))
+    (when (and name (functionp compiled-function))
+      (sys::%set-lambda-name compiled-function name)
+      (sys:set-call-count compiled-function (sys:call-count definition))
+      (sys::%set-arglist compiled-function (sys::arglist definition))
+      (let ((*warn-on-redefinition* nil))
+        (cond ((typep definition 'standard-generic-function)
+               (mop:set-funcallable-instance-function definition compiled-function))
+              (t
+               (setf (fdefinition name)
+                     (if (macro-function name)
+                         (make-macro name compiled-function)
+                         compiled-function))))))
+    (or name compiled-function)))
 
 (defun jvm-compile (name &optional definition)
-  (if *catch-errors*
-      (handler-case
-          (%jvm-compile name definition)
-        (compiler-unsupported-feature-error
-         (c)
-         (fresh-line)
-         (sys::%format t "; UNSUPPORTED FEATURE: ~A~%" c)
-         (if name
-             (sys::%format t "; Unable to compile ~S.~%" name)
-             (sys::%format t "; Unable to compile top-level form.~%"))
-         (precompiler::precompile name definition)))
-      (%jvm-compile name definition)))
+  (unless definition
+    (resolve name) ;; Make sure the symbol has been resolved by the autoloader
+    (setf definition (fdefinition name)))
+  (when (compiled-function-p definition)
+    (return-from jvm-compile (values name nil nil)))
+  (let ((catch-errors *catch-errors*)
+        (warnings-p nil)
+        (failure-p nil)
+        (*package* (or (and name (symbol-package name)) *package*))
+        (expression definition)
+        environment)
+    (unless (and (consp definition) (eq (car definition) 'LAMBDA))
+      (when (typep definition 'standard-generic-function)
+        (setf definition (mop::funcallable-instance-function definition)))
+      (multiple-value-setq
+          (expression environment)
+        (function-lambda-expression definition)))
+    (unless expression
+      (error "Can't find a definition for ~S." definition))
+    (handler-bind
+        ((compiler-unsupported-feature-error
+          #'(lambda (c)
+              (when catch-errors
+                (fresh-line)
+                (sys::%format t "; UNSUPPORTED FEATURE: ~A~%" c)
+                (sys::%format t "; Unable to compile ~S.~%"
+                              (or name "top-level form"))
+                (precompiler::precompile name definition)
+                t)))
+         (style-warning
+          #'(lambda (c) (declare (ignore c))
+              (setf warnings-p t) nil))
+         ((or warning compiler-error)
+          #'(lambda (c) (declare (ignore c))
+              (setf warnings-p t
+                    failure-p t)
+              nil)))
+      (values (%jvm-compile name definition expression environment)
+              warnings-p failure-p))))
 
 (defun jvm-compile-package (package-designator)
   (let ((pkg (if (packagep package-designator)
@@ -8431,11 +8422,7 @@ for use with derive-type-times.")
       (dolist (sym (sys::package-symbols pkg))
         (when (fboundp sym)
           (unless (or (special-operator-p sym) (macro-function sym))
-            ;; Force autoload to be resolved.
-            (resolve sym)
-            (let ((f (fdefinition sym)))
-              (unless (compiled-function-p f)
-                (jvm-compile sym)))))))
+            (jvm-compile sym)))))
   t)
 
 (defun initialize-p2-handlers ()
