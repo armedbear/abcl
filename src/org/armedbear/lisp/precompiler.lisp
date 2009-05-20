@@ -355,7 +355,9 @@
 
 (defvar *in-jvm-compile* nil)
 
-(defvar *local-variables* nil)
+(defvar *local-variables* nil
+  "An alist with all local variables visible in the context
+of the form being preprocessed.")
 
 (declaim (ftype (function (t) t) find-varspec))
 (defun find-varspec (sym)
