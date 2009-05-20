@@ -8383,11 +8383,12 @@ for use with derive-type-times.")
         (sys::*fasl-anonymous-package* (sys::%make-package))
         environment)
     (unless (and (consp definition) (eq (car definition) 'LAMBDA))
-      (when (typep definition 'standard-generic-function)
-        (setf definition (mop::funcallable-instance-function definition)))
-      (multiple-value-setq
-          (expression environment)
-        (function-lambda-expression definition)))
+      (let ((function definition))
+        (when (typep definition 'standard-generic-function)
+          (setf function (mop::funcallable-instance-function function)))
+        (multiple-value-setq
+            (expression environment)
+          (function-lambda-expression function))))
     (unless expression
       (error "Can't find a definition for ~S." definition))
     (handler-bind
@@ -8408,7 +8409,7 @@ for use with derive-type-times.")
               (setf warnings-p t
                     failure-p t)
               nil)))
-      (values (%jvm-compile name definition expression environment)
+      (values (%jvm-compile name org-definition expression environment)
               warnings-p failure-p))))
 
 (defvar *file-compilation* nil)
