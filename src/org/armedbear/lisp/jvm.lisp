@@ -31,7 +31,7 @@
 
 (in-package "JVM")
 
-(export '(compile-defun *catch-errors* jvm-compile jvm-compile-package
+(export '(compile-defun *catch-errors* jvm-compile-package
           derive-compiler-type))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
