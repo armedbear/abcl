@@ -8409,7 +8409,7 @@ for use with derive-type-times.")
               (setf warnings-p t
                     failure-p t)
               nil)))
-      (values (%jvm-compile name org-definition expression environment)
+      (values (%jvm-compile name definition expression environment)
               warnings-p failure-p))))
 
 (defvar *file-compilation* nil)
