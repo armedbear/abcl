@@ -8362,20 +8362,9 @@ for use with derive-type-times.")
                     (compile-defun name expr env tempfile))))
         (delete-file tempfile)))
     (when (and name (functionp compiled-function))
-      (set-function-definition name compiled-function definition))
+      (sys::set-function-definition name compiled-function definition))
     (or name compiled-function)))
 
-
-(defvar *file-compilation* nil)
-(defvar *pathnames-generator* #'make-temp-file)
-
-(defun compile (name &optional definition)
-  (jvm-compile name definition))
-
-(defmacro with-file-compilation (&body body)
-  `(let ((*file-compilation* t)
-         (*pathnames-generator* #'sys::next-classfile-name))
-     ,@body))
 
 (defun jvm-compile (name &optional definition)
   (unless definition
@@ -8421,6 +8410,19 @@ for use with derive-type-times.")
               nil)))
       (values (%jvm-compile name definition expression environment)
               warnings-p failure-p))))
+
+(defvar *file-compilation* nil)
+(defvar *pathnames-generator* #'make-temp-file)
+
+(defun compile (name &optional definition)
+  (jvm-compile name definition))
+
+(defmacro with-file-compilation (&body body)
+  `(let ((*file-compilation* t)
+         (*pathnames-generator* #'sys::next-classfile-name))
+     ,@body))
+
+
 
 (defun jvm-compile-package (package-designator)
   (let ((pkg (if (packagep package-designator)
