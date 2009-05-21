@@ -301,7 +301,7 @@ public final class Environment extends LispObject
         return first;
       }
     };
-    
+
   // ### empty-environment-p
   private static final Primitive EMPTY_ENVIRONMENT_P =
     new Primitive("empty-environment-p", PACKAGE_SYS, true, "environment")
