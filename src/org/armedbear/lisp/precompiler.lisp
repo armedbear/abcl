@@ -256,7 +256,7 @@
              (eq (%car callee) 'function)
              (symbolp (cadr callee))
              (not (special-operator-p (cadr callee)))
-             (not (macro-function (cadr callee) sys:*compile-file-environment*))
+             (not (macro-function (cadr callee) *compile-file-environment*))
              (memq (symbol-package (cadr callee))
                    (list (find-package "CL") (find-package "SYS"))))
         `(,(cadr callee) ,@(cdr args))
@@ -355,29 +355,15 @@
 
 (defvar *in-jvm-compile* nil)
 
-(defvar *local-variables* nil
-  "An alist with all local variables visible in the context
-of the form being preprocessed.")
-
-(declaim (ftype (function (t) t) find-varspec))
-(defun find-varspec (sym)
-  (dolist (varspec *local-variables*)
-    (when (eq sym (car varspec))
-      (return varspec))))
-
 (declaim (ftype (function (t) t) precompile1))
 (defun precompile1 (form)
   (cond ((symbolp form)
-         (let ((varspec (find-varspec form)))
-           (cond ((and varspec (eq (second varspec) :symbol-macro))
-                  (precompile1 (copy-tree (third varspec))))
-                 ((null varspec)
-                  (let ((expansion (expand-macro form)))
-                    (if (eq expansion form)
-                        form
-                        (precompile1 expansion))))
-                 (t
-                  form))))
+         (multiple-value-bind
+               (expansion expanded)
+             (expand-macro form)
+           (if expanded
+               (precompile1 expansion)
+               form)))
         ((atom form)
          form)
         (t
@@ -517,9 +503,12 @@ of the form being preprocessed.")
 			(cddr form)))
 	   (precompile1 (expand-macro form)))
 	  ((symbolp place)
-           (let ((varspec (find-varspec place)))
-             (if (and varspec (eq (second varspec) :symbol-macro))
-                 (precompile1 (list* 'SETF (copy-tree (third varspec)) (cddr form)))
+           (multiple-value-bind
+                 (expansion expanded)
+               (expand-macro place)
+             (if expanded
+                 (precompile1 (list* 'SETF expansion
+                                     (cddr form)))
                  (precompile1 (expand-macro form)))))
           (t
            (precompile1 (expand-macro form))))))
@@ -532,11 +521,14 @@ of the form being preprocessed.")
              :format-control "Odd number of arguments to SETQ."))
     (if (= len 2)
         (let* ((sym (%car args))
-               (val (%cadr args))
-               (varspec (find-varspec sym)))
-          (if (and varspec (eq (second varspec) :symbol-macro))
-              (precompile1 (list 'SETF (copy-tree (third varspec)) val))
-              (list 'SETQ sym (precompile1 val))))
+               (val (%cadr args)))
+          (multiple-value-bind
+                (expansion expanded)
+              (expand-macro sym)
+            (if expanded
+                (precompile1 (list 'SETF expansion val))
+                (list 'SETQ sym (precompile1 val))
+                )))
         (let ((result ()))
           (loop
             (when (null args)
@@ -628,8 +620,7 @@ of the form being preprocessed.")
       `(locally ,@decls ,@(mapcar #'precompile1 body)))))
 
 (defun precompile-symbol-macrolet (form)
-  (let ((*local-variables* *local-variables*)
-        (*compile-file-environment*
+  (let ((*compile-file-environment*
          (make-environment *compile-file-environment*))
         (defs (cadr form)))
     (dolist (def defs)
@@ -639,7 +630,6 @@ of the form being preprocessed.")
           (error 'program-error
                  :format-control "Attempt to bind the special variable ~S with SYMBOL-MACROLET."
                  :format-arguments (list sym)))
-        (push (list sym :symbol-macro expansion) *local-variables*)
         (environment-add-symbol-binding *compile-file-environment*
                                         sym
                                         (sys::make-symbol-macro expansion))
@@ -688,14 +678,18 @@ of the form being preprocessed.")
                         :format-control "The variable ~S is not a symbol."
                         :format-arguments (list v)))
                (push (list v (precompile1 expr)) result)
-               (push (list v :variable) *local-variables*)))
+               (environment-add-symbol-binding *compile-file-environment*
+                                               v nil))) ;; any value will do
             (t
              (push var result)
-             (push (list var :variable) *local-variables*))))
+             (environment-add-symbol-binding *compile-file-environment*
+                                             var nil)
+)))
     (nreverse result)))
 
 (defun precompile-let (form)
-  (let ((*local-variables* *local-variables*))
+  (let ((*compile-file-environment*
+         (make-environment *compile-file-environment*)))
     (list* 'LET
            (precompile-let/let*-vars (cadr form))
            (mapcar #'precompile1 (cddr form)))))
@@ -712,7 +706,8 @@ of the form being preprocessed.")
 
 (defun precompile-let* (form)
   (setf form (maybe-fold-let* form))
-  (let ((*local-variables* *local-variables*))
+  (let ((*compile-file-environment*
+         (make-environment *compile-file-environment*)))
     (list* 'LET*
            (precompile-let/let*-vars (cadr form))
            (mapcar #'precompile1 (cddr form)))))
@@ -856,9 +851,11 @@ of the form being preprocessed.")
   (let ((vars (cadr form))
         (values-form (caddr form))
         (body (cdddr form))
-        (*local-variables* *local-variables*))
+        (*compile-file-environment*
+         (make-environment *compile-file-environment*))
+)
     (dolist (var vars)
-      (push (list var :variable) *local-variables*))
+      (environment-add-symbol-binding *compile-file-environment* var nil))
     (list* 'MULTIPLE-VALUE-BIND
            vars
            (precompile1 values-form)
@@ -914,17 +911,19 @@ of the form being preprocessed.")
 ;; is false and a macro is encountered that is also implemented as a special
 ;; operator, so interpreted code can use the special operator implementation.
 (defun expand-macro (form)
-  (loop
-    (unless *in-jvm-compile*
-      (when (and (consp form)
-                 (symbolp (%car form))
-                 (special-operator-p (%car form)))
-        (return-from expand-macro form)))
-    (multiple-value-bind (result expanded)
-        (macroexpand-1 form *compile-file-environment*)
-      (unless expanded
-        (return-from expand-macro result))
-      (setf form result))))
+  (let (exp)
+    (loop
+       (unless *in-jvm-compile*
+         (when (and (consp form)
+                    (symbolp (%car form))
+                    (special-operator-p (%car form)))
+           (return-from expand-macro form)))
+       (multiple-value-bind (result expanded)
+           (macroexpand-1 form *compile-file-environment*)
+         (unless expanded
+           (return-from expand-macro (values result exp)))
+         (setf form result
+               exp t)))))
 
 (declaim (ftype (function (t t) t) precompile-form))
 (defun precompile-form (form in-jvm-compile)
