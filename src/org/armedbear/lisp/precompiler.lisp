@@ -628,12 +628,12 @@
             (expansion (cadr def)))
         (when (special-variable-p sym)
           (error 'program-error
-                 :format-control "Attempt to bind the special variable ~S with SYMBOL-MACROLET."
+                 :format-control
+                 "Attempt to bind the special variable ~S with SYMBOL-MACROLET."
                  :format-arguments (list sym)))
         (environment-add-symbol-binding *compile-file-environment*
                                         sym
-                                        (sys::make-symbol-macro expansion))
-        ))
+                                        (sys::make-symbol-macro expansion))))
     (multiple-value-bind (body decls)
         (parse-body (cddr form) nil)
       (when decls
@@ -648,7 +648,8 @@
               (dolist (special specials)
                 (when (memq special syms)
                   (error 'program-error
-                         :format-control "~S is a symbol-macro and may not be declared special."
+                         :format-control
+                         "~S is a symbol-macro and may not be declared special."
                          :format-arguments (list special))))))))
       `(locally ,@decls ,@(mapcar #'precompile1 body)))))
 
@@ -683,8 +684,7 @@
             (t
              (push var result)
              (environment-add-symbol-binding *compile-file-environment*
-                                             var nil)
-)))
+                                             var nil))))
     (nreverse result)))
 
 (defun precompile-let (form)
@@ -791,7 +791,8 @@
                              (setf used-p t)
                              (return))))))))
         (unless used-p
-          (format t "; Note: deleting unused local function ~A ~S~%" operator name)
+          (format t "; Note: deleting unused local function ~A ~S~%"
+                  operator name)
           (let* ((new-locals (remove local locals :test 'eq))
                  (new-form
                   (if new-locals
@@ -852,8 +853,7 @@
         (values-form (caddr form))
         (body (cdddr form))
         (*compile-file-environment*
-         (make-environment *compile-file-environment*))
-)
+         (make-environment *compile-file-environment*)))
     (dolist (var vars)
       (environment-add-symbol-binding *compile-file-environment* var nil))
     (list* 'MULTIPLE-VALUE-BIND
@@ -934,7 +934,8 @@
 (defun install-handler (symbol &optional handler)
   (declare (type symbol symbol))
   (let ((handler (or handler
-                     (find-symbol (sys::%format nil "PRECOMPILE-~A" (symbol-name symbol))
+                     (find-symbol (sys::%format nil "PRECOMPILE-~A"
+                                                (symbol-name symbol))
                                   'precompiler))))
     (unless (and handler (fboundp handler))
       (error "No handler for ~S." symbol))
@@ -992,7 +993,6 @@
                   (LOAD-TIME-VALUE      precompile-load-time-value)
 
                   (DECLARE              precompile-identity)
-;;                   (DEFMETHOD            precompile-identity)
                   (DEFUN                precompile-defun)
                   (GO                   precompile-identity)
                   (QUOTE                precompile-identity)
