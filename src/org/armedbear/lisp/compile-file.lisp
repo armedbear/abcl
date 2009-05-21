@@ -110,7 +110,7 @@
            (return-from process-toplevel-form))
           ((IN-PACKAGE DEFPACKAGE)
            (note-toplevel-form form)
-           (setf form (precompile-form form nil))
+           (setf form (precompiler:precompile-form form nil *compile-file-environment*))
            (eval form)
            ;; Force package prefix to be used when dumping form.
            (let ((*package* +keyword-package+))
@@ -162,7 +162,9 @@
                       ;; FIXME Should be a warning or error of some sort...
                       (format *error-output*
                               "; Unable to compile function ~A~%" name)
-                      (let ((precompiled-function (precompile-form expr nil)))
+                      (let ((precompiled-function
+                             (precompiler:precompile-form expr nil
+                                              *compile-file-environment*)))
                         (setf form
                               `(fset ',name
                                      ,precompiled-function
@@ -264,23 +266,24 @@
              (return-from process-toplevel-form))
 
            (cond ((eq operator 'QUOTE)
-;;;                      (setf form (precompile-form form nil))
+;;;                      (setf form (precompiler:precompile-form form nil
+;;;                                                  *compile-file-environment*))
                   (when compile-time-too
                     (eval form))
                   (return-from process-toplevel-form))
                  ((eq operator 'PUT)
-                  (setf form (precompile-form form nil)))
+                  (setf form (precompiler:precompile-form form nil *compile-file-environment*)))
                  ((eq operator 'COMPILER-DEFSTRUCT)
-                  (setf form (precompile-form form nil)))
+                  (setf form (precompiler:precompile-form form nil *compile-file-environment*)))
                  ((eq operator 'PROCLAIM)
-                  (setf form (precompile-form form nil)))
+                  (setf form (precompiler:precompile-form form nil *compile-file-environment*)))
                  ((and (memq operator '(EXPORT REQUIRE PROVIDE SHADOW))
                        (or (keywordp (second form))
                            (and (listp (second form))
                                 (eq (first (second form)) 'QUOTE))))
-                  (setf form (precompile-form form nil)))
+                  (setf form (precompiler:precompile-form form nil *compile-file-environment*)))
                  ((eq operator 'IMPORT)
-                  (setf form (precompile-form form nil))
+                  (setf form (precompiler:precompile-form form nil *compile-file-environment*))
                   ;; Make sure package prefix is printed when symbols are imported.
                   (let ((*package* +keyword-package+))
                     (dump-form form stream))
@@ -293,22 +296,22 @@
                        (consp (third form))
                        (eq (%car (third form)) 'FUNCTION)
                        (symbolp (cadr (third form))))
-                  (setf form (precompile-form form nil)))
+                  (setf form (precompiler:precompile-form form nil *compile-file-environment*)))
 ;;;                     ((memq operator '(LET LET*))
 ;;;                      (let ((body (cddr form)))
 ;;;                        (if (dolist (subform body nil)
 ;;;                              (when (and (consp subform) (eq (%car subform) 'DEFUN))
 ;;;                                (return t)))
 ;;;                            (setf form (convert-toplevel-form form))
-;;;                            (setf form (precompile-form form nil)))))
+;;;                            (setf form (precompiler:precompile-form form nil)))))
                  ((eq operator 'mop::ensure-method)
                   (setf form (convert-ensure-method form)))
                  ((and (symbolp operator)
                        (not (special-operator-p operator))
                        (null (cdr form)))
-                  (setf form (precompile-form form nil)))
+                  (setf form (precompiler:precompile-form form nil *compile-file-environment*)))
                  (t
-;;;                      (setf form (precompile-form form nil))
+;;;                      (setf form (precompiler:precompile-form form nil))
                   (note-toplevel-form form)
                   (setf form (convert-toplevel-form form)))))))))
   (when (consp form)
@@ -326,7 +329,7 @@
 (defun convert-ensure-method (form)
   (c-e-m-1 form :function)
   (c-e-m-1 form :fast-function)
-  (precompile-form form nil))
+  (precompiler:precompile-form form nil *compile-file-environment*))
 
 (declaim (ftype (function (t t) t) c-e-m-1))
 (defun c-e-m-1 (form key)
@@ -356,7 +359,7 @@
     (setf form
           (if compiled-function
               `(funcall (load-compiled-function ,(file-namestring classfile)))
-              (precompile-form form nil)))))
+              (precompiler:precompile-form form nil *compile-file-environment*)))))
 
 
 (defun process-toplevel-macrolet (form stream compile-time-too)

@@ -333,8 +333,6 @@
 
 (in-package "EXTENSIONS")
 
-(export '(precompile-form precompile))
-
 (unless (find-package "PRECOMPILER")
   (make-package "PRECOMPILER"
                 :nicknames '("PRE")
@@ -355,6 +353,8 @@
 ;; if *in-jvm-compile* is false
 
 (defvar *in-jvm-compile* nil)
+(defvar *precompile-env* nil)
+
 
 (declaim (ftype (function (t) t) precompile1))
 (defun precompile1 (form)
@@ -373,7 +373,7 @@
            (when (symbolp op)
              (cond ((setf handler (get op 'precompile-handler))
                     (return-from precompile1 (funcall handler form)))
-                   ((macro-function op *compile-file-environment*)
+                   ((macro-function op *precompile-env*)
                     (return-from precompile1 (precompile1 (expand-macro form))))
                    ((special-operator-p op)
                     (error "PRECOMPILE1: unsupported special operator ~S." op))))
@@ -422,13 +422,13 @@
 
 (defun precompile-dolist (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form *compile-file-environment*))
+      (precompile1 (macroexpand form *precompile-env*))
       (cons 'DOLIST (cons (mapcar #'precompile1 (cadr form))
                           (mapcar #'precompile1 (cddr form))))))
 
 (defun precompile-dotimes (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form *compile-file-environment*))
+      (precompile1 (macroexpand form *precompile-env*))
       (cons 'DOTIMES (cons (mapcar #'precompile1 (cadr form))
                            (mapcar #'precompile1 (cddr form))))))
 
@@ -464,7 +464,7 @@
 
 (defun precompile-do/do* (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form *compile-file-environment*))
+      (precompile1 (macroexpand form *precompile-env*))
       (list* (car form)
              (precompile-do/do*-vars (cadr form))
              (precompile-do/do*-end-form (caddr form))
@@ -606,11 +606,10 @@
       form))
 
 (defun precompile-macrolet (form)
-  (let ((*compile-file-environment*
-         (make-environment *compile-file-environment*)))
+  (let ((*precompile-env* (make-environment *precompile-env*)))
     (dolist (definition (cadr form))
       (environment-add-macro-definition
-       *compile-file-environment*
+       *precompile-env*
        (car definition)
        (make-macro (car definition)
                    (make-closure
@@ -621,8 +620,7 @@
       `(locally ,@decls ,@(mapcar #'precompile1 body)))))
 
 (defun precompile-symbol-macrolet (form)
-  (let ((*compile-file-environment*
-         (make-environment *compile-file-environment*))
+  (let ((*precompile-env* (make-environment *precompile-env*))
         (defs (cadr form)))
     (dolist (def defs)
       (let ((sym (car def))
@@ -632,7 +630,7 @@
                  :format-control
                  "Attempt to bind the special variable ~S with SYMBOL-MACROLET."
                  :format-arguments (list sym)))
-        (environment-add-symbol-binding *compile-file-environment*
+        (environment-add-symbol-binding *precompile-env*
                                         sym
                                         (sys::make-symbol-macro expansion))))
     (multiple-value-bind (body decls)
@@ -680,17 +678,15 @@
                         :format-control "The variable ~S is not a symbol."
                         :format-arguments (list v)))
                (push (list v (precompile1 expr)) result)
-               (environment-add-symbol-binding *compile-file-environment*
-                                               v nil))) ;; any value will do
+               (environment-add-symbol-binding *precompile-env* v nil)))
+               ;; any value will do: we just need to shadow any symbol macros
             (t
              (push var result)
-             (environment-add-symbol-binding *compile-file-environment*
-                                             var nil))))
+             (environment-add-symbol-binding *precompile-env* var nil))))
     (nreverse result)))
 
 (defun precompile-let (form)
-  (let ((*compile-file-environment*
-         (make-environment *compile-file-environment*)))
+  (let ((*precompile-env* (make-environment *precompile-env*)))
     (list* 'LET
            (precompile-let/let*-vars (cadr form))
            (mapcar #'precompile1 (cddr form)))))
@@ -707,15 +703,14 @@
 
 (defun precompile-let* (form)
   (setf form (maybe-fold-let* form))
-  (let ((*compile-file-environment*
-         (make-environment *compile-file-environment*)))
+  (let ((*precompile-env* (make-environment *precompile-env*)))
     (list* 'LET*
            (precompile-let/let*-vars (cadr form))
            (mapcar #'precompile1 (cddr form)))))
 
 (defun precompile-case (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form *compile-file-environment*))
+      (precompile1 (macroexpand form *precompile-env*))
       (let* ((keyform (cadr form))
              (clauses (cddr form))
              (result (list (precompile1 keyform))))
@@ -730,7 +725,7 @@
 
 (defun precompile-cond (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form *compile-file-environment*))
+      (precompile1 (macroexpand form *precompile-env*))
       (let ((clauses (cdr form))
             (result nil))
         (dolist (clause clauses)
@@ -746,7 +741,7 @@
   (let ((name (car def))
         (body (cddr def)))
     ;; Macro names are shadowed by local functions.
-    (environment-add-function-definition *compile-file-environment* name body)
+    (environment-add-function-definition *precompile-env* name body)
     (cdr (precompile-named-lambda (list* 'NAMED-LAMBDA def)))))
 
 (defun precompile-local-functions (defs)
@@ -766,8 +761,7 @@
              (find-use name (%cdr expression))))))
 
 (defun precompile-flet/labels (form)
-  (let ((*compile-file-environment*
-         (make-environment *compile-file-environment*))
+  (let ((*precompile-env* (make-environment *precompile-env*))
         (operator (car form))
         (locals (cadr form))
         (body (cddr form)))
@@ -840,12 +834,12 @@
 
 (defun precompile-when (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form *compile-file-environment*))
+      (precompile1 (macroexpand form *precompile-env*))
       (precompile-cons form)))
 
 (defun precompile-unless (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form *compile-file-environment*))
+      (precompile1 (macroexpand form *precompile-env*))
       (precompile-cons form)))
 
 ;; MULTIPLE-VALUE-BIND is handled explicitly by the JVM compiler.
@@ -853,10 +847,9 @@
   (let ((vars (cadr form))
         (values-form (caddr form))
         (body (cdddr form))
-        (*compile-file-environment*
-         (make-environment *compile-file-environment*)))
+        (*precompile-env* (make-environment *precompile-env*)))
     (dolist (var vars)
-      (environment-add-symbol-binding *compile-file-environment* var nil))
+      (environment-add-symbol-binding *precompile-env* var nil))
     (list* 'MULTIPLE-VALUE-BIND
            vars
            (precompile1 values-form)
@@ -868,12 +861,12 @@
 
 (defun precompile-nth-value (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form *compile-file-environment*))
+      (precompile1 (macroexpand form *precompile-env*))
       form))
 
 (defun precompile-return (form)
   (if *in-jvm-compile*
-      (precompile1 (macroexpand form *compile-file-environment*))
+      (precompile1 (macroexpand form *precompile-env*))
       (list 'RETURN (precompile1 (cadr form)))))
 
 (defun precompile-return-from (form)
@@ -920,16 +913,18 @@
                     (special-operator-p (%car form)))
            (return-from expand-macro form)))
        (multiple-value-bind (result expanded)
-           (macroexpand-1 form *compile-file-environment*)
+           (macroexpand-1 form *precompile-env*)
          (unless expanded
            (return-from expand-macro (values result exp)))
          (setf form result
                exp t)))))
 
 (declaim (ftype (function (t t) t) precompile-form))
-(defun precompile-form (form in-jvm-compile)
+(defun precompile-form (form in-jvm-compile
+                        &optional precompile-env)
   (let ((*in-jvm-compile* in-jvm-compile)
-        (*inline-declarations* *inline-declarations*))
+        (*inline-declarations* *inline-declarations*)
+        (pre::*precompile-env* precompile-env))
     (precompile1 form)))
 
 (defun install-handler (symbol &optional handler)
@@ -1004,11 +999,12 @@
 
 (install-handlers)
 
+(export '(precompile-form))
+
 (in-package #:system)
 
 (defun macroexpand-all (form &optional env)
-  (let ((*compile-file-environment* env))
-    (precompile-form form nil)))
+  (precompiler:precompile-form form nil env))
 
 (defmacro compiler-let (bindings &body forms &environment env)
   (let ((bindings (mapcar #'(lambda (binding)
@@ -1034,7 +1030,8 @@
   (unless definition
     (setq definition (or (and (symbolp name) (macro-function name))
                          (fdefinition name))))
-  (let (expr result)
+  (let (expr result
+        (pre::*precompile-env* nil))
     (cond ((functionp definition)
            (multiple-value-bind (form closure-p)
              (function-lambda-expression definition)
@@ -1052,7 +1049,7 @@
 ;;            (error 'type-error)))
            (format t "Unable to precompile ~S.~%" name)
            (return-from precompile (values nil t t))))
-    (setf result (coerce-to-function (precompile-form expr nil)))
+    (setf result (coerce-to-function (precompiler:precompile-form expr nil)))
     (when (and name (functionp result))
       (sys::set-function-definition name result definition))
     (values (or name result) nil nil)))
@@ -1131,8 +1128,12 @@
              (when (and env (empty-environment-p env))
                (setf env nil))
              (when (null env)
-               (setf lambda-expression (precompile-form lambda-expression nil)))
+               (setf lambda-expression (precompiler:precompile-form lambda-expression nil)))
              `(progn
                 (%defun ',name ,lambda-expression)
                 ,@(when doc
                    `((%set-documentation ',name 'function ,doc)))))))))
+
+(export '(precompile))
+
+;;(provide "PRECOMPILER")

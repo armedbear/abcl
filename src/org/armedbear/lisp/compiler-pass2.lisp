@@ -7328,7 +7328,8 @@ for use with derive-type-times.")
 (defknown p2-setq (t t t) t)
 (defun p2-setq (form target representation)
   (unless (= (length form) 3)
-    (return-from p2-setq (compile-form (precompiler::precompile-setq form)
+    (return-from p2-setq (compile-form (precompiler:precompile-form form t
+                                                        *compile-file-environment*)
                                        target representation)))
   (let ((expansion (macroexpand (%cadr form) *compile-file-environment*)))
     (unless (eq expansion (%cadr form))
@@ -8259,7 +8260,9 @@ for use with derive-type-times.")
                                                            :lambda-name ',name
                                                            :lambda-list (cadr ',form)))))))
         (compile-1 (make-compiland :name name
-                                   :lambda-expression (precompile-form form t)
+                                   :lambda-expression
+                                   (precompiler:precompile-form form t
+                                                         *compile-file-environment*)
                                    :class-file class-file)))))
 
 (defvar *catch-errors* t)
@@ -8400,7 +8403,7 @@ for use with derive-type-times.")
                 (sys::%format t "; Unable to compile ~S.~%"
                               (or name "top-level form"))
                 (return-from jvm-compile
-                  (precompiler::precompile name definition)))))
+                  (sys:precompile name definition)))))
          (style-warning
           #'(lambda (c) (declare (ignore c))
               (setf warnings-p t) nil))
