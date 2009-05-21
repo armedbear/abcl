@@ -855,7 +855,10 @@ of the form being preprocessed.")
 (defun precompile-multiple-value-bind (form)
   (let ((vars (cadr form))
         (values-form (caddr form))
-        (body (cdddr form)))
+        (body (cdddr form))
+        (*local-variables* *local-variables*))
+    (dolist (var vars)
+      (push (list var :variable) *local-variables*))
     (list* 'MULTIPLE-VALUE-BIND
            vars
            (precompile1 values-form)
