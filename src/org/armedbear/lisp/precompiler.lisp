@@ -249,14 +249,15 @@
       `(%subtypep ,@args)
       form))
 
-(define-compiler-macro funcall (&whole form &rest args)
+(define-compiler-macro funcall (&whole form
+                                &environment env &rest args)
   (let ((callee (car args)))
     (if (and (>= *speed* *debug*)
              (consp callee)
              (eq (%car callee) 'function)
              (symbolp (cadr callee))
              (not (special-operator-p (cadr callee)))
-             (not (macro-function (cadr callee) *compile-file-environment*))
+             (not (macro-function (cadr callee) env))
              (memq (symbol-package (cadr callee))
                    (list (find-package "CL") (find-package "SYS"))))
         `(,(cadr callee) ,@(cdr args))
