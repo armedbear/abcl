@@ -8262,7 +8262,7 @@ for use with derive-type-times.")
         (compile-1 (make-compiland :name name
                                    :lambda-expression
                                    (precompiler:precompile-form form t
-                                                         *compile-file-environment*)
+                                                                environment)
                                    :class-file class-file)))))
 
 (defvar *catch-errors* t)
