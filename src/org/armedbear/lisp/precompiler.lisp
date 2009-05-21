@@ -528,8 +528,7 @@
               (expand-macro sym)
             (if expanded
                 (precompile1 (list 'SETF expansion val))
-                (list 'SETQ sym (precompile1 val))
-                )))
+                (list 'SETQ sym (precompile1 val)))))
         (let ((result ()))
           (loop
             (when (null args)
@@ -1030,26 +1029,21 @@
   (unless definition
     (setq definition (or (and (symbolp name) (macro-function name))
                          (fdefinition name))))
-  (let (expr result
+  (let ((expr definition)
+        env result
         (pre::*precompile-env* nil))
-    (cond ((functionp definition)
-           (multiple-value-bind (form closure-p)
-             (function-lambda-expression definition)
-             (unless form
-;;                (format t "; No lambda expression available for ~S.~%" name)
-               (return-from precompile (values nil t t)))
-             (when closure-p
-               (format t "; Unable to compile function ~S defined in non-null lexical environment.~%" name)
-               (finish-output)
-               (return-from precompile (values nil t t)))
-             (setq expr form)))
-          ((and (consp definition) (eq (%car definition) 'lambda))
-           (setq expr definition))
-          (t
-;;            (error 'type-error)))
-           (format t "Unable to precompile ~S.~%" name)
-           (return-from precompile (values nil t t))))
-    (setf result (coerce-to-function (precompiler:precompile-form expr nil)))
+    (when (functionp definition)
+      (multiple-value-bind (form closure-p)
+          (function-lambda-expression definition)
+        (unless form
+          (return-from precompile (values nil t t)))
+        (setq env closure-p)
+        (setq expr form)))
+    (unless (and (consp expr) (eq (car expr) 'lambda))
+      (format t "Unable to precompile ~S.~%" name)
+      (return-from precompile (values nil t t)))
+    (setf result
+          (sys:make-closure (precompiler:precompile-form expr nil env) env))
     (when (and name (functionp result))
       (sys::set-function-definition name result definition))
     (values (or name result) nil nil)))
