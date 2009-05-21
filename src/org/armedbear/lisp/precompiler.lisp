@@ -612,8 +612,6 @@ of the form being preprocessed.")
       (precompile1 (expand-macro form))
       form))
 
-(defvar *local-functions-and-macros* ())
-
 (defun precompile-macrolet (form)
   (let ((*compile-file-environment*
          (make-environment *compile-file-environment*)))
@@ -928,8 +926,7 @@ of the form being preprocessed.")
 (declaim (ftype (function (t t) t) precompile-form))
 (defun precompile-form (form in-jvm-compile)
   (let ((*in-jvm-compile* in-jvm-compile)
-        (*inline-declarations* *inline-declarations*)
-        (*local-functions-and-macros* ()))
+        (*inline-declarations* *inline-declarations*))
     (precompile1 form)))
 
 (defun install-handler (symbol &optional handler)
