@@ -8220,17 +8220,16 @@ for use with derive-type-times.")
       ;; Pass 1.
       (p1-compiland compiland)
       (setf *closure-variables*
-            (remove-if-not #'variable-used-non-locally-p *all-variables*))
-      (when *closure-variables*
-        (setf *closure-variables*
-              (remove-if #'variable-special-p *closure-variables*))
-        (when *closure-variables*
-          (let ((i 0))
-            (dolist (var (reverse *closure-variables*))
-              (setf (variable-closure-index var) i)
-              (dformat t "var = ~S closure index = ~S~%" (variable-name var)
-                       (variable-closure-index var))
-              (incf i)))))
+            (remove-if #'variable-special-p
+                       (remove-if-not #'variable-used-non-locally-p
+                                      *all-variables*)))
+      (let ((i 0))
+        (dolist (var (reverse *closure-variables*))
+          (setf (variable-closure-index var) i)
+          (dformat t "var = ~S closure index = ~S~%" (variable-name var)
+                   (variable-closure-index var))
+          (incf i)))
+
       ;; Pass 2.
       (with-class-file (compiland-class-file compiland)
         (p2-compiland compiland)
