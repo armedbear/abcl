@@ -8245,10 +8245,14 @@ for use with derive-type-times.")
     (with-saved-compiler-policy
       ;; Pass 1.
       (p1-compiland compiland)
+
+      ;; *all-variables* doesn't contain variables which
+      ;; are in an enclosing lexical environment (variable-environment)
+      ;; so we don't need to filter them out
       (setf *closure-variables*
             (remove-if #'variable-special-p
                        (remove-if-not #'variable-used-non-locally-p
-                                      *all-variables*)))
+                                                 *all-variables*)))
       (let ((i 0))
         (dolist (var (reverse *closure-variables*))
           (setf (variable-closure-index var) i)
