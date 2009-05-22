@@ -53,7 +53,7 @@
           (t
            (setf body (copy-tree body))
            (list 'LAMBDA lambda-list
-                 (precompiler:precompile-form (list* 'BLOCK block-name body) t *compile-file-environment*)))))
+                 (list* 'BLOCK block-name body)))))
   ) ; EVAL-WHEN
 
 ;;; Pass 1.
