@@ -1787,6 +1787,18 @@ public final class Primitives extends Lisp
       }
     };
 
+  // ### macro-function-p
+  private static final Primitive MACRO_FUNCTION_P =
+      new Primitive("macro-function-p", PACKAGE_SYS, true, "value")
+  {
+      @Override
+      public LispObject execute(LispObject arg) throws ConditionThrowable
+      {
+          return (arg instanceof MacroObject) ? T : NIL;
+      }
+  };
+
+
   // ### make-symbol-macro
   private static final Primitive MAKE_SYMBOL_MACRO =
       new Primitive("make-symbol-macro", PACKAGE_SYS, true, "expansion")

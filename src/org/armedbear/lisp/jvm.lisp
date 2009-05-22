@@ -337,10 +337,14 @@ of the compilands being processed (p1: so far; p2: in total).")
   name
   compiland
   inline-expansion
-  function  ;; the function loaded through load-compiled-function
-  class-file
-  variable  ;; the variable which contains the loaded compiled function
-            ;; or compiled closure
+  function    ;; the function loaded through load-compiled-function
+  class-file  ;; the class file structure for this function
+  variable    ;; the variable which contains the loaded compiled function
+              ;; or compiled closure
+  environment ;; the environment in which the function is stored in
+              ;; case of a function from an enclosing lexical environment
+              ;; which itself isn't being compiled
+  (references-allowed-p t)
   )
 
 (defvar *local-functions* ())

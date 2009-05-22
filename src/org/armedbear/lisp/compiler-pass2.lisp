@@ -3028,6 +3028,20 @@ Note: DEFUN implies a named lambda."
            (compile-var-ref (make-var-ref
                              (local-function-variable local-function))
                             'stack nil))
+          ((local-function-environment local-function)
+           (assert (local-function-references-allowed-p local-function))
+           (assert (not *file-compilation*))
+           (emit 'getstatic *this-class*
+                 (declare-object (local-function-environment local-function)
+                                 +lisp-environment+
+                                 +lisp-environment-class+)
+                 +lisp-environment+)
+           (emit 'getstatic *this-class*
+                 (declare-object (local-function-name local-function))
+                 +lisp-object+)
+           (emit-invokevirtual +lisp-environment-class+ "lookupFunction"
+                               (list +lisp-object+)
+                               +lisp-object+))
           (t
            (dformat t "compile-local-function-call default case~%")
            (let* ((g (if *file-compilation*
@@ -8240,7 +8254,7 @@ for use with derive-type-times.")
   (let ((*all-variables* nil)
         (*closure-variables* nil)
         (*undefined-variables* nil)
-        (*local-functions* nil)
+        (*local-functions* *local-functions*)
         (*current-compiland* compiland))
     (with-saved-compiler-policy
       ;; Pass 1.
@@ -8417,6 +8431,7 @@ for use with derive-type-times.")
         (expression definition)
         (*file-compilation* nil)
         (*visible-variables* nil)
+        (*local-functions* nil)
         (*pathnames-generator* #'make-temp-file)
         (sys::*fasl-anonymous-package* (sys::%make-package))
         environment)
@@ -8441,6 +8456,13 @@ for use with derive-type-times.")
                              :references-allowed-p
                              (not (sys:symbol-macro-p (cdr var)))
                              :compiland NIL) *visible-variables*)))
+    (when environment
+      (dolist (fun (reverse (environment-all-functions environment)))
+        (push (make-local-function :name (car fun)
+                                   :references-allowed-p
+                                   (not (macro-function-p (cdr fun)))
+                                   :environment environment)
+              *local-functions*)))
     ;; FIXME: we still need to add local functions, ofcourse.
     (handler-bind
         ((compiler-unsupported-feature-error

@@ -347,4 +347,20 @@ public final class Environment extends LispObject
             return result.nreverse();
       }
     };
+
+  // ### environment-all-functions
+  private static final Primitive ENVIRONMENT_ALL_FUNS =
+    new Primitive("environment-all-functions", PACKAGE_SYS, true, "environment")
+    {
+      @Override
+      public LispObject execute(LispObject arg) throws ConditionThrowable
+      {
+            Environment env = checkEnvironment(arg);
+            LispObject result = NIL;
+            for (FunctionBinding binding = env.lastFunctionBinding;
+                 binding != null; binding = binding.next)
+            result = result.push(new Cons(binding.name, binding.value));
+            return result.nreverse();
+      }
+    };
 }
