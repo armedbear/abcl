@@ -8455,15 +8455,13 @@ for use with derive-type-times.")
                              :environment environment
                              :references-allowed-p
                              (not (sys:symbol-macro-p (cdr var)))
-                             :compiland NIL) *visible-variables*)))
-    (when environment
+                             :compiland NIL) *visible-variables*))
       (dolist (fun (reverse (environment-all-functions environment)))
         (push (make-local-function :name (car fun)
                                    :references-allowed-p
                                    (not (macro-function-p (cdr fun)))
                                    :environment environment)
               *local-functions*)))
-    ;; FIXME: we still need to add local functions, ofcourse.
     (handler-bind
         ((compiler-unsupported-feature-error
           #'(lambda (c)
