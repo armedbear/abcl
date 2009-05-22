@@ -1,3 +1,48 @@
+Version 0.15.0
+(?? Jun, 2009) - Anticipate a June date
+
+ Summary of changes:
+  * Updated FASL version
+  * Support (pre)compilation of functions with a non-null lexical environment
+  * Compiler and precompiler cleanups
+  * 'rt.lisp' copy from ANSI test suite removed
+  * Many documentation additions for the (pre)compiler
+  * JSR-233 support improvements
+  * Refactoring of classes:
+   - deleted: CompiledFunction, ClosureTemplateFunction, CompiledClosure,
+              Primitive0R, Primitive1R, Primitive2R
+   - renamed: CompiledClosure [from ClosureTemplateFunction]
+  * Compiler support for non-constant &key and &optional initforms
+  * Fixed ticket #21: JVM stack inconsistency [due to use of RET/JSR]
+  * Numerous special bindings handling fixes, especially with respect
+    to (local) transfer of control with GO/RETURN-FROM
+  * Paths retrieved using URL.getPath() require decoding (r11815)
+  * Build doesn't work inside paths with spaces (r11813)
+  * Compilation of export of a symbol not in *package* (r11808)
+  * Moved compiler-related rewriting of forms from precompiler to compiler
+  * Removed chained closures ('XEPs') in case of &optional arguments only
+  * Loading of SLIME fails under specific conditions (r11791)
+  * Binding of *FASL-ANONYMOUS-PACKAGE* breaks specials handling (r11783)
+  * Fixed ANSI tests: DO-ALL-SYMBOLS.{6,9,12}, DEFINE-SETF-EXPANDER.{1,6,?},
+      MULTIPLE-VALUE-SETQ.{5,8}, SYMBOL-MACROLET.8, COMPILE-FILE.{17,18}
+  * COMPILE and COMPILE-FILE second and third values after a failed
+      invocation inside the same compilation-unit (r11769)
+  * JCLASS on non-existing classes should signal an error (r11762)
+  * Dotted lambda lists break interpretation (r11760)
+  * Implementation of MACROEXPAND-ALL and COMPILER-LET (r11755)
+  * Switch from casting to 'instanceof' for performance (r11754)
+  * Google App Engine support: don't die if 'os.arch' isn't set (r11750)
+  * Excessive stack use while resolving #n= and #n# (r11474)
+
+
+Version 0.14.1
+(5 Apr, 2009)
+svn://common-lisp.net/project/armedbear/svn/tags/0.14.1/abcl
+
+ Summary of changes:
+  * Include this CHANGES file and scripting files in the tar and zip files
+
+
 Version 0.14.0
 (5 Apr, 2009)
 svn://common-lisp.net/project/armedbear/svn/tags/0.14.0/abcl
