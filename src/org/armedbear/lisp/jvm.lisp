@@ -260,11 +260,15 @@ of the compilands being processed (p1: so far; p2: in total).")
   register      ; register number for a local variable
   index         ; index number for a variable in the argument array
   closure-index ; index number for a variable in the closure context array
+  environment   ; the environment for the variable, if we're compiling in
+                ; a non-null lexical environment with variables
     ;; a variable can be either special-p *or* have a register *or*
-    ;; have an index *or a closure-index
+    ;; have an index *or* a closure-index *or* an environment
   (reads 0 :type fixnum)
   (writes 0 :type fixnum)
   references
+  (references-allowed-p t) ; NIL if this is a symbol macro in the enclosing
+                           ; lexical environment
   used-non-locally-p
   (compiland *current-compiland*))
 

@@ -328,4 +328,23 @@ public final class Environment extends LispObject
             return result.nreverse();
       }
     };
+
+  // ### environment-all-variables
+  private static final Primitive ENVIRONMENT_ALL_VARS =
+    new Primitive("environment-all-variables", PACKAGE_SYS, true, "environment")
+    {
+      @Override
+      public LispObject execute(LispObject arg) throws ConditionThrowable
+      {
+            Environment env = checkEnvironment(arg);
+            LispObject result = NIL;
+            for (Binding binding = env.vars;
+                 binding != null; binding = binding.next)
+              if (binding.specialp)
+                result = result.push(binding.symbol);
+              else
+                result = result.push(new Cons(binding.symbol, binding.value));
+            return result.nreverse();
+      }
+    };
 }

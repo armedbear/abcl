@@ -236,6 +236,7 @@
 (defconstant +lisp-simple-string-class+ "org/armedbear/lisp/SimpleString")
 (defconstant +lisp-simple-string+ "Lorg/armedbear/lisp/SimpleString;")
 (defconstant +lisp-environment+ "Lorg/armedbear/lisp/Environment;")
+(defconstant +lisp-environment-class+ "org/armedbear/lisp/Environment")
 (defconstant +lisp-special-binding+ "Lorg/armedbear/lisp/SpecialBinding;")
 (defconstant +lisp-throw-class+ "org/armedbear/lisp/Throw")
 (defconstant +lisp-return-class+ "org/armedbear/lisp/Return")
@@ -4187,6 +4188,19 @@ given a specific common representation.")
              (emit 'aaload)
              (emit-swap representation nil)
              (emit 'putfield +closure-binding-class+ "value" +lisp-object+))
+            ((variable-environment variable)
+             (assert (not *file-compilation*))
+             (emit 'getstatic *this-class*
+                   (declare-object (variable-environment variable)
+                                   +lisp-environment+
+                                   +lisp-environment-class+)
+                   +lisp-environment+)
+             (emit 'swap)
+             (emit-push-variable-name variable)
+             (emit 'swap)
+             (emit-invokevirtual +lisp-environment-class+ "rebind"
+                                 (list +lisp-symbol+ +lisp-object+)
+                                 nil))
             (t
              (assert nil))))))
 
@@ -4217,6 +4231,17 @@ given a specific common representation.")
            (emit-push-constant-int (variable-closure-index variable))
            (emit 'aaload)
            (emit 'getfield +closure-binding-class+ "value" +lisp-object+))
+          ((variable-environment variable)
+           (assert (not *file-compilation*))
+           (emit 'getstatic *this-class*
+                 (declare-object (variable-environment variable)
+                                 +lisp-environment+
+                                 +lisp-environment-class+)
+                 +lisp-environment+)
+           (emit-push-variable-name variable)
+           (emit-invokevirtual +lisp-environment-class+ "lookup"
+                               (list +lisp-object+)
+                               +lisp-object+))
           (t
            (assert nil)))))
 
@@ -7293,7 +7318,8 @@ for use with derive-type-times.")
                 ((or (variable-representation variable)
                      (variable-register variable)
                      (variable-closure-index variable)
-                     (variable-index variable))
+                     (variable-index variable)
+                     (variable-environment variable))
                  (emit-push-variable variable)
                  (convert-representation (variable-representation variable)
                                          representation)
@@ -8230,6 +8256,13 @@ for use with derive-type-times.")
                    (variable-closure-index var))
           (incf i)))
 
+      ;; Assert that we're not refering to any variables
+      ;; we're not allowed to use
+      (assert (= 0
+                 (length (remove-if (complement #'variable-references)
+                                    (remove-if #'variable-references-allowed-p
+                                               *visible-variables*)))))
+
       ;; Pass 2.
       (with-class-file (compiland-class-file compiland)
         (p2-compiland compiland)
@@ -8244,8 +8277,6 @@ for use with derive-type-times.")
 
 (defun compile-defun (name form environment filespec)
   (aver (eq (car form) 'LAMBDA))
-  (unless (or (null environment) (empty-environment-p environment))
-    (compiler-unsupported "COMPILE-DEFUN: unable to compile LAMBDA form defined in non-null lexical environment."))
   (catch 'compile-defun-abort
     (let* ((class-file (make-class-file :pathname filespec
                                         :lambda-name name
@@ -8257,7 +8288,8 @@ for use with derive-type-times.")
                                           :class-file
                                           (make-class-file :pathname ,filespec
                                                            :lambda-name ',name
-                                                           :lambda-list (cadr ',form)))))))
+                                                           :lambda-list (cadr ',form))))))
+           (*compile-file-environment* environment))
         (compile-1 (make-compiland :name name
                                    :lambda-expression
                                    (precompiler:precompile-form form t
@@ -8393,6 +8425,19 @@ for use with derive-type-times.")
           (function-lambda-expression function))))
     (unless expression
       (error "Can't find a definition for ~S." definition))
+    (when environment
+      (dolist (var (reverse (environment-all-variables environment)))
+        ;; We need to add all variables, even symbol macros,
+        ;; because the latter may shadow other variables by the same name
+        ;; The precompiler should have resolved all symbol-macros, so
+        ;; later we assert we didn't get any references to the symbol-macro.
+        (push (make-variable :name (if (symbolp var) var (car var))
+                             :special-p (symbolp var)
+                             :environment environment
+                             :references-allowed-p
+                             (not (sys:symbol-macro-p (cdr var)))
+                             :compiland NIL) *visible-variables*)))
+    ;; FIXME: we still need to add local functions, ofcourse.
     (handler-bind
         ((compiler-unsupported-feature-error
           #'(lambda (c)
