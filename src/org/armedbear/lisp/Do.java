@@ -101,11 +101,12 @@ public final class Do extends Lisp
     LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
     body = bodyAndDecls.car();
 
-    final Environment ext = new Environment(env);
+    Environment ext = new Environment(env);
     for (int i = 0; i < numvars; i++)
       {
         Symbol var = vars[i];
         LispObject value = eval(initforms[i], (sequential ? ext : env), thread);
+	ext = new Environment(ext);
         if (specials != NIL && memq(var, specials))
             thread.bindSpecial(var, value);
         else if (var.isSpecialVariable())

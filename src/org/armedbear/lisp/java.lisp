@@ -288,7 +288,7 @@
      ((jinstance-of-p object "java.lang.Class")
       `(java:jclass ,(jcall (jmethod "java.lang.Class" "getName") object)))
      (t
-      (error "Unknown load-from for ~A" class-name)))))
+      (error "Unknown load-form for ~A" class-name)))))
 
 (defun jproperty-value (obj prop)
   (%jget-property-value obj prop))

@@ -143,8 +143,10 @@ public final class SpecialOperators extends Lisp
                 symbol = checkSymbol(obj);
                 value = NIL;
               }
-            if (sequential)
+            if (sequential) {
+	      ext = new Environment(ext);
               bindArg(specials, symbol, value, ext, thread);
+	    }
             else
                 nonSequentialVars.add(new Cons(symbol, value));
             varList = ((Cons)varList).cdr;
