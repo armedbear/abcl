@@ -106,7 +106,7 @@ public class LispObject extends Lisp
 
   public Object javaInstance(Class c) throws ConditionThrowable
   {
-      if (getClass().isAssignableFrom(c))
+      if (c.isAssignableFrom(getClass()))
 	  return this;
       return error(new LispError("The value " + writeToString() +
 				 " is not of class " + c.getName()));
