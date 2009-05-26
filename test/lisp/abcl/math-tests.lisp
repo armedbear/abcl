@@ -305,8 +305,8 @@
 
 (deftest expt.15
   (expt 1 1/2)
-  #+clisp 1
-  #-clisp 1.0)
+  #+(or clisp abcl) 1
+  #-(or clisp abcl) 1.0)
 
 (deftest expt.16
   (expt 9 1/2)
@@ -429,11 +429,11 @@
 
 (deftest atanh.1
   (atanh 2)
-  #C(0.54930615 1.5707964))
+  #C(0.54930615 -1.5707964))
 
 (deftest atanh.2
   (atanh -2)
-  #C(-0.54930615 -1.5707964))
+  #C(-0.54930615 1.5707964))
 
 (deftest truncate.1
   (truncate least-positive-single-float)

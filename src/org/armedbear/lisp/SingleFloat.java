@@ -489,6 +489,8 @@ public final class SingleFloat extends LispObject
             final LispThread thread = LispThread.currentThread();
             float divisor = ((SingleFloat)obj).value;
             float quotient = value / divisor;
+            if (value != 0)
+                MathFunctions.OverUnderFlowCheck(quotient);
             if (quotient >= Integer.MIN_VALUE && quotient <= Integer.MAX_VALUE) {
                 int q = (int) quotient;
                 return thread.setValues(Fixnum.getInstance(q),
@@ -519,6 +521,8 @@ public final class SingleFloat extends LispObject
             final LispThread thread = LispThread.currentThread();
             double divisor = ((DoubleFloat)obj).value;
             double quotient = value / divisor;
+            if (value != 0)
+                MathFunctions.OverUnderFlowCheck(quotient);
             if (quotient >= Integer.MIN_VALUE && quotient <= Integer.MAX_VALUE) {
                 int q = (int) quotient;
                 return thread.setValues(Fixnum.getInstance(q),

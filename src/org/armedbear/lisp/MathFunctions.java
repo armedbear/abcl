@@ -771,6 +771,45 @@ public final class MathFunctions extends Lisp
         return number;
     }
 
+    /** Checks number for over- or underflow values.
+     *
+     * @param number
+     * @return number or signals an appropriate error
+     * @throws org.armedbear.lisp.ConditionThrowable
+     */
+    final static float OverUnderFlowCheck(float number)
+            throws ConditionThrowable
+    {
+        if (TRAP_OVERFLOW) {
+            if (Float.isInfinite(number))
+                error(new FloatingPointOverflow(NIL));
+        }
+        if (TRAP_UNDERFLOW) {
+            if (number == 0)
+                error(new FloatingPointUnderflow(NIL));
+        }
+        return number;
+    }
+
+    /** Checks number for over- or underflow values.
+     *
+     * @param number
+     * @return number or signals an appropriate error
+     * @throws org.armedbear.lisp.ConditionThrowable
+     */
+    public final static double OverUnderFlowCheck(double number)
+            throws ConditionThrowable
+    {
+        if (TRAP_OVERFLOW) {
+            if (Double.isInfinite(number))
+                error(new FloatingPointOverflow(NIL));
+        }
+        if (TRAP_UNDERFLOW) {
+            if (number == 0)
+                error(new FloatingPointUnderflow(NIL));
+        }
+        return number;
+    }
     // Adapted from SBCL.
     /** Return the exponent of base taken to the integer exponent power
      *

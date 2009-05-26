@@ -484,6 +484,8 @@ public final class DoubleFloat extends LispObject
             final LispThread thread = LispThread.currentThread();
             double divisor = ((SingleFloat)obj).value;
             double quotient = value / divisor;
+            if (value != 0)
+                MathFunctions.OverUnderFlowCheck(quotient);
             if (quotient >= Integer.MIN_VALUE && quotient <= Integer.MAX_VALUE) {
                 int q = (int) quotient;
                 return thread.setValues(Fixnum.getInstance(q),
@@ -516,6 +518,8 @@ public final class DoubleFloat extends LispObject
             double divisor = ((DoubleFloat)obj).value;
 //             Debug.trace("divisor = " + divisor);
             double quotient = value / divisor;
+            if (value != 0)
+                MathFunctions.OverUnderFlowCheck(quotient);
 //             Debug.trace("quotient = " + quotient);
             if (quotient >= Integer.MIN_VALUE && quotient <= Integer.MAX_VALUE) {
                 int q = (int) quotient;
