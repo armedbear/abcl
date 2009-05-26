@@ -33,8 +33,6 @@
 
 package org.armedbear.lisp;
 
-import java.lang.reflect.Method;
-
 public final class Complex extends LispObject
 {
   public final LispObject realpart;
@@ -302,15 +300,6 @@ public final class Complex extends LispObject
     return !isEqualTo(obj);
   }
 
-  private static Method hypotMethod = null;
-  static { try {
-      hypotMethod = 
-          Class.forName("java.lang.Math")
-          .getMethod("hypot", new Class[] { Double.TYPE, Double.TYPE });
-  }
-  catch (Throwable t) { Debug.trace(t); }
-  }
-
   @Override
   public LispObject ABS() throws ConditionThrowable
   {
@@ -318,31 +307,10 @@ public final class Complex extends LispObject
       return imagpart.ABS();
     double real = DoubleFloat.coerceToFloat(realpart).value;
     double imag = DoubleFloat.coerceToFloat(imagpart).value;
-    try
-      {
-        if (hypotMethod != null)
-          {
-            Object[] args;
-            args = new Object[2];
-            args[0] = new Double(real);
-            args[1] = new Double(imag);
-            Double d = (Double) hypotMethod.invoke(null, args);
-            if (realpart instanceof DoubleFloat)
-              return new DoubleFloat(d.doubleValue());
-            else
-              return new SingleFloat((float)d.doubleValue());
-          }
-      }
-    catch (Throwable t)
-      {
-        Debug.trace(t);
-        // Fall through...
-      }
-    double result = Math.sqrt(real * real + imag * imag);
     if (realpart instanceof DoubleFloat)
-      return new DoubleFloat(result);
+      return new DoubleFloat(Math.hypot(real, imag));
     else
-      return new SingleFloat((float)result);
+      return new SingleFloat((float)Math.hypot(real, imag));
   }
 
   @Override
