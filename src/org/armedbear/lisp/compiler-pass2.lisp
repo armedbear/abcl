@@ -6188,18 +6188,8 @@ of the operation arguments given in `types'."
 value for use with derive-type-minus and derive-type-plus.")
 
 (define-int-bounds-derivation - (low1 high1 low2 high2)
-  (values (when (and low1 high2) ;; low1 or high2 undefined: no lower bound
-            (if low2
-                (min (- low1 low2)
-                     (- low1 high2))
-                ;; low2 undefined: no effect on lower bound
-                (- low1 high2)))
-          (when (and high1 low2) ;; high1 or low2 undefined: no upper bound
-            (if high2
-                (max (- high1 low2)
-                     (- high1 high2))
-                ;; high2 undefined: no effect on upper bound
-                (- high1 low2)))))
+  (values (and low1 high2 (- low1 high2))
+          (and high1 low2 (- high2 low2))))
 
 (defun derive-compiler-types (args op)
   (flet ((combine (x y)
