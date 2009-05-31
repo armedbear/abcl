@@ -714,172 +714,141 @@ public class Symbol extends LispObject
   }
 
   @Override
-  public LispObject execute() throws ConditionThrowable
+  final public LispObject execute() throws ConditionThrowable
   {
-    try
-      {
-        return function.execute();
-      }
-    catch (NullPointerException e)
-      {
-        return handleNPE(e, NIL);
-      }
+    LispObject fun;
+    if ((fun = function) == null)
+        return undefinedFunction(NIL);
+
+    return fun.execute();
   }
 
   @Override
-  public LispObject execute(LispObject arg) throws ConditionThrowable
+  final public LispObject execute(LispObject arg) throws ConditionThrowable
   {
-    try
-      {
-        return function.execute(arg);
-      }
-    catch (NullPointerException e)
-      {
-        return handleNPE(e, list(arg));
-      }
+    LispObject fun;
+    if ((fun = function) == null)
+        return undefinedFunction(list(arg));
+
+    return fun.execute(arg);
   }
 
   @Override
-  public LispObject execute(LispObject first, LispObject second)
+  final public LispObject execute(LispObject first, LispObject second)
     throws ConditionThrowable
   {
-    try
-      {
-        return function.execute(first, second);
-      }
-    catch (NullPointerException e)
-      {
-        return handleNPE(e, list(first, second));
-      }
+    LispObject fun;
+    if ((fun = function) == null)
+        return undefinedFunction(list(first, second));
+
+    return fun.execute(first, second);
   }
 
   @Override
-  public LispObject execute(LispObject first, LispObject second,
+  final public LispObject execute(LispObject first, LispObject second,
                             LispObject third)
     throws ConditionThrowable
   {
-    try
-      {
-        return function.execute(first, second, third);
-      }
-    catch (NullPointerException e)
-      {
-        return handleNPE(e, list(first, second, third));
-      }
+    LispObject fun;
+    if ((fun = function) == null)
+        return undefinedFunction(list(first, second, third));
+
+    return fun.execute(first, second, third);
   }
 
   @Override
-  public LispObject execute(LispObject first, LispObject second,
+  final public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth)
     throws ConditionThrowable
   {
-    try
-      {
-        return function.execute(first, second, third, fourth);
-      }
-    catch (NullPointerException e)
-      {
-        return handleNPE(e, list(first, second, third, fourth));
-      }
+    LispObject fun;
+    if ((fun = function) == null)
+        return undefinedFunction(list(first, second, third, fourth));
+
+    return fun.execute(first, second, third, fourth);
   }
 
   @Override
-  public LispObject execute(LispObject first, LispObject second,
+  final public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth)
     throws ConditionThrowable
   {
-    try
-      {
-        return function.execute(first, second, third, fourth, fifth);
-      }
-    catch (NullPointerException e)
-      {
-        return handleNPE(e, list(first, second, third, fourth, fifth));
-      }
+    LispObject fun;
+    if ((fun = function) == null)
+        return undefinedFunction(list(first, second, third, fourth,
+                                      fifth));
+
+    return fun.execute(first, second, third, fourth,
+                       fifth);
   }
 
   @Override
-  public LispObject execute(LispObject first, LispObject second,
+  final public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth)
     throws ConditionThrowable
   {
-    try
-      {
-        return function.execute(first, second, third, fourth, fifth, sixth);
-      }
-    catch (NullPointerException e)
-      {
-        return handleNPE(e, list(first, second, third, fourth, fifth,
-                                  sixth));
-      }
+    LispObject fun;
+    if ((fun = function) == null)
+        return undefinedFunction(list(first, second, third, fourth,
+                                      fifth, sixth));
+
+    return fun.execute(first, second, third, fourth,
+                       fifth, sixth);
   }
 
   @Override
-  public LispObject execute(LispObject first, LispObject second,
+  final public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
                             LispObject seventh)
     throws ConditionThrowable
   {
-    try
-      {
-        return function.execute(first, second, third, fourth, fifth, sixth,
-                                seventh);
-      }
-    catch (NullPointerException e)
-      {
-        return handleNPE(e,
-                         list(first, second, third, fourth, fifth, sixth,
-                               seventh));
-      }
+    LispObject fun;
+    if ((fun = function) == null)
+        return undefinedFunction(list(first, second, third, fourth,
+                                      fifth, sixth, seventh));
+
+    return fun.execute(first, second, third, fourth,
+                       fifth, sixth, seventh);
   }
 
   @Override
-  public LispObject execute(LispObject first, LispObject second,
+  final public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
                             LispObject seventh, LispObject eighth)
     throws ConditionThrowable
   {
-    try
-      {
-        return function.execute(first, second, third, fourth, fifth, sixth,
-                                seventh, eighth);
-      }
-    catch (NullPointerException e)
-      {
-        return handleNPE(e,
-                         list(first, second, third, fourth, fifth, sixth,
-                               seventh, eighth));
-      }
+    LispObject fun;
+    if ((fun = function) == null)
+        return undefinedFunction(list(first, second, third, fourth,
+                                      fifth, sixth, seventh, eighth));
+
+    return fun.execute(first, second, third, fourth,
+                       fifth, sixth, seventh, eighth);
   }
 
   @Override
-  public LispObject execute(LispObject[] args) throws ConditionThrowable
+  final public LispObject execute(LispObject[] args) throws ConditionThrowable
   {
-    try
-      {
-        return function.execute(args);
-      }
-    catch (NullPointerException e)
-      {
+    LispObject fun;
+    if ((fun = function) == null) {
         LispObject list = NIL;
         for (int i = args.length; i-- > 0;)
           list = new Cons(args[i], list);
-        return handleNPE(e, list);
-      }
+        return undefinedFunction(list);
+    }
+
+    return fun.execute(args);
   }
 
-  private final LispObject handleNPE(NullPointerException e, LispObject args)
+  private final LispObject undefinedFunction(LispObject args)
     throws ConditionThrowable
   {
-    if (function == null)
-      return LispThread.currentThread().execute(Symbol.UNDEFINED_FUNCTION_CALLED,
-                                                this, args);
-    Debug.trace(e);
-    return error(new LispError("Null pointer exception"));
+    return LispThread.currentThread().execute(Symbol.UNDEFINED_FUNCTION_CALLED,
+                                              this, args);
   }
 
   @Override
