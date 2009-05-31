@@ -845,6 +845,25 @@ public abstract class Lisp
         type_error(obj, Symbol.VECTOR);
   }
 
+  public static final DoubleFloat checkDoubleFloat(LispObject obj)
+    throws ConditionThrowable
+  {
+          if (obj instanceof DoubleFloat)
+                  return (DoubleFloat) obj;
+          return (DoubleFloat)// Not reached.
+            type_error(obj, Symbol.DOUBLE_FLOAT);
+  }
+
+  public static final SingleFloat checkSingleFloat(LispObject obj)
+    throws ConditionThrowable
+  {
+          if (obj instanceof SingleFloat)
+                  return (SingleFloat) obj;
+          return (SingleFloat)// Not reached.
+            type_error(obj, Symbol.SINGLE_FLOAT);
+  }
+
+
   static
   {
     // ### *gensym-counter*
