@@ -1062,19 +1062,26 @@ public final class LispThread extends LispObject
         }
     };
 
+    public static final long javaSleepInterval(LispObject lispSleep)
+            throws ConditionThrowable
+    {
+        double d =
+            checkDoubleFloat(lispSleep.multiplyBy(new DoubleFloat(1000))).getValue();
+        if (d < 0)
+            type_error(lispSleep, list(Symbol.REAL, Fixnum.ZERO));
+
+        return (d < Long.MAX_VALUE ? (long) d : Long.MAX_VALUE);
+    }
+
     // ### sleep
     private static final Primitive SLEEP = new Primitive("sleep", "seconds")
     {
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            double d =
-                ((DoubleFloat)arg.multiplyBy(new DoubleFloat(1000))).getValue();
-            if (d < 0)
-                return type_error(arg, list(Symbol.REAL, Fixnum.ZERO));
-            long millis = d < Long.MAX_VALUE ? (long) d : Long.MAX_VALUE;
+
             try {
-                Thread.sleep(millis);
+                Thread.sleep(javaSleepInterval(arg));
             }
             catch (InterruptedException e) {
                 currentThread().processThreadInterrupts();
