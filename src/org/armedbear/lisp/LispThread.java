@@ -49,9 +49,12 @@ public final class LispThread extends LispObject
         @Override
         public LispThread initialValue() {
             Thread thisThread = Thread.currentThread();
-            LispThread newThread = new LispThread(thisThread);
-            LispThread.map.put(thisThread,newThread);
-            return newThread;
+            LispThread thread = LispThread.map.get(thisThread);
+            if (thread == null) {
+                thread = new LispThread(thisThread);
+                LispThread.map.put(thisThread,thread);
+            }
+            return thread;
         }
     };
 
@@ -60,7 +63,7 @@ public final class LispThread extends LispObject
         return threads.get();
     }
 
-   private final Thread javaThread;
+    private final Thread javaThread;
     private boolean destroyed;
     private final LispObject name;
     public SpecialBinding lastSpecialBinding;
@@ -103,6 +106,7 @@ public final class LispThread extends LispObject
         };
         javaThread = new Thread(r);
         this.name = name;
+        map.put(javaThread, this);
         javaThread.setDaemon(true);
         javaThread.start();
     }
