@@ -320,31 +320,40 @@ public class RandomAccessCharacterFile {
         internalFlush(false);
     }
 
+    private final boolean ensureReadBbuf(boolean force) throws IOException {
+        boolean bufReady = true;
+
+        if ((bbuf.remaining() == 0) || force) {
+            // need to read from the file.
+
+            if (bbufIsDirty) {
+                bbuf.flip();
+                fcn.position(bbufpos);
+                fcn.write(bbuf);
+                bbufpos = bbufpos+bbuf.position();
+                bbuf.clear();
+            } else {
+                fcn.position(bbufpos + bbuf.limit());
+                bbufpos += bbuf.position();
+                bbuf.compact();
+            }
+
+            bufReady = (fcn.read(bbuf) != -1);
+            fcnpos = fcn.position();
+            // update bbufpos.
+            bbuf.flip();
+        }
+
+        return bufReady;
+    }
+
     private int read(char[] cb, int off, int len) throws IOException {
         CharBuffer cbuf = CharBuffer.wrap(cb, off, len);
         boolean decodeWasUnderflow = false;
         boolean atEof = false;
         while ((cbuf.remaining() > 0) && dataIsAvailableForRead() && ! atEof) {
-            if ((bbuf.remaining() == 0) || decodeWasUnderflow) {
-                // need to read from the file.
 
-                if (bbufIsDirty) {
-                    bbuf.flip();
-                    fcn.position(bbufpos);
-                    fcn.write(bbuf);
-                    bbufpos = bbufpos+bbuf.position();
-                    bbuf.clear();
-                } else {
-                    fcn.position(bbufpos + bbuf.limit());
-                    bbufpos += bbuf.position();
-                    bbuf.compact();
-                }
-
-                atEof = (fcn.read(bbuf) == -1);
-                fcnpos = fcn.position();
-                // update bbufpos.
-                bbuf.flip();
-            }
+            atEof = ! ensureReadBbuf(decodeWasUnderflow);
             CoderResult r = cdec.decode(bbuf, cbuf, pointingAtEOF() );
             decodeWasUnderflow = (CoderResult.UNDERFLOW == r);
         }
@@ -457,21 +466,8 @@ public class RandomAccessCharacterFile {
         boolean atEof = false;
         while (pos - off < len && dataIsAvailableForRead()
                && ! atEof) {
-            if (bbuf.remaining() == 0) {
-                // need to read from the file.
-                flushBbuf(); // in case bbuf is dirty.
-                // update bbufpos.
-                bbufpos += bbuf.limit();
-                // if reads and writes are mixed, we may need to seek first.
-                if (bbufpos != fcnpos) {
-                    fcn.position(bbufpos);
-                }
-                // need to read data from file.
-                bbuf.clear();
-                atEof = (fcn.read(bbuf) == -1);
-                bbuf.flip();
-                fcnpos = bbufpos + bbuf.remaining();
-            }
+
+            atEof = ! ensureReadBbuf(false);
             int want = len - pos;
             if (want > bbuf.remaining()) {
                 want = bbuf.remaining();
