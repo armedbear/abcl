@@ -435,12 +435,10 @@ public class RandomAccessCharacterFile {
 
         fcn.position(bbufpos);
 
-        bbuf.position(0);
-        if (bbufpos + bbuf.limit() > fcnsize) {
-            // the buffer is at the end of the file.
-            // area beyond fcnsize does not have data.
-            bbuf.limit((int)(fcnsize - bbufpos));
-        }
+        // if the buffer is dirty, the modifications have to be
+        // before position(): before re-positioning, this.position()
+        // calls this function.
+        bbuf.flip();
         fcn.write(bbuf);
 
         bbufpos += bbuf.position();
