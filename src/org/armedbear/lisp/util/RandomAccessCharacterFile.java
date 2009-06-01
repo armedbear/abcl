@@ -509,11 +509,6 @@ public class RandomAccessCharacterFile {
 
     private final void write(byte[] b, int off, int len) throws IOException {
         int pos = off;
-        if (len > bbuf.limit()) {
-            if (bbufIsDirty)
-                flushBbuf(false);
-            fcn.write(ByteBuffer.wrap(b, off, len));
-        }
         while (pos < off + len) {
             int want = len;
             if (want > bbuf.remaining()) {
