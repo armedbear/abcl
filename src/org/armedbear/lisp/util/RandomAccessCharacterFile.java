@@ -62,7 +62,7 @@ public class RandomAccessCharacterFile {
         private byte[] read_buf = new byte[1];
 
         @Override
-        public int read() throws IOException {
+        public final int read() throws IOException {
             int len = read(read_buf);
             if (len == 1) {
                 // byte is signed, char is unsigned, int is signed.
@@ -74,59 +74,59 @@ public class RandomAccessCharacterFile {
         }
                 
         @Override
-        public int read(byte[] b, int off, int len) throws IOException {
+        public final int read(byte[] b, int off, int len) throws IOException {
             return RandomAccessCharacterFile.this.read(b, off, len);
         }
 
         @Override
-        public void unread(int b) throws IOException {
+        public final void unread(int b) throws IOException {
             RandomAccessCharacterFile.this.unreadByte((byte)b);
         }
 
         @Override
-        public void unread(byte[] b, int off, int len) throws IOException {
+        public final void unread(byte[] b, int off, int len) throws IOException {
             for (int i = 0; i < len; i++)
                 this.unread(b[off+i]);
         }
 
         @Override
-        public void unread(byte[] b) throws IOException {
+        public final void unread(byte[] b) throws IOException {
             this.unread(b, 0, b.length);
         }
 
         @Override
-        public int available() throws IOException {
+        public final int available() throws IOException {
             return (int)(RandomAccessCharacterFile.this.length()
                             - RandomAccessCharacterFile.this.position());
         }
 
         @Override
-        public synchronized void mark(int readlimit) {
+        public final synchronized void mark(int readlimit) {
         }
 
         @Override
-        public boolean markSupported() {
+        public final boolean markSupported() {
             return false;
         }
 
         @Override
-        public synchronized void reset() throws IOException {
+        public final synchronized void reset() throws IOException {
             throw new IOException("Operation not supported");
         }
 
         @Override
-        public long skip(long n) throws IOException {
+        public final long skip(long n) throws IOException {
             RandomAccessCharacterFile.this.position(RandomAccessCharacterFile.this.position()+n);
             return n;
         }
 
         @Override
-        public int read(byte[] b) throws IOException {
+        public final int read(byte[] b) throws IOException {
             return this.read(b, 0, b.length);
         }
 
         @Override
-        public void close() throws IOException {
+        public final void close() throws IOException {
             RandomAccessCharacterFile.this.close();
         }
     }
@@ -137,23 +137,23 @@ public class RandomAccessCharacterFile {
         }
 
         private byte[] buf = new byte[1];
-        public void write(int b) throws IOException {
+        public final void write(int b) throws IOException {
             buf[0] = (byte)b;
             write(buf);
         }
 
         @Override
-            public void write(byte[] b, int off, int len) throws IOException {
+        public final void write(byte[] b, int off, int len) throws IOException {
             RandomAccessCharacterFile.this.write(b, off, len);
         }
 
         @Override
-        public void flush() throws IOException {
+        public final void flush() throws IOException {
             RandomAccessCharacterFile.this.flush();
         }
 
         @Override
-        public void close() throws IOException {
+        public final void close() throws IOException {
             RandomAccessCharacterFile.this.close();
         }
     }
@@ -170,15 +170,15 @@ public class RandomAccessCharacterFile {
                 super(staticReader);
         }
 
-            @Override
-        public void close() throws IOException {
+        @Override
+        public final void close() throws IOException {
             RandomAccessCharacterFile.this.close();
         }
         
         private char[] read_buf = new char[1];
 
         @Override
-        public int read() throws IOException {
+        public final int read() throws IOException {
             int n = this.read(read_buf);
             
             if (n == 1)
@@ -188,34 +188,34 @@ public class RandomAccessCharacterFile {
         }
 
         @Override
-        public void unread(int c) throws IOException {
+        public final void unread(int c) throws IOException {
             RandomAccessCharacterFile.this.unreadChar((char)c);
         }
 
         @Override
-        public void unread(char[] cbuf, int off, int len) throws IOException {
+        public final void unread(char[] cbuf, int off, int len) throws IOException {
             for (int i = 0; i < len; i++)
                 this.unread(cbuf[off+i]);
         }
 
         @Override
-        public void unread(char[] cbuf) throws IOException {
+        public final void unread(char[] cbuf) throws IOException {
             this.unread(cbuf, 0, cbuf.length);
         }
 
         @Override
-        public int read(CharBuffer target) throws IOException {
+        public final int read(CharBuffer target) throws IOException {
             //FIXME: to be implemented
             throw new IOException("Not implemented");
         }
 
         @Override
-        public int read(char[] cbuf) throws IOException {
+        public final int read(char[] cbuf) throws IOException {
             return RandomAccessCharacterFile.this.read(cbuf, 0, cbuf.length);
         }
         
         @Override
-        public int read(char[] cb, int off, int len) throws IOException {
+        public final int read(char[] cb, int off, int len) throws IOException {
             return RandomAccessCharacterFile.this.read(cb, off, len);
         }
     }
@@ -225,16 +225,16 @@ public class RandomAccessCharacterFile {
         private RandomAccessWriter() {
         }
 
-        public void close() throws IOException {
+        public final void close() throws IOException {
             RandomAccessCharacterFile.this.close();
         }
 
-        public void flush() throws IOException {
+        public final void flush() throws IOException {
             RandomAccessCharacterFile.this.flush();
         }
 
         @Override
-            public void write(char[] cb, int off, int len) throws IOException {
+        public final void write(char[] cb, int off, int len) throws IOException {
             RandomAccessCharacterFile.this.write(cb, off, len);
         }
 
@@ -312,12 +312,12 @@ public class RandomAccessCharacterFile {
         return outputStream;
     }
 	
-    public void close() throws IOException {
+    public final void close() throws IOException {
         internalFlush(true);
         fcn.close();
     }
 	
-    public void flush() throws IOException {
+    public final void flush() throws IOException {
         internalFlush(false);
     }
 
@@ -348,7 +348,7 @@ public class RandomAccessCharacterFile {
         return bufReady;
     }
 
-    private int read(char[] cb, int off, int len) throws IOException {
+    private final int read(char[] cb, int off, int len) throws IOException {
         CharBuffer cbuf = CharBuffer.wrap(cb, off, len);
         boolean decodeWasUnderflow = false;
         boolean atEof = false;
@@ -365,12 +365,12 @@ public class RandomAccessCharacterFile {
         }
     }
 
-    private void write(char[] cb, int off, int len) throws IOException {
+    private final void write(char[] cb, int off, int len) throws IOException {
         CharBuffer cbuf = CharBuffer.wrap(cb, off, len);
         encodeAndWrite(cbuf, false, false);
     }
 
-    private void internalFlush(boolean endOfFile) throws IOException {
+    private final void internalFlush(boolean endOfFile) throws IOException {
         if (endOfFile) {
             CharBuffer cbuf = CharBuffer.allocate(0);
             encodeAndWrite(cbuf, true, endOfFile);
@@ -379,7 +379,7 @@ public class RandomAccessCharacterFile {
         }
     }
 
-    private void encodeAndWrite(CharBuffer cbuf, boolean flush, boolean endOfFile) throws IOException {
+    private final void encodeAndWrite(CharBuffer cbuf, boolean flush, boolean endOfFile) throws IOException {
         while (cbuf.remaining() > 0) {
             CoderResult r = cenc.encode(cbuf, bbuf, endOfFile);
             bbufIsDirty = true;
@@ -398,7 +398,7 @@ public class RandomAccessCharacterFile {
         }
     }
 
-    public void position(long newPosition) throws IOException {
+    public final void position(long newPosition) throws IOException {
         flushBbuf();
         long bbufend = bbufpos + bbuf.limit();
         if (newPosition >= bbufpos && newPosition < bbufend) {
@@ -414,17 +414,17 @@ public class RandomAccessCharacterFile {
         }
     }
 	
-    public long position() throws IOException {
+    public final long position() throws IOException {
         flushBbuf();
         return bbufpos + bbuf.position(); // the logical position within the file.
     }
 
-    public long length() throws IOException {
+    public final long length() throws IOException {
         flushBbuf();
         return fcn.size();
     }
 
-    private void flushBbuf() throws IOException {
+    private final void flushBbuf() throws IOException {
         if (! bbufIsDirty)
             return;
 
@@ -443,7 +443,7 @@ public class RandomAccessCharacterFile {
         bbufIsReadable = false;
     }
 
-    public int read(byte[] b, int off, int len) throws IOException {
+    public final int read(byte[] b, int off, int len) throws IOException {
         int pos = off;
         boolean atEof = false;
         while (pos - off < len && ! atEof) {
@@ -467,7 +467,7 @@ public class RandomAccessCharacterFile {
     // Example of such code is ISO-2022-JP which is used in Japanese e-mail.
     private CharBuffer singleCharBuf;
     private ByteBuffer shortByteBuf;
-    public void unreadChar(char c) throws IOException {
+    public final void unreadChar(char c) throws IOException {
         // algorithm :
         //  1. encode c into bytes, to find out how many bytes it corresponds to
         //  2. move the position backwards that many bytes.
@@ -494,12 +494,12 @@ public class RandomAccessCharacterFile {
         position(pos);
     }
 	
-    public void unreadByte(byte b) throws IOException {
+    public final void unreadByte(byte b) throws IOException {
         long pos = position() - 1;
         position(pos);
     }
 
-    private void write(byte[] b, int off, int len) throws IOException {
+    private final void write(byte[] b, int off, int len) throws IOException {
         int pos = off;
         if (len > bbuf.limit()) {
             if (bbufIsDirty)
