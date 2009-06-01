@@ -248,7 +248,6 @@ public class RandomAccessCharacterFile {
     private RandomAccessInputStream inputStream;
     private RandomAccessOutputStream outputStream;
     private FileChannel fcn;
-    private long fcnpos; /* where fcn is pointing now. */
     private long fcnsize; /* the file size */
 	
     private Charset cset;
@@ -270,7 +269,6 @@ public class RandomAccessCharacterFile {
     public RandomAccessCharacterFile(RandomAccessFile raf, String encoding) throws IOException {
 
         fcn = raf.getChannel();
-        fcnpos = fcn.position();
         fcnsize = fcn.size();
 
         cset = (encoding == null) ? Charset.defaultCharset() : Charset.forName(encoding);
@@ -339,8 +337,6 @@ public class RandomAccessCharacterFile {
             }
 
             bufReady = (fcn.read(bbuf) != -1);
-            fcnpos = fcn.position();
-            // update bbufpos.
             bbuf.flip();
         }
 
@@ -354,7 +350,7 @@ public class RandomAccessCharacterFile {
         while ((cbuf.remaining() > 0) && dataIsAvailableForRead() && ! atEof) {
 
             atEof = ! ensureReadBbuf(decodeWasUnderflow);
-            CoderResult r = cdec.decode(bbuf, cbuf, atEof);
+            CoderResult r = cdec.decode(bbuf, cbuf, atEof );
             decodeWasUnderflow = (CoderResult.UNDERFLOW == r);
         }
         if (cbuf.remaining() == len) {
@@ -365,7 +361,7 @@ public class RandomAccessCharacterFile {
     }
 
     private boolean dataIsAvailableForRead() throws IOException {
-        return ((bbuf.remaining() > 0) || (fcn.position() < fcn.size()));
+        return ((bbuf.remaining() > 0) || (bbufpos + bbuf.position() < fcn.size()));
     }
 
     private void write(char[] cb, int off, int len) throws IOException {
@@ -395,10 +391,9 @@ public class RandomAccessCharacterFile {
                 flushBbuf();
                 bbufpos += bbuf.limit();
                 bbuf.clear();
-                if (fcnpos < fcnsize) {
+                if (bbufpos < fcnsize) {
                     fcn.read(bbuf);
                     bbuf.flip();
-                    fcnpos += bbuf.remaining();
                 }
             // if we are at the end of file, bbuf is simply cleared.
             // in that case, bbufpos + bbuf.position points to the EOF, not fcnpos.
@@ -419,10 +414,9 @@ public class RandomAccessCharacterFile {
             // far seek. discard the buffer.
             flushBbuf();
             fcn.position(newPosition);
-            fcnpos = newPosition;
             bbuf.clear();
             bbuf.flip(); // "there is no useful data on this buffer yet."
-            bbufpos = fcnpos;
+            bbufpos = newPosition;
         }
     }
 	
@@ -440,8 +434,7 @@ public class RandomAccessCharacterFile {
         if (! bbufIsDirty)
             return;
 
-        if (fcnpos != bbufpos)
-            fcn.position(bbufpos);
+        fcn.position(bbufpos);
 
         bbuf.position(0);
         if (bbufpos + bbuf.limit() > fcnsize) {
@@ -450,7 +443,6 @@ public class RandomAccessCharacterFile {
             bbuf.limit((int)(fcnsize - bbufpos));
         }
         fcn.write(bbuf);
-        fcnpos = bbufpos + bbuf.limit();
         bbufIsDirty = false;
     }
 
@@ -517,9 +509,7 @@ public class RandomAccessCharacterFile {
             if (bbufIsDirty)
                 flushBbuf();
             fcn.write(ByteBuffer.wrap(b, off, len));
-            fcnpos = fcn.position();
-            if (fcnpos > fcnsize)
-                fcnsize = fcnpos;
+            fcnsize = fcn.size();
         }
         while (pos < off + len) {
             int want = len;
@@ -538,11 +528,10 @@ public class RandomAccessCharacterFile {
                 flushBbuf();
                 bbufpos += bbuf.limit();
                 bbuf.clear();
-                if (fcn.position() < fcnsize) {
-                    bbufpos = fcn.position();
+                if (bbufpos < fcnsize) {
+                    fcn.position(bbufpos);
                     fcn.read(bbuf);
                     bbuf.flip();
-                    fcnpos += bbuf.remaining();
                 }
                 // if we are at the end of file, bbuf is simply cleared.
                 // in that case, bbufpos + bbuf.position points to the EOF, not fcnpos.
