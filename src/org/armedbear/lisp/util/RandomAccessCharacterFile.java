@@ -354,7 +354,7 @@ public class RandomAccessCharacterFile {
         while ((cbuf.remaining() > 0) && dataIsAvailableForRead() && ! atEof) {
 
             atEof = ! ensureReadBbuf(decodeWasUnderflow);
-            CoderResult r = cdec.decode(bbuf, cbuf, pointingAtEOF() );
+            CoderResult r = cdec.decode(bbuf, cbuf, atEof);
             decodeWasUnderflow = (CoderResult.UNDERFLOW == r);
         }
         if (cbuf.remaining() == len) {
@@ -366,10 +366,6 @@ public class RandomAccessCharacterFile {
 
     private boolean dataIsAvailableForRead() throws IOException {
         return ((bbuf.remaining() > 0) || (fcn.position() < fcn.size()));
-    }
-	
-    private boolean pointingAtEOF() {
-        return (bbuf.remaining() == 0) && (fcnpos == fcnsize);
     }
 
     private void write(char[] cb, int off, int len) throws IOException {
