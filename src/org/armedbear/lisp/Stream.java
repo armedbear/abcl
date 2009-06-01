@@ -1793,9 +1793,9 @@ public class Stream extends LispObject
    */
   protected int _readChar() throws ConditionThrowable
   {
-    if (pastEnd)
-      return -1;
-    
+    if (reader == null)
+        streamNotCharacterInputStream();
+
     try
       {
         int n = reader.read();
@@ -1822,11 +1822,6 @@ public class Stream extends LispObject
         }
 
         return n;
-      }
-    catch (NullPointerException e)
-      {
-        // reader is null
-        streamNotCharacterInputStream();
       }
     catch (IOException e)
       {
