@@ -387,9 +387,6 @@ public class RandomAccessCharacterFile {
     }
 
     private void encodeAndWrite(CharBuffer cbuf, boolean flush, boolean endOfFile) throws IOException {
-        if (bbufpos == fcnsize) {
-            bbuf.clear();
-        }
         while (cbuf.remaining() > 0) {
             CoderResult r = cenc.encode(cbuf, bbuf, endOfFile);
             bbufIsDirty = true;
