@@ -218,6 +218,11 @@ public class RandomAccessCharacterFile {
         public final int read(char[] cb, int off, int len) throws IOException {
             return RandomAccessCharacterFile.this.read(cb, off, len);
         }
+
+        @Override
+        public final boolean ready() throws IOException {
+            return true;
+        }
     }
 
     private class RandomAccessWriter extends Writer {
