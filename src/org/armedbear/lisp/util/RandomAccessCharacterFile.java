@@ -258,7 +258,6 @@ public class RandomAccessCharacterFile {
     private RandomAccessInputStream inputStream;
     private RandomAccessOutputStream outputStream;
     private FileChannel fcn;
-    private long fcnsize; /* the file size */
 	
     private Charset cset;
     private CharsetEncoder cenc;
@@ -280,7 +279,6 @@ public class RandomAccessCharacterFile {
     public RandomAccessCharacterFile(RandomAccessFile raf, String encoding) throws IOException {
 
         fcn = raf.getChannel();
-        fcnsize = fcn.size();
 
         cset = (encoding == null) ? Charset.defaultCharset() : Charset.forName(encoding);
         cdec = cset.newDecoder();
@@ -393,11 +391,6 @@ public class RandomAccessCharacterFile {
         while (cbuf.remaining() > 0) {
             CoderResult r = cenc.encode(cbuf, bbuf, endOfFile);
             bbufIsDirty = true;
-            long curpos = bbufpos + bbuf.position();
-            if (curpos > fcnsize) {
-                // the file is extended.
-                fcnsize = curpos;
-            }
             if (CoderResult.OVERFLOW == r || bbuf.remaining() == 0) {
                 flushBbuf();
                 bbuf.clear();
@@ -515,7 +508,6 @@ public class RandomAccessCharacterFile {
             if (bbufIsDirty)
                 flushBbuf();
             fcn.write(ByteBuffer.wrap(b, off, len));
-            fcnsize = fcn.size();
         }
         while (pos < off + len) {
             int want = len;
@@ -525,11 +517,6 @@ public class RandomAccessCharacterFile {
             bbuf.put(b, pos, want);
             pos += want;
             bbufIsDirty = true;
-            long curpos = bbufpos + bbuf.position();
-            if (curpos > fcnsize) {
-                // the file is extended.
-                fcnsize = curpos;
-            }
             if (bbuf.remaining() == 0) {
                 flushBbuf();
                 bbuf.clear();
