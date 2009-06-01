@@ -403,15 +403,14 @@ public class RandomAccessCharacterFile {
 
     public final void position(long newPosition) throws IOException {
         flushBbuf();
-        long bbufend = bbufpos + // in case bbuf is readable, its contents is valid
-            bbufIsReadable ? bbuf.limit() : bbuf.position(); // beyond position()
+        long bbufend = bbufpos // in case bbuf is readable, its contents is valid
+            + (bbufIsReadable ? bbuf.limit() : bbuf.position()); // beyond position()
         if (newPosition >= bbufpos && newPosition < bbufend) {
             // near seek. within existing data of bbuf.
             bbuf.position((int)(newPosition - bbufpos));
         } else {
-            // far seek. discard the buffer.
-            flushBbuf();
             fcn.position(newPosition);
+            // far seek; discard the buffer (it's already cleared)
             bbuf.clear();
             bbuf.flip(); // "there is no useful data on this buffer yet."
             bbufpos = newPosition;
@@ -419,7 +418,6 @@ public class RandomAccessCharacterFile {
     }
 	
     public final long position() throws IOException {
-        flushBbuf();
         return bbufpos + bbuf.position(); // the logical position within the file.
     }
 
