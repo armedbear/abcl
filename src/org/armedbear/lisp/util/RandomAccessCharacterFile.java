@@ -383,7 +383,7 @@ public class RandomAccessCharacterFile {
             CharBuffer cbuf = CharBuffer.allocate(0);
             encodeAndWrite(cbuf, true, endOfFile);
         } else {
-            flushBbuf();
+            flushBbuf(false);
         }
     }
 
@@ -392,17 +392,17 @@ public class RandomAccessCharacterFile {
             CoderResult r = cenc.encode(cbuf, bbuf, endOfFile);
             bbufIsDirty = true;
             if (CoderResult.OVERFLOW == r || bbuf.remaining() == 0) {
-                flushBbuf();
+                flushBbuf(false);
                 bbuf.clear();
             }
         }
         if (bbuf.position() > 0 && bbufIsDirty && flush) {
-            flushBbuf();
+            flushBbuf(false);
         }
     }
 
     public final void position(long newPosition) throws IOException {
-        flushBbuf();
+        flushBbuf(true);
         long bbufend = bbufpos // in case bbuf is readable, its contents is valid
             + (bbufIsReadable ? bbuf.limit() : bbuf.position()); // beyond position()
         if (newPosition >= bbufpos && newPosition < bbufend) {
@@ -422,11 +422,11 @@ public class RandomAccessCharacterFile {
     }
 
     public final long length() throws IOException {
-        flushBbuf();
+        flushBbuf(false);
         return fcn.size();
     }
 
-    private final void flushBbuf() throws IOException {
+    private final void flushBbuf(boolean commitOnly) throws IOException {
         if (! bbufIsDirty)
             return;
 
@@ -435,6 +435,12 @@ public class RandomAccessCharacterFile {
         // if the buffer is dirty, the modifications have to be
         // before position(): before re-positioning, this.position()
         // calls this function.
+        if (commitOnly || bbufIsReadable) {
+            ByteBuffer dup = bbuf.duplicate();
+            dup.flip();
+            fcn.write(dup);
+            return;
+        }
         bbuf.flip();
         fcn.write(bbuf);
 
@@ -505,7 +511,7 @@ public class RandomAccessCharacterFile {
         int pos = off;
         if (len > bbuf.limit()) {
             if (bbufIsDirty)
-                flushBbuf();
+                flushBbuf(false);
             fcn.write(ByteBuffer.wrap(b, off, len));
         }
         while (pos < off + len) {
@@ -517,7 +523,7 @@ public class RandomAccessCharacterFile {
             pos += want;
             bbufIsDirty = true;
             if (bbuf.remaining() == 0) {
-                flushBbuf();
+                flushBbuf(false);
                 bbuf.clear();
             }
         }
