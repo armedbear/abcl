@@ -328,7 +328,7 @@ public class RandomAccessCharacterFile {
                 bbuf.flip();
                 fcn.position(bbufpos);
                 fcn.write(bbuf);
-                bbufpos = bbufpos+bbuf.position();
+                bbufpos += bbuf.position();
                 bbuf.clear();
             } else {
                 fcn.position(bbufpos + bbuf.limit());
@@ -389,7 +389,6 @@ public class RandomAccessCharacterFile {
             }
             if (CoderResult.OVERFLOW == r || bbuf.remaining() == 0) {
                 flushBbuf();
-                bbufpos += bbuf.limit();
                 bbuf.clear();
                 if (bbufpos < fcnsize) {
                     fcn.read(bbuf);
@@ -443,6 +442,10 @@ public class RandomAccessCharacterFile {
             bbuf.limit((int)(fcnsize - bbufpos));
         }
         fcn.write(bbuf);
+
+        bbufpos += bbuf.position();
+        bbuf.clear();
+        bbuf.flip(); // there's no useable data in this buffer
         bbufIsDirty = false;
     }
 
@@ -526,7 +529,6 @@ public class RandomAccessCharacterFile {
             }
             if (bbuf.remaining() == 0) {
                 flushBbuf();
-                bbufpos += bbuf.limit();
                 bbuf.clear();
                 if (bbufpos < fcnsize) {
                     fcn.position(bbufpos);
