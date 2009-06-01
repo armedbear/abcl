@@ -139,7 +139,12 @@ public class RandomAccessCharacterFile {
         private byte[] buf = new byte[1];
         public final void write(int b) throws IOException {
             buf[0] = (byte)b;
-            write(buf);
+            RandomAccessCharacterFile.this.write(buf, 0, 1);
+        }
+
+        @Override
+        public final void write(byte[] b) throws IOException {
+            RandomAccessCharacterFile.this.write(b, 0, b.length);
         }
 
         @Override
