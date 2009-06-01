@@ -264,6 +264,7 @@ public class RandomAccessCharacterFile {
      */
     private ByteBuffer bbuf;
     private boolean bbufIsDirty; /* whether bbuf holds data that must be written. */
+    private boolean bbufIsReadable; /* whether bbuf.remaining() contains readable content. */
     private long bbufpos; /* where the beginning of bbuf is pointing in the file now. */
 
     public RandomAccessCharacterFile(RandomAccessFile raf, String encoding) throws IOException {
@@ -284,6 +285,8 @@ public class RandomAccessCharacterFile {
 
         // there is no write pending data in the buffers.
         bbufIsDirty = false;
+
+        bbufIsReadable = false;
 
         bbufpos = fcn.position();
 
@@ -321,7 +324,7 @@ public class RandomAccessCharacterFile {
     private final boolean ensureReadBbuf(boolean force) throws IOException {
         boolean bufReady = true;
 
-        if ((bbuf.remaining() == 0) || force) {
+        if ((bbuf.remaining() == 0) || force || ! bbufIsReadable) {
             // need to read from the file.
 
             if (bbufIsDirty) {
@@ -331,13 +334,15 @@ public class RandomAccessCharacterFile {
                 bbufpos += bbuf.position();
                 bbuf.clear();
             } else {
-                fcn.position(bbufpos + bbuf.limit());
+                int bbufEnd = bbufIsReadable ? bbuf.limit() : bbuf.position();
+                fcn.position(bbufpos + bbufEnd);
                 bbufpos += bbuf.position();
                 bbuf.compact();
             }
 
             bufReady = (fcn.read(bbuf) != -1);
             bbuf.flip();
+            bbufIsReadable = true;
         }
 
         return bufReady;
@@ -347,7 +352,7 @@ public class RandomAccessCharacterFile {
         CharBuffer cbuf = CharBuffer.wrap(cb, off, len);
         boolean decodeWasUnderflow = false;
         boolean atEof = false;
-        while ((cbuf.remaining() > 0) && dataIsAvailableForRead() && ! atEof) {
+        while ((cbuf.remaining() > 0) && ! atEof) {
 
             atEof = ! ensureReadBbuf(decodeWasUnderflow);
             CoderResult r = cdec.decode(bbuf, cbuf, atEof );
@@ -358,10 +363,6 @@ public class RandomAccessCharacterFile {
         } else {
             return len - cbuf.remaining();
         }
-    }
-
-    private boolean dataIsAvailableForRead() throws IOException {
-        return ((bbuf.remaining() > 0) || (bbufpos + bbuf.position() < fcn.size()));
     }
 
     private void write(char[] cb, int off, int len) throws IOException {
@@ -390,12 +391,6 @@ public class RandomAccessCharacterFile {
             if (CoderResult.OVERFLOW == r || bbuf.remaining() == 0) {
                 flushBbuf();
                 bbuf.clear();
-                if (bbufpos < fcnsize) {
-                    fcn.read(bbuf);
-                    bbuf.flip();
-                }
-            // if we are at the end of file, bbuf is simply cleared.
-            // in that case, bbufpos + bbuf.position points to the EOF, not fcnpos.
             }
         }
         if (bbuf.position() > 0 && bbufIsDirty && flush) {
@@ -445,13 +440,13 @@ public class RandomAccessCharacterFile {
         bbuf.clear();
         bbuf.flip(); // there's no useable data in this buffer
         bbufIsDirty = false;
+        bbufIsReadable = false;
     }
 
     public int read(byte[] b, int off, int len) throws IOException {
         int pos = off;
         boolean atEof = false;
-        while (pos - off < len && dataIsAvailableForRead()
-               && ! atEof) {
+        while (pos - off < len && ! atEof) {
 
             atEof = ! ensureReadBbuf(false);
             int want = len - pos;
@@ -528,13 +523,6 @@ public class RandomAccessCharacterFile {
             if (bbuf.remaining() == 0) {
                 flushBbuf();
                 bbuf.clear();
-                if (bbufpos < fcnsize) {
-                    fcn.position(bbufpos);
-                    fcn.read(bbuf);
-                    bbuf.flip();
-                }
-                // if we are at the end of file, bbuf is simply cleared.
-                // in that case, bbufpos + bbuf.position points to the EOF, not fcnpos.
             }
         }
     }
