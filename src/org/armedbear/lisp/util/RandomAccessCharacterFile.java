@@ -403,7 +403,8 @@ public class RandomAccessCharacterFile {
 
     public final void position(long newPosition) throws IOException {
         flushBbuf();
-        long bbufend = bbufpos + bbuf.limit();
+        long bbufend = bbufpos + // in case bbuf is readable, its contents is valid
+            bbufIsReadable ? bbuf.limit() : bbuf.position(); // beyond position()
         if (newPosition >= bbufpos && newPosition < bbufend) {
             // near seek. within existing data of bbuf.
             bbuf.position((int)(newPosition - bbufpos));
