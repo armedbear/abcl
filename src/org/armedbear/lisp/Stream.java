@@ -1838,6 +1838,9 @@ public class Stream extends LispObject
    */
   protected void _unreadChar(int n) throws ConditionThrowable
   {
+    if (reader == null)
+        streamNotCharacterInputStream();
+
     try
       {
         reader.unread(n);
@@ -1845,11 +1848,6 @@ public class Stream extends LispObject
         pastEnd = false;
         if (n == eolChar)
           --lineNumber;
-      }
-    catch (NullPointerException e)
-      {
-        // reader is null
-        streamNotCharacterInputStream();
       }
     catch (IOException e)
       {
@@ -1864,14 +1862,12 @@ public class Stream extends LispObject
    */
   protected boolean _charReady() throws ConditionThrowable
   {
+    if (reader == null)
+        streamNotCharacterInputStream();
+
     try
       {
         return reader.ready();
-      }
-    catch (NullPointerException e)
-      {
-        // reader is null
-        streamNotCharacterInputStream();
       }
     catch (IOException e)
       {
