@@ -112,7 +112,8 @@
     (declare (type string name))
     (dotimes (i (length name))
       (declare (type fixnum i))
-      (when (char= (char name i) #\-)
+      (when (or (char= (char name i) #\-)
+		(char= (char name i) #\Space))
         (setf (char name i) #\_)))
     (concatenate 'string "org/armedbear/lisp/" name)))
 
