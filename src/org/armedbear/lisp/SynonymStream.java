@@ -125,19 +125,19 @@ public final class SynonymStream extends Stream
     }
 
     @Override
-    protected int _readChar() throws ConditionThrowable
+    protected int _readChar() throws ConditionThrowable, java.io.IOException
     {
         return checkStream(symbol.symbolValue())._readChar();
     }
 
     @Override
-    protected void _unreadChar(int n) throws ConditionThrowable
+    protected void _unreadChar(int n) throws ConditionThrowable, java.io.IOException
     {
         checkStream(symbol.symbolValue())._unreadChar(n);
     }
 
     @Override
-    protected boolean _charReady() throws ConditionThrowable
+    protected boolean _charReady() throws ConditionThrowable, java.io.IOException
     {
         return checkStream(symbol.symbolValue())._charReady();
     }

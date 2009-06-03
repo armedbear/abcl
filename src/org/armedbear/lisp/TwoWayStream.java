@@ -120,19 +120,19 @@ public class TwoWayStream extends Stream
 
     // Returns -1 at end of file.
     @Override
-    protected int _readChar() throws ConditionThrowable
+    protected int _readChar() throws ConditionThrowable, java.io.IOException
     {
         return in._readChar();
     }
 
     @Override
-    protected void _unreadChar(int n) throws ConditionThrowable
+    protected void _unreadChar(int n) throws ConditionThrowable, java.io.IOException
     {
         in._unreadChar(n);
     }
 
     @Override
-    protected boolean _charReady() throws ConditionThrowable
+    protected boolean _charReady() throws ConditionThrowable, java.io.IOException
     {
         return in._charReady();
     }

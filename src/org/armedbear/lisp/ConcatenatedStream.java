@@ -111,7 +111,14 @@ public final class ConcatenatedStream extends Stream
             else
                 return eofValue;
         }
-        return _charReady() ? readChar(eofError, eofValue) : NIL;
+	try 
+	  {
+	    return _charReady() ? readChar(eofError, eofValue) : NIL;
+	  }
+	catch (java.io.IOException e)
+	  {
+	    return error(new StreamError(this, e));
+	  }
     }
 
     @Override
@@ -132,7 +139,7 @@ public final class ConcatenatedStream extends Stream
 
     // Returns -1 at end of file.
     @Override
-    protected int _readChar() throws ConditionThrowable
+    protected int _readChar() throws ConditionThrowable, java.io.IOException
     {
         int n;
         if (unreadChar >= 0) {
@@ -159,7 +166,7 @@ public final class ConcatenatedStream extends Stream
     }
 
     @Override
-    protected boolean _charReady() throws ConditionThrowable
+    protected boolean _charReady() throws ConditionThrowable, java.io.IOException
     {
         if (unreadChar >= 0)
             return true;

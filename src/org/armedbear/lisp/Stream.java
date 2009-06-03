@@ -398,16 +398,22 @@ public class Stream extends LispObject
                                                  recursive, thread);
     if (result != eofValue && !recursive)
       {
-        if (_charReady())
+        try {
+          if (_charReady())
+            {
+              int n = _readChar();
+              if (n >= 0)
+                {
+                  char c = (char) n;
+                  Readtable rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
+                  if (!rt.isWhitespace(c))
+                      _unreadChar(c);
+                }
+            } 
+        }
+        catch (IOException e) 
           {
-            int n = _readChar();
-            if (n >= 0)
-              {
-                char c = (char) n;
-                Readtable rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
-                if (!rt.isWhitespace(c))
-                  _unreadChar(c);
-              }
+            return error(new StreamError(this, e));
           }
       }
     if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
@@ -432,7 +438,15 @@ public class Stream extends LispObject
         final Readtable rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
         while (true)
           {
-            int n = _readChar();
+            int n = -1;
+            try
+              {
+                n = _readChar();
+              }
+            catch (IOException e)
+              {
+                error(new StreamError(this, e));
+              }
             if (n < 0)
               {
                 if (eofError)
@@ -467,33 +481,40 @@ public class Stream extends LispObject
                              boolean recursive, LispThread thread)
     throws ConditionThrowable
   {
-    LispObject result = faslReadPreservingWhitespace(eofError, eofValue,
-                                                     recursive, thread);
-    if (result != eofValue && !recursive)
+    try 
       {
-        if (_charReady())
+        LispObject result = faslReadPreservingWhitespace(eofError, eofValue,
+                                                         recursive, thread);
+        if (result != eofValue && !recursive)
           {
-            int n = _readChar();
-            if (n >= 0)
+            if (_charReady())
               {
-                char c = (char) n;
-                Readtable rt = FaslReadtable.getInstance();
-                if (!rt.isWhitespace(c))
-                  _unreadChar(c);
+                int n = _readChar();
+                if (n >= 0)
+                  {
+                    char c = (char) n;
+                    Readtable rt = FaslReadtable.getInstance();
+                    if (!rt.isWhitespace(c))
+                        _unreadChar(c);
+                  }
               }
           }
+        if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
+            return NIL;
+        else
+            return result;
       }
-    if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
-      return NIL;
-    else
-      return result;
+    catch (IOException e)
+      {
+        return error(new StreamError(this, e));
+      }
   }
 
   private final LispObject faslReadPreservingWhitespace(boolean eofError,
                                                         LispObject eofValue,
                                                         boolean recursive,
                                                         LispThread thread)
-    throws ConditionThrowable
+      throws ConditionThrowable, IOException
   {
     if (recursive)
       {
@@ -504,16 +525,16 @@ public class Stream extends LispObject
             if (n < 0)
               {
                 if (eofError)
-                  return error(new EndOfFile(this));
+                    return error(new EndOfFile(this));
                 else
-                  return eofValue;
+                    return eofValue;
               }
             char c = (char) n;
             if (rt.isWhitespace(c))
-              continue;
+                continue;
             LispObject result = processChar(c, rt);
             if (result != null)
-              return result;
+                return result;
           }
       }
     else
@@ -683,65 +704,73 @@ public class Stream extends LispObject
     Readtable rt = null;
     if (useFaslReadtable)
       rt = FaslReadtable.getInstance();
-    while (true)
+    try 
       {
-        if (!useFaslReadtable)
-          rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
-        char c = flushWhitespace(rt);
-        if (c == ')')
+        while (true)
           {
-            return first == null ? NIL : first;
-          }
-        if (c == '.')
-          {
-            int n = _readChar();
-            if (n < 0)
-              return error(new EndOfFile(this));
-            char nextChar = (char) n;
-            if (isTokenDelimiter(nextChar, rt))
+            if (!useFaslReadtable)
+                rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
+            char c = flushWhitespace(rt);
+            if (c == ')')
               {
-                if (last == null)
+                return first == null ? NIL : first;
+              }
+            if (c == '.')
+              {
+                int n = _readChar();
+                if (n < 0)
+                    return error(new EndOfFile(this));
+                char nextChar = (char) n;
+                if (isTokenDelimiter(nextChar, rt))
                   {
-                    if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
-                      return NIL;
-                    else
-                      return error(new ReaderError("Nothing appears before . in list.",
-                                                    this));
+                    if (last == null)
+                      {
+                        if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
+                            return NIL;
+                        else
+                            return error(new ReaderError("Nothing appears before . in list.",
+                                                         this));
+                      }
+                    _unreadChar(nextChar);
+                    LispObject obj = read(true, NIL, true, thread);
+                    if (requireProperList)
+                      {
+                        if (!obj.listp())
+                            error(new ReaderError("The value " +
+                                                  obj.writeToString() +
+                                                  " is not of type " +
+                                                  Symbol.LIST.writeToString() + ".",
+                                                  this));
+                      }
+                    last.cdr = obj;
+                    continue;
                   }
+                // normal token beginning with '.'
                 _unreadChar(nextChar);
-                LispObject obj = read(true, NIL, true, thread);
-                if (requireProperList)
-                  {
-                    if (!obj.listp())
-                      error(new ReaderError("The value " +
-                                             obj.writeToString() +
-                                             " is not of type " +
-                                             Symbol.LIST.writeToString() + ".",
-                                             this));
-                  }
-                last.cdr = obj;
+              }
+            LispObject obj = processChar(c, rt);
+            if (obj == null)
+              {
+                // A comment.
                 continue;
               }
-            // normal token beginning with '.'
-            _unreadChar(nextChar);
+            if (first == null)
+              {
+                first = new Cons(obj);
+                last = first;
+              }
+            else
+              {
+                Cons newCons = new Cons(obj);
+                last.cdr = newCons;
+                last = newCons;
+              }
           }
-        LispObject obj = processChar(c, rt);
-        if (obj == null)
-          {
-            // A comment.
-            continue;
-          }
-        if (first == null)
-          {
-            first = new Cons(obj);
-            last = first;
-          }
-        else
-          {
-            Cons newCons = new Cons(obj);
-            last.cdr = newCons;
-            last = newCons;
-          }
+      }
+    catch (IOException e)
+      {
+        error(new StreamError(this, e));
+        return null;
       }
   }
 
@@ -767,18 +796,25 @@ public class Stream extends LispObject
     throws ConditionThrowable
   {
     int numArg = -1;
-    char c;
-    while (true)
+    char c = 0;
+    try 
       {
-        int n = _readChar();
-        if (n < 0)
-          return error(new EndOfFile(this));
-        c = (char) n;
-        if (c < '0' || c > '9')
-          break;
-        if (numArg < 0)
-          numArg = 0;
-        numArg = numArg * 10 + c - '0';
+        while (true)
+          {
+            int n = _readChar();
+            if (n < 0)
+                return error(new EndOfFile(this));
+            c = (char) n;
+            if (c < '0' || c > '9')
+                break;
+            if (numArg < 0)
+                numArg = 0;
+            numArg = numArg * 10 + c - '0';
+          }
+      }
+    catch (IOException e)
+      {
+        error(new StreamError(this, e));
       }
     final LispThread thread = LispThread.currentThread();
     final Readtable rt;
@@ -809,60 +845,74 @@ public class Stream extends LispObject
   public LispObject readCharacterLiteral(Readtable rt, LispThread thread)
     throws ConditionThrowable
   {
-    int n = _readChar();
-    if (n < 0)
-      return error(new EndOfFile(this));
-    char c = (char) n;
-    FastStringBuffer sb = new FastStringBuffer(c);
-    while (true)
+    try 
       {
-        n = _readChar();
+        int n = _readChar();
         if (n < 0)
-          break;
-        c = (char) n;
-        if (rt.isWhitespace(c))
-          break;
-        if (c == '(' || c == ')')
+            return error(new EndOfFile(this));
+        char c = (char) n;
+        FastStringBuffer sb = new FastStringBuffer(c);
+        while (true)
           {
-            _unreadChar(c);
-            break;
+            n = _readChar();
+            if (n < 0)
+                break;
+            c = (char) n;
+            if (rt.isWhitespace(c))
+                break;
+            if (c == '(' || c == ')')
+              {
+                _unreadChar(c);
+                break;
+              }
+            sb.append(c);
           }
-        sb.append(c);
+        if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
+            return NIL;
+        if (sb.length() == 1)
+            return LispCharacter.getInstance(sb.charAt(0));
+        String token = sb.toString();
+        n = LispCharacter.nameToChar(token);
+        if (n >= 0)
+            return LispCharacter.getInstance((char)n);
+        return error(new LispError("Unrecognized character name: \"" + token + '"'));
       }
-    if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
-      return NIL;
-    if (sb.length() == 1)
-      return LispCharacter.getInstance(sb.charAt(0));
-    String token = sb.toString();
-    n = LispCharacter.nameToChar(token);
-    if (n >= 0)
-      return LispCharacter.getInstance((char)n);
-    return error(new LispError("Unrecognized character name: \"" + token + '"'));
+    catch (IOException e)
+      {
+        return error(new StreamError(this, e));
+      }
   }
 
   public void skipBalancedComment() throws ConditionThrowable
   {
-    while (true)
+    try 
       {
-        int n = _readChar();
-        if (n < 0)
-          return;
-        if (n == '|')
+        while (true)
           {
-            n = _readChar();
-            if (n == '#')
-              return;
-            else
-              _unreadChar(n);
-          }
-        else if (n == '#')
-          {
-            n = _readChar();
+            int n = _readChar();
+            if (n < 0)
+                return;
             if (n == '|')
-              skipBalancedComment(); // Nested comment. Recurse!
-            else
-              _unreadChar(n);
+              {
+                n = _readChar();
+                if (n == '#')
+                    return;
+                else
+                    _unreadChar(n);
+              }
+            else if (n == '#')
+              {
+                n = _readChar();
+                if (n == '|')
+                    skipBalancedComment(); // Nested comment. Recurse!
+                else
+                    _unreadChar(n);
+              }
           }
+      }
+    catch (IOException e)
+      {
+        error(new StreamError(this, e));
       }
   }
 
@@ -979,32 +1029,39 @@ public class Stream extends LispObject
   private String readMultipleEscape(Readtable rt) throws ConditionThrowable
   {
     FastStringBuffer sb = new FastStringBuffer();
-    while (true)
+    try 
       {
-        int n = _readChar();
-        if (n < 0)
+        while (true)
           {
-            error(new EndOfFile(this));
-            // Not reached.
-            return null;
-          }
-        char c = (char) n;
-        byte syntaxType = rt.getSyntaxType(c);
-        if (syntaxType == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE)
-          {
-            n = _readChar();
+            int n = _readChar();
             if (n < 0)
               {
                 error(new EndOfFile(this));
                 // Not reached.
                 return null;
               }
-            sb.append((char)n);
-            continue;
+            char c = (char) n;
+            byte syntaxType = rt.getSyntaxType(c);
+            if (syntaxType == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE)
+              {
+                n = _readChar();
+                if (n < 0)
+                  {
+                    error(new EndOfFile(this));
+                    // Not reached.
+                    return null;
+                  }
+                sb.append((char)n);
+                continue;
+              }
+            if (syntaxType == Readtable.SYNTAX_TYPE_MULTIPLE_ESCAPE)
+                break;
+            sb.append(c);
           }
-        if (syntaxType == Readtable.SYNTAX_TYPE_MULTIPLE_ESCAPE)
-          break;
-        sb.append(c);
+      } 
+    catch (IOException e)
+      {
+        error(new StreamError(this, e));
       }
     return sb.toString();
   }
@@ -1159,7 +1216,16 @@ public class Stream extends LispObject
         byte syntaxType = rt.getSyntaxType(c);
         if (syntaxType == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE)
           {
-            int n = _readChar();
+            int n = -1;
+            try
+              {
+                n = _readChar();
+              }
+            catch (IOException e)
+              {
+                error(new StreamError(this, e));
+                return flags;
+              }
             if (n < 0)
               {
                 error(new EndOfFile(this));
@@ -1191,52 +1257,60 @@ public class Stream extends LispObject
             sb.setCharAt(0, LispCharacter.toLowerCase(c));
           }
       }
-    while (true)
-      {
-        int n = _readChar();
-        if (n < 0)
-          break;
-        char c = (char) n;
-        if (rt.isWhitespace(c))
-          {
-            _unreadChar(n);
-            break;
-          }
-        byte syntaxType = rt.getSyntaxType(c);
-        if (syntaxType == Readtable.SYNTAX_TYPE_TERMINATING_MACRO)
-          {
-            _unreadChar(c);
-            break;
-          }
-        rt.checkInvalid(c, this);
-        if (syntaxType == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE)
-          {
-            n = _readChar();
-            if (n < 0)
+    try {
+      while (true)
+        {
+          int n = _readChar();
+          if (n < 0)
               break;
-            sb.append((char)n);
-            if (flags == null)
-              flags = new BitSet(sb.length());
-            flags.set(sb.length() - 1);
-            continue;
-          }
-        if (syntaxType == Readtable.SYNTAX_TYPE_MULTIPLE_ESCAPE)
-          {
-            int begin = sb.length();
-            sb.append(readMultipleEscape(rt));
-            int end = sb.length();
-            if (flags == null)
-              flags = new BitSet(sb.length());
-            for (int i = begin; i < end; i++)
-              flags.set(i);
-            continue;
-          }
-        if (readtableCase == Keyword.UPCASE)
-          c = LispCharacter.toUpperCase(c);
-        else if (readtableCase == Keyword.DOWNCASE)
-          c = LispCharacter.toLowerCase(c);
-        sb.append(c);
+          char c = (char) n;
+          if (rt.isWhitespace(c))
+            {
+              _unreadChar(n);
+              break;
+            }
+          byte syntaxType = rt.getSyntaxType(c);
+          if (syntaxType == Readtable.SYNTAX_TYPE_TERMINATING_MACRO)
+            {
+              _unreadChar(c);
+              break;
+            }
+          rt.checkInvalid(c, this);
+          if (syntaxType == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE)
+            {
+              n = _readChar();
+              if (n < 0)
+                  break;
+              sb.append((char)n);
+              if (flags == null)
+                  flags = new BitSet(sb.length());
+              flags.set(sb.length() - 1);
+              continue;
+            }
+          if (syntaxType == Readtable.SYNTAX_TYPE_MULTIPLE_ESCAPE)
+            {
+              int begin = sb.length();
+              sb.append(readMultipleEscape(rt));
+              int end = sb.length();
+              if (flags == null)
+                  flags = new BitSet(sb.length());
+              for (int i = begin; i < end; i++)
+                  flags.set(i);
+              continue;
+            }
+          if (readtableCase == Keyword.UPCASE)
+              c = LispCharacter.toUpperCase(c);
+          else if (readtableCase == Keyword.DOWNCASE)
+              c = LispCharacter.toLowerCase(c);
+          sb.append(c);
+        }
+    }
+    catch (IOException e)
+      {
+        error(new StreamError(this, e));
+        return flags;
       }
+
     return flags;
   }
 
@@ -1537,18 +1611,26 @@ public class Stream extends LispObject
 
   private char flushWhitespace(Readtable rt) throws ConditionThrowable
   {
-    while (true)
+    try 
       {
-        int n = _readChar();
-        if (n < 0)
+        while (true)
           {
-            error(new EndOfFile(this));
-            // Not reached.
-            return 0;
+            int n = _readChar();
+            if (n < 0)
+              {
+                error(new EndOfFile(this));
+                // Not reached.
+                return 0;
+              }
+            char c = (char) n;
+            if (!rt.isWhitespace(c))
+                return c;
           }
-        char c = (char) n;
-        if (!rt.isWhitespace(c))
-          return c;
+      } 
+    catch (IOException e)
+      {
+        error(new StreamError(this, e));
+        return 0;
       }
   }
 
@@ -1581,23 +1663,30 @@ public class Stream extends LispObject
   {
     final LispThread thread = LispThread.currentThread();
     FastStringBuffer sb = new FastStringBuffer();
-    while (true)
+    try 
       {
-        int n = _readChar();
-        if (n < 0)
+        while (true)
           {
-            if (sb.length() == 0)
+            int n = _readChar();
+            if (n < 0)
               {
-                if (eofError)
-                  return error(new EndOfFile(this));
-                return thread.setValues(eofValue, T);
+                if (sb.length() == 0)
+                  {
+                    if (eofError)
+                        return error(new EndOfFile(this));
+                    return thread.setValues(eofValue, T);
+                  }
+                return thread.setValues(new SimpleString(sb), T);
               }
-            return thread.setValues(new SimpleString(sb), T);
+            if (n == '\n')
+                return thread.setValues(new SimpleString(sb), NIL);
+            else
+                sb.append((char)n);
           }
-        if (n == '\n')
-          return thread.setValues(new SimpleString(sb), NIL);
-        else
-          sb.append((char)n);
+      } 
+    catch (IOException e)
+      {
+        return error(new StreamError(this, e));
       }
   }
 
@@ -1605,24 +1694,39 @@ public class Stream extends LispObject
   // recursive-p is ignored
   public LispObject readChar() throws ConditionThrowable
   {
-    int n = _readChar();
-    if (n < 0)
-      return error(new EndOfFile(this));
-    return LispCharacter.getInstance((char)n);
+    try 
+      {
+        int n = _readChar();
+        if (n < 0)
+            return error(new EndOfFile(this));
+        return LispCharacter.getInstance((char)n);
+      } 
+    catch (IOException e)
+      {
+        return error(new StreamError(this, e));
+      }
+
   }
 
   public LispObject readChar(boolean eofError, LispObject eofValue)
     throws ConditionThrowable
   {
-    int n = _readChar();
-    if (n < 0)
+    try 
       {
-        if (eofError)
-          return error(new EndOfFile(this));
-        else
-          return eofValue;
+        int n = _readChar();
+        if (n < 0)
+          {
+            if (eofError)
+                return error(new EndOfFile(this));
+            else
+                return eofValue;
+          }
+        return LispCharacter.getInstance((char)n);
       }
-    return LispCharacter.getInstance((char)n);
+    catch (IOException e)
+      {
+        return error(new StreamError(this, e));
+      }
   }
 
   // read-char-no-hang &optional stream eof-error-p eof-value recursive-p => char
@@ -1630,15 +1734,29 @@ public class Stream extends LispObject
   public LispObject readCharNoHang(boolean eofError, LispObject eofValue)
     throws ConditionThrowable
   {
-    return _charReady() ? readChar(eofError, eofValue) : NIL;
+    try 
+      {
+        return _charReady() ? readChar(eofError, eofValue) : NIL;
+      } 
+    catch (IOException e)
+      {
+        return error(new StreamError(this, e));
+      }
   }
 
 
   // unread-char character &optional input-stream => nil
   public LispObject unreadChar(LispCharacter c) throws ConditionThrowable
   {
-    _unreadChar(c.value);
-    return NIL;
+    try 
+      {
+        _unreadChar(c.value);
+        return NIL;
+      } 
+    catch (IOException e)
+      {
+        return error(new StreamError(this, e));
+      }
   }
 
   public LispObject finishOutput() throws ConditionThrowable
@@ -1735,17 +1853,23 @@ public class Stream extends LispObject
   {
     if (pastEnd)
       return NIL;
-    
-    if (! _charReady())
-      return NIL;
-    
-    int n = _readChar();
-    if (n < 0)
-      return NIL;
-
-    _unreadChar(n);
-    
-    return T;
+    try
+      {
+        if (! _charReady())
+            return NIL;
+        
+        int n = _readChar();
+        if (n < 0)
+            return NIL;
+        
+        _unreadChar(n);
+        
+        return T;
+      }
+    catch (IOException e)
+      {
+        return error(new StreamError(this, e));
+      }
   }
 
   public LispObject fileLength() throws ConditionThrowable
@@ -1791,44 +1915,35 @@ public class Stream extends LispObject
    * @return a character, or -1 at end-of-file
    * @throws org.armedbear.lisp.ConditionThrowable
    */
-  protected int _readChar() throws ConditionThrowable
+  protected int _readChar() throws ConditionThrowable, IOException
   {
     if (reader == null)
         streamNotCharacterInputStream();
 
-    try
-      {
-        int n = reader.read();
+    int n = reader.read();
+    
+    if (n < 0) {
+        pastEnd = true;
+        return -1;
+    }
         
-        if (n < 0) {
-            pastEnd = true;
-            return -1;
+    ++offset;
+    if (eolStyle == EolStyle.CRLF && n == '\r') {
+        n = _readChar();
+        if (n != '\n') {
+            _unreadChar(n);
+            return '\r';
         }
-        
-        ++offset;
-        if (eolStyle == EolStyle.CRLF && n == '\r') {
-            n = _readChar();
-            if (n != '\n') {
-                _unreadChar(n);
-                return '\r';
-            }
-            else
-              return '\n';
-        }
+        else
+            return '\n';
+    }
 
-        if (n == eolChar) {
-          ++lineNumber;
-          return '\n';
-        }
+    if (n == eolChar) {
+        ++lineNumber;
+        return '\n';
+    }
 
-        return n;
-      }
-    catch (IOException e)
-      {
-        error(new StreamError(this, e));
-      }
-    // Not reached.
-    return -1;
+    return n;
   }
 
   /** Puts a character back into the (underlying) stream
@@ -1836,45 +1951,28 @@ public class Stream extends LispObject
    * @param n
    * @throws org.armedbear.lisp.ConditionThrowable
    */
-  protected void _unreadChar(int n) throws ConditionThrowable
+  protected void _unreadChar(int n) throws ConditionThrowable, IOException
   {
     if (reader == null)
         streamNotCharacterInputStream();
-
-    try
-      {
-        reader.unread(n);
-        --offset;
-        pastEnd = false;
-        if (n == eolChar)
-          --lineNumber;
-      }
-    catch (IOException e)
-      {
-        error(new StreamError(this, e));
-      }
+    reader.unread(n);
+    --offset;
+    pastEnd = false;
+    if (n == eolChar)
+        --lineNumber;
   }
+
 
   /** Returns a boolean indicating input readily available
    * 
    * @return true if a character is available
    * @throws org.armedbear.lisp.ConditionThrowable
    */
-  protected boolean _charReady() throws ConditionThrowable
+  protected boolean _charReady() throws ConditionThrowable, IOException
   {
     if (reader == null)
         streamNotCharacterInputStream();
-
-    try
-      {
-        return reader.ready();
-      }
-    catch (IOException e)
-      {
-        error(new StreamError(this, e));
-      }
-    // Not reached.
-    return false;
+    return reader.ready();
   }
 
   /** Writes a character into the underlying stream,
@@ -2087,8 +2185,15 @@ public class Stream extends LispObject
     if (reader != null)
       {
         int c = 0;
-        while (_charReady() && (c >= 0))
-          c = _readChar();
+        try 
+          {
+            while (_charReady() && (c >= 0))
+                c = _readChar();
+          }
+        catch (IOException e)
+          {
+            error(new StreamError(this, e));
+          }
       }
     else if (in != null)
       {

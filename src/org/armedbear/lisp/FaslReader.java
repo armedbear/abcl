@@ -44,12 +44,19 @@ public final class FaslReader extends Lisp
         public LispObject execute(Stream stream, char ignored)
             throws ConditionThrowable
         {
-            while (true) {
+          try 
+            {
+              while (true) {
                 int n = stream._readChar();
                 if (n < 0)
-                    return null;
+                  return null;
                 if (n == '\n')
-                    return null;
+                  return null;
+              }
+            }
+          catch (java.io.IOException e)
+            {
+              return null;
             }
         }
     };
@@ -65,49 +72,57 @@ public final class FaslReader extends Lisp
         {
             final Readtable rt = FaslReadtable.getInstance();
             FastStringBuffer sb = new FastStringBuffer();
-            while (true) {
-                int n = stream._readChar();
-                if (n < 0) {
+            try 
+              {
+                while (true) {
+                  int n = stream._readChar();
+                  if (n < 0) {
                     error(new EndOfFile(stream));
                     // Not reached.
                     return null;
-                }
-                char c = (char) n;
-                if (rt.getSyntaxType(c) == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE) {
+                  }
+                  char c = (char) n;
+                  if (rt.getSyntaxType(c) == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE) {
                     // Single escape.
                     n = stream._readChar();
                     if (n < 0) {
-                        error(new EndOfFile(stream));
-                        // Not reached.
-                        return null;
+                      error(new EndOfFile(stream));
+                      // Not reached.
+                      return null;
                     }
                     sb.append((char)n);
                     continue;
-                }
-                if (Utilities.isPlatformWindows) {
+                  }
+                  if (Utilities.isPlatformWindows) {
                     if (c == '\r') {
-                        n = stream._readChar();
-                        if (n < 0) {
-                            error(new EndOfFile(stream));
-                            // Not reached.
-                            return null;
-                        }
-                        if (n == '\n') {
-                            sb.append('\n');
-                        } else {
-                            // '\r' was not followed by '\n'.
-                            stream._unreadChar(n);
-                            sb.append('\r');
-                        }
-                        continue;
+                      n = stream._readChar();
+                      if (n < 0) {
+                        error(new EndOfFile(stream));
+                        // Not reached.
+                        return null;
+                      }
+                      if (n == '\n') {
+                        sb.append('\n');
+                      } else {
+                        // '\r' was not followed by '\n'.
+                        stream._unreadChar(n);
+                        sb.append('\r');
+                      }
+                      continue;
                     }
-                }
-                if (c == terminator)
+                  }
+                  if (c == terminator)
                     break;
-                // Default.
-                sb.append(c);
-            }
-            return new SimpleString(sb);
+                  // Default.
+                  sb.append(c);
+                }
+                return new SimpleString(sb);
+              }
+            catch (java.io.IOException e)
+              {
+                return new SimpleString(sb);
+		//                return null;
+              }
         }
     };
 
@@ -206,28 +221,38 @@ public final class FaslReader extends Lisp
             final boolean suppress =
                 (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL);
             FastStringBuffer sb = new FastStringBuffer();
-            while (true) {
-                int ch = stream._readChar();
-                if (ch < 0)
+	    try 
+	      {
+		while (true) {
+		  int ch = stream._readChar();
+		  if (ch < 0)
                     break;
-                char c = (char) ch;
-                if (c == '0' || c == '1')
+		  char c = (char) ch;
+		  if (c == '0' || c == '1')
                     sb.append(c);
-                else {
+		  else {
                     int syntaxType = rt.getSyntaxType(c);
                     if (syntaxType == Readtable.SYNTAX_TYPE_WHITESPACE ||
                         syntaxType == Readtable.SYNTAX_TYPE_TERMINATING_MACRO) {
-                        stream._unreadChar(c);
-                        break;
+		      stream._unreadChar(c);
+		      break;
                     } else if (!suppress) {
-                        String name = LispCharacter.charToName(c);
-                        if (name == null)
-                            name = "#\\" + c;
-                        error(new ReaderError("Illegal element for bit-vector: " + name,
-                                               stream));
+		      String name = LispCharacter.charToName(c);
+		      if (name == null)
+			name = "#\\" + c;
+		      error(new ReaderError("Illegal element for bit-vector: " + name,
+					    stream));
                     }
-                }
-            }
+		  }
+		}
+	      }
+	    catch (java.io.IOException e)
+	      {
+		error(new ReaderError("IO error: ",
+				      stream));
+		return NIL;
+	      }
+
             if (suppress)
                 return NIL;
             if (n >= 0) {

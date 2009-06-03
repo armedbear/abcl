@@ -133,7 +133,7 @@ public final class EchoStream extends Stream
 
     // Returns -1 at end of file.
     @Override
-    protected int _readChar() throws ConditionThrowable
+    protected int _readChar() throws ConditionThrowable, java.io.IOException
     {
         int n = in._readChar();
         if (n >= 0) {
@@ -147,14 +147,14 @@ public final class EchoStream extends Stream
     }
 
     @Override
-    protected void _unreadChar(int n) throws ConditionThrowable
+    protected void _unreadChar(int n) throws ConditionThrowable, java.io.IOException
     {
         in._unreadChar(n);
         unreadChar = n;
     }
 
     @Override
-    protected boolean _charReady() throws ConditionThrowable
+    protected boolean _charReady() throws ConditionThrowable, java.io.IOException
     {
         return in._charReady();
     }
