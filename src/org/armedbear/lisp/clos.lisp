@@ -51,7 +51,13 @@
 
 (in-package #:mop)
 
-(export '(class-precedence-list))
+(export '(class-precedence-list class-slots slot-definition-name))
+
+(defun class-slots (class)
+  (%class-slots class))
+
+(defun slot-definition-name (slot-definition)
+  (%slot-definition-name slot-definition))
 
 (defmacro push-on-end (value location)
   `(setf ,location (nconc ,location (list ,value))))
