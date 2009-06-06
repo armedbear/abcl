@@ -190,8 +190,9 @@
 (autoload 'disassemble)
 
 (in-package "MOP")
-(export 'class-precedence-list)
-(autoload 'class-precedence-list "clos")
+(export '(class-precedence-list class-slots slot-definition-name))
+(autoload '(class-precedence-list class-slots slot-definition-name) "clos")
+
 
 ;; Java interface.
 (in-package "JAVA")
