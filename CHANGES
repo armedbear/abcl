@@ -2,6 +2,7 @@ Version 0.15.0
 (?? Jun, 2009) - Anticipate a June date
 
  Summary of changes:
+  * 2 more MOP exported symbols to support Cells port
   * Updated FASL version
   * Support (pre)compilation of functions with a non-null lexical environment
   * Compiler and precompiler cleanups
