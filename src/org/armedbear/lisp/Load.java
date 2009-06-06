@@ -123,7 +123,7 @@ public final class Load extends Lisp
         if (checkZipFile(file))
         {
             try {
-                zipfile = new ZipFile(file);
+                zipfile = ZipCache.getZip(file.getPath());
             }
             catch (Throwable t) {
                 // Fall through.
@@ -175,7 +175,7 @@ public final class Load extends Lisp
         finally {
             if (in != null) {
                 try {
-                    in.close();
+                   in.close();
                 }
                 catch (IOException e) {
                     return error(new LispError(e.getMessage()));
@@ -183,7 +183,7 @@ public final class Load extends Lisp
             }
             if (zipfile != null) {
                 try {
-                    zipfile.close();
+                    ZipCache.removeZip(zipfile.getName());
                 }
                 catch (IOException e) {
                     return error(new LispError(e.getMessage()));
@@ -265,7 +265,7 @@ public final class Load extends Lisp
                         String ext = getExtension(s);
                         if (ext.equalsIgnoreCase(".abcl")) {
                             try {
-                                zipfile = new ZipFile(file);
+                                zipfile = ZipCache.getZip(file.getPath());
                                 String name = file.getName();
                                 int index = name.lastIndexOf('.');
                                 Debug.assertTrue(index >= 0);
@@ -338,7 +338,7 @@ public final class Load extends Lisp
             finally {
                 if (zipfile != null) {
                     try {
-                        zipfile.close();
+                        ZipCache.removeZip(zipfile.getName());
                     }
                     catch (IOException e) {
                         return error(new LispError(e.getMessage()));

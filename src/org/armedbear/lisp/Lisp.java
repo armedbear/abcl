@@ -1075,7 +1075,7 @@ public abstract class Lisp
                               zipFileName = zipFileName.substring(1);
                           }
                         zipFileName = URLDecoder.decode(zipFileName, "UTF-8");
-                        ZipFile zipFile = new ZipFile(zipFileName);
+                        ZipFile zipFile = ZipCache.getZip(zipFileName);
                         try
                           {
                             ZipEntry entry = zipFile.getEntry(entryName);
@@ -1089,7 +1089,7 @@ public abstract class Lisp
                           }
                         finally
                           {
-                            zipFile.close();
+                            ZipCache.removeZip(zipFile.getName());
                           }
                       }
                   }
@@ -1139,7 +1139,7 @@ public abstract class Lisp
       {
         LispObject loadTruename = Symbol.LOAD_TRUENAME.symbolValue(thread);
         String zipFileName = ((Pathname)loadTruename).getNamestring();
-        ZipFile zipFile = new ZipFile(zipFileName);
+        ZipFile zipFile = ZipCache.getZip(zipFileName);
         try
           {
             ZipEntry entry = zipFile.getEntry(namestring);
@@ -1155,7 +1155,7 @@ public abstract class Lisp
           }
         finally
           {
-            zipFile.close();
+            ZipCache.removeZip(zipFile.getName());
           }
       }
     catch (Throwable t)
@@ -1197,7 +1197,6 @@ public abstract class Lisp
     public static final LispObject loadCompiledFunction(byte[] bytes) throws Throwable {
         Class c = (new JavaClassLoader()).loadClassFromByteArray(null, bytes, 0, bytes.length);
         if (c != null) {
-            Class sc = c.getSuperclass();
             Constructor constructor = c.getConstructor((Class[])null);
             LispObject obj = (LispObject) constructor.newInstance((Object[])null);
             if (obj instanceof Function) {
