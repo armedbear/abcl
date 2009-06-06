@@ -1002,7 +1002,7 @@
 
 (in-package #:ext)
 (defun macroexpand-all (form &optional env)
-  (precompiler:precompile-form form nil env))
+  (precompiler:precompile-form form t env))
 
 (in-package #:lisp)
 
