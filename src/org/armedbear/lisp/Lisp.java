@@ -76,6 +76,8 @@ public abstract class Lisp
     Packages.createPackage("PROFILER");
   public static final Package PACKAGE_JAVA =
     Packages.createPackage("JAVA");
+  public static final Package PACKAGE_LISP =
+    Packages.createPackage("LISP");
 
   // ### nil
   public static final LispObject NIL = Nil.NIL;
@@ -110,6 +112,9 @@ public abstract class Lisp
         PACKAGE_PROF.usePackage(PACKAGE_EXT);
         PACKAGE_JAVA.usePackage(PACKAGE_CL);
         PACKAGE_JAVA.usePackage(PACKAGE_EXT);
+        PACKAGE_LISP.usePackage(PACKAGE_CL);
+        PACKAGE_LISP.usePackage(PACKAGE_EXT);
+        PACKAGE_LISP.usePackage(PACKAGE_SYS);
       }
     catch (Throwable t)
       {

@@ -2857,6 +2857,8 @@ public class Symbol extends LispObject
     PACKAGE_EXT.addExternalSymbol("INTERRUPT-LISP");
   public static final Symbol GETENV =
     PACKAGE_EXT.addExternalSymbol("GETENV");
+  public static final Symbol MACROEXPAND_ALL =
+    PACKAGE_EXT.addExternalSymbol("MACROEXPAND-ALL");
 
   // MOP.
   public static final Symbol STANDARD_READER_METHOD =
@@ -2986,4 +2988,6 @@ public class Symbol extends LispObject
   public static final Symbol _INSPECTOR_HOOK_ =
     PACKAGE_EXT.addExternalSymbol("*INSPECTOR-HOOK*");
 
+  public static final Symbol COMPILER_LET=
+    PACKAGE_LISP.addExternalSymbol("COMPILER-LET");
 }

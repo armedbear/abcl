@@ -1000,10 +1000,11 @@
 
 (export '(precompile-form))
 
-(in-package #:system)
-
+(in-package #:ext)
 (defun macroexpand-all (form &optional env)
   (precompiler:precompile-form form nil env))
+
+(in-package #:lisp)
 
 (defmacro compiler-let (bindings &body forms &environment env)
   (let ((bindings (mapcar #'(lambda (binding)
@@ -1013,6 +1014,8 @@
            (mapcar #'(lambda (binding)
                        (eval (cadr binding))) bindings)
       (macroexpand-all `(progn ,@forms) env))))
+
+(in-package #:system)
 
 (defun set-function-definition (name new old)
   (let ((*warn-on-redefinition* nil))

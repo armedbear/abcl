@@ -306,8 +306,14 @@
 (autoload 'compile-file-if-needed "compile-file")
 (export 'describe-compiler-policy)
 (autoload 'describe-compiler-policy)
+(export 'macroexpand-all)
+(autoload 'macroexpand-all)
 
 ;; JVM compiler.
 (in-package "JVM")
 (export '(jvm-compile-package))
 (autoload '%with-compilation-unit "jvm")
+
+(in-package "LISP")
+(export 'compiler-let)
+(autoload 'compiler-let)
