@@ -292,6 +292,10 @@
                 (return (values line nil))
                 (vector-push-extend character line)))))))
 
+(defmethod stream-clear-input (stream)
+  (declare (ignore stream))
+  nil)
+
 (defclass fundamental-character-output-stream
   (fundamental-output-stream fundamental-character-stream))
 
@@ -300,6 +304,9 @@
 (defgeneric stream-start-line-p (stream))
 (defgeneric stream-write-string (stream string &optional start end))
 (defgeneric stream-terpri (stream))
+(defmethod stream-terpri (stream)
+  (stream-write-char stream #\Newline))
+
 (defgeneric stream-fresh-line (stream))
 (defgeneric stream-finish-output (stream))
 (defgeneric stream-force-output (stream))
@@ -309,6 +316,10 @@
 (defgeneric stream-write-sequence (stream sequence &optional start end))
 
 (defmethod stream-force-output (stream)
+  (declare (ignore stream))
+  nil)
+
+(defmethod stream-clear-output (stream)
   (declare (ignore stream))
   nil)
 
