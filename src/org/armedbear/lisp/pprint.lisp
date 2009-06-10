@@ -766,8 +766,9 @@
   char)
 
 (defun write-string (string &optional (stream *standard-output*)
-                            &key (start 0) (end (length string)))
+                            &key (start 0) end)
   (setf stream (sys:out-synonym-of stream))
+  (setf end (or end (length string))) ;; default value for end is NIL
   (if (xp-structure-p stream)
       (write-string+ string stream start end)
       (progn
@@ -780,8 +781,9 @@
   string)
 
 (defun write-line (string &optional (stream *standard-output*)
-		   &key (start 0) (end (length string)))
+		   &key (start 0) end)
   (setf stream (sys:out-synonym-of stream))
+  (setf end (or end (length string)))
   (cond ((xp-structure-p stream)
          (write-string+ string stream start end)
          (pprint-newline+ :unconditional stream))

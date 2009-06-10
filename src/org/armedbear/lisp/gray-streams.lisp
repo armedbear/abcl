@@ -195,7 +195,8 @@
 
 
 (defun old-streamp (stream)
-  (funcall *old-streamp* stream))
+  (or (xp::xp-structure-p stream)
+      (funcall *old-streamp* stream)))
 
 (defclass fundamental-stream ())
 
@@ -304,8 +305,8 @@
 (defgeneric stream-force-output (stream))
 (defgeneric stream-clear-output (stream))
 (defgeneric stream-advance-to-column (stream column))
-(defgeneric stream-read-sequence (stream sequence start end))
-(defgeneric stream-write-sequence (stream sequence start end))
+(defgeneric stream-read-sequence (stream sequence &optional start end))
+(defgeneric stream-write-sequence (stream sequence &optional start end))
 
 (defmethod stream-force-output (stream)
   (declare (ignore stream))
@@ -316,11 +317,8 @@
 
 (defmethod stream-write-string ((stream fundamental-character-output-stream)
                                 string
-                                &optional
-                                (start 0)
-                                (end (length string)))
-  (let ((start (or start 0))
-        (end (or end (length string))))
+                                &optional (start 0) end)
+  (let ((end (or end (length string))))
     (do ((i start (1+ i)))
         ((>= i end) string)
       (stream-write-char stream (char string i)))))
@@ -339,10 +337,10 @@
       (dotimes (i (- current column) t)
         (stream-write-char stream #\Space)))))
 
-(defmethod stream-read-sequence ((stream  fundamental-character-input-stream) sequence start end)
-  (if (null end)
-      (setf end (length sequence)))
+(defmethod stream-read-sequence ((stream  fundamental-character-input-stream)
+                                 sequence &optional (start 0) end)
   (let ((element-type (stream-element-type stream))
+        (end (or end (length sequence)))
         (eof (cons nil nil)))
     (cond
      ((eq element-type 'character)
@@ -359,13 +357,13 @@
           (if (eq b eof)
               (return (+ count start)))
           (setf (elt sequence (+ count start)) b))))
-     (t (error "Cannot READ-SEQUENCE on stream of :ELEMENT-TYPE ~A" element-type)))))
+     (t (error "Cannot READ-SEQUENCE on stream of :ELEMENT-TYPE ~A"
+               element-type)))))
 
 (defmethod stream-write-sequence ((stream fundamental-character-output-stream)
-                                  sequence start end)
+                                  sequence &optional (start 0) end)
   (let ((element-type (stream-element-type stream))
-        (start (if start start 0))
-        (end (if end end (length sequence))))
+        (end (or end (length sequence))))
     (if (eq element-type 'character)
         (do ((n start (+ n 1)))
             ((= n end))
@@ -645,7 +643,7 @@
       (funcall *old-write-sequence* sequence stream :start start :end end)
       (stream-write-sequence stream sequence start end)))
 
-(defun gray-read-sequence (sequence stream &key (start 0) (end nil))
+(defun gray-read-sequence (sequence stream &key (start 0) end)
   (if (old-streamp stream)
       (funcall *old-read-sequence* sequence stream :start start :end end)
       (stream-read-sequence stream sequence start end)))
