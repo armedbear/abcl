@@ -67,11 +67,14 @@
   (assert nil))
 
 (declaim (ftype (function (t) t) verify-load))
+;(defun verify-load (classfile)
+;  (and classfile
+;       (let ((*load-truename* *output-file-pathname*))
+;         (report-error
+;          (load-compiled-function classfile)))))
 (defun verify-load (classfile)
-  (and classfile
-       (let ((*load-truename* *output-file-pathname*))
-         (report-error
-          (load-compiled-function classfile)))))
+  (declare (ignore classfile))
+  t)
 
 (declaim (ftype (function (t stream) t) process-defconstant))
 (defun process-defconstant (form stream)
