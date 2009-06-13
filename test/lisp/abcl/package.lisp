@@ -3,15 +3,14 @@
   (:export #:run))
 (in-package #:abcl.test.lisp)
 
-(defparameter *abcl-lisp-test-pathname* nil)
-
-(eval-when (:load-toplevel)
-  (setf *abcl-lisp-test-pathname* *load-truename*))
+(defvar *abcl-lisp-test-directory* 
+  (pathname (directory-namestring *load-truename*))
+  "The directory in which the ABCL test source files are located.")
 
 (defun run ()
-  (progv 
-      '(*default-pathname-defaults*)
-      `(,(merge-pathnames *abcl-lisp-test-pathname* *default-pathname-defaults*))
+  "Run the Lisp test suite for ABCL."
+
+  (let ((*default-pathname-defaults* *abcl-lisp-test-directory*))
     (rem-all-tests)
 
     (load "test-utilities.lisp")
@@ -24,10 +23,5 @@
     (load "misc-tests.lisp")
 
     (do-tests)))
-
-
-
-   
-
 
 	

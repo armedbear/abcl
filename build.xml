@@ -503,7 +503,6 @@
     <target name="abcl.test.lisp" 
 	    depends="test.ansi.compiled,test.abcl"/>
 
-
     <target name="test.ansi.interpreted" depends="abcl.jar">
       <echo>Recording test output in ${abcl.test.log.file}.</echo>
       <record name="${abcl.test.log.file}" emacsmode="true" action="start" append="yes"/>

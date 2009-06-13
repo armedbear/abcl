@@ -52,8 +52,9 @@
 	    (:module package  :depends (abcl-rt)
 		     :pathname "test/lisp/abcl/" :components
 		     ((:file "package")))))
+
 (defmethod perform ((o test-op) (c (eql (find-system 'abcl-test-lisp))))
-   "Invoke tests with:  (asdf:oos 'asdf:test-op :abcl-tests :force t)."
+   "Invoke tests with:  (asdf:oos 'asdf:test-op :abcl-test-lisp :force t)."
    ;;; FIXME needs ASDF:OOS to be invoked with :FORCE t
    (funcall (intern (symbol-name 'run) :abcl.test.lisp)))
  
