@@ -251,7 +251,7 @@
            :format-control "Multiply defined label: #~D="
            :format-arguments (list label)))
   (let* ((tag (gensym))
-         (*sharp-sharp-alist* (acons label tag *sharp-sharp-alist*))
+         (*sharp-sharp-alist* (cons (list label tag nil) *sharp-sharp-alist*))
          (obj (read stream t nil t)))
     (when (eq obj tag)
       (error 'reader-error
@@ -259,8 +259,10 @@
              :format-control "Must tag something more than just #~D#"
              :format-arguments (list label)))
     (push (list label tag obj) *sharp-equal-alist*)
-    (let ((*sharp-equal-circle-table* (make-hash-table :test 'eq :size 20)))
-      (circle-subst *sharp-equal-alist* obj))))
+    (when (third (car *sharp-sharp-alist*)) ;; set to T on circularity
+      (let ((*sharp-equal-circle-table* (make-hash-table :test 'eq :size 20)))
+        (circle-subst *sharp-equal-alist* obj)))
+    obj))
 
 (defun sharp-sharp (stream ignore label)
   (declare (ignore ignore))
@@ -276,7 +278,8 @@
                    :stream stream
                    :format-control "Object is not labelled #~S#"
                    :format-arguments (list label)))
-          (cdr pair)))))
+          (setf (third pair) t)
+          (second pair)))))
 
 (set-dispatch-macro-character #\# #\= #'sharp-equal +standard-readtable+)
 (set-dispatch-macro-character #\# #\# #'sharp-sharp +standard-readtable+)
