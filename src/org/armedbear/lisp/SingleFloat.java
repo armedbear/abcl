@@ -580,11 +580,18 @@ public final class SingleFloat extends LispObject
             sb.append(Symbol.SINGLE_FLOAT_NEGATIVE_INFINITY.writeToString());
             return sb.toString();
         }
-        if (value != value)
-            return "#<SINGLE-FLOAT NaN>";
-        String s1 = String.valueOf(value);
+
         LispThread thread = LispThread.currentThread();
-        if (Symbol.PRINT_READABLY.symbolValue(thread) != NIL ||
+        boolean printReadably = Symbol.PRINT_READABLY.symbolValue(thread) != NIL;
+
+        if (value != value) {
+            if (printReadably)
+                return "#.(progn \"Comment: create a NaN.\" (/ 0.0s0 0.0s0))";
+            else
+                return "#<SINGLE-FLOAT NaN>";
+        }
+        String s1 = String.valueOf(value);
+        if (printReadably ||
             !memq(Symbol.READ_DEFAULT_FLOAT_FORMAT.symbolValue(thread),
                   list(Symbol.SINGLE_FLOAT, Symbol.SHORT_FLOAT)))
         {

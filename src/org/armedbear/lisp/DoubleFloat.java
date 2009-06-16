@@ -591,11 +591,18 @@ public final class DoubleFloat extends LispObject
             sb.append(Symbol.DOUBLE_FLOAT_NEGATIVE_INFINITY.writeToString());
             return sb.toString();
         }
-        if (value != value)
-            return "#<DOUBLE-FLOAT NaN>";
-        String s1 = String.valueOf(value);
+
         LispThread thread = LispThread.currentThread();
-        if (Symbol.PRINT_READABLY.symbolValue(thread) != NIL ||
+        boolean printReadably = Symbol.PRINT_READABLY.symbolValue(thread) != NIL;
+
+        if (value != value) {
+            if (printReadably)
+                return "#.(progn \"Comment: create a NaN.\" (/ 0.0d0 0.0d0))";
+            else
+                return "#<DOUBLE-FLOAT NaN>";
+        }
+        String s1 = String.valueOf(value);
+        if (printReadably ||
             !memq(Symbol.READ_DEFAULT_FLOAT_FORMAT.symbolValue(thread),
                   list(Symbol.DOUBLE_FLOAT, Symbol.LONG_FLOAT)))
         {
