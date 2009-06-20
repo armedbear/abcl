@@ -47,26 +47,9 @@ public final class room extends Primitive
         if (args.length > 1)
             return error(new WrongNumberOfArgumentsException(this));
         Runtime runtime = Runtime.getRuntime();
-        long total = 0;
-        long free = 0;
-        long maxFree = 0;
-        while (true) {
-            try {
-                runtime.gc();
-                Thread.sleep(100);
-                runtime.runFinalization();
-                Thread.sleep(100);
-                runtime.gc();
-                Thread.sleep(100);
-            }
-            catch (InterruptedException e) {}
-            total = runtime.totalMemory();
-            free = runtime.freeMemory();
-            if (free > maxFree)
-                maxFree = free;
-            else
-                break;
-        }
+        long total = runtime.totalMemory();
+        long free = runtime.freeMemory();
+
         long used = total - free;
         Stream out = getStandardOutput();
         StringBuffer sb = new StringBuffer("Total memory ");
@@ -81,7 +64,8 @@ public final class room extends Primitive
         sb.append(System.getProperty("line.separator"));
         out._writeString(sb.toString());
         out._finishOutput();
-        return number(used);
+        return LispThread.currentThread().setValues(number(used),
+                number(total),number(runtime.maxMemory()));
     }
 
     private static final Primitive ROOM = new room();
