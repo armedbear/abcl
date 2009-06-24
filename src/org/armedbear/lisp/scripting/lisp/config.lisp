@@ -40,11 +40,11 @@
 (defparameter *use-throwing-debugger* t)
 
 (defun configure-abcl (abcl-script-engine)
+  (when *use-throwing-debugger*
+    (setf *debugger-hook* #'sys::%debugger-hook-function))
   (when *launch-swank-at-startup*
     (unless *swank-dir*
       (error "Swank directory not specified, please set *swank-dir*"))
-    (when *use-throwing-debugger*
-      (setf *debugger-hook* #'sys::%debugger-hook-function))
     (pushnew *swank-dir* asdf:*central-registry* :test #'equal)
     (asdf:oos 'asdf:load-op :swank)
     (ext:make-thread (lambda () (funcall (find-symbol

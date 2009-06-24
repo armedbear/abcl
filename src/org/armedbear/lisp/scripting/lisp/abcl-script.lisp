@@ -65,15 +65,12 @@
 
 (defmacro eval-in-script-context ((global-bindings engine-bindings stdin stdout script-context)
 				  body)
-  "Sets up an environment in which to evaluate a piece of code coming from Java through the JSR-223 methods."
+  "Sets up a context in which to evaluate a piece of code coming from Java through the JSR-223 methods."
   (let ((actual-global-bindings (gensym))
 	(actual-engine-bindings (gensym)))
     `(let ((*package* (find-package :abcl-script-user))
 	   (*standard-input* ,stdin)
 	   (*standard-output* ,stdout)
-	   (*debugger-hook* (if *use-throwing-debugger*
-				#'sys::%debugger-hook-function
-				*debugger-hook*))
 	   (,actual-global-bindings (generate-bindings ,global-bindings))
 	   (,actual-engine-bindings (generate-bindings ,engine-bindings)))
        (eval `(let (,@,actual-global-bindings)
