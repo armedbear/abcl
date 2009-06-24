@@ -755,7 +755,7 @@ public final class Java extends Lisp
 				if(value instanceof LispObject) {
 				    return (LispObject) value;
 				} else if(value != null) {
-				    return JavaObject.getInstance(value);
+				    return JavaObject.getInstance(value, true);
 				} else {
 				    return NIL;
 				}
@@ -778,15 +778,16 @@ public final class Java extends Lisp
 		obj = javaObject.javaInstance();
 		PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
 		Object jValue;
-		if(value == NIL) {
+		//TODO maybe we should do this in javaInstance(Class)
+		if(value instanceof JavaObject) {
+		    jValue = value.javaInstance();
+		} else {
 		    if(Boolean.TYPE.equals(pd.getPropertyType()) ||
 		       Boolean.class.equals(pd.getPropertyType())) {
-			jValue = false;
+			jValue = value != NIL;
 		    } else {
-			jValue = null;
+			jValue = value != NIL ? value.javaInstance() : null;
 		    }
-		} else {
-		    jValue = value.javaInstance();
 		}
 		pd.getWriteMethod().invoke(obj, jValue);
 		return value;
