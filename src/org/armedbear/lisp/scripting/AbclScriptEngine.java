@@ -227,7 +227,8 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		LispObject[] argList = new LispObject[bindings.size()];
 		int i = 0;
 		for (Map.Entry<String, Object> entry : bindings.entrySet()) {
-			argList[i++] = Symbol.CONS.execute(new SimpleString(entry.getKey()), toLisp(entry.getValue()));
+			argList[i++] = Symbol.CONS.execute(new SimpleString(entry.getKey()),
+							   JavaObject.getInstance(entry.getValue(), true));
 		}
 		return Symbol.LIST.getSymbolFunction().execute(argList);
 	}
@@ -283,47 +284,6 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		return new AbclScriptEngineFactory();
 	}
 	
-	public static LispObject toLisp(Object javaObject) {
-		if(javaObject == null) {
-            return Lisp.NIL;
-		} else if(javaObject instanceof Boolean) {
-            return ((Boolean)javaObject).booleanValue() ? Lisp.T : Lisp.NIL;
-		} else if(javaObject instanceof Byte) {
-            return Fixnum.getInstance(((Byte)javaObject).intValue());
-		} else if(javaObject instanceof Integer) {
-            return Fixnum.getInstance(((Integer)javaObject).intValue());
-		} else if(javaObject instanceof Short) {
-            return Fixnum.getInstance(((Short)javaObject).shortValue());
-		} else if(javaObject instanceof Long) {
-            return Bignum.getInstance((Long)javaObject);
-		} else if(javaObject instanceof BigInteger) {
-			return Bignum.getInstance((BigInteger) javaObject);
-		} else if(javaObject instanceof Float) {
-            return new SingleFloat(((Float)javaObject).floatValue());
-		} else if(javaObject instanceof Double) {
-            return new DoubleFloat(((Double)javaObject).doubleValue());
-		} else if(javaObject instanceof String) {
-            return new SimpleString((String)javaObject);
-		} else if(javaObject instanceof Character) {
-            return LispCharacter.getInstance((Character)javaObject);
-		} else if(javaObject instanceof Object[]) {
-            Object[] array = (Object[]) javaObject;
-            SimpleVector v = new SimpleVector(array.length);
-            for(int i = array.length; i > 0; --i) {
-            	try {
-					v.aset(i, new JavaObject(array[i]));
-				} catch (ConditionThrowable e) {
-					throw new Error("Can't set SimpleVector index " + i, e);
-				}
-            }
-            return v;
-        } else if(javaObject instanceof LispObject) {
-            return (LispObject) javaObject;
-        } else {
-        	return new JavaObject(javaObject);
-        }
-	}
-	
 	@Override
 	public <T> T getInterface(Class<T> clasz) {
 		try {
@@ -359,7 +319,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		if(f != null && f instanceof Function) {
 		    LispObject functionAndArgs = Lisp.NIL.push(f);
 		    for(int i = 0; i < args.length; ++i) {
-			functionAndArgs = functionAndArgs.push(toLisp(args[i]));
+			functionAndArgs = functionAndArgs.push(JavaObject.getInstance(args[i], true));
 		    }
 		    functionAndArgs = functionAndArgs.reverse();
 		    return eval(evalFunction, functionAndArgs, getContext());
