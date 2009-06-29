@@ -309,6 +309,13 @@
 (export 'macroexpand-all)
 (autoload 'macroexpand-all)
 
+(export '*gui-backend*)
+(export 'init-gui)
+(autoload 'init-gui "gui")
+(export 'make-dialog-prompt-stream)
+(autoload 'make-dialog-prompt-stream "gui")
+
+
 ;; JVM compiler.
 (in-package "JVM")
 (export '(jvm-compile-package))

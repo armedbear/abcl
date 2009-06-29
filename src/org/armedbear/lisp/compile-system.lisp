@@ -178,6 +178,7 @@
                            "find-all-symbols.lisp"
                            "gentemp.lisp"
                            "gray-streams.lisp"
+			   "gui.lisp"
                            "inline.lisp"
                            "inspect.lisp"
                            ;;"j.lisp"
