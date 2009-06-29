@@ -44,6 +44,7 @@
     <patternset id="abcl.source.java">
       <include name="org/armedbear/lisp/*.java"/>
       <include name="org/armedbear/lisp/util/*.java"/>
+      <include name="org/armedbear/lisp/java/**/*.java"/>
       <include name="org/armedbear/lisp/scripting/*.java" if="abcl.jsr-223.p"/>
       <include name="org/armedbear/lisp/scripting/util/*.java" if="abcl.jsr-223.p"/>
       <include name="org/armedbear/Main.java"/>
@@ -51,6 +52,7 @@
 
     <patternset id="abcl.source.lisp">
       <include name="org/armedbear/lisp/*.lisp"/>
+      <include name="org/armedbear/lisp/java/**/*.lisp"/>
       <include name="org/armedbear/lisp/tests/*.lisp"/>
       <exclude name="org/armedbear/lisp/j.lisp"/>
       <include name="org/armedbear/lisp/scripting/lisp/*.lisp" if="abcl.jsr-223.p"/>
@@ -68,14 +70,13 @@
     <!-- Lisp files required at runtime -->
     <patternset id="abcl.source.lisp.dist">
       <include name="org/armedbear/lisp/boot.lisp"/>
-	  <include name="org/armedbear/lisp/scripting/lisp/*.lisp" if="abcl.jsr-223.p"/>
+      <include name="org/armedbear/lisp/scripting/lisp/*.lisp" if="abcl.jsr-223.p"/>
     </patternset>
 
     <patternset id="abcl.objects">
-      <include name="org/armedbear/lisp/*.class"/>
-      <include name="org/armedbear/lisp/util/*.class"/>
-      <include name="org/armedbear/lisp/*.cls"/> 
-      <include name="org/armedbear/lisp/*.abcl"/>
+      <include name="org/armedbear/lisp/**/*.class"/>
+      <include name="org/armedbear/lisp/**/*.cls"/> 
+      <include name="org/armedbear/lisp/**/*.abcl"/>
       <include name="org/armedbear/lisp/scripting/*.class" if="abcl.jsr-223.p"/>
       <include name="org/armedbear/lisp/scripting/util/*.class" if="abcl.jsr-223.p"/>
       <patternset refid="abcl.source.lisp.dist"/>
