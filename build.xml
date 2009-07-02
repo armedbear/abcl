@@ -182,10 +182,11 @@
     <!-- Adjust the patternset for ABCL source to use the much faster
          Ant 'uptodate' task to check if we need to compile the system
          fasls.  Highly inter-dependent with the behavior specified in
-         'compile-system.lisp'.-->
+         'compile-system.lisp', i.e. files not listed in
+         there should NOT occur here. -->
     <patternset id="abcl.source.lisp.fasls">
       <patternset refid="abcl.source.lisp"/>
-      <exclude name="org/armedbear/lisp/tests/*.lisp"/>
+      <exclude name="org/armedbear/lisp/scripting/**/*.lisp"/>
       <exclude name="org/armedbear/lisp/boot.lisp"/>
       <exclude name="org/armedbear/lisp/emacs.lisp"/>
       <exclude name="org/armedbear/lisp/runtime-class.lisp"/>
@@ -301,10 +302,8 @@
 	  <filter token="JAVA" 
 		  value="${java.path}"/>
 	  <filter token="ABCL_JAVA_OPTIONS" 
-		  value= "${java.options}"/>
-	  <filter token="ABCL_LIBPATH" 
-		  value="${basedir}/src/org/armedbear/lisp/libabcl.so"/>
-	  <filter token="ABCL_CLASSPATH" 
+		  value="${java.options}"/>
+	  <filter token="ABCL_CLASSPATH"
 		  value="${toString:abcl.runtime.classpath}"/>
 	</filterset>
       </copy>
@@ -332,6 +331,7 @@
 	<jvmarg 
 	    value="-agentlib:jdwp=transport=dt_socket,address=6789,server=y"/>
       </java>
+      <echo>JPDA listening on localhost:6789</echo>
     </target>
 
     <target name="abcl.run" depends="abcl.jar">
