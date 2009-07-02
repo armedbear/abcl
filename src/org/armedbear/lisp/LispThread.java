@@ -107,6 +107,12 @@ public final class LispThread extends LispObject
         javaThread = new Thread(r);
         this.name = name;
         map.put(javaThread, this);
+        try {
+            javaThread.setName(name.getStringValue());
+        } catch (ConditionThrowable ex) {
+            Debug.trace("Failed to set thread name:");
+	    Debug.trace(ex);
+        }
         javaThread.setDaemon(true);
         javaThread.start();
     }
@@ -1021,7 +1027,8 @@ public final class LispThread extends LispObject
 
     // ### threadp
     private static final Primitive THREADP =
-        new Primitive("threadp", PACKAGE_EXT, true, "object")
+        new Primitive("threadp", PACKAGE_EXT, true, "object",
+		      "Boolean predicate as whether OBJECT is a thread.")
     {
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
@@ -1032,7 +1039,8 @@ public final class LispThread extends LispObject
 
     // ### thread-alive-p
     private static final Primitive THREAD_ALIVE_P =
-        new Primitive("thread-alive-p", PACKAGE_EXT, true, "thread")
+        new Primitive("thread-alive-p", PACKAGE_EXT, true, "thread",
+		      "Boolean predicate whether THREAD is alive.")
     {
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
@@ -1050,7 +1058,8 @@ public final class LispThread extends LispObject
 
     // ### thread-name
     private static final Primitive THREAD_NAME =
-        new Primitive("thread-name", PACKAGE_EXT, true, "thread")
+        new Primitive("thread-name", PACKAGE_EXT, true, "thread",
+		      "Return the name of THREAD if it has one.")
     {
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
@@ -1074,7 +1083,8 @@ public final class LispThread extends LispObject
     }
 
     // ### sleep
-    private static final Primitive SLEEP = new Primitive("sleep", "seconds")
+    private static final Primitive SLEEP = new Primitive("sleep", PACKAGE_CL, true, "seconds",
+							 "Causes the invoking thread to sleep for SECONDS seconds.\nSECONDS may be a value between 0 1and 1.")
     {
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
@@ -1092,7 +1102,8 @@ public final class LispThread extends LispObject
 
     // ### mapcar-threads
     private static final Primitive MAPCAR_THREADS =
-        new Primitive("mapcar-threads", PACKAGE_EXT, true)
+        new Primitive("mapcar-threads", PACKAGE_EXT, true, "function",
+		      "Applies FUNCTION to all existing threads.")
     {
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
@@ -1112,7 +1123,8 @@ public final class LispThread extends LispObject
 
     // ### destroy-thread
     private static final Primitive DESTROY_THREAD =
-        new Primitive("destroy-thread", PACKAGE_EXT, true)
+        new Primitive("destroy-thread", PACKAGE_EXT, true, "thread", 
+		      "Mark THREAD as destroyed.")
     {
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
@@ -1135,7 +1147,9 @@ public final class LispThread extends LispObject
     // multiple interrupts are queued for a thread, they are all run, but the
     // order is not guaranteed.
     private static final Primitive INTERRUPT_THREAD =
-        new Primitive("interrupt-thread", PACKAGE_EXT, true)
+        new Primitive("interrupt-thread", PACKAGE_EXT, true,
+		      "thread function &rest args",
+		      "Interrupts THREAD and forces it to apply FUNCTION to ARGS.\nWhen the function returns, the thread's original computation continues. If  multiple interrupts are queued for a thread, they are all run, but the order is not guaranteed.")
     {
         @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
@@ -1160,7 +1174,8 @@ public final class LispThread extends LispObject
 
     // ### current-thread
     private static final Primitive CURRENT_THREAD =
-        new Primitive("current-thread", PACKAGE_EXT, true)
+        new Primitive("current-thread", PACKAGE_EXT, true, "",
+		      "Returns a reference to invoking thread.")
     {
         @Override
         public LispObject execute() throws ConditionThrowable
@@ -1171,7 +1186,8 @@ public final class LispThread extends LispObject
 
     // ### backtrace-as-list
     private static final Primitive BACKTRACE_AS_LIST =
-        new Primitive("backtrace-as-list", PACKAGE_EXT, true)
+        new Primitive("backtrace-as-list", PACKAGE_EXT, true, "",
+		      "Returns a backtrace of the invoking thread as a list.")
     {
         @Override
         public LispObject execute(LispObject[] args)
