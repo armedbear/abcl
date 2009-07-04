@@ -2843,6 +2843,8 @@ public class Symbol extends LispObject
     PACKAGE_EXT.addExternalSymbol("COMPILER-UNSUPPORTED-FEATURE-ERROR");
   public static final Symbol MUTEX =
     PACKAGE_EXT.addExternalSymbol("MUTEX");
+  public static final Symbol GATE =
+    PACKAGE_EXT.addExternalSymbol("GATE");
   public static final Symbol THREAD =
     PACKAGE_EXT.addExternalSymbol("THREAD");
   public static final Symbol SUPPRESS_COMPILER_WARNINGS =
