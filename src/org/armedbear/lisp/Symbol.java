@@ -283,28 +283,60 @@ public class Symbol extends LispObject
       }
   }
 
-  // Raw accessor.
+  /** Gets the value associated with the symbol
+   * as set by SYMBOL-VALUE.
+   *
+   * @return The associated value, or null if unbound.
+   *
+   * @see Symbol#symbolValue
+   */
   @Override
   public LispObject getSymbolValue()
   {
     return value;
   }
 
+  /** Sets the value associated with the symbol
+   * as if set by SYMBOL-VALUE.
+   *
+   * @return The associated value, or null if unbound.
+   *
+   * @see Symbol#symbolValue
+   */
   public final void setSymbolValue(LispObject value)
   {
     this.value = value;
   }
 
+  /** Returns the value associated with this symbol in the current
+   * thread context when it is treated as a special variable.
+   *
+   * A lisp error is thrown if the symbol is unbound.
+   *
+   * @return The associated value
+   * @throws org.armedbear.lisp.ConditionThrowable
+   *
+   * @see LispThread#lookupSpecial
+   * @see Symbol#getSymbolValue()
+   *
+   */
   public final LispObject symbolValue() throws ConditionThrowable
   {
-    LispObject val = LispThread.currentThread().lookupSpecial(this);
-    if (val != null)
-      return val;
-    if (value != null)
-      return value;
-    return error(new UnboundVariable(this));
+    return symbolValue(LispThread.currentThread());
   }
 
+  /** Returns the value associated with this symbol in the specified
+   * thread context when it is treated as a special variable.
+   *
+   * A lisp error is thrown if the symbol is unbound.
+   *
+   * @return The associated value
+   * @throws org.armedbear.lisp.ConditionThrowable
+   *
+   * @see LispThread#lookupSpecial
+   * @see Symbol#getSymbolValue()
+   *
+   */
   public final LispObject symbolValue(LispThread thread) throws ConditionThrowable
   {
     LispObject val = thread.lookupSpecial(this);
@@ -315,17 +347,33 @@ public class Symbol extends LispObject
     return error(new UnboundVariable(this));
   }
 
+  /** Returns the value of the symbol in the current thread context;
+   * if the symbol has been declared special, the value of the innermost
+   * binding is returned. Otherwise, the SYMBOL-VALUE is returned, or
+   * null if unbound.
+   *
+   * @return A lisp object, or null if unbound
+   *
+   * @see LispThread#lookupSpecial
+   * @see Symbol#getSymbolValue()
+   *
+   */
   public final LispObject symbolValueNoThrow()
   {
-    if ((flags & FLAG_SPECIAL) != 0)
-      {
-        LispObject val = LispThread.currentThread().lookupSpecial(this);
-        if (val != null)
-          return val;
-      }
-    return value;
+    return symbolValueNoThrow(LispThread.currentThread());
   }
 
+  /** Returns the value of the symbol in the current thread context;
+   * if the symbol has been declared special, the value of the innermost
+   * binding is returned. Otherwise, the SYMBOL-VALUE is returned, or
+   * null if unbound.
+   *
+   * @return A lisp object, or null if unbound
+   *
+   * @see LispThread#lookupSpecial
+   * @see Symbol#getSymbolValue()
+   *
+   */
   public final LispObject symbolValueNoThrow(LispThread thread)
   {
     if ((flags & FLAG_SPECIAL) != 0)

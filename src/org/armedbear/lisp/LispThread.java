@@ -332,6 +332,17 @@ public final class LispThread extends LispObject
             new SpecialBinding(name, name.getSymbolValue(), lastSpecialBinding);
     }
 
+    /** Looks up the value of a special binding in the context of the
+     * given thread.
+     *
+     * In order to find the value of a special variable (in general),
+     * use {@link Symbol#symbolValue}.
+     *
+     * @param name The name of the special variable, normally a symbol
+     * @return The inner most binding of the special, or null if unbound
+     *
+     * @see Symbol#symbolValue
+     */
     public final LispObject lookupSpecial(LispObject name)
     {
         SpecialBinding binding = lastSpecialBinding;
