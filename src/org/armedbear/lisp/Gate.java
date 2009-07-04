@@ -2,7 +2,7 @@
  * AbstractArray.java
  *
  * Copyright (C) 2009 Tobias Rittweiler
- * $Id: AbstractArray.java 11711 2009-03-15 15:51:40Z ehuelsmann $
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
