@@ -1,5 +1,5 @@
 /*
- * AbstractArray.java
+ * Gate.java
  *
  * Copyright (C) 2009 Tobias Rittweiler
  * $Id$
@@ -158,7 +158,7 @@ final public class Gate extends LispObject
   private static final Primitive WAIT_OPEN_GATE 
     = new Primitive("wait-open-gate", PACKAGE_EXT, true, 
 		    "gate &optional timeout",
-		    "Wait for GATE to be open with an optional TIMEOUT in ms." ) {
+		    "Wait for GATE to be open with an optional TIMEOUT in seconds." ) {
 	@Override
 	public LispObject execute(LispObject gate) 
 	  throws ConditionThrowable 
