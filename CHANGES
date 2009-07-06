@@ -1,5 +1,9 @@
+Version 0.16.0
+  Summary of changes:
+  * Implementation of Franz Allegro CL Gates MP primitive (Tobias Rittweiler).
+  
 Version 0.15.0
-(?? Jun, 2009) - Anticipate a June date
+(07 Jun, 2009) 
 
  Summary of changes:
   * 2 more MOP exported symbols to support Cells port
