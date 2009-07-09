@@ -34,7 +34,6 @@ public class SwingDialogPromptStream extends DialogPromptStream {
 		JButton okBtn = new JButton("Ok");
 		okBtn.addActionListener(new ActionListener() {
 
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				synchronized(dialog) {
 					dialog.dispose();

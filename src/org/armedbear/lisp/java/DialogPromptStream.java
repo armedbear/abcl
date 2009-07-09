@@ -24,12 +24,10 @@ public abstract class DialogPromptStream extends Stream {
 		private StringReader stringReader = null;
 		private int inputSize = 0;
 		
-		@Override
 		public void close() throws IOException {
 			closeDialog();
 		}
 
-		@Override
 		public int read(char[] cbuf, int off, int len) throws IOException {
 			if(stringReader == null) {
 				writtenSoFar.flush();
