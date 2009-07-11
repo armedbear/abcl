@@ -112,6 +112,19 @@ public class LispObject extends Lisp
 				 " is not of class " + c.getName()));
   }
 
+  /** This method returns 'this' by default, but allows
+   * objects to return different values to increase Java
+   * interoperability
+   * 
+   * @return An object to be used with synchronized, wait, notify, etc
+   * @throws org.armedbear.lisp.ConditionThrowable
+   */
+  public Object lockableInstance() throws ConditionThrowable
+  {
+      return this;
+  }
+
+
   public LispObject car() throws ConditionThrowable
   {
     return type_error(this, Symbol.LIST);

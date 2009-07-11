@@ -176,6 +176,16 @@ public final class JavaObject extends LispObject
         return javaInstance();
     }
 
+    /** Returns the encapsulated Java object for
+     * interoperability with wait, notify, synchronized, etc.
+     *
+     * @return The encapsulated object
+     */
+    @Override
+    public Object lockableInstance() {
+        return obj;
+    }
+
     public static final Object getObject(LispObject o)
         throws ConditionThrowable
     {
