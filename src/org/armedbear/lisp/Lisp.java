@@ -78,6 +78,8 @@ public abstract class Lisp
     Packages.createPackage("JAVA");
   public static final Package PACKAGE_LISP =
     Packages.createPackage("LISP");
+  public static final Package PACKAGE_THREADS =
+    Packages.createPackage("THREADS");
 
   // ### nil
   public static final LispObject NIL = Nil.NIL;
@@ -103,6 +105,7 @@ public abstract class Lisp
         PACKAGE_TPL.usePackage(PACKAGE_EXT);
         PACKAGE_EXT.addNickname("EXT");
         PACKAGE_EXT.usePackage(PACKAGE_CL);
+        PACKAGE_EXT.usePackage(PACKAGE_THREADS);
         PACKAGE_JVM.usePackage(PACKAGE_CL);
         PACKAGE_JVM.usePackage(PACKAGE_EXT);
         PACKAGE_JVM.usePackage(PACKAGE_SYS);
