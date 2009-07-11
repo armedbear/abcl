@@ -1928,7 +1928,7 @@ public class Stream extends LispObject
     }
         
     ++offset;
-    if (eolStyle == EolStyle.CRLF && n == '\r') {
+    if (n == '\r' && eolStyle == EolStyle.CRLF) {
         n = _readChar();
         if (n != '\n') {
             _unreadChar(n);
@@ -1955,11 +1955,15 @@ public class Stream extends LispObject
   {
     if (reader == null)
         streamNotCharacterInputStream();
-    reader.unread(n);
+
     --offset;
-    pastEnd = false;
-    if (n == eolChar)
+    if (n == '\n') {
+        n = eolChar;
         --lineNumber;
+    }
+
+    reader.unread(n);
+    pastEnd = false;
   }
 
 
