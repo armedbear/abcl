@@ -1012,7 +1012,7 @@ public final class LispThread extends LispObject
 
     // ### make-thread
     private static final Primitive MAKE_THREAD =
-        new Primitive("make-thread", PACKAGE_EXT, true, "function &key name")
+        new Primitive("make-thread", PACKAGE_THREADS, true, "function &key name")
     {
         @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
@@ -1038,7 +1038,7 @@ public final class LispThread extends LispObject
 
     // ### threadp
     private static final Primitive THREADP =
-        new Primitive("threadp", PACKAGE_EXT, true, "object",
+        new Primitive("threadp", PACKAGE_THREADS, true, "object",
 		      "Boolean predicate as whether OBJECT is a thread.")
     {
         @Override
@@ -1050,7 +1050,7 @@ public final class LispThread extends LispObject
 
     // ### thread-alive-p
     private static final Primitive THREAD_ALIVE_P =
-        new Primitive("thread-alive-p", PACKAGE_EXT, true, "thread",
+        new Primitive("thread-alive-p", PACKAGE_THREADS, true, "thread",
 		      "Boolean predicate whether THREAD is alive.")
     {
         @Override
@@ -1069,7 +1069,7 @@ public final class LispThread extends LispObject
 
     // ### thread-name
     private static final Primitive THREAD_NAME =
-        new Primitive("thread-name", PACKAGE_EXT, true, "thread",
+        new Primitive("thread-name", PACKAGE_THREADS, true, "thread",
 		      "Return the name of THREAD if it has one.")
     {
         @Override
@@ -1113,7 +1113,7 @@ public final class LispThread extends LispObject
 
     // ### mapcar-threads
     private static final Primitive MAPCAR_THREADS =
-        new Primitive("mapcar-threads", PACKAGE_EXT, true, "function",
+        new Primitive("mapcar-threads", PACKAGE_THREADS, true, "function",
 		      "Applies FUNCTION to all existing threads.")
     {
         @Override
@@ -1134,7 +1134,7 @@ public final class LispThread extends LispObject
 
     // ### destroy-thread
     private static final Primitive DESTROY_THREAD =
-        new Primitive("destroy-thread", PACKAGE_EXT, true, "thread", 
+        new Primitive("destroy-thread", PACKAGE_THREADS, true, "thread", 
 		      "Mark THREAD as destroyed.")
     {
         @Override
@@ -1158,7 +1158,7 @@ public final class LispThread extends LispObject
     // multiple interrupts are queued for a thread, they are all run, but the
     // order is not guaranteed.
     private static final Primitive INTERRUPT_THREAD =
-        new Primitive("interrupt-thread", PACKAGE_EXT, true,
+        new Primitive("interrupt-thread", PACKAGE_THREADS, true,
 		      "thread function &rest args",
 		      "Interrupts THREAD and forces it to apply FUNCTION to ARGS.\nWhen the function returns, the thread's original computation continues. If  multiple interrupts are queued for a thread, they are all run, but the order is not guaranteed.")
     {
@@ -1185,7 +1185,7 @@ public final class LispThread extends LispObject
 
     // ### current-thread
     private static final Primitive CURRENT_THREAD =
-        new Primitive("current-thread", PACKAGE_EXT, true, "",
+        new Primitive("current-thread", PACKAGE_THREADS, true, "",
 		      "Returns a reference to invoking thread.")
     {
         @Override
@@ -1211,6 +1211,22 @@ public final class LispThread extends LispObject
         }
     };
 
+    static {
+        //FIXME: this block has been added for pre-0.16 compatibility
+        // and can be removed the latest at release 0.22
+        try {
+            PACKAGE_EXT.export(Symbol.intern("MAKE-THREAD", PACKAGE_THREADS));
+            PACKAGE_EXT.export(Symbol.intern("THREADP", PACKAGE_THREADS));
+            PACKAGE_EXT.export(Symbol.intern("THREAD-ALIVE-P", PACKAGE_THREADS));
+            PACKAGE_EXT.export(Symbol.intern("THREAD-NAME", PACKAGE_THREADS));
+            PACKAGE_EXT.export(Symbol.intern("MAPCAR-THREADS", PACKAGE_THREADS));
+            PACKAGE_EXT.export(Symbol.intern("DESTROY-THREAD", PACKAGE_THREADS));
+            PACKAGE_EXT.export(Symbol.intern("INTERRUPT-THREAD", PACKAGE_THREADS));
+            PACKAGE_EXT.export(Symbol.intern("CURRENT-THREAD", PACKAGE_THREADS));
+        }
+        catch (ConditionThrowable ct) { }
+    }
+
     // ### use-fast-calls
     private static final Primitive USE_FAST_CALLS =
         new Primitive("use-fast-calls", PACKAGE_SYS, true)
@@ -1222,4 +1238,101 @@ public final class LispThread extends LispObject
             return use_fast_calls ? T : NIL;
         }
     };
+
+    // ### synchronized-on
+    private static final SpecialOperator SYNCHRONIZED_ON =
+        new SpecialOperator("synchronized-on", PACKAGE_THREADS, true,
+                            "form &body body")
+    {
+        @Override
+        public LispObject execute(LispObject args, Environment env)
+            throws ConditionThrowable
+        {
+          if (args == NIL)
+            return error(new WrongNumberOfArgumentsException(this));
+
+          LispThread thread = LispThread.currentThread();
+          synchronized (eval(args.car(), env, thread).lockableInstance()) {
+              return progn(args.cdr(), env, thread);
+          }
+        }
+    };
+
+    // ### object-wait
+    private static final Primitive OBJECT_WAIT =
+        new Primitive("object-wait", PACKAGE_THREADS, true,
+                      "object &optional timeout")
+    {
+        @Override
+        public LispObject execute(LispObject object)
+            throws ConditionThrowable
+        {
+            try {
+                object.lockableInstance().wait();
+            }
+            catch (InterruptedException e) {
+                currentThread().processThreadInterrupts();
+            }
+            catch (IllegalMonitorStateException e) {
+                return error(new IllegalMonitorState());
+            }
+            return NIL;
+        }
+
+        @Override
+        public LispObject execute(LispObject object, LispObject timeout)
+            throws ConditionThrowable
+        {
+            try {
+                object.lockableInstance().wait(javaSleepInterval(timeout));
+            }
+            catch (InterruptedException e) {
+                currentThread().processThreadInterrupts();
+            }
+            catch (IllegalMonitorStateException e) {
+                return error(new IllegalMonitorState());
+            }
+            return NIL;
+        }
+    };
+
+    // ### object-notify
+    private static final Primitive OBJECT_NOTIFY =
+        new Primitive("object-notify", PACKAGE_THREADS, true,
+                      "object")
+    {
+        @Override
+        public LispObject execute(LispObject object)
+            throws ConditionThrowable
+        {
+            try {
+                object.lockableInstance().notify();
+            }
+            catch (IllegalMonitorStateException e) {
+                return error(new IllegalMonitorState());
+            }
+            return NIL;
+        }
+    };
+
+    // ### object-notify-all
+    private static final Primitive OBJECT_NOTIFY_ALL =
+        new Primitive("object-notify-all", PACKAGE_THREADS, true,
+                      "object")
+    {
+        @Override
+        public LispObject execute(LispObject object)
+            throws ConditionThrowable
+        {
+            try {
+                object.lockableInstance().notifyAll();
+            }
+            catch (IllegalMonitorStateException e) {
+                return error(new IllegalMonitorState());
+            }
+            return NIL;
+        }
+    };
+
+
 }

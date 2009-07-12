@@ -304,6 +304,22 @@
     (setf (block-form block) result)
     block))
 
+(defun p1-threads-synchronized-on (form)
+  (let* ((synchronized-object (p1 (cadr form)))
+         (body (cddr form))
+         (block (make-block-node '(THREADS:SYNCHRONIZED-ON)))
+         (*blocks* (cons block *blocks*))
+         result)
+    (dolist (subform body)
+      (let ((op (and (consp subform) (%car subform))))
+        (push (p1 subform) result)
+        (when (memq op '(GO RETURN-FROM THROW))
+          (return))))
+    (setf (block-form block)
+          (list* 'threads:synchronized-on synchronized-object
+                 (nreverse result)))
+    block))
+
 (defun p1-unwind-protect (form)
   (if (= (length form) 2)
       (p1 (second form)) ; No cleanup forms: (unwind-protect (...)) => (...)
@@ -1040,7 +1056,9 @@
                   (THE                  p1-the)
                   (THROW                p1-throw)
                   (TRULY-THE            p1-truly-the)
-                  (UNWIND-PROTECT       p1-unwind-protect)))
+                  (UNWIND-PROTECT       p1-unwind-protect)
+                  (THREADS:SYNCHRONIZED-ON
+                                        p1-threads-synchronized-on)))
     (install-p1-handler (%car pair) (%cadr pair))))
 
 (initialize-p1-handlers)

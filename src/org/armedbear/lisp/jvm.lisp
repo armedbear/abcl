@@ -420,7 +420,8 @@ than just restore the lastSpecialBinding (= dynamic environment).
 "
   (let ((name (block-name object)))
     (or (equal name '(CATCH))
-        (equal name '(UNWIND-PROTECT)))))
+        (equal name '(UNWIND-PROTECT))
+        (equal name '(THREADS:SYNCHRONIZED-ON)))))
 
 
 (defknown enclosed-by-protected-block-p (&optional t) boolean)

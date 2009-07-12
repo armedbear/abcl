@@ -488,6 +488,9 @@
               res))
         (cons 'PROGN (mapcar #'precompile1 body)))))
 
+(defun precompile-threads-synchronized-on (form)
+  (cons 'threads:synchronized-on (mapcar #'precompile1 (cdr form))))
+
 (defun precompile-progv (form)
   (if (< (length form) 3)
       (compiler-error "Not enough arguments for ~S." 'progv)
@@ -993,7 +996,10 @@
                   (QUOTE                precompile-identity)
                   (THE                  precompile-the)
                   (THROW                precompile-cons)
-                  (TRULY-THE            precompile-truly-the)))
+                  (TRULY-THE            precompile-truly-the)
+
+                  (THREADS:SYNCHRONIZED-ON
+                                        precompile-threads-synchronized-on)))
     (install-handler (first pair) (second pair))))
 
 (install-handlers)

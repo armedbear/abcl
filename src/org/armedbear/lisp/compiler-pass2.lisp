@@ -1131,6 +1131,8 @@ representation, based on the derived type of the LispObject."
                  177 ; return
                  190 ; arraylength
                  191 ; athrow
+                 194 ; monitorenter
+                 195 ; monitorexit
                  198 ; ifnull
                  202 ; label
                  ))
@@ -7680,6 +7682,37 @@ for use with derive-type-times.")
         (label LABEL2)
         (emit-move-from-stack target representation)))))
 
+(defknown p2-threads-synchronized-on (t t) t)
+(defun p2-threads-synchronized-on (block target)
+  (let* ((form (block-form block))
+         (*register* *register*)
+         (object-register (allocate-register))
+         (BEGIN-PROTECTED-RANGE (gensym))
+         (END-PROTECTED-RANGE (gensym))
+         (EXIT (gensym)))
+    (compile-form (cadr form) 'stack nil)
+    (emit-invokevirtual +lisp-object-class+ "lockableInstance" nil
+                        +java-object+) ; value to synchronize
+    (emit 'dup)
+    (astore object-register)
+    (emit 'monitorenter)
+    (label BEGIN-PROTECTED-RANGE)
+    (compile-progn-body (cddr form) target)
+    (emit 'goto EXIT)
+    (label END-PROTECTED-RANGE)
+    (aload object-register)
+    (emit 'monitorexit)
+    (emit 'athrow)
+
+    (label EXIT)
+    (aload object-register)
+    (emit 'monitorexit)
+    (push (make-handler :from BEGIN-PROTECTED-RANGE
+                        :to END-PROTECTED-RANGE
+                        :code END-PROTECTED-RANGE
+                        :catch-type 0) *handlers*)))
+
+
 (defknown p2-catch-node (t t) t)
 (defun p2-catch-node (block target)
   (let ((form (block-form block)))
@@ -7885,6 +7918,9 @@ for use with derive-type-times.")
                 (fix-boxing representation nil))
                ((equal (block-name form) '(PROGV))
                 (p2-progv-node form target representation))
+               ((equal (block-name form) '(THREADS:SYNCHRONIZED-ON))
+                (p2-threads-synchronized-on form target)
+                (fix-boxing representation nil))
                (t
                 (p2-block-node form target representation))))
         ((constantp form)
