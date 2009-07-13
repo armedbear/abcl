@@ -99,7 +99,7 @@ public final class FaslReadtable extends Readtable
         dt.functions[13]   = FaslReader.FASL_SHARP_ILLEGAL; // return
         dispatchTables['#'] = dt;
 
-        readtableCase = Keyword.PRESERVE;
+        readtableCase = Keyword.UPCASE;
     }
 
     private static final FaslReadtable instance = new FaslReadtable();
