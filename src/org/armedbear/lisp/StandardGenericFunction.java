@@ -445,7 +445,8 @@ public final class StandardGenericFunction extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-          checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION] = second;
+          checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION] 
+	    = second;
           return second;
       }
     };
@@ -457,7 +458,8 @@ public final class StandardGenericFunction extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-          return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER];
+          return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass
+							 .SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER];
       }
     };
 
@@ -469,7 +471,8 @@ public final class StandardGenericFunction extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-          checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER] = second;
+          checkStandardGenericFunction(first)
+	    .slots[StandardGenericFunctionClass.SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER] = second;
           return second;
       }
     };
@@ -481,7 +484,8 @@ public final class StandardGenericFunction extends StandardObject
       @Override
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
-          return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE];
+          return checkStandardGenericFunction(arg)
+	    .slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE];
       }
     };
 
@@ -493,7 +497,8 @@ public final class StandardGenericFunction extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-          checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE] = second;
+          checkStandardGenericFunction(first)
+	    .slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE] = second;
           return second;
       }
     };
@@ -517,7 +522,8 @@ public final class StandardGenericFunction extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
       {
-          checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION] = second;
+          checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION] 
+	    = second;
           return second;
       }
     };
@@ -550,14 +556,14 @@ public final class StandardGenericFunction extends StandardObject
         LispObject[] array = new LispObject[gf.numberOfRequiredArgs];
         for (int i = gf.numberOfRequiredArgs; i-- > 0;)
           {
-            array[i] = args.car().classOf();
+            array[i] = gf.getArgSpecialization(args.car());
             args = args.cdr();
           }
-        CacheEntry classes = new CacheEntry(array);
+        CacheEntry specializations = new CacheEntry(array);
         HashMap<CacheEntry,LispObject> ht = gf.cache;
         if (ht == null)
             ht = gf.cache = new HashMap<CacheEntry,LispObject>();
-        ht.put(classes, third);
+        ht.put(specializations, third);
         return third;
       }
     };
@@ -575,15 +581,94 @@ public final class StandardGenericFunction extends StandardObject
         LispObject[] array = new LispObject[gf.numberOfRequiredArgs];
         for (int i = gf.numberOfRequiredArgs; i-- > 0;)
           {
-            array[i] = args.car().classOf();
+            array[i] = gf.getArgSpecialization(args.car());
             args = args.cdr();
           }
-        CacheEntry classes = new CacheEntry(array);
+        CacheEntry specializations = new CacheEntry(array);
         HashMap<CacheEntry,LispObject> ht = gf.cache;
         if (ht == null)
           return NIL;
-        LispObject emf = (LispObject) ht.get(classes);
+        LispObject emf = (LispObject) ht.get(specializations);
         return emf != null ? emf : NIL;
+      }
+    };
+
+  /**
+   * Returns an object representing generic function 
+   * argument <tt>arg</tt> in a <tt>CacheEntry</tt>
+   *
+   * <p>In the simplest case, when this generic function
+   * does not have EQL specialized methos, and therefore
+   * only argument types are relevant for choosing
+   * applicable methods, the value returned is the 
+   * class of <tt>arg</tt>
+   *
+   * <p>If the function has EQL specialized methods: 
+   *   - if <tt>arg</tt> is EQL to some of the EQL-specializers,
+   *     a special object representing equality to that specializer
+   *     is returned.
+   *   - otherwise class of the <tt>arg</tt> is returned.
+   *
+   * <p>Note that we do not consider argument position, when
+   * calculating arg specialization. In rare cases (when
+   * one argument is eql-specialized to a symbol specifying
+   * class of another argument) this may result in redundant cache
+   * entries caching the same method. But the method cached is anyway
+   * correct for the arguments (because in case of cache miss, correct method
+   * is calculated by other code, which does not rely on getArgSpecialization;
+   * and because EQL is true only for objects of the same type, which guaranties
+   * that if a type-specialized methods was chached by eql-specialization,
+   * all the cache hits into this records will be from args of the conforming 
+   * type).
+   *
+   * <p>Consider:
+   * <pre><tt>
+   * (defgeneric f (a b))
+   *
+   * (defmethod f (a (b (eql 'symbol)))
+   *   "T (EQL 'SYMBOL)")
+   *
+   * (defmethod f ((a symbol) (b (eql 'symbol)))
+   *   "SYMBOL (EQL 'SYMBOL)")
+   *
+   * (f 12 'symbol)
+   * => "T (EQL 'SYMBOL)"
+   *
+   * (f 'twelve 'symbol)
+   * => "SYMBOL (EQL 'SYMBOL)"
+   *
+   * (f 'symbol 'symbol)
+   * => "SYMBOL (EQL 'SYMBOL)"
+   *
+   * </tt></pre>
+   *
+   * After the two above calls <tt>cache</tt> will contain tree keys:
+   * <pre>
+   * { class FIXNUM, EqlSpecialization('SYMBOL) }
+   * { class SYMBOL, EqlSpecialization('SYMBOL) }
+   * { EqlSpecialization('SYMBOL), EqlSpecialization('SYMBOL) }.
+   * </pre>
+   */     
+  private LispObject getArgSpecialization(LispObject arg)
+  {
+    for (EqlSpecialization eqlSpecialization : eqlSpecializations)
+      {
+        if (eqlSpecialization.eqlTo.eql(arg))
+          return eqlSpecialization;
+      }
+    return arg.classOf();
+  }
+
+  // ### %get-arg-specialization
+  private static final Primitive _GET_ARG_SPECIALIZATION =
+    new Primitive("%get-arg-specialization", PACKAGE_SYS, true, "generic-function arg")
+    {
+      @Override
+      public LispObject execute(LispObject first, LispObject second)
+        throws ConditionThrowable
+      {
+        final StandardGenericFunction gf = checkStandardGenericFunction(first);
+        return gf.getArgSpecialization(second);
       }
     };
 
@@ -666,13 +751,45 @@ public final class StandardGenericFunction extends StandardObject
       return true;
     }
   }
+
+  private EqlSpecialization eqlSpecializations[] = new EqlSpecialization[0];
+
+    // ### %init-eql-specializations
+    private static final Primitive _INIT_EQL_SPECIALIZATIONS 
+      = new Primitive("%init-eql-specializations", PACKAGE_SYS, true, 
+		    "generic-function eql-specilizer-objects-list")
+      {
+        @Override
+        public LispObject execute(LispObject first, LispObject second)
+          throws ConditionThrowable
+        {
+          final StandardGenericFunction gf = checkStandardGenericFunction(first);
+          LispObject eqlSpecializerObjects = second;
+          gf.eqlSpecializations = new EqlSpecialization[eqlSpecializerObjects.length()];
+          for (int i = 0; i < gf.eqlSpecializations.length; i++) {
+	    gf.eqlSpecializations[i] = new EqlSpecialization(eqlSpecializerObjects.car());
+	    eqlSpecializerObjects = eqlSpecializerObjects.cdr();
+          }
+          return NIL;
+        }
+      };
+
+  private static class EqlSpecialization extends LispObject
+  {
+    public LispObject eqlTo;
+
+    public EqlSpecialization(LispObject eqlTo)
+    {
+        this.eqlTo = eqlTo;
+    }
+  }
   
   public static final StandardGenericFunction checkStandardGenericFunction(LispObject obj)
   throws ConditionThrowable
   {
-                if (obj instanceof StandardGenericFunction)
-                        return (StandardGenericFunction) obj;
-                return (StandardGenericFunction) // Not reached.
-                type_error(obj, Symbol.STANDARD_GENERIC_FUNCTION);
-        }
+    if (obj instanceof StandardGenericFunction)
+      return (StandardGenericFunction) obj;
+    return (StandardGenericFunction) // Not reached.
+      type_error(obj, Symbol.STANDARD_GENERIC_FUNCTION);
+  }
 }

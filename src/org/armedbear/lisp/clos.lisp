@@ -857,9 +857,20 @@
             gf))
   (apply gf args))
 
+(defun collect-eql-specializer-objects (generic-function)
+  (let ((result nil))
+    (dolist (method (generic-function-methods generic-function))
+      (dolist (specializer (%method-specializers method))
+        (when (typep specializer 'eql-specializer)
+          (pushnew (eql-specializer-object specializer)
+                   result
+                   :test 'eql))))
+    result))
+
 (defun finalize-generic-function (gf)
   (%finalize-generic-function gf)
   (setf (classes-to-emf-table gf) (make-hash-table :test #'equal))
+  (%init-eql-specializations gf (collect-eql-specializer-objects gf))
   (set-funcallable-instance-function
    gf
    (make-closure `(lambda (&rest args)
@@ -1184,12 +1195,6 @@
         (error "No such method for ~S." (%generic-function-name gf))
         method)))
 
-(defun methods-contain-eql-specializer-p (methods)
-  (dolist (method methods nil)
-    (when (dolist (spec (%method-specializers method) nil)
-            (when (eql-specializer-p spec) (return t)))
-      (return t))))
-
 (defun fast-callable-p (gf)
   (and (eq (generic-function-method-combination gf) 'standard)
        (null (intersection (%generic-function-lambda-list gf)
@@ -1205,11 +1210,7 @@
 
 (defun std-compute-discriminating-function (gf)
   (let ((code
-         (cond ((methods-contain-eql-specializer-p (generic-function-methods gf))
-                (make-closure `(lambda (&rest args)
-                                 (slow-method-lookup ,gf args))
-                              nil))
-               ((and (= (length (generic-function-methods gf)) 1)
+         (cond ((and (= (length (generic-function-methods gf)) 1)
                      (typep (car (generic-function-methods gf)) 'standard-reader-method))
 ;;                 (sys::%format t "standard reader function ~S~%" (generic-function-name gf))
                 (make-closure
@@ -1245,23 +1246,30 @@
                               (cond ((and (eq (generic-function-method-combination gf) 'standard)
                                           (= (length (generic-function-methods gf)) 1))
                                      (let* ((method (%car (generic-function-methods gf)))
-                                            (class (car (%method-specializers method)))
+                                            (specializer (car (%method-specializers method)))
                                             (function (or (%method-fast-function method)
                                                           (%method-function method))))
-                                       `(lambda (arg)
-                                          (declare (optimize speed))
-                                          (unless (simple-typep arg ,class)
-                                            ;; FIXME no applicable method
-                                            (error 'simple-type-error
-                                                   :datum arg
-                                                   :expected-type ,class))
-                                          (funcall ,function arg))))
+                                       (if (eql-specializer-p specializer)
+                                           (let ((specializer-object (eql-specializer-object specializer)))
+                                             `(lambda (arg)
+                                                (declare (optimize speed))
+                                                (if (eql arg ',specializer-object)
+                                                    (funcall ,function arg)
+                                                    (no-applicable-method ,gf (list arg)))))
+                                           `(lambda (arg)
+                                              (declare (optimize speed))
+                                              (unless (simple-typep arg ,specializer)
+                                                ;; FIXME no applicable method
+                                                (error 'simple-type-error
+                                                       :datum arg
+                                                       :expected-type ,specializer))
+                                              (funcall ,function arg)))))
                                     (t
                                      `(lambda (arg)
                                         (declare (optimize speed))
-                                        (let* ((class (class-of arg))
-                                               (emfun (or (gethash1 class ,emf-table)
-                                                          (slow-method-lookup-1 ,gf class))))
+                                        (let* ((specialization (%get-arg-specialization ,gf arg))
+                                               (emfun (or (gethash1 specialization ,emf-table)
+                                                          (slow-method-lookup-1 ,gf arg specialization))))
                                           (if emfun
                                               (funcall emfun (list arg))
                                               (apply #'no-applicable-method ,gf (list arg)))))
@@ -1275,7 +1283,7 @@
                                  (let ((emfun (get-cached-emf ,gf args)))
                                    (if emfun
                                        (funcall emfun args)
-                                       (slow-method-lookup ,gf args))))))
+                                      (slow-method-lookup ,gf args))))))
                          ((= number-required 2)
                           (if exact
                               `(lambda (arg1 arg2)
@@ -1368,21 +1376,6 @@
       (unless (subclassp (car classes) specializer)
         (return nil)))))
 
-(defun %compute-applicable-methods-using-classes (gf required-classes)
-  (let ((methods '()))
-    (dolist (method (generic-function-methods gf))
-      (when (method-applicable-p-using-classes method required-classes)
-        (push method methods)))
-    (if (or (null methods) (null (%cdr methods)))
-        methods
-        (sort methods
-              (if (eq (class-of gf) (find-class 'standard-generic-function))
-                  #'(lambda (m1 m2)
-                     (std-method-more-specific-p m1 m2 required-classes
-                                                 (generic-function-argument-precedence-order gf)))
-                  #'(lambda (m1 m2)
-                     (method-more-specific-p gf m1 m2 required-classes)))))))
-
 (defun slow-method-lookup (gf args)
   (let ((applicable-methods (%compute-applicable-methods gf args)))
     (if applicable-methods
@@ -1394,15 +1387,15 @@
           (funcall emfun args))
         (apply #'no-applicable-method gf args))))
 
-(defun slow-method-lookup-1 (gf class)
-  (let ((applicable-methods (%compute-applicable-methods-using-classes gf (list class))))
+(defun slow-method-lookup-1 (gf arg arg-specialization)
+  (let ((applicable-methods (%compute-applicable-methods gf (list arg))))
     (if applicable-methods
         (let ((emfun (funcall (if (eq (class-of gf) (find-class 'standard-generic-function))
                                   #'std-compute-effective-method-function
                                   #'compute-effective-method-function)
                               gf applicable-methods)))
           (when emfun
-            (setf (gethash class (classes-to-emf-table gf)) emfun))
+            (setf (gethash arg-specialization (classes-to-emf-table gf)) emfun))
           emfun))))
 
 (defun sub-specializer-p (c1 c2 c-arg)
