@@ -64,7 +64,7 @@ public final class arglist extends Lisp
 
     // ### arglist
     private static final Primitive ARGLIST =
-        new Primitive("arglist", PACKAGE_EXT, true)
+        new Primitive("arglist", PACKAGE_EXT, true, "extended-function-designator")
     {
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
