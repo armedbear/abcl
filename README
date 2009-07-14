@@ -61,26 +61,26 @@ Copy the file 'customizations.lisp.in' to customization.lisp', in the
 directory containing this README file, editing to suit your situation,
 paying attention to the comments in the file.
 
-Start up one of the supported Common Lisp implementations in the
-directory containing this README file.
 
-Load build-abcl.lisp:
+Use ./build-from-lisp.sh <lisp-of-choice>, e.g.
 
-    (load "build-abcl.lisp")
-
-Then do:
-
-    (build-abcl:build-abcl :clean t :full t)
-
-Wait for the build to finish and exit the host Lisp.
+  ./build-from-lisp.sh sbcl
 
 Use abcl.bat on Windows or ./abcl on Unix to start ABCL.
 Note: abcl.bat and abcl contain absolute paths, so you'll need
 to edit them if you move things around after the build.
 
+
+If you're developing on ABCL, you may want to use
+
+  ./build-from-lisp.sh <implementation> --clean=nil
+
+to not do a full rebuild.
+
+
 In case of failure in the javac stage, you might try this:
 
-    (build-abcl:build-abcl :clean t :full t :batch nil)
+  ./build-from-lisp.sh <implementation> --full=t --clean=t --batch=nil
 
 This invokes javac separately for each .java file, which avoids running
 into limitations on command line length (but is a lot slower).
