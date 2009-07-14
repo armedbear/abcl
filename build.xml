@@ -361,6 +361,7 @@
 
     <target name="TAGS">
       <apply executable="etags" parallel="true" verbose="true">
+	<arg value="--regex=|[ \t]+//[ \t]+###[ \t]+\([^ \t]+\)|\1|"/>
 	<fileset dir="${src.dir}">
 	  <patternset refid="abcl.source.java"/>
 	  <patternset refid="abcl.source.lisp"/>
