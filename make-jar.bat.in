@@ -1,0 +1,3 @@
+@JAR@ cfm dist\abcl.jar src\manifest-abcl -C src org\armedbear\lisp\LICENSE -C src org\armedbear\lisp\boot.lisp
+@JAR@ uf dist\abcl.jar -C build\classes .
+
