@@ -890,29 +890,38 @@ public abstract class Lisp
     FastStringBuffer sb = new FastStringBuffer(prefix);
     SpecialBinding binding = thread.getSpecialBinding(Symbol.GENSYM_COUNTER);
     final LispObject oldValue;
-    if (binding != null)
-      oldValue = binding.value;
-    else
-      oldValue = Symbol.GENSYM_COUNTER.getSymbolValue();
+    if (binding != null) {
+        oldValue = binding.value;
+        if (oldValue instanceof Fixnum
+                || oldValue instanceof Bignum)
+          binding.value = oldValue.incr();
+        else {
+           Symbol.GENSYM_COUNTER.setSymbolValue(Fixnum.ZERO);
+           error(new TypeError("The value of *GENSYM-COUNTER* was not a nonnegative integer. Old value: " +
+                                oldValue.writeToString() + " New value: 0"));
+        }
+    } else {
+        // we're manipulating a global resource
+        // make sure we operate thread-safely
+        synchronized (Symbol.GENSYM_COUNTER) {
+            oldValue = Symbol.GENSYM_COUNTER.getSymbolValue();
+            if (oldValue instanceof Fixnum
+                    || oldValue instanceof Bignum)
+                Symbol.GENSYM_COUNTER.setSymbolValue(oldValue.incr());
+            else {
+               Symbol.GENSYM_COUNTER.setSymbolValue(Fixnum.ZERO);
+               error(new TypeError("The value of *GENSYM-COUNTER* was not a nonnegative integer. Old value: " +
+                                    oldValue.writeToString() + " New value: 0"));
+            }
+        }
+    }
+      
     // Decimal representation.
     if (oldValue instanceof Fixnum)
       sb.append(((Fixnum)oldValue).value);
     else if (oldValue instanceof Bignum)
       sb.append(((Bignum)oldValue).value.toString());
-    else
-      {
-        // Restore sanity.
-        if (binding != null)
-          binding.value = Fixnum.ZERO;
-        else
-          Symbol.GENSYM_COUNTER.setSymbolValue(Fixnum.ZERO);
-        error(new TypeError("The value of *GENSYM-COUNTER* was not a nonnegative integer. Old value: " +
-                             oldValue.writeToString() + " New value: 0"));
-      }
-    if (binding != null)
-      binding.value = oldValue.incr();
-    else
-      Symbol.GENSYM_COUNTER.setSymbolValue(oldValue.incr());
+
     return new Symbol(new SimpleString(sb));
   }
 
