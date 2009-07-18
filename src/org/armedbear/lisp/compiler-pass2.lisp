@@ -4912,11 +4912,6 @@ given a specific common representation.")
 	  (progn ,@body)
        (delete-file pathname))))
 
-(defun verify-class-file-loadable (pathname)
-  (let ((*load-truename* (pathname pathname)))
-    (unless (ignore-errors (load-compiled-function pathname))
-      (error "Unable to load ~S." pathname))))
-
 (defknown p2-flet-process-compiland (t) t)
 (defun p2-flet-process-compiland (local-function)
   (let* ((compiland (local-function-compiland local-function))
@@ -4926,7 +4921,6 @@ given a specific common representation.")
                   (class-file (make-class-file :pathname pathname
                                                :lambda-list lambda-list)))
 	     (set-compiland-and-write-class-file class-file compiland)
-	     (verify-class-file-loadable pathname)
              (setf (local-function-class-file local-function) class-file)))
           (t
 	   (with-temp-class-file
@@ -4945,7 +4939,6 @@ given a specific common representation.")
                   (class-file (make-class-file :pathname pathname
                                                :lambda-list lambda-list)))
 	     (set-compiland-and-write-class-file class-file compiland)
-	     (verify-class-file-loadable pathname)
              (setf (local-function-class-file local-function) class-file)
              (let ((g (declare-local-function local-function)))
 	       (emit-make-compiled-closure-for-flet/labels
@@ -8458,7 +8451,8 @@ for use with derive-type-times.")
              (setf compiled-function
                    (load-compiled-function
                     (compile-defun name expr env tempfile))))
-        (delete-file tempfile)))
+        ;;(delete-file tempfile)
+        ))
     (when (and name (functionp compiled-function))
       (sys::set-function-definition name compiled-function definition))
     (or name compiled-function)))
