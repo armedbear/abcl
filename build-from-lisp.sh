@@ -74,7 +74,7 @@ abcl()
 
 clisp()
 { 
-    exec "$1" -ansi -q -norc -i "$2" -x "(progn $3 (ext:quit)"
+    exec "$1" -ansi -q -norc -i "$2" -x "(progn $3 (ext:quit))"
 }
 
 sbcl()
