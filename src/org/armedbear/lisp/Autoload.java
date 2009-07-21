@@ -489,34 +489,23 @@ public class Autoload extends Function
         autoload(PACKAGE_EXT, "arglist", "arglist", true);
         autoload(PACKAGE_EXT, "assq", "assq", true);
         autoload(PACKAGE_EXT, "assql", "assql", true);
-        autoload(PACKAGE_EXT, "close-gate", "Gate", true);
         autoload(PACKAGE_EXT, "file-directory-p", "probe_file", true);
         autoload(PACKAGE_EXT, "gc", "gc", true);
         autoload(PACKAGE_EXT, "get-floating-point-modes", "FloatFunctions", true);
-        autoload(PACKAGE_EXT, "get-mutex", "Mutex", true);
-	autoload(PACKAGE_EXT, "make-gate", "Gate", true);
         autoload(PACKAGE_EXT, "mailbox-empty-p", "Mailbox", true);
         autoload(PACKAGE_EXT, "mailbox-peek", "Mailbox", true);
         autoload(PACKAGE_EXT, "mailbox-read", "Mailbox", true);
         autoload(PACKAGE_EXT, "mailbox-send", "Mailbox", true);
         autoload(PACKAGE_EXT, "make-mailbox", "Mailbox", true);
-        autoload(PACKAGE_EXT, "make-mutex", "Mutex", true);
         autoload(PACKAGE_EXT, "make-slime-input-stream", "SlimeInputStream", true);
         autoload(PACKAGE_EXT, "make-slime-output-stream", "SlimeOutputStream", true);
-        autoload(PACKAGE_EXT, "make-thread-lock", "ThreadLock", true);
-        autoload(PACKAGE_EXT, "open-gate", "Gate", true);
-        autoload(PACKAGE_EXT, "open-gate-p", "Gate", true);
         autoload(PACKAGE_EXT, "probe-directory", "probe_file", true);
-        autoload(PACKAGE_EXT, "release-mutex", "Mutex", true);
         autoload(PACKAGE_EXT, "set-floating-point-modes", "FloatFunctions", true);
         autoload(PACKAGE_EXT, "simple-string-fill", "StringFunctions");
         autoload(PACKAGE_EXT, "simple-string-search", "StringFunctions");
         autoload(PACKAGE_EXT, "string-input-stream-current", "StringInputStream", true);
         autoload(PACKAGE_EXT, "string-find", "StringFunctions");
         autoload(PACKAGE_EXT, "string-position", "StringFunctions");
-        autoload(PACKAGE_EXT, "thread-lock", "ThreadLock", true);
-        autoload(PACKAGE_EXT, "thread-unlock", "ThreadLock", true);
-        autoload(PACKAGE_EXT, "wait-open-gate", "Gate", true);
         autoload(PACKAGE_JAVA, "%jnew-proxy", "JProxy");
         autoload(PACKAGE_JAVA, "%find-java-class", "JavaClass");
         autoload(PACKAGE_JAVA, "%jmake-invocation-handler", "JProxy");
@@ -680,6 +669,13 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "single-float-bits", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "std-allocate-instance", "StandardObjectFunctions", true);
         autoload(PACKAGE_SYS, "zip", "zip", true);
+
+        autoload(PACKAGE_THREADS, "make-mutex", "Mutex", true);
+        autoload(PACKAGE_THREADS, "get-mutex", "Mutex", true);
+        autoload(PACKAGE_THREADS, "release-mutex", "Mutex", true);
+        autoload(PACKAGE_THREADS, "make-thread-lock", "ThreadLock", true);
+        autoload(PACKAGE_THREADS, "thread-lock", "ThreadLock", true);
+        autoload(PACKAGE_THREADS, "thread-unlock", "ThreadLock", true);
 
         autoload(Symbol.COPY_LIST, "copy_list");
 

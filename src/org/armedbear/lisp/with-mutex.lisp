@@ -29,7 +29,7 @@
 ;;; obligated to do so.  If you do not wish to do so, delete this
 ;;; exception statement from your version.
 
-(in-package #:extensions)
+(in-package #:threads)
 
 (defmacro with-mutex ((mutex) &body body)
   (let ((m (gensym)))

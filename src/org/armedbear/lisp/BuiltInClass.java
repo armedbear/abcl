@@ -111,7 +111,6 @@ public class BuiltInClass extends LispClass
   public static final BuiltInClass MAILBOX              = addClass(Symbol.MAILBOX);
   public static final BuiltInClass METHOD_COMBINATION   = addClass(Symbol.METHOD_COMBINATION);
   public static final BuiltInClass MUTEX                = addClass(Symbol.MUTEX);
-  public static final BuiltInClass GATE                 = addClass(Symbol.GATE);
   public static final BuiltInClass NIL_VECTOR           = addClass(Symbol.NIL_VECTOR);
   public static final BuiltInClass NULL                 = addClass(Symbol.NULL);
   public static final BuiltInClass NUMBER               = addClass(Symbol.NUMBER);

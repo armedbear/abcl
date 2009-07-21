@@ -293,15 +293,11 @@
 
 (export '(grovel-java-definitions compile-system))
 (autoload '(grovel-java-definitions compile-system) "compile-system")
-(export 'with-thread-lock)
-(autoload-macro 'with-thread-lock)
 (export 'aver)
 (autoload-macro 'aver)
 (autoload 'sys::%failed-aver "aver")
 (export 'collect)
 (autoload-macro 'collect)
-(export 'with-mutex)
-(autoload-macro 'with-mutex)
 (export 'compile-file-if-needed)
 (autoload 'compile-file-if-needed "compile-file")
 (export 'describe-compiler-policy)
@@ -315,7 +311,6 @@
 (export 'make-dialog-prompt-stream)
 (autoload 'make-dialog-prompt-stream "gui")
 
-
 ;; JVM compiler.
 (in-package "JVM")
 (export '(jvm-compile-package))
@@ -324,3 +319,9 @@
 (in-package "LISP")
 (export 'compiler-let)
 (autoload 'compiler-let)
+
+(in-package "THREADS")
+(export 'with-thread-lock)
+(ext:autoload-macro 'with-thread-lock)
+(export 'with-mutex)
+(ext:autoload-macro 'with-mutex)

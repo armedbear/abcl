@@ -72,7 +72,7 @@ public final class ThreadLock extends LispObject
 
     // ### make-thread-lock
     private static final Primitive MAKE_THREAD_LOCK =
-        new Primitive("make-thread-lock", PACKAGE_EXT, true)
+        new Primitive("make-thread-lock", PACKAGE_THREADS, true)
     {
         @Override
         public LispObject execute() throws ConditionThrowable
@@ -83,7 +83,7 @@ public final class ThreadLock extends LispObject
 
     // ### thread-lock lock
     private static final Primitive THREAD_LOCK =
-        new Primitive("thread-lock", PACKAGE_EXT, true)
+        new Primitive("thread-lock", PACKAGE_THREADS, true)
     {
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
@@ -96,7 +96,7 @@ public final class ThreadLock extends LispObject
 
     // ### thread-unlock lock
     private static final Primitive THREAD_UNLOCK =
-        new Primitive("thread-unlock", PACKAGE_EXT, true)
+        new Primitive("thread-unlock", PACKAGE_THREADS, true)
     {
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
@@ -106,4 +106,16 @@ public final class ThreadLock extends LispObject
             return NIL;
         }
     };
+
+    static {
+      //FIXME: this block has been added for pre-0.16 compatibility
+      // and can be removed the latest at release 0.22
+      try {
+	PACKAGE_EXT.export(Symbol.intern("MAKE-THREAD-LOCK", PACKAGE_THREADS));
+	PACKAGE_EXT.export(Symbol.intern("THREAD-LOCK", PACKAGE_THREADS));
+	PACKAGE_EXT.export(Symbol.intern("THREAD-UNLOCK", PACKAGE_THREADS));
+      } catch (ConditionThrowable t) {
+	Debug.bug();
+      }
+    }
 }

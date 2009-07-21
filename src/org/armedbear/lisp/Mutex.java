@@ -101,6 +101,17 @@ public final class Mutex extends LispObject
         return unreadableString("MUTEX");
     }
 
+    static {
+      //FIXME: this block has been added for pre-0.16 compatibility
+      // and can be removed the latest at release 0.22
+      try {
+	PACKAGE_EXT.export(Symbol.intern("WITH-MUTEX", PACKAGE_THREADS));
+	PACKAGE_EXT.export(Symbol.intern("WITH-THREAD-LOCK", PACKAGE_THREADS));
+      } catch (ConditionThrowable t) {
+	Debug.bug();
+      }
+    }
+      
     // ### make-mutex => mutex
     private static final Primitive MAKE_MUTEX =
         new Primitive("make-mutex", PACKAGE_EXT, true, "")
