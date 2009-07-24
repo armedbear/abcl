@@ -1,4 +1,6 @@
 Version 0.16.0
+(unreleased)
+
   Summary of changes:
   * Improve performance of CLOS eql-specializers via cache (Anton Vodonosov).
   * 'build-from-lisp.sh' shell script (Tobias Rittweiler).
