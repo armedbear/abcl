@@ -555,21 +555,21 @@ public final class LispThread extends LispObject
         }
     }
 
-    public void pushStackFrame(LispObject operator)
+    public final void pushStackFrame(LispObject operator)
         throws ConditionThrowable
     {
         stack = new Cons((new StackFrame(operator)), stack);
         doProfiling();
     }
 
-    public void pushStackFrame(LispObject operator, LispObject arg)
+    public final void pushStackFrame(LispObject operator, LispObject arg)
         throws ConditionThrowable
     {
         stack = new Cons((new StackFrame(operator, arg)), stack);
         doProfiling();
     }
 
-    public void pushStackFrame(LispObject operator, LispObject first,
+    public final void pushStackFrame(LispObject operator, LispObject first,
                                LispObject second)
         throws ConditionThrowable
     {
@@ -577,7 +577,7 @@ public final class LispThread extends LispObject
         doProfiling();
     }
 
-    public void pushStackFrame(LispObject operator, LispObject first,
+    public final void pushStackFrame(LispObject operator, LispObject first,
                                LispObject second, LispObject third)
         throws ConditionThrowable
     {
@@ -586,7 +586,7 @@ public final class LispThread extends LispObject
         doProfiling();
     }
 
-    public void pushStackFrame(LispObject operator, LispObject... args)
+    public final void pushStackFrame(LispObject operator, LispObject... args)
         throws ConditionThrowable
     {
         stack = new Cons((new StackFrame(operator, args)), stack);
