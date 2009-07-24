@@ -499,9 +499,7 @@ public final class LispThread extends LispObject
             first = null;
             second = null;
             third = null;
-            this.args = new LispObject[args.length];
-            for (int i = args.length; i-- > 0;)
-                this.args[i] = args[i];
+            this.args = args;
         }
 
         public LispObject toList() throws ConditionThrowable
@@ -591,7 +589,7 @@ public final class LispThread extends LispObject
         }
     }
 
-    public void pushStackFrame(LispObject operator, LispObject[] args)
+    public void pushStackFrame(LispObject operator, LispObject... args)
         throws ConditionThrowable
     {
         stack = new Cons((new StackFrame(operator, args)), stack);
@@ -701,12 +699,7 @@ public final class LispThread extends LispObject
             return function.execute(first, second, third, fourth);
 
         LispObject oldStack = stack;
-        LispObject[] args = new LispObject[4];
-        args[0] = first;
-        args[1] = second;
-        args[2] = third;
-        args[3] = fourth;
-        pushStackFrame(function, args);
+        pushStackFrame(function, first, second, third, fourth);
         try {
             return function.execute(first, second, third, fourth);
         }
@@ -729,13 +722,7 @@ public final class LispThread extends LispObject
             return function.execute(first, second, third, fourth, fifth);
 
         LispObject oldStack = stack;
-        LispObject[] args = new LispObject[5];
-        args[0] = first;
-        args[1] = second;
-        args[2] = third;
-        args[3] = fourth;
-        args[4] = fifth;
-        pushStackFrame(function, args);
+        pushStackFrame(function, first, second, third, fourth, fifth);
         try {
             return function.execute(first, second, third, fourth, fifth);
         }
@@ -759,14 +746,7 @@ public final class LispThread extends LispObject
             return function.execute(first, second, third, fourth, fifth, sixth);
 
         LispObject oldStack = stack;
-        LispObject[] args = new LispObject[6];
-        args[0] = first;
-        args[1] = second;
-        args[2] = third;
-        args[3] = fourth;
-        args[4] = fifth;
-        args[5] = sixth;
-        pushStackFrame(function, args);
+        pushStackFrame(function, first, second, third, fourth, fifth, sixth);
         try {
             return function.execute(first, second, third, fourth, fifth, sixth);
         }
@@ -791,15 +771,8 @@ public final class LispThread extends LispObject
                                     seventh);
 
         LispObject oldStack = stack;
-        LispObject[] args = new LispObject[7];
-        args[0] = first;
-        args[1] = second;
-        args[2] = third;
-        args[3] = fourth;
-        args[4] = fifth;
-        args[5] = sixth;
-        args[6] = seventh;
-        pushStackFrame(function, args);
+        pushStackFrame(function, first, second, third, fourth, fifth, sixth,
+                                    seventh);
         try {
             return function.execute(first, second, third, fourth, fifth, sixth,
                                     seventh);
@@ -825,16 +798,8 @@ public final class LispThread extends LispObject
                                     seventh, eighth);
 
         LispObject oldStack = stack;
-        LispObject[] args = new LispObject[8];
-        args[0] = first;
-        args[1] = second;
-        args[2] = third;
-        args[3] = fourth;
-        args[4] = fifth;
-        args[5] = sixth;
-        args[6] = seventh;
-        args[7] = eighth;
-        pushStackFrame(function, args);
+        pushStackFrame(function, first, second, third, fourth, fifth, sixth,
+                                    seventh, eighth);
         try {
             return function.execute(first, second, third, fourth, fifth, sixth,
                                     seventh, eighth);
