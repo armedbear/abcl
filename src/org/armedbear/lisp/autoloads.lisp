@@ -291,6 +291,26 @@
 (export 'socket-peer-address)
 (autoload 'socket-peer-address "socket")
 
+(in-package "THREADS")
+(sys::export '(mailbox-send mailbox-empty-p mailbox-read mailbox-peek))
+(sys::autoload '(mailbox-send mailbox-empty-p mailbox-read mailbox-peek)
+    "threads")
+
+(sys::export '(make-thread-lock thread-lock thread-unlock with-thread-lock))
+(sys::autoload '(make-thread-lock thread-lock thread-unlock) "threads")
+(sys::autoload-macro 'with-thread-lock "threads")
+
+;; block to be removed at 0.22
+
+(in-package "EXTENSIONS")
+
+(export '(mailbox-send mailbox-empty-p mailbox-read mailbox-peek))
+(export '(make-thread-lock thread-lock thread-unlock with-thread-lock))
+
+;; end of 0.22 block
+
+(in-package "EXTENSIONS")
+
 (export '(grovel-java-definitions compile-system))
 (autoload '(grovel-java-definitions compile-system) "compile-system")
 (export 'aver)
