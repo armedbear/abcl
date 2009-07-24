@@ -546,24 +546,27 @@ public final class LispThread extends LispObject
         this.stack = stack;
     }
 
-    public void pushStackFrame(LispObject operator)
+    private void doProfiling()
         throws ConditionThrowable
     {
-        stack = new Cons((new StackFrame(operator)), stack);
         if (profiling && sampling) {
             if (sampleNow)
                 Profiler.sample(this);
         }
     }
 
+    public void pushStackFrame(LispObject operator)
+        throws ConditionThrowable
+    {
+        stack = new Cons((new StackFrame(operator)), stack);
+        doProfiling();
+    }
+
     public void pushStackFrame(LispObject operator, LispObject arg)
         throws ConditionThrowable
     {
         stack = new Cons((new StackFrame(operator, arg)), stack);
-        if (profiling && sampling) {
-            if (sampleNow)
-                Profiler.sample(this);
-        }
+        doProfiling();
     }
 
     public void pushStackFrame(LispObject operator, LispObject first,
@@ -571,10 +574,7 @@ public final class LispThread extends LispObject
         throws ConditionThrowable
     {
         stack = new Cons((new StackFrame(operator, first, second)), stack);
-        if (profiling && sampling) {
-            if (sampleNow)
-                Profiler.sample(this);
-        }
+        doProfiling();
     }
 
     public void pushStackFrame(LispObject operator, LispObject first,
@@ -583,20 +583,14 @@ public final class LispThread extends LispObject
     {
         stack = new Cons((new StackFrame(operator, first, second, third)),
                          stack);
-        if (profiling && sampling) {
-            if (sampleNow)
-                Profiler.sample(this);
-        }
+        doProfiling();
     }
 
     public void pushStackFrame(LispObject operator, LispObject... args)
         throws ConditionThrowable
     {
         stack = new Cons((new StackFrame(operator, args)), stack);
-        if (profiling && sampling) {
-            if (sampleNow)
-                Profiler.sample(this);
-        }
+        doProfiling();
     }
 
     public void resetStack()
@@ -616,10 +610,7 @@ public final class LispThread extends LispObject
             return function.execute();
         }
         finally {
-            if (profiling && sampling) {
-                if (sampleNow)
-                    Profiler.sample(this);
-            }
+            doProfiling();
             stack = oldStack;
         }
     }
@@ -637,10 +628,7 @@ public final class LispThread extends LispObject
             return function.execute(arg);
         }
         finally {
-            if (profiling && sampling) {
-                if (sampleNow)
-                    Profiler.sample(this);
-            }
+            doProfiling();
             stack = oldStack;
         }
     }
@@ -659,10 +647,7 @@ public final class LispThread extends LispObject
             return function.execute(first, second);
         }
         finally {
-            if (profiling && sampling) {
-                if (sampleNow)
-                    Profiler.sample(this);
-            }
+            doProfiling();
             stack = oldStack;
         }
     }
@@ -681,10 +666,7 @@ public final class LispThread extends LispObject
             return function.execute(first, second, third);
         }
         finally {
-            if (profiling && sampling) {
-                if (sampleNow)
-                    Profiler.sample(this);
-            }
+            doProfiling();
             stack = oldStack;
         }
     }
@@ -704,10 +686,7 @@ public final class LispThread extends LispObject
             return function.execute(first, second, third, fourth);
         }
         finally {
-            if (profiling && sampling) {
-                if (sampleNow)
-                    Profiler.sample(this);
-            }
+            doProfiling();
             stack = oldStack;
         }
     }
@@ -727,10 +706,7 @@ public final class LispThread extends LispObject
             return function.execute(first, second, third, fourth, fifth);
         }
         finally {
-            if (profiling && sampling) {
-                if (sampleNow)
-                    Profiler.sample(this);
-            }
+            doProfiling();
             stack = oldStack;
         }
     }
@@ -751,10 +727,7 @@ public final class LispThread extends LispObject
             return function.execute(first, second, third, fourth, fifth, sixth);
         }
         finally {
-            if (profiling && sampling) {
-                if (sampleNow)
-                    Profiler.sample(this);
-            }
+            doProfiling();
             stack = oldStack;
         }
     }
@@ -778,10 +751,7 @@ public final class LispThread extends LispObject
                                     seventh);
         }
         finally {
-            if (profiling && sampling) {
-                if (sampleNow)
-                    Profiler.sample(this);
-            }
+            doProfiling();
             stack = oldStack;
         }
     }
@@ -805,10 +775,7 @@ public final class LispThread extends LispObject
                                     seventh, eighth);
         }
         finally {
-            if (profiling && sampling) {
-                if (sampleNow)
-                    Profiler.sample(this);
-            }
+            doProfiling();
             stack = oldStack;
         }
     }
@@ -825,10 +792,7 @@ public final class LispThread extends LispObject
             return function.execute(args);
         }
         finally {
-            if (profiling && sampling) {
-                if (sampleNow)
-                    Profiler.sample(this);
-            }
+            doProfiling();
             stack = oldStack;
         }
     }
