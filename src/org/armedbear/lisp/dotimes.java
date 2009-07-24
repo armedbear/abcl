@@ -51,7 +51,6 @@ public final class dotimes extends SpecialOperator
     final LispThread thread = LispThread.currentThread();
     LispObject resultForm = args.cdr().cdr().car();
     SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
-    final LispObject stack = thread.getStack();
 
     LispObject bodyAndDecls = parseBody(bodyForm, false);
     LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
@@ -144,7 +143,6 @@ public final class dotimes extends SpecialOperator
                                 if (b != null && b.value != null)
                                   {
                                     body = b.value;
-                                    thread.setStack(stack);
                                     continue;
                                   }
                               }
@@ -205,7 +203,6 @@ public final class dotimes extends SpecialOperator
                                 if (b != null && b.value != null)
                                   {
                                     body = b.value;
-                                    thread.setStack(stack);
                                     continue;
                                   }
                               }
@@ -232,7 +229,6 @@ public final class dotimes extends SpecialOperator
       {
         if (ret.getTag() == NIL)
           {
-            thread.setStack(stack);
             return ret.getResult();
           }
         throw ret;

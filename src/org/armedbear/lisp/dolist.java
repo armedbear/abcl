@@ -52,7 +52,6 @@ public final class dolist extends SpecialOperator
     final LispThread thread = LispThread.currentThread();
     LispObject resultForm = args.cdr().cdr().car();
     SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
-    final LispObject stack = thread.getStack();
     // Process declarations.
     LispObject bodyAndDecls = parseBody(bodyForm, false);
     LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
@@ -134,7 +133,6 @@ public final class dolist extends SpecialOperator
                         if (b != null && b.value != null)
                           {
                             body = b.value;
-                            thread.setStack(stack);
                             continue;
                           }
                         throw go;
@@ -157,7 +155,6 @@ public final class dolist extends SpecialOperator
       {
         if (ret.getTag() == NIL)
           {
-            thread.setStack(stack);
             return ret.getResult();
           }
         throw ret;

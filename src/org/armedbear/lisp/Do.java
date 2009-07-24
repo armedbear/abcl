@@ -93,7 +93,6 @@ public final class Do extends Lisp
         varlist = varlist.cdr();
       }
     final LispThread thread = LispThread.currentThread();
-    final LispObject stack = thread.getStack();
     final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
     // Process declarations.
 
@@ -170,7 +169,6 @@ public final class Do extends Lisp
                         if (binding != null && binding.value != null)
                           {
                             remaining = binding.value;
-                            thread.setStack(stack);
                             continue;
                           }
                         throw go;
@@ -234,7 +232,6 @@ public final class Do extends Lisp
       {
         if (ret.getTag() == NIL)
           {
-            thread.setStack(stack);
             return ret.getResult();
           }
         throw ret;

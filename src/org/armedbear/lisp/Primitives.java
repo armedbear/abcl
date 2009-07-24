@@ -3509,7 +3509,6 @@ public final class Primitives extends Lisp
             localTags = new Cons(current, localTags);
           }
         final LispThread thread = LispThread.currentThread();
-        final LispObject stack = thread.getStack();
         LispObject remaining = args;
         while (remaining != NIL)
           {
@@ -3546,7 +3545,6 @@ public final class Primitives extends Lisp
                         if (binding != null && binding.value != null)
                           {
                             remaining = binding.value;
-                            thread.setStack(stack);
                             continue;
                           }
                       }
@@ -3597,7 +3595,6 @@ public final class Primitives extends Lisp
         ext.addBlock(tag, block);
         LispObject result = NIL;
         final LispThread thread = LispThread.currentThread();
-        final LispObject stack = thread.getStack();
         try
           {
             return progn(body, ext, thread);
@@ -3606,7 +3603,6 @@ public final class Primitives extends Lisp
           {
             if (ret.getBlock() == block)
               {
-                thread.setStack(stack);
                 return ret.getResult();
               }
             throw ret;
@@ -3660,7 +3656,6 @@ public final class Primitives extends Lisp
         thread.pushCatchTag(tag);
         LispObject body = args.cdr();
         LispObject result = NIL;
-        final LispObject stack = thread.getStack();
         try
           {
             return progn(body, env, thread);
@@ -3669,7 +3664,6 @@ public final class Primitives extends Lisp
           {
             if (t.tag == tag)
               {
-                thread.setStack(stack);
                 return t.getResult(thread);
               }
             throw t;
