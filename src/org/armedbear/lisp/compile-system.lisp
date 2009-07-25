@@ -247,6 +247,7 @@
                            "sublis.lisp"
                            "subst.lisp"
                            "tailp.lisp"
+                           "threads.lisp"
                            "time.lisp"
                            "top-level.lisp"
                            "trace.lisp"
@@ -261,7 +262,6 @@
                            "with-package-iterator.lisp"
                            "with-slots.lisp"
                            "with-standard-io-syntax.lisp"
-                           "with-thread-lock.lisp"
                            "write-sequence.lisp")))
     t))
 
