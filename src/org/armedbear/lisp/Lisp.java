@@ -140,6 +140,7 @@ public abstract class Lisp
                                          LispThread thread)
     throws ConditionThrowable
   {
+    LispObject stack = thread.getStack();
     thread.pushStackFrame(fun, args);
     thread._values = null;
     LispObject result;
@@ -188,7 +189,7 @@ public abstract class Lisp
       }
     finally
       {
-        thread.popStackFrame();
+        thread.setStack(stack);
       }
     return result;
   }
