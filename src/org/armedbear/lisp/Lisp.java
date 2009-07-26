@@ -140,58 +140,38 @@ public abstract class Lisp
                                          LispThread thread)
     throws ConditionThrowable
   {
-    LispObject stack = thread.getStack();
-    thread.pushStackFrame(fun, args);
     thread._values = null;
-    LispObject result;
-    if (profiling)
-      if (!sampling)
-        fun.incrementCallCount();
-    try
+
+    // 26-07-2009: For some reason we cannot "just" call the array version;
+    // it causes an error (Wrong number of arguments for LOOP-FOR-IN)
+    // which is probably a sign of an issue in our design?
+    switch (args.length)
       {
-        switch (args.length)
-          {
-          case 0:
-            result = fun.execute();
-            break;
-          case 1:
-            result = fun.execute(args[0]);
-            break;
-          case 2:
-            result = fun.execute(args[0], args[1]);
-            break;
-          case 3:
-            result = fun.execute(args[0], args[1], args[2]);
-            break;
-          case 4:
-            result = fun.execute(args[0], args[1], args[2], args[3]);
-            break;
-          case 5:
-            result = fun.execute(args[0], args[1], args[2], args[3],
-                                 args[4]);
-            break;
-          case 6:
-            result = fun.execute(args[0], args[1], args[2], args[3],
-                                 args[4], args[5]);
-            break;
-          case 7:
-            result = fun.execute(args[0], args[1], args[2], args[3],
-                                 args[4], args[5], args[6]);
-            break;
-          case 8:
-            result = fun.execute(args[0], args[1], args[2], args[3],
-                                 args[4], args[5], args[6], args[7]);
-            break;
-          default:
-            result = fun.execute(args);
-            break;
-          }
-      }
-    finally
-      {
-        thread.setStack(stack);
-      }
-    return result;
+      case 0:
+        return thread.execute(fun);
+      case 1:
+        return thread.execute(fun, args[0]);
+      case 2:
+        return thread.execute(fun, args[0], args[1]);
+      case 3:
+        return thread.execute(fun, args[0], args[1], args[2]);
+      case 4:
+        return thread.execute(fun, args[0], args[1], args[2], args[3]);
+      case 5:
+        return thread.execute(fun, args[0], args[1], args[2], args[3],
+                              args[4]);
+      case 6:
+        return thread.execute(fun, args[0], args[1], args[2], args[3],
+                              args[4], args[5]);
+      case 7:
+        return thread.execute(fun, args[0], args[1], args[2], args[3],
+                              args[4], args[5], args[6]);
+      case 8:
+        return thread.execute(fun, args[0], args[1], args[2], args[3],
+                              args[4], args[5], args[6], args[7]);
+      default:
+        return thread.execute(fun, args);
+    }
   }
 
   public static final LispObject macroexpand(LispObject form,
