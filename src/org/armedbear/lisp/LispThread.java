@@ -449,62 +449,63 @@ public final class LispThread extends LispObject
 
     private static class StackFrame
     {
-        public LispObject operator;
-        private LispObject first;
-        private LispObject second;
-        private LispObject third;
-        private LispObject[] args;
+        public final LispObject operator;
+        private final LispObject first;
+        private final LispObject second;
+        private final LispObject third;
+        private final LispObject[] args;
         final StackFrame next;
 
-        public StackFrame(StackFrame next) {
-            this.next = next;
-        }
-
-        public final void set(LispObject operator)
+        public StackFrame(LispObject operator, StackFrame next)
         {
             this.operator = operator;
             first = null;
             second = null;
             third = null;
             args = null;
+            this.next = next;
         }
 
-        public final void set(LispObject operator, LispObject arg)
+        public StackFrame(LispObject operator, LispObject arg, StackFrame next)
         {
             this.operator = operator;
             first = arg;
             second = null;
             third = null;
             args = null;
+            this.next = next;
         }
 
-        public final void set(LispObject operator, LispObject first,
-                              LispObject second)
+        public StackFrame(LispObject operator, LispObject first,
+                          LispObject second, StackFrame next)
         {
             this.operator = operator;
             this.first = first;
             this.second = second;
             third = null;
             args = null;
+            this.next = next;
         }
 
-        public final void set(LispObject operator, LispObject first,
-                              LispObject second, LispObject third)
+        public StackFrame(LispObject operator, LispObject first,
+                          LispObject second, LispObject third, StackFrame next)
         {
             this.operator = operator;
             this.first = first;
             this.second = second;
             this.third = third;
             args = null;
+            this.next = next;
         }
 
-        public final void set(LispObject operator, LispObject[] args)
+        public StackFrame(LispObject operator, LispObject[] args, StackFrame next)
         {
             this.operator = operator;
             first = null;
             second = null;
             third = null;
             this.args = args;
+            this.next = next;
         }
 
         public LispObject toList() throws ConditionThrowable
@@ -540,9 +541,6 @@ public final class LispThread extends LispObject
     }
 
     private StackFrame stack = null;
-    private final int framePoolSize = 256;
-    private final StackFrame[] framePool = new StackFrame[256];
-    private int framePointer = -1;
 
     @Deprecated
     public LispObject getStack()
@@ -564,26 +562,17 @@ public final class LispThread extends LispObject
         }
     }
 
-    private final StackFrame newStackFrame() {
-        if (++framePointer < framePoolSize) {
-            if (framePool[framePointer] == null)
-                framePool[framePointer] = new StackFrame(stack);
-            return (stack = framePool[framePointer]);
-        } else
-            return (stack = new StackFrame(stack));
-    }
-
     public final void pushStackFrame(LispObject operator)
         throws ConditionThrowable
     {
-        newStackFrame().set(operator);
+        stack = new StackFrame(operator, stack);
         doProfiling();
     }
 
     public final void pushStackFrame(LispObject operator, LispObject arg)
         throws ConditionThrowable
     {
-        newStackFrame().set(operator, arg);
+        stack = new StackFrame(operator, arg, stack);
         doProfiling();
     }
 
@@ -591,7 +580,7 @@ public final class LispThread extends LispObject
                                LispObject second)
         throws ConditionThrowable
     {
-        newStackFrame().set(operator, first, second);
+        stack = new StackFrame(operator, first, second, stack);
         doProfiling();
     }
 
@@ -599,36 +588,26 @@ public final class LispThread extends LispObject
                                LispObject second, LispObject third)
         throws ConditionThrowable
     {
-        newStackFrame().set(operator, first, second, third);
+        stack = new StackFrame(operator, first, second, third, stack);
         doProfiling();
     }
 
     public final void pushStackFrame(LispObject operator, LispObject... args)
         throws ConditionThrowable
     {
-        newStackFrame().set(operator, args);
+        stack = new StackFrame(operator, args, stack);
         doProfiling();
     }
 
     public final void popStackFrame()
     {
-        if (stack != null) {
-            if (framePointer < framePoolSize)
-                stack.set(null);
+        if (stack != null)
             stack = stack.next;
-            framePointer--;
-        }
     }
 
     public void resetStack()
     {
         stack = null;
-        // Clear out old frames, in order to prevent leaking references
-        // to old objects
-        for (StackFrame frame : framePool)
-            if (frame != null)
-                frame.set(null);
-        framePointer = -1;
     }
 
     @Override
