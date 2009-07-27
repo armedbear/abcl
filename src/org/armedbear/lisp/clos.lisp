@@ -1969,25 +1969,37 @@
 ;; initialization arguments that either fill slots or supply arguments to
 ;; methods, along with the predefined initialization argument :ALLOW-OTHER-KEYS."
 ;; 7.1.2
-#+nil
-(defun check-initargs (class initargs)
+
+(defun check-initargs (instance shared-initialize-param initargs)
   (when (oddp (length initargs))
     (error 'program-error
            :format-control "Odd number of keyword arguments."))
   (unless (getf initargs :allow-other-keys)
-    (let ((slots (%class-slots class)))
+    (let ((methods (compute-applicable-methods #'shared-initialize
+					       (if initargs
+						   `(,instance ,shared-initialize-param ,@initargs)
+						 (list instance shared-initialize-param))))
+	  (slots (%class-slots (class-of instance))))
       (do* ((tail initargs (cddr tail))
             (initarg (car tail) (car tail)))
            ((null tail))
         (unless (or (valid-initarg-p initarg slots)
+		    (valid-methodarg-p initarg methods)
                     (eq initarg :allow-other-keys))
           (error 'program-error
                  :format-control "Invalid initarg ~S."
                  :format-arguments (list initarg)))))))
 
 ;; FIXME
-(defun check-initargs (class initargs)
-  (declare (ignore class initargs)))
+
+;(defun check-initargs (class initargs)
+;  (declare (ignore class initargs)))
+
+(defun valid-methodarg-p (initarg methods)
+  (dolist (method methods nil)
+    (let ((valid-initargs (method-lambda-list method)))
+      (when (find (symbol-value initarg) valid-initargs :test #'string=)
+        (return t)))))
 
 (defun valid-initarg-p (initarg slots)
   (dolist (slot slots nil)
@@ -2012,8 +2024,9 @@
           (when (eq (getf initargs key 'not-found) 'not-found)
             (setf default-initargs (append default-initargs (list key (funcall fn))))))
         (setf initargs (append initargs default-initargs)))))
-  (check-initargs class initargs)
+
   (let ((instance (std-allocate-instance class)))
+    (check-initargs instance t initargs)
     (apply #'initialize-instance instance initargs)
     instance))
 
@@ -2098,7 +2111,7 @@
                        (slot-exists-p old slot-name))
                     (mapcar #'%slot-definition-name
                             (%class-slots (class-of new))))))
-    (check-initargs (class-of new) initargs)
+    (check-initargs new added-slots initargs)
     (apply #'shared-initialize new added-slots initargs)))
 
 ;;; make-instances-obsolete
@@ -2127,7 +2140,7 @@
 						discarded-slots
 						property-list
 						&rest initargs)
-  (check-initargs (class-of instance) initargs)
+  (check-initargs instance added-slots initargs)
   (apply #'shared-initialize instance added-slots initargs))
 
 ;;;  Methods having to do with class metaobjects.
