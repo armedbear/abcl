@@ -1990,16 +1990,12 @@
                  :format-control "Invalid initarg ~S."
                  :format-arguments (list initarg)))))))
 
-;; FIXME
-
-;(defun check-initargs (class initargs)
-;  (declare (ignore class initargs)))
-
 (defun valid-methodarg-p (initarg methods)
-  (dolist (method methods nil)
-    (let ((valid-initargs (method-lambda-list method)))
-      (when (find (symbol-value initarg) valid-initargs :test #'string=)
-        (return t)))))
+  (when (symbolp initarg)
+    (dolist (method methods nil)
+      (let ((valid-initargs (method-lambda-list method)))
+	(when (find (symbol-value initarg) valid-initargs :test #'string=)
+	  (return t))))))
 
 (defun valid-initarg-p (initarg slots)
   (dolist (slot slots nil)
