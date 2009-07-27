@@ -2,9 +2,13 @@ Version 0.16.0
 (unreleased)
 
   Summary of changes:
+  * Better initarg checking for make-instance and change-class. Fixes ansi-test
+    errors CHANGE-CLASS.1.11, MAKE-INSTANCE.ERROR.3 and MAKE-INSTANCE.ERROR.4.
+  * Improve performance of StackFrames (Erik Huelsmann, Ville Voutilainen,
+    with input from Peter Graves and Douglas Miles)
   * Improve performance of CLOS eql-specializers via cache (Anton Vodonosov).
   * 'build-from-lisp.sh' shell script (Tobias Rittweiler).
-  * New threading primitives aligned with Java/JVM constructs (Erik Huselman)
+  * New threading primitives aligned with Java/JVM constructs (Erik Huelsmann)
 
       SYNCHRONIZED-ON
       OBJECT-NOTIFY
