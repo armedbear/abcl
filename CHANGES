@@ -3,7 +3,8 @@ Version 0.16.0
 
   Summary of changes:
   * Better initarg checking for make-instance and change-class. Fixes ansi-test
-    errors CHANGE-CLASS.1.11, MAKE-INSTANCE.ERROR.3 and MAKE-INSTANCE.ERROR.4.
+    errors CHANGE-CLASS.1.11, MAKE-INSTANCE.ERROR.3, MAKE-INSTANCE.ERROR.4
+    and CHANGE-CLASS.ERROR.4.
   * Improve performance of StackFrames (Erik Huelsmann, Ville Voutilainen,
     with input from Peter Graves and Douglas Miles)
   * Improve performance of CLOS eql-specializers via cache (Anton Vodonosov).
