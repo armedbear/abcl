@@ -3711,16 +3711,17 @@ public final class Primitives extends Lisp
         try
           {
             result = eval(args.car(), env, thread);
-            values = thread._values;
           }
         finally
           {
+            values = thread._values;
             LispObject body = args.cdr();
             while (body != NIL)
               {
                 eval(body.car(), env, thread);
                 body = ((Cons)body).cdr;
               }
+            thread._values = values;
           }
         if (values != null)
           thread.setValues(values);

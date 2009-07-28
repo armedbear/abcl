@@ -7828,10 +7828,16 @@ for use with derive-type-times.")
       (label HANDLER) ; Start of exception handler.
       ;; The Throwable object is on the runtime stack. Stack depth is 1.
       (astore exception-register)
+      (emit-push-current-thread)
+      (emit 'getfield +lisp-thread-class+ "_values" +lisp-object-array+)
+      (astore values-register)
       (let ((*register* *register*))
         (dolist (subform cleanup-forms)
           (compile-form subform nil nil)))
       (maybe-emit-clear-values cleanup-forms)
+      (emit-push-current-thread)
+      (aload values-register)
+      (emit 'putfield +lisp-thread-class+ "_values" +lisp-object-array+)
       (aload exception-register)
       (emit 'athrow) ; Re-throw exception.
       (label EXIT)
