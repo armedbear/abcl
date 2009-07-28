@@ -2048,6 +2048,13 @@
 (defun std-shared-initialize (instance slot-names all-keys)
   (when (oddp (length all-keys))
     (error 'program-error :format-control "Odd number of keyword arguments."))
+  (do* ((tail all-keys (cddr tail))
+	(initarg (car tail) (car tail)))
+      ((null tail))
+    (when (and initarg (not (symbolp initarg)))
+      (error 'program-error
+	     :format-control "Invalid initarg ~S."
+	     :format-arguments (list initarg))))
   (dolist (slot (%class-slots (class-of instance)))
     (let ((slot-name (%slot-definition-name slot)))
       (multiple-value-bind (init-key init-value foundp)
