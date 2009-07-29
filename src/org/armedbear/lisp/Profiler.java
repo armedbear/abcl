@@ -106,10 +106,9 @@ public class Profiler extends Lisp
                     sleep = Fixnum.getValue(second);
                     thread.resetStack();
                     Thread t = new Thread(profilerRunnable);
-                    int priority =
-                        Math.min(Thread.currentThread().getPriority() + 1,
-                                 Thread.MAX_PRIORITY);
-                    t.setPriority(priority);
+                    // Maximum priority doesn't hurt:
+                    // we're sleeping all the time anyway
+                    t.setPriority(Thread.MAX_PRIORITY);
                     new Thread(profilerRunnable).start();
                 }
                 out._writeLine("; Profiler started.");
