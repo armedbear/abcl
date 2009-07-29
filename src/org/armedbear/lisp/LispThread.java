@@ -556,10 +556,8 @@ public final class LispThread extends LispObject
     private void doProfiling()
         throws ConditionThrowable
     {
-        if (profiling && sampling) {
-            if (sampleNow)
-                Profiler.sample(this);
-        }
+        if (sampleNow)
+            Profiler.sample(this);
     }
 
     public final void pushStackFrame(LispObject operator)
