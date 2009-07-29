@@ -341,7 +341,5 @@
 (autoload 'compiler-let)
 
 (in-package "THREADS")
-(export 'with-thread-lock)
-(ext:autoload-macro 'with-thread-lock)
 (export 'with-mutex)
 (ext:autoload-macro 'with-mutex)
