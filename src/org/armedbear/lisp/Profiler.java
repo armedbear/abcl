@@ -47,6 +47,7 @@ public class Profiler extends Lisp
     private static final Runnable profilerRunnable = new Runnable() {
         public void run()
         {
+            profiling = true; // make sure we don't fall through on the first iteration
             while (profiling) {
                 sampleNow = true;
                 try {
@@ -112,7 +113,6 @@ public class Profiler extends Lisp
                     new Thread(profilerRunnable).start();
                 }
                 out._writeLine("; Profiler started.");
-                profiling = true;
             }
             return thread.nothing();
         }
