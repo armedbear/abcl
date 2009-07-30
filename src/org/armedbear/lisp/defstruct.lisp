@@ -113,6 +113,7 @@
 (defvar *dd-copier*)
 (defvar *dd-include*)
 (defvar *dd-type*)
+(defvar *dd-default-slot-type* t)
 (defvar *dd-named*)
 (defvar *dd-initial-offset*)
 (defvar *dd-predicate*)
@@ -338,7 +339,9 @@
           ((or (eq *dd-type* 'vector)
                (and (consp *dd-type*) (eq (car *dd-type*) 'vector)))
            `((declaim (ftype (function * ,type) ,accessor-name))
-             (defun ,accessor-name (instance) (aref instance ,index))))
+             (defun ,accessor-name (instance) (aref instance ,index))
+             (define-source-transform ,accessor-name (instance)
+               `(aref (truly-the ,',*dd-type* ,instance) ,,index))))
           (t
            `((declaim (ftype (function * ,type) ,accessor-name))
              (defun ,accessor-name (instance) (structure-ref instance ,index))
@@ -360,7 +363,9 @@
           ((or (eq *dd-type* 'vector)
                (and (consp *dd-type*) (eq (car *dd-type*) 'vector)))
            `((defun (setf ,accessor-name) (value instance)
-               (aset instance ,index value))))
+               (aset instance ,index value))
+             (define-source-transform (setf ,accessor-name) (value instance)
+               `(aset (truly-the ,',*dd-type* ,instance) ,,index ,value))))
           (t
            `((defun (setf ,accessor-name) (value instance)
                (structure-set instance ,index value))
@@ -434,7 +439,10 @@
     (:print-object
      (setf *dd-print-object* option))
     (:type
-     (setf *dd-type* (cadr option)))))
+     (setf *dd-type* (cadr option))
+     (when (and (consp *dd-type*) (eq (car *dd-type*) 'vector))
+       (unless (eq (second *dd-type*) '*)
+         (setf *dd-default-slot-type* (second *dd-type*)))))))
 
 (defun parse-name-and-options (name-and-options)
   (setf *dd-name* (the symbol (car name-and-options)))
@@ -494,6 +502,7 @@
         (*dd-copier* nil)
         (*dd-include* nil)
         (*dd-type* nil)
+        (*dd-default-slot-type* t)
         (*dd-named* nil)
         (*dd-initial-offset* nil)
         (*dd-predicate* nil)
@@ -525,7 +534,13 @@
                          :name name
                          :reader reader
                          :initform initform
-                         (if (atom slot) nil (cddr slot)))))
+                         (cond
+                           ((atom slot)
+                            (list :type *dd-default-slot-type*))
+                           ((getf (cddr slot) :type)
+                            (cddr slot))
+                           (t
+                            (list* :type *dd-default-slot-type* (cddr slot)))))))
         (push dsd *dd-direct-slots*)))
     (setf *dd-direct-slots* (nreverse *dd-direct-slots*))
     (let ((index 0))
