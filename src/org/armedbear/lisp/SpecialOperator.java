@@ -36,6 +36,7 @@ package org.armedbear.lisp;
 public class SpecialOperator extends Operator
 {
     private int callCount;
+    private int hotCount;
 
     public SpecialOperator(Symbol symbol)
     {
@@ -173,5 +174,23 @@ public class SpecialOperator extends Operator
     public final void incrementCallCount()
     {
         ++callCount;
+    }
+
+    @Override
+    public final int getHotCount()
+    {
+        return hotCount;
+    }
+
+    @Override
+    public final void setHotCount(int n)
+    {
+        callCount = n;
+    }
+
+    @Override
+    public final void incrementHotCount()
+    {
+        ++hotCount;
     }
 }

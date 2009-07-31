@@ -906,6 +906,14 @@ public class Symbol extends LispObject
       function.incrementCallCount();
   }
 
+  @Override
+  public void incrementHotCount()
+  {
+    if (function != null)
+      function.incrementHotCount();
+  }
+
+
   // External symbols in CL package.
   public static final Symbol AND_ALLOW_OTHER_KEYS =
     PACKAGE_CL.addExternalSymbol("&ALLOW-OTHER-KEYS");

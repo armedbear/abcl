@@ -37,6 +37,7 @@ public abstract class Function extends Operator
 {
     private LispObject propertyList = NIL;
     private int callCount;
+    private int hotCount;
 
     protected Function() {}
 
@@ -306,8 +307,8 @@ public abstract class Function extends Operator
         error(new WrongNumberOfArgumentsException(this));
     }
 
-    @Override
     // Profiling.
+    @Override
     public final int getCallCount()
     {
         return callCount;
@@ -323,5 +324,23 @@ public abstract class Function extends Operator
     public final void incrementCallCount()
     {
         ++callCount;
+    }
+
+    @Override
+    public final int getHotCount()
+    {
+        return hotCount;
+    }
+
+    @Override
+    public void setHotCount(int n)
+    {
+        hotCount = n;
+    }
+
+    @Override
+    public final void incrementHotCount()
+    {
+        ++hotCount;
     }
 }

@@ -1156,4 +1156,17 @@ public class LispObject extends Lisp
   public void incrementCallCount()
   {
   }
+
+  public int getHotCount()
+  {
+      return 0;
+  }
+
+  public void setHotCount(int n)
+  {
+  }
+
+  public void incrementHotCount()
+  {
+  }
 }

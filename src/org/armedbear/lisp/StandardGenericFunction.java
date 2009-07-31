@@ -224,6 +224,7 @@ public final class StandardGenericFunction extends StandardObject
 
   // Profiling.
   private int callCount;
+  private int hotCount;
 
   @Override
   public final int getCallCount()
@@ -243,7 +244,25 @@ public final class StandardGenericFunction extends StandardObject
     ++callCount;
   }
 
-  // AMOP (p. 216) specifies the following readers as generic functions:
+    @Override
+    public final int getHotCount()
+    {
+        return hotCount;
+    }
+
+    @Override
+    public void setHotCount(int n)
+    {
+        hotCount = n;
+    }
+
+    @Override
+    public final void incrementHotCount()
+    {
+        ++hotCount;
+    }
+
+    // AMOP (p. 216) specifies the following readers as generic functions:
   //   generic-function-argument-precedence-order
   //   generic-function-declarations
   //   generic-function-lambda-list
