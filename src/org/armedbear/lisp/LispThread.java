@@ -553,25 +553,16 @@ public final class LispThread extends LispObject
     {
     }
 
-    private void doProfiling()
-        throws ConditionThrowable
-    {
-        if (sampleNow)
-            Profiler.sample(this);
-    }
-
     public final void pushStackFrame(LispObject operator)
         throws ConditionThrowable
     {
         stack = new StackFrame(operator, stack);
-        doProfiling();
     }
 
     public final void pushStackFrame(LispObject operator, LispObject arg)
         throws ConditionThrowable
     {
         stack = new StackFrame(operator, arg, stack);
-        doProfiling();
     }
 
     public final void pushStackFrame(LispObject operator, LispObject first,
@@ -579,7 +570,6 @@ public final class LispThread extends LispObject
         throws ConditionThrowable
     {
         stack = new StackFrame(operator, first, second, stack);
-        doProfiling();
     }
 
     public final void pushStackFrame(LispObject operator, LispObject first,
@@ -587,14 +577,12 @@ public final class LispThread extends LispObject
         throws ConditionThrowable
     {
         stack = new StackFrame(operator, first, second, third, stack);
-        doProfiling();
     }
 
     public final void pushStackFrame(LispObject operator, LispObject... args)
         throws ConditionThrowable
     {
         stack = new StackFrame(operator, args, stack);
-        doProfiling();
     }
 
     public final void popStackFrame()
@@ -619,7 +607,6 @@ public final class LispThread extends LispObject
             return function.execute();
         }
         finally {
-            doProfiling();
             popStackFrame();
         }
     }
@@ -636,7 +623,6 @@ public final class LispThread extends LispObject
             return function.execute(arg);
         }
         finally {
-            doProfiling();
             popStackFrame();
         }
     }
@@ -654,7 +640,6 @@ public final class LispThread extends LispObject
             return function.execute(first, second);
         }
         finally {
-            doProfiling();
             popStackFrame();
         }
     }
@@ -672,7 +657,6 @@ public final class LispThread extends LispObject
             return function.execute(first, second, third);
         }
         finally {
-            doProfiling();
             popStackFrame();
         }
     }
@@ -691,7 +675,6 @@ public final class LispThread extends LispObject
             return function.execute(first, second, third, fourth);
         }
         finally {
-            doProfiling();
             popStackFrame();
         }
     }
@@ -710,7 +693,6 @@ public final class LispThread extends LispObject
             return function.execute(first, second, third, fourth, fifth);
         }
         finally {
-            doProfiling();
             popStackFrame();
         }
     }
@@ -730,7 +712,6 @@ public final class LispThread extends LispObject
             return function.execute(first, second, third, fourth, fifth, sixth);
         }
         finally {
-            doProfiling();
             popStackFrame();
         }
     }
@@ -753,7 +734,6 @@ public final class LispThread extends LispObject
                                     seventh);
         }
         finally {
-            doProfiling();
             popStackFrame();
         }
     }
@@ -776,7 +756,6 @@ public final class LispThread extends LispObject
                                     seventh, eighth);
         }
         finally {
-            doProfiling();
             popStackFrame();
         }
     }
@@ -792,7 +771,6 @@ public final class LispThread extends LispObject
             return function.execute(args);
         }
         finally {
-            doProfiling();
             popStackFrame();
         }
     }

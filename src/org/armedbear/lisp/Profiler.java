@@ -37,29 +37,6 @@ public class Profiler extends Lisp
 {
     private static int sleep = 1;
 
-    public static final void sample(LispThread thread)
-        throws ConditionThrowable
-    {
-        sampleNow = false;
-        thread.incrementCallCounts();
-    }
-
-    private static final Runnable profilerRunnable = new Runnable() {
-        public void run()
-        {
-            profiling = true; // make sure we don't fall through on the first iteration
-            while (profiling) {
-                sampleNow = true;
-                try {
-                    Thread.sleep(sleep);
-                }
-                catch (InterruptedException e) {
-                    Debug.trace(e);
-                }
-            }
-        }
-    };
-
     // ### %start-profiler
     // %start-profiler type granularity
     public static final Primitive _START_PROFILER =
@@ -105,7 +82,24 @@ public class Profiler extends Lisp
                 }
                 if (sampling) {
                     sleep = Fixnum.getValue(second);
-                    thread.resetStack();
+                    Runnable profilerRunnable = new Runnable() {
+                        public void run()
+                        {
+                            profiling = true; // make sure we don't fall through on the first iteration
+                            while (profiling) {
+                                try {
+                                    thread.incrementCallCounts();
+                                    Thread.sleep(sleep);
+                                }
+                                catch (InterruptedException e) {
+                                    Debug.trace(e);
+                                }
+                                catch (ConditionThrowable e) {
+                                    break;
+                                }
+                            }
+                        }
+                    };
                     Thread t = new Thread(profilerRunnable);
                     // Maximum priority doesn't hurt:
                     // we're sleeping all the time anyway
