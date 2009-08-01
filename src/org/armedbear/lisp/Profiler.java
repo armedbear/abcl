@@ -68,12 +68,14 @@ public class Profiler extends Lisp
                         LispObject object = symbol.getSymbolFunction();
                         if (object != null) {
                             object.setCallCount(0);
+                            object.setHotCount(0);
                             if (object instanceof StandardGenericFunction) {
                                 LispObject methods =
                                     PACKAGE_MOP.intern("GENERIC-FUNCTION-METHODS").execute(object);
                                 while (methods != NIL) {
                                     StandardMethod method = (StandardMethod) methods.car();
                                     method.getFunction().setCallCount(0);
+                                    method.getFunction().setHotCount(0);
                                     methods = methods.cdr();
                                 }
                             }

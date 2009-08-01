@@ -834,6 +834,18 @@ public final class LispThread extends LispObject
     public void incrementCallCounts() throws ConditionThrowable
     {
         StackFrame s = stack;
+
+        for (int i = 0; i < 8; i++) {
+            if (s == null)
+                break;
+            LispObject operator = s.operator;
+            if (operator != null) {
+                operator.incrementHotCount();
+                operator.incrementCallCount();
+            }
+            s = s.next;
+        }
+
         while (s != null) {
             LispObject operator = s.operator;
             if (operator != null)
