@@ -176,12 +176,7 @@ public final class JavaObject extends LispObject
 
     @Override
     public Object javaInstance(Class c) throws ConditionThrowable {
-	if(obj != null && !c.isAssignableFrom(obj.getClass())) {
-	    return error(new LispError("The value " + obj +
-				       " is not of class " + c.getName()));
-	} else {
-	    return javaInstance();
-	}
+	return javaInstance();
     }
 
     /** Returns the encapsulated Java object for
@@ -263,7 +258,7 @@ public final class JavaObject extends LispObject
 		int length = Array.getLength(obj);
 		for(int i = 0; i < length; i++) {
 		    parts = parts.push
-			(new Cons(empty, new JavaObject(Array.get(obj, i))));
+			(new Cons(empty, JavaObject.getInstance(Array.get(obj, i))));
 		}
 		parts = parts.nreverse();
 	    } else {
@@ -284,7 +279,9 @@ public final class JavaObject extends LispObject
 		@Override
 		public LispObject execute(LispObject arg)
 		    throws ConditionThrowable {
-		    Class<?> c = (Class) arg.javaInstance(Class.class);
+		    //No possibility of type error - we're mapping this function
+		    //over a list of classes
+		    Class<?> c = (Class) arg.javaInstance();
 		    for(Field f : c.getDeclaredFields()) {
 			LispObject value = NIL;
 			try {
