@@ -272,6 +272,8 @@
                 (block-environment-register block) t)))
       (setf (block-free-specials block)
             (process-declarations-for-vars body vars))
+      (dolist (special (block-free-specials block))
+        (push special *visible-variables*))
       (setf (block-vars block) (nreverse vars)))
     (setf body (p1-body body))
     (setf (block-form block)
