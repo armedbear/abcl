@@ -1586,7 +1586,8 @@
                              (funcall next-emfun (or cnm-args args))))
                        (next-method-p ()
                          (not (null next-emfun))))
-                  (declare (ignorable call-next-method next-method-p))
+                  (declare (ignorable (function call-next-method)
+                                      (function next-method-p)))
                   (apply #'(lambda ,lambda-list ,@declarations ,@body) args))))
             ((null (intersection lambda-list '(&rest &optional &key &allow-other-keys &aux)))
              ;; Required parameters only.

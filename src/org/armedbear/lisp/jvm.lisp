@@ -479,17 +479,18 @@ That's the one which contains the environment used in the outermost block."
   (when (memq declaration '(IGNORE IGNORABLE))
     (let ((what (if (eq declaration 'IGNORE) "ignored" "ignorable")))
       (dolist (name names)
-        (let ((variable (find-variable name variables)))
-          (cond ((null variable)
-                 (compiler-style-warn "Declaring unknown variable ~S to be ~A."
-                                      name what))
-                ((variable-special-p variable)
-                 (compiler-style-warn "Declaring special variable ~S to be ~A."
-                                      name what))
-                ((eq declaration 'IGNORE)
-                 (setf (variable-ignore-p variable) t))
-                (t
-                 (setf (variable-ignorable-p variable) t))))))))
+        (unless (and (consp name) (eq (car name) 'FUNCTION))
+          (let ((variable (find-variable name variables)))
+            (cond ((null variable)
+                   (compiler-style-warn "Declaring unknown variable ~S to be ~A."
+                                        name what))
+                  ((variable-special-p variable)
+                   (compiler-style-warn "Declaring special variable ~S to be ~A."
+                                        name what))
+                  ((eq declaration 'IGNORE)
+                   (setf (variable-ignore-p variable) t))
+                  (t
+                   (setf (variable-ignorable-p variable) t)))))))))
 
 (defun finalize-generic-functions ()
   (dolist (sym '(make-instance
