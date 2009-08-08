@@ -162,6 +162,7 @@
   parent            ; the parent for compilands which defined within another
   (children 0       ; Number of local functions
             :type fixnum) ; defined with with FLET, LABELS or LAMBDA
+  blocks            ; TAGBODY, PROGV, BLOCK, etc. blocks
   argument-register
   closure-register
   environment-register
@@ -271,7 +272,8 @@ of the compilands being processed (p1: so far; p2: in total).")
   (references-allowed-p t) ; NIL if this is a symbol macro in the enclosing
                            ; lexical environment
   used-non-locally-p
-  (compiland *current-compiland*))
+  (compiland *current-compiland*)
+  block)
 
 (defstruct (var-ref (:constructor make-var-ref (variable)))
   ;; The variable this reference refers to. Will be NIL if the VAR-REF has been
@@ -369,7 +371,7 @@ of the compilands being processed (p1: so far; p2: in total).")
 ;; BLOCKs per se.
 (defstruct (block-node (:conc-name block-)
                        (:include node)
-                       (:constructor make-block-node (name)))
+                       (:constructor %make-block-node (name)))
   (exit (gensym))
   target
   catch-tag
@@ -393,6 +395,12 @@ of the compilands being processed (p1: so far; p2: in total).")
   )
 
 (defvar *blocks* ())
+
+(defknown make-block-node (t) t)
+(defun make-block-node (name)
+  (let ((block (%make-block-node name)))
+    (push block (compiland-blocks *current-compiland*))
+    block))
 
 (defun find-block (name)
   (dolist (block *blocks*)
