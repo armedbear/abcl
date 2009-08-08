@@ -60,8 +60,9 @@
 
 
 ;; Returns a list of declared free specials, if any are found.
-(declaim (ftype (function (list list) list) process-declarations-for-vars))
-(defun process-declarations-for-vars (body variables)
+(declaim (ftype (function (list list block-node) list)
+                process-declarations-for-vars))
+(defun process-declarations-for-vars (body variables block)
   (let ((free-specials '()))
     (dolist (subform body)
       (unless (and (consp subform) (eq (%car subform) 'DECLARE))
@@ -84,7 +85,8 @@
                         (setf (variable-special-p variable) t))
                        (t
                         (dformat t "adding free special ~S~%" name)
-                        (push (make-variable :name name :special-p t)
+                        (push (make-variable :name name :special-p t
+                                             :block block)
                               free-specials))))))
             (TYPE
              (dolist (name (cddr decl))
@@ -149,7 +151,7 @@
 
 
 (defmacro p1-let/let*-vars 
-    (varlist variables-var var body1 body2)
+    (block varlist variables-var var body1 body2)
   (let ((varspec (gensym))
 	(initform (gensym))
 	(name (gensym)))
@@ -165,18 +167,20 @@
 		(let* ((,name (%car ,varspec))
 		       (,initform (p1 (%cadr ,varspec)))
 		       (,var (make-variable :name (check-name ,name)
-                                            :initform ,initform)))
+                                            :initform ,initform
+                                            :block ,block)))
 		  (push ,var ,variables-var)
 		  ,@body1))
 	       (t
-		(let ((,var (make-variable :name (check-name ,varspec))))
+		(let ((,var (make-variable :name (check-name ,varspec)
+                                           :block ,block)))
 		  (push ,var ,variables-var)
 		  ,@body1))))
        ,@body2)))
 
 (defknown p1-let-vars (t) t)
-(defun p1-let-vars (varlist)
-  (p1-let/let*-vars 
+(defun p1-let-vars (block varlist)
+  (p1-let/let*-vars block
    varlist vars var
    ()
    ((setf vars (nreverse vars))
@@ -186,8 +190,8 @@
     vars)))
 
 (defknown p1-let*-vars (t) t)
-(defun p1-let*-vars (varlist)
-  (p1-let/let*-vars 
+(defun p1-let*-vars (block varlist)
+  (p1-let/let*-vars block
    varlist vars var
    ((push var *visible-variables*)
     (push var *all-variables*))
@@ -212,8 +216,8 @@
                 (eq (car varspec) (cadr varspec))
                 (return)))))
     (let ((vars (if (eq op 'LET)
-                    (p1-let-vars varlist)
-                    (p1-let*-vars varlist))))
+                    (p1-let-vars block varlist)
+                    (p1-let*-vars block varlist))))
       ;; Check for globally declared specials.
       (dolist (variable vars)
         (when (special-variable-p (variable-name variable))
@@ -223,7 +227,7 @@
       ;; last to first, since declarations apply to the last-defined variable
       ;; with the specified name.
       (setf (block-free-specials block)
-            (process-declarations-for-vars body (reverse vars)))
+            (process-declarations-for-vars body (reverse vars) block))
       (setf (block-vars block) vars)
       ;; Make free specials visible.
       (dolist (variable (block-free-specials block))
@@ -235,7 +239,7 @@
 (defun p1-locally (form)
   (let* ((*visible-variables* *visible-variables*)
          (block (make-block-node '(LOCALLY)))
-         (free-specials (process-declarations-for-vars (cdr form) nil)))
+         (free-specials (process-declarations-for-vars (cdr form) nil block)))
     (setf (block-free-specials block) free-specials)
     (dolist (special free-specials)
 ;;       (format t "p1-locally ~S is special~%" name)
@@ -261,7 +265,7 @@
     (setf values-form (p1 values-form))
     (let ((vars ()))
       (dolist (symbol varlist)
-        (let ((var (make-variable :name symbol)))
+        (let ((var (make-variable :name symbol :block block)))
           (push var vars)
           (push var *visible-variables*)
           (push var *all-variables*)))
@@ -271,7 +275,7 @@
           (setf (variable-special-p variable) t
                 (block-environment-register block) t)))
       (setf (block-free-specials block)
-            (process-declarations-for-vars body vars))
+            (process-declarations-for-vars body vars block))
       (dolist (special (block-free-specials block))
         (push special *visible-variables*))
       (setf (block-vars block) (nreverse vars)))
@@ -642,7 +646,7 @@
                 (body (cddr form))
                 (*visible-variables* *visible-variables*))
            (setf (block-free-specials block)
-                 (process-declarations-for-vars body nil))
+                 (process-declarations-for-vars body nil block))
            (dolist (special (block-free-specials block))
              (push special *visible-variables*))
            (setf (block-form block)
@@ -672,7 +676,7 @@
               (body (cddr form))
               (*visible-variables* *visible-variables*))
          (setf (block-free-specials block)
-               (process-declarations-for-vars body nil))
+               (process-declarations-for-vars body nil block))
          (dolist (special (block-free-specials block))
            (push special *visible-variables*))
          (setf (block-form block)
@@ -770,8 +774,6 @@
 (defun p1-progv (form)
   ;; We've already checked argument count in PRECOMPILE-PROGV.
 
-  ;; ### FIXME: we need to return a block here, so that
-  ;;  (local) GO in p2 can restore the lastSpecialBinding environment
   (let ((new-form (rewrite-progv form)))
     (when (neq new-form form)
       (return-from p1-progv (p1 new-form))))
@@ -780,6 +782,14 @@
          (block (make-block-node '(PROGV)))
          (*blocks* (cons block *blocks*))
          (body (cdddr form)))
+;;  The (commented out) block below means to detect compile-time
+;;  enumeration of bindings to be created (a quoted form in the symbols
+;;  position).
+;;    (when (and (quoted-form-p symbols-form)
+;;               (listp (second symbols-form)))
+;;      (dolist (name (second symbols-form))
+;;        (let ((variable (make-variable :name name :special-p t)))
+;;          (push 
     (setf (block-form block)
           `(progv ,symbols-form ,values-form ,@(p1-body body))
           (block-environment-register block) t)
@@ -1109,7 +1119,7 @@
           (push var *all-variables*)
           (push var *visible-variables*)))
       (setf (compiland-arg-vars compiland) (nreverse vars))
-      (let ((free-specials (process-declarations-for-vars body vars)))
+      (let ((free-specials (process-declarations-for-vars body vars nil)))
         (setf (compiland-free-specials compiland) free-specials)
         (dolist (var free-specials)
           (push var *visible-variables*)))
