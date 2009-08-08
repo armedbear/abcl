@@ -245,10 +245,10 @@
                  (parse-body (cdr form) nil)
                (process-optimization-declarations decls)
                (let* ((jvm::*visible-variables* jvm::*visible-variables*)
-                      (specials (process-special-declarations decls)))
+                      (specials (jvm::process-declarations-for-vars (cdr form)
+                                                                    nil nil)))
                  (dolist (special specials)
-                   (push (jvm::make-variable :name special :special-p t)
-                         jvm::*visible-variables*))
+                   (push special jvm::*visible-variables*))
                  (process-toplevel-progn forms stream compile-time-too))
                (return-from process-toplevel-form))))
           (PROGN
