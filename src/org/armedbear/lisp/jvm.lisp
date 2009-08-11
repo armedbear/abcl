@@ -439,8 +439,6 @@ of the compilands being processed (p1: so far; p2: in total).")
   return-p
   ;; True if there is a non-local RETURN from this block.
   non-local-return-p
-  ;; True if a tag in this tagbody is the target of a non-local GO.
-  non-local-go-p
   ;; If non-nil, register containing saved dynamic environment for this block.
   environment-register
   ;; Only used in LET/LET*/M-V-B nodes.
