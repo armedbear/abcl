@@ -367,10 +367,70 @@ of the compilands being processed (p1: so far; p2: in total).")
   form
   (compiland *current-compiland*))
 
+;; control-transferring blocks: TAGBODY, CATCH, to do: BLOCK
+
+(defstruct (control-transferring-node (:include node))
+  ;; If non-nil, the TAGBODY contains local blocks which "contaminate" the
+  ;; environment, with GO forms in them which target tags in this TAGBODY
+  ;; Non-nil if and only if the block doesn't modify the environment
+  needs-environment-restoration
+  )
+
+(defstruct (tagbody-node (:conc-name tagbody-)
+                         (:include control-transferring-node))
+  ;; True if a tag in this tagbody is the target of a non-local GO.
+  non-local-go-p
+  tags)
+
+(defstruct (catch-node (:conc-name catch-)
+                       (:include control-transferring-node))
+  ;; fixme? tag gotten from the catch-form
+  )
+
+;; block-node belongs here; it's down below for historical raisins
+
+;; binding blocks: LET, LET*, FLET, LABELS, M-V-B, PROGV, LOCALLY
+
+(defstruct (binding-node (:include node))
+  ;; If non-nil, register containing saved dynamic environment for this block.
+  environment-register
+  ;; Not used for LOCALLY, FLET, LABELS
+  vars
+  free-specials)
+
+(defstruct (let/let*-node (:conc-name let-)
+                          (:include binding-node)))
+
+(defstruct (flet-node (:conc-name flet-)
+                      (:include binding-node)))
+
+(defstruct (labels-node (:conc-name labels-)
+                        (:include binding-node)))
+
+(defstruct (m-v-b-node (:conc-name m-v-b-)
+                       (:include binding-node)))
+
+(defstruct (progv-node (:conc-name progv-)
+                       (:include binding-node)))
+
+(defstruct (locally-node (:conc-name locally-)
+                         (:include binding-node)))
+
+;; blocks requiring non-local exits: UNWIND-PROTECT, SYS:SYNCHRONIZED-ON
+
+(defstruct (protected-node (:include node)))
+
+(defstruct (unwind-protect-node (:conc-name unwind-protect-)
+                                (:include protected-node)))
+
+(defstruct (synchronized-node (:conc-name synchronized-)
+                              (:include protected-node)))
+
+
 ;; Used to wrap TAGBODYs, UNWIND-PROTECTs and LET/LET*/M-V-B forms as well as
 ;; BLOCKs per se.
 (defstruct (block-node (:conc-name block-)
-                       (:include node)
+                       (:include control-transferring-node)
                        (:constructor %make-block-node (name)))
   (exit (gensym))
   target
@@ -381,10 +441,6 @@ of the compilands being processed (p1: so far; p2: in total).")
   non-local-return-p
   ;; True if a tag in this tagbody is the target of a non-local GO.
   non-local-go-p
-  ;; If non-nil, the TAGBODY contains local blocks which "contaminate" the
-  ;; environment, with GO forms in them which target tags in this TAGBODY
-  ;; Non-nil if and only if the block doesn't modify the environment
-  needs-environment-restoration
   ;; If non-nil, register containing saved dynamic environment for this block.
   environment-register
   ;; Only used in LET/LET*/M-V-B nodes.
