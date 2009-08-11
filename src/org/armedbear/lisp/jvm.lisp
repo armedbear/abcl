@@ -449,8 +449,7 @@ be generated.
   (dolist (enclosing-block *blocks*)
     (when (eq enclosing-block outermost-block)
       (return nil))
-    (when (and (block-environment-register enclosing-block)
-               (not (block-needs-environment-restoration enclosing-block)))
+    (when (and (block-environment-register enclosing-block))
       (return t))))
 
 (defknown environment-register-to-restore (&optional t) t)
