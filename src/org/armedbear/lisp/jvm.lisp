@@ -446,8 +446,6 @@ of the compilands being processed (p1: so far; p2: in total).")
   ;; Only used in LET/LET*/M-V-B nodes.
   vars
   free-specials
-  ;; Only used in TAGBODY
-  tags
   )
 
 (defvar *blocks* ())
@@ -465,7 +463,7 @@ of the compilands being processed (p1: so far; p2: in total).")
 
 (defknown node-constant-p (t) boolean)
 (defun node-constant-p (object)
-  (cond ((block-node-p object)
+  (cond ((node-p object)
          nil)
         ((var-ref-p object)
          nil)
@@ -505,7 +503,10 @@ be generated.
   (dolist (enclosing-block *blocks*)
     (when (eq enclosing-block outermost-block)
       (return nil))
-    (when (and (block-environment-register enclosing-block))
+    (when (or (and (binding-node-p enclosing-block)
+                   (binding-node-environment-register enclosing-block))
+              (and (block-node-p enclosing-block)
+                   (block-environment-register enclosing-block)))
       (return t))))
 
 (defknown environment-register-to-restore (&optional t) t)
@@ -517,7 +518,10 @@ That's the one which contains the environment used in the outermost block."
   (flet ((outermost-register (last-register block)
            (when (eq block outermost-block)
              (return-from environment-register-to-restore last-register))
-           (or (block-environment-register block)
+           (or (and (binding-node-p block)
+                    (binding-node-environment-register block))
+               (and (block-node-p block)
+                    (block-environment-register block))
                last-register)))
     (reduce #'outermost-register *blocks*
             :initial-value nil)))

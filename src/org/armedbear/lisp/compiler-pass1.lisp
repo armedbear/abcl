@@ -368,7 +368,7 @@
            ;; which is inside the block we're returning from, we'll do a non-
            ;; local return anyway so that UNWIND-PROTECT can catch it and run
            ;; its cleanup forms.
-           (dformat t "*blocks* = ~S~%" (mapcar #'block-name *blocks*))
+           (dformat t "*blocks* = ~S~%" (mapcar #'node-name *blocks*))
            (let ((protected (enclosed-by-protected-block-p block)))
              (dformat t "p1-return-from protected = ~S~%" protected)
              (if protected
@@ -385,7 +385,7 @@
   (list* 'RETURN-FROM (cadr form) (mapcar #'p1 (cddr form))))
 
 (defun p1-tagbody (form)
-  (let* ((block (make-block-node '(TAGBODY)))
+  (let* ((block (make-tagbody-node :name '(TAGBODY)))
          (*blocks* (cons block *blocks*))
          (*visible-tags* *visible-tags*)
          (local-tags '())
@@ -402,7 +402,7 @@
         (cond ((or (symbolp subform) (integerp subform))
                (push subform new-body)
                (push (find subform local-tags :key #'tag-name :test #'eql)
-                     (block-tags block))
+                     (tagbody-tags block))
                (setf live t))
               ((not live)
                ;; Nothing to do.
@@ -414,7 +414,7 @@
                  ;; tag.
                  (setf live nil))
                (push (p1 subform) new-body))))
-      (setf (block-form block) (list* 'TAGBODY (nreverse new-body))))
+      (setf (tagbody-form block) (list* 'TAGBODY (nreverse new-body))))
     block))
 
 (defknown p1-go (t) t)
@@ -428,14 +428,14 @@
       (cond ((eq (tag-compiland tag) *current-compiland*)
              ;; Does the GO leave an enclosing UNWIND-PROTECT or CATCH?
              (if (enclosed-by-protected-block-p tag-block)
-                 (setf (block-non-local-go-p tag-block) t)
+                 (setf (tagbody-non-local-go-p tag-block) t)
                  ;; non-local GO's ensure environment restoration
                  ;; find out about this local GO
-                 (when (null (block-needs-environment-restoration tag-block))
-                   (setf (block-needs-environment-restoration tag-block)
+                 (when (null (tagbody-needs-environment-restoration tag-block))
+                   (setf (tagbody-needs-environment-restoration tag-block)
                          (enclosed-by-environment-setting-block-p tag-block)))))
             (t
-             (setf (block-non-local-go-p tag-block) t)))))
+             (setf (tagbody-non-local-go-p tag-block) t)))))
   form)
 
 (defun validate-function-name (name)
