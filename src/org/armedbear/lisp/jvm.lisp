@@ -404,7 +404,7 @@ of the compilands being processed (p1: so far; p2: in total).")
 
 (defun find-block (name)
   (dolist (block *blocks*)
-    (when (eq name (block-name block))
+    (when (eq name (node-name block))
       (return block))))
 
 (defknown node-constant-p (t) boolean)
@@ -426,7 +426,7 @@ requires a transfer control exception to be thrown: e.g. Go and Return.
 Non-local exits are required by blocks which do more in their cleanup
 than just restore the lastSpecialBinding (= dynamic environment).
 "
-  (let ((name (block-name object)))
+  (let ((name (node-name object)))
     (or (equal name '(CATCH))
         (equal name '(UNWIND-PROTECT))
         (equal name '(THREADS:SYNCHRONIZED-ON)))))
