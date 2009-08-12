@@ -340,7 +340,7 @@
       ;;
       ;; However, p1 transforms the forms being processed, so, we
       ;; need to copy the forms to create a second copy.
-      (let* ((block (make-unwind-protect-node :name '(UNWIND-PROTECT)))
+      (let* ((block (make-block-node '(UNWIND-PROTECT)))
              ;; a bit of jumping through hoops...
              (unwinding-forms (p1-body (copy-tree (cddr form))))
              (unprotected-forms (p1-body (cddr form)))
@@ -348,7 +348,7 @@
              ;; protected by the UNWIND-PROTECT block
              (*blocks* (cons block *blocks*))
              (protected-form (p1 (cadr form))))
-        (setf (unwind-protect-form block)
+        (setf (block-form block)
               `(unwind-protect ,protected-form
                  (progn ,@unwinding-forms)
                  ,@unprotected-forms))
