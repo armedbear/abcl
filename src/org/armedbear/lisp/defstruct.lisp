@@ -344,11 +344,13 @@
                `(aref (truly-the ,',*dd-type* ,instance) ,,index))))
           (t
            `((declaim (ftype (function * ,type) ,accessor-name))
-             (defun ,accessor-name (instance) (structure-ref instance ,index))
+             (defun ,accessor-name (instance)
+               (structure-ref (the ',*dd-name* instance) ,index))
              (define-source-transform ,accessor-name (instance)
                ,(if (eq type 't)
-                    ``(structure-ref ,instance ,,index)
-                    ``(the ,',type (structure-ref ,instance ,,index)))))))))
+                    ``(structure-ref (the ,',*dd-name* ,instance) ,,index)
+                    ``(the ,',type
+                        (structure-ref (the ,',*dd-name* ,instance) ,,index)))))))))
 
 (defun define-writer (slot)
   (let ((accessor-name (if *dd-conc-name*
@@ -368,9 +370,10 @@
                `(aset (truly-the ,',*dd-type* ,instance) ,,index ,value))))
           (t
            `((defun (setf ,accessor-name) (value instance)
-               (structure-set instance ,index value))
+               (structure-set (the ',*dd-name* instance) ,index value))
              (define-source-transform (setf ,accessor-name) (value instance)
-               `(structure-set ,instance ,,index ,value)))))))
+               `(structure-set (the ,',*dd-name* ,instance)
+                               ,,index ,value)))))))
 
 (defun define-access-functions ()
   (let ((result ()))
