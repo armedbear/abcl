@@ -7783,7 +7783,7 @@ for use with derive-type-times.")
     (emit-move-from-stack target)))
 
 (defun p2-unwind-protect-node (block target)
-  (let ((form (block-form block)))
+  (let ((form (unwind-protect-form block)))
     (when (= (length form) 2) ; No cleanup form.
       (compile-form (second form) target nil)
       (return-from p2-unwind-protect-node))
