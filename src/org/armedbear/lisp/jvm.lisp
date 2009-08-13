@@ -362,8 +362,6 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defvar *hairy-arglist-p* nil)
 
 (defstruct node
-  ;; Block name or (TAGBODY) or (LET) or (MULTIPLE-VALUE-BIND).
-  name
   form
   (compiland *current-compiland*))
 
@@ -432,6 +430,8 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defstruct (block-node (:conc-name block-)
                        (:include control-transferring-node)
                        (:constructor %make-block-node (name)))
+  ;; Block name or (TAGBODY) or (LET) or (MULTIPLE-VALUE-BIND).
+  name
   (exit (gensym))
   target
   catch-tag
@@ -456,7 +456,8 @@ of the compilands being processed (p1: so far; p2: in total).")
 
 (defun find-block (name)
   (dolist (block *blocks*)
-    (when (eq name (node-name block))
+    (when (and (block-node-p block)
+               (eq name (block-name block)))
       (return block))))
 
 (defknown node-constant-p (t) boolean)
@@ -478,10 +479,10 @@ requires a transfer control exception to be thrown: e.g. Go and Return.
 Non-local exits are required by blocks which do more in their cleanup
 than just restore the lastSpecialBinding (= dynamic environment).
 "
-  (let ((name (node-name object)))
-    (or (equal name '(CATCH))
-        (equal name '(UNWIND-PROTECT))
-        (equal name '(THREADS:SYNCHRONIZED-ON)))))
+  (or (unwind-protect-node-p object)
+      (catch-node-p object)
+      (and (block-node-p object)
+           (equal (block-name object) '(THREADS:SYNCHRONIZED-ON)))))
 
 
 (defknown enclosed-by-protected-block-p (&optional t) boolean)

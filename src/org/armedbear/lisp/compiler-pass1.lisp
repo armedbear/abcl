@@ -340,7 +340,7 @@
       ;;
       ;; However, p1 transforms the forms being processed, so, we
       ;; need to copy the forms to create a second copy.
-      (let* ((block (make-unwind-protect-node :name '(UNWIND-PROTECT)))
+      (let* ((block (make-unwind-protect-node))
              ;; a bit of jumping through hoops...
              (unwinding-forms (p1-body (copy-tree (cddr form))))
              (unprotected-forms (p1-body (cddr form)))
@@ -368,7 +368,7 @@
            ;; which is inside the block we're returning from, we'll do a non-
            ;; local return anyway so that UNWIND-PROTECT can catch it and run
            ;; its cleanup forms.
-           (dformat t "*blocks* = ~S~%" (mapcar #'node-name *blocks*))
+           ;;(dformat t "*blocks* = ~S~%" (mapcar #'node-name *blocks*))
            (let ((protected (enclosed-by-protected-block-p block)))
              (dformat t "p1-return-from protected = ~S~%" protected)
              (if protected
@@ -385,7 +385,7 @@
   (list* 'RETURN-FROM (cadr form) (mapcar #'p1 (cddr form))))
 
 (defun p1-tagbody (form)
-  (let* ((block (make-tagbody-node :name '(TAGBODY)))
+  (let* ((block (make-tagbody-node))
          (*blocks* (cons block *blocks*))
          (*visible-tags* *visible-tags*)
          (local-tags '())
