@@ -294,7 +294,7 @@
 (defun p1-catch (form)
   (let* ((tag (p1 (cadr form)))
          (body (cddr form))
-         (block (make-block-node '(CATCH)))
+         (block (make-catch-node))
          ;; our subform processors need to know
          ;; they're enclosed in a CATCH block
          (*blocks* (cons block *blocks*))
@@ -311,13 +311,13 @@
       (return-from p1-catch (car result)))
     (push tag result)
     (push 'CATCH result)
-    (setf (block-form block) result)
+    (setf (catch-form block) result)
     block))
 
 (defun p1-threads-synchronized-on (form)
   (let* ((synchronized-object (p1 (cadr form)))
          (body (cddr form))
-         (block (make-block-node '(THREADS:SYNCHRONIZED-ON)))
+         (block (make-synchronized-node))
          (*blocks* (cons block *blocks*))
          result)
     (dolist (subform body)
@@ -325,7 +325,7 @@
         (push (p1 subform) result)
         (when (memq op '(GO RETURN-FROM THROW))
           (return))))
-    (setf (block-form block)
+    (setf (synchronized-form block)
           (list* 'threads:synchronized-on synchronized-object
                  (nreverse result)))
     block))

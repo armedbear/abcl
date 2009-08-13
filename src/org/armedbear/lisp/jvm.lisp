@@ -481,6 +481,7 @@ than just restore the lastSpecialBinding (= dynamic environment).
 "
   (or (unwind-protect-node-p object)
       (catch-node-p object)
+      (synchronized-node-p object)
       (and (block-node-p object)
            (equal (block-name object) '(THREADS:SYNCHRONIZED-ON)))))
 
