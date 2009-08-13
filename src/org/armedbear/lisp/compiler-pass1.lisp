@@ -779,7 +779,7 @@
       (return-from p1-progv (p1 new-form))))
   (let* ((symbols-form (p1 (cadr form)))
          (values-form (p1 (caddr form)))
-         (block (make-block-node '(PROGV)))
+         (block (make-progv-node))
          (*blocks* (cons block *blocks*))
          (body (cdddr form)))
 ;;  The (commented out) block below means to detect compile-time
@@ -790,9 +790,9 @@
 ;;      (dolist (name (second symbols-form))
 ;;        (let ((variable (make-variable :name name :special-p t)))
 ;;          (push 
-    (setf (block-form block)
+    (setf (progv-form block)
           `(progv ,symbols-form ,values-form ,@(p1-body body))
-          (block-environment-register block) t)
+          (progv-environment-register block) t)
     block))
 
 (defknown rewrite-progv (t) t)
