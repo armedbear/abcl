@@ -238,14 +238,14 @@
 
 (defun p1-locally (form)
   (let* ((*visible-variables* *visible-variables*)
-         (block (make-block-node '(LOCALLY)))
+         (block (make-locally-node))
          (free-specials (process-declarations-for-vars (cdr form) nil block)))
-    (setf (block-free-specials block) free-specials)
+    (setf (locally-free-specials block) free-specials)
     (dolist (special free-specials)
 ;;       (format t "p1-locally ~S is special~%" name)
       (push special *visible-variables*))
     (let ((*blocks* (cons block *blocks*)))
-      (setf (block-form block)
+      (setf (locally-form block)
             (list* 'LOCALLY (p1-body (cdr form))))
       block)))
 
