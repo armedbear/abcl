@@ -87,9 +87,7 @@ public class LispStackFrame
     first = null;
     second = null;
     third = null;
-    final int length = args.length;
-    this.args = new LispObject[length];
-    System.arraycopy(args, 0, this.args, 0, length);
+    this.args = args;
   }
 
    @Override
