@@ -855,6 +855,13 @@
                                (require-type ,sym ',type)
                                ,sym)))
              (p1 new-expr)))
+          ((and (<= 1 *safety* 2) ;; at safety 1 or 2 check relatively
+                (symbolp type))   ;; simple types (those specified by a single symbol)
+           (let* ((sym (gensym))
+                  (new-expr `(let ((,sym ,expr))
+                               (require-type ,sym ',type)
+                               ,sym)))
+             (p1 new-expr)))
           (t
            (list 'THE type (p1 expr))))))
 
