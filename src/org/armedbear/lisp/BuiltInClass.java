@@ -142,6 +142,10 @@ public class BuiltInClass extends LispClass
   public static final BuiltInClass THREAD               = addClass(Symbol.THREAD);
   public static final BuiltInClass TWO_WAY_STREAM       = addClass(Symbol.TWO_WAY_STREAM);
   public static final BuiltInClass VECTOR               = addClass(Symbol.VECTOR);
+  public static final BuiltInClass STACK_FRAME          = addClass(Symbol.STACK_FRAME);
+  public static final BuiltInClass LISP_STACK_FRAME     = addClass(Symbol.LISP_STACK_FRAME);
+  public static final BuiltInClass JAVA_STACK_FRAME     = addClass(Symbol.JAVA_STACK_FRAME);
+
 
   public static final StructureClass STRUCTURE_OBJECT =
     new StructureClass(Symbol.STRUCTURE_OBJECT, list(CLASS_T));
@@ -275,6 +279,12 @@ public class BuiltInClass extends LispClass
     TWO_WAY_STREAM.setCPL(TWO_WAY_STREAM, STREAM, CLASS_T);
     VECTOR.setDirectSuperclasses(list(ARRAY, SEQUENCE));
     VECTOR.setCPL(VECTOR, ARRAY, SEQUENCE, CLASS_T);
+    STACK_FRAME.setDirectSuperclasses(CLASS_T);
+    STACK_FRAME.setCPL(STACK_FRAME, CLASS_T);
+    LISP_STACK_FRAME.setDirectSuperclasses(STACK_FRAME);
+    LISP_STACK_FRAME.setCPL(LISP_STACK_FRAME, STACK_FRAME, CLASS_T);
+    JAVA_STACK_FRAME.setDirectSuperclasses(STACK_FRAME);
+    JAVA_STACK_FRAME.setCPL(JAVA_STACK_FRAME, STACK_FRAME, CLASS_T);
   }
 
   static

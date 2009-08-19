@@ -271,7 +271,7 @@ public abstract class Lisp
         catch (StackOverflowError e)
           {
             thread.setSpecialVariable(_SAVED_BACKTRACE_,
-                                      thread.backtraceAsList(0));
+                                      thread.backtrace(0));
             return error(new StorageCondition("Stack overflow."));
           }
         catch (Go go)
@@ -287,7 +287,7 @@ public abstract class Lisp
           {
             Debug.trace(t);
             thread.setSpecialVariable(_SAVED_BACKTRACE_,
-                                      thread.backtraceAsList(0));
+                                      thread.backtrace(0));
             return error(new LispError("Caught " + t + "."));
           }
         Debug.assertTrue(result != null);
@@ -320,15 +320,39 @@ public abstract class Lisp
       }
     };
 
+  private static final void pushJavaStackFrames() throws ConditionThrowable
+  {
+      final LispThread thread = LispThread.currentThread();
+      final StackTraceElement[] frames = thread.getJavaStackTrace();
+
+      // Search for last Primitive in the StackTrace; that was the
+      // last entry point from Lisp.
+      int last = frames.length - 1;
+      for (int i = 0; i<= last; i++) {
+          if (frames[i].getClassName().startsWith("org.armedbear.lisp.Primitive"))
+	    last = i;
+      }
+      // Do not include the first three frames:
+      //   Thread.getStackTrace, LispThread.getJavaStackTrace,
+      //   Lisp.pushJavaStackFrames.
+      while (last > 2) {
+        thread.pushStackFrame(new JavaStackFrame(frames[last]));
+        last--;
+      }
+  }
+
+
   public static final LispObject error(LispObject condition)
     throws ConditionThrowable
   {
+    pushJavaStackFrames();
     return Symbol.ERROR.execute(condition);
   }
 
   public static final LispObject error(LispObject condition, LispObject message)
     throws ConditionThrowable
   {
+    pushJavaStackFrames();
     return Symbol.ERROR.execute(condition, Keyword.FORMAT_CONTROL, message);
   }
 
@@ -852,6 +876,14 @@ public abstract class Lisp
             type_error(obj, Symbol.SINGLE_FLOAT);
   }
 
+  public static final StackFrame checkStackFrame(LispObject obj)
+    throws ConditionThrowable
+  {
+          if (obj instanceof StackFrame)      
+                  return (StackFrame) obj;         
+          return (StackFrame)// Not reached.       
+	    type_error(obj, Symbol.STACK_FRAME);
+  }
 
   static
   {

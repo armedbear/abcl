@@ -389,7 +389,7 @@ public final class Interpreter extends Lisp
                 catch (Throwable t) {
                     getStandardInput().clearInput();
                     out.printStackTrace(t);
-                    thread.backtrace();
+                    thread.printBacktrace();
                 }
             }
         }
@@ -408,7 +408,7 @@ public final class Interpreter extends Lisp
             out._writeLine("Error: unhandled condition: " +
                            condition.writeToString());
             if (thread != null)
-                thread.backtrace();
+                thread.printBacktrace();
         }
         catch (Throwable t) {
             

@@ -102,6 +102,23 @@
       (%format *debug-io* "~A~%" s))
     (show-restarts (compute-restarts) *debug-io*)))
 
+(defun print-frame (frame stream &key prefix)
+  (when prefix
+    (write-string prefix stream))
+  (etypecase frame
+    (sys::lisp-stack-frame
+     (pprint-logical-block (stream nil :prefix "(" :suffix ")")
+       (setq frame (sys:frame-to-list frame))
+       (ignore-errors
+         (prin1 (car frame) stream)
+         (let ((args (cdr frame)))
+           (if (listp args)
+               (format stream "~{ ~_~S~}" args)
+               (format stream " ~S" args))))))
+    (sys::java-stack-frame
+     (write-string (sys:frame-to-string frame) stream))))
+
+
 (defun backtrace-command (args)
   (let ((count (or (and args (ignore-errors (parse-integer args)))
                    8))
@@ -113,14 +130,7 @@
             (*print-array* nil))
         (dolist (frame *saved-backtrace*)
           (fresh-line *debug-io*)
-          (let ((prefix (format nil "~3D: (" n)))
-            (pprint-logical-block (*debug-io* nil :prefix prefix :suffix ")")
-              (ignore-errors
-               (prin1 (car frame) *debug-io*)
-               (let ((args (cdr frame)))
-                 (if (listp args)
-                     (format *debug-io* "~{ ~_~S~}" args)
-                     (format *debug-io* " ~S" args))))))
+          (print-frame frame *debug-io* :prefix (format nil "~3D: " n))
           (incf n)
           (when (>= n count)
             (return))))))
@@ -136,12 +146,7 @@
               (*print-readably* nil)
               (*print-structure* nil))
           (fresh-line *debug-io*)
-          (pprint-logical-block (*debug-io* nil :prefix "(" :suffix ")")
-            (prin1 (car frame) *debug-io*)
-            (let ((args (cdr frame)))
-              (if (listp args)
-                  (format *debug-io* "~{ ~_~S~}" args)
-                  (format *debug-io* " ~S" args))))))
+	  (print-frame frame *debug-io*)))
       (setf *** **
             ** *
             * frame)))

@@ -100,7 +100,7 @@
         (simple-format *debug-io* "  ~A~%" condition)))))
 
 (defun invoke-debugger (condition)
-  (let ((*saved-backtrace* (backtrace-as-list)))
+  (let ((*saved-backtrace* (sys:backtrace)))
     (when *debugger-hook*
       (let ((hook-function *debugger-hook*)
             (*debugger-hook* nil))
@@ -129,3 +129,7 @@
                         (list :format-control format-control
                               :format-arguments format-arguments))))
     nil))
+
+(defun backtrace-as-list (&optional (n 0))
+  "Return BACKTRACE with each element converted to a list."
+  (mapcar #'sys::frame-to-list (sys:backtrace n)))

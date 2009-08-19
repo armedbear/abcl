@@ -49,7 +49,7 @@
     (let* ((old-bos *break-on-signals*)
            (*break-on-signals* nil))
       (when (typep condition old-bos)
-        (let ((*saved-backtrace* (backtrace-as-list)))
+        (let ((*saved-backtrace* (sys:backtrace)))
           (break "~A~%BREAK called because of *BREAK-ON-SIGNALS* (now rebound to NIL)."
                  condition))))
     (loop

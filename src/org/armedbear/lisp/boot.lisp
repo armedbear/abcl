@@ -334,7 +334,6 @@
 (load-system-file "defsetf")
 (load-system-file "package")
 
-
 (defun preload-package (pkg)
   (%format t "Preloading ~S~%" (find-package pkg))
   (dolist (sym (package-symbols pkg))

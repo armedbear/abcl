@@ -117,6 +117,10 @@ public final class LispThread extends LispObject
         javaThread.start();
     }
 
+    public StackTraceElement[] getJavaStackTrace() {
+        return javaThread.getStackTrace();
+    }
+
     @Override
     public LispObject typeOf()
     {
@@ -447,98 +451,6 @@ public final class LispThread extends LispObject
                                 tag.writeToString() + "."));
     }
 
-    private static class StackFrame
-    {
-        public final LispObject operator;
-        private final LispObject first;
-        private final LispObject second;
-        private final LispObject third;
-        private final LispObject[] args;
-        final StackFrame next;
-
-        public StackFrame(LispObject operator, StackFrame next)
-        {
-            this.operator = operator;
-            first = null;
-            second = null;
-            third = null;
-            args = null;
-            this.next = next;
-        }
-
-        public StackFrame(LispObject operator, LispObject arg, StackFrame next)
-        {
-            this.operator = operator;
-            first = arg;
-            second = null;
-            third = null;
-            args = null;
-            this.next = next;
-        }
-
-        public StackFrame(LispObject operator, LispObject first,
-                          LispObject second, StackFrame next)
-        {
-            this.operator = operator;
-            this.first = first;
-            this.second = second;
-            third = null;
-            args = null;
-            this.next = next;
-        }
-
-        public StackFrame(LispObject operator, LispObject first,
-                          LispObject second, LispObject third, StackFrame next)
-        {
-            this.operator = operator;
-            this.first = first;
-            this.second = second;
-            this.third = third;
-            args = null;
-            this.next = next;
-        }
-
-        public StackFrame(LispObject operator, LispObject[] args, StackFrame next)
-        {
-            this.operator = operator;
-            first = null;
-            second = null;
-            third = null;
-            this.args = args;
-            this.next = next;
-        }
-
-        public LispObject toList() throws ConditionThrowable
-        {
-            LispObject list = NIL;
-            if (args != null) {
-                for (int i = 0; i < args.length; i++)
-                    list = list.push(args[i]);
-            } else {
-                do {
-                    if (first != null)
-                        list = list.push(first);
-                    else
-                        break;
-                    if (second != null)
-                        list = list.push(second);
-                    else
-                        break;
-                    if (third != null)
-                        list = list.push(third);
-                    else
-                        break;
-                } while (false);
-            }
-            list = list.nreverse();
-            if (operator instanceof Operator) {
-                LispObject lambdaName = ((Operator)operator).getLambdaName();
-                if (lambdaName != null && lambdaName != NIL)
-                    return list.push(lambdaName);
-            }
-            return list.push(operator);
-        }
-    }
 
     private StackFrame stack = null;
 
@@ -553,42 +465,18 @@ public final class LispThread extends LispObject
     {
     }
 
-    public final void pushStackFrame(LispObject operator)
-        throws ConditionThrowable
+    public final void pushStackFrame(StackFrame frame) 
+	throws ConditionThrowable
     {
-        stack = new StackFrame(operator, stack);
+	frame.setNext(stack);
+	stack = frame;
     }
 
-    public final void pushStackFrame(LispObject operator, LispObject arg)
-        throws ConditionThrowable
-    {
-        stack = new StackFrame(operator, arg, stack);
-    }
-
-    public final void pushStackFrame(LispObject operator, LispObject first,
-                               LispObject second)
-        throws ConditionThrowable
-    {
-        stack = new StackFrame(operator, first, second, stack);
-    }
-
-    public final void pushStackFrame(LispObject operator, LispObject first,
-                               LispObject second, LispObject third)
-        throws ConditionThrowable
-    {
-        stack = new StackFrame(operator, first, second, third, stack);
-    }
-
-    public final void pushStackFrame(LispObject operator, LispObject... args)
-        throws ConditionThrowable
-    {
-        stack = new StackFrame(operator, args, stack);
-    }
 
     public final void popStackFrame()
     {
         if (stack != null)
-            stack = stack.next;
+            stack = stack.getNext();
     }
 
     public void resetStack()
@@ -602,7 +490,7 @@ public final class LispThread extends LispObject
         if (use_fast_calls)
             return function.execute();
 
-        pushStackFrame(function);
+        pushStackFrame(new LispStackFrame(function));
         try {
             return function.execute();
         }
@@ -618,7 +506,7 @@ public final class LispThread extends LispObject
         if (use_fast_calls)
             return function.execute(arg);
 
-        pushStackFrame(function, arg);
+        pushStackFrame(new LispStackFrame(function, arg));
         try {
             return function.execute(arg);
         }
@@ -635,7 +523,7 @@ public final class LispThread extends LispObject
         if (use_fast_calls)
             return function.execute(first, second);
 
-        pushStackFrame(function, first, second);
+        pushStackFrame(new LispStackFrame(function, first, second));
         try {
             return function.execute(first, second);
         }
@@ -652,7 +540,7 @@ public final class LispThread extends LispObject
         if (use_fast_calls)
             return function.execute(first, second, third);
 
-        pushStackFrame(function, first, second, third);
+        pushStackFrame(new LispStackFrame(function, first, second, third));
         try {
             return function.execute(first, second, third);
         }
@@ -670,7 +558,7 @@ public final class LispThread extends LispObject
         if (use_fast_calls)
             return function.execute(first, second, third, fourth);
 
-        pushStackFrame(function, first, second, third, fourth);
+        pushStackFrame(new LispStackFrame(function, first, second, third, fourth));
         try {
             return function.execute(first, second, third, fourth);
         }
@@ -688,7 +576,7 @@ public final class LispThread extends LispObject
         if (use_fast_calls)
             return function.execute(first, second, third, fourth, fifth);
 
-        pushStackFrame(function, first, second, third, fourth, fifth);
+        pushStackFrame(new LispStackFrame(function, first, second, third, fourth, fifth));
         try {
             return function.execute(first, second, third, fourth, fifth);
         }
@@ -707,7 +595,8 @@ public final class LispThread extends LispObject
         if (use_fast_calls)
             return function.execute(first, second, third, fourth, fifth, sixth);
 
-        pushStackFrame(function, first, second, third, fourth, fifth, sixth);
+        pushStackFrame(new LispStackFrame(function, first, second, 
+					  third, fourth, fifth, sixth));
         try {
             return function.execute(first, second, third, fourth, fifth, sixth);
         }
@@ -727,8 +616,8 @@ public final class LispThread extends LispObject
             return function.execute(first, second, third, fourth, fifth, sixth,
                                     seventh);
 
-        pushStackFrame(function, first, second, third, fourth, fifth, sixth,
-                                    seventh);
+        pushStackFrame(new LispStackFrame(function, first, second, third, 
+					  fourth, fifth, sixth, seventh));
         try {
             return function.execute(first, second, third, fourth, fifth, sixth,
                                     seventh);
@@ -749,8 +638,8 @@ public final class LispThread extends LispObject
             return function.execute(first, second, third, fourth, fifth, sixth,
                                     seventh, eighth);
 
-        pushStackFrame(function, first, second, third, fourth, fifth, sixth,
-                                    seventh, eighth);
+        pushStackFrame(new LispStackFrame(function, first, second, third, 
+					  fourth, fifth, sixth, seventh, eighth));
         try {
             return function.execute(first, second, third, fourth, fifth, sixth,
                                     seventh, eighth);
@@ -766,7 +655,7 @@ public final class LispThread extends LispObject
         if (use_fast_calls)
             return function.execute(args);
 
-        pushStackFrame(function, args);
+        pushStackFrame(new LispStackFrame(function, args));
         try {
             return function.execute(args);
         }
@@ -775,12 +664,12 @@ public final class LispThread extends LispObject
         }
     }
 
-    public void backtrace()
+    public void printBacktrace()
     {
-        backtrace(0);
+        printBacktrace(0);
     }
 
-    public void backtrace(int limit)
+    public void printBacktrace(int limit)
     {
         if (stack != null) {
             try {
@@ -796,7 +685,7 @@ public final class LispThread extends LispObject
                     out._writeString(String.valueOf(count));
                     out._writeString(": ");
                     
-                    pprint(s.toList(), out.getCharPos(), out);
+                    pprint(s.toLispList(), out.getCharPos(), out);
                     out.terpri();
                     out._finishOutput();
                     if (limit > 0 && ++count == limit)
@@ -810,7 +699,7 @@ public final class LispThread extends LispObject
         }
     }
 
-    public LispObject backtraceAsList(int limit) throws ConditionThrowable
+    public LispObject backtrace(int limit) throws ConditionThrowable
     {
         LispObject result = NIL;
         if (stack != null) {
@@ -818,10 +707,10 @@ public final class LispThread extends LispObject
             try {
                 StackFrame s = stack;
                 while (s != null) {
-                    result = result.push(s.toList());
+                    result = result.push(s);
                     if (limit > 0 && ++count == limit)
                         break;
-                    s = s.next;
+                    s = s.getNext();
                 }
             }
             catch (Throwable t) {
@@ -838,19 +727,23 @@ public final class LispThread extends LispObject
         for (int i = 0; i < 8; i++) {
             if (s == null)
                 break;
-            LispObject operator = s.operator;
-            if (operator != null) {
-                operator.incrementHotCount();
-                operator.incrementCallCount();
-            }
-            s = s.next;
+	    if (s instanceof LispStackFrame) {
+		LispObject operator = ((LispStackFrame)s).getOperator();
+		if (operator != null) {
+		    operator.incrementHotCount();
+		    operator.incrementCallCount();
+		}
+		s = s.getNext();
+	    }
         }
 
         while (s != null) {
-            LispObject operator = s.operator;
-            if (operator != null)
-                operator.incrementCallCount();
-            s = s.next;
+	    if (s instanceof LispStackFrame) {
+		LispObject operator = ((LispStackFrame)s).getOperator();
+		if (operator != null)
+		    operator.incrementCallCount();
+	    }
+	    s = s.getNext();
         }
     }
 
@@ -1110,10 +1003,10 @@ public final class LispThread extends LispObject
         }
     };
 
-    // ### backtrace-as-list
-    private static final Primitive BACKTRACE_AS_LIST =
-        new Primitive("backtrace-as-list", PACKAGE_EXT, true, "",
-		      "Returns a backtrace of the invoking thread as a list.")
+    // ### backtrace
+    private static final Primitive BACKTRACE =
+        new Primitive("backtrace", PACKAGE_SYS, true, "",
+		      "Returns a backtrace of the invoking thread.")
     {
         @Override
         public LispObject execute(LispObject[] args)
@@ -1122,9 +1015,39 @@ public final class LispThread extends LispObject
             if (args.length > 1)
                 return error(new WrongNumberOfArgumentsException(this));
             int limit = args.length > 0 ? Fixnum.getValue(args[0]) : 0;
-            return currentThread().backtraceAsList(limit);
+            return currentThread().backtrace(limit);
         }
     };
+    // ### frame-to-string
+    private static final Primitive FRAME_TO_STRING =
+        new Primitive("frame-to-string", PACKAGE_SYS, true, "frame")
+    {
+        @Override
+        public LispObject execute(LispObject[] args)
+            throws ConditionThrowable
+        {
+            if (args.length != 1)
+                return error(new WrongNumberOfArgumentsException(this));
+            
+            return checkStackFrame(args[0]).toLispString();
+        }
+    };
+
+    // ### frame-to-list
+    private static final Primitive FRAME_TO_LIST =
+        new Primitive("frame-to-list", PACKAGE_SYS, true, "frame")
+    {
+        @Override
+        public LispObject execute(LispObject[] args)
+            throws ConditionThrowable
+        {
+            if (args.length != 1)
+                return error(new WrongNumberOfArgumentsException(this));
+
+            return checkStackFrame(args[0]).toLispList();
+        }
+    };
+
 
     static {
         //FIXME: this block has been added for pre-0.16 compatibility

@@ -3039,6 +3039,12 @@ public class Symbol extends LispObject
     PACKAGE_SYS.addInternalSymbol("STRING-INPUT-STREAM");
   public static final Symbol STRING_OUTPUT_STREAM =
     PACKAGE_SYS.addInternalSymbol("STRING-OUTPUT-STREAM");
+  public static final Symbol STACK_FRAME =
+    PACKAGE_SYS.addInternalSymbol("STACK-FRAME");
+  public static final Symbol LISP_STACK_FRAME =
+    PACKAGE_SYS.addInternalSymbol("LISP-STACK-FRAME");
+  public static final Symbol JAVA_STACK_FRAME =
+    PACKAGE_SYS.addInternalSymbol("JAVA-STACK-FRAME");
 
   // CDR6
   public static final Symbol _INSPECTOR_HOOK_ =
