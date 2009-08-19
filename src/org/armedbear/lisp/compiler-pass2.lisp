@@ -4067,7 +4067,7 @@ given a specific common representation.")
     (let ((*blocks* (cons block *blocks*)))
       (compile-progn-body (cdddr form) target))
     (when bind-special-p
-      (restore-environment-and-make-handler (block-environment-register block)
+      (restore-environment-and-make-handler (m-v-b-environment-register block)
 					    label-START))))
 
 (defun propagate-vars (block)
