@@ -371,7 +371,15 @@ public final class SpecialOperators extends Lisp
       {
         if (args.length() != 2)
           return error(new WrongNumberOfArgumentsException(this));
-        return eval(args.cadr(), env, LispThread.currentThread());
+        LispObject rv = eval(args.cadr(), env, LispThread.currentThread());
+
+        LispObject type = args.car();
+        if (type instanceof Symbol
+            || type instanceof BuiltInClass)
+            if (rv.typep(type) == NIL)
+                type_error(rv, type);
+
+        return rv;
       }
     };
 
