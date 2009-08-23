@@ -39,33 +39,6 @@ import java.util.TimeZone;
 
 public final class Time extends Lisp
 {
-  private static final long getCurrentThreadUserTime()
-  {
-    try
-      {
-        Class c = Class.forName("org.armedbear.lisp.Native");
-        Method m = c.getMethod("getCurrentThreadUserTime", (Class[]) null);
-        Object result = m.invoke((Object) null, (Object[]) null);
-        if (result instanceof Long)
-          return ((Long)result).longValue();
-      }
-    catch (Throwable t) {}
-    return -1;
-  }
-
-  private static final long getCurrentThreadSystemTime()
-  {
-    try
-      {
-        Class c = Class.forName("org.armedbear.lisp.Native");
-        Method m = c.getMethod("getCurrentThreadSystemTime", (Class[]) null);
-        Object result = m.invoke((Object) null, (Object[]) null);
-        if (result instanceof Long)
-          return ((Long)result).longValue();
-      }
-    catch (Throwable t) {}
-    return -1;
-  }
 
   // ### %time
   private static final Primitive _TIME =
@@ -75,14 +48,6 @@ public final class Time extends Lisp
       public LispObject execute(LispObject arg) throws ConditionThrowable
       {
         Cons.setCount(0);
-        long userStart = -1;
-        long systemStart = -1;
-        try
-          {
-            userStart = getCurrentThreadUserTime();
-            systemStart = getCurrentThreadSystemTime();
-          }
-        catch (Throwable t) {}
         long realStart = System.currentTimeMillis();
         try
           {
@@ -91,18 +56,6 @@ public final class Time extends Lisp
         finally
           {
             long realElapsed = System.currentTimeMillis() - realStart;
-            final long userStop;
-            final long systemStop;
-            if (userStart > 0)
-              {
-                userStop = getCurrentThreadUserTime();
-                systemStop = getCurrentThreadSystemTime();
-              }
-            else
-              {
-                userStop = -1;
-                systemStop = -1;
-              }
             long count = Cons.getCount();
             Stream out =
               checkCharacterOutputStream(Symbol.TRACE_OUTPUT.symbolValue());
@@ -111,15 +64,6 @@ public final class Time extends Lisp
             sb.append(String.valueOf((float)realElapsed / 1000));
             sb.append(" seconds real time");
             sb.append(System.getProperty("line.separator"));
-            if (userStart > 0)
-              {
-                sb.append(String.valueOf((float)(userStop - userStart) / 100));
-                sb.append(" seconds user run time");
-                sb.append(System.getProperty("line.separator"));
-                sb.append(String.valueOf((float)(systemStop - systemStart) / 100));
-                sb.append(" seconds system run time");
-                sb.append(System.getProperty("line.separator"));
-              }
             sb.append(count);
             sb.append(" cons cell");
             if (count != 1)
@@ -149,19 +93,6 @@ public final class Time extends Lisp
       @Override
       public LispObject execute() throws ConditionThrowable
       {
-        if (Utilities.isPlatformUnix)
-          {
-            long userTime = -1;
-            long systemTime = -1;
-            try
-              {
-                userTime = getCurrentThreadUserTime();
-                systemTime = getCurrentThreadSystemTime();
-              }
-            catch (Throwable t) {}
-            if (userTime >= 0 && systemTime >= 0)
-              return number((userTime + systemTime) * 10);
-          }
         return number(System.currentTimeMillis());
       }
     };
