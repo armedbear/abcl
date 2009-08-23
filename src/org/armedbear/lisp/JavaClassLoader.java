@@ -79,12 +79,14 @@ public class JavaClassLoader extends ClassLoader
         }
     }
 
-    public Class loadClassFromByteArray(String className, byte[] classbytes)
+    public Class<?> loadClassFromByteArray(String className,
+                                                byte[] classbytes)
     {
         try {
             long length = classbytes.length;
             if (length < Integer.MAX_VALUE) {
-                Class c = defineClass(className, classbytes, 0, (int) length);
+                Class<?> c =
+                    defineClass(className, classbytes, 0, (int) length);
                 if (c != null) {
                     resolveClass(c);
                     return c;
@@ -100,11 +102,11 @@ public class JavaClassLoader extends ClassLoader
         return null;
     }
 
-    public Class loadClassFromByteArray(String className, byte[] bytes,
-                                        int offset, int length)
+    public Class<?> loadClassFromByteArray(String className, byte[] bytes,
+                                                int offset, int length)
     {
         try {
-            Class c = defineClass(className, bytes, offset, length);
+            Class<?> c = defineClass(className, bytes, offset, length);
             if (c != null) {
                 resolveClass(c);
                 return c;

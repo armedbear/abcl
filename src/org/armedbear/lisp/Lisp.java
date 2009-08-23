@@ -1220,7 +1220,7 @@ public abstract class Lisp
   }
 
     public static final LispObject loadCompiledFunction(byte[] bytes) throws Throwable {
-        Class<Object> c = (new JavaClassLoader())
+        Class<?> c = (new JavaClassLoader())
             .loadClassFromByteArray(null, bytes, 0, bytes.length);
         if (c != null) {
             Constructor constructor = c.getConstructor((Class[])null);

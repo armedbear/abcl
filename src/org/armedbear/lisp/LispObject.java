@@ -104,7 +104,7 @@ public class LispObject extends Lisp
         return this;
   }
 
-  public Object javaInstance(Class<Object> c) throws ConditionThrowable
+  public Object javaInstance(Class<?> c) throws ConditionThrowable
   {
       if (c.isAssignableFrom(getClass()))
 	  return this;

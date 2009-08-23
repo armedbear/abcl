@@ -254,12 +254,12 @@ public final class Java extends Lisp
             if (args.length < 1)
                 error(new WrongNumberOfArgumentsException(this));
             try {
-                final Class c = javaClass(args[0]);
+                final Class<?> c = javaClass(args[0]);
                 int argCount = 0;
                 if (args.length == 2 && args[1] instanceof Fixnum) {
                     argCount = Fixnum.getValue(args[1]);
                 } else {
-                    Class[] parameterTypes = new Class[args.length-1];
+                    Class<?>[] parameterTypes = new Class[args.length-1];
                     for (int i = 1; i < args.length; i++) {
                         parameterTypes[i-1] = javaClass(args[i]);
                     }
@@ -298,14 +298,14 @@ public final class Java extends Lisp
         {
             if (args.length < 2)
                 error(new WrongNumberOfArgumentsException(this));
-            final Class c = javaClass(args[0]);
+            final Class<?> c = javaClass(args[0]);
             String methodName = args[1].getStringValue();
             try {
                 int argCount = 0;
                 if (args.length == 3 && args[2] instanceof Fixnum) {
                     argCount = ((Fixnum)args[2]).value;
                 } else {
-                    Class[] parameterTypes = new Class[args.length-2];
+                    Class<?>[] parameterTypes = new Class[args.length-2];
                     for (int i = 2; i < args.length; i++)
                         parameterTypes[i-2] = javaClass(args[i]);
                     return JavaObject.getInstance(c.getMethod(methodName,
@@ -636,7 +636,7 @@ public final class Java extends Lisp
                 method = findMethod(c, methodName, args.length - 2);
             } else
                 method = (Method) JavaObject.getObject(methodArg);
-            Class[] argTypes = method.getParameterTypes();
+            Class<?>[] argTypes = (Class<?>[])method.getParameterTypes();
             Object[] methodArgs = new Object[args.length - 2];
             for (int i = 2; i < args.length; i++) {
                 LispObject arg = args[i];
@@ -645,7 +645,8 @@ public final class Java extends Lisp
                 else
                     methodArgs[i-2] = arg.javaInstance(argTypes[i-2]);
             }
-            return JavaObject.getInstance(method.invoke(instance, methodArgs), translate);
+            return JavaObject.getInstance(method.invoke(instance, methodArgs),
+                                          translate);
         }
         catch (ConditionThrowable t) {
             throw t;
