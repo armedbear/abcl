@@ -345,7 +345,7 @@
           (t
            `((declaim (ftype (function * ,type) ,accessor-name))
              (defun ,accessor-name (instance)
-               (structure-ref (the ',*dd-name* instance) ,index))
+               (structure-ref (the ,*dd-name* instance) ,index))
              (define-source-transform ,accessor-name (instance)
                ,(if (eq type 't)
                     ``(structure-ref (the ,',*dd-name* ,instance) ,,index)
@@ -370,7 +370,7 @@
                `(aset (truly-the ,',*dd-type* ,instance) ,,index ,value))))
           (t
            `((defun (setf ,accessor-name) (value instance)
-               (structure-set (the ',*dd-name* instance) ,index value))
+               (structure-set (the ,*dd-name* instance) ,index value))
              (define-source-transform (setf ,accessor-name) (value instance)
                `(structure-set (the ,',*dd-name* ,instance)
                                ,,index ,value)))))))
