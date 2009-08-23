@@ -8477,8 +8477,7 @@ for use with derive-type-times.")
              (setf compiled-function
                    (load-compiled-function
                     (compile-defun name expr env tempfile))))
-        ;;(delete-file tempfile)
-        ))
+        (delete-file tempfile)))
     (when (and name (functionp compiled-function))
       (sys::set-function-definition name compiled-function definition))
     (or name compiled-function)))
