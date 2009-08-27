@@ -376,9 +376,17 @@ public final class SpecialOperators extends Lisp
         LispObject type = args.car();
         if (type instanceof Symbol
             || type instanceof BuiltInClass)
-            if (rv.typep(type) == NIL)
-                type_error(rv, type);
-
+	  if (rv.typep(type) == NIL) {
+	    // Try to call the Lisp-side TYPEP, as we will miss
+	    // DEFTYPEd types.
+	    Symbol typep
+	      = PACKAGE_SYS.findAccessibleSymbol("TYPEP");
+	    LispObject result
+	      = typep.getSymbolFunction().execute(rv, type);
+	    if (result == NIL) {
+	      type_error(rv, type);
+	    }
+	  }
         return rv;
       }
     };

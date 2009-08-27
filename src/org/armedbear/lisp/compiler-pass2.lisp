@@ -7915,9 +7915,11 @@ for use with derive-type-times.")
                  (cond
                    ((eq name 'LET)
                     (p2-let/let*-node form target representation))
-                   ((eq name 'SETF) ;; SETF functions create
+;;                   ((eq name 'LABELS)
+;;                    (p2-labels-node form target representation))
+;;                   ((eq name 'SETF) ;; SETF functions create
                     ;; consp block names, if we're unlucky
-                    (p2-block-node form target representation))
+;;                    (p2-block-node form target representation))
                    (t
                     (print name)
                     (aver (not "Can't happen.")))
