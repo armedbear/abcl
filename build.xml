@@ -278,7 +278,9 @@
 		       value="${version.src}"/>
 	  </section>
 	</manifest>
-      	<metainf dir="${src.dir}/META-INF">
+	<metainf dir="${src.dir}/META-INF"> 
+	  <exclude name="services/javax.script.ScriptEngineFactory"
+		   unless="abcl.jsr-223.p"/>
       	</metainf>
       </jar>
     </target>
