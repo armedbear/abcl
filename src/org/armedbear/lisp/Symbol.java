@@ -3011,6 +3011,8 @@ public class Symbol extends LispObject
     PACKAGE_SYS.addInternalSymbol("COMMA-MACRO");
   public static final Symbol DATUM =
     PACKAGE_SYS.addInternalSymbol("DATUM");
+  public static final Symbol DEFTYPE_DEFINITION =
+    PACKAGE_SYS.addInternalSymbol("DEFTYPE-DEFINITION");
   public static final Symbol EXPECTED_TYPE =
     PACKAGE_SYS.addInternalSymbol("EXPECTED-TYPE");
   public static final Symbol FORMAT_ARGUMENTS =

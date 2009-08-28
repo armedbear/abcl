@@ -373,20 +373,25 @@ public final class SpecialOperators extends Lisp
           return error(new WrongNumberOfArgumentsException(this));
         LispObject rv = eval(args.cadr(), env, LispThread.currentThread());
 
+        // check only the most simple types: single symbols
+        // (class type specifiers/primitive types)
+        // DEFTYPE-d types need expansion;
+        // doing so would slow down our execution too much
+
+        // An implementation is allowed not to check the type,
+        // the fact that we do so here is mainly driven by the
+        // requirement to verify argument types in structure-slot
+        // accessors (defstruct.lisp)
+
+        // The policy below is in line with the level of verification
+        // in the compiler at *safety* levels below 3
         LispObject type = args.car();
-        if (type instanceof Symbol
+        if ((type instanceof Symbol
+             && get(type, Symbol.DEFTYPE_DEFINITION) == NIL)
             || type instanceof BuiltInClass)
-	  if (rv.typep(type) == NIL) {
-	    // Try to call the Lisp-side TYPEP, as we will miss
-	    // DEFTYPEd types.
-	    Symbol typep
-	      = PACKAGE_SYS.findAccessibleSymbol("TYPEP");
-	    LispObject result
-	      = typep.getSymbolFunction().execute(rv, type);
-	    if (result == NIL) {
+	  if (rv.typep(type) == NIL)
 	      type_error(rv, type);
-	    }
-	  }
+
         return rv;
       }
     };
