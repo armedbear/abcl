@@ -4072,7 +4072,7 @@ given a specific common representation.")
 
 (defun propagate-vars (block)
   (let ((removed '()))
-    (dolist (variable (block-vars block))
+    (dolist (variable (let-vars block))
       (unless (or (variable-special-p variable)
                   (variable-closure-index variable))
         (when (eql (variable-writes variable) 0)
@@ -4104,7 +4104,7 @@ given a specific common representation.")
                                            'sys::dotimes-limit-variable-p)
                                   (let* ((symbol (get (variable-name variable)
                                                       'sys::dotimes-index-variable-name))
-                                         (index-variable (find-variable symbol (block-vars block))))
+                                         (index-variable (find-variable symbol (let-vars block))))
                                     (when index-variable
                                       (setf (get (variable-name index-variable)
                                                  'sys::dotimes-limit-variable-name)
@@ -4119,7 +4119,7 @@ given a specific common representation.")
                    (push variable removed)))))))
     (when removed
       (dolist (variable removed)
-        (setf (block-vars block) (remove variable (block-vars block)))))))
+        (setf (let-vars block) (remove variable (let-vars block)))))))
 
 (defun derive-variable-representation (variable block
                                        &key (type nil type-supplied-p))
@@ -4156,7 +4156,7 @@ given a specific common representation.")
                              'sys::dotimes-limit-variable-name))
                   (limit-variable (and name
                                        (or (find-variable name
-                                                          (block-vars block))
+                                                          (let-vars block))
                                            (find-visible-variable name)))))
              (when limit-variable
                (derive-variable-representation limit-variable block)
@@ -4264,7 +4264,7 @@ given a specific common representation.")
 
 (defknown p2-let-bindings (t) t)
 (defun p2-let-bindings (block)
-  (dolist (variable (block-vars block))
+  (dolist (variable (let-vars block))
     (unless (or (variable-special-p variable)
                 (variable-closure-index variable)
                 (zerop (variable-reads variable)))
@@ -4279,7 +4279,7 @@ given a specific common representation.")
     ;; been evaluated. Note that we can't just push the values on the stack
     ;; because we'll lose JVM stack consistency if there is a non-local
     ;; transfer of control from one of the initforms.
-    (dolist (variable (block-vars block))
+    (dolist (variable (let-vars block))
       (let* ((initform (variable-initform variable))
              (unused-p (and (not (variable-special-p variable))
                             ;; If it's never read, we don't care about writes.
@@ -4320,7 +4320,7 @@ given a specific common representation.")
       (aload (car temp))
       (compile-binding (cdr temp))))
   ;; Now make the variables visible.
-  (dolist (variable (block-vars block))
+  (dolist (variable (let-vars block))
     (push variable *visible-variables*))
   t)
 
@@ -4329,7 +4329,7 @@ given a specific common representation.")
   (let ((must-clear-values nil))
     (declare (type boolean must-clear-values))
     ;; Generate code to evaluate initforms and bind variables.
-    (dolist (variable (block-vars block))
+    (dolist (variable (let-vars block))
       (let* ((initform (variable-initform variable))
              (unused-p (and (not (variable-special-p variable))
                             (zerop (variable-reads variable))
@@ -4401,14 +4401,14 @@ given a specific common representation.")
   t)
 
 (defun p2-let/let*-node (block target representation)
-  (let* ((*blocks* (cons block *blocks*))
+  (let* (
          (*register* *register*)
-         (form (block-form block))
+         (form (let-form block))
          (*visible-variables* *visible-variables*)
          (specialp nil)
          (label-START (gensym)))
     ;; Walk the variable list looking for special bindings and unused lexicals.
-    (dolist (variable (block-vars block))
+    (dolist (variable (let-vars block))
       (cond ((variable-special-p variable)
              (setf specialp t))
             ((zerop (variable-reads variable))
@@ -4416,8 +4416,8 @@ given a specific common representation.")
     ;; If there are any special bindings...
     (when specialp
       ;; We need to save current dynamic environment.
-      (setf (block-environment-register block) (allocate-register))
-      (save-dynamic-environment (block-environment-register block))
+      (setf (let-environment-register block) (allocate-register))
+      (save-dynamic-environment (let-environment-register block))
       (label label-START))
     (propagate-vars block)
     (ecase (car form)
@@ -4426,14 +4426,15 @@ given a specific common representation.")
       (LET*
        (p2-let*-bindings block)))
     ;; Make declarations of free specials visible.
-    (dolist (variable (block-free-specials block))
+    (dolist (variable (let-free-specials block))
       (push variable *visible-variables*))
     ;; Body of LET/LET*.
     (with-saved-compiler-policy
       (process-optimization-declarations (cddr form))
-      (compile-progn-body (cddr form) target representation))
+      (let ((*blocks* (cons block *blocks*)))
+        (compile-progn-body (cddr form) target representation)))
     (when specialp
-      (restore-environment-and-make-handler (block-environment-register block)
+      (restore-environment-and-make-handler (let-environment-register block)
 					    label-START))))
 
 (defknown p2-locally-node (t t t) t)
@@ -7907,23 +7908,12 @@ for use with derive-type-times.")
                 (aver nil))))
         ((var-ref-p form)
          (compile-var-ref form target representation))
-        ((block-node-p form)
-         (let ((name (block-name form)))
-           (if (not (consp name))
-               (p2-block-node form target representation)
-               (let ((name (car name)))
-                 (cond
-                   ((eq name 'LET)
-                    (p2-let/let*-node form target representation))
-                   ((eq name 'SETF) ;; SETF functions create
-                    ;; consp block names, if we're unlucky
-                    (p2-block-node form target representation))
-                   (t
-                    (print name)
-                    (aver (not "Can't happen.")))
-                   )))))
         ((node-p form)
          (cond
+           ((block-node-p form)
+            (p2-block-node form target representation))
+           ((let/let*-node-p form)
+            (p2-let/let*-node form target representation))
            ((tagbody-node-p form)
             (p2-tagbody-node form target)
             (fix-boxing representation nil))

@@ -438,13 +438,7 @@ of the compilands being processed (p1: so far; p2: in total).")
   ;; True if there is any RETURN from this block.
   return-p
   ;; True if there is a non-local RETURN from this block.
-  non-local-return-p
-  ;; If non-nil, register containing saved dynamic environment for this block.
-  environment-register
-  ;; Only used in LET/LET*/M-V-B nodes.
-  vars
-  free-specials
-  )
+  non-local-return-p)
 
 (defvar *blocks* ())
 
@@ -481,9 +475,7 @@ than just restore the lastSpecialBinding (= dynamic environment).
 "
   (or (unwind-protect-node-p object)
       (catch-node-p object)
-      (synchronized-node-p object)
-      (and (block-node-p object)
-           (equal (block-name object) '(THREADS:SYNCHRONIZED-ON)))))
+      (synchronized-node-p object)))
 
 
 (defknown enclosed-by-protected-block-p (&optional t) boolean)
@@ -503,10 +495,8 @@ be generated.
   (dolist (enclosing-block *blocks*)
     (when (eq enclosing-block outermost-block)
       (return nil))
-    (when (or (and (binding-node-p enclosing-block)
-                   (binding-node-environment-register enclosing-block))
-              (and (block-node-p enclosing-block)
-                   (block-environment-register enclosing-block)))
+    (when (and (binding-node-p enclosing-block)
+               (binding-node-environment-register enclosing-block))
       (return t))))
 
 (defknown environment-register-to-restore (&optional t) t)
@@ -520,8 +510,6 @@ That's the one which contains the environment used in the outermost block."
              (return-from environment-register-to-restore last-register))
            (or (and (binding-node-p block)
                     (binding-node-environment-register block))
-               (and (block-node-p block)
-                    (block-environment-register block))
                last-register)))
     (reduce #'outermost-register *blocks*
             :initial-value nil)))

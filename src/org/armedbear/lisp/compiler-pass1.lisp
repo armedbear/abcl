@@ -200,8 +200,7 @@
 (defun p1-let/let* (form)
   (declare (type cons form))
   (let* ((*visible-variables* *visible-variables*)
-         (block (make-block-node '(LET)))
-         (*blocks* (cons block *blocks*))
+         (block (make-let/let*-node))
          (op (%car form))
          (varlist (cadr form))
          (body (cddr form)))
@@ -222,18 +221,19 @@
       (dolist (variable vars)
         (when (special-variable-p (variable-name variable))
           (setf (variable-special-p variable) t
-                (block-environment-register block) t)))
+                (let-environment-register block) t)))
       ;; For processing declarations, we want to walk the variable list from
       ;; last to first, since declarations apply to the last-defined variable
       ;; with the specified name.
-      (setf (block-free-specials block)
+      (setf (let-free-specials block)
             (process-declarations-for-vars body (reverse vars) block))
-      (setf (block-vars block) vars)
+      (setf (let-vars block) vars)
       ;; Make free specials visible.
-      (dolist (variable (block-free-specials block))
+      (dolist (variable (let-free-specials block))
         (push variable *visible-variables*)))
-    (setf body (p1-body body))
-    (setf (block-form block) (list* op varlist body))
+    (let ((*blocks* (cons block *blocks*)))
+      (setf body (p1-body body)))
+    (setf (let-form block) (list* op varlist body))
     block))
 
 (defun p1-locally (form)
