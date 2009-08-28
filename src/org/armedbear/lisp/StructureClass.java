@@ -95,7 +95,23 @@ public class StructureClass extends SlotClass
             LispObject directSlots = checkList(second);
             LispObject slots = checkList(third);
             Symbol include = checkSymbol(fourth);
-            StructureClass c = new StructureClass(symbol);
+            LispClass existingClass = LispClass.findClass(symbol);
+            StructureClass c;
+
+            if (existingClass instanceof StructureClass)
+                // Change the existing class definition if there is one.
+                // The compiler has this scenario, where it is first loaded
+                // and subsequently run through the file compiler - which
+                // re-creates the same structure and breaks the inheritance
+                // if we don't re-use the existing class. Reusing the
+                // existing class is alright in this case, since we're
+                // recreating the same class.
+                // Redefinition of structures is undefined in the CLHS.
+                // As per the DEFSTRUCT-REDEFINITION it is allowed, but
+                // consequences are undefined.
+                c = (StructureClass)existingClass;
+            else
+                c = new StructureClass(symbol);
             if (include != NIL) {
                 LispClass includedClass = LispClass.findClass(include);
                 if (includedClass == null)
