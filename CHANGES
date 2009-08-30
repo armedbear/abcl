@@ -2,44 +2,59 @@ Version 0.16.0
 (unreleased)
 
   Summary of changes:
-  * Better initarg checking for make-instance and change-class. Fixes ansi-test
-    errors CHANGE-CLASS.1.11, MAKE-INSTANCE.ERROR.3, MAKE-INSTANCE.ERROR.4,
-    CHANGE-CLASS.ERROR.4 and SHARED-INITIALIZE.ERROR.4.
+  * Fixed generated wrapper for path names with spaces (Windows)
+  * Fixed ticket #58: Inspection of Java objects in Lisp code
+  * Restored functionality of the built-in profiler
+  * Profiler extended with hot-spot counting (as opposed to call counting)
+  * Stack sampling in the profiler moved to scheduler thread to
+    reduce impact on the program execution thread
+  * THE type-checking for the interpreter
+    (for simple-enough type specifications)
+  * Added structure argument type checking in structure slot
+    accessor functions
+  * Make GENSYM thread-safe
+  * Various performance fixes found by running the raytracer
+    from http://www.ffconsultancy.com/languages/ray_tracer/benchmark.html
+  * Better initarg checking for make-instance and change-class
+    Fixes ansi-test errors CHANGE-CLASS.1.11, MAKE-INSTANCE.ERROR.3,
+    MAKE-INSTANCE.ERROR.4, CHANGE-CLASS.ERROR.4 and SHARED-INITIALIZE.ERROR.4
   * Improve performance of StackFrames (Erik Huelsmann, Ville Voutilainen,
     with input from Peter Graves and Douglas Miles)
-  * Improve performance of CLOS eql-specializers via cache (Anton Vodonosov).
-  * 'build-from-lisp.sh' shell script (Tobias Rittweiler).
+  * Improve performance of CLOS eql-specializers via cache (Anton Vodonosov)
+  * 'build-from-lisp.sh' shell script (Tobias Rittweiler)
   * New threading primitives aligned with Java/JVM constructs (Erik Huelsmann)
 
       SYNCHRONIZED-ON
       OBJECT-NOTIFY
       OBJECT-NOTIFY-ALL
-
-  * THREADS package created to hold threads related primitives:	
+  * THREADS package created to hold threads related primitives:
 
       THREADP THREAD-UNLOCK THREAD-LOCK THREAD-NAME THREAD-ALIVE-P
       CURRENT-THREAD DESTROY-THREAD INTERRUPT-THREAD WITH-THREAD-LOCK
       MAKE-THREAD-LOCK MAKE-THREAD INTERRUPT-THREAD
 
       MAPCAR-THREADS
-      
+
       GET-MUTEX MAKE-MUTEX WITH-MUTEX RELEASE-MUTEX
 
     These primitives are still part of the EXTENSIONS package but are
     now to be considered as deprecated, marked to be removed with
-    0.22.
+    0.22
+  * Stacktraces now contain calls through Java code relevant to
+    debugging (Tobias Rittweiler)
 
-   * Stacktraces now contain calls through Java code relevant to
-     debugging (Tobias Rittweiler).
+    Backtrace functionality been moved from EXT:BACKTRACE-AS-LIST to
+    SYS:BACKTRACE to mark this changes.  The methods SYS:FRAME-TO-STRING
+    and SYS:FRAME-TO-LIST can be used to inspect the new
+    LISP_STACK_FRAME and JAVA_STACK_FRAME objects
+  * Various stream input performance optimizations
+  * Fixed breakage when combining Gray streams and the pretty printer
+  * Performance improvements for resolution of non-recursive #=n and #n#
 
-     Backtrace functionality been moved from EXT:BACKTRACE-AS-LIST to
-     SYS:BACKTRACE to mark this changes.  The methods SYS:FRAME-TO-STRING
-     and SYS:FRAME-TO-LIST can be used to inspect the new
-     LISP_STACK_FRAME and JAVA_STACK_FRAME objects.
-  
+
 Version 0.15.0
 svn://common-lisp.net/project/armedbear/svn/tags/0.15.0/abcl
-(07 Jun, 2009) 
+(07 Jun, 2009)
 
  Summary of changes:
   * 2 more MOP exported symbols to support Cells port
