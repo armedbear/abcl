@@ -92,26 +92,23 @@ public class StructureClass extends SlotClass
             throws ConditionThrowable
         {
             Symbol symbol = checkSymbol(first);
+            LispClass existingClass = LispClass.findClass(symbol);
+
+            if (existingClass instanceof StructureClass)
+                // DEFSTRUCT-REDEFINITION write-up
+                // states the effects from re-definition are undefined
+                // we punt: our compiler bootstrapping depends on
+                // the class not being redefined (remaining in the
+                // same location in the class hierarchy)
+                return existingClass;
+
+
+
             LispObject directSlots = checkList(second);
             LispObject slots = checkList(third);
             Symbol include = checkSymbol(fourth);
-            LispClass existingClass = LispClass.findClass(symbol);
-            StructureClass c;
 
-            if (existingClass instanceof StructureClass)
-                // Change the existing class definition if there is one.
-                // The compiler has this scenario, where it is first loaded
-                // and subsequently run through the file compiler - which
-                // re-creates the same structure and breaks the inheritance
-                // if we don't re-use the existing class. Reusing the
-                // existing class is alright in this case, since we're
-                // recreating the same class.
-                // Redefinition of structures is undefined in the CLHS.
-                // As per the DEFSTRUCT-REDEFINITION it is allowed, but
-                // consequences are undefined.
-                c = (StructureClass)existingClass;
-            else
-                c = new StructureClass(symbol);
+            StructureClass c = new StructureClass(symbol);
             if (include != NIL) {
                 LispClass includedClass = LispClass.findClass(include);
                 if (includedClass == null)
