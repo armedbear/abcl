@@ -426,7 +426,7 @@
 
     <!--  Files in source distribution that always get LF EOL (aka
          'unix') -->    
-    <patternset id="abcl.dist.lf"
+    <patternset id="abcl.dist.lf">
       <include name="abcl.in"/>
     </patternset>
 
