@@ -227,6 +227,8 @@
     <target name="abcl.stamp.version" depends="abcl.compile">
       <!-- Determine which ABCL version we have just built by parsing
            the output of LISP-IMPLEMENTATION-VERSION. -->
+      <!-- TODO As an optimization, we could possibly compare the timestamp
+      of 'abcl.version.path' vs. org.armedbear.lisp.Version -->
       <java fork="true"
 	    classpath="${build.classes.dir}"
 	    outputproperty="abcl.version"
@@ -400,31 +402,58 @@
       <include name="manifest-abcl"/>
       <include name="META-INF/services/javax.script.ScriptEngineFactory"/>
     </patternset>
-    
+
     <target name="abcl.source.prepare" depends="abcl.stamp.version">
-      <property name="abcl.source.eol" value="asis"/>
-      <echo>Using abcl.source.eol='${abcl.source.eol}' to drive
-      source code line-ending transformations.</echo>
       <property name="abcl.build.src.dir"
 		value="${build.dir}/abcl-src-${abcl.version}"/>
       <mkdir dir="${abcl.build.src.dir}/src"/>
-      <fixcrlf srcdir="${src.dir}" 
-	       eol="${abcl.source.eol}"
-	       destdir="${abcl.build.src.dir}/src"
-	       preservelastmodified="true">
-	<patternset refid="abcl.source.java"/>
-	<patternset refid="abcl.source.lisp"/>
-	<patternset refid="abcl.source.misc"/>
-      </fixcrlf>
-      <fixcrlf srcdir="${basedir}" 
-	       eol="${abcl.source.eol}"
-	       destdir="${abcl.build.src.dir}"
-	       preservelastmodified="true">
-	<patternset refid="abcl.dist.misc"/>
-      </fixcrlf>
+      <copy todir="${abcl.build.src.dir}/src"
+            preservelastmodified="true">
+        <fileset dir="${src.dir}"
+                 id="abcl.source.src">
+            <patternset refid="abcl.source.java"/>
+            <patternset refid="abcl.source.lisp"/>
+            <patternset refid="abcl.source.misc"/>
+        </fileset>
+      </copy>
+      <copy todir="${abcl.build.src.dir}"
+            preservelastmodified="true">
+        <fileset dir="${basedir}">
+            <patternset refid="abcl.dist.misc"/>
+        </fileset>
+      </copy>
     </target>
 
+    <!--  Files in source distribution that always get LF EOL (aka
+         'unix') -->    
+    <patternset id="abcl.dist.lf"
+      <include name="abcl.in"/>
+    </patternset>
+
+    <!--  Files in source distribution that always get CRLF EOL (aka
+         'dos') -->    
+    <patternset id="abcl.dist.crlf">
+      <include name="abcl.bat.in"/>
+    </patternset>
+
     <target name="abcl.source.tar" depends="abcl.source.prepare">
+      <fixcrlf srcdir="${abcl.build.src.dir}"
+               preservelastmodified="true"
+               eol="lf">
+      </fixcrlf>
+
+      <fixcrlf srcdir="${abcl.build.src.dir}"
+               preservelastmodified="true"
+               eol="crlf">
+          <patternset refid="abcl.dist.crlf"/>
+      </fixcrlf>
+
+      <fixcrlf srcdir="${abcl.build.src.dir}"
+               preservelastmodified="true"
+               eol="lf">
+          <patternset refid="abcl.dist.lf"/>
+      </fixcrlf>
+
       <mkdir dir="${dist.dir}"/>
       <tar destfile="${dist.dir}/abcl-src-${abcl.version}.tar.gz"
 	   compression="gzip">
@@ -435,6 +464,23 @@
     </target>
 
     <target name="abcl.source.zip" depends="abcl.source.prepare">
+      <fixcrlf srcdir="${abcl.build.src.dir}"
+               preservelastmodified="true"
+               eol="crlf">
+      </fixcrlf>
+
+      <fixcrlf srcdir="${abcl.build.src.dir}"
+               preservelastmodified="true"
+               eol="crlf">
+          <patternset refid="abcl.dist.crlf"/>
+      </fixcrlf>
+
+      <fixcrlf srcdir="${abcl.build.src.dir}"
+               preservelastmodified="true"
+               eol="lf">
+          <patternset refid="abcl.dist.lf"/>
+      </fixcrlf>
+
       <mkdir dir="${dist.dir}"/>
       <zip destfile="${dist.dir}/abcl-src-${abcl.version}.zip"
 	   compress="true">
