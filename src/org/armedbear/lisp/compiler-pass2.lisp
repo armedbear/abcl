@@ -4891,20 +4891,6 @@ given a specific common representation.")
   (compile-and-write-to-file class-file compiland))
 
 
-(defun emit-make-compiled-closure-for-flet/labels
-    (local-function compiland declaration)
-  (emit 'getstatic *this-class* declaration +lisp-object+)
-  (let ((parent (compiland-parent compiland)))
-    (when (compiland-closure-register parent)
-      (dformat t "(compiland-closure-register parent) = ~S~%"
-	       (compiland-closure-register parent))
-      (emit 'checkcast +lisp-compiled-closure-class+)
-      (duplicate-closure-array parent)
-      (emit-invokestatic +lisp-class+ "makeCompiledClosure"
-			 (list +lisp-object+ +closure-binding-array+)
-			 +lisp-object+)))
-  (emit-move-to-variable (local-function-variable local-function)))
-
 (defmacro with-temp-class-file (pathname class-file lambda-list &body body)
   `(let* ((,pathname (make-temp-file))
 	  (,class-file (make-class-file :pathname ,pathname
@@ -4931,6 +4917,20 @@ given a specific common representation.")
 	       (setf (local-function-function local-function)
                      (load-compiled-function pathname)))))))
 
+(defun emit-make-compiled-closure-for-labels
+    (local-function compiland declaration)
+  (emit 'getstatic *this-class* declaration +lisp-object+)
+  (let ((parent (compiland-parent compiland)))
+    (when (compiland-closure-register parent)
+      (dformat t "(compiland-closure-register parent) = ~S~%"
+	       (compiland-closure-register parent))
+      (emit 'checkcast +lisp-compiled-closure-class+)
+      (duplicate-closure-array parent)
+      (emit-invokestatic +lisp-class+ "makeCompiledClosure"
+			 (list +lisp-object+ +closure-binding-array+)
+			 +lisp-object+)))
+  (emit-move-to-variable (local-function-variable local-function)))
+
 (defknown p2-labels-process-compiland (t) t)
 (defun p2-labels-process-compiland (local-function)
   (let* ((compiland (local-function-compiland local-function))
@@ -4942,7 +4942,7 @@ given a specific common representation.")
 	     (set-compiland-and-write-class-file class-file compiland)
              (setf (local-function-class-file local-function) class-file)
              (let ((g (declare-local-function local-function)))
-	       (emit-make-compiled-closure-for-flet/labels
+	       (emit-make-compiled-closure-for-labels
 		local-function compiland g))))
           (t
 	   (with-temp-class-file
@@ -4950,7 +4950,7 @@ given a specific common representation.")
 	       (set-compiland-and-write-class-file class-file compiland)
 	       (setf (local-function-class-file local-function) class-file)
 	       (let ((g (declare-object (load-compiled-function pathname))))
-		 (emit-make-compiled-closure-for-flet/labels
+		 (emit-make-compiled-closure-for-labels
 		  local-function compiland g)))))))
 
 (defknown p2-flet-node (t t t) t)
