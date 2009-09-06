@@ -161,7 +161,7 @@
   p1-result         ; the parse tree as created in pass 1
   parent            ; the parent for compilands which defined within another
   (children 0       ; Number of local functions
-            :type fixnum) ; defined with with FLET, LABELS or LAMBDA
+            :type fixnum) ; defined with FLET, LABELS or LAMBDA
   blocks            ; TAGBODY, PROGV, BLOCK, etc. blocks
   argument-register
   closure-register
