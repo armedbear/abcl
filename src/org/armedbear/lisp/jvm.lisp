@@ -430,13 +430,9 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defstruct (block-node (:conc-name block-)
                        (:include control-transferring-node)
                        (:constructor %make-block-node (name)))
-  ;; Block name or (TAGBODY) or (LET) or (MULTIPLE-VALUE-BIND).
-  name
+  name  ;; Block name
   (exit (gensym))
   target
-  catch-tag
-  ;; True if there is any RETURN from this block.
-  return-p
   ;; True if there is a non-local RETURN from this block.
   non-local-return-p)
 

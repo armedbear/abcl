@@ -361,7 +361,6 @@
       (compiler-error "RETURN-FROM ~S: no block named ~S is currently visible."
                       name name))
     (dformat t "p1-return-from block = ~S~%" (block-name block))
-    (setf (block-return-p block) t)
     (cond ((eq (block-compiland block) *current-compiland*)
            ;; Local case. If the RETURN is nested inside an UNWIND-PROTECT
            ;; which is inside the block we're returning from, we'll do a non-

@@ -4642,50 +4642,42 @@ given a specific common representation.")
     (sys::%format t "type-of block = ~S~%" (type-of block))
     (aver (block-node-p block)))
   (let* ((*blocks* (cons block *blocks*))
-         (*register* *register*))
-    (if (null (block-return-p block))
-        ;; No explicit returns
-        (compile-progn-body (cddr (block-form block)) target representation)
-        (progn
-          (setf (block-target block) target)
-          (dformat t "p2-block-node lastSpecialBinding~%")
-          (dformat t "*all-variables* = ~S~%"
-                   (mapcar #'variable-name *all-variables*))
-          (setf (block-catch-tag block) (gensym))
-          (let* ((*register* *register*)
-                 (BEGIN-BLOCK (gensym))
-                 (END-BLOCK (gensym))
-                 (BLOCK-EXIT (block-exit block)))
-            (label BEGIN-BLOCK) ; Start of protected range.
-            ;; Implicit PROGN.
-            (compile-progn-body (cddr (block-form block)) target)
-            (label END-BLOCK) ; End of protected range.
-            (emit 'goto BLOCK-EXIT) ; Jump over handler (if any).
-            (when (block-non-local-return-p block)
-              ;; We need a handler to catch non-local RETURNs.
-              (let ((HANDLER (gensym))
-                    (RETHROW (gensym)))
-                (label HANDLER)
-                ;; The Return object is on the runtime stack. Stack depth is 1.
-                (emit 'dup) ; Stack depth is 2.
-                (emit 'getfield +lisp-return-class+ "tag" +lisp-object+) ; Still 2.
-                (compile-form `',(block-catch-tag block) 'stack nil) ; Tag. Stack depth is 3.
-                ;; If it's not the tag we're looking for...
-                (emit 'if_acmpne RETHROW) ; Stack depth is 1.
-                (emit 'getfield +lisp-return-class+ "result" +lisp-object+)
-                (emit-move-from-stack target) ; Stack depth is 0.
-                (emit 'goto BLOCK-EXIT)
-                (label RETHROW)
-                ;; Not the tag we're looking for.
-                (emit 'athrow)
-                ;; Finally...
-                (push (make-handler :from BEGIN-BLOCK
-                                    :to END-BLOCK
-                                    :code HANDLER
-                                    :catch-type (pool-class +lisp-return-class+))
-                      *handlers*)))
-            (label BLOCK-EXIT))
-          (fix-boxing representation nil)))))
+         (BEGIN-BLOCK (gensym))
+         (END-BLOCK (gensym))
+         (BLOCK-EXIT (block-exit block)))
+    (setf (block-target block) target)
+    (dformat t "*all-variables* = ~S~%"
+             (mapcar #'variable-name *all-variables*))
+    (label BEGIN-BLOCK) ; Start of protected range, for non-local returns
+    ;; Implicit PROGN.
+    (compile-progn-body (cddr (block-form block)) target)
+    (label END-BLOCK) ; End of protected range, for non-local returns
+    (when (block-non-local-return-p block)
+      ;; We need a handler to catch non-local RETURNs.
+      (emit 'goto BLOCK-EXIT) ; Jump over handler, when inserting one
+      (let ((HANDLER (gensym))
+            (RETHROW (gensym)))
+        (label HANDLER)
+        ;; The Return object is on the runtime stack. Stack depth is 1.
+        (emit 'dup) ; Stack depth is 2.
+        (emit 'getfield +lisp-return-class+ "tag" +lisp-object+) ; Still 2.
+        (compile-form `',(block-exit block) 'stack nil) ; Tag. Stack depth is 3.
+        ;; If it's not the tag we're looking for...
+        (emit 'if_acmpne RETHROW) ; Stack depth is 1.
+        (emit 'getfield +lisp-return-class+ "result" +lisp-object+)
+        (emit-move-from-stack target) ; Stack depth is 0.
+        (emit 'goto BLOCK-EXIT)
+        (label RETHROW)
+        ;; Not the tag we're looking for.
+        (emit 'athrow)
+        ;; Finally...
+        (push (make-handler :from BEGIN-BLOCK
+                            :to END-BLOCK
+                            :code HANDLER
+                            :catch-type (pool-class +lisp-return-class+))
+              *handlers*)))
+    (label BLOCK-EXIT)
+    (fix-boxing representation nil)))
 
 (defknown p2-return-from (t t t) t)
 (defun p2-return-from (form target representation)
@@ -4716,7 +4708,7 @@ given a specific common representation.")
     (cond ((node-constant-p result-form)
            (emit 'new +lisp-return-class+)
            (emit 'dup)
-           (compile-form `',(block-catch-tag block) 'stack nil) ; Tag.
+           (compile-form `',(block-exit block) 'stack nil) ; Tag.
            (emit-clear-values)
            (compile-form result-form 'stack nil)) ; Result.
           (t
@@ -4726,7 +4718,7 @@ given a specific common representation.")
              (compile-form result-form temp-register nil) ; Result.
              (emit 'new +lisp-return-class+)
              (emit 'dup)
-             (compile-form `',(block-catch-tag block) 'stack nil) ; Tag.
+             (compile-form `',(block-exit block) 'stack nil) ; Tag.
              (aload temp-register))))
     (emit-invokespecial-init +lisp-return-class+ (lisp-object-arg-types 2))
     (emit 'athrow)
@@ -6413,6 +6405,10 @@ for use with derive-type-times.")
                       t)))))
         ((node-p form)
          (let ((result t))
+;;; ### FIXME
+#|
+the statements below used to work, maybe ...
+We need more thought here.
            (cond ((and (block-node-p form)
                        (equal (block-name form) '(LET)))
                   ;;              (format t "derive-type LET/LET* node case~%")
@@ -6436,7 +6432,7 @@ for use with derive-type-times.")
 ;;                           (format t "last-form = ~S~%" last-form))
 ;;                         (format t "derived-type = ~S~%" derived-type)
 ;;                         )
-                      (setf result derived-type)))))
+                      (setf result derived-type))))) |#
            result))
         (t
          t)))
