@@ -385,7 +385,14 @@ of the compilands being processed (p1: so far; p2: in total).")
   ;; fixme? tag gotten from the catch-form
   )
 
-;; block-node belongs here; it's down below for historical raisins
+(defstruct (block-node (:conc-name block-)
+                       (:include control-transferring-node)
+                       (:constructor %make-block-node (name)))
+  name  ;; Block name
+  (exit (gensym))
+  target
+  ;; True if there is a non-local RETURN from this block.
+  non-local-return-p)
 
 ;; binding blocks: LET, LET*, FLET, LABELS, M-V-B, PROGV, LOCALLY
 
@@ -424,17 +431,6 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defstruct (synchronized-node (:conc-name synchronized-)
                               (:include protected-node)))
 
-
-;; Used to wrap TAGBODYs, UNWIND-PROTECTs and LET/LET*/M-V-B forms as well as
-;; BLOCKs per se.
-(defstruct (block-node (:conc-name block-)
-                       (:include control-transferring-node)
-                       (:constructor %make-block-node (name)))
-  name  ;; Block name
-  (exit (gensym))
-  target
-  ;; True if there is a non-local RETURN from this block.
-  non-local-return-p)
 
 (defvar *blocks* ())
 
