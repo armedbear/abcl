@@ -33,8 +33,14 @@
 
 package org.armedbear.lisp;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 public final class Utilities extends Lisp
 {
@@ -115,4 +121,60 @@ public final class Utilities extends Lisp
             return null;
         }
     }
+    
+    public static byte[] getZippedZipEntryAsByteArray(ZipFile zipfile,
+                                                      String entryName,
+                                                      String subEntryName) 
+      throws ConditionThrowable 
+  {
+      ZipEntry entry = zipfile.getEntry(entryName);
+      
+      ZipInputStream stream = null;
+      try {
+          stream = new ZipInputStream(zipfile.getInputStream(entry));
+      } 
+      catch (IOException e) {
+          Lisp.error(new FileError("Failed to open '" + entryName + "' in zipfile '"
+                                   + zipfile + "': " + e.getMessage()));
+      }
+      //  XXX Cache the zipEntries somehow
+      do {
+          try { 
+              entry = stream.getNextEntry();
+          } catch (IOException e){
+              Lisp.error(new FileError("Failed to seek for '" + subEntryName 
+                                       + "' in '" 
+                                       + zipfile.getName() + ":" + entryName + ".:"
+                                       + e.getMessage()));
+          }
+      } while (!entry.getName().equals(subEntryName));
+      
+      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int count;
+        byte buf[] = new byte[1024];
+        try {
+            while ((count = stream.read(buf, 0, buf.length)) != -1) {
+                buffer.write(buf, 0, count);
+            }
+        } catch (java.io.IOException e) {
+          Lisp.error(new FileError("Failed to read compressed '"
+                                   + subEntryName 
+                                   + "' in '" 
+                                   + zipfile.getName() + ":" + entryName + ":"
+                                   + e.getMessage()));
+        }
+        return buffer.toByteArray();
+    }
+    
+    public static InputStream getZippedZipEntryAsInputStream(ZipFile zipfile,
+                                                             String entryName,
+                                                             String subEntryName) 
+      throws ConditionThrowable
+  {
+        return 
+            new ByteArrayInputStream(Utilities
+                                     .getZippedZipEntryAsByteArray(zipfile, entryName, 
+                                                                   subEntryName));
+  }
 }
+

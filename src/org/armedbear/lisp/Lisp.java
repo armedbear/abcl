@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Hashtable;
@@ -118,7 +119,7 @@ public abstract class Lisp
         PACKAGE_LISP.usePackage(PACKAGE_CL);
         PACKAGE_LISP.usePackage(PACKAGE_EXT);
         PACKAGE_LISP.usePackage(PACKAGE_SYS);
-	PACKAGE_THREADS.usePackage(PACKAGE_CL);
+        PACKAGE_THREADS.usePackage(PACKAGE_CL);
       }
     catch (Throwable t)
       {
@@ -330,7 +331,7 @@ public abstract class Lisp
       int last = frames.length - 1;
       for (int i = 0; i<= last; i++) {
           if (frames[i].getClassName().startsWith("org.armedbear.lisp.Primitive"))
-	    last = i;
+            last = i;
       }
       // Do not include the first three frames:
       //   Thread.getStackTrace, LispThread.getJavaStackTrace,
@@ -882,7 +883,7 @@ public abstract class Lisp
           if (obj instanceof StackFrame)      
                   return (StackFrame) obj;         
           return (StackFrame)// Not reached.       
-	    type_error(obj, Symbol.STACK_FRAME);
+            type_error(obj, Symbol.STACK_FRAME);
   }
 
   static
@@ -1074,8 +1075,20 @@ public abstract class Lisp
       }
     if (device instanceof Pathname)
       {
-        // We're loading a fasl from j.jar.
+        // Are we loading a fasl from j.jar?  
+        // XXX this will collide with file names from other JAR files
         URL url = Lisp.class.getResource(namestring);
+        if (url == null) {
+          // Maybe device-->namestring references another JAR file?
+          String jarFile = ((Pathname)device).getNamestring();
+          if (jarFile.startsWith("jar:file:")) {
+            try {
+              url = new URL(jarFile + "!/" + namestring);
+            } catch (MalformedURLException ex) {
+              Debug.trace(ex);
+            }
+          }
+        }
         if (url != null)
           {
             try
@@ -1110,6 +1123,20 @@ public abstract class Lisp
                                 InputStream in = zipFile.getInputStream(entry);
                                 LispObject obj = loadCompiledFunction(in, (int) size);
                                 return obj != null ? obj : NIL;
+                              }
+                            else 
+                              {
+                                // ASSERT type = "abcl"
+                                entryName 
+                                  = defaultPathname.name.getStringValue() 
+                                  + "." +  "abcl";//defaultPathname.type.getStringValue();
+                                byte in[] 
+                                  = Utilities
+                                  .getZippedZipEntryAsByteArray(zipFile, 
+                                                                entryName,
+                                                                namestring);
+                                LispObject o = loadCompiledFunction(in);
+                                return o != null ? o : NIL;
                               }
                           }
                         finally

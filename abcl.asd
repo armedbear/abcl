@@ -9,24 +9,24 @@
 ;;; Wrapper for all ABCL ASDF definitions.
 (defsystem :abcl :version "0.3.0")
 
-(defmethod perform :after ((o load-op) (c (eql (find-system 'abcl))))
+(defmethod perform :after ((o load-op) (c (eql (find-system :abcl))))
   ;;; Additional test suite loads would go here.
-  (asdf:oos 'asdf:load-op :test-abcl :force t))
+  (operate 'load-op :test-abcl :force t))
 
-(defmethod perform ((o test-op) (c (eql (find-system 'abcl))))
+(defmethod perform ((o test-op) (c (eql (find-system :abcl))))
   ;;; Additional test suite invocations would go here.
-  (asdf:oos 'asdf:test-op :ansi-compiled :force t))
+  (operate 'test-op :ansi-compiled :force t))
 
 ;;; A collection of test suites for ABCL.
 (defsystem :test-abcl
   :version "0.3"
   :depends-on (:ansi-compiled #+nil :abcl-tests))
 
-(defmethod perform :after ((o load-op) (c (eql (find-system 'test-abcl))))
+(defmethod perform :after ((o load-op) (c (eql (find-system :test-abcl))))
   #+nil (asdf:oos 'asdf:test-op :cl-bench :force t)
-  (asdf:oos 'asdf:load-op :abcl-test-lisp :force t)
-  (asdf:oos 'asdf:load-op :ansi-compiled :force t)
-  (asdf:oos 'asdf:load-op :ansi-interpreted :force t))
+  (operate 'load-op :abcl-test-lisp :force t)
+  (operate 'load-op :ansi-compiled :force t)
+  (operate 'load-op :ansi-interpreted :force t))
 
 (defsystem :ansi-test :version "1.0" :components
      ;;; GCL ANSI test suite.
@@ -34,14 +34,14 @@
 	       ((:file "package")))))
 
 (defsystem :ansi-interpreted :version "1.0" :depends-on (ansi-test))
-(defmethod perform ((o test-op) (c (eql (find-system 'ansi-interpreted))))
+(defmethod perform ((o test-op) (c (eql (find-system :ansi-interpreted))))
    "Invoke tests with:  (asdf:oos 'asdf:test-op :ansi-interpreted :force t)."
    ;;; FIXME needs ASDF:OOS to be invoked with :FORCE t
   (funcall (intern (symbol-name 'run) :abcl.test.ansi)
 	   :compile-tests nil))
 
 (defsystem :ansi-compiled :version "1.0" :depends-on (ansi-test))
-(defmethod perform ((o test-op) (c (eql (find-system 'ansi-compiled))))
+(defmethod perform ((o test-op) (c (eql (find-system :ansi-compiled))))
   "Invoke tests with:  (asdf:oos 'asdf:test-op :abcl-compiled :force t)."
   (funcall (intern (symbol-name 'run) :abcl.test.ansi)
 	   :compile-tests t))

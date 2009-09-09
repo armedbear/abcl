@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -43,6 +45,7 @@ import java.net.URLDecoder;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 public final class Load extends Lisp
 {
@@ -56,27 +59,27 @@ public final class Load extends Lisp
                     Symbol.LOAD_PRINT.symbolValue(thread) != NIL,
                     true);
     }
-
+    
     private static final File findLoadableFile(final String filename,
                                                final String dir)
     {
         File file = new File(dir, filename);
-	if (!file.isFile()) {
-	    String extension = getExtension(filename);
-	    if (extension == null) {
-		// No extension specified. Try appending ".lisp" or ".abcl".
-		File lispFile = new File(dir, filename.concat(".lisp"));
-		File abclFile = new File(dir, filename.concat(".abcl"));
-		if (lispFile.isFile() && abclFile.isFile()) {
-		    if (abclFile.lastModified() > lispFile.lastModified()) {
-			return abclFile;
-		    } else {
-			return lispFile;
-		    }
-		} else if (abclFile.isFile()) {
-		    return abclFile;
-		} else if (lispFile.isFile()) {
-		    return lispFile;
+        if (!file.isFile()) {
+            String extension = getExtension(filename);
+            if (extension == null) {
+                // No extension specified. Try appending ".lisp" or ".abcl".
+                File lispFile = new File(dir, filename.concat(".lisp"));
+                File abclFile = new File(dir, filename.concat(".abcl"));
+                if (lispFile.isFile() && abclFile.isFile()) {
+                    if (abclFile.lastModified() > lispFile.lastModified()) {
+                        return abclFile;
+                    } else {
+                        return lispFile;
+                    }
+                } else if (abclFile.isFile()) {
+                    return abclFile;
+                } else if (lispFile.isFile()) {
+                    return lispFile;
                 }
             }
         } else
@@ -84,60 +87,131 @@ public final class Load extends Lisp
         return null; // this is the error case: the file does not exist
                      // no need to check again at the caller
     }
-
+  
     public static final LispObject load(Pathname pathname,
                                         String filename,
                                         boolean verbose,
                                         boolean print,
                                         boolean ifDoesNotExist)
         throws ConditionThrowable {
-	return load(pathname, filename, verbose, print, ifDoesNotExist, false);
+        return load(pathname, filename, verbose, print, ifDoesNotExist, false);
     }
-
 
     public static final LispObject load(Pathname pathname,
                                         String filename,
                                         boolean verbose,
                                         boolean print,
                                         boolean ifDoesNotExist,
-					boolean returnLastResult)
+                                        boolean returnLastResult)
         throws ConditionThrowable
     {
-	String dir = null;
+        String dir = null;
         if (!Utilities.isFilenameAbsolute(filename)) {
-	    dir =
-                coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue()).getNamestring();
+            dir = coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS
+                                   .symbolValue()).getNamestring();
         }
 
-	File file = findLoadableFile(filename, dir);
-        if (file == null) {
+        String zipFileName = null;
+        String zipEntryName = null;
+        if (filename.startsWith("jar:file:")) {
+            String s = new String(filename);
+            s = s.substring(9);
+            int index = s.lastIndexOf('!');
+            if (index >= 0) {
+                zipFileName = s.substring(0, index);
+                zipEntryName = s.substring(index + 1);
+                if (zipEntryName.length() > 0 && zipEntryName.charAt(0) == '/')
+                    zipEntryName = zipEntryName.substring(1);
+                if (Utilities.isPlatformWindows) {
+                    if (zipFileName.length() > 0 && zipFileName.charAt(0) == '/')
+                        zipFileName = zipFileName.substring(1);
+                }
+            }
+        }
+
+        File file = findLoadableFile(filename, dir);
+        if (null == file && null == zipFileName) {
             if (ifDoesNotExist)
-                return error(new FileError("File not found: " + filename,
-                                            pathname));
+                return error(new FileError("File not found: " + filename, pathname));
             else
                 return NIL;
         }
 
-	filename = file.getPath();
+        if (checkZipFile(file)) {
+            // Either we are loading a packed FASL (i.e. ZIP with suffix ".abcl")
+            // Or we are loading from a JAR archive
+            if (".abcl".equals(getExtension(file.getPath()))) {
+                // So we adjust the value passed to
+                // loadFileFromStream() to get any further loading
+                // within this invocation of LOAD to work properly.
+                filename = file.getPath();
+            } 
+            zipFileName = file.getPath();
+            zipEntryName = file.getName();
+        }
+        
+        String truename = filename;
         ZipFile zipfile = null;
-        if (checkZipFile(file))
-        {
+
+        boolean packedFASL = false;
+
+        InputStream in = null;
+        if (zipFileName != null) {
             try {
-                zipfile = ZipCache.getZip(file.getPath());
+                zipfile = ZipCache.getZip(zipFileName);
             }
             catch (Throwable t) {
-                // Fall through.
+                return error (new FileError("Zip file not found: " + filename, pathname));
             }
-        }
-        String truename = filename;
-        InputStream in = null;
-        if (zipfile != null) {
-            String name = file.getName();
-            int index = name.lastIndexOf('.');
-            Debug.assertTrue(index >= 0);
-            name = name.substring(0, index).concat("._");
-            ZipEntry entry = zipfile.getEntry(name);
-            if (entry != null) {
+            ZipEntry entry = zipfile.getEntry(zipEntryName);
+            if (null == entry) {
+                // try appending "._" to base filename
+                int index = zipEntryName.lastIndexOf('.');
+                if (-1 == index) index = zipEntryName.length();
+                zipEntryName = zipEntryName.substring(0, index).concat("._");
+                entry = zipfile.getEntry(zipEntryName);
+            }
+            if (null == entry) {
+                // try appending ".abcl" to base filename
+                int index = zipEntryName.lastIndexOf('.');
+                if (index == -1)
+                  index = zipEntryName.length();
+                zipEntryName = zipEntryName.substring(0, index).concat(".abcl");
+                entry = zipfile.getEntry(zipEntryName);
+                if (entry != null) 
+                  packedFASL = true;
+            }
+            if (null == entry) {
+                // Try looking for ".lisp"
+                int i = zipEntryName.lastIndexOf('.');
+                if (i == -1) {
+                    i = zipEntryName.length();
+                }
+                zipEntryName = zipEntryName.substring(0, i).concat(".lisp");
+                entry = zipfile.getEntry(zipEntryName);
+                if (entry == null) {
+                  return error(new LispError("Failed to find " + zipEntryName + " in "
+                                             + zipFileName + "."));
+                }
+            }
+
+            if (null == entry) {
+                return error(new FileError("Can't find zip file entry " 
+                                           + zipEntryName, pathname));
+            }
+            if (".abcl".equals(getExtension(zipEntryName))) {
+                packedFASL = true;
+            }
+            if (packedFASL) {
+                // If we are loading a packed FASL from the JAR we
+                // have to decompress it first, and seek for the '._'
+                // init FASL.
+                int i = zipEntryName.lastIndexOf('.');
+                String subZipEntryName = zipEntryName.substring(0, i).concat("._");
+                in = Utilities.getZippedZipEntryAsInputStream(zipfile, 
+                                                              zipEntryName, 
+                                                              subZipEntryName);
+            } else {
                 try {
                     in = zipfile.getInputStream(entry);
                 }
@@ -162,9 +236,10 @@ public final class Load extends Lisp
             }
         }
         try {
-            return loadFileFromStream(null, truename,
-                                      new Stream(in, Symbol.CHARACTER),
-                                      verbose, print, false, returnLastResult);
+
+          return loadFileFromStream(null, truename,
+                                    new Stream(in, Symbol.CHARACTER),
+                                    verbose, print, false, returnLastResult);
         }
         catch (FaslVersionMismatch e) {
             FastStringBuffer sb =
@@ -391,8 +466,8 @@ public final class Load extends Lisp
                                                        boolean verbose,
                                                        boolean print,
                                                        boolean auto)
-	throws ConditionThrowable {
-	return loadFileFromStream(pathname, truename, in, verbose, print, auto, false);
+        throws ConditionThrowable {
+        return loadFileFromStream(pathname, truename, in, verbose, print, auto, false);
     }
 
     private static final LispObject loadFileFromStream(LispObject pathname,
@@ -401,7 +476,7 @@ public final class Load extends Lisp
                                                        boolean verbose,
                                                        boolean print,
                                                        boolean auto,
-						       boolean returnLastResult)
+                                                       boolean returnLastResult)
         throws ConditionThrowable
     {
         long start = System.currentTimeMillis();
@@ -466,8 +541,8 @@ public final class Load extends Lisp
 
     private static final LispObject loadStream(Stream in, boolean print,
                                                LispThread thread)
-	throws ConditionThrowable {
-	return loadStream(in, print, thread, false);
+        throws ConditionThrowable {
+        return loadStream(in, print, thread, false);
     }
 
     private static final LispObject loadStream(Stream in, boolean print,
@@ -482,7 +557,7 @@ public final class Load extends Lisp
         thread.lastSpecialBinding = sourcePositionBinding;
         try {
             final Environment env = new Environment();
-	    LispObject result = NIL;
+            LispObject result = NIL;
             while (true) {
                 sourcePositionBinding.value = Fixnum.getInstance(in.getOffset());
                 LispObject obj = in.read(false, EOF, false, thread);
@@ -496,11 +571,11 @@ public final class Load extends Lisp
                     out._finishOutput();
                 }
             }
-	    if(returnLastResult) {
-		return result;
-	    } else {
-		return T;
-	    }
+            if(returnLastResult) {
+                return result;
+            } else {
+                return T;
+            }
         }
         finally {
             thread.lastSpecialBinding = lastSpecialBinding;
@@ -513,7 +588,7 @@ public final class Load extends Lisp
         Stream in = (Stream) _LOAD_STREAM_.symbolValue(thread);
         final Environment env = new Environment();
         final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
-	LispObject result = NIL;
+        LispObject result = NIL;
         try {
             thread.bindSpecial(_FASL_ANONYMOUS_PACKAGE_, new Package());
             while (true) {
@@ -527,10 +602,10 @@ public final class Load extends Lisp
             thread.lastSpecialBinding = lastSpecialBinding;
         }
         return result;
-	//There's no point in using here the returnLastResult flag like in
-	//loadStream(): this function is only called from init-fasl, which is
-	//only called from load, which already has its own policy for choosing
-	//whether to return T or the last value.
+        //There's no point in using here the returnLastResult flag like in
+        //loadStream(): this function is only called from init-fasl, which is
+        //only called from load, which already has its own policy for choosing
+        //whether to return T or the last value.
     }
 
     // Returns extension including leading '.'
@@ -600,10 +675,10 @@ public final class Load extends Lisp
     {
         @Override
         public LispObject execute(LispObject filespec, LispObject verbose,
-				  LispObject print, LispObject ifDoesNotExist)
-	    throws ConditionThrowable {
-	    return load(filespec, verbose, print, ifDoesNotExist, NIL);
-	}
+                                  LispObject print, LispObject ifDoesNotExist)
+            throws ConditionThrowable {
+            return load(filespec, verbose, print, ifDoesNotExist, NIL);
+        }
     };
 
     // ### %load-returning-last-result filespec verbose print if-does-not-exist => object
@@ -613,49 +688,49 @@ public final class Load extends Lisp
     {
         @Override
         public LispObject execute(LispObject filespec, LispObject verbose,
-				  LispObject print, LispObject ifDoesNotExist)
-	    throws ConditionThrowable {
-	    return load(filespec, verbose, print, ifDoesNotExist, T);
-	}
+                                  LispObject print, LispObject ifDoesNotExist)
+            throws ConditionThrowable {
+            return load(filespec, verbose, print, ifDoesNotExist, T);
+        }
     };
 
     private static final LispObject load(LispObject filespec,
-					 LispObject verbose,
-					 LispObject print,
-					 LispObject ifDoesNotExist,
-					 LispObject returnLastResult)
-	throws ConditionThrowable {
-	if (filespec instanceof Stream) {
-	    if (((Stream)filespec).isOpen()) {
-		LispObject pathname;
-		if (filespec instanceof FileStream)
-		    pathname = ((FileStream)filespec).getPathname();
-		else
-		    pathname = NIL;
-		String truename;
-		if (pathname instanceof Pathname)
-		    truename = ((Pathname)pathname).getNamestring();
-		else
-		    truename = null;
-		return loadFileFromStream(pathname,
-					  truename,
-					  (Stream) filespec,
-					  verbose != NIL,
-					  print != NIL,
-					  false,
-					  returnLastResult != NIL);
-	    }
-	    // If stream is closed, fall through...
-	}
-	Pathname pathname = coerceToPathname(filespec);
-	if (pathname instanceof LogicalPathname)
-	    pathname = LogicalPathname.translateLogicalPathname((LogicalPathname)pathname);
-	return load(pathname,
-		    pathname.getNamestring(),
-		    verbose != NIL,
-		    print != NIL,
-		    ifDoesNotExist != NIL,
-		    returnLastResult != NIL);
+                                         LispObject verbose,
+                                         LispObject print,
+                                         LispObject ifDoesNotExist,
+                                         LispObject returnLastResult)
+        throws ConditionThrowable {
+        if (filespec instanceof Stream) {
+            if (((Stream)filespec).isOpen()) {
+                LispObject pathname;
+                if (filespec instanceof FileStream)
+                    pathname = ((FileStream)filespec).getPathname();
+                else
+                    pathname = NIL;
+                String truename;
+                if (pathname instanceof Pathname)
+                    truename = ((Pathname)pathname).getNamestring();
+                else
+                    truename = null;
+                return loadFileFromStream(pathname,
+                                          truename,
+                                          (Stream) filespec,
+                                          verbose != NIL,
+                                          print != NIL,
+                                          false,
+                                          returnLastResult != NIL);
+            }
+            // If stream is closed, fall through...
+        }
+        Pathname pathname = coerceToPathname(filespec);
+        if (pathname instanceof LogicalPathname)
+            pathname = LogicalPathname.translateLogicalPathname((LogicalPathname)pathname);
+        return load(pathname,
+                    pathname.getNamestring(),
+                    verbose != NIL,
+                    print != NIL,
+                    ifDoesNotExist != NIL,
+                    returnLastResult != NIL);
     }
 
     // ### load-system-file
