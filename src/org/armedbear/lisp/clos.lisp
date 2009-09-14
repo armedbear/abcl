@@ -1995,9 +1995,12 @@
   (when (symbolp initarg)
     (dolist (method methods nil)
       (let ((valid-initargs (method-lambda-list method)))
-	(when (or
-	       (find "&ALLOW-OTHER-KEYS" valid-initargs :test #'string=)
-	       (find (symbol-value initarg) valid-initargs :test #'string=))
+	(when (find (symbol-value initarg) valid-initargs 
+		     :test #'(lambda (a b)
+			       (or
+				(string= a b)
+				(string= b "&ALLOW-OTHER-KEYS"))))
+
 	  (return t))))))
 
 (defun valid-initarg-p (initarg slots)
