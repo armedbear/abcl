@@ -32,6 +32,8 @@
  */
 
 package org.armedbear.lisp;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class LispCharacter extends LispObject
 {
@@ -44,7 +46,7 @@ public final class LispCharacter extends LispObject
   }
 
   public final char value;
-
+  private String name;
   public static LispCharacter getInstance(char c)
   {
     try
@@ -256,8 +258,11 @@ public final class LispCharacter extends LispObject
           case 127:
             sb.append("Rubout");
             break;
-          default:
-            sb.append(value);
+	  default:
+	    if (name!=null)
+              sb.append(name);
+	    else
+              sb.append(value);
             break;
           }
       }
@@ -541,6 +546,8 @@ public final class LispCharacter extends LispObject
   public static final int nameToChar(String s)
   {
     String lower = s.toLowerCase();
+    LispCharacter lc = namedToChar.get(lower);
+    if (lc!=null) return lc.value;
     if (lower.equals("null"))
       return 0;
     if (lower.equals("bell"))
@@ -605,7 +612,8 @@ public final class LispCharacter extends LispObject
       case 127:
         return "Rubout";
       }
-    return null;
+    if (c<0 || c>255) return null;
+    return constants[c].name;
   }
 
   // ### char-name
@@ -626,6 +634,39 @@ public final class LispCharacter extends LispObject
       return UPPER_CASE_CHARS[c];
     return Character.toUpperCase(c);
   }
+
+  static int maxNamedChar = 0; 
+  static Map<String, LispCharacter> namedToChar = new HashMap<String, LispCharacter>(); 
+  
+  static void setCharNames(int i, String[] string) { 
+    int settingChar = i; 
+    int index = 0; 
+    int stringLen = string.length; 
+    while(stringLen-->0) { 
+      setCharName(settingChar,string[index]); 
+      index++; 
+      settingChar++; 
+    } 
+    if (maxNamedChar<settingChar) maxNamedChar = settingChar;  
+  } 
+  
+  static void setCharName(int settingChar, String string) { 
+    if (settingChar>=CHAR_MAX) return; 
+    LispCharacter c = constants[settingChar]; 
+    c.name = string; 
+    namedToChar.put(string.toLowerCase(), c); 
+  } 
+   
+  static { 
+   new CharNameMaker0(); 
+  } 
+   
+  static class CharNameMaker0{ 
+    { 
+      setCharNames(0,new String[]{"Null", "Soh", "Stx", "Etx", "Eot", "Enq", "Ack", "Bell", "Backspace", "Tab", "Newline", "Vt", "Page", "Return", "So", "Si", "Dle", "Dc1", "Dc2", "Dc3", "Dc4", "Nak", "Syn", "Etb", "Can", "Em", "Sub", "Escape", "Fs", "Gs", "Rs", "Us"}); 
+      setCharNames(128,new String[]{"U0080", "U0081", "U0082", "U0083", "U0084", "U0085", "U0086", "U0087", "U0088", "U0089", "U008a", "U008b", "U008c", "U008d", "U008e", "U008f", "U0090", "U0091", "U0092", "U0093", "U0094", "U0095", "U0096", "U0097", "U0098", "U0099", "U009a", "U009b", "U009c", "U009d", "U009e", "U009f"}); 
+    } 
+  }  
 
   private static final char[] UPPER_CASE_CHARS = new char[128];
 
