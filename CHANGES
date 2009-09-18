@@ -1,5 +1,17 @@
-Version 0.16.0
+Version 0.17.0
 (unreleased)
+
+Features
+  * Support for loading FASLs from JAR files.
+
+Bugs.
+
+  * More careful checking for null args in LispStackFrame
+  * Honor appearance of &allow-other-keys in CLOS MAKE-INSTANCE
+
+Version 0.16.0
+(06 SEP 2009)
+svn://common-lisp.net/project/armedbear/svn/tags/0.16.0/abcl
 
   Summary of changes:
   * Fixed generated wrapper for path names with spaces (Windows)
