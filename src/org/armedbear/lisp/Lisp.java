@@ -123,7 +123,7 @@ public abstract class Lisp
       }
     catch (Throwable t)
       {
-        t.printStackTrace();
+        Debug.trace(t);
       }
   }
 
@@ -277,7 +277,7 @@ public abstract class Lisp
           }
         catch (Go go)
           {
-            throw go;
+            return error(go.getCondition());
           }
         catch (Throw t)
           {
@@ -1042,6 +1042,7 @@ public abstract class Lisp
       }
     catch (Throwable t)
       {
+        Debug.trace(t);
         return null;
       }
   }
@@ -2586,7 +2587,7 @@ public abstract class Lisp
       }
     catch (ClassNotFoundException e)
       {
-        e.printStackTrace();
+        Debug.trace(e);
       }
   }
 
