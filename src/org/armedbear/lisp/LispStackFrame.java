@@ -42,6 +42,17 @@ public class LispStackFrame
   private final LispObject third;
   private final LispObject[] args;
 
+  private final class UnavailableArgument extends LispObject 
+  {
+    public UnavailableArgument () { }
+    @Override
+    public String writeToString() { 
+      return unreadableString("unavailable arg", false); 
+    }
+  }
+
+  private final LispObject UNAVAILABLE_ARG = new UnavailableArgument();
+
   public LispStackFrame(LispObject operator)
   {
     this.operator = operator;
@@ -108,8 +119,8 @@ public class LispStackFrame
      try {
        result =  unreadableString(LISP_STACK_FRAME + " " 
 				  + toLispString().getStringValue());
-     } catch (ConditionThrowable t) {
-       Debug.trace("Implementation error: ");
+     } catch (Throwable t) {
+       Debug.trace("Serious printing error: ");
        Debug.trace(t);
        result = unreadableString(LISP_STACK_FRAME);
      }
@@ -145,7 +156,15 @@ public class LispStackFrame
     LispObject result = Lisp.NIL;
     if (args != null) {
       for (int i = 0; i < args.length; i++)
-	result = result.push(args[i]);
+        // `args' come here from LispThread.execute. I don't know
+        // how it comes that some callers pass NULL ptrs around but
+        // we better do not create conses with their CAR being NULL;
+        // it'll horribly break printing such a cons; and probably
+        // other bad things may happen, too. --TCR, 2009-09-17.
+        if (args[i] == null)
+          result = result.push(UNAVAILABLE_ARG);
+        else
+          result = result.push(args[i]);
     } else {
       do {
 	if (first != null)
@@ -168,7 +187,15 @@ public class LispStackFrame
   public SimpleString toLispString() 
     throws ConditionThrowable 
   {
-    return new SimpleString(toLispList().writeToString());
+    String result;
+    try {
+      result = this.toLispList().writeToString();
+    } catch (Throwable t) {
+      Debug.trace("Serious printing error: ");
+      Debug.trace(t);
+      result = unreadableString("LISP-STACK-FRAME");
+    }
+    return new SimpleString(result);
   }
 
   public LispObject getOperator() {

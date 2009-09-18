@@ -632,24 +632,30 @@ public class LispObject extends Lisp
     return toString();
   }
 
-  public String unreadableString(String s)
+  public String unreadableString(String s) {
+     return unreadableString(s, true);
+  }
+  public String unreadableString(Symbol sym) throws ConditionThrowable {
+     return unreadableString(sym, true);
+  }
+
+  public String unreadableString(String s, boolean identity)
   {
     FastStringBuffer sb = new FastStringBuffer("#<");
     sb.append(s);
-    sb.append(" {");
-    sb.append(Integer.toHexString(System.identityHashCode(this)).toUpperCase());
-    sb.append("}>");
+    if (identity) {
+      sb.append(" {");
+      sb.append(Integer.toHexString(System.identityHashCode(this)).toUpperCase());
+      sb.append("}");
+    }
+    sb.append(">");
     return sb.toString();
   }
 
-  public String unreadableString(Symbol symbol) throws ConditionThrowable
+  public String unreadableString(Symbol symbol, boolean identity) 
+    throws ConditionThrowable
   {
-    FastStringBuffer sb = new FastStringBuffer("#<");
-    sb.append(symbol.writeToString());
-    sb.append(" {");
-    sb.append(Integer.toHexString(System.identityHashCode(this)).toUpperCase());
-    sb.append("}>");
-    return sb.toString();
+    return unreadableString(symbol.writeToString(), identity);
   }
 
   // Special operator
