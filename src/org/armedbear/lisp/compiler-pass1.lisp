@@ -426,14 +426,16 @@
       (cond ((eq (tag-compiland tag) *current-compiland*)
              ;; Does the GO leave an enclosing UNWIND-PROTECT or CATCH?
              (if (enclosed-by-protected-block-p tag-block)
-                 (setf (tagbody-non-local-go-p tag-block) t)
+                 (setf (tagbody-non-local-go-p tag-block) t
+                       (tag-used-non-locally tag) t)
                  ;; non-local GO's ensure environment restoration
                  ;; find out about this local GO
                  (when (null (tagbody-needs-environment-restoration tag-block))
                    (setf (tagbody-needs-environment-restoration tag-block)
                          (enclosed-by-environment-setting-block-p tag-block)))))
             (t
-             (setf (tagbody-non-local-go-p tag-block) t)))))
+             (setf (tagbody-non-local-go-p tag-block) t
+                   (tag-used-non-locally tag) t)))))
   form)
 
 (defun validate-function-name (name)

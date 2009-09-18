@@ -588,7 +588,8 @@ That's the one which contains the environment used in the outermost block."
   ;; The associated TAGBODY
   block
   (compiland *current-compiland*)
-  used)
+  used
+  used-non-locally)
 
 (defknown find-tag (t) t)
 (defun find-tag (name)

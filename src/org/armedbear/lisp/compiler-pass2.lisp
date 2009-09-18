@@ -4502,8 +4502,9 @@ given a specific common representation.")
         (emit 'getfield +lisp-go-class+ "tag" +lisp-object+) ; Stack depth is still 1.
         (astore tag-register)
         ;; Don't actually generate comparisons for tags
-        ;; to which there is no GO instruction
-        (dolist (tag (remove-if-not #'tag-used (tagbody-tags block)))
+        ;; to which there is no non-local GO instruction
+        (dolist (tag (remove-if-not #'tag-used-non-locally
+                                    (tagbody-tags block)))
           (let ((NEXT (gensym)))
             (aload tag-register)
             (emit 'getstatic *this-class*
