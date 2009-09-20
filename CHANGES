@@ -1,19 +1,25 @@
 Version 0.17.0
+==============
 (unreleased)
 
 Features
+--------
+
   * Support for loading FASLs from JAR files.
 
-Bugs.
-
+Bugs fixed
+----------
   * More careful checking for null args in LispStackFrame
   * Honor appearance of &allow-other-keys in CLOS MAKE-INSTANCE
+  * Fix #63: GO forms to non-existent TAGBODY labels would exit ABCL
 
 Version 0.16.0
+==============
 (06 SEP 2009)
 svn://common-lisp.net/project/armedbear/svn/tags/0.16.0/abcl
 
   Summary of changes:
+  ------------------
   * Fixed generated wrapper for path names with spaces (Windows)
   * Fixed ticket #58: Inspection of Java objects in Lisp code
   * Restored functionality of the built-in profiler
@@ -65,10 +71,12 @@ svn://common-lisp.net/project/armedbear/svn/tags/0.16.0/abcl
 
 
 Version 0.15.0
+==============
 svn://common-lisp.net/project/armedbear/svn/tags/0.15.0/abcl
 (07 Jun, 2009)
 
  Summary of changes:
+ -------------------
   * 2 more MOP exported symbols to support Cells port
   * Updated FASL version
   * Support (pre)compilation of functions with a non-null lexical environment
@@ -104,18 +112,22 @@ svn://common-lisp.net/project/armedbear/svn/tags/0.15.0/abcl
 
 
 Version 0.14.1
+==============
 (5 Apr, 2009)
 svn://common-lisp.net/project/armedbear/svn/tags/0.14.1/abcl
 
  Summary of changes:
+ -------------------
   * Include this CHANGES file and scripting files in the tar and zip files
 
 
 Version 0.14.0
+==============
 (5 Apr, 2009)
 svn://common-lisp.net/project/armedbear/svn/tags/0.14.0/abcl
 
  Summary of changes:
+ -------------------
   * Increased clarity on licensing (Classpath exception
      mentioned in COPYING, removed LICENSE)
   * Resolved infinite recursion on TRACEing the compiler
@@ -141,10 +153,12 @@ svn://common-lisp.net/project/armedbear/svn/tags/0.14.0/abcl
 
 
 Version 0.13.0
+==============
 (28 Feb, 2009)
 svn://common-lisp.net/project/armedbear/svn/tags/0.13.0/abcl
 
  Summary of changes:
+ -------------------
   * Separated J and ABCL into two trees
   * Many many compiler code cleanups
   * NetBeans project files
