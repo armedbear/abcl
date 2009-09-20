@@ -21,6 +21,7 @@
 package org.armedbear.lisp.scripting;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.script.ScriptEngine;
@@ -44,7 +45,7 @@ public class AbclScriptEngineFactory implements ScriptEngineFactory {
 	public List<String> getExtensions() {
 		List<String> extensions = new ArrayList<String>(1);
 		extensions.add("lisp");
-		return extensions;
+		return Collections.unmodifiableList(extensions);
 	}
 
 	@Override
@@ -89,7 +90,7 @@ public class AbclScriptEngineFactory implements ScriptEngineFactory {
 
 	@Override
 	public List<String> getMimeTypes() {
-		return new ArrayList<String>();
+	    return Collections.unmodifiableList(new ArrayList<String>());
 	}
 
 	@Override
@@ -99,7 +100,7 @@ public class AbclScriptEngineFactory implements ScriptEngineFactory {
 		names.add("cl");
 		names.add("Lisp");
 		names.add("Common Lisp");
-		return names;
+		return Collections.unmodifiableList(names);
 	}
 
 	@Override
