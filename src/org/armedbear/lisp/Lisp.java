@@ -2317,7 +2317,7 @@ public abstract class Lisp
 
   // ### char-code-limit
   // "The upper exclusive bound on the value returned by the function CHAR-CODE."
-  public static final int CHAR_MAX = 65535;
+  public static final int CHAR_MAX = Character.MAX_VALUE;
   static
   {
     Symbol.CHAR_CODE_LIMIT.initializeConstant(Fixnum.getInstance(CHAR_MAX));
