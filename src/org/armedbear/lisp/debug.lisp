@@ -99,19 +99,32 @@
                        (type-of condition))
         (simple-format *debug-io* "  ~A~%" condition)))))
 
+(declaim (inline run-hook))
+(defun run-hook (hook &rest args)
+  (let ((hook-function (symbol-value hook)))
+    (when hook-function
+      (progv (list hook) (list nil)
+        (apply hook-function args)))))
+
+(defvar *invoke-debugger-hook* nil
+  "Like *DEBUGGER-HOOK* but observed by INVOKE-DEBUGGER even when
+called by BREAK. This hook is run before *DEBUGGER-HOOK*.")
+
+;;; We run *INVOKE-DEBUGGER-HOOK* before *DEBUGGER-HOOK* because SBCL
+;;; does so, too, and for good reason: This way, you can specify
+;;; default debugger behaviour that trumps over whatever the users
+;;; wants to do with *DEBUGGER-HOOK*.
 (defun invoke-debugger (condition)
   (let ((*saved-backtrace* (sys:backtrace)))
-    (when *debugger-hook*
-      (let ((hook-function *debugger-hook*)
-            (*debugger-hook* nil))
-        (funcall hook-function condition hook-function)))
+    (run-hook '*invoke-debugger-hook* condition *invoke-debugger-hook*)
+    (run-hook '*debugger-hook*        condition *debugger-hook*)
     (invoke-debugger-report-condition condition)
     (unless (fboundp 'tpl::repl)
       (quit))
     (let ((original-package *package*))
       (with-standard-io-syntax
         (let ((*package* original-package)
-              (*print-readably* nil) ; Top-level default.
+              (*print-readably* nil)    ; Top-level default.
               (*print-structure* nil)
               (*debug-condition* condition)
               (level *debug-level*))
