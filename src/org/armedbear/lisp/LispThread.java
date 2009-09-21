@@ -108,7 +108,8 @@ public final class LispThread extends LispObject
         this.name = name;
         map.put(javaThread, this);
         try {
-            javaThread.setName(name.getStringValue());
+            if (name != NIL)
+                javaThread.setName(name.getStringValue());
         } catch (ConditionThrowable ex) {
             Debug.trace("Failed to set thread name:");
 	    Debug.trace(ex);
@@ -820,7 +821,7 @@ public final class LispThread extends LispObject
 
     // ### make-thread
     private static final Primitive MAKE_THREAD =
-        new Primitive("make-thread", PACKAGE_THREADS, true, "function &key name")
+        new Primitive("make-thread", PACKAGE_THREADS, true, "function &optional &key name")
     {
         @Override
         public LispObject execute(LispObject[] args) throws ConditionThrowable
