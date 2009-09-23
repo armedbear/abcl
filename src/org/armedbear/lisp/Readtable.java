@@ -540,6 +540,10 @@ public class Readtable extends LispObject
             toReadtable.dispatchTables[toChar] =
               new DispatchTable(fromReadtable.dispatchTables[fromChar]);
           }
+        else
+            // Don't leave behind dispatch tables when fromChar
+            // doesn't have one
+            toReadtable.dispatchTables[toChar] = null;
         return T;
       }
     };
