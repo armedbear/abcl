@@ -1904,16 +1904,19 @@ representation, based on the derived type of the LispObject."
   (write-u2 (field-descriptor-index field) stream)
   (write-u2 0 stream)) ; attributes count
 
-(defconst +field-access-protected+ #x4) ;; subclass accessible
-(defconst +field-access-private+   #x2) ;; class-only accessible
-(defconst +field-access-public+    #x1) ;; generally accessible
-(defconst +field-access-default+   #x0) ;; package accessible, used for LABELS
+(defconst +field-flag-final+       #x10) ;; final field
+(defconst +field-flag-static+      #x08) ;; static field
+(defconst +field-access-protected+ #x04) ;; subclass accessible
+(defconst +field-access-private+   #x02) ;; class-only accessible
+(defconst +field-access-public+    #x01) ;; generally accessible
+(defconst +field-access-default+   #x00) ;; package accessible, used for LABELS
 
 (defknown declare-field (t t t) t)
 (defun declare-field (name descriptor access-flags)
   (let ((field (make-field name descriptor)))
     ;; final static <access-flags>
-    (setf (field-access-flags field) (logior #x10 #x8 access-flags))
+    (setf (field-access-flags field)
+          (logior +field-flag-final+ +field-flag-static+ access-flags))
     (setf (field-name-index field) (pool-name (field-name field)))
     (setf (field-descriptor-index field) (pool-name (field-descriptor field)))
     (push field *fields*)))
