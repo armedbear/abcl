@@ -409,7 +409,10 @@ of the compilands being processed (p1: so far; p2: in total).")
   (exit (gensym))
   target
   ;; True if there is a non-local RETURN from this block.
-  non-local-return-p)
+  non-local-return-p
+  ;; Contains a variable whose value uniquely identifies the
+  ;; lexical scope from this block, to be used by RETURN-FROM
+  id-variable)
 (defknown make-block-node (t) t)
 (defun make-block-node (name)
   (let ((block (%make-block-node name)))

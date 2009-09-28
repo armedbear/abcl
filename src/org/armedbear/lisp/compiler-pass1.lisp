@@ -288,6 +288,13 @@
          (*blocks* (cons block *blocks*)))
     (setf (cddr form) (p1-body (cddr form)))
     (setf (block-form block) form)
+    (when (block-non-local-return-p block)
+      ;; Add a closure variable for RETURN-FROM to use
+      (push (setf (block-id-variable block)
+                  (make-variable :name (gensym)
+                                 :block block
+                                 :used-non-locally-p t))
+            *all-variables*))
     block))
 
 (defun p1-catch (form)

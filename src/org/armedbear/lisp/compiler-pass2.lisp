@@ -3912,6 +3912,22 @@ given a specific common representation.")
                (zerop (variable-writes variable)))
       (unused-variable variable))))
 
+(declaim (ftype (function (t) t) emit-new-closure-binding))
+(defun emit-new-closure-binding (variable)
+  ""
+  (emit 'new +closure-binding-class+)            ;; value c-b
+  (emit 'dup_x1)                                 ;; c-b value c-b
+  (emit 'swap)                                   ;; c-b c-b value
+  (emit-invokespecial-init +closure-binding-class+
+                           (list +lisp-object+)) ;; c-b
+  (aload (compiland-closure-register *current-compiland*))
+                                                 ;; c-b array
+  (emit 'swap)                                   ;; array c-b
+  (emit-push-constant-int (variable-closure-index variable))
+                                                 ;; array c-b int
+  (emit 'swap) ; array index value
+  (emit 'aastore))
+
 ;; Generates code to bind variable to value at top of runtime stack.
 (declaim (ftype (function (t) t) compile-binding))
 (defun compile-binding (variable)
@@ -3925,18 +3941,7 @@ given a specific common representation.")
          (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
                              (list +lisp-symbol+ +lisp-object+) nil))
         ((variable-closure-index variable)              ;; stack:
-         (emit 'new +closure-binding-class+)            ;; value c-b
-         (emit 'dup_x1)                                 ;; c-b value c-b
-         (emit 'swap)                                   ;; c-b c-b value
-         (emit-invokespecial-init +closure-binding-class+
-                                  (list +lisp-object+)) ;; c-b
-         (aload (compiland-closure-register *current-compiland*))
-                                                         ;; c-b array
-         (emit 'swap)                                    ;; array c-b
-         (emit-push-constant-int (variable-closure-index variable))
-                                                         ;; array c-b int
-         (emit 'swap) ; array index value
-         (emit 'aastore))
+         (emit-new-closure-binding variable))
         (t
          (sys::%format t "compile-binding~%")
          (aver nil))))
@@ -4651,10 +4656,18 @@ given a specific common representation.")
     (sys::%format t "type-of block = ~S~%" (type-of block))
     (aver (block-node-p block)))
   (let* ((*blocks* (cons block *blocks*))
+         (*register* *register*)
          (BEGIN-BLOCK (gensym))
          (END-BLOCK (gensym))
          (BLOCK-EXIT (block-exit block)))
     (setf (block-target block) target)
+    (when (block-id-variable block)
+      ;; we have a block variable; that should be a closure variable
+      (assert (not (null (variable-closure-index (block-id-variable block)))))
+      (emit 'new +lisp-object-class+)
+      (emit 'dup)
+      (emit-invokespecial-init +lisp-object-class+ '())
+      (emit-new-closure-binding (block-id-variable block)))
     (dformat t "*all-variables* = ~S~%"
              (mapcar #'variable-name *all-variables*))
     (label BEGIN-BLOCK) ; Start of protected range, for non-local returns
@@ -4665,20 +4678,19 @@ given a specific common representation.")
       ;; We need a handler to catch non-local RETURNs.
       (emit 'goto BLOCK-EXIT) ; Jump over handler, when inserting one
       (let ((HANDLER (gensym))
-            (RETHROW (gensym)))
+            (THIS-BLOCK (gensym)))
         (label HANDLER)
         ;; The Return object is on the runtime stack. Stack depth is 1.
         (emit 'dup) ; Stack depth is 2.
         (emit 'getfield +lisp-return-class+ "tag" +lisp-object+) ; Still 2.
-        (compile-form `',(block-exit block) 'stack nil) ; Tag. Stack depth is 3.
-        ;; If it's not the tag we're looking for...
-        (emit 'if_acmpne RETHROW) ; Stack depth is 1.
-        (emit 'getfield +lisp-return-class+ "result" +lisp-object+)
-        (emit-move-from-stack target) ; Stack depth is 0.
-        (emit 'goto BLOCK-EXIT)
-        (label RETHROW)
+        (emit-push-variable (block-id-variable block))
+        ;; If it's not the block we're looking for...
+        (emit 'if_acmpeq THIS-BLOCK) ; Stack depth is 1.
         ;; Not the tag we're looking for.
         (emit 'athrow)
+        (label THIS-BLOCK)
+        (emit 'getfield +lisp-return-class+ "result" +lisp-object+)
+        (emit-move-from-stack target) ; Stack depth is 0.
         ;; Finally...
         (push (make-handler :from BEGIN-BLOCK
                             :to END-BLOCK
@@ -4717,7 +4729,7 @@ given a specific common representation.")
     (cond ((node-constant-p result-form)
            (emit 'new +lisp-return-class+)
            (emit 'dup)
-           (compile-form `',(block-exit block) 'stack nil) ; Tag.
+           (emit-push-variable (block-id-variable block))
            (emit-clear-values)
            (compile-form result-form 'stack nil)) ; Result.
           (t
@@ -4727,7 +4739,7 @@ given a specific common representation.")
              (compile-form result-form temp-register nil) ; Result.
              (emit 'new +lisp-return-class+)
              (emit 'dup)
-             (compile-form `',(block-exit block) 'stack nil) ; Tag.
+             (emit-push-variable (block-id-variable block))
              (aload temp-register))))
     (emit-invokespecial-init +lisp-return-class+ (lisp-object-arg-types 2))
     (emit 'athrow)
