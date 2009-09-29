@@ -56,25 +56,14 @@ public final class dotimes extends SpecialOperator
     LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
     bodyForm = bodyAndDecls.car();
 
+    LispObject blockId = new LispObject();
     try
       {
         LispObject limit = eval(countForm, env, thread);
         Environment ext = new Environment(env);
-        LispObject localTags = NIL; // Tags that are local to this TAGBODY.
-        // Look for tags.
-        LispObject remaining = bodyForm;
-        while (remaining != NIL)
-          {
-            LispObject current = remaining.car();
-            remaining = remaining.cdr();
-            if (current instanceof Cons)
-              continue;
-            // It's a tag.
-            ext.addTagBinding(current, remaining);
-            localTags = new Cons(current, localTags);
-          }
-        // Implicit block.
-        ext.addBlock(NIL, new LispObject());
+        LispObject localTags = preprocessTagBody(bodyForm, ext);
+
+        ext.addBlock(NIL, blockId);
         LispObject result;
         // Establish a reusable binding.
         final Object binding;
@@ -109,48 +98,9 @@ public final class dotimes extends SpecialOperator
                   ((SpecialBinding)binding).value = Fixnum.getInstance(i);
                 else
                   ((Binding)binding).value = Fixnum.getInstance(i);
-                LispObject body = bodyForm;
-                while (body != NIL)
-                  {
-                    LispObject current = body.car();
-                    if (current instanceof Cons)
-                      {
-                        try
-                          {
-                            // Handle GO inline if possible.
-                            if (current.car() == Symbol.GO)
-                              {
-                                LispObject tag = current.cadr();
-                                if (memql(tag, localTags))
-                                  {
-                                    Binding b = ext.getTagBinding(tag);
-                                    if (b != null && b.value != null)
-                                      {
-                                        body = b.value;
-                                        continue;
-                                      }
-                                  }
-                                throw new Go(tag);
-                              }
-                            eval(current, ext, thread);
-                          }
-                        catch (Go go)
-                          {
-                            LispObject tag = go.getTag();
-                            if (memql(tag, localTags))
-                              {
-                                Binding b = ext.getTagBinding(tag);
-                                if (b != null && b.value != null)
-                                  {
-                                    body = b.value;
-                                    continue;
-                                  }
-                              }
-                            throw go;
-                          }
-                      }
-                    body = body.cdr();
-                  }
+
+                processTagBody(bodyForm, localTags, ext);
+
                 if (interrupted)
                   handleInterrupt();
               }
@@ -169,48 +119,9 @@ public final class dotimes extends SpecialOperator
                   ((SpecialBinding)binding).value = i;
                 else
                   ((Binding)binding).value = i;
-                LispObject body = bodyForm;
-                while (body != NIL)
-                  {
-                    LispObject current = body.car();
-                    if (current instanceof Cons)
-                      {
-                        try
-                          {
-                            // Handle GO inline if possible.
-                            if (current.car() == Symbol.GO)
-                              {
-                                LispObject tag = current.cadr();
-                                if (memql(tag, localTags))
-                                  {
-                                    Binding b = ext.getTagBinding(tag);
-                                    if (b != null && b.value != null)
-                                      {
-                                        body = b.value;
-                                        continue;
-                                      }
-                                  }
-                                throw new Go(tag);
-                              }
-                            eval(current, ext, thread);
-                          }
-                        catch (Go go)
-                          {
-                            LispObject tag = go.getTag();
-                            if (memql(tag, localTags))
-                              {
-                                Binding b = ext.getTagBinding(tag);
-                                if (b != null && b.value != null)
-                                  {
-                                    body = b.value;
-                                    continue;
-                                  }
-                              }
-                            throw go;
-                          }
-                      }
-                    body = body.cdr();
-                  }
+
+                processTagBody(bodyForm, localTags, ext);
+
                 i = i.incr();
                 if (interrupted)
                   handleInterrupt();
@@ -227,7 +138,7 @@ public final class dotimes extends SpecialOperator
       }
     catch (Return ret)
       {
-        if (ret.getTag() == NIL)
+        if (ret.getBlock() == blockId)
           {
             return ret.getResult();
           }

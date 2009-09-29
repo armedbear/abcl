@@ -57,25 +57,18 @@ public final class dolist extends SpecialOperator
     LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
     bodyForm = bodyAndDecls.car();
 
+    LispObject blockId = new LispObject();
     try
       {
         final Environment ext = new Environment(env);
         // Implicit block.
-        ext.addBlock(NIL, new LispObject());
+        ext.addBlock(NIL, blockId);
         // Evaluate the list form.
         LispObject list = checkList(eval(listForm, ext, thread));
         // Look for tags.
         LispObject remaining = bodyForm;
-        while (remaining != NIL)
-          {
-            LispObject current = remaining.car();
-            remaining = remaining.cdr();
-            if (current instanceof Cons)
-              continue;
-            // It's a tag.
-            ext.addTagBinding(current, remaining);
-          }
-        // Establish a reusable binding.
+        LispObject localTags = preprocessTagBody(bodyForm, ext);
+
         final Object binding;
         if (specials != NIL && memq(var, specials))
           {
@@ -104,42 +97,9 @@ public final class dolist extends SpecialOperator
               ((SpecialBinding)binding).value = list.car();
             else
               ((Binding)binding).value = list.car();
-            LispObject body = bodyForm;
-            while (body != NIL)
-              {
-                LispObject current = body.car();
-                if (current instanceof Cons)
-                  {
-                    try
-                      {
-                        // Handle GO inline if possible.
-                        if (current.car() == Symbol.GO)
-                          {
-                            LispObject tag = current.cadr();
-                            Binding b = ext.getTagBinding(tag);
-                            if (b != null && b.value != null)
-                              {
-                                body = b.value;
-                                continue;
-                              }
-                            throw new Go(tag);
-                          }
-                        eval(current, ext, thread);
-                      }
-                    catch (Go go)
-                      {
-                        LispObject tag = go.getTag();
-                        Binding b = ext.getTagBinding(tag);
-                        if (b != null && b.value != null)
-                          {
-                            body = b.value;
-                            continue;
-                          }
-                        throw go;
-                      }
-                  }
-                body = body.cdr();
-              }
+
+            processTagBody(bodyForm, localTags, ext);
+
             list = list.cdr();
             if (interrupted)
               handleInterrupt();
@@ -153,7 +113,7 @@ public final class dolist extends SpecialOperator
       }
     catch (Return ret)
       {
-        if (ret.getTag() == NIL)
+        if (ret.getBlock() == blockId)
           {
             return ret.getResult();
           }
