@@ -3496,65 +3496,7 @@ public final class Primitives extends Lisp
         throws ConditionThrowable
       {
         Environment ext = new Environment(env);
-        LispObject localTags = NIL; // Tags that are local to this TAGBODY.
-        LispObject body = args;
-        while (body != NIL)
-          {
-            LispObject current = body.car();
-            body = ((Cons)body).cdr;
-            if (current instanceof Cons)
-              continue;
-            // It's a tag.
-            ext.addTagBinding(current, body);
-            localTags = new Cons(current, localTags);
-          }
-        final LispThread thread = LispThread.currentThread();
-        LispObject remaining = args;
-        while (remaining != NIL)
-          {
-            LispObject current = remaining.car();
-            if (current instanceof Cons)
-              {
-                try
-                  {
-                    // Handle GO inline if possible.
-                    if (((Cons)current).car == Symbol.GO)
-                      {
-                        if (interrupted)
-                          handleInterrupt();
-                        LispObject tag = current.cadr();
-                        if (memql(tag, localTags))
-                          {
-                            Binding binding = ext.getTagBinding(tag);
-                            if (binding != null && binding.value != null)
-                              {
-                                remaining = binding.value;
-                                continue;
-                              }
-                          }
-                        throw new Go(tag);
-                      }
-                    eval(current, ext, thread);
-                  }
-                catch (Go go)
-                  {
-                    LispObject tag = go.getTag();
-                    if (memql(tag, localTags))
-                      {
-                        Binding binding = ext.getTagBinding(tag);
-                        if (binding != null && binding.value != null)
-                          {
-                            remaining = binding.value;
-                            continue;
-                          }
-                      }
-                    throw go;
-                  }
-              }
-            remaining = ((Cons)remaining).cdr;
-          }
-        thread._values = null;
-        return NIL;
+        return processTagBody(args, preprocessTagBody(args, ext), ext);
       }
     };
 

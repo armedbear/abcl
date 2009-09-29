@@ -120,62 +120,21 @@ public final class Do extends Lisp
         list = list.cdr();
       }
     // Look for tags.
-    LispObject remaining = body;
-    while (remaining != NIL)
-      {
-        LispObject current = remaining.car();
-        remaining = remaining.cdr();
-        if (current instanceof Cons)
-          continue;
-        // It's a tag.
-        ext.addTagBinding(current, remaining);
-      }
+    LispObject localTags = preprocessTagBody(body, ext);
+    LispObject blockId = new LispObject();
     try
       {
         // Implicit block.
-        ext.addBlock(NIL, new LispObject());
+        ext.addBlock(NIL, blockId);
         while (true)
           {
             // Execute body.
             // Test for termination.
             if (eval(end_test_form, ext, thread) != NIL)
               break;
-            remaining = body;
-            while (remaining != NIL)
-              {
-                LispObject current = remaining.car();
-                if (current instanceof Cons)
-                  {
-                    try
-                      {
-                        // Handle GO inline if possible.
-                        if (current.car() == Symbol.GO)
-                          {
-                            LispObject tag = current.cadr();
-                            Binding binding = ext.getTagBinding(tag);
-                            if (binding != null && binding.value != null)
-                              {
-                                remaining = binding.value;
-                                continue;
-                              }
-                            throw new Go(tag);
-                          }
-                        eval(current, ext, thread);
-                      }
-                    catch (Go go)
-                      {
-                        LispObject tag = go.getTag();
-                        Binding binding = ext.getTagBinding(tag);
-                        if (binding != null && binding.value != null)
-                          {
-                            remaining = binding.value;
-                            continue;
-                          }
-                        throw go;
-                      }
-                  }
-                remaining = remaining.cdr();
-              }
+
+            processTagBody(body, localTags, ext);
+
             // Update variables.
             if (sequential)
               {
@@ -230,7 +189,7 @@ public final class Do extends Lisp
       }
     catch (Return ret)
       {
-        if (ret.getTag() == NIL)
+        if (ret.getBlock() == blockId)
           {
             return ret.getResult();
           }
