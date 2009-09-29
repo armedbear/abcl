@@ -59,11 +59,12 @@ public final class dotimes extends SpecialOperator
     LispObject blockId = new LispObject();
     try
       {
-        LispObject limit = eval(countForm, env, thread);
         Environment ext = new Environment(env);
+        ext.addBlock(NIL, blockId);
+
+        LispObject limit = eval(countForm, ext, thread);
         LispObject localTags = preprocessTagBody(bodyForm, ext);
 
-        ext.addBlock(NIL, blockId);
         LispObject result;
         // Establish a reusable binding.
         final Object binding;
