@@ -35,11 +35,18 @@ package org.armedbear.lisp;
 
 public final class Go extends ConditionThrowable
 {
+    public final LispObject tagbody;
     public final LispObject tag;
 
-    public Go(LispObject tag)
+    public Go(LispObject tagbody, LispObject tag)
     {
+        this.tagbody = tagbody;
         this.tag = tag;
+    }
+
+    public LispObject getTagBody()
+    {
+        return tagbody;
     }
 
     public LispObject getTag()

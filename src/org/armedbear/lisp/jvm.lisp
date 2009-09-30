@@ -383,7 +383,11 @@ of the compilands being processed (p1: so far; p2: in total).")
 			 (:constructor %make-tagbody-node ()))
   ;; True if a tag in this tagbody is the target of a non-local GO.
   non-local-go-p
-  tags)
+  ;; Tags in the tagbody form; a list of tag structures
+  tags
+  ;; Contains a variable whose value uniquely identifies the
+  ;; lexical scope from this block, to be used by GO
+  id-variable)
 (defknown make-tagbody-node () t)
 (defun make-tagbody-node ()
   (let ((block (%make-tagbody-node)))

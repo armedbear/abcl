@@ -420,6 +420,12 @@
                  (setf live nil))
                (push (p1 subform) new-body))))
       (setf (tagbody-form block) (list* 'TAGBODY (nreverse new-body))))
+    (when (some #'tag-used-non-locally (tagbody-tags block))
+      (push (setf (tagbody-id-variable block)
+                  (make-variable :name (gensym)
+                                 :block block
+                                 :used-non-locally-p t))
+            *all-variables*))
     block))
 
 (defknown p1-go (t) t)

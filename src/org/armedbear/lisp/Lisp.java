@@ -638,7 +638,7 @@ public abstract class Lisp
         if (current instanceof Cons)
           continue;
         // It's a tag.
-        env.addTagBinding(current, body);
+        env.addTagBinding(current, env, body);
         localTags = new Cons(current, localTags);
       }
     return localTags;
@@ -676,14 +676,15 @@ public abstract class Lisp
                           continue;
                         }
                     }
-                  throw new Go(tag);
+                  throw new Go(binding.tagbody, tag);
                 }
               eval(current, env, thread);
             }
             catch (Go go)
               {
-                LispObject tag = go.getTag();
-                if (memql(tag, localTags))
+                LispObject tag;
+                if (go.getTagBody() == env
+                    && memql(tag = go.getTag(), localTags))
                   {
                     Binding binding = env.getTagBinding(tag);
                     if (binding != null && binding.value != null)

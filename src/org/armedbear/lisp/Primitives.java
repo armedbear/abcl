@@ -3515,7 +3515,7 @@ public final class Primitives extends Lisp
           return error(new ControlError("No tag named " +
                                          args.car().writeToString() +
                                          " is currently visible."));
-        throw new Go(args.car());
+        throw new Go(binding.tagbody, args.car());
       }
     };
 

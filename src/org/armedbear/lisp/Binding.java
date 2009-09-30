@@ -37,6 +37,7 @@ package org.armedbear.lisp;
 final class Binding
 {
     final LispObject symbol;
+    LispObject tagbody = null;
     LispObject value;
     boolean specialp;
     final Binding next;
@@ -46,5 +47,12 @@ final class Binding
         this.symbol = symbol;
         this.value = value;
         this.next = next;
+    }
+
+    Binding(LispObject symbol, LispObject tagbody,
+            LispObject value, Binding next)
+    {
+        this(symbol, value, next);
+        this.tagbody = tagbody;
     }
 }

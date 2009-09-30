@@ -182,9 +182,9 @@ public final class Environment extends LispObject
     return null;
   }
 
-  public void addTagBinding(LispObject tag, LispObject code)
+  public void addTagBinding(LispObject tag, LispObject tagbody, LispObject code)
   {
-    tags = new Binding(tag, code, tags);
+    tags = new Binding(tag, tagbody, code, tags);
   }
 
   public Binding getTagBinding(LispObject tag)
