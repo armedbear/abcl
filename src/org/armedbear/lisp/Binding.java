@@ -33,12 +33,44 @@
 
 package org.armedbear.lisp;
 
+/** Used by the environment to capture different kinds of bindings:
+ * tags, blocks, functions and variables.
+ *
+ */
 // Package accessibility.
 final class Binding
 {
+    /** The symbol in case of a variable, block or
+     * non-SETF function binding, the tag (symbol or
+     * integer) in case of a tag binding or the cons
+     * in case of a SETF function binding
+     */
     final LispObject symbol;
+
+    /** Used only for tags. Refers to the environment
+     * relating to the tagbody in which the tag was created.
+     *
+     */
     LispObject tagbody = null;
+
+    /** The value bound.
+     *
+     * In case of a block binding, it holds the block identifier to be used
+     * with the Return to be thrown.
+     *
+     * In case of a tagbody, it holds the tail subforms of the tagbody, of
+     * which the tag is the first subform.
+     *
+     * In case of a function binding, it holds the function object.
+     *
+     * In case of a variable binding, it holds the value associated with the
+     * variable, unless specialp is true.
+     */
     LispObject value;
+
+    /** Only used for variable bindings. Indicates whether or not the value
+     * should be retrieved from the dynamic environment or from this binding.
+     */
     boolean specialp;
     final Binding next;
 
