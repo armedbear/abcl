@@ -4525,18 +4525,16 @@ given a specific common representation.")
         ;; to which there is no non-local GO instruction
         (dolist (tag (remove-if-not #'tag-used-non-locally
                                     (tagbody-tags block)))
-          (let ((NEXT (gensym)))
-            (aload tag-register)
-            (emit 'getstatic *this-class*
-                  (if *file-compilation*
-                      (declare-object-as-string (tag-label tag))
-                      (declare-object (tag-label tag)))
-                  +lisp-object+)
-            (emit 'if_acmpne NEXT) ;; Jump if not EQ.
-            (emit 'goto (tag-label tag))
-            (label NEXT)))
-        ;; Not found. Re-throw Go.
+          (aload tag-register)
+          (emit 'getstatic *this-class*
+                (if *file-compilation*
+                    (declare-object-as-string (tag-label tag))
+                    (declare-object (tag-label tag)))
+                +lisp-object+)
+          ;; Jump if EQ.
+          (emit 'if_acmpeq (tag-label tag)))
         (label RETHROW)
+        ;; Not found. Re-throw Go.
         (aload go-register)
         (emit 'aconst_null) ;; load null value
         (emit-move-to-variable (tagbody-id-variable block))
