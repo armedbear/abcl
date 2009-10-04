@@ -638,7 +638,7 @@ public abstract class Lisp
         if (current instanceof Cons)
           continue;
         // It's a tag.
-        env.addTagBinding(current, env, body);
+        env.addTagBinding(current, body);
         localTags = new Cons(current, localTags);
       }
     return localTags;
