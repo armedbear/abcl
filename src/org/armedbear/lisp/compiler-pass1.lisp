@@ -673,11 +673,12 @@
       ((let* ((variable (make-variable :name (gensym)))
 	      (local-function (make-local-function :name name
 						   :compiland compiland
-						   :variable variable)))
+						   :variable variable))
+              (block-name (fdefinition-block-name name)))
 	 (multiple-value-bind (body decls) (parse-body body)
 	   (setf (compiland-lambda-expression compiland)
                  (rewrite-lambda
-		 `(lambda ,lambda-list ,@decls (block ,name ,@body)))))
+		 `(lambda ,lambda-list ,@decls (block ,block-name ,@body)))))
 	 (push variable *all-variables*)
 	 (push local-function local-functions)))
       ((dolist (local-function local-functions)
