@@ -58,9 +58,9 @@ public final class dolist extends SpecialOperator
     bodyForm = bodyAndDecls.car();
 
     LispObject blockId = new LispObject();
+    final Environment ext = new Environment(env);
     try
       {
-        final Environment ext = new Environment(env);
         // Implicit block.
         ext.addBlock(NIL, blockId);
         // Evaluate the list form.
@@ -122,6 +122,7 @@ public final class dolist extends SpecialOperator
     finally
       {
         thread.lastSpecialBinding = lastSpecialBinding;
+        ext.inactive = true;
       }
   }
 

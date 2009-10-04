@@ -39,6 +39,7 @@ public final class Environment extends LispObject
   private FunctionBinding lastFunctionBinding;
   private Binding blocks;
   private Binding tags;
+  public boolean inactive; //default value: false == active
 
   public Environment() {}
 
@@ -165,9 +166,9 @@ public final class Environment extends LispObject
     return null;
   }
 
-  public void addBlock(LispObject tag, LispObject block)
+  public void addBlock(LispObject symbol, LispObject block)
   {
-    blocks = new Binding(tag, block, blocks);
+    blocks = new Binding(symbol, this, block, blocks);
   }
 
   public LispObject lookupBlock(LispObject symbol)
@@ -182,9 +183,21 @@ public final class Environment extends LispObject
     return null;
   }
 
-  public void addTagBinding(LispObject tag, LispObject tagbody, LispObject code)
+  public Binding getBlockBinding(LispObject block)
   {
-    tags = new Binding(tag, tagbody, code, tags);
+    Binding binding = blocks;
+    while (binding != null)
+      {
+        if (binding.symbol == block)
+          return binding;
+        binding = binding.next;
+      }
+    return null;
+  }
+
+  public void addTagBinding(LispObject tag, Environment env, LispObject code)
+  {
+    tags = new Binding(tag, env, code, tags);
   }
 
   public Binding getTagBinding(LispObject tag)

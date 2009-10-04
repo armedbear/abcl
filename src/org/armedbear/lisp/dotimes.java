@@ -57,9 +57,9 @@ public final class dotimes extends SpecialOperator
     bodyForm = bodyAndDecls.car();
 
     LispObject blockId = new LispObject();
+    final Environment ext = new Environment(env);
     try
       {
-        Environment ext = new Environment(env);
         ext.addBlock(NIL, blockId);
 
         LispObject limit = eval(countForm, ext, thread);
@@ -148,6 +148,7 @@ public final class dotimes extends SpecialOperator
     finally
       {
         thread.lastSpecialBinding = lastSpecialBinding;
+        ext.inactive = true;
       }
   }
 

@@ -198,6 +198,7 @@ public final class Do extends Lisp
     finally
       {
         thread.lastSpecialBinding = lastSpecialBinding;
+        ext.inactive = true;
       }
   }
 }

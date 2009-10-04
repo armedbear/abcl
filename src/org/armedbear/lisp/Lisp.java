@@ -644,6 +644,87 @@ public abstract class Lisp
     return localTags;
   }
 
+  /** Throws a Go exception to cause a non-local transfer
+   * of control event, after checking that the extent of
+   * the catching tagbody hasn't ended yet.
+   *
+   * This version is used by the compiler.
+   */
+  public static final LispObject nonLocalGo(LispObject tagbody,
+                                            LispObject tag)
+    throws ConditionThrowable
+  {
+    if (tagbody == null)
+      return error(new ControlError("Unmatched tag "
+                                    + tag.writeToString() +
+                                    " for GO outside lexical extent."));
+
+    throw new Go(tagbody, tag);
+  }
+
+  /** Throws a Go exception to cause a non-local transfer
+   * of control event, after checking that the extent of
+   * the catching tagbody hasn't ended yet.
+   *
+   * This version is used by the interpreter.
+   */
+  public static final LispObject nonLocalGo(Binding binding,
+                                            LispObject tag)
+    throws ConditionThrowable
+  {
+    if (binding.env.inactive)
+      return error(new ControlError("Unmatched tag "
+                                    + binding.symbol.writeToString() +
+                                    " for GO outside of lexical extent."));
+
+    throw new Go(binding.env, binding.symbol);
+  }
+
+  /** Throws a Return exception to cause a non-local transfer
+   * of control event, after checking that the extent of
+   * the catching block hasn't ended yet.
+   *
+   * This version is used by the compiler.
+   */
+  public static final LispObject nonLocalReturn(LispObject blockId,
+                                                LispObject blockName,
+                                                LispObject result)
+    throws ConditionThrowable
+  {
+    if (blockId == null)
+      return error(new ControlError("Unmatched block "
+                                    + blockName.writeToString() + " for " +
+                                    "RETURN-FROM outside lexical extent."));
+
+    throw new Return(blockId, result);
+  }
+
+  /** Throws a Return exception to cause a non-local transfer
+   * of control event, after checking that the extent of
+   * the catching block hasn't ended yet.
+   *
+   * This version is used by the interpreter.
+   */
+  public static final LispObject nonLocalReturn(Binding binding,
+                                                Symbol block,
+                                                LispObject result)
+    throws ConditionThrowable
+  {
+    if (binding == null)
+      {
+        return error(new LispError("No block named " + block.getName() +
+                                   " is currently visible."));
+      }
+
+    if (binding.env.inactive)
+      return error(new ControlError("Unmatched block "
+                                    + binding.symbol.writeToString() +
+                                    " for RETURN-FROM outside of" +
+                                    " lexical extent."));
+
+    throw new Return(binding.symbol, binding.value, result);
+  }
+
   public static final LispObject processTagBody(LispObject body,
                                                 LispObject localTags,
                                                 Environment env)
@@ -676,7 +757,7 @@ public abstract class Lisp
                           continue;
                         }
                     }
-                  throw new Go(binding.tagbody, tag);
+                  throw new Go(binding.env, tag);
                 }
               eval(current, env, thread);
             }

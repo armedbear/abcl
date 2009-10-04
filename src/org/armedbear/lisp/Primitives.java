@@ -3496,7 +3496,12 @@ public final class Primitives extends Lisp
         throws ConditionThrowable
       {
         Environment ext = new Environment(env);
-        return processTagBody(args, preprocessTagBody(args, ext), ext);
+        try {
+          return processTagBody(args, preprocessTagBody(args, ext), ext);
+        }
+        finally {
+          ext.inactive = true;
+        }
       }
     };
 
@@ -3515,7 +3520,8 @@ public final class Primitives extends Lisp
           return error(new ControlError("No tag named " +
                                          args.car().writeToString() +
                                          " is currently visible."));
-        throw new Go(binding.tagbody, args.car());
+
+        return nonLocalGo(binding, args.car());
       }
     };
 
@@ -3549,6 +3555,10 @@ public final class Primitives extends Lisp
               }
             throw ret;
           }
+        finally
+          {
+              ext.inactive = true;
+          }
       }
     };
 
@@ -3566,20 +3576,10 @@ public final class Primitives extends Lisp
         Symbol symbol;
             symbol = checkSymbol(args.car());
 
-        LispObject block = env.lookupBlock(symbol);
-        if (block == null)
-          {
-            FastStringBuffer sb = new FastStringBuffer("No block named ");
-            sb.append(symbol.getName());
-            sb.append(" is currently visible.");
-            error(new LispError(sb.toString()));
-          }
-        LispObject result;
-        if (length == 2)
-          result = eval(args.cadr(), env, LispThread.currentThread());
-        else
-          result = NIL;
-        throw new Return(symbol, block, result);
+        return nonLocalReturn(env.getBlockBinding(symbol), symbol,
+                              (length == 2) ? eval(args.cadr(), env,
+                                                   LispThread.currentThread())
+                                            : NIL);
       }
     };
 

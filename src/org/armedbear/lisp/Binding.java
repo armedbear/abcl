@@ -47,11 +47,11 @@ final class Binding
      */
     final LispObject symbol;
 
-    /** Used only for tags. Refers to the environment
-     * relating to the tagbody in which the tag was created.
+    /** Used only for tags and blocks. Refers to the
+     * defining environment.
      *
      */
-    LispObject tagbody = null;
+    Environment env = null;
 
     /** The value bound.
      *
@@ -81,10 +81,10 @@ final class Binding
         this.next = next;
     }
 
-    Binding(LispObject symbol, LispObject tagbody,
+    Binding(LispObject symbol, Environment env,
             LispObject value, Binding next)
     {
         this(symbol, value, next);
-        this.tagbody = tagbody;
+        this.env = env;
     }
 }

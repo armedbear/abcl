@@ -4506,6 +4506,7 @@ given a specific common representation.")
     (when (tagbody-non-local-go-p block)
       ; We need a handler to catch non-local GOs.
       (let* ((HANDLER (gensym))
+             (EXTENT-EXIT-HANDLER (gensym))
              (*register* *register*)
              (go-register (allocate-register))
              (tag-register (allocate-register)))
@@ -4532,31 +4533,45 @@ given a specific common representation.")
                       (declare-object (tag-label tag)))
                   +lisp-object+)
             (emit 'if_acmpne NEXT) ;; Jump if not EQ.
-            ;; Restore dynamic environment.
             (emit 'goto (tag-label tag))
             (label NEXT)))
         ;; Not found. Re-throw Go.
         (label RETHROW)
         (aload go-register)
+        (emit 'aconst_null) ;; load null value
+        (emit-move-to-variable (tagbody-id-variable block))
+        (emit 'athrow)
+        (label EXTENT-EXIT-HANDLER)
+        (emit 'aconst_null) ;; load null value
+        (emit-move-to-variable (tagbody-id-variable block))
         (emit 'athrow)
         ;; Finally...
         (push (make-handler :from BEGIN-BLOCK
                             :to END-BLOCK
                             :code HANDLER
                             :catch-type (pool-class +lisp-go-class+))
+              *handlers*)
+        (push (make-handler :from BEGIN-BLOCK
+                            :to END-BLOCK
+                            :code EXTENT-EXIT-HANDLER
+                            :catch-type 0)
               *handlers*)))
     (label EXIT)
+    (when (tagbody-non-local-go-p block)
+      (emit 'aconst_null) ;; load null value
+      (emit-move-to-variable (tagbody-id-variable block)))
     (when must-clear-values
       (emit-clear-values))
     ;; TAGBODY returns NIL.
     (when target
       (emit-push-nil)
-      (emit-move-from-stack target))))
+      (emit-move-from-stack target)))
+  )
 
 (defknown p2-go (t t t) t)
 (defun p2-go (form target representation)
   ;; FIXME What if we're called with a non-NIL representation?
-  (declare (ignore representation))
+  (declare (ignore target representation))
   (let* ((name (cadr form))
          (tag (find-tag name))
          (tag-block (when tag (tag-block tag))))
@@ -4574,17 +4589,17 @@ given a specific common representation.")
       (emit 'goto (tag-label tag))
       (return-from p2-go))
     ;; Non-local GO.
-    (emit 'new +lisp-go-class+)
-    (emit 'dup)
-    (emit-push-variable (tagbody-id-variable (tag-block tag)))
-    (compile-form `',(tag-label tag) 'stack nil) ; Tag.
-    (emit-invokespecial-init +lisp-go-class+ (lisp-object-arg-types 2))
-    (emit 'athrow)
+    (emit-push-variable (tagbody-id-variable tag-block))
+    (emit 'getstatic *this-class*
+          (if *file-compilation*
+              (declare-object-as-string (tag-label tag))
+              (declare-object (tag-label tag)))
+          +lisp-object+) ; Tag.
+    (emit-invokestatic +lisp-class+ "nonLocalGo" (lisp-object-arg-types 2)
+                       +lisp-object+)
     ;; Following code will not be reached, but is needed for JVM stack
     ;; consistency.
-    (when target
-      (emit-push-nil)
-      (emit-move-from-stack target))))
+    (emit 'areturn)))
 
 (defknown p2-atom (t t t) t)
 (define-inlined-function p2-atom (form target representation)
@@ -4691,6 +4706,7 @@ given a specific common representation.")
       ;; We need a handler to catch non-local RETURNs.
       (emit 'goto BLOCK-EXIT) ; Jump over handler, when inserting one
       (let ((HANDLER (gensym))
+            (EXTENT-EXIT-HANDLER (gensym))
             (THIS-BLOCK (gensym)))
         (label HANDLER)
         ;; The Return object is on the runtime stack. Stack depth is 1.
@@ -4699,7 +4715,10 @@ given a specific common representation.")
         (emit-push-variable (block-id-variable block))
         ;; If it's not the block we're looking for...
         (emit 'if_acmpeq THIS-BLOCK) ; Stack depth is 1.
+        (label EXTENT-EXIT-HANDLER)
         ;; Not the tag we're looking for.
+        (emit 'aconst_null) ;; load null value
+        (emit-move-to-variable (block-id-variable block))
         (emit 'athrow)
         (label THIS-BLOCK)
         (emit 'getfield +lisp-return-class+ "result" +lisp-object+)
@@ -4709,14 +4728,22 @@ given a specific common representation.")
                             :to END-BLOCK
                             :code HANDLER
                             :catch-type (pool-class +lisp-return-class+))
+              *handlers*)
+        (push (make-handler :from BEGIN-BLOCK
+                            :to END-BLOCK
+                            :code EXTENT-EXIT-HANDLER
+                            :catch-type 0)
               *handlers*)))
     (label BLOCK-EXIT)
+    (when (block-id-variable block)
+      (emit 'aconst_null) ;; load null value
+      (emit-move-to-variable (block-id-variable block)))
     (fix-boxing representation nil)))
 
 (defknown p2-return-from (t t t) t)
 (defun p2-return-from (form target representation)
   ;; FIXME What if we're called with a non-NIL representation?
-  (declare (ignore representation))
+  (declare (ignore target representation))
   (let* ((name (second form))
          (result-form (third form))
          (block (find-block name)))
@@ -4739,28 +4766,19 @@ given a specific common representation.")
           (return-from p2-return-from))))
     ;; Non-local RETURN.
     (aver (block-non-local-return-p block))
-    (cond ((node-constant-p result-form)
-           (emit 'new +lisp-return-class+)
-           (emit 'dup)
-           (emit-push-variable (block-id-variable block))
-           (emit-clear-values)
-           (compile-form result-form 'stack nil)) ; Result.
-          (t
-           (let* ((*register* *register*)
-                  (temp-register (allocate-register)))
-             (emit-clear-values)
-             (compile-form result-form temp-register nil) ; Result.
-             (emit 'new +lisp-return-class+)
-             (emit 'dup)
-             (emit-push-variable (block-id-variable block))
-             (aload temp-register))))
-    (emit-invokespecial-init +lisp-return-class+ (lisp-object-arg-types 2))
-    (emit 'athrow)
+    (emit-push-variable (block-id-variable block))
+    (emit 'getstatic *this-class*
+          (if *file-compilation*
+              (declare-object-as-string (block-name block))
+              (declare-object (block-name block)))
+          +lisp-object+)
+    (emit-clear-values)
+    (compile-form result-form 'stack nil)
+    (emit-invokestatic +lisp-class+ "nonLocalReturn" (lisp-object-arg-types 3)
+                       +lisp-object+)
     ;; Following code will not be reached, but is needed for JVM stack
     ;; consistency.
-    (when target
-      (emit-push-nil)
-      (emit-move-from-stack target))))
+    (emit 'areturn)))
 
 (defun emit-car/cdr (arg target representation field)
   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
