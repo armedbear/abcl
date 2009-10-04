@@ -362,6 +362,9 @@
 
 (defknown p1-return-from (t) t)
 (defun p1-return-from (form)
+  (let ((new-form (rewrite-return-from form)))
+    (when (neq form new-form)
+      (return-from p1-return-from (p1 new-form))))
   (let* ((name (second form))
          (block (find-block name)))
     (when (null block)
@@ -889,6 +892,16 @@
 
 (defknown unsafe-p (t) t)
 (defun unsafe-p (args)
+  "Determines whether the args can cause 'stack unsafe situations'.
+Returns T if this is the case.
+
+When a 'stack unsafe situation' is encountered, the stack cannot
+be used for temporary storage of intermediary results. This happens
+because one of the forms in ARGS causes a local transfer of control
+- local GO instruction - which assumes an empty stack, or if one of
+the args causes a Java exception handler to be installed, which
+- when triggered - clears out the stack.
+"
   (cond ((node-p args)
          (unsafe-p (node-form args)))
         ((atom args)
@@ -905,6 +918,20 @@
             (dolist (arg args)
               (when (unsafe-p arg)
                 (return t))))))))
+
+(defknown rewrite-return-from (t) t)
+(defun rewrite-return-from (form)
+  (let* ((args (cdr form))
+         (result-form (second args))
+         (var (gensym)))
+    (if (unsafe-p (cdr args))
+        (if (single-valued-p result-form)
+            `(let ((,var ,result-form))
+               (return-from ,(first args) ,var))
+            `(let ((,var (multiple-value-list ,result-form)))
+               (return-from ,(first args) (values-list ,var))))
+        form)))
+
 
 (defknown rewrite-throw (t) t)
 (defun rewrite-throw (form)
