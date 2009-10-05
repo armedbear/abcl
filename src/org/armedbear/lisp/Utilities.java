@@ -50,7 +50,8 @@ public final class Utilities extends Lisp
     static {
         String osName = System.getProperty("os.name");
         isPlatformUnix = osName.startsWith("Linux") ||
-            osName.startsWith("Mac OS X") || osName.startsWith("Solaris") ||
+            osName.startsWith("Mac OS X") || osName.startsWith("Darwin") ||
+            osName.startsWith("Solaris") ||
             osName.startsWith("SunOS") || osName.startsWith("AIX") ||
             osName.startsWith("FreeBSD") || osName.startsWith("OpenBSD") ||
             osName.startsWith("NetBSD");

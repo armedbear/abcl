@@ -2318,7 +2318,8 @@ public abstract class Lisp
                                              Keyword.SUNOS,
                                              Keyword.CDR6));
       }
-    else if (osName.startsWith("Mac OS X"))
+    else if (osName.startsWith("Mac OS X") ||
+             osName.startsWith("Darwin"))
       {
         Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
                                              Keyword.ABCL,
