@@ -1976,10 +1976,18 @@
     (error 'program-error
            :format-control "Odd number of keyword arguments."))
   (unless (getf initargs :allow-other-keys)
-    (let ((methods (compute-applicable-methods #'shared-initialize
-					       (if initargs
-						   `(,instance ,shared-initialize-param ,@initargs)
-						 (list instance shared-initialize-param))))
+    (let ((methods 
+	   (nconc 
+	    (compute-applicable-methods 
+	     #'shared-initialize
+	     (if initargs
+		 `(,instance ,shared-initialize-param ,@initargs)
+	       (list instance shared-initialize-param)))
+	    (compute-applicable-methods 
+	     #'initialize-instance
+	     (if initargs
+		 `(,instance ,@initargs)
+	       (list instance)))))
 	  (slots (%class-slots (class-of instance))))
       (do* ((tail initargs (cddr tail))
             (initarg (car tail) (car tail)))
