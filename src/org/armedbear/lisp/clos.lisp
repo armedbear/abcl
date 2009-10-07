@@ -2005,9 +2005,11 @@
       (let ((valid-initargs (method-lambda-list method)))
 	(when (find (symbol-value initarg) valid-initargs 
 		     :test #'(lambda (a b)
-			       (or
-				(string= a b)
-				(string= b "&ALLOW-OTHER-KEYS"))))
+			       (if (listp b)
+				   (string= a (car b))
+				 (or
+				  (string= a b)
+				  (string= b "&ALLOW-OTHER-KEYS")))))
 
 	  (return t))))))
 
