@@ -1376,6 +1376,16 @@ public abstract class Lisp
                                 new Pathname(namestring)));
   }
 
+    public static final LispObject makeCompiledFunctionFromClass(Class<?> c)
+	throws Exception {
+	if (c != null) {
+	    LispObject obj = (LispObject)c.newInstance();
+	    return obj;
+        } else {
+            return null;
+        }
+    }
+
   private static final LispObject loadCompiledFunction(InputStream in, int size)
   {
     try
@@ -1405,20 +1415,18 @@ public abstract class Lisp
   }
 
     public static final LispObject loadCompiledFunction(byte[] bytes) throws Throwable {
-        Class<?> c = (new JavaClassLoader())
-            .loadClassFromByteArray(null, bytes, 0, bytes.length);
-        if (c != null) {
-            Constructor constructor = c.getConstructor((Class[])null);
-            LispObject obj = (LispObject)constructor
-                .newInstance((Object[])null);
-            if (obj instanceof Function) {
-              ((Function)obj).setClassBytes(bytes);
-            }
-            return obj;
-        } else {
-            return null;
-        }
+	return loadCompiledFunction(bytes, new JavaClassLoader());
     }
+
+    public static final LispObject loadCompiledFunction(byte[] bytes, JavaClassLoader cl) throws Throwable {
+        Class<?> c = cl.loadClassFromByteArray(null, bytes, 0, bytes.length);
+	LispObject obj = makeCompiledFunctionFromClass(c);
+	if (obj instanceof Function) {
+	    ((Function)obj).setClassBytes(bytes);
+	}
+	return obj;
+    }
+
 
   public static final LispObject makeCompiledClosure(LispObject template,
                                                      ClosureBinding[] context)

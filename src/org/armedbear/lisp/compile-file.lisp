@@ -146,11 +146,17 @@
                    (parse-body body)
                  (let* ((expr `(lambda ,lambda-list
                                  ,@decls (block ,block-name ,@body)))
-                        (classfile-name (next-classfile-name))
-                        (classfile (report-error
-                                    (jvm:compile-defun name expr nil
-                                                       classfile-name)))
+                        (classfile (next-classfile-name))
+                        (result (with-open-file
+				    (f classfile
+				       :direction :output
+				       :element-type '(unsigned-byte 8)
+				       :if-exists :supersede)
+				  (report-error
+				   (jvm:compile-defun name expr nil
+						      classfile f))))
                         (compiled-function (verify-load classfile)))
+		   (declare (ignore result))
                    (cond
                      (compiled-function
                       (setf form
@@ -205,10 +211,14 @@
            (let ((name (second form)))
              (eval form)
              (let* ((expr (function-lambda-expression (macro-function name)))
-                    (classfile-name (next-classfile-name))
-                    (classfile
-                     (ignore-errors
-                       (jvm:compile-defun nil expr nil classfile-name))))
+                    (classfile (next-classfile-name)))
+	       (with-open-file
+		   (f classfile
+		      :direction :output
+		      :element-type '(unsigned-byte 8)
+		      :if-exists :supersede)
+		 (ignore-errors
+		   (jvm:compile-defun nil expr nil classfile f)))
                (if (null (verify-load classfile))
                    ;; FIXME error or warning
                    (format *error-output* "; Unable to compile macro ~A~%" name)
@@ -342,10 +352,17 @@
                (eq (%car function-form) 'FUNCTION))
       (let ((lambda-expression (cadr function-form)))
         (jvm::with-saved-compiler-policy
-          (let* ((classfile-name (next-classfile-name))
-                 (classfile (report-error
-                             (jvm:compile-defun nil lambda-expression nil classfile-name)))
+          (let* ((classfile (next-classfile-name))
+                 (result
+		  (with-open-file
+		      (f classfile
+			 :direction :output
+			 :element-type '(unsigned-byte 8)
+			 :if-exists :supersede)
+		    (report-error
+		     (jvm:compile-defun nil lambda-expression nil classfile f))))
                  (compiled-function (verify-load classfile)))
+	    (declare (ignore result))
             (cond (compiled-function
                    (setf (getf tail key)
                          `(load-compiled-function ,(file-namestring classfile))))
@@ -356,9 +373,16 @@
 (declaim (ftype (function (t) t) convert-toplevel-form))
 (defun convert-toplevel-form (form)
   (let* ((expr `(lambda () ,form))
-         (classfile-name (next-classfile-name))
-         (classfile (report-error (jvm:compile-defun nil expr nil classfile-name)))
+         (classfile (next-classfile-name))
+         (result
+	  (with-open-file
+	      (f classfile
+		 :direction :output
+		 :element-type '(unsigned-byte 8)
+		 :if-exists :supersede)
+	    (report-error (jvm:compile-defun nil expr nil classfile f))))
          (compiled-function (verify-load classfile)))
+    (declare (ignore result))
     (setf form
           (if compiled-function
               `(funcall (load-compiled-function ,(file-namestring classfile)))

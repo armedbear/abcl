@@ -119,6 +119,14 @@ public class Stream extends LispObject
   {
   }
 
+    public Stream(Reader r) {
+	initAsCharacterInputStream(r);
+    }
+
+    public Stream(Writer w) {
+	initAsCharacterOutputStream(w);
+    }
+
   public Stream(InputStream inputStream, LispObject elementType)
     {
       this(inputStream, elementType, keywordDefault);

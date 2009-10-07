@@ -207,7 +207,7 @@ public class CompiledClosure extends Closure
 
   // ### load-compiled-function
   private static final Primitive LOAD_COMPILED_FUNCTION =
-      new Primitive("load-compiled-function", PACKAGE_SYS, true, "pathname")
+      new Primitive("load-compiled-function", PACKAGE_SYS, true, "source")
   {
     @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
@@ -219,6 +219,14 @@ public class CompiledClosure extends Closure
         namestring = arg.getStringValue();
       if (namestring != null)
         return loadCompiledFunction(namestring);
+      if(arg instanceof JavaObject) {
+	  try {
+	      return loadCompiledFunction((byte[]) arg.javaInstance(byte[].class));
+	  } catch(Throwable t) {
+	      Debug.trace(t);
+	      return error(new LispError("Unable to load " + arg.writeToString()));
+	  }
+      }
       return error(new LispError("Unable to load " + arg.writeToString()));
     }
   };

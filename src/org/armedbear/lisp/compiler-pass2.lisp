@@ -4921,16 +4921,16 @@ given a specific common representation.")
     (emit-push-nil)
     (emit-move-from-stack target)))
 
-(defun compile-and-write-to-file (class-file compiland)
+(defun compile-and-write-to-stream (class-file compiland stream)
   (with-class-file class-file
     (let ((*current-compiland* compiland))
       (with-saved-compiler-policy
 	  (p2-compiland compiland)
-	(write-class-file (compiland-class-file compiland))))))
+	(write-class-file (compiland-class-file compiland) stream)))))
 
-(defun set-compiland-and-write-class-file (class-file compiland)
+(defun set-compiland-and-write-class (class-file compiland stream)
   (setf (compiland-class-file compiland) class-file)
-  (compile-and-write-to-file class-file compiland))
+  (compile-and-write-to-stream class-file compiland stream))
 
 
 (defmacro with-temp-class-file (pathname class-file lambda-list &body body)
@@ -4949,15 +4949,18 @@ given a specific common representation.")
            (let* ((pathname (funcall *pathnames-generator*))
                   (class-file (make-class-file :pathname pathname
                                                :lambda-list lambda-list)))
-	     (set-compiland-and-write-class-file class-file compiland)
+	     (with-open-class-file (f class-file)
+	       (set-compiland-and-write-class class-file compiland f))
              (setf (local-function-class-file local-function) class-file)))
           (t
-	   (with-temp-class-file
-	       pathname class-file lambda-list
-	       (set-compiland-and-write-class-file class-file compiland)
+	   (let ((class-file (make-class-file
+			      :pathname (funcall *pathnames-generator*)
+			      :lambda-list lambda-list)))
+	     (with-open-stream (stream (sys::%make-byte-array-output-stream))
+	       (set-compiland-and-write-class class-file compiland stream)
 	       (setf (local-function-class-file local-function) class-file)
 	       (setf (local-function-function local-function)
-                     (load-compiled-function pathname)))))))
+                     (load-compiled-function (sys::%get-output-stream-bytes stream)))))))))
 
 (defun emit-make-compiled-closure-for-labels
     (local-function compiland declaration)
@@ -4981,19 +4984,24 @@ given a specific common representation.")
            (let* ((pathname (funcall *pathnames-generator*))
                   (class-file (make-class-file :pathname pathname
                                                :lambda-list lambda-list)))
-	     (set-compiland-and-write-class-file class-file compiland)
+	     (with-open-class-file (f class-file)
+	       (set-compiland-and-write-class class-file compiland f))
              (setf (local-function-class-file local-function) class-file)
              (let ((g (declare-local-function local-function)))
 	       (emit-make-compiled-closure-for-labels
 		local-function compiland g))))
           (t
-	   (with-temp-class-file
-	       pathname class-file lambda-list
-	       (set-compiland-and-write-class-file class-file compiland)
+	   (let ((class-file (make-class-file
+			      :pathname (funcall *pathnames-generator*)
+			      :lambda-list lambda-list)))
+	     (with-open-stream (stream (sys::%make-byte-array-output-stream))
+	       (set-compiland-and-write-class class-file compiland stream)
 	       (setf (local-function-class-file local-function) class-file)
-	       (let ((g (declare-object (load-compiled-function pathname))))
+	       (let ((g (declare-object
+			 (load-compiled-function
+			  (sys::%get-output-stream-bytes stream)))))
 		 (emit-make-compiled-closure-for-labels
-		  local-function compiland g)))))))
+		  local-function compiland g))))))))
 
 (defknown p2-flet-node (t t t) t)
 (defun p2-flet-node (block target representation)
@@ -5041,7 +5049,8 @@ given a specific common representation.")
                  (make-class-file :pathname (funcall *pathnames-generator*)
                                   :lambda-list lambda-list))
            (let ((class-file (compiland-class-file compiland)))
-	     (compile-and-write-to-file class-file compiland)
+	     (with-open-class-file (f class-file)
+	       (compile-and-write-to-stream class-file compiland f))
              (emit 'getstatic *this-class*
                    (declare-local-function (make-local-function :class-file
                                                                 class-file))
@@ -5051,14 +5060,13 @@ given a specific common representation.")
              (setf (compiland-class-file compiland)
                    (make-class-file :pathname pathname
                                     :lambda-list lambda-list))
-             (unwind-protect
-                 (progn
-		   (compile-and-write-to-file (compiland-class-file compiland)
-                                              compiland)
-                   (emit 'getstatic *this-class*
-                         (declare-object (load-compiled-function pathname))
-                         +lisp-object+))
-               (delete-file pathname)))))
+	     (with-open-stream (stream (sys::%make-byte-array-output-stream))
+	       (compile-and-write-to-stream (compiland-class-file compiland)
+					    compiland stream)
+	       (emit 'getstatic *this-class*
+		     (declare-object (load-compiled-function
+				      (sys::%get-output-stream-bytes stream)))
+		     +lisp-object+)))))
     (cond ((null *closure-variables*))  ; Nothing to do.
           ((compiland-closure-register *current-compiland*)
            (duplicate-closure-array *current-compiland*)
@@ -8030,7 +8038,14 @@ We need more thought here.
            (setf (compiland-arity compiland) arg-count)
            (get-descriptor (list +lisp-object-array+) +lisp-object+)))))
 
-(defun write-class-file (class-file)
+(defmacro with-open-class-file ((var class-file) &body body)
+  `(with-open-file (,var (class-file-pathname ,class-file)
+			 :direction :output
+			 :element-type '(unsigned-byte 8)
+			 :if-exists :supersede)
+     ,@body))
+
+(defun write-class-file (class-file stream)
   (let* ((super (class-file-superclass class-file))
          (this-index (pool-class (class-file-class class-file)))
          (super-index (pool-class super))
@@ -8045,43 +8060,39 @@ We need more thought here.
     (when (and (boundp '*source-line-number*)
                (fixnump *source-line-number*))
       (pool-name "LineNumberTable")) ; Must be in pool!
-
-    ;; Write out the class file.
-    (with-open-file (stream (class-file-pathname class-file)
-                            :direction :output
-                            :element-type '(unsigned-byte 8)
-                            :if-exists :supersede)
-      (write-u4 #xCAFEBABE stream)
-      (write-u2 3 stream)
-      (write-u2 45 stream)
-      (write-constant-pool stream)
-      ;; access flags
-      (write-u2 #x21 stream)
-      (write-u2 this-index stream)
-      (write-u2 super-index stream)
-      ;; interfaces count
-      (write-u2 0 stream)
-      ;; fields count
-      (write-u2 (length *fields*) stream)
-      ;; fields
-      (dolist (field *fields*)
-        (write-field field stream))
-      ;; methods count
-      (write-u2 (1+ (length (class-file-methods class-file))) stream)
-      ;; methods
-      (dolist (method (class-file-methods class-file))
-        (write-method method stream))
-      (write-method constructor stream)
-      ;; attributes count
-      (cond (*file-compilation*
-             ;; attributes count
-             (write-u2 1 stream)
-             ;; attributes table
-             (write-source-file-attr (file-namestring *compile-file-truename*)
-                                     stream))
-            (t
-             ;; attributes count
-             (write-u2 0 stream))))))
+    
+    (write-u4 #xCAFEBABE stream)
+    (write-u2 3 stream)
+    (write-u2 45 stream)
+    (write-constant-pool stream)
+    ;; access flags
+    (write-u2 #x21 stream)
+    (write-u2 this-index stream)
+    (write-u2 super-index stream)
+    ;; interfaces count
+    (write-u2 0 stream)
+    ;; fields count
+    (write-u2 (length *fields*) stream)
+    ;; fields
+    (dolist (field *fields*)
+      (write-field field stream))
+    ;; methods count
+    (write-u2 (1+ (length (class-file-methods class-file))) stream)
+    ;; methods
+    (dolist (method (class-file-methods class-file))
+      (write-method method stream))
+    (write-method constructor stream)
+    ;; attributes count
+    (cond (*file-compilation*
+	   ;; attributes count
+	   (write-u2 1 stream)
+	   ;; attributes table
+	   (write-source-file-attr (file-namestring *compile-file-truename*)
+				   stream))
+	  (t
+	   ;; attributes count
+	   (write-u2 0 stream)))
+    stream))
 
 (defknown p2-compiland-process-type-declarations (list) t)
 (defun p2-compiland-process-type-declarations (body)
@@ -8359,7 +8370,7 @@ We need more thought here.
     (push execute-method (class-file-methods class-file)))
   t)
 
-(defun compile-1 (compiland)
+(defun compile-1 (compiland stream)
   (let ((*all-variables* nil)
         (*closure-variables* nil)
         (*undefined-variables* nil)
@@ -8393,8 +8404,7 @@ We need more thought here.
       ;; Pass 2.
       (with-class-file (compiland-class-file compiland)
         (p2-compiland compiland)
-        (write-class-file (compiland-class-file compiland)))
-      (class-file-pathname (compiland-class-file compiland)))))
+        (write-class-file (compiland-class-file compiland) stream)))))
 
 (defvar *compiler-error-bailout*)
 
@@ -8402,7 +8412,7 @@ We need more thought here.
   `(lambda ,(cadr form)
      (error 'program-error :format-control "Execution of a form compiled with errors.")))
 
-(defun compile-defun (name form environment filespec)
+(defun compile-defun (name form environment filespec stream)
   (aver (eq (car form) 'LAMBDA))
   (catch 'compile-defun-abort
     (let* ((class-file (make-class-file :pathname filespec
@@ -8415,13 +8425,15 @@ We need more thought here.
                                           :class-file
                                           (make-class-file :pathname ,filespec
                                                            :lambda-name ',name
-                                                           :lambda-list (cadr ',form))))))
+                                                           :lambda-list (cadr ',form)))
+			  ,stream)))
            (*compile-file-environment* environment))
         (compile-1 (make-compiland :name name
                                    :lambda-expression
                                    (precompiler:precompile-form form t
                                                                 environment)
-                                   :class-file class-file)))))
+                                   :class-file class-file)
+		   stream))))
 
 (defvar *catch-errors* t)
 
@@ -8517,11 +8529,22 @@ We need more thought here.
          (tempfile (make-temp-file)))
     (with-compilation-unit ()
       (with-saved-compiler-policy
-        (unwind-protect
-             (setf compiled-function
-                   (load-compiled-function
-                    (compile-defun name expr env tempfile))))
-        (delete-file tempfile)))
+	  (setf compiled-function
+		(load-compiled-function		 
+		 (if *file-compilation*
+		     (unwind-protect
+			  (progn
+			    (with-open-file (f tempfile
+					       :direction :output
+					       :element-type '(unsigned-byte 8)
+					       :if-exists :supersede)
+			      (compile-defun name expr env tempfile f))
+			    tempfile)
+		       (delete-file tempfile))
+		     (with-open-stream (s (sys::%make-byte-array-output-stream))
+		       (compile-defun name expr env tempfile s)
+		       (finish-output s)
+		       (sys::%get-output-stream-bytes s)))))))
     (when (and name (functionp compiled-function))
       (sys::set-function-definition name compiled-function definition))
     (or name compiled-function)))
