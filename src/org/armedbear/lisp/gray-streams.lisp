@@ -94,25 +94,7 @@
 ;;;;
 ;;;; Notes
 ;;;; =====
-;;;; CLOSE is not a generic function in this implementation. Instead,
-;;;; the generic is called STREAM-CLOSE and the function CLOSE calls
-;;;; STREAM-CLOSE. The same goes for STREAMP, INPUT-STREAM-P,
-;;;; OUTPUT-STREAM-P and STREAM-ELEMENT-TYPE. The generic functions for
-;;;; these are STREAM-STREAMP, STREAM-INPUT-STREAM-P,
-;;;; STREAM-OUTPUT-STREAM-P and STREAM-STREAM-ELEMENT-TYPE.
 ;;;;
-;;;; The standard Corman Lisp streams are not derived from
-;;;; FUNDAMENTAL-STREAM. All the stream functions check to see if the
-;;;; stream is an original Corman Lisp stream and forward on to the
-;;;; original function implementations.
-;;;;
-;;;; The string streams are implemented in this file as Gray streams
-;;;; but do not replace the Corman Lisp string streams. They are only
-;;;; implemented here to test the Gray stream functionality. These methods
-;;;; are called:
-;;;;    GRAY-MAKE-STRING-OUTPUT-STREAM
-;;;;    GRAY-GET-OUTPUT-STREAM-STRING
-;;;;    GRAY-MAKE-STRING-INPUT-STREAM
 ;;;;
 ;;;; Much of the implementation of the Gray streams below is from the
 ;;;; document referenced earlier.
@@ -123,7 +105,6 @@
   (:nicknames "GS") ;; # fb 1.01
   (:export
    "FUNDAMENTAL-STREAM"
-   "STREAM-CLOSE"
    "STREAM-OPEN-STREAM-P"
    "STREAM-STREAMP"
    "STREAM-INPUT-STREAM-P"
@@ -200,21 +181,14 @@
 
 (defclass fundamental-stream ())
 
-(defgeneric stream-close (stream &key abort))
-(defgeneric stream-open-stream-p (stream))
-(defgeneric stream-streamp (stream))
-(defgeneric stream-input-stream-p (stream))
-(defgeneric stream-input-character-stream-p (stream)) ;; # fb 1.01
-(defgeneric stream-output-stream-p (stream))
-(defgeneric stream-stream-element-type (stream))
+(defgeneric gray-close (stream &key abort))
+(defgeneric gray-open-stream-p (stream))
+(defgeneric gray-streamp (stream))
+(defgeneric gray-input-stream-p (stream))
+(defgeneric gray-input-character-stream-p (stream)) ;; # fb 1.01
+(defgeneric gray-output-stream-p (stream))
+(defgeneric gray-stream-element-type (stream))
 
-(defmethod stream-close (stream &key abort)
-  (declare (ignore stream abort))
-  nil)
-
-(defmethod stream-streamp (s)
-  (declare (ignore s))
-  nil)
 
 (defmethod stream-streamp ((s fundamental-stream))
   s)
@@ -225,19 +199,11 @@
   (and (stream-input-stream-p s)
        (eq (stream-stream-element-type s) 'character)))
 
-(defmethod stream-input-stream-p (s)
-  (declare (ignore s))
-  nil)
-
 (defmethod stream-input-stream-p ((s fundamental-input-stream))
   (declare (ignore s))
   t)
 
 (defclass fundamental-output-stream (fundamental-stream))
-
-(defmethod stream-output-stream-p (s)
-  (declare (ignore s))
-  nil)
 
 (defmethod stream-output-stream-p ((s fundamental-output-stream))
   (declare (ignore s))
@@ -539,72 +505,6 @@
       (funcall *old-write-byte* integer binary-output-stream)
       (stream-write-byte binary-output-stream integer)))
 
-(defclass string-input-stream (fundamental-character-input-stream)
-  ((string :initarg :string :type string)
-   (index :initarg :start :type fixnum)
-   (end :initarg :end :type fixnum)))
-
-(defun gray-make-string-input-stream (string &optional (start 0) end)
-  (make-instance 'string-input-stream :string string
-                 :start start :end (or end (length string))))
-
-(defmethod stream-read-char ((stream string-input-stream))
-  (with-slots (index end string) stream
-    (if (>= index end)
-        :eof
-        (prog1
-         (char string index)
-         (incf index)))))
-
-(defmethod stream-unread-char ((stream string-input-stream) character)
-  (with-slots (index end string) stream
-    (decf index)
-    (assert (eql (char string index) character))
-    nil))
-
-(defmethod stream-read-line ((stream string-input-stream))
-  (with-slots (index end string) stream
-    (let* ((endline (position #\newline string :start index :end end))
-           (line (subseq string index endline)))
-      (if endline
-          (progn
-            (setq index (1+ endline))
-            (values line nil))
-          (progn
-            (setq index end)
-            (values line t))))))
-
-(defclass string-output-stream (fundamental-character-output-stream)
-  ((string :initform nil :initarg :string)))
-
-(defun gray-make-string-output-stream ()
-  (make-instance 'string-output-stream))
-
-(defun gray-get-output-stream-string (stream)
-  (with-slots (string) stream
-    (if (null string)
-        ""
-        (prog1
-         (coerce string 'string)
-         (setq string nil)))))
-
-(defmethod stream-write-char ((stream string-output-stream) character)
-  (with-slots (string) stream
-    (when (null string)
-      (setq string (make-array 64 :slement-type 'character
-                               :fill-pointer 0 :adjustable t)))
-    (vector-push-extend character string)
-    character))
-
-(defmethod stream-line-column ((stream string-output-stream))
-  (with-slots (string) stream
-    (if (null string)
-        0
-        (let ((nx (position #\newline string :from-end t)))
-          (if (null nx)
-              (length string)
-              (- (length string) nx 1))))))
-
 (defmethod stream-line-column ((stream stream))
   nil)
 
@@ -614,40 +514,26 @@
         nil ;(funcall *old-stream-column* stream)
         (stream-line-column stream))))
 
-(defun gray-stream-element-type (stream)
-  (if (old-streamp stream)
-      (funcall *old-stream-element-type* stream)
-      (stream-stream-element-type stream)))
+(defmethod gray-stream-element-type (stream)
+  (funcall *old-stream-element-type* stream))
 
-(defun gray-close (stream &key abort)
-  (if (old-streamp stream)
-      (funcall *old-close* stream :abort abort)
-      (stream-close stream :abort nil)))
+(defmethod gray-close (stream &key abort)
+  (funcall *old-close* stream :abort abort))
 
-(defun gray-input-stream-p (stream)
-  (if (old-streamp stream)
-      (funcall *old-input-stream-p* stream)
-      (stream-input-stream-p stream)))
+(defmethod gray-input-stream-p (stream)
+  (funcall *old-input-stream-p* stream))
 
-(defun gray-input-character-stream-p (stream)
-  (if (old-streamp stream)
-      (funcall *old-input-character-stream-p* stream)
-      (stream-input-character-stream-p stream)))
+(defmethod gray-input-character-stream-p (stream)
+  (funcall *old-input-character-stream-p* stream))
 
-(defun gray-output-stream-p (stream)
-  (if (old-streamp stream)
-      (funcall *old-output-stream-p* stream)
-      (stream-output-stream-p stream)))
+(defmethod gray-output-stream-p (stream)
+  (funcall *old-output-stream-p* stream))
 
-(defun gray-open-stream-p (stream)
-  (if (old-streamp stream)
-      (funcall *old-open-stream-p* stream)
-      (stream-open-stream-p stream)))
+(defmethod gray-open-stream-p (stream)
+  (funcall *old-open-stream-p* stream))
 
-(defun gray-streamp (stream)
-  (if (old-streamp stream)
-      (funcall *old-streamp* stream)
-      (stream-streamp stream)))
+(defmethod gray-streamp (stream)
+  (funcall *old-streamp* stream))
 
 (defun gray-write-sequence (sequence stream &key (start 0) end)
   (if (old-streamp stream)
@@ -658,24 +544,6 @@
   (if (old-streamp stream)
       (funcall *old-read-sequence* sequence stream :start start :end end)
       (stream-read-sequence stream sequence start end)))
-
-(defstruct two-way-stream-g
-  input-stream output-stream)
-
-(defun gray-make-two-way-stream (in out)
-  (if (and (old-streamp in) (old-streamp out))
-      (funcall *old-make-two-way-stream* in out)
-      (make-two-way-stream-g :input-stream in :output-stream out)))
-
-(defun gray-two-way-stream-input-stream (stream)
-  (if (old-streamp stream)
-      (funcall *old-two-way-stream-input-stream* stream)
-      (two-way-stream-g-input-stream stream)))
-
-(defun gray-two-way-stream-output-stream (stream)
-  (if (old-streamp stream)
-      (funcall *old-two-way-stream-output-stream* stream)
-      (two-way-stream-g-output-stream stream)))
 
 (setf (symbol-function 'common-lisp::read-char) #'gray-read-char)
 (setf (symbol-function 'common-lisp::peek-char) #'gray-peek-char)
@@ -703,8 +571,5 @@
 (setf (symbol-function 'common-lisp::streamp) #'gray-streamp)
 (setf (symbol-function 'common-lisp::read-sequence) #'gray-read-sequence)
 (setf (symbol-function 'common-lisp::write-sequence) #'gray-write-sequence)
-(setf (symbol-function 'common-lisp::make-two-way-stream) #'gray-make-two-way-stream)
-(setf (symbol-function 'common-lisp::two-way-stream-input-stream) #'gray-two-way-stream-input-stream)
-(setf (symbol-function 'common-lisp::two-way-stream-output-stream) #'gray-two-way-stream-output-stream)
 
 (provide 'gray-streams)
