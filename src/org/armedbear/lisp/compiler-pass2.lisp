@@ -8758,4 +8758,11 @@ We need more thought here.
 (initialize-p2-handlers)
 
 
+(defun sys:autocompile (function)
+  (when sys:*enable-autocompile*
+    (let ((sys:*enable-autocompile* nil))
+      (values (compile nil function)))))
+
+(setf sys:*enable-autocompile* t)
+
 (provide "COMPILER-PASS2")

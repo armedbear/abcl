@@ -2943,6 +2943,10 @@ public class Symbol extends LispObject
     PACKAGE_JAVA.addExternalSymbol("JMETHOD-RETURN-TYPE");
 
   // External symbols in SYSTEM package.
+  public static final Symbol _ENABLE_AUTOCOMPILE_ =
+    PACKAGE_SYS.addExternalSymbol("*ENABLE-AUTOCOMPILE*");
+  public static final Symbol AUTOCOMPILE =
+    PACKAGE_SYS.addExternalSymbol("AUTOCOMPILE");
   public static final Symbol ENVIRONMENT =
     PACKAGE_SYS.addExternalSymbol("ENVIRONMENT");
   public static final Symbol FORWARD_REFERENCED_CLASS =

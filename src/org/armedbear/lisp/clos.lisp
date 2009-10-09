@@ -1335,9 +1335,9 @@
                                    (slow-method-lookup ,gf args))))))
                    nil))))))
 
-    (when (and (fboundp 'compile)
+    (when (and (fboundp 'autocompile)
                (not (autoloadp 'compile)))
-      (setf code (or (compile nil code) code)))
+      (setf code (or (autocompile code) code)))
 
     code))
 
@@ -1535,7 +1535,7 @@
                                           (lambda (primary)
                                             `(funcall ,(%method-function primary) args nil))
                                           primaries)))))))))
-    (or (ignore-errors (compile nil emf-form))
+    (or (ignore-errors (autocompile emf-form))
         (coerce-to-function emf-form))))
 
 (defun generate-emf-lambda (method-function next-emfun)
@@ -1753,10 +1753,10 @@
                                                    :specializers (list class)
                                                    :function (if (autoloadp 'compile)
                                                                  method-function
-                                                                 (compile nil method-function))
+                                                                 (autocompile method-function))
                                                    :fast-function (if (autoloadp 'compile)
                                                                       fast-function
-                                                                      (compile nil fast-function))
+                                                                      (autocompile fast-function))
                                                    :slot-name slot-name)))
         (%add-method gf method)
         method))))
@@ -1778,10 +1778,10 @@
 ;;                    :function `(function ,method-function)
                    :function (if (autoloadp 'compile)
                                  method-function
-                                 (compile nil method-function))
+                                 (autocompile method-function))
                    :fast-function (if (autoloadp 'compile)
                                       fast-function
-                                      (compile nil fast-function))
+                                      (autocompile fast-function))
                    )))
 
 (fmakunbound 'class-name)

@@ -1449,6 +1449,7 @@ public final class Primitives extends Lisp
       }
     };
 
+  /** Stub to be replaced later when signal.lisp has been loaded. */
   // ### error
   private static final Primitive ERROR =
     new Primitive(Symbol.ERROR, "datum &rest arguments")
@@ -1466,6 +1467,18 @@ public final class Primitives extends Lisp
 
         //###FIXME: Bail out, but do it nicer...
         System.exit(1);
+        return NIL;
+      }
+    };
+
+  /** Stub replaced when compiler-pass2.lisp has been loaded */
+  // ### autocompile
+  private static final Primitive AUTOCOMPILE =
+    new Primitive(Symbol.AUTOCOMPILE, "function")
+    {
+      @Override
+      public LispObject execute(LispObject function) throws ConditionThrowable
+      {
         return NIL;
       }
     };
