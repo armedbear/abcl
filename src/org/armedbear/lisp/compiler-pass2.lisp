@@ -8758,6 +8758,8 @@ We need more thought here.
 (initialize-p2-handlers)
 
 
+(defvar sys:*enable-autocompile*)
+
 (defun sys:autocompile (function)
   (when sys:*enable-autocompile*
     (let ((sys:*enable-autocompile* nil))
