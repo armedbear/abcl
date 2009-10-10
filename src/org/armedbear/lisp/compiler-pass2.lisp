@@ -1058,11 +1058,19 @@ representation, based on the derived type of the LispObject."
                  43 ; aload_1
                  44 ; aload_2
                  45 ; aload_3
+                 46 ; iaload
+                 47 ; laload
+                 48 ; faload
+                 49 ; daload
                  50 ; aaload
                  75 ; astore_0
                  76 ; astore_1
                  77 ; astore_2
                  78 ; astore_3
+                 79 ; iastore
+                 80 ; lastore
+                 81 ; fastore
+                 82 ; dastore
                  83 ; aastore
                  87 ; pop
                  88 ; pop2
