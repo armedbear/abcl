@@ -1326,17 +1326,19 @@
                                (funcall emfun args)
                                (slow-method-lookup gf args))))))
                 (t
-                 (make-closure
-                  `(lambda (&rest args)
+                 #'(lambda (&rest args)
                      (declare (optimize speed))
-                     (unless (,(if exact '= '>=) (length args) ,number-required)
-                       (error 'program-error
-                              :format-control "Not enough arguments for generic function ~S."
-                              :format-arguments (list (%generic-function-name ,gf))))
-                     (let ((emfun (get-cached-emf ,gf args)))
+                     (let ((len (length args)))
+                       (unless (or (and exact
+                                        (= len number-required))
+                                   (>= len number-required))
+                         (error 'program-error
+                                :format-control "Not enough arguments for generic function ~S."
+                                :format-arguments (list (%generic-function-name gf)))))
+                     (let ((emfun (get-cached-emf gf args)))
                        (if emfun
                            (funcall emfun args)
-                           (slow-method-lookup ,gf args)))) nil))))))))
+                           (slow-method-lookup gf args)))))))))))
 
     (when (and (fboundp 'autocompile)
                (not (autoloadp 'compile)))
