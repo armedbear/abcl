@@ -545,6 +545,24 @@
       (funcall *old-read-sequence* sequence stream :start start :end end)
       (stream-read-sequence stream sequence start end)))
 
+(defstruct two-way-stream-g
+  input-stream output-stream)
+
+(defun gray-make-two-way-stream (in out)
+  (if (and (old-streamp in) (old-streamp out))
+      (funcall *old-make-two-way-stream* in out)
+      (make-two-way-stream-g :input-stream in :output-stream out)))
+
+(defun gray-two-way-stream-input-stream (stream)
+  (if (old-streamp stream)
+      (funcall *old-two-way-stream-input-stream* stream)
+      (two-way-stream-g-input-stream stream)))
+
+(defun gray-two-way-stream-output-stream (stream)
+  (if (old-streamp stream)
+      (funcall *old-two-way-stream-output-stream* stream)
+      (two-way-stream-g-output-stream stream)))
+
 (setf (symbol-function 'common-lisp::read-char) #'gray-read-char)
 (setf (symbol-function 'common-lisp::peek-char) #'gray-peek-char)
 (setf (symbol-function 'common-lisp::unread-char) #'gray-unread-char)
@@ -571,5 +589,8 @@
 (setf (symbol-function 'common-lisp::streamp) #'gray-streamp)
 (setf (symbol-function 'common-lisp::read-sequence) #'gray-read-sequence)
 (setf (symbol-function 'common-lisp::write-sequence) #'gray-write-sequence)
+(setf (symbol-function 'common-lisp::make-two-way-stream) #'gray-make-two-way-stream)
+(setf (symbol-function 'common-lisp::two-way-stream-input-stream) #'gray-two-way-stream-input-stream)
+(setf (symbol-function 'common-lisp::two-way-stream-output-stream) #'gray-two-way-stream-output-stream)
 
 (provide 'gray-streams)
