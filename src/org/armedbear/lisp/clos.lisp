@@ -1239,9 +1239,9 @@
                    (exact (null (intersection lambda-list
                                               '(&rest &optional &key
                                                 &allow-other-keys &aux)))))
-              (cond
-                ((= number-required 1)
-                 (if exact
+              (if exact
+                  (cond
+                    ((= number-required 1)
                      (cond
                        ((and (eq (generic-function-method-combination gf) 'standard)
                              (= (length (generic-function-methods gf)) 1))
@@ -1275,70 +1275,46 @@
                                                gf arg specialization))))
                               (if emfun
                                   (funcall emfun (list arg))
-                                  (apply #'no-applicable-method gf (list arg)))))
-                        ))
-                     #'(lambda (&rest args)
-                         (declare (optimize speed))
-                         (unless (>= (length args) 1)
-                           (error 'program-error
-                                  :format-control "Not enough arguments for generic function ~S."
-                                  :format-arguments (list (%generic-function-name gf))))
-                         (let ((emfun (get-cached-emf gf args)))
-                           (if emfun
-                               (funcall emfun args)
-                               (slow-method-lookup gf args))))))
-                ((= number-required 2)
-                 (if exact
+                                  (apply #'no-applicable-method gf (list arg))))))))
+                    ((= number-required 2)
                      #'(lambda (arg1 arg2)
                          (declare (optimize speed))
                          (let* ((args (list arg1 arg2))
                                 (emfun (get-cached-emf gf args)))
                            (if emfun
                                (funcall emfun args)
-                               (slow-method-lookup gf args))))
-                     #'(lambda (&rest args)
-                         (declare (optimize speed))
-                         (unless (>= (length args) 2)
-                           (error 'program-error
-                                  :format-control "Not enough arguments for generic function ~S."
-                                  :format-arguments (list (%generic-function-name gf))))
-                         (let ((emfun (get-cached-emf gf args)))
-                           (if emfun
-                               (funcall emfun args)
-                               (slow-method-lookup gf args))))))
-                ((= number-required 3)
-                 (if exact
+                               (slow-method-lookup gf args)))))
+                    ((= number-required 3)
                      #'(lambda (arg1 arg2 arg3)
                          (declare (optimize speed))
                          (let* ((args (list arg1 arg2 arg3))
                                 (emfun (get-cached-emf gf args)))
                            (if emfun
                                (funcall emfun args)
-                               (slow-method-lookup gf args))))
+                               (slow-method-lookup gf args)))))
+                    (t
                      #'(lambda (&rest args)
                          (declare (optimize speed))
-                         (unless (>= (length args) 3)
-                           (error 'program-error
-                                  :format-control "Not enough arguments for generic function ~S."
-                                  :format-arguments (list (%generic-function-name gf))))
+                         (let ((len (length args)))
+                           (unless (= len number-required)
+                             (error 'program-error
+                                    :format-control "Not enough arguments for generic function ~S."
+                                    :format-arguments (list (%generic-function-name gf)))))
                          (let ((emfun (get-cached-emf gf args)))
                            (if emfun
                                (funcall emfun args)
                                (slow-method-lookup gf args))))))
-                (t
-                 #'(lambda (&rest args)
-                     (declare (optimize speed))
-                     (let ((len (length args)))
-                       (unless (or (and exact
-                                        (= len number-required))
-                                   (>= len number-required))
-                         (error 'program-error
-                                :format-control "Not enough arguments for generic function ~S."
-                                :format-arguments (list (%generic-function-name gf)))))
-                     (let ((emfun (get-cached-emf gf args)))
-                       (if emfun
-                           (funcall emfun args)
-                           (slow-method-lookup gf args)))))))))))
+                  #'(lambda (&rest args)
+                      (declare (optimize speed))
+                      (let ((len (length args)))
+                        (unless (>= len number-required)
+                          (error 'program-error
+                                 :format-control "Not enough arguments for generic function ~S."
+                                 :format-arguments (list (%generic-function-name gf)))))
+                      (let ((emfun (get-cached-emf gf args)))
+                        (if emfun
+                            (funcall emfun args)
+                            (slow-method-lookup gf args))))))))))
 
     code))
 
