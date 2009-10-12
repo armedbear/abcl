@@ -1340,10 +1340,6 @@
                            (funcall emfun args)
                            (slow-method-lookup gf args)))))))))))
 
-    (when (and (fboundp 'autocompile)
-               (not (autoloadp 'compile)))
-      (setf code (or (autocompile code) code)))
-
     code))
 
 (defun method-applicable-p (method args)
