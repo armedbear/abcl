@@ -37,10 +37,22 @@ import java.util.Map;
 
 public final class LispCharacter extends LispObject
 {
-  public static final LispCharacter[] constants = new LispCharacter[CHAR_MAX];
+  public static final LispCharacter[] constants;
+  public static final CharHashMap<LispCharacter> lispChars;
 
   static
   {
+    lispChars = new CharHashMap<LispCharacter>(LispCharacter.class,null){
+      public LispCharacter get(char c) {
+        LispCharacter lc = super.get(c);
+        if (lc==null) {
+          lc = new LispCharacter(c);
+          put(c, lc);
+        }
+        return lc;
+      }
+    };
+    constants = lispChars.constants;
     for (int i = constants.length; i-- > 0;)
       constants[i] = new LispCharacter((char)i);
   }
@@ -51,7 +63,7 @@ public final class LispCharacter extends LispObject
   {
     try
       {
-        return constants[c];
+        return lispChars.get(c);
       }
     catch (ArrayIndexOutOfBoundsException e)
       {
@@ -341,7 +353,7 @@ public final class LispCharacter extends LispObject
       {
           int n = Fixnum.getValue(arg);
           if (n < CHAR_MAX)
-            return constants[n];
+            return lispChars.get((char)n);
           else if (n <= Character.MAX_VALUE)
             return new LispCharacter((char)n);
               // SBCL signals a type-error here: "not of type (UNSIGNED-BYTE 8)"
@@ -613,7 +625,7 @@ public final class LispCharacter extends LispObject
         return "Rubout";
       }
     if (c<0 || c>255) return null;
-    return constants[c].name;
+    return lispChars.get(c).name;
   }
 
   // ### char-name
@@ -651,8 +663,7 @@ public final class LispCharacter extends LispObject
   } 
   
   static void setCharName(int settingChar, String string) { 
-    if (settingChar>=CHAR_MAX) return; 
-    LispCharacter c = constants[settingChar]; 
+    LispCharacter c = lispChars.get((char)settingChar); 
     c.name = string; 
     namedToChar.put(string.toLowerCase(), c); 
   } 

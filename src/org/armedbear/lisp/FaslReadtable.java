@@ -43,6 +43,7 @@ public final class FaslReadtable extends Readtable
     @Override
     protected void initialize()
     {
+    	Byte[] syntax = this.syntax.constants;
         syntax[9]    = SYNTAX_TYPE_WHITESPACE; // tab
         syntax[10]   = SYNTAX_TYPE_WHITESPACE; // linefeed
         syntax[12]   = SYNTAX_TYPE_WHITESPACE; // form feed
@@ -62,6 +63,7 @@ public final class FaslReadtable extends Readtable
         syntax['\\'] = SYNTAX_TYPE_SINGLE_ESCAPE;
         syntax['|']  = SYNTAX_TYPE_MULTIPLE_ESCAPE;
 
+        LispObject[] readerMacroFunctions = this.readerMacroFunctions.constants;
         readerMacroFunctions[';']  = FaslReader.FASL_READ_COMMENT;
         readerMacroFunctions['"']  = FaslReader.FASL_READ_STRING;
         readerMacroFunctions['(']  = FaslReader.FASL_READ_LIST;
@@ -74,30 +76,31 @@ public final class FaslReadtable extends Readtable
         readerMacroFunctions[',']  = Symbol.COMMA_MACRO;
 
         DispatchTable dt = new DispatchTable();
-        dt.functions['(']  = FaslReader.FASL_SHARP_LEFT_PAREN;
-        dt.functions['*']  = FaslReader.FASL_SHARP_STAR;
-        dt.functions['.']  = FaslReader.FASL_SHARP_DOT;
-        dt.functions[':']  = FaslReader.FASL_SHARP_COLON;
-        dt.functions['A']  = FaslReader.FASL_SHARP_A;
-        dt.functions['B']  = FaslReader.FASL_SHARP_B;
-        dt.functions['C']  = FaslReader.FASL_SHARP_C;
-        dt.functions['O']  = FaslReader.FASL_SHARP_O;
-        dt.functions['P']  = FaslReader.FASL_SHARP_P;
-        dt.functions['R']  = FaslReader.FASL_SHARP_R;
-        dt.functions['S']  = FaslReader.FASL_SHARP_S;
-        dt.functions['X']  = FaslReader.FASL_SHARP_X;
-        dt.functions['\''] = FaslReader.FASL_SHARP_QUOTE;
-        dt.functions['\\'] = FaslReader.FASL_SHARP_BACKSLASH;
-        dt.functions['|']  = FaslReader.FASL_SHARP_VERTICAL_BAR;
-        dt.functions[')']  = FaslReader.FASL_SHARP_ILLEGAL;
-        dt.functions['<']  = FaslReader.FASL_SHARP_ILLEGAL;
-        dt.functions[' ']  = FaslReader.FASL_SHARP_ILLEGAL;
-        dt.functions[8]    = FaslReader.FASL_SHARP_ILLEGAL; // backspace
-        dt.functions[9]    = FaslReader.FASL_SHARP_ILLEGAL; // tab
-        dt.functions[10]   = FaslReader.FASL_SHARP_ILLEGAL; // newline, linefeed
-        dt.functions[12]   = FaslReader.FASL_SHARP_ILLEGAL; // page
-        dt.functions[13]   = FaslReader.FASL_SHARP_ILLEGAL; // return
-        dispatchTables['#'] = dt;
+        LispObject[] dtfunctions = dt.functions.constants;
+        dtfunctions['(']  = FaslReader.FASL_SHARP_LEFT_PAREN;
+        dtfunctions['*']  = FaslReader.FASL_SHARP_STAR;
+        dtfunctions['.']  = FaslReader.FASL_SHARP_DOT;
+        dtfunctions[':']  = FaslReader.FASL_SHARP_COLON;
+        dtfunctions['A']  = FaslReader.FASL_SHARP_A;
+        dtfunctions['B']  = FaslReader.FASL_SHARP_B;
+        dtfunctions['C']  = FaslReader.FASL_SHARP_C;
+        dtfunctions['O']  = FaslReader.FASL_SHARP_O;
+        dtfunctions['P']  = FaslReader.FASL_SHARP_P;
+        dtfunctions['R']  = FaslReader.FASL_SHARP_R;
+        dtfunctions['S']  = FaslReader.FASL_SHARP_S;
+        dtfunctions['X']  = FaslReader.FASL_SHARP_X;
+        dtfunctions['\''] = FaslReader.FASL_SHARP_QUOTE;
+        dtfunctions['\\'] = FaslReader.FASL_SHARP_BACKSLASH;
+        dtfunctions['|']  = FaslReader.FASL_SHARP_VERTICAL_BAR;
+        dtfunctions[')']  = FaslReader.FASL_SHARP_ILLEGAL;
+        dtfunctions['<']  = FaslReader.FASL_SHARP_ILLEGAL;
+        dtfunctions[' ']  = FaslReader.FASL_SHARP_ILLEGAL;
+        dtfunctions[8]    = FaslReader.FASL_SHARP_ILLEGAL; // backspace
+        dtfunctions[9]    = FaslReader.FASL_SHARP_ILLEGAL; // tab
+        dtfunctions[10]   = FaslReader.FASL_SHARP_ILLEGAL; // newline, linefeed
+        dtfunctions[12]   = FaslReader.FASL_SHARP_ILLEGAL; // page
+        dtfunctions[13]   = FaslReader.FASL_SHARP_ILLEGAL; // return
+        dispatchTables.constants['#'] = dt;
 
         readtableCase = Keyword.UPCASE;
     }

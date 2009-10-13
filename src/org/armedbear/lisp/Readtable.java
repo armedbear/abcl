@@ -32,6 +32,7 @@
  */
 
 package org.armedbear.lisp;
+import java.util.Iterator;
 
 public class Readtable extends LispObject
 {
@@ -42,9 +43,9 @@ public class Readtable extends LispObject
   public static final byte SYNTAX_TYPE_SINGLE_ESCAPE         = 4;
   public static final byte SYNTAX_TYPE_MULTIPLE_ESCAPE       = 5;
 
-  protected final byte[]          syntax               = new byte[CHAR_MAX];
-  protected final LispObject[]    readerMacroFunctions = new LispObject[CHAR_MAX];
-  protected final DispatchTable[] dispatchTables       = new DispatchTable[CHAR_MAX];
+  protected final CharHashMap<Byte> syntax = new CharHashMap<Byte>(Byte.class,SYNTAX_TYPE_CONSTITUENT);
+  protected final CharHashMap<LispObject> readerMacroFunctions = new CharHashMap<LispObject>(LispObject.class,null);
+  protected final CharHashMap<DispatchTable> dispatchTables = new CharHashMap<DispatchTable>(DispatchTable.class,null);
 
   protected LispObject readtableCase;
 
@@ -55,6 +56,7 @@ public class Readtable extends LispObject
 
   protected void initialize()
   {
+    Byte[] syntax = this.syntax.constants;
     syntax[9]    = SYNTAX_TYPE_WHITESPACE; // tab
     syntax[10]   = SYNTAX_TYPE_WHITESPACE; // linefeed
     syntax[12]   = SYNTAX_TYPE_WHITESPACE; // form feed
@@ -74,6 +76,7 @@ public class Readtable extends LispObject
     syntax['\\'] = SYNTAX_TYPE_SINGLE_ESCAPE;
     syntax['|']  = SYNTAX_TYPE_MULTIPLE_ESCAPE;
 
+    LispObject[] readerMacroFunctions = this.readerMacroFunctions.constants;
     readerMacroFunctions[';']  = LispReader.READ_COMMENT;
     readerMacroFunctions['"']  = LispReader.READ_STRING;
     readerMacroFunctions['(']  = LispReader.READ_LIST;
@@ -86,32 +89,32 @@ public class Readtable extends LispObject
     readerMacroFunctions[',']  = Symbol.COMMA_MACRO;
 
     DispatchTable dt = new DispatchTable();
+    LispObject[] dtfunctions = dt.functions.constants;
+    dtfunctions['(']  = LispReader.SHARP_LEFT_PAREN;
+    dtfunctions['*']  = LispReader.SHARP_STAR;
+    dtfunctions['.']  = LispReader.SHARP_DOT;
+    dtfunctions[':']  = LispReader.SHARP_COLON;
+    dtfunctions['A']  = LispReader.SHARP_A;
+    dtfunctions['B']  = LispReader.SHARP_B;
+    dtfunctions['C']  = LispReader.SHARP_C;
+    dtfunctions['O']  = LispReader.SHARP_O;
+    dtfunctions['P']  = LispReader.SHARP_P;
+    dtfunctions['R']  = LispReader.SHARP_R;
+    dtfunctions['S']  = LispReader.SHARP_S;
+    dtfunctions['X']  = LispReader.SHARP_X;
+    dtfunctions['\''] = LispReader.SHARP_QUOTE;
+    dtfunctions['\\'] = LispReader.SHARP_BACKSLASH;
+    dtfunctions['|']  = LispReader.SHARP_VERTICAL_BAR;
+    dtfunctions[')']  = LispReader.SHARP_ILLEGAL;
+    dtfunctions['<']  = LispReader.SHARP_ILLEGAL;
+    dtfunctions[' ']  = LispReader.SHARP_ILLEGAL;
+    dtfunctions[8]    = LispReader.SHARP_ILLEGAL; // backspace
+    dtfunctions[9]    = LispReader.SHARP_ILLEGAL; // tab
+    dtfunctions[10]   = LispReader.SHARP_ILLEGAL; // newline, linefeed
+    dtfunctions[12]   = LispReader.SHARP_ILLEGAL; // page
+    dtfunctions[13]   = LispReader.SHARP_ILLEGAL; // return
 
-    dt.functions['(']  = LispReader.SHARP_LEFT_PAREN;
-    dt.functions['*']  = LispReader.SHARP_STAR;
-    dt.functions['.']  = LispReader.SHARP_DOT;
-    dt.functions[':']  = LispReader.SHARP_COLON;
-    dt.functions['A']  = LispReader.SHARP_A;
-    dt.functions['B']  = LispReader.SHARP_B;
-    dt.functions['C']  = LispReader.SHARP_C;
-    dt.functions['O']  = LispReader.SHARP_O;
-    dt.functions['P']  = LispReader.SHARP_P;
-    dt.functions['R']  = LispReader.SHARP_R;
-    dt.functions['S']  = LispReader.SHARP_S;
-    dt.functions['X']  = LispReader.SHARP_X;
-    dt.functions['\''] = LispReader.SHARP_QUOTE;
-    dt.functions['\\'] = LispReader.SHARP_BACKSLASH;
-    dt.functions['|']  = LispReader.SHARP_VERTICAL_BAR;
-    dt.functions[')']  = LispReader.SHARP_ILLEGAL;
-    dt.functions['<']  = LispReader.SHARP_ILLEGAL;
-    dt.functions[' ']  = LispReader.SHARP_ILLEGAL;
-    dt.functions[8]    = LispReader.SHARP_ILLEGAL; // backspace
-    dt.functions[9]    = LispReader.SHARP_ILLEGAL; // tab
-    dt.functions[10]   = LispReader.SHARP_ILLEGAL; // newline, linefeed
-    dt.functions[12]   = LispReader.SHARP_ILLEGAL; // page
-    dt.functions[13]   = LispReader.SHARP_ILLEGAL; // return
-
-    dispatchTables['#'] = dt;
+    dispatchTables.constants['#'] = dt;
 
     readtableCase = Keyword.UPCASE;
   }
@@ -125,35 +128,44 @@ public class Readtable extends LispObject
       rt = checkReadtable(obj);
     synchronized (rt)
       {
-        System.arraycopy(rt.syntax, 0, syntax, 0, CHAR_MAX);
-        System.arraycopy(rt.readerMacroFunctions, 0, readerMacroFunctions, 0,
-                         CHAR_MAX);
-        // Deep copy.
-        for (int i = dispatchTables.length; i-- > 0;)
-          {
-            DispatchTable dt = rt.dispatchTables[i];
-            if (dt != null)
-              dispatchTables[i] = new DispatchTable(dt);
-          }
-        readtableCase = rt.readtableCase;
+        copyReadtable(rt, this);
       }
   }
 
   // FIXME synchronization
   private static void copyReadtable(Readtable from, Readtable to)
   {
-    System.arraycopy(from.syntax, 0, to.syntax, 0, CHAR_MAX);
-    System.arraycopy(from.readerMacroFunctions, 0, to.readerMacroFunctions, 0,
-                     CHAR_MAX);
-    for (int i = from.dispatchTables.length; i-- > 0;)
-      {
-        DispatchTable dt = from.dispatchTables[i];
-        if (dt != null)
-          to.dispatchTables[i] = new DispatchTable(dt);
-        else
-          to.dispatchTables[i] = null;
+    Iterator<Character> charIterator = from.syntax.getCharIterator();
+      while (charIterator.hasNext()) {
+        char c = charIterator.next();
+          Byte dt = from.syntax.get(c);
+          if (dt!=null) {
+              to.syntax.put(c, dt);          
+          } else {
+              to.syntax.put(c, null);          
+          }      
+      }      
+      charIterator = from.readerMacroFunctions.getCharIterator();
+      while (charIterator.hasNext()) {
+        char c = charIterator.next();
+          LispObject dt = from.readerMacroFunctions.get(c);
+          if (dt!=null) {
+              to.readerMacroFunctions.put(c, dt);          
+          } else {
+              to.readerMacroFunctions.put(c, null);          
+          }      
       }
-    to.readtableCase = from.readtableCase;
+      charIterator = from.dispatchTables.getCharIterator();
+      while (charIterator.hasNext()) {
+        char c = charIterator.next();
+          DispatchTable dt = from.dispatchTables.get(c);
+          if (dt!=null) {
+              to.dispatchTables.put(c, new DispatchTable(dt));          
+          } else {
+              to.dispatchTables.put(c, null);          
+          }      
+      }
+      to.readtableCase = from.readtableCase;
   }
 
   @Override
@@ -191,16 +203,12 @@ public class Readtable extends LispObject
 
   public boolean isWhitespace(char c)
   {
-    if (c < CHAR_MAX)
-      return syntax[c] == SYNTAX_TYPE_WHITESPACE;
-    return false;
+    return getSyntaxType(c) == SYNTAX_TYPE_WHITESPACE;
   }
 
   public byte getSyntaxType(char c)
   {
-    if (c < CHAR_MAX)
-      return syntax[c];
-    return SYNTAX_TYPE_CONSTITUENT;
+    return syntax.get(c);
   }
 
   public boolean isInvalid(char c)
@@ -239,10 +247,7 @@ public class Readtable extends LispObject
 
   public LispObject getReaderMacroFunction(char c)
   {
-    if (c < CHAR_MAX)
-      return readerMacroFunctions[c];
-    else
-      return null;
+    return readerMacroFunctions.get(c);
   }
 
   private LispObject getMacroCharacter(char c) throws ConditionThrowable
@@ -251,7 +256,7 @@ public class Readtable extends LispObject
     LispObject non_terminating_p;
     if (function != null)
       {
-        if (syntax[c] == SYNTAX_TYPE_NON_TERMINATING_MACRO)
+        if (syntax.get(c) == SYNTAX_TYPE_NON_TERMINATING_MACRO)
           non_terminating_p = T;
         else
           non_terminating_p = NIL;
@@ -272,15 +277,15 @@ public class Readtable extends LispObject
     else
       syntaxType = SYNTAX_TYPE_TERMINATING_MACRO;
     // FIXME synchronization
-    syntax[dispChar] = syntaxType;
-    readerMacroFunctions[dispChar] = LispReader.READ_DISPATCH_CHAR;
-    dispatchTables[dispChar] = new DispatchTable();
+    syntax.put(dispChar,syntaxType);
+    readerMacroFunctions.put(dispChar, LispReader.READ_DISPATCH_CHAR);
+    dispatchTables.put(dispChar, new DispatchTable());
   }
 
   public LispObject getDispatchMacroCharacter(char dispChar, char subChar)
     throws ConditionThrowable
   {
-    DispatchTable dispatchTable = dispatchTables[dispChar];
+    DispatchTable dispatchTable = dispatchTables.get(dispChar);
     if (dispatchTable == null)
       {
         LispCharacter c = LispCharacter.getInstance(dispChar);
@@ -288,7 +293,7 @@ public class Readtable extends LispObject
                                     " is not a dispatch character."));
       }
     LispObject function =
-      dispatchTable.functions[LispCharacter.toUpperCase(subChar)];
+      dispatchTable.functions.get(LispCharacter.toUpperCase(subChar));
     return (function != null) ? function : NIL;
   }
 
@@ -296,28 +301,28 @@ public class Readtable extends LispObject
                                         LispObject function)
     throws ConditionThrowable
   {
-    DispatchTable dispatchTable = dispatchTables[dispChar];
+    DispatchTable dispatchTable = dispatchTables.get(dispChar);
     if (dispatchTable == null)
       {
         LispCharacter c = LispCharacter.getInstance(dispChar);
         error(new LispError(c.writeToString() +
                              " is not a dispatch character."));
       }
-    dispatchTable.functions[LispCharacter.toUpperCase(subChar)] = function;
+    dispatchTable.functions.put(LispCharacter.toUpperCase(subChar), function);
   }
 
   protected static class DispatchTable
   {
-    public LispObject[] functions = new LispObject[CHAR_MAX];
+	protected final CharHashMap<LispObject> functions;
 
     public DispatchTable()
     {
+      functions = new CharHashMap<LispObject>(LispObject.class,null);
     }
 
     public DispatchTable(DispatchTable dt)
     {
-      for (int i = 0; i < functions.length; i++)
-        functions[i] = dt.functions[i];
+      functions = (CharHashMap<LispObject>) dt.functions.clone();
     }
   }
 
@@ -427,8 +432,8 @@ public class Readtable extends LispObject
           syntaxType = SYNTAX_TYPE_TERMINATING_MACRO;
         Readtable rt = designator_readtable(fourth);
         // REVIEW synchronization
-        rt.syntax[c] = syntaxType;
-        rt.readerMacroFunctions[c] = designator;
+        rt.syntax.put(c, syntaxType);
+        rt.readerMacroFunctions.put(c, designator);
         return T;
       }
     };
@@ -530,20 +535,18 @@ public class Readtable extends LispObject
         else
           fromReadtable = checkReadtable(STANDARD_READTABLE.symbolValue());
         // REVIEW synchronization
-        toReadtable.syntax[toChar] = fromReadtable.syntax[fromChar];
-        toReadtable.readerMacroFunctions[toChar] =
-          fromReadtable.readerMacroFunctions[fromChar];
+        toReadtable.syntax.put(toChar, fromReadtable.syntax.get(fromChar));
+        toReadtable.readerMacroFunctions.put(toChar,
+        		fromReadtable.readerMacroFunctions.get(fromChar));
         // "If the character is a dispatching macro character, its entire
         // dispatch table of reader macro functions is copied."
-        if (fromReadtable.dispatchTables[fromChar] != null)
-          {
-            toReadtable.dispatchTables[toChar] =
-              new DispatchTable(fromReadtable.dispatchTables[fromChar]);
-          }
+        DispatchTable found = fromReadtable.dispatchTables.get(fromChar);
+        if (found!=null)
+        	toReadtable.dispatchTables.put(toChar, new DispatchTable(found));          
         else
             // Don't leave behind dispatch tables when fromChar
             // doesn't have one
-            toReadtable.dispatchTables[toChar] = null;
+        	toReadtable.dispatchTables.put(toChar, null);
         return T;
       }
     };
