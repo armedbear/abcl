@@ -4946,18 +4946,20 @@ given a specific common representation.")
            (let* ((pathname (funcall *pathnames-generator*))
                   (class-file (make-class-file :pathname pathname
                                                :lambda-list lambda-list)))
-	     (with-open-class-file (f class-file)
-	       (set-compiland-and-write-class class-file compiland f))
+             (with-open-class-file (f class-file)
+               (set-compiland-and-write-class class-file compiland f))
              (setf (local-function-class-file local-function) class-file)))
           (t
-	   (let ((class-file (make-class-file
-			      :pathname (funcall *pathnames-generator*)
-			      :lambda-list lambda-list)))
-	     (with-open-stream (stream (sys::%make-byte-array-output-stream))
-	       (set-compiland-and-write-class class-file compiland stream)
-	       (setf (local-function-class-file local-function) class-file)
-	       (setf (local-function-function local-function)
-                     (load-compiled-function (sys::%get-output-stream-bytes stream)))))))))
+           (let ((class-file (make-class-file
+                              :pathname (funcall *pathnames-generator*)
+                              :lambda-list lambda-list)))
+             (unwind-protect
+                  (with-open-stream (stream (sys::%make-byte-array-output-stream))
+                    (set-compiland-and-write-class class-file compiland stream)
+                    (setf (local-function-class-file local-function) class-file)
+                    (setf (local-function-function local-function)
+                          (load-compiled-function (sys::%get-output-stream-bytes stream))))
+               (delete-file (class-file-pathname class-file))))))))
 
 (defun emit-make-compiled-closure-for-labels
     (local-function compiland declaration)
@@ -4981,24 +4983,26 @@ given a specific common representation.")
            (let* ((pathname (funcall *pathnames-generator*))
                   (class-file (make-class-file :pathname pathname
                                                :lambda-list lambda-list)))
-	     (with-open-class-file (f class-file)
-	       (set-compiland-and-write-class class-file compiland f))
+             (with-open-class-file (f class-file)
+               (set-compiland-and-write-class class-file compiland f))
              (setf (local-function-class-file local-function) class-file)
              (let ((g (declare-local-function local-function)))
-	       (emit-make-compiled-closure-for-labels
-		local-function compiland g))))
+               (emit-make-compiled-closure-for-labels
+                local-function compiland g))))
           (t
-	   (let ((class-file (make-class-file
-			      :pathname (funcall *pathnames-generator*)
-			      :lambda-list lambda-list)))
-	     (with-open-stream (stream (sys::%make-byte-array-output-stream))
-	       (set-compiland-and-write-class class-file compiland stream)
-	       (setf (local-function-class-file local-function) class-file)
-	       (let ((g (declare-object
-			 (load-compiled-function
-			  (sys::%get-output-stream-bytes stream)))))
-		 (emit-make-compiled-closure-for-labels
-		  local-function compiland g))))))))
+           (let ((class-file (make-class-file
+                              :pathname (funcall *pathnames-generator*)
+                              :lambda-list lambda-list)))
+             (unwind-protect
+                  (with-open-stream (stream (sys::%make-byte-array-output-stream))
+                    (set-compiland-and-write-class class-file compiland stream)
+                    (setf (local-function-class-file local-function) class-file)
+                    (let ((g (declare-object
+                              (load-compiled-function
+                               (sys::%get-output-stream-bytes stream)))))
+                      (emit-make-compiled-closure-for-labels
+                       local-function compiland g)))
+               (delete-file (class-file-pathname class-file))))))))
 
 (defknown p2-flet-node (t t t) t)
 (defun p2-flet-node (block target representation)
@@ -5057,13 +5061,15 @@ given a specific common representation.")
              (setf (compiland-class-file compiland)
                    (make-class-file :pathname pathname
                                     :lambda-list lambda-list))
-	     (with-open-stream (stream (sys::%make-byte-array-output-stream))
-	       (compile-and-write-to-stream (compiland-class-file compiland)
-					    compiland stream)
-	       (emit 'getstatic *this-class*
-		     (declare-object (load-compiled-function
-				      (sys::%get-output-stream-bytes stream)))
-		     +lisp-object+)))))
+             (unwind-protect
+                  (with-open-stream (stream (sys::%make-byte-array-output-stream))
+                    (compile-and-write-to-stream (compiland-class-file compiland)
+                                                 compiland stream)
+                    (emit 'getstatic *this-class*
+                          (declare-object (load-compiled-function
+                                           (sys::%get-output-stream-bytes stream)))
+                          +lisp-object+))
+               (delete-file pathname)))))
     (cond ((null *closure-variables*))  ; Nothing to do.
           ((compiland-closure-register *current-compiland*)
            (duplicate-closure-array *current-compiland*)
@@ -8524,24 +8530,24 @@ We need more thought here.
 (defun %jvm-compile (name definition expr env)
   (let* (compiled-function
          (tempfile (make-temp-file)))
-    (with-compilation-unit ()
-      (with-saved-compiler-policy
-	  (setf compiled-function
-		(load-compiled-function		 
-		 (if *file-compilation*
-		     (unwind-protect
-			  (progn
-			    (with-open-file (f tempfile
-					       :direction :output
-					       :element-type '(unsigned-byte 8)
-					       :if-exists :supersede)
-			      (compile-defun name expr env tempfile f))
-			    tempfile)
-		       (delete-file tempfile))
-		     (with-open-stream (s (sys::%make-byte-array-output-stream))
-		       (compile-defun name expr env tempfile s)
-		       (finish-output s)
-		       (sys::%get-output-stream-bytes s)))))))
+    (unwind-protect
+         (with-compilation-unit ()
+           (with-saved-compiler-policy
+               (setf compiled-function
+                     (load-compiled-function		 
+                      (if *file-compilation*
+                          (progn
+                            (with-open-file (f tempfile
+                                               :direction :output
+                                               :element-type '(unsigned-byte 8)
+                                               :if-exists :supersede)
+                              (compile-defun name expr env tempfile f))
+                            tempfile)
+                          (with-open-stream (s (sys::%make-byte-array-output-stream))
+                            (compile-defun name expr env tempfile s)
+                            (finish-output s)
+                            (sys::%get-output-stream-bytes s)))))))
+      (delete-file tempfile))
     (when (and name (functionp compiled-function))
       (sys::set-function-definition name compiled-function definition))
     (or name compiled-function)))
