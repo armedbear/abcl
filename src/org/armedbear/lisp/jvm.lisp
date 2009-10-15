@@ -117,12 +117,26 @@
         (setf (char name i) #\_)))
     (concatenate 'string "org/armedbear/lisp/" name)))
 
+(defun make-unique-class-name ()
+  "Creates a random class name for use with a `class-file' structure's
+`class' slot."
+  (concatenate 'string "abcl_"
+          (java:jcall (java:jmethod "java.lang.String" "replace" "char" "char")
+                      (java:jcall (java:jmethod "java.util.UUID" "toString")
+                             (java:jstatic "randomUUID" "java.util.UUID"))
+                      #\- #\_)))
+
 (defun make-class-file (&key pathname lambda-name lambda-list)
-  (aver (not (null pathname)))
-  (let ((class-file (%make-class-file :pathname pathname
-                                      :lambda-name lambda-name
-                                      :lambda-list lambda-list)))
-    (setf (class-file-class class-file) (class-name-from-filespec pathname))
+  "Creates a `class-file' structure. If `pathname' is non-NIL, it's
+used to derive a class name. If it is NIL, a random one created
+using `make-unique-class-name'."
+  (let* ((class-name (if pathname
+                         (class-name-from-filespec  pathname)
+                         (make-unique-class-name)))
+         (class-file (%make-class-file :pathname pathname
+                                       :class class-name
+                                       :lambda-name lambda-name
+                                       :lambda-list lambda-list)))
     class-file))
 
 (defmacro with-class-file (class-file &body body)
