@@ -320,6 +320,7 @@ public class Readtable extends LispObject
       functions = new CharHashMap<LispObject>(LispObject.class,null);
     }
 
+    @SuppressWarnings("unchecked")
     public DispatchTable(DispatchTable dt)
     {
       functions = (CharHashMap<LispObject>) dt.functions.clone();

@@ -16,6 +16,8 @@ public class CharHashMap<T> {
 	final public T NULL;
 	final static int CACHE_SIZE = 256; 
 	final HashMap<Character, T> backing;
+
+        @SuppressWarnings("unchecked")
 	public CharHashMap(Class componentType, T def) {
 		NULL = def;
 		constants = (T[]) Array.newInstance(componentType, CACHE_SIZE);
