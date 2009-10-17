@@ -30,7 +30,7 @@
    -- create executable wrapper for ABCL.
  abcl.source.zip abcl.source.tar
    -- create source distributions in ${dist.dir}.
- acbl.test.java
+ abcl.test.java
    -- Run junit tests under ${abcl.test.src.dir}.
  abcl.clean 
    -- remove ABCL intermediate files</echo>
