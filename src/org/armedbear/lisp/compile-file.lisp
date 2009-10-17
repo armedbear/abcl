@@ -475,15 +475,19 @@
                            :stream out)
                     (%stream-terpri out))
                   (handler-bind ((style-warning #'(lambda (c)
-                                                    (declare (ignore c))
                                                     (setf warnings-p t)
-                                                    nil))
+                                                    ;; let outer handlers
+                                                    ;; do their thing
+                                                    (signal c)
+                                                    ;; prevent the next
+                                                    ;; handler from running:
+                                                    ;; we're a WARNING subclass
+                                                    (continue)))
                                  ((or warning
                                       compiler-error) #'(lambda (c)
                                                           (declare (ignore c))
                                                           (setf warnings-p t
-                                                                failure-p t)
-                                                          nil)))
+                                                                failure-p t))))
                     (loop
                        (let* ((*source-position* (file-position in))
                               (jvm::*source-line-number* (stream-line-number in))
