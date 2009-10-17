@@ -252,7 +252,9 @@ public class StandardObject extends LispObject
       }
     Debug.assertTrue(layout != null);
     int index = layout.getSlotIndex(slotName);
-    Debug.assertTrue(index >= 0);
+    //### FIXME: should call SLOT-MISSING (clhs)
+    if (index < 0)
+      return error(new LispError("Missing slot " + slotName.writeToString()));
     return slots[index];
   }
 
@@ -268,7 +270,9 @@ public class StandardObject extends LispObject
       }
     Debug.assertTrue(layout != null);
     int index = layout.getSlotIndex(slotName);
-    Debug.assertTrue(index >= 0);
+    //### FIXME: should call SLOT-MISSING (clhs)
+    if (index < 0)
+      error(new LispError("Missing slot " + slotName.writeToString()));
     slots[index] = newValue;
   }
 

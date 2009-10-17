@@ -47,7 +47,7 @@ public final class SpecialOperators extends Lisp
       {
         if (args.cdr() != NIL)
           return error(new WrongNumberOfArgumentsException(this));
-        return ((Cons)args).car;
+        return args.car();
       }
     };
 
