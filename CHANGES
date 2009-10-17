@@ -2,16 +2,40 @@ Version 0.17.0
 ==============
 (unreleased)
 
-Features
---------
+Features:
 
-  * Support for loading FASLs from JAR files.
+  * Support for loading FASLs from JAR files
+  * Checking of init-arguments for MAKE-INSTANCE (CLOS)
+  * Support for *INVOKE-DEBUGGER-HOOK* (to support SLIME)
 
-Bugs fixed
-----------
+
+Bugs fixed:
+
+  * Better fix for #63: Prevent exceptions from happening (GO and RETURN-FROM)
+  * Restore ability for ABCL to be build host for SBCL
+  * CLOS performance improvements through looser COMPILE dependency
+  * Compilation fix for highest SPEED setting (triggered by CL-BENCH)
+  * COMPILE's use of temp files eliminated
+  * OpenJDK on Darwin now correctly identified
+  * Incorrect block names for SETF functions defined by LABELS
+  * Fixed MULTIPLE-VALUE-CALL with more than 8 arguments
+  * Incorrect identification of lexical scope on recursive TAGBODY/GO
+    and BLOCK/RETURN-FROM blocks (compiler and interpreter)
+  * Correctly return 65k in char-code-limit (was 256, incorrectly)
+  * 
+
+
+Version 0.16.1
+==============
+svn://common-lisp.net/project/armedbear/svn/tags/0.16.1/abcl
+(17 Oct, 2009)
+
+Bugs fixed:
+
   * More careful checking for null args in LispStackFrame
   * Honor appearance of &allow-other-keys in CLOS MAKE-INSTANCE
   * Fix #63: GO forms to non-existent TAGBODY labels would exit ABCL
+  * Don't leak temp files during compilation
 
 Version 0.16.0
 ==============
