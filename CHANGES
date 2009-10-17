@@ -22,7 +22,7 @@ Bugs fixed:
   * Incorrect identification of lexical scope on recursive TAGBODY/GO
     and BLOCK/RETURN-FROM blocks (compiler and interpreter)
   * Correctly return 65k in char-code-limit (was 256, incorrectly)
-  * 
+  * Fixes to be able to run the BEYOND-ANSI tests (part of ANSI test suite)
 
 
 Version 0.16.1
