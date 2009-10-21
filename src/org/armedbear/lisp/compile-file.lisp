@@ -372,6 +372,22 @@
 
 (declaim (ftype (function (t) t) convert-toplevel-form))
 (defun convert-toplevel-form (form)
+  (when (and (consp form)
+             (every #'(lambda (arg)
+                        (or (and (atom arg)
+                                 (not (and (symbolp arg)
+                                           (symbol-macro-p arg))))
+                            (and (consp arg)
+                                 (eq 'QUOTE (car arg)))))
+                    (cdr form)))
+    ;; single form with simple or constant arguments
+    ;; Without this exception, toplevel function calls
+    ;; will be compiled into lambdas which get compiled to
+    ;; compiled-functions. Those need to be loaded.
+    ;; Conclusion: Top level interpreting the function call
+    ;;  and its arguments may be (and should be) more efficient.
+    (return-from convert-toplevel-form
+      (precompiler:precompile-form form nil *compile-file-environment*)))
   (let* ((expr `(lambda () ,form))
          (classfile (next-classfile-name))
          (result
