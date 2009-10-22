@@ -316,24 +316,24 @@ public final class LispThread extends LispObject
         return obj;
     }
 
-    public final void bindSpecial(Symbol name, LispObject value)
+    public final SpecialBinding bindSpecial(Symbol name, LispObject value)
     {
-        lastSpecialBinding = new SpecialBinding(name, value, lastSpecialBinding);
+        return lastSpecialBinding
+            = new SpecialBinding(name, value, lastSpecialBinding);
     }
 
-    public final void bindSpecialToCurrentValue(Symbol name)
+    public final SpecialBinding bindSpecialToCurrentValue(Symbol name)
     {
         SpecialBinding binding = lastSpecialBinding;
         while (binding != null) {
             if (binding.name == name) {
-                lastSpecialBinding =
+                return lastSpecialBinding =
                     new SpecialBinding(name, binding.value, lastSpecialBinding);
-                return;
             }
             binding = binding.next;
         }
         // Not found.
-        lastSpecialBinding =
+        return lastSpecialBinding =
             new SpecialBinding(name, name.getSymbolValue(), lastSpecialBinding);
     }
 

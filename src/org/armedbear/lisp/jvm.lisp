@@ -247,10 +247,11 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defvar *dump-variables* nil)
 
 (defun dump-1-variable (variable)
-  (sys::%format t "  ~S special-p = ~S register = ~S index = ~S declared-type = ~S~%"
+  (sys::%format t "  ~S special-p = ~S register = ~S binding-reg = ~S index = ~S declared-type = ~S~%"
            (variable-name variable)
            (variable-special-p variable)
            (variable-register variable)
+           (variable-binding-register variable)
            (variable-index variable)
            (variable-declared-type variable)))
 
@@ -274,6 +275,7 @@ of the compilands being processed (p1: so far; p2: in total).")
   representation
   special-p     ; indicates whether a variable is special
   register      ; register number for a local variable
+  binding-register ; register number containing the binding reference
   index         ; index number for a variable in the argument array
   closure-index ; index number for a variable in the closure context array
   environment   ; the environment for the variable, if we're compiling in
@@ -564,6 +566,21 @@ than just restore the lastSpecialBinding (= dynamic environment).
       (catch-node-p object)
       (synchronized-node-p object)))
 
+(defknown block-creates-runtime-bindings-p (t) boolean)
+(defun block-creates-runtime-bindings-p (block)
+  ;; FIXME: This may be false, if the bindings to be
+  ;; created are a quoted list
+  (progv-node-p block))
+
+(defknown enclosed-by-runtime-bindings-creating-block-p (t) boolean)
+(defun enclosed-by-runtime-bindings-creating-block-p (outermost-block)
+  "Indicates whether the code being compiled/analyzed is enclosed in a
+block which creates special bindings at runtime."
+  (dolist (enclosing-block *blocks*)
+    (when (eq enclosing-block outermost-block)
+      (return-from enclosed-by-runtime-bindings-creating-block-p nil))
+    (when (block-creates-runtime-bindings-p enclosing-block)
+      (return-from enclosed-by-runtime-bindings-creating-block-p t))))
 
 (defknown enclosed-by-protected-block-p (&optional t) boolean)
 (defun enclosed-by-protected-block-p (&optional outermost-block)

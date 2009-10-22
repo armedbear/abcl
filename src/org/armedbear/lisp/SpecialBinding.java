@@ -37,7 +37,7 @@ package org.armedbear.lisp;
 final public class SpecialBinding
 {
     final LispObject name;
-    LispObject value;
+    public LispObject value;
     final SpecialBinding next;
 
     SpecialBinding(LispObject name, LispObject value, SpecialBinding next)
@@ -45,5 +45,19 @@ final public class SpecialBinding
         this.name = name;
         this.value = value;
         this.next = next;
+    }
+
+    /** Return the value of the binding,
+     * checking a valid binding.
+     *
+     * If the binding is invalid, an unbound variable error
+     * is raised.
+     */
+    final public LispObject getValue() throws ConditionThrowable
+    {
+        if (value == null)
+            return Lisp.error(new UnboundVariable(name));
+
+        return value;
     }
 }

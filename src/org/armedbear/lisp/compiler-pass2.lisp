@@ -238,6 +238,7 @@
 (defconstant +lisp-environment+ "Lorg/armedbear/lisp/Environment;")
 (defconstant +lisp-environment-class+ "org/armedbear/lisp/Environment")
 (defconstant +lisp-special-binding+ "Lorg/armedbear/lisp/SpecialBinding;")
+(defconstant +lisp-special-binding-class+ "org/armedbear/lisp/SpecialBinding")
 (defconstant +lisp-throw-class+ "org/armedbear/lisp/Throw")
 (defconstant +lisp-return-class+ "org/armedbear/lisp/Return")
 (defconstant +lisp-go-class+ "org/armedbear/lisp/Go")
@@ -3939,6 +3940,7 @@ given a specific common representation.")
 ;; Generates code to bind variable to value at top of runtime stack.
 (declaim (ftype (function (t) t) compile-binding))
 (defun compile-binding (variable)
+;;  (dump-1-variable variable)
   (cond ((variable-register variable)
          (astore (variable-register variable)))
         ((variable-special-p variable)
@@ -3947,7 +3949,11 @@ given a specific common representation.")
          (emit-push-variable-name variable)
          (emit 'swap)
          (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
-                             (list +lisp-symbol+ +lisp-object+) nil))
+                             (list +lisp-symbol+ +lisp-object+)
+                             +lisp-special-binding+)
+         (if (variable-binding-register variable)
+             (astore (variable-binding-register variable))
+             (emit 'pop)))
         ((variable-closure-index variable)              ;; stack:
          (emit-new-closure-binding variable))
         (t
@@ -4311,6 +4317,9 @@ given a specific common representation.")
                (when (eq (variable-register variable) t)
                  ;; Now allocate the register.
                  (allocate-variable-register variable))
+               (when (variable-special-p variable)
+                 (setf (variable-binding-register variable)
+                       (allocate-register)))
                (cond ((variable-special-p variable)
                       (let ((temp-register (allocate-register)))
                         ;; FIXME: this permanently allocates a register
@@ -4358,7 +4367,10 @@ given a specific common representation.")
                  (emit-invokevirtual +lisp-thread-class+
                                      "bindSpecialToCurrentValue"
                                      (list +lisp-symbol+)
-                                     nil)
+                                     +lisp-special-binding+)
+                 (if (variable-binding-register variable)
+                     (astore (variable-binding-register variable))
+                     (emit 'pop))
                  (setf boundp t))
                 ((and (not (variable-special-p variable))
                       (zerop (variable-reads variable)))
@@ -4404,6 +4416,8 @@ given a specific common representation.")
             (setf (variable-register variable) (allocate-register))))
         (push variable *visible-variables*)
         (unless boundp
+          (when (variable-special-p variable)
+            (setf (variable-binding-register variable) (allocate-register)))
           (compile-binding variable))
         (maybe-generate-type-check variable)))
     (when must-clear-values
@@ -7354,30 +7368,42 @@ We need more thought here.
       (t
        (compile-function-call form target representation)))))
 
-(defun compile-special-reference (name target representation)
-  (when (constantp name)
-    (let ((value (symbol-value name)))
-      (when (or (null *file-compilation*)
-                (stringp value)
-                (numberp value)
-                (packagep value))
-        (compile-constant value target representation)
-        (return-from compile-special-reference))))
-  (multiple-value-bind
-        (name class)
-      (lookup-or-declare-symbol name)
-    (emit 'getstatic class name +lisp-symbol+))
-  (cond ((constantp name)
-         ;; "... a reference to a symbol declared with DEFCONSTANT always
-         ;; refers to its global value."
-         (emit-invokevirtual +lisp-symbol-class+ "getSymbolValue"
-                             nil +lisp-object+))
-        (t
-         (emit-push-current-thread)
-         (emit-invokevirtual +lisp-symbol-class+ "symbolValue"
-                             (list +lisp-thread+) +lisp-object+)))
-  (fix-boxing representation nil)
-  (emit-move-from-stack target representation))
+(defun compile-special-reference (variable target representation)
+  (let ((name (variable-name variable)))
+    (when (constantp name)
+      (let ((value (symbol-value name)))
+        (when (or (null *file-compilation*)
+                  (stringp value)
+                  (numberp value)
+                  (packagep value))
+          (compile-constant value target representation)
+          (return-from compile-special-reference))))
+    (unless (and (variable-binding-register variable)
+                 (eq (variable-compiland variable) *current-compiland*)
+                 (not (enclosed-by-runtime-bindings-creating-block-p
+                       (variable-block variable))))
+      (multiple-value-bind
+            (name class)
+          (lookup-or-declare-symbol name)
+        (emit 'getstatic class name +lisp-symbol+)))
+    (cond ((constantp name)
+           ;; "... a reference to a symbol declared with DEFCONSTANT always
+           ;; refers to its global value."
+           (emit-invokevirtual +lisp-symbol-class+ "getSymbolValue"
+                               nil +lisp-object+))
+          ((and (variable-binding-register variable)
+                (eq (variable-compiland variable) *current-compiland*)
+                (not (enclosed-by-runtime-bindings-creating-block-p
+                      (variable-block variable))))
+           (aload (variable-binding-register variable))
+           (emit 'getfield +lisp-special-binding-class+ "value"
+                 +lisp-object+))
+          (t
+           (emit-push-current-thread)
+           (emit-invokevirtual +lisp-symbol-class+ "symbolValue"
+                               (list +lisp-thread+) +lisp-object+)))
+    (fix-boxing representation nil)
+    (emit-move-from-stack target representation)))
 
 (defknown compile-var-ref (t t t) t)
 (defun compile-var-ref (ref target representation)
@@ -7386,7 +7412,7 @@ We need more thought here.
         (compile-constant (var-ref-constant-value ref) target representation)
         (let ((variable (var-ref-variable ref)))
           (cond ((variable-special-p variable)
-                 (compile-special-reference (variable-name variable) target representation))
+                 (compile-special-reference variable target representation))
                 ((or (variable-representation variable)
                      (variable-register variable)
                      (variable-closure-index variable)
@@ -7442,24 +7468,39 @@ We need more thought here.
         (when (neq new-form form)
           (return-from p2-setq (compile-form (p1 new-form) target representation))))
       ;; We're setting a special variable.
-      (emit-push-current-thread)
-      (multiple-value-bind
-            (name class)
-          (lookup-or-declare-symbol name)
-        (emit 'getstatic class name +lisp-symbol+))
 ;;       (let ((*print-structure* nil))
 ;;         (format t "p2-setq name = ~S value-form = ~S~%" name value-form))
-      (cond ((and (consp value-form)
+      (cond ((and variable
+                  (variable-binding-register variable)
+                  (eq (variable-compiland variable) *current-compiland*)
+                  (not (enclosed-by-runtime-bindings-creating-block-p
+                        (variable-block variable))))
+             (aload (variable-binding-register variable))
+             (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
+             (emit 'dup_x1) ;; copy past th
+             (emit 'putfield +lisp-special-binding-class+ "value"
+                   +lisp-object+))
+            ((and (consp value-form)
                   (eq (first value-form) 'CONS)
                   (= (length value-form) 3)
                   (var-ref-p (third value-form))
                   (eq (variable-name (var-ref-variable (third value-form))) name))
              ;; (push thing *special*) => (setq *special* (cons thing *special*))
 ;;              (format t "compiling pushSpecial~%")
+             (emit-push-current-thread)
+             (multiple-value-bind
+                   (name class)
+                 (lookup-or-declare-symbol name)
+               (emit 'getstatic class name +lisp-symbol+))
 	     (compile-forms-and-maybe-emit-clear-values (second value-form) 'stack nil)
              (emit-invokevirtual +lisp-thread-class+ "pushSpecial"
                                  (list +lisp-symbol+ +lisp-object+) +lisp-object+))
             (t
+             (emit-push-current-thread)
+             (multiple-value-bind
+                   (name class)
+                 (lookup-or-declare-symbol name)
+               (emit 'getstatic class name +lisp-symbol+))
 	     (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
              (emit-invokevirtual +lisp-thread-class+ "setSpecialVariable"
                                  (list +lisp-symbol+ +lisp-object+) +lisp-object+)))
@@ -8281,6 +8322,7 @@ We need more thought here.
       (label label-START)
       (dolist (variable (compiland-arg-vars compiland))
         (when (variable-special-p variable)
+          (setf (variable-binding-register variable) (allocate-register))
           (emit-push-current-thread)
           (emit-push-variable-name variable)
           (cond ((variable-register variable)
@@ -8292,7 +8334,9 @@ We need more thought here.
                  (emit 'aaload)
                  (setf (variable-index variable) nil)))
           (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
-                              (list +lisp-symbol+ +lisp-object+) nil))))
+                              (list +lisp-symbol+ +lisp-object+)
+                              +lisp-special-binding+)
+          (astore (variable-binding-register variable)))))
 
     (compile-progn-body body 'stack)
 
