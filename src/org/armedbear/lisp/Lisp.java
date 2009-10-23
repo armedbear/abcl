@@ -120,6 +120,8 @@ public abstract class Lisp
         PACKAGE_LISP.usePackage(PACKAGE_EXT);
         PACKAGE_LISP.usePackage(PACKAGE_SYS);
         PACKAGE_THREADS.usePackage(PACKAGE_CL);
+        PACKAGE_THREADS.usePackage(PACKAGE_EXT);
+        PACKAGE_THREADS.usePackage(PACKAGE_SYS);
       }
     catch (Throwable t)
       {
