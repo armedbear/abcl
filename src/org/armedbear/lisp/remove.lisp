@@ -31,7 +31,7 @@
 
 (in-package "SYSTEM")
 
-(resolve 'delete) ; MUMBLE-DELETE-FROM-END
+(require "DELETE") ; MUMBLE-DELETE-FROM-END
 
 ;;; From CMUCL.
 

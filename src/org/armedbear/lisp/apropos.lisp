@@ -33,7 +33,6 @@
 
 (in-package #:system)
 
-(resolve 'write-string)
 
 (defun apropos-list (string-designator &optional package-designator)
   (if package-designator
