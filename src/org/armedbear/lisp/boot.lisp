@@ -175,14 +175,6 @@
 (load-system-file "defpackage")
 (load-system-file "define-modify-macro")
 
-;;; Package definitions.
-(defpackage "FORMAT" (:use "CL" "EXT"))
-
-(defpackage "XP"
-  (:use "CL")
-  (:export
-   #:output-pretty-object))
-
 (defconstant lambda-list-keywords
   '(&optional &rest &key &aux &body &whole &allow-other-keys &environment))
 

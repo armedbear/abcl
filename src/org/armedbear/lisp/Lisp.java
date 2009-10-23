@@ -81,6 +81,11 @@ public abstract class Lisp
     Packages.createPackage("LISP");
   public static final Package PACKAGE_THREADS =
     Packages.createPackage("THREADS");
+  public static final Package PACKAGE_FORMAT =
+    Packages.createPackage("FORMAT");
+  public static final Package PACKAGE_XP =
+    Packages.createPackage("XP");
+
 
   // ### nil
   public static final LispObject NIL = Nil.NIL;
@@ -122,6 +127,9 @@ public abstract class Lisp
         PACKAGE_THREADS.usePackage(PACKAGE_CL);
         PACKAGE_THREADS.usePackage(PACKAGE_EXT);
         PACKAGE_THREADS.usePackage(PACKAGE_SYS);
+        PACKAGE_FORMAT.usePackage(PACKAGE_CL);
+        PACKAGE_FORMAT.usePackage(PACKAGE_EXT);
+        PACKAGE_XP.usePackage(PACKAGE_CL);
       }
     catch (Throwable t)
       {
@@ -2777,6 +2785,7 @@ public abstract class Lisp
     loadClass("org.armedbear.lisp.StructureObject");
     loadClass("org.armedbear.lisp.ash");
     loadClass("org.armedbear.lisp.Java");
+    loadClass("org.armedbear.lisp.PackageFunctions");
     cold = false;
   }
 }

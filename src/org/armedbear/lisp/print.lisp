@@ -273,7 +273,7 @@
 
 (defun %print-object (object stream)
   (if *print-pretty*
-      (xp:output-pretty-object object stream)
+      (xp::output-pretty-object object stream)
       (output-ugly-object object stream)))
 
 (defun %check-object (object stream)
