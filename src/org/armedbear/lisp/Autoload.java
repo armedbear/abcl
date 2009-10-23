@@ -665,10 +665,6 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "std-allocate-instance", "StandardObjectFunctions", true);
         autoload(PACKAGE_SYS, "zip", "zip", true);
 
-        autoload(PACKAGE_THREADS, "make-mutex", "Mutex", true);
-        autoload(PACKAGE_THREADS, "get-mutex", "Mutex", true);
-        autoload(PACKAGE_THREADS, "release-mutex", "Mutex", true);
-
         autoload(Symbol.COPY_LIST, "copy_list");
 
         autoload(Symbol.SET_CHAR, "StringFunctions");

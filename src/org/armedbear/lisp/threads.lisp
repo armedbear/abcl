@@ -38,7 +38,7 @@
 ;;
 
 ;; this export statement is also in autoloads.lisp
-(export '(mailbox-send mailbox-empty-p mailbox-read mailbox-peek))
+(export '(make-mailbox mailbox-send mailbox-empty-p mailbox-read mailbox-peek))
 
 (defstruct mailbox
   queue)
@@ -82,6 +82,43 @@ calling thread."
 
 
 ;;
+;; Mutex implementation
+;;
+
+
+;; this export statement is also in autoloads.lisp
+(export '(make-mutex get-mutex release-mutex))
+
+(defstruct mutex
+  in-use)
+
+(defun get-mutex (mutex)
+  "Acquires a lock on the `mutex'."
+  (synchronized-on mutex
+    (loop
+       while (mutex-in-use mutex)
+       do (object-wait mutex))
+    (setf (mutex-in-use mutex) T)))
+
+(defun release-mutex (mutex)
+  "Releases a lock on the `mutex'."
+  (synchronized-on mutex
+    (setf (mutex-in-use mutex) NIL)
+    (object-notify mutex)))
+
+(defmacro with-mutex ((mutex) &body body)
+  "Acquires a lock on `mutex', executes the body
+and releases the lock."
+  (let ((m (gensym)))
+    `(let ((,m ,mutex))
+       (when (get-mutex ,m)
+         (unwind-protect
+          (progn
+            ,@body)
+          (release-mutex ,m))))))
+
+
+;;
 ;; Lock implementation
 ;;
 
@@ -90,6 +127,7 @@ calling thread."
   (gensym))
 
 (defmacro with-thread-lock ((lock) &body body)
+  "Acquires a lock on the `lock', executes `body' and releases the lock."
   (let ((glock (gensym)))
     `(let ((,glock ,lock))
        (synchronized-on ,glock

@@ -292,20 +292,39 @@
 (autoload 'socket-peer-address "socket")
 
 (in-package "THREADS")
-(sys::export '(mailbox-send mailbox-empty-p mailbox-read mailbox-peek))
-(sys::autoload '(mailbox-send mailbox-empty-p mailbox-read mailbox-peek)
+
+
+(autoload '(;; Mailbox
+            make-mailbox mailbox-send mailbox-empty-p
+            mailbox-read mailbox-peek
+
+            ;; Lock
+            make-thread-lock thread-lock thread-unlock
+
+            ;; Mutex
+            make-mutex get-mutex release-mutex)
     "threads")
 
-(sys::export '(make-thread-lock thread-lock thread-unlock with-thread-lock))
-(sys::autoload '(make-thread-lock thread-lock thread-unlock) "threads")
-(sys::autoload-macro 'with-thread-lock "threads")
+(autoload-macro '(;; Lock
+                  with-thread-lock
 
-;; block to be removed at 0.22
+                  ;; Mutex
+                  with-mutex)
+                "threads")
 
-(in-package "EXTENSIONS")
-
-(export '(mailbox-send mailbox-empty-p mailbox-read mailbox-peek))
+(export '(make-mailbox mailbox-send mailbox-empty-p
+          mailbox-read mailbox-peek))
 (export '(make-thread-lock thread-lock thread-unlock with-thread-lock))
+(export '(make-mutex get-mutex release-mutex with-mutex))
+
+(progn
+  ;; block to be removed at 0.22
+  ;; It exists solely for pre-0.17 compatibility
+  ;; FIXME 0.22
+  (in-package "EXTENSIONS")
+  (export '(mailbox-send mailbox-empty-p mailbox-read mailbox-peek))
+  (export '(make-thread-lock thread-lock thread-unlock with-thread-lock))
+  (export '(with-mutex make-mutex get-mutex release-mutex)))
 
 ;; end of 0.22 block
 
@@ -340,6 +359,3 @@
 (export 'compiler-let)
 (autoload 'compiler-let)
 
-(in-package "THREADS")
-(export 'with-mutex)
-(ext:autoload-macro 'with-mutex)

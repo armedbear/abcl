@@ -256,7 +256,6 @@
                            "with-accessors.lisp"
                            "with-hash-table-iterator.lisp"
                            "with-input-from-string.lisp"
-                           "with-mutex.lisp"
                            "with-open-file.lisp"
                            "with-output-to-string.lisp"
                            "with-package-iterator.lisp"
