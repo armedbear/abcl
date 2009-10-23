@@ -6323,7 +6323,7 @@ for use with derive-type-times.")
 
 (define-int-bounds-derivation min (low1 high1 low2 high2)
   (values (or (when (and low1 low2) (min low1 low2)) low1 low2)
-          (or (when (and high1 high2) (min high1 high2)) high1 hig2)))
+          (or (when (and high1 high2) (min high1 high2)) high1 high2)))
 
 (defknown derive-type-min (t) t)
 (defun derive-type-min (form)
