@@ -162,12 +162,6 @@
 (load-system-file "compiler-error")
 (load-system-file "source-transform")
 (load-system-file "precompiler")
-
-(precompile-package "PRECOMPILER")
-(precompile-package "EXTENSIONS")
-(precompile-package "SYSTEM")
-(precompile-package "COMMON-LISP")
-
 (load-system-file "signal")
 (load-system-file "list")
 (load-system-file "sequences")
