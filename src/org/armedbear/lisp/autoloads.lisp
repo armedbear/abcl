@@ -29,6 +29,23 @@
 ;;; obligated to do so.  If you do not wish to do so, delete this
 ;;; exception statement from your version.
 
+
+;; This file lists public functions which package users can depend upon.
+;;
+;; In order to avoid loading the full CL system (of which not all functions
+;; may be required by the current program), this file makes sure the symbols
+;; are available, but when it tries to execute them, the autoloader causes
+;; the actual functions or macros to be loaded.
+
+;; This file lists for each autoloaded symbol which file has to be
+;; REQUIRE'd to make it available.
+;;
+;; Please note: the actual function definition may not be always in the
+;;    same file as the one which needs to be REQUIRE'd; an example of
+;;    such a case is the compiler: all compiler functions have to be
+;;    loaded through loading jvm.lisp.
+
+
 (in-package "SYSTEM")
 
 (autoload '(char/= char> char>= char-not-equal)
