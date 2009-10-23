@@ -220,6 +220,7 @@
                            "prog.lisp"
                            "psetf.lisp"
                            "query.lisp"
+                           "read-circle.lisp"
                            "read-conditional.lisp"
                            "read-from-string.lisp"
                            "read-sequence.lisp"
