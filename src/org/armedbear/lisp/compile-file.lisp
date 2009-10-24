@@ -370,16 +370,25 @@
                    ;; FIXME This should be a warning or error of some sort...
                    (format *error-output* "; Unable to compile method~%")))))))))
 
+(declaim (ftype (function (t) t) simple-toplevel-form-p))
+(defun simple-toplevel-form-p (form)
+  "Returns NIL if the form is too complex to become an
+interpreted toplevel form, non-NIL if it is 'simple enough'."
+  (and (consp form)
+       (every #'(lambda (arg)
+                  (or (and (atom arg)
+                           (not (and (symbolp arg)
+                                     (symbol-macro-p arg))))
+                      (and (consp arg)
+                           (eq 'QUOTE (car arg)))))
+              (cdr form))))
+
 (declaim (ftype (function (t) t) convert-toplevel-form))
 (defun convert-toplevel-form (form)
-  (when (and (consp form)
-             (every #'(lambda (arg)
-                        (or (and (atom arg)
-                                 (not (and (symbolp arg)
-                                           (symbol-macro-p arg))))
-                            (and (consp arg)
-                                 (eq 'QUOTE (car arg)))))
-                    (cdr form)))
+  (when (or (simple-toplevel-form-p form)
+            (and (eq (car form) 'SETQ)
+                 ;; for SETQ, look at the evaluated part
+                 (simple-toplevel-form-p (third form))))
     ;; single form with simple or constant arguments
     ;; Without this exception, toplevel function calls
     ;; will be compiled into lambdas which get compiled to
