@@ -50,6 +50,7 @@
 
   (initialize-known-symbols "org.armedbear.lisp.Symbol" symbols)
   (initialize-known-symbols "org.armedbear.lisp.Keyword" symbols)
+  (initialize-known-symbols "org.armedbear.lisp.Lisp" symbols)
 
   (defun lookup-known-symbol (symbol)
     "Returns the name of the field and its class designator
