@@ -106,7 +106,9 @@ public class Autoload extends Function
             int loadDepth = Fixnum.getValue(_LOAD_DEPTH_.symbolValue());
             thread.bindSpecial(_LOAD_DEPTH_, Fixnum.getInstance(++loadDepth));
             try {
-                if (_AUTOLOAD_VERBOSE_.symbolValue(thread) != NIL) {
+                if (_AUTOLOAD_VERBOSE_.symbolValue(thread) != NIL
+                    || "Y".equals(System.getProperty("abcl.autoload.verbose")))
+                {
                     final String prefix = Load.getLoadVerbosePrefix(loadDepth);
                     Stream out = getStandardOutput();
                     out._writeString(prefix);
