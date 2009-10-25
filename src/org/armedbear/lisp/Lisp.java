@@ -2450,6 +2450,11 @@ public abstract class Lisp
     Symbol.COMPILE_FILE_TRUENAME.initializeSpecial(NIL);
   }
 
+  // ### *double-colon-package-separators*
+  // internal symbol
+  public static final Symbol DOUBLE_COLON_PACKAGE_SEPARATORS =
+    internSpecial("*DOUBLE-COLON-PACKAGE-SEPARATORS*", PACKAGE_SYS, NIL);
+
   // ### *load-depth*
   // internal symbol
   public static final Symbol _LOAD_DEPTH_ =

@@ -580,7 +580,8 @@ public class Symbol extends LispObject
           }
       }
     FastStringBuffer sb = new FastStringBuffer(packageName);
-    if (((Package)pkg).findExternalSymbol(name) != null)
+    if (((Package)pkg).findExternalSymbol(name) != null
+        && DOUBLE_COLON_PACKAGE_SEPARATORS.symbolValue(thread) == NIL)
       sb.append(':');
     else
       sb.append("::");
