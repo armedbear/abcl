@@ -76,8 +76,8 @@
   (declare (ignore classfile))
   t)
 
-(declaim (ftype (function (t stream) t) process-defconstant))
-(defun process-defconstant (form stream)
+(declaim (ftype (function (t) t) process-defconstant))
+(defun process-defconstant (form)
   ;; "If a DEFCONSTANT form appears as a top level form, the compiler
   ;; must recognize that [the] name names a constant variable. An
   ;; implementation may choose to evaluate the value-form at compile
@@ -86,8 +86,7 @@
   ;; whether or not references to name appear in the file) and that
   ;; it always evaluates to the same value."
   (eval form)
-  (dump-form form stream)
-  (%stream-terpri stream))
+  (output-form form))
 
 (declaim (ftype (function (t) t) note-toplevel-form))
 (defun note-toplevel-form (form)
@@ -117,8 +116,7 @@
            (eval form)
            ;; Force package prefix to be used when dumping form.
            (let ((*package* +keyword-package+))
-             (dump-form form stream))
-           (%stream-terpri stream)
+             (output-form form))
            (return-from process-toplevel-form))
           ((DEFVAR DEFPARAMETER)
            (note-toplevel-form form)
@@ -133,7 +131,7 @@
                  (%defvar name))))
           (DEFCONSTANT
            (note-toplevel-form form)
-           (process-defconstant form stream)
+           (process-defconstant form)
            (return-from process-toplevel-form))
           (DEFUN
            (note-toplevel-form form)
@@ -154,7 +152,7 @@
 				       :if-exists :supersede)
 				  (report-error
 				   (jvm:compile-defun name expr nil
-						      classfile f))))
+						      classfile f nil))))
                         (compiled-function (verify-load classfile)))
 		   (declare (ignore result))
                    (cond
@@ -187,10 +185,8 @@
                    (setf (inline-expansion name)
                          (jvm::generate-inline-expansion block-name
                                                          lambda-list body))
-                   (dump-form `(setf (inline-expansion ',name)
-                                     ',(inline-expansion name))
-                              stream)
-                   (%stream-terpri stream))))
+                   (output-form `(setf (inline-expansion ',name)
+                                       ',(inline-expansion name))))))
              (push name jvm::*functions-defined-in-current-file*)
              (note-name-defined name)
              ;; If NAME is not fbound, provide a dummy definition so that
@@ -218,7 +214,7 @@
 		      :element-type '(unsigned-byte 8)
 		      :if-exists :supersede)
 		 (ignore-errors
-		   (jvm:compile-defun nil expr nil classfile f)))
+		   (jvm:compile-defun nil expr nil classfile f nil)))
                (if (null (verify-load classfile))
                    ;; FIXME error or warning
                    (format *error-output* "; Unable to compile macro ~A~%" name)
@@ -299,8 +295,7 @@
                   (setf form (precompiler:precompile-form form nil *compile-file-environment*))
                   ;; Make sure package prefix is printed when symbols are imported.
                   (let ((*package* +keyword-package+))
-                    (dump-form form stream))
-                  (%stream-terpri stream)
+                    (output-form form))
                   (when compile-time-too
                     (eval form))
                   (return-from process-toplevel-form))
@@ -326,10 +321,9 @@
                  (t
 ;;;                      (setf form (precompiler:precompile-form form nil))
                   (note-toplevel-form form)
-                  (setf form (convert-toplevel-form form)))))))))
+                  (setf form (convert-toplevel-form form nil)))))))))
   (when (consp form)
-    (dump-form form stream)
-    (%stream-terpri stream))
+    (output-form form))
   ;; Make sure the compiled-function loader knows where
   ;; to load the compiled functions. Note that this trickery
   ;; was already used in verify-load before I used it,
@@ -360,7 +354,7 @@
 			 :element-type '(unsigned-byte 8)
 			 :if-exists :supersede)
 		    (report-error
-		     (jvm:compile-defun nil lambda-expression nil classfile f))))
+		     (jvm:compile-defun nil lambda-expression nil classfile f nil))))
                  (compiled-function (verify-load classfile)))
 	    (declare (ignore result))
             (cond (compiled-function
@@ -375,12 +369,12 @@
   "Returns NIL if the form is too complex to become an
 interpreted toplevel form, non-NIL if it is 'simple enough'."
   (and (consp form)
-       (every #'(lambda (arg)
-                  (or (and (atom arg)
-                           (not (and (symbolp arg)
-                                     (symbol-macro-p arg))))
-                      (and (consp arg)
-                           (eq 'QUOTE (car arg)))))
+             (every #'(lambda (arg)
+                        (or (and (atom arg)
+                                 (not (and (symbolp arg)
+                                           (symbol-macro-p arg))))
+                            (and (consp arg)
+                                 (eq 'QUOTE (car arg)))))
               (cdr form))))
 
 (declaim (ftype (function (t) t) convert-toplevel-form))
@@ -405,7 +399,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 		 :direction :output
 		 :element-type '(unsigned-byte 8)
 		 :if-exists :supersede)
-	    (report-error (jvm:compile-defun nil expr nil classfile f))))
+	    (report-error (jvm:compile-defun nil expr nil classfile
+                                             f declare-inline))))
          (compiled-function (verify-load classfile)))
     (declare (ignore result))
     (setf form
@@ -447,13 +442,35 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 	  (intersection '(:load-toplevel load) situations)
 	  (intersection '(:execute eval) situations)))
 
+
+(defvar *binary-fasls* nil)
+(defvar *forms-for-output* nil)
+(defvar *fasl-stream* nil)
+
+(defun output-form (form)
+  (if *binary-fasls*
+      (push form *forms-for-output*)
+      (progn
+        (dump-form form *fasl-stream*)
+        (%stream-terpri *fasl-stream*))))
+
+(defun finalize-fasl-output ()
+  (when *binary-fasls*
+    (let ((*package* (find-package :keyword))
+          (*double-colon-package-separators* T))
+      (dump-form (convert-toplevel-form (list* 'PROGN
+                                               (nreverse *forms-for-output*))
+                                        t)
+                 *fasl-stream*))
+    (%stream-terpri *fasl-stream*)))
+
 (defun compile-file (input-file
                      &key
                      output-file
                      ((:verbose *compile-verbose*) *compile-verbose*)
                      ((:print *compile-print*) *compile-print*)
                      external-format)
-  (declare (ignore external-format)) ; FIXME
+  (declare (ignore external-format))    ; FIXME
   (unless (or (and (probe-file input-file) (not (file-directory-p input-file)))
               (pathname-type input-file))
     (let ((pathname (merge-pathnames (make-pathname :type "lisp") input-file)))
@@ -487,42 +504,45 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                   (*package* *package*)
                   (jvm::*functions-defined-in-current-file* '())
                   (*fbound-names* '())
-                  (*fasl-anonymous-package* (%make-package)))
+                  (*fasl-anonymous-package* (%make-package))
+                  (*fasl-stream* out)
+                  *forms-for-output*)
               (jvm::with-saved-compiler-policy
-                (jvm::with-file-compilation
-                  (write "; -*- Mode: Lisp -*-" :escape nil :stream out)
-                  (%stream-terpri out)
-                  (let ((*package* (find-package '#:cl)))
-                    (write (list 'init-fasl :version *fasl-version*)
-                           :stream out)
+                  (jvm::with-file-compilation
+                      (write "; -*- Mode: Lisp -*-" :escape nil :stream out)
                     (%stream-terpri out)
-                    (write (list 'setq '*source* *compile-file-truename*)
-                           :stream out)
-                    (%stream-terpri out))
-                  (handler-bind ((style-warning #'(lambda (c)
-                                                    (setf warnings-p t)
-                                                    ;; let outer handlers
-                                                    ;; do their thing
-                                                    (signal c)
-                                                    ;; prevent the next
-                                                    ;; handler from running:
-                                                    ;; we're a WARNING subclass
-                                                    (continue)))
-                                 ((or warning
-                                      compiler-error) #'(lambda (c)
-                                                          (declare (ignore c))
-                                                          (setf warnings-p t
-                                                                failure-p t))))
-                    (loop
-                       (let* ((*source-position* (file-position in))
-                              (jvm::*source-line-number* (stream-line-number in))
-                              (form (read in nil in))
-                              (*compiler-error-context* form))
-                         (when (eq form in)
-                           (return))
-                         (process-toplevel-form form out nil))))
-                  (dolist (name *fbound-names*)
-                    (fmakunbound name)))))))
+                    (let ((*package* (find-package '#:cl)))
+                      (write (list 'init-fasl :version *fasl-version*)
+                             :stream out)
+                      (%stream-terpri out)
+                      (write (list 'setq '*source* *compile-file-truename*)
+                             :stream out)
+                      (%stream-terpri out))
+                    (handler-bind ((style-warning #'(lambda (c)
+                                                      (setf warnings-p t)
+                                                      ;; let outer handlers
+                                                      ;; do their thing
+                                                      (signal c)
+                                                      ;; prevent the next
+                                                      ;; handler from running:
+                                                      ;; we're a WARNING subclass
+                                                      (continue)))
+                                   ((or warning
+                                        compiler-error) #'(lambda (c)
+                                        (declare (ignore c))
+                                        (setf warnings-p t
+                                              failure-p t))))
+                      (loop
+                         (let* ((*source-position* (file-position in))
+                                (jvm::*source-line-number* (stream-line-number in))
+                                (form (read in nil in))
+                                (*compiler-error-context* form))
+                           (when (eq form in)
+                             (return))
+                           (process-toplevel-form form out nil))))
+                    (finalize-fasl-output)
+                    (dolist (name *fbound-names*)
+                      (fmakunbound name)))))))
         (rename-file temp-file output-file)
 
         (when *compile-file-zip*
