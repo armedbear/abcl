@@ -1462,8 +1462,14 @@ public final class Primitives extends Lisp
         e.printStackTrace();
 
         System.out.println("ERROR placeholder called with arguments:");
-        for (LispObject a : args)
-            System.out.println(a.writeToString());
+
+        if (args.length == 1 && args[0] instanceof Condition) {
+            System.out.println(args[0].writeToString());
+            System.out.println(((Condition)args[0]).getConditionReport());
+        }
+        else
+            for (LispObject a : args)
+                System.out.println(a.writeToString());
 
         //###FIXME: Bail out, but do it nicer...
         System.exit(1);
