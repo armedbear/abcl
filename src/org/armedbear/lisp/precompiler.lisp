@@ -331,12 +331,6 @@
         (t
          form)))
 
-(in-package "EXTENSIONS")
-
-(unless (find-package "PRECOMPILER")
-  (make-package "PRECOMPILER"
-                :nicknames '("PRE")
-                :use '("COMMON-LISP" "EXTENSIONS" "SYSTEM")))
 
 (in-package "PRECOMPILER")
 

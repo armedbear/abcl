@@ -85,6 +85,8 @@ public abstract class Lisp
     Packages.createPackage("FORMAT");
   public static final Package PACKAGE_XP =
     Packages.createPackage("XP");
+  public static final Package PACKAGE_PRECOMPILER =
+    Packages.createPackage("PRECOMPILER");
 
 
   // ### nil
@@ -130,6 +132,10 @@ public abstract class Lisp
         PACKAGE_FORMAT.usePackage(PACKAGE_CL);
         PACKAGE_FORMAT.usePackage(PACKAGE_EXT);
         PACKAGE_XP.usePackage(PACKAGE_CL);
+        PACKAGE_PRECOMPILER.addNickname("PRE");
+        PACKAGE_PRECOMPILER.usePackage(PACKAGE_CL);
+        PACKAGE_PRECOMPILER.usePackage(PACKAGE_EXT);
+        PACKAGE_PRECOMPILER.usePackage(PACKAGE_SYS);
       }
     catch (Throwable t)
       {
