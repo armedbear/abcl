@@ -376,3 +376,29 @@
 (export 'compiler-let)
 (autoload 'compiler-let)
 
+
+(in-package "SYSTEM")
+
+;; #:SYSTEM in PRECOMPILER.LISP
+
+
+(export '(process-optimization-declarations
+          inline-p notinline-p inline-expansion expand-inline
+          note-name-defined precompile))
+(autoload '(process-optimization-declarations
+            inline-p notinline-p inline-expansion expand-inline
+            note-name-defined precompile) "precompiler")
+
+
+
+;; #:SYSTEM in SOURCE-TRANSFORM.LISP
+
+(export '(source-transform define-source-transform expand-source-transform))
+(autoload '(source-transform define-source-transform set-source-transform
+            expand-source-transform)
+    "source-transform")
+
+(in-package "PRECOMPILER")
+
+(export '(precompile-form precompile))
+(autoload '(precompile-form) "precompiler")

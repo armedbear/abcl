@@ -40,6 +40,7 @@
   (require "CLOS")
   (require "PRINT-OBJECT")
   (require "COMPILER-TYPES")
+  (require "COMPILER-ERROR")
   (require "KNOWN-FUNCTIONS")
   (require "KNOWN-SYMBOLS")
   (require "DUMP-FORM")

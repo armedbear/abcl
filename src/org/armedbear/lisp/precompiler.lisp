@@ -31,6 +31,7 @@
 
 (in-package "SYSTEM")
 
+
 (export '(*inline-declarations*
           process-optimization-declarations
           inline-p notinline-p inline-expansion expand-inline
@@ -473,7 +474,7 @@
 
 (defun precompile-progv (form)
   (if (< (length form) 3)
-      (compiler-error "Not enough arguments for ~S." 'progv)
+      (error "Not enough arguments for ~S." 'progv)
       (list* 'PROGV (mapcar #'precompile1 (%cdr form)))))
 
 (defun precompile-setf (form)
