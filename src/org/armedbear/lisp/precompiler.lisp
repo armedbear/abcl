@@ -33,7 +33,6 @@
 
 (export '(*inline-declarations*
           process-optimization-declarations
-          process-special-declarations
           inline-p notinline-p inline-expansion expand-inline
           *defined-functions* *undefined-functions* note-name-defined))
 
@@ -82,19 +81,6 @@
                  (pushnew quality *explain*)
                  (setf *explain* (remove quality *explain*)))))))))
   t)
-
-;; Returns list of declared specials.
-(declaim (ftype (function (list) list) process-special-declarations))
-(defun process-special-declarations (forms)
-  (let ((specials nil))
-    (dolist (form forms)
-      (unless (and (consp form) (eq (%car form) 'DECLARE))
-        (return))
-      (let ((decls (%cdr form)))
-        (dolist (decl decls)
-          (when (eq (car decl) 'special)
-            (setq specials (append (cdr decl) specials))))))
-    specials))
 
 (declaim (ftype (function (t) t) inline-p))
 (defun inline-p (name)
