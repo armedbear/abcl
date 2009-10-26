@@ -377,8 +377,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                                  (eq 'QUOTE (car arg)))))
               (cdr form))))
 
-(declaim (ftype (function (t) t) convert-toplevel-form))
-(defun convert-toplevel-form (form)
+(declaim (ftype (function (t t) t) convert-toplevel-form))
+(defun convert-toplevel-form (form declare-inline)
   (when (or (simple-toplevel-form-p form)
             (and (eq (car form) 'SETQ)
                  ;; for SETQ, look at the evaluated part
