@@ -176,7 +176,6 @@
 (load-system-file "debug")
 (load-system-file "print")
 (load-system-file "pprint-dispatch")
-(load-system-file "pprint")
 (load-system-file "defsetf")
 (load-system-file "package")
 

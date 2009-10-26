@@ -402,3 +402,27 @@
 
 (export '(precompile-form precompile))
 (autoload '(precompile-form) "precompiler")
+
+
+;; items in the XP package (pprint.lisp)
+
+(in-package "XP")
+
+(sys::autoload '(xp-structure-p write-string++ output-pretty-object
+                 pprint-logical-block+ maybe-initiate-xp-printing
+                 check-block-abbreviation start-block end-block
+                 pprint-pop-check+) "pprint")
+
+(sys::autoload-macro '(pprint-logical-block+ pprint-pop+) "pprint")
+
+(in-package "COMMON-LISP")
+
+(sys::autoload '(write print prin1 princ pprint write-to-string
+            prin1-to-string princ-to-string write-char
+            write-string write-line terpri finish-output
+            fresh-line force-output clear-output
+            pprint-newline pprint-indent pprint-tab pprint-linear
+            pprint-fill pprint-tabular) "pprint")
+
+(sys::autoload-macro '(pprint-logical-block) "pprint")
+

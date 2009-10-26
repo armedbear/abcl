@@ -1358,7 +1358,7 @@
          (assert nil)
          (sys:output-object object stream))))
 
-(provide 'pprint)
+(provide "PPRINT")
 
 ;------------------------------------------------------------------------
 
