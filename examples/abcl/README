@@ -2,6 +2,7 @@ ABCL Examples Building and Running Instructions
 ===============================================
 
 code by Ville Voutilainen
+(abcl_appengine code by Alex Muscar)
 instructions by Blake McBride
 updated by Mark Evenson
 
@@ -31,3 +32,13 @@ or in Windows use:
 	cmd$  java  -cp  $ABCL_ROOT/dist/abcl.jar;.  Main
 
 where "Main" is the initial class to run in your Java program.
+
+
+abcl_appengine
+==============
+
+This example shows how to run your servlet off ABCL in general
+and in Google App Engine (GAE) in particular.
+
+When uploading your code to the server, be sure to put abcl.jar
+in war/WEB-INF/lib.
