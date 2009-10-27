@@ -1972,19 +1972,28 @@ representation, based on the derived type of the LispObject."
 		      (declare-object symbol +lisp-symbol+
                                       +lisp-symbol-class+))))
 	 (t
-          (let ((*code* *static-code*)
-                (s (sanitize symbol)))
-            (setf g (symbol-name (gensym "SYM")))
-            (when s
-              (setf g (concatenate 'string g "_" s)))
-            (declare-field g +lisp-symbol+ +field-access-private+)
-            (emit 'ldc (pool-string (symbol-name symbol)))
-            (emit 'ldc (pool-string (package-name (symbol-package symbol))))
-            (emit-invokestatic +lisp-class+ "internInPackage"
-                               (list +java-string+ +java-string+) +lisp-symbol+)
-            (emit 'putstatic *this-class* g +lisp-symbol+)
-            (setf *static-code* *code*)
-            (setf (gethash symbol ht) g))))))
+          (let (saved-code)
+            (let ((*code* (if *declare-inline* *code*) *static-code*)
+                  (s (sanitize symbol)))
+              ;; *declare-inline*, because the code below assumes the
+              ;; package to exist, which can be in a previous statement;
+              ;; thus we can't create the symbol out-of-band.
+              (setf g (symbol-name (gensym "SYM")))
+              (when s
+                (setf g (concatenate 'string g "_" s)))
+              (declare-field g +lisp-symbol+ +field-access-private+)
+              (emit 'ldc (pool-string (symbol-name symbol)))
+              (emit 'ldc (pool-string (package-name (symbol-package symbol))))
+              (emit-invokestatic +lisp-class+ "internInPackage"
+                                 (list +java-string+ +java-string+)
+                                 +lisp-symbol+)
+              (emit 'putstatic *this-class* g +lisp-symbol+)
+              (if *declare-inline*
+                  (setf saved-code *code*)
+                  (setf *static-code* *code*))
+              (setf (gethash symbol ht) g))
+            (when *declare-inline*
+              (setf *code* saved-code)))))))
 
 (defun lookup-or-declare-symbol (symbol)
   "Returns the value-pair (VALUES field class) from which
@@ -2189,18 +2198,25 @@ the Java object representing SYMBOL can be retrieved."
     g))
 
 (defun declare-load-time-value (obj)
-  (let* ((g (symbol-name (gensym "LTV")))
-         (s (with-output-to-string (stream) (dump-form obj stream)))
-         (*code* *static-code*))
-    ;; fixme *declare-inline*?
-    (declare-field g +lisp-object+ +field-access-private+)
-    (emit 'ldc (pool-string s))
-    (emit-invokestatic +lisp-class+ "readObjectFromString"
-                       (list +java-string+) +lisp-object+)
-    (emit-invokestatic +lisp-class+ "loadTimeValue"
-                       (lisp-object-arg-types 1) +lisp-object+)
-    (emit 'putstatic *this-class* g +lisp-object+)
-    (setf *static-code* *code*)
+  (let ((g (symbol-name (gensym "LTV")))
+        saved-code)
+    (let* ((s (with-output-to-string (stream) (dump-form obj stream)))
+           (*code* (if *declare-inline* *code* *static-code*)))
+      ;; The readObjectFromString call may require evaluation of
+      ;; lisp code in the string (think #.() syntax), of which the outcome
+      ;; may depend on something which was declared inline
+      (declare-field g +lisp-object+ +field-access-private+)
+      (emit 'ldc (pool-string s))
+      (emit-invokestatic +lisp-class+ "readObjectFromString"
+                         (list +java-string+) +lisp-object+)
+      (emit-invokestatic +lisp-class+ "loadTimeValue"
+                         (lisp-object-arg-types 1) +lisp-object+)
+      (emit 'putstatic *this-class* g +lisp-object+)
+      (if *declared-inline*
+          (setf saved-code *code*)
+          (setf *static-code* *code*)))
+    (when *declared-inline*
+      (setf *code* saved-code))
     g))
 
 (defknown declare-instance (t) t)
@@ -2208,18 +2224,25 @@ the Java object representing SYMBOL can be retrieved."
   (aver (not (null *file-compilation*)))
   (aver (or (structure-object-p obj) (standard-object-p obj)
             (java:java-object-p obj)))
-  (let* ((g (symbol-name (gensym "INSTANCE")))
-         (s (with-output-to-string (stream) (dump-form obj stream)))
-         (*code* *static-code*))
-    ;; fixme *declare-inline*?
-    (declare-field g +lisp-object+ +field-access-private+)
-    (emit 'ldc (pool-string s))
-    (emit-invokestatic +lisp-class+ "readObjectFromString"
-                       (list +java-string+) +lisp-object+)
-    (emit-invokestatic +lisp-class+ "loadTimeValue"
-                       (lisp-object-arg-types 1) +lisp-object+)
-    (emit 'putstatic *this-class* g +lisp-object+)
-    (setf *static-code* *code*)
+  (let ((g (symbol-name (gensym "INSTANCE")))
+        saved-code)
+    (let* ((s (with-output-to-string (stream) (dump-form obj stream)))
+           (*code* (if *declare-inline* *code* *static-code*)))
+      ;; The readObjectFromString call may require evaluation of
+      ;; lisp code in the string (think #.() syntax), of which the outcome
+      ;; may depend on something which was declared inline
+      (declare-field g +lisp-object+ +field-access-private+)
+      (emit 'ldc (pool-string s))
+      (emit-invokestatic +lisp-class+ "readObjectFromString"
+                         (list +java-string+) +lisp-object+)
+      (emit-invokestatic +lisp-class+ "loadTimeValue"
+                         (lisp-object-arg-types 1) +lisp-object+)
+      (emit 'putstatic *this-class* g +lisp-object+)
+      (if *declare-inline*
+          (setf saved-code *code*)
+          (setf *static-code* *code*)))
+    (when *declare-inline*
+      (setf *code* saved-code))
     g))
 
 (defun declare-package (obj)
@@ -2228,7 +2251,7 @@ the Java object representing SYMBOL can be retrieved."
     (let* ((*print-level* nil)
            (*print-length* nil)
            (s (format nil "#.(FIND-PACKAGE ~S)" (package-name obj)))
-           (*code* *static-code*))
+           (*code* (if *declare-inline* *code* *static-code*)))
       (declare-field g +lisp-object+ +field-access-private+)
       (emit 'ldc (pool-string s))
       (emit-invokestatic +lisp-class+ "readObjectFromString"
@@ -2254,15 +2277,15 @@ The field type of the object is specified by OBJ-REF."
     (let* ((g1 (declare-string key))
            (g2 (symbol-name (gensym "O2BJ"))))
       (let* ((*code* *static-code*))
-      (declare-field g2 obj-ref +field-access-private+)
-      (emit 'getstatic *this-class* g1 +lisp-simple-string+)
-      (emit-invokestatic +lisp-class+ "recall"
-                         (list +lisp-simple-string+) +lisp-object+)
-      (when (and obj-class (string/= obj-class +lisp-object-class+))
-        (emit 'checkcast obj-class))
-      (emit 'putstatic *this-class* g2 obj-ref)
-      (setf *static-code* *code*)
-      g2))))
+        (declare-field g2 obj-ref +field-access-private+)
+        (emit 'getstatic *this-class* g1 +lisp-simple-string+)
+        (emit-invokestatic +lisp-class+ "recall"
+                           (list +lisp-simple-string+) +lisp-object+)
+        (when (and obj-class (string/= obj-class +lisp-object-class+))
+          (emit 'checkcast obj-class))
+        (emit 'putstatic *this-class* g2 obj-ref)
+        (setf *static-code* *code*)
+        g2))))
 
 (defun declare-lambda (obj)
   (let (saved-code
@@ -2270,7 +2293,7 @@ The field type of the object is specified by OBJ-REF."
     (let* ((*print-level* nil)
            (*print-length* nil)
            (s (format nil "~S" obj))
-           (*code* *static-code*))
+           (*code* (if *declare-inline* *code* *static-code*)))
       (declare-field g +lisp-object+ +field-access-private+)
       (emit 'ldc
             (pool-string s))
