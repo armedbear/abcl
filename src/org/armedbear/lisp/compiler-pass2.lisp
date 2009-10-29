@@ -1973,7 +1973,7 @@ representation, based on the derived type of the LispObject."
                                       +lisp-symbol-class+))))
 	 (t
           (let (saved-code)
-            (let ((*code* (if *declare-inline* *code*) *static-code*)
+            (let ((*code* (if *declare-inline* *code* *static-code*))
                   (s (sanitize symbol)))
               ;; *declare-inline*, because the code below assumes the
               ;; package to exist, which can be in a previous statement;
@@ -2212,10 +2212,10 @@ the Java object representing SYMBOL can be retrieved."
       (emit-invokestatic +lisp-class+ "loadTimeValue"
                          (lisp-object-arg-types 1) +lisp-object+)
       (emit 'putstatic *this-class* g +lisp-object+)
-      (if *declared-inline*
+      (if *declare-inline*
           (setf saved-code *code*)
           (setf *static-code* *code*)))
-    (when *declared-inline*
+    (when *declare-inline*
       (setf *code* saved-code))
     g))
 
