@@ -2271,21 +2271,19 @@ the Java object representing SYMBOL can be retrieved."
 loading the object value into a field upon class-creation time.
 
 The field type of the object is specified by OBJ-REF."
-  (let ((key (symbol-name (gensym "OBJ"))))
+  (let ((g (symbol-name (gensym "OBJ"))))
     ;; fixme *declare-inline*?
-    (remember key obj)
-    (let* ((g1 (declare-string key))
-           (g2 (symbol-name (gensym "O2BJ"))))
-      (let* ((*code* *static-code*))
-        (declare-field g2 obj-ref +field-access-private+)
-        (emit 'getstatic *this-class* g1 +lisp-simple-string+)
-        (emit-invokestatic +lisp-class+ "recall"
-                           (list +lisp-simple-string+) +lisp-object+)
-        (when (and obj-class (string/= obj-class +lisp-object-class+))
-          (emit 'checkcast obj-class))
-        (emit 'putstatic *this-class* g2 obj-ref)
-        (setf *static-code* *code*)
-        g2))))
+    (remember g obj)
+    (let* ((*code* *static-code*))
+      (declare-field g obj-ref +field-access-private+)
+      (emit 'ldc (pool-string g))
+      (emit-invokestatic +lisp-class+ "recall"
+                         (list +java-string+) +lisp-object+)
+      (when (and obj-class (string/= obj-class +lisp-object-class+))
+        (emit 'checkcast obj-class))
+      (emit 'putstatic *this-class* g obj-ref)
+      (setf *static-code* *code*)
+      g)))
 
 (defun declare-lambda (obj)
   (let (saved-code

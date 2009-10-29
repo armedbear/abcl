@@ -2129,9 +2129,14 @@ public abstract class Lisp
   private static final Hashtable<String,LispObject> objectTable =
           new Hashtable<String,LispObject>();
 
+  public static final LispObject recall(String key)
+  {
+    return objectTable.remove(key);
+  }
+
   public static final LispObject recall(SimpleString key)
   {
-    return (LispObject) objectTable.remove(key.getStringValue());
+    return objectTable.remove(key.getStringValue());
   }
 
   // ### remember
