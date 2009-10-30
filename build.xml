@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="antlib:org.apache.tools.ant"
-	 name="abcl-master" default="help" basedir=".">
+	 name="abcl-master" default="abcl.wrapper" basedir=".">
     <description>Compiling, testing, and packaging Armed Bear Common Lisp</description>
 
     <target name="abcl" depends="abcl.wrapper"/>
@@ -90,9 +90,16 @@
       <pathelement location="${build.classes.dir}"/>
     </path>
 
-    <target name="abcl.compile" depends="abcl.compile.lisp">
+    <target name="abcl.compile" depends="abcl.clean.maybe,abcl.compile.lisp">
       <echo>Compiled ABCL with Java version: ${java.version}</echo>
     </target>
+    
+    <target name="abcl.clean.maybe" unless="abcl.build.incremental">
+      <echo>Cleaning all intermediate compilation artifacts.</echo>
+      <echo>Setting 'abcl.build.incremental' enables incremental compilation.</echo>
+      <antcall target="abcl.clean"/>
+    </target>
+      
 
     <target name="abcl.init">
       <tstamp>
