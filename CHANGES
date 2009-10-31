@@ -4,9 +4,15 @@ Version 0.17.0
 
 Features:
 
+  * Google App Engine example project "Hello world"
   * Support for loading FASLs from JAR files
   * Checking of init-arguments for MAKE-INSTANCE (CLOS)
   * Support for *INVOKE-DEBUGGER-HOOK* (to support SLIME)
+  * Reduced abcl.jar size (bytes and number of objects)
+  * Faster access to locally bound specials (compiler efficiency)
+  * Java property to print autoloading information: abcl.autoload.verbose
+  * Experimental: binary fasls
+  * Default Ant build target now "abcl.clean abcl.wrapper" (from abcl.help)
 
 
 Bugs fixed:
@@ -23,6 +29,12 @@ Bugs fixed:
     and BLOCK/RETURN-FROM blocks (compiler and interpreter)
   * Correctly return 65k in char-code-limit (was 256, incorrectly)
   * Fixes to be able to run the BEYOND-ANSI tests (part of ANSI test suite)
+  * Compiler typo fix
+  * Implementation of mutex functionality moved to lisp from Java
+  * Functions handling #n= and #n# are now compiled
+  * Autoload cleanups
+  * System package creation cleaned up
+  * CHAR-CODE-LIMIT correctly reflects CHAR-CODE maximum return value
 
 
 Version 0.16.1
