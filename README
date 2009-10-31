@@ -32,6 +32,32 @@ are not obligated to do so. If you do not wish to do so, delete this
 exception statement from your version.
 
 
+RUNNING FROM BINARY RELEASE
+===========================
+
+After you have downloaded a binary release archive, unzip or untar it
+into its own directory. To run ABCL directly from this directory, make
+sure Java (version 1.5 or up) is in your path. Then, type the following
+command:
+
+  $ java -jar abcl.jar
+
+Which should result output like the following:
+
+----------------
+Armed Bear Common Lisp 0.17.0
+Java 1.6.0_14 Sun Microsystems Inc.
+Java HotSpot(TM) Client VM
+Low-level initialization completed in 0.9 seconds.
+Startup completed in 2.294 seconds.
+Type ":help" for a list of available commands.
+CL-USER(1):
+----------------
+
+In order to build ABCL, you need the full SDK. However, in order to
+just run it (like the above), the JRE is enough.
+
+
 BUILDING
 ========
 
@@ -109,27 +135,28 @@ BUGS
 
 A lot of (renewed) energy has been spent to make ABCL a compliant
 and practically useable Common Lisp implementation.  Because of this,
-ABCL 0.0.11 now fails only 47 out of 21702 tests in the ANSI CL test
+ABCL 0.17.0 now fails only 34 out of 21702 tests in the ANSI CL test
 suite.  Next to that, the fail count of the Maxima test suite has been
-reduced from over 1400 in 0.0.10 to little more than 600 in 0.0.11.
+reduced to only 3 - rounding errors.
 
 ABCL's CLOS does not handle on-the-fly redefinition of classes
-correctly, and in any event is intolerably slow. There is no support
-for the long form of DEFINE-METHOD-COMBINATION, and certain other
-required CLOS features are also missing. Enough CLOS is there to run
+correctly. Quite a bit of energy has been spent in versions 0.16.0 and
+0.17.0 to improve CLOS performance. There is no support for the long
+form of DEFINE-METHOD-COMBINATION, and certain other required CLOS
+features are also missing. Enough CLOS is there to run
 ASDF and CL-PPCRE, if you're in no hurry.
 
 There is no MOP worth mentioning.
 
-Since this is a early public release, there might be build
-problems as well as runtime bugs.
+Patches to address any of the issues mentioned above will be gladly
+accepted.
 
-Please report problems to the j-devel mailing list:
+Please report problems to the development mailing list:
 
-    armedbear-j-devel@lists.sourceforge.net
+    armedbear-devel@common-lisp.net
 
 Have fun!
 
 On behalf of all ABCL development team and contributors,
 Erik Huelsmann
-October 18, 2008
+October 31, 2009
