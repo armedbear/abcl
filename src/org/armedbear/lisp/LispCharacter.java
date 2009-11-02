@@ -226,6 +226,13 @@ public final class LispCharacter extends LispObject
     return Character.toUpperCase(value);
   }
 
+  /** See LispObject.getStringValue() */
+  @Override
+  public String getStringValue() throws ConditionThrowable
+  {
+    return String.valueOf(value);
+  }
+
   @Override
   public final String writeToString() throws ConditionThrowable
   {

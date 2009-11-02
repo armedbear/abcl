@@ -1062,6 +1062,11 @@ public class LispObject extends Lisp
     return null;
   }
 
+  /** Returns a string representing the value
+   * of a 'string designator', if the instance is one.
+   *
+   * Throws an error if the instance isn't a string designator.
+   */
   public String getStringValue() throws ConditionThrowable
   {
     type_error(this, Symbol.STRING);

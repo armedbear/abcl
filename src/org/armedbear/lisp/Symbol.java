@@ -420,6 +420,13 @@ public class Symbol extends LispObject
     this.function = obj;
   }
 
+  /** See LispObject.getStringValue() */
+  @Override
+  public String getStringValue() throws ConditionThrowable
+  {
+    return name.getStringValue();
+  }
+
   @Override
   public final LispObject getPropertyList()
   {
