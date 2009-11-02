@@ -494,6 +494,42 @@
 	<zipfileset dir="${abcl.build.src.dir}" prefix="abcl-src-${abcl.version}"/>
       </zip>
     </target>
+    
+    <target name="abcl.binary.prepare" depends="abcl.stamp.version">
+      <property name="abcl.build.binary.dir"
+                value="${build.dir}/abcl-bin-${abcl.version}"/>
+      <mkdir dir="${abcl.build.binary.dir}"/>
+      <copy todir="${abcl.build.binary.dir}"
+            preservelastmodified="true">
+        <fileset dir="${basedir}/dist">
+          <patternset>
+            <include name="abcl.jar"/>
+          </patternset>
+        </fileset>
+        <fileset dir="${basedir}">
+          <patternset>
+            <include name="README"/>
+            <include name="CHANGES"/>
+          </patternset>
+        </fileset>
+      </copy>
+    </target>
+
+    <target name="abcl.binary.tar" depends="abcl.binary.prepare">
+      <tar destfile="${dist.dir}/abcl-bin-${abcl.version}.tar.gz"
+           compression="gzip">
+        <tarfileset dir="${build.dir}">
+          <include name="abcl-bin-${abcl.version}/**"/>
+          </tarfileset>
+      </tar>
+    </target>
+
+    <target name="abcl.binary.zip" depends="abcl.binary.prepare">
+      <zip destfile="${dist.dir}/abcl-bin-${abcl.version}.zip"
+           compress="true">
+        <zipfileset dir="${abcl.build.binary.dir}" prefix="abcl-bin-${abcl.version}"/>
+      </zip>
+    </target>
 
     <property name="abcl.test.classes.dir"
 	      value="${build.dir}/classes-test"/>
