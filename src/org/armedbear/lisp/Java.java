@@ -761,10 +761,7 @@ public final class Java extends Lisp
 				    return NIL;
 				}
 			} catch (Exception e) {
-				ConditionThrowable t = new ConditionThrowable("Exception reading property");
-				t.initCause(e);
-                // ### FIXME conditionthrowable -> error()
-				throw t;
+                return error(new JavaException(e));
 			}
         }
     };
@@ -794,10 +791,7 @@ public final class Java extends Lisp
 		pd.getWriteMethod().invoke(obj, jValue);
 		return value;
 	    } catch (Exception e) {
-            // ### FIXME conditionthrowable -> error()
-		ConditionThrowable t = new ConditionThrowable("Exception writing property " + propertyName.writeToString() + " in object " + obj + " to " + value.writeToString());
-		t.initCause(e);
-		throw t;
+            return error(new JavaException(e));
 	    }
         }
     };
@@ -810,8 +804,9 @@ public final class Java extends Lisp
         		return pd;
         	}
         }
-        // ### FIXME conditionthrowable -> error()
-		throw new ConditionThrowable("Property " + prop + " not found in " + obj);
+        error(new LispError("Property " + prop + " not found in " + obj));
+
+        return null; // not reached
     }
     
     private static Class classForName(String className) throws ConditionThrowable

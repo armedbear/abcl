@@ -33,10 +33,8 @@
 
 package org.armedbear.lisp;
 
-public class ConditionThrowable extends Throwable
+abstract public class ConditionThrowable extends RuntimeException
 {
-    public Condition condition;
-
     public ConditionThrowable()
     {
     }
@@ -50,18 +48,10 @@ public class ConditionThrowable extends Throwable
 	return this;
     }
 
-    public ConditionThrowable(Condition condition)
-    {
-        this.condition = condition;
-    }
-
     public ConditionThrowable(String message)
     {
         super(message);
     }
 
-    public LispObject getCondition() throws ConditionThrowable
-    {
-        return condition != null ? condition : new Condition();
-    }
+    public abstract LispObject getCondition() throws ConditionThrowable;
 }

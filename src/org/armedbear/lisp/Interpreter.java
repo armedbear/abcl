@@ -457,12 +457,25 @@ public final class Interpreter extends Lisp
         System.err.println("Interpreter.finalize");
     }
 
+    public static final class UnhandledCondition extends Error
+    {
+        LispObject condition;
+
+        UnhandledCondition(LispObject condition) {
+            this.condition = condition;
+        }
+
+        public LispObject getCondition() {
+            return condition;
+        }
+    };
+
     private static final Primitive _DEBUGGER_HOOK_FUNCTION =
         new Primitive("%debugger-hook-function", PACKAGE_SYS, false)
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+            throws ConditionThrowable, UnhandledCondition
         {
             final Condition condition = (Condition) first;
             if (interpreter == null) {
@@ -495,8 +508,7 @@ public final class Interpreter extends Lisp
                     thread.lastSpecialBinding = lastSpecialBinding;
                 }
             }
-            // ### FIXME conditionthrowable
-            throw new ConditionThrowable(condition);
+            throw new UnhandledCondition(condition);
         }
     };
 
@@ -512,6 +524,14 @@ public final class Interpreter extends Lisp
     }
 
     // For j.
+    /** Runs its input string through the lisp reader and evaluates the result.
+     *
+     * @param s A string with a valid Common Lisp expression
+     * @return The result of the evaluation
+     * @throws org.armedbear.lisp.ConditionThrowable
+     * @exception UnhandledCondition in case the an error occurs which
+     *      should be passed to the Lisp debugger
+     */
     public static LispObject evaluate(String s) throws ConditionThrowable
     {
         if (!initialized)

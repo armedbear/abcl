@@ -1490,6 +1490,12 @@ public final class Primitives extends Lisp
     };
 
   // ### signal
+  /** Placeholder function, to be replaced by the function
+   * defined in signal.lisp
+   *
+   * Calling this function is an error: we're not set up for
+   * signalling yet.
+   */
   private static final Primitive SIGNAL =
     new Primitive(Symbol.SIGNAL, "datum &rest arguments")
     {
@@ -1497,10 +1503,10 @@ public final class Primitives extends Lisp
       public LispObject execute(LispObject[] args) throws ConditionThrowable
       {
         if (args.length < 1)
-          throw new ConditionThrowable(new WrongNumberOfArgumentsException(this));
+          return error(new WrongNumberOfArgumentsException(this));
         if (args[0] instanceof Condition)
-          throw new ConditionThrowable((Condition)args[0]);
-        throw new ConditionThrowable(new SimpleCondition());
+          return error((Condition)args[0]);
+        return error(new SimpleCondition());
       }
     };
 

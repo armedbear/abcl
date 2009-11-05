@@ -43,4 +43,10 @@ public class ThreadDestroyed extends ConditionThrowable
     {
         super(message);
     }
+
+    @Override
+    public LispObject getCondition() throws ConditionThrowable
+    {
+        return new ControlError("Thread destroyed.");
+    }
 }
