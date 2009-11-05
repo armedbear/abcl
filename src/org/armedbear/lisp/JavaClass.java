@@ -135,11 +135,11 @@ public class JavaClass extends LispClass {
 	private static final Primitive _FIND_JAVA_CLASS = new Primitive(
 			"%find-java-class", PACKAGE_JAVA, false, "string") {
 		public LispObject execute(LispObject arg) throws ConditionThrowable {
-			try {
-				return findJavaClass(Class.forName((String) arg.getStringValue()));
-			} catch (ClassNotFoundException e) {
-				throw new ConditionThrowable("Cannot find Java class " + arg.getStringValue());
-			}
+		    try {
+			return findJavaClass(Class.forName((String) arg.getStringValue()));
+		    } catch (ClassNotFoundException e) {
+			return error(new LispError("Cannot find Java class " + arg.getStringValue()));
+		    }
 		}
 
 	};
