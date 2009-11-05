@@ -894,7 +894,7 @@
          (when (and (consp form)
                     (symbolp (%car form))
                     (special-operator-p (%car form)))
-           (return-from expand-macro form)))
+           (return-from expand-macro (values form exp))))
        (multiple-value-bind (result expanded)
            (macroexpand-1 form *precompile-env*)
          (unless expanded
