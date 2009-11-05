@@ -111,6 +111,7 @@ public final class LispThread extends LispObject
             if (name != NIL)
                 javaThread.setName(name.getStringValue());
         } catch (ConditionThrowable ex) {
+            // ### FIXME exception
             Debug.trace("Failed to set thread name:");
 	    Debug.trace(ex);
         }
@@ -794,6 +795,7 @@ public final class LispThread extends LispObject
                 stream.print(')');
             }
             catch (ConditionThrowable t) {
+                // ### FIXME exception
                 Debug.trace(t);
             }
         } else {
@@ -1063,6 +1065,7 @@ public final class LispThread extends LispObject
             PACKAGE_EXT.export(Symbol.intern("INTERRUPT-THREAD", PACKAGE_THREADS));
             PACKAGE_EXT.export(Symbol.intern("CURRENT-THREAD", PACKAGE_THREADS));
         }
+        // ### FIXME exception
         catch (ConditionThrowable ct) { }
     }
 

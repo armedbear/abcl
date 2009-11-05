@@ -83,6 +83,7 @@ public class Autoload extends Function
                 pkg.export(symbol);
             }
             catch (ConditionThrowable t) {
+                // ### FIXME exception
                 Debug.assertTrue(false);
             }
         }

@@ -85,6 +85,7 @@ public final class JHandler extends Lisp
                     f.execute(args);
                 }
                 catch (ConditionThrowable t) {
+                    // ### FIXME exception
                     t.printStackTrace();
                 }
             }

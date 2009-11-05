@@ -88,6 +88,7 @@ public final class StandardGenericFunction extends StandardObject
       }
     catch (ConditionThrowable t)
       {
+        // ### FIXME exception
         Debug.assertTrue(false);
       }
   }

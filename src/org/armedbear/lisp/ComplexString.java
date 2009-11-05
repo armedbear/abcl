@@ -532,6 +532,7 @@ public final class ComplexString extends AbstractString
           }
         catch (ConditionThrowable t)
           {
+            // ### FIXME exception
             Debug.trace(t);
           }
         hashCode += (hashCode << 10);
@@ -557,6 +558,7 @@ public final class ComplexString extends AbstractString
           }
         catch (ConditionThrowable t)
           {
+            // ### FIXME exception
             Debug.trace(t);
           }
         hashCode += (hashCode << 10);

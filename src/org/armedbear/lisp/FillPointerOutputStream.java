@@ -78,6 +78,7 @@ public final class FillPointerOutputStream extends Stream
                     string.ensureCapacity(fp + limit);
                 }
                 catch (ConditionThrowable t) {
+                    // ### FIXME exception
                     // Shouldn't happen.
                     Debug.trace(t);
                 }
@@ -86,6 +87,7 @@ public final class FillPointerOutputStream extends Stream
                         string.setCharAt(fp, cbuf[i]);
                     }
                     catch (ConditionThrowable t) {
+                        // ### FIXME exception
                         // Shouldn't happen.
                         Debug.trace(t);
                     }

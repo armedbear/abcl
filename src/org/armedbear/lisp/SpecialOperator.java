@@ -65,6 +65,7 @@ public class SpecialOperator extends Operator
             setLambdaList(new SimpleString(arglist));
         }
         catch (ConditionThrowable t) {
+            // ### FIXME exception
             Debug.assertTrue(false);
         }
     }

@@ -93,6 +93,7 @@ public class Profiler extends Lisp
                                     thread.incrementCallCounts();
                                     Thread.sleep(sleep);
                                 }
+                                //### FIXME exception
                                 catch (InterruptedException e) {
                                     Debug.trace(e);
                                 }

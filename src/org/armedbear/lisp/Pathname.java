@@ -571,6 +571,7 @@ public class Pathname extends LispObject
             return sb.toString();
         }
         catch (ConditionThrowable t) {
+            // ### FIXME exception
             return unreadableString("PATHNAME");
         }
     }

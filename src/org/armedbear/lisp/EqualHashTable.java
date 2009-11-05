@@ -61,6 +61,7 @@ public final class EqualHashTable extends HashTable
             if (key == e.key || key.equal(e.key))
               return e.value;
           }
+        // ### FIXME exception
         catch (ConditionThrowable t)
           {
             Debug.trace(t);

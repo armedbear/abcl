@@ -59,6 +59,7 @@ public final class EqualpHashTable extends HashTable
             if (key.equalp(e.key))
               return e.value;
           }
+        // ### FIXME exception
         catch (ConditionThrowable t)
           {
             Debug.trace(t);

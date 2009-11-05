@@ -326,6 +326,7 @@ public class Stream extends LispObject
       if (encIsCp)
           encoding = "Cp" + encoding;
     }
+    // ### FIXME exception
     catch (ConditionThrowable ct) { }
     
     eolChar = (eolStyle == EolStyle.CR) ? '\r' : '\n';

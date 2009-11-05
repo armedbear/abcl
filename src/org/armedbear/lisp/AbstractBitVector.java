@@ -168,6 +168,7 @@ public abstract class AbstractBitVector extends AbstractVector
             for (int i = 0; i < limit; i++)
                 hashCode = hashCode * 31 + getBit(i);
         }
+        // ### fixme exception
         catch (ConditionThrowable t) {
             // Shouldn't happen.
             Debug.trace(t);

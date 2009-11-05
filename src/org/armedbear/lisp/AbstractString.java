@@ -128,6 +128,7 @@ public abstract class AbstractString extends AbstractVector
 	    }
 	    return sb.toString();
 	} catch(ConditionThrowable t) {
+        // ### FIXME exception
 	    throw new Error(t); //Should never happen
 	}
     }

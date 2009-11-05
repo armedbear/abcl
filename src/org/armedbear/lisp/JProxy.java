@@ -106,6 +106,7 @@ public final class JProxy extends Lisp
                                                LispThread.currentThread());
                   return (method.getReturnType() == void.class ? null : result.javaInstance());
                 }
+              // ### FIXME exception
               catch (ConditionThrowable t)
                 {
                   t.printStackTrace();

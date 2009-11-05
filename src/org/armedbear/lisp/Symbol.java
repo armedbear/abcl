@@ -50,6 +50,7 @@ public class Symbol extends LispObject
       }
     catch (ConditionThrowable t)
       {
+        // ### FIXME exception
         Debug.trace(t); // Shouldn't happen.
         return null;
       }

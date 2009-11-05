@@ -59,6 +59,7 @@ public class JavaStackFrame
       result = unreadableString(JAVA_STACK_FRAME + " " 
 				+ toLispString().toString()); 
     } catch (ConditionThrowable t) {
+        // ### FIXME exception
       Debug.trace("Implementation error: ");
       Debug.trace(t);
       result = unreadableString(JAVA_STACK_FRAME);

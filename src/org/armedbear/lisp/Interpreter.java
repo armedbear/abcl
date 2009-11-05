@@ -164,6 +164,7 @@ public final class Interpreter extends Lisp
                 Load.loadSystemFile("boot.lisp", false, false, false);
             }
             catch (ConditionThrowable c) {
+                // ### FIXME exception
                 reportError(c, LispThread.currentThread());
             }
             catch (Throwable t) {
@@ -184,6 +185,7 @@ public final class Interpreter extends Lisp
                 Load.loadSystemFile("j.lisp");
             }
             catch (ConditionThrowable c) {
+                // ### FIXME exception
                 reportError(c, LispThread.currentThread());
             }
             catch (Throwable t) {
@@ -276,6 +278,7 @@ public final class Interpreter extends Lisp
                             evaluate(args[i + 1]);
                         }
                         catch (ConditionThrowable c) {
+                            // ### FIXME exception
                             final String separator =
                                 System.getProperty("line.separator");
                             FastStringBuffer sb = new FastStringBuffer();
@@ -311,6 +314,7 @@ public final class Interpreter extends Lisp
                                 Load.loadSystemFile(args[i + 1]);
                         }
                         catch (ConditionThrowable c) {
+                            // ### FIXME exception
                             System.err.println("Caught condition: " +
                                                c.getCondition().writeToString() +
                                                " while loading: " +
@@ -384,6 +388,7 @@ public final class Interpreter extends Lisp
                     out._writeLine("Stack overflow");
                 }
                 catch (ConditionThrowable c) {
+                    // ### FIXME exception
                     reportError(c, thread);
                 }
                 catch (Throwable t) {
@@ -490,6 +495,7 @@ public final class Interpreter extends Lisp
                     thread.lastSpecialBinding = lastSpecialBinding;
                 }
             }
+            // ### FIXME conditionthrowable
             throw new ConditionThrowable(condition);
         }
     };
