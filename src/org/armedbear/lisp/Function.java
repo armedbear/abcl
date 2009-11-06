@@ -68,13 +68,8 @@ public abstract class Function extends Operator
         setLambdaName(symbol);
         setLambdaList(new SimpleString(arglist));
         if (docstring != null) {
-            try {
-                symbol.setDocumentation(Symbol.FUNCTION,
-                                        new SimpleString(docstring));
-            }
-            catch (ConditionThrowable t) {
-                Debug.assertTrue(false);
-            }
+            symbol.setDocumentation(Symbol.FUNCTION,
+                                    new SimpleString(docstring));
         }
     }
 
@@ -106,23 +101,18 @@ public abstract class Function extends Operator
         if (arglist instanceof String)
             setLambdaList(new SimpleString(arglist));
         if (name != null) {
-            try {
-                Symbol symbol;
-                if (exported)
-                    symbol = pkg.internAndExport(name.toUpperCase());
-                else
-                    symbol = pkg.intern(name.toUpperCase());
-                symbol.setSymbolFunction(this);
-                if (cold)
-                    symbol.setBuiltInFunction(true);
-                setLambdaName(symbol);
-                if (docstring != null)
-                    symbol.setDocumentation(Symbol.FUNCTION,
-                                            new SimpleString(docstring));
-            }
-            catch (ConditionThrowable t) {
-                Debug.assertTrue(false);
-            }
+            Symbol symbol;
+            if (exported)
+                symbol = pkg.internAndExport(name.toUpperCase());
+            else
+                symbol = pkg.intern(name.toUpperCase());
+            symbol.setSymbolFunction(this);
+            if (cold)
+                symbol.setBuiltInFunction(true);
+            setLambdaName(symbol);
+            if (docstring != null)
+                symbol.setDocumentation(Symbol.FUNCTION,
+                                        new SimpleString(docstring));
         }
     }
 

@@ -55,42 +55,34 @@ public final class StandardGenericFunction extends StandardObject
                                  LispObject specializers)
   {
     this();
-    try
-      {
-        Symbol symbol;
-        if (exported)
-          symbol = pkg.internAndExport(name.toUpperCase());
-        else
-          symbol = pkg.intern(name.toUpperCase());
-        symbol.setSymbolFunction(this);
-        this.function = function;
-        slots[StandardGenericFunctionClass.SLOT_INDEX_NAME] = symbol;
-        slots[StandardGenericFunctionClass.SLOT_INDEX_LAMBDA_LIST] =
-          lambdaList;
-        slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS] =
-          lambdaList;
-        numberOfRequiredArgs = lambdaList.length();
-        slots[StandardGenericFunctionClass.SLOT_INDEX_INITIAL_METHODS] =
-          NIL;
-        StandardMethod method =
-          new StandardMethod(this, function, lambdaList, specializers);
-        slots[StandardGenericFunctionClass.SLOT_INDEX_METHODS] =
-          list(method);
-        slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS] =
-          StandardClass.STANDARD_METHOD;
-        slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION] =
-          Symbol.STANDARD;
-        slots[StandardGenericFunctionClass.SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER] =
-          NIL;
-        slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE] =
-          NIL;
-        slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION] = NIL;
-      }
-    catch (ConditionThrowable t)
-      {
-        // ### FIXME exception
-        Debug.assertTrue(false);
-      }
+    Symbol symbol;
+    if (exported)
+      symbol = pkg.internAndExport(name.toUpperCase());
+    else
+      symbol = pkg.intern(name.toUpperCase());
+    symbol.setSymbolFunction(this);
+    this.function = function;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_NAME] = symbol;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_LAMBDA_LIST] =
+      lambdaList;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS] =
+      lambdaList;
+    numberOfRequiredArgs = lambdaList.length();
+    slots[StandardGenericFunctionClass.SLOT_INDEX_INITIAL_METHODS] =
+      NIL;
+    StandardMethod method =
+      new StandardMethod(this, function, lambdaList, specializers);
+    slots[StandardGenericFunctionClass.SLOT_INDEX_METHODS] =
+      list(method);
+    slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS] =
+      StandardClass.STANDARD_METHOD;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION] =
+      Symbol.STANDARD;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER] =
+      NIL;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE] =
+      NIL;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION] = NIL;
   }
 
   private void finalizeInternal()

@@ -526,15 +526,7 @@ public final class ComplexString extends AbstractString
     final int limit = length();
     for (int i = 0; i < limit; i++)
       {
-        try
-          {
-            hashCode += charAt(i);
-          }
-        catch (ConditionThrowable t)
-          {
-            // ### FIXME exception
-            Debug.trace(t);
-          }
+        hashCode += charAt(i);
         hashCode += (hashCode << 10);
         hashCode ^= (hashCode >> 6);
       }
@@ -552,15 +544,7 @@ public final class ComplexString extends AbstractString
     final int limit = length();
     for (int i = 0; i < limit; i++)
       {
-        try
-          {
-            hashCode += Character.toUpperCase(charAt(i));
-          }
-        catch (ConditionThrowable t)
-          {
-            // ### FIXME exception
-            Debug.trace(t);
-          }
+        hashCode += Character.toUpperCase(charAt(i));
         hashCode += (hashCode << 10);
         hashCode ^= (hashCode >> 6);
       }

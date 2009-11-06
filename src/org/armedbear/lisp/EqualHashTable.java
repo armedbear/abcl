@@ -56,16 +56,8 @@ public final class EqualHashTable extends HashTable
     HashEntry e = buckets[key.sxhash() & mask];
     while (e != null)
       {
-        try
-          {
-            if (key == e.key || key.equal(e.key))
-              return e.value;
-          }
-        // ### FIXME exception
-        catch (ConditionThrowable t)
-          {
-            Debug.trace(t);
-          }
+        if (key == e.key || key.equal(e.key))
+          return e.value;
         e = e.next;
       }
     return null;

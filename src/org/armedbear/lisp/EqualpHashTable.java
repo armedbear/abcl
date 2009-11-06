@@ -54,16 +54,8 @@ public final class EqualpHashTable extends HashTable
     HashEntry e = buckets[index];
     while (e != null)
       {
-        try
-          {
-            if (key.equalp(e.key))
-              return e.value;
-          }
-        // ### FIXME exception
-        catch (ConditionThrowable t)
-          {
-            Debug.trace(t);
-          }
+        if (key.equalp(e.key))
+          return e.value;
         e = e.next;
       }
     return null;

@@ -90,12 +90,7 @@ public final class LispThread extends LispObject
                 }
                 catch (Throwable t) {
                     if (isInterrupted()) {
-                        try {
-                            processThreadInterrupts();
-                        }
-                        catch (ConditionThrowable c) {
-                            Debug.trace(c);
-                        }
+                        processThreadInterrupts();
                     }
                 }
                 finally {
@@ -107,14 +102,8 @@ public final class LispThread extends LispObject
         javaThread = new Thread(r);
         this.name = name;
         map.put(javaThread, this);
-        try {
-            if (name != NIL)
-                javaThread.setName(name.getStringValue());
-        } catch (ConditionThrowable ex) {
-            // ### FIXME exception
-            Debug.trace("Failed to set thread name:");
-	    Debug.trace(ex);
-        }
+        if (name != NIL)
+            javaThread.setName(name.getStringValue());
         javaThread.setDaemon(true);
         javaThread.start();
     }
@@ -765,38 +754,32 @@ public final class LispThread extends LispObject
         }
         // Object doesn't fit.
         if (obj instanceof Cons) {
-            try {
-                boolean newlineBefore = false;
-                LispObject[] array = obj.copyToArray();
-                if (array.length > 0) {
-                    LispObject first = array[0];
-                    if (first == Symbol.LET) {
-                        newlineBefore = true;
-                    }
+            boolean newlineBefore = false;
+            LispObject[] array = obj.copyToArray();
+            if (array.length > 0) {
+                LispObject first = array[0];
+                if (first == Symbol.LET) {
+                    newlineBefore = true;
                 }
-                int charPos = stream.getCharPos();
-                if (newlineBefore && charPos != indentBy) {
-                    stream.terpri();
-                    charPos = stream.getCharPos();
-                }
-                if (charPos < indentBy) {
-                    StringBuffer sb = new StringBuffer();
-                    for (int i = charPos; i < indentBy; i++)
-                        sb.append(' ');
-                    stream._writeString(sb.toString());
-                }
-                stream.print('(');
-                for (int i = 0; i < array.length; i++) {
-                    pprint(array[i], indentBy + 2, stream);
-                    if (i < array.length - 1)
-                        stream.print(' ');
-                }
-                stream.print(')');
             }
-            catch (ConditionThrowable t) {
-                // ### FIXME exception
-                Debug.trace(t);
+            int charPos = stream.getCharPos();
+            if (newlineBefore && charPos != indentBy) {
+                stream.terpri();
+                charPos = stream.getCharPos();
             }
+            if (charPos < indentBy) {
+                StringBuffer sb = new StringBuffer();
+                for (int i = charPos; i < indentBy; i++)
+                    sb.append(' ');
+                stream._writeString(sb.toString());
+            }
+            stream.print('(');
+            for (int i = 0; i < array.length; i++) {
+                pprint(array[i], indentBy + 2, stream);
+                if (i < array.length - 1)
+                   stream.print(' ');
+            }
+            stream.print(')');
         } else {
             stream.terpri();
             StringBuffer sb = new StringBuffer();
@@ -1054,18 +1037,14 @@ public final class LispThread extends LispObject
     static {
         //FIXME: this block has been added for pre-0.16 compatibility
         // and can be removed the latest at release 0.22
-        try {
-            PACKAGE_EXT.export(Symbol.intern("MAKE-THREAD", PACKAGE_THREADS));
-            PACKAGE_EXT.export(Symbol.intern("THREADP", PACKAGE_THREADS));
-            PACKAGE_EXT.export(Symbol.intern("THREAD-ALIVE-P", PACKAGE_THREADS));
-            PACKAGE_EXT.export(Symbol.intern("THREAD-NAME", PACKAGE_THREADS));
-            PACKAGE_EXT.export(Symbol.intern("MAPCAR-THREADS", PACKAGE_THREADS));
-            PACKAGE_EXT.export(Symbol.intern("DESTROY-THREAD", PACKAGE_THREADS));
-            PACKAGE_EXT.export(Symbol.intern("INTERRUPT-THREAD", PACKAGE_THREADS));
-            PACKAGE_EXT.export(Symbol.intern("CURRENT-THREAD", PACKAGE_THREADS));
-        }
-        // ### FIXME exception
-        catch (ConditionThrowable ct) { }
+        PACKAGE_EXT.export(Symbol.intern("MAKE-THREAD", PACKAGE_THREADS));
+        PACKAGE_EXT.export(Symbol.intern("THREADP", PACKAGE_THREADS));
+        PACKAGE_EXT.export(Symbol.intern("THREAD-ALIVE-P", PACKAGE_THREADS));
+        PACKAGE_EXT.export(Symbol.intern("THREAD-NAME", PACKAGE_THREADS));
+        PACKAGE_EXT.export(Symbol.intern("MAPCAR-THREADS", PACKAGE_THREADS));
+        PACKAGE_EXT.export(Symbol.intern("DESTROY-THREAD", PACKAGE_THREADS));
+        PACKAGE_EXT.export(Symbol.intern("INTERRUPT-THREAD", PACKAGE_THREADS));
+        PACKAGE_EXT.export(Symbol.intern("CURRENT-THREAD", PACKAGE_THREADS));
     }
 
     // ### use-fast-calls

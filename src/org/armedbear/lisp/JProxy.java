@@ -94,23 +94,15 @@ public final class JProxy extends Lisp
           Function f = entry.getLispMethod(methodName);
           if (f != null)
             {
-              try
+              LispObject lispArgs = NIL;
+              if (args != null)
                 {
-                  LispObject lispArgs = NIL;
-                  if (args != null)
-                    {
-                      for (int i = args.length - 1 ; 0 <= i  ; i--)
-                        lispArgs = lispArgs.push(new JavaObject(args[i]));
-                    }
-                  LispObject result = evalCall(f, lispArgs, new Environment(),
-                                               LispThread.currentThread());
-                  return (method.getReturnType() == void.class ? null : result.javaInstance());
+                  for (int i = args.length - 1 ; 0 <= i  ; i--)
+                    lispArgs = lispArgs.push(new JavaObject(args[i]));
                 }
-              // ### FIXME exception
-              catch (ConditionThrowable t)
-                {
-                  t.printStackTrace();
-                }
+              LispObject result = evalCall(f, lispArgs, new Environment(),
+                                           LispThread.currentThread());
+              return (method.getReturnType() == void.class ? null : result.javaInstance());
             }
         }
       return null;

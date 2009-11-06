@@ -44,25 +44,21 @@ public class JavaClass extends LispClass {
 
 	private void initCPL() {
 		LispObject cpl = Lisp.NIL;
-		try {
-			cpl = cpl.push(BuiltInClass.CLASS_T);
-			cpl = cpl.push(BuiltInClass.JAVA_OBJECT);
-			Set<Class<?>> alreadySeen = new HashSet<Class<?>>();
-			Stack<JavaClass> stack = new Stack<JavaClass>();
-			Class<?> theClass = javaClass;
-			boolean stop = false;
-			while(!stop && theClass != null) {
-				stop = addClass(alreadySeen, stack, theClass);
-				for(Class<?> c : theClass.getInterfaces()) {
-					stop = addClass(alreadySeen, stack, c) && stop; //watch out for short-circuiting!
-				}
-				theClass = theClass.getSuperclass();
+		cpl = cpl.push(BuiltInClass.CLASS_T);
+		cpl = cpl.push(BuiltInClass.JAVA_OBJECT);
+		Set<Class<?>> alreadySeen = new HashSet<Class<?>>();
+		Stack<JavaClass> stack = new Stack<JavaClass>();
+		Class<?> theClass = javaClass;
+		boolean stop = false;
+		while(!stop && theClass != null) {
+			stop = addClass(alreadySeen, stack, theClass);
+			for(Class<?> c : theClass.getInterfaces()) {
+				stop = addClass(alreadySeen, stack, c) && stop; //watch out for short-circuiting!
 			}
-			while(!stack.isEmpty()) {
-				cpl = cpl.push(stack.pop());
-			}
-		} catch (ConditionThrowable e) {
-			throw new Error("Cannot push class in class precedence list", e);
+			theClass = theClass.getSuperclass();
+		}
+		while(!stack.isEmpty()) {
+			cpl = cpl.push(stack.pop());
 		}
 		setCPL(cpl);
 	}

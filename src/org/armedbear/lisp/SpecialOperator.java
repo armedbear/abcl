@@ -54,20 +54,14 @@ public class SpecialOperator extends Operator
     public SpecialOperator(String name, Package pkg, boolean exported,
                            String arglist)
     {
-        try {
-            Symbol symbol;
-            if (exported)
-                symbol = pkg.internAndExport(name.toUpperCase());
-            else
-                symbol = pkg.intern(name.toUpperCase());
-            symbol.setSymbolFunction(this);
-            setLambdaName(symbol);
-            setLambdaList(new SimpleString(arglist));
-        }
-        catch (ConditionThrowable t) {
-            // ### FIXME exception
-            Debug.assertTrue(false);
-        }
+        Symbol symbol;
+        if (exported)
+           symbol = pkg.internAndExport(name.toUpperCase());
+        else
+           symbol = pkg.intern(name.toUpperCase());
+        symbol.setSymbolFunction(this);
+        setLambdaName(symbol);
+        setLambdaList(new SimpleString(arglist));
     }
 
     @Override

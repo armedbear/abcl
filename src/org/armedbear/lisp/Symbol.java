@@ -42,18 +42,9 @@ public class Symbol extends LispObject
 
   public static final Symbol addFunction(String name, LispObject obj)
   {
-    try
-      {
-        Symbol symbol = PACKAGE_CL.internAndExport(name);
-        symbol.function = obj;
-        return symbol;
-      }
-    catch (ConditionThrowable t)
-      {
-        // ### FIXME exception
-        Debug.trace(t); // Shouldn't happen.
-        return null;
-      }
+    Symbol symbol = PACKAGE_CL.internAndExport(name);
+    symbol.function = obj;
+    return symbol;
   }
 
   public final SimpleString name;

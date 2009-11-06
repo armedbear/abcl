@@ -160,16 +160,7 @@ public final class Interpreter extends Lisp
     public static synchronized void initializeLisp()
     {
         if (!initialized) {
-            try {
-                Load.loadSystemFile("boot.lisp", false, false, false);
-            }
-            catch (ConditionThrowable c) {
-                // ### FIXME exception
-                reportError(c, LispThread.currentThread());
-            }
-            catch (Throwable t) {
-                t.printStackTrace();
-            }
+            Load.loadSystemFile("boot.lisp", false, false, false);
             initialized = true;
         }
     }
@@ -184,11 +175,8 @@ public final class Interpreter extends Lisp
                 Class.forName("org.armedbear.j.LispAPI");
                 Load.loadSystemFile("j.lisp");
             }
-            catch (ConditionThrowable c) {
-                // ### FIXME exception
-                reportError(c, LispThread.currentThread());
-            }
             catch (Throwable t) {
+                // ### FIXME exception
                 t.printStackTrace();
             }
             initialized = true;
@@ -277,8 +265,7 @@ public final class Interpreter extends Lisp
                         try {
                             evaluate(args[i + 1]);
                         }
-                        catch (ConditionThrowable c) {
-                            // ### FIXME exception
+                        catch (UnhandledCondition c) {
                             final String separator =
                                 System.getProperty("line.separator");
                             FastStringBuffer sb = new FastStringBuffer();
@@ -305,22 +292,12 @@ public final class Interpreter extends Lisp
                 } else if (arg.equals("--load") ||
                            arg.equals("--load-system-file")) {
                     if (i + 1 < args.length) {
-                        try {
-                            if (arg.equals("--load"))
-                                Load.load(new Pathname(args[i + 1]),
-                                          args[i + 1],
-                                          false, false, true);
-                            else
-                                Load.loadSystemFile(args[i + 1]);
-                        }
-                        catch (ConditionThrowable c) {
-                            // ### FIXME exception
-                            System.err.println("Caught condition: " +
-                                               c.getCondition().writeToString() +
-                                               " while loading: " +
-                                               args[i+1]);
-                            System.exit(2);
-                        }
+                        if (arg.equals("--load"))
+                            Load.load(new Pathname(args[i + 1]),
+                                      args[i + 1],
+                                      false, false, true);
+                        else
+                            Load.loadSystemFile(args[i + 1]);
                         ++i;
                     } else {
                         // Shouldn't happen.
@@ -387,8 +364,9 @@ public final class Interpreter extends Lisp
                     getStandardInput().clearInput();
                     out._writeLine("Stack overflow");
                 }
-                catch (ConditionThrowable c) {
-                    // ### FIXME exception
+                catch (ControlTransfer c) {
+                    // We're on the toplevel, if this occurs,
+                    // we're toast...
                     reportError(c, thread);
                 }
                 catch (Throwable t) {
@@ -403,7 +381,24 @@ public final class Interpreter extends Lisp
         }
     }
 
-    private static void reportError(ConditionThrowable c, LispThread thread)
+    private static void reportError(ControlTransfer c, LispThread thread)
+    {
+        try {
+            getStandardInput().clearInput();
+            Stream out = getStandardOutput();
+            out.freshLine();
+            Condition condition = (Condition) c.getCondition();
+            out._writeLine("Error: unhandled condition: " +
+                           condition.writeToString());
+            if (thread != null)
+                thread.printBacktrace();
+        }
+        catch (Throwable t) {
+            
+        }
+    }
+
+    private static void reportError(UnhandledCondition c, LispThread thread)
     {
         try {
             getStandardInput().clearInput();

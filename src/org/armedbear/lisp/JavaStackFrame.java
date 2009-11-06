@@ -53,18 +53,9 @@ public class JavaStackFrame
 
   @Override
   public String writeToString() { 
-    String result = null;
     final String JAVA_STACK_FRAME = "JAVA-STACK-FRAME";
-    try {
-      result = unreadableString(JAVA_STACK_FRAME + " " 
-				+ toLispString().toString()); 
-    } catch (ConditionThrowable t) {
-        // ### FIXME exception
-      Debug.trace("Implementation error: ");
-      Debug.trace(t);
-      result = unreadableString(JAVA_STACK_FRAME);
-    }
-    return result;
+    return unreadableString(JAVA_STACK_FRAME + " "
+				+ toLispString().toString());
   }
 
   @Override

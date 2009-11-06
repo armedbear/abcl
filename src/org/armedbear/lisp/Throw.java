@@ -33,7 +33,7 @@
 
 package org.armedbear.lisp;
 
-public final class Throw extends ConditionThrowable
+public final class Throw extends ControlTransfer
 {
     public final LispObject tag;
     private final LispObject result;

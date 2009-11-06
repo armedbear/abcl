@@ -97,9 +97,6 @@ public class Profiler extends Lisp
                                 catch (InterruptedException e) {
                                     Debug.trace(e);
                                 }
-                                catch (ConditionThrowable e) {
-                                    break;
-                                }
                             }
                         }
                     };

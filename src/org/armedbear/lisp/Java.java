@@ -277,7 +277,7 @@ public final class Java extends Lisp
             catch (NoSuchMethodException e) {
                 error(new LispError("no such constructor"));
             }
-            catch (ConditionThrowable e) {
+            catch (ControlTransfer e) {
                 throw e;
             }
             catch (Throwable t) {
@@ -335,7 +335,7 @@ public final class Java extends Lisp
                 sb.append(')');
                 error(new LispError(sb.toString()));
             }
-            catch (ConditionThrowable e) {
+            catch (ControlTransfer e) {
                 throw e;
             }
             catch (Throwable t) {
@@ -648,7 +648,7 @@ public final class Java extends Lisp
             return JavaObject.getInstance(method.invoke(instance, methodArgs),
                                           translate);
         }
-        catch (ConditionThrowable t) {
+        catch (ControlTransfer t) {
             throw t;
         }
         catch (Throwable t) {

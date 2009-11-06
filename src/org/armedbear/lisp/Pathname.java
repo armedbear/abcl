@@ -490,90 +490,85 @@ public class Pathname extends LispObject
     @Override
     public String writeToString()
     {
+        final LispThread thread = LispThread.currentThread();
+        boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);
+        boolean printEscape = (Symbol.PRINT_ESCAPE.symbolValue(thread) != NIL);
+        boolean useNamestring;
+        String s = null;
         try {
-            final LispThread thread = LispThread.currentThread();
-            boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);
-            boolean printEscape = (Symbol.PRINT_ESCAPE.symbolValue(thread) != NIL);
-            boolean useNamestring;
-            String s = null;
-            try {
-                s = getNamestring();
-            }
-            catch (Throwable t) {}
-            if (s != null) {
-                useNamestring = true;
-                if (printReadably) {
-                    // We have a namestring. Check for pathname components that
-                    // can't be read from the namestring.
-                    if (host != NIL || version != NIL) {
+            s = getNamestring();
+        }
+        // ### FIXME exception
+        catch (Throwable t) {}
+        if (s != null) {
+            useNamestring = true;
+            if (printReadably) {
+                // We have a namestring. Check for pathname components that
+                // can't be read from the namestring.
+                if (host != NIL || version != NIL) {
+                    useNamestring = false;
+                } else if (name instanceof AbstractString) {
+                    String n = name.getStringValue();
+                    if (n.equals(".") || n.equals(".."))
                         useNamestring = false;
-                    } else if (name instanceof AbstractString) {
-                        String n = name.getStringValue();
-                        if (n.equals(".") || n.equals(".."))
-                            useNamestring = false;
-                        else if (n.indexOf(File.separatorChar) >= 0)
-                            useNamestring = false;
-                    }
+                    else if (n.indexOf(File.separatorChar) >= 0)
+                        useNamestring = false;
                 }
-            } else
-                useNamestring = false;
-            FastStringBuffer sb = new FastStringBuffer();
-            if (useNamestring) {
-                if (printReadably || printEscape)
-                    sb.append("#P\"");
-                final int limit = s.length();
-                for (int i = 0; i < limit; i++) {
-                    char c = s.charAt(i);
-                    if (printReadably || printEscape) {
-                        if (c == '\"' || c == '\\')
-                            sb.append('\\');
-                    }
-                    sb.append(c);
-                }
-                if (printReadably || printEscape)
-                    sb.append('"');
-            } else {
-                sb.append("#P(");
-                if (host != NIL) {
-                    sb.append(":HOST ");
-                    sb.append(host.writeToString());
-                    sb.append(' ');
-                }
-                if (device != NIL) {
-                    sb.append(":DEVICE ");
-                    sb.append(device.writeToString());
-                    sb.append(' ');
-                }
-                if (directory != NIL) {
-                    sb.append(":DIRECTORY ");
-                    sb.append(directory.writeToString());
-                    sb.append(" ");
-                }
-                if (name != NIL) {
-                    sb.append(":NAME ");
-                    sb.append(name.writeToString());
-                    sb.append(' ');
-                }
-                if (type != NIL) {
-                    sb.append(":TYPE ");
-                    sb.append(type.writeToString());
-                    sb.append(' ');
-                }
-                if (version != NIL) {
-                    sb.append(":VERSION ");
-                    sb.append(version.writeToString());
-                    sb.append(' ');
-                }
-                if (sb.charAt(sb.length() - 1) == ' ')
-                    sb.setLength(sb.length() - 1);
-                sb.append(')');
             }
-            return sb.toString();
-        }
-        catch (ConditionThrowable t) {
-            // ### FIXME exception
-            return unreadableString("PATHNAME");
-        }
+        } else
+           useNamestring = false;
+        FastStringBuffer sb = new FastStringBuffer();
+        if (useNamestring) {
+            if (printReadably || printEscape)
+                sb.append("#P\"");
+            final int limit = s.length();
+            for (int i = 0; i < limit; i++) {
+                char c = s.charAt(i);
+                if (printReadably || printEscape) {
+                    if (c == '\"' || c == '\\')
+                        sb.append('\\');
+                }
+                sb.append(c);
+            }
+            if (printReadably || printEscape)
+                sb.append('"');
+        } else {
+            sb.append("#P(");
+            if (host != NIL) {
+                sb.append(":HOST ");
+                sb.append(host.writeToString());
+                sb.append(' ');
+           }
+           if (device != NIL) {
+               sb.append(":DEVICE ");
+               sb.append(device.writeToString());
+               sb.append(' ');
+            }
+            if (directory != NIL) {
+                sb.append(":DIRECTORY ");
+                sb.append(directory.writeToString());
+                sb.append(" ");
+            }
+           if (name != NIL) {
+                sb.append(":NAME ");
+                sb.append(name.writeToString());
+                sb.append(' ');
+            }
+            if (type != NIL) {
+                sb.append(":TYPE ");
+                sb.append(type.writeToString());
+                sb.append(' ');
+            }
+            if (version != NIL) {
+                sb.append(":VERSION ");
+                sb.append(version.writeToString());
+                sb.append(' ');
+            }
+            if (sb.charAt(sb.length() - 1) == ' ')
+                sb.setLength(sb.length() - 1);
+            sb.append(')');
+         }
+         return sb.toString();
     }
 
     // A logical host is represented as the string that names it.

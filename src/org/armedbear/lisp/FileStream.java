@@ -116,13 +116,7 @@ public final class FileStream extends Stream
 	    }
         } else {
             isBinaryStream = true;
-            int width;
-            try {
-                width = Fixnum.getValue(elementType.cadr());
-            }
-            catch (ConditionThrowable t) {
-                width = 8;
-            }
+            int width = Fixnum.getValue(elementType.cadr());
             bytesPerUnit = width / 8;
 	    if (isInputStream) {
 		initAsBinaryInputStream(racf.getInputStream());

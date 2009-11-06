@@ -120,17 +120,12 @@ public abstract class AbstractString extends AbstractVector
     }
 
     public String toString() {
-	try {
 	    int length = length();
 	    StringBuilder sb = new StringBuilder(length);
 	    for(int i = 0; i < length; ++i) {
-		sb.append(charAt(i));
+			sb.append(charAt(i));
 	    }
 	    return sb.toString();
-	} catch(ConditionThrowable t) {
-        // ### FIXME exception
-	    throw new Error(t); //Should never happen
-	}
     }
 
 }

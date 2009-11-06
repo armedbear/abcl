@@ -74,23 +74,9 @@ public final class FillPointerOutputStream extends Stream
             int fp = string.getFillPointer();
             if (fp >= 0) {
                 final int limit = Math.min(cbuf.length, off + len);
-                try {
-                    string.ensureCapacity(fp + limit);
-                }
-                catch (ConditionThrowable t) {
-                    // ### FIXME exception
-                    // Shouldn't happen.
-                    Debug.trace(t);
-                }
+                string.ensureCapacity(fp + limit);
                 for (int i = off; i < limit; i++) {
-                    try {
-                        string.setCharAt(fp, cbuf[i]);
-                    }
-                    catch (ConditionThrowable t) {
-                        // ### FIXME exception
-                        // Shouldn't happen.
-                        Debug.trace(t);
-                    }
+                    string.setCharAt(fp, cbuf[i]);
                     ++fp;
                 }
             }

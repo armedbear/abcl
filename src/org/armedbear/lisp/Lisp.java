@@ -1453,13 +1453,8 @@ public abstract class Lisp
 
   public static final String safeWriteToString(LispObject obj)
   {
-    try
-      {
+    try {
         return obj.writeToString();
-      }
-    catch (ConditionThrowable t)
-      {
-        return obj.toString();
       }
     catch (NullPointerException e)
       {
@@ -2173,14 +2168,7 @@ public abstract class Lisp
                                            LispObject value)
   {
     Symbol symbol = pkg.intern(name);
-    try
-      {
-        pkg.export(symbol); // FIXME Inefficient!
-      }
-    catch (ConditionThrowable t)
-      {
-        Debug.trace(t);
-      }
+    pkg.export(symbol); // FIXME Inefficient!
     symbol.setSpecial(true);
     symbol.setSymbolValue(value);
     return symbol;
@@ -2190,14 +2178,7 @@ public abstract class Lisp
                                             LispObject value)
   {
     Symbol symbol = pkg.intern(name);
-    try
-      {
-        pkg.export(symbol); // FIXME Inefficient!
-      }
-    catch (ConditionThrowable t)
-      {
-        Debug.trace(t);
-      }
+    pkg.export(symbol); // FIXME Inefficient!
     symbol.initializeConstant(value);
     return symbol;
   }

@@ -79,13 +79,7 @@ public class Autoload extends Function
     {
         Symbol symbol = intern(symbolName.toUpperCase(), pkg);
         if (pkg != PACKAGE_CL && exported) {
-            try {
-                pkg.export(symbol);
-            }
-            catch (ConditionThrowable t) {
-                // ### FIXME exception
-                Debug.assertTrue(false);
-            }
+            pkg.export(symbol);
         }
         if (symbol.getSymbolFunction() == null)
             symbol.setSymbolFunction(new Autoload(symbol, null,

@@ -601,8 +601,7 @@ public final class StringFunctions extends Lisp
     {
         @Override
         public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third) throws
-        ConditionThrowable
+                                  LispObject third)
         {
             LispObject s = first.STRING();
             final int length = s.length();

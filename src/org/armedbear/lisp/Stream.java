@@ -281,53 +281,48 @@ public class Stream extends LispObject
       return;
     }
       
-    try {
-      LispObject enc;
-      boolean encIsCp = false;
-      
-      if (format instanceof Cons) {
-          // meaning a non-empty list
-          enc = format.car();
+    LispObject enc;
+    boolean encIsCp = false;
+    
+    if (format instanceof Cons) {
+        // meaning a non-empty list
+        enc = format.car();
+        if (enc == keywordCodePage) {
+            encIsCp = true;
 
-          if (enc == keywordCodePage) {
-              encIsCp = true;
-
-              enc = LispObject.getf(format.cdr(), keywordID, null);
-          }
+            enc = LispObject.getf(format.cdr(), keywordID, null);
+        }
           
-          LispObject eol = LispObject.getf(format.cdr(), keywordEolStyle, keywordRAW);
-          if (eol == keywordCR)
-              eolStyle = EolStyle.CR;
-          else if (eol == keywordLF)
-              eolStyle = EolStyle.LF;
-          else if (eol == keywordCRLF)
-              eolStyle = EolStyle.CRLF;
-          else if (eol != keywordRAW)
-              ; //###FIXME: raise an error
-          
-      } else
-        enc = format;
-      
-      if (enc.numberp())
-          encoding = enc.toString();
-      else if (enc instanceof AbstractString)
-          encoding = enc.getStringValue();
-      else if (enc == keywordDefault)
-          // This allows the user to use the encoding determined by
-          // Java to be the default for the current environment
-          // while still being able to set other stream options
-          // (e.g. :EOL-STYLE)
-          encoding = null;
-      else if (enc instanceof Symbol)
-          encoding = ((Symbol)enc).getName();
-      else
-          ; //###FIXME: raise an error!
-      
-      if (encIsCp)
-          encoding = "Cp" + encoding;
-    }
-    // ### FIXME exception
-    catch (ConditionThrowable ct) { }
+        LispObject eol = LispObject.getf(format.cdr(), keywordEolStyle, keywordRAW);
+        if (eol == keywordCR)
+            eolStyle = EolStyle.CR;
+        else if (eol == keywordLF)
+            eolStyle = EolStyle.LF;
+        else if (eol == keywordCRLF)
+            eolStyle = EolStyle.CRLF;
+        else if (eol != keywordRAW)
+            ; //###FIXME: raise an error
+        
+    } else
+      enc = format;
+    
+    if (enc.numberp())
+        encoding = enc.toString();
+    else if (enc instanceof AbstractString)
+        encoding = enc.getStringValue();
+    else if (enc == keywordDefault)
+        // This allows the user to use the encoding determined by
+        // Java to be the default for the current environment
+        // while still being able to set other stream options
+        // (e.g. :EOL-STYLE)
+        encoding = null;
+    else if (enc instanceof Symbol)
+        encoding = ((Symbol)enc).getName();
+    else
+        ; //###FIXME: raise an error!
+    
+    if (encIsCp)
+        encoding = "Cp" + encoding;
     
     eolChar = (eolStyle == EolStyle.CR) ? '\r' : '\n';
     externalFormat = format;

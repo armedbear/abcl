@@ -223,7 +223,7 @@ public final class JavaObject extends LispObject
     @Override
     public String writeToString()
     {
-        if (obj instanceof ConditionThrowable)
+        if (obj instanceof ControlTransfer)
             return obj.toString();
 	final String s;
 	if(obj != null) {

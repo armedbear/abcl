@@ -81,13 +81,7 @@ public final class JHandler extends Lisp
                 LispObject lispAsVector = new SimpleVector(lispAs);
                 LispObject[] args = new LispObject[] //FIXME: count -> seq_num
                 { data, new JavaObject(o), lispAiVector, lispAsVector, Keyword.internKeyword(s), count };
-                try {
-                    f.execute(args);
-                }
-                catch (ConditionThrowable t) {
-                    // ### FIXME exception
-                    t.printStackTrace();
-                }
+                f.execute(args);
             }
         }
     }

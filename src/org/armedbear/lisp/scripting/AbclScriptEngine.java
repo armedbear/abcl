@@ -75,7 +75,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	    compileScript = (Function) this.findSymbol("COMPILE-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
 	    evalCompiledScript = (Function) this.findSymbol("EVAL-COMPILED-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
 	    evalFunction = (Function) this.findSymbol("EVAL-FUNCTION", "ABCL-SCRIPT").getSymbolFunction();
-	} catch (ConditionThrowable e) {
+	} catch (ControlTransfer e) {
 	    throw new RuntimeException(e);
 	}
     }
@@ -110,13 +110,13 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	return b.toString();
     }
 
-	public LispObject loadFromClasspath(String classpathResource) throws ConditionThrowable {
+	public LispObject loadFromClasspath(String classpathResource) throws ControlTransfer {
 		InputStream istream = getClass().getResourceAsStream(classpathResource);
 		Stream stream = new Stream(istream, Symbol.CHARACTER);
 		return load(stream);
 	}
 
-	public LispObject load(Stream stream) throws ConditionThrowable {
+	public LispObject load(Stream stream) throws ControlTransfer {
 		Symbol keyword_verbose = Lisp.internKeyword("VERBOSE");
 		Symbol keyword_print = Lisp.internKeyword("PRINT");
 		/*
@@ -129,11 +129,11 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 						Lisp.T, Keyword.EXTERNAL_FORMAT, Keyword.DEFAULT });
 	}
 
-	public LispObject load(String filespec) throws ConditionThrowable {
+	public LispObject load(String filespec) throws ControlTransfer {
 		return load(filespec, true);
 	}
 
-	public LispObject load(String filespec, boolean compileIfNecessary)	throws ConditionThrowable {
+	public LispObject load(String filespec, boolean compileIfNecessary)	throws ControlTransfer {
 		if (isCompiled(filespec) || !compileIfNecessary) {
 			return interpreter.eval("(load \"" + escape(filespec) + "\")");
 		} else {
@@ -162,11 +162,11 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 				&& compiled.lastModified() >= source.lastModified();
 	}
 
-	public LispObject compileFile(String filespec) throws ConditionThrowable {
+	public LispObject compileFile(String filespec) throws ControlTransfer {
 		return interpreter.eval("(compile-file \"" + escape(filespec) + "\")");
 	}
 
-	public LispObject compileAndLoad(String filespec) throws ConditionThrowable {
+	public LispObject compileAndLoad(String filespec) throws ControlTransfer {
 		return interpreter.eval("(load (compile-file \"" + escape(filespec)	+ "\"))");
 	}
 
@@ -174,7 +174,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		return obj instanceof Function;
 	}
 
-	public JavaObject jsetq(String symbol, Object value) throws ConditionThrowable {
+	public JavaObject jsetq(String symbol, Object value) throws ControlTransfer {
 		Symbol s = findSymbol(symbol);
 		JavaObject jo;
 		if (value instanceof JavaObject) {
@@ -186,7 +186,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		return jo;
 	}
 
-	public Symbol findSymbol(String name, String pkg) throws ConditionThrowable {
+	public Symbol findSymbol(String name, String pkg) throws ControlTransfer {
 		Cons values = (Cons) (interpreter.eval("(cl:multiple-value-list (find-symbol (symbol-name '#:"
 											   + escape(name) + ")" + (pkg == null ? "" : " :" + escape(pkg))
 											   + "))"));
@@ -197,7 +197,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		}
 	}
 
-	public Symbol findSymbol(String name) throws ConditionThrowable {
+	public Symbol findSymbol(String name) throws ControlTransfer {
 		//Known bug: doesn't handle escaped ':' e.g. |a:b|
 		int i = name.indexOf(':');
 		if(i < 0) { 
@@ -211,7 +211,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		}
 	}
 	
-	public Function findFunction(String name) throws ConditionThrowable {
+	public Function findFunction(String name) throws ControlTransfer {
 		return (Function) interpreter.eval("#'" + name);
 	}
 
@@ -220,7 +220,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		return new SimpleBindings();
 	}
 
-	private static LispObject makeBindings(Bindings bindings) throws ConditionThrowable {
+	private static LispObject makeBindings(Bindings bindings) throws ControlTransfer {
 		if (bindings == null || bindings.size() == 0) {
 			return Lisp.NIL;
 		}
@@ -247,7 +247,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 				       inStream, outStream,
 				       code, new JavaObject(ctx));
 	    return retVal.javaInstance();
-	} catch (ConditionThrowable e) {
+	} catch (ControlTransfer e) {
 	    throw new ScriptException(new Exception(e));
 	} catch (IOException e) {
 	    throw new ScriptException(e);
@@ -300,7 +300,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 			Symbol s = findSymbol("jmake-proxy", "JAVA");
 			JavaObject iface = new JavaObject(clasz);
 			return (T) ((JavaObject) s.execute(iface, (LispObject) thiz)).javaInstance();
-		} catch (ConditionThrowable e) {
+		} catch (ControlTransfer e) {
 			throw new Error(e);
 		}
 	}	
@@ -329,7 +329,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	    } else {
 		throw new NoSuchMethodException(name);
 	    }
-	} catch (ConditionThrowable e) {
+	} catch (ControlTransfer e) {
 	    throw new ScriptException(new RuntimeException(e));
 	}
     }
@@ -365,7 +365,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		try {
 		    Function f = (Function) compileScript.execute(new SimpleString(script));
 		    return new AbclCompiledScript(f);
-		} catch (ConditionThrowable e) {
+		} catch (ControlTransfer e) {
 			throw new ScriptException(new Exception(e));
 		} catch(ClassCastException e) {
 			throw new ScriptException(e);
