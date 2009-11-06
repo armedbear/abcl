@@ -35,25 +35,25 @@ package org.armedbear.lisp;
 
 public final class UpcaseStream extends CaseFrobStream
 {
-    public UpcaseStream(Stream target) throws ConditionThrowable
+    public UpcaseStream(Stream target)
     {
         super(target);
     }
 
     @Override
-    public void _writeChar(char c) throws ConditionThrowable
+    public void _writeChar(char c)
     {
         target._writeChar(LispCharacter.toUpperCase(c));
     }
 
     @Override
-    public void _writeString(String s) throws ConditionThrowable
+    public void _writeString(String s)
     {
         target._writeString(s.toUpperCase());
     }
 
     @Override
-    public void _writeLine(String s) throws ConditionThrowable
+    public void _writeLine(String s)
     {
         target._writeLine(s.toUpperCase());
     }

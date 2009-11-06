@@ -48,20 +48,20 @@ public final class MacroObject extends Function
   }
 
   @Override
-  public LispObject execute() throws ConditionThrowable
+  public LispObject execute()
   {
     return error(new UndefinedFunction(name));
   }
 
   @Override
-  public LispObject execute(LispObject arg) throws ConditionThrowable
+  public LispObject execute(LispObject arg)
   {
     return error(new UndefinedFunction(name));
   }
 
   @Override
   public LispObject execute(LispObject first, LispObject second)
-    throws ConditionThrowable
+
   {
     return error(new UndefinedFunction(name));
   }
@@ -69,7 +69,7 @@ public final class MacroObject extends Function
   @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third)
-    throws ConditionThrowable
+
   {
     return error(new UndefinedFunction(name));
   }
@@ -77,7 +77,7 @@ public final class MacroObject extends Function
   @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth)
-    throws ConditionThrowable
+
   {
     return error(new UndefinedFunction(name));
   }
@@ -86,7 +86,7 @@ public final class MacroObject extends Function
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth)
-    throws ConditionThrowable
+
   {
     return error(new UndefinedFunction(name));
   }
@@ -95,7 +95,7 @@ public final class MacroObject extends Function
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth)
-    throws ConditionThrowable
+
   {
     return error(new UndefinedFunction(name));
   }
@@ -105,7 +105,7 @@ public final class MacroObject extends Function
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
                             LispObject seventh)
-    throws ConditionThrowable
+
   {
     return error(new UndefinedFunction(name));
   }
@@ -115,13 +115,13 @@ public final class MacroObject extends Function
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
                             LispObject seventh, LispObject eighth)
-    throws ConditionThrowable
+
   {
     return error(new UndefinedFunction(name));
   }
 
   @Override
-  public LispObject execute(LispObject[] args) throws ConditionThrowable
+  public LispObject execute(LispObject[] args)
   {
     return error(new UndefinedFunction(name));
   }

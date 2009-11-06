@@ -35,13 +35,13 @@ package org.armedbear.lisp;
 
 public final class EndOfFile extends StreamError
 {
-    public EndOfFile(Stream stream) throws ConditionThrowable
+    public EndOfFile(Stream stream)
     {
         super(StandardClass.END_OF_FILE);
         setStream(stream);
     }
 
-    public EndOfFile(LispObject initArgs) throws ConditionThrowable
+    public EndOfFile(LispObject initArgs)
     {
         super(StandardClass.END_OF_FILE);
         initialize(initArgs);
@@ -60,7 +60,7 @@ public final class EndOfFile extends StreamError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.END_OF_FILE)
             return T;
@@ -70,7 +70,7 @@ public final class EndOfFile extends StreamError
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         return unreadableString(Symbol.END_OF_FILE);
     }

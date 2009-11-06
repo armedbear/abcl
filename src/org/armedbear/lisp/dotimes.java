@@ -42,7 +42,7 @@ public final class dotimes extends SpecialOperator
 
   @Override
   public LispObject execute(LispObject args, Environment env)
-    throws ConditionThrowable
+
   {
     LispObject bodyForm = args.cdr();
     args = args.car();

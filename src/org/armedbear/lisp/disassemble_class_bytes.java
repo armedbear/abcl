@@ -46,7 +46,7 @@ public final class disassemble_class_bytes extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         if (arg instanceof JavaObject) {
             byte[] bytes = (byte[]) ((JavaObject)arg).getObject();

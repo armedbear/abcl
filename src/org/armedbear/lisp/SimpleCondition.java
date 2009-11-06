@@ -35,20 +35,20 @@ package org.armedbear.lisp;
 
 public class SimpleCondition extends Condition
 {
-    public SimpleCondition() throws ConditionThrowable
+    public SimpleCondition()
     {
         setFormatControl(NIL);
         setFormatArguments(NIL);
     }
 
     public SimpleCondition(LispObject formatControl, LispObject formatArguments)
-        throws ConditionThrowable
+
     {
         setFormatControl(formatControl);
         setFormatArguments(formatArguments);
     }
 
-    public SimpleCondition(LispObject initArgs) throws ConditionThrowable
+    public SimpleCondition(LispObject initArgs)
     {
         super(initArgs);
     }
@@ -71,7 +71,7 @@ public class SimpleCondition extends Condition
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.SIMPLE_CONDITION)
             return T;
@@ -85,7 +85,7 @@ public class SimpleCondition extends Condition
         new Primitive(Symbol.SIMPLE_CONDITION_FORMAT_CONTROL, "condition")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return Symbol.STD_SLOT_VALUE.execute(arg, Symbol.FORMAT_CONTROL);
         }
@@ -96,7 +96,7 @@ public class SimpleCondition extends Condition
         new Primitive(Symbol.SIMPLE_CONDITION_FORMAT_ARGUMENTS, "condition")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return Symbol.STD_SLOT_VALUE.execute(arg, Symbol.FORMAT_ARGUMENTS);
         }

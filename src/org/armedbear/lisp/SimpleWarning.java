@@ -35,14 +35,14 @@ package org.armedbear.lisp;
 
 public final class SimpleWarning extends Warning
 {
-    public SimpleWarning(LispObject initArgs) throws ConditionThrowable
+    public SimpleWarning(LispObject initArgs)
     {
         super(StandardClass.SIMPLE_WARNING);
         initialize(initArgs);
     }
 
     public SimpleWarning(LispObject formatControl, LispObject formatArguments)
-        throws ConditionThrowable
+
     {
         super(StandardClass.SIMPLE_WARNING);
         setFormatControl(formatControl);
@@ -62,7 +62,7 @@ public final class SimpleWarning extends Warning
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.SIMPLE_WARNING)
             return T;

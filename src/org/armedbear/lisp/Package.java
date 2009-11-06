@@ -95,7 +95,7 @@ public final class Package extends LispObject
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.PACKAGE)
             return T;
@@ -135,7 +135,7 @@ public final class Package extends LispObject
         return nicknames;
     }
 
-    public final synchronized boolean delete() throws ConditionThrowable
+    public final synchronized boolean delete()
     {
         if (name != null) {
             Packages.deletePackage(this);
@@ -162,7 +162,7 @@ public final class Package extends LispObject
     }
 
     public final synchronized void rename(String newName, LispObject newNicks)
-        throws ConditionThrowable
+
     {
         ArrayList<String> arrayList = null;
         while (newNicks != NIL) {
@@ -198,14 +198,14 @@ public final class Package extends LispObject
 
     // Returns null if symbol is not accessible in this package.
     public synchronized Symbol findAccessibleSymbol(String name)
-        throws ConditionThrowable
+
     {
         return findAccessibleSymbol(new SimpleString(name));
     }
 
     // Returns null if symbol is not accessible in this package.
     public synchronized Symbol findAccessibleSymbol(SimpleString name)
-        throws ConditionThrowable
+
     {
         // Look in external and internal symbols of this package.
         Symbol symbol = externalSymbols.get(name);
@@ -230,7 +230,7 @@ public final class Package extends LispObject
     }
 
     public synchronized LispObject findSymbol(String name)
-        throws ConditionThrowable
+
     {
         final SimpleString s = new SimpleString(name);
         final LispThread thread = LispThread.currentThread();
@@ -366,7 +366,7 @@ public final class Package extends LispObject
     }
 
     public synchronized Symbol internAndExport(String symbolName)
-        throws ConditionThrowable
+
     {
         final SimpleString s = new SimpleString(symbolName);
         final int hash = s.sxhash();
@@ -401,7 +401,7 @@ public final class Package extends LispObject
     }
 
     public synchronized LispObject unintern(final Symbol symbol)
-        throws ConditionThrowable
+
     {
         final String symbolName = symbol.getName();
         final boolean shadow;
@@ -453,7 +453,7 @@ public final class Package extends LispObject
         return T;
     }
 
-    public synchronized void importSymbol(Symbol symbol) throws ConditionThrowable
+    public synchronized void importSymbol(Symbol symbol)
     {
         if (symbol.getPackage() == this)
             return; // Nothing to do.
@@ -471,7 +471,7 @@ public final class Package extends LispObject
             symbol.setPackage(this);
     }
 
-    public synchronized void export(final Symbol symbol) throws ConditionThrowable
+    public synchronized void export(final Symbol symbol)
     {
         final String symbolName = symbol.getName();
         boolean added = false;
@@ -527,7 +527,7 @@ public final class Package extends LispObject
     }
 
     public synchronized void unexport(final Symbol symbol)
-        throws ConditionThrowable
+
     {
         if (symbol.getPackage() == this) {
             if (externalSymbols.get(symbol.name) == symbol) {
@@ -554,7 +554,7 @@ public final class Package extends LispObject
     }
 
     public synchronized void shadow(final String symbolName)
-        throws ConditionThrowable
+
     {
         if (shadowingSymbols == null)
             shadowingSymbols = new HashMap<String,Symbol>();
@@ -576,7 +576,7 @@ public final class Package extends LispObject
         shadowingSymbols.put(symbolName, symbol);
     }
 
-    public synchronized void shadowingImport(Symbol symbol) throws ConditionThrowable
+    public synchronized void shadowingImport(Symbol symbol)
     {
         LispObject where = NIL;
         final String symbolName = symbol.getName();
@@ -622,7 +622,7 @@ public final class Package extends LispObject
     // "USE-PACKAGE causes PACKAGE to inherit all the external symbols of
     // PACKAGES-TO-USE. The inherited symbols become accessible as internal
     // symbols of PACKAGE."
-    public void usePackage(Package pkg) throws ConditionThrowable
+    public void usePackage(Package pkg)
     {
         if (useList == null)
             useList = NIL;
@@ -654,7 +654,7 @@ public final class Package extends LispObject
         }
     }
 
-    public void unusePackage(Package pkg) throws ConditionThrowable
+    public void unusePackage(Package pkg)
     {
         if (useList instanceof Cons) {
             if (memq(pkg, useList)) {
@@ -674,7 +674,7 @@ public final class Package extends LispObject
         }
     }
 
-    public final void addNickname(String s) throws ConditionThrowable
+    public final void addNickname(String s)
     {
         // This call will signal an error if there's a naming conflict.
         Packages.addNickname(this, s);
@@ -714,7 +714,7 @@ public final class Package extends LispObject
         return useList;
     }
 
-    public boolean uses(LispObject pkg) throws ConditionThrowable
+    public boolean uses(LispObject pkg)
     {
         return (useList instanceof Cons) && memq(pkg, useList);
     }
@@ -849,7 +849,7 @@ public final class Package extends LispObject
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         if (_PRINT_FASL_.symbolValue() != NIL && name != null) {
             FastStringBuffer sb = new FastStringBuffer("#.(FIND-PACKAGE \"");

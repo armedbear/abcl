@@ -75,7 +75,7 @@ public final class Environment extends LispObject
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.ENVIRONMENT)
       return T;
@@ -140,7 +140,7 @@ public final class Environment extends LispObject
   }
 
   public LispObject lookupFunction(LispObject name)
-    throws ConditionThrowable
+
   {
     FunctionBinding binding = lastFunctionBinding;
     if (name instanceof Symbol)
@@ -214,7 +214,7 @@ public final class Environment extends LispObject
 
   // Returns body with declarations removed.
   public LispObject processDeclarations(LispObject body)
-    throws ConditionThrowable
+
   {
     LispObject bodyAndDecls = parseBody(body, false);
     LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
@@ -243,7 +243,7 @@ public final class Environment extends LispObject
   }
 
   @Override
-  public String writeToString() throws ConditionThrowable
+  public String writeToString()
   {
     return unreadableString(Symbol.ENVIRONMENT);
   }
@@ -259,7 +259,7 @@ public final class Environment extends LispObject
         return new Environment();
       }
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         if (arg == NIL)
           return new Environment();
@@ -275,7 +275,7 @@ public final class Environment extends LispObject
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
-        throws ConditionThrowable
+
       {
         Environment env = checkEnvironment(first);
         LispObject name = second;
@@ -293,7 +293,7 @@ public final class Environment extends LispObject
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
-        throws ConditionThrowable
+
       {
         checkEnvironment(first).addFunctionBinding(second, third);
         return first;
@@ -308,7 +308,7 @@ public final class Environment extends LispObject
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
-        throws ConditionThrowable
+
       {
         checkEnvironment(first).bind(checkSymbol(second), third);
         return first;
@@ -320,7 +320,7 @@ public final class Environment extends LispObject
     new Primitive("empty-environment-p", PACKAGE_SYS, true, "environment")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkEnvironment(arg).isEmpty() ? T : NIL;
       }
@@ -331,7 +331,7 @@ public final class Environment extends LispObject
     new Primitive("environment-variables", PACKAGE_SYS, true, "environment")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
             Environment env = checkEnvironment(arg);
             LispObject result = NIL;
@@ -347,7 +347,7 @@ public final class Environment extends LispObject
     new Primitive("environment-all-variables", PACKAGE_SYS, true, "environment")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
             Environment env = checkEnvironment(arg);
             LispObject result = NIL;
@@ -366,7 +366,7 @@ public final class Environment extends LispObject
     new Primitive("environment-all-functions", PACKAGE_SYS, true, "environment")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
             Environment env = checkEnvironment(arg);
             LispObject result = NIL;

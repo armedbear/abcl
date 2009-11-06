@@ -42,7 +42,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char ignored)
-            throws ConditionThrowable
+
         {
           try 
             {
@@ -68,7 +68,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char terminator)
-            throws ConditionThrowable
+
         {
             final LispThread thread = LispThread.currentThread();
             final Readtable rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
@@ -134,7 +134,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char ignored)
-            throws ConditionThrowable
+
         {
             return stream.readList(false, false);
         }
@@ -147,7 +147,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char ignored)
-            throws ConditionThrowable
+
         {
             return error(new ReaderError("Unmatched right parenthesis.", stream));
         }
@@ -160,7 +160,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char ignored)
-            throws ConditionThrowable
+
         {
             return new Cons(Symbol.QUOTE,
                             new Cons(stream.read(true, NIL, true,
@@ -175,7 +175,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c)
-            throws ConditionThrowable
+
         {
             return stream.readDispatchChar(c, false);
         }
@@ -188,7 +188,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-            throws ConditionThrowable
+
         {
             final LispThread thread = LispThread.currentThread();
             LispObject list = stream.readList(true, false);
@@ -215,7 +215,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char ignored, int n)
-            throws ConditionThrowable
+
         {
             final LispThread thread = LispThread.currentThread();
             final Readtable rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
@@ -283,7 +283,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-            throws ConditionThrowable
+
         {
             final LispThread thread = LispThread.currentThread();
             if (Symbol.READ_EVAL.symbolValue(thread) == NIL)
@@ -302,7 +302,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-            throws ConditionThrowable
+
         {
             return stream.readSymbol();
         }
@@ -315,7 +315,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-            throws ConditionThrowable
+
         {
             return stream.readArray(n);
         }
@@ -328,7 +328,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-            throws ConditionThrowable
+
         {
             return stream.readRadix(2);
         }
@@ -341,7 +341,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-            throws ConditionThrowable
+
         {
             return stream.readComplex();
         }
@@ -354,7 +354,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-            throws ConditionThrowable
+
         {
             return stream.readRadix(8);
         }
@@ -367,7 +367,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-            throws ConditionThrowable
+
         {
             return stream.readPathname();
         }
@@ -380,7 +380,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-            throws ConditionThrowable
+
         {
             return stream.readRadix(n);
         }
@@ -393,7 +393,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-            throws ConditionThrowable
+
         {
             return stream.readStructure();
         }
@@ -406,7 +406,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-            throws ConditionThrowable
+
         {
             return stream.readRadix(16);
         }
@@ -419,7 +419,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-            throws ConditionThrowable
+
         {
             return new Cons(Symbol.FUNCTION,
                             new Cons(stream.read(true, NIL, true,
@@ -434,7 +434,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-            throws ConditionThrowable
+
         {
             final LispThread thread = LispThread.currentThread();
             final Readtable rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
@@ -449,7 +449,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-            throws ConditionThrowable
+
         {
             stream.skipBalancedComment();
             return null;
@@ -463,7 +463,7 @@ public final class LispReader extends Lisp
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-            throws ConditionThrowable
+
         {
             FastStringBuffer sb = new FastStringBuffer("Illegal # macro character: #\\");
             String s = LispCharacter.charToName(c);

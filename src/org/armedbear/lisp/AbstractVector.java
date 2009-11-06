@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 public abstract class AbstractVector extends AbstractArray
 {
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.VECTOR)
       return T;
@@ -61,7 +61,7 @@ public abstract class AbstractVector extends AbstractArray
   }
 
   @Override
-  public boolean equalp(LispObject obj) throws ConditionThrowable
+  public boolean equalp(LispObject obj)
   {
     if (obj instanceof AbstractVector)
       {
@@ -89,7 +89,7 @@ public abstract class AbstractVector extends AbstractArray
   }
 
   @Override
-  public final int getDimension(int n) throws ConditionThrowable
+  public final int getDimension(int n)
   {
     if (n != 0)
       {
@@ -108,9 +108,9 @@ public abstract class AbstractVector extends AbstractArray
 
   public abstract int capacity();
 
-  public abstract LispObject subseq(int start, int end) throws ConditionThrowable;
+  public abstract LispObject subseq(int start, int end);
 
-  public LispObject deleteEq(LispObject item) throws ConditionThrowable
+  public LispObject deleteEq(LispObject item)
   {
     final int limit = length();
     int i = 0;
@@ -127,7 +127,7 @@ public abstract class AbstractVector extends AbstractArray
     return this;
   }
 
-  public LispObject deleteEql(LispObject item) throws ConditionThrowable
+  public LispObject deleteEql(LispObject item)
   {
     final int limit = length();
     int i = 0;
@@ -144,16 +144,16 @@ public abstract class AbstractVector extends AbstractArray
     return this;
   }
 
-  public abstract void shrink(int n) throws ConditionThrowable;
+  public abstract void shrink(int n);
 
-  public int checkIndex(int index) throws ConditionThrowable
+  public int checkIndex(int index)
   {
     if (index < 0 || index >= capacity())
       badIndex(index, capacity());
     return index;
   }
 
-  protected void badIndex(int index, int limit) throws ConditionThrowable
+  protected void badIndex(int index, int limit)
   {
     FastStringBuffer sb = new FastStringBuffer("Invalid array index ");
     sb.append(index);
@@ -173,12 +173,12 @@ public abstract class AbstractVector extends AbstractArray
 
   }
 
-  public void setFillPointer(int n) throws ConditionThrowable
+  public void setFillPointer(int n)
   {
     noFillPointer();
   }
 
-  public void setFillPointer(LispObject obj) throws ConditionThrowable
+  public void setFillPointer(LispObject obj)
   {
     noFillPointer();
   }
@@ -189,10 +189,10 @@ public abstract class AbstractVector extends AbstractArray
   }
 
   @Override
-  public abstract LispObject reverse() throws ConditionThrowable;
+  public abstract LispObject reverse();
 
   @Override
-  public LispObject nreverse() throws ConditionThrowable
+  public LispObject nreverse()
   {
     int i = 0;
     int j = length() - 1;
@@ -208,7 +208,7 @@ public abstract class AbstractVector extends AbstractArray
   }
 
   @Override
-  public String writeToString() throws ConditionThrowable
+  public String writeToString()
   {
     final LispThread thread = LispThread.currentThread();
     if (Symbol.PRINT_READABLY.symbolValue(thread) != NIL)
@@ -300,24 +300,24 @@ public abstract class AbstractVector extends AbstractArray
   public abstract AbstractArray adjustArray(int size,
                                               LispObject initialElement,
                                               LispObject initialContents)
-    throws ConditionThrowable;
+   ;
   public abstract AbstractArray adjustArray(int size,
                                               AbstractArray displacedTo,
                                               int displacement)
-    throws ConditionThrowable;
+   ;
 
 
   public AbstractArray adjustArray(int[] dims,
                                               LispObject initialElement,
                                               LispObject initialContents)
-    throws ConditionThrowable {
+    {
       return adjustArray(dims[0], initialElement, initialContents);
   }
 
   public AbstractArray adjustArray(int[] dims,
                                               AbstractArray displacedTo,
                                               int displacement)
-    throws ConditionThrowable {
+    {
       return adjustArray(dims[0], displacedTo, displacement);
   }
 }

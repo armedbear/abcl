@@ -37,13 +37,13 @@ public final class NilVector extends AbstractString
 {
     private int capacity;
 
-    public NilVector(int capacity) throws ConditionThrowable
+    public NilVector(int capacity)
     {
         this.capacity = capacity;
     }
 
     @Override
-    public char[] chars() throws ConditionThrowable
+    public char[] chars()
     {
         if (capacity != 0)
             accessError();
@@ -51,7 +51,7 @@ public final class NilVector extends AbstractString
     }
 
     @Override
-    public char[] getStringChars() throws ConditionThrowable
+    public char[] getStringChars()
     {
         if (capacity != 0)
             accessError();
@@ -59,7 +59,7 @@ public final class NilVector extends AbstractString
     }
 
     @Override
-    public String getStringValue() throws ConditionThrowable
+    public String getStringValue()
     {
         if (capacity != 0)
             accessError();
@@ -79,7 +79,7 @@ public final class NilVector extends AbstractString
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.NIL_VECTOR)
             return T;
@@ -103,7 +103,7 @@ public final class NilVector extends AbstractString
     }
 
     @Override
-    public boolean equal(LispObject obj) throws ConditionThrowable
+    public boolean equal(LispObject obj)
     {
         if (obj instanceof NilVector) {
             if (capacity != ((NilVector)obj).capacity)
@@ -128,7 +128,7 @@ public final class NilVector extends AbstractString
         return false;
     }
 
-    public String getValue() throws ConditionThrowable
+    public String getValue()
     {
         if (capacity == 0)
             return "";
@@ -156,31 +156,31 @@ public final class NilVector extends AbstractString
     }
 
     @Override
-    public LispObject CHAR(int index) throws ConditionThrowable
+    public LispObject CHAR(int index)
     {
         return accessError();
     }
 
     @Override
-    public LispObject SCHAR(int index) throws ConditionThrowable
+    public LispObject SCHAR(int index)
     {
         return accessError();
     }
 
     @Override
-    public LispObject AREF(int index) throws ConditionThrowable
+    public LispObject AREF(int index)
     {
         return accessError();
     }
 
     @Override
-    public void aset(int index, LispObject newValue) throws ConditionThrowable
+    public void aset(int index, LispObject newValue)
     {
         storeError(newValue);
     }
 
     @Override
-    public char charAt(int index) throws ConditionThrowable
+    public char charAt(int index)
     {
         accessError();
         // Not reached.
@@ -188,13 +188,13 @@ public final class NilVector extends AbstractString
     }
 
     @Override
-    public void setCharAt(int index, char c) throws ConditionThrowable
+    public void setCharAt(int index, char c)
     {
         storeError(LispCharacter.getInstance(c));
     }
 
     @Override
-    public LispObject subseq(int start, int end) throws ConditionThrowable
+    public LispObject subseq(int start, int end)
     {
         if (capacity == 0 && start == 0 && end == 0)
             return this;
@@ -202,34 +202,34 @@ public final class NilVector extends AbstractString
     }
 
     @Override
-    public void fill(LispObject obj) throws ConditionThrowable
+    public void fill(LispObject obj)
     {
         storeError(obj);
     }
 
     @Override
-    public void fill(char c) throws ConditionThrowable
+    public void fill(char c)
     {
         storeError(LispCharacter.getInstance(c));
     }
 
     @Override
-    public void shrink(int n) throws ConditionThrowable
+    public void shrink(int n)
     {
     }
 
     @Override
-    public LispObject reverse() throws ConditionThrowable
+    public LispObject reverse()
     {
         return accessError();
     }
 
-    public LispObject accessError() throws ConditionThrowable
+    public LispObject accessError()
     {
         return error(new TypeError("Attempt to access an array of element type NIL."));
     }
 
-    private void storeError(LispObject obj) throws ConditionThrowable
+    private void storeError(LispObject obj)
     {
         error(new TypeError(String.valueOf(obj) + " is not of type NIL."));
     }
@@ -250,7 +250,7 @@ public final class NilVector extends AbstractString
     public AbstractVector adjustArray(int newCapacity,
                                        LispObject initialElement,
                                        LispObject initialContents)
-        throws ConditionThrowable
+
     {
         accessError();
         // Not reached.
@@ -260,7 +260,7 @@ public final class NilVector extends AbstractString
     @Override
     public AbstractVector adjustArray(int size, AbstractArray displacedTo,
                                        int displacement)
-        throws ConditionThrowable
+
     {
         accessError();
         // Not reached.

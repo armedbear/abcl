@@ -44,7 +44,7 @@ public final class lognand extends Primitive
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         if (first instanceof Fixnum) {
             if (second instanceof Fixnum)

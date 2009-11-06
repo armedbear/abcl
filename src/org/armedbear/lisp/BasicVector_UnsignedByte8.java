@@ -47,7 +47,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   }
 
   public BasicVector_UnsignedByte8(LispObject[] array)
-    throws ConditionThrowable
+
   {
     capacity = array.length;
     elements = new byte[capacity];
@@ -68,7 +68,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.SIMPLE_ARRAY)
       return T;
@@ -114,7 +114,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   }
 
   @Override
-  public LispObject elt(int index) throws ConditionThrowable
+  public LispObject elt(int index)
   {
     try
       {
@@ -128,7 +128,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   }
 
   @Override
-  public int aref(int index) throws ConditionThrowable
+  public int aref(int index)
   {
     try
       {
@@ -143,7 +143,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   }
 
   @Override
-  public LispObject AREF(int index) throws ConditionThrowable
+  public LispObject AREF(int index)
   {
     try
       {
@@ -157,7 +157,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   }
 
   @Override
-  public LispObject AREF(LispObject index) throws ConditionThrowable
+  public LispObject AREF(LispObject index)
   {
           int idx = Fixnum.getValue(index);
     try
@@ -172,7 +172,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   }
 
   @Override
-  public void aset(int index, int n) throws ConditionThrowable
+  public void aset(int index, int n)
   {
     try
       {
@@ -185,7 +185,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   }
 
   @Override
-  public void aset(int index, LispObject value) throws ConditionThrowable
+  public void aset(int index, LispObject value)
   {
     try
       {
@@ -198,7 +198,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   }
 
   @Override
-  public LispObject subseq(int start, int end) throws ConditionThrowable
+  public LispObject subseq(int start, int end)
   {
     BasicVector_UnsignedByte8 v = new BasicVector_UnsignedByte8(end - start);
     int i = start, j = 0;
@@ -215,7 +215,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   }
 
   @Override
-  public void fill(LispObject obj) throws ConditionThrowable
+  public void fill(LispObject obj)
   {
     byte b = coerceLispObjectToJavaByte(obj);
     for (int i = capacity; i-- > 0;)
@@ -223,7 +223,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   }
 
   @Override
-  public void shrink(int n) throws ConditionThrowable
+  public void shrink(int n)
   {
     if (n < capacity)
       {
@@ -239,7 +239,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   }
 
   @Override
-  public LispObject reverse() throws ConditionThrowable
+  public LispObject reverse()
   {
     BasicVector_UnsignedByte8 result = new BasicVector_UnsignedByte8(capacity);
     int i, j;
@@ -249,7 +249,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   }
 
   @Override
-  public LispObject nreverse() throws ConditionThrowable
+  public LispObject nreverse()
   {
     int i = 0;
     int j = capacity - 1;
@@ -268,7 +268,7 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
   public AbstractVector adjustArray(int newCapacity,
                                      LispObject initialElement,
                                      LispObject initialContents)
-    throws ConditionThrowable
+
   {
     if (initialContents != null)
       {

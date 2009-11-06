@@ -49,7 +49,7 @@ public final class SimpleVector extends AbstractVector
     this.capacity = capacity;
   }
 
-  public SimpleVector(LispObject obj) throws ConditionThrowable
+  public SimpleVector(LispObject obj)
   {
     if (obj.listp())
       {
@@ -95,7 +95,7 @@ public final class SimpleVector extends AbstractVector
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.SIMPLE_VECTOR)
       return T;
@@ -145,7 +145,7 @@ public final class SimpleVector extends AbstractVector
   }
 
   @Override
-  public LispObject elt(int index) throws ConditionThrowable
+  public LispObject elt(int index)
   {
     try
       {
@@ -159,7 +159,7 @@ public final class SimpleVector extends AbstractVector
   }
 
   @Override
-  public LispObject AREF(int index) throws ConditionThrowable
+  public LispObject AREF(int index)
   {
     try
       {
@@ -173,7 +173,7 @@ public final class SimpleVector extends AbstractVector
   }
 
   @Override
-  public LispObject AREF(LispObject index) throws ConditionThrowable
+  public LispObject AREF(LispObject index)
   {
         int idx = Fixnum.getValue(index);
     try
@@ -188,7 +188,7 @@ public final class SimpleVector extends AbstractVector
   }
 
   @Override
-  public void aset(int index, LispObject newValue) throws ConditionThrowable
+  public void aset(int index, LispObject newValue)
   {
     try
       {
@@ -201,7 +201,7 @@ public final class SimpleVector extends AbstractVector
   }
 
   @Override
-  public LispObject SVREF(int index) throws ConditionThrowable
+  public LispObject SVREF(int index)
   {
     try
       {
@@ -215,7 +215,7 @@ public final class SimpleVector extends AbstractVector
   }
 
   @Override
-  public void svset(int index, LispObject newValue) throws ConditionThrowable
+  public void svset(int index, LispObject newValue)
   {
     try
       {
@@ -228,7 +228,7 @@ public final class SimpleVector extends AbstractVector
   }
 
   @Override
-  public LispObject subseq(int start, int end) throws ConditionThrowable
+  public LispObject subseq(int start, int end)
   {
     SimpleVector v = new SimpleVector(end - start);
     int i = start, j = 0;
@@ -245,14 +245,14 @@ public final class SimpleVector extends AbstractVector
   }
 
   @Override
-  public void fill(LispObject obj) throws ConditionThrowable
+  public void fill(LispObject obj)
   {
     for (int i = capacity; i-- > 0;)
       data[i] = obj;
   }
 
   @Override
-  public LispObject deleteEq(LispObject item) throws ConditionThrowable
+  public LispObject deleteEq(LispObject item)
   {
     final int limit = capacity;
     int i = 0;
@@ -269,7 +269,7 @@ public final class SimpleVector extends AbstractVector
   }
 
   @Override
-  public LispObject deleteEql(LispObject item) throws ConditionThrowable
+  public LispObject deleteEql(LispObject item)
   {
     final int limit = capacity;
     int i = 0;
@@ -286,7 +286,7 @@ public final class SimpleVector extends AbstractVector
   }
 
   @Override
-  public void shrink(int n) throws ConditionThrowable
+  public void shrink(int n)
   {
     if (n < capacity)
       {
@@ -302,7 +302,7 @@ public final class SimpleVector extends AbstractVector
   }
 
   @Override
-  public LispObject reverse() throws ConditionThrowable
+  public LispObject reverse()
   {
     SimpleVector result = new SimpleVector(capacity);
     int i, j;
@@ -312,7 +312,7 @@ public final class SimpleVector extends AbstractVector
   }
 
   @Override
-  public LispObject nreverse() throws ConditionThrowable
+  public LispObject nreverse()
   {
     int i = 0;
     int j = capacity - 1;
@@ -331,7 +331,7 @@ public final class SimpleVector extends AbstractVector
   public AbstractVector adjustArray(int newCapacity,
                                      LispObject initialElement,
                                      LispObject initialContents)
-    throws ConditionThrowable
+
   {
     if (initialContents != null)
       {
@@ -383,7 +383,7 @@ public final class SimpleVector extends AbstractVector
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
                         if (first instanceof SimpleVector) {
                                 final SimpleVector sv = (SimpleVector)first;
@@ -408,7 +408,7 @@ public final class SimpleVector extends AbstractVector
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
-        throws ConditionThrowable
+
       {
                         if (first instanceof SimpleVector) {
                                 final SimpleVector sv = (SimpleVector)first;

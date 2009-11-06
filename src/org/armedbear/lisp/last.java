@@ -42,7 +42,7 @@ public final class last extends Primitive
   }
 
   @Override
-  public LispObject execute(LispObject arg) throws ConditionThrowable
+  public LispObject execute(LispObject arg)
   {
     if (arg == NIL)
       return NIL;
@@ -62,7 +62,7 @@ public final class last extends Primitive
 
   @Override
   public LispObject execute(LispObject first, LispObject second)
-    throws ConditionThrowable
+
   {
     LispObject list = checkList(first);
     if (second instanceof Fixnum)

@@ -35,12 +35,12 @@ package org.armedbear.lisp;
 
 public class ProgramError extends LispError
 {
-    protected ProgramError(LispClass cls) throws ConditionThrowable
+    protected ProgramError(LispClass cls)
     {
         super(cls);
     }
 
-    public ProgramError(LispObject initArgs) throws ConditionThrowable
+    public ProgramError(LispObject initArgs)
     {
         super(StandardClass.PROGRAM_ERROR);
         initialize(initArgs);
@@ -52,7 +52,7 @@ public class ProgramError extends LispError
 
     }
 
-    public ProgramError(String message) throws ConditionThrowable
+    public ProgramError(String message)
     {
         super(StandardClass.PROGRAM_ERROR);
         setFormatControl(message);
@@ -72,7 +72,7 @@ public class ProgramError extends LispError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.PROGRAM_ERROR)
             return T;

@@ -50,7 +50,7 @@ public final class JProxy extends Lisp
                   "interface &rest method-names-and-defs")
     {
       @Override
-      public LispObject execute(LispObject[] args) throws ConditionThrowable
+      public LispObject execute(LispObject[] args)
       {
         int length = args.length;
         if (length < 3 || length % 2 != 1)
@@ -202,7 +202,7 @@ public final class JProxy extends Lisp
 	    new Primitive("%jmake-invocation-handler", PACKAGE_JAVA, false,
 	                  "function") {
 		
-	      	public LispObject execute(LispObject[] args) throws ConditionThrowable {
+	      	public LispObject execute(LispObject[] args) {
 	      		int length = args.length;
 	      		if (length != 1) {
 	      			return error(new WrongNumberOfArgumentsException(this));
@@ -218,7 +218,7 @@ public final class JProxy extends Lisp
 	    new Primitive("%jmake-proxy", PACKAGE_JAVA, false,
 	                  "interface invocation-handler") {
 		
-	      	public LispObject execute(final LispObject[] args) throws ConditionThrowable {
+	      	public LispObject execute(final LispObject[] args) {
 	      		int length = args.length;
 	      		if (length != 3) {
 	      			return error(new WrongNumberOfArgumentsException(this));

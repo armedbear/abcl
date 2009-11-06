@@ -53,7 +53,7 @@ public final class SimpleArray_T extends AbstractArray
   public SimpleArray_T(int[] dimv,
                        LispObject elementType,
                        LispObject initialContents)
-    throws ConditionThrowable
+
   {
     this.dimv = dimv;
     this.elementType = elementType;
@@ -70,7 +70,7 @@ public final class SimpleArray_T extends AbstractArray
   }
 
   public SimpleArray_T(int rank, LispObject initialContents)
-    throws ConditionThrowable
+
   {
     if (rank < 2)
       Debug.assertTrue(false);
@@ -99,7 +99,7 @@ public final class SimpleArray_T extends AbstractArray
 
   private int setInitialContents(int axis, int[] dims, LispObject contents,
                                  int index)
-    throws ConditionThrowable
+
   {
     if (dims.length == 0)
       {
@@ -163,7 +163,7 @@ public final class SimpleArray_T extends AbstractArray
   }
 
   @Override
-  public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
+  public LispObject typep(LispObject typeSpecifier)
   {
     if (typeSpecifier == Symbol.SIMPLE_ARRAY)
       return T;
@@ -188,7 +188,7 @@ public final class SimpleArray_T extends AbstractArray
   }
 
   @Override
-  public int getDimension(int n) throws ConditionThrowable
+  public int getDimension(int n)
   {
     try
       {
@@ -220,7 +220,7 @@ public final class SimpleArray_T extends AbstractArray
   }
 
   @Override
-  public LispObject AREF(int index) throws ConditionThrowable
+  public LispObject AREF(int index)
   {
     try
       {
@@ -233,7 +233,7 @@ public final class SimpleArray_T extends AbstractArray
   }
 
   @Override
-  public void aset(int index, LispObject newValue) throws ConditionThrowable
+  public void aset(int index, LispObject newValue)
   {
     try
       {
@@ -246,7 +246,7 @@ public final class SimpleArray_T extends AbstractArray
   }
 
   @Override
-  public int getRowMajorIndex(int[] subscripts) throws ConditionThrowable
+  public int getRowMajorIndex(int[] subscripts)
   {
     final int rank = dimv.length;
     if (rank != subscripts.length)
@@ -281,7 +281,7 @@ public final class SimpleArray_T extends AbstractArray
   }
 
   @Override
-  public LispObject get(int[] subscripts) throws ConditionThrowable
+  public LispObject get(int[] subscripts)
   {
     try
       {
@@ -296,7 +296,7 @@ public final class SimpleArray_T extends AbstractArray
 
   @Override
   public void set(int[] subscripts, LispObject newValue)
-    throws ConditionThrowable
+
   {
     try
       {
@@ -317,7 +317,7 @@ public final class SimpleArray_T extends AbstractArray
   }
 
   @Override
-  public String writeToString() throws ConditionThrowable
+  public String writeToString()
   {
     return writeToString(dimv);
   }
@@ -325,7 +325,7 @@ public final class SimpleArray_T extends AbstractArray
   @Override
   public AbstractArray adjustArray(int[] dimv, LispObject initialElement,
                                    LispObject initialContents)
-    throws ConditionThrowable
+
   {
     if (initialContents != null)
       return new SimpleArray_T(dimv, elementType, initialContents);
@@ -347,7 +347,7 @@ public final class SimpleArray_T extends AbstractArray
 
   // Copy a1 to a2 for index tuples that are valid for both arrays.
   static void copyArray(AbstractArray a1, AbstractArray a2)
-    throws ConditionThrowable
+
   {
     Debug.assertTrue(a1.getRank() == a2.getRank());
     int[] subscripts = new int[a1.getRank()];
@@ -357,7 +357,7 @@ public final class SimpleArray_T extends AbstractArray
 
   private static void copySubArray(AbstractArray a1, AbstractArray a2,
                                    int[] subscripts, int axis)
-    throws ConditionThrowable
+
   {
     if (axis < subscripts.length)
       {

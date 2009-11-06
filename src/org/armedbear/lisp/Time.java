@@ -45,7 +45,7 @@ public final class Time extends Lisp
     new Primitive("%time", PACKAGE_SYS, false)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         Cons.setCount(0);
         long realStart = System.currentTimeMillis();
@@ -80,7 +80,7 @@ public final class Time extends Lisp
     new Primitive("get-internal-real-time", "")
     {
       @Override
-      public LispObject execute() throws ConditionThrowable
+      public LispObject execute()
       {
         return number(System.currentTimeMillis());
       }
@@ -91,7 +91,7 @@ public final class Time extends Lisp
     new Primitive("get-internal-run-time", "")
     {
       @Override
-      public LispObject execute() throws ConditionThrowable
+      public LispObject execute()
       {
         return number(System.currentTimeMillis());
       }
@@ -113,7 +113,7 @@ public final class Time extends Lisp
     new Primitive("default-time-zone", PACKAGE_SYS, false)
     {
       @Override
-      public LispObject execute() throws ConditionThrowable
+      public LispObject execute()
       {
         TimeZone tz = TimeZone.getDefault();
         //int offset = tz.getOffset(System.currentTimeMillis());

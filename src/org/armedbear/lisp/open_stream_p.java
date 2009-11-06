@@ -42,7 +42,7 @@ public final class open_stream_p extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         return checkStream(arg).isOpen() ? T : NIL;
     }

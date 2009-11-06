@@ -42,7 +42,7 @@ public final class ComplexBitVector extends AbstractBitVector
     private AbstractArray array;
     private int displacement;
 
-    public ComplexBitVector(int capacity) throws ConditionThrowable
+    public ComplexBitVector(int capacity)
     {
         this.capacity = capacity;
         int size = capacity >>> 6;
@@ -84,7 +84,7 @@ public final class ComplexBitVector extends AbstractBitVector
     }
 
     @Override
-    public void setFillPointer(LispObject obj) throws ConditionThrowable
+    public void setFillPointer(LispObject obj)
     {
         if (obj == T)
             fillPointer = capacity();
@@ -108,7 +108,7 @@ public final class ComplexBitVector extends AbstractBitVector
     }
 
     @Override
-    public LispObject arrayDisplacement() throws ConditionThrowable
+    public LispObject arrayDisplacement()
     {
         LispObject value1, value2;
         if (array != null) {
@@ -128,7 +128,7 @@ public final class ComplexBitVector extends AbstractBitVector
     }
 
     @Override
-    public LispObject elt(int index) throws ConditionThrowable
+    public LispObject elt(int index)
     {
         if (index >= length())
             badIndex(index, length());
@@ -136,7 +136,7 @@ public final class ComplexBitVector extends AbstractBitVector
     }
 
     @Override
-    public LispObject AREF(int index) throws ConditionThrowable
+    public LispObject AREF(int index)
     {
         if (index < 0 || index >= capacity)
             badIndex(index, capacity);
@@ -150,7 +150,7 @@ public final class ComplexBitVector extends AbstractBitVector
     }
 
     @Override
-    protected int getBit(int index) throws ConditionThrowable
+    protected int getBit(int index)
     {
         if (bits != null) {
             int offset = index >> 6;
@@ -160,7 +160,7 @@ public final class ComplexBitVector extends AbstractBitVector
     }
 
     @Override
-    public void aset(int index, LispObject newValue) throws ConditionThrowable
+    public void aset(int index, LispObject newValue)
     {
         if (index < 0 || index >= capacity)
             badIndex(index, capacity);
@@ -187,7 +187,7 @@ public final class ComplexBitVector extends AbstractBitVector
     }
 
     @Override
-    protected void setBit(int index) throws ConditionThrowable
+    protected void setBit(int index)
     {
         if (bits != null) {
             int offset = index >> 6;
@@ -197,7 +197,7 @@ public final class ComplexBitVector extends AbstractBitVector
     }
 
     @Override
-    protected void clearBit(int index) throws ConditionThrowable
+    protected void clearBit(int index)
     {
         if (bits != null) {
             int offset = index >> 6;
@@ -207,7 +207,7 @@ public final class ComplexBitVector extends AbstractBitVector
     }
 
     @Override
-    public void shrink(int n) throws ConditionThrowable
+    public void shrink(int n)
     {
         if (bits != null) {
             if (n < capacity) {
@@ -236,7 +236,7 @@ public final class ComplexBitVector extends AbstractBitVector
 
     // FIXME
     @Override
-    public void vectorPushExtend(LispObject element) throws ConditionThrowable
+    public void vectorPushExtend(LispObject element)
     {
         final int fp = getFillPointer();
         if (fp < 0)
@@ -252,7 +252,7 @@ public final class ComplexBitVector extends AbstractBitVector
     // FIXME
     @Override
     public LispObject VECTOR_PUSH_EXTEND(LispObject element)
-        throws ConditionThrowable
+
     {
         vectorPushExtend(element);
         return Fixnum.getInstance(getFillPointer() - 1);
@@ -261,7 +261,7 @@ public final class ComplexBitVector extends AbstractBitVector
     // FIXME
     @Override
     public LispObject VECTOR_PUSH_EXTEND(LispObject element, LispObject extension)
-        throws ConditionThrowable
+
     {
         int ext = Fixnum.getValue(extension);
         final int fp = getFillPointer();
@@ -277,7 +277,7 @@ public final class ComplexBitVector extends AbstractBitVector
         return Fixnum.getInstance(fp);
     }
 
-    private final void ensureCapacity(int minCapacity) throws ConditionThrowable
+    private final void ensureCapacity(int minCapacity)
     {
         if (bits != null) {
             if (capacity < minCapacity) {
@@ -320,7 +320,7 @@ public final class ComplexBitVector extends AbstractBitVector
     public AbstractVector adjustArray(int newCapacity,
                                        LispObject initialElement,
                                        LispObject initialContents)
-        throws ConditionThrowable
+
     {
         if (bits == null) {
             // Copy array.
@@ -380,7 +380,7 @@ public final class ComplexBitVector extends AbstractBitVector
     @Override
     public AbstractVector adjustArray(int size, AbstractArray displacedTo,
                                        int displacement)
-        throws ConditionThrowable
+
     {
         capacity = size;
         array = displacedTo;

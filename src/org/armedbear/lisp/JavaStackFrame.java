@@ -69,7 +69,7 @@ public class JavaStackFrame
 
   @Override
   public LispObject typep(LispObject typeSpecifier) 
-     throws ConditionThrowable
+
   {
      if (typeSpecifier == Symbol.JAVA_STACK_FRAME)
        return T;
@@ -84,7 +84,7 @@ public class JavaStackFrame
   static final Symbol LINE = Packages.internKeyword("LINE");
   static final Symbol NATIVE_METHOD = Packages.internKeyword("NATIVE-METHOD");
 
-  public LispObject toLispList() throws ConditionThrowable
+  public LispObject toLispList()
   {
     LispObject result = Lisp.NIL;
     
@@ -109,14 +109,14 @@ public class JavaStackFrame
 
   @Override
   public SimpleString toLispString() 
-    throws ConditionThrowable 
+
   {
     return new SimpleString(javaFrame.toString());
   }
 
   @Override
   public LispObject getParts() 
-    throws ConditionThrowable
+
   { 
     LispObject result = NIL;
     result = result.push(new Cons("CLASS", 

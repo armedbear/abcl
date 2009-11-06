@@ -72,7 +72,7 @@ public final class EqualHashTable extends HashTable
   }
 
   @Override
-  public void put(LispObject key, LispObject value) throws ConditionThrowable
+  public void put(LispObject key, LispObject value)
   {
     int index = key.sxhash() & mask;
     HashEntry e = buckets[index];
@@ -98,7 +98,7 @@ public final class EqualHashTable extends HashTable
   }
 
   @Override
-  public LispObject remove(LispObject key) throws ConditionThrowable
+  public LispObject remove(LispObject key)
   {
     final int index = key.sxhash() & mask;
     HashEntry e = buckets[index];

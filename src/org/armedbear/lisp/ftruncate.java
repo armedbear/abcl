@@ -50,7 +50,7 @@ public final class ftruncate extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         final LispThread thread = LispThread.currentThread();
         if (arg.zerop()) {
@@ -99,7 +99,7 @@ public final class ftruncate extends Primitive
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         final LispThread thread = LispThread.currentThread();
         if (first.zerop()) {

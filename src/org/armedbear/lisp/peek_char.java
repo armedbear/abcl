@@ -43,7 +43,7 @@ public final class peek_char extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject[] args) throws ConditionThrowable
+    public LispObject execute(LispObject[] args)
     {
         int length = args.length;
         if (length > 5)

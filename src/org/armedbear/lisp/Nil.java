@@ -69,7 +69,7 @@ public final class Nil extends Symbol
     }
 
     @Override
-    public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
+    public LispObject typep(LispObject typeSpecifier)
     {
         if (typeSpecifier == Symbol.NULL)
             return T;
@@ -135,7 +135,7 @@ public final class Nil extends Symbol
     }
 
     @Override
-    public LispObject nthcdr(int n) throws ConditionThrowable
+    public LispObject nthcdr(int n)
     {
         if (n < 0)
             return type_error(Fixnum.getInstance(n),
@@ -156,7 +156,7 @@ public final class Nil extends Symbol
     }
 
     @Override
-    public LispObject NTH(int index) throws ConditionThrowable
+    public LispObject NTH(int index)
     {
         if (index < 0)
             error(new TypeError(String.valueOf(index) +
@@ -165,7 +165,7 @@ public final class Nil extends Symbol
     }
 
     @Override
-    public LispObject NTH(LispObject arg) throws ConditionThrowable
+    public LispObject NTH(LispObject arg)
     {
         int index;
                 if (arg instanceof Fixnum) {
@@ -182,7 +182,7 @@ public final class Nil extends Symbol
     }
 
     @Override
-    public LispObject elt(int index) throws ConditionThrowable
+    public LispObject elt(int index)
     {
         return error(new TypeError("ELT: invalid index " + index + " for " + this + "."));
     }

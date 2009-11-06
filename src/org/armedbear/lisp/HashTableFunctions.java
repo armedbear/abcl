@@ -51,7 +51,7 @@ public final class HashTableFunctions extends Lisp
       @Override
       public LispObject execute(LispObject test, LispObject size,
                                 LispObject rehashSize, LispObject rehashThreshold)
-        throws ConditionThrowable
+
       {
         final int n = Fixnum.getValue(size);
         if (test == FUNCTION_EQL || test == NIL)
@@ -73,7 +73,7 @@ public final class HashTableFunctions extends Lisp
     {
       @Override
       public LispObject execute(LispObject key, LispObject ht)
-        throws ConditionThrowable
+
       {
           return checkHashTable(ht).gethash(key);
       }
@@ -81,7 +81,7 @@ public final class HashTableFunctions extends Lisp
       @Override
       public LispObject execute(LispObject key, LispObject ht,
                                 LispObject defaultValue)
-        throws ConditionThrowable
+
       {
           return checkHashTable(ht).gethash(key, defaultValue);
       }
@@ -93,7 +93,7 @@ public final class HashTableFunctions extends Lisp
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
         final HashTable ht = checkHashTable(second);
         synchronized (ht)
@@ -112,14 +112,14 @@ public final class HashTableFunctions extends Lisp
       @Override
       public LispObject execute(LispObject key, LispObject ht,
                                 LispObject value)
-        throws ConditionThrowable
+
       {
           return checkHashTable(ht).puthash(key, value);
       }
       @Override
       public LispObject execute(LispObject key, LispObject ht,
                                 LispObject ignored, LispObject value)
-        throws ConditionThrowable
+
       {
           return checkHashTable(ht).puthash(key, value);
       }
@@ -131,7 +131,7 @@ public final class HashTableFunctions extends Lisp
     {
       @Override
       public LispObject execute(LispObject key, LispObject ht)
-        throws ConditionThrowable
+
       {
             return checkHashTable(ht).remhash(key);
       }
@@ -142,7 +142,7 @@ public final class HashTableFunctions extends Lisp
     new Primitive(Symbol.CLRHASH, "hash-table")
     {
       @Override
-      public LispObject execute(LispObject ht) throws ConditionThrowable
+      public LispObject execute(LispObject ht)
       {
           checkHashTable(ht).clear();
           return ht;
@@ -154,7 +154,7 @@ public final class HashTableFunctions extends Lisp
     new Primitive(Symbol.HASH_TABLE_COUNT, "hash-table")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return Fixnum.getInstance(checkHashTable(arg).getCount());
       }
@@ -165,7 +165,7 @@ public final class HashTableFunctions extends Lisp
     new Primitive(Symbol.SXHASH, "object")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return Fixnum.getInstance(arg.sxhash());
       }
@@ -177,7 +177,7 @@ public final class HashTableFunctions extends Lisp
     new Primitive("psxhash", PACKAGE_SYS, true, "object")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return Fixnum.getInstance(arg.psxhash());
       }
@@ -188,7 +188,7 @@ public final class HashTableFunctions extends Lisp
     new Primitive(Symbol.HASH_TABLE_P,"object")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg instanceof HashTable ? T : NIL;
       }
@@ -199,7 +199,7 @@ public final class HashTableFunctions extends Lisp
     new Primitive("hash-table-entries", PACKAGE_SYS, false)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkHashTable(arg).ENTRIES();
       }
@@ -210,7 +210,7 @@ public final class HashTableFunctions extends Lisp
     new Primitive(Symbol.HASH_TABLE_TEST, "hash-table")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkHashTable(arg).getTest();
       }
@@ -221,7 +221,7 @@ public final class HashTableFunctions extends Lisp
     new Primitive(Symbol.HASH_TABLE_SIZE, "hash-table")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return Fixnum.getInstance(checkHashTable(arg).getSize());
       }
@@ -232,7 +232,7 @@ public final class HashTableFunctions extends Lisp
     new Primitive(Symbol.HASH_TABLE_REHASH_SIZE, "hash-table")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkHashTable(arg).getRehashSize();
       }
@@ -243,7 +243,7 @@ public final class HashTableFunctions extends Lisp
     new Primitive(Symbol.HASH_TABLE_REHASH_THRESHOLD, "hash-table")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkHashTable(arg).getRehashThreshold();
       }
@@ -255,13 +255,13 @@ public final class HashTableFunctions extends Lisp
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
         return checkHashTable(second).MAPHASH(first);
       }
     };
 
-protected static HashTable checkHashTable(LispObject ht) throws ConditionThrowable {
+protected static HashTable checkHashTable(LispObject ht) {
         if (ht instanceof HashTable) return (HashTable)ht;
     type_error(ht, Symbol.HASH_TABLE);    
         return null;

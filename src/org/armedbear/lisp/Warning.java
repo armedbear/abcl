@@ -35,11 +35,11 @@ package org.armedbear.lisp;
 
 public class Warning extends Condition
 {
-    protected Warning() throws ConditionThrowable
+    protected Warning()
     {
     }
 
-    public Warning(LispObject initArgs) throws ConditionThrowable
+    public Warning(LispObject initArgs)
     {
         super(initArgs);
     }
@@ -57,7 +57,7 @@ public class Warning extends Condition
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.WARNING)
             return T;

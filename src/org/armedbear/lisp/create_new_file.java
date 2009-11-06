@@ -45,7 +45,7 @@ public final class create_new_file extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         final String namestring = arg.getStringValue();
         try {

@@ -46,7 +46,7 @@ public final class socket_accept extends Primitive
 
     @Override
     public LispObject execute(LispObject first)
-        throws ConditionThrowable
+
     {
          ServerSocket serverSocket =
             (ServerSocket) ((JavaObject)first).getObject();

@@ -46,7 +46,7 @@ public final class logtest extends Primitive
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         if (first instanceof Fixnum && second instanceof Fixnum) {
             return (((Fixnum)first).value & ((Fixnum)second).value) == 0 ? NIL : T;

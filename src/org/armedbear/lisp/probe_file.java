@@ -43,7 +43,7 @@ public final class probe_file extends Lisp
         new Primitive("probe-file", "pathspec")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return Pathname.truename(arg, false);
         }
@@ -55,7 +55,7 @@ public final class probe_file extends Lisp
         new Primitive("truename", "filespec")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return Pathname.truename(arg, true);
         }
@@ -67,7 +67,7 @@ public final class probe_file extends Lisp
         new Primitive("probe-directory", PACKAGE_EXT, true)
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             Pathname pathname = coerceToPathname(arg);
             if (pathname.isWild())
@@ -83,7 +83,7 @@ public final class probe_file extends Lisp
         new Primitive("file-directory-p", PACKAGE_EXT, true)
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             Pathname pathname = coerceToPathname(arg);
             if (pathname.isWild())

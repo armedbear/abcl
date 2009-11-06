@@ -58,7 +58,7 @@ public class StructureClass extends SlotClass
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.STRUCTURE_CLASS)
             return T;
@@ -68,13 +68,13 @@ public class StructureClass extends SlotClass
     }
 
     @Override
-    public LispObject getDescription() throws ConditionThrowable
+    public LispObject getDescription()
     {
         return new SimpleString(writeToString());
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         StringBuffer sb = new StringBuffer("#<STRUCTURE-CLASS ");
         sb.append(symbol.writeToString());
@@ -89,7 +89,7 @@ public class StructureClass extends SlotClass
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third, LispObject fourth)
-            throws ConditionThrowable
+
         {
             Symbol symbol = checkSymbol(first);
             LispClass existingClass = LispClass.findClass(symbol);

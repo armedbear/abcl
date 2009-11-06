@@ -40,7 +40,7 @@ public class StandardObjectFunctions extends Lisp
     new Primitive("std-allocate-instance", PACKAGE_SYS, true, "class")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         if (arg == StandardClass.STANDARD_CLASS)
           return new StandardClass();

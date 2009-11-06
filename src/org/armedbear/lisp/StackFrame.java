@@ -38,7 +38,7 @@ public abstract class StackFrame
 {
   @Override
     public LispObject typep(LispObject typeSpecifier) 
-    throws ConditionThrowable
+
    {
      if (typeSpecifier == Symbol.STACK_FRAME)
        return T;
@@ -56,6 +56,6 @@ public abstract class StackFrame
     return this.next;
   }
   
-  public abstract LispObject toLispList() throws ConditionThrowable;
-  public abstract SimpleString toLispString() throws ConditionThrowable;
+  public abstract LispObject toLispList();
+  public abstract SimpleString toLispString();
 }

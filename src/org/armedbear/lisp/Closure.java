@@ -84,14 +84,14 @@ public class Closure extends Function
   private boolean bindInitForms;
 
   public Closure(LispObject lambdaExpression, Environment env)
-    throws ConditionThrowable
+
   {
     this(null, lambdaExpression, env);
   }
 
   public Closure(final LispObject name, final LispObject lambdaExpression,
                  final Environment env)
-    throws ConditionThrowable
+
   {
     super(name, lambdaExpression.cadr());
     final LispObject lambdaList = lambdaExpression.cadr();
@@ -338,14 +338,14 @@ public class Closure extends Function
   }
 
   private static final void invalidParameter(LispObject obj)
-    throws ConditionThrowable
+
   {
     error(new LispError(obj.writeToString() +
                          " may not be used as a variable in a lambda list."));
   }
 
   @Override
-  public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
+  public LispObject typep(LispObject typeSpecifier)
   {
     if (typeSpecifier == Symbol.COMPILED_FUNCTION)
       return NIL;
@@ -372,7 +372,7 @@ public class Closure extends Function
   }
 
   @Override
-  public LispObject execute() throws ConditionThrowable
+  public LispObject execute()
   {
     if (arity == 0)
       {
@@ -384,7 +384,7 @@ public class Closure extends Function
   }
     
   private final LispObject bindParametersAndExecute(LispObject... objects)
-  throws ConditionThrowable
+
   {
     final LispThread thread = LispThread.currentThread();
     final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
@@ -412,7 +412,7 @@ public class Closure extends Function
   private final void bindRequiredParameters(Environment ext,
                                             LispThread thread,
                                             LispObject[] objects)
-  throws ConditionThrowable
+
   {
     // &whole and &environment before anything
     if (envVar != null)
@@ -424,13 +424,13 @@ public class Closure extends Function
   }
 
   public final LispObject invokeArrayExecute(LispObject... objects)
-  throws ConditionThrowable
+
   {
     return execute(objects);
   }
 
   @Override
-  public LispObject execute(LispObject arg) throws ConditionThrowable
+  public LispObject execute(LispObject arg)
   {
     if (minArgs == 1)
       {
@@ -444,7 +444,7 @@ public class Closure extends Function
 
   @Override
   public LispObject execute(LispObject first, LispObject second)
-    throws ConditionThrowable
+
   {
     if (minArgs == 2)
       {
@@ -459,7 +459,7 @@ public class Closure extends Function
   @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third)
-    throws ConditionThrowable
+
   {
     if (minArgs == 3)
       {
@@ -474,7 +474,7 @@ public class Closure extends Function
   @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth)
-    throws ConditionThrowable
+
   {
     if (minArgs == 4)
       {
@@ -490,7 +490,7 @@ public class Closure extends Function
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth)
-    throws ConditionThrowable
+
   {
     if (minArgs == 5)
       {
@@ -507,7 +507,7 @@ public class Closure extends Function
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth)
-    throws ConditionThrowable
+
   {
     if (minArgs == 6)
       {
@@ -526,7 +526,7 @@ public class Closure extends Function
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
                             LispObject seventh)
-    throws ConditionThrowable
+
   {
     if (minArgs == 7)
       {
@@ -545,7 +545,7 @@ public class Closure extends Function
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
                             LispObject seventh, LispObject eighth)
-    throws ConditionThrowable
+
   {
     if (minArgs == 8)
       {
@@ -560,7 +560,7 @@ public class Closure extends Function
   }
 
   private final void declareFreeSpecials(Environment ext)
-    throws ConditionThrowable
+
   {
     LispObject s = specials;
     special:
@@ -578,7 +578,7 @@ public class Closure extends Function
   }
 
   @Override
-  public LispObject execute(LispObject[] args) throws ConditionThrowable
+  public LispObject execute(LispObject[] args)
   {
     final LispThread thread = LispThread.currentThread();
     SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
@@ -610,7 +610,7 @@ public class Closure extends Function
   }
 
   protected final LispObject[] processArgs(LispObject[] args, LispThread thread)
-    throws ConditionThrowable
+
   {
     if (optionalParameters.length == 0 && keywordParameters.length == 0)
       return fastProcessArgs(args);
@@ -871,7 +871,7 @@ public class Closure extends Function
 
   // No optional or keyword parameters.
   protected final LispObject[] fastProcessArgs(LispObject[] args)
-    throws ConditionThrowable
+
   {
     final int argsLength = args.length;
     if (arity >= 0)
@@ -949,7 +949,7 @@ public class Closure extends Function
   private final void bindParameterDefaults(Parameter[] parameters,
                                            Environment env,
                                            LispThread thread)
-    throws ConditionThrowable
+
   {
     for (Parameter parameter : parameters)
       {
@@ -965,7 +965,7 @@ public class Closure extends Function
   }
 
   private final void bindAuxVars(Environment env, LispThread thread)
-    throws ConditionThrowable
+
   {
     // Aux variable processing is analogous to LET* processing.
     for (Parameter parameter : auxVars)
@@ -1002,7 +1002,7 @@ public class Closure extends Function
     }
 
     public Parameter(Symbol var, LispObject initForm, int type)
-      throws ConditionThrowable
+
     {
       this.var = var;
       this.initForm = initForm;
@@ -1015,7 +1015,7 @@ public class Closure extends Function
 
     public Parameter(Symbol var, LispObject initForm, LispObject svar,
                      int type)
-      throws ConditionThrowable
+
     {
       this.var = var;
       this.initForm = initForm;
@@ -1028,7 +1028,7 @@ public class Closure extends Function
 
     public Parameter(Symbol keyword, Symbol var, LispObject initForm,
                      LispObject svar)
-      throws ConditionThrowable
+
     {
       this.var = var;
       this.initForm = initForm;
@@ -1058,7 +1058,7 @@ public class Closure extends Function
     }
 
     private static final LispObject processInitForm(LispObject initForm)
-      throws ConditionThrowable
+
     {
       if (initForm.constantp())
         {
@@ -1080,7 +1080,7 @@ public class Closure extends Function
       new Primitive("lambda-list-names", PACKAGE_SYS, true)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         Closure closure = new Closure(list(Symbol.LAMBDA, arg, NIL), new Environment());
         return closure.getVariableList();

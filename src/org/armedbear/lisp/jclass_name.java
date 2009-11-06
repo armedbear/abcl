@@ -48,7 +48,7 @@ public final class jclass_name extends Primitive
     // referenced by CLASS-REF.
     @Override
     public LispObject execute(LispObject arg)
-        throws ConditionThrowable
+
     {
         if (arg instanceof AbstractString) {
             String s = arg.getStringValue();
@@ -71,7 +71,7 @@ public final class jclass_name extends Primitive
     // matches NAME.
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         String className = null;
         if (first instanceof AbstractString) {

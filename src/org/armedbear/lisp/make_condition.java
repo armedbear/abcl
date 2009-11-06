@@ -44,7 +44,7 @@ public final class make_condition extends Primitive
     // %make-condition type slot-initializations => condition
     @Override
     public LispObject execute(LispObject type, LispObject initArgs)
-        throws ConditionThrowable
+
     {
         final Symbol symbol;
         if (type instanceof Symbol)

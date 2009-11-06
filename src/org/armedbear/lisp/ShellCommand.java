@@ -50,7 +50,7 @@ public final class ShellCommand extends Lisp implements Runnable
     private int exitValue = -1;
 
     public ShellCommand(String command, String directory, Stream outputStream)
-        throws ConditionThrowable
+
     {
         this.command = command;
         this.directory = directory;
@@ -68,7 +68,7 @@ public final class ShellCommand extends Lisp implements Runnable
         return exitValue;
     }
 
-    private void processOutput(String s) throws ConditionThrowable
+    private void processOutput(String s)
     {
         if (outputStream != null)
             outputStream._writeString(s);
@@ -247,7 +247,7 @@ public final class ShellCommand extends Lisp implements Runnable
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
-            throws ConditionThrowable
+
         {
             if (!(Utilities.isPlatformUnix || Utilities.isPlatformWindows)) {
               return error(new LispError("run-shell-command not implemented for "

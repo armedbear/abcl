@@ -44,7 +44,7 @@ public final class file_write_date extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         Pathname pathname = coerceToPathname(arg);
         if (pathname.isWild())

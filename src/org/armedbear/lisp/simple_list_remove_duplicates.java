@@ -42,7 +42,7 @@ public final class simple_list_remove_duplicates extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject list) throws ConditionThrowable
+    public LispObject execute(LispObject list)
     {
         LispObject result = NIL;
         while (list != NIL) {

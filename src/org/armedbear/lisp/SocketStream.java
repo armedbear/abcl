@@ -58,7 +58,7 @@ public final class SocketStream extends TwoWayStream
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.SOCKET_STREAM)
             return T;
@@ -68,7 +68,7 @@ public final class SocketStream extends TwoWayStream
     }
 
     @Override
-    public LispObject close(LispObject abort) throws ConditionThrowable
+    public LispObject close(LispObject abort)
     {
 	try {
 	    socket.close();

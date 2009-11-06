@@ -40,7 +40,7 @@ public class CompiledClosure extends Closure
   public ClosureBinding[] ctx;
 
   public CompiledClosure(LispObject lambdaList)
-    throws ConditionThrowable
+
   {
     super(list(Symbol.LAMBDA, lambdaList), null);
   }
@@ -62,21 +62,21 @@ public class CompiledClosure extends Closure
   }
 
   @Override
-  public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
+  public LispObject typep(LispObject typeSpecifier)
   {
     if (typeSpecifier == Symbol.COMPILED_FUNCTION)
       return T;
     return super.typep(typeSpecifier);
   }
 
-  private final LispObject notImplemented() throws ConditionThrowable
+  private final LispObject notImplemented()
   {
     return error(new WrongNumberOfArgumentsException(this));
   }
 
 
   // Zero args.
-  public LispObject execute() throws ConditionThrowable
+  public LispObject execute()
   {
     LispObject[] args = new LispObject[0];
     return execute(args);
@@ -84,7 +84,7 @@ public class CompiledClosure extends Closure
 
   // One arg.
   public LispObject execute( LispObject first)
-    throws ConditionThrowable
+
   {
     LispObject[] args = new LispObject[1];
     args[0] = first;
@@ -94,7 +94,7 @@ public class CompiledClosure extends Closure
   // Two args.
   public LispObject execute( LispObject first,
                             LispObject second)
-    throws ConditionThrowable
+
   {
     LispObject[] args = new LispObject[2];
     args[0] = first;
@@ -105,7 +105,7 @@ public class CompiledClosure extends Closure
   // Three args.
   public LispObject execute( LispObject first,
                             LispObject second, LispObject third)
-    throws ConditionThrowable
+
   {
     LispObject[] args = new LispObject[3];
     args[0] = first;
@@ -118,7 +118,7 @@ public class CompiledClosure extends Closure
   public LispObject execute( LispObject first,
                             LispObject second, LispObject third,
                             LispObject fourth)
-    throws ConditionThrowable
+
   {
     LispObject[] args = new LispObject[4];
     args[0] = first;
@@ -132,7 +132,7 @@ public class CompiledClosure extends Closure
   public LispObject execute( LispObject first,
                             LispObject second, LispObject third,
                             LispObject fourth, LispObject fifth)
-    throws ConditionThrowable
+
   {
     LispObject[] args = new LispObject[5];
     args[0] = first;
@@ -148,7 +148,7 @@ public class CompiledClosure extends Closure
                             LispObject second, LispObject third,
                             LispObject fourth, LispObject fifth,
                             LispObject sixth)
-    throws ConditionThrowable
+
   {
     LispObject[] args = new LispObject[6];
     args[0] = first;
@@ -165,7 +165,7 @@ public class CompiledClosure extends Closure
                             LispObject second, LispObject third,
                             LispObject fourth, LispObject fifth,
                             LispObject sixth, LispObject seventh)
-    throws ConditionThrowable
+
   {
     LispObject[] args = new LispObject[7];
     args[0] = first;
@@ -184,7 +184,7 @@ public class CompiledClosure extends Closure
                             LispObject fourth, LispObject fifth,
                             LispObject sixth, LispObject seventh,
                             LispObject eighth)
-    throws ConditionThrowable
+
   {
     LispObject[] args = new LispObject[8];
     args[0] = first;
@@ -200,7 +200,7 @@ public class CompiledClosure extends Closure
 
   // Arg array.
   public LispObject execute(LispObject[] args)
-    throws ConditionThrowable
+
   {
     return notImplemented();
   }
@@ -210,7 +210,7 @@ public class CompiledClosure extends Closure
       new Primitive("load-compiled-function", PACKAGE_SYS, true, "source")
   {
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
       String namestring = null;
       if (arg instanceof Pathname)
@@ -236,7 +236,7 @@ public class CompiledClosure extends Closure
       new Primitive("varlist", PACKAGE_SYS, false)
   {
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
       if (arg instanceof Closure)
         return ((Closure)arg).getVariableList();

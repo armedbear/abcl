@@ -53,7 +53,7 @@ final public class SpecialBinding
      * If the binding is invalid, an unbound variable error
      * is raised.
      */
-    final public LispObject getValue() throws ConditionThrowable
+    final public LispObject getValue()
     {
         if (value == null)
             return Lisp.error(new UnboundVariable(name));

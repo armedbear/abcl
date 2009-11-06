@@ -40,21 +40,21 @@ public final class Throw extends ConditionThrowable
     private final LispObject[] values;
 
     public Throw(LispObject tag, LispObject result, LispThread thread)
-        throws ConditionThrowable
+
     {
         this.tag = tag;
         this.result = result;
         values = thread._values;
     }
 
-    public LispObject getResult(LispThread thread) throws ConditionThrowable
+    public LispObject getResult(LispThread thread)
     {
         thread._values = values;
         return result;
     }
 
     @Override
-    public LispObject getCondition() throws ConditionThrowable
+    public LispObject getCondition()
     {
         try {
             return new ControlError("Attempt to throw to the nonexistent tag " +

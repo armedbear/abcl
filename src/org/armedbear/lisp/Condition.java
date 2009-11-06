@@ -37,14 +37,14 @@ public class Condition extends StandardObject
 {
   protected String message;
 
-  public Condition() throws ConditionThrowable
+  public Condition()
   {
     super(StandardClass.CONDITION);
     Debug.assertTrue(slots.length == 2);
     setFormatArguments(NIL);
   }
 
-  protected Condition(LispClass cls) throws ConditionThrowable
+  protected Condition(LispClass cls)
   {
     super(cls);
     Debug.assertTrue(slots.length >= 2);
@@ -56,14 +56,14 @@ public class Condition extends StandardObject
     super(cls, length);
   }
 
-  public Condition(LispObject initArgs) throws ConditionThrowable
+  public Condition(LispObject initArgs)
   {
     super(StandardClass.CONDITION);
     Debug.assertTrue(slots.length == 2);
     initialize(initArgs);
   }
 
-  protected void initialize(LispObject initArgs) throws ConditionThrowable
+  protected void initialize(LispObject initArgs)
   {
     LispObject control = null;
     LispObject arguments = null;
@@ -107,34 +107,34 @@ public class Condition extends StandardObject
       }
   }
 
-  public final LispObject getFormatControl() throws ConditionThrowable
+  public final LispObject getFormatControl()
   {
     return getInstanceSlotValue(Symbol.FORMAT_CONTROL);
   }
 
   public final void setFormatControl(LispObject formatControl)
-    throws ConditionThrowable
+
   {
     setInstanceSlotValue(Symbol.FORMAT_CONTROL, formatControl);
   }
 
-  public final void setFormatControl(String s) throws ConditionThrowable
+  public final void setFormatControl(String s)
   {
     setFormatControl(new SimpleString(s));
   }
 
-  public final LispObject getFormatArguments() throws ConditionThrowable
+  public final LispObject getFormatArguments()
   {
     return getInstanceSlotValue(Symbol.FORMAT_ARGUMENTS);
   }
 
   public final void setFormatArguments(LispObject formatArguments)
-    throws ConditionThrowable
+
   {
     setInstanceSlotValue(Symbol.FORMAT_ARGUMENTS, formatArguments);
   }
 
-  public String getMessage() throws ConditionThrowable
+  public String getMessage()
   {
     return message;
   }
@@ -158,7 +158,7 @@ public class Condition extends StandardObject
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.CONDITION)
       return T;
@@ -167,7 +167,7 @@ public class Condition extends StandardObject
     return super.typep(type);
   }
 
-  public String getConditionReport() throws ConditionThrowable
+  public String getConditionReport()
   {
     String s = getMessage();
     if (s != null)
@@ -185,7 +185,7 @@ public class Condition extends StandardObject
   }
 
   @Override
-  public String writeToString() throws ConditionThrowable
+  public String writeToString()
   {
     final LispThread thread = LispThread.currentThread();
     if (Symbol.PRINT_ESCAPE.symbolValue(thread) == NIL)

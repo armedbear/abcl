@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 public class PrintNotReadable extends LispError
 {
-    public PrintNotReadable(LispObject initArgs) throws ConditionThrowable
+    public PrintNotReadable(LispObject initArgs)
     {
         super(StandardClass.PRINT_NOT_READABLE);
         super.initialize(initArgs);
@@ -67,7 +67,7 @@ public class PrintNotReadable extends LispError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.PRINT_NOT_READABLE)
             return T;
@@ -112,7 +112,7 @@ public class PrintNotReadable extends LispError
         new Primitive("print-not-readable-object", "condition")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
                 if (arg instanceof PrintNotReadable) return ((PrintNotReadable)arg).getInstanceSlotValue(Symbol.OBJECT);
                 return type_error(arg, Symbol.PRINT_NOT_READABLE);

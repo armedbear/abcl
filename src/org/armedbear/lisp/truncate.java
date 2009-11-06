@@ -42,14 +42,14 @@ public final class truncate extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         return arg.truncate(Fixnum.ONE);
     }
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         return first.truncate(second);
     }

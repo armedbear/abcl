@@ -52,7 +52,7 @@ public final class logeqv extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         if (arg instanceof Fixnum)
             return arg;
@@ -62,7 +62,7 @@ public final class logeqv extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject[] args) throws ConditionThrowable
+    public LispObject execute(LispObject[] args)
     {
         BigInteger result = null;
         for (int i = 0; i < args.length; i++) {

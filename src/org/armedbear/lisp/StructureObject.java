@@ -39,14 +39,14 @@ public final class StructureObject extends LispObject
   private final LispObject[] slots;
 
   public StructureObject(Symbol symbol, LispObject[] slots)
-    throws ConditionThrowable
+
   {
     structureClass = (StructureClass) LispClass.findClass(symbol); // Might return null.
     this.slots = slots;
   }
 
   public StructureObject(Symbol symbol, LispObject obj0)
-    throws ConditionThrowable
+
   {
     structureClass = (StructureClass) LispClass.findClass(symbol); // Might return null.
     LispObject[] slots = new LispObject[1];
@@ -55,7 +55,7 @@ public final class StructureObject extends LispObject
   }
 
   public StructureObject(Symbol symbol, LispObject obj0, LispObject obj1)
-    throws ConditionThrowable
+
   {
     structureClass = (StructureClass) LispClass.findClass(symbol); // Might return null.
     LispObject[] slots = new LispObject[2];
@@ -66,7 +66,7 @@ public final class StructureObject extends LispObject
 
   public StructureObject(Symbol symbol, LispObject obj0, LispObject obj1,
                          LispObject obj2)
-    throws ConditionThrowable
+
   {
     structureClass = (StructureClass) LispClass.findClass(symbol); // Might return null.
     LispObject[] slots = new LispObject[3];
@@ -78,7 +78,7 @@ public final class StructureObject extends LispObject
 
   public StructureObject(Symbol symbol, LispObject obj0, LispObject obj1,
                          LispObject obj2, LispObject obj3)
-    throws ConditionThrowable
+
   {
     structureClass = (StructureClass) LispClass.findClass(symbol); // Might return null.
     LispObject[] slots = new LispObject[4];
@@ -91,7 +91,7 @@ public final class StructureObject extends LispObject
 
   public StructureObject(Symbol symbol, LispObject obj0, LispObject obj1,
                          LispObject obj2, LispObject obj3, LispObject obj4)
-    throws ConditionThrowable
+
   {
     structureClass = (StructureClass) LispClass.findClass(symbol); // Might return null.
     LispObject[] slots = new LispObject[5];
@@ -106,7 +106,7 @@ public final class StructureObject extends LispObject
   public StructureObject(Symbol symbol, LispObject obj0, LispObject obj1,
                          LispObject obj2, LispObject obj3, LispObject obj4,
                          LispObject obj5)
-    throws ConditionThrowable
+
   {
     structureClass = (StructureClass) LispClass.findClass(symbol); // Might return null.
     LispObject[] slots = new LispObject[6];
@@ -140,7 +140,7 @@ public final class StructureObject extends LispObject
   }
 
   @Override
-  public LispObject getParts() throws ConditionThrowable
+  public LispObject getParts()
   {
     LispObject result = NIL;
     result = result.push(new Cons("class", structureClass));
@@ -157,7 +157,7 @@ public final class StructureObject extends LispObject
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type instanceof StructureClass)
       return memq(type, structureClass.getCPL()) ? T : NIL;
@@ -177,7 +177,7 @@ public final class StructureObject extends LispObject
   }
 
   @Override
-  public boolean equalp(LispObject obj) throws ConditionThrowable
+  public boolean equalp(LispObject obj)
   {
     if (this == obj)
       return true;
@@ -197,7 +197,7 @@ public final class StructureObject extends LispObject
   }
 
   @Override
-  public LispObject getSlotValue_0() throws ConditionThrowable
+  public LispObject getSlotValue_0()
   {
     try
       {
@@ -210,7 +210,7 @@ public final class StructureObject extends LispObject
   }
 
   @Override
-  public LispObject getSlotValue_1() throws ConditionThrowable
+  public LispObject getSlotValue_1()
   {
     try
       {
@@ -223,7 +223,7 @@ public final class StructureObject extends LispObject
   }
 
   @Override
-  public LispObject getSlotValue_2() throws ConditionThrowable
+  public LispObject getSlotValue_2()
   {
     try
       {
@@ -236,7 +236,7 @@ public final class StructureObject extends LispObject
   }
 
   @Override
-  public LispObject getSlotValue_3() throws ConditionThrowable
+  public LispObject getSlotValue_3()
   {
     try
       {
@@ -249,7 +249,7 @@ public final class StructureObject extends LispObject
   }
 
   @Override
-  public LispObject getSlotValue(int index) throws ConditionThrowable
+  public LispObject getSlotValue(int index)
   {
     try
       {
@@ -262,7 +262,7 @@ public final class StructureObject extends LispObject
   }
 
   @Override
-  public int getFixnumSlotValue(int index) throws ConditionThrowable
+  public int getFixnumSlotValue(int index)
   {
     try
       {
@@ -277,7 +277,7 @@ public final class StructureObject extends LispObject
   }
 
   @Override
-  public boolean getSlotValueAsBoolean(int index) throws ConditionThrowable
+  public boolean getSlotValueAsBoolean(int index)
   {
     try
       {
@@ -293,7 +293,7 @@ public final class StructureObject extends LispObject
 
   @Override
   public void setSlotValue_0(LispObject value)
-    throws ConditionThrowable
+
   {
     try
       {
@@ -307,7 +307,7 @@ public final class StructureObject extends LispObject
 
   @Override
   public void setSlotValue_1(LispObject value)
-    throws ConditionThrowable
+
   {
     try
       {
@@ -321,7 +321,7 @@ public final class StructureObject extends LispObject
 
   @Override
   public void setSlotValue_2(LispObject value)
-    throws ConditionThrowable
+
   {
     try
       {
@@ -335,7 +335,7 @@ public final class StructureObject extends LispObject
 
   @Override
   public void setSlotValue_3(LispObject value)
-    throws ConditionThrowable
+
   {
     try
       {
@@ -349,7 +349,7 @@ public final class StructureObject extends LispObject
 
   @Override
   public void setSlotValue(int index, LispObject value)
-    throws ConditionThrowable
+
   {
     try
       {
@@ -361,7 +361,7 @@ public final class StructureObject extends LispObject
       }
   }
 
-  private LispObject badIndex(int n) throws ConditionThrowable
+  private LispObject badIndex(int n)
   {
     FastStringBuffer sb = new FastStringBuffer("Invalid slot index ");
     sb.append(Fixnum.getInstance(n).writeToString());
@@ -392,7 +392,7 @@ public final class StructureObject extends LispObject
   }
 
   @Override
-  public String writeToString() throws ConditionThrowable
+  public String writeToString()
   {
     try
       {
@@ -481,7 +481,7 @@ public final class StructureObject extends LispObject
     new Primitive("structure-length", PACKAGE_SYS, true, "instance")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           if (arg instanceof StructureObject)
             return Fixnum.getInstance(((StructureObject)arg).slots.length);
@@ -495,7 +495,7 @@ public final class StructureObject extends LispObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
     if (first instanceof StructureObject)
         try
@@ -518,7 +518,7 @@ public final class StructureObject extends LispObject
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
-        throws ConditionThrowable
+
       {
           
             if (first instanceof StructureObject)
@@ -542,21 +542,21 @@ public final class StructureObject extends LispObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           return new StructureObject(checkSymbol(first), second);
       }
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
-        throws ConditionThrowable
+
       {
           return new StructureObject(checkSymbol(first), second, third);
       }
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third, LispObject fourth)
-        throws ConditionThrowable
+
       {
           return new StructureObject(checkSymbol(first), second, third, fourth);
       }
@@ -564,7 +564,7 @@ public final class StructureObject extends LispObject
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third, LispObject fourth,
                                 LispObject fifth)
-        throws ConditionThrowable
+
       {
           return new StructureObject(checkSymbol(first), second, third, fourth,
                   fifth);
@@ -573,7 +573,7 @@ public final class StructureObject extends LispObject
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third, LispObject fourth,
                                 LispObject fifth, LispObject sixth)
-        throws ConditionThrowable
+
       {
           return new StructureObject(checkSymbol(first), second, third, fourth,
                   fifth, sixth);
@@ -583,7 +583,7 @@ public final class StructureObject extends LispObject
                                 LispObject third, LispObject fourth,
                                 LispObject fifth, LispObject sixth,
                                 LispObject seventh)
-        throws ConditionThrowable
+
       {
           return new StructureObject(checkSymbol(first), second, third, fourth,
                   fifth, sixth, seventh);
@@ -596,7 +596,7 @@ public final class StructureObject extends LispObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           return new StructureObject(checkSymbol(first), second.copyToArray());
       }
@@ -607,7 +607,7 @@ public final class StructureObject extends LispObject
     new Primitive(Symbol.COPY_STRUCTURE, "structure")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           if (arg instanceof StructureObject)
             return new StructureObject((StructureObject)arg);

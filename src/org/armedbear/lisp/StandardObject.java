@@ -60,7 +60,7 @@ public class StandardObject extends LispObject
   }
 
   @Override
-  public LispObject getParts() throws ConditionThrowable
+  public LispObject getParts()
   {
     LispObject parts = NIL;
     if (layout != null)
@@ -119,7 +119,7 @@ public class StandardObject extends LispObject
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.STANDARD_OBJECT)
       return T;
@@ -146,7 +146,7 @@ public class StandardObject extends LispObject
   }
 
   @Override
-  public String writeToString() throws ConditionThrowable
+  public String writeToString()
   {
     final LispThread thread = LispThread.currentThread();
     int maxLevel = Integer.MAX_VALUE;
@@ -167,7 +167,7 @@ public class StandardObject extends LispObject
     return unreadableString(typeOf().writeToString());
   }
 
-  private Layout updateLayout() throws ConditionThrowable
+  private Layout updateLayout()
   {
     Debug.assertTrue(layout.isInvalid());
     Layout oldLayout = layout;
@@ -242,7 +242,7 @@ public class StandardObject extends LispObject
 
   // Only handles instance slots (not shared slots).
   public LispObject getInstanceSlotValue(LispObject slotName)
-    throws ConditionThrowable
+
   {
     Debug.assertTrue(layout != null);
     if (layout.isInvalid())
@@ -260,7 +260,7 @@ public class StandardObject extends LispObject
 
   // Only handles instance slots (not shared slots).
   public void setInstanceSlotValue(LispObject slotName, LispObject newValue)
-    throws ConditionThrowable
+
   {
     Debug.assertTrue(layout != null);
     if (layout.isInvalid())
@@ -276,7 +276,7 @@ public class StandardObject extends LispObject
     slots[index] = newValue;
   }
 
-        final public static StandardObject checkStandardObject(LispObject first) throws ConditionThrowable
+        final public static StandardObject checkStandardObject(LispObject first)
         {
                 if (first instanceof StandardObject)
                         return (StandardObject) first;
@@ -289,7 +289,7 @@ public class StandardObject extends LispObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
         final StandardObject obj1 = checkStandardObject(first);
         final StandardObject obj2 = checkStandardObject(second);
@@ -305,7 +305,7 @@ public class StandardObject extends LispObject
     new Primitive("std-instance-layout", PACKAGE_SYS, true)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         final StandardObject instance = checkStandardObject(arg);
         Layout layout = instance.layout;
@@ -324,7 +324,7 @@ public class StandardObject extends LispObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardObject(first).layout = checkLayout(second);          
           return second;
@@ -336,7 +336,7 @@ public class StandardObject extends LispObject
     new Primitive("std-instance-class", PACKAGE_SYS, true)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardObject(arg).layout.lispClass;
       }
@@ -349,7 +349,7 @@ public class StandardObject extends LispObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
         final StandardObject instance = checkStandardObject(first);
         final int index;
@@ -392,7 +392,7 @@ public class StandardObject extends LispObject
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
-        throws ConditionThrowable
+
       {
           checkStandardObject(first).slots[Fixnum.getValue(second)] = third; // FIXME
           return third;
@@ -405,7 +405,7 @@ public class StandardObject extends LispObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
         final StandardObject instance = checkStandardObject(first);
         Layout layout = instance.layout;
@@ -437,7 +437,7 @@ public class StandardObject extends LispObject
     };
 
   @Override
-  public LispObject SLOT_VALUE(LispObject slotName) throws ConditionThrowable
+  public LispObject SLOT_VALUE(LispObject slotName)
   {
     if (layout.isInvalid())
       {
@@ -474,7 +474,7 @@ public class StandardObject extends LispObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
         return first.SLOT_VALUE(second);
       }
@@ -482,7 +482,7 @@ public class StandardObject extends LispObject
 
   @Override
   public void setSlotValue(LispObject slotName, LispObject newValue)
-    throws ConditionThrowable
+
   {
     if (layout.isInvalid())
       {
@@ -519,7 +519,7 @@ public class StandardObject extends LispObject
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
-        throws ConditionThrowable
+
       {
         first.setSlotValue(second, third);
         return third;

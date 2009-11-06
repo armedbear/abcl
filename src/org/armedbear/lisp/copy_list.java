@@ -42,7 +42,7 @@ public final class copy_list extends Primitive
   }
 
   @Override
-  public LispObject execute(LispObject arg) throws ConditionThrowable
+  public LispObject execute(LispObject arg)
   {
     if (arg == NIL)
       return NIL;

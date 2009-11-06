@@ -45,7 +45,7 @@ public final class make_socket extends Primitive
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         String host = first.getStringValue();
         int port = Fixnum.getValue(second);

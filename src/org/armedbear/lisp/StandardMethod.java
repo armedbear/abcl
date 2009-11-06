@@ -67,7 +67,7 @@ public class StandardMethod extends StandardObject
     new Primitive("method-lambda-list", PACKAGE_SYS, true, "method")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_LAMBDA_LIST];
       }
@@ -80,7 +80,7 @@ public class StandardMethod extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_LAMBDA_LIST] = second;
           return second;
@@ -92,7 +92,7 @@ public class StandardMethod extends StandardObject
     new Primitive("%method-qualifiers", PACKAGE_SYS, true, "method")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_QUALIFIERS];
       }
@@ -105,7 +105,7 @@ public class StandardMethod extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {          
           checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_QUALIFIERS] = second;
           return second;
@@ -117,7 +117,7 @@ public class StandardMethod extends StandardObject
     new Primitive("method-documentation", PACKAGE_SYS, true, "method")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_DOCUMENTATION];
       }
@@ -130,7 +130,7 @@ public class StandardMethod extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_DOCUMENTATION] = second;
           return second;
@@ -143,7 +143,7 @@ public class StandardMethod extends StandardObject
   }
 
   @Override
-  public String writeToString() throws ConditionThrowable
+  public String writeToString()
   {
     LispObject genericFunction =
       slots[StandardMethodClass.SLOT_INDEX_GENERIC_FUNCTION];
@@ -186,7 +186,7 @@ public class StandardMethod extends StandardObject
     new Primitive("%method-generic-function", PACKAGE_SYS, true)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_GENERIC_FUNCTION];
       }
@@ -198,7 +198,7 @@ public class StandardMethod extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_GENERIC_FUNCTION] = second;
           return second;
@@ -210,7 +210,7 @@ public class StandardMethod extends StandardObject
     new Primitive("%method-function", PACKAGE_SYS, true, "method")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_FUNCTION];
       }
@@ -223,7 +223,7 @@ public class StandardMethod extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_FUNCTION] = second;
           return second;
@@ -235,7 +235,7 @@ public class StandardMethod extends StandardObject
     new Primitive("%method-fast-function", PACKAGE_SYS, true, "method")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_FAST_FUNCTION];
       }
@@ -248,7 +248,7 @@ public class StandardMethod extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_FAST_FUNCTION] = second;
           return second;
@@ -260,7 +260,7 @@ public class StandardMethod extends StandardObject
     new Primitive("%method-specializers", PACKAGE_SYS, true, "method")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_SPECIALIZERS];
       }
@@ -273,7 +273,7 @@ public class StandardMethod extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_SPECIALIZERS] = second;
           return second;
@@ -296,7 +296,7 @@ public class StandardMethod extends StandardObject
                                 list(Symbol.METHOD),
                                 list(StandardClass.STANDARD_METHOD));
 
-        final public static StandardMethod checkStandardMethod(LispObject first) throws ConditionThrowable
+        final public static StandardMethod checkStandardMethod(LispObject first)
         {
                 if (first instanceof StandardMethod)
                         return (StandardMethod) first;

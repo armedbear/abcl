@@ -64,7 +64,7 @@ public class SlimeInputStream extends Stream
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.SLIME_INPUT_STREAM)
             return T;
@@ -78,7 +78,7 @@ public class SlimeInputStream extends Stream
     }
 
     @Override
-    public LispObject close(LispObject abort) throws ConditionThrowable
+    public LispObject close(LispObject abort)
     {
         setOpen(false);
         return T;
@@ -131,7 +131,7 @@ public class SlimeInputStream extends Stream
 
 
     @Override
-    public void _clearInput() throws ConditionThrowable
+    public void _clearInput()
     {
         super._clearInput();
         s = "";
@@ -155,7 +155,7 @@ public class SlimeInputStream extends Stream
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             final Function fun;
             final Stream os;

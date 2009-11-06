@@ -35,22 +35,22 @@ package org.armedbear.lisp;
 
 public class SeriousCondition extends Condition
 {
-    public SeriousCondition() throws ConditionThrowable
+    public SeriousCondition()
     {
     }
 
-    protected SeriousCondition(LispClass cls) throws ConditionThrowable
+    protected SeriousCondition(LispClass cls)
     {
         super(cls);
     }
 
-    public SeriousCondition(LispObject initArgs) throws ConditionThrowable
+    public SeriousCondition(LispObject initArgs)
     {
         super(initArgs);
     }
 
     @Override
-    protected void initialize(LispObject initArgs) throws ConditionThrowable
+    protected void initialize(LispObject initArgs)
     {
         super.initialize(initArgs);
     }
@@ -73,7 +73,7 @@ public class SeriousCondition extends Condition
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.SERIOUS_CONDITION)
             return T;

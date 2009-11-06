@@ -42,7 +42,7 @@ public final class listen extends Primitive
     }
 
     @Override
-    public LispObject execute() throws ConditionThrowable
+    public LispObject execute()
     {
         Stream stream =
             checkCharacterInputStream(Symbol.STANDARD_INPUT.symbolValue());
@@ -50,7 +50,7 @@ public final class listen extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         return inSynonymOf(arg).listen();
     }

@@ -35,14 +35,14 @@ package org.armedbear.lisp;
 
 public final class PackageError extends LispError
 {
-    public PackageError(LispObject initArgs) throws ConditionThrowable
+    public PackageError(LispObject initArgs)
     {
         super(StandardClass.PACKAGE_ERROR);
         initialize(initArgs);
     }
 
     @Override
-    protected void initialize(LispObject initArgs) throws ConditionThrowable
+    protected void initialize(LispObject initArgs)
     {
         super.initialize(initArgs);
 
@@ -76,7 +76,7 @@ public final class PackageError extends LispError
         setPackage(pkg);
     }
 
-    public PackageError(String message) throws ConditionThrowable
+    public PackageError(String message)
     {
         super(StandardClass.PACKAGE_ERROR);
         setFormatControl(message);
@@ -95,7 +95,7 @@ public final class PackageError extends LispError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.PACKAGE_ERROR)
             return T;

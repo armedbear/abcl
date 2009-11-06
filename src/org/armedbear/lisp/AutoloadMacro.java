@@ -46,7 +46,7 @@ public final class AutoloadMacro extends Autoload
     }
 
     private static void installAutoloadMacro(Symbol symbol, String fileName)
-        throws ConditionThrowable
+
     {
         AutoloadMacro am = new AutoloadMacro(symbol, fileName);
         if (symbol.getSymbolFunction() instanceof SpecialOperator)
@@ -56,13 +56,13 @@ public final class AutoloadMacro extends Autoload
     }
 
     @Override
-    public void load() throws ConditionThrowable
+    public void load()
     {
         Load.loadSystemFile(getFileName(), true);
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         StringBuffer sb = new StringBuffer("#<AUTOLOAD-MACRO ");
         sb.append(getSymbol().writeToString());
@@ -77,7 +77,7 @@ public final class AutoloadMacro extends Autoload
         new Primitive("autoload-macro", PACKAGE_EXT, true)
     {
         @Override
-        public LispObject execute(LispObject first) throws ConditionThrowable
+        public LispObject execute(LispObject first)
         {
             if (first instanceof Symbol) {
                 Symbol symbol = (Symbol) first;
@@ -95,7 +95,7 @@ public final class AutoloadMacro extends Autoload
         }
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             final String fileName = second.getStringValue();
             if (first instanceof Symbol) {

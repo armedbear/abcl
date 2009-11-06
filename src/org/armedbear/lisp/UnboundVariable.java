@@ -36,7 +36,7 @@ package org.armedbear.lisp;
 public final class UnboundVariable extends CellError
 {
   // obj is either the unbound variable itself or an initArgs list.
-  public UnboundVariable(LispObject obj) throws ConditionThrowable
+  public UnboundVariable(LispObject obj)
   {
     super(StandardClass.UNBOUND_VARIABLE);
     if (obj instanceof Cons)
@@ -78,7 +78,7 @@ public final class UnboundVariable extends CellError
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.UNBOUND_VARIABLE)
       return T;

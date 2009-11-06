@@ -65,7 +65,7 @@ public final class JavaObject extends LispObject
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.JAVA_OBJECT)
             return T;
@@ -108,7 +108,7 @@ public final class JavaObject extends LispObject
      * @return a LispObject representing or encapsulating obj
      */
     public final static LispObject getInstance(Object obj, boolean translated)
-            throws ConditionThrowable
+
     {
         if (! translated)
             return getInstance(obj);
@@ -175,7 +175,7 @@ public final class JavaObject extends LispObject
     }
 
     @Override
-    public Object javaInstance(Class c) throws ConditionThrowable {
+    public Object javaInstance(Class c) {
 	return javaInstance();
     }
 
@@ -190,7 +190,7 @@ public final class JavaObject extends LispObject
     }
 
     public static final Object getObject(LispObject o)
-        throws ConditionThrowable
+
     {
         if (o instanceof JavaObject)
                 return ((JavaObject)o).obj;        
@@ -221,7 +221,7 @@ public final class JavaObject extends LispObject
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         if (obj instanceof ConditionThrowable)
             return obj.toString();
@@ -245,12 +245,12 @@ public final class JavaObject extends LispObject
     }
 
     @Override
-    public LispObject getDescription() throws ConditionThrowable {
+    public LispObject getDescription() {
 	return new SimpleString(describeJavaObject(this));
     }
 
     @Override
-    public LispObject getParts() throws ConditionThrowable {
+    public LispObject getParts() {
 	if(obj != null) {
 	    LispObject parts = NIL;
 	    if(obj.getClass().isArray()) {
@@ -273,12 +273,12 @@ public final class JavaObject extends LispObject
     }
 
     private LispObject getInspectedFields()
-	throws ConditionThrowable {
+	{
 	final LispObject[] acc = new LispObject[] { NIL };
 	doClassHierarchy(obj.getClass(), new Function() {
 		@Override
 		public LispObject execute(LispObject arg)
-		    throws ConditionThrowable {
+		    {
 		    //No possibility of type error - we're mapping this function
 		    //over a list of classes
 		    Class<?> c = (Class) arg.javaInstance();
@@ -305,7 +305,7 @@ public final class JavaObject extends LispObject
     private static void doClassHierarchy(Collection<Class<?>> classes,
 					 LispObject callback,
 					 Set<Class<?>> visited)
-	throws ConditionThrowable {
+	{
 	Collection<Class<?>> newClasses = new LinkedList<Class<?>>();
 	for(Class<?> clss : classes) {
 	    if(clss == null) {
@@ -334,7 +334,7 @@ public final class JavaObject extends LispObject
      * interfaces.
      */
     public static void doClassHierarchy(Class<?> clss, LispObject callback)
-	throws ConditionThrowable {
+	{
 	if (clss != null) {
 	    Set<Class<?>> visited = new HashSet<Class<?>>();
 	    Collection<Class<?>> classes = new ArrayList<Class<?>>(1);
@@ -345,12 +345,12 @@ public final class JavaObject extends LispObject
 
     public static LispObject mapcarClassHierarchy(Class<?> clss,
 						  final LispObject fn)
-    throws ConditionThrowable {
+    {
 	final LispObject[] acc = new LispObject[] { NIL };
 	doClassHierarchy(clss, new Function() {
 		@Override
 		public LispObject execute(LispObject arg)
-		    throws ConditionThrowable {
+		    {
 		    acc[0] = acc[0].push(fn.execute(arg));
 		    return acc[0];
 		}
@@ -359,7 +359,7 @@ public final class JavaObject extends LispObject
     }
 
     public static String describeJavaObject(final JavaObject javaObject)
-	throws ConditionThrowable {
+	{
 	final Object obj = javaObject.getObject();
 	final FastStringBuffer sb =
 	    new FastStringBuffer(javaObject.writeToString());
@@ -423,7 +423,7 @@ public final class JavaObject extends LispObject
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             if (!(first instanceof JavaObject))
                 return type_error(first, Symbol.JAVA_OBJECT);

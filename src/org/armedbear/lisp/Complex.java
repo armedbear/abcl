@@ -46,7 +46,7 @@ public final class Complex extends LispObject
 
   public static LispObject getInstance(LispObject realpart,
                                        LispObject imagpart)
-    throws ConditionThrowable
+
   {
     if (!realpart.realp())
       return type_error(realpart, Symbol.REAL);
@@ -91,7 +91,7 @@ public final class Complex extends LispObject
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.COMPLEX)
       return T;
@@ -136,7 +136,7 @@ public final class Complex extends LispObject
   }
 
   @Override
-  public boolean equalp(LispObject obj) throws ConditionThrowable
+  public boolean equalp(LispObject obj)
   {
     if (this == obj)
       return true;
@@ -174,19 +174,19 @@ public final class Complex extends LispObject
   }
 
   @Override
-  public final LispObject incr() throws ConditionThrowable
+  public final LispObject incr()
   {
     return new Complex(realpart.add(Fixnum.ONE), imagpart);
   }
 
   @Override
-  public final LispObject decr() throws ConditionThrowable
+  public final LispObject decr()
   {
     return new Complex(realpart.subtract(Fixnum.ONE), imagpart);
   }
 
   @Override
-  public LispObject add(LispObject obj) throws ConditionThrowable
+  public LispObject add(LispObject obj)
   {
     if (obj instanceof Complex)
       {
@@ -197,7 +197,7 @@ public final class Complex extends LispObject
   }
 
   @Override
-  public LispObject subtract(LispObject obj) throws ConditionThrowable
+  public LispObject subtract(LispObject obj)
   {
     if (obj instanceof Complex)
       {
@@ -209,7 +209,7 @@ public final class Complex extends LispObject
   }
 
   @Override
-  public LispObject multiplyBy(LispObject obj) throws ConditionThrowable
+  public LispObject multiplyBy(LispObject obj)
   {
     if (obj instanceof Complex)
       {
@@ -231,7 +231,7 @@ public final class Complex extends LispObject
   }
 
   @Override
-  public LispObject divideBy(LispObject obj) throws ConditionThrowable
+  public LispObject divideBy(LispObject obj)
   {
     if (obj instanceof Complex)
       {
@@ -252,7 +252,7 @@ public final class Complex extends LispObject
   }
 
   @Override
-  public boolean isEqualTo(LispObject obj) throws ConditionThrowable
+  public boolean isEqualTo(LispObject obj)
   {
     if (obj instanceof Complex)
       {
@@ -295,13 +295,13 @@ public final class Complex extends LispObject
   }
 
   @Override
-  public boolean isNotEqualTo(LispObject obj) throws ConditionThrowable
+  public boolean isNotEqualTo(LispObject obj)
   {
     return !isEqualTo(obj);
   }
 
   @Override
-  public LispObject ABS() throws ConditionThrowable
+  public LispObject ABS()
   {
     if (realpart.zerop())
       return imagpart.ABS();
@@ -314,7 +314,7 @@ public final class Complex extends LispObject
   }
 
   @Override
-  public boolean zerop() throws ConditionThrowable
+  public boolean zerop()
   {
     return realpart.zerop() && imagpart.zerop();
   }
@@ -338,7 +338,7 @@ public final class Complex extends LispObject
   }
 
   @Override
-  public String writeToString() throws ConditionThrowable
+  public String writeToString()
   {
     FastStringBuffer sb = new FastStringBuffer("#C(");
     sb.append(realpart.writeToString());

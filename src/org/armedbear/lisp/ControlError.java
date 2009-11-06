@@ -35,13 +35,13 @@ package org.armedbear.lisp;
 
 public final class ControlError extends LispError
 {
-    public ControlError(LispObject initArgs) throws ConditionThrowable
+    public ControlError(LispObject initArgs)
     {
         super(StandardClass.CONTROL_ERROR);
         initialize(initArgs);
     }
 
-    public ControlError(String message) throws ConditionThrowable
+    public ControlError(String message)
     {
         super(StandardClass.CONTROL_ERROR);
         setFormatControl(message);
@@ -61,7 +61,7 @@ public final class ControlError extends LispError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.CONTROL_ERROR)
             return T;

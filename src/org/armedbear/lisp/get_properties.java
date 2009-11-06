@@ -43,7 +43,7 @@ public final class get_properties extends Primitive
 
   @Override
   public LispObject execute(LispObject first, LispObject second)
-    throws ConditionThrowable
+
   {
     final LispThread thread = LispThread.currentThread();
     LispObject plist = first;

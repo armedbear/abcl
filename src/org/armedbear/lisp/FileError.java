@@ -36,7 +36,7 @@ package org.armedbear.lisp;
 public final class FileError extends LispError
 {
     // initArgs is either a normal initArgs list or a pathname.
-    public FileError(LispObject initArgs) throws ConditionThrowable
+    public FileError(LispObject initArgs)
     {
         super(StandardClass.FILE_ERROR);
         if (initArgs instanceof Cons)
@@ -46,7 +46,7 @@ public final class FileError extends LispError
     }
 
     @Override
-    protected void initialize(LispObject initArgs) throws ConditionThrowable
+    protected void initialize(LispObject initArgs)
     {
         super.initialize(initArgs);
         LispObject pathname = NIL;
@@ -62,7 +62,7 @@ public final class FileError extends LispError
         setPathname(pathname);
     }
 
-    public FileError(String message) throws ConditionThrowable
+    public FileError(String message)
     {
         super(StandardClass.FILE_ERROR);
         setFormatControl(message);
@@ -70,7 +70,7 @@ public final class FileError extends LispError
     }
 
     public FileError(String message, LispObject pathname)
-        throws ConditionThrowable
+
     {
         super(StandardClass.FILE_ERROR);
         setFormatControl(message);
@@ -78,12 +78,12 @@ public final class FileError extends LispError
         setPathname(pathname);
     }
 
-    public LispObject getPathname() throws ConditionThrowable
+    public LispObject getPathname()
     {
         return getInstanceSlotValue(Symbol.PATHNAME);
     }
 
-    private void setPathname(LispObject pathname) throws ConditionThrowable
+    private void setPathname(LispObject pathname)
     {
         setInstanceSlotValue(Symbol.PATHNAME, pathname);
     }
@@ -101,7 +101,7 @@ public final class FileError extends LispError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.FILE_ERROR)
             return T;

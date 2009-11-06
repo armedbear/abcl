@@ -81,7 +81,7 @@ public final class Ratio extends LispObject
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.RATIO)
             return T;
@@ -225,19 +225,19 @@ public final class Ratio extends LispObject
     }
 
     @Override
-    public final LispObject incr() throws ConditionThrowable
+    public final LispObject incr()
     {
         return new Ratio(numerator.add(denominator), denominator);
     }
 
     @Override
-    public final LispObject decr() throws ConditionThrowable
+    public final LispObject decr()
     {
         return new Ratio(numerator.subtract(denominator), denominator);
     }
 
     @Override
-    public LispObject add(LispObject obj) throws ConditionThrowable
+    public LispObject add(LispObject obj)
     {
         if (obj instanceof Fixnum) {
             BigInteger n =
@@ -272,7 +272,7 @@ public final class Ratio extends LispObject
     }
 
     @Override
-    public LispObject subtract(LispObject obj) throws ConditionThrowable
+    public LispObject subtract(LispObject obj)
     {
         if (obj instanceof Fixnum) {
             BigInteger n =
@@ -308,7 +308,7 @@ public final class Ratio extends LispObject
     }
 
     @Override
-    public LispObject multiplyBy(LispObject obj) throws ConditionThrowable
+    public LispObject multiplyBy(LispObject obj)
     {
         if (obj instanceof Fixnum) {
             BigInteger n = ((Fixnum)obj).getBigInteger();
@@ -338,7 +338,7 @@ public final class Ratio extends LispObject
     }
 
     @Override
-    public LispObject divideBy(LispObject obj) throws ConditionThrowable
+    public LispObject divideBy(LispObject obj)
     {
         if (obj instanceof Fixnum) {
             BigInteger n = ((Fixnum)obj).getBigInteger();
@@ -380,7 +380,7 @@ public final class Ratio extends LispObject
     }
 
     @Override
-    public boolean isEqualTo(LispObject obj) throws ConditionThrowable
+    public boolean isEqualTo(LispObject obj)
     {
         if (obj instanceof Ratio)
             return (numerator.equals(((Ratio)obj).numerator) &&
@@ -397,13 +397,13 @@ public final class Ratio extends LispObject
     }
 
     @Override
-    public boolean isNotEqualTo(LispObject obj) throws ConditionThrowable
+    public boolean isNotEqualTo(LispObject obj)
     {
         return !isEqualTo(obj);
     }
 
     @Override
-    public boolean isLessThan(LispObject obj) throws ConditionThrowable
+    public boolean isLessThan(LispObject obj)
     {
         if (obj instanceof Fixnum) {
             BigInteger n2 = ((Fixnum)obj).getBigInteger().multiply(denominator);
@@ -428,7 +428,7 @@ public final class Ratio extends LispObject
     }
 
     @Override
-    public boolean isGreaterThan(LispObject obj) throws ConditionThrowable
+    public boolean isGreaterThan(LispObject obj)
     {
         if (obj instanceof Fixnum) {
             BigInteger n2 = ((Fixnum)obj).getBigInteger().multiply(denominator);
@@ -453,7 +453,7 @@ public final class Ratio extends LispObject
     }
 
     @Override
-    public boolean isLessThanOrEqualTo(LispObject obj) throws ConditionThrowable
+    public boolean isLessThanOrEqualTo(LispObject obj)
     {
         if (obj instanceof Fixnum) {
             BigInteger n2 = ((Fixnum)obj).getBigInteger().multiply(denominator);
@@ -478,7 +478,7 @@ public final class Ratio extends LispObject
     }
 
     @Override
-    public boolean isGreaterThanOrEqualTo(LispObject obj) throws ConditionThrowable
+    public boolean isGreaterThanOrEqualTo(LispObject obj)
     {
         if (obj instanceof Fixnum) {
             BigInteger n2 = ((Fixnum)obj).getBigInteger().multiply(denominator);
@@ -503,7 +503,7 @@ public final class Ratio extends LispObject
     }
 
     @Override
-    public LispObject truncate(LispObject obj) throws ConditionThrowable
+    public LispObject truncate(LispObject obj)
     {
         // "When rationals and floats are combined by a numerical function,
         // the rational is first converted to a float of the same format."
@@ -550,7 +550,7 @@ public final class Ratio extends LispObject
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         final LispThread thread = LispThread.currentThread();
         int base = Fixnum.getValue(Symbol.PRINT_BASE.symbolValue(thread));

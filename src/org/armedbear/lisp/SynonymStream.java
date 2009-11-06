@@ -43,37 +43,37 @@ public final class SynonymStream extends Stream
     }
 
     @Override
-    public boolean isInputStream() throws ConditionThrowable
+    public boolean isInputStream()
     {
         return checkStream(symbol.symbolValue()).isInputStream();
     }
 
     @Override
-    public boolean isOutputStream() throws ConditionThrowable
+    public boolean isOutputStream()
     {
         return checkStream(symbol.symbolValue()).isOutputStream();
     }
 
     @Override
-    public boolean isCharacterInputStream() throws ConditionThrowable
+    public boolean isCharacterInputStream()
     {
         return checkStream(symbol.symbolValue()).isCharacterInputStream();
     }
 
     @Override
-    public boolean isBinaryInputStream() throws ConditionThrowable
+    public boolean isBinaryInputStream()
     {
         return checkStream(symbol.symbolValue()).isBinaryInputStream();
     }
 
     @Override
-    public boolean isCharacterOutputStream() throws ConditionThrowable
+    public boolean isCharacterOutputStream()
     {
         return checkStream(symbol.symbolValue()).isCharacterOutputStream();
     }
 
     @Override
-    public boolean isBinaryOutputStream() throws ConditionThrowable
+    public boolean isBinaryOutputStream()
     {
         return checkStream(symbol.symbolValue()).isBinaryOutputStream();
     }
@@ -91,7 +91,7 @@ public final class SynonymStream extends Stream
     }
 
     @Override
-    public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
+    public LispObject typep(LispObject typeSpecifier)
     {
         if (typeSpecifier == Symbol.SYNONYM_STREAM)
             return T;
@@ -101,118 +101,118 @@ public final class SynonymStream extends Stream
     }
 
     @Override
-    public LispObject getElementType() throws ConditionThrowable
+    public LispObject getElementType()
     {
         return checkStream(symbol.symbolValue()).getElementType();
     }
 
     @Override
-    public LispObject listen() throws ConditionThrowable
+    public LispObject listen()
     {
         return checkStream(symbol.symbolValue()).listen();
     }
 
     @Override
-    public LispObject fileLength() throws ConditionThrowable
+    public LispObject fileLength()
     {
         return checkStream(symbol.symbolValue()).fileLength();
     }
 
     @Override
-    public LispObject fileStringLength(LispObject arg) throws ConditionThrowable
+    public LispObject fileStringLength(LispObject arg)
     {
         return checkStream(symbol.symbolValue()).fileStringLength(arg);
     }
 
     @Override
-    protected int _readChar() throws ConditionThrowable, java.io.IOException
+    protected int _readChar() throws java.io.IOException
     {
         return checkStream(symbol.symbolValue())._readChar();
     }
 
     @Override
-    protected void _unreadChar(int n) throws ConditionThrowable, java.io.IOException
+    protected void _unreadChar(int n) throws java.io.IOException
     {
         checkStream(symbol.symbolValue())._unreadChar(n);
     }
 
     @Override
-    protected boolean _charReady() throws ConditionThrowable, java.io.IOException
+    protected boolean _charReady() throws java.io.IOException
     {
         return checkStream(symbol.symbolValue())._charReady();
     }
 
     @Override
-    public void _writeChar(char c) throws ConditionThrowable
+    public void _writeChar(char c)
     {
         checkStream(symbol.symbolValue())._writeChar(c);
     }
 
     @Override
     public void _writeChars(char[] chars, int start, int end)
-        throws ConditionThrowable
+
     {
         checkStream(symbol.symbolValue())._writeChars(chars, start, end);
     }
 
     @Override
-    public void _writeString(String s) throws ConditionThrowable
+    public void _writeString(String s)
     {
         checkStream(symbol.symbolValue())._writeString(s);
     }
 
     @Override
-    public void _writeLine(String s) throws ConditionThrowable
+    public void _writeLine(String s)
     {
         checkStream(symbol.symbolValue())._writeLine(s);
     }
 
     // Reads an 8-bit byte.
     @Override
-    public int _readByte() throws ConditionThrowable
+    public int _readByte()
     {
         return checkStream(symbol.symbolValue())._readByte();
     }
 
     // Writes an 8-bit byte.
     @Override
-    public void _writeByte(int n) throws ConditionThrowable
+    public void _writeByte(int n)
     {
         checkStream(symbol.symbolValue())._writeByte(n);
     }
 
     @Override
-    public void _finishOutput() throws ConditionThrowable
+    public void _finishOutput()
     {
         checkStream(symbol.symbolValue())._finishOutput();
     }
 
     @Override
-    public void _clearInput() throws ConditionThrowable
+    public void _clearInput()
     {
         checkStream(symbol.symbolValue())._clearInput();
     }
 
     @Override
-    protected long _getFilePosition() throws ConditionThrowable
+    protected long _getFilePosition()
     {
         return checkStream(symbol.symbolValue())._getFilePosition();
     }
 
     @Override
-    protected boolean _setFilePosition(LispObject arg) throws ConditionThrowable
+    protected boolean _setFilePosition(LispObject arg)
     {
         return checkStream(symbol.symbolValue())._setFilePosition(arg);
     }
 
     @Override
-    public void _close() throws ConditionThrowable
+    public void _close()
     {
         checkStream(symbol.symbolValue())._close();
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         StringBuffer sb = new StringBuffer("SYNONYM-STREAM ");
         sb.append(symbol.writeToString());
@@ -224,7 +224,7 @@ public final class SynonymStream extends Stream
         new Primitive("make-synonym-stream", "symbol")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return new SynonymStream(checkSymbol(arg));
         }
@@ -235,7 +235,7 @@ public final class SynonymStream extends Stream
         new Primitive("synonym-stream-symbol", "synonym-stream")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof SynonymStream) 
                 return ((SynonymStream)arg).symbol;

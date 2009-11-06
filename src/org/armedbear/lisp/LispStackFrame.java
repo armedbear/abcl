@@ -129,7 +129,7 @@ public class LispStackFrame
 
   @Override
   public LispObject typep(LispObject typeSpecifier) 
-    throws ConditionThrowable
+
   {
     if (typeSpecifier == Symbol.LISP_STACK_FRAME)
       return T;
@@ -139,7 +139,7 @@ public class LispStackFrame
    }
 
   public LispObject toLispList() 
-    throws ConditionThrowable
+
   {
     LispObject result = argsToLispList();
     if (operator instanceof Operator) {
@@ -151,7 +151,7 @@ public class LispStackFrame
   }
 
   private LispObject argsToLispList() 
-    throws ConditionThrowable
+
   {
     LispObject result = Lisp.NIL;
     if (args != null) {
@@ -185,7 +185,7 @@ public class LispStackFrame
   }
 
   public SimpleString toLispString() 
-    throws ConditionThrowable 
+
   {
     String result;
     try {
@@ -204,7 +204,7 @@ public class LispStackFrame
 
   @Override 
   public LispObject getParts() 
-    throws ConditionThrowable
+
   {
     LispObject result = NIL;
     result = result.push(new Cons("OPERATOR", getOperator()));

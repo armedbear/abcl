@@ -43,7 +43,7 @@ public final class rem extends Primitive
 
     @Override
     public LispObject execute(LispObject number, LispObject divisor)
-        throws ConditionThrowable
+
     {
         number.truncate(divisor);
         final LispThread thread = LispThread.currentThread();

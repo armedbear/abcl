@@ -43,7 +43,7 @@ public abstract class AbstractBitVector extends AbstractVector
     protected long[] bits;
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.BIT_VECTOR)
             return T;
@@ -71,7 +71,7 @@ public abstract class AbstractBitVector extends AbstractVector
     }
 
     @Override
-    public boolean equal(LispObject obj) throws ConditionThrowable
+    public boolean equal(LispObject obj)
     {
         if (this == obj)
             return true;
@@ -89,7 +89,7 @@ public abstract class AbstractBitVector extends AbstractVector
     }
 
     @Override
-    public boolean equalp(LispObject obj) throws ConditionThrowable
+    public boolean equalp(LispObject obj)
     {
         if (this == obj)
             return true;
@@ -111,7 +111,7 @@ public abstract class AbstractBitVector extends AbstractVector
     }
 
     @Override
-    public void fill(LispObject obj) throws ConditionThrowable
+    public void fill(LispObject obj)
     {
         if (obj instanceof Fixnum) {
             switch (((Fixnum)obj).value) {
@@ -140,7 +140,7 @@ public abstract class AbstractBitVector extends AbstractVector
     }
 
     @Override
-    public LispObject subseq(int start, int end) throws ConditionThrowable
+    public LispObject subseq(int start, int end)
     {
         SimpleBitVector v = new SimpleBitVector(end - start);
         int i = start, j = 0;
@@ -177,7 +177,7 @@ public abstract class AbstractBitVector extends AbstractVector
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         final LispThread thread = LispThread.currentThread();
         final int length = length();
@@ -198,13 +198,13 @@ public abstract class AbstractBitVector extends AbstractVector
 
     // Ignores fill pointer.
     @Override
-    public LispObject AREF(LispObject index) throws ConditionThrowable
+    public LispObject AREF(LispObject index)
     {
         return AREF(Fixnum.getValue(index));
     }
 
     @Override
-    public LispObject reverse() throws ConditionThrowable
+    public LispObject reverse()
     {
         int length = length();
         SimpleBitVector result = new SimpleBitVector(length);
@@ -218,9 +218,9 @@ public abstract class AbstractBitVector extends AbstractVector
         return result;
     }
 
-    protected abstract int getBit(int index) throws ConditionThrowable;
+    protected abstract int getBit(int index);
 
-    protected abstract void setBit(int index) throws ConditionThrowable;
+    protected abstract void setBit(int index);
 
-    protected abstract void clearBit(int index) throws ConditionThrowable;
+    protected abstract void clearBit(int index);
 }

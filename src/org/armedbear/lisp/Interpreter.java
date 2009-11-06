@@ -151,7 +151,7 @@ public final class Interpreter extends Lisp
     }
 
     // Interface.
-    public LispObject eval(String s) throws ConditionThrowable
+    public LispObject eval(String s)
     {
         return eval(new StringInputStream(s).read(true, NIL, false,
                                                   LispThread.currentThread()));
@@ -234,7 +234,7 @@ public final class Interpreter extends Lisp
     // Check for --noinit; verify that arguments are supplied for --load and
     // --eval options.
     private static void preprocessCommandLineArguments(String[] args)
-        throws ConditionThrowable
+
     {
         if (args != null) {
             for (int i = 0; i < args.length; ++i) {
@@ -267,7 +267,7 @@ public final class Interpreter extends Lisp
 
     // Do the --load and --eval actions.
     private static void postprocessCommandLineArguments(String[] args)
-        throws ConditionThrowable
+
     {
         if (args != null) {
             for (int i = 0; i < args.length; ++i) {
@@ -475,7 +475,7 @@ public final class Interpreter extends Lisp
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable, UnhandledCondition
+            throws UnhandledCondition
         {
             final Condition condition = (Condition) first;
             if (interpreter == null) {
@@ -528,11 +528,10 @@ public final class Interpreter extends Lisp
      *
      * @param s A string with a valid Common Lisp expression
      * @return The result of the evaluation
-     * @throws org.armedbear.lisp.ConditionThrowable
      * @exception UnhandledCondition in case the an error occurs which
      *      should be passed to the Lisp debugger
      */
-    public static LispObject evaluate(String s) throws ConditionThrowable
+    public static LispObject evaluate(String s)
     {
         if (!initialized)
             initializeJLisp();

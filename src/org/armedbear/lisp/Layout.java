@@ -104,7 +104,7 @@ public final class Layout extends LispObject
   }
 
   @Override
-  public LispObject getParts() throws ConditionThrowable
+  public LispObject getParts()
   {
     LispObject result = NIL;
     result = result.push(new Cons("class", lispClass));
@@ -142,7 +142,7 @@ public final class Layout extends LispObject
   }
 
   @Override
-  public String writeToString() throws ConditionThrowable
+  public String writeToString()
   {
     return unreadableString(Symbol.LAYOUT);
   }
@@ -172,7 +172,7 @@ public final class Layout extends LispObject
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
-        throws ConditionThrowable
+
       {
           return new Layout(checkClass(first), checkList(second),
                               checkList(third));
@@ -185,7 +185,7 @@ public final class Layout extends LispObject
     new Primitive("layout-class", PACKAGE_SYS, true, "layout")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkLayout(arg).lispClass;
       }
@@ -196,7 +196,7 @@ public final class Layout extends LispObject
     new Primitive("layout-length", PACKAGE_SYS, true, "layout")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return Fixnum.getInstance(checkLayout(arg).slotNames.length);
       }
@@ -211,7 +211,7 @@ public final class Layout extends LispObject
   }
 
   public LispObject getSharedSlotLocation(LispObject slotName)
-    throws ConditionThrowable
+
   {
     LispObject rest = sharedSlots;
     while (rest != NIL)
@@ -230,7 +230,7 @@ public final class Layout extends LispObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           final LispObject slotNames[] = checkLayout(first).slotNames;
           for (int i = slotNames.length; i-- > 0;)
@@ -248,7 +248,7 @@ public final class Layout extends LispObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
                 final Layout layOutFirst = checkLayout(first);
             final LispObject slotNames[] = layOutFirst.slotNames;
@@ -276,7 +276,7 @@ public final class Layout extends LispObject
     new Primitive("%make-instances-obsolete", PACKAGE_SYS, true, "class")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         final LispClass lispClass = checkClass(arg);
         Layout oldLayout = lispClass.getClassLayout();

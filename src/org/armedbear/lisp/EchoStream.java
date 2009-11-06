@@ -54,7 +54,7 @@ public final class EchoStream extends Stream
     }
 
     @Override
-    public LispObject getElementType() throws ConditionThrowable
+    public LispObject getElementType()
     {
         LispObject itype = in.getElementType();
         LispObject otype = out.getElementType();
@@ -86,7 +86,7 @@ public final class EchoStream extends Stream
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.ECHO_STREAM)
             return T;
@@ -108,32 +108,32 @@ public final class EchoStream extends Stream
     }
 
     @Override
-    public boolean isCharacterInputStream() throws ConditionThrowable
+    public boolean isCharacterInputStream()
     {
         return in.isCharacterInputStream();
     }
 
     @Override
-    public boolean isBinaryInputStream() throws ConditionThrowable
+    public boolean isBinaryInputStream()
     {
         return in.isBinaryInputStream();
     }
 
     @Override
-    public boolean isCharacterOutputStream() throws ConditionThrowable
+    public boolean isCharacterOutputStream()
     {
         return out.isCharacterOutputStream();
     }
 
     @Override
-    public boolean isBinaryOutputStream() throws ConditionThrowable
+    public boolean isBinaryOutputStream()
     {
         return out.isBinaryOutputStream();
     }
 
     // Returns -1 at end of file.
     @Override
-    protected int _readChar() throws ConditionThrowable, java.io.IOException
+    protected int _readChar() throws java.io.IOException
     {
         int n = in._readChar();
         if (n >= 0) {
@@ -147,46 +147,46 @@ public final class EchoStream extends Stream
     }
 
     @Override
-    protected void _unreadChar(int n) throws ConditionThrowable, java.io.IOException
+    protected void _unreadChar(int n) throws java.io.IOException
     {
         in._unreadChar(n);
         unreadChar = n;
     }
 
     @Override
-    protected boolean _charReady() throws ConditionThrowable, java.io.IOException
+    protected boolean _charReady() throws java.io.IOException
     {
         return in._charReady();
     }
 
     @Override
-    public void _writeChar(char c) throws ConditionThrowable
+    public void _writeChar(char c)
     {
         out._writeChar(c);
     }
 
     @Override
     public void _writeChars(char[] chars, int start, int end)
-        throws ConditionThrowable
+
     {
         out._writeChars(chars, start, end);
     }
 
     @Override
-    public void _writeString(String s) throws ConditionThrowable
+    public void _writeString(String s)
     {
         out._writeString(s);
     }
 
     @Override
-    public void _writeLine(String s) throws ConditionThrowable
+    public void _writeLine(String s)
     {
         out._writeLine(s);
     }
 
     // Reads an 8-bit byte.
     @Override
-    public int _readByte() throws ConditionThrowable
+    public int _readByte()
     {
         int n = in._readByte();
         if (n >= 0)
@@ -196,25 +196,25 @@ public final class EchoStream extends Stream
 
     // Writes an 8-bit byte.
     @Override
-    public void _writeByte(int n) throws ConditionThrowable
+    public void _writeByte(int n)
     {
         out._writeByte(n);
     }
 
     @Override
-    public void _finishOutput() throws ConditionThrowable
+    public void _finishOutput()
     {
         out._finishOutput();
     }
 
     @Override
-    public void _clearInput() throws ConditionThrowable
+    public void _clearInput()
     {
         in._clearInput();
     }
 
     @Override
-    public LispObject close(LispObject abort) throws ConditionThrowable
+    public LispObject close(LispObject abort)
     {
         // "The effect of CLOSE on a constructed stream is to close the
         // argument stream only. There is no effect on the constituents of
@@ -224,13 +224,13 @@ public final class EchoStream extends Stream
     }
 
     @Override
-    public LispObject listen() throws ConditionThrowable
+    public LispObject listen()
     {
         return in.listen();
     }
 
     @Override
-    public LispObject freshLine() throws ConditionThrowable
+    public LispObject freshLine()
     {
         return out.freshLine();
     }
@@ -248,7 +248,7 @@ public final class EchoStream extends Stream
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             if (!(first instanceof Stream))
                 return type_error(first, Symbol.STREAM);
@@ -264,7 +264,7 @@ public final class EchoStream extends Stream
         new Primitive("echo-stream-input-stream", "echo-stream")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof EchoStream)
                 return ((EchoStream)arg).getInputStream();
@@ -278,7 +278,7 @@ public final class EchoStream extends Stream
         new Primitive("echo-stream-output-stream", "echo-stream")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof EchoStream)
                 return ((EchoStream)arg).getOutputStream();

@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 public final class StyleWarning extends Warning
 {
-    public StyleWarning(LispObject initArgs) throws ConditionThrowable
+    public StyleWarning(LispObject initArgs)
     {
         super(StandardClass.STYLE_WARNING);
         initialize(initArgs);
@@ -54,7 +54,7 @@ public final class StyleWarning extends Warning
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.STYLE_WARNING)
             return T;

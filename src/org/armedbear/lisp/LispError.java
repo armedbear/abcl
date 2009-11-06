@@ -35,22 +35,22 @@ package org.armedbear.lisp;
 
 public class LispError extends SeriousCondition
 {
-  public LispError() throws ConditionThrowable
+  public LispError()
   {
   }
 
-  protected LispError(LispClass cls) throws ConditionThrowable
+  protected LispError(LispClass cls)
   {
     super(cls);
   }
 
-  public LispError(LispObject initArgs) throws ConditionThrowable
+  public LispError(LispObject initArgs)
   {
     super(StandardClass.ERROR);
     initialize(initArgs);
   }
 
-  public LispError(String message) throws ConditionThrowable
+  public LispError(String message)
   {
     super(StandardClass.ERROR);
     setFormatControl(message);
@@ -69,7 +69,7 @@ public class LispError extends SeriousCondition
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.ERROR)
       return T;

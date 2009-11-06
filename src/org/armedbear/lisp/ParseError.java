@@ -35,14 +35,14 @@ package org.armedbear.lisp;
 
 public final class ParseError extends LispError
 {
-    public ParseError(String message) throws ConditionThrowable
+    public ParseError(String message)
     {
         super(StandardClass.PARSE_ERROR);
         setFormatControl(message);
         setFormatArguments(NIL);
     }
 
-    public ParseError(LispObject initArgs) throws ConditionThrowable
+    public ParseError(LispObject initArgs)
     {
         super(StandardClass.PARSE_ERROR);
         initialize(initArgs);
@@ -61,7 +61,7 @@ public final class ParseError extends LispError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.PARSE_ERROR)
             return T;

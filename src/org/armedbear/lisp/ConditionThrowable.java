@@ -53,5 +53,5 @@ abstract public class ConditionThrowable extends RuntimeException
         super(message);
     }
 
-    public abstract LispObject getCondition() throws ConditionThrowable;
+    public abstract LispObject getCondition();
 }

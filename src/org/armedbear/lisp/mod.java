@@ -43,7 +43,7 @@ public final class mod extends Primitive
 
     @Override
     public LispObject execute(LispObject number, LispObject divisor)
-        throws ConditionThrowable
+
     {
         return number.MOD(divisor);
     }

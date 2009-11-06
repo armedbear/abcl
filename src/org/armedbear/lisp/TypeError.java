@@ -35,32 +35,32 @@ package org.armedbear.lisp;
 
 public class TypeError extends LispError
 {
-    public TypeError() throws ConditionThrowable
+    public TypeError()
     {
         super(StandardClass.TYPE_ERROR);
     }
 
-    protected TypeError(LispClass cls) throws ConditionThrowable
+    protected TypeError(LispClass cls)
     {
         super(cls);
     }
 
     public TypeError(LispObject datum, LispObject expectedType)
-        throws ConditionThrowable
+
     {
         super(StandardClass.TYPE_ERROR);
         setDatum(datum);
         setExpectedType(expectedType);
     }
 
-    public TypeError(LispObject initArgs) throws ConditionThrowable
+    public TypeError(LispObject initArgs)
     {
         super(StandardClass.TYPE_ERROR);
         initialize(initArgs);
     }
 
     @Override
-    protected void initialize(LispObject initArgs) throws ConditionThrowable
+    protected void initialize(LispObject initArgs)
     {
         super.initialize(initArgs);
         LispObject datum = null;
@@ -85,7 +85,7 @@ public class TypeError extends LispError
             setExpectedType(expectedType);
     }
 
-    public TypeError(String message) throws ConditionThrowable
+    public TypeError(String message)
     {
         super(StandardClass.TYPE_ERROR);
         setFormatControl(message);
@@ -94,7 +94,7 @@ public class TypeError extends LispError
     }
 
     public TypeError(String message, LispObject datum, LispObject expectedType)
-        throws ConditionThrowable
+
     {
         super(StandardClass.TYPE_ERROR);
         setFormatControl(message);
@@ -115,7 +115,7 @@ public class TypeError extends LispError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.TYPE_ERROR)
             return T;
@@ -172,23 +172,23 @@ public class TypeError extends LispError
         }
     }
 
-    public final LispObject getDatum() throws ConditionThrowable
+    public final LispObject getDatum()
     {
         return getInstanceSlotValue(Symbol.DATUM);
     }
 
-    private final void setDatum(LispObject datum) throws ConditionThrowable
+    private final void setDatum(LispObject datum)
     {
         setInstanceSlotValue(Symbol.DATUM, datum);
     }
 
-    public final LispObject getExpectedType() throws ConditionThrowable
+    public final LispObject getExpectedType()
     {
         return getInstanceSlotValue(Symbol.EXPECTED_TYPE);
     }
 
     private final void setExpectedType(LispObject expectedType)
-        throws ConditionThrowable
+
     {
         setInstanceSlotValue(Symbol.EXPECTED_TYPE, expectedType);
     }
@@ -198,7 +198,7 @@ public class TypeError extends LispError
         new Primitive(Symbol.TYPE_ERROR_DATUM, "condition")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             final StandardObject obj;
             if (arg instanceof StandardObject) {
@@ -216,7 +216,7 @@ public class TypeError extends LispError
         new Primitive(Symbol.TYPE_ERROR_EXPECTED_TYPE, "condition")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             final StandardObject obj;
             if (arg instanceof StandardObject) {

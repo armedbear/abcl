@@ -46,7 +46,7 @@ public final class jmethod_return_type extends Primitive
 
     @Override
     public LispObject execute(LispObject arg)
-        throws ConditionThrowable
+
     {
         if (arg instanceof JavaObject) {
             Object method = ((JavaObject)arg).getObject();

@@ -94,14 +94,14 @@ public class Primitive extends Function
     }
 
     @Override
-    public LispObject execute() throws ConditionThrowable
+    public LispObject execute()
     {
         LispObject[] args = new LispObject[0];
         return execute(args);
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         LispObject[] args = new LispObject[1];
         args[0] = arg;
@@ -110,7 +110,7 @@ public class Primitive extends Function
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         LispObject[] args = new LispObject[2];
         args[0] = first;
@@ -121,7 +121,7 @@ public class Primitive extends Function
     @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third)
-        throws ConditionThrowable
+
     {
         LispObject[] args = new LispObject[3];
         args[0] = first;
@@ -133,7 +133,7 @@ public class Primitive extends Function
     @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth)
-        throws ConditionThrowable
+
     {
         LispObject[] args = new LispObject[4];
         args[0] = first;
@@ -147,7 +147,7 @@ public class Primitive extends Function
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth)
-        throws ConditionThrowable
+
     {
         LispObject[] args = new LispObject[5];
         args[0] = first;
@@ -162,7 +162,7 @@ public class Primitive extends Function
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth)
-        throws ConditionThrowable
+
     {
         LispObject[] args = new LispObject[6];
         args[0] = first;
@@ -179,7 +179,7 @@ public class Primitive extends Function
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
                               LispObject seventh)
-        throws ConditionThrowable
+
     {
         LispObject[] args = new LispObject[7];
         args[0] = first;
@@ -197,7 +197,7 @@ public class Primitive extends Function
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
                               LispObject seventh, LispObject eighth)
-        throws ConditionThrowable
+
     {
         LispObject[] args = new LispObject[8];
         args[0] = first;

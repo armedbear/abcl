@@ -155,7 +155,7 @@ public abstract class Lisp
   // args must not be null!
   public static final LispObject funcall(LispObject fun, LispObject[] args,
                                          LispThread thread)
-    throws ConditionThrowable
+
   {
     thread._values = null;
 
@@ -194,7 +194,7 @@ public abstract class Lisp
   public static final LispObject macroexpand(LispObject form,
                                              final Environment env,
                                              final LispThread thread)
-    throws ConditionThrowable
+
   {
     LispObject expanded = NIL;
     while (true)
@@ -213,7 +213,7 @@ public abstract class Lisp
   public static final LispObject macroexpand_1(final LispObject form,
                                                final Environment env,
                                                final LispThread thread)
-    throws ConditionThrowable
+
   {
     if (form instanceof Cons)
       {
@@ -272,7 +272,7 @@ public abstract class Lisp
     new Primitive("interactive-eval", PACKAGE_SYS, true)
     {
       @Override
-      public LispObject execute(LispObject object) throws ConditionThrowable
+      public LispObject execute(LispObject object)
       {
         final LispThread thread = LispThread.currentThread();
         thread.setSpecialVariable(Symbol.MINUS, object);
@@ -337,7 +337,7 @@ public abstract class Lisp
       }
     };
 
-  private static final void pushJavaStackFrames() throws ConditionThrowable
+  private static final void pushJavaStackFrames()
   {
       final LispThread thread = LispThread.currentThread();
       final StackTraceElement[] frames = thread.getJavaStackTrace();
@@ -360,14 +360,14 @@ public abstract class Lisp
 
 
   public static final LispObject error(LispObject condition)
-    throws ConditionThrowable
+
   {
     pushJavaStackFrames();
     return Symbol.ERROR.execute(condition);
   }
 
   public static final LispObject error(LispObject condition, LispObject message)
-    throws ConditionThrowable
+
   {
     pushJavaStackFrames();
     return Symbol.ERROR.execute(condition, Keyword.FORMAT_CONTROL, message);
@@ -375,7 +375,7 @@ public abstract class Lisp
 
   public static final LispObject type_error(LispObject datum,
                                             LispObject expectedType)
-    throws ConditionThrowable
+
   {
     return error(new TypeError(datum, expectedType));
   }
@@ -387,7 +387,7 @@ public abstract class Lisp
     interrupted = b;
   }
 
-  public static final void handleInterrupt() throws ConditionThrowable
+  public static final void handleInterrupt()
   {
     setInterrupted(false);
     Symbol.BREAK.getSymbolFunction().execute();
@@ -396,7 +396,7 @@ public abstract class Lisp
 
   // Used by the compiler.
   public static final LispObject loadTimeValue(LispObject obj)
-    throws ConditionThrowable
+
   {
     final LispThread thread = LispThread.currentThread();
     if (Symbol.LOAD_TRUENAME.symbolValue(thread) != NIL)
@@ -406,7 +406,7 @@ public abstract class Lisp
   }
 
   public static final LispObject eval(LispObject obj)
-    throws ConditionThrowable
+
   {
     return eval(obj, new Environment(), LispThread.currentThread());
   }
@@ -414,7 +414,7 @@ public abstract class Lisp
   public static final LispObject eval(final LispObject obj,
                                       final Environment env,
                                       final LispThread thread)
-    throws ConditionThrowable
+
   {
     thread._values = null;
     if (interrupted)
@@ -493,7 +493,7 @@ public abstract class Lisp
                                              LispObject args,
                                              Environment env,
                                              LispThread thread)
-    throws ConditionThrowable
+
   {
     if (args == NIL)
       return thread.execute(function);
@@ -578,7 +578,7 @@ public abstract class Lisp
 
   public static final LispObject parseBody(LispObject body,
                                            boolean documentationAllowed)
-    throws ConditionThrowable
+
   {
       LispObject decls = NIL;
       LispObject doc = NIL;
@@ -600,7 +600,7 @@ public abstract class Lisp
   }
 
   public static final LispObject parseSpecials(LispObject forms)
-    throws ConditionThrowable
+
   {
     LispObject specials = NIL;
     while (forms != NIL) {
@@ -631,7 +631,7 @@ public abstract class Lisp
 
   public static final LispObject progn(LispObject body, Environment env,
                                        LispThread thread)
-    throws ConditionThrowable
+
   {
     LispObject result = NIL;
     while (body != NIL)
@@ -644,7 +644,7 @@ public abstract class Lisp
 
   public static final LispObject preprocessTagBody(LispObject body,
                                                    Environment env)
-    throws ConditionThrowable
+
   {
     LispObject localTags = NIL; // Tags that are local to this TAGBODY.
     while (body != NIL)
@@ -668,7 +668,7 @@ public abstract class Lisp
    */
   public static final LispObject nonLocalGo(LispObject tagbody,
                                             LispObject tag)
-    throws ConditionThrowable
+
   {
     if (tagbody == null)
       return error(new ControlError("Unmatched tag "
@@ -686,7 +686,7 @@ public abstract class Lisp
    */
   public static final LispObject nonLocalGo(Binding binding,
                                             LispObject tag)
-    throws ConditionThrowable
+
   {
     if (binding.env.inactive)
       return error(new ControlError("Unmatched tag "
@@ -705,7 +705,7 @@ public abstract class Lisp
   public static final LispObject nonLocalReturn(LispObject blockId,
                                                 LispObject blockName,
                                                 LispObject result)
-    throws ConditionThrowable
+
   {
     if (blockId == null)
       return error(new ControlError("Unmatched block "
@@ -724,7 +724,7 @@ public abstract class Lisp
   public static final LispObject nonLocalReturn(Binding binding,
                                                 Symbol block,
                                                 LispObject result)
-    throws ConditionThrowable
+
   {
     if (binding == null)
       {
@@ -744,7 +744,7 @@ public abstract class Lisp
   public static final LispObject processTagBody(LispObject body,
                                                 LispObject localTags,
                                                 Environment env)
-    throws ConditionThrowable
+
   {
     LispObject remaining = body;
     LispThread thread = LispThread.currentThread();
@@ -802,7 +802,7 @@ public abstract class Lisp
   // Environment wrappers.
   private static final boolean isSpecial(Symbol sym, LispObject ownSpecials,
                                          Environment env)
-    throws ConditionThrowable
+
   {
     if (ownSpecials != null)
       {
@@ -820,7 +820,7 @@ public abstract class Lisp
   protected static final void bindArg(LispObject ownSpecials,
                                       Symbol sym, LispObject value,
                                       Environment env, LispThread thread)
-    throws ConditionThrowable
+
   {
     if (isSpecial(sym, ownSpecials, env)) {
       env.declareSpecial(sym);
@@ -947,7 +947,7 @@ public abstract class Lisp
 
   // Used by the compiler.
   public static final LispObject multipleValueList(LispObject result)
-    throws ConditionThrowable
+
   {
     LispThread thread = LispThread.currentThread();
     LispObject[] values = thread._values;
@@ -964,7 +964,7 @@ public abstract class Lisp
   public static final LispObject multipleValueCall1(LispObject result,
                                                     LispObject function,
                                                     LispThread thread)
-    throws ConditionThrowable
+
   {
     LispObject[] values = thread._values;
     thread._values = null;
@@ -977,7 +977,7 @@ public abstract class Lisp
   public static final void progvBindVars(LispObject symbols,
                                          LispObject values,
                                          LispThread thread)
-    throws ConditionThrowable
+
   {
     for (LispObject list = symbols; list != NIL; list = list.cdr())
       {
@@ -998,7 +998,7 @@ public abstract class Lisp
       }
   }
 
-  public static Symbol checkSymbol(LispObject obj) throws ConditionThrowable
+  public static Symbol checkSymbol(LispObject obj)
   {             
           if (obj instanceof Symbol)      
                   return (Symbol) obj;         
@@ -1007,7 +1007,7 @@ public abstract class Lisp
   }
 
   public static final LispObject checkList(LispObject obj)
-    throws ConditionThrowable
+
   {
     if (obj.listp())
       return obj;
@@ -1015,7 +1015,7 @@ public abstract class Lisp
   }
 
   public static final AbstractArray checkArray(LispObject obj)
-    throws ConditionThrowable
+
   {
           if (obj instanceof AbstractArray)       
                   return (AbstractArray) obj;         
@@ -1024,7 +1024,7 @@ public abstract class Lisp
   }
 
   public static final AbstractVector checkVector(LispObject obj)
-    throws ConditionThrowable
+
   {
           if (obj instanceof AbstractVector)      
                   return (AbstractVector) obj;         
@@ -1033,7 +1033,7 @@ public abstract class Lisp
   }
 
   public static final DoubleFloat checkDoubleFloat(LispObject obj)
-    throws ConditionThrowable
+
   {
           if (obj instanceof DoubleFloat)
                   return (DoubleFloat) obj;
@@ -1042,7 +1042,7 @@ public abstract class Lisp
   }
 
   public static final SingleFloat checkSingleFloat(LispObject obj)
-    throws ConditionThrowable
+
   {
           if (obj instanceof SingleFloat)
                   return (SingleFloat) obj;
@@ -1051,7 +1051,7 @@ public abstract class Lisp
   }
 
   public static final StackFrame checkStackFrame(LispObject obj)
-    throws ConditionThrowable
+
   {
           if (obj instanceof StackFrame)      
                   return (StackFrame) obj;         
@@ -1066,13 +1066,13 @@ public abstract class Lisp
   }
 
   public static final Symbol gensym(LispThread thread)
-    throws ConditionThrowable
+
   {
     return gensym("G", thread);
   }
 
   public static final Symbol gensym(String prefix, LispThread thread)
-    throws ConditionThrowable
+
   {
     FastStringBuffer sb = new FastStringBuffer(prefix);
     SpecialBinding binding = thread.getSpecialBinding(Symbol.GENSYM_COUNTER);
@@ -1113,7 +1113,7 @@ public abstract class Lisp
   }
 
   public static final String javaString(LispObject arg)
-    throws ConditionThrowable
+
   {
     if (arg instanceof AbstractString)
       return arg.getStringValue();
@@ -1140,7 +1140,7 @@ public abstract class Lisp
 
   public static final LispObject number(BigInteger numerator,
                                         BigInteger denominator)
-    throws ConditionThrowable
+
   {
     if (denominator.signum() == 0)
       error(new DivisionByZero());
@@ -1170,7 +1170,7 @@ public abstract class Lisp
   }
 
   public static final int mod(int number, int divisor)
-    throws ConditionThrowable
+
   {
     final int r;
     try
@@ -1221,7 +1221,7 @@ public abstract class Lisp
   }
 
   public static final LispObject loadCompiledFunction(final String namestring)
-    throws ConditionThrowable
+
   {
     final LispThread thread = LispThread.currentThread();
     final boolean absolute = Utilities.isFilenameAbsolute(namestring);
@@ -1446,7 +1446,7 @@ public abstract class Lisp
 
   public static final LispObject makeCompiledClosure(LispObject template,
                                                      ClosureBinding[] context)
-    throws ConditionThrowable
+
   {
     return ((CompiledClosure)template).dup().setContext(context);
   }
@@ -1502,7 +1502,7 @@ public abstract class Lisp
     Bignum.getInstance(4294967296L);
 
   public static final LispObject getUpgradedArrayElementType(LispObject type)
-    throws ConditionThrowable
+
   {
     if (type instanceof Symbol)
       {
@@ -1605,7 +1605,7 @@ public abstract class Lisp
   }
 
   public static final byte coerceLispObjectToJavaByte(LispObject obj)
-    throws ConditionThrowable
+
   {
           return (byte)Fixnum.getValue(obj);
   }
@@ -1616,7 +1616,7 @@ public abstract class Lisp
   }
 
   public static final LispCharacter checkCharacter(LispObject obj)
-    throws ConditionThrowable
+
   {
           if (obj instanceof LispCharacter) 
                   return (LispCharacter) obj;         
@@ -1625,7 +1625,7 @@ public abstract class Lisp
   }
 
   public static final Package checkPackage(LispObject obj)
-    throws ConditionThrowable
+
   {
           if (obj instanceof Package)     
                   return (Package) obj;         
@@ -1634,7 +1634,7 @@ public abstract class Lisp
   }
 
   public static final Function checkFunction(LispObject obj)
-    throws ConditionThrowable
+
   {
           if (obj instanceof Function)    
                   return (Function) obj;         
@@ -1643,7 +1643,7 @@ public abstract class Lisp
   }
 
   public static final Stream checkStream(LispObject obj)
-    throws ConditionThrowable
+
   {
           if (obj instanceof Stream)      
                   return (Stream) obj;         
@@ -1652,7 +1652,7 @@ public abstract class Lisp
   }
 
   public static final Stream checkCharacterInputStream(LispObject obj)
-    throws ConditionThrowable
+
   {
           final Stream stream = checkStream(obj);
           if (stream.isCharacterInputStream())      
@@ -1663,7 +1663,7 @@ public abstract class Lisp
   }
 
   public static final Stream checkCharacterOutputStream(LispObject obj)
-    throws ConditionThrowable
+
   {
           final Stream stream = checkStream(obj);
           if (stream.isCharacterOutputStream())      
@@ -1674,7 +1674,7 @@ public abstract class Lisp
   }
 
   public static final Stream checkBinaryInputStream(LispObject obj)
-    throws ConditionThrowable
+
   {
           final Stream stream = checkStream(obj);
           if (stream.isBinaryInputStream())      
@@ -1685,7 +1685,7 @@ public abstract class Lisp
   }
   
   public static final Stream outSynonymOf(LispObject obj)
-  throws ConditionThrowable
+
   {       
           if (obj instanceof Stream)
             return (Stream) obj;
@@ -1698,7 +1698,7 @@ public abstract class Lisp
   }
 
   public static final Stream inSynonymOf(LispObject obj)
-    throws ConditionThrowable
+
   {
     if (obj instanceof Stream)
       return (Stream) obj;
@@ -1711,7 +1711,7 @@ public abstract class Lisp
   }
 
   public static final void writeByte(int n, LispObject obj)
-    throws ConditionThrowable
+
   {
     if (n < 0 || n > 255)
       type_error(Fixnum.getInstance(n), UNSIGNED_BYTE_8);
@@ -1719,7 +1719,7 @@ public abstract class Lisp
   }
 
   public static final Readtable checkReadtable(LispObject obj)
-    throws ConditionThrowable
+
   {
           if (obj instanceof Readtable)   
                   return (Readtable) obj;         
@@ -1728,7 +1728,7 @@ public abstract class Lisp
   }
   
   public final static AbstractString checkString(LispObject obj) 
-   throws ConditionThrowable 
+
   {
           if (obj instanceof AbstractString)            
                   return (AbstractString) obj;                    
@@ -1737,7 +1737,7 @@ public abstract class Lisp
   }
   
   public final static LispClass checkClass(LispObject obj) 
-   throws ConditionThrowable 
+
    {
           if (obj instanceof LispClass)         
                   return (LispClass) obj;                         
@@ -1746,7 +1746,7 @@ public abstract class Lisp
    }   
 
   public final static Layout checkLayout(LispObject obj) 
-   throws ConditionThrowable 
+
   {
           if (obj instanceof Layout)            
                   return (Layout) obj;                    
@@ -1755,7 +1755,7 @@ public abstract class Lisp
   }
 
   public static final Readtable designator_readtable(LispObject obj)
-    throws ConditionThrowable
+
   {
     if (obj == NIL)
       obj = STANDARD_READTABLE.symbolValue();
@@ -1765,7 +1765,7 @@ public abstract class Lisp
   }
 
   public static final Environment checkEnvironment(LispObject obj)
-    throws ConditionThrowable
+
   {
           if (obj instanceof Environment)         
                   return (Environment) obj;         
@@ -1774,7 +1774,7 @@ public abstract class Lisp
   }
 
   public static final void checkBounds(int start, int end, int length)
-    throws ConditionThrowable
+
   {
     if (start < 0 || end < 0 || start > end || end > length)
       {
@@ -1790,7 +1790,7 @@ public abstract class Lisp
   }
 
   public static final LispObject coerceToFunction(LispObject obj)
-    throws ConditionThrowable
+
   {
     if (obj instanceof Function)
       return obj;
@@ -1811,7 +1811,7 @@ public abstract class Lisp
 
   // Returns package or throws exception.
   public static final Package coerceToPackage(LispObject obj)
-    throws ConditionThrowable
+
   {
     if (obj instanceof Package)
       return (Package) obj;
@@ -1824,7 +1824,7 @@ public abstract class Lisp
   }
 
   public static Pathname coerceToPathname(LispObject arg)
-    throws ConditionThrowable
+
   {
     if (arg instanceof Pathname)
       return (Pathname) arg;
@@ -1839,7 +1839,7 @@ public abstract class Lisp
   }
 
   public LispObject assq(LispObject item, LispObject alist)
-    throws ConditionThrowable
+
   {
     while (alist instanceof Cons)
       {
@@ -1859,7 +1859,7 @@ public abstract class Lisp
   }
 
   public static final boolean memq(LispObject item, LispObject list)
-    throws ConditionThrowable
+
   {
     while (list instanceof Cons)
       {
@@ -1873,7 +1873,7 @@ public abstract class Lisp
   }
 
   public static final boolean memql(LispObject item, LispObject list)
-    throws ConditionThrowable
+
   {
     while (list instanceof Cons)
       {
@@ -1889,7 +1889,7 @@ public abstract class Lisp
   // Property lists.
   public static final LispObject getf(LispObject plist, LispObject indicator,
                                       LispObject defaultValue)
-    throws ConditionThrowable
+
   {
     LispObject list = plist;
     while (list != NIL)
@@ -1906,7 +1906,7 @@ public abstract class Lisp
   }
 
   public static final LispObject get(LispObject symbol, LispObject indicator)
-    throws ConditionThrowable
+
   {
     LispObject list = checkSymbol(symbol).getPropertyList();
     while (list != NIL)
@@ -1920,7 +1920,7 @@ public abstract class Lisp
 
   public static final LispObject get(LispObject symbol, LispObject indicator,
                                      LispObject defaultValue)
-    throws ConditionThrowable
+
   {
     LispObject list = checkSymbol(symbol).getPropertyList();
     while (list != NIL)
@@ -1934,7 +1934,7 @@ public abstract class Lisp
 
   public static final LispObject put(Symbol symbol, LispObject indicator,
                                      LispObject value)
-    throws ConditionThrowable
+
   {
     LispObject list = symbol.getPropertyList();
     while (list != NIL)
@@ -1957,7 +1957,7 @@ public abstract class Lisp
 
   public static final LispObject putf(LispObject plist, LispObject indicator,
                                       LispObject value)
-    throws ConditionThrowable
+
   {
     LispObject list = plist;
     while (list != NIL)
@@ -1976,7 +1976,7 @@ public abstract class Lisp
   }
 
   public static final LispObject remprop(Symbol symbol, LispObject indicator)
-    throws ConditionThrowable
+
   {
     LispObject list = checkList(symbol.getPropertyList());
     LispObject prev = null;
@@ -2003,7 +2003,7 @@ public abstract class Lisp
 
   public static final String format(LispObject formatControl,
                                     LispObject formatArguments)
-    throws ConditionThrowable
+
   {
     final LispThread thread = LispThread.currentThread();
     String control = formatControl.getStringValue();
@@ -2112,7 +2112,7 @@ public abstract class Lisp
 
   // Used by the compiler.
   public static final Symbol internInPackage(String name, String packageName)
-    throws ConditionThrowable
+
   {
     Package pkg = Packages.findPackage(packageName);
     if (pkg == null)
@@ -2145,7 +2145,7 @@ public abstract class Lisp
     {
       @Override
       public LispObject execute(LispObject key, LispObject value)
-        throws ConditionThrowable
+
       {
         objectTable.put(key.getStringValue(), value);
         return NIL;
@@ -2269,7 +2269,7 @@ public abstract class Lisp
     return (Stream) Symbol.STANDARD_INPUT.symbolValueNoThrow();
   }
 
-  public static final Stream getStandardOutput() throws ConditionThrowable
+  public static final Stream getStandardOutput()
   {
     return checkCharacterOutputStream(Symbol.STANDARD_OUTPUT.symbolValue());
   }
@@ -2284,7 +2284,7 @@ public abstract class Lisp
   public static final Symbol STANDARD_READTABLE =
     internConstant("+STANDARD-READTABLE+", PACKAGE_SYS, new Readtable());
 
-  public static final Readtable currentReadtable() throws ConditionThrowable
+  public static final Readtable currentReadtable()
   {
     return (Readtable) Symbol.CURRENT_READTABLE.symbolValue();
   }

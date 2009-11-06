@@ -41,7 +41,7 @@ public final class Do extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         return _do(args, env, false);
       }
@@ -53,7 +53,7 @@ public final class Do extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         return _do(args, env, true);
       }
@@ -61,7 +61,7 @@ public final class Do extends Lisp
 
   private static final LispObject _do(LispObject args, Environment env,
                                       boolean sequential)
-    throws ConditionThrowable
+
   {
     LispObject varlist = args.car();
     LispObject second = args.cadr();

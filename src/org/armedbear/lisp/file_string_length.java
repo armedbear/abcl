@@ -43,7 +43,7 @@ public final class file_string_length extends Primitive
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         return checkStream(first).fileStringLength(second);
     }

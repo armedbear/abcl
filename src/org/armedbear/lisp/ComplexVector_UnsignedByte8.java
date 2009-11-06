@@ -94,7 +94,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
     }
 
     @Override
-    public void setFillPointer(LispObject obj) throws ConditionThrowable
+    public void setFillPointer(LispObject obj)
     {
         if (obj == T)
             fillPointer = capacity();
@@ -124,7 +124,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
     }
 
     @Override
-    public LispObject arrayDisplacement() throws ConditionThrowable
+    public LispObject arrayDisplacement()
     {
         LispObject value1, value2;
         if (array != null) {
@@ -162,7 +162,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
     }
 
     @Override
-    public LispObject elt(int index) throws ConditionThrowable
+    public LispObject elt(int index)
     {
         final int limit = length();
         if (index < 0 || index >= limit)
@@ -172,7 +172,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
 
     // Ignores fill pointer.
     @Override
-    public LispObject AREF(int index) throws ConditionThrowable
+    public LispObject AREF(int index)
     {
         if (elements != null) {
             try {
@@ -193,13 +193,13 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
     // Ignores fill pointer.
     // FIXME inline
     @Override
-    public LispObject AREF(LispObject index) throws ConditionThrowable
+    public LispObject AREF(LispObject index)
     {
         return AREF(Fixnum.getValue(index));
     }
 
     @Override
-    public void aset(int index, int n) throws ConditionThrowable
+    public void aset(int index, int n)
     {
         if (elements != null) {
             try {
@@ -218,7 +218,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
     }
 
     @Override
-    public void aset(int index, LispObject newValue) throws ConditionThrowable
+    public void aset(int index, LispObject newValue)
     {
         if (elements != null) {
             try {
@@ -232,7 +232,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
     }
 
     @Override
-    public LispObject subseq(int start, int end) throws ConditionThrowable
+    public LispObject subseq(int start, int end)
     {
         SimpleVector v = new SimpleVector(end - start);
         int i = start, j = 0;
@@ -247,7 +247,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
     }
 
     @Override
-    public void fill(LispObject obj) throws ConditionThrowable
+    public void fill(LispObject obj)
     {
         byte b = (byte) Fixnum.getValue(obj);
         for (int i = capacity; i-- > 0;)
@@ -255,7 +255,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
     }
 
     @Override
-    public void shrink(int n) throws ConditionThrowable
+    public void shrink(int n)
     {
         if (elements != null) {
             if (n < elements.length) {
@@ -272,7 +272,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
     }
 
     @Override
-    public LispObject reverse() throws ConditionThrowable
+    public LispObject reverse()
     {
         int length = length();
         BasicVector_UnsignedByte8 result = new BasicVector_UnsignedByte8(length);
@@ -283,7 +283,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
     }
 
     @Override
-    public LispObject nreverse() throws ConditionThrowable
+    public LispObject nreverse()
     {
         if (elements != null) {
             int i = 0;
@@ -313,7 +313,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
     }
 
     @Override
-    public void vectorPushExtend(LispObject element) throws ConditionThrowable
+    public void vectorPushExtend(LispObject element)
     {
         if (fillPointer < 0)
             noFillPointer();
@@ -327,7 +327,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
 
     @Override
     public LispObject VECTOR_PUSH_EXTEND(LispObject element)
-        throws ConditionThrowable
+
     {
         vectorPushExtend(element);
         return Fixnum.getInstance(fillPointer - 1);
@@ -335,7 +335,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
 
     @Override
     public LispObject VECTOR_PUSH_EXTEND(LispObject element, LispObject extension)
-        throws ConditionThrowable
+
     {
         int ext = Fixnum.getValue(extension);
         if (fillPointer < 0)
@@ -349,7 +349,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
         return Fixnum.getInstance(fillPointer++);
     }
 
-    private final void ensureCapacity(int minCapacity) throws ConditionThrowable
+    private final void ensureCapacity(int minCapacity)
     {
         if (elements != null) {
             if (capacity < minCapacity) {
@@ -382,7 +382,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
     public AbstractVector adjustArray(int newCapacity,
                                        LispObject initialElement,
                                        LispObject initialContents)
-        throws ConditionThrowable
+
     {
         if (initialContents != null) {
             // "If INITIAL-CONTENTS is supplied, it is treated as for MAKE-
@@ -432,7 +432,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
     public AbstractVector adjustArray(int newCapacity,
                                        AbstractArray displacedTo,
                                        int displacement)
-        throws ConditionThrowable
+
     {
         capacity = newCapacity;
         array = displacedTo;

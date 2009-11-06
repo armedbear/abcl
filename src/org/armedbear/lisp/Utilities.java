@@ -85,14 +85,14 @@ public final class Utilities extends Lisp
         return false;
     }
 
-    public static File getFile(Pathname pathname) throws ConditionThrowable
+    public static File getFile(Pathname pathname)
     {
         return getFile(pathname,
                        coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue()));
     }
 
     public static File getFile(Pathname pathname, Pathname defaultPathname)
-        throws ConditionThrowable
+
     {
         Pathname merged =
             Pathname.mergePathnames(pathname, defaultPathname, NIL);
@@ -106,7 +106,7 @@ public final class Utilities extends Lisp
     }
 
     public static Pathname getDirectoryPathname(File file)
-        throws ConditionThrowable
+
     {
         try {
             String namestring = file.getCanonicalPath();
@@ -126,7 +126,7 @@ public final class Utilities extends Lisp
     public static byte[] getZippedZipEntryAsByteArray(ZipFile zipfile,
                                                       String entryName,
                                                       String subEntryName) 
-      throws ConditionThrowable 
+
   {
       ZipEntry entry = zipfile.getEntry(entryName);
       
@@ -170,7 +170,7 @@ public final class Utilities extends Lisp
     public static InputStream getZippedZipEntryAsInputStream(ZipFile zipfile,
                                                              String entryName,
                                                              String subEntryName) 
-      throws ConditionThrowable
+
   {
         return 
             new ByteArrayInputStream(Utilities

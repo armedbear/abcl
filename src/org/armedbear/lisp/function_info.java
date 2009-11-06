@@ -43,7 +43,7 @@ public final class function_info extends Lisp
         new Primitive("function-info", PACKAGE_SYS, false)
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             LispObject info = FUNCTION_TABLE.get(arg);
             return info != null ? info : NIL;
@@ -56,7 +56,7 @@ public final class function_info extends Lisp
     {
         @Override
         public LispObject execute(LispObject name, LispObject info)
-            throws ConditionThrowable
+
         {
             if (info == NIL)
                 FUNCTION_TABLE.remhash(name);
@@ -73,7 +73,7 @@ public final class function_info extends Lisp
     {
         @Override
         public LispObject execute(LispObject name, LispObject indicator)
-            throws ConditionThrowable
+
         {
             // info is an alist
             LispObject info = FUNCTION_TABLE.get(name);
@@ -102,7 +102,7 @@ public final class function_info extends Lisp
         @Override
         public LispObject execute(LispObject name, LispObject indicator,
                                   LispObject value)
-            throws ConditionThrowable
+
         {
             // info is an alist
             LispObject info = FUNCTION_TABLE.get(name);

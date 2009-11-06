@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 public final class SimpleTypeError extends TypeError
 {
-    public SimpleTypeError(LispObject initArgs) throws ConditionThrowable
+    public SimpleTypeError(LispObject initArgs)
     {
         super(StandardClass.SIMPLE_TYPE_ERROR);
         initialize(initArgs);
@@ -54,7 +54,7 @@ public final class SimpleTypeError extends TypeError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.SIMPLE_TYPE_ERROR)
             return T;

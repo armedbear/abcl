@@ -35,13 +35,13 @@ package org.armedbear.lisp;
 
 public final class DivisionByZero extends ArithmeticError
 {
-    public DivisionByZero() throws ConditionThrowable
+    public DivisionByZero()
     {
         super(StandardClass.DIVISION_BY_ZERO);
         setFormatControl("Arithmetic error DIVISION-BY-ZERO signalled.");
     }
 
-    public DivisionByZero(LispObject initArgs) throws ConditionThrowable
+    public DivisionByZero(LispObject initArgs)
     {
         super(StandardClass.DIVISION_BY_ZERO);
         initialize(initArgs);
@@ -60,7 +60,7 @@ public final class DivisionByZero extends ArithmeticError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.DIVISION_BY_ZERO)
             return T;

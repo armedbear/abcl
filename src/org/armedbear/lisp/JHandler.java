@@ -97,7 +97,7 @@ public final class JHandler extends Lisp
         new Primitive("%jregister-handler", PACKAGE_JAVA)
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             if (args.length != 5)
                 return error(new WrongNumberOfArgumentsException(this));

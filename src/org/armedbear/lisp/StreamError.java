@@ -37,13 +37,13 @@ public class StreamError extends LispError
 {
     private final Throwable cause;
 
-    protected StreamError(LispClass cls) throws ConditionThrowable
+    protected StreamError(LispClass cls)
     {
         super(cls);
         cause = null;
     }
 
-    public StreamError(String message) throws ConditionThrowable
+    public StreamError(String message)
     {
         super(StandardClass.STREAM_ERROR);
         setFormatControl(message);
@@ -52,14 +52,14 @@ public class StreamError extends LispError
         cause = null;
     }
 
-    public StreamError(Stream stream) throws ConditionThrowable
+    public StreamError(Stream stream)
     {
         super(StandardClass.STREAM_ERROR);
         setStream(stream != null ? stream : NIL);
         cause = null;
     }
 
-    public StreamError(String message, Stream stream) throws ConditionThrowable
+    public StreamError(String message, Stream stream)
     {
         super(StandardClass.STREAM_ERROR);
         setFormatControl(message);
@@ -68,7 +68,7 @@ public class StreamError extends LispError
         cause = null;
     }
 
-    public StreamError(LispObject initArgs) throws ConditionThrowable
+    public StreamError(LispObject initArgs)
     {
         super(StandardClass.STREAM_ERROR);
         initialize(initArgs);
@@ -76,7 +76,7 @@ public class StreamError extends LispError
     }
 
     @Override
-    protected void initialize(LispObject initArgs) throws ConditionThrowable
+    protected void initialize(LispObject initArgs)
     {
         super.initialize(initArgs);
         while (initArgs != NIL) {
@@ -90,7 +90,7 @@ public class StreamError extends LispError
         }
     }
 
-    public StreamError(Stream stream, String message) throws ConditionThrowable
+    public StreamError(Stream stream, String message)
     {
         super(StandardClass.STREAM_ERROR);
         setFormatControl(message);
@@ -99,19 +99,19 @@ public class StreamError extends LispError
         cause = null;
     }
 
-    public StreamError(Stream stream, Throwable cause) throws ConditionThrowable
+    public StreamError(Stream stream, Throwable cause)
     {
         super(StandardClass.STREAM_ERROR);
         setStream(stream != null ? stream : NIL);
         this.cause = cause;
     }
 
-    public final LispObject getStream() throws ConditionThrowable
+    public final LispObject getStream()
     {
         return getInstanceSlotValue(Symbol.STREAM);
     }
 
-    protected final void setStream(LispObject stream) throws ConditionThrowable
+    protected final void setStream(LispObject stream)
     {
         setInstanceSlotValue(Symbol.STREAM, stream);
     }
@@ -129,7 +129,7 @@ public class StreamError extends LispError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.STREAM_ERROR)
             return T;
@@ -154,7 +154,7 @@ public class StreamError extends LispError
         new Primitive("stream-error-stream", "condition")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof StreamError) 
                 return ((StreamError)arg).getStream();                

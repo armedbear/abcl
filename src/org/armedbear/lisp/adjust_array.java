@@ -44,7 +44,7 @@ public final class adjust_array extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject[] args) throws ConditionThrowable
+    public LispObject execute(LispObject[] args)
     {
         if (args.length != 10)
             return error(new WrongNumberOfArgumentsException(this));

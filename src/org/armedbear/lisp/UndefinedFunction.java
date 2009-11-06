@@ -36,7 +36,7 @@ package org.armedbear.lisp;
 public final class UndefinedFunction extends CellError
 {
   // obj is either the name of the undefined function or an initArgs list.
-  public UndefinedFunction(LispObject obj) throws ConditionThrowable
+  public UndefinedFunction(LispObject obj)
   {
     super(StandardClass.UNDEFINED_FUNCTION);
     if (obj instanceof Cons)
@@ -58,7 +58,7 @@ public final class UndefinedFunction extends CellError
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.UNDEFINED_FUNCTION)
       return T;
@@ -68,7 +68,7 @@ public final class UndefinedFunction extends CellError
   }
 
   @Override
-  public String getMessage() throws ConditionThrowable
+  public String getMessage()
   {
     FastStringBuffer sb = new FastStringBuffer("The function ");
     sb.append(getCellName().writeToString());

@@ -44,7 +44,7 @@ public final class ash extends Primitive
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         return first.ash(second);
     }

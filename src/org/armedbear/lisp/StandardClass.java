@@ -59,7 +59,7 @@ public class StandardClass extends SlotClass
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.STANDARD_CLASS)
       return T;
@@ -68,7 +68,7 @@ public class StandardClass extends SlotClass
     return super.typep(type);
   }
 
-  public LispObject allocateInstance() throws ConditionThrowable
+  public LispObject allocateInstance()
   {
     Layout layout = getClassLayout();
     if (layout == null)
@@ -83,7 +83,7 @@ public class StandardClass extends SlotClass
   }
 
   @Override
-  public String writeToString() throws ConditionThrowable
+  public String writeToString()
   {
     FastStringBuffer sb =
       new FastStringBuffer(Symbol.STANDARD_CLASS.writeToString());
@@ -264,7 +264,7 @@ public class StandardClass extends SlotClass
     addClass(Symbol.SLOT_DEFINITION, SLOT_DEFINITION);
   }
 
-  public static void initializeStandardClasses() throws ConditionThrowable
+  public static void initializeStandardClasses()
   {
     // We need to call setDirectSuperclass() here for classes that have a
     // BuiltInClass as a superclass. See comment above (at first mention of

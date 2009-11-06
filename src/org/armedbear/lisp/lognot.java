@@ -44,7 +44,7 @@ public final class lognot extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         return arg.LOGNOT();
     }

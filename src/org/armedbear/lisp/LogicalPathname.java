@@ -47,7 +47,7 @@ public final class LogicalPathname extends Pathname
     {
     }
 
-    public LogicalPathname(String host, String rest) throws ConditionThrowable
+    public LogicalPathname(String host, String rest)
     {
         final int limit = rest.length();
         for (int i = 0; i < limit; i++) {
@@ -120,7 +120,7 @@ public final class LogicalPathname extends Pathname
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-";
 
     public static final SimpleString canonicalizeStringComponent(AbstractString s)
-        throws ConditionThrowable
+
     {
         final int limit = s.length();
         for (int i = 0; i < limit; i++) {
@@ -137,13 +137,13 @@ public final class LogicalPathname extends Pathname
     }
 
     public static Pathname translateLogicalPathname(LogicalPathname pathname)
-        throws ConditionThrowable
+
     {
         return (Pathname) Symbol.TRANSLATE_LOGICAL_PATHNAME.execute(pathname);
     }
 
     private static final LispObject parseDirectory(String s)
-        throws ConditionThrowable
+
     {
         LispObject result;
         if (s.charAt(0) == ';') {
@@ -185,7 +185,7 @@ public final class LogicalPathname extends Pathname
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.LOGICAL_PATHNAME)
             return T;
@@ -195,7 +195,7 @@ public final class LogicalPathname extends Pathname
     }
 
     @Override
-    protected String getDirectoryNamestring() throws ConditionThrowable
+    protected String getDirectoryNamestring()
     {
         FastStringBuffer sb = new FastStringBuffer();
         // "If a pathname is converted to a namestring, the symbols NIL and
@@ -233,7 +233,7 @@ public final class LogicalPathname extends Pathname
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         final LispThread thread = LispThread.currentThread();
         boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);
@@ -281,7 +281,7 @@ public final class LogicalPathname extends Pathname
     {
         @Override
         public LispObject execute(LispObject arg)
-            throws ConditionThrowable
+
         {
                 AbstractString s = checkString(arg);
                 if (s.length() == 0) {
@@ -300,7 +300,7 @@ public final class LogicalPathname extends Pathname
     {
         @Override
         public LispObject execute(LispObject arg)
-            throws ConditionThrowable
+
         {
             // Check for a logical pathname host.
             String s = arg.getStringValue();

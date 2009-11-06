@@ -112,7 +112,7 @@ public abstract class HashTable extends LispObject
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.HASH_TABLE)
       return T;
@@ -122,7 +122,7 @@ public abstract class HashTable extends LispObject
   }
 
   @Override
-  public boolean equalp(LispObject obj) throws ConditionThrowable
+  public boolean equalp(LispObject obj)
   {
     if (this == obj)
       return true;
@@ -149,7 +149,7 @@ public abstract class HashTable extends LispObject
   }
 
   @Override
-  public LispObject getParts() throws ConditionThrowable
+  public LispObject getParts()
   {
     LispObject parts = NIL;
     for (int i = 0; i < buckets.length; i++)
@@ -174,7 +174,7 @@ public abstract class HashTable extends LispObject
 
   // gethash key hash-table &optional default => value, present-p
   public synchronized LispObject gethash(LispObject key)
-    throws ConditionThrowable
+
   {
     LispObject value = get(key);
     final LispObject presentp;
@@ -188,7 +188,7 @@ public abstract class HashTable extends LispObject
   // gethash key hash-table &optional default => value, present-p
   public synchronized LispObject gethash(LispObject key,
                                          LispObject defaultValue)
-    throws ConditionThrowable
+
   {
     LispObject value = get(key);
     final LispObject presentp;
@@ -203,14 +203,14 @@ public abstract class HashTable extends LispObject
   }
 
   public synchronized LispObject gethash1(LispObject key)
-    throws ConditionThrowable
+
   {
     final LispObject value = get(key);
     return value != null ? value : NIL;
   }
 
   public synchronized LispObject puthash(LispObject key, LispObject newValue)
-    throws ConditionThrowable
+
   {
     put(key, newValue);
     return newValue;
@@ -218,14 +218,14 @@ public abstract class HashTable extends LispObject
 
   // remhash key hash-table => generalized-boolean
   public synchronized LispObject remhash(LispObject key)
-    throws ConditionThrowable
+
   {
     // A value in a Lisp hash table can never be null, so...
     return remove(key) != null ? T : NIL;
   }
 
   @Override
-  public String writeToString() throws ConditionThrowable
+  public String writeToString()
   {
     if (Symbol.PRINT_READABLY.symbolValue(LispThread.currentThread()) != NIL)
       {
@@ -250,9 +250,9 @@ public abstract class HashTable extends LispObject
   public abstract LispObject get(LispObject key);
 
   public abstract void put(LispObject key, LispObject value)
-    throws ConditionThrowable;
+   ;
 
-  public abstract LispObject remove(LispObject key) throws ConditionThrowable;
+  public abstract LispObject remove(LispObject key);
 
   protected abstract void rehash();
 
@@ -272,7 +272,7 @@ public abstract class HashTable extends LispObject
     return list;
   }
 
-  public LispObject MAPHASH(LispObject function) throws ConditionThrowable
+  public LispObject MAPHASH(LispObject function)
   {
     for (int i = buckets.length; i-- > 0;)
       {

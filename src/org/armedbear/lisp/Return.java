@@ -69,7 +69,7 @@ public final class Return extends ConditionThrowable
     }
 
     @Override
-    public LispObject getCondition() throws ConditionThrowable
+    public LispObject getCondition()
     {
         try {
             FastStringBuffer sb = new FastStringBuffer("No block named ");

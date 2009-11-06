@@ -99,7 +99,7 @@ public final class StandardGenericFunction extends StandardObject
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.COMPILED_FUNCTION)
       {
@@ -126,20 +126,20 @@ public final class StandardGenericFunction extends StandardObject
   }
 
   @Override
-  public LispObject execute() throws ConditionThrowable
+  public LispObject execute()
   {
     return function.execute();
   }
 
   @Override
-  public LispObject execute(LispObject arg) throws ConditionThrowable
+  public LispObject execute(LispObject arg)
   {
     return function.execute(arg);
   }
 
   @Override
   public LispObject execute(LispObject first, LispObject second)
-    throws ConditionThrowable
+
   {
     return function.execute(first, second);
   }
@@ -147,7 +147,7 @@ public final class StandardGenericFunction extends StandardObject
   @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third)
-    throws ConditionThrowable
+
   {
     return function.execute(first, second, third);
   }
@@ -155,7 +155,7 @@ public final class StandardGenericFunction extends StandardObject
   @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth)
-    throws ConditionThrowable
+
   {
     return function.execute(first, second, third, fourth);
   }
@@ -164,7 +164,7 @@ public final class StandardGenericFunction extends StandardObject
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth)
-    throws ConditionThrowable
+
   {
     return function.execute(first, second, third, fourth,
                             fifth);
@@ -174,7 +174,7 @@ public final class StandardGenericFunction extends StandardObject
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth)
-    throws ConditionThrowable
+
   {
     return function.execute(first, second, third, fourth,
                             fifth, sixth);
@@ -185,7 +185,7 @@ public final class StandardGenericFunction extends StandardObject
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
                             LispObject seventh)
-    throws ConditionThrowable
+
   {
     return function.execute(first, second, third, fourth,
                             fifth, sixth, seventh);
@@ -196,20 +196,20 @@ public final class StandardGenericFunction extends StandardObject
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
                             LispObject seventh, LispObject eighth)
-    throws ConditionThrowable
+
   {
     return function.execute(first, second, third, fourth,
                             fifth, sixth, seventh, eighth);
   }
 
   @Override
-  public LispObject execute(LispObject[] args) throws ConditionThrowable
+  public LispObject execute(LispObject[] args)
   {
     return function.execute(args);
   }
 
   @Override
-  public String writeToString() throws ConditionThrowable
+  public String writeToString()
   {
     LispObject name = getGenericFunctionName();
     if (name != null)
@@ -277,7 +277,7 @@ public final class StandardGenericFunction extends StandardObject
     new Primitive("%generic-function-name", PACKAGE_SYS, true)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_NAME];
       }
@@ -289,7 +289,7 @@ public final class StandardGenericFunction extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_NAME] = second;
           return second;
@@ -301,7 +301,7 @@ public final class StandardGenericFunction extends StandardObject
     new Primitive("%generic-function-lambda-list", PACKAGE_SYS, true)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_LAMBDA_LIST];
       }
@@ -313,7 +313,7 @@ public final class StandardGenericFunction extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_LAMBDA_LIST] = second;
           return second;
@@ -327,7 +327,7 @@ public final class StandardGenericFunction extends StandardObject
     {
       @Override
       public LispObject execute(LispObject arg)
-        throws ConditionThrowable
+
       {
           return checkStandardGenericFunction(arg).function;
       }
@@ -341,7 +341,7 @@ public final class StandardGenericFunction extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardGenericFunction(first).function = second;
           return second;
@@ -353,7 +353,7 @@ public final class StandardGenericFunction extends StandardObject
     new Primitive("gf-required-args", PACKAGE_SYS, true)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS];
       }
@@ -365,7 +365,7 @@ public final class StandardGenericFunction extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
         final StandardGenericFunction gf = checkStandardGenericFunction(first);
         gf.slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS] = second;
@@ -379,7 +379,7 @@ public final class StandardGenericFunction extends StandardObject
     new Primitive("generic-function-initial-methods", PACKAGE_SYS, true)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_INITIAL_METHODS];
       }
@@ -391,7 +391,7 @@ public final class StandardGenericFunction extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_INITIAL_METHODS] = second;
           return second;
@@ -403,7 +403,7 @@ public final class StandardGenericFunction extends StandardObject
     new Primitive("generic-function-methods", PACKAGE_SYS, true)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_METHODS];
       }
@@ -415,7 +415,7 @@ public final class StandardGenericFunction extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_METHODS] = second;
           return second;
@@ -427,7 +427,7 @@ public final class StandardGenericFunction extends StandardObject
     new Primitive("generic-function-method-class", PACKAGE_SYS, true)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS];
       }
@@ -439,7 +439,7 @@ public final class StandardGenericFunction extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS] = second;
           return second;
@@ -451,7 +451,7 @@ public final class StandardGenericFunction extends StandardObject
     new Primitive("generic-function-method-combination", PACKAGE_SYS, true)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION];
       }
@@ -463,7 +463,7 @@ public final class StandardGenericFunction extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION] 
 	    = second;
@@ -476,7 +476,7 @@ public final class StandardGenericFunction extends StandardObject
     new Primitive("generic-function-argument-precedence-order", PACKAGE_SYS, true)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass
 							 .SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER];
@@ -489,7 +489,7 @@ public final class StandardGenericFunction extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardGenericFunction(first)
 	    .slots[StandardGenericFunctionClass.SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER] = second;
@@ -502,7 +502,7 @@ public final class StandardGenericFunction extends StandardObject
     new Primitive("generic-function-classes-to-emf-table", PACKAGE_SYS, true)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardGenericFunction(arg)
 	    .slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE];
@@ -515,7 +515,7 @@ public final class StandardGenericFunction extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardGenericFunction(first)
 	    .slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE] = second;
@@ -528,7 +528,7 @@ public final class StandardGenericFunction extends StandardObject
     new Primitive("generic-function-documentation", PACKAGE_SYS, true)
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION];
       }
@@ -540,7 +540,7 @@ public final class StandardGenericFunction extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
           checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION] 
 	    = second;
@@ -554,7 +554,7 @@ public final class StandardGenericFunction extends StandardObject
                   "generic-function")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           final StandardGenericFunction gf = checkStandardGenericFunction(arg);
           gf.finalizeInternal();        
@@ -569,7 +569,7 @@ public final class StandardGenericFunction extends StandardObject
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
-        throws ConditionThrowable
+
       {
         final StandardGenericFunction gf = checkStandardGenericFunction(first);
         LispObject args = second;
@@ -594,7 +594,7 @@ public final class StandardGenericFunction extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
         final StandardGenericFunction gf = checkStandardGenericFunction(first);
         LispObject args = second;
@@ -685,7 +685,7 @@ public final class StandardGenericFunction extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
         final StandardGenericFunction gf = checkStandardGenericFunction(first);
         return gf.getArgSpecialization(second);
@@ -699,7 +699,7 @@ public final class StandardGenericFunction extends StandardObject
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
-        throws ConditionThrowable
+
       {
         final StandardGenericFunction gf = checkStandardGenericFunction(first);
         LispObject layout = second;
@@ -718,7 +718,7 @@ public final class StandardGenericFunction extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
         final StandardGenericFunction gf = checkStandardGenericFunction(first);
         LispObject layout = second;
@@ -781,7 +781,7 @@ public final class StandardGenericFunction extends StandardObject
       {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-          throws ConditionThrowable
+
         {
           final StandardGenericFunction gf = checkStandardGenericFunction(first);
           LispObject eqlSpecializerObjects = second;
@@ -805,7 +805,7 @@ public final class StandardGenericFunction extends StandardObject
   }
   
   public static final StandardGenericFunction checkStandardGenericFunction(LispObject obj)
-  throws ConditionThrowable
+
   {
     if (obj instanceof StandardGenericFunction)
       return (StandardGenericFunction) obj;

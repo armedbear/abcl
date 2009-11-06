@@ -42,7 +42,7 @@ public final class unbound_slot_instance extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         if (arg instanceof UnboundSlot)
             return ((UnboundSlot)arg).getInstance();

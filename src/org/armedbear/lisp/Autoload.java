@@ -99,7 +99,7 @@ public class Autoload extends Function
                                                   "org.armedbear.lisp.".concat(className)));
     }
 
-    public void load() throws ConditionThrowable
+    public void load()
     {
         if (className != null) {
             final LispThread thread = LispThread.currentThread();
@@ -156,14 +156,14 @@ public class Autoload extends Function
     }
 
     @Override
-    public LispObject execute() throws ConditionThrowable
+    public LispObject execute()
     {
         load();
         return symbol.execute();
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         load();
         return symbol.execute(arg);
@@ -171,7 +171,7 @@ public class Autoload extends Function
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         load();
         return symbol.execute(first, second);
@@ -180,7 +180,7 @@ public class Autoload extends Function
     @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third)
-        throws ConditionThrowable
+
     {
         load();
         return symbol.execute(first, second, third);
@@ -189,7 +189,7 @@ public class Autoload extends Function
     @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth)
-        throws ConditionThrowable
+
     {
         load();
         return symbol.execute(first, second, third, fourth);
@@ -199,7 +199,7 @@ public class Autoload extends Function
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth)
-        throws ConditionThrowable
+
     {
         load();
         return symbol.execute(first, second, third, fourth, fifth);
@@ -209,7 +209,7 @@ public class Autoload extends Function
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth)
-        throws ConditionThrowable
+
     {
         load();
         return symbol.execute(first, second, third, fourth, fifth, sixth);
@@ -220,7 +220,7 @@ public class Autoload extends Function
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
                               LispObject seventh)
-        throws ConditionThrowable
+
     {
         load();
         return symbol.execute(first, second, third, fourth, fifth, sixth,
@@ -232,7 +232,7 @@ public class Autoload extends Function
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
                               LispObject seventh, LispObject eighth)
-        throws ConditionThrowable
+
     {
         load();
         return symbol.execute(first, second, third, fourth, fifth, sixth,
@@ -240,14 +240,14 @@ public class Autoload extends Function
     }
 
     @Override
-    public LispObject execute(LispObject[] args) throws ConditionThrowable
+    public LispObject execute(LispObject[] args)
     {
         load();
         return symbol.execute(args);
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         StringBuffer sb = new StringBuffer("#<AUTOLOAD ");
         sb.append(symbol.writeToString());
@@ -270,7 +270,7 @@ public class Autoload extends Function
         new Primitive("autoload", PACKAGE_EXT, true)
     {
         @Override
-        public LispObject execute(LispObject first) throws ConditionThrowable
+        public LispObject execute(LispObject first)
         {
             if (first instanceof Symbol) {
                 Symbol symbol = (Symbol) first;
@@ -288,7 +288,7 @@ public class Autoload extends Function
         }
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             final String fileName = second.getStringValue();
             if (first instanceof Symbol) {
@@ -313,7 +313,7 @@ public class Autoload extends Function
         new Primitive("resolve", PACKAGE_EXT, true, "symbol")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             Symbol symbol = checkSymbol(arg);
             LispObject fun = symbol.getSymbolFunction();
@@ -331,7 +331,7 @@ public class Autoload extends Function
         new Primitive("autoloadp", PACKAGE_EXT, true, "symbol")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof Symbol) {
                 if (arg.getSymbolFunction() instanceof Autoload)

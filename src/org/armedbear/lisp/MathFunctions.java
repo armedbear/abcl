@@ -39,13 +39,13 @@ public final class MathFunctions extends Lisp
     private static final Primitive SIN = new Primitive("sin", "radians")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return sin(arg);
         }
     };
 
-    private static LispObject sin(LispObject arg) throws ConditionThrowable
+    private static LispObject sin(LispObject arg)
     {
         if (arg instanceof DoubleFloat)
             return new DoubleFloat(Math.sin(((DoubleFloat)arg).value));
@@ -66,13 +66,13 @@ public final class MathFunctions extends Lisp
     private static final Primitive COS = new Primitive("cos", "radians")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return cos(arg);
         }
     };
 
-    private static LispObject cos(LispObject arg) throws ConditionThrowable
+    private static LispObject cos(LispObject arg)
     {
         if (arg instanceof DoubleFloat)
             return new DoubleFloat(Math.cos(((DoubleFloat)arg).value));
@@ -92,7 +92,7 @@ public final class MathFunctions extends Lisp
     private static final Primitive TAN = new Primitive("tan", "radians")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof DoubleFloat)
                 return new DoubleFloat(Math.tan(((DoubleFloat)arg).value));
@@ -106,13 +106,13 @@ public final class MathFunctions extends Lisp
     private static final Primitive ASIN = new Primitive("asin", "number")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return asin(arg);
         }
     };
 
-    private static LispObject asin(LispObject arg) throws ConditionThrowable
+    private static LispObject asin(LispObject arg)
     {
         if (arg instanceof SingleFloat) {
             float f = ((SingleFloat)arg).value;
@@ -147,13 +147,13 @@ public final class MathFunctions extends Lisp
     private static final Primitive ACOS = new Primitive("acos", "number")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return acos(arg);
         }
     };
 
-    private static LispObject acos(LispObject arg) throws ConditionThrowable
+    private static LispObject acos(LispObject arg)
     {
         if (arg instanceof DoubleFloat) {
             double d = ((DoubleFloat)arg).value;
@@ -190,7 +190,7 @@ public final class MathFunctions extends Lisp
         new Primitive("atan", "number1 &optional number2")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg.numberp())
                 return atan(arg);
@@ -206,7 +206,7 @@ public final class MathFunctions extends Lisp
         // y = -0     x = -0       -<PI>
         @Override
         public LispObject execute(LispObject y, LispObject x)
-            throws ConditionThrowable
+
         {
             if (!y.realp())
                 return type_error(y, Symbol.REAL);
@@ -223,7 +223,7 @@ public final class MathFunctions extends Lisp
         }
     };
 
-    private static LispObject atan(LispObject arg) throws ConditionThrowable
+    private static LispObject atan(LispObject arg)
     {
         if (arg instanceof Complex) {
             LispObject im = ((Complex)arg).imagpart;
@@ -251,13 +251,13 @@ public final class MathFunctions extends Lisp
     private static final Primitive SINH = new Primitive("sinh", "number")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return sinh(arg);
         }
     };
 
-    private static LispObject sinh(LispObject arg) throws ConditionThrowable
+    private static LispObject sinh(LispObject arg)
     {
         if (arg instanceof Complex) {
             LispObject im = ((Complex)arg).getImaginaryPart();
@@ -301,13 +301,13 @@ public final class MathFunctions extends Lisp
     private static final Primitive COSH = new Primitive("cosh", "number")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return cosh(arg);
         }
     };
 
-    private static LispObject cosh(LispObject arg) throws ConditionThrowable
+    private static LispObject cosh(LispObject arg)
     {
         if (arg instanceof Complex) {
             LispObject im = ((Complex)arg).getImaginaryPart();
@@ -351,7 +351,7 @@ public final class MathFunctions extends Lisp
     private static final Primitive TANH = new Primitive("tanh", "number")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof SingleFloat) {
                 try {
@@ -380,13 +380,13 @@ public final class MathFunctions extends Lisp
     private static final Primitive ASINH = new Primitive("asinh", "number")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return asinh(arg);
         }
     };
 
-    private static LispObject asinh(LispObject arg) throws ConditionThrowable
+    private static LispObject asinh(LispObject arg)
     {
         if (arg instanceof Complex) {
             LispObject im = ((Complex)arg).getImaginaryPart();
@@ -413,13 +413,13 @@ public final class MathFunctions extends Lisp
     private static final Primitive ACOSH = new Primitive("acosh", "number")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return acosh(arg);
         }
     };
 
-    private static LispObject acosh(LispObject arg) throws ConditionThrowable
+    private static LispObject acosh(LispObject arg)
     {
         if (arg instanceof Complex) {
             LispObject im = ((Complex)arg).getImaginaryPart();
@@ -450,13 +450,13 @@ public final class MathFunctions extends Lisp
     private static final Primitive ATANH = new Primitive("atanh", "number")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return atanh(arg);
         }
     };
 
-    private static LispObject atanh(LispObject arg) throws ConditionThrowable
+    private static LispObject atanh(LispObject arg)
     {
         if (arg instanceof Complex) {
             LispObject im = ((Complex)arg).getImaginaryPart();
@@ -482,13 +482,13 @@ public final class MathFunctions extends Lisp
     private static final Primitive CIS = new Primitive("cis", "radians")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return cis(arg);
         }
     };
 
-    private static LispObject cis(LispObject arg) throws ConditionThrowable
+    private static LispObject cis(LispObject arg)
     {
         if (arg.realp())
             return Complex.getInstance(cos(arg), sin(arg));
@@ -499,13 +499,13 @@ public final class MathFunctions extends Lisp
     private static final Primitive EXP = new Primitive("exp", "number")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return exp(arg);
         }
     };
 
-    private static LispObject exp(LispObject arg) throws ConditionThrowable
+    private static LispObject exp(LispObject arg)
     {
         if (arg.realp()) {
             if (arg instanceof DoubleFloat) {
@@ -527,13 +527,13 @@ public final class MathFunctions extends Lisp
     private static final Primitive SQRT = new Primitive("sqrt", "number")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return sqrt(arg);
         }
     };
 
-    private static final LispObject sqrt(LispObject obj) throws ConditionThrowable
+    private static final LispObject sqrt(LispObject obj)
     {
         if (obj instanceof DoubleFloat) {
             if (obj.minusp())
@@ -564,13 +564,13 @@ public final class MathFunctions extends Lisp
         new Primitive("log", "number &optional base")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return log(arg);
         }
         @Override
         public LispObject execute(LispObject number, LispObject base)
-            throws ConditionThrowable
+
         {
             if (number.realp() && !number.minusp()
                 && base.isEqualTo(Fixnum.getInstance(10))) {
@@ -592,7 +592,7 @@ public final class MathFunctions extends Lisp
         }
     };
 
-    private static final LispObject log(LispObject obj) throws ConditionThrowable
+    private static final LispObject log(LispObject obj)
     {
         if (obj.realp() && !obj.minusp()) {
             // Result is real.
@@ -648,7 +648,7 @@ public final class MathFunctions extends Lisp
     {
         @Override
         public LispObject execute(LispObject base, LispObject power)
-            throws ConditionThrowable
+
         {
             if (power.zerop()) {
                 if (power instanceof Fixnum) {
@@ -745,10 +745,9 @@ public final class MathFunctions extends Lisp
      *
      * @param number
      * @return number or signals an appropriate error
-     * @throws org.armedbear.lisp.ConditionThrowable
      */
     private final static LispObject OverUnderFlowCheck(LispObject number)
-            throws ConditionThrowable
+
     {
         if (number instanceof Complex) {
             OverUnderFlowCheck(((Complex)number).realpart);
@@ -775,10 +774,9 @@ public final class MathFunctions extends Lisp
      *
      * @param number
      * @return number or signals an appropriate error
-     * @throws org.armedbear.lisp.ConditionThrowable
      */
     final static float OverUnderFlowCheck(float number)
-            throws ConditionThrowable
+
     {
         if (TRAP_OVERFLOW) {
             if (Float.isInfinite(number))
@@ -795,10 +793,9 @@ public final class MathFunctions extends Lisp
      *
      * @param number
      * @return number or signals an appropriate error
-     * @throws org.armedbear.lisp.ConditionThrowable
      */
     public final static double OverUnderFlowCheck(double number)
-            throws ConditionThrowable
+
     {
         if (TRAP_OVERFLOW) {
             if (Double.isInfinite(number))
@@ -815,10 +812,9 @@ public final class MathFunctions extends Lisp
      *
      * @param base A value of any type
      * @param power An integer (fixnum or bignum) value
-     * @throws org.armedbear.lisp.ConditionThrowable
      */
     private static final LispObject intexp(LispObject base, LispObject power)
-        throws ConditionThrowable
+
     {
         if (power.isEqualTo(0))
             return Fixnum.ONE;

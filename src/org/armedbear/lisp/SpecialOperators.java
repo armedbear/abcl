@@ -43,7 +43,7 @@ public final class SpecialOperators extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         if (args.cdr() != NIL)
           return error(new WrongNumberOfArgumentsException(this));
@@ -57,7 +57,7 @@ public final class SpecialOperators extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         final LispThread thread = LispThread.currentThread();
         switch (args.length())
@@ -87,7 +87,7 @@ public final class SpecialOperators extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         if (args == NIL)
           return error(new WrongNumberOfArgumentsException(this));
@@ -101,7 +101,7 @@ public final class SpecialOperators extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         if (args == NIL)
           return error(new WrongNumberOfArgumentsException(this));
@@ -111,7 +111,7 @@ public final class SpecialOperators extends Lisp
 
   private static final LispObject _let(LispObject args, Environment env,
                                        boolean sequential)
-    throws ConditionThrowable
+
   {
     final LispThread thread = LispThread.currentThread();
     final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
@@ -176,7 +176,7 @@ public final class SpecialOperators extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         LispObject varList = checkList(args.car());
         final LispThread thread = LispThread.currentThread();
@@ -227,7 +227,7 @@ public final class SpecialOperators extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         switch (args.length())
           {
@@ -247,7 +247,7 @@ public final class SpecialOperators extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         final LispThread thread = LispThread.currentThread();
         final Environment ext = new Environment(env);
@@ -262,7 +262,7 @@ public final class SpecialOperators extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         LispThread thread = LispThread.currentThread();
         return progn(args, env, thread);
@@ -275,7 +275,7 @@ public final class SpecialOperators extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         return _flet(args, env, false);
       }
@@ -287,7 +287,7 @@ public final class SpecialOperators extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         return _flet(args, env, true);
       }
@@ -295,7 +295,7 @@ public final class SpecialOperators extends Lisp
 
   private static final LispObject _flet(LispObject args, Environment env,
                                         boolean recursive)
-    throws ConditionThrowable
+
   {
     // First argument is a list of local function definitions.
     LispObject defs = checkList(args.car());
@@ -367,7 +367,7 @@ public final class SpecialOperators extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         if (args.length() != 2)
           return error(new WrongNumberOfArgumentsException(this));
@@ -402,7 +402,7 @@ public final class SpecialOperators extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         if (args.length() < 2)
           return error(new WrongNumberOfArgumentsException(this));
@@ -430,7 +430,7 @@ public final class SpecialOperators extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         return NIL;
       }
@@ -442,7 +442,7 @@ public final class SpecialOperators extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         final LispObject arg = args.car();
         if (arg instanceof Symbol)
@@ -500,7 +500,7 @@ public final class SpecialOperators extends Lisp
     {
       @Override
       public LispObject execute(LispObject args, Environment env)
-        throws ConditionThrowable
+
       {
         LispObject value = Symbol.NIL;
         final LispThread thread = LispThread.currentThread();

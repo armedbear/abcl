@@ -35,19 +35,19 @@ package org.armedbear.lisp;
 
 public class ArithmeticError extends LispError
 {
-    protected ArithmeticError(LispClass cls) throws ConditionThrowable
+    protected ArithmeticError(LispClass cls)
     {
         super(cls);
     }
 
-    public ArithmeticError(LispObject initArgs) throws ConditionThrowable
+    public ArithmeticError(LispObject initArgs)
     {
         super(StandardClass.ARITHMETIC_ERROR);
         initialize(initArgs);
     }
 
     @Override
-    protected void initialize(LispObject initArgs) throws ConditionThrowable
+    protected void initialize(LispObject initArgs)
     {
         super.initialize(initArgs);
         LispObject operation = NIL;
@@ -67,7 +67,7 @@ public class ArithmeticError extends LispError
         setOperands(operands);
     }
 
-    public ArithmeticError(String message) throws ConditionThrowable
+    public ArithmeticError(String message)
     {
         super(StandardClass.ARITHMETIC_ERROR);
         setFormatControl(message);
@@ -89,7 +89,7 @@ public class ArithmeticError extends LispError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.ARITHMETIC_ERROR)
             return T;
@@ -98,24 +98,24 @@ public class ArithmeticError extends LispError
         return super.typep(type);
     }
 
-    private final LispObject getOperation() throws ConditionThrowable
+    private final LispObject getOperation()
     {
         return getInstanceSlotValue(Symbol.OPERATION);
     }
 
     private final void setOperation(LispObject operation)
-        throws ConditionThrowable
+
     {
         setInstanceSlotValue(Symbol.OPERATION, operation);
     }
 
-    private final LispObject getOperands() throws ConditionThrowable
+    private final LispObject getOperands()
     {
         return getInstanceSlotValue(Symbol.OPERANDS);
     }
 
     private final void setOperands(LispObject operands)
-        throws ConditionThrowable
+
     {
         setInstanceSlotValue(Symbol.OPERANDS, operands);
     }
@@ -125,7 +125,7 @@ public class ArithmeticError extends LispError
         new Primitive("arithmetic-error-operation", "condition")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof ArithmeticError) {
                 return ((ArithmeticError)arg).getOperation();
@@ -140,7 +140,7 @@ public class ArithmeticError extends LispError
         new Primitive("arithmetic-error-operands", "condition")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof ArithmeticError) {
                 return ((ArithmeticError)arg).getOperands();

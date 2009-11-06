@@ -37,7 +37,7 @@ public final class BroadcastStream extends Stream
 {
     private final Stream[] streams;
 
-    private BroadcastStream(Stream[] streams) throws ConditionThrowable
+    private BroadcastStream(Stream[] streams)
     {
         this.streams = streams;
         isOutputStream = true;
@@ -72,7 +72,7 @@ public final class BroadcastStream extends Stream
     }
 
     @Override
-    public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
+    public LispObject typep(LispObject typeSpecifier)
     {
         if (typeSpecifier == Symbol.BROADCAST_STREAM)
             return T;
@@ -82,7 +82,7 @@ public final class BroadcastStream extends Stream
     }
 
     @Override
-    public LispObject listen() throws ConditionThrowable
+    public LispObject listen()
     {
         notSupported();
         // Not reached.
@@ -90,7 +90,7 @@ public final class BroadcastStream extends Stream
     }
 
     @Override
-    public LispObject fileLength() throws ConditionThrowable
+    public LispObject fileLength()
     {
         if (streams.length > 0)
             return streams[streams.length - 1].fileLength();
@@ -99,7 +99,7 @@ public final class BroadcastStream extends Stream
     }
 
     @Override
-    public LispObject fileStringLength(LispObject arg) throws ConditionThrowable
+    public LispObject fileStringLength(LispObject arg)
     {
         if (streams.length > 0)
             return streams[streams.length - 1].fileStringLength(arg);
@@ -109,7 +109,7 @@ public final class BroadcastStream extends Stream
 
     // Returns -1 at end of file.
     @Override
-    protected int _readChar() throws ConditionThrowable
+    protected int _readChar()
     {
         notSupported();
         // Not reached.
@@ -117,13 +117,13 @@ public final class BroadcastStream extends Stream
     }
 
     @Override
-    protected void _unreadChar(int n) throws ConditionThrowable
+    protected void _unreadChar(int n)
     {
         notSupported();
     }
 
     @Override
-    protected boolean _charReady() throws ConditionThrowable
+    protected boolean _charReady()
     {
         notSupported();
         // Not reached.
@@ -131,7 +131,7 @@ public final class BroadcastStream extends Stream
     }
 
     @Override
-    public void _writeChar(char c) throws ConditionThrowable
+    public void _writeChar(char c)
     {
         for (int i = 0; i < streams.length; i++)
             streams[i]._writeChar(c);
@@ -139,21 +139,21 @@ public final class BroadcastStream extends Stream
 
     @Override
     public void _writeChars(char[] chars, int start, int end)
-        throws ConditionThrowable
+
     {
         for (int i = 0; i < streams.length; i++)
             streams[i]._writeChars(chars, start, end);
     }
 
     @Override
-    public void _writeString(String s) throws ConditionThrowable
+    public void _writeString(String s)
     {
         for (int i = 0; i < streams.length; i++)
             streams[i]._writeString(s);
     }
 
     @Override
-    public void _writeLine(String s) throws ConditionThrowable
+    public void _writeLine(String s)
     {
         for (int i = 0; i < streams.length; i++)
             streams[i]._writeLine(s);
@@ -161,7 +161,7 @@ public final class BroadcastStream extends Stream
 
     // Reads an 8-bit byte.
     @Override
-    public int _readByte() throws ConditionThrowable
+    public int _readByte()
     {
         notSupported();
         // Not reached.
@@ -170,27 +170,27 @@ public final class BroadcastStream extends Stream
 
     // Writes an 8-bit byte.
     @Override
-    public void _writeByte(int n) throws ConditionThrowable
+    public void _writeByte(int n)
     {
         for (int i = 0; i < streams.length; i++)
             streams[i]._writeByte(n);
     }
 
     @Override
-    public void _finishOutput() throws ConditionThrowable
+    public void _finishOutput()
     {
         for (int i = 0; i < streams.length; i++)
             streams[i]._finishOutput();
     }
 
     @Override
-    public void _clearInput() throws ConditionThrowable
+    public void _clearInput()
     {
         notSupported();
     }
 
     @Override
-    protected long _getFilePosition() throws ConditionThrowable
+    protected long _getFilePosition()
     {
         if (streams.length == 0)
             return 0;
@@ -199,18 +199,18 @@ public final class BroadcastStream extends Stream
     }
 
     @Override
-    protected boolean _setFilePosition(LispObject arg) throws ConditionThrowable
+    protected boolean _setFilePosition(LispObject arg)
     {
         return false;
     }
 
     @Override
-    public void _close() throws ConditionThrowable
+    public void _close()
     {
         setOpen(false);
     }
 
-    private void notSupported() throws ConditionThrowable
+    private void notSupported()
     {
         error(new TypeError("Operation is not supported for streams of type BROADCAST-STREAM."));
     }
@@ -226,12 +226,12 @@ public final class BroadcastStream extends Stream
         new Primitive("make-broadcast-stream", "&rest streams")
     {
         @Override
-        public LispObject execute() throws ConditionThrowable
+        public LispObject execute()
         {
             return new BroadcastStream(new Stream[0]);
         }
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             Stream[] streams = new Stream[args.length];
             for (int i = 0; i < args.length; i++) {
@@ -255,7 +255,7 @@ public final class BroadcastStream extends Stream
         new Primitive("broadcast-stream-streams", "broadcast-stream")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof BroadcastStream) {
                 BroadcastStream stream = (BroadcastStream) arg;

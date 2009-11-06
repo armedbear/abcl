@@ -49,7 +49,7 @@ public final class SimpleBitVector extends AbstractBitVector
         bits = new long[size];
     }
 
-    public SimpleBitVector(String s) throws ConditionThrowable
+    public SimpleBitVector(String s)
     {
         this(s.length());
         for (int i = capacity; i-- > 0;) {
@@ -75,7 +75,7 @@ public final class SimpleBitVector extends AbstractBitVector
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.SIMPLE_BIT_VECTOR)
             return T;
@@ -113,7 +113,7 @@ public final class SimpleBitVector extends AbstractBitVector
     }
 
     @Override
-    public LispObject elt(int index) throws ConditionThrowable
+    public LispObject elt(int index)
     {
         if (index < 0 || index >= length())
             badIndex(index, length());
@@ -122,7 +122,7 @@ public final class SimpleBitVector extends AbstractBitVector
     }
 
     @Override
-    public LispObject AREF(int index) throws ConditionThrowable
+    public LispObject AREF(int index)
     {
         if (index < 0 || index >= capacity)
             badIndex(index, capacity);
@@ -131,7 +131,7 @@ public final class SimpleBitVector extends AbstractBitVector
     }
 
     @Override
-    public void aset(int index, LispObject newValue) throws ConditionThrowable
+    public void aset(int index, LispObject newValue)
     {
         if (index < 0 || index >= capacity)
             badIndex(index, capacity);
@@ -172,7 +172,7 @@ public final class SimpleBitVector extends AbstractBitVector
     }
 
     @Override
-    public void shrink(int n) throws ConditionThrowable
+    public void shrink(int n)
     {
         if (n < capacity) {
             int size = n >>> 6;
@@ -195,7 +195,7 @@ public final class SimpleBitVector extends AbstractBitVector
     public AbstractVector adjustArray(int newCapacity,
                                        LispObject initialElement,
                                        LispObject initialContents)
-        throws ConditionThrowable
+
     {
         if (initialContents != null) {
             SimpleBitVector v = new SimpleBitVector(newCapacity);
@@ -240,7 +240,7 @@ public final class SimpleBitVector extends AbstractBitVector
     public AbstractVector adjustArray(int newCapacity,
                                        AbstractArray displacedTo,
                                        int displacement)
-        throws ConditionThrowable
+
     {
         return new ComplexBitVector(newCapacity, displacedTo, displacement);
     }
@@ -343,7 +343,7 @@ public final class SimpleBitVector extends AbstractBitVector
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
-            throws ConditionThrowable
+
         {
             return ((SimpleBitVector)first).and((SimpleBitVector)second,
                                                 ((SimpleBitVector)third));
@@ -358,7 +358,7 @@ public final class SimpleBitVector extends AbstractBitVector
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
-            throws ConditionThrowable
+
         {
             return ((SimpleBitVector)first).ior((SimpleBitVector)second,
                                                 (SimpleBitVector)third);
@@ -374,7 +374,7 @@ public final class SimpleBitVector extends AbstractBitVector
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
-            throws ConditionThrowable
+
         {
             return ((SimpleBitVector)first).xor((SimpleBitVector)second,
                                                 (SimpleBitVector)third);
@@ -390,7 +390,7 @@ public final class SimpleBitVector extends AbstractBitVector
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
-            throws ConditionThrowable
+
         {
             return ((SimpleBitVector)first).eqv((SimpleBitVector)second,
                                                 (SimpleBitVector)third);
@@ -405,7 +405,7 @@ public final class SimpleBitVector extends AbstractBitVector
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
-            throws ConditionThrowable
+
         {
             return ((SimpleBitVector)first).nand((SimpleBitVector)second,
                                                  (SimpleBitVector)third);
@@ -420,7 +420,7 @@ public final class SimpleBitVector extends AbstractBitVector
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
-            throws ConditionThrowable
+
         {
             return ((SimpleBitVector)first).nor((SimpleBitVector)second,
                                                  (SimpleBitVector)third);
@@ -435,7 +435,7 @@ public final class SimpleBitVector extends AbstractBitVector
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
-            throws ConditionThrowable
+
         {
             return ((SimpleBitVector)first).andc1((SimpleBitVector)second,
                                                   (SimpleBitVector)third);
@@ -450,7 +450,7 @@ public final class SimpleBitVector extends AbstractBitVector
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
-            throws ConditionThrowable
+
         {
             return ((SimpleBitVector)first).andc2((SimpleBitVector)second,
                                                   (SimpleBitVector)third);
@@ -466,7 +466,7 @@ public final class SimpleBitVector extends AbstractBitVector
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
-            throws ConditionThrowable
+
         {
             return ((SimpleBitVector)first).orc1((SimpleBitVector)second,
                                                  (SimpleBitVector)third);
@@ -481,7 +481,7 @@ public final class SimpleBitVector extends AbstractBitVector
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
-            throws ConditionThrowable
+
         {
             return ((SimpleBitVector)first).orc2((SimpleBitVector)second,
                                                  (SimpleBitVector)third);
@@ -495,7 +495,7 @@ public final class SimpleBitVector extends AbstractBitVector
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             SimpleBitVector v = (SimpleBitVector) first;
             SimpleBitVector result = (SimpleBitVector) second;

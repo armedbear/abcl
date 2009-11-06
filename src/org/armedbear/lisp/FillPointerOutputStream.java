@@ -53,7 +53,7 @@ public final class FillPointerOutputStream extends Stream
         new Primitive("make-fill-pointer-output-stream", PACKAGE_SYS, true)
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof ComplexString) {
                 ComplexString string = (ComplexString) arg;

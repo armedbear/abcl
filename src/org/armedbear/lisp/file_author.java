@@ -44,7 +44,7 @@ public final class file_author extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         Pathname pathname = coerceToPathname(arg);
         if (pathname.isWild())

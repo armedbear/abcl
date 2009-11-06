@@ -50,7 +50,7 @@ import java.util.zip.ZipInputStream;
 public final class Load extends Lisp
 {
     public static final LispObject load(String filename)
-        throws ConditionThrowable
+
     {
         final LispThread thread = LispThread.currentThread();
         return load(new Pathname(filename),
@@ -93,7 +93,7 @@ public final class Load extends Lisp
                                         boolean verbose,
                                         boolean print,
                                         boolean ifDoesNotExist)
-        throws ConditionThrowable {
+        {
         return load(pathname, filename, verbose, print, ifDoesNotExist, false);
     }
 
@@ -103,7 +103,7 @@ public final class Load extends Lisp
                                         boolean print,
                                         boolean ifDoesNotExist,
                                         boolean returnLastResult)
-        throws ConditionThrowable
+
     {
         String dir = null;
         if (!Utilities.isFilenameAbsolute(filename)) {
@@ -268,7 +268,7 @@ public final class Load extends Lisp
     }
 
     public static final LispObject loadSystemFile(String filename)
-        throws ConditionThrowable
+
     {
         final LispThread thread = LispThread.currentThread();
         return loadSystemFile(filename,
@@ -278,7 +278,7 @@ public final class Load extends Lisp
     }
 
     public static final LispObject loadSystemFile(String filename, boolean auto)
-        throws ConditionThrowable
+
     {
         LispThread thread = LispThread.currentThread();
         if (auto) {
@@ -307,7 +307,7 @@ public final class Load extends Lisp
                                                   boolean verbose,
                                                   boolean print,
                                                   boolean auto)
-        throws ConditionThrowable
+
     {
         final int ARRAY_SIZE = 2;
         String[] candidates = new String[ARRAY_SIZE];
@@ -445,7 +445,7 @@ public final class Load extends Lisp
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             if (first == Keyword.VERSION) {
                 if (second.eql(_FASL_VERSION_.getSymbolValue())) {
@@ -466,7 +466,7 @@ public final class Load extends Lisp
                                                        boolean verbose,
                                                        boolean print,
                                                        boolean auto)
-        throws ConditionThrowable {
+        {
         return loadFileFromStream(pathname, truename, in, verbose, print, auto, false);
     }
 
@@ -477,7 +477,7 @@ public final class Load extends Lisp
                                                        boolean print,
                                                        boolean auto,
                                                        boolean returnLastResult)
-        throws ConditionThrowable
+
     {
         long start = System.currentTimeMillis();
         final LispThread thread = LispThread.currentThread();
@@ -541,13 +541,13 @@ public final class Load extends Lisp
 
     private static final LispObject loadStream(Stream in, boolean print,
                                                LispThread thread)
-        throws ConditionThrowable {
+        {
         return loadStream(in, print, thread, false);
     }
 
     private static final LispObject loadStream(Stream in, boolean print,
                                                LispThread thread, boolean returnLastResult)
-        throws ConditionThrowable
+
     {
         SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
         thread.bindSpecial(_LOAD_STREAM_, in);
@@ -583,7 +583,7 @@ public final class Load extends Lisp
     }
 
     private static final LispObject faslLoadStream(LispThread thread)
-        throws ConditionThrowable
+
     {
         Stream in = (Stream) _LOAD_STREAM_.symbolValue(thread);
         final Environment env = new Environment();
@@ -676,7 +676,7 @@ public final class Load extends Lisp
         @Override
         public LispObject execute(LispObject filespec, LispObject verbose,
                                   LispObject print, LispObject ifDoesNotExist)
-            throws ConditionThrowable {
+            {
             return load(filespec, verbose, print, ifDoesNotExist, NIL);
         }
     };
@@ -689,7 +689,7 @@ public final class Load extends Lisp
         @Override
         public LispObject execute(LispObject filespec, LispObject verbose,
                                   LispObject print, LispObject ifDoesNotExist)
-            throws ConditionThrowable {
+            {
             return load(filespec, verbose, print, ifDoesNotExist, T);
         }
     };
@@ -699,7 +699,7 @@ public final class Load extends Lisp
                                          LispObject print,
                                          LispObject ifDoesNotExist,
                                          LispObject returnLastResult)
-        throws ConditionThrowable {
+        {
         if (filespec instanceof Stream) {
             if (((Stream)filespec).isOpen()) {
                 LispObject pathname;
@@ -738,7 +738,7 @@ public final class Load extends Lisp
         new Primitive("load-system-file", PACKAGE_SYS, true)
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             final LispThread thread = LispThread.currentThread();
             return loadSystemFile(arg.getStringValue(),

@@ -63,7 +63,7 @@ public abstract class ReaderMacroFunction extends Function
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         Stream stream = inSynonymOf(first);
         char c = LispCharacter.getValue(second);
@@ -71,5 +71,5 @@ public abstract class ReaderMacroFunction extends Function
     }
 
     public abstract LispObject execute(Stream stream, char c)
-        throws ConditionThrowable;
+       ;
 }

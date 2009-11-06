@@ -46,7 +46,7 @@ public final class StandardReaderMethod extends StandardMethod
       new Primitive("reader-method-slot-name", PACKAGE_MOP, false, "reader-method")
   {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
           if (arg instanceof StandardReaderMethod)
               return ((StandardReaderMethod)arg).slots[StandardReaderMethodClass.SLOT_INDEX_SLOT_NAME];
@@ -61,7 +61,7 @@ public final class StandardReaderMethod extends StandardMethod
   {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-          throws ConditionThrowable
+
       {
           if (first instanceof StandardReaderMethod)
           {

@@ -50,7 +50,7 @@ public final class RandomState extends LispObject
         random = new Random();
     }
 
-    public RandomState(RandomState rs) throws ConditionThrowable
+    public RandomState(RandomState rs)
     {
         try {
             File file = File.createTempFile("MAKE-RANDOM-STATE", null);
@@ -82,7 +82,7 @@ public final class RandomState extends LispObject
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.RANDOM_STATE)
             return T;
@@ -92,12 +92,12 @@ public final class RandomState extends LispObject
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         return unreadableString(Symbol.RANDOM_STATE);
     }
 
-    public LispObject random(LispObject arg) throws ConditionThrowable
+    public LispObject random(LispObject arg)
     {
         if (arg instanceof Fixnum) {
             int limit = ((Fixnum)arg).value;
@@ -136,7 +136,7 @@ public final class RandomState extends LispObject
         new Primitive(Symbol.RANDOM, "limit &optional random-state")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             RandomState randomState =
                 (RandomState) Symbol._RANDOM_STATE_.symbolValue();
@@ -144,7 +144,7 @@ public final class RandomState extends LispObject
         }
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             if (second instanceof RandomState) {
                 RandomState randomState = (RandomState) second;
@@ -159,13 +159,13 @@ public final class RandomState extends LispObject
         new Primitive(Symbol.MAKE_RANDOM_STATE, "&optional state")
     {
         @Override
-        public LispObject execute() throws ConditionThrowable
+        public LispObject execute()
         {
             return new RandomState((RandomState)Symbol._RANDOM_STATE_.symbolValue());
         }
         @Override
         public LispObject execute(LispObject arg)
-            throws ConditionThrowable
+
         {
             if (arg == NIL)
                 return new RandomState((RandomState)Symbol._RANDOM_STATE_.symbolValue());

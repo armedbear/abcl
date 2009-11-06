@@ -35,11 +35,11 @@ package org.armedbear.lisp;
 
 public class StorageCondition extends SeriousCondition
 {
-  public StorageCondition() throws ConditionThrowable
+  public StorageCondition()
   {
   }
 
-  public StorageCondition(LispObject initArgs) throws ConditionThrowable
+  public StorageCondition(LispObject initArgs)
   {
     super(initArgs);
   }
@@ -62,7 +62,7 @@ public class StorageCondition extends SeriousCondition
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.STORAGE_CONDITION)
       return T;

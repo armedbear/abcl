@@ -64,7 +64,7 @@ public final class ZeroRankArray extends AbstractArray
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.SIMPLE_ARRAY)
             return adjustable ? NIL : T;
@@ -84,7 +84,7 @@ public final class ZeroRankArray extends AbstractArray
     }
 
     @Override
-    public int getDimension(int n) throws ConditionThrowable
+    public int getDimension(int n)
     {
         error(new TypeError("Bad array dimension (" + n + ") for array of rank 0."));
         // Not reached.
@@ -104,7 +104,7 @@ public final class ZeroRankArray extends AbstractArray
     }
 
     @Override
-    public LispObject AREF(int index) throws ConditionThrowable
+    public LispObject AREF(int index)
     {
         if (index == 0)
             return data;
@@ -113,7 +113,7 @@ public final class ZeroRankArray extends AbstractArray
     }
 
     @Override
-    public void aset(int index, LispObject obj) throws ConditionThrowable
+    public void aset(int index, LispObject obj)
     {
         if (obj.typep(elementType) == NIL)
             error(new TypeError(obj, elementType));
@@ -124,7 +124,7 @@ public final class ZeroRankArray extends AbstractArray
     }
 
     @Override
-    public void fill(LispObject obj) throws ConditionThrowable
+    public void fill(LispObject obj)
     {
         if (obj.typep(elementType) == NIL)
             error(new TypeError(obj, elementType));
@@ -132,7 +132,7 @@ public final class ZeroRankArray extends AbstractArray
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         final LispThread thread = LispThread.currentThread();
         boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);
@@ -167,7 +167,7 @@ public final class ZeroRankArray extends AbstractArray
   public AbstractArray adjustArray(int[] dims,
                                               LispObject initialElement,
                                               LispObject initialContents)
-    throws ConditionThrowable {
+    {
       if (isAdjustable()) {
           // initial element doesn't matter:
           // we're not creating new elements
@@ -185,7 +185,7 @@ public final class ZeroRankArray extends AbstractArray
   public AbstractArray adjustArray(int[] dims,
                                               AbstractArray displacedTo,
                                               int displacement)
-    throws ConditionThrowable {
+    {
       error(new TypeError("Displacement not supported for array of rank 0."));
       return null;
   }

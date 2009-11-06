@@ -64,7 +64,7 @@ public final class StringOutputStream extends Stream
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.STRING_OUTPUT_STREAM)
             return T;
@@ -78,14 +78,14 @@ public final class StringOutputStream extends Stream
     }
 
     @Override
-    protected long _getFilePosition() throws ConditionThrowable
+    protected long _getFilePosition()
     {
         if (elementType == NIL)
             return 0;
         return stringWriter.getBuffer().length();
     }
 
-    public LispObject getString() throws ConditionThrowable
+    public LispObject getString()
     {
         if (elementType == NIL)
             return new NilVector(0);
@@ -108,7 +108,7 @@ public final class StringOutputStream extends Stream
                        "element-type")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return new StringOutputStream(arg);
         }
@@ -120,7 +120,7 @@ public final class StringOutputStream extends Stream
         new Primitive("get-output-stream-string", "string-output-stream")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof StringOutputStream)
                 return ((StringOutputStream)arg).getString();

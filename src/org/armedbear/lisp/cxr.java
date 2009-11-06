@@ -41,7 +41,7 @@ public final class cxr extends Lisp
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
         first.setCar(second);
         return second;
@@ -54,7 +54,7 @@ public final class cxr extends Lisp
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
         first.setCdr(second);
         return second;
@@ -65,7 +65,7 @@ public final class cxr extends Lisp
   private static final Primitive CAR = new Primitive(Symbol.CAR, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.car();
       }
@@ -75,7 +75,7 @@ public final class cxr extends Lisp
   private static final Primitive CDR = new Primitive(Symbol.CDR, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.cdr();
       }
@@ -85,7 +85,7 @@ public final class cxr extends Lisp
   private static final Primitive CAAR = new Primitive(Symbol.CAAR, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.car().car();
       }
@@ -95,7 +95,7 @@ public final class cxr extends Lisp
   private static final Primitive CADR = new Primitive(Symbol.CADR, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.cadr();
       }
@@ -105,7 +105,7 @@ public final class cxr extends Lisp
   private static final Primitive CDAR = new Primitive(Symbol.CDAR, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.car().cdr();
       }
@@ -115,7 +115,7 @@ public final class cxr extends Lisp
   private static final Primitive CDDR = new Primitive(Symbol.CDDR, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.cdr().cdr();
       }
@@ -125,7 +125,7 @@ public final class cxr extends Lisp
   private static final Primitive CADDR = new Primitive(Symbol.CADDR, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.caddr();
       }
@@ -135,7 +135,7 @@ public final class cxr extends Lisp
   private static final Primitive CAADR = new Primitive(Symbol.CAADR, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.cdr().car().car();
       }
@@ -145,7 +145,7 @@ public final class cxr extends Lisp
   private static final Primitive CAAAR = new Primitive(Symbol.CAAAR, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.car().car().car();
       }
@@ -155,7 +155,7 @@ public final class cxr extends Lisp
   private static final Primitive CDAAR = new Primitive(Symbol.CDAAR, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.car().car().cdr();
       }
@@ -165,7 +165,7 @@ public final class cxr extends Lisp
   private static final Primitive CDDAR = new Primitive(Symbol.CDDAR, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.car().cdr().cdr();
       }
@@ -175,7 +175,7 @@ public final class cxr extends Lisp
   private static final Primitive CDDDR = new Primitive(Symbol.CDDDR, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.cdr().cdr().cdr();
       }
@@ -185,7 +185,7 @@ public final class cxr extends Lisp
   private static final Primitive CADAR = new Primitive(Symbol.CADAR, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.car().cdr().car();
       }
@@ -195,7 +195,7 @@ public final class cxr extends Lisp
   private static final Primitive CDADR = new Primitive(Symbol.CDADR, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.cdr().car().cdr();
       }
@@ -205,7 +205,7 @@ public final class cxr extends Lisp
   private static final Primitive FIRST = new Primitive(Symbol.FIRST, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.car();
       }
@@ -215,7 +215,7 @@ public final class cxr extends Lisp
   private static final Primitive SECOND = new Primitive(Symbol.SECOND, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.cadr();
       }
@@ -225,7 +225,7 @@ public final class cxr extends Lisp
   private static final Primitive THIRD = new Primitive(Symbol.THIRD, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.caddr();
       }
@@ -235,7 +235,7 @@ public final class cxr extends Lisp
   private static final Primitive FOURTH = new Primitive(Symbol.FOURTH, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.cdr().cdr().cadr();
       }
@@ -245,7 +245,7 @@ public final class cxr extends Lisp
   private static final Primitive REST = new Primitive(Symbol.REST, "list")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return arg.cdr();
       }

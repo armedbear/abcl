@@ -42,7 +42,7 @@ public final class software_type extends Primitive
     }
 
     @Override
-    public LispObject execute() throws ConditionThrowable
+    public LispObject execute()
     {
         return new SimpleString(System.getProperty("os.name"));
     }

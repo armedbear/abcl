@@ -112,7 +112,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type instanceof Symbol)
       {
@@ -221,7 +221,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public boolean equalp(LispObject obj) throws ConditionThrowable
+  public boolean equalp(LispObject obj)
   {
     if (obj instanceof Bignum)
       return value.equals(((Bignum)obj).value);
@@ -253,13 +253,13 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public boolean evenp() throws ConditionThrowable
+  public boolean evenp()
   {
     return !value.testBit(0);
   }
 
   @Override
-  public boolean oddp() throws ConditionThrowable
+  public boolean oddp()
   {
     return value.testBit(0);
   }
@@ -295,7 +295,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public float floatValue() throws ConditionThrowable
+  public float floatValue()
   {
     float f = value.floatValue();
     if (Float.isInfinite(f))
@@ -305,7 +305,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public double doubleValue() throws ConditionThrowable
+  public double doubleValue()
   {
     double d = value.doubleValue();
     if (Double.isInfinite(d))
@@ -314,7 +314,7 @@ public final class Bignum extends LispInteger
     return d;
   }
 
-  public static BigInteger getValue(LispObject obj) throws ConditionThrowable
+  public static BigInteger getValue(LispObject obj)
   {
           
     if (obj instanceof Bignum)
@@ -339,13 +339,13 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public LispObject add(int n) throws ConditionThrowable
+  public LispObject add(int n)
   {
     return number(value.add(BigInteger.valueOf(n)));
   }
 
   @Override
-  public LispObject add(LispObject obj) throws ConditionThrowable
+  public LispObject add(LispObject obj)
   {
     if (obj instanceof Fixnum)
       return number(value.add(Fixnum.getBigInteger(obj)));
@@ -371,7 +371,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public LispObject subtract(LispObject obj) throws ConditionThrowable
+  public LispObject subtract(LispObject obj)
   {
     if (obj instanceof Fixnum)
       return number(value.subtract(Fixnum.getBigInteger(obj)));
@@ -398,7 +398,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public LispObject multiplyBy(int n) throws ConditionThrowable
+  public LispObject multiplyBy(int n)
   {
     if (n == 0)
       return Fixnum.ZERO;
@@ -408,7 +408,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public LispObject multiplyBy(LispObject obj) throws ConditionThrowable
+  public LispObject multiplyBy(LispObject obj)
   {
     if (obj instanceof Fixnum)
       {
@@ -440,7 +440,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public LispObject divideBy(LispObject obj) throws ConditionThrowable
+  public LispObject divideBy(LispObject obj)
   {
     if (obj instanceof Fixnum)
       return number(value, Fixnum.getBigInteger(obj));
@@ -469,7 +469,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public boolean isEqualTo(LispObject obj) throws ConditionThrowable
+  public boolean isEqualTo(LispObject obj)
   {
     if (obj instanceof Bignum)
       return value.equals(((Bignum)obj).value);
@@ -485,7 +485,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public boolean isNotEqualTo(LispObject obj) throws ConditionThrowable
+  public boolean isNotEqualTo(LispObject obj)
   {
     if (obj instanceof Bignum)
       return !value.equals(((Bignum)obj).value);
@@ -501,7 +501,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public boolean isLessThan(LispObject obj) throws ConditionThrowable
+  public boolean isLessThan(LispObject obj)
   {
     if (obj instanceof Fixnum)
       return value.compareTo(Fixnum.getBigInteger(obj)) < 0;
@@ -522,7 +522,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public boolean isGreaterThan(LispObject obj) throws ConditionThrowable
+  public boolean isGreaterThan(LispObject obj)
   {
     if (obj instanceof Fixnum)
       return value.compareTo(Fixnum.getBigInteger(obj)) > 0;
@@ -543,7 +543,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public boolean isLessThanOrEqualTo(LispObject obj) throws ConditionThrowable
+  public boolean isLessThanOrEqualTo(LispObject obj)
   {
     if (obj instanceof Fixnum)
       return value.compareTo(Fixnum.getBigInteger(obj)) <= 0;
@@ -564,7 +564,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public boolean isGreaterThanOrEqualTo(LispObject obj) throws ConditionThrowable
+  public boolean isGreaterThanOrEqualTo(LispObject obj)
   {
     if (obj instanceof Fixnum)
       return value.compareTo(Fixnum.getBigInteger(obj)) >= 0;
@@ -585,7 +585,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public LispObject truncate(LispObject obj) throws ConditionThrowable
+  public LispObject truncate(LispObject obj)
   {
     final LispThread thread = LispThread.currentThread();
     LispObject value1, value2;
@@ -647,7 +647,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public LispObject ash(LispObject obj) throws ConditionThrowable
+  public LispObject ash(LispObject obj)
   {
     BigInteger n = value;
     if (obj instanceof Fixnum)
@@ -680,7 +680,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public LispObject LOGAND(int n) throws ConditionThrowable
+  public LispObject LOGAND(int n)
   {
     if (n >= 0)
       return Fixnum.getInstance(value.intValue() & n);
@@ -689,7 +689,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public LispObject LOGAND(LispObject obj) throws ConditionThrowable
+  public LispObject LOGAND(LispObject obj)
   {
     if (obj instanceof Fixnum)
       {
@@ -709,13 +709,13 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public LispObject LOGIOR(int n) throws ConditionThrowable
+  public LispObject LOGIOR(int n)
   {
     return number(value.or(BigInteger.valueOf(n)));
   }
 
   @Override
-  public LispObject LOGIOR(LispObject obj) throws ConditionThrowable
+  public LispObject LOGIOR(LispObject obj)
   {
     if (obj instanceof Fixnum)
       {
@@ -732,13 +732,13 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public LispObject LOGXOR(int n) throws ConditionThrowable
+  public LispObject LOGXOR(int n)
   {
     return number(value.xor(BigInteger.valueOf(n)));
   }
 
   @Override
-  public LispObject LOGXOR(LispObject obj) throws ConditionThrowable
+  public LispObject LOGXOR(LispObject obj)
   {
     final BigInteger n;
     if (obj instanceof Fixnum)
@@ -765,7 +765,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public String writeToString() throws ConditionThrowable
+  public String writeToString()
   {
     final LispThread thread = LispThread.currentThread();
     final int base = Fixnum.getValue(Symbol.PRINT_BASE.symbolValue(thread));

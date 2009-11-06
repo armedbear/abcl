@@ -50,7 +50,7 @@ public final class logand extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         if (arg instanceof Fixnum || arg instanceof Bignum)
             return arg;
@@ -59,13 +59,13 @@ public final class logand extends Primitive
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         return first.LOGAND(second);
     }
 
     @Override
-    public LispObject execute(LispObject[] args) throws ConditionThrowable
+    public LispObject execute(LispObject[] args)
     {
         LispObject result = Fixnum.MINUS_ONE;
         for (int i = 0; i < args.length; i++)

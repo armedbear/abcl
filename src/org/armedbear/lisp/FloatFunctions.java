@@ -43,7 +43,7 @@ public final class FloatFunctions extends Lisp
                       "&key traps")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             if (args.length % 2 != 0)
                 error(new ProgramError("Odd number of keyword arguments."));
@@ -78,7 +78,7 @@ public final class FloatFunctions extends Lisp
         new Primitive("get-floating-point-modes", PACKAGE_EXT, true, "")
     {
         @Override
-        public LispObject execute() throws ConditionThrowable
+        public LispObject execute()
         {
             LispObject traps = NIL;
             if (TRAP_UNDERFLOW)
@@ -104,7 +104,7 @@ public final class FloatFunctions extends Lisp
         // See also: http://paste.lisp.org/display/10847
 
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof SingleFloat) {
                 int bits =
@@ -149,7 +149,7 @@ public final class FloatFunctions extends Lisp
         new Primitive("%float-bits", PACKAGE_SYS, true, "integer")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof SingleFloat) {
                 int bits = Float.floatToIntBits(((SingleFloat)arg).value);
@@ -170,7 +170,7 @@ public final class FloatFunctions extends Lisp
         new Primitive("rational", "number")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof SingleFloat)
                 return ((SingleFloat)arg).rational();
@@ -188,7 +188,7 @@ public final class FloatFunctions extends Lisp
         new Primitive("float-radix", "float")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof SingleFloat || arg instanceof DoubleFloat)
                 return Fixnum.TWO;
@@ -205,7 +205,7 @@ public final class FloatFunctions extends Lisp
         new Primitive("float-digits", "float")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof SingleFloat)
                 return FIXNUM_24;
@@ -221,7 +221,7 @@ public final class FloatFunctions extends Lisp
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             if (first instanceof SingleFloat) {
                 float f = ((SingleFloat)first).value;
@@ -242,7 +242,7 @@ public final class FloatFunctions extends Lisp
         new Primitive("coerce-to-single-float", PACKAGE_SYS, false)
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return SingleFloat.coerceToFloat(arg);
         }
@@ -253,7 +253,7 @@ public final class FloatFunctions extends Lisp
         new Primitive("coerce-to-double-float", PACKAGE_SYS, false)
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return DoubleFloat.coerceToFloat(arg);
         }
@@ -265,7 +265,7 @@ public final class FloatFunctions extends Lisp
         new Primitive("float", "number &optional prototype")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof SingleFloat || arg instanceof DoubleFloat)
                 return arg;
@@ -273,7 +273,7 @@ public final class FloatFunctions extends Lisp
         }
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             if (second instanceof SingleFloat)
                 return SingleFloat.coerceToFloat(first);
@@ -288,7 +288,7 @@ public final class FloatFunctions extends Lisp
     private static final Primitive FLOATP = new Primitive("floatp", "object")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof SingleFloat)
                 return T;
@@ -303,7 +303,7 @@ public final class FloatFunctions extends Lisp
         new Primitive("single-float-bits", PACKAGE_SYS, true, "float")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof SingleFloat) {
                 SingleFloat f = (SingleFloat) arg;
@@ -318,7 +318,7 @@ public final class FloatFunctions extends Lisp
         new Primitive("double-float-high-bits", PACKAGE_SYS, true, "float")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof DoubleFloat) {
                 DoubleFloat f = (DoubleFloat) arg;
@@ -333,7 +333,7 @@ public final class FloatFunctions extends Lisp
         new Primitive("double-float-low-bits", PACKAGE_SYS, true, "float")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof DoubleFloat) {
                 DoubleFloat f = (DoubleFloat) arg;
@@ -349,7 +349,7 @@ public final class FloatFunctions extends Lisp
     {
         @Override
         public LispObject execute(LispObject arg)
-            throws ConditionThrowable
+
         {
             if (arg instanceof Fixnum) {
                 int bits = ((Fixnum)arg).value;
@@ -369,7 +369,7 @@ public final class FloatFunctions extends Lisp
     {
         @Override
         public LispObject execute(LispObject arg)
-            throws ConditionThrowable
+
         {
             if (arg instanceof Fixnum) {
                 long bits = (long) ((Fixnum)arg).value;
@@ -389,7 +389,7 @@ public final class FloatFunctions extends Lisp
     {
         @Override
         public LispObject execute(LispObject arg)
-            throws ConditionThrowable
+
         {
             if (arg instanceof SingleFloat)
                 return Float.isInfinite(((SingleFloat)arg).value) ? T : NIL;
@@ -405,7 +405,7 @@ public final class FloatFunctions extends Lisp
     {
         @Override
         public LispObject execute(LispObject arg)
-            throws ConditionThrowable
+
         {
             if (arg instanceof SingleFloat)
                 return Float.isNaN(((SingleFloat)arg).value) ? T : NIL;
@@ -420,7 +420,7 @@ public final class FloatFunctions extends Lisp
         new Primitive("float-string", PACKAGE_SYS, true)
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             final String s1;
             if (arg instanceof SingleFloat)

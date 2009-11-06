@@ -60,7 +60,7 @@ public abstract class Operator extends LispObject
     }
 
     @Override
-    public LispObject getParts() throws ConditionThrowable
+    public LispObject getParts()
     {
         LispObject result = NIL;
         result = result.push(new Cons("lambda-name", lambdaName));

@@ -62,7 +62,7 @@ public abstract class LispClass extends StandardObject
   }
 
   public static LispObject findClass(LispObject name, boolean errorp)
-    throws ConditionThrowable
+
   {
     final Symbol symbol = checkSymbol(name);
     final LispClass c;
@@ -115,7 +115,7 @@ public abstract class LispClass extends StandardObject
   }
 
   @Override
-  public LispObject getParts() throws ConditionThrowable
+  public LispObject getParts()
   {
     LispObject result = NIL;
     result = result.push(new Cons("NAME", symbol != null ? symbol : NIL));
@@ -301,7 +301,7 @@ public abstract class LispClass extends StandardObject
   }
 
   @Override
-  public LispObject typep(LispObject type) throws ConditionThrowable
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.CLASS)
       return T;
@@ -310,7 +310,7 @@ public abstract class LispClass extends StandardObject
     return super.typep(type);
   }
 
-  public boolean subclassp(LispObject obj) throws ConditionThrowable
+  public boolean subclassp(LispObject obj)
   {
     LispObject cpl = classPrecedenceList;
     while (cpl != NIL)
@@ -327,20 +327,20 @@ public abstract class LispClass extends StandardObject
     new Primitive(Symbol.FIND_CLASS, "symbol &optional errorp environment")
     {
       @Override
-      public LispObject execute(LispObject arg) throws ConditionThrowable
+      public LispObject execute(LispObject arg)
       {
         return findClass(arg, true);
       }
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
         return findClass(first, second != NIL);
       }
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
-        throws ConditionThrowable
+
       {
         // FIXME Use environment!
         return findClass(first, second != NIL);
@@ -353,7 +353,7 @@ public abstract class LispClass extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
         final Symbol name = checkSymbol(first);
         if (second == NIL)
@@ -373,7 +373,7 @@ public abstract class LispClass extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
       {
         final LispClass c = checkClass(first);
         return c.subclassp(second) ? T : NIL;

@@ -36,7 +36,7 @@ package org.armedbear.lisp;
 public final class IllegalMonitorState extends ProgramError
 {
     public IllegalMonitorState()
-        throws ConditionThrowable
+
     {
         // This is really just an ordinary PROGRAM-ERROR, broken out into its
         // own Java class as a convenience for the implementation.

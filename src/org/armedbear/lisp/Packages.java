@@ -63,7 +63,7 @@ public final class Packages extends Lisp
   }
 
   public static final synchronized void addPackage(Package pkg)
-    throws ConditionThrowable
+
   {
     final String name = pkg.getName();
     if (map.get(name) != null)
@@ -91,7 +91,7 @@ public final class Packages extends Lisp
   }
 
   public static final synchronized Package makePackage(String name)
-    throws ConditionThrowable
+
   {
     if (map.get(name) != null)
       {
@@ -106,7 +106,7 @@ public final class Packages extends Lisp
   }
 
   public static final synchronized void addNickname(Package pkg, String nickname)
-    throws ConditionThrowable
+
   {
     Object obj = map.get(nickname);
     if (obj != null && obj != pkg)

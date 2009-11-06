@@ -36,7 +36,7 @@ package org.armedbear.lisp;
 public final class arglist extends Lisp
 {
     private static final Operator getOperator(LispObject obj)
-        throws ConditionThrowable
+
     {
         if (obj instanceof Operator)
             return (Operator) obj;
@@ -67,7 +67,7 @@ public final class arglist extends Lisp
         new Primitive("arglist", PACKAGE_EXT, true, "extended-function-designator")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             LispThread thread = LispThread.currentThread();
             Operator operator = getOperator(arg);
@@ -108,7 +108,7 @@ public final class arglist extends Lisp
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             Operator operator = null;
             if (first instanceof Operator) {

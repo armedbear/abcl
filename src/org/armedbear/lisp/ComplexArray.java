@@ -59,7 +59,7 @@ public final class ComplexArray extends AbstractArray
     public ComplexArray(int[] dimv,
                         LispObject elementType,
                         LispObject initialContents)
-        throws ConditionThrowable
+
     {
         this.dimv = dimv;
         this.elementType = elementType;
@@ -85,7 +85,7 @@ public final class ComplexArray extends AbstractArray
 
     private int setInitialContents(int axis, int[] dims, LispObject contents,
                                    int index)
-        throws ConditionThrowable
+
     {
         if (dims.length == 0) {
             try {
@@ -153,7 +153,7 @@ public final class ComplexArray extends AbstractArray
     }
 
     @Override
-    public int getDimension(int n) throws ConditionThrowable
+    public int getDimension(int n)
     {
         try {
             return dimv[n];
@@ -177,7 +177,7 @@ public final class ComplexArray extends AbstractArray
     }
 
     @Override
-    public LispObject arrayDisplacement() throws ConditionThrowable
+    public LispObject arrayDisplacement()
     {
         LispObject value1, value2;
         if (array != null) {
@@ -191,7 +191,7 @@ public final class ComplexArray extends AbstractArray
     }
 
     @Override
-    public LispObject AREF(int index) throws ConditionThrowable
+    public LispObject AREF(int index)
     {
         if (data != null) {
             try {
@@ -205,7 +205,7 @@ public final class ComplexArray extends AbstractArray
     }
 
     @Override
-    public void aset(int index, LispObject newValue) throws ConditionThrowable
+    public void aset(int index, LispObject newValue)
     {
         if (data != null) {
             try {
@@ -219,7 +219,7 @@ public final class ComplexArray extends AbstractArray
     }
 
     @Override
-    public void fill(LispObject obj) throws ConditionThrowable
+    public void fill(LispObject obj)
     {
         if (data != null) {
             for (int i = data.length; i-- > 0;)
@@ -231,7 +231,7 @@ public final class ComplexArray extends AbstractArray
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         return writeToString(dimv);
     }
@@ -240,7 +240,7 @@ public final class ComplexArray extends AbstractArray
     public AbstractArray adjustArray(int[] dims,
                                               LispObject initialElement,
                                               LispObject initialContents)
-            throws ConditionThrowable {
+            {
         if (isAdjustable()) {
             if (initialContents != null)
                 setInitialContents(0, dims, initialContents, 0);
@@ -273,7 +273,7 @@ public final class ComplexArray extends AbstractArray
     public AbstractArray adjustArray(int[] dims,
                                               AbstractArray displacedTo,
                                               int displacement)
-            throws ConditionThrowable {
+            {
         if (isAdjustable()) {
             for (int i = 0; i < dims.length; i++)
                 dimv[i] = dims[i];

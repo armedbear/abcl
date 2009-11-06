@@ -44,7 +44,7 @@ public final class make_array extends Primitive
   }
 
   @Override
-  public LispObject execute(LispObject[] args) throws ConditionThrowable
+  public LispObject execute(LispObject[] args)
   {
     if (args.length != 9)
       return error(new WrongNumberOfArgumentsException(this));

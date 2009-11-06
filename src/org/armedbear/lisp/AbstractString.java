@@ -36,7 +36,7 @@ package org.armedbear.lisp;
 public abstract class AbstractString extends AbstractVector
 {
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type instanceof Symbol) {
             if (type == Symbol.STRING)
@@ -81,14 +81,14 @@ public abstract class AbstractString extends AbstractVector
         return this;
     }
 
-    public abstract void fill(char c) throws ConditionThrowable;
+    public abstract void fill(char c);
 
-    public abstract char charAt(int index) throws ConditionThrowable;
+    public abstract char charAt(int index);
 
-    public abstract void setCharAt(int index, char c) throws ConditionThrowable;
+    public abstract void setCharAt(int index, char c);
 
     public final String writeToString(int beginIndex, int endIndex)
-        throws ConditionThrowable
+
     {
         if (beginIndex < 0)
             beginIndex = 0;
@@ -114,7 +114,7 @@ public abstract class AbstractString extends AbstractVector
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         return writeToString(0, length());
     }

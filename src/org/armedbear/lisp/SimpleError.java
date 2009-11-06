@@ -36,20 +36,20 @@ package org.armedbear.lisp;
 public final class SimpleError extends LispError
 {
     public SimpleError(LispObject formatControl, LispObject formatArguments)
-        throws ConditionThrowable
+
     {
         super(StandardClass.SIMPLE_ERROR);
         setFormatControl(formatControl);
         setFormatArguments(formatArguments);
     }
 
-    public SimpleError(LispObject initArgs) throws ConditionThrowable
+    public SimpleError(LispObject initArgs)
     {
         super(StandardClass.SIMPLE_ERROR);
         initialize(initArgs);
     }
 
-    public SimpleError(String message) throws ConditionThrowable
+    public SimpleError(String message)
     {
         super(StandardClass.SIMPLE_ERROR);
         setFormatControl(message);
@@ -69,7 +69,7 @@ public final class SimpleError extends LispError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.SIMPLE_ERROR)
             return T;

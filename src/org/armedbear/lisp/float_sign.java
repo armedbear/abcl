@@ -42,7 +42,7 @@ public final class float_sign extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         if (arg instanceof SingleFloat) {
             float f = ((SingleFloat)arg).value;
@@ -59,7 +59,7 @@ public final class float_sign extends Primitive
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         if (!first.floatp())
             return type_error(first, Symbol.FLOAT);

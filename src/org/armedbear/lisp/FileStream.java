@@ -146,7 +146,7 @@ public final class FileStream extends Stream
     }
 
     @Override
-    public LispObject typep(LispObject typeSpecifier) throws ConditionThrowable
+    public LispObject typep(LispObject typeSpecifier)
     {
         if (typeSpecifier == Symbol.FILE_STREAM)
             return T;
@@ -161,7 +161,7 @@ public final class FileStream extends Stream
     }
 
     @Override
-    public LispObject fileLength() throws ConditionThrowable
+    public LispObject fileLength()
     {
         final long length;
         if (isOpen()) {
@@ -189,7 +189,7 @@ public final class FileStream extends Stream
     }
 
     @Override
-    protected void _unreadChar(int n) throws ConditionThrowable
+    protected void _unreadChar(int n)
     {
         try {
             racf.unreadChar((char)n);
@@ -200,13 +200,13 @@ public final class FileStream extends Stream
     }
 
     @Override
-    protected boolean _charReady() throws ConditionThrowable
+    protected boolean _charReady()
     {
         return true;
     }
 
     @Override
-    public void _clearInput() throws ConditionThrowable
+    public void _clearInput()
     {
         try {
 	    if (isInputStream) {
@@ -221,7 +221,7 @@ public final class FileStream extends Stream
     }
 
     @Override
-    protected long _getFilePosition() throws ConditionThrowable
+    protected long _getFilePosition()
     {
         try {
             long pos = racf.position();
@@ -235,7 +235,7 @@ public final class FileStream extends Stream
     }
 
     @Override
-    protected boolean _setFilePosition(LispObject arg) throws ConditionThrowable
+    protected boolean _setFilePosition(LispObject arg)
     {
         try {
             long pos;
@@ -256,7 +256,7 @@ public final class FileStream extends Stream
     }
 
     @Override
-    public void _close() throws ConditionThrowable
+    public void _close()
     {
         try {
             racf.close();
@@ -268,7 +268,7 @@ public final class FileStream extends Stream
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         return unreadableString(Symbol.FILE_STREAM);
     }
@@ -282,7 +282,7 @@ public final class FileStream extends Stream
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third, LispObject fourth,
                                   LispObject fifth, LispObject sixth)
-            throws ConditionThrowable
+
         {
             final Pathname pathname;
             if(first instanceof Pathname) {

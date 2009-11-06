@@ -45,7 +45,7 @@ public final class logbitp extends Primitive
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         int index = -1;
         if (first instanceof Fixnum) {

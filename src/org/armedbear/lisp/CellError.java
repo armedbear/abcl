@@ -35,19 +35,19 @@ package org.armedbear.lisp;
 
 public class CellError extends LispError
 {
-    protected CellError(LispClass cls) throws ConditionThrowable
+    protected CellError(LispClass cls)
     {
         super(cls);
     }
 
-    public CellError(LispObject initArgs) throws ConditionThrowable
+    public CellError(LispObject initArgs)
     {
         super(StandardClass.CELL_ERROR);
         initialize(initArgs);
     }
 
     @Override
-    protected void initialize(LispObject initArgs) throws ConditionThrowable
+    protected void initialize(LispObject initArgs)
     {
         super.initialize(initArgs);
         LispObject name = NIL;
@@ -63,12 +63,12 @@ public class CellError extends LispError
         setCellName(name);
     }
 
-    public final LispObject getCellName() throws ConditionThrowable
+    public final LispObject getCellName()
     {
         return getInstanceSlotValue(Symbol.NAME);
     }
 
-    protected final void setCellName(LispObject name) throws ConditionThrowable
+    protected final void setCellName(LispObject name)
     {
         setInstanceSlotValue(Symbol.NAME, name);
     }
@@ -86,7 +86,7 @@ public class CellError extends LispError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.CELL_ERROR)
             return T;
@@ -96,7 +96,7 @@ public class CellError extends LispError
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         if (Symbol.PRINT_ESCAPE.symbolValue() == NIL)
             return super.writeToString();

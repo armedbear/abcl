@@ -46,7 +46,7 @@ public final class jclass_of extends Primitive
 
     @Override
     public LispObject execute(LispObject arg)
-        throws ConditionThrowable
+
     {
         final String className;
         if (arg instanceof AbstractString)
@@ -62,7 +62,7 @@ public final class jclass_of extends Primitive
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         final String className;
         if (first instanceof AbstractString)

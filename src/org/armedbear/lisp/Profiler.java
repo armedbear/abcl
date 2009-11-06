@@ -44,7 +44,7 @@ public class Profiler extends Lisp
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             final LispThread thread = LispThread.currentThread();
             Stream out = getStandardOutput();
@@ -120,7 +120,7 @@ public class Profiler extends Lisp
         new Primitive("stop-profiler", PACKAGE_PROF, true)
     {
         @Override
-        public LispObject execute() throws ConditionThrowable
+        public LispObject execute()
         {
             Stream out = getStandardOutput();
             out.freshLine();

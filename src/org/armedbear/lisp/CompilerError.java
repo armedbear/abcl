@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 public class CompilerError extends Condition
 {
-    public CompilerError(LispObject initArgs) throws ConditionThrowable
+    public CompilerError(LispObject initArgs)
     {
         super(initArgs);
     }
@@ -53,7 +53,7 @@ public class CompilerError extends Condition
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.COMPILER_ERROR)
             return T;

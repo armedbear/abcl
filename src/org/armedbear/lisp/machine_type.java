@@ -42,7 +42,7 @@ public final class machine_type extends Primitive
   }
 
   @Override
-  public LispObject execute() throws ConditionThrowable
+  public LispObject execute()
   {
     String s = System.getProperty("os.arch");
     if (s == null)

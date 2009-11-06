@@ -75,7 +75,7 @@ public final class StringInputStream extends Stream
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.STRING_INPUT_STREAM)
             return T;
@@ -105,14 +105,14 @@ public final class StringInputStream extends Stream
         new Primitive("make-string-input-stream", "string &optional start end")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return new StringInputStream(arg.getStringValue());
         }
 
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             String s = first.getStringValue();
             int start = Fixnum.getValue(second);
@@ -122,7 +122,7 @@ public final class StringInputStream extends Stream
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
-            throws ConditionThrowable
+
         {
             String s = first.getStringValue();
             int start = Fixnum.getValue(second);
@@ -138,7 +138,7 @@ public final class StringInputStream extends Stream
         new Primitive("string-input-stream-current", PACKAGE_EXT, true, "stream")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof StringInputStream)
                 return Fixnum.getInstance(((StringInputStream)arg).getOffset());

@@ -35,14 +35,14 @@ package org.armedbear.lisp;
 
 public final class ReaderError extends StreamError
 {
-    public ReaderError(String message) throws ConditionThrowable
+    public ReaderError(String message)
     {
         super(StandardClass.READER_ERROR);
         setFormatControl(message);
         setFormatArguments(NIL);
     }
 
-    public ReaderError(String message, Stream stream) throws ConditionThrowable
+    public ReaderError(String message, Stream stream)
     {
         super(StandardClass.READER_ERROR);
         setFormatControl(message);
@@ -50,7 +50,7 @@ public final class ReaderError extends StreamError
         setStream(stream);
     }
 
-    public ReaderError(LispObject initArgs) throws ConditionThrowable
+    public ReaderError(LispObject initArgs)
     {
         super(StandardClass.READER_ERROR);
         initialize(initArgs);
@@ -69,7 +69,7 @@ public final class ReaderError extends StreamError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.READER_ERROR)
             return T;

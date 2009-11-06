@@ -42,14 +42,14 @@ public final class ceiling extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         return execute(arg, Fixnum.ONE);
     }
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         LispObject quotient = first.truncate(second);
         final LispThread thread = LispThread.currentThread();

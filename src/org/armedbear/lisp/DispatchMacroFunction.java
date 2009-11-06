@@ -64,7 +64,7 @@ public abstract class DispatchMacroFunction extends Function
     @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third)
-        throws ConditionThrowable
+
     {
         Stream stream = inSynonymOf(first);
         char c = LispCharacter.getValue(second);
@@ -77,5 +77,5 @@ public abstract class DispatchMacroFunction extends Function
     }
 
     public abstract LispObject execute(Stream stream, char c, int n)
-        throws ConditionThrowable;
+       ;
 }

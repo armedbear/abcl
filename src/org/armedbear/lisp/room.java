@@ -42,7 +42,7 @@ public final class room extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject[] args) throws ConditionThrowable
+    public LispObject execute(LispObject[] args)
     {
         if (args.length > 1)
             return error(new WrongNumberOfArgumentsException(this));

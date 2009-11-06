@@ -55,7 +55,7 @@ public final class Go extends ConditionThrowable
     }
 
     @Override
-    public LispObject getCondition() throws ConditionThrowable
+    public LispObject getCondition()
     {
         try {
             StringBuffer sb = new StringBuffer("No tag named ");

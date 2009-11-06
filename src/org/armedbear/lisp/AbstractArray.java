@@ -36,7 +36,7 @@ package org.armedbear.lisp;
 public abstract class AbstractArray extends LispObject
 {
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.ARRAY)
             return T;
@@ -46,7 +46,7 @@ public abstract class AbstractArray extends LispObject
     }
 
     @Override
-    public boolean equalp(LispObject obj) throws ConditionThrowable
+    public boolean equalp(LispObject obj)
     {
         if (obj instanceof AbstractArray) {
             AbstractArray a = (AbstractArray) obj;
@@ -70,7 +70,7 @@ public abstract class AbstractArray extends LispObject
         return false;
     }
 
-    public LispObject arrayDisplacement() throws ConditionThrowable
+    public LispObject arrayDisplacement()
     {
         return LispThread.currentThread().setValues(NIL, Fixnum.ZERO);
     }
@@ -80,18 +80,18 @@ public abstract class AbstractArray extends LispObject
         return false;
     }
 
-    public int getFillPointer() throws ConditionThrowable
+    public int getFillPointer()
     {
         noFillPointer();
         return -1; // Not reached.
     }
 
-    public void setFillPointer(LispObject fillPointer) throws ConditionThrowable
+    public void setFillPointer(LispObject fillPointer)
     {
         setFillPointer(fillPointer.intValue());
     }
 
-    public void setFillPointer(int fillPointer) throws ConditionThrowable
+    public void setFillPointer(int fillPointer)
     {
         noFillPointer();
     }
@@ -105,7 +105,7 @@ public abstract class AbstractArray extends LispObject
 
     public abstract LispObject getDimensions();
 
-    public abstract int getDimension(int n) throws ConditionThrowable;
+    public abstract int getDimension(int n);
 
     public abstract LispObject getElementType();
 
@@ -113,7 +113,7 @@ public abstract class AbstractArray extends LispObject
 
     @Override
     public abstract void aset(int index, LispObject newValue)
-        throws ConditionThrowable;
+       ;
 
     // FIXME Detect overflow!
     protected static final int computeTotalSize(int[] dimensions)
@@ -125,7 +125,7 @@ public abstract class AbstractArray extends LispObject
     }
 
     public int getRowMajorIndex(LispObject[] subscripts)
-        throws ConditionThrowable
+
     {
         int[] subs = new int[subscripts.length];
         for (int i = 0; i < subscripts.length; i++) {
@@ -138,7 +138,7 @@ public abstract class AbstractArray extends LispObject
         return getRowMajorIndex(subs);
     }
 
-    public int getRowMajorIndex(int[] subscripts) throws ConditionThrowable
+    public int getRowMajorIndex(int[] subscripts)
     {
         final int rank = getRank();
         if (rank != subscripts.length) {
@@ -165,20 +165,20 @@ public abstract class AbstractArray extends LispObject
         return sum;
     }
 
-    public LispObject get(int[] subscripts) throws ConditionThrowable
+    public LispObject get(int[] subscripts)
     {
         return AREF(getRowMajorIndex(subscripts));
     }
 
     public void set(int[] subscripts, LispObject newValue)
-        throws ConditionThrowable
+
     {
         aset(getRowMajorIndex(subscripts), newValue);
     }
 
-    public abstract void fill(LispObject obj) throws ConditionThrowable;
+    public abstract void fill(LispObject obj);
 
-    public String writeToString(int[] dimv) throws ConditionThrowable
+    public String writeToString(int[] dimv)
     {
         StringBuilder sb = new StringBuilder();
         LispThread thread = LispThread.currentThread();
@@ -229,7 +229,7 @@ public abstract class AbstractArray extends LispObject
     // Helper for writeToString().
     private void appendContents(int[] dimensions, int index, StringBuilder sb,
                                 LispThread thread)
-        throws ConditionThrowable
+
     {
         if (dimensions.length == 0) {
             if (Symbol.PRINT_CIRCLE.symbolValue(thread) != NIL) {
@@ -318,12 +318,10 @@ public abstract class AbstractArray extends LispObject
      * @param initialElement @c null if none
      * @param initialContents @c null if none
      * @return @c this or a new array
-     * @throws org.armedbear.lisp.ConditionThrowable
      */
     public abstract AbstractArray adjustArray(int[] dims,
                                               LispObject initialElement,
-                                              LispObject initialContents)
-        throws ConditionThrowable;
+                                              LispObject initialContents);
 
     /**
      *
@@ -331,10 +329,8 @@ public abstract class AbstractArray extends LispObject
      * @param displacedTo
      * @param displacement
      * @return
-     * @throws org.armedbear.lisp.ConditionThrowable
      */
     public abstract AbstractArray adjustArray(int[] dims,
                                               AbstractArray displacedTo,
-                                              int displacement)
-        throws ConditionThrowable;
+                                              int displacement);
 }

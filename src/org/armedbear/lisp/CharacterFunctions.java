@@ -40,12 +40,12 @@ public final class CharacterFunctions extends Lisp
         new Primitive("char=", "&rest characters")
     {
         @Override
-        public LispObject execute() throws ConditionThrowable
+        public LispObject execute()
         {
             return error(new WrongNumberOfArgumentsException(this));
         }
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof LispCharacter)
                 return T;
@@ -53,12 +53,12 @@ public final class CharacterFunctions extends Lisp
         }
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             return LispCharacter.getValue(first) == LispCharacter.getValue(second) ? T : NIL;
         }
         @Override
-        public LispObject execute(LispObject[] array) throws ConditionThrowable
+        public LispObject execute(LispObject[] array)
         {
             final int length = array.length;
             final char c0 = LispCharacter.getValue(array[0]);
@@ -75,12 +75,12 @@ public final class CharacterFunctions extends Lisp
         new Primitive("char-equal", "&rest characters")
     {
         @Override
-        public LispObject execute() throws ConditionThrowable
+        public LispObject execute()
         {
             return error(new WrongNumberOfArgumentsException(this));
         }
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof LispCharacter)
                 return T;
@@ -88,7 +88,7 @@ public final class CharacterFunctions extends Lisp
         }
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             final char c1, c2;
             c1 = LispCharacter.getValue(first);
@@ -102,7 +102,7 @@ public final class CharacterFunctions extends Lisp
             return NIL;
         }
         @Override
-        public LispObject execute(LispObject[] array) throws ConditionThrowable
+        public LispObject execute(LispObject[] array)
         {
             final int length = array.length;
             final char c0 = LispCharacter.getValue(array[0]);
@@ -125,12 +125,12 @@ public final class CharacterFunctions extends Lisp
         new Primitive("char-greaterp", "&rest characters")
     {
         @Override
-        public LispObject execute() throws ConditionThrowable
+        public LispObject execute()
         {
             return error(new WrongNumberOfArgumentsException(this));
         }
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof LispCharacter)
                 return T;
@@ -138,14 +138,14 @@ public final class CharacterFunctions extends Lisp
         }
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             char c1 = LispCharacter.toUpperCase(LispCharacter.getValue(first));
             char c2 = LispCharacter.toUpperCase(LispCharacter.getValue(second));
             return c1 > c2 ? T : NIL;
         }
         @Override
-        public LispObject execute(LispObject[] array) throws ConditionThrowable
+        public LispObject execute(LispObject[] array)
         {
             final int length = array.length;
             char[] chars = new char[length];
@@ -164,12 +164,12 @@ public final class CharacterFunctions extends Lisp
         new Primitive("char-not-greaterp", "&rest characters")
     {
         @Override
-        public LispObject execute() throws ConditionThrowable
+        public LispObject execute()
         {
             return error(new WrongNumberOfArgumentsException(this));
         }
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof LispCharacter)
                 return T;
@@ -177,14 +177,14 @@ public final class CharacterFunctions extends Lisp
         }
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             char c1 = LispCharacter.toUpperCase(LispCharacter.getValue(first));
             char c2 = LispCharacter.toUpperCase(LispCharacter.getValue(second));
             return c1 <= c2 ? T : NIL;
         }
         @Override
-        public LispObject execute(LispObject[] array) throws ConditionThrowable
+        public LispObject execute(LispObject[] array)
         {
             final int length = array.length;
             char[] chars = new char[length];
@@ -203,12 +203,12 @@ public final class CharacterFunctions extends Lisp
         new Primitive("char<", "&rest characters")
     {
         @Override
-        public LispObject execute() throws ConditionThrowable
+        public LispObject execute()
         {
             return error(new WrongNumberOfArgumentsException(this));
         }
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof LispCharacter)
                 return T;
@@ -216,12 +216,12 @@ public final class CharacterFunctions extends Lisp
         }
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             return LispCharacter.getValue(first) < LispCharacter.getValue(second) ? T : NIL;
        }
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             final int length = args.length;
             char[] chars = new char[length];
@@ -241,12 +241,12 @@ public final class CharacterFunctions extends Lisp
         new Primitive("char<=", "&rest characters")
     {
         @Override
-        public LispObject execute() throws ConditionThrowable
+        public LispObject execute()
         {
             return error(new WrongNumberOfArgumentsException(this));
         }
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof LispCharacter)
                 return T;
@@ -254,14 +254,14 @@ public final class CharacterFunctions extends Lisp
         }
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             return LispCharacter.getValue(first) <= LispCharacter.getValue(second) ? T : NIL;
         }
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
-            throws ConditionThrowable
+
         {
             if (LispCharacter.getValue(first) > LispCharacter.getValue(second))
                 return NIL;
@@ -270,7 +270,7 @@ public final class CharacterFunctions extends Lisp
             return T;
         }
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             final int length = args.length;
             char[] chars = new char[length];
@@ -290,12 +290,12 @@ public final class CharacterFunctions extends Lisp
         new Primitive("char-lessp", "&rest characters")
     {
         @Override
-        public LispObject execute() throws ConditionThrowable
+        public LispObject execute()
         {
             return error(new WrongNumberOfArgumentsException(this));
         }
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof LispCharacter)
                 return T;
@@ -303,14 +303,14 @@ public final class CharacterFunctions extends Lisp
         }
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             char c1 = LispCharacter.toUpperCase(LispCharacter.getValue(first));
             char c2 = LispCharacter.toUpperCase(LispCharacter.getValue(second));
             return c1 < c2 ? T : NIL;
         }
         @Override
-        public LispObject execute(LispObject[] array) throws ConditionThrowable
+        public LispObject execute(LispObject[] array)
         {
             final int length = array.length;
             char[] chars = new char[length];
@@ -329,12 +329,12 @@ public final class CharacterFunctions extends Lisp
         new Primitive("char-not-lessp", "&rest characters")
     {
         @Override
-        public LispObject execute() throws ConditionThrowable
+        public LispObject execute()
         {
             return error(new WrongNumberOfArgumentsException(this));
         }
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof LispCharacter)
                 return T;
@@ -342,14 +342,14 @@ public final class CharacterFunctions extends Lisp
         }
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             char c1 = LispCharacter.toUpperCase(LispCharacter.getValue(first));
             char c2 = LispCharacter.toUpperCase(LispCharacter.getValue(second));
             return c1 >= c2 ? T : NIL;
         }
         @Override
-        public LispObject execute(LispObject[] array) throws ConditionThrowable
+        public LispObject execute(LispObject[] array)
         {
             final int length = array.length;
             char[] chars = new char[length];

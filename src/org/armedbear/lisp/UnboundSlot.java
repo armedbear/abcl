@@ -35,14 +35,14 @@ package org.armedbear.lisp;
 
 public final class UnboundSlot extends CellError
 {
-    public UnboundSlot(LispObject initArgs) throws ConditionThrowable
+    public UnboundSlot(LispObject initArgs)
     {
         super(StandardClass.UNBOUND_SLOT);
         initialize(initArgs);
     }
 
     @Override
-    protected void initialize(LispObject initArgs) throws ConditionThrowable
+    protected void initialize(LispObject initArgs)
     {
         super.initialize(initArgs);
         while (initArgs != NIL) {
@@ -56,18 +56,18 @@ public final class UnboundSlot extends CellError
         }
     }
 
-    public LispObject getInstance() throws ConditionThrowable
+    public LispObject getInstance()
     {
         return getInstanceSlotValue(Symbol.INSTANCE);
     }
 
-    private void setInstance(LispObject instance) throws ConditionThrowable
+    private void setInstance(LispObject instance)
     {
         setInstanceSlotValue(Symbol.INSTANCE, instance);
     }
 
     @Override
-    public String getMessage() throws ConditionThrowable
+    public String getMessage()
     {
         final LispThread thread = LispThread.currentThread();
         SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
@@ -98,7 +98,7 @@ public final class UnboundSlot extends CellError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.UNBOUND_SLOT)
             return T;

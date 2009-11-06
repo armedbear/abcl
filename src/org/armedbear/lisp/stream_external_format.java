@@ -42,7 +42,7 @@ public final class stream_external_format extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         if (arg instanceof Stream)
             return Keyword.DEFAULT;

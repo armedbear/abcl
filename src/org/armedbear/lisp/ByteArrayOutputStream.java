@@ -61,20 +61,20 @@ public final class ByteArrayOutputStream extends Stream
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         return super.typep(type); //TODO
     }
 
     @Override
-    protected long _getFilePosition() throws ConditionThrowable
+    protected long _getFilePosition()
     {
         if (elementType == NIL)
             return 0;
         return byteArrayOutputStream.size();
     }
 
-    public byte[] getByteArray() throws ConditionThrowable
+    public byte[] getByteArray()
     {
         if (elementType == NIL) {
             return new byte[0];
@@ -97,12 +97,12 @@ public final class ByteArrayOutputStream extends Stream
     {
 
         @Override
-        public LispObject execute() throws ConditionThrowable {
+        public LispObject execute() {
             return new ByteArrayOutputStream();
         }
 
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return new ByteArrayOutputStream(arg);
         }
@@ -115,7 +115,7 @@ public final class ByteArrayOutputStream extends Stream
                        "byte-array-output-stream")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             if (arg instanceof ByteArrayOutputStream) {
                 return JavaObject.getInstance(((ByteArrayOutputStream)arg).getByteArray());

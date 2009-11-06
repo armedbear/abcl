@@ -42,7 +42,7 @@ public final class file_error_pathname extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         return arg instanceof FileError ? ((FileError)arg).getPathname() : NIL;
     }

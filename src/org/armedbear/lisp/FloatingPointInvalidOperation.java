@@ -36,7 +36,7 @@ package org.armedbear.lisp;
 public final class FloatingPointInvalidOperation extends ArithmeticError
 {
     public FloatingPointInvalidOperation(LispObject initArgs)
-        throws ConditionThrowable
+
     {
         super(StandardClass.FLOATING_POINT_INVALID_OPERATION);
         initialize(initArgs);
@@ -55,7 +55,7 @@ public final class FloatingPointInvalidOperation extends ArithmeticError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.FLOATING_POINT_INVALID_OPERATION)
             return T;

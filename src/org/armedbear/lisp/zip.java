@@ -50,7 +50,7 @@ public final class zip extends Primitive
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-        throws ConditionThrowable
+
     {
         Pathname zipfilePathname = coerceToPathname(first);
         byte[] buffer = new byte[4096];

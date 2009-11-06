@@ -49,7 +49,7 @@ public class RuntimeClass extends Lisp
         new Primitive("%jnew-runtime-class", PACKAGE_JAVA, false, "class-name &rest method-names-and-defs")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             int length = args.length;
             if (length < 3 || length % 2 != 1)
@@ -74,7 +74,7 @@ public class RuntimeClass extends Lisp
         @Override
         public LispObject execute(LispObject className, LispObject methodName,
                                   LispObject methodDef)
-            throws ConditionThrowable
+
         {
 
 	    String cn = className.getStringValue();
@@ -100,7 +100,7 @@ public class RuntimeClass extends Lisp
     {
         @Override
         public LispObject execute(LispObject className, LispObject classBytes)
-            throws ConditionThrowable
+
         {
             String cn = className.getStringValue();
 	      String pn = cn.substring(0,cn.lastIndexOf('.'));
@@ -132,7 +132,7 @@ public class RuntimeClass extends Lisp
                                          LispObject args,
                                          Environment env,
                                          LispThread thread)
-        throws ConditionThrowable
+
     {
         return evalCall(function, args, env, thread);
     }
@@ -149,47 +149,47 @@ public class RuntimeClass extends Lisp
         methods.put(methodName, def);
     }
 
-    public static final LispObject makeLispObject(Object obj) throws ConditionThrowable
+    public static final LispObject makeLispObject(Object obj)
     {
         return new JavaObject(obj);
     }
 
-    public static final Fixnum makeLispObject(byte i) throws ConditionThrowable
+    public static final Fixnum makeLispObject(byte i)
     {
         return Fixnum.getInstance(i);
     }
 
-    public static final Fixnum makeLispObject(short i) throws ConditionThrowable
+    public static final Fixnum makeLispObject(short i)
     {
         return Fixnum.getInstance(i);
     }
 
-    public static final Fixnum makeLispObject(int i) throws ConditionThrowable
+    public static final Fixnum makeLispObject(int i)
     {
         return Fixnum.getInstance(i);
     }
 
-    public static final LispInteger makeLispObject(long i) throws ConditionThrowable
+    public static final LispInteger makeLispObject(long i)
     {
         return Bignum.getInstance(i);
     }
 
-    public static final SingleFloat makeLispObject(float i) throws ConditionThrowable
+    public static final SingleFloat makeLispObject(float i)
     {
         return new SingleFloat(i);
     }
 
-    public static final DoubleFloat makeLispObject(double i) throws ConditionThrowable
+    public static final DoubleFloat makeLispObject(double i)
     {
         return new DoubleFloat(i);
     }
 
-    public static final LispCharacter makeLispObject(char i) throws ConditionThrowable
+    public static final LispCharacter makeLispObject(char i)
     {
         return LispCharacter.getInstance(i);
     }
 
-    public static final LispObject makeLispObject(boolean i) throws ConditionThrowable
+    public static final LispObject makeLispObject(boolean i)
     {
         return i ? T : NIL;
     }

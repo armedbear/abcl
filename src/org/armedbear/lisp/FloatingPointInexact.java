@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 public final class FloatingPointInexact extends ArithmeticError
 {
-    public FloatingPointInexact(LispObject initArgs) throws ConditionThrowable
+    public FloatingPointInexact(LispObject initArgs)
     {
         super(StandardClass.FLOATING_POINT_INEXACT);
         initialize(initArgs);
@@ -54,7 +54,7 @@ public final class FloatingPointInexact extends ArithmeticError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.FLOATING_POINT_INEXACT)
             return T;

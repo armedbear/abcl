@@ -38,7 +38,7 @@ public final class WrongNumberOfArgumentsException extends ProgramError
     private final Operator operator;
 
     public WrongNumberOfArgumentsException(Operator operator)
-        throws ConditionThrowable
+
     {
         // This is really just an ordinary PROGRAM-ERROR, broken out into its
         // own Java class as a convenience for the implementation.

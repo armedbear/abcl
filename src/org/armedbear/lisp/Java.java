@@ -53,7 +53,7 @@ public final class Java extends Lisp
 
     private static final LispClass java_exception = LispClass.findClass(Symbol.JAVA_EXCEPTION);
 
-    private static boolean isJavaException(LispClass lc) throws ConditionThrowable
+    private static boolean isJavaException(LispClass lc)
     {
         return lc.subclassp(java_exception);
     }
@@ -65,7 +65,7 @@ public final class Java extends Lisp
     {
         @Override
         public LispObject execute(LispObject className, LispObject symbol)
-            throws ConditionThrowable
+
         {
             // FIXME Verify that CONDITION-SYMBOL is a symbol that names a condition.
             // FIXME Signal a continuable error if the exception is already registered.
@@ -85,14 +85,14 @@ public final class Java extends Lisp
     {
         @Override
         public LispObject execute(LispObject className)
-            throws ConditionThrowable
+
         {
             // FIXME Verify that EXCEPTION-NAME designates a subclass of Throwable.
             return registeredExceptions.remove(classForName(className.getStringValue())) == null ? NIL : T;
         }
     };
 
-    private static Symbol getCondition(Class cl) throws ConditionThrowable
+    private static Symbol getCondition(Class cl)
     {
 	Class o = classForName("java.lang.Object");
      	for (Class c = cl ; c != o ; c = c.getSuperclass()) {
@@ -110,7 +110,7 @@ public final class Java extends Lisp
 "Returns a reference to the Java class designated by NAME-OR-CLASS-REF.")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return JavaObject.getInstance(javaClass(arg));
         }
@@ -146,7 +146,7 @@ public final class Java extends Lisp
     //
 
     private static final LispObject jfield(Primitive fun, LispObject[] args, boolean translate)
-            throws ConditionThrowable
+
     {
         if (args.length < 2 || args.length > 4)
             error(new WrongNumberOfArgumentsException(fun));
@@ -225,7 +225,7 @@ public final class Java extends Lisp
                       "class-ref-or-field field-or-instance &optional instance value")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             return jfield(this, args, true);
         }
@@ -237,7 +237,7 @@ public final class Java extends Lisp
                       "class-ref-or-field field-or-instance &optional instance value")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             return jfield(this, args, false);
         }
@@ -249,7 +249,7 @@ public final class Java extends Lisp
                       "class-ref &rest parameter-class-refs")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             if (args.length < 1)
                 error(new WrongNumberOfArgumentsException(this));
@@ -294,7 +294,7 @@ public final class Java extends Lisp
                       "class-ref name &rest parameter-class-refs")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             if (args.length < 2)
                 error(new WrongNumberOfArgumentsException(this));
@@ -347,7 +347,7 @@ public final class Java extends Lisp
     };
 
     private static final LispObject jstatic(Primitive fun, LispObject[] args, boolean translate)
-            throws ConditionThrowable
+
     {
         if (args.length < 2)
             error(new WrongNumberOfArgumentsException(fun));
@@ -414,7 +414,7 @@ public final class Java extends Lisp
         new Primitive("jstatic", PACKAGE_JAVA, true, "method class &rest args")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             return jstatic(this, args, true);
         }
@@ -426,7 +426,7 @@ public final class Java extends Lisp
                       "method class &rest args")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             return jstatic(this, args, false);
         }
@@ -437,7 +437,7 @@ public final class Java extends Lisp
         new Primitive("jnew", PACKAGE_JAVA, true, "constructor &rest args")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             if (args.length < 1)
                 error(new WrongNumberOfArgumentsException(this));
@@ -481,7 +481,7 @@ public final class Java extends Lisp
                       "element-type &rest dimensions")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             if (args.length < 2)
                 error(new WrongNumberOfArgumentsException(this));
@@ -501,7 +501,7 @@ public final class Java extends Lisp
     };
 
     private static final LispObject jarray_ref(Primitive fun, LispObject[] args, boolean translate)
-            throws ConditionThrowable
+
     {
         if (args.length < 2)
             error(new WrongNumberOfArgumentsException(fun));
@@ -534,7 +534,7 @@ public final class Java extends Lisp
                       "java-array &rest indices")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             return jarray_ref(this, args, true);
         }
@@ -546,7 +546,7 @@ public final class Java extends Lisp
                       "java-array &rest indices")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             return jarray_ref(this, args, false);
         }
@@ -558,7 +558,7 @@ public final class Java extends Lisp
                       "java-array new-value &rest indices")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             if (args.length < 3)
                 error(new WrongNumberOfArgumentsException(this));
@@ -593,7 +593,7 @@ public final class Java extends Lisp
         new Primitive(Symbol.JCALL, "method-ref instance &rest args")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             return jcall(this, args, true);
         }
@@ -606,14 +606,14 @@ public final class Java extends Lisp
         new Primitive(Symbol.JCALL_RAW, "method-ref instance &rest args")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             return jcall(this, args, false);
         }
     };
 
     private static LispObject jcall(Primitive fun, LispObject[] args, boolean translate)
-            throws ConditionThrowable
+
     {
         if (args.length < 2)
             error(new WrongNumberOfArgumentsException(fun));
@@ -689,7 +689,7 @@ public final class Java extends Lisp
                       "object &optional type")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             if (args.length < 1)
                 error(new WrongNumberOfArgumentsException(this));
@@ -726,7 +726,7 @@ public final class Java extends Lisp
         new Primitive("java-object-p", PACKAGE_JAVA, true, "object")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return (arg instanceof JavaObject) ? T : NIL;
         }
@@ -737,7 +737,7 @@ public final class Java extends Lisp
         new Primitive("jobject-lisp-value", PACKAGE_JAVA, true, "java-object")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return JavaObject.getInstance(arg.javaInstance(), true);
         }
@@ -748,7 +748,7 @@ public final class Java extends Lisp
 	                  "java-object property-name") {
     	
         @Override
-        public LispObject execute(LispObject javaObject, LispObject propertyName) throws ConditionThrowable {
+        public LispObject execute(LispObject javaObject, LispObject propertyName) {
 			try {
 				Object obj = javaObject.javaInstance();
 				PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
@@ -771,7 +771,7 @@ public final class Java extends Lisp
 	                  "java-object property-name value") {
     	
         @Override
-        public LispObject execute(LispObject javaObject, LispObject propertyName, LispObject value) throws ConditionThrowable {
+        public LispObject execute(LispObject javaObject, LispObject propertyName, LispObject value) {
 	    Object obj = null;
 	    try {
 		obj = javaObject.javaInstance();
@@ -796,7 +796,7 @@ public final class Java extends Lisp
         }
     };
     
-    private static PropertyDescriptor getPropertyDescriptor(Object obj, LispObject propertyName) throws ConditionThrowable, IntrospectionException {
+    private static PropertyDescriptor getPropertyDescriptor(Object obj, LispObject propertyName) throws IntrospectionException {
         String prop = ((AbstractString) propertyName).getStringValue();
         BeanInfo beanInfo = Introspector.getBeanInfo(obj.getClass());
         for(PropertyDescriptor pd : beanInfo.getPropertyDescriptors()) {
@@ -809,7 +809,7 @@ public final class Java extends Lisp
         return null; // not reached
     }
     
-    private static Class classForName(String className) throws ConditionThrowable
+    private static Class classForName(String className)
     {
         try {
             return Class.forName(className);
@@ -827,7 +827,7 @@ public final class Java extends Lisp
     }
 
     // Supports Java primitive types too.
-    private static Class javaClass(LispObject obj) throws ConditionThrowable
+    private static Class javaClass(LispObject obj)
     {
         if (obj instanceof AbstractString || obj instanceof Symbol) {
             String s = javaString(obj);

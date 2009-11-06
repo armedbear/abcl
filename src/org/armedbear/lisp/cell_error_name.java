@@ -42,7 +42,7 @@ public final class cell_error_name extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         final StandardObject obj;
         if (arg instanceof StandardObject) {

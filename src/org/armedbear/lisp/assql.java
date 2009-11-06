@@ -43,7 +43,7 @@ public final class assql extends Primitive
 
     @Override
     public LispObject execute(LispObject item, LispObject alist)
-        throws ConditionThrowable
+
     {
         while (alist != NIL) {
             LispObject cons = alist.car();

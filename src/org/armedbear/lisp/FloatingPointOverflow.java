@@ -36,7 +36,7 @@ package org.armedbear.lisp;
 public final class FloatingPointOverflow extends ArithmeticError
 {
     public FloatingPointOverflow(LispObject initArgs)
-        throws ConditionThrowable
+
     {
         super(StandardClass.FLOATING_POINT_OVERFLOW);
         initialize(initArgs);
@@ -55,7 +55,7 @@ public final class FloatingPointOverflow extends ArithmeticError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.FLOATING_POINT_OVERFLOW)
             return T;

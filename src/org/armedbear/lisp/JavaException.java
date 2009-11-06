@@ -40,7 +40,7 @@ public class JavaException extends LispError
 {
     private final Throwable throwable;
 
-    public JavaException(Throwable throwable) throws ConditionThrowable
+    public JavaException(Throwable throwable)
     {
         super(StandardClass.JAVA_EXCEPTION);
         Debug.assertTrue(slots.length == 3);
@@ -62,7 +62,7 @@ public class JavaException extends LispError
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.JAVA_EXCEPTION)
             return T;
@@ -91,7 +91,7 @@ public class JavaException extends LispError
 "  object that caused JAVA-EXCEPTION to be signalled.)")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return Symbol.STD_SLOT_VALUE.execute(arg, Symbol.CAUSE);
         }

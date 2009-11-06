@@ -50,7 +50,7 @@ public class SlotClass extends LispClass
     }
 
     @Override
-    public LispObject getParts() throws ConditionThrowable
+    public LispObject getParts()
     {
         LispObject result = super.getParts().nreverse();
         result = result.push(new Cons("DIRECT-SLOTS", directSlotDefinitions));
@@ -61,7 +61,7 @@ public class SlotClass extends LispClass
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         return super.typep(type);
     }
@@ -101,7 +101,7 @@ public class SlotClass extends LispClass
         this.defaultInitargs = defaultInitargs;
     }
 
-    private LispObject computeDefaultInitargs() throws ConditionThrowable
+    private LispObject computeDefaultInitargs()
     {
         LispObject result = NIL;
         LispObject cpl = getCPL();
@@ -166,7 +166,7 @@ public class SlotClass extends LispClass
     {
         @Override
         public LispObject execute(LispObject arg)
-            throws ConditionThrowable
+
         {
             if (arg instanceof SlotClass)
                 return ((SlotClass)arg).directSlotDefinitions;
@@ -182,7 +182,7 @@ public class SlotClass extends LispClass
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
                 if (first instanceof SlotClass) {
                 ((SlotClass)first).directSlotDefinitions = second;
@@ -200,7 +200,7 @@ public class SlotClass extends LispClass
     {
         @Override
         public LispObject execute(LispObject arg)
-            throws ConditionThrowable
+
         {
             if (arg instanceof SlotClass)
                 return ((SlotClass)arg).slotDefinitions;
@@ -216,7 +216,7 @@ public class SlotClass extends LispClass
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
                 if (first instanceof SlotClass) {
                 ((SlotClass)first).slotDefinitions = second;
@@ -234,7 +234,7 @@ public class SlotClass extends LispClass
     {
         @Override
         public LispObject execute(LispObject arg)
-            throws ConditionThrowable
+
         {
             if (arg instanceof SlotClass)
                 return ((SlotClass)arg).directDefaultInitargs;
@@ -250,7 +250,7 @@ public class SlotClass extends LispClass
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
                    if (first instanceof SlotClass) {                
                            ((SlotClass)first).directDefaultInitargs = second;                
@@ -266,7 +266,7 @@ public class SlotClass extends LispClass
     {
         @Override
         public LispObject execute(LispObject arg)
-            throws ConditionThrowable
+
         {
             if (arg instanceof SlotClass)
                 return ((SlotClass)arg).defaultInitargs;
@@ -282,7 +282,7 @@ public class SlotClass extends LispClass
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws ConditionThrowable
+
         {
             if (first instanceof SlotClass) {
                 ((SlotClass)first).defaultInitargs = second;
@@ -298,7 +298,7 @@ public class SlotClass extends LispClass
     {
         @Override
         public LispObject execute(LispObject arg)
-            throws ConditionThrowable
+
         {
             final SlotClass c;
             if (arg instanceof SlotClass) {

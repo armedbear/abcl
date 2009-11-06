@@ -45,7 +45,7 @@ public final class make_server_socket extends Primitive
 
     @Override
     public LispObject execute(LispObject first)
-        throws ConditionThrowable
+
     {
         int port = Fixnum.getValue(first);
         try {

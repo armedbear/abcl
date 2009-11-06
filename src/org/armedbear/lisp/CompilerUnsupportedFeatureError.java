@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 public class CompilerUnsupportedFeatureError extends Condition
 {
-    public CompilerUnsupportedFeatureError(LispObject initArgs) throws ConditionThrowable
+    public CompilerUnsupportedFeatureError(LispObject initArgs)
     {
         super(initArgs);
     }
@@ -53,7 +53,7 @@ public class CompilerUnsupportedFeatureError extends Condition
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.COMPILER_UNSUPPORTED_FEATURE_ERROR)
             return T;

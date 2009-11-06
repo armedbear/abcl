@@ -40,7 +40,7 @@ public final class PackageFunctions extends Lisp
     private static final Primitive PACKAGEP = new Primitive("packagep", "object")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return arg instanceof Package ? T : NIL;
         }
@@ -52,7 +52,7 @@ public final class PackageFunctions extends Lisp
         new Primitive("package-name", "package")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return coerceToPackage(arg).NAME();
         }
@@ -64,7 +64,7 @@ public final class PackageFunctions extends Lisp
         new Primitive("package-nicknames", "package")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return coerceToPackage(arg).packageNicknames();
         }
@@ -76,7 +76,7 @@ public final class PackageFunctions extends Lisp
         new Primitive("package-use-list", "package")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return coerceToPackage(arg).getUseList();
         }
@@ -88,7 +88,7 @@ public final class PackageFunctions extends Lisp
         new Primitive("package-used-by-list", "package")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return coerceToPackage(arg).getUsedByList();
         }
@@ -100,7 +100,7 @@ public final class PackageFunctions extends Lisp
         new Primitive("%import", PACKAGE_SYS, false)
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             if (args.length == 0 || args.length > 2)
                 return error(new WrongNumberOfArgumentsException(this));
@@ -124,7 +124,7 @@ public final class PackageFunctions extends Lisp
         new Primitive("unexport", "symbols &optional package")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             if (args.length == 0 || args.length > 2)
                 return error(new WrongNumberOfArgumentsException(this));
@@ -148,7 +148,7 @@ public final class PackageFunctions extends Lisp
         new Primitive("shadow", "symbol-names &optional package")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             if (args.length == 0 || args.length > 2)
                 return error(new WrongNumberOfArgumentsException(this));
@@ -172,7 +172,7 @@ public final class PackageFunctions extends Lisp
         new Primitive("shadowing-import", "symbols &optional package")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             if (args.length == 0 || args.length > 2)
                 return error(new WrongNumberOfArgumentsException(this));
@@ -196,7 +196,7 @@ public final class PackageFunctions extends Lisp
         new Primitive("package-shadowing-symbols", "package")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return coerceToPackage(arg).getShadowingSymbols();
         }
@@ -207,7 +207,7 @@ public final class PackageFunctions extends Lisp
         new Primitive("delete-package", "package")
     {
         @Override
-        public LispObject execute(LispObject arg) throws ConditionThrowable
+        public LispObject execute(LispObject arg)
         {
             return coerceToPackage(arg).delete() ? T : NIL;
         }
@@ -219,7 +219,7 @@ public final class PackageFunctions extends Lisp
         new Primitive("unuse-package", "packages-to-unuse &optional package")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             if (args.length < 1 || args.length > 2)
                 return error(new WrongNumberOfArgumentsException(this));
@@ -246,7 +246,7 @@ public final class PackageFunctions extends Lisp
         new Primitive("rename-package", "package new-name &optional new-nicknames")
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             if (args.length < 2 || args.length > 3)
                 return error(new WrongNumberOfArgumentsException(this));
@@ -274,7 +274,7 @@ public final class PackageFunctions extends Lisp
         new Primitive("%defpackage", PACKAGE_SYS, false)
     {
         @Override
-        public LispObject execute(LispObject[] args) throws ConditionThrowable
+        public LispObject execute(LispObject[] args)
         {
             if (args.length != 10)
                 return error(new WrongNumberOfArgumentsException(this));

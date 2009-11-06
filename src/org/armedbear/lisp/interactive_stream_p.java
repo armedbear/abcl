@@ -42,7 +42,7 @@ public final class interactive_stream_p extends Primitive
     }
 
     @Override
-    public LispObject execute(LispObject arg) throws ConditionThrowable
+    public LispObject execute(LispObject arg)
     {
         if (arg instanceof Stream)
             return ((Stream)arg).isInteractive() ? T : NIL;

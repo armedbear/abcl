@@ -53,7 +53,7 @@ public class ForwardReferencedClass extends LispClass
     }
 
     @Override
-    public LispObject typep(LispObject type) throws ConditionThrowable
+    public LispObject typep(LispObject type)
     {
         if (type == Symbol.FORWARD_REFERENCED_CLASS)
             return T;
@@ -63,7 +63,7 @@ public class ForwardReferencedClass extends LispClass
     }
 
     @Override
-    public String writeToString() throws ConditionThrowable
+    public String writeToString()
     {
         StringBuffer sb =
             new StringBuffer(Symbol.FORWARD_REFERENCED_CLASS.writeToString());
@@ -80,7 +80,7 @@ public class ForwardReferencedClass extends LispClass
     {
         @Override
         public LispObject execute(LispObject arg)
-            throws ConditionThrowable
+
         {
             if (arg instanceof Symbol) {
                 Symbol name = (Symbol) arg;

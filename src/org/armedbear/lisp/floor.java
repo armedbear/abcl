@@ -43,7 +43,7 @@ public final class floor extends Primitive
 
     @Override
     public LispObject execute(LispObject number)
-        throws ConditionThrowable
+
     {
         LispObject quotient = number.truncate(Fixnum.ONE);
         final LispThread thread = LispThread.currentThread();
@@ -61,7 +61,7 @@ public final class floor extends Primitive
 
     @Override
     public LispObject execute(LispObject number, LispObject divisor)
-        throws ConditionThrowable
+
     {
         LispObject quotient = number.truncate(divisor);
         final LispThread thread = LispThread.currentThread();

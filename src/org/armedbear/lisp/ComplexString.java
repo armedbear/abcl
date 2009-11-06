@@ -92,7 +92,7 @@ public final class ComplexString extends AbstractString
   }
 
   @Override
-  public void setFillPointer(LispObject obj) throws ConditionThrowable
+  public void setFillPointer(LispObject obj)
   {
     if (obj == T)
       fillPointer = capacity();
@@ -127,7 +127,7 @@ public final class ComplexString extends AbstractString
   }
 
   @Override
-  public LispObject arrayDisplacement() throws ConditionThrowable
+  public LispObject arrayDisplacement()
   {
     LispObject value1, value2;
     if (array != null)
@@ -144,7 +144,7 @@ public final class ComplexString extends AbstractString
   }
 
   @Override
-  public char[] chars() throws ConditionThrowable
+  public char[] chars()
   {
     if (chars != null)
       return chars;
@@ -166,7 +166,7 @@ public final class ComplexString extends AbstractString
   }
 
   @Override
-  public char[] getStringChars() throws ConditionThrowable
+  public char[] getStringChars()
   {
     if (fillPointer < 0)
       return chars();
@@ -176,7 +176,7 @@ public final class ComplexString extends AbstractString
   }
 
   @Override
-  public boolean equal(LispObject obj) throws ConditionThrowable
+  public boolean equal(LispObject obj)
   {
     if (this == obj)
       return true;
@@ -196,7 +196,7 @@ public final class ComplexString extends AbstractString
   }
 
   @Override
-  public boolean equalp(LispObject obj) throws ConditionThrowable
+  public boolean equalp(LispObject obj)
   {
     if (this == obj)
       return true;
@@ -223,7 +223,7 @@ public final class ComplexString extends AbstractString
   }
 
   @Override
-  public LispObject subseq(int start, int end) throws ConditionThrowable
+  public LispObject subseq(int start, int end)
   {
     SimpleString s = new SimpleString(end - start);
     int i = start, j = 0;
@@ -233,20 +233,20 @@ public final class ComplexString extends AbstractString
   }
 
   @Override
-  public void fill(LispObject obj) throws ConditionThrowable
+  public void fill(LispObject obj)
   {
     fill(LispCharacter.getValue(obj));
   }
 
   @Override
-  public void fill(char c) throws ConditionThrowable
+  public void fill(char c)
   {
     for (int i = length(); i-- > 0;)
       setCharAt(i, c);
   }
 
   @Override
-  public void shrink(int n) throws ConditionThrowable
+  public void shrink(int n)
   {
     if (chars != null)
       {
@@ -290,7 +290,7 @@ public final class ComplexString extends AbstractString
   }
 
   @Override
-  public LispObject reverse() throws ConditionThrowable
+  public LispObject reverse()
   {
     int length = length();
     SimpleString result = new SimpleString(length);
@@ -301,7 +301,7 @@ public final class ComplexString extends AbstractString
   }
 
   @Override
-  public LispObject nreverse() throws ConditionThrowable
+  public LispObject nreverse()
   {
     int i = 0;
     int j = length() - 1;
@@ -317,7 +317,7 @@ public final class ComplexString extends AbstractString
   }
 
   @Override
-  public String getStringValue() throws ConditionThrowable
+  public String getStringValue()
   {
     if (fillPointer >= 0)
       return new String(chars(), 0, fillPointer);
@@ -326,13 +326,13 @@ public final class ComplexString extends AbstractString
   }
 
   @Override
-  public Object javaInstance() throws ConditionThrowable
+  public Object javaInstance()
   {
     return new String(chars());
   }
 
   @Override
-  public Object javaInstance(Class c) throws ConditionThrowable
+  public Object javaInstance(Class c)
   {
     return javaInstance();
   }
@@ -350,7 +350,7 @@ public final class ComplexString extends AbstractString
   }
 
   @Override
-  public char charAt(int index) throws ConditionThrowable
+  public char charAt(int index)
   {
     if (chars != null)
       {
@@ -369,7 +369,7 @@ public final class ComplexString extends AbstractString
   }
 
   @Override
-  public void setCharAt(int index, char c) throws ConditionThrowable
+  public void setCharAt(int index, char c)
   {
     if (chars != null)
       {
@@ -387,7 +387,7 @@ public final class ComplexString extends AbstractString
   }
 
   @Override
-  public LispObject elt(int index) throws ConditionThrowable
+  public LispObject elt(int index)
   {
     final int limit = length();
     if (index < 0 || index >= limit)
@@ -397,34 +397,34 @@ public final class ComplexString extends AbstractString
 
   // Ignores fill pointer.
   @Override
-  public LispObject CHAR(int index) throws ConditionThrowable
+  public LispObject CHAR(int index)
   {
     return LispCharacter.getInstance(charAt(index));
   }
 
   // Ignores fill pointer.
   @Override
-  public LispObject AREF(int index) throws ConditionThrowable
+  public LispObject AREF(int index)
   {
     return LispCharacter.getInstance(charAt(index));
   }
 
   // Ignores fill pointer.
   @Override
-  public LispObject AREF(LispObject index) throws ConditionThrowable
+  public LispObject AREF(LispObject index)
   {
     return LispCharacter.getInstance(charAt(Fixnum.getValue(index)));
   }
 
   @Override
-  public void aset(int index, LispObject newValue) throws ConditionThrowable
+  public void aset(int index, LispObject newValue)
   {
       setCharAt(index, LispCharacter.getValue(newValue));
   }
 
   @Override
   public void vectorPushExtend(LispObject element)
-    throws ConditionThrowable
+
   {
     if (fillPointer < 0)
       noFillPointer();
@@ -444,7 +444,7 @@ public final class ComplexString extends AbstractString
 
   @Override
   public LispObject VECTOR_PUSH_EXTEND(LispObject element)
-    throws ConditionThrowable
+
   {
     vectorPushExtend(element);
     return Fixnum.getInstance(fillPointer - 1);
@@ -452,7 +452,7 @@ public final class ComplexString extends AbstractString
 
   @Override
   public LispObject VECTOR_PUSH_EXTEND(LispObject element, LispObject extension)
-    throws ConditionThrowable
+
   {
     int ext = Fixnum.getValue(extension);
     if (fillPointer < 0)
@@ -472,7 +472,7 @@ public final class ComplexString extends AbstractString
     return Fixnum.getInstance(fillPointer++);
   }
 
-  public final void ensureCapacity(int minCapacity) throws ConditionThrowable
+  public final void ensureCapacity(int minCapacity)
   {
     if (chars != null)
       {
@@ -574,7 +574,7 @@ public final class ComplexString extends AbstractString
   public AbstractVector adjustArray(int newCapacity,
                                      LispObject initialElement,
                                      LispObject initialContents)
-    throws ConditionThrowable
+
   {
     if (initialContents != null)
       {
@@ -651,7 +651,7 @@ public final class ComplexString extends AbstractString
   public AbstractVector adjustArray(int newCapacity,
                                      AbstractArray displacedTo,
                                      int displacement)
-    throws ConditionThrowable
+
   {
     capacity = newCapacity;
     array = displacedTo;
