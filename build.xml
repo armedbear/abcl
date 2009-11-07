@@ -495,7 +495,7 @@
       </zip>
     </target>
     
-    <target name="abcl.binary.prepare" depends="abcl.stamp.version">
+    <target name="abcl.binary.prepare" depends="abcl.jar,abcl.stamp.version">
       <property name="abcl.build.binary.dir"
                 value="${build.dir}/abcl-bin-${abcl.version}"/>
       <mkdir dir="${abcl.build.binary.dir}"/>
