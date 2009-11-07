@@ -13,6 +13,9 @@ Features:
   * Java property to print autoloading information: abcl.autoload.verbose
   * Experimental: binary fasls
   * Default Ant build target now "abcl.clean abcl.wrapper" (from abcl.help)
+  * ConditionThrowable class renamed to ControlTransfer,
+      parent class changed to RuntimeException (to make it unchecked)
+  * API no longer throws ConditionThrowable/ControlTransfer
 
 
 Bugs fixed:
@@ -35,6 +38,8 @@ Bugs fixed:
   * Autoload cleanups
   * System package creation cleaned up
   * CHAR-CODE-LIMIT correctly reflects CHAR-CODE maximum return value
+  * Precompiler macroexpansion failure for macros expanding into
+      special operators
 
 
 Version 0.16.1
