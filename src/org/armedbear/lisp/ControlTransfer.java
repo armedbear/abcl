@@ -33,11 +33,27 @@
 
 package org.armedbear.lisp;
 
+/** This class is the parent class of all non-local transfer of
+ * control events in ABCL. The classes inheriting from this class each
+ * represent a transfer of control event as it is available in the
+ * standard: GO (represented by Go), RETURN (by Return) and THROW (by Throw).
+ *
+ * Please note that you should <b>only</b> be using these classes in case
+ * you've establisched a corresponding TAGBODY, BLOCK or CATCH-like
+ * construct in your code.
+ *
+ * Otherwise, be aware that if you are mixing Lisp and Java code,
+ * Lisp code being called into might throw one of the three exception types
+ * and cause execution to be transferred to the nearest handler - presumably
+ * outside your Java code.
+ *
+ */
 abstract public class ControlTransfer extends RuntimeException
 {
     public ControlTransfer()
     {
     }
+    
     /**
      * Overridden in order to make ControlTransfer construct
      * faster. This avoids gathering stack trace information.
@@ -45,7 +61,7 @@ abstract public class ControlTransfer extends RuntimeException
     @Override
     public Throwable fillInStackTrace()
     {
-	return this;
+        return this;
     }
 
     public ControlTransfer(String message)

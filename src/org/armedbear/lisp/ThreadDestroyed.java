@@ -33,20 +33,10 @@
 
 package org.armedbear.lisp;
 
-public class ThreadDestroyed extends ControlTransfer
+public class ThreadDestroyed extends Error
 {
     public ThreadDestroyed()
     {
     }
 
-    public ThreadDestroyed(String message)
-    {
-        super(message);
-    }
-
-    @Override
-    public LispObject getCondition()
-    {
-        return new ControlError("Thread destroyed.");
-    }
 }
