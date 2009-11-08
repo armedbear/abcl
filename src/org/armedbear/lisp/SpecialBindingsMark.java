@@ -2,7 +2,7 @@
  * SpecialBindingsMark.java
  *
  * Copyright (C) 1009 Erik Huelsmann
- * $Id: LispThread.java 12255 2009-11-06 22:36:32Z ehuelsmann $
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
