@@ -107,7 +107,7 @@ public class Symbol extends LispObject
   public LispObject getDescription()
   {
     final LispThread thread = LispThread.currentThread();
-    SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+    final SpecialBindingsMark mark = thread.markSpecialBindings();
     thread.bindSpecial(Symbol.PRINT_ESCAPE, NIL);
     try
       {
@@ -128,7 +128,7 @@ public class Symbol extends LispObject
       }
     finally
       {
-        thread.lastSpecialBinding = lastSpecialBinding;
+        thread.resetSpecialBindings(mark);
       }
   }
 

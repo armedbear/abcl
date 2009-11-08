@@ -325,7 +325,7 @@ public final class Interpreter extends Lisp
             while (true) {
                 try {
                     thread.resetStack();
-                    thread.lastSpecialBinding = null;
+                    thread.clearSpecialBindings();
                     out._writeString("* ");
                     out._finishOutput();
                     LispObject object =
@@ -475,7 +475,7 @@ public final class Interpreter extends Lisp
             final Condition condition = (Condition) first;
             if (interpreter == null) {
                 final LispThread thread = LispThread.currentThread();
-                final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+                final SpecialBindingsMark mark = thread.markSpecialBindings();
                 thread.bindSpecial(Symbol.PRINT_ESCAPE, NIL);
                 try {
                     final LispObject truename =
@@ -500,7 +500,7 @@ public final class Interpreter extends Lisp
                 }
                 catch (Throwable t) {}
                 finally {
-                    thread.lastSpecialBinding = lastSpecialBinding;
+                    thread.resetSpecialBindings(mark);
                 }
             }
             throw new UnhandledCondition(condition);
@@ -535,13 +535,13 @@ public final class Interpreter extends Lisp
         LispObject obj = stream.read(false, EOF, false, thread);
         if (obj == EOF)
             return error(new EndOfFile(stream));
-        final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+        final SpecialBindingsMark mark = thread.markSpecialBindings();
         thread.bindSpecial(Symbol.DEBUGGER_HOOK, _DEBUGGER_HOOK_FUNCTION);
         try {
             return eval(obj, new Environment(), thread);
         }
         finally {
-            thread.lastSpecialBinding = lastSpecialBinding;
+            thread.resetSpecialBindings(mark);
         }
     }
 

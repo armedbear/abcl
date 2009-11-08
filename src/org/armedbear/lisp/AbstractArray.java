@@ -258,7 +258,7 @@ public abstract class AbstractArray extends LispObject
                 _CURRENT_PRINT_LEVEL_.symbolValue(thread);
             int currentLevel = Fixnum.getValue(currentPrintLevel);
             if (currentLevel < maxLevel) {
-                SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+                final SpecialBindingsMark mark = thread.markSpecialBindings();
                 thread.bindSpecial(_CURRENT_PRINT_LEVEL_, currentPrintLevel.incr());
                 try {
                     sb.append('(');
@@ -281,7 +281,7 @@ public abstract class AbstractArray extends LispObject
                     sb.append(')');
                 }
                 finally {
-                    thread.lastSpecialBinding = lastSpecialBinding;
+                    thread.resetSpecialBindings(mark);
                 }
             } else
                 sb.append('#');

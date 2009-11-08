@@ -97,7 +97,7 @@ public class Autoload extends Function
     {
         if (className != null) {
             final LispThread thread = LispThread.currentThread();
-            final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+            final SpecialBindingsMark mark = thread.markSpecialBindings();
             int loadDepth = Fixnum.getValue(_LOAD_DEPTH_.symbolValue());
             thread.bindSpecial(_LOAD_DEPTH_, Fixnum.getInstance(++loadDepth));
             try {
@@ -128,7 +128,7 @@ public class Autoload extends Function
                 e.printStackTrace();
             }
             finally {
-                thread.lastSpecialBinding = lastSpecialBinding;
+                thread.resetSpecialBindings(mark);
             }
         } else
             Load.loadSystemFile(getFileName(), true);

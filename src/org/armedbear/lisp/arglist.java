@@ -81,13 +81,13 @@ public final class arglist extends Lisp
                 s = "(" + s + ")";
                 // Bind *PACKAGE* so we use the EXT package if we need
                 // to intern any symbols.
-                SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+                final SpecialBindingsMark mark = thread.markSpecialBindings();
                 thread.bindSpecial(Symbol._PACKAGE_, PACKAGE_EXT);
                 try {
                     arglist = readObjectFromString(s);
                 }
                 finally {
-                    thread.lastSpecialBinding = lastSpecialBinding;
+                    thread.resetSpecialBindings(mark);
                 }
                 operator.setLambdaList(arglist);
             }

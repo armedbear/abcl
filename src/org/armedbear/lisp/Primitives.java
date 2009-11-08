@@ -1642,7 +1642,7 @@ public final class Primitives extends Lisp
                   }
                 else
                   {
-                    SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+                    SpecialBindingsMark mark = thread.markSpecialBindings();
                     thread.bindSpecial(Symbol._PACKAGE_, PACKAGE_CL);
                     try
                       {
@@ -1651,7 +1651,7 @@ public final class Primitives extends Lisp
                       }
                     finally
                       {
-                        thread.lastSpecialBinding = lastSpecialBinding;
+                        thread.resetSpecialBindings(mark);
                       }
                   }
               }
@@ -3458,7 +3458,7 @@ public final class Primitives extends Lisp
       {
         LispObject defs = checkList(args.car());
         final LispThread thread = LispThread.currentThread();
-        final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+        final SpecialBindingsMark mark = thread.markSpecialBindings();
 
         try
           {
@@ -3481,7 +3481,7 @@ public final class Primitives extends Lisp
           }
         finally
           {
-            thread.lastSpecialBinding = lastSpecialBinding;
+            thread.resetSpecialBindings(mark);
           }
       }
     };
@@ -3748,7 +3748,7 @@ public final class Primitives extends Lisp
         LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
         body = bodyAndDecls.car();
 
-        final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+        final SpecialBindingsMark mark = thread.markSpecialBindings();
         final Environment ext = new Environment(env);
         int i = 0;
         LispObject var = vars.car();
@@ -3792,7 +3792,7 @@ public final class Primitives extends Lisp
           }
         finally
           {
-            thread.lastSpecialBinding = lastSpecialBinding;
+            thread.resetSpecialBindings(mark);
           }
         return result;
       }

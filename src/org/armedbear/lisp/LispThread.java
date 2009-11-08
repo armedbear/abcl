@@ -306,6 +306,29 @@ public final class LispThread extends LispObject
         return obj;
     }
 
+    /** Marks the state of the special bindings,
+     * for later rewinding by resetSpecialBindings().
+     */
+    public final SpecialBindingsMark markSpecialBindings() {
+        return new SpecialBindingsMark(lastSpecialBinding);
+    }
+
+    /** Restores the state of the special bindings to what
+     * was captured in the marker 'mark' by a call to markSpecialBindings().
+     */
+    public final void resetSpecialBindings(SpecialBindingsMark mark) {
+        lastSpecialBinding = mark.binding;
+    }
+
+    /** Clears out all active special bindings including any marks
+     * previously set. Invoking resetSpecialBindings() with marks
+     * set before this call results in undefined behaviour.
+     */
+    // Package level access: only for Interpreter.run()
+    final void clearSpecialBindings() {
+        lastSpecialBinding = null;
+    }
+
     public final SpecialBinding bindSpecial(Symbol name, LispObject value)
     {
         return lastSpecialBinding

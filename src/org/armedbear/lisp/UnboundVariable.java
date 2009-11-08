@@ -49,7 +49,7 @@ public final class UnboundVariable extends CellError
   public String getMessage()
   {
     LispThread thread = LispThread.currentThread();
-    SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+    final SpecialBindingsMark mark = thread.markSpecialBindings();
     thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
     StringBuffer sb = new StringBuffer("The variable ");
     // FIXME
@@ -59,7 +59,7 @@ public final class UnboundVariable extends CellError
       }
     catch (Throwable t) {}
     finally {
-        thread.lastSpecialBinding = lastSpecialBinding;
+        thread.resetSpecialBindings(mark);
     }
     sb.append(" is unbound.");
     return sb.toString();

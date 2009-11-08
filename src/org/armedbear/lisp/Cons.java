@@ -654,7 +654,7 @@ public final class Cons extends LispObject
     int currentLevel = Fixnum.getValue(currentPrintLevel);
     if (currentLevel < maxLevel)
       {
-        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+        final SpecialBindingsMark mark = thread.markSpecialBindings();
         thread.bindSpecial(_CURRENT_PRINT_LEVEL_, currentPrintLevel.incr());
         try
           {
@@ -694,7 +694,7 @@ public final class Cons extends LispObject
           }
         finally
           {
-            thread.lastSpecialBinding = lastSpecialBinding;
+            thread.resetSpecialBindings(mark);
           }
       }
     else

@@ -2028,11 +2028,15 @@ public abstract class Lisp
                     if (j < args.length)
                       {
                         LispObject obj = args[j++];
-                        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+                        final SpecialBindingsMark mark = thread.markSpecialBindings();
                         thread.bindSpecial(Symbol.PRINT_ESCAPE, NIL);
                         thread.bindSpecial(Symbol.PRINT_READABLY, NIL);
-                        sb.append(obj.writeToString());
-                        thread.lastSpecialBinding = lastSpecialBinding;
+                        try {
+                            sb.append(obj.writeToString());
+                        }
+                        finally {
+                            thread.resetSpecialBindings(mark);
+                        }
                       }
                   }
                 else if (c == 'S' || c == 's')
@@ -2040,13 +2044,13 @@ public abstract class Lisp
                     if (j < args.length)
                       {
                         LispObject obj = args[j++];
-                        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+                        final SpecialBindingsMark mark = thread.markSpecialBindings();
                         thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
                         try {
                             sb.append(obj.writeToString());
                         }
                         finally {
-                            thread.lastSpecialBinding = lastSpecialBinding;
+                            thread.resetSpecialBindings(mark);
                         }
                       }
                   }
@@ -2055,7 +2059,7 @@ public abstract class Lisp
                     if (j < args.length)
                       {
                         LispObject obj = args[j++];
-                        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+                        final SpecialBindingsMark mark = thread.markSpecialBindings();
                         thread.bindSpecial(Symbol.PRINT_ESCAPE, NIL);
                         thread.bindSpecial(Symbol.PRINT_RADIX, NIL);
                         thread.bindSpecial(Symbol.PRINT_BASE, Fixnum.constants[10]);
@@ -2063,7 +2067,7 @@ public abstract class Lisp
                             sb.append(obj.writeToString());
                         }
                         finally {
-                            thread.lastSpecialBinding = lastSpecialBinding;
+                            thread.resetSpecialBindings(mark);
                         }
                       }
                   }
@@ -2072,7 +2076,7 @@ public abstract class Lisp
                     if (j < args.length)
                       {
                         LispObject obj = args[j++];
-                        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+                        final SpecialBindingsMark mark = thread.markSpecialBindings();
                         thread.bindSpecial(Symbol.PRINT_ESCAPE, NIL);
                         thread.bindSpecial(Symbol.PRINT_RADIX, NIL);
                         thread.bindSpecial(Symbol.PRINT_BASE, Fixnum.constants[16]);
@@ -2080,7 +2084,7 @@ public abstract class Lisp
                             sb.append(obj.writeToString());
                         }
                         finally {
-                            thread.lastSpecialBinding = lastSpecialBinding;
+                            thread.resetSpecialBindings(mark);
                         }
                       }
                   }

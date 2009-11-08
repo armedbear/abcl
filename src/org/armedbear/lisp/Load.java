@@ -282,7 +282,7 @@ public final class Load extends Lisp
     {
         LispThread thread = LispThread.currentThread();
         if (auto) {
-            SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+            final SpecialBindingsMark mark = thread.markSpecialBindings();
             thread.bindSpecial(Symbol.CURRENT_READTABLE,
                                STANDARD_READTABLE.symbolValue(thread));
             thread.bindSpecial(Symbol._PACKAGE_, PACKAGE_CL_USER);
@@ -293,7 +293,7 @@ public final class Load extends Lisp
                                       auto);
             }
             finally {
-                thread.lastSpecialBinding = lastSpecialBinding;
+                thread.resetSpecialBindings(mark);
             }
         } else {
             return loadSystemFile(filename,
@@ -386,7 +386,7 @@ public final class Load extends Lisp
                 }
                 if (in != null) {
                     final LispThread thread = LispThread.currentThread();
-                    final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+                    final SpecialBindingsMark mark = thread.markSpecialBindings();
                     thread.bindSpecial(_WARN_ON_REDEFINITION_, NIL);
                     try {
                         return loadFileFromStream(pathname, truename,
@@ -400,7 +400,7 @@ public final class Load extends Lisp
                         System.err.println(sb.toString());
                     }
                     finally {
-                        thread.lastSpecialBinding = lastSpecialBinding;
+                        thread.resetSpecialBindings(mark);
                         try {
                             in.close();
                         }
@@ -481,7 +481,7 @@ public final class Load extends Lisp
     {
         long start = System.currentTimeMillis();
         final LispThread thread = LispThread.currentThread();
-        final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+        final SpecialBindingsMark mark = thread.markSpecialBindings();
         // "LOAD binds *READTABLE* and *PACKAGE* to the values they held before
         // loading the file."
         thread.bindSpecialToCurrentValue(Symbol.CURRENT_READTABLE);
@@ -527,7 +527,7 @@ public final class Load extends Lisp
                 return loadStream(in, print, thread, returnLastResult);
         }
         finally {
-            thread.lastSpecialBinding = lastSpecialBinding;
+            thread.resetSpecialBindings(mark);
         }
     }
 
@@ -549,12 +549,10 @@ public final class Load extends Lisp
                                                LispThread thread, boolean returnLastResult)
 
     {
-        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+        final SpecialBindingsMark mark = thread.markSpecialBindings();
         thread.bindSpecial(_LOAD_STREAM_, in);
         SpecialBinding sourcePositionBinding =
-            new SpecialBinding(_SOURCE_POSITION_, Fixnum.ZERO,
-                               thread.lastSpecialBinding);
-        thread.lastSpecialBinding = sourcePositionBinding;
+            thread.bindSpecial(_SOURCE_POSITION_, Fixnum.ZERO);
         try {
             final Environment env = new Environment();
             LispObject result = NIL;
@@ -578,7 +576,7 @@ public final class Load extends Lisp
             }
         }
         finally {
-            thread.lastSpecialBinding = lastSpecialBinding;
+            thread.resetSpecialBindings(mark);
         }
     }
 
@@ -587,7 +585,7 @@ public final class Load extends Lisp
     {
         Stream in = (Stream) _LOAD_STREAM_.symbolValue(thread);
         final Environment env = new Environment();
-        final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+        final SpecialBindingsMark mark = thread.markSpecialBindings();
         LispObject result = NIL;
         try {
             thread.bindSpecial(_FASL_ANONYMOUS_PACKAGE_, new Package());
@@ -599,7 +597,7 @@ public final class Load extends Lisp
             }
         }
         finally {
-            thread.lastSpecialBinding = lastSpecialBinding;
+            thread.resetSpecialBindings(mark);
         }
         return result;
         //There's no point in using here the returnLastResult flag like in

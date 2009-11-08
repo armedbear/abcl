@@ -273,13 +273,13 @@ public abstract class Function extends Operator
                 sb.append("()");
             } else {
                 final LispThread thread = LispThread.currentThread();
-                SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+                final SpecialBindingsMark mark = thread.markSpecialBindings();
                 thread.bindSpecial(Symbol.PRINT_LENGTH, Fixnum.THREE);
                 try {
                     sb.append(lambdaList.writeToString());
                 }
                 finally {
-                    thread.lastSpecialBinding = lastSpecialBinding;
+                    thread.resetSpecialBindings(mark);
                 }
             }
             sb.append(")");

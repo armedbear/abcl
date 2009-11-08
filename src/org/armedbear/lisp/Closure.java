@@ -387,7 +387,7 @@ public class Closure extends Function
 
   {
     final LispThread thread = LispThread.currentThread();
-    final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+    final SpecialBindingsMark mark = thread.markSpecialBindings();
     Environment ext = new Environment(environment);
     bindRequiredParameters(ext, thread, objects);
     if (arity != minArgs)
@@ -405,7 +405,7 @@ public class Closure extends Function
       }
     finally
       {
-        thread.lastSpecialBinding = lastSpecialBinding;
+        thread.resetSpecialBindings(mark);
       }
   }
 
@@ -581,7 +581,7 @@ public class Closure extends Function
   public LispObject execute(LispObject[] args)
   {
     final LispThread thread = LispThread.currentThread();
-    SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+    final SpecialBindingsMark mark = thread.markSpecialBindings();
     Environment ext = new Environment(environment);
     if (optionalParameters.length == 0 && keywordParameters.length == 0)
       args = fastProcessArgs(args);
@@ -605,7 +605,7 @@ public class Closure extends Function
       }
     finally
       {
-        thread.lastSpecialBinding = lastSpecialBinding;
+        thread.resetSpecialBindings(mark);
       }
   }
 
@@ -630,7 +630,7 @@ public class Closure extends Function
     // The bindings established here (if any) are lost when this function
     // returns. They are used only in the evaluation of initforms for
     // optional and keyword arguments.
-    SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+    final SpecialBindingsMark mark = thread.markSpecialBindings();
     Environment ext = new Environment(environment);
     // Section 3.4.4: "...the &environment parameter is bound along with
     // &whole before any other variables in the lambda list..."
@@ -864,7 +864,7 @@ public class Closure extends Function
           }
     }
     finally {
-        thread.lastSpecialBinding = lastSpecialBinding;
+        thread.resetSpecialBindings(mark);
     }
     return array;
   }

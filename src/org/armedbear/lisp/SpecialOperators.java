@@ -114,7 +114,7 @@ public final class SpecialOperators extends Lisp
 
   {
     final LispThread thread = LispThread.currentThread();
-    final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+    final SpecialBindingsMark mark = thread.markSpecialBindings();
     try
       {
         LispObject varList = checkList(args.car());
@@ -166,7 +166,7 @@ public final class SpecialOperators extends Lisp
       }
     finally
       {
-        thread.lastSpecialBinding = lastSpecialBinding;
+        thread.resetSpecialBindings(mark);
       }
   }
 
@@ -180,7 +180,7 @@ public final class SpecialOperators extends Lisp
       {
         LispObject varList = checkList(args.car());
         final LispThread thread = LispThread.currentThread();
-        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+        final SpecialBindingsMark mark = thread.markSpecialBindings();
         Environment ext = new Environment(env);
         try
          {
@@ -215,7 +215,7 @@ public final class SpecialOperators extends Lisp
               }
         finally
             {
-                thread.lastSpecialBinding = lastSpecialBinding;
+              thread.resetSpecialBindings(mark);
             }
       }
     };
@@ -300,7 +300,7 @@ public final class SpecialOperators extends Lisp
     // First argument is a list of local function definitions.
     LispObject defs = checkList(args.car());
     final LispThread thread = LispThread.currentThread();
-    final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+    final SpecialBindingsMark mark = thread.markSpecialBindings();
     final Environment funEnv = new Environment(env);
     while (defs != NIL)
       {
@@ -357,7 +357,7 @@ public final class SpecialOperators extends Lisp
       }
     finally
       {
-        thread.lastSpecialBinding = lastSpecialBinding;
+        thread.resetSpecialBindings(mark);
       }
   }
 
@@ -409,7 +409,7 @@ public final class SpecialOperators extends Lisp
         final LispThread thread = LispThread.currentThread();
         final LispObject symbols = checkList(eval(args.car(), env, thread));
         LispObject values = checkList(eval(args.cadr(), env, thread));
-        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+        final SpecialBindingsMark mark = thread.markSpecialBindings();
         try
           {
             // Set up the new bindings.
@@ -419,7 +419,7 @@ public final class SpecialOperators extends Lisp
           }
         finally
           {
-            thread.lastSpecialBinding = lastSpecialBinding;
+            thread.resetSpecialBindings(mark);
           }
       }
     };

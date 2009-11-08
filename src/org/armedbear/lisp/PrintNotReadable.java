@@ -89,7 +89,7 @@ public class PrintNotReadable extends LispError
         }
         if (object != UNBOUND_VALUE) {
             final LispThread thread = LispThread.currentThread();
-            final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+            final SpecialBindingsMark mark = thread.markSpecialBindings();
             thread.bindSpecial(Symbol.PRINT_READABLY, NIL);
             thread.bindSpecial(Symbol.PRINT_ARRAY, NIL);
             try {
@@ -99,7 +99,7 @@ public class PrintNotReadable extends LispError
                 sb.append("Object");
             }
             finally {
-                thread.lastSpecialBinding = lastSpecialBinding;
+                thread.resetSpecialBindings(mark);
             }
         } else
             sb.append("Object");

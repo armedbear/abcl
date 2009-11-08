@@ -239,6 +239,8 @@
 (defconstant +lisp-environment-class+ "org/armedbear/lisp/Environment")
 (defconstant +lisp-special-binding+ "Lorg/armedbear/lisp/SpecialBinding;")
 (defconstant +lisp-special-binding-class+ "org/armedbear/lisp/SpecialBinding")
+(defconstant +lisp-special-bindings-mark+ "Lorg/armedbear/lisp/SpecialBindingsMark;")
+(defconstant +lisp-special-bindings-mark-class+ "org/armedbear/lisp/SpecialBindingsMark")
 (defconstant +lisp-throw-class+ "org/armedbear/lisp/Throw")
 (defconstant +lisp-return-class+ "org/armedbear/lisp/Return")
 (defconstant +lisp-go-class+ "org/armedbear/lisp/Go")
@@ -4046,16 +4048,22 @@ given a specific common representation.")
   t)
 
 (defun restore-dynamic-environment (register)
-  (emit-push-current-thread)
-  (aload register)
-  (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
-	+lisp-special-binding+))
+   (emit-push-current-thread)
+   (aload register)
+;;   (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
+;; 	+lisp-special-binding+)
+   (emit-invokevirtual +lisp-thread-class+ "resetSpecialBindings"
+                       (list +lisp-special-bindings-mark+) nil)
+  )
 
 (defun save-dynamic-environment (register)
-  (emit-push-current-thread)
-  (emit 'getfield +lisp-thread-class+ "lastSpecialBinding"
-	+lisp-special-binding+)
-  (astore register))
+   (emit-push-current-thread)
+;;   (emit 'getfield +lisp-thread-class+ "lastSpecialBinding"
+;; 	+lisp-special-binding+)
+   (emit-invokevirtual +lisp-thread-class+ "markSpecialBindings"
+                       nil +lisp-special-bindings-mark+)
+   (astore register)
+  )
 
 (defun restore-environment-and-make-handler (register label-START)
   (let ((label-END (gensym))

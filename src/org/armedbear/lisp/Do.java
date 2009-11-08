@@ -93,7 +93,7 @@ public final class Do extends Lisp
         varlist = varlist.cdr();
       }
     final LispThread thread = LispThread.currentThread();
-    final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+    final SpecialBindingsMark mark = thread.markSpecialBindings();
     // Process declarations.
 
     final LispObject bodyAndDecls = parseBody(body, false);
@@ -197,7 +197,7 @@ public final class Do extends Lisp
       }
     finally
       {
-        thread.lastSpecialBinding = lastSpecialBinding;
+        thread.resetSpecialBindings(mark);
         ext.inactive = true;
       }
   }

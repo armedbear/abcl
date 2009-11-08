@@ -244,7 +244,7 @@ public abstract class AbstractVector extends AbstractArray
               maxLength = ((Fixnum)printLength).value;
             final int length = length();
             final int limit = Math.min(length, maxLength);
-            SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+            final SpecialBindingsMark mark = thread.markSpecialBindings();
             thread.bindSpecial(_CURRENT_PRINT_LEVEL_, currentPrintLevel.incr());
             try
               {
@@ -257,7 +257,7 @@ public abstract class AbstractVector extends AbstractArray
               }
             finally
               {
-                thread.lastSpecialBinding = lastSpecialBinding;
+                thread.resetSpecialBindings(mark);
               }
             if (limit < length)
               sb.append(limit > 0 ? " ..." : "...");

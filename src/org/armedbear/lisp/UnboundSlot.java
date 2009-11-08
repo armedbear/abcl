@@ -70,7 +70,7 @@ public final class UnboundSlot extends CellError
     public String getMessage()
     {
         final LispThread thread = LispThread.currentThread();
-        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+        final SpecialBindingsMark mark = thread.markSpecialBindings();
         thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
         try {
             FastStringBuffer sb = new FastStringBuffer("The slot ");
@@ -81,7 +81,7 @@ public final class UnboundSlot extends CellError
             return sb.toString();
         }
         finally {
-            thread.lastSpecialBinding = lastSpecialBinding;
+            thread.resetSpecialBindings(mark);
         }
     }
 

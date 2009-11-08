@@ -468,7 +468,7 @@ public class Stream extends LispObject
       }
     else
       {
-        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+        final SpecialBindingsMark mark = thread.markSpecialBindings();
         thread.bindSpecial(_SHARP_EQUAL_ALIST_, NIL);
         try
           {
@@ -476,7 +476,7 @@ public class Stream extends LispObject
           }
         finally
           {
-            thread.lastSpecialBinding = lastSpecialBinding;
+            thread.resetSpecialBindings(mark);
           }
       }
   }
@@ -543,7 +543,7 @@ public class Stream extends LispObject
       }
     else
       {
-        SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+        final SpecialBindingsMark mark = thread.markSpecialBindings();
         thread.bindSpecial(_SHARP_EQUAL_ALIST_, NIL);
         try
           {
@@ -551,7 +551,7 @@ public class Stream extends LispObject
           }
         finally
           {
-            thread.lastSpecialBinding = lastSpecialBinding;
+            thread.resetSpecialBindings(mark);
           }
       }
   }
@@ -1841,7 +1841,7 @@ public class Stream extends LispObject
   public void prin1(LispObject obj)
   {
     LispThread thread = LispThread.currentThread();
-    SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+    final SpecialBindingsMark mark = thread.markSpecialBindings();
     thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
     try
       {
@@ -1849,7 +1849,7 @@ public class Stream extends LispObject
       }
     finally
       {
-        thread.lastSpecialBinding = lastSpecialBinding;
+        thread.resetSpecialBindings(mark);
       }
   }
 

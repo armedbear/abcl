@@ -130,7 +130,7 @@ public class TypeError extends LispError
         // FIXME
         try {
             final LispThread thread = LispThread.currentThread();
-            final SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+            final SpecialBindingsMark mark = thread.markSpecialBindings();
             thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
             try {
                 String s = super.getMessage();
@@ -164,7 +164,7 @@ public class TypeError extends LispError
                 return toString();
             }
             finally {
-                thread.lastSpecialBinding = lastSpecialBinding;
+                thread.resetSpecialBindings(mark);
             }
         }
         catch (Throwable t) {

@@ -51,7 +51,7 @@ public final class dolist extends SpecialOperator
     LispObject listForm = args.cadr();
     final LispThread thread = LispThread.currentThread();
     LispObject resultForm = args.cdr().cdr().car();
-    SpecialBinding lastSpecialBinding = thread.lastSpecialBinding;
+    final SpecialBindingsMark mark = thread.markSpecialBindings();
     // Process declarations.
     LispObject bodyAndDecls = parseBody(bodyForm, false);
     LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
@@ -121,7 +121,7 @@ public final class dolist extends SpecialOperator
       }
     finally
       {
-        thread.lastSpecialBinding = lastSpecialBinding;
+        thread.resetSpecialBindings(mark);
         ext.inactive = true;
       }
   }
