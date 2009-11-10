@@ -49,6 +49,11 @@ public class Symbol extends LispObject
 
   public final SimpleString name;
   private int hash = -1;
+
+  /** To be accessed by LispThread only:
+   * used to find the index in the LispThread.specials array
+   */
+  int specialIndex = LispThread.UNASSIGNED_SPECIAL_INDEX;
   private LispObject pkg; // Either a package object or NIL.
   private LispObject value;
   private LispObject function;

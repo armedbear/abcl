@@ -39,13 +39,20 @@ package org.armedbear.lisp;
  */
 final public class SpecialBindingsMark {
 
+    /** The index in the specials array of the saved binding. */
+    int idx;
+
     /** Special binding state to be restored */
     // package level access
     SpecialBinding binding;
+    SpecialBindingsMark next;
 
     /** Constructor to be called by LispThread.markSpecialBindings() only */
     // package level access
-    SpecialBindingsMark(SpecialBinding binding) {
+    SpecialBindingsMark(int idx, SpecialBinding binding,
+                        SpecialBindingsMark next) {
+        this.idx = idx;
         this.binding = binding;
+        this.next = next;
     }
 }

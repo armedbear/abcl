@@ -35,6 +35,7 @@ package org.armedbear.lisp;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class LispThread extends LispObject
 {
@@ -66,7 +67,6 @@ public final class LispThread extends LispObject
     private final Thread javaThread;
     private boolean destroyed;
     private final LispObject name;
-    public SpecialBinding lastSpecialBinding;
     public LispObject[] _values;
     private boolean threadInterrupted;
     private LispObject pending = NIL;
@@ -306,18 +306,57 @@ public final class LispThread extends LispObject
         return obj;
     }
 
+
+
+    final static int UNASSIGNED_SPECIAL_INDEX = 0;
+
+    /** Indicates the last special slot which has been assigned.
+     * Symbols which don't have a special slot assigned use a slot
+     * index of 0 for efficiency reasons: it eliminates the need to
+     * check for index validity before accessing the specials array.
+     *
+     */
+    final static AtomicInteger lastSpecial
+        = new AtomicInteger(UNASSIGNED_SPECIAL_INDEX);
+
+    /** This array stores the current special binding for every symbol
+     * which has been globally or locally declared special.
+     *
+     * If the array element has a null value, this means there currently
+     * is no active binding. If the array element contains a valid
+     * SpecialBinding object, but the value field of it is null, that
+     * indicates an "UNBOUND VARIABLE" situation.
+     */
+    final SpecialBinding[] specials = new SpecialBinding[4097];
+
+    /** This array stores the symbols associated with the special
+     * bindings slots.
+     */
+    final static Symbol[] specialNames = new Symbol[4097];
+
+    /** This variable points to the head of a linked list of saved
+     * special bindings. Its main purpose is to allow a mark/reset
+     * interface to special binding and unbinding.
+     */
+    private SpecialBindingsMark savedSpecials = null;
+
     /** Marks the state of the special bindings,
      * for later rewinding by resetSpecialBindings().
      */
     public final SpecialBindingsMark markSpecialBindings() {
-        return new SpecialBindingsMark(lastSpecialBinding);
+        return savedSpecials;
     }
 
     /** Restores the state of the special bindings to what
      * was captured in the marker 'mark' by a call to markSpecialBindings().
      */
     public final void resetSpecialBindings(SpecialBindingsMark mark) {
-        lastSpecialBinding = mark.binding;
+        SpecialBindingsMark c = savedSpecials;
+        while (mark != c) {
+            specials[c.idx] = c.binding;
+            c = c.next;
+        }
+        savedSpecials = c;
     }
 
     /** Clears out all active special bindings including any marks
@@ -326,28 +365,46 @@ public final class LispThread extends LispObject
      */
     // Package level access: only for Interpreter.run()
     final void clearSpecialBindings() {
-        lastSpecialBinding = null;
+        resetSpecialBindings(null);
+    }
+
+    /** Assigns a specials array index number to the symbol,
+     * if it doesn't already have one.
+     */
+    private static final void assignSpecialIndex(Symbol sym)
+    {
+        if (sym.specialIndex != 0)
+            return;
+
+        synchronized (sym) {
+            // Don't use an atomic access: we'll be swapping values only once.
+            if (sym.specialIndex == 0) {
+                sym.specialIndex = lastSpecial.incrementAndGet();
+                specialNames[sym.specialIndex] = sym;
+            }
+        }
     }
 
     public final SpecialBinding bindSpecial(Symbol name, LispObject value)
     {
-        return lastSpecialBinding
-            = new SpecialBinding(name, value, lastSpecialBinding);
+        int idx;
+
+        assignSpecialIndex(name);
+        SpecialBinding binding = specials[idx = name.specialIndex];
+        savedSpecials = new SpecialBindingsMark(idx, binding, savedSpecials);
+        return specials[idx] = new SpecialBinding(idx, value);
     }
 
     public final SpecialBinding bindSpecialToCurrentValue(Symbol name)
     {
-        SpecialBinding binding = lastSpecialBinding;
-        while (binding != null) {
-            if (binding.name == name) {
-                return lastSpecialBinding =
-                    new SpecialBinding(name, binding.value, lastSpecialBinding);
-            }
-            binding = binding.next;
-        }
-        // Not found.
-        return lastSpecialBinding =
-            new SpecialBinding(name, name.getSymbolValue(), lastSpecialBinding);
+        int idx;
+
+        assignSpecialIndex(name);
+        SpecialBinding binding = specials[idx = name.specialIndex];
+        savedSpecials = new SpecialBindingsMark(idx, binding, savedSpecials);
+        return specials[idx]
+            = new SpecialBinding(idx,
+                                 (binding == null) ? null : binding.value);
     }
 
     /** Looks up the value of a special binding in the context of the
@@ -361,38 +418,23 @@ public final class LispThread extends LispObject
      *
      * @see Symbol#symbolValue
      */
-    public final LispObject lookupSpecial(LispObject name)
+    public final LispObject lookupSpecial(Symbol name)
     {
-        SpecialBinding binding = lastSpecialBinding;
-        while (binding != null) {
-            if (binding.name == name)
-                return binding.value;
-            binding = binding.next;
-        }
-        return null;
+        SpecialBinding binding = specials[name.specialIndex];
+        return (binding == null) ? null : binding.value;
     }
 
-    public final SpecialBinding getSpecialBinding(LispObject name)
+    public final SpecialBinding getSpecialBinding(Symbol name)
     {
-        SpecialBinding binding = lastSpecialBinding;
-        while (binding != null) {
-            if (binding.name == name)
-                return binding;
-            binding = binding.next;
-        }
-        return null;
+        return specials[name.specialIndex];
     }
 
     public final LispObject setSpecialVariable(Symbol name, LispObject value)
     {
-        SpecialBinding binding = lastSpecialBinding;
-        while (binding != null) {
-            if (binding.name == name) {
-                binding.value = value;
-                return value;
-            }
-            binding = binding.next;
-        }
+        SpecialBinding binding = specials[name.specialIndex];
+        if (binding != null)
+            return binding.value = value;
+
         name.setSymbolValue(value);
         return value;
     }
@@ -400,15 +442,10 @@ public final class LispThread extends LispObject
     public final LispObject pushSpecial(Symbol name, LispObject thing)
 
     {
-        SpecialBinding binding = lastSpecialBinding;
-        while (binding != null) {
-            if (binding.name == name) {
-                LispObject newValue = new Cons(thing, binding.value);
-                binding.value = newValue;
-                return newValue;
-            }
-            binding = binding.next;
-        }
+        SpecialBinding binding = specials[name.specialIndex];
+        if (binding != null)
+            return binding.value = new Cons(thing, binding.value);
+
         LispObject value = name.getSymbolValue();
         if (value != null) {
             LispObject newValue = new Cons(thing, value);
@@ -421,12 +458,10 @@ public final class LispThread extends LispObject
     // Returns symbol value or NIL if unbound.
     public final LispObject safeSymbolValue(Symbol name)
     {
-        SpecialBinding binding = lastSpecialBinding;
-        while (binding != null) {
-            if (binding.name == name)
-                return binding.value;
-            binding = binding.next;
-        }
+        SpecialBinding binding = specials[name.specialIndex];
+        if (binding != null)
+            return binding.value;
+
         LispObject value = name.getSymbolValue();
         return value != null ? value : NIL;
     }
@@ -479,7 +514,7 @@ public final class LispThread extends LispObject
     {
     }
 
-    public final void pushStackFrame(StackFrame frame) 
+    public final void pushStackFrame(StackFrame frame)
     {
 	frame.setNext(stack);
 	stack = frame;

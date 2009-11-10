@@ -33,18 +33,20 @@
 
 package org.armedbear.lisp;
 
-// Package accessibility.
 final public class SpecialBinding
 {
-    final LispObject name;
-    public LispObject value;
-    final SpecialBinding next;
+    /** The index in the specials array of the symbol
+     *  to which this value belongs.
+     */
+    final int idx;
 
-    SpecialBinding(LispObject name, LispObject value, SpecialBinding next)
+    /** The value bound */
+    public LispObject value;
+
+    SpecialBinding(int idx, LispObject value)
     {
-        this.name = name;
+        this.idx = idx;
         this.value = value;
-        this.next = next;
     }
 
     /** Return the value of the binding,
@@ -56,8 +58,19 @@ final public class SpecialBinding
     final public LispObject getValue()
     {
         if (value == null)
-            return Lisp.error(new UnboundVariable(name));
+            // return or not: error doesn't return anyway
+            Lisp.error(new UnboundVariable(LispThread.specialNames[idx]));
 
         return value;
+    }
+
+    /** Sets the value of the binding.
+     *
+     * Note: this method can only be called when the
+     *    binding is the one which is currently visible.
+     */
+    final public void setValue(LispObject value)
+    {
+        this.value = value;
     }
 }
