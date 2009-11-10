@@ -235,7 +235,7 @@ public final class Environment extends LispObject
      * If there is no binding in the current (lexical) environment,
      * the current dynamic environment (thread) is checked.
      */
-  public boolean isDeclaredSpecial(LispObject var)
+  public boolean isDeclaredSpecial(Symbol var)
   {
     Binding binding = getBinding(var);
     return (binding != null) ? binding.specialp :

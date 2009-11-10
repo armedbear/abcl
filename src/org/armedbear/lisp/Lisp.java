@@ -423,21 +423,22 @@ public abstract class Lisp
       throw new ThreadDestroyed();
     if (obj instanceof Symbol)
       {
+        Symbol symbol = (Symbol)obj;
         LispObject result;
-        if (obj.isSpecialVariable())
+        if (symbol.isSpecialVariable())
           {
-            if (obj.constantp())
-              return obj.getSymbolValue();
+            if (symbol.constantp())
+              return symbol.getSymbolValue();
             else
-              result = thread.lookupSpecial(obj);
+              result = thread.lookupSpecial(symbol);
           }
-        else if (env.isDeclaredSpecial(obj))
-          result = thread.lookupSpecial(obj);
+        else if (env.isDeclaredSpecial(symbol))
+          result = thread.lookupSpecial(symbol);
         else
-          result = env.lookup(obj);
+          result = env.lookup(symbol);
         if (result == null)
           {
-            result = obj.getSymbolValue();
+            result = symbol.getSymbolValue();
             if (result == null)
               return error(new UnboundVariable(obj));
           }
