@@ -186,7 +186,6 @@
       (resolve sym))))
 
 (unless (featurep :j)
-  (load-system-file "top-level")
   (unless *noinform*
     (%format t "Startup completed in ~A seconds.~%"
              (float (/ (ext:uptime) 1000)))))
