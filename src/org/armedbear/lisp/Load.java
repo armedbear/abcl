@@ -47,6 +47,23 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+/* This file holds ABCL's (FASL and non-FASL) loading behaviours.
+ *
+ * The loading process works like this:
+ *   The loader associates the input filename with a special variable
+ *   and starts evaluating the forms in the file.
+ *
+ *   If one of the forms is (INIT-FASL :VERSION <version>), from that
+ *   point the file is taken to be a FASL.
+ *   The FASL loader takes over and retrieves the file being loaded
+ *   from the special variable and continues loading from there.
+ *
+ *   Note: In order to prevent re-opening the ZIP file again and again,
+ *    ABCL keeps a cache of opened zip files, which are retrieved to load
+ *    .cls (compiled-function files) from the ZIP while loading the main
+ *    ._ file with FASL loading instructions.
+ */
+
 public final class Load extends Lisp
 {
     public static final LispObject load(String filename)
@@ -59,7 +76,7 @@ public final class Load extends Lisp
                     Symbol.LOAD_PRINT.symbolValue(thread) != NIL,
                     true);
     }
-    
+
     private static final File findLoadableFile(final String filename,
                                                final String dir)
     {
@@ -93,7 +110,7 @@ public final class Load extends Lisp
                                         boolean verbose,
                                         boolean print,
                                         boolean ifDoesNotExist)
-        {
+    {
         return load(pathname, filename, verbose, print, ifDoesNotExist, false);
     }
 
