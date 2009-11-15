@@ -124,13 +124,22 @@ public class LispObject extends Lisp
   }
 
 
-  public LispObject car()
+  public final LispObject car()
   {
+    if (this instanceof Cons) {
+      return ((Cons)this).car;
+    } else if (this == NIL) {
+      return NIL;
+    }
     return type_error(this, Symbol.LIST);
   }
 
-  public void setCar(LispObject obj)
+  public final void setCar(LispObject obj)
   {
+      if (this instanceof Cons) {
+          ((Cons)this).car = obj;
+          return;
+      }
     type_error(this, Symbol.CONS);
   }
 
@@ -139,13 +148,23 @@ public class LispObject extends Lisp
     return type_error(this, Symbol.CONS);
   }
 
-  public LispObject cdr()
+  public final LispObject cdr()
   {
+    if (this instanceof Cons) {
+      return ((Cons)this).cdr;
+    } else if (this instanceof Nil) {
+      return NIL;
+    }
     return type_error(this, Symbol.LIST);
   }
 
-  public void setCdr(LispObject obj)
+  public final void setCdr(LispObject obj)
   {
+      if (this instanceof Cons) {
+          ((Cons)this).cdr = obj;
+          return;
+      }
+
     type_error(this, Symbol.CONS);
   }
 
@@ -182,7 +201,7 @@ public class LispObject extends Lisp
     return type_error(this, Symbol.LIST);
   }
 
-  public LispObject EQ(LispObject obj)
+  final public LispObject EQ(LispObject obj)
   {
     return this == obj ? T : NIL;
   }

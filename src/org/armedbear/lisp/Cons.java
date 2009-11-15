@@ -124,34 +124,10 @@ public final class Cons extends LispObject
   }
 
   @Override
-  public final LispObject car()
-  {
-    return car;
-  }
-
-  @Override
-  public final LispObject cdr()
-  {
-    return cdr;
-  }
-
-  @Override
-  public final void setCar(LispObject obj)
-  {
-    car = obj;
-  }
-
-  @Override
   public LispObject RPLACA(LispObject obj)
   {
     car = obj;
     return this;
-  }
-
-  @Override
-  public final void setCdr(LispObject obj)
-  {
-    cdr = obj;
   }
 
   @Override

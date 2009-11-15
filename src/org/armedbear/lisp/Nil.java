@@ -105,18 +105,6 @@ public final class Nil extends Symbol
     }
 
     @Override
-    public LispObject car()
-    {
-        return this;
-    }
-
-    @Override
-    public LispObject cdr()
-    {
-        return this;
-    }
-
-    @Override
     public final LispObject cadr()
     {
         return this;
