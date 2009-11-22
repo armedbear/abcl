@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import java.util.WeakHashMap;
+
 public class LispObject extends Lisp
 {
   public LispObject typeOf()
@@ -587,13 +589,16 @@ public class LispObject extends Lisp
     return false;
   }
 
-  private static final EqHashTable documentationHashTable =
-    new EqHashTable(11, NIL, NIL);
+  private static final WeakHashMap<LispObject, LispObject>
+      documentationHashTable = new WeakHashMap<LispObject, LispObject>();
 
   public LispObject getDocumentation(LispObject docType)
 
   {
-    LispObject alist = documentationHashTable.get(this);
+    LispObject alist;
+    synchronized (documentationHashTable) {
+      alist = documentationHashTable.get(this);
+    }
     if (alist != null)
       {
         LispObject entry = assq(docType, alist);
@@ -606,19 +611,21 @@ public class LispObject extends Lisp
   public void setDocumentation(LispObject docType, LispObject documentation)
 
   {
-    LispObject alist = documentationHashTable.get(this);
-    if (alist == null)
-      alist = NIL;
-    LispObject entry = assq(docType, alist);
-    if (entry instanceof Cons)
-      {
-        ((Cons)entry).cdr = documentation;
-      }
-    else
-      {
-        alist = alist.push(new Cons(docType, documentation));
-        documentationHashTable.put(this, alist);
-      }
+    synchronized (documentationHashTable) {
+      LispObject alist = documentationHashTable.get(this);
+      if (alist == null)
+        alist = NIL;
+      LispObject entry = assq(docType, alist);
+      if (entry instanceof Cons)
+        {
+          ((Cons)entry).cdr = documentation;
+        }
+      else
+        {
+          alist = alist.push(new Cons(docType, documentation));
+          documentationHashTable.put(this, alist);
+        }
+    }
   }
 
   public LispObject getPropertyList()
