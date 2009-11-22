@@ -404,7 +404,8 @@ public final class LispThread extends LispObject
         savedSpecials = new SpecialBindingsMark(idx, binding, savedSpecials);
         return specials[idx]
             = new SpecialBinding(idx,
-                                 (binding == null) ? null : binding.value);
+                                 (binding == null) ?
+                                 name.getSymbolValue() : binding.value);
     }
 
     /** Looks up the value of a special binding in the context of the
