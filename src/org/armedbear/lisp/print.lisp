@@ -133,7 +133,13 @@
               (not (bit-vector-p object)))
          (output-vector object stream))
         ((structure-object-p object)
-         (print-object object stream))
+         (cond
+           ((and (null *print-readably*)
+                 *print-level*
+                 (>= *current-print-level* *print-level*))
+            (write-char #\# stream))
+           (t
+            (print-object object stream))))
         ((standard-object-p object)
          (print-object object stream))
         ((xp::xp-structure-p stream)
