@@ -214,33 +214,46 @@
          ;; FIXME
          (error "Unsupported wildcard pattern: ~S" to))))
 
-(defun translate-directory-components (source from to case)
-  (cond ((null to)
-         nil
-         )
-        ((memq (car to) '(:absolute :relative))
-         (cons (car to)
-               (translate-directory-components (cdr source) (cdr from) (cdr to) case))
-         )
-        ((eq (car to) :wild)
-         (if (eq (car from) :wild)
-             ;; Grab the next chunk from SOURCE.
-             (append (casify (car source) case)
-                     (translate-directory-components (cdr source) (cdr from) (cdr to) case))
-             (error "Unsupported case 1: ~S ~S ~S" source from to))
-         )
-        ((eq (car to) :wild-inferiors)
-         ;; Grab the next chunk from SOURCE.
-         (append (casify (car source) case)
-                 (translate-directory-components (cdr source) (cdr from) (cdr to) case))
-         )
-        (t
-         ;; "If the piece in TO-WILDCARD is present and not wild, it is copied
-         ;; into the result."
-         (append (casify (car to) case)
-                 (translate-directory-components source from (cdr to) case))
-         )
-        ))
+
+(defun translate-directory-components-aux (src from to case)
+  (cond
+    ((and (null src) (null from) (null to))
+     NIL)
+    ((and to
+          (not (member (car to) '(:wild :wild-inferiors))))
+     (cons (casify (car to) case)
+           (translate-directory-components-aux src from (cdr to) case)))
+    ((not (and src from))
+     ;; both are NIL --> TO is a wildcard which can't be matched
+     ;; either is NIL --> SRC can't be fully matched against FROM, vice versa
+     (throw 'failed-match))
+    ((not (member (car from) '(:wild :wild-inferiors)))
+     (unless (string= (casify (car src) case) (casify (car from) case))
+       (throw 'failed-match)) ;; FROM doesn't match SRC
+     (translate-directory-components-aux (cdr src) (cdr from) to case))
+    ((not (eq (car from) (car to))) ;; TO is NIL while FROM is not, or
+     (throw 'failed-match))         ;; FROM wildcard doesn't match TO wildcard
+    ((eq (car to) :wild)  ;; FROM and TO wildcards are :WILD
+     (cons (casify (car src) case)
+       (translate-directory-components-aux (cdr src) (cdr from) (cdr to) case)))
+    ((eq (car to) :wild-inferiors) ;; FROM and TO wildcards are :WILD-INFERIORS
+     (do ((src (cdr src) (cdr src))
+          (match (list (casify (car src) case))
+                 (cons (casify (car src) case) match)))
+         (NIL) ;; we'll exit the loop in different ways
+       (catch 'failed-match
+         (return-from translate-directory-components-aux
+           (append (reverse match) (translate-directory-components-aux
+                                        src (cdr from) (cdr to) case))))
+       (when (null src) ;; SRC is NIL and we're still here: error exit
+         (throw 'failed-match))))))
+
+(defun translate-directory-components (src from to case)
+  (catch 'failed-match
+    (return-from translate-directory-components
+      (translate-directory-components-aux src from to case)))
+  (error "Unsupported case in TRANSLATE-DIRECTORY-COMPONENTS."))
+
 
 (defun translate-directory (source from to case)
   ;; FIXME The IGNORE-CASE argument to DIRECTORY-MATCH-P should not be nil on
@@ -252,10 +265,7 @@
         ((equal source '(:absolute))
          (remove :wild-inferiors to))
         (t
-         (translate-directory-components (split-directory-components source)
-                                         (split-directory-components from)
-                                         (split-directory-components to)
-                                         case))))
+         (translate-directory-components source from to case))))
 
 ;; "The resulting pathname is TO-WILDCARD with each wildcard or missing field
 ;; replaced by a portion of SOURCE."
