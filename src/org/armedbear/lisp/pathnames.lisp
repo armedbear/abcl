@@ -175,25 +175,6 @@
     (t
      thing)))
 
-(defun split-directory-components (directory)
-  (declare (optimize safety))
-  (declare (type list directory))
-  (unless (memq (car directory) '(:absolute :relative))
-    (error "Ill-formed directory list: ~S" directory))
-  (let (result sublist)
-    (push (car directory) result)
-    (dolist (component (cdr directory))
-      (cond ((memq component '(:wild :wild-inferiors))
-             (when sublist
-               (push (nreverse sublist) result)
-               (setf sublist nil))
-             (push component result))
-            (t
-             (push component sublist))))
-    (when sublist
-      (push (nreverse sublist) result))
-    (nreverse result)))
-
 (defun translate-component (source from to &optional case)
   (declare (ignore from))
   (cond ((or (eq to :wild) (null to))
