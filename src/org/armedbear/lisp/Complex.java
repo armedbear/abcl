@@ -105,12 +105,6 @@ public final class Complex extends LispObject
   }
 
   @Override
-  public LispObject NUMBERP()
-  {
-    return T;
-  }
-
-  @Override
   public boolean numberp()
   {
     return true;

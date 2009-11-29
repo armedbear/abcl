@@ -156,21 +156,9 @@ public final class Fixnum extends LispInteger
   }
 
   @Override
-  public LispObject NUMBERP()
-  {
-    return T;
-  }
-
-  @Override
   public boolean numberp()
   {
     return true;
-  }
-
-  @Override
-  public LispObject INTEGERP()
-  {
-    return T;
   }
 
   @Override

@@ -97,12 +97,6 @@ public final class Ratio extends LispObject
     }
 
     @Override
-    public LispObject NUMBERP()
-    {
-        return T;
-    }
-
-    @Override
     public boolean numberp()
     {
         return true;

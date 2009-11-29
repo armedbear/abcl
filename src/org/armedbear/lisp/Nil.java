@@ -200,21 +200,9 @@ public final class Nil extends Symbol
     }
 
     @Override
-    public LispObject LISTP()
-    {
-        return T;
-    }
-
-    @Override
     public boolean endp()
     {
         return true;
-    }
-
-    @Override
-    public LispObject ENDP()
-    {
-        return T;
     }
 
     @Override

@@ -116,12 +116,6 @@ public final class LispCharacter extends LispObject
   }
 
   @Override
-  public LispObject CHARACTERP()
-  {
-    return T;
-  }
-
-  @Override
   public boolean characterp()
   {
     return true;

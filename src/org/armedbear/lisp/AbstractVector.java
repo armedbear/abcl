@@ -49,12 +49,6 @@ public abstract class AbstractVector extends AbstractArray
   }
 
   @Override
-  public final LispObject VECTORP()
-  {
-    return T;
-  }
-
-  @Override
   public final boolean vectorp()
   {
     return true;

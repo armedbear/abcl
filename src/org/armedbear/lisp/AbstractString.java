@@ -52,12 +52,6 @@ public abstract class AbstractString extends AbstractVector
     }
 
     @Override
-    public final LispObject STRINGP()
-    {
-        return T;
-    }
-
-    @Override
     public final boolean stringp()
     {
         return true;

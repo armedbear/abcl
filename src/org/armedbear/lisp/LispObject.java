@@ -86,14 +86,14 @@ public class LispObject extends Lisp
     return true;
   }
 
-  public LispObject CONSTANTP()
+  public final LispObject CONSTANTP()
   {
     return constantp() ? T : NIL;
   }
 
-  public LispObject ATOM()
+  public final LispObject ATOM()
   {
-    return T;
+    return atom() ? T : NIL;
   }
 
   public boolean atom()
@@ -268,7 +268,7 @@ public class LispObject extends Lisp
     return type_error(this, Symbol.RATIONAL);
   }
 
-  public LispObject EVENP()
+  public final LispObject EVENP()
   {
     return evenp() ? T : NIL;
   }
@@ -280,7 +280,7 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject ODDP()
+  public final LispObject ODDP()
   {
     return oddp() ? T : NIL;
   }
@@ -292,7 +292,7 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject PLUSP()
+  public final LispObject PLUSP()
   {
     return plusp() ? T : NIL;
   }
@@ -304,7 +304,7 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject MINUSP()
+  public final LispObject MINUSP()
   {
     return minusp() ? T : NIL;
   }
@@ -316,9 +316,9 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject NUMBERP()
+  public final LispObject NUMBERP()
   {
-    return NIL;
+    return numberp() ? T : NIL;
   }
 
   public boolean numberp()
@@ -326,7 +326,7 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject ZEROP()
+  public final LispObject ZEROP()
   {
     return zerop() ? T : NIL;
   }
@@ -343,9 +343,9 @@ public class LispObject extends Lisp
     return NIL;
   }
 
-  public LispObject FLOATP()
+  public final LispObject FLOATP()
   {
-    return NIL;
+    return floatp() ? T : NIL;
   }
 
   public boolean floatp()
@@ -353,9 +353,9 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject INTEGERP()
+  public final LispObject INTEGERP()
   {
-    return NIL;
+    return integerp() ? T : NIL;
   }
 
   public boolean integerp()
@@ -363,7 +363,7 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject RATIONALP()
+  public final LispObject RATIONALP()
   {
     return rationalp() ? T : NIL;
   }
@@ -373,7 +373,7 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject REALP()
+  public final LispObject REALP()
   {
     return realp() ? T : NIL;
   }
@@ -383,9 +383,9 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject STRINGP()
+  public final LispObject STRINGP()
   {
-    return NIL;
+    return stringp() ? T : NIL;
   }
 
   public boolean stringp()
@@ -398,9 +398,9 @@ public class LispObject extends Lisp
     return NIL;
   }
 
-  public LispObject VECTORP()
+  public final LispObject VECTORP()
   {
-    return NIL;
+    return vectorp() ? T : NIL;
   }
 
   public boolean vectorp()
@@ -408,9 +408,9 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject CHARACTERP()
+  public final LispObject CHARACTERP()
   {
-    return NIL;
+    return characterp() ? T : NIL;
   }
 
   public boolean characterp()
@@ -555,9 +555,9 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject LISTP()
+  public final LispObject LISTP()
   {
-    return NIL;
+    return listp() ? T : NIL;
   }
 
   public boolean endp()
@@ -567,9 +567,9 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject ENDP()
+  public final LispObject ENDP()
   {
-    return type_error(this, Symbol.LIST);
+    return endp() ? T : NIL;
   }
 
   public LispObject NOT()
@@ -880,7 +880,7 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject IS_E(LispObject obj)
+  public final LispObject IS_E(LispObject obj)
   {
     return isEqualTo(obj) ? T : NIL;
   }
@@ -897,7 +897,7 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject IS_NE(LispObject obj)
+  public final LispObject IS_NE(LispObject obj)
   {
     return isNotEqualTo(obj) ? T : NIL;
   }
@@ -914,7 +914,7 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject IS_LT(LispObject obj)
+  public final LispObject IS_LT(LispObject obj)
   {
     return isLessThan(obj) ? T : NIL;
   }
@@ -931,7 +931,7 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject IS_GT(LispObject obj)
+  public final LispObject IS_GT(LispObject obj)
   {
     return isGreaterThan(obj) ? T : NIL;
   }
@@ -948,7 +948,7 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject IS_LE(LispObject obj)
+  public final LispObject IS_LE(LispObject obj)
   {
     return isLessThanOrEqualTo(obj) ? T : NIL;
   }
@@ -965,7 +965,7 @@ public class LispObject extends Lisp
     return false;
   }
 
-  public LispObject IS_GE(LispObject obj)
+  public final LispObject IS_GE(LispObject obj)
   {
     return isGreaterThanOrEqualTo(obj) ? T : NIL;
   }

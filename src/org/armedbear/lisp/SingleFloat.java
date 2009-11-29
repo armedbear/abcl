@@ -106,12 +106,6 @@ public final class SingleFloat extends LispObject
     }
 
     @Override
-    public LispObject NUMBERP()
-    {
-        return T;
-    }
-
-    @Override
     public boolean numberp()
     {
         return true;
@@ -209,12 +203,6 @@ public final class SingleFloat extends LispObject
     public boolean zerop()
     {
         return value == 0;
-    }
-
-    @Override
-    public LispObject FLOATP()
-    {
-        return T;
     }
 
     @Override

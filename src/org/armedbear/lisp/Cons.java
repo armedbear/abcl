@@ -112,12 +112,6 @@ public final class Cons extends LispObject
   }
 
   @Override
-  public LispObject ATOM()
-  {
-    return NIL;
-  }
-
-  @Override
   public boolean atom()
   {
     return false;
@@ -414,21 +408,9 @@ public final class Cons extends LispObject
   }
 
   @Override
-  public final LispObject LISTP()
-  {
-    return T;
-  }
-
-  @Override
   public final boolean endp()
   {
     return false;
-  }
-
-  @Override
-  public final LispObject ENDP()
-  {
-    return NIL;
   }
 
   @Override
