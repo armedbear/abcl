@@ -138,12 +138,6 @@ public final class Nil extends Symbol
     }
 
     @Override
-    public LispObject push(LispObject obj)
-    {
-        return new Cons(obj);
-    }
-
-    @Override
     public LispObject NTH(int index)
     {
         if (index < 0)

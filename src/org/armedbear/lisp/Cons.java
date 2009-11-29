@@ -166,12 +166,6 @@ public final class Cons extends LispObject
   }
 
   @Override
-  public final LispObject push(LispObject obj)
-  {
-    return new Cons(obj, this);
-  }
-
-  @Override
   public final int sxhash()
   {
     return computeHash(this, 4);

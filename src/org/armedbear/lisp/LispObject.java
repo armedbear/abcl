@@ -198,8 +198,13 @@ public class LispObject extends Lisp
     return type_error(this, Symbol.LIST);
   }
 
-  public LispObject push(LispObject obj)
+  public final LispObject push(LispObject obj)
   {
+    if (this instanceof Cons) {
+      return new Cons(obj, this);
+    } else if (this instanceof Nil) {
+      return new Cons(obj);
+    }
     return type_error(this, Symbol.LIST);
   }
 
