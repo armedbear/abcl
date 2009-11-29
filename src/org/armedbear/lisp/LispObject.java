@@ -130,7 +130,7 @@ public class LispObject extends Lisp
   {
     if (this instanceof Cons) {
       return ((Cons)this).car;
-    } else if (this == NIL) {
+    } else if (this instanceof Nil) {
       return NIL;
     }
     return type_error(this, Symbol.LIST);
