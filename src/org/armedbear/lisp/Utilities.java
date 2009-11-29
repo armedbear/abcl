@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -42,7 +44,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
-public final class Utilities extends Lisp
+public final class Utilities extends LispTrampolinesFile
 {
     public static final boolean isPlatformUnix;
     public static final boolean isPlatformWindows;

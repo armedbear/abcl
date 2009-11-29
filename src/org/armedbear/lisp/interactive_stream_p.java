@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 // ### interactive-stream-p
 public final class interactive_stream_p extends Primitive
 {

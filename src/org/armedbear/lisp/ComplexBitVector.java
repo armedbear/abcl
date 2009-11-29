@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public final class ComplexBitVector extends AbstractBitVector
 {
     private int fillPointer = -1; // -1 indicates no fill pointer.

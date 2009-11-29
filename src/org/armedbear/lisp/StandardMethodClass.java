@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public final class StandardMethodClass extends StandardClass
 {
   public static final int SLOT_INDEX_GENERIC_FUNCTION = 0;

@@ -33,10 +33,12 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.io.File;
 import java.io.IOException;
 
-public final class Extensions extends Lisp
+public final class Extensions extends LispTrampolinesFile
 {
   // ### *ed-functions*
   public static final Symbol _ED_FUNCTIONS_ =

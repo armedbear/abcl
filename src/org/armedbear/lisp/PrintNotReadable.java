@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public class PrintNotReadable extends LispError
 {
     public PrintNotReadable(LispObject initArgs)

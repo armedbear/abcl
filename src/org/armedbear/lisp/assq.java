@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 // ### assq item alist => entry
 public final class assq extends Primitive
 {
@@ -45,7 +47,7 @@ public final class assq extends Primitive
     public LispObject execute(LispObject item, LispObject alist)
 
     {
-        return assq(item, alist);
+        return Lisp.assq(item, alist);
     }
 
     private static final Primitive ASSQ = new assq();

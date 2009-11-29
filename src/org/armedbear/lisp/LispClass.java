@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public abstract class LispClass extends StandardObject
 {
   private static final EqHashTable map = new EqHashTable(256, NIL, NIL);

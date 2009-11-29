@@ -33,9 +33,11 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
-public final class SpecialOperators extends Lisp
+public final class SpecialOperators extends LispTrampolinesFile
 {
   // ### quote
   private static final SpecialOperator QUOTE =
@@ -502,7 +504,7 @@ public final class SpecialOperators extends Lisp
       public LispObject execute(LispObject args, Environment env)
 
       {
-        LispObject value = Symbol.NIL;
+        LispObject value = Nil.NIL;
         final LispThread thread = LispThread.currentThread();
         while (args != NIL)
           {

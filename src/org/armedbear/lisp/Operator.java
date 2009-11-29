@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public abstract class Operator extends LispObject
 {
     protected LispObject lambdaName;

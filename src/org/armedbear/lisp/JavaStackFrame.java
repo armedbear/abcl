@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public class JavaStackFrame 
   extends StackFrame
 {
@@ -69,11 +71,11 @@ public class JavaStackFrame
      return super.typep(typeSpecifier);
    }
 
-  static final Symbol CLASS = Packages.internKeyword("CLASS");
-  static final Symbol METHOD = Packages.internKeyword("METHOD");
-  static final Symbol FILE = Packages.internKeyword("FILE");
-  static final Symbol LINE = Packages.internKeyword("LINE");
-  static final Symbol NATIVE_METHOD = Packages.internKeyword("NATIVE-METHOD");
+  static final Symbol CLASS = internKeyword("CLASS");
+  static final Symbol METHOD = internKeyword("METHOD");
+  static final Symbol FILE = internKeyword("FILE");
+  static final Symbol LINE = internKeyword("LINE");
+  static final Symbol NATIVE_METHOD = internKeyword("NATIVE-METHOD");
 
   public LispObject toLispList()
   {

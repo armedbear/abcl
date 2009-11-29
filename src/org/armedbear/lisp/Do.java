@@ -33,7 +33,9 @@
 
 package org.armedbear.lisp;
 
-public final class Do extends Lisp
+import static org.armedbear.lisp.Lisp.*;
+
+public final class Do extends LispTrampolinesFile
 {
   // ### do
   private static final SpecialOperator DO =

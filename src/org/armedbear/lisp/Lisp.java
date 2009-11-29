@@ -46,7 +46,7 @@ import java.util.Hashtable;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public abstract class Lisp
+public final class Lisp
 {
   public static final boolean debug = true;
 
@@ -380,7 +380,7 @@ public abstract class Lisp
     return error(new TypeError(datum, expectedType));
   }
 
-  protected static volatile boolean interrupted;
+  public static volatile boolean interrupted;
 
   public static synchronized final void setInterrupted(boolean b)
   {
@@ -490,7 +490,7 @@ public abstract class Lisp
   public static final int CALL_REGISTERS_MAX = 8;
 
   // Also used in JProxy.java.
-  protected static final LispObject evalCall(LispObject function,
+  public static final LispObject evalCall(LispObject function,
                                              LispObject args,
                                              Environment env,
                                              LispThread thread)
@@ -818,7 +818,7 @@ public abstract class Lisp
     return false;
   }
 
-  protected static final void bindArg(LispObject ownSpecials,
+  public static final void bindArg(LispObject ownSpecials,
                                       Symbol sym, LispObject value,
                                       Environment env, LispThread thread)
 
@@ -1834,7 +1834,7 @@ public abstract class Lisp
     return null;
   }
 
-  public LispObject assq(LispObject item, LispObject alist)
+  public static LispObject assq(LispObject item, LispObject alist)
 
   {
     while (alist instanceof Cons)

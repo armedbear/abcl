@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +42,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 
-public final class Interpreter extends Lisp
+public final class Interpreter extends LispTrampolinesFile
 {
     // There can only be one interpreter.
     public static Interpreter interpreter;
@@ -153,7 +155,7 @@ public final class Interpreter extends Lisp
     // Interface.
     public LispObject eval(String s)
     {
-        return eval(new StringInputStream(s).read(true, NIL, false,
+        return Lisp.eval(new StringInputStream(s).read(true, NIL, false,
                                                   LispThread.currentThread()));
     }
 
@@ -334,7 +336,7 @@ public final class Interpreter extends Lisp
                         break;
                     out.setCharPos(0);
                     Symbol.MINUS.setSymbolValue(object);
-                    LispObject result = eval(object, new Environment(), thread);
+                    LispObject result = Lisp.eval(object, new Environment(), thread);
                     Debug.assertTrue(result != null);
                     Symbol.STAR_STAR_STAR.setSymbolValue(Symbol.STAR_STAR.getSymbolValue());
                     Symbol.STAR_STAR.setSymbolValue(Symbol.STAR.getSymbolValue());
@@ -538,7 +540,7 @@ public final class Interpreter extends Lisp
         final SpecialBindingsMark mark = thread.markSpecialBindings();
         thread.bindSpecial(Symbol.DEBUGGER_HOOK, _DEBUGGER_HOOK_FUNCTION);
         try {
-            return eval(obj, new Environment(), thread);
+            return Lisp.eval(obj, new Environment(), thread);
         }
         finally {
             thread.resetSpecialBindings(mark);

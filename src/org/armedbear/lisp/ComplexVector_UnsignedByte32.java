@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 // A specialized vector of element type (UNSIGNED-BYTE 32) that is displaced to
 // another array, has a fill pointer, and/or is expressly adjustable.
 public final class ComplexVector_UnsignedByte32 extends AbstractVector

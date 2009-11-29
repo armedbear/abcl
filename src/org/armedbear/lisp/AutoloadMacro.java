@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public final class AutoloadMacro extends Autoload
 {
     private AutoloadMacro(Symbol symbol)

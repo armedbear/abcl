@@ -33,11 +33,13 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.TimeZone;
 
-public final class Time extends Lisp
+public final class Time extends LispTrampolinesFile
 {
 
   // ### %time

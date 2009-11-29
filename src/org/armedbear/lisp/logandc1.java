@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.math.BigInteger;
 
 public final class logandc1 extends Primitive

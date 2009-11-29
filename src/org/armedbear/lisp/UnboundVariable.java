@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public final class UnboundVariable extends CellError
 {
   // obj is either the unbound variable itself or an initArgs list.

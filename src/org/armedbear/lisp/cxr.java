@@ -33,7 +33,9 @@
 
 package org.armedbear.lisp;
 
-public final class cxr extends Lisp
+import static org.armedbear.lisp.Lisp.*;
+
+public final class cxr extends LispTrampolinesFile
 {
   // ### set-car
   private static final Primitive SET_CAR =

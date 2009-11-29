@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public final class ByteArrayOutputStream extends Stream
 {
     private final java.io.ByteArrayOutputStream byteArrayOutputStream;

@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 // "The type of a vector that is not displaced to another array, has no fill
 // pointer, is not expressly adjustable and is able to hold elements of any
 // type is a subtype of type SIMPLE-VECTOR."

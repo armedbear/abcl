@@ -33,11 +33,13 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
 
-public class RuntimeClass extends Lisp
+public class RuntimeClass extends LispTrampolinesFile
 {
     private static Map<String,RuntimeClass> classes = new HashMap<String,RuntimeClass>();
 

@@ -33,7 +33,9 @@
 
 package org.armedbear.lisp;
 
-public final class StringFunctions extends Lisp
+import static org.armedbear.lisp.Lisp.*;
+
+public final class StringFunctions extends LispTrampolinesFile
 {
     // ### %string=
     // Case sensitive.

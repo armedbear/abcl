@@ -33,12 +33,14 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-public final class Packages extends Lisp
+public final class Packages extends LispTrampolinesFile
 {
   private static final ArrayList<Package> packages = new ArrayList<Package>();
   private static final HashMap<String,Package> map = new HashMap<String,Package>();

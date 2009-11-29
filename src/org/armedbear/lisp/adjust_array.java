@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 // ### %adjust-array array new-dimensions element-type initial-element
 // initial-element-p initial-contents initial-contents-p fill-pointer
 // displaced-to displaced-index-offset => new-array

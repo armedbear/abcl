@@ -33,9 +33,11 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.net.InetAddress;
 
-public final class SiteName extends Lisp
+public final class SiteName extends LispTrampolinesFile
 {
     private static LispObject getHostName()
     {

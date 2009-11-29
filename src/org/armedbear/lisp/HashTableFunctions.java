@@ -33,7 +33,9 @@
 
 package org.armedbear.lisp;
 
-public final class HashTableFunctions extends Lisp
+import static org.armedbear.lisp.Lisp.*;
+
+public final class HashTableFunctions extends LispTrampolinesFile
 {
   private static final LispObject FUNCTION_EQ =
     Symbol.EQ.getSymbolFunction();

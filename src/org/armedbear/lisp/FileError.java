@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public final class FileError extends LispError
 {
     // initArgs is either a normal initArgs list or a pathname.

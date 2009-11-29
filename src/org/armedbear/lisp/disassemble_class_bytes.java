@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;

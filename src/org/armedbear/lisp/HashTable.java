@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public abstract class HashTable extends LispObject
 {
   private static final int DEFAULT_SIZE = 16;

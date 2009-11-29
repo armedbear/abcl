@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public class ArithmeticError extends LispError
 {
     protected ArithmeticError(LispClass cls)

@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public final class FloatingPointUnderflow extends ArithmeticError
 {
     public FloatingPointUnderflow(LispObject initArgs)

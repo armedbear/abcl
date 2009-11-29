@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public final class FloatingPointInexact extends ArithmeticError
 {
     public FloatingPointInexact(LispObject initArgs)

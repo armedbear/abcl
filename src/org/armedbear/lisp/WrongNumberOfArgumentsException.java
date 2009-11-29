@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public final class WrongNumberOfArgumentsException extends ProgramError
 {
     private final Operator operator;

@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 // ### stream-element-type
 public final class stream_element_type extends Primitive
 {

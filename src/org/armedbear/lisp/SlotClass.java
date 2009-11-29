@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public class SlotClass extends LispClass
 {
     private LispObject directSlotDefinitions = NIL;

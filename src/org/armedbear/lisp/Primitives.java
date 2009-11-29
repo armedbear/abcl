@@ -33,10 +33,12 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-public final class Primitives extends Lisp
+public final class Primitives extends LispTrampolinesFile
 {
   // ### *
   public static final Primitive MULTIPLY =

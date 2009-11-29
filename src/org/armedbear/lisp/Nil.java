@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public final class Nil extends Symbol
 {
     final static Nil NIL = new Nil(PACKAGE_CL);

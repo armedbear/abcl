@@ -33,11 +33,13 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-public final class JHandler extends Lisp
+public final class JHandler extends LispTrampolinesFile
 {
     private static final Map<Object,Map<String,Entry>> table =
        new WeakHashMap<Object,Map<String,Entry>>();
@@ -80,7 +82,7 @@ public final class JHandler extends Lisp
                 }
                 LispObject lispAsVector = new SimpleVector(lispAs);
                 LispObject[] args = new LispObject[] //FIXME: count -> seq_num
-                { data, new JavaObject(o), lispAiVector, lispAsVector, Keyword.internKeyword(s), count };
+                { data, new JavaObject(o), lispAiVector, lispAsVector, internKeyword(s), count };
                 f.execute(args);
             }
         }

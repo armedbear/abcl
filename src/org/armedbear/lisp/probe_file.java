@@ -33,9 +33,11 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.io.File;
 
-public final class probe_file extends Lisp
+public final class probe_file extends LispTrampolinesFile
 {
     // ### probe-file
     // probe-file pathspec => truename

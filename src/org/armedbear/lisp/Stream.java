@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -90,22 +92,22 @@ public class Stream extends LispObject
     LF
   }
 
-  static final protected Symbol keywordDefault = Packages.internKeyword("DEFAULT");
+  static final protected Symbol keywordDefault = internKeyword("DEFAULT");
   
-  static final private Symbol keywordCodePage = Packages.internKeyword("CODE-PAGE");
-  static final private Symbol keywordID = Packages.internKeyword("ID");
+  static final private Symbol keywordCodePage = internKeyword("CODE-PAGE");
+  static final private Symbol keywordID = internKeyword("ID");
 
-  static final private Symbol keywordEolStyle = Packages.internKeyword("EOL-STYLE");
-  static final private Symbol keywordCR = Packages.internKeyword("CR");
-  static final private Symbol keywordLF = Packages.internKeyword("LF");
-  static final private Symbol keywordCRLF = Packages.internKeyword("CRLF");
-  static final private Symbol keywordRAW = Packages.internKeyword("RAW");
+  static final private Symbol keywordEolStyle = internKeyword("EOL-STYLE");
+  static final private Symbol keywordCR = internKeyword("CR");
+  static final private Symbol keywordLF = internKeyword("LF");
+  static final private Symbol keywordCRLF = internKeyword("CRLF");
+  static final private Symbol keywordRAW = internKeyword("RAW");
     
   public final static EolStyle platformEolStyle = Utilities.isPlatformWindows ? EolStyle.CRLF : EolStyle.LF;
     
   protected EolStyle eolStyle = platformEolStyle;
   protected char eolChar = (eolStyle == EolStyle.CR) ? '\r' : '\n';
-  protected LispObject externalFormat = LispObject.NIL;
+  protected LispObject externalFormat = NIL;
   protected String encoding = null;
   protected char lastChar = 0;
   
@@ -290,10 +292,10 @@ public class Stream extends LispObject
         if (enc == keywordCodePage) {
             encIsCp = true;
 
-            enc = LispObject.getf(format.cdr(), keywordID, null);
+            enc = getf(format.cdr(), keywordID, null);
         }
           
-        LispObject eol = LispObject.getf(format.cdr(), keywordEolStyle, keywordRAW);
+        LispObject eol = getf(format.cdr(), keywordEolStyle, keywordRAW);
         if (eol == keywordCR)
             eolStyle = EolStyle.CR;
         else if (eol == keywordLF)

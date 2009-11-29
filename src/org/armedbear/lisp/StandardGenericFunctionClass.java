@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public final class StandardGenericFunctionClass extends StandardClass
 {
   public static final int SLOT_INDEX_NAME                      = 0;

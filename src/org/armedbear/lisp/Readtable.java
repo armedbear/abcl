@@ -32,6 +32,8 @@
  */
 
 package org.armedbear.lisp;
+
+import static org.armedbear.lisp.Lisp.*;
 import java.util.Iterator;
 
 public class Readtable extends LispObject

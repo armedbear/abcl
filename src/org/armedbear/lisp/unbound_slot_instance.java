@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 // ### unbound-slot-instance
 public final class unbound_slot_instance extends Primitive
 {

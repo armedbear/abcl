@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public final class SimpleArray_UnsignedByte16 extends AbstractArray
 {
     private final int[] dimv;

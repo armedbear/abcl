@@ -34,6 +34,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.util.ArrayList;
 
 public class Closure extends Function

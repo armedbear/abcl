@@ -33,9 +33,10 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
 import java.util.WeakHashMap;
 
-public class LispObject extends Lisp
+public class LispObject //extends Lisp
 {
   public LispObject typeOf()
   {

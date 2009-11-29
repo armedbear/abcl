@@ -33,7 +33,7 @@
 
 package org.armedbear.lisp;
 
-public final class Debug extends Lisp
+public final class Debug
 {
     public static final void assertTrue(boolean b)
     {

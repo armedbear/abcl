@@ -21,6 +21,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;

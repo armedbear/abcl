@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 // "The type of a bit vector that is not displaced to another array, has no
 // fill pointer, and is not expressly adjustable is a subtype of type SIMPLE-
 // BIT-VECTOR."

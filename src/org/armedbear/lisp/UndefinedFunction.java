@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public final class UndefinedFunction extends CellError
 {
   // obj is either the name of the undefined function or an initArgs list.

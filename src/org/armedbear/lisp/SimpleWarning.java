@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public final class SimpleWarning extends Warning
 {
     public SimpleWarning(LispObject initArgs)

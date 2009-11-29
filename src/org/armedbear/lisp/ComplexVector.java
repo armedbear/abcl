@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 // A vector that is displaced to another array, has a fill pointer, and/or is
 // expressly adjustable. It can hold elements of any type.
 public final class ComplexVector extends AbstractVector

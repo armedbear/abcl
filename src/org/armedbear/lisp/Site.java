@@ -33,11 +33,13 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.io.File;
 import java.net.URL;
 import java.net.URLDecoder;
 
-public final class Site extends Lisp
+public final class Site extends LispTrampolinesFile
 {
     private static final String LISP_HOME;
 

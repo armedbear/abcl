@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -46,7 +48,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class Java extends Lisp
+public final class Java extends LispTrampolinesFile
 {
     private static final Map<Class,Symbol> registeredExceptions =
        new HashMap<Class,Symbol>();

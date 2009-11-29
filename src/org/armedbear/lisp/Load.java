@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -64,7 +66,7 @@ import java.util.zip.ZipInputStream;
  *    ._ file with FASL loading instructions.
  */
 
-public final class Load extends Lisp
+public final class Load extends LispTrampolinesFile
 {
     public static final LispObject load(String filename)
 

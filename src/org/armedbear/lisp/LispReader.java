@@ -33,7 +33,9 @@
 
 package org.armedbear.lisp;
 
-public final class LispReader extends Lisp
+import static org.armedbear.lisp.Lisp.*;
+
+public final class LispReader extends LispTrampolinesFile
 {
     // ### read-comment
     public static final ReaderMacroFunction READ_COMMENT =
