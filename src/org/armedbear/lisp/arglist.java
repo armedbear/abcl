@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public final class arglist extends LispTrampolinesFile
+public final class arglist
 {
     private static final Operator getOperator(LispObject obj)
 

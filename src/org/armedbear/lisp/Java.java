@@ -48,7 +48,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class Java extends LispTrampolinesFile
+public final class Java
 {
     private static final Map<Class,Symbol> registeredExceptions =
        new HashMap<Class,Symbol>();

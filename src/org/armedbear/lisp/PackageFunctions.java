@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public final class PackageFunctions extends LispTrampolinesFile
+public final class PackageFunctions
 {
     // ### packagep
     // packagep object => generalized-boolean

@@ -40,7 +40,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-public final class Packages extends LispTrampolinesFile
+public final class Packages
 {
   private static final ArrayList<Package> packages = new ArrayList<Package>();
   private static final HashMap<String,Package> map = new HashMap<String,Package>();

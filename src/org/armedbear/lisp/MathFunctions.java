@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public final class MathFunctions extends LispTrampolinesFile
+public final class MathFunctions
 {
     // ### sin
     private static final Primitive SIN = new Primitive("sin", "radians")

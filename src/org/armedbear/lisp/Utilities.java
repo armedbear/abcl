@@ -44,7 +44,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
-public final class Utilities extends LispTrampolinesFile
+public final class Utilities
 {
     public static final boolean isPlatformUnix;
     public static final boolean isPlatformWindows;

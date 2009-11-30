@@ -37,7 +37,7 @@ import static org.armedbear.lisp.Lisp.*;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
-public final class SpecialOperators extends LispTrampolinesFile
+public final class SpecialOperators
 {
   // ### quote
   private static final SpecialOperator QUOTE =

@@ -37,7 +37,7 @@ import static org.armedbear.lisp.Lisp.*;
 
 import java.math.BigInteger;
 
-public final class FloatFunctions extends LispTrampolinesFile
+public final class FloatFunctions
 {
     // ### set-floating-point-modes &key traps => <no values>
     private static final Primitive SET_FLOATING_POINT_MODES =

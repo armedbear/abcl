@@ -39,7 +39,7 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLDecoder;
 
-public final class Site extends LispTrampolinesFile
+public final class Site
 {
     private static final String LISP_HOME;
 

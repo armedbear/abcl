@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public final class CharacterFunctions extends LispTrampolinesFile
+public final class CharacterFunctions
 {
     // ### char=
     private static final Primitive CHAR_EQUALS =

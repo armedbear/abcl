@@ -66,7 +66,7 @@ import java.util.zip.ZipInputStream;
  *    ._ file with FASL loading instructions.
  */
 
-public final class Load extends LispTrampolinesFile
+public final class Load
 {
     public static final LispObject load(String filename)
 

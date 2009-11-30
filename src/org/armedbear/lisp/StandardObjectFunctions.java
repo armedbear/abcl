@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public class StandardObjectFunctions extends LispTrampolinesFile
+public class StandardObjectFunctions
 {
   // ### std-allocate-instance class => instance
   private static final Primitive STD_ALLOCATE_INSTANCE =

@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public final class Keyword extends LispTrampolinesFile
+public final class Keyword
 {
     public static final Symbol
         ABCL                = internKeyword("ABCL"),

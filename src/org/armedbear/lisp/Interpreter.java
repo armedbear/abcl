@@ -42,7 +42,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 
-public final class Interpreter extends LispTrampolinesFile
+public final class Interpreter
 {
     // There can only be one interpreter.
     public static Interpreter interpreter;

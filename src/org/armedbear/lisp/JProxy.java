@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-public final class JProxy extends LispTrampolinesFile
+public final class JProxy
 {
   private static final Map<Object,Entry> table = new WeakHashMap<Object,Entry>();
 

@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public final class function_info extends LispTrampolinesFile
+public final class function_info
 {
     private static EqualHashTable FUNCTION_TABLE =
         new EqualHashTable(64, NIL, NIL);

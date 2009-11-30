@@ -37,7 +37,7 @@ import static org.armedbear.lisp.Lisp.*;
 
 import java.net.InetAddress;
 
-public final class SiteName extends LispTrampolinesFile
+public final class SiteName
 {
     private static LispObject getHostName()
     {

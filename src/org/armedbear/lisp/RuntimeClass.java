@@ -39,7 +39,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
 
-public class RuntimeClass extends LispTrampolinesFile
+public class RuntimeClass
 {
     private static Map<String,RuntimeClass> classes = new HashMap<String,RuntimeClass>();
 

@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public final class FaslReader extends LispTrampolinesFile
+public final class FaslReader
 {
     // ### fasl-read-comment
     public static final ReaderMacroFunction FASL_READ_COMMENT =

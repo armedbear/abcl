@@ -37,7 +37,7 @@ import static org.armedbear.lisp.Lisp.*;
 
 import java.io.File;
 
-public final class probe_file extends LispTrampolinesFile
+public final class probe_file
 {
     // ### probe-file
     // probe-file pathspec => truename

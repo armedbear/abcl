@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public class Profiler extends LispTrampolinesFile
+public class Profiler
 {
     private static int sleep = 1;
 

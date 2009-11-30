@@ -39,7 +39,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-public final class JHandler extends LispTrampolinesFile
+public final class JHandler
 {
     private static final Map<Object,Map<String,Entry>> table =
        new WeakHashMap<Object,Map<String,Entry>>();

@@ -39,7 +39,7 @@ import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.TimeZone;
 
-public final class Time extends LispTrampolinesFile
+public final class Time
 {
 
   // ### %time

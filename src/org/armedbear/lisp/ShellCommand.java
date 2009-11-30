@@ -42,7 +42,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class ShellCommand extends LispTrampolinesFile implements Runnable
+public final class ShellCommand implements Runnable
 {
     private final String command;
     private final String directory;
