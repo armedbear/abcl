@@ -219,7 +219,7 @@
         <jvmarg value="-Dabcl.home=${abcl.home.dir}"/>
 	<arg value="--noinit"/>
 	<arg value="--eval"/>
-	<arg value="(compile-system :zip nil :quit t :output-path (symbol-name (quote ${build.classes.dir}/org/armedbear/lisp/)))"/>
+	<arg value="(compile-system :zip nil :quit t :output-path &quot;${build.classes.dir}/org/armedbear/lisp/&quot;)"/>
       </java>
     </target>
 
