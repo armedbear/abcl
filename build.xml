@@ -262,7 +262,7 @@
     </target>
 
     <target name="abcl.jar.uptodate" depends="abcl.compile">
-      <uptodate property="abcl.jar.upttodate.p" targetfile="${abcl.jar.path}">
+      <uptodate property="abcl.jar.uptodate.p" targetfile="${abcl.jar.path}">
         <srcfiles dir="${build.classes.dir}">
           <patternset refid="abcl.objects"/>
         </srcfiles>
