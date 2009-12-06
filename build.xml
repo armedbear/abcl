@@ -181,7 +181,7 @@
     <target name="abcl.copy.lisp">
       <copy todir="${build.classes.dir}" preservelastmodified="yes">
 	<fileset dir="${src.dir}">
-	  <patternset refid="abcl.source.lisp"/>
+          <patternset refid="abcl.source.lisp.dist"/>
 	</fileset>
       </copy>
     </target>
@@ -202,10 +202,10 @@
 
     <target name="abcl.fasls.uptodate">
       <uptodate property="abcl.fasls.uptodate.p" value="true">
-	<srcfiles dir="${build.classes.dir}">
+	<srcfiles dir="${src.dir}">
 	  <patternset refid="abcl.source.lisp.fasls"/>
 	</srcfiles>
-	<mapper type="glob" from="*.lisp" to="*.abcl"/>
+	<mapper type="glob" from="*.lisp" to="${build.classes.dir}/*.abcl"/>
       </uptodate>
     </target>
     
@@ -216,9 +216,10 @@
 	    fork="true"
 	    failonerror="true"
 	    classname="org.armedbear.lisp.Main">
+        <jvmarg value="-Dabcl.home=${abcl.home.dir}"/>
 	<arg value="--noinit"/>
 	<arg value="--eval"/>
-	<arg value="(compile-system :zip nil :quit t)"/>
+	<arg value="(compile-system :zip nil :quit t :output-path (symbol-name (quote ${build.classes.dir}/org/armedbear/lisp/)))"/>
       </java>
     </target>
 
@@ -229,6 +230,8 @@
       <echo message="${build}" file="${abcl.build.path}"/>    
     </target>
 
+    <property name="abcl.home.dir"
+              value="${src.dir}/org/armedbear/lisp/"/>
     <property name="abcl.version.path"
 	      value="${build.classes.dir}/org/armedbear/lisp/version"/>
     <target name="abcl.stamp.version" depends="abcl.compile">
@@ -240,7 +243,8 @@
 	    classpath="${build.classes.dir}"
 	    outputproperty="abcl.version"
 	    classname="org.armedbear.lisp.Main"
-        logerror="yes"> <!-- Don't catch stderr output -->
+            logerror="yes"> <!-- Don't catch stderr output -->
+        <jvmarg value="-Dabcl.home=${abcl.home.dir}"/>
 	<arg value="--noinit"/>
 	<arg value="--noinform"/>
 	<arg value="--eval"/>
@@ -258,10 +262,10 @@
     </target>
 
     <target name="abcl.jar.uptodate" depends="abcl.compile">
-      <uptodate property="abcl.jar.uptodate.p" targetfile="${abcl.jar.path}">
-	<srcfiles dir="${build.classes.dir}">
-	  <patternset refid="abcl.objects"/>
-	</srcfiles>
+      <uptodate property="abcl.jar.upttodate.p" targetfile="${abcl.jar.path}">
+        <srcfiles dir="${build.classes.dir}">
+          <patternset refid="abcl.objects"/>
+        </srcfiles>
       </uptodate>
     </target>
 

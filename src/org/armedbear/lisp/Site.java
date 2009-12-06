@@ -39,35 +39,37 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLDecoder;
 
+
 public final class Site
 {
     private static final String LISP_HOME;
 
     static {
-        String lispHome = null;
-        URL url = Lisp.class.getResource("boot.lisp");
-        if (url != null) {
-            String protocol = url.getProtocol();
-            if (protocol != null && protocol.equals("file")) {
-                String path = url.getPath();
-                try {
-                    path = URLDecoder.decode(path, "UTF-8");
-                }
-                catch (java.io.UnsupportedEncodingException uee) {
-                    // can't happen: Java implementations are required to
-                    // support UTF-8
-                }
-                int index = path.lastIndexOf('/');
-                if (index >= 0) {
-                    lispHome = path.substring(0, index + 1);
-                    if (Utilities.isPlatformWindows) {
-                        if (lispHome.length() > 0 && lispHome.charAt(0) == '/')
-                            lispHome = lispHome.substring(1);
+        String lispHome = System.getProperty("abcl.home");
+        if (lispHome == null) {
+            URL url = Lisp.class.getResource("boot.lisp");
+            if (url != null) {
+                String protocol = url.getProtocol();
+                if (protocol != null && protocol.equals("file")) {
+                    String path = url.getPath();
+                    try {
+                        path = URLDecoder.decode(path, "UTF-8");
+                    }
+                    catch (java.io.UnsupportedEncodingException uee) {
+                        // can't happen: Java implementations are required to
+                        // support UTF-8
+                    }
+                    int index = path.lastIndexOf('/');
+                    if (index >= 0) {
+                        lispHome = path.substring(0, index + 1);
+                        if (Utilities.isPlatformWindows) {
+                            if (lispHome.length() > 0 && lispHome.charAt(0) == '/')
+                                lispHome = lispHome.substring(1);
+                        }
                     }
                 }
             }
-        } else
-            lispHome = System.getProperty("abcl.home");
+        }
         LISP_HOME = lispHome;
     }
 
