@@ -208,19 +208,46 @@
 	<mapper type="glob" from="*.lisp" to="${build.classes.dir}/*.abcl"/>
       </uptodate>
     </target>
+
+    <path id="abcl.home.dir.path">
+        <path location="${src.dir}/org/armedbear/lisp/"/>
+    </path>   	    
+    <pathconvert property="abcl.home.dir" refid="abcl.home.dir.path"/>
+
+    <path id="abcl.lisp.output.path"
+          location="${build.classes.dir}/org/armedbear/lisp/"/>
     
     <target name="abcl.compile.lisp" 
 	    depends="abcl.copy.lisp,abcl.compile.java,abcl.fasls.uptodate"
 	    unless="abcl.fasls.uptodate.p">
+
+      <tempfile property="abcl.compile.lisp.tmp" suffix=".lisp"/>
+
+      <echo file="${abcl.compile.lisp.tmp}">
+      (compile-system :zip nil :quit t 
+          :output-path "${toString:abcl.lisp.output.path}${file.separator}")
+      </echo>
+
+      <tempfile property="abcl.compile.lisp.tmp.2"  suffix=".lisp"/>
+	    
+      <copy verbose="true" file="${abcl.compile.lisp.tmp}"
+            tofile="${abcl.compile.lisp.tmp.2}">
+	 <filterchain>
+	    <replacestring from="\" to="/"/>
+	 </filterchain>
+      </copy>
+
       <java classpath="${build.classes.dir}"
 	    fork="true"
 	    failonerror="true"
 	    classname="org.armedbear.lisp.Main">
-        <jvmarg value="-Dabcl.home=${abcl.home.dir}"/>
+        <jvmarg value="-Dabcl.home=${abcl.home.dir}${file.separator}"/>
 	<arg value="--noinit"/>
-	<arg value="--eval"/>
-	<arg value="(compile-system :zip nil :quit t :output-path &quot;${build.classes.dir}/org/armedbear/lisp/&quot;)"/>
+	<arg value="--load"/>
+	<arg value="${abcl.compile.lisp.tmp.2}"/>
       </java>
+            <delete file="${abcl.compile.lisp.tmp}"/> 
+	    <delete file="${abcl.compile.lisp.tmp.2}"/> 
     </target>
 
     <property name="abcl.build.path"
