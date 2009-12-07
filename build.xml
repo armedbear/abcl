@@ -221,6 +221,11 @@
 	    depends="abcl.copy.lisp,abcl.compile.java,abcl.fasls.uptodate"
 	    unless="abcl.fasls.uptodate.p">
 
+      <!-- The following shenanigans are necessary to get something
+           that ABCL under Windows can parse as a pathname with the
+           drive syntax not being interpreted as a Lisp package
+           namespace, and with backslash characters not starting
+           escape sequences.  -->
       <tempfile property="abcl.compile.lisp.tmp" suffix=".lisp"/>
 
       <echo file="${abcl.compile.lisp.tmp}">
@@ -230,7 +235,7 @@
 
       <tempfile property="abcl.compile.lisp.tmp.2"  suffix=".lisp"/>
 	    
-      <copy verbose="true" file="${abcl.compile.lisp.tmp}"
+      <copy file="${abcl.compile.lisp.tmp}"
             tofile="${abcl.compile.lisp.tmp.2}">
 	 <filterchain>
 	    <replacestring from="\" to="/"/>
