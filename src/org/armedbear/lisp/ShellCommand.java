@@ -204,12 +204,7 @@ public final class ShellCommand implements Runnable
                 String s = read();
                 if (s == null)
                     return;
-                try {
-                    processOutput(s);
-                }
-                catch (Throwable t) {
-                    Debug.trace(t);
-                }
+                processOutput(s);
             }
         }
 
@@ -232,9 +227,6 @@ public final class ShellCommand implements Runnable
                 return null;
             }
             catch (InterruptedException e) {
-                return null;
-            }
-            catch (Throwable t) {
                 return null;
             }
             return sb.toString();

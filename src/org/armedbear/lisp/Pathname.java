@@ -497,11 +497,7 @@ public class Pathname extends LispObject
         boolean printEscape = (Symbol.PRINT_ESCAPE.symbolValue(thread) != NIL);
         boolean useNamestring;
         String s = null;
-        try {
-            s = getNamestring();
-        }
-        // ### FIXME exception
-        catch (Throwable t) {}
+        s = getNamestring();
         if (s != null) {
             useNamestring = true;
             if (printReadably) {
@@ -1388,12 +1384,7 @@ public class Pathname extends LispObject
     };
 
     static {
-        try {
-            LispObject obj = Symbol.DEFAULT_PATHNAME_DEFAULTS.getSymbolValue();
-            Symbol.DEFAULT_PATHNAME_DEFAULTS.setSymbolValue(coerceToPathname(obj));
-        }
-        catch (Throwable t) {
-            Debug.trace(t);
-        }
+        LispObject obj = Symbol.DEFAULT_PATHNAME_DEFAULTS.getSymbolValue();
+        Symbol.DEFAULT_PATHNAME_DEFAULTS.setSymbolValue(coerceToPathname(obj));
     }
 }

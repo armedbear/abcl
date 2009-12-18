@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -70,7 +72,7 @@ public class JavaClassLoader extends ClassLoader {
     }
 
     public Class<?> loadClassFromByteArray(byte[] classbytes) {
-	return loadClassFromByteArray(null, classbytes);
+        return loadClassFromByteArray(null, classbytes);
     }
 
     public Class<?> loadClassFromByteArray(String className,
@@ -87,9 +89,9 @@ public class JavaClassLoader extends ClassLoader {
                 }
             }
         }
-	catch (LinkageError e) {
-            throw e;
-	}
+    	catch (LinkageError e) {
+                throw e;
+    	}
         catch (Throwable t) {
             Debug.trace(t);
         }
@@ -106,6 +108,10 @@ public class JavaClassLoader extends ClassLoader {
                 return c;
             }
         }
+        catch (VerifyError e)
+          {
+            error(new LispError("Class verification failed: " + e.getMessage()));
+          }
         catch (Throwable t) {
             Debug.trace(t);
         }

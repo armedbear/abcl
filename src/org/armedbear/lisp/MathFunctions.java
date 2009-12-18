@@ -268,23 +268,11 @@ public final class MathFunctions
                                            im);
         }
         if (arg instanceof SingleFloat) {
-            try {
-                double d = Math.sinh(((SingleFloat)arg).value);
-                return new SingleFloat((float)d);
-            }
-            catch (Throwable t) {
-                Debug.trace(t);
-                // Fall through...
-            }
+            double d = Math.sinh(((SingleFloat)arg).value);
+            return new SingleFloat((float)d);
         } else if (arg instanceof DoubleFloat) {
-            try {
-                double d = Math.sinh(((DoubleFloat)arg).value);
-                return new DoubleFloat(d);
-            }
-            catch (Throwable t) {
-                Debug.trace(t);
-                // Fall through...
-            }
+            double d = Math.sinh(((DoubleFloat)arg).value);
+            return new DoubleFloat(d);
         }
         LispObject result = exp(arg);
         result = result.subtract(exp(arg.multiplyBy(Fixnum.MINUS_ONE)));
@@ -318,23 +306,11 @@ public final class MathFunctions
                                            im);
         }
         if (arg instanceof SingleFloat) {
-            try {
-                double d = Math.cosh(((SingleFloat)arg).value);
-                return new SingleFloat((float)d);
-            }
-            catch (Throwable t) {
-                Debug.trace(t);
-                // Fall through...
-            }
+            double d = Math.cosh(((SingleFloat)arg).value);
+            return new SingleFloat((float)d);
         } else if (arg instanceof DoubleFloat) {
-            try {
-                double d = Math.cosh(((DoubleFloat)arg).value);
-                return new DoubleFloat(d);
-            }
-            catch (Throwable t) {
-                Debug.trace(t);
-                // Fall through...
-            }
+            double d = Math.cosh(((DoubleFloat)arg).value);
+            return new DoubleFloat(d);
         }
         LispObject result = exp(arg);
         result = result.add(exp(arg.multiplyBy(Fixnum.MINUS_ONE)));
@@ -356,23 +332,11 @@ public final class MathFunctions
         public LispObject execute(LispObject arg)
         {
             if (arg instanceof SingleFloat) {
-                try {
-                    double d = Math.tanh(((SingleFloat)arg).value);
-                    return new SingleFloat((float)d);
-                }
-                catch (Throwable t) {
-                    Debug.trace(t);
-                    // Fall through...
-                }
+                double d = Math.tanh(((SingleFloat)arg).value);
+                return new SingleFloat((float)d);
             } else if (arg instanceof DoubleFloat) {
-                try {
-                    double d = Math.tanh(((DoubleFloat)arg).value);
-                    return new DoubleFloat(d);
-                }
-                catch (Throwable t) {
-                    Debug.trace(t);
-                    // Fall through...
-                }
+                double d = Math.tanh(((DoubleFloat)arg).value);
+                return new DoubleFloat(d);
             }
             return sinh(arg).divideBy(cosh(arg));
         }
@@ -576,19 +540,13 @@ public final class MathFunctions
         {
             if (number.realp() && !number.minusp()
                 && base.isEqualTo(Fixnum.getInstance(10))) {
-                try {
-                    double d =
-                        Math.log10(DoubleFloat.coerceToFloat(number).value);
-                    if (number instanceof DoubleFloat
-                        || base instanceof DoubleFloat)
-                        return new DoubleFloat(d);
-                    else
-                        return new SingleFloat((float)d);
-                }
-                catch (Throwable t) {
-                    Debug.trace(t);
-                    // Fall through...
-                }
+                double d =
+                    Math.log10(DoubleFloat.coerceToFloat(number).value);
+                if (number instanceof DoubleFloat
+                    || base instanceof DoubleFloat)
+                    return new DoubleFloat(d);
+                else
+                    return new SingleFloat((float)d);
             }
             return log(number).divideBy(log(base));
         }

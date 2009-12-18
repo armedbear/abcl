@@ -96,13 +96,8 @@ public class SlimeInputStream extends Stream
     protected int _readChar()
     {
         if (offset >= length) {
-            try {
-                ostream.finishOutput();
-                s = LispThread.currentThread().execute(f).getStringValue();
-            }
-            catch (Throwable t) {
-                return -1;
-            }
+            ostream.finishOutput();
+            s = LispThread.currentThread().execute(f).getStringValue();
             if (s.length() == 0)
                 return -1;
             offset = 0;

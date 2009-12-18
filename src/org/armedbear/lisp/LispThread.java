@@ -90,7 +90,7 @@ public final class LispThread extends LispObject
                 catch (ThreadDestroyed ignored) {
                       // Might happen.
                 }
-                catch (Throwable t) {
+                catch (Throwable t) { // any error: process thread interrupts
                     if (isInterrupted()) {
                         processThreadInterrupts();
                     }
@@ -723,29 +723,24 @@ public final class LispThread extends LispObject
     public void printBacktrace(int limit)
     {
         if (stack != null) {
-            try {
-                int count = 0;
-                Stream out =
-                    checkCharacterOutputStream(Symbol.TRACE_OUTPUT.symbolValue());
-                out._writeLine("Evaluation stack:");
-                out._finishOutput();
+            int count = 0;
+            Stream out =
+                checkCharacterOutputStream(Symbol.TRACE_OUTPUT.symbolValue());
+            out._writeLine("Evaluation stack:");
+            out._finishOutput();
 
-                StackFrame s = stack;
-                while (s != null) {
-                    out._writeString("  ");
-                    out._writeString(String.valueOf(count));
-                    out._writeString(": ");
-                    
-                    pprint(s.toLispList(), out.getCharPos(), out);
-                    out.terpri();
-                    out._finishOutput();
-                    if (limit > 0 && ++count == limit)
-                        break;
-                    s = s.next;
-                }
-            }
-            catch (Throwable t) {
-                t.printStackTrace();
+            StackFrame s = stack;
+            while (s != null) {
+                out._writeString("  ");
+                out._writeString(String.valueOf(count));
+                out._writeString(": ");
+
+                pprint(s.toLispList(), out.getCharPos(), out);
+                out.terpri();
+                out._finishOutput();
+                if (limit > 0 && ++count == limit)
+                    break;
+                s = s.next;
             }
         }
     }
@@ -755,17 +750,12 @@ public final class LispThread extends LispObject
         LispObject result = NIL;
         if (stack != null) {
             int count = 0;
-            try {
-                StackFrame s = stack;
-                while (s != null) {
-                    result = result.push(s);
-                    if (limit > 0 && ++count == limit)
-                        break;
-                    s = s.getNext();
-                }
-            }
-            catch (Throwable t) {
-                t.printStackTrace();
+            StackFrame s = stack;
+            while (s != null) {
+                result = result.push(s);
+                if (limit > 0 && ++count == limit)
+                    break;
+                s = s.getNext();
             }
         }
         return result.nreverse();

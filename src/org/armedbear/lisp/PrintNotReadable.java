@@ -83,12 +83,7 @@ public class PrintNotReadable extends LispError
     {
         FastStringBuffer sb = new FastStringBuffer();
         LispObject object = UNBOUND_VALUE;
-        try {
-            object = getInstanceSlotValue(Symbol.OBJECT);
-        }
-        catch (Throwable t) {
-            Debug.trace(t);
-        }
+        object = getInstanceSlotValue(Symbol.OBJECT);
         if (object != UNBOUND_VALUE) {
             final LispThread thread = LispThread.currentThread();
             final SpecialBindingsMark mark = thread.markSpecialBindings();
@@ -96,9 +91,6 @@ public class PrintNotReadable extends LispError
             thread.bindSpecial(Symbol.PRINT_ARRAY, NIL);
             try {
                 sb.append(object.writeToString());
-            }
-            catch (Throwable t) {
-                sb.append("Object");
             }
             finally {
                 thread.resetSpecialBindings(mark);

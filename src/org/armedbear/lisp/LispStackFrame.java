@@ -121,7 +121,7 @@ public class LispStackFrame
      try {
        result =  unreadableString(LISP_STACK_FRAME + " " 
 				  + toLispString().getStringValue());
-     } catch (Throwable t) {
+     } catch (Throwable t) { // error while printing stack
        Debug.trace("Serious printing error: ");
        Debug.trace(t);
        result = unreadableString(LISP_STACK_FRAME);
@@ -192,7 +192,7 @@ public class LispStackFrame
     String result;
     try {
       result = this.toLispList().writeToString();
-    } catch (Throwable t) {
+    } catch (Throwable t) { // error while printing stack
       Debug.trace("Serious printing error: ");
       Debug.trace(t);
       result = unreadableString("LISP-STACK-FRAME");

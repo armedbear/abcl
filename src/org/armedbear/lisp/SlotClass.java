@@ -123,43 +123,39 @@ public class SlotClass extends LispClass
     {
         if (isFinalized())
             return;
-        try {
-            Debug.assertTrue(slotDefinitions == NIL);
-            LispObject cpl = getCPL();
-            Debug.assertTrue(cpl != null);
-            Debug.assertTrue(cpl.listp());
-            cpl = cpl.reverse();
-            while (cpl != NIL) {
-                LispObject car = cpl.car();
-                if (car instanceof StandardClass) {
-                    StandardClass cls = (StandardClass) car;
-                    LispObject defs = cls.getDirectSlotDefinitions();
-                    Debug.assertTrue(defs != null);
-                    Debug.assertTrue(defs.listp());
-                    while (defs != NIL) {
-                        slotDefinitions = slotDefinitions.push(defs.car());
-                        defs = defs.cdr();
-                    }
+
+        Debug.assertTrue(slotDefinitions == NIL);
+        LispObject cpl = getCPL();
+        Debug.assertTrue(cpl != null);
+        Debug.assertTrue(cpl.listp());
+        cpl = cpl.reverse();
+        while (cpl != NIL) {
+            LispObject car = cpl.car();
+            if (car instanceof StandardClass) {
+                StandardClass cls = (StandardClass) car;
+                LispObject defs = cls.getDirectSlotDefinitions();
+                Debug.assertTrue(defs != null);
+                Debug.assertTrue(defs.listp());
+                while (defs != NIL) {
+                    slotDefinitions = slotDefinitions.push(defs.car());
+                    defs = defs.cdr();
                 }
-                cpl = cpl.cdr();
             }
-            slotDefinitions = slotDefinitions.nreverse();
-            LispObject[] instanceSlotNames = new LispObject[slotDefinitions.length()];
-            int i = 0;
-            LispObject tail = slotDefinitions;
-            while (tail != NIL) {
-                SlotDefinition slotDefinition = (SlotDefinition) tail.car();
-                slotDefinition.setLocation(i);
-                instanceSlotNames[i++] = slotDefinition.getName();
-                tail = tail.cdr();
-            }
-            setClassLayout(new Layout(this, instanceSlotNames, NIL));
-            setDefaultInitargs(computeDefaultInitargs());
-            setFinalized(true);
+            cpl = cpl.cdr();
         }
-        catch (Throwable t) {
-            Debug.trace(t);
+        slotDefinitions = slotDefinitions.nreverse();
+        LispObject[] instanceSlotNames = new LispObject[slotDefinitions.length()];
+        int i = 0;
+        LispObject tail = slotDefinitions;
+        while (tail != NIL) {
+            SlotDefinition slotDefinition = (SlotDefinition) tail.car();
+            slotDefinition.setLocation(i);
+            instanceSlotNames[i++] = slotDefinition.getName();
+            tail = tail.cdr();
         }
+        setClassLayout(new Layout(this, instanceSlotNames, NIL));
+        setDefaultInitargs(computeDefaultInitargs());
+        setFinalized(true);
     }
 
     // ### class-direct-slots

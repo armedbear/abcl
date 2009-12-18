@@ -294,23 +294,16 @@ public abstract class AbstractArray extends LispObject
     @Override
     public int psxhash()
     {
-        try {
-            long result = 128387; // Chosen at random.
-            final int rank = getRank();
-            int limit = rank < 4 ? rank : 4;
-            for (int i = 0; i < limit; i++)
-                result = mix(result, getDimension(i));
-            final int length = getTotalSize();
-            limit = length < 4 ? length : 4;
-            for (int i = 0; i < length; i++)
-                result = mix(result, AREF(i).psxhash());
-            return (int) (result & 0x7fffffff);
-        }
-        catch (Throwable t) {
-            // Shouldn't happen.
-            Debug.trace(t);
-            return 0;
-        }
+        long result = 128387; // Chosen at random.
+        final int rank = getRank();
+        int limit = rank < 4 ? rank : 4;
+        for (int i = 0; i < limit; i++)
+            result = mix(result, getDimension(i));
+        final int length = getTotalSize();
+        limit = length < 4 ? length : 4;
+        for (int i = 0; i < length; i++)
+            result = mix(result, AREF(i).psxhash());
+        return (int) (result & 0x7fffffff);
     }
 
     /** Returns a newly allocated array or the current array with

@@ -72,21 +72,17 @@ public final class SimpleTypeError extends TypeError
     @Override
     public String getMessage()
     {
-        try {
-            LispObject formatControl = getFormatControl();
-            if (formatControl != NIL) {
-                LispObject formatArguments = getFormatArguments();
-                // (apply 'format (append '(nil format-control) format-arguments))
-                LispObject result =
-                    Primitives.APPLY.execute(Symbol.FORMAT,
-                                             Primitives.APPEND.execute(list(NIL,
-                                                                             formatControl),
-                                                                       formatArguments));
-                return result.getStringValue();
-            }
-            return super.getMessage();
+        LispObject formatControl = getFormatControl();
+        if (formatControl != NIL) {
+            LispObject formatArguments = getFormatArguments();
+            // (apply 'format (append '(nil format-control) format-arguments))
+            LispObject result =
+                Primitives.APPLY.execute(Symbol.FORMAT,
+                                         Primitives.APPEND.execute(list(NIL,
+                                                                         formatControl),
+                                                                   formatArguments));
+            return result.getStringValue();
         }
-        catch (Throwable t) {}
-        return null;
+        return super.getMessage();
     }
 }

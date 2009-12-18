@@ -49,31 +49,16 @@ public final class Layout extends LispObject
   {
     this.lispClass = lispClass;
     Debug.assertTrue(instanceSlots.listp());
-    int length = 0;
-    try
-      {
-        length = instanceSlots.length();
-      }
-    catch (Throwable t)
-      {
-        // Shouldn't happen.
-        Debug.trace(t);
-      }
+    int length = instanceSlots.length();
     slotNames = new LispObject[length];
     int i = 0;
-    try
+
+    while (instanceSlots != NIL)
       {
-        while (instanceSlots != NIL)
-          {
-            slotNames[i++] = instanceSlots.car();
-            instanceSlots = instanceSlots.cdr();
-          }
+        slotNames[i++] = instanceSlots.car();
+        instanceSlots = instanceSlots.cdr();
       }
-    catch (Throwable t)
-      {
-        // Shouldn't happen.
-        Debug.trace(t);
-      }
+
     Debug.assertTrue(i == length);
     this.sharedSlots = sharedSlots;
     slotTable = initializeSlotTable(slotNames);
@@ -153,16 +138,9 @@ public final class Layout extends LispObject
   protected LispObject generateSlotDefinitions()
   {
     LispObject list = NIL;
-    try
-      {
-        for (int i = slotNames.length; i-- > 0;)
-          list = list.push(new SlotDefinition(slotNames[i], NIL));
-      }
-    catch (Throwable t)
-      {
-        // Shouldn't happen.
-        Debug.trace(t);
-      }
+    for (int i = slotNames.length; i-- > 0;)
+      list = list.push(new SlotDefinition(slotNames[i], NIL));
+
     return list;
   }
 

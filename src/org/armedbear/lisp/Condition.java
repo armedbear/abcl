@@ -98,15 +98,8 @@ public class Condition extends StandardObject
   {
     super(StandardClass.CONDITION);
     Debug.assertTrue(slots.length == 2);
-    try
-      {
-        setFormatControl(message);
-        setFormatArguments(NIL);
-      }
-    catch (Throwable t)
-      {
-        Debug.trace(t);
-      }
+    setFormatControl(message);
+    setFormatArguments(NIL);
   }
 
   public final LispObject getFormatControl()
@@ -177,11 +170,7 @@ public class Condition extends StandardObject
     LispObject formatControl = getFormatControl();
     if (formatControl != NIL)
       {
-        try
-          {
-            return format(formatControl, getFormatArguments());
-          }
-        catch (Throwable t) {}
+        return format(formatControl, getFormatArguments());
       }
     return unreadableString(typeOf().writeToString());
   }

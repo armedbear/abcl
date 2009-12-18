@@ -75,31 +75,28 @@ public final class Interpreter
         if (interpreter != null)
             return null;
         interpreter = new Interpreter();
-        try {
-            if (args != null)
-                preprocessCommandLineArguments(args);
-            if (!noinform) {
-                Stream out = getStandardOutput();
-                out._writeString(banner());
-                out._finishOutput();
-            }
-            if (noinform)
-                _NOINFORM_.setSymbolValue(T);
-            else {
-                double uptime = (System.currentTimeMillis() - Main.startTimeMillis) / 1000.0;
-                getStandardOutput()._writeString("Low-level initialization completed in " +
-                                                 uptime + " seconds.\n");
-            }
-            initializeLisp();
-            initializeTopLevel();
-            if (!noinit)
-                processInitializationFile();
-            if (args != null)
-                postprocessCommandLineArguments(args);
+
+        if (args != null)
+            preprocessCommandLineArguments(args);
+        if (!noinform) {
+            Stream out = getStandardOutput();
+            out._writeString(banner());
+            out._finishOutput();
         }
-        catch (Throwable t) {
-            t.printStackTrace();
+        if (noinform)
+            _NOINFORM_.setSymbolValue(T);
+        else {
+            double uptime = (System.currentTimeMillis() - Main.startTimeMillis) / 1000.0;
+            getStandardOutput()._writeString("Low-level initialization completed in " +
+                                             uptime + " seconds.\n");
         }
+        initializeLisp();
+        initializeTopLevel();
+        if (!noinit)
+            processInitializationFile();
+        if (args != null)
+            postprocessCommandLineArguments(args);
+
         return interpreter;
     }
 
@@ -112,15 +109,12 @@ public final class Interpreter
         if (interpreter != null)
             return null;
         interpreter = new Interpreter(in, out, initialDirectory);
-        try {
-            Stream stdout = getStandardOutput();
-            stdout._writeLine(version);
-            stdout._writeString(banner());
-            stdout._finishOutput();
-        }
-        catch (Throwable t) {
-            t.printStackTrace();
-        }
+
+        Stream stdout = getStandardOutput();
+        stdout._writeLine(version);
+        stdout._writeString(banner());
+        stdout._finishOutput();
+
         initializeJLisp();
         initializeTopLevel();
         processInitializationFile();
@@ -144,12 +138,7 @@ public final class Interpreter
                 new Stream(outputStream, Symbol.CHARACTER));
         if (!initialDirectory.endsWith(File.separator))
             initialDirectory = initialDirectory.concat(File.separator);
-        try {
-            Symbol.DEFAULT_PATHNAME_DEFAULTS.setSymbolValue(new Pathname(initialDirectory));
-        }
-        catch (Throwable t) {
-            Debug.trace(t);
-        }
+        Symbol.DEFAULT_PATHNAME_DEFAULTS.setSymbolValue(new Pathname(initialDirectory));
     }
 
     // Interface.
@@ -170,17 +159,17 @@ public final class Interpreter
     public static synchronized void initializeJLisp()
     {
         if (!initialized) {
+            Symbol.FEATURES.setSymbolValue(new Cons(Keyword.J,
+                                               Symbol.FEATURES.getSymbolValue()));
+            Load.loadSystemFile("boot.lisp", false, false, false);
+
             try {
-                Symbol.FEATURES.setSymbolValue(new Cons(Keyword.J,
-                                                   Symbol.FEATURES.getSymbolValue()));
-                Load.loadSystemFile("boot.lisp", false, false, false);
                 Class.forName("org.armedbear.j.LispAPI");
-                Load.loadSystemFile("j.lisp");
             }
-            catch (Throwable t) {
-                // ### FIXME exception
-                t.printStackTrace();
-            }
+            catch (ClassNotFoundException e) { } // FIXME: what to do?
+
+            Load.loadSystemFile("j.lisp");
+
             initialized = true;
         }
     }
@@ -190,18 +179,14 @@ public final class Interpreter
     private static synchronized void initializeTopLevel()
     {
         if (!topLevelInitialized) {
-            try {
-                // Resolve top-level-loop autoload.
-                Symbol TOP_LEVEL_LOOP = intern("TOP-LEVEL-LOOP", PACKAGE_TPL);
-                LispObject tplFun = TOP_LEVEL_LOOP.getSymbolFunction();
-                if (tplFun instanceof Autoload) {
-                    Autoload autoload = (Autoload) tplFun;
-                    autoload.load();
-                }
+            // Resolve top-level-loop autoload.
+            Symbol TOP_LEVEL_LOOP = intern("TOP-LEVEL-LOOP", PACKAGE_TPL);
+            LispObject tplFun = TOP_LEVEL_LOOP.getSymbolFunction();
+            if (tplFun instanceof Autoload) {
+                Autoload autoload = (Autoload) tplFun;
+                autoload.load();
             }
-            catch (Throwable t) {
-                t.printStackTrace();
-            }
+
             topLevelInitialized = true;
         }
     }
@@ -216,8 +201,8 @@ public final class Interpreter
                 return;
             }
         }
-        catch (Throwable t) {
-            t.printStackTrace();
+        catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -385,36 +370,26 @@ public final class Interpreter
 
     private static void reportError(ControlTransfer c, LispThread thread)
     {
-        try {
-            getStandardInput().clearInput();
-            Stream out = getStandardOutput();
-            out.freshLine();
-            Condition condition = (Condition) c.getCondition();
-            out._writeLine("Error: unhandled condition: " +
-                           condition.writeToString());
-            if (thread != null)
-                thread.printBacktrace();
-        }
-        catch (Throwable t) {
-            
-        }
+        getStandardInput().clearInput();
+        Stream out = getStandardOutput();
+        out.freshLine();
+        Condition condition = (Condition) c.getCondition();
+        out._writeLine("Error: unhandled condition: " +
+                       condition.writeToString());
+        if (thread != null)
+            thread.printBacktrace();
     }
 
     private static void reportError(UnhandledCondition c, LispThread thread)
     {
-        try {
-            getStandardInput().clearInput();
-            Stream out = getStandardOutput();
-            out.freshLine();
-            Condition condition = (Condition) c.getCondition();
-            out._writeLine("Error: unhandled condition: " +
-                           condition.writeToString());
-            if (thread != null)
-                thread.printBacktrace();
-        }
-        catch (Throwable t) {
-            
-        }
+        getStandardInput().clearInput();
+        Stream out = getStandardOutput();
+        out.freshLine();
+        Condition condition = (Condition) c.getCondition();
+        out._writeLine("Error: unhandled condition: " +
+                       condition.writeToString());
+        if (thread != null)
+            thread.printBacktrace();
     }
 
     public void kill()
@@ -500,7 +475,7 @@ public final class Interpreter
                                 condition.typeOf().writeToString() + ':');
                     Debug.trace("  " + condition.writeToString());
                 }
-                catch (Throwable t) {}
+                catch (Throwable t) {} // catch any exception to throw below
                 finally {
                     thread.resetSpecialBindings(mark);
                 }
@@ -511,13 +486,8 @@ public final class Interpreter
 
     public static final LispObject readFromString(String s)
     {
-        try {
-            return new StringInputStream(s).read(true, NIL, false,
-                                                 LispThread.currentThread());
-        }
-        catch (Throwable t) {
-            return null;
-        }
+        return new StringInputStream(s).read(true, NIL, false,
+                                             LispThread.currentThread());
     }
 
     // For j.

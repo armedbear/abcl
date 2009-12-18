@@ -696,30 +696,23 @@ public final class Java
             if (args.length < 1)
                 error(new WrongNumberOfArgumentsException(this));
             LispObject object = args[0];
-            try {
-                if (args.length > 1) {
-                    LispObject type = args[1];
-                    if (type == Keyword.BOOLEAN) {
-                        if (object == NIL)
-                            return JavaObject.getInstance(Boolean.FALSE);
-                        else
-                            return JavaObject.getInstance(Boolean.TRUE);
-                    }
-                    if (type == Keyword.REF) {
-                        if (object == NIL)
-                            return JavaObject.getInstance(null);
-                        else
-                            throw new Error();
-                    }
-                    // other special cases come here
+            if (args.length > 1) {
+                LispObject type = args[1];
+                if (type == Keyword.BOOLEAN) {
+                    if (object == NIL)
+                        return JavaObject.getInstance(Boolean.FALSE);
+                    else
+                        return JavaObject.getInstance(Boolean.TRUE);
                 }
-                return JavaObject.getInstance(object.javaInstance());
+                if (type == Keyword.REF) {
+                    if (object == NIL)
+                        return JavaObject.getInstance(null);
+                    else
+                        error(new LispError("MAKE-IMMEDIATE-OBJECT: not implemented"));
+                }
+                // other special cases come here
             }
-            catch (Throwable t) {
-                error(new LispError("MAKE-IMMEDIATE-OBJECT: not implemented"));
-            }
-            // Not reached.
-            return NIL;
+            return JavaObject.getInstance(object.javaInstance());
         }
     };
 

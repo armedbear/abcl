@@ -71,15 +71,9 @@ public final class Return extends ControlTransfer
     @Override
     public LispObject getCondition()
     {
-        try {
-            FastStringBuffer sb = new FastStringBuffer("No block named ");
-            sb.append(tag.writeToString());
-            sb.append(" is currently visible.");
-            return new ControlError(sb.toString());
-        }
-        catch (Throwable t) {
-            Debug.trace(t);
-            return new Condition();
-        }
+        FastStringBuffer sb = new FastStringBuffer("No block named ");
+        sb.append(tag.writeToString());
+        sb.append(" is currently visible.");
+        return new ControlError(sb.toString());
     }
 }

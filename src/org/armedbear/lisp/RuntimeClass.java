@@ -122,9 +122,6 @@ public class RuntimeClass
                 return error(new LispError("class could not be linked: " +
                                             e.getMessage()));
             }
-            catch (Throwable t) {
-                Debug.trace(t);
-            }
             return error(
                 new LispError("unable to load ".concat(cn)));
         }

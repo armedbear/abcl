@@ -56,13 +56,7 @@ public final class Throw extends ControlTransfer
     @Override
     public LispObject getCondition()
     {
-        try {
-            return new ControlError("Attempt to throw to the nonexistent tag " +
-                                    tag.writeToString() + ".");
-        }
-        catch (Throwable t) {
-            Debug.trace(t);
-            return new Condition();
-        }
+        return new ControlError("Attempt to throw to the nonexistent tag " +
+                                tag.writeToString() + ".");
     }
 }

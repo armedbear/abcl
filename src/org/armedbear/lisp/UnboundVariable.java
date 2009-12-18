@@ -54,12 +54,9 @@ public final class UnboundVariable extends CellError
     final SpecialBindingsMark mark = thread.markSpecialBindings();
     thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
     StringBuffer sb = new StringBuffer("The variable ");
-    // FIXME
-    try
-      {
+    try {
         sb.append(getCellName().writeToString());
-      }
-    catch (Throwable t) {}
+    }
     finally {
         thread.resetSpecialBindings(mark);
     }

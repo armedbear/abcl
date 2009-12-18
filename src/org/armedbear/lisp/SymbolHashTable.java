@@ -65,13 +65,8 @@ public final class SymbolHashTable
     {
         HashEntry e = buckets[key.sxhash() & mask];
         while (e != null) {
-            try {
-                if (key.equal(e.symbol.name))
-                    return e.symbol; // Return the symbol.
-            }
-            catch (Throwable t) {
-                Debug.trace(t); // Shouldn't happen.
-            }
+            if (key.equal(e.symbol.name))
+                return e.symbol; // Return the symbol.
             e = e.next;
         }
         return null;
@@ -81,13 +76,8 @@ public final class SymbolHashTable
     {
         HashEntry e = buckets[hash & mask];
         while (e != null) {
-            try {
-                if (key.equal(e.symbol.name))
-                    return e.symbol; // Return the symbol.
-            }
-            catch (Throwable t) {
-                Debug.trace(t); // Shouldn't happen.
-            }
+            if (key.equal(e.symbol.name))
+                return e.symbol; // Return the symbol.
             e = e.next;
         }
         return null;
@@ -98,19 +88,14 @@ public final class SymbolHashTable
         int index = key.sxhash() & mask;
         HashEntry e = buckets[index];
         while (e != null) {
-            try {
-                if (key.equal(e.symbol.name)) {
-                    if (e.symbol != symbol) {
-                        Debug.trace("replacing existing key for " + key.getStringValue() +
-                                    " in package " + e.symbol.getPackage().writeToString());
-                        Thread.dumpStack();
-                        e.symbol = symbol;
-                    }
-                    return;
+            if (key.equal(e.symbol.name)) {
+                if (e.symbol != symbol) {
+                    Debug.trace("replacing existing key for " + key.getStringValue() +
+                                " in package " + e.symbol.getPackage().writeToString());
+                    Thread.dumpStack();
+                    e.symbol = symbol;
                 }
-            }
-            catch (Throwable t) {
-                Debug.trace(t); // FIXME
+                return;
             }
             e = e.next;
         }
@@ -130,18 +115,13 @@ public final class SymbolHashTable
         int index = symbol.sxhash() & mask;
         HashEntry e = buckets[index];
         while (e != null) {
-            try {
-                if (symbol.name.equal(e.symbol.name)) {
-                    if (e.symbol != symbol) {
-                        Debug.trace("replacing existing key for " + symbol.getName());
-                        Thread.dumpStack();
-                        e.symbol = symbol; // Replace existing key.
-                    }
-                    return;
+            if (symbol.name.equal(e.symbol.name)) {
+                if (e.symbol != symbol) {
+                    Debug.trace("replacing existing key for " + symbol.getName());
+                    Thread.dumpStack();
+                    e.symbol = symbol; // Replace existing key.
                 }
-            }
-            catch (Throwable t) {
-                Debug.trace(t); // FIXME
+                return;
             }
             e = e.next;
         }
@@ -164,18 +144,13 @@ public final class SymbolHashTable
         HashEntry e = buckets[index];
         HashEntry last = null;
         while (e != null) {
-            try {
-                if (key.equal(e.symbol.name)) {
-                    if (last == null)
-                        buckets[index] = e.next;
-                    else
-                        last.next = e.next;
-                    --count;
-                    return e.symbol; // The key is the value!
-                }
-            }
-            catch (Throwable t) {
-                Debug.trace(t); // FIXME
+            if (key.equal(e.symbol.name)) {
+                if (last == null)
+                    buckets[index] = e.next;
+                else
+                    last.next = e.next;
+                --count;
+                return e.symbol; // The key is the value!
             }
             last = e;
             e = e.next;

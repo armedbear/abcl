@@ -291,13 +291,6 @@ public class BuiltInClass extends LispClass
 
   static
   {
-    try
-      {
-        StandardClass.initializeStandardClasses();
-      }
-    catch (Throwable t)
-      {
-        Debug.trace(t);
-      }
+    StandardClass.initializeStandardClasses();
   }
 }

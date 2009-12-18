@@ -64,9 +64,9 @@ public final class RandomState extends LispObject
             ObjectInputStream in = new ObjectInputStream(fileIn);
             random = (Random) in.readObject();
             in.close();
-            file.delete();
+            file.delete(); // FIXME: file leak on exception
         }
-        catch (Throwable t) {
+        catch (Throwable t) { // ANY exception gets converted to a lisp error
             error(new LispError("Unable to copy random state."));
         }
     }

@@ -47,41 +47,27 @@ public final class SlotDefinition extends StandardObject
   public SlotDefinition(LispObject name, LispObject readers)
   {
     this();
-    try
-      {
-        Debug.assertTrue(name instanceof Symbol);
-        slots[SlotDefinitionClass.SLOT_INDEX_NAME] = name;
-        slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = NIL;
-        slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] =
-          new Cons(PACKAGE_KEYWORD.intern(((Symbol)name).getName()));
-        slots[SlotDefinitionClass.SLOT_INDEX_READERS] = readers;
-        slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
-      }
-    catch (Throwable t)
-      {
-        Debug.trace(t);
-      }
+    Debug.assertTrue(name instanceof Symbol);
+    slots[SlotDefinitionClass.SLOT_INDEX_NAME] = name;
+    slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = NIL;
+    slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] =
+      new Cons(PACKAGE_KEYWORD.intern(((Symbol)name).getName()));
+    slots[SlotDefinitionClass.SLOT_INDEX_READERS] = readers;
+    slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
   }
 
   public SlotDefinition(LispObject name, LispObject readers,
                         LispObject initForm)
   {
     this();
-    try
-      {
-        Debug.assertTrue(name instanceof Symbol);
-        slots[SlotDefinitionClass.SLOT_INDEX_NAME] = name;
-        slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = NIL;
-        slots[SlotDefinitionClass.SLOT_INDEX_INITFORM] = initForm;
-        slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] =
-          new Cons(PACKAGE_KEYWORD.intern(((Symbol)name).getName()));
-        slots[SlotDefinitionClass.SLOT_INDEX_READERS] = readers;
-        slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
-      }
-    catch (Throwable t)
-      {
-        Debug.trace(t);
-      }
+    Debug.assertTrue(name instanceof Symbol);
+    slots[SlotDefinitionClass.SLOT_INDEX_NAME] = name;
+    slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = NIL;
+    slots[SlotDefinitionClass.SLOT_INDEX_INITFORM] = initForm;
+    slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] =
+      new Cons(PACKAGE_KEYWORD.intern(((Symbol)name).getName()));
+    slots[SlotDefinitionClass.SLOT_INDEX_READERS] = readers;
+    slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
   }
   
   public static SlotDefinition checkSlotDefination(LispObject obj) {

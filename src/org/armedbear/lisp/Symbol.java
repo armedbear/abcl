@@ -247,39 +247,23 @@ public class Symbol extends LispObject
 
   public final String getName()
   {
-    try
-      {
-        return name.getStringValue();
-      }
-    catch (Throwable t)
-      {
-        Debug.trace(t);
-        return null;
-      }
+    return name.getStringValue();
   }
 
   public final String getQualifiedName()
   {
-    try
-      {
-        final String n = name.getStringValue();
-        if (pkg == NIL)
-          return("#:".concat(n));
-        if (pkg == PACKAGE_KEYWORD)
-          return ":".concat(n);
-        FastStringBuffer sb = new FastStringBuffer(((Package)pkg).getName());
-        if (((Package)pkg).findExternalSymbol(name) != null)
-          sb.append(':');
-        else
-          sb.append("::");
-        sb.append(n);
-        return sb.toString();
-      }
-    catch (Throwable t)
-      {
-        Debug.trace(t);
-        return null;
-      }
+    final String n = name.getStringValue();
+    if (pkg == NIL)
+      return("#:".concat(n));
+    if (pkg == PACKAGE_KEYWORD)
+      return ":".concat(n);
+    FastStringBuffer sb = new FastStringBuffer(((Package)pkg).getName());
+    if (((Package)pkg).findExternalSymbol(name) != null)
+      sb.append(':');
+    else
+      sb.append("::");
+    sb.append(n);
+    return sb.toString();
   }
 
   /** Gets the value associated with the symbol

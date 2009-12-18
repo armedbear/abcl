@@ -58,12 +58,7 @@ public final class WrongNumberOfArgumentsException extends ProgramError
         LispObject lambdaName = operator.getLambdaName();
         if (lambdaName != null && lambdaName != NIL) {
             sb.append(" for ");
-            try {
-                sb.append(operator.getLambdaName().writeToString());
-            }
-            catch (Throwable t) {
-                Debug.trace(t);
-            }
+            sb.append(operator.getLambdaName().writeToString());
         }
         sb.append('.');
         return sb.toString();

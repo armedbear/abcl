@@ -57,15 +57,9 @@ public final class Go extends ControlTransfer
     @Override
     public LispObject getCondition()
     {
-        try {
-            StringBuffer sb = new StringBuffer("No tag named ");
-            sb.append(tag.writeToString());
-            sb.append(" is currently visible");
-            return new ControlError(sb.toString());
-        }
-        catch (Throwable t) {
-            Debug.trace(t);
-            return new Condition();
-        }
+        StringBuffer sb = new StringBuffer("No tag named ");
+        sb.append(tag.writeToString());
+        sb.append(" is currently visible");
+        return new ControlError(sb.toString());
     }
 }

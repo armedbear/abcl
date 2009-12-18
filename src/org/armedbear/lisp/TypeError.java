@@ -129,48 +129,37 @@ public class TypeError extends LispError
     @Override
     public String getMessage()
     {
-        // FIXME
+        final LispThread thread = LispThread.currentThread();
+        final SpecialBindingsMark mark = thread.markSpecialBindings();
+        thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
         try {
-            final LispThread thread = LispThread.currentThread();
-            final SpecialBindingsMark mark = thread.markSpecialBindings();
-            thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
-            try {
-                String s = super.getMessage();
-                if (s != null)
-                    return s;
-                final LispObject datum = getDatum();
-                final LispObject expectedType = getExpectedType();
-                FastStringBuffer sb = new FastStringBuffer();
-                String name = datum != null ? datum.writeToString() : null;
-                String type = null;
-                if (expectedType != null)
-                    type = expectedType.writeToString();
-                if (type != null) {
-                    if (name != null) {
-                        sb.append("The value ");
-                        sb.append(name);
-                    } else
-                        sb.append("Value");
-                    sb.append(" is not of type ");
-                    sb.append(type);
-                } else if (name != null) {
-                    sb.append("Wrong type: ");
+            String s = super.getMessage();
+            if (s != null)
+                return s;
+            final LispObject datum = getDatum();
+            final LispObject expectedType = getExpectedType();
+            FastStringBuffer sb = new FastStringBuffer();
+            String name = datum != null ? datum.writeToString() : null;
+            String type = null;
+            if (expectedType != null)
+                type = expectedType.writeToString();
+            if (type != null) {
+                if (name != null) {
+                    sb.append("The value ");
                     sb.append(name);
-                }
-                sb.append('.');
-                return sb.toString();
+                } else
+                    sb.append("Value");
+                sb.append(" is not of type ");
+                sb.append(type);
+            } else if (name != null) {
+                sb.append("Wrong type: ");
+                sb.append(name);
             }
-            catch (Throwable t) {
-                // FIXME
-                Debug.trace(t);
-                return toString();
-            }
-            finally {
-                thread.resetSpecialBindings(mark);
-            }
+            sb.append('.');
+            return sb.toString();
         }
-        catch (Throwable t) {
-            return toString();
+        finally {
+            thread.resetSpecialBindings(mark);
         }
     }
 

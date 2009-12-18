@@ -83,13 +83,8 @@ public final class Site
         exportSpecial("*LISP-HOME*", PACKAGE_EXT, NIL);
 
     static {
-        try {
-            String s = Site.getLispHome();
-            if (s != null)
-                _LISP_HOME_.setSymbolValue(new Pathname(s));
-        }
-        catch (Throwable t) {
-            Debug.trace(t);
-        }
+        String s = Site.getLispHome();
+        if (s != null)
+            _LISP_HOME_.setSymbolValue(new Pathname(s));
     }
 }

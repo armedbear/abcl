@@ -36,18 +36,23 @@ package org.armedbear.lisp;
 import static org.armedbear.lisp.Lisp.*;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public final class SiteName
 {
     private static LispObject getHostName()
     {
         String hostName = null;
+        InetAddress addr;
         try {
-            InetAddress addr = InetAddress.getLocalHost();
-            if (addr != null)
-                hostName = addr.getHostName();
+            addr = InetAddress.getLocalHost();
         }
-        catch (Throwable t) {}
+        catch (UnknownHostException e) {
+            addr = null;
+        }
+        if (addr != null)
+            hostName = addr.getHostName();
+
         return hostName != null ? new SimpleString(hostName) : NIL;
     }
 
