@@ -215,7 +215,7 @@ public final class Java
         catch (IllegalArgumentException e) {
             error(new LispError("illegal argument"));
         }
-        catch (Throwable t) {
+        catch (Throwable t) { // no code -> no ControlTransfer
             error(new LispError(getMessage(t)));
         }
         // Not reached.
@@ -282,7 +282,7 @@ public final class Java
             catch (ControlTransfer e) {
                 throw e;
             }
-            catch (Throwable t) {
+            catch (Throwable t) { // ControlTransfer addressed above
                 error(new LispError(getMessage(t)));
             }
             // Not reached.
@@ -340,7 +340,7 @@ public final class Java
             catch (ControlTransfer e) {
                 throw e;
             }
-            catch (Throwable t) {
+            catch (Throwable t) { // ControlTransfer addressed above
                 error(new LispError(getMessage(t)));
             }
             // Not reached.
@@ -393,7 +393,10 @@ public final class Java
             Object result = m.invoke(null, methodArgs);
             return JavaObject.getInstance(result, translate);
         }
-        catch (Throwable t) {
+        catch (ControlTransfer c) {
+            throw c;
+        }
+        catch (Throwable t) { // ControlTransfer handled above
             if (t instanceof InvocationTargetException)
                 t = t.getCause();
             Symbol condition = getCondition(t.getClass());
@@ -458,7 +461,10 @@ public final class Java
                 }
                 return JavaObject.getInstance(constructor.newInstance(initargs));
             }
-            catch (Throwable t) {
+            catch (ControlTransfer c) {
+                throw c;
+            }
+            catch (Throwable t) { // ControlTransfer handled above
                 if (t instanceof InvocationTargetException)
                     t = t.getCause();
                 Symbol condition = getCondition(t.getClass());
@@ -494,7 +500,7 @@ public final class Java
                     dimensions[i-1] = ((Integer)args[i].javaInstance()).intValue();
                 return JavaObject.getInstance(Array.newInstance(c, dimensions));
             }
-            catch (Throwable t) {
+            catch (Throwable t) { // no code -> no ControlTransfer
                 error(new JavaException(t));
             }
             // Not reached.
@@ -514,7 +520,7 @@ public final class Java
             return JavaObject.getInstance(Array.get(a,
                     ((Integer)args[args.length - 1].javaInstance()).intValue()), translate);
         }
-        catch (Throwable t) {
+        catch (Throwable t) { // no code -> no ControlTransfer
             Symbol condition = getCondition(t.getClass());
             if (condition == null)
                 error(new JavaException(t));
@@ -572,7 +578,7 @@ public final class Java
                 Array.set(a, ((Integer)args[args.length - 1].javaInstance()).intValue(), v.javaInstance());
                 return v;
             }
-            catch (Throwable t) {
+            catch (Throwable t) { // no code -> no ControlTransfer
                 Symbol condition = getCondition(t.getClass());
                 if (condition == null)
                     error(new JavaException(t));
@@ -653,7 +659,7 @@ public final class Java
         catch (ControlTransfer t) {
             throw t;
         }
-        catch (Throwable t) {
+        catch (Throwable t) { // ControlTransfer handled above
             if (t instanceof InvocationTargetException)
                 t = t.getCause();
             Symbol condition = getCondition(t.getClass());
