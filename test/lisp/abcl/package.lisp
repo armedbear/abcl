@@ -23,6 +23,9 @@
     (load "math-tests.lisp")
     (load "misc-tests.lisp")
 
+    (when (find :unix *features*)
+      (load "jar-file.lisp"))
+
     (do-tests)))
 
 	
