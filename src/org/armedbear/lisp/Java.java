@@ -640,8 +640,7 @@ public final class Java
             if (methodArg instanceof AbstractString) {
                 String methodName = methodArg.getStringValue();
                 Class c = instance.getClass();
-                // FIXME Use the actual args, not just the count!
-                method = findMethod(c, methodName, args.length - 2);
+                method = findMethod(c, methodName, args);
             } else
                 method = (Method) JavaObject.getObject(methodArg);
             Class<?>[] argTypes = (Class<?>[])method.getParameterTypes();
@@ -677,18 +676,100 @@ public final class Java
         return null;
     }
 
-    // FIXME This just returns the first matching method that it finds. Allegro
-    // signals a continuable error if there are multiple matching methods.
-    private static Method findMethod(Class c, String methodName, int argCount)
-    {
+    private static Method findMethod(Class<?> c, String methodName, LispObject[] args) throws NoSuchMethodException {
+        int argCount = args.length - 2;
+        Object[] javaArgs = new Object[argCount];
+        for (int i = 0; i < argCount; ++i) {
+            Object x = args[i + 2];
+            if (x == NIL) {
+                javaArgs[i] = null;
+            } else {
+                javaArgs[i] = ((LispObject) x).javaInstance();
+            }
+        }
         Method[] methods = c.getMethods();
+        Method result = null;
         for (int i = methods.length; i-- > 0;) {
             Method method = methods[i];
-            if (method.getName().equals(methodName))
-                if (method.getParameterTypes().length == argCount)
-                    return method;
+            if (!method.getName().equals(methodName)) {
+                continue;
+            }
+            if (method.getParameterTypes().length != argCount) {
+                continue;
+            }
+            Class<?>[] methodTypes = (Class<?>[]) method.getParameterTypes();
+            if (!isApplicableMethod(methodTypes, javaArgs)) {
+                continue;
+            }
+            if (result == null || isMoreSpecialized(method, result)) {
+                result = method;
+            }
         }
-        return null;
+        if (result == null) {
+            throw new NoSuchMethodException(methodName);
+        }
+        return result;
+    }
+
+    private static boolean isApplicableMethod(Class<?>[] methodTypes,
+            Object[] args) {
+        for (int i = 0; i < methodTypes.length; ++i) {
+            Class<?> methodType = methodTypes[i];
+            Object arg = args[i];
+            if (methodType.isPrimitive()) {
+                Class<?> x = getBoxedClass(methodType);
+                if (!x.isInstance(arg)) {
+                    return false;
+                }
+            } else if (arg != null && !methodType.isInstance(arg)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isMoreSpecialized(Method x, Method y) {
+        Class<?>[] xtypes = x.getParameterTypes();
+        Class<?>[] ytypes = y.getParameterTypes();
+        for (int i = 0; i < xtypes.length; ++i) {
+            Class<?> xtype = xtypes[i];
+            if (xtype.isPrimitive()) {
+                xtype = getBoxedClass(xtype);
+            }
+            Class<?> ytype = ytypes[i];
+            if (ytype.isPrimitive()) {
+                ytype = getBoxedClass(ytype);
+            }
+            if (xtype.equals(ytype)) {
+                continue;
+            }
+            if (ytype.isAssignableFrom(xtype)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static Class<?> getBoxedClass(Class<?> clazz) {
+        if (clazz.equals(int.class)) {
+            return Integer.class;
+        } else if (clazz.equals(boolean.class)) {
+            return Boolean.class;
+        } else if (clazz.equals(byte.class)) {
+            return Byte.class;
+        } else if (clazz.equals(char.class)) {
+            return Character.class;
+        } else if (clazz.equals(long.class)) {
+            return Long.class;
+        } else if (clazz.equals(float.class)) {
+            return Float.class;
+        } else if (clazz.equals(double.class)) {
+            return Double.class;
+        } else if (clazz.equals(short.class)) {
+            return Short.class;
+        } else { // if (methodType.equals(void.class))
+            return Void.class;
+        }
     }
 
     // ### make-immediate-object object &optional type
