@@ -49,7 +49,7 @@
 (defsystem :abcl-test-lisp :version "1.0" :components
 	   ((:module abcl-rt :pathname "test/lisp/abcl/" :serial t :components
 		     ((:file "rt-package") (:file "rt")))
-	    (:module package  :depends (abcl-rt)
+	    (:module package  :depends-on (abcl-rt)
 		     :pathname "test/lisp/abcl/" :components
 		     ((:file "package")))))
 
