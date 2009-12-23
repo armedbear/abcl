@@ -448,7 +448,12 @@ public final class Java
                 error(new WrongNumberOfArgumentsException(this));
             LispObject classRef = args[0];
             try {
-                Constructor constructor = (Constructor) JavaObject.getObject(classRef);
+                Constructor constructor;
+		if(classRef instanceof AbstractString) {
+		    constructor = findConstructor(javaClass(classRef), args);
+		} else {
+		    constructor = (Constructor) JavaObject.getObject(classRef);
+		}
                 Class[] argTypes = constructor.getParameterTypes();
                 Object[] initargs = new Object[args.length-1];
                 for (int i = 1; i < args.length; i++) {
@@ -676,17 +681,27 @@ public final class Java
         return null;
     }
 
-    private static Method findMethod(Class<?> c, String methodName, LispObject[] args) throws NoSuchMethodException {
-        int argCount = args.length - 2;
+    private static Object[] translateMethodArguments(LispObject[] args) {
+	return translateMethodArguments(args, 0);
+    }
+
+    private static Object[] translateMethodArguments(LispObject[] args, int offs) {
+	int argCount = args.length - offs;
         Object[] javaArgs = new Object[argCount];
         for (int i = 0; i < argCount; ++i) {
-            Object x = args[i + 2];
+            Object x = args[i + offs];
             if (x == NIL) {
                 javaArgs[i] = null;
             } else {
                 javaArgs[i] = ((LispObject) x).javaInstance();
             }
         }
+	return javaArgs;
+    }
+
+    private static Method findMethod(Class<?> c, String methodName, LispObject[] args) throws NoSuchMethodException {
+	int argCount = args.length - 2;
+        Object[] javaArgs = translateMethodArguments(args, 2);
         Method[] methods = c.getMethods();
         Method result = null;
         for (int i = methods.length; i-- > 0;) {
@@ -701,12 +716,36 @@ public final class Java
             if (!isApplicableMethod(methodTypes, javaArgs)) {
                 continue;
             }
-            if (result == null || isMoreSpecialized(method, result)) {
+            if (result == null || isMoreSpecialized(methodTypes, result.getParameterTypes())) {
                 result = method;
             }
         }
         if (result == null) {
             throw new NoSuchMethodException(methodName);
+        }
+        return result;
+    }
+
+    private static Constructor findConstructor(Class<?> c, LispObject[] args) throws NoSuchMethodException {
+	int argCount = args.length - 1;
+        Object[] javaArgs = translateMethodArguments(args, 1);
+        Constructor[] ctors = c.getConstructors();
+        Constructor result = null;
+        for (int i = ctors.length; i-- > 0;) {
+            Constructor ctor = ctors[i];
+            if (ctor.getParameterTypes().length != argCount) {
+                continue;
+            }
+            Class<?>[] methodTypes = (Class<?>[]) ctor.getParameterTypes();
+            if (!isApplicableMethod(methodTypes, javaArgs)) {
+                continue;
+            }
+            if (result == null || isMoreSpecialized(methodTypes, result.getParameterTypes())) {
+                result = ctor;
+            }
+        }
+        if (result == null) {
+            throw new NoSuchMethodException(c.getSimpleName());
         }
         return result;
     }
@@ -728,9 +767,7 @@ public final class Java
         return true;
     }
 
-    private static boolean isMoreSpecialized(Method x, Method y) {
-        Class<?>[] xtypes = x.getParameterTypes();
-        Class<?>[] ytypes = y.getParameterTypes();
+    private static boolean isMoreSpecialized(Class<?>[] xtypes, Class<?>[] ytypes) {
         for (int i = 0; i < xtypes.length; ++i) {
             Class<?> xtype = xtypes[i];
             if (xtype.isPrimitive()) {
