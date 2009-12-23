@@ -745,7 +745,23 @@ public final class Java
             }
         }
         if (result == null) {
-            throw new NoSuchMethodException(c.getSimpleName());
+	    StringBuilder sb = new StringBuilder(c.getSimpleName());
+	    sb.append('(');
+	    boolean first = true;
+	    for(Object o : javaArgs) {
+		if(first) {
+		    first = false;
+		} else {
+		    sb.append(", ");
+		}
+		if(o != null) {
+		    sb.append(o.getClass().getName());
+		} else {
+		    sb.append("<null>");
+		}
+	    }
+	    sb.append(')');
+            throw new NoSuchMethodException(sb.toString());
         }
         return result;
     }
