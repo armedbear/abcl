@@ -3014,10 +3014,14 @@ public class Symbol extends LispObject
     PACKAGE_SYS.addInternalSymbol("FORMAT-CONTROL");
   public static final Symbol FSET =
     PACKAGE_SYS.addInternalSymbol("FSET");
+  public static final Symbol FUNCTION_PRELOAD =
+    PACKAGE_SYS.addInternalSymbol("FUNCTION-PRELOAD");
   public static final Symbol INSTANCE =
     PACKAGE_SYS.addInternalSymbol("INSTANCE");
   public static final Symbol MACROEXPAND_MACRO =
     PACKAGE_SYS.addInternalSymbol("MACROEXPAND-MACRO");
+  public static final Symbol MAKE_FUNCTION_PRELOADING_CONTEXT =
+    PACKAGE_SYS.addInternalSymbol("MAKE-FUNCTION-PRELOADING-CONTEXT");
   public static final Symbol NAME =
     PACKAGE_SYS.addInternalSymbol("NAME");
   public static final Symbol OBJECT =
@@ -3026,6 +3030,8 @@ public class Symbol extends LispObject
     PACKAGE_SYS.addInternalSymbol("OPERANDS");
   public static final Symbol OPERATION =
     PACKAGE_SYS.addInternalSymbol("OPERATION");
+  public static final Symbol PROXY_PRELOADED_FUNCTION =
+    PACKAGE_SYS.addInternalSymbol("PROXY-PRELOADED-FUNCTION");
   public static final Symbol _SOURCE =
     PACKAGE_SYS.addInternalSymbol("%SOURCE");
   public static final Symbol SOCKET_STREAM =

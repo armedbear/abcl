@@ -2070,7 +2070,7 @@ the Java object representing SYMBOL can be retrieved."
      ;; fixme *declare-inline*
      (declare-field g +lisp-object+ +field-access-default+)
      (emit 'ldc (pool-string (file-namestring pathname)))
-     (emit-invokestatic +lisp-class+ "loadCompiledFunction"
+     (emit-invokestatic "org/armedbear/lisp/AutoloadedFunctionProxy" "loadPreloadedFunction"
 			(list +java-string+) +lisp-object+)
      (emit 'putstatic *this-class* g +lisp-object+)
      (setf *static-code* *code*)

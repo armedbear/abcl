@@ -160,7 +160,7 @@
                      (compiled-function
                       (setf form
                             `(fset ',name
-                                   (load-compiled-function ,(file-namestring classfile))
+                                   (proxy-preloaded-function ',name ,(file-namestring classfile))
                                    ,*source-position*
                                    ',lambda-list
                                    ,doc))
@@ -484,6 +484,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
          (type (pathname-type output-file))
          (temp-file (merge-pathnames (make-pathname :type (concatenate 'string type "-tmp"))
                                      output-file))
+         (temp-file2 (merge-pathnames (make-pathname :type (concatenate 'string type "-tmp2"))
+                                     output-file))
          (warnings-p nil)
          (failure-p nil))
     (with-open-file (in input-file :direction :input)
@@ -510,15 +512,6 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                   *forms-for-output*)
               (jvm::with-saved-compiler-policy
                   (jvm::with-file-compilation
-                      (write "; -*- Mode: Lisp -*-" :escape nil :stream out)
-                    (%stream-terpri out)
-                    (let ((*package* (find-package '#:cl)))
-                      (write (list 'init-fasl :version *fasl-version*)
-                             :stream out)
-                      (%stream-terpri out)
-                      (write (list 'setq '*source* *compile-file-truename*)
-                             :stream out)
-                      (%stream-terpri out))
                     (handler-bind ((style-warning #'(lambda (c)
                                                       (setf warnings-p t)
                                                       ;; let outer handlers
@@ -544,7 +537,34 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                     (finalize-fasl-output)
                     (dolist (name *fbound-names*)
                       (fmakunbound name)))))))
-        (rename-file temp-file output-file)
+        (with-open-file (in temp-file :direction :input)
+          (with-open-file (out temp-file2 :direction :output
+                               :if-does-not-exist :create
+                               :if-exists :supersede)
+            ;; write header
+            (write "; -*- Mode: Lisp -*-" :escape nil :stream out)
+            (%stream-terpri out)
+            (let ((*package* (find-package '#:cl))
+                  (count-sym (gensym)))
+              (write (list 'init-fasl :version *fasl-version*)
+                     :stream out)
+              (%stream-terpri out)
+              (write (list 'setq '*source* *compile-file-truename*)
+                     :stream out)
+              (%stream-terpri out)
+              (dump-form `(dotimes (,count-sym ,*class-number*)
+                            (function-preload
+                             (%format nil "~A-~D.cls" ,(pathname-name output-file)
+                                      (1+ ,count-sym)))) out)
+              (%stream-terpri out))
+
+
+            ;; copy remaining content
+            (loop for line = (read-line in nil :eof)
+               while (not (eq line :eof))
+               do (write-line line out))))
+        (delete-file temp-file)
+        (rename-file temp-file2 output-file)
 
         (when *compile-file-zip*
           (let* ((type ;; Don't use ".zip", it'll result in an extension

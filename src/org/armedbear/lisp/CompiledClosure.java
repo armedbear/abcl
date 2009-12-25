@@ -219,11 +219,13 @@ public class CompiledClosure extends Closure
         namestring = ((Pathname)arg).getNamestring();
       else if (arg instanceof AbstractString)
         namestring = arg.getStringValue();
-      if (namestring != null)
-        return loadCompiledFunction(namestring);
+      if (namestring != null) {
+          //    Debug.trace("autoloading preloaded ... " + namestring);
+        return AutoloadedFunctionProxy.loadPreloadedFunction(namestring);
+      }
       if(arg instanceof JavaObject) {
 	  try {
-	      return loadCompiledFunction((byte[]) arg.javaInstance(byte[].class));
+	      return loadClassBytes((byte[]) arg.javaInstance(byte[].class));
 	  } catch(Throwable t) {
 	      Debug.trace(t);
 	      return error(new LispError("Unable to load " + arg.writeToString()));

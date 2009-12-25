@@ -664,6 +664,13 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "std-allocate-instance", "StandardObjectFunctions", true);
         autoload(PACKAGE_SYS, "zip", "zip", true);
 
+        autoload(PACKAGE_SYS, "proxy-preloaded-function",
+                 "AutoloadedFunctionProxy", false);
+        autoload(PACKAGE_SYS, "make-function-preloading-context",
+                 "AutoloadedFunctionProxy", false);
+        autoload(PACKAGE_SYS, "function-preload",
+                 "AutoloadedFunctionProxy", false);
+
         autoload(Symbol.COPY_LIST, "copy_list");
 
         autoload(Symbol.SET_CHAR, "StringFunctions");
