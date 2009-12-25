@@ -38,7 +38,7 @@ public class Main
 	    }
 	catch (Throwable t)
 	    {
-		System.out.println("abcl exception!");
+		System.out.println("exception!");
 		t.printStackTrace();
 	    }
     }
