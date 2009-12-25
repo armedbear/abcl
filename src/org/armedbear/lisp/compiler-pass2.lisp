@@ -220,6 +220,8 @@
 (defconstant +lisp-fixnum-class+ "org/armedbear/lisp/Fixnum")
 (defconstant +lisp-fixnum+ "Lorg/armedbear/lisp/Fixnum;")
 (defconstant +lisp-fixnum-array+ "[Lorg/armedbear/lisp/Fixnum;")
+(defconstant +lisp-function-proxy-class+
+  "org/armedbear/lisp/AutoloadedFunctionProxy")
 (defconstant +lisp-bignum-class+ "org/armedbear/lisp/Bignum")
 (defconstant +lisp-bignum+ "Lorg/armedbear/lisp/Bignum;")
 (defconstant +lisp-single-float-class+ "org/armedbear/lisp/SingleFloat")
@@ -2070,7 +2072,7 @@ the Java object representing SYMBOL can be retrieved."
      ;; fixme *declare-inline*
      (declare-field g +lisp-object+ +field-access-default+)
      (emit 'ldc (pool-string (file-namestring pathname)))
-     (emit-invokestatic "org/armedbear/lisp/AutoloadedFunctionProxy" "loadPreloadedFunction"
+     (emit-invokestatic +lisp-function-proxy-class+ "loadPreloadedFunction"
 			(list +java-string+) +lisp-object+)
      (emit 'putstatic *this-class* g +lisp-object+)
      (setf *static-code* *code*)
