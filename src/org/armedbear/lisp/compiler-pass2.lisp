@@ -2048,6 +2048,10 @@ the Java object representing SYMBOL can be retrieved."
                                  "getSymbolSetfFunctionOrDie"
                                  "getSymbolFunctionOrDie")
                              nil +lisp-object+)
+         ;; make sure we're not cacheing a proxied function
+         ;; (AutoloadedFunctionProxy) by allowing it to resolve itself
+         (emit-invokevirtual +lisp-object-class+
+                             "resolve" nil +lisp-object+)
          (emit 'putstatic *this-class* f +lisp-object+)
          (if *declare-inline*
              (setf saved-code *code*)

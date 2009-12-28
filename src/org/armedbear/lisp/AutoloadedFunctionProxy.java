@@ -68,6 +68,12 @@ public class AutoloadedFunctionProxy extends Function {
         this.fType = ft;
     }
 
+    /** Resolve this instance by returning the function we're proxy for */
+    @Override
+    public LispObject resolve() {
+        return load();
+    }
+
     final private synchronized Function load() {
         if (fun != null)
             return fun;
@@ -249,6 +255,9 @@ public class AutoloadedFunctionProxy extends Function {
         LispObject pack = Symbol._PACKAGE_.symbolValue(thread);
 
         if (cache instanceof Nil)
+            // during EVAL-WHEN :compile-toplevel, this function will
+            // be called without a caching environment; we'll need to
+            // forward to the compiled function loader
             return loadCompiledFunction(name.getStringValue());
         else {
             fun = new AutoloadedFunctionProxy(sym, name, cache, pack,

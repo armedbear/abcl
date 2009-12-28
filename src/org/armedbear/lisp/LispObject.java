@@ -38,6 +38,16 @@ import java.util.WeakHashMap;
 
 public class LispObject //extends Lisp
 {
+
+  /** Function to allow objects to return the value
+   * "they stand for". Used by AutoloadedFunctionProxy to return
+   * the function it is proxying.
+   */
+  public LispObject resolve()
+  {
+    return this;
+  }
+
   public LispObject typeOf()
   {
     return T;
