@@ -41,27 +41,31 @@ import java.util.Hashtable;
 
 public class AutoloadedFunctionProxy extends Function {
 
+    public enum FunctionType
+    {
+        NORMAL, SETF, MACRO
+    };
+
     final private Symbol symbol;
     final private String name;
     final private LispObject cache;
     final private LispObject pack;
     final private LispObject anonymousPackage;
-    final private boolean isSetfFunction;
+    final private FunctionType fType;
     Function fun = null;
 
     public AutoloadedFunctionProxy(Symbol symbol, LispObject name,
                                    LispObject cache, LispObject pack,
                                    LispObject anonymousPackage,
-                                   boolean setfFunction) {
+                                   FunctionType ft) {
         super();
         this.symbol = symbol;
         this.name = name.getStringValue();
         this.cache = cache;
         this.pack = pack;
-        //        Debug.trace("proxying ... " + name.getStringValue());
         Debug.assertTrue(! (cache instanceof Nil));
         this.anonymousPackage = anonymousPackage;
-        this.isSetfFunction = setfFunction;
+        this.fType = ft;
     }
 
     final private synchronized Function load() {
@@ -86,14 +90,25 @@ public class AutoloadedFunctionProxy extends Function {
             thread.resetSpecialBindings(mark);
         }
 
-        if (symbol != null) {
-            if (isSetfFunction)
-                put(symbol, Symbol.SETF_FUNCTION, fun);
-            else
-                symbol.setSymbolFunction(fun);
-        }
+        if (symbol != null)
+            installFunction(fType, symbol, fun);
 
         return fun;
+    }
+
+    final static private void installFunction(FunctionType fType,
+                                              Symbol sym, Function fun) {
+
+        if (fType == FunctionType.SETF)
+            put(sym, Symbol.SETF_FUNCTION, fun);
+        else if (fType == FunctionType.MACRO) {
+            if (sym.getSymbolFunction() instanceof SpecialOperator)
+                put(sym, Symbol.MACROEXPAND_MACRO,
+                    new MacroObject(sym, fun));
+            else
+                sym.setSymbolFunction(new MacroObject(sym, fun));
+        } else
+            sym.setSymbolFunction(fun);
     }
 
     @Override
@@ -214,14 +229,17 @@ public class AutoloadedFunctionProxy extends Function {
       final public LispObject execute(LispObject symbol, LispObject name) {
         LispThread thread = LispThread.currentThread();
         Symbol sym;
-        LispObject fun;
-        boolean setfFun = false;
+        Function fun;
+        FunctionType fType = FunctionType.NORMAL;
 
         if (symbol instanceof Symbol)
             sym = (Symbol)symbol;
         else if (isValidSetfFunctionName(symbol)) {
             sym = (Symbol)symbol.cadr();
-            setfFun = true;
+            fType = FunctionType.SETF;
+        } else if (isValidMacroFunctionName(symbol)) {
+            sym = (Symbol)symbol.cadr();
+            fType = FunctionType.MACRO;
         } else {
             checkSymbol(symbol); // generate an error
             return null; // not reached
@@ -235,11 +253,9 @@ public class AutoloadedFunctionProxy extends Function {
         else {
             fun = new AutoloadedFunctionProxy(sym, name, cache, pack,
                                               Load._FASL_ANONYMOUS_PACKAGE_.symbolValue(thread),
-                                              setfFun);
-            if (setfFun)
-                put(sym, Symbol.SETF_FUNCTION, fun);
-            else
-                sym.setSymbolFunction(fun);
+                                              fType);
+
+            installFunction(fType, sym, fun);
         }
 
         return fun;

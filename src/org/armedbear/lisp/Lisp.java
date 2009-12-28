@@ -1478,6 +1478,21 @@ public final class Lisp
     return false;
   }
 
+  public static final boolean isValidMacroFunctionName(LispObject obj)
+  {
+    if (obj instanceof Cons)
+      {
+        Cons cons = (Cons) obj;
+        if (cons.car == Symbol.MACRO_FUNCTION && cons.cdr instanceof Cons)
+          {
+            Cons cdr = (Cons) cons.cdr;
+            return (cdr.car instanceof Symbol && cdr.cdr == NIL);
+          }
+      }
+    return false;
+  }
+
+
   public static final LispObject FUNCTION_NAME =
     list(Symbol.OR,
           Symbol.SYMBOL,

@@ -224,11 +224,13 @@
                          (if (special-operator-p name)
                              `(put ',name 'macroexpand-macro
                                    (make-macro ',name
-                                               (load-compiled-function
+                                               (proxy-preloaded-function
+                                                '(macro-function ,name)
                                                 ,(file-namestring classfile))))
                              `(fset ',name
                                     (make-macro ',name
-                                                (load-compiled-function
+                                                (proxy-preloaded-function
+                                                 '(macro-function ,name)
                                                  ,(file-namestring classfile)))
                                     ,*source-position*
                                     ',(third form)))))))))
