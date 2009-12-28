@@ -121,6 +121,10 @@ public final class Interpreter
         return interpreter;
     }
 
+    public static boolean initialized() {
+        return interpreter != null;
+    }
+
     private Interpreter()
     {
         jlisp = false;
