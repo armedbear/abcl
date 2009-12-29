@@ -46,25 +46,35 @@ public class AutoloadedFunctionProxy extends Function {
         NORMAL, SETF, MACRO
     };
 
+    /** List of symbols that need to be saved upon instantiation of a
+     * proxy and restored while loading the actual function.
+     */
+    final static private Symbol[] symsToSave =
+        new Symbol[]
+        {
+            AUTOLOADING_CACHE, // allow loading local preloaded functions
+            Load._FASL_ANONYMOUS_PACKAGE_, // package for uninterned symbols
+            Symbol._PACKAGE_,              // current package
+            Symbol.LOAD_TRUENAME           // LOAD-TIME-VALUE depends on this
+        };
+
     final private Symbol symbol;
     final private String name;
     final private LispObject cache;
-    final private LispObject pack;
-    final private LispObject anonymousPackage;
+    final private LispObject[] savedSyms;
     final private FunctionType fType;
     Function fun = null;
 
     public AutoloadedFunctionProxy(Symbol symbol, LispObject name,
-                                   LispObject cache, LispObject pack,
-                                   LispObject anonymousPackage,
+                                   LispObject cache,
+                                   LispObject[] savedSyms,
                                    FunctionType ft) {
         super();
         this.symbol = symbol;
         this.name = name.getStringValue();
         this.cache = cache;
-        this.pack = pack;
+        this.savedSyms = savedSyms;
         Debug.assertTrue(! (cache instanceof Nil));
-        this.anonymousPackage = anonymousPackage;
         this.fType = ft;
     }
 
@@ -81,9 +91,9 @@ public class AutoloadedFunctionProxy extends Function {
         LispThread thread = LispThread.currentThread();
         SpecialBindingsMark mark = thread.markSpecialBindings();
 
-        thread.bindSpecial(AUTOLOADING_CACHE, cache);
-        thread.bindSpecial(Load._FASL_ANONYMOUS_PACKAGE_, anonymousPackage);
-        thread.bindSpecial(Symbol._PACKAGE_, pack);
+        for (int i = 0; i < symsToSave.length; i++)
+            thread.bindSpecial(symsToSave[i], savedSyms[i]);
+
         byte[] classbytes =
             (byte[])((Hashtable)cache.javaInstance()).get(name);
         try {
@@ -208,6 +218,9 @@ public class AutoloadedFunctionProxy extends Function {
 
       Hashtable cache = (Hashtable)value.javaInstance();
       byte[] bytes = (byte[])cache.get(name);
+      if (bytes == null)
+          return error(new LispError("Function '" + name + "' not preloaded" +
+                                     " while preloading requested."));
       try {
         return loadClassBytes(bytes);
       }
@@ -252,17 +265,18 @@ public class AutoloadedFunctionProxy extends Function {
         }
 
         LispObject cache = AUTOLOADING_CACHE.symbolValue(thread);
-        LispObject pack = Symbol._PACKAGE_.symbolValue(thread);
-
         if (cache instanceof Nil)
             // during EVAL-WHEN :compile-toplevel, this function will
             // be called without a caching environment; we'll need to
             // forward to the compiled function loader
             return loadCompiledFunction(name.getStringValue());
         else {
-            fun = new AutoloadedFunctionProxy(sym, name, cache, pack,
-                                              Load._FASL_ANONYMOUS_PACKAGE_.symbolValue(thread),
-                                              fType);
+            LispObject[] cachedSyms = new LispObject[symsToSave.length];
+            for (int i = 0; i < symsToSave.length; i++)
+                cachedSyms[i] = symsToSave[i].symbolValue(thread);
+
+            fun = new AutoloadedFunctionProxy(sym, name, cache,
+                                              cachedSyms, fType);
 
             installFunction(fType, sym, fun);
         }
