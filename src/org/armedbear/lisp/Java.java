@@ -930,7 +930,28 @@ public final class Java
 	    }
         }
     };
-    
+
+
+    private static final Primitive JRUN_EXCEPTION_PROTECTED =
+        new Primitive("jrun-exception-protected", PACKAGE_JAVA, true,
+                      "closure") {
+
+      @Override
+      public LispObject execute(LispObject closure) {
+          Function fun = checkFunction(closure);
+
+          try {
+              return LispThread.currentThread().execute(closure);
+          }
+          catch (OutOfMemoryError oom) {
+              return error(new StorageCondition("Out of memory."));
+          }
+          catch (StackOverflowError oos) {
+              return error(new StorageCondition("Stack overflow."));
+          }
+      }
+    };
+
     private static PropertyDescriptor getPropertyDescriptor(Object obj, LispObject propertyName) throws IntrospectionException {
         String prop = ((AbstractString) propertyName).getStringValue();
         BeanInfo beanInfo = Introspector.getBeanInfo(obj.getClass());

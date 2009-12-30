@@ -105,8 +105,10 @@
           (cons (list ,@(mapcar (lambda (x) `(cons ',(car x) ,(cadr x)))
                                 bindings))
                 *handler-clusters*)))
-     (progn
-       ,@forms)))
+     (java:jrun-exception-protected
+      (lambda ()
+        (progn
+          ,@forms)))))
 
 (defmacro handler-case (form &rest cases)
   (let ((no-error-clause (assoc ':no-error cases)))
