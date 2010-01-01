@@ -297,6 +297,11 @@
       `(adjoin-eql ,(first args) ,(second args))
       form))
 
+(define-source-transform format (&whole form &rest args)
+  (if (stringp (second args))
+      `(format ,(pop args) (formatter ,(pop args)) ,@args)
+      form))
+
 (define-compiler-macro catch (&whole form tag &rest args)
   (declare (ignore tag))
   (if (and (null (cdr args))
