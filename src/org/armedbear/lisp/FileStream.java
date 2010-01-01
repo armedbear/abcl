@@ -185,17 +185,6 @@ public final class FileStream extends Stream
     }
 
     @Override
-    protected void _unreadChar(int n)
-    {
-        try {
-            racf.unreadChar((char)n);
-        }
-        catch (IOException e) {
-            error(new StreamError(this, e));
-        }
-    }
-
-    @Override
     protected boolean _charReady()
     {
         return true;
