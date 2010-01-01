@@ -47,7 +47,7 @@ public final class stream_external_format extends Primitive
     public LispObject execute(LispObject arg)
     {
         if (arg instanceof Stream)
-            return Keyword.DEFAULT;
+            return ((Stream)arg).getExternalFormat();
         else
             return error(new TypeError(arg, Symbol.STREAM));
     }
