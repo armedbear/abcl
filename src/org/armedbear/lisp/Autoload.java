@@ -472,6 +472,7 @@ public class Autoload extends Function
         autoload("stream-element-type", "stream_element_type");
         autoload("stream-error-stream", "StreamError");
         autoload("stream-external-format", "stream_external_format");
+        autoload("%set-stream-external-format", "stream_external_format");
         autoload("stringp", "StringFunctions");
         autoload("sxhash", "HashTableFunctions");
         autoload("sxhash", "HashTableFunctions");

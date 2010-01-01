@@ -54,4 +54,17 @@ public final class stream_external_format extends Primitive
 
     private static final Primitive STREAM_EXTERNAL_FORMAT =
         new stream_external_format();
+
+    // DEFSETF-ed in 'setf.lisp'
+    private static final Primitive SET_STREAM_EXTERNAL_FORMAT =
+        new Primitive("%set-stream-external-format",
+                      PACKAGE_SYS, false, "stream external-format") {
+        @Override
+        public LispObject execute(LispObject stream, LispObject format) {
+            Stream s = checkStream(stream);
+            s.setExternalFormat(format);
+
+            return format;
+        }
+    };
 }
