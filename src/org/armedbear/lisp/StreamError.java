@@ -105,6 +105,8 @@ public class StreamError extends LispError
     {
         super(StandardClass.STREAM_ERROR);
         setStream(stream != null ? stream : NIL);
+        setFormatControl(cause.getMessage());
+        setFormatArguments(NIL);
         this.cause = cause;
     }
 
@@ -158,8 +160,8 @@ public class StreamError extends LispError
         @Override
         public LispObject execute(LispObject arg)
         {
-            if (arg instanceof StreamError) 
-                return ((StreamError)arg).getStream();                
+            if (arg instanceof StreamError)
+                return ((StreamError)arg).getStream();
             return error(new TypeError(arg, Symbol.STREAM_ERROR));
         }
     };
