@@ -1624,7 +1624,9 @@ public final class Primitives
         if (arg instanceof Symbol)
           {
             LispObject oldDefinition = arg.getSymbolFunction();
-            if (oldDefinition != null && !(oldDefinition instanceof Autoload))
+            if (oldDefinition != null
+                && !(oldDefinition instanceof Autoload)
+                && !(oldDefinition instanceof AutoloadedFunctionProxy))
               {
                 LispObject oldSource =
                   Extensions.SOURCE_PATHNAME.execute(arg);
