@@ -50,6 +50,7 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
+import org.armedbear.lisp.Debug;
 
 public class RandomAccessCharacterFile {
 
@@ -373,14 +374,15 @@ public class RandomAccessCharacterFile {
                 // When reading encoded Unicode, we'd expect to require
                 // catching MalformedInput
                 throw new RACFMalformedInputException(bbuf.position(),
-                                                      bbuf.get(bbuf.position()),
+                                                      (char)bbuf.get(bbuf.position()),
                                                       cset.name());
             if (r.isUnmappable())
                 // Since we're mapping TO unicode, we'd expect to be able
                 // to map all characters
                 Debug.assertTrue(false);
-            if (CoderResult.OVERFLOW == r)
-                Debug.assertTrue(false);
+            // OVERFLOW is a normal condition:
+            //  it's equal to cbuf.remaining() == 0
+            // ### EHU: really??? EXACTLY equal??
         }
         if (cbuf.remaining() == len) {
             return -1;
@@ -424,8 +426,8 @@ public class RandomAccessCharacterFile {
                                                       cbuf.charAt(cbuf.position()),
                                                       cset.name());
             }
-            if (CoderResult.UNDERFLOW == r)
-                Debug.assertTrue(false);
+            // UNDERFLOW is the normal condition where cbuf runs out
+            // before bbuf is filled.
         }
         if (bbuf.position() > 0 && bbufIsDirty && flush) {
             flushBbuf(false);
