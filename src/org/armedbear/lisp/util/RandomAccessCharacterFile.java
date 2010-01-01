@@ -280,12 +280,7 @@ public class RandomAccessCharacterFile {
 
         fcn = raf.getChannel();
 
-        cset = (encoding == null) ? Charset.defaultCharset() : Charset.forName(encoding);
-        cdec = cset.newDecoder();
-        cdec.onMalformedInput(CodingErrorAction.REPLACE);
-        cdec.onUnmappableCharacter(CodingErrorAction.REPLACE);
-        cenc = cset.newEncoder();
-
+        setEncoding(encoding);
         bbuf = ByteBuffer.allocate(BUFSIZ);
 
         // there is no readable data available in the buffers.
@@ -302,6 +297,15 @@ public class RandomAccessCharacterFile {
         writer = new RandomAccessWriter();
         inputStream = new RandomAccessInputStream();
         outputStream = new RandomAccessOutputStream();
+    }
+
+    public void setEncoding(String encoding) {
+        cset = (encoding == null)
+            ? Charset.defaultCharset() : Charset.forName(encoding);
+        cdec = cset.newDecoder();
+        cdec.onMalformedInput(CodingErrorAction.REPLACE);
+        cdec.onUnmappableCharacter(CodingErrorAction.REPLACE);
+        cenc = cset.newEncoder();
     }
 
     public Writer getWriter() {
@@ -365,6 +369,18 @@ public class RandomAccessCharacterFile {
             atEof = ! ensureReadBbuf(decodeWasUnderflow);
             CoderResult r = cdec.decode(bbuf, cbuf, atEof );
             decodeWasUnderflow = (CoderResult.UNDERFLOW == r);
+            if (r.isMalformed())
+                // When reading encoded Unicode, we'd expect to require
+                // catching MalformedInput
+                throw new RACFMalformedInputException(bbuf.position(),
+                                                      bbuf.get(bbuf.position()),
+                                                      cset.name());
+            if (r.isUnmappable())
+                // Since we're mapping TO unicode, we'd expect to be able
+                // to map all characters
+                Debug.assertTrue(false);
+            if (CoderResult.OVERFLOW == r)
+                Debug.assertTrue(false);
         }
         if (cbuf.remaining() == len) {
             return -1;
@@ -387,7 +403,8 @@ public class RandomAccessCharacterFile {
         }
     }
 
-    private final void encodeAndWrite(CharBuffer cbuf, boolean flush, boolean endOfFile) throws IOException {
+    private final void encodeAndWrite(CharBuffer cbuf, boolean flush,
+                                      boolean endOfFile) throws IOException {
         while (cbuf.remaining() > 0) {
             CoderResult r = cenc.encode(cbuf, bbuf, endOfFile);
             bbufIsDirty = true;
@@ -395,6 +412,20 @@ public class RandomAccessCharacterFile {
                 flushBbuf(false);
                 bbuf.clear();
             }
+            if (r.isUnmappable()) {
+                throw new RACFUnmappableCharacterException(cbuf.position(),
+                                                           cbuf.charAt(cbuf.position()),
+                                                           cset.name());
+            }
+            if (r.isMalformed()) {
+                // We don't really expect Malformed, but not handling it
+                // will cause an infinite loop if we don't...
+                throw new RACFMalformedInputException(cbuf.position(),
+                                                      cbuf.charAt(cbuf.position()),
+                                                      cset.name());
+            }
+            if (CoderResult.UNDERFLOW == r)
+                Debug.assertTrue(false);
         }
         if (bbuf.position() > 0 && bbufIsDirty && flush) {
             flushBbuf(false);
