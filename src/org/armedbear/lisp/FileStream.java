@@ -151,6 +151,15 @@ public final class FileStream extends Stream
         return super.typep(typeSpecifier);
     }
 
+    @Override
+    public void setExternalFormat(LispObject format) {
+        super.setExternalFormat(format);
+
+        if (racf != null)
+            // setExternalFormat also called before 'racf' is set up
+            racf.setEncoding(encoding);
+    }
+
     public Pathname getPathname()
     {
         return pathname;

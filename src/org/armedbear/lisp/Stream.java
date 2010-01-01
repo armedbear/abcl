@@ -269,12 +269,15 @@ public class Stream extends LispObject
   public LispObject getExternalFormat() {
       return externalFormat;
   }
-  
+
   public String getEncoding() {
       return encoding;
   }
-  
+
   public void setExternalFormat(LispObject format) {
+    // make sure we encode any remaining buffers with the current format
+    finishOutput();
+
     if (format == keywordDefault) {
       encoding = null;
       eolStyle = platformEolStyle;
@@ -282,10 +285,10 @@ public class Stream extends LispObject
       externalFormat = format;
       return;
     }
-      
+
     LispObject enc;
     boolean encIsCp = false;
-    
+
     if (format instanceof Cons) {
         // meaning a non-empty list
         enc = format.car();
@@ -294,7 +297,7 @@ public class Stream extends LispObject
 
             enc = getf(format.cdr(), keywordID, null);
         }
-          
+
         LispObject eol = getf(format.cdr(), keywordEolStyle, keywordRAW);
         if (eol == keywordCR)
             eolStyle = EolStyle.CR;
@@ -304,10 +307,10 @@ public class Stream extends LispObject
             eolStyle = EolStyle.CRLF;
         else if (eol != keywordRAW)
             ; //###FIXME: raise an error
-        
+
     } else
       enc = format;
-    
+
     if (enc.numberp())
         encoding = enc.toString();
     else if (enc instanceof AbstractString)
