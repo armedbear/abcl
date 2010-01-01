@@ -58,7 +58,7 @@ public class RandomAccessCharacterFile {
         public RandomAccessInputStream() {
             super(null);
         }
-        
+
         private byte[] read_buf = new byte[1];
 
         @Override
@@ -72,7 +72,7 @@ public class RandomAccessCharacterFile {
                 return -1;
             }
         }
-                
+
         @Override
         public final int read(byte[] b, int off, int len) throws IOException {
             return RandomAccessCharacterFile.this.read(b, off, len);
@@ -162,11 +162,11 @@ public class RandomAccessCharacterFile {
             RandomAccessCharacterFile.this.close();
         }
     }
-    
+
     // dummy reader which we need to call the Pushback constructor
     // because a null value won't work
     private static Reader staticReader = new StringReader("");
-    
+
     private class RandomAccessReader extends PushbackReader {
 
         private RandomAccessReader() {
@@ -179,13 +179,13 @@ public class RandomAccessCharacterFile {
         public final void close() throws IOException {
             RandomAccessCharacterFile.this.close();
         }
-        
+
         private char[] read_buf = new char[1];
 
         @Override
         public final int read() throws IOException {
             int n = this.read(read_buf);
-            
+
             if (n == 1)
                 return read_buf[0];
             else
@@ -218,7 +218,7 @@ public class RandomAccessCharacterFile {
         public final int read(char[] cbuf) throws IOException {
             return RandomAccessCharacterFile.this.read(cbuf, 0, cbuf.length);
         }
-        
+
         @Override
         public final int read(char[] cb, int off, int len) throws IOException {
             return RandomAccessCharacterFile.this.read(cb, off, len);
@@ -252,17 +252,17 @@ public class RandomAccessCharacterFile {
 
 
     final static int BUFSIZ = 4*1024; // setting this to a small value like 8 is helpful for testing.
-	
+
     private RandomAccessWriter writer;
     private RandomAccessReader reader;
     private RandomAccessInputStream inputStream;
     private RandomAccessOutputStream outputStream;
     private FileChannel fcn;
-	
+
     private Charset cset;
     private CharsetEncoder cenc;
     private CharsetDecoder cdec;
-	
+
     /**
      * bbuf is treated as a cache of the file content.
      * If it points to somewhere in the middle of the file, it holds the copy of the file content,
@@ -303,28 +303,28 @@ public class RandomAccessCharacterFile {
         inputStream = new RandomAccessInputStream();
         outputStream = new RandomAccessOutputStream();
     }
-	
+
     public Writer getWriter() {
         return writer;
     }
-	
+
     public PushbackReader getReader() {
         return reader;
     }
-	
+
     public PushbackInputStream getInputStream() {
         return inputStream;
     }
-	
+
     public OutputStream getOutputStream() {
         return outputStream;
     }
-	
+
     public final void close() throws IOException {
         internalFlush(true);
         fcn.close();
     }
-	
+
     public final void flush() throws IOException {
         internalFlush(false);
     }
@@ -416,7 +416,7 @@ public class RandomAccessCharacterFile {
             bbufpos = newPosition;
         }
     }
-	
+
     public final long position() throws IOException {
         return bbufpos + bbuf.position(); // the logical position within the file.
     }
@@ -466,7 +466,7 @@ public class RandomAccessCharacterFile {
         }
         return pos - off;
     }
-        
+
     // a method corresponding to the good ol' ungetc in C.
     // This function may fail when using (combined) character codes that use
     // escape sequences to switch between sub-codes.
@@ -501,7 +501,7 @@ public class RandomAccessCharacterFile {
         long pos = position() - n;
         position(pos);
     }
-	
+
     public final void unreadByte(byte b) throws IOException {
         long pos = position() - 1;
         position(pos);
