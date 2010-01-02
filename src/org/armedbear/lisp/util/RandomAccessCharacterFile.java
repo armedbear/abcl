@@ -72,6 +72,8 @@ public class RandomAccessCharacterFile {
             } else {
                 return -1;
             }
+            // ### BUG: 'int read()' is to return a *codepoint*,
+            // not the half of a surrogate pair!
         }
 
         @Override
@@ -191,6 +193,8 @@ public class RandomAccessCharacterFile {
                 return read_buf[0];
             else
                 return -1;
+            // ### BUG: 'int read()' is to return a codepoint!
+            // not the half of a surrogate pair!
         }
 
         @Override
