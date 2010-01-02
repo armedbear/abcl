@@ -413,7 +413,7 @@ public class Stream extends LispObject
               int n = _readChar();
               if (n >= 0)
                 {
-                  char c = (char) n;
+                  char c = (char) n; // ### BUG: Codepoint conversion
                   Readtable rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
                   if (!rt.isWhitespace(c))
                       _unreadChar(c);
@@ -463,7 +463,7 @@ public class Stream extends LispObject
                 else
                   return eofValue;
               }
-            char c = (char) n;
+            char c = (char) n; // ### BUG: Codepoint conversion
             if (rt.isWhitespace(c))
               continue;
             LispObject result = processChar(c, rt);
@@ -501,7 +501,7 @@ public class Stream extends LispObject
                 int n = _readChar();
                 if (n >= 0)
                   {
-                    char c = (char) n;
+                    char c = (char) n; // ### BUG: Codepoint conversion
                     Readtable rt = FaslReadtable.getInstance();
                     if (!rt.isWhitespace(c))
                         _unreadChar(c);
@@ -538,7 +538,7 @@ public class Stream extends LispObject
                 else
                     return eofValue;
               }
-            char c = (char) n;
+            char c = (char) n; // ### BUG: Codepoint conversion
             if (rt.isWhitespace(c))
                 continue;
             LispObject result = processChar(c, rt);
@@ -729,7 +729,7 @@ public class Stream extends LispObject
                 int n = _readChar();
                 if (n < 0)
                     return error(new EndOfFile(this));
-                char nextChar = (char) n;
+                char nextChar = (char) n; // ### BUG: Codepoint conversion
                 if (isTokenDelimiter(nextChar, rt))
                   {
                     if (last == null)
@@ -813,7 +813,7 @@ public class Stream extends LispObject
             int n = _readChar();
             if (n < 0)
                 return error(new EndOfFile(this));
-            c = (char) n;
+            c = (char) n; // ### BUG: Codepoint conversion
             if (c < '0' || c > '9')
                 break;
             if (numArg < 0)
@@ -859,14 +859,14 @@ public class Stream extends LispObject
         int n = _readChar();
         if (n < 0)
             return error(new EndOfFile(this));
-        char c = (char) n;
+        char c = (char) n; // ### BUG: Codepoint conversion
         FastStringBuffer sb = new FastStringBuffer(c);
         while (true)
           {
             n = _readChar();
             if (n < 0)
                 break;
-            c = (char) n;
+            c = (char) n; // ### BUG: Codepoint conversion
             if (rt.isWhitespace(c))
                 break;
             if (c == '(' || c == ')')
@@ -883,7 +883,7 @@ public class Stream extends LispObject
         String token = sb.toString();
         n = LispCharacter.nameToChar(token);
         if (n >= 0)
-            return LispCharacter.getInstance((char)n);
+            return LispCharacter.getInstance((char)n); // ### BUG: Codepoint conversion
         return error(new LispError("Unrecognized character name: \"" + token + '"'));
       }
     catch (IOException e)
@@ -1049,7 +1049,7 @@ public class Stream extends LispObject
                 // Not reached.
                 return null;
               }
-            char c = (char) n;
+            char c = (char) n; // ### BUG: Codepoint conversion
             byte syntaxType = rt.getSyntaxType(c);
             if (syntaxType == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE)
               {
@@ -1060,7 +1060,7 @@ public class Stream extends LispObject
                     // Not reached.
                     return null;
                   }
-                sb.append((char)n);
+                sb.append((char)n); // ### BUG: Codepoint conversion
                 continue;
               }
             if (syntaxType == Readtable.SYNTAX_TYPE_MULTIPLE_ESCAPE)
@@ -1241,7 +1241,7 @@ public class Stream extends LispObject
                 // Not reached.
                 return flags;
               }
-            sb.setCharAt(0, (char) n);
+            sb.setCharAt(0, (char) n); // ### BUG: Codepoint conversion
             flags = new BitSet(1);
             flags.set(0);
           }
@@ -1272,7 +1272,7 @@ public class Stream extends LispObject
           int n = _readChar();
           if (n < 0)
               break;
-          char c = (char) n;
+          char c = (char) n; // ### BUG: Codepoint conversion
           if (rt.isWhitespace(c))
             {
               _unreadChar(n);
@@ -1290,7 +1290,7 @@ public class Stream extends LispObject
               n = _readChar();
               if (n < 0)
                   break;
-              sb.append((char)n);
+              sb.append((char)n); // ### BUG: Codepoint conversion
               if (flags == null)
                   flags = new BitSet(sb.length());
               flags.set(sb.length() - 1);
@@ -1631,7 +1631,7 @@ public class Stream extends LispObject
                 // Not reached.
                 return 0;
               }
-            char c = (char) n;
+            char c = (char) n; // ### BUG: Codepoint conversion
             if (!rt.isWhitespace(c))
                 return c;
           }
@@ -1690,7 +1690,7 @@ public class Stream extends LispObject
             if (n == '\n')
                 return thread.setValues(new SimpleString(sb), NIL);
             else
-                sb.append((char)n);
+                sb.append((char)n); // ### BUG: Codepoint conversion
           }
       } 
     catch (IOException e)
@@ -1708,7 +1708,7 @@ public class Stream extends LispObject
         int n = _readChar();
         if (n < 0)
             return error(new EndOfFile(this));
-        return LispCharacter.getInstance((char)n);
+        return LispCharacter.getInstance((char)n); // ### BUG: Codepoint conversion
       } 
     catch (IOException e)
       {
@@ -1730,7 +1730,7 @@ public class Stream extends LispObject
             else
                 return eofValue;
           }
-        return LispCharacter.getInstance((char)n);
+        return LispCharacter.getInstance((char)n); // ### BUG: Codepoint conversion
       }
     catch (IOException e)
       {
