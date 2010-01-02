@@ -84,7 +84,7 @@ public final class LispReader
                     // Not reached.
                     return null;
                   }
-                  char c = (char) n;
+                  char c = (char) n; // ### BUG: Codepoint conversion
                   if (rt.getSyntaxType(c) == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE) {
                     // Single escape.
                     n = stream._readChar();
@@ -93,7 +93,7 @@ public final class LispReader
                       // Not reached.
                       return null;
                     }
-                    sb.append((char)n);
+                    sb.append((char)n); // ### BUG: Codepoint conversion
                     continue;
                   }
                   if (Utilities.isPlatformWindows) {
@@ -229,7 +229,7 @@ public final class LispReader
                   int ch = stream._readChar();
                   if (ch < 0)
                     break;
-                  char c = (char) ch;
+                  char c = (char) ch; // ### BUG: Codepoint conversion
                   if (c == '0' || c == '1')
                     sb.append(c);
                   else {
