@@ -445,7 +445,13 @@ public final class Load
     // ### *fasl-version*
     // internal symbol
     private static final Symbol _FASL_VERSION_ =
-        exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(34));
+        exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(35));
+
+    // ### *fasl-external-format*
+    // internal symbol
+    private static final Symbol _FASL_EXTERNAL_FORMAT_ =
+        internConstant("*FASL-EXTERNAL-FORMAT*", PACKAGE_SYS,
+                       new SimpleString("UTF-8"));
 
     // ### *fasl-anonymous-package*
     // internal symbol
@@ -609,6 +615,7 @@ public final class Load
             thread.bindSpecial(_FASL_ANONYMOUS_PACKAGE_, new Package());
             thread.bindSpecial(AUTOLOADING_CACHE,
                                AutoloadedFunctionProxy.makePreloadingContext());
+            in.setExternalFormat(_FASL_EXTERNAL_FORMAT_.symbolValue(thread));
             while (true) {
                 LispObject obj = in.faslRead(false, EOF, true, thread);
                 if (obj == EOF)

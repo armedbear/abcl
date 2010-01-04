@@ -502,7 +502,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
           (format t "; Compiling ~A ...~%" namestring))
         (with-compilation-unit ()
           (with-open-file (out temp-file
-                               :direction :output :if-exists :supersede)
+                               :direction :output :if-exists :supersede
+                               :external-format *fasl-external-format*)
             (let ((*readtable* *readtable*)
                   (*read-default-float-format* *read-default-float-format*)
                   (*read-base* *read-base*)

@@ -52,6 +52,7 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.BitSet;
 
+import org.armedbear.lisp.util.DecodingReader;
 
 /** The stream class
  * 
@@ -143,12 +144,12 @@ public class Stream extends LispObject
     
     if (elementType == Symbol.CHARACTER || elementType == Symbol.BASE_CHAR)
       {
-        InputStreamReader inputStreamReader =
-            (encoding == null) ?
-                new InputStreamReader(inputStream)
-                : new InputStreamReader(inputStream,
-                    Charset.forName(encoding).newDecoder());
-        initAsCharacterInputStream(new BufferedReader(inputStreamReader));
+        Reader reader =
+            new DecodingReader(inputStream, 4096,
+                               (encoding == null)
+                               ? Charset.defaultCharset()
+                               : Charset.forName(encoding));
+        initAsCharacterInputStream(reader);
       }
     else
       {
@@ -331,6 +332,10 @@ public class Stream extends LispObject
     
     eolChar = (eolStyle == EolStyle.CR) ? '\r' : '\n';
     externalFormat = format;
+
+    if (reader != null
+        && reader instanceof DecodingReader)
+        ((DecodingReader)reader).setCharset(Charset.forName(encoding));
   }
   
   public boolean isOpen()
