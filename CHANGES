@@ -1,3 +1,38 @@
+Version 0.18.0
+==============
+
+
+Features:
+
+ * Programmable handling of out-of-memory and stack-overflow conditions
+ * Faster initial startup (to support Google App Engine)
+ * Faster special variable lookup
+ * New interface for binding/unwinding special variables
+ * Implement (SETF (STREAM-EXTERNAL-FORMAT <stream>) <format>)
+ * Implement (SETF (JAVA:JFIELD <object>) <value>)
+ * Programmatic handling of out-of-memory and stack-overflow
+ * Constant FORMAT strings get compiled for performance
+
+
+Bugs fixed:
+
+ * FASLs are system default encoding dependent (ticket 77)
+ * I/O of charset-unsupported characters causes infinite loop (ticket 76)
+ * Memory leak where on unused functions with documentation
+ * ANSI PRINT-LEVEL.* tests
+ * Continued execution after failing to handle Throwable exceptions
+ * Line numbers in generated java classes incorrect
+ * JCALL, JNEW doesn't select best match when multiple applicable methods
+ * STREAM-EXTERNAL-FORMAT always returns :DEFAULT, instead of actual format
+
+
+Other changes
+
+ * LispObject does not inherit from Lisp anymore
+ * Many functions declared 'final' for performance improvement
+
+
+
 Version 0.17.0
 ==============
 svn://common-lisp.net/project/armedbear/svn/tags/0.17.0/abcl
