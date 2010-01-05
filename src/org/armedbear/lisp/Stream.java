@@ -122,8 +122,16 @@ public class Stream extends LispObject
   {
   }
 
+    public Stream(InputStream stream) {
+	initAsBinaryInputStream(stream);
+    }
+
     public Stream(Reader r) {
 	initAsCharacterInputStream(r);
+    }
+
+    public Stream(OutputStream stream) {
+	initAsBinaryOutputStream(stream);
     }
 
     public Stream(Writer w) {
