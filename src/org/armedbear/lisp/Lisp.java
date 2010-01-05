@@ -1237,89 +1237,47 @@ public final class Lisp
               coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue(thread));
           }
       }
-    if (device instanceof Pathname)
-      {
-        // Are we loading a fasl from j.jar?  
-        // XXX this will collide with file names from other JAR files
-        URL url = Lisp.class.getResource(namestring);
-        if (url == null) {
-          // Maybe device-->namestring references another JAR file?
-          String jarFile = ((Pathname)device).getNamestring();
-          if (jarFile.startsWith("jar:file:")) {
+    if (device instanceof Pathname) { //Loading from a jar
+	URL url = null;
+	String jar = ((Pathname)device).getNamestring();
+	if(jar.startsWith("jar:")) {
+	    try {
+		url = new URL(jar + "!/" + namestring);
+	    } catch (MalformedURLException ex) {
+		Debug.trace(ex);
+	    }
+	} else {
+	    url = Lisp.class.getResource(namestring);
+	}
+        if (url != null) {
             try {
-              url = new URL(jarFile + "!/" + namestring);
-            } catch (MalformedURLException ex) {
-              Debug.trace(ex);
-            }
-          }
-        }
-        if (url != null)
-          {
-            try
-              {
-                String s = url.toString();
-                String zipFileName;
-                String entryName;
-                if (s.startsWith("jar:file:"))
-                  {
-                    s = s.substring(9);
-                    int index = s.lastIndexOf('!');
-                    if (index >= 0)
-                      {
-                        zipFileName = s.substring(0, index);
-                        entryName = s.substring(index + 1);
-                        if (entryName.length() > 0 && entryName.charAt(0) == '/')
-                          entryName = entryName.substring(1);
-                        if (Utilities.isPlatformWindows)
-                          {
-                            // "/C:/Documents%20and%20Settings/peter/Desktop/j.jar"
-                            if (zipFileName.length() > 0 && zipFileName.charAt(0) == '/')
-                              zipFileName = zipFileName.substring(1);
-                          }
-                        zipFileName = URLDecoder.decode(zipFileName, "UTF-8");
-                        ZipFile zipFile = ZipCache.getZip(zipFileName);
-                        try
-                          {
-                            ZipEntry entry = zipFile.getEntry(entryName);
-                            if (entry != null)
-                              {
-                                long size = entry.getSize();
-                                InputStream in = zipFile.getInputStream(entry);
-                                return readFunctionBytes(in, (int) size);
-                              }
-                            else 
-                              {
-                                // ASSERT type = "abcl"
-                                entryName 
-                                  = defaultPathname.name.getStringValue() 
-                                  + "." +  "abcl";//defaultPathname.type.getStringValue();
-                                return Utilities
-                                  .getZippedZipEntryAsByteArray(zipFile,
-                                                                entryName,
-                                                                namestring);
-                              }
-                          }
-                        finally
-                          {
-                            ZipCache.removeZip(zipFile.getName());
-                          }
-                      }
-                  }
-              }
-            catch (VerifyError e)
-              {
-                error(new LispError("Class verification failed: " +
-                                    e.getMessage()));
-                return null; // not reached
-              }
-            catch (IOException e)
-              {
+		InputStream input = null;		
+		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+		try {
+		    input = url.openStream();               
+		    byte[] bytes = new byte[4096];
+		    int n = 0;
+		    while (n >= 0) {
+			n = input.read(bytes, 0, 4096);
+			if(n >= 0) {
+			    baos.write(bytes, 0, n);
+			}
+		    }
+		    bytes = baos.toByteArray();
+		    return bytes;
+		} finally {
+		    baos.close();
+		    if(input != null) {
+			input.close();
+		    }
+		}
+	    } catch (IOException e) {
                 Debug.trace(e);
-              }
-          }
+	    }
+	}
         error(new LispError("Unable to load " + namestring));
         return null; // not reached
-      }
+    }
     Pathname pathname = new Pathname(namestring);
     final File file = Utilities.getFile(pathname, defaultPathname);
     if (file != null && file.isFile())
