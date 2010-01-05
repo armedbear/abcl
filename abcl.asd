@@ -7,7 +7,7 @@
 (in-package :abcl-asdf)
 
 ;;; Wrapper for all ABCL ASDF definitions.
-(defsystem :abcl :version "0.3.1")
+(defsystem :abcl :version "0.4.0")
 
 (defmethod perform :after ((o load-op) (c (eql (find-system :abcl))))
   ;;; Additional test suite loads would go here.
@@ -71,8 +71,11 @@
    (funcall (intern (symbol-name 'run) :abcl-test)))
 
 (defsystem :cl-bench :components
-  ((:module cl-bench-wrapper :pathname "test/lisp/cl-bench/" :components 
-            ((:file "wrapper")))))
+           ((:module cl-bench-package :pathname "../cl-bench/"
+                    :components ((:file "defpackage")))
+            (:module cl-bench-wrapper :pathname "test/lisp/cl-bench/" 
+                     :depends-on (cl-bench-package) :components
+                     ((:file "wrapper")))))
 
 (defmethod perform :before ((o test-op) (c (eql (find-system :cl-bench))))
   (operate 'load-op :cl-bench :force t))

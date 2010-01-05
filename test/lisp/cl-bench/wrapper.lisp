@@ -12,12 +12,19 @@
   (merge-pathnames #p"../cl-bench/"
                    (component-pathname (find-system :abcl))))
 
+;;; cl-bench defines BENCH-GC and WITH-SPAWNED-THREAD in
+;;; '*cl-bench-directory*/sysdep/setup-ablisp.lisp'.  
+(defun cl-bench::bench-gc () (ext:gc))
+(defmacro cl-bench::with-spawned-thread (&body body)
+  `(progn ,@body))
+
 (defun run ()
   (unless (probe-file *cl-bench-directory*)
-    (format t "Failed to find the cl-bench test suite in '~A'. ~
-Please manually download and extract the cl-bench tool suite from ~A to run the tests."
-            *cl-bench-directory*
-            *cl-bench-master-source-location*))
+    (error "Failed to find the cl-bench test suite in '~A'.~%
+Please manually download and extract the cl-bench tool suite~%
+from ~A to run the tests."
+           *cl-bench-directory*
+           *cl-bench-master-source-location*))
   (let ((*default-pathname-defaults* *cl-bench-directory*))
     (if (find :unix *features*)
         (run-shell-command 
