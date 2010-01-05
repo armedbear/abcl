@@ -58,15 +58,6 @@
       <include name="org/armedbear/lisp/scripting/lisp/*.lisp" if="abcl.jsr-223.p"/>
     </patternset>
 
-    <patternset id="abcl.scripting.source.java">
-      <include name="org/armedbear/lisp/scripting/*.java"/>
-      <include name="org/armedbear/lisp/scripting/util/*.java"/>
-    </patternset>
-
-    <patternset id="abcl.scripting.source.lisp">
-      <include name="org/armedbear/lisp/scripting/lisp/*.lisp"/>
-    </patternset>
-
     <!-- Lisp files required at runtime -->
     <patternset id="abcl.source.lisp.dist">
       <include name="org/armedbear/lisp/boot.lisp"/>
