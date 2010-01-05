@@ -23,11 +23,12 @@
   :depends-on (:ansi-compiled #+nil :abcl-tests))
 
 (defmethod perform :after ((o load-op) (c (eql (find-system :abcl))))
-  #+nil (asdf:oos 'asdf:test-op :cl-bench :force t)
+  (operate 'load-op :cl-bench :force t)
   (operate 'load-op :abcl-test-lisp :force t)
   (operate 'load-op :ansi-compiled :force t)
   (operate 'load-op :ansi-interpreted :force t))
 
+#+nil
 (defmethod perform :before ((o load-op) (c t))
   (warn "ASDF load-op class is ~A" c))
 
@@ -68,6 +69,16 @@
 (defmethod perform ((o test-op) (c (eql (find-system 'abcl-test-lisp))))
    "Invoke tests with (asdf:oos 'asdf:test-op :abcl-test-lisp)."
    (funcall (intern (symbol-name 'run) :abcl-test)))
+
+(defsystem :cl-bench :components
+  ((:module cl-bench-wrapper :pathname "test/lisp/cl-bench/" :components 
+            ((:file "wrapper")))))
+
+(defmethod perform :before ((o test-op) (c (eql (find-system :cl-bench))))
+  (operate 'load-op :cl-bench :force t))
+
+(defmethod perform ((o test-op) (c (eql (find-system :cl-bench))))
+  (funcall (intern (symbol-name 'run) :abcl.test.cl-bench)))
  
 ;;; Build ABCL from a Lisp.
 ;;; aka the "Lisp-hosted build system"

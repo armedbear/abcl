@@ -665,6 +665,22 @@
       <echo>Finished recording test output in ${abcl.test.log.file}.</echo>
     </target>
 
+    <target name="test.cl-bench" depends="abcl.jar">
+      <echo>Recording test output in ${abcl.test.log.file}.</echo>
+      <record name="${abcl.test.log.file}" emacsmode="true" action="start" append="yes"/>
+      <java fork="true" dir="${basedir}"
+	    classpathref="abcl.classpath.dist"
+	    classname="org.armedbear.lisp.Main">
+	<arg value="--noinit"/> 
+	<arg value="--eval"/><arg value="(require (quote asdf))"/>
+	<arg value="--eval"/><arg value="(asdf:operate (quote asdf:load-op) :abcl)"/>
+	<arg value="--eval"/><arg value="(asdf:operate (quote asdf:test-op) :cl-bench)"/>
+      </java>
+      <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
+      <echo>Finished recording test output in ${abcl.test.log.file}.</echo>
+    </target>
+
+
     <import file="netbeans-build.xml" optional="true"/> 
 <!--    <import file="j-build.xml" optional="true"/>  -->
     <import file="not.org-build.xml" optional="true"/> 
