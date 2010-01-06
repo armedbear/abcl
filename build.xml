@@ -4,7 +4,30 @@
     <description>Compiling, testing, and packaging Armed Bear Common Lisp</description>
 
     <target name="abcl" depends="abcl.wrapper"/>
+	
+    <target name="help">
+      <echo>
+Main Ant targets:
 
+ abcl.wrapper 
+   -- [default] create executable wrapper for ABCL.
+ abcl.compile  
+   -- compile ABCL to ${build.classes.dir}.
+ abcl.jar      
+   -- create packaged ${abcl.jar.path}.
+ abcl.source.zip abcl.source.tar
+   -- create source distributions in ${dist.dir}.
+ abcl.clean 
+   -- remove ABCL intermediate files
+      </echo>
+
+      <echo>
+For help on the automatic tests available, use the Ant target 'help.test'.
+      </echo>
+    </target>
+
+    <!-- Behavior of the build system can be customized via setting
+         properties in the 'build.properties' file. -->
     <property file="build.properties"/>
 
     <property name="build.dir" 
@@ -19,23 +42,14 @@
 	      value="${dist.dir}/abcl.jar"/>
     <property name="abcl.ext.dir"
 	      value="${basedir}/ext"/>
-	
-    <target name="help">
-      <echo>Main Ant targets:
- abcl.compile  
-   -- compile ABCL to ${build.classes.dir}.
- abcl.jar      
-   -- create packaged ${abcl.jar.path}.
- abcl.wrapper  
-   -- create executable wrapper for ABCL.
- abcl.source.zip abcl.source.tar
-   -- create source distributions in ${dist.dir}.
- abcl.test.java
-   -- Run junit tests under ${abcl.test.src.dir}.
- abcl.clean 
-   -- remove ABCL intermediate files</echo>
-      <echo>Corresponding targets for J have been removed.</echo>
-    </target>
+
+    <fail message="Please build using Ant 1.7.1 or higher.">
+        <condition>
+            <not>
+                <antversion atleast="1.7.1"/>
+            </not>
+        </condition>
+    </fail>
 
     <!-- Checks if JSR-223 support is available - thanks to Mark Evenson -->
     <available property="abcl.jsr-223.p"
@@ -104,8 +118,6 @@
       <property name="abcl.test.log.file"
 		value="abcl-test-${build.stamp}.log"/>
 
-      <!--- antversion fails in ant 1.7.1 <antversion property="ant.version" 
-	                                              atleast="1.7"/> -->
       <property name="java.path"
 		value="${java.home}/bin/java"/>
 
@@ -426,12 +438,11 @@
       <include name="build-abcl.lisp"/>
       <include name="customizations.lisp.in"/>
 
-      <include name="test-abcl.asd"/>
-      <include name="build-abcl.asd"/>
     </patternset>
 
-    <patternset id="abcl.source.misc"
-		description="Additional includes in the source distribution relative to source root">
+    <patternset 
+        id="abcl.source.misc"
+        description="Additional includes in the source distribution relative to source root">
       <include name="org/armedbear/lisp/LICENSE"/>
       <include name="manifest-abcl"/>
       <include name="META-INF/services/javax.script.ScriptEngineFactory"/>
@@ -558,6 +569,35 @@
       </zip>
     </target>
 
+    <target name="help.test">
+      <echo>
+The following Ant targets run various test suites:
+  
+  abcl.test
+    --  Run all available tests.
+  abcl.test.java
+    --  Run the ABCL junit Java tests under ${basedir}/test/src
+  abcl.test.lisp
+    --  Run the 'test.ansi.compiled', 'test.abcl', 'test.cl-bench' targets
+  test.ansi.compiled
+    --  Run the compiled version of the ANSI test suite
+  test.abcl
+    --  Run the Lisp RT tests collected in ${basedir}/test/lisp/abcl
+  test.cl-bench 
+    --  Run the cl-bench test suite.
+
+The ANSI tests require that the [ansi-tests][1] be manually installed in 
+${basedir}/../ansi-tests.
+
+[1]: svn://common-lisp.net/project/ansi-test/svn/trunk/ansi-tests
+
+The CL-BENCH test require that [cl-bench][2] be maunally installed in
+${basedir}/../cl-bench
+
+[2]: http://www.chez.com/emarsden/downloads/cl-bench.tar.gz
+      </echo>
+    </target>
+
     <property name="abcl.test.classes.dir"
 	      value="${build.dir}/classes-test"/>
 
@@ -581,7 +621,8 @@
     <target name="abcl.test.pre-compile" depends="abcl.ext"/>
 
     <target name="abcl.ext.p">
-      <!--XXX generalize over enumeration of all contributions to abcl.ext -->
+      <!--XXX generalize over enumeration of all contributions to
+           abcl.ext if we get more of them.  -->
       <available file="${junit-4.5.path}" property="abcl.ext.p"/>
     </target>
     <target name="abcl.ext" depends="abcl.ext.p" unless="abcl.ext.p">
@@ -621,7 +662,7 @@
     </target>
 
     <target name="abcl.test.lisp" 
-	    depends="test.ansi.compiled,test.abcl"/>
+	    depends="test.ansi.compiled,test.abcl,test.cl-bench"/>
 
     <target name="test.ansi.interpreted" depends="abcl.jar">
       <echo>Recording test output in ${abcl.test.log.file}.</echo>
@@ -630,8 +671,10 @@
 	    classpathref="abcl.classpath.dist"
 	    classname="org.armedbear.lisp.Main">
  	<arg value="--noinit"/> 
-	<arg value="--load"/>
-	<arg line="${basedir}/test/lisp/ansi/ansi-tests-interpreted.lisp"/>
+	<arg value="--eval"/><arg value="(require (quote asdf))"/>
+	<arg value="--eval"/><arg value="(asdf:operate (quote asdf:load-op) :abcl)"/>
+	<arg value="--eval"/><arg value="(asdf:operate (quote asdf:test-op) :ansi-interpreted)"/>
+        <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
       <echo>Finished recording test output in ${abcl.test.log.file}.</echo>
@@ -644,8 +687,10 @@
 	    classpathref="abcl.classpath.dist"
 	    classname="org.armedbear.lisp.Main">
 	<arg value="--noinit"/> 
-	<arg value="--load"/>
- 	<arg line="${basedir}/test/lisp/ansi/ansi-tests-compiled.lisp "/> 
+	<arg value="--eval"/><arg value="(require (quote asdf))"/>
+	<arg value="--eval"/><arg value="(asdf:operate (quote asdf:load-op) :abcl)"/>
+	<arg value="--eval"/><arg value="(asdf:operate (quote asdf:test-op) :ansi-compiled)"/>
+        <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
       <echo>Finished recording test output in ${abcl.test.log.file}.</echo>
@@ -658,8 +703,10 @@
 	    classpathref="abcl.classpath.dist"
 	    classname="org.armedbear.lisp.Main">
 	<arg value="--noinit"/> 
-	<arg value="--load"/>
- 	<arg line="${basedir}/test/lisp/abcl/abcl-test.lisp"/>
+	<arg value="--eval"/><arg value="(require (quote asdf))"/>
+	<arg value="--eval"/><arg value="(asdf:operate (quote asdf:load-op) :abcl)"/>
+	<arg value="--eval"/><arg value="(asdf:operate (quote asdf:test-op) :abcl-test-lisp)"/>
+        <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
       <echo>Finished recording test output in ${abcl.test.log.file}.</echo>
@@ -675,6 +722,7 @@
 	<arg value="--eval"/><arg value="(require (quote asdf))"/>
 	<arg value="--eval"/><arg value="(asdf:operate (quote asdf:load-op) :abcl)"/>
 	<arg value="--eval"/><arg value="(asdf:operate (quote asdf:test-op) :cl-bench)"/>
+        <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
       <echo>Finished recording test output in ${abcl.test.log.file}.</echo>
@@ -685,4 +733,7 @@
 <!--    <import file="j-build.xml" optional="true"/>  -->
     <import file="not.org-build.xml" optional="true"/> 
 </project>
+
+
+
 
