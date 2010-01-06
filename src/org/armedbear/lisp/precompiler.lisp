@@ -569,12 +569,48 @@
                    (precompile1 (second arg)))
              (push new-arg new))))))
 
+(defun extract-lambda-vars (lambda-list)
+  (let ((state :required)
+        vars)
+    (dolist (var/key lambda-list vars)
+      (cond
+        ((eq '&aux var/key)       (setf state :aux))
+        ((eq '&key var/key)       (setf state :key))
+        ((eq '&optional var/key)  (setf state :optional))
+        ((eq '&rest var/key)      (setf state :rest))
+        ((symbolp var/key)        (unless (eq var/key '&allow-other-keys)
+                                    (push var/key vars)))
+        ((and (consp var/key)
+              (member state '(:optional :key)))
+         (setf var/key (car var/key))
+         (when (and (consp var/key) (eq state :key))
+           (setf var/key (second var/key)))
+         (if (symbolp var/key)
+             (push var/key vars)
+             (error 'program-error
+                    :format-control
+                    "Unexpected ~A variable specifier ~A."
+                    :format-arguments (list state var/key))))
+        ((and (consp var/key) (eq state :aux))
+         (if (symbolp (car var/key))
+             (push (car var/key) vars)
+             (error 'program-error
+                    :format-control "Unexpected &AUX format for ~A."
+                    :format-arguments (list var/key))))
+        (t
+         (error 'program-error
+                :format-control "Unexpected lambda-list format: ~A."
+                :format-arguments (list lambda-list)))))))
+
 (defun precompile-lambda (form)
   (let ((body (cddr form))
         (precompiled-lambda-list
            (precompile-lambda-list (cadr form)))
-        (*inline-declarations* *inline-declarations*))
+        (*inline-declarations* *inline-declarations*)
+        (*precompile-env* (make-environment *precompile-env*)))
     (process-optimization-declarations body)
+    (dolist (var (extract-lambda-vars precompiled-lambda-list))
+      (environment-add-symbol-binding *precompile-env* var nil))
     (list* 'LAMBDA precompiled-lambda-list
            (mapcar #'precompile1 body))))
 
@@ -583,8 +619,11 @@
     (let ((body (cddr lambda-form))
           (precompiled-lambda-list
            (precompile-lambda-list (cadr lambda-form)))
-          (*inline-declarations* *inline-declarations*))
+          (*inline-declarations* *inline-declarations*)
+          (*precompile-env* (make-environment *precompile-env*)))
       (process-optimization-declarations body)
+      (dolist (var (extract-lambda-vars precompiled-lambda-list))
+        (environment-add-symbol-binding *precompile-env* var nil))
       (list* 'NAMED-LAMBDA (cadr form) precompiled-lambda-list
              (mapcar #'precompile1 body)))))
 
