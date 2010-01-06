@@ -10,7 +10,6 @@ Features:
  * New interface for binding/unwinding special variables
  * Implement (SETF (STREAM-EXTERNAL-FORMAT <stream>) <format>)
  * Implement (SETF (JAVA:JFIELD <object>) <value>)
- * Programmatic handling of out-of-memory and stack-overflow
  * Constant FORMAT strings get compiled for performance
 
 
@@ -24,6 +23,7 @@ Bugs fixed:
  * Line numbers in generated java classes incorrect
  * JCALL, JNEW doesn't select best match when multiple applicable methods
  * STREAM-EXTERNAL-FORMAT always returns :DEFAULT, instead of actual format
+ * Lambda-list variables replaced by surrounding SYMBOL-MACROLET
 
 
 Other changes
