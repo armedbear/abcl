@@ -278,7 +278,6 @@ public class AutoloadedFunctionProxy extends Function {
             fun = new AutoloadedFunctionProxy(sym, name, cache,
                                               cachedSyms, fType);
 
-            installFunction(fType, sym, fun);
         }
 
         return fun;
