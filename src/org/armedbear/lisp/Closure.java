@@ -99,7 +99,7 @@ public class Closure extends Function
     final LispObject lambdaList = lambdaExpression.cadr();
     setLambdaList(lambdaList);
     if (!(lambdaList == NIL || lambdaList instanceof Cons))
-      error(new LispError("The lambda list " + lambdaList.writeToString() +
+      error(new ProgramError("The lambda list " + lambdaList.writeToString() +
                            " is invalid."));
     boolean _andKey = false;
     boolean _allowOtherKeys = false;
@@ -136,10 +136,14 @@ public class Closure extends Function
                     remaining = remaining.cdr();
                     if (remaining == NIL)
                       {
-                        error(new LispError(
+                        error(new ProgramError(
                           "&REST/&BODY must be followed by a variable."));
                       }
-                    Debug.assertTrue(restVar == null);
+                    if (restVar != null) 
+                      {
+                        error(new ProgramError(
+                          "&REST/&BODY may occur only once."));
+                      }
                     final LispObject remainingcar =  remaining.car();
                     if (remainingcar instanceof Symbol)
                       {
@@ -147,7 +151,7 @@ public class Closure extends Function
                       }
                     else
                       {
-                        error(new LispError(
+                        error(new ProgramError(
                           "&REST/&BODY must be followed by a variable."));
                       }
                   }
@@ -194,7 +198,11 @@ public class Closure extends Function
                       }
                     else
                       {
-                        Debug.assertTrue(state == STATE_REQUIRED);
+                        if (state != STATE_REQUIRED)
+                          {
+                            error(new ProgramError(
+                              "required parameters cannot appear after &REST/&BODY."));
+                          }
                         if (required == null)
                           required = new ArrayList<Parameter>();
                         required.add(new Parameter((Symbol)obj));
@@ -342,7 +350,7 @@ public class Closure extends Function
   private static final void invalidParameter(LispObject obj)
 
   {
-    error(new LispError(obj.writeToString() +
+    error(new ProgramError(obj.writeToString() +
                          " may not be used as a variable in a lambda list."));
   }
 
