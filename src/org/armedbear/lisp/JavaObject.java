@@ -236,6 +236,9 @@ public final class JavaObject extends LispObject {
     @Override
     public Object javaInstance(Class c) {
 	if(obj == null) {
+	    if(c.isPrimitive()) {
+		throw new NullPointerException("Cannot assign null to " + c);
+	    }
 	    return obj;
 	} else {
 	    c = Java.maybeBoxClass(c);
