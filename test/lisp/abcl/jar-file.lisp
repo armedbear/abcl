@@ -16,7 +16,6 @@
 
 (defvar *jar-file-init* nil)
 
-
 (defmacro with-jar-file-init (&rest body)
   `(let ((*default-pathname-defaults* *this-directory*))
      (progn
@@ -69,7 +68,8 @@
 (deftest jar-file-probe-file.1
     (with-jar-file-init
         (probe-file "jar:file:baz.jar!/eek.lisp"))
-  #p"jar:file:baz.jar!/eek.lisp")
+  #p"jar:file:baz.jar!/eek.lisp") ; WRONG: PROBE-FILE should return
+                                  ; TRUENAME on existence.
 
 
 (deftest jar-file-merge-pathnames.1
@@ -77,7 +77,11 @@
      "!/foo" #p"jar:file:baz.jar")
   #p"jar:file:baz.jar!/foo")
 
-
+(deftest jar-file-truename.1
+    (truename "jar:file:baz.jar!/foo")
+  (format nil "jar:file:~S/baz.jar!/foo" 
+          *this-directory*))
+          
 
 
 
