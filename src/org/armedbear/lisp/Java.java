@@ -841,6 +841,14 @@ public final class Java
         return false;
     }
 
+    public static Class<?> maybeBoxClass(Class<?> clazz) {
+	if(clazz.isPrimitive()) {
+	    return getBoxedClass(clazz);
+	} else {
+	    return clazz;
+	}
+    }
+    
     private static Class<?> getBoxedClass(Class<?> clazz) {
         if (clazz.equals(int.class)) {
             return Integer.class;
