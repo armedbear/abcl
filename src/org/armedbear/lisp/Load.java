@@ -227,7 +227,11 @@ public final class Load
                 // have to decompress it first, and seek for the '._'
                 // init FASL.
                 int i = zipEntryName.lastIndexOf('.');
-                String subZipEntryName = zipEntryName.substring(0, i).concat("._");
+		int j = zipEntryName.lastIndexOf('/');
+		if(j >= i) {
+		    return error(new LispError("Invalid zip entry name: " + zipEntryName));
+		}
+                String subZipEntryName = zipEntryName.substring(j + 1, i).concat("._");
                 in = Utilities.getZippedZipEntryAsInputStream(zipfile, 
                                                               zipEntryName, 
                                                               subZipEntryName);
