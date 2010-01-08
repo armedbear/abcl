@@ -37,15 +37,30 @@ import static org.armedbear.lisp.Lisp.*;
 
 public final class WrongNumberOfArgumentsException extends ProgramError
 {
-    private final Operator operator;
+    private Operator operator;
+    private int expectedArgs;
+    private String message;
 
-    public WrongNumberOfArgumentsException(Operator operator)
+    public WrongNumberOfArgumentsException(Operator operator) {
+	this(operator, -1);
+    }
 
-    {
+    public WrongNumberOfArgumentsException(Operator operator, int expectedArgs) {
         // This is really just an ordinary PROGRAM-ERROR, broken out into its
         // own Java class as a convenience for the implementation.
         super(StandardClass.PROGRAM_ERROR);
         this.operator = operator;
+	this.expectedArgs = expectedArgs;
+        setFormatControl(getMessage());
+        setFormatArguments(NIL);
+    }
+
+    public WrongNumberOfArgumentsException(String message) {
+        super(StandardClass.PROGRAM_ERROR);
+	if(message == null) {
+	    throw new NullPointerException("message can not be null");
+	}
+	this.message = message;
         setFormatControl(getMessage());
         setFormatArguments(NIL);
     }
@@ -53,6 +68,9 @@ public final class WrongNumberOfArgumentsException extends ProgramError
     @Override
     public String getMessage()
     {
+	if(message != null) {
+	    return message;
+	}
         FastStringBuffer sb =
             new FastStringBuffer("Wrong number of arguments");
         LispObject lambdaName = operator.getLambdaName();
@@ -60,7 +78,12 @@ public final class WrongNumberOfArgumentsException extends ProgramError
             sb.append(" for ");
             sb.append(operator.getLambdaName().writeToString());
         }
+	if(expectedArgs >= 0) {
+	    sb.append("; ");
+	    sb.append(expectedArgs);
+	    sb.append(" expected");
+	}
         sb.append('.');
-        return sb.toString();
+        return message = sb.toString();
     }
 }
