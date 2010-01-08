@@ -41,13 +41,30 @@ import java.math.BigInteger;
 
 import java.util.*;
 
-public final class JavaObject extends LispObject
-{
+public final class JavaObject extends LispObject {
     private final Object obj;
+    private final Class<?> intendedClass;
 
-    public JavaObject(Object obj)
-    {
+    public JavaObject(Object obj) {
         this.obj = obj;
+	this.intendedClass = obj != null ? obj.getClass() : null;
+    }
+
+    /**
+     * Constructs a Java Object with the given intended class, used to access
+     * the object reflectively.
+     * @throws ClassCastException if the object is not an instance of the
+     *                            intended class.
+     */
+    public JavaObject(Object obj, Class<?> intendedClass) {
+	if(obj != null && intendedClass == null) {
+	    intendedClass = obj.getClass();
+	}
+	if(intendedClass != null && !intendedClass.isInstance(obj)) {
+	    throw new ClassCastException(obj + " can not be cast to " + intendedClass);
+	}
+	this.obj = obj;
+	this.intendedClass = intendedClass;
     }
 
     @Override
@@ -102,6 +119,24 @@ public final class JavaObject extends LispObject
 
     /** Encapsulates obj, if required.
      * If obj is a {@link LispObject}, it's returned as-is.
+     * If not, a java object with the specified intended class is returned.
+     * 
+     * @param obj Any java object
+     * @param intendedClass the class that shall be used to access obj
+     * @return obj or a new JavaObject encapsulating obj
+     */
+    public final static LispObject getInstance(Object obj, Class<?> intendedClass) {
+        if (obj == null)
+            return new JavaObject(null);
+        
+        if (obj instanceof LispObject)
+            return (LispObject)obj;
+
+        return new JavaObject(obj, intendedClass);
+    }
+
+    /** Encapsulates obj, if required.
+     * If obj is a {@link LispObject}, it's returned as-is.
      * If obj is of a type which can be mapped to a lisp type,
      * an object of the mapped type is returned, if translated is true.
      *
@@ -109,11 +144,29 @@ public final class JavaObject extends LispObject
      * @param translated
      * @return a LispObject representing or encapsulating obj
      */
-    public final static LispObject getInstance(Object obj, boolean translated)
+    public final static LispObject getInstance(Object obj, boolean translated) {
+	return getInstance(obj, translated, obj != null ? obj.getClass() : null);
+    }
 
-    {
+
+
+    /** Encapsulates obj, if required.
+     * If obj is a {@link LispObject}, it's returned as-is.
+     * If obj is of a type which can be mapped to a lisp type,
+     * an object of the mapped type is returned, if translated is true.
+     *
+     * @param obj
+     * @param translated
+     * @param intendedClass the class that shall be used to reflectively 
+     *                      access obj; it is an error for obj not to be
+     *                      an instance of this class. This parameter is ignored
+     *                      if translated == true and the object can be
+     *                      converted to a Lisp object.
+     * @return a LispObject representing or encapsulating obj
+     */
+    public final static LispObject getInstance(Object obj, boolean translated, Class<?> intendedClass) {
         if (! translated)
-            return getInstance(obj);
+            return getInstance(obj, intendedClass);
 
         if (obj == null) return NIL;
 
@@ -167,18 +220,23 @@ public final class JavaObject extends LispObject
         // We might want to handle:
         //  - streams
         //  - others?
-        return new JavaObject(obj);
+        return new JavaObject(obj, intendedClass);
     }
 
     @Override
-    public Object javaInstance()
-    {
+    public Object javaInstance() {
         return obj;
     }
 
     @Override
     public Object javaInstance(Class c) {
-	return javaInstance();
+	if(obj == null) {
+	    return obj;
+	} else if(c.isAssignableFrom(intendedClass)) {
+	    return obj;
+	} else {
+	    return error(new TypeError(intendedClass.getName() + " is not assignable to " + c.getName()));
+	}
     }
 
     /** Returns the encapsulated Java object for
@@ -189,6 +247,10 @@ public final class JavaObject extends LispObject
     @Override
     public Object lockableInstance() {
         return obj;
+    }
+
+    public Class<?> getIntendedClass() {
+	return intendedClass;
     }
 
     public static final Object getObject(LispObject o)

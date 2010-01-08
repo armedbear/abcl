@@ -45,8 +45,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public final class Java
 {
@@ -201,7 +200,7 @@ public final class Java
                     f.set(instance,args[3].javaInstance(fieldType));
                     return args[3];
             }
-            return JavaObject.getInstance(f.get(instance), translate);
+            return JavaObject.getInstance(f.get(instance), translate, f.getType());
         }
         catch (NoSuchFieldException e) {
             error(new LispError("no such field"));
@@ -365,17 +364,16 @@ public final class Java
                 if (c != null) {
                     String methodName = methodRef.getStringValue();
                     Method[] methods = c.getMethods();
+		    List<Method> staticMethods = new ArrayList<Method>();
                     int argCount = args.length - 2;
-                    for (int i = 0; i < methods.length; i++) {
-                        Method method = methods[i];
-                        if (!Modifier.isStatic(method.getModifiers())
-                            || method.getParameterTypes().length != argCount)
-                            continue;
-                        if (method.getName().equals(methodName)) {
-                            m = method;
-                            break;
-                        }
-                    }
+		    for(Method m1 : methods) {
+			if(Modifier.isStatic(m1.getModifiers())) {
+			    staticMethods.add(m1);
+			}
+		    }
+		    if(staticMethods.size() > 0) {
+			m = findMethod(staticMethods.toArray(new Method[staticMethods.size()]), methodName, args);
+		    }
                     if (m == null)
                         error(new LispError("no such method"));
                 }
@@ -391,7 +389,7 @@ public final class Java
                     methodArgs[i-2] = arg.javaInstance(argTypes[i-2]);
             }
             Object result = m.invoke(null, methodArgs);
-            return JavaObject.getInstance(result, translate);
+	    return JavaObject.getInstance(result, translate, m.getReturnType());
         }
         catch (ControlTransfer c) {
             throw c;
@@ -630,26 +628,55 @@ public final class Java
     {
         if (args.length < 2)
             error(new WrongNumberOfArgumentsException(fun));
-        final LispObject methodArg = args[0];
-        final LispObject instanceArg = args[1];
-        final Object instance;
-        if (instanceArg instanceof AbstractString)
-            instance = instanceArg.getStringValue();
-        else if (instanceArg instanceof JavaObject)
-            instance = ((JavaObject)instanceArg).getObject();
-        else {
-	    instance = instanceArg.javaInstance();
-        }
         try {
-            final Method method;
+	    final LispObject methodArg = args[0];
+	    final LispObject instanceArg = args[1];
+	    final Object instance;
+	    Class<?> intendedClass = null;
+	    if (instanceArg instanceof AbstractString) {
+		instance = instanceArg.getStringValue();
+	    } else if (instanceArg instanceof JavaObject) {
+		JavaObject jobj = ((JavaObject)instanceArg);
+		instance = jobj.getObject();
+		intendedClass = jobj.getIntendedClass();
+	    } else {
+		instance = instanceArg.javaInstance();
+	    }
+	    if(instance == null) {
+		throw new NullPointerException(); //Handled below
+	    }
+            Method method;
+	    Object[] methodArgs;
             if (methodArg instanceof AbstractString) {
+		methodArgs = translateMethodArguments(args, 2);
                 String methodName = methodArg.getStringValue();
-                Class c = instance.getClass();
-                method = findMethod(c, methodName, args);
+		if(intendedClass == null) {
+		    intendedClass = instance.getClass();
+		}
+                method = findMethod(intendedClass, methodName, methodArgs);
+		Class actualClass = null;
+		if(method == null) {		    
+		    actualClass = instance.getClass();
+		    if(intendedClass != actualClass &&
+		       Modifier.isPublic(actualClass.getModifiers())) {
+			method = findMethod(actualClass, methodName, methodArgs);
+		    }
+		}
+		if (method == null) {
+		    String classes = intendedClass.getName();
+		    if(actualClass != null && actualClass != intendedClass) {
+			classes += " or " + actualClass.getName();
+		    }
+		    throw new NoSuchMethodException("No applicable method named " + methodName + " found in " + classes);
+		}
+
             } else
                 method = (Method) JavaObject.getObject(methodArg);
             Class<?>[] argTypes = (Class<?>[])method.getParameterTypes();
-            Object[] methodArgs = new Object[args.length - 2];
+	    if(argTypes.length != args.length - 2) {
+		return error(new WrongNumberOfArgumentsException("Wrong number of arguments for " + method + ": expected " + argTypes.length + ", got " + (args.length - 2)));
+	    }
+            methodArgs = new Object[argTypes.length];
             for (int i = 2; i < args.length; i++) {
                 LispObject arg = args[i];
                 if (arg == NIL)
@@ -658,7 +685,8 @@ public final class Java
                     methodArgs[i-2] = arg.javaInstance(argTypes[i-2]);
             }
             return JavaObject.getInstance(method.invoke(instance, methodArgs),
-                                          translate);
+                                          translate,
+					  method.getReturnType());
         }
         catch (ControlTransfer t) {
             throw t;
@@ -699,10 +727,8 @@ public final class Java
 	return javaArgs;
     }
 
-    private static Method findMethod(Class<?> c, String methodName, LispObject[] args) throws NoSuchMethodException {
-	int argCount = args.length - 2;
-        Object[] javaArgs = translateMethodArguments(args, 2);
-        Method[] methods = c.getMethods();
+    private static Method findMethod(Method[] methods, String methodName, Object[] javaArgs) {
+	int argCount = javaArgs.length;
         Method result = null;
         for (int i = methods.length; i-- > 0;) {
             Method method = methods[i];
@@ -720,10 +746,22 @@ public final class Java
                 result = method;
             }
         }
-        if (result == null) {
-            throw new NoSuchMethodException(methodName);
-        }
         return result;
+    }
+
+    private static Method findMethod(Class<?> c, String methodName, Object[] javaArgs) {
+        Method[] methods = c.getMethods();
+	return findMethod(methods, methodName, javaArgs);
+    }
+
+    private static Method findMethod(Class<?> c, String methodName, LispObject[] args) {
+        Object[] javaArgs = translateMethodArguments(args, 2);
+	return findMethod(c, methodName, javaArgs);
+    }
+
+    private static Method findMethod(Method[] methods, String methodName, LispObject[] args) {
+        Object[] javaArgs = translateMethodArguments(args, 2);
+	return findMethod(methods, methodName, javaArgs);
     }
 
     private static Constructor findConstructor(Class<?> c, LispObject[] args) throws NoSuchMethodException {
@@ -875,6 +913,23 @@ public final class Java
         public LispObject execute(LispObject arg)
         {
             return JavaObject.getInstance(arg.javaInstance(), true);
+        }
+    };
+
+    // ### jcoerce java-object intended-class
+    private static final Primitive JCOERCE =
+        new Primitive("jcoerce", PACKAGE_JAVA, true, "java-object intended-class")
+    {
+        @Override
+        public LispObject execute(LispObject javaObject, LispObject intendedClass)
+        {
+	    Object o = javaObject.javaInstance();
+	    Class<?> c = javaClass(intendedClass);
+	    try {
+		return JavaObject.getInstance(o, c);
+	    } catch(ClassCastException e) {
+		return error(new TypeError(javaObject, new SimpleString(c.getName())));
+	    }
         }
     };
     
