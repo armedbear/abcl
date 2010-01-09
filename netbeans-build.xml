@@ -7,20 +7,7 @@
   <import file="nbproject/build-impl.xml"/>
 
   <target name="-post-compile">
-    <echo>build.classes.dir: ${build.classes.dir}</echo>
-      <copy todir="${build.classes.dir}">
-	<fileset dir="${basedir}/src">
-	  <patternset refid="abcl.source.lisp"/>
-	</fileset>
-      </copy>
-
-      <java classpath="${build.classes.dir}"
-	    fork="true"
-	    classname="org.armedbear.lisp.Main">
-	<arg value="--noinit"/>
-	<arg value="--eval"/>
-	<arg value="(compile-system :zip nil :quit t)"/>
-      </java>
+    <antcall target="abcl.compile.lisp"/>
   </target>
 </project>
 
