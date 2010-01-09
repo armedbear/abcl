@@ -34,10 +34,7 @@
 package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
-
 import java.util.Hashtable;
-
-
 
 public class AutoloadedFunctionProxy extends Function {
 
@@ -240,6 +237,7 @@ public class AutoloadedFunctionProxy extends Function {
         return new JavaObject(new Hashtable());
     }
 
+    // ### proxy-preloaded-function
     final private static Primitive PROXY_PRELOADED_FUNCTION
         = new Primitive("proxy-preloaded-function", PACKAGE_SYS, false,
                         "symbol name")
@@ -284,7 +282,7 @@ public class AutoloadedFunctionProxy extends Function {
       }
    };
 
-
+  //  ### function-preload
   final private static Primitive FUNCTION_PRELOAD
     = new Primitive("function-preload", PACKAGE_SYS, false, "name")
   {
