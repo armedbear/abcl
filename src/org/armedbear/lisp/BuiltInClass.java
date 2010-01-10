@@ -92,16 +92,11 @@ public class BuiltInClass extends LispClass
   public static final BuiltInClass BIGNUM               = addClass(Symbol.BIGNUM);
   public static final BuiltInClass BASE_STRING          = addClass(Symbol.BASE_STRING);
   public static final BuiltInClass BIT_VECTOR           = addClass(Symbol.BIT_VECTOR);
-  public static final BuiltInClass BROADCAST_STREAM     = addClass(Symbol.BROADCAST_STREAM);
-  public static final BuiltInClass CASE_FROB_STREAM     = addClass(Symbol.CASE_FROB_STREAM);
   public static final BuiltInClass CHARACTER            = addClass(Symbol.CHARACTER);
   public static final BuiltInClass COMPLEX              = addClass(Symbol.COMPLEX);
-  public static final BuiltInClass CONCATENATED_STREAM  = addClass(Symbol.CONCATENATED_STREAM);
   public static final BuiltInClass CONS                 = addClass(Symbol.CONS);
   public static final BuiltInClass DOUBLE_FLOAT         = addClass(Symbol.DOUBLE_FLOAT);
-  public static final BuiltInClass ECHO_STREAM          = addClass(Symbol.ECHO_STREAM);
   public static final BuiltInClass ENVIRONMENT          = addClass(Symbol.ENVIRONMENT);
-  public static final BuiltInClass FILE_STREAM          = addClass(Symbol.FILE_STREAM);
   public static final BuiltInClass FIXNUM               = addClass(Symbol.FIXNUM);
   public static final BuiltInClass FLOAT                = addClass(Symbol.FLOAT);
   public static final BuiltInClass FUNCTION             = addClass(Symbol.FUNCTION);
@@ -131,18 +126,9 @@ public class BuiltInClass extends LispClass
   public static final BuiltInClass SIMPLE_STRING        = addClass(Symbol.SIMPLE_STRING);
   public static final BuiltInClass SIMPLE_VECTOR        = addClass(Symbol.SIMPLE_VECTOR);
   public static final BuiltInClass SINGLE_FLOAT         = addClass(Symbol.SINGLE_FLOAT);
-  public static final BuiltInClass SLIME_INPUT_STREAM   = addClass(Symbol.SLIME_INPUT_STREAM);
-  public static final BuiltInClass SLIME_OUTPUT_STREAM  = addClass(Symbol.SLIME_OUTPUT_STREAM);
-  public static final BuiltInClass SOCKET_STREAM        = addClass(Symbol.SOCKET_STREAM);
-  public static final BuiltInClass STREAM               = addClass(Symbol.STREAM);
   public static final BuiltInClass STRING               = addClass(Symbol.STRING);
-  public static final BuiltInClass STRING_INPUT_STREAM  = addClass(Symbol.STRING_INPUT_STREAM);
-  public static final BuiltInClass STRING_OUTPUT_STREAM = addClass(Symbol.STRING_OUTPUT_STREAM);
-  public static final BuiltInClass STRING_STREAM        = addClass(Symbol.STRING_STREAM);
   public static final BuiltInClass SYMBOL               = addClass(Symbol.SYMBOL);
-  public static final BuiltInClass SYNONYM_STREAM       = addClass(Symbol.SYNONYM_STREAM);
   public static final BuiltInClass THREAD               = addClass(Symbol.THREAD);
-  public static final BuiltInClass TWO_WAY_STREAM       = addClass(Symbol.TWO_WAY_STREAM);
   public static final BuiltInClass VECTOR               = addClass(Symbol.VECTOR);
   public static final BuiltInClass STACK_FRAME          = addClass(Symbol.STACK_FRAME);
   public static final BuiltInClass LISP_STACK_FRAME     = addClass(Symbol.LISP_STACK_FRAME);
@@ -150,11 +136,60 @@ public class BuiltInClass extends LispClass
 
 
   public static final StructureClass STRUCTURE_OBJECT =
-    new StructureClass(Symbol.STRUCTURE_OBJECT, list(CLASS_T));
-  static
-  {
-    addClass(Symbol.STRUCTURE_OBJECT, STRUCTURE_OBJECT);
-  }
+    (StructureClass)addClass(Symbol.STRUCTURE_OBJECT,
+             new StructureClass(Symbol.STRUCTURE_OBJECT, list(CLASS_T)));
+
+  public static final LispClass STREAM =
+    addClass(Symbol.STREAM,
+             new StructureClass(Symbol.STREAM, list(STRUCTURE_OBJECT)));
+  public static final LispClass SYSTEM_STREAM =
+    addClass(Symbol.SYSTEM_STREAM,
+             new StructureClass(Symbol.SYSTEM_STREAM, list(STREAM)));
+  public static final LispClass TWO_WAY_STREAM =
+    addClass(Symbol.TWO_WAY_STREAM,
+             new StructureClass(Symbol.TWO_WAY_STREAM, list(SYSTEM_STREAM)));
+  public static final LispClass BROADCAST_STREAM =
+    addClass(Symbol.BROADCAST_STREAM,
+             new StructureClass(Symbol.BROADCAST_STREAM, list(SYSTEM_STREAM)));
+  public static final LispClass ECHO_STREAM =
+    addClass(Symbol.ECHO_STREAM,
+             new StructureClass(Symbol.ECHO_STREAM, list(SYSTEM_STREAM)));
+  public static final LispClass CASE_FROB_STREAM =
+    addClass(Symbol.CASE_FROB_STREAM,
+             new StructureClass(Symbol.CASE_FROB_STREAM, list(SYSTEM_STREAM)));
+  public static final LispClass STRING_STREAM =
+    addClass(Symbol.STRING_STREAM,
+             new StructureClass(Symbol.STRING_STREAM, list(SYSTEM_STREAM)));
+  public static final LispClass STRING_INPUT_STREAM =
+    addClass(Symbol.STRING_INPUT_STREAM,
+             new StructureClass(Symbol.STRING_INPUT_STREAM, list(STRING_STREAM)));
+  public static final LispClass STRING_OUTPUT_STREAM =
+    addClass(Symbol.STRING_OUTPUT_STREAM,
+             new StructureClass(Symbol.STRING_OUTPUT_STREAM, list(STRING_STREAM)));
+  public static final LispClass SYNONYM_STREAM =
+    addClass(Symbol.SYNONYM_STREAM,
+             new StructureClass(Symbol.SYNONYM_STREAM, list(SYSTEM_STREAM)));
+  public static final LispClass FILE_STREAM =
+    addClass(Symbol.FILE_STREAM,
+             new StructureClass(Symbol.FILE_STREAM, list(SYSTEM_STREAM)));
+  public static final LispClass CONCATENATED_STREAM =
+    addClass(Symbol.CONCATENATED_STREAM,
+             new StructureClass(Symbol.CONCATENATED_STREAM, list(SYSTEM_STREAM)));
+
+
+
+    // Implementation defined streams
+  public static final LispClass SOCKET_STREAM =
+    addClass(Symbol.SOCKET_STREAM,
+             new StructureClass(Symbol.SOCKET_STREAM, list(TWO_WAY_STREAM)));
+  public static final LispClass SLIME_INPUT_STREAM =
+    addClass(Symbol.SLIME_INPUT_STREAM,
+             new StructureClass(Symbol.SLIME_INPUT_STREAM, list(STRING_STREAM)));
+  public static final LispClass SLIME_OUTPUT_STREAM =
+    addClass(Symbol.SLIME_OUTPUT_STREAM,
+             new StructureClass(Symbol.SLIME_OUTPUT_STREAM, list(STRING_STREAM)));
+
+
 
   static
   {
@@ -166,7 +201,6 @@ public class BuiltInClass extends LispClass
     BIGNUM.setCPL(BIGNUM, INTEGER, RATIONAL, REAL, NUMBER, CLASS_T);
     BIT_VECTOR.setDirectSuperclass(VECTOR);
     BIT_VECTOR.setCPL(BIT_VECTOR, VECTOR, ARRAY, SEQUENCE, CLASS_T);
-    BROADCAST_STREAM.setDirectSuperclass(STREAM);
     BROADCAST_STREAM.setCPL(BROADCAST_STREAM, STREAM, CLASS_T);
     CASE_FROB_STREAM.setDirectSuperclass(STREAM);
     CASE_FROB_STREAM.setCPL(CASE_FROB_STREAM, STREAM, CLASS_T);
@@ -175,19 +209,16 @@ public class BuiltInClass extends LispClass
     CLASS_T.setCPL(CLASS_T);
     COMPLEX.setDirectSuperclass(NUMBER);
     COMPLEX.setCPL(COMPLEX, NUMBER, CLASS_T);
-    CONCATENATED_STREAM.setDirectSuperclass(STREAM);
     CONCATENATED_STREAM.setCPL(CONCATENATED_STREAM, STREAM, CLASS_T);
     CONS.setDirectSuperclass(LIST);
     CONS.setCPL(CONS, LIST, SEQUENCE, CLASS_T);
     DOUBLE_FLOAT.setDirectSuperclass(FLOAT);
     DOUBLE_FLOAT.setCPL(DOUBLE_FLOAT, FLOAT, REAL, NUMBER, CLASS_T);
-    ECHO_STREAM.setDirectSuperclass(STREAM);
     ECHO_STREAM.setCPL(ECHO_STREAM, STREAM, CLASS_T);
     ENVIRONMENT.setDirectSuperclass(CLASS_T);
     ENVIRONMENT.setCPL(ENVIRONMENT, CLASS_T);
     FIXNUM.setDirectSuperclass(INTEGER);
     FIXNUM.setCPL(FIXNUM, INTEGER, RATIONAL, REAL, NUMBER, CLASS_T);
-    FILE_STREAM.setDirectSuperclass(STREAM);
     FILE_STREAM.setCPL(FILE_STREAM, STREAM, CLASS_T);
     FLOAT.setDirectSuperclass(REAL);
     FLOAT.setCPL(FLOAT, REAL, NUMBER, CLASS_T);
@@ -250,34 +281,25 @@ public class BuiltInClass extends LispClass
                          CLASS_T);
     SINGLE_FLOAT.setDirectSuperclass(FLOAT);
     SINGLE_FLOAT.setCPL(SINGLE_FLOAT, FLOAT, REAL, NUMBER, CLASS_T);
-    SLIME_INPUT_STREAM.setDirectSuperclass(STRING_STREAM);
     SLIME_INPUT_STREAM.setCPL(SLIME_INPUT_STREAM, STRING_STREAM, STREAM,
                               CLASS_T);
-    SLIME_OUTPUT_STREAM.setDirectSuperclass(STRING_STREAM);
     SLIME_OUTPUT_STREAM.setCPL(SLIME_OUTPUT_STREAM, STRING_STREAM, STREAM,
                                CLASS_T);
-    SOCKET_STREAM.setDirectSuperclass(TWO_WAY_STREAM);
     SOCKET_STREAM.setCPL(SOCKET_STREAM, TWO_WAY_STREAM, STREAM, CLASS_T);
-    STREAM.setDirectSuperclass(CLASS_T);
     STREAM.setCPL(STREAM, CLASS_T);
     STRING.setDirectSuperclass(VECTOR);
     STRING.setCPL(STRING, VECTOR, ARRAY, SEQUENCE, CLASS_T);
-    STRING_INPUT_STREAM.setDirectSuperclass(STRING_STREAM);
     STRING_INPUT_STREAM.setCPL(STRING_INPUT_STREAM, STRING_STREAM, STREAM,
                                CLASS_T);
-    STRING_OUTPUT_STREAM.setDirectSuperclass(STRING_STREAM);
     STRING_OUTPUT_STREAM.setCPL(STRING_OUTPUT_STREAM, STRING_STREAM, STREAM,
                                 CLASS_T);
-    STRING_STREAM.setDirectSuperclass(STREAM);
     STRING_STREAM.setCPL(STRING_STREAM, STREAM, CLASS_T);
     STRUCTURE_OBJECT.setCPL(STRUCTURE_OBJECT, CLASS_T);
     SYMBOL.setDirectSuperclass(CLASS_T);
     SYMBOL.setCPL(SYMBOL, CLASS_T);
-    SYNONYM_STREAM.setDirectSuperclass(STREAM);
     SYNONYM_STREAM.setCPL(SYNONYM_STREAM, STREAM, CLASS_T);
     THREAD.setDirectSuperclass(CLASS_T);
     THREAD.setCPL(THREAD, CLASS_T);
-    TWO_WAY_STREAM.setDirectSuperclass(STREAM);
     TWO_WAY_STREAM.setCPL(TWO_WAY_STREAM, STREAM, CLASS_T);
     VECTOR.setDirectSuperclasses(list(ARRAY, SEQUENCE));
     VECTOR.setCPL(VECTOR, ARRAY, SEQUENCE, CLASS_T);
