@@ -39,12 +39,13 @@ public abstract class LispClass extends StandardObject
 {
   private static final EqHashTable map = new EqHashTable(256, NIL, NIL);
 
-  public static void addClass(Symbol symbol, LispClass c)
+  public static LispClass addClass(Symbol symbol, LispClass c)
   {
     synchronized (map)
       {
         map.put(symbol, c);
       }
+    return c;
   }
 
   public static void removeClass(Symbol symbol)
