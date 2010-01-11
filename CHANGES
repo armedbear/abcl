@@ -23,6 +23,7 @@ Bugs fixed:
  * Line numbers in generated java classes incorrect
  * JCALL, JNEW doesn't select best match when multiple applicable methods
  * STREAM-EXTERNAL-FORMAT always returns :DEFAULT, instead of actual format
+ * REPL no longer hangs in Netbeans 6.[578] output window
  * Lambda-list variables replaced by surrounding SYMBOL-MACROLET
 
 
@@ -30,7 +31,7 @@ Other changes
 
  * LispObject does not inherit from Lisp anymore
  * Many functions declared 'final' for performance improvement
-
+ * SYSTEM:*SOURCE* FASLs for system files no longer refer to intermediate build location
 
 
 Version 0.17.0
