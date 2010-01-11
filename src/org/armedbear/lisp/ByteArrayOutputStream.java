@@ -47,7 +47,13 @@ public final class ByteArrayOutputStream extends Stream
     private ByteArrayOutputStream(LispObject elementType)
     {
         this.elementType = elementType;
-        initAsBinaryOutputStream(byteArrayOutputStream = new java.io.ByteArrayOutputStream());
+        initAsBinaryOutputStream(byteArrayOutputStream = new java.io.ByteArrayOutputStream(2048));
+        // based on statistics of ABCL's own .cls files
+        // as per 20100111, 2048 is the 70th percentile,
+        // meaning that only 30% of all .cls files is bigger
+
+        // However, *every* .cls file is bigger than 32 bytes;
+        // we want to prevent buffer resizing
     }
 
     @Override
