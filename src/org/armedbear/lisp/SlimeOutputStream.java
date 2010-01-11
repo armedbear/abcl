@@ -44,6 +44,7 @@ public final class SlimeOutputStream extends Stream
 
     private SlimeOutputStream(Function f)
     {
+        super(Symbol.SLIME_OUTPUT_STREAM);
         this.elementType = Symbol.CHARACTER;
         isInputStream = false;
         isOutputStream = true;

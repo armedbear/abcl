@@ -41,6 +41,7 @@ public final class BroadcastStream extends Stream
 
     private BroadcastStream(Stream[] streams)
     {
+        super(Symbol.BROADCAST_STREAM);
         this.streams = streams;
         isOutputStream = true;
         if (streams.length == 0) {

@@ -53,9 +53,9 @@ public final class socket_stream extends Primitive
         LispObject elementType = second; // Checked by caller.
         try {
              Stream in =
-                 new Stream(socket.getInputStream(), elementType, third);
+                 new Stream(Symbol.SYSTEM_STREAM, socket.getInputStream(), elementType, third);
              Stream out =
-                 new Stream(socket.getOutputStream(), elementType, third);
+                 new Stream(Symbol.SYSTEM_STREAM, socket.getOutputStream(), elementType, third);
              return new SocketStream(socket, in, out);
         }
         catch (Exception e) {

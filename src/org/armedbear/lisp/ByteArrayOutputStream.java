@@ -46,6 +46,7 @@ public final class ByteArrayOutputStream extends Stream
 
     private ByteArrayOutputStream(LispObject elementType)
     {
+        super(Symbol.SYSTEM_STREAM);
         this.elementType = elementType;
         initAsBinaryOutputStream(byteArrayOutputStream = new java.io.ByteArrayOutputStream(2048));
         // based on statistics of ABCL's own .cls files

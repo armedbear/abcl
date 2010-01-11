@@ -41,6 +41,7 @@ public final class FillPointerOutputStream extends Stream
 
     private FillPointerOutputStream(ComplexString string)
     {
+        super(Symbol.SYSTEM_STREAM);
         elementType = Symbol.CHARACTER;
         isOutputStream = true;
         isInputStream = false;

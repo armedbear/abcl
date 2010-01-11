@@ -42,6 +42,7 @@ public abstract class CaseFrobStream extends Stream
     protected CaseFrobStream(Stream target)
 
     {
+        super(Symbol.CASE_FROB_STREAM);
         Debug.assertTrue(target.isCharacterOutputStream());
         this.target = target;
     }

@@ -41,6 +41,7 @@ public final class ConcatenatedStream extends Stream
 
     private ConcatenatedStream(LispObject streams)
     {
+        super(Symbol.CONCATENATED_STREAM);
         this.streams = streams;
         isInputStream = true;
     }

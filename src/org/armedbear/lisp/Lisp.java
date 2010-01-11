@@ -2183,20 +2183,7 @@ public final class Lisp
     return (Package) Symbol._PACKAGE_.symbolValueNoThrow();
   }
 
-  private static Stream stdin = new Stream(System.in, Symbol.CHARACTER, true);
 
-  private static Stream stdout = new Stream(System.out, Symbol.CHARACTER, true);
-
-  static
-  {
-    Symbol.STANDARD_INPUT.initializeSpecial(stdin);
-    Symbol.STANDARD_OUTPUT.initializeSpecial(stdout);
-    Symbol.ERROR_OUTPUT.initializeSpecial(stdout);
-    Symbol.TRACE_OUTPUT.initializeSpecial(stdout);
-    Symbol.TERMINAL_IO.initializeSpecial(new TwoWayStream(stdin, stdout, true));
-    Symbol.QUERY_IO.initializeSpecial(new TwoWayStream(stdin, stdout, true));
-    Symbol.DEBUG_IO.initializeSpecial(new TwoWayStream(stdin, stdout, true));
-  }
 
   public static final void resetIO(Stream in, Stream out)
   {
@@ -2214,8 +2201,8 @@ public final class Lisp
   // Used in org/armedbear/j/JLisp.java.
   public static final void resetIO()
   {
-    resetIO(new Stream(System.in, Symbol.CHARACTER, true),
-            new Stream(System.out, Symbol.CHARACTER, true));
+    resetIO(new Stream(Symbol.SYSTEM_STREAM, System.in, Symbol.CHARACTER, true),
+            new Stream(Symbol.SYSTEM_STREAM, System.out, Symbol.CHARACTER, true));
   }
 
   public static final TwoWayStream getTerminalIO()
@@ -2767,4 +2754,20 @@ public final class Lisp
     loadClass("org.armedbear.lisp.PackageFunctions");
     cold = false;
   }
+
+    private static Stream stdin = new Stream(Symbol.SYSTEM_STREAM, System.in, Symbol.CHARACTER, true);
+
+    private static Stream stdout = new Stream(Symbol.SYSTEM_STREAM,System.out, Symbol.CHARACTER, true);
+
+  static
+  {
+    Symbol.STANDARD_INPUT.initializeSpecial(stdin);
+    Symbol.STANDARD_OUTPUT.initializeSpecial(stdout);
+    Symbol.ERROR_OUTPUT.initializeSpecial(stdout);
+    Symbol.TRACE_OUTPUT.initializeSpecial(stdout);
+    Symbol.TERMINAL_IO.initializeSpecial(new TwoWayStream(stdin, stdout, true));
+    Symbol.QUERY_IO.initializeSpecial(new TwoWayStream(stdin, stdout, true));
+    Symbol.DEBUG_IO.initializeSpecial(new TwoWayStream(stdin, stdout, true));
+  }
+
 }

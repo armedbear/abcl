@@ -70,6 +70,7 @@ public final class FileStream extends Stream
          * These definitions have been taken from FLEXI-STREAMS:
          *    http://www.weitz.de/flexi-streams/#make-external-format
          */
+        super(Symbol.FILE_STREAM);
         final File file = new File(namestring);
         String mode = null;
         if (direction == Keyword.INPUT) {

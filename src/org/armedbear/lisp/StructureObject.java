@@ -35,10 +35,22 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public final class StructureObject extends LispObject
+public class StructureObject extends LispObject
 {
   private final StructureClass structureClass;
   private final LispObject[] slots;
+
+  public StructureObject(Symbol symbol)
+
+  {
+      structureClass = (StructureClass) LispClass.findClass(symbol/*, true*/); // Might return null.
+    if (structureClass == null) {
+        System.err.println("No mitens sitten: " + BuiltInClass.SYSTEM_STREAM.toString());
+        System.err.println("joopa joo:" + Symbol.SYSTEM_STREAM.name);
+        System.err.println("Oh noes, structure object got a null class:" + symbol.toString() + ", symbol name:" + symbol.name );
+    }
+    slots = new LispObject[0];
+  }
 
   public StructureObject(Symbol symbol, LispObject[] slots)
 

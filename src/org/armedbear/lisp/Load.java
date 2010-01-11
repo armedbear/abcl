@@ -262,7 +262,7 @@ public final class Load
         try {
 
           return loadFileFromStream(null, truename,
-                                    new Stream(in, Symbol.CHARACTER),
+                                    new Stream(Symbol.SYSTEM_STREAM, in, Symbol.CHARACTER),
                                     verbose, print, false, returnLastResult);
         }
         catch (FaslVersionMismatch e) {
@@ -413,7 +413,7 @@ public final class Load
                     thread.bindSpecial(_WARN_ON_REDEFINITION_, NIL);
                     try {
                         return loadFileFromStream(pathname, truename,
-                                                  new Stream(in, Symbol.CHARACTER),
+                                                  new Stream(Symbol.SYSTEM_STREAM, in, Symbol.CHARACTER),
                                                   verbose, print, auto);
                     }
                     catch (FaslVersionMismatch e) {

@@ -6,7 +6,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 import org.armedbear.lisp.Stream;
-
 /**
  * A bidirectional stream that captures input from a modal dialog. The dialog reports a label (prompt line)
  * which shows to the user everything that has been printed to the stream up to the moment when the dialog
@@ -54,6 +53,7 @@ public abstract class DialogPromptStream extends Stream {
 	 * Inits this stream. Should be called by subclasses' constructors.
 	 */
 	protected DialogPromptStream() {
+		super(org.armedbear.lisp.Symbol.SYSTEM_STREAM);
 		initAsCharacterOutputStream(writtenSoFar);
 		initAsCharacterInputStream(reader);
 	}

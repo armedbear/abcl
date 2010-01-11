@@ -81,7 +81,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
     }
 
     public void setStandardInput(InputStream stream, LispThread thread) {
-	thread.setSpecialVariable(Symbol.STANDARD_INPUT, new Stream(stream,	Symbol.CHARACTER, true));
+	thread.setSpecialVariable(Symbol.STANDARD_INPUT, new Stream(Symbol.SYSTEM_STREAM, stream,	Symbol.CHARACTER, true));
     }
     
     public void setStandardInput(InputStream stream) {
@@ -108,7 +108,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 
 	public LispObject loadFromClasspath(String classpathResource) {
 		InputStream istream = getClass().getResourceAsStream(classpathResource);
-		Stream stream = new Stream(istream, Symbol.CHARACTER);
+		Stream stream = new Stream(Symbol.SYSTEM_STREAM, istream, Symbol.CHARACTER);
 		return load(stream);
 	}
 
@@ -236,8 +236,8 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	try {
 	    in = new ReaderInputStream(ctx.getReader());
 	    out = new WriterOutputStream(ctx.getWriter());
-	    Stream outStream = new Stream(out, Symbol.CHARACTER);
-	    Stream inStream  = new Stream(in,  Symbol.CHARACTER);
+	    Stream outStream = new Stream(Symbol.SYSTEM_STREAM, out, Symbol.CHARACTER);
+	    Stream inStream  = new Stream(Symbol.SYSTEM_STREAM, in,  Symbol.CHARACTER);
 	    retVal = evaluator.execute(makeBindings(ctx.getBindings(ScriptContext.GLOBAL_SCOPE)),
 				       makeBindings(ctx.getBindings(ScriptContext.ENGINE_SCOPE)),
 				       inStream, outStream,

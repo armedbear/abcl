@@ -42,6 +42,7 @@ public class TwoWayStream extends Stream
 
     public TwoWayStream(Stream in, Stream out)
     {
+        super(Symbol.TWO_WAY_STREAM);
         this.in = in;
         this.out = out;
         isInputStream = true;

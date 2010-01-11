@@ -54,6 +54,7 @@ public final class StringInputStream extends Stream
 
     public StringInputStream(String s, int start, int end)
     {
+        super(Symbol.STRING_INPUT_STREAM);
         elementType = Symbol.CHARACTER;
         setExternalFormat(keywordDefault);
         eolStyle = EolStyle.RAW;

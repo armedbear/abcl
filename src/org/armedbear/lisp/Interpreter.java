@@ -138,8 +138,8 @@ public final class Interpreter
         jlisp = true;
         this.inputStream = inputStream;
         this.outputStream = outputStream;
-        resetIO(new Stream(inputStream, Symbol.CHARACTER),
-                new Stream(outputStream, Symbol.CHARACTER));
+        resetIO(new Stream(Symbol.SYSTEM_STREAM, inputStream, Symbol.CHARACTER),
+                new Stream(Symbol.SYSTEM_STREAM, outputStream, Symbol.CHARACTER));
         if (!initialDirectory.endsWith(File.separator))
             initialDirectory = initialDirectory.concat(File.separator);
         Symbol.DEFAULT_PATHNAME_DEFAULTS.setSymbolValue(new Pathname(initialDirectory));

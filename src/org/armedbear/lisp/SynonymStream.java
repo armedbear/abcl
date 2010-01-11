@@ -41,6 +41,7 @@ public final class SynonymStream extends Stream
 
     private SynonymStream(Symbol symbol)
     {
+        super(Symbol.SYNONYM_STREAM);
         this.symbol = symbol;
     }
 

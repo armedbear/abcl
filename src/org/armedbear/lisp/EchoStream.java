@@ -44,12 +44,14 @@ public final class EchoStream extends Stream
 
     public EchoStream(Stream in, Stream out)
     {
+        super(Symbol.ECHO_STREAM);
         this.in = in;
         this.out = out;
     }
 
     public EchoStream(Stream in, Stream out, boolean interactive)
     {
+        super(Symbol.ECHO_STREAM);
         this.in = in;
         this.out = out;
         setInteractive(interactive);

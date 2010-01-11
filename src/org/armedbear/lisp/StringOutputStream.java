@@ -48,6 +48,7 @@ public final class StringOutputStream extends Stream
 
     private StringOutputStream(LispObject elementType)
     {
+        super(Symbol.STRING_OUTPUT_STREAM);
         this.elementType = elementType;
         this.eolStyle = EolStyle.RAW;
         initAsCharacterOutputStream(stringWriter = new StringWriter());
