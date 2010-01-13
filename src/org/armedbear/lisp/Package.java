@@ -829,7 +829,13 @@ public final class Package extends LispObject
             sb.append(name);
             sb.append("\")");
             return sb.toString();
-        } else if (name != null) {
+        } else
+            return toString();
+    }
+    
+    @Override
+    public String toString() {
+         if (name != null) {
             FastStringBuffer sb = new FastStringBuffer("#<PACKAGE \"");
             sb.append(name);
             sb.append("\">");

@@ -268,7 +268,7 @@ public class Symbol extends LispObject
 
   @Override
   public String toString() {
-      return "(Symbol)" + getQualifiedName();
+      return getQualifiedName();
   }
 
   /** Gets the value associated with the symbol
