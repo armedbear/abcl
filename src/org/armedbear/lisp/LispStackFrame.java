@@ -119,8 +119,7 @@ public class LispStackFrame
      String result = "";
      final String LISP_STACK_FRAME = "LISP-STACK-FRAME";
      try {
-       result =  unreadableString(LISP_STACK_FRAME + " " 
-				  + toLispString().getStringValue());
+	 result = Symbol.PRIN1_TO_STRING.execute(this.toLispList()).writeToString();
      } catch (Throwable t) { // error while printing stack
        Debug.trace("Serious printing error: ");
        Debug.trace(t);
