@@ -81,6 +81,7 @@ public class AutoloadedFunctionProxy extends Function {
         return load();
     }
 
+
     final private synchronized Function load() {
         if (fun != null)
             return fun;
@@ -90,6 +91,14 @@ public class AutoloadedFunctionProxy extends Function {
 
         for (int i = 0; i < symsToSave.length; i++)
             thread.bindSpecial(symsToSave[i], savedSyms[i]);
+
+        // set a specific reader environment, because we may be triggered in
+        // any undefined dynamic environment; we want something predictable
+        thread.bindSpecial(Symbol.READ_SUPPRESS, NIL);
+        thread.bindSpecial(Symbol.READ_EVAL, T);
+        thread.bindSpecial(Symbol.READ_BASE, LispInteger.getInstance(10));
+        // don't need to bind *READ-DEFAULT-FLOAT-FORMAT*,
+        // because DUMP-FORM sets it to NIL, forcing exponent markers everywhere
 
         byte[] classbytes =
             (byte[])((Hashtable)cache.javaInstance()).get(name);
