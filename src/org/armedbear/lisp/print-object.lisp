@@ -50,6 +50,9 @@
     (format stream "~S" (class-name (class-of object))))
   object)
 
+(defmethod print-object ((obj java:java-object) stream)
+  (write-string (%write-to-string obj) stream))
+
 (defmethod print-object ((class java:java-class) stream)
   (write-string (%write-to-string class) stream))
 
