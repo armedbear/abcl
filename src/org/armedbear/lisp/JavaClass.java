@@ -40,8 +40,9 @@ public class JavaClass extends LispClass {
 	private static final Map<Class<?>, JavaClass> cache = new HashMap<Class<?>, JavaClass>();
 
 	private JavaClass(Class<?> javaClass) {
-		this.javaClass = javaClass;
-		setDirectSuperclass(BuiltInClass.JAVA_OBJECT);
+	    super(new Symbol(javaClass.getCanonicalName()));
+	    this.javaClass = javaClass;
+	    setDirectSuperclass(BuiltInClass.JAVA_OBJECT);
 	}
 
 	private void initCPL() {
