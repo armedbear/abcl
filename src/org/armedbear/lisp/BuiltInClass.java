@@ -139,6 +139,12 @@ public class BuiltInClass extends LispClass
     (StructureClass)addClass(Symbol.STRUCTURE_OBJECT,
              new StructureClass(Symbol.STRUCTURE_OBJECT, list(CLASS_T)));
 
+    /* All the stream classes below are being defined as structure classes
+       but won't be available as such until further action is taken:
+       the 'defstruct' internal administration is missing.
+
+       For STREAM and SYSTEM-STREAM, that bit is added in boot.lisp */
+
   public static final LispClass STREAM =
     addClass(Symbol.STREAM,
              new StructureClass(Symbol.STREAM, list(STRUCTURE_OBJECT)));

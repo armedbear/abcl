@@ -171,6 +171,18 @@
 
 (load-system-file "require")
 (load-system-file "defstruct")
+
+;; The actual stream and system-stream classes
+;; are created in BuiltInClass.java, however, that code does not
+;; set up the structure internals correctly: we wouldn't be able
+;; to :include the structure classes. Fix that here.
+(defstruct (stream (:constructor nil)
+                   (:copier nil)
+                   (:predicate nil)))  ;; Predicate STREAMP defined elsewhere
+(defstruct (system-stream (:include stream)
+                          (:constructor nil)
+                          (:copier nil)))
+
 (load-system-file "restart")
 (load-system-file "late-setf")
 (load-system-file "debug")
