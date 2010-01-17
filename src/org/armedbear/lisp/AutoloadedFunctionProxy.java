@@ -284,7 +284,8 @@ public class AutoloadedFunctionProxy extends Function {
 
             fun = new AutoloadedFunctionProxy(sym, name, cache,
                                               cachedSyms, fType);
-
+            fun.setClassBytes((byte[])((Hashtable)cache.javaInstance())
+                              .get(name.getStringValue()));
         }
 
         return fun;
