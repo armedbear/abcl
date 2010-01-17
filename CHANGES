@@ -1,5 +1,21 @@
+Version 0.18.1
+==============
+svn://common-lisp.net/project/armedbear/svn/tags/0.18.1/abcl
+(17 Jan, 2010)
+
+Features:
+
+ * Support for printing java objects with print-object
+ * Support for disassembling proxied functions
+
+Bugs fixed:
+
+ * maxima works again
+
 Version 0.18.0
 ==============
+svn://common-lisp.net/project/armedbear/svn/tags/0.18.0/abcl
+(12 Jan, 2010)
 
 
 Features:
