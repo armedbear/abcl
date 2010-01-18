@@ -520,7 +520,7 @@
                     (list (find-class 'standard-object)))))
     (setf (class-direct-superclasses class) supers)
     (dolist (superclass supers)
-      (push class (class-direct-subclasses superclass))))
+      (pushnew class (class-direct-subclasses superclass))))
   (let ((slots (mapcar #'(lambda (slot-properties)
                           (apply #'make-direct-slot-definition class slot-properties))
                        direct-slots)))
