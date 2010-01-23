@@ -223,6 +223,9 @@
                          numerator denominator
                          boole
                          array-dimension
+                         array-row-major-index
+                         array-rank
+                         array-total-size
                          %dpb
                          ash)
   * integer)
