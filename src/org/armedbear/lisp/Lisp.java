@@ -2610,6 +2610,19 @@ public final class Lisp
     Symbol.INTERNAL_TIME_UNITS_PER_SECOND.initializeConstant(Fixnum.getInstance(1000));
   }
 
+  static
+  {
+    Symbol.LAMBDA_LIST_KEYWORDS
+      .initializeConstant(list(Symbol.AND_OPTIONAL,
+                               Symbol.AND_REST,
+                               Symbol.AND_KEY,
+                               Symbol.AND_AUX,
+                               Symbol.AND_BODY,
+                               Symbol.AND_WHOLE,
+                               Symbol.AND_ALLOW_OTHER_KEYS,
+                               Symbol.AND_ENVIRONMENT));
+  }
+
   // ### call-registers-limit
   public static final Symbol CALL_REGISTERS_LIMIT =
     exportConstant("CALL-REGISTERS-LIMIT", PACKAGE_SYS,

@@ -165,10 +165,6 @@
 (load-system-file "error")
 (load-system-file "defpackage")
 (load-system-file "define-modify-macro")
-
-(defconstant lambda-list-keywords
-  '(&optional &rest &key &aux &body &whole &allow-other-keys &environment))
-
 (load-system-file "require")
 (load-system-file "defstruct")
 
@@ -190,12 +186,6 @@
 (load-system-file "pprint-dispatch")
 (load-system-file "defsetf")
 (load-system-file "package")
-
-(defun preload-package (pkg)
-  (%format t "Preloading ~S~%" (find-package pkg))
-  (dolist (sym (package-symbols pkg))
-    (when (autoloadp sym)
-      (resolve sym))))
 
 (unless (featurep :j)
   (unless *noinform*
