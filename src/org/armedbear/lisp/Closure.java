@@ -54,15 +54,10 @@ public class Closure extends Function
   private static final int STATE_REST     = 3;
   private static final int STATE_AUX      = 4;
 
-  private static final Parameter[] emptyParameterArray;
-  static 
-    {
-        emptyParameterArray = new Parameter[0];
-    }
-  private Parameter[] requiredParameters = emptyParameterArray;
-  private Parameter[] optionalParameters = emptyParameterArray;
-  private Parameter[] keywordParameters = emptyParameterArray;
-  private Parameter[] auxVars = emptyParameterArray;
+  private Parameter[] requiredParameters = new Parameter[0];
+  private Parameter[] optionalParameters = requiredParameters;
+  private Parameter[] keywordParameters = requiredParameters;
+  private Parameter[] auxVars = requiredParameters;
   private final LispObject body;
   private final LispObject executionBody;
   private final Environment environment;
@@ -75,12 +70,7 @@ public class Closure extends Function
   private int minArgs;
   private int maxArgs;
 
-  private static final Symbol[] emptySymbolArray;
-  static 
-    {
-        emptySymbolArray = new Symbol[0];
-    }
-  private Symbol[] variables = emptySymbolArray;
+  private Symbol[] variables = new Symbol[0];
   private LispObject specials = NIL;
 
   private boolean bindInitForms;
