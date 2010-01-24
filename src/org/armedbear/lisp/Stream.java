@@ -107,7 +107,7 @@ public class Stream extends StructureObject {
 
     protected EolStyle eolStyle = platformEolStyle;
     protected char eolChar = (eolStyle == EolStyle.CR) ? '\r' : '\n';
-    protected LispObject externalFormat = NIL;
+    protected LispObject externalFormat = keywordDefault;
     protected String encoding = null;
     protected char lastChar = 0;
 
