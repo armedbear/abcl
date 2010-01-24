@@ -18,6 +18,7 @@
 
     (load "compiler-tests.lisp")
     (load "condition-tests.lisp")
+    (load "mop-tests.lisp")
     (load "file-system-tests.lisp")
     (load "java-tests.lisp")
     (load "math-tests.lisp")

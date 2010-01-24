@@ -207,8 +207,12 @@
 (autoload 'disassemble)
 
 (in-package "MOP")
-(export '(class-precedence-list class-slots slot-definition-name))
-(autoload '(class-precedence-list class-slots slot-definition-name) "clos")
+(export '(class-precedence-list class-slots slot-definition-allocation 
+	  slot-definition-initargs slot-definition-initform
+	  slot-definition-initfunction slot-definition-name
+	  compute-applicable-methods
+	  compute-applicable-methods-using-classes))
+(autoload '(class-precedence-list class-slots) "clos")
 
 
 ;; Java interface.

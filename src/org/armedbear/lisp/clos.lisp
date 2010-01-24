@@ -51,13 +51,10 @@
 
 (in-package #:mop)
 
-(export '(class-precedence-list class-slots slot-definition-name))
+(export '(class-precedence-list class-slots))
 
 (defun class-slots (class)
   (%class-slots class))
-
-(defun slot-definition-name (slot-definition)
-  (%slot-definition-name slot-definition))
 
 (defmacro push-on-end (value location)
   `(setf ,location (nconc ,location (list ,value))))
@@ -1318,6 +1315,17 @@
 
     code))
 
+(defun sort-methods (methods gf required-classes)
+  (if (or (null methods) (null (%cdr methods)))
+      methods
+      (sort methods
+	    (if (eq (class-of gf) (find-class 'standard-generic-function))
+		#'(lambda (m1 m2)
+		    (std-method-more-specific-p m1 m2 required-classes
+						(generic-function-argument-precedence-order gf)))
+		#'(lambda (m1 m2)
+		    (method-more-specific-p gf m1 m2 required-classes))))))
+
 (defun method-applicable-p (method args)
   (do* ((specializers (%method-specializers method) (cdr specializers))
         (args args (cdr args)))
@@ -1335,23 +1343,31 @@
     (dolist (method (generic-function-methods gf))
       (when (method-applicable-p method args)
         (push method methods)))
-    (if (or (null methods) (null (%cdr methods)))
-        methods
-        (sort methods
-              (if (eq (class-of gf) (find-class 'standard-generic-function))
-                  #'(lambda (m1 m2)
-                     (std-method-more-specific-p m1 m2 required-classes
-                                                 (generic-function-argument-precedence-order gf)))
-                  #'(lambda (m1 m2)
-                     (method-more-specific-p gf m1 m2 required-classes)))))))
+    (sort-methods methods gf required-classes)))
 
-(defun method-applicable-p-using-classes (method classes)
+;;; METHOD-APPLICABLE-USING-CLASSES-P
+;;;
+;;; If the first return value is T, METHOD is definitely applicable to
+;;; arguments that are instances of CLASSES.  If the first value is
+;;; NIL and the second value is T, METHOD is definitely not applicable
+;;; to arguments that are instances of CLASSES; if the second value is
+;;; NIL the applicability of METHOD cannot be determined by inspecting
+;;; the classes of its arguments only.
+;;;
+(defun method-applicable-using-classes-p (method classes)
   (do* ((specializers (%method-specializers method) (cdr specializers))
-        (classes classes (cdr classes)))
-       ((null specializers) t)
+	(classes classes (cdr classes))
+	(knownp t))
+       ((null specializers)
+	(if knownp (values t t) (values nil nil)))
     (let ((specializer (car specializers)))
-      (unless (subclassp (car classes) specializer)
-        (return nil)))))
+      (if (typep specializer 'eql-specializer)
+	  (if (eql (class-of (eql-specializer-object specializer)) 
+		   (car classes))
+	      (setf knownp nil)
+	      (return (values nil t)))
+	  (unless (subclassp (car classes) specializer)
+	    (return (values nil t)))))))
 
 (defun slow-method-lookup (gf args)
   (let ((applicable-methods (%compute-applicable-methods gf args)))
@@ -1879,6 +1895,30 @@
 (defmethod (setf documentation) (new-value (x package) (doc-type (eql 't)))
   (%set-documentation x doc-type new-value))
 
+;;; Applicable methods
+
+(defgeneric compute-applicable-methods (gf args)
+  (:method ((gf standard-generic-function) args)
+    (%compute-applicable-methods gf args)))
+
+(defgeneric compute-applicable-methods-using-classes (gf classes)
+  (:method ((gf standard-generic-function) classes)
+    (let ((methods '()))
+      (dolist (method (generic-function-methods gf))
+	(multiple-value-bind (applicable knownp)
+	    (method-applicable-using-classes-p method classes)
+	  (cond (applicable
+		 (push method methods))
+		((not knownp)
+		 (return-from compute-applicable-methods-using-classes
+		   (values nil nil))))))
+      (values (sort-methods methods gf classes)
+	      t))))
+
+(export '(compute-applicable-methods
+	  compute-applicable-methods-using-classes))
+
+
 ;;; Slot access
 
 (defun set-slot-value-using-class (new-value class instance slot-name)
@@ -2196,6 +2236,37 @@
 (defgeneric compute-applicable-methods (gf args))
 (defmethod compute-applicable-methods ((gf standard-generic-function) args)
   (%compute-applicable-methods gf args))
+
+;;; Slot definition accessors
+
+(export '(slot-definition-allocation 
+	  slot-definition-initargs
+	  slot-definition-initform
+	  slot-definition-initfunction
+	  slot-definition-name))
+
+(defgeneric slot-definition-allocation (slot-definition)
+  (:method ((slot-definition slot-definition))
+    (%slot-definition-allocation slot-definition)))
+
+(defgeneric slot-definition-initargs (slot-definition)
+  (:method ((slot-definition slot-definition))
+    (%slot-definition-initargs slot-definition)))
+
+(defgeneric slot-definition-initform (slot-definition)
+  (:method ((slot-definition slot-definition))
+    (%slot-definition-initform slot-definition)))
+
+(defgeneric slot-definition-initfunction (slot-definition)
+  (:method ((slot-definition slot-definition))
+    (%slot-definition-initfunction slot-definition)))
+
+(defgeneric slot-definition-name (slot-definition)
+  (:method ((slot-definition slot-definition))
+    (%slot-definition-name slot-definition)))
+
+;;; No %slot-definition-type.
+
 
 ;;; Conditions.
 
