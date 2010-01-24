@@ -58,6 +58,87 @@
 
 ;;; Pass 1.
 
+(defun parse-lambda-list (lambda-list)
+  "Breaks the lambda list into the different elements, returning the values
+
+ required-vars
+ optional-vars
+ key-vars
+ key-p
+ rest-var
+ allow-other-keys-p
+ aux-vars
+ whole-var
+ env-var
+
+where each of the vars returned is a list with these elements:
+
+ var      - the actual variable name
+ initform - the init form if applicable; optional, keyword and aux vars
+ p-var    - variable indicating presence
+ keyword  - the keyword argument to match against
+
+"
+  (let ((state :req)
+        req opt key rest whole env aux key-p allow-others-p)
+    (dolist (arg lambda-list)
+      (case arg
+        (&optional (setf state :opt))
+        (&key (setf state :key
+                    key-p t))
+        (&rest (setf state :rest))
+        (&aux (setf state :aux))
+        (&allow-other-keys (setf state :none
+                                 allow-others-p t))
+        (&whole (setf state :whole))
+        (&environment (setf state :env))
+        (t
+         (case state
+           (:req (push arg req))
+           (:rest (setf rest (list arg)
+                        state :none))
+           (:env (setf env (list arg)
+                       state :req))
+           (:whole (setf whole (list arg)
+                         state :req))
+           (:none
+            (error "Invalid lambda list: argument found in :none state."))
+           (:opt
+            (cond
+              ((symbolp arg)
+               (push (list arg nil nil nil) opt))
+              ((consp arg)
+               (push (list (car arg) (cadr arg) (caddr arg)) opt))
+              (t
+               (error "Invalid state."))))
+           (:aux
+            (cond
+              ((symbolp arg)
+               (push (list arg nil nil nil) aux))
+              ((consp arg)
+               (push (list (car arg) (cadr arg) nil nil) aux))
+              (t
+               (error "Invalid :aux state."))))
+           (:key
+            (cond
+              ((symbolp arg)
+               (push (list arg nil nil (sys::keywordify arg)) key))
+              ((and (consp arg)
+                    (consp (car arg)))
+               (push (list (cadar arg) (cadr arg) (caddr arg) (caar arg)) key))
+              ((consp arg)
+               (push (list (car arg) (cadr arg) (caddr arg)
+                           (sys::keywordify (car arg))) key))
+              (t
+               (error "Invalid :key state."))))
+           (t (error "Invalid state found."))))))
+    (values
+     (nreverse req)
+     (nreverse opt)
+     (nreverse key)
+     key-p
+     rest allow-others-p
+     (nreverse aux) whole env)))
 
 ;; Returns a list of declared free specials, if any are found.
 (declaim (ftype (function (list list block-node) list)

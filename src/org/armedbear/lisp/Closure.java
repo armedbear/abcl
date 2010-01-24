@@ -41,11 +41,11 @@ import java.util.ArrayList;
 public class Closure extends Function
 {
   // Parameter types.
-  private static final int REQUIRED = 0;
-  private static final int OPTIONAL = 1;
-  private static final int KEYWORD  = 2;
-  private static final int REST     = 3;
-  private static final int AUX      = 4;
+  public static final int REQUIRED = 0;
+  public static final int OPTIONAL = 1;
+  public static final int KEYWORD  = 2;
+  public static final int REST     = 3;
+  public static final int AUX      = 4;
 
   // States.
   private static final int STATE_REQUIRED = 0;
@@ -75,8 +75,50 @@ public class Closure extends Function
 
   private boolean bindInitForms;
 
-  public Closure(LispObject lambdaExpression, Environment env)
 
+    /** Construct a closure object with a lambda-list described
+     * by these parameters.
+     *
+     *
+     * @param required Required parameters or an empty array for none
+     * @param optional Optional parameters or an empty array for none
+     * @param keyword Keyword parameters or an empty array for none
+     * @param keys NIL if the lambda-list doesn't contain &amp;key, T otherwise
+     * @param rest the &amp;rest parameter, or NIL if none
+     * @param moreKeys NIL if &amp;allow-other-keys not present, T otherwise
+     */
+  public Closure(Parameter[] required,
+                 Parameter[] optional,
+                 Parameter[] keyword,
+                 Symbol keys, Symbol rest, Symbol moreKeys) {
+      minArgs = required.length;
+      maxArgs = (rest == NIL && moreKeys == NIL)
+          ? minArgs + optional.length + 2*keyword.length : -1;
+
+      arity = (rest == NIL && moreKeys == NIL && keys == NIL
+               && optional.length == 0)
+          ? maxArgs : -1;
+
+      requiredParameters = required;
+      optionalParameters = optional;
+      keywordParameters = keyword;
+
+      if (rest != NIL)
+        restVar = rest;
+
+      andKey = keys != NIL;
+      allowOtherKeys = moreKeys != NIL;
+      variables = processVariables();
+      bindInitForms = false;
+
+      // stuff we don't need: we're a compiled function
+      body = null;
+      executionBody = null;
+      environment = null;
+  }
+
+
+  public Closure(LispObject lambdaExpression, Environment env)
   {
     this(null, lambdaExpression, env);
   }
@@ -982,7 +1024,7 @@ public class Closure extends Function
       }
   }
 
-  private static class Parameter
+  public static class Parameter
   {
     private final Symbol var;
     private final LispObject initForm;

@@ -41,8 +41,16 @@ public class CompiledClosure extends Closure
 
   public ClosureBinding[] ctx;
 
-  public CompiledClosure(LispObject lambdaList)
+  public CompiledClosure(Parameter[] required,
+                         Parameter[] optional,
+                         Parameter[] keyword,
+                         Symbol keys, Symbol rest, Symbol moreKeys)
+  {
+      super(required, optional, keyword, keys, rest, moreKeys);
+  }
 
+
+  public CompiledClosure(LispObject lambdaList)
   {
     super(list(Symbol.LAMBDA, lambdaList), null);
   }
