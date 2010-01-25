@@ -37,7 +37,7 @@ import static org.armedbear.lisp.Lisp.*;
 
 public final class Nil extends Symbol
 {
-    final static Nil NIL = new Nil(PACKAGE_CL);
+    final public static Symbol NIL = new Nil(PACKAGE_CL);
 
     public Nil(Package pkg)
     {
