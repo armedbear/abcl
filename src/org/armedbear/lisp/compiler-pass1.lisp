@@ -840,6 +840,8 @@ where each of the vars returned is a list with these elements:
              (list 'FUNCTION compiland)))
           ((setf local-function (find-local-function (cadr form)))
            (dformat t "p1-function local function ~S~%" (cadr form))
+	   ;;we found out that the function needs a reference
+	   (setf (local-function-references-needed-p local-function) t)
            (let ((variable (local-function-variable local-function)))
              (when variable
                  (dformat t "p1-function ~S used non-locally~%"

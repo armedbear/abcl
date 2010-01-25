@@ -364,7 +364,11 @@ of the compilands being processed (p1: so far; p2: in total).")
   environment ;; the environment in which the function is stored in
               ;; case of a function from an enclosing lexical environment
               ;; which itself isn't being compiled
-  (references-allowed-p t)
+  (references-allowed-p t) ;;whether a reference to the function CAN be captured
+  (references-needed-p nil) ;;whether a reference to the function NEEDS to be
+			    ;;captured, because the function name is used in a
+                            ;;(function ...) form. Obviously implies
+                            ;;references-allowed-p.
   )
 
 (defvar *local-functions* ())
@@ -464,10 +468,11 @@ of the compilands being processed (p1: so far; p2: in total).")
     block))
 
 (defstruct (flet-node (:conc-name flet-)
-                      (:include binding-node)))
-(defknown make-let/let*-node () t)
-(defun make-let/let*-node ()
-  (let ((block (%make-let/let*-node)))
+                      (:include binding-node)
+		      (:constructor %make-flet-node ())))
+(defknown make-flet-node () t)
+(defun make-flet-node ()
+  (let ((block (%make-flet-node)))
     (push block (compiland-blocks *current-compiland*))
     block))
 
