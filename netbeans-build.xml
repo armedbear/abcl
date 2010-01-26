@@ -6,8 +6,12 @@
      probably fail otherwise.  -->
   <import file="nbproject/build-impl.xml"/>
 
-  <target name="-post-compile">
-    <antcall target="abcl.compile.lisp"/>
+  <target name="-pre-compile" if="abcl.compile.lisp.skip">
+    <antcall target="abcl.copy.lisp"/>
+  </target>
+
+  <target name="-post-compile" unless="abcl.compile.lisp.skip">
+    <antcall target="abcl.compile.lisp" />
   </target>
 </project>
 

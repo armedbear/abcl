@@ -76,6 +76,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
     <patternset id="abcl.source.lisp.dist">
       <include name="org/armedbear/lisp/boot.lisp"/>
       <include name="org/armedbear/lisp/scripting/lisp/*.lisp" if="abcl.jsr-223.p"/>
+      <include name="**/*.lisp" if="abcl.compile.lisp.skip"/>
     </patternset>
 
     <patternset id="abcl.objects">
@@ -269,7 +270,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
               value="${src.dir}/org/armedbear/lisp/"/>
     <property name="abcl.version.path"
 	      value="${build.classes.dir}/org/armedbear/lisp/version"/>
-    <target name="abcl.stamp.version" depends="abcl.compile">
+    <target name="abcl.stamp.version" depends="abcl.compile"  unless="abcl.compile.lisp.skip">
       <!-- Determine which ABCL version we have just built by parsing
            the output of LISP-IMPLEMENTATION-VERSION. -->
       <!-- TODO As an optimization, we could possibly compare the timestamp
@@ -607,14 +608,15 @@ ${basedir}/../cl-bench
     <patternset id="abcl.test.source.java">
       <!-- For now, we list tests explicitly, because we have to
            enumerate them later to the JUnit test runner. -->
-      <include name="org/armedbear/lisp/FastStringBufferTest.java"/>
+      <include name="org/armedbear/lisp/*.java"/>
     </patternset>
 
-    <property name="junit-4.5.path"
-	      value="${abcl.ext.dir}/junit-4.5.jar"/>
+    <property name="junit.path"
+	      value="${abcl.ext.dir}/junit-4.8.1.jar"/>
+
 
     <path id="abcl.test.compile.classpath">
-      <pathelement location="${junit-4.5.path}"/>
+      <pathelement location="${junit.path}"/>
       <pathelement location="${build.classes.dir}"/>
     </path>
 
@@ -623,18 +625,19 @@ ${basedir}/../cl-bench
     <target name="abcl.ext.p">
       <!--XXX generalize over enumeration of all contributions to
            abcl.ext if we get more of them.  -->
-      <available file="${junit-4.5.path}" property="abcl.ext.p"/>
+      <available file="${junit.path}" property="abcl.ext.p"/>
     </target>
     <target name="abcl.ext" depends="abcl.ext.p" unless="abcl.ext.p">
 
       <mkdir dir="${abcl.ext.dir}"/>
-      <get src="http://downloads.sourceforge.net/junit/junit-4.5.jar?modtime=1218209625"
-	   usetimestamp="true"
-	   dest="${junit-4.5.path}"/>
+      <get 
+          src="http://cloud.github.com/downloads/KentBeck/junit/junit-4.8.1.jar"
+          usetimestamp="true"
+          dest="${junit.path}"/>
     </target>
 	
     <target name="abcl.test.compile" 
-	    depends="abcl.test.pre-compile,abcl.compile">
+	    depends="abcl.test.pre-compile">
       <mkdir dir="${abcl.test.classes.dir}"/>
       <javac destdir="${abcl.test.classes.dir}"
 	     classpathref="abcl.test.compile.classpath"
@@ -658,6 +661,8 @@ ${basedir}/../cl-bench
 	    classpathref="abcl.test.run.classpath"
 	    classname="org.junit.runner.JUnitCore">
 	<arg value="org.armedbear.lisp.FastStringBufferTest"/>
+        <arg value="org.armedbear.lisp.PathnameTest"/>
+        <arg value="org.armedbear.lisp.StreamTest"/>
       </java>
     </target>
 
