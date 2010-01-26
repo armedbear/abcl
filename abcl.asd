@@ -10,7 +10,6 @@
 (defsystem :abcl :version "0.5.0")
 
 (defmethod perform :after ((o load-op) (c (eql (find-system :abcl))))
-  (operate 'load-op :abcl-tests :force t)
   (operate 'load-op :abcl-test-lisp :force t)
   (operate 'load-op :cl-bench :force t)
   (operate 'load-op :ansi-compiled :force t)
@@ -20,38 +19,30 @@
 (defmethod perform ((o test-op) (c (eql (find-system :abcl))))
   (operate 'test-op :abcl-tests :force t))
 
-;;; A collection of test suites for ABCL.
-(defsystem :abcl-tests
-  :version "2.0"
-  :depends-on (:abcl-test-lisp 
-               :ansi-compiled :ansi-interpreted
-               :cl-bench))
-
-(defmethod perfom :before ((o test-op (c (eql find-system :abcl-tests))))
-  (operate 'load-op :abcl-test-lisp)
-  (operate 'load-op :ansi-compiled)
-  (operate 'load-op :cl-bench))
-
-;;;  Run via (asdf:operate 'asdf:test-op :abcl-tests :force t)
-(defmethod perform ((o test-op) (c (eql (find-system :abcl-tests))))
-  ;; Additional test suite invocations would go here.
-  (operate 'test-op :abcl-test-lisp) 
-  (operate 'test-op :ansi-compiled)
-  (operate 'test-op :cl-bench))
-
 ;;; Test ABCL with the Lisp unit tests collected in "test/lisp/abcl"
 (defsystem :abcl-test-lisp :version "1.1" :components
-	   ((:module abcl-rt :pathname "test/lisp/abcl/" :serial t :components
-		     ((:file "rt-package") (:file "rt")))
+	   ((:module abcl-rt 
+                     :pathname "test/lisp/abcl/" :serial t :components
+		     ((:file "rt-package") (:file "rt")
+                      (:file "test-utilities")))
 	    (:module package  :depends-on (abcl-rt)
 		     :pathname "test/lisp/abcl/" :components
-		     ((:file "package")))))
-(defmethod perform :before ((o test-op) (c (eql (find-system
-                                                 :abcl-test-lisp))))
-  (operate 'load-op :abcl-test-lisp :force t))
+		     ((:file "package")))
+            (:module test :depends-on (package)
+		     :pathname "test/lisp/abcl/" :components
+                     ((:file "compiler-tests")
+                      (:file "condition-tests")
+                      (:file "mop-tests-setup")
+                      (:file "mop-tests" :depends-on ("mop-tests-setup"))
+                      (:file "file-system-tests")
+                      (:file "jar-file")
+                      (:file "math-tests")
+                      (:file "misc-tests")
+                      (:file "pathname-tests")))))
+
 (defmethod perform ((o test-op) (c (eql (find-system 'abcl-test-lisp))))
    "Invoke tests with (asdf:oos 'asdf:test-op :abcl-test-lisp)."
-   (funcall (intern (symbol-name 'run) :abcl-test)))
+   (funcall (intern (symbol-name 'run) :abcl.test.lisp)))
 
 ;;; Test ABCL with the interpreted ANSI tests
 (defsystem :ansi-interpreted :version "1.0.1" 

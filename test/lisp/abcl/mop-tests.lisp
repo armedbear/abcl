@@ -16,11 +16,6 @@
 ;;; along with this program; if not, write to the Free Software
 ;;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-
-(load (merge-pathnames "test-utilities.lisp" *load-truename*))
-(compile-file (merge-pathnames "mop-tests-setup.lisp" *load-truename*))
-(load (merge-pathnames "mop-tests-setup" *load-truename*))
-
 (in-package #:abcl.test.lisp)
 
 (deftest compute-applicable-methods.foo.1

@@ -1,32 +1,32 @@
 (defpackage #:abcl.test.lisp 
   (:use #:cl #:abcl-rt)
-  (:nicknames "ABCL-TEST")
-  (:export #:run))
+  (:nicknames "ABCL-TEST-LISP" "ABCL-TEST")
+  (:export 
+   #:run #:run-matching))
 (in-package #:abcl.test.lisp)
 
-(defvar *abcl-lisp-test-directory* 
-  (pathname (directory-namestring *load-truename*))
-  "The directory in which the ABCL test source files are located.")
+(defparameter *abcl-test-directory* 
+   (make-pathname :host (pathname-host *load-truename*)
+                  :device (pathname-device *load-truename*)
+                  :directory (pathname-directory *load-truename*)))
 
 (defun run ()
   "Run the Lisp test suite for ABCL."
-
-  (let ((*default-pathname-defaults* *abcl-lisp-test-directory*))
-    (rem-all-tests)
-
-    (load "test-utilities.lisp")
-
-    (load "compiler-tests.lisp")
-    (load "condition-tests.lisp")
-    (load "mop-tests.lisp")
-    (load "file-system-tests.lisp")
-    (load "java-tests.lisp")
-    (load "math-tests.lisp")
-    (load "misc-tests.lisp")
-
-    (when (find :unix *features*)
-      (load "jar-file.lisp"))
-
+  (let ((*default-pathname-defaults* *abcl-test-directory*))
     (do-tests)))
+
+;;; XXX move this into test-utilities.lisp?
+(defun run-matching (&optional (match "jar-file."))
+  (let* ((matching (string-upcase match))
+         (tests
+          (remove-if-not
+           (lambda (name) (search matching name))
+           (mapcar (lambda (entry) 
+                     (symbol-name (abcl-rt::name entry))) 
+                   (rest abcl-rt::*entries*)))))
+    (dolist (test tests)
+      (do-test (intern test :abcl.test.lisp)))))
+    
+
 
 	

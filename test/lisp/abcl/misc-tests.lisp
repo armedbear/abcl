@@ -19,12 +19,12 @@
 
 (in-package #:abcl.test.lisp)
 
-(deftest dotimes.1
+(deftest misc.dotimes.1
   (progn
-    (fmakunbound 'dotimes.1)
-    (defun dotimes.1 ()
+    (fmakunbound 'misc.dotimes.1)
+    (defun misc.dotimes.1 ()
       (let ((sum 0)) (dotimes (i 10) (setq i 42) (incf sum i)) sum))
-    (dotimes.1))
+    (misc.dotimes.1))
   420)
 
 (deftest dotimes.1.compiled
@@ -36,12 +36,12 @@
     (dotimes.1.compiled))
   420)
 
-(deftest dotimes.2
+(deftest misc.dotimes.2
   (progn
-    (fmakunbound 'dotimes.2)
-    (defun dotimes.2 (count)
+    (fmakunbound 'misc.dotimes.2)
+    (defun misc.dotimes.2 (count)
       (let ((sum 0)) (dotimes (i count) (setq i 42) (incf sum i)) sum))
-    (dotimes.2 10))
+    (misc.dotimes.2 10))
   420)
 
 (deftest dotimes.2.compiled

@@ -33,12 +33,6 @@
                  :device (pathname-device *load-truename*)
                  :directory (pathname-directory *load-truename*)))
 
-(defmacro signals-error (form error-name)
-  `(locally (declare (optimize safety))
-     (handler-case ,form
-       (error (c) (typep c ,error-name))
-       (:no-error (&rest ignored) (declare (ignore ignored)) nil))))
-
 (defun pathnames-equal-p (pathname1 pathname2)
   #-(or allegro clisp cmu lispworks)
   (equal pathname1 pathname2)
@@ -425,7 +419,7 @@
 ;; Allegro's version component is :UNSPECIFIC.
 (pushnew 'user-homedir-pathname.1 *expected-failures*)
 
-(deftest directory-namestring.1
+(deftest file-system.directory-namestring.1
   (let ((pathname (user-homedir-pathname)))
     (equal (namestring pathname) (directory-namestring pathname)))
   #-windows
@@ -434,15 +428,15 @@
   ;; The drive prefix ("C:\\") is not part of the directory namestring.
   nil)
 #+clisp
-(pushnew 'directory-namestring.1 *expected-failures*)
+(pushnew 'file-system.directory-namestring.1 *expected-failures*)
 
-(deftest directory-namestring.2
+(deftest file.system.directory-namestring.2
   (let ((pathname (user-homedir-pathname)))
     (equal (directory-namestring pathname)
            (namestring (make-pathname :directory (pathname-directory pathname)))))
   t)
 #+clisp
-(pushnew 'directory-namestring.2 *expected-failures*)
+(pushnew 'file-system.directory-namestring.2 *expected-failures*)
 
 (deftest ensure-directories-exist.1
   (let* ((tmp (make-temporary-filename *this-directory*))

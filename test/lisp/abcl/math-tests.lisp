@@ -35,15 +35,17 @@
   #+sbcl `(sb-int:get-floating-point-modes))
 
 #+(or abcl cmu sbcl)
-(defun restore-default-floating-point-modes ()
+(defmacro restore-default-floating-point-modes ()
   #+abcl
-  (set-floating-point-modes :traps '(:overflow :underflow))
+  `(ext:set-floating-point-modes :traps '(:overflow :underflow))
   #+(or cmu sbcl)
-  (set-floating-point-modes :traps '(:overflow :invalid :divide-by-zero)))
+  `(set-floating-point-modes :traps '(:overflow :invalid :divide-by-zero)))
 
 #+(or abcl cmu sbcl)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (restore-default-floating-point-modes))
+   (restore-default-floating-point-modes))
+;;  (ext:set-floating-point-modes :traps '(:overflow :underflow)))
+;;
 
 (deftest most-negative-fixnum.1
   (= (/ most-negative-fixnum -1) (- most-negative-fixnum))
@@ -354,7 +356,7 @@
   (expt #c(0 0.0) 4)
   #c(0.0 0.0))
 
-(deftest expt.25
+(deftest expt.26
   (expt #c(0 0.0) 4.0)
   #c(0.0 0.0))
 
@@ -451,7 +453,7 @@
   (signals-error (truncate least-positive-double-float 2) 'floating-point-underflow)
   t)
 
-(deftest read-from-string.1
+(deftest math.read-from-string.1
   #+(or cmu sbcl)
   (unwind-protect
       (signals-error (read-from-string "1.0f-1000") 'reader-error)

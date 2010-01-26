@@ -39,6 +39,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -47,7 +49,7 @@ public final class zip extends Primitive
 {
     private zip()
     {
-        super("zip", PACKAGE_SYS, true, "pathname pathnames");
+        super("zip", PACKAGE_SYS, true, "pathname pathnames &optional topdir");
     }
 
     @Override
@@ -93,6 +95,75 @@ public final class zip extends Primitive
         }
         return zipfilePathname;
     }
+
+    @Override
+    public LispObject execute(LispObject first, LispObject second, LispObject third)
+    {
+        Pathname zipfilePathname = coerceToPathname(first);
+        byte[] buffer = new byte[4096];
+        try {
+            String zipfileNamestring = zipfilePathname.getNamestring();
+            if (zipfileNamestring == null)
+                return error(new SimpleError("Pathname has no namestring: " +
+                                              zipfilePathname.writeToString()));
+            ZipOutputStream out =
+                new ZipOutputStream(new FileOutputStream(zipfileNamestring));
+            Pathname root = (Pathname)coerceToPathname(third);
+            String rootPath = root.getDirectoryNamestring();
+            int rootPathLength = rootPath.length();
+            Set<String> directories = new HashSet<String>();
+            LispObject list = second;
+            while (list != NIL) {
+                Pathname pathname = coerceToPathname(list.car());
+                String namestring = pathname.getNamestring();
+                if (namestring == null) {
+                    // Clean up before signalling error.
+                    out.close();
+                    File zipfile = new File(zipfileNamestring);
+                    zipfile.delete();
+                    return error(new SimpleError("Pathname has no namestring: " +
+                                                  pathname.writeToString()));
+                }
+                String directory = "";
+                String dir = pathname.getDirectoryNamestring();
+                if (dir.length() > rootPathLength) {
+                  String d = dir.substring(rootPathLength);
+                  int i = 0;
+                  int j;
+                  while ((j = d.indexOf(File.separator, i)) != -1) {
+                    i = j + 1;
+                    directory = d.substring(0, j).replace(File.separatorChar, '/') + "/";
+                    if (!directories.contains(directory)) {
+                      directories.add(directory);
+                      ZipEntry entry = new ZipEntry(directory);
+                      out.putNextEntry(entry);
+                      out.closeEntry();
+                    }
+                  }
+                }
+                File file = new File(namestring);
+                if (file.isDirectory()) {
+                    list = list.cdr();
+                    continue;
+                }
+                FileInputStream in = new FileInputStream(file);
+                ZipEntry entry = new ZipEntry(directory + file.getName());
+                out.putNextEntry(entry);
+                int n;
+                while ((n = in.read(buffer)) > 0)
+                    out.write(buffer, 0, n);
+                out.closeEntry();
+                in.close();
+                list = list.cdr();
+            }
+            out.close();
+        }
+        catch (IOException e) {
+            return error(new LispError(e.getMessage()));
+        }
+        return zipfilePathname;
+    }
+
 
     private static final Primitive zip = new zip();
 }
