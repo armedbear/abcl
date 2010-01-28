@@ -270,24 +270,14 @@ For help on the automatic tests available, use the Ant target 'help.test'.
               value="${src.dir}/org/armedbear/lisp/"/>
     <property name="abcl.version.path"
 	      value="${build.classes.dir}/org/armedbear/lisp/version"/>
-    <target name="abcl.stamp.version" depends="abcl.compile"  unless="abcl.compile.lisp.skip">
-      <!-- Determine which ABCL version we have just built by parsing
-           the output of LISP-IMPLEMENTATION-VERSION. -->
-      <!-- TODO As an optimization, we could possibly compare the timestamp
-      of 'abcl.version.path' vs. org.armedbear.lisp.Version -->
+    <target name="abcl.stamp.version" depends="abcl.compile.java"  >
       <java fork="true"
 	    classpath="${build.classes.dir}"
 	    outputproperty="abcl.version"
-	    classname="org.armedbear.lisp.Main"
-            logerror="yes"> <!-- Don't catch stderr output -->
-        <jvmarg value="-Dabcl.home=${abcl.home.dir}"/>
-	<arg value="--noinit"/>
-	<arg value="--noinform"/>
-	<arg value="--eval"/>
-	<arg value="(progn (format t (lisp-implementation-version)) (finish-output) (quit))"/>
-      </java>
+	    classname="org.armedbear.lisp.Version"
+            logerror="yes"/> <!-- Don't catch stderr output -->
 
-      <echo>Built ABCL version: ${abcl.version}</echo>
+      <echo>ABCL version: ${abcl.version}</echo>
       <mkdir dir="${abcl.version.path}/.."/>
       <echo message="${abcl.version}" file="${abcl.version.path}"/> 
     </target>

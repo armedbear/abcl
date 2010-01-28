@@ -43,4 +43,8 @@ public final class Version
   {
     return "0.19.0-dev";
   }
+  
+  public static void main(String args[]) {
+    System.out.println(Version.getVersion());
+  }
 }
