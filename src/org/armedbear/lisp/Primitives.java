@@ -3300,14 +3300,16 @@ public final class Primitives
       @Override
       public LispObject execute(LispObject arg)
       {
-        return getCurrentPackage().findSymbol(arg.getStringValue());
+        return getCurrentPackage()
+            .findSymbol(checkString(arg).getStringValue());
       }
 
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
       {
-        return coerceToPackage(second).findSymbol(first.getStringValue());
+        return coerceToPackage(second)
+            .findSymbol(checkString(first).getStringValue());
       }
     };
 
