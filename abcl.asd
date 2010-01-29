@@ -38,6 +38,7 @@
                       (:file "jar-file")
                       (:file "math-tests")
                       (:file "misc-tests")
+                      (:file "bugs")
                       (:file "pathname-tests")))))
 
 (defmethod perform ((o test-op) (c (eql (find-system 'abcl-test-lisp))))
