@@ -1238,8 +1238,8 @@ the args causes a Java exception handler to be installed, which
 		   (declare (ignorable ,@ignorables))
 		   ,@body)))
 	  (lambda-list-mismatch (x)
-	    (warn "Invalid function call: ~S (mismatch type: ~A)"
-		  form (lambda-list-mismatch-type x))
+	    (compiler-warn "Invalid function call: ~S (mismatch type: ~A)"
+			   form (lambda-list-mismatch-type x))
 	    form))
 	(if (unsafe-p args)
 	    (let ((arg1 (car args)))
@@ -1301,6 +1301,10 @@ the args causes a Java exception handler to be installed, which
 ;;                (format t "not single-valued op = ~S~%" op)
              (setf (compiland-%single-valued-p *current-compiland*) nil)))))
   (p1-default form))
+
+(defun %funcall (fn &rest args)
+  "Dummy FUNCALL wrapper to force p1 not to optimize the call."
+  (apply fn args))
 
 (defknown p1 (t) t)
 (defun p1 (form)
@@ -1369,7 +1373,10 @@ the args causes a Java exception handler to be installed, which
                         (t
                          (p1-function-call form))))
                  ((and (consp op) (eq (%car op) 'LAMBDA))
-                  (p1 (rewrite-function-call form)))
+		  (let ((maybe-optimized-call (rewrite-function-call form)))
+		    (if (eq maybe-optimized-call form)
+			(p1 `(%funcall (function ,op) ,@(cdr form)))
+			(p1 maybe-optimized-call))))
                  (t
                   form))))))
 
