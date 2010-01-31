@@ -1,0 +1,8 @@
+To generate html from rst, use
+rst2html design.rst > design.html
+
+The .dia files are uncompressed dia diagrams. Just export
+them to png from dia if you need to do modifications.
+You can do the exports from the command line by using
+dia -t pprint-problem.dia
+dia -t pprint-solution.dia
