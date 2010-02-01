@@ -297,9 +297,9 @@
           #\tab))
 
 (defvar *format-directive-expanders*
-  (make-array char-code-limit :initial-element nil))
+  (make-hash-table :test #'eq))
 (defvar *format-directive-interpreters*
-  (make-array char-code-limit :initial-element nil))
+  (make-hash-table :test #'eq))
 
 (defvar *default-format-error-control-string* nil)
 (defvar *default-format-error-offset* nil)
@@ -594,8 +594,8 @@
   (etypecase directive
     (format-directive
      (let ((expander
-	    (aref *format-directive-expanders*
-		  (char-code (format-directive-character directive))))
+	    (gethash (format-directive-character directive)
+                     *format-directive-expanders*))
 	   (*default-format-error-offset*
 	    (1- (format-directive-end directive))))
        (declare (type (or null function) expander))
@@ -711,13 +711,11 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
   (defun %set-format-directive-expander (char fn)
-    (setf (aref *format-directive-expanders* (char-code (char-upcase char))) fn)
+    (setf (gethash (char-upcase char) *format-directive-expanders*) fn)
     char)
 
   (defun %set-format-directive-interpreter (char fn)
-    (setf (aref *format-directive-interpreters*
-                (char-code (char-upcase char)))
-          fn)
+    (setf (gethash (char-upcase char) *format-directive-interpreters*) fn)
     char)
 
   (defun find-directive (directives kind stop-at-semi)
@@ -1763,8 +1761,7 @@
 	   (multiple-value-bind (new-directives new-args)
              (let* ((character (format-directive-character directive))
                     (function
-                     (svref *format-directive-interpreters*
-                            (char-code character)))
+                     (gethash character *format-directive-interpreters*))
                     (*default-format-error-offset*
                      (1- (format-directive-end directive))))
                (unless function
