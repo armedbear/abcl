@@ -340,6 +340,11 @@
 (defun emit-push-nil ()
   (emit 'getstatic +lisp-class+ "NIL" +lisp-object+))
 
+(defknown emit-push-nil-symbol () t)
+(declaim (inline emit-push-nil-symbol))
+(defun emit-push-nil-symbol ()
+  (emit 'getstatic +lisp-nil-class+ "NIL" +lisp-symbol+))
+
 (defknown emit-push-t () t)
 (declaim (inline emit-push-t))
 (defun emit-push-t ()
@@ -1844,112 +1849,83 @@ representation, based on the derived type of the LispObject."
         (setf rest-p rest
               more-keys-p allow-other-keys-p
               keys-p key-p)
-        ;; process required args
-        (emit-push-constant-int (length req))
-        (emit 'anewarray +lisp-closure-parameter-class+)
-        (astore (setf req-params-register (method-max-locals constructor)))
-        (incf (method-max-locals constructor))
-        (do ((i 0 (1+ i))
-             (req req (cdr req)))
-            ((endp req))
-          (aload req-params-register)
-          (emit-push-constant-int i)
-          (emit 'new +lisp-closure-parameter-class+)
-          (emit 'dup)
-          (emit-push-t) ;; we don't need the actual symbol
-          (emit-invokespecial-init +lisp-closure-parameter-class+
-                                   (list +lisp-symbol+))
-          (emit 'aastore))
+        (macrolet
+            ((parameters-to-array ((param params register) &body body)
+               (let ((count-sym (gensym)))
+                 `(progn
+                    (emit-push-constant-int (length ,params))
+                    (emit 'anewarray +lisp-closure-parameter-class+)
+                    (astore (setf ,register (method-max-locals constructor)))
+                    (incf (method-max-locals constructor))
+                    (do* ((,count-sym 0 (1+ ,count-sym))
+                          (,params ,params (cdr ,params))
+                          (,param (car ,params) (car ,params)))
+                        ((endp ,params))
+                      (declare (ignorable ,param))
+                      (aload ,register)
+                      (emit-push-constant-int ,count-sym)
+                      (emit 'new +lisp-closure-parameter-class+)
+                      (emit 'dup)
+                      ,@body
+                      (emit 'aastore))))))
+          ;; process required args
+          (parameters-to-array (ignore req req-params-register)
+             (emit-push-t) ;; we don't need the actual symbol
+             (emit-invokespecial-init +lisp-closure-parameter-class+
+                                      (list +lisp-symbol+)))
 
-        ;; process optional args
-        (emit-push-constant-int (length opt))
-        (emit 'anewarray +lisp-closure-parameter-class+)
-        (astore (setf opt-params-register (method-max-locals constructor)))
-        (incf (method-max-locals constructor))
-        (do ((i 0 (1+ i))
-             (opt opt (cdr opt)))
-            ((endp opt))
-          (aload opt-params-register)
-          (emit-push-constant-int i)
-          (emit 'new +lisp-closure-parameter-class+)
-          (emit 'dup)
-          (emit-push-t) ;; we don't need the actual variable-symbol
-          (emit-read-from-string (second (car opt))) ;; initform
-          (if (null (third (car opt)))               ;; 
-              (emit-push-nil)
-              (emit-push-t)) ;; we don't need the actual supplied-p symbol
-          (emit 'getstatic +lisp-closure-class+ "OPTIONAL" "I")
-          (emit-invokespecial-init +lisp-closure-parameter-class+
-                                   (list +lisp-symbol+ +lisp-object+
-                                         +lisp-object+ "I"))
-          (emit 'aastore))
+          (parameters-to-array (param opt opt-params-register)
+             (emit-push-t) ;; we don't need the actual variable-symbol
+             (emit-read-from-string (second param)) ;; initform
+             (if (null (third param))               ;; supplied-p
+                 (emit-push-nil)
+                 (emit-push-t)) ;; we don't need the actual supplied-p symbol
+             (emit 'getstatic +lisp-closure-class+ "OPTIONAL" "I")
+             (emit-invokespecial-init +lisp-closure-parameter-class+
+                                      (list +lisp-symbol+ +lisp-object+
+                                            +lisp-object+ "I")))
 
-        ;; process key args
-        (emit-push-constant-int (length key))
-        (emit 'anewarray +lisp-closure-parameter-class+)
-        (astore (setf key-params-register (method-max-locals constructor)))
-        (incf (method-max-locals constructor))
-        (do ((i 0 (1+ i))
-             (key key (cdr key)))
-            ((endp key))
-          (aload key-params-register)
-          (emit-push-constant-int i)
-          (emit 'new +lisp-closure-parameter-class+)
-          (emit 'dup)
-          (let ((keyword (fourth (car key))))
-            (if (keywordp keyword)
-                (progn
-                  (emit 'ldc (pool-string (symbol-name keyword)))
-                  (emit-invokestatic +lisp-class+ "internKeyword"
-                                     (list +java-string+) +lisp-symbol+))
-                ;; symbol is not really a keyword; yes, that's allowed!
-                (progn
-                  (emit 'ldc (pool-string (symbol-name keyword)))
-                  (emit 'ldc (pool-string
-                              (package-name (symbol-package keyword))))
-                  (emit-invokestatic +lisp-class+ "internInPackage"
-                                     (list +java-string+ +java-string+)
-                                     +lisp-symbol+))))
-          (emit-push-t) ;; we don't need the actual variable-symbol
-          (emit-read-from-string (second (car key)))
-          (if (null (third (car key)))
-              (emit-push-nil)
-              (emit-push-t)) ;; we don't need the actual supplied-p symbol
-          (emit-invokespecial-init +lisp-closure-parameter-class+
-                                   (list +lisp-symbol+ +lisp-symbol+
-                                         +lisp-object+ +lisp-object+))
-          (emit 'aastore))
-
-        ))
+          (parameters-to-array (param key key-params-register)
+             (let ((keyword (fourth param)))
+               (if (keywordp keyword)
+                   (progn
+                     (emit 'ldc (pool-string (symbol-name keyword)))
+                     (emit-invokestatic +lisp-class+ "internKeyword"
+                                        (list +java-string+) +lisp-symbol+))
+                   ;; symbol is not really a keyword; yes, that's allowed!
+                   (progn
+                     (emit 'ldc (pool-string (symbol-name keyword)))
+                     (emit 'ldc (pool-string
+                                 (package-name (symbol-package keyword))))
+                     (emit-invokestatic +lisp-class+ "internInPackage"
+                                        (list +java-string+ +java-string+)
+                                        +lisp-symbol+))))
+             (emit-push-t) ;; we don't need the actual variable-symbol
+             (emit-read-from-string (second (car key)))
+             (if (null (third param))
+                 (emit-push-nil)
+                 (emit-push-t)) ;; we don't need the actual supplied-p symbol
+             (emit-invokespecial-init +lisp-closure-parameter-class+
+                                      (list +lisp-symbol+ +lisp-symbol+
+                                            +lisp-object+ +lisp-object+))))))
     (aload 0) ;; this
     (cond ((equal super +lisp-primitive-class+)
            (emit-constructor-lambda-name lambda-name)
            (emit-constructor-lambda-list args)
            (emit-invokespecial-init super (lisp-object-arg-types 2)))
-          ((and (null req-params-register)
-                (equal super +lisp-compiled-closure-class+))
-           (emit-constructor-lambda-list args)
-           (emit-invokespecial-init super (lisp-object-arg-types 1)))
-          ((and
-                (equal super +lisp-compiled-closure-class+))
+          ((equal super +lisp-compiled-closure-class+)
            (aload req-params-register)
            (aload opt-params-register)
            (aload key-params-register)
            (if keys-p
                (emit-push-t)
-               (progn
-                 (emit-push-nil)
-                 (emit 'checkcast +lisp-symbol-class+)))
+               (emit-push-nil-symbol))
            (if rest-p
                (emit-push-t)
-               (progn
-                 (emit-push-nil)
-                 (emit 'checkcast +lisp-symbol-class+)))
+               (emit-push-nil-symbol))
            (if more-keys-p
                (emit-push-t)
-               (progn
-                 (emit-push-nil)
-                 (emit 'checkcast +lisp-symbol-class+)))
+               (emit-push-nil-symbol))
            (emit-invokespecial-init super
                                     (list +lisp-closure-parameter-array+
                                           +lisp-closure-parameter-array+
