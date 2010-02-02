@@ -2171,7 +2171,7 @@ the Java object representing SYMBOL can be retrieved."
   (declare-with-hashtable
    local-function *declared-functions* ht g
    (setf g (symbol-name (gensym "LFUN")))
-   (let* ((pathname (class-file-pathname (local-function-class-file local-function)))
+   (let* ((pathname (abcl-class-file-pathname (local-function-class-file local-function)))
 	  (*code* *static-code*))
      ;; fixme *declare-inline*
      (declare-field g +lisp-object+ +field-access-default+)
@@ -8245,19 +8245,19 @@ We need more thought here.
            (get-descriptor (list +lisp-object-array+) +lisp-object+)))))
 
 (defmacro with-open-class-file ((var class-file) &body body)
-  `(with-open-file (,var (class-file-pathname ,class-file)
+  `(with-open-file (,var (abcl-class-file-pathname ,class-file)
 			 :direction :output
 			 :element-type '(unsigned-byte 8)
 			 :if-exists :supersede)
      ,@body))
 
 (defun write-class-file (class-file stream)
-  (let* ((super (class-file-superclass class-file))
-         (this-index (pool-class (class-file-class class-file)))
+  (let* ((super (abcl-class-file-superclass class-file))
+         (this-index (pool-class (abcl-class-file-class class-file)))
          (super-index (pool-class super))
          (constructor (make-constructor super
-                                        (class-file-lambda-name class-file)
-                                        (class-file-lambda-list class-file))))
+                                        (abcl-class-file-lambda-name class-file)
+                                        (abcl-class-file-lambda-list class-file))))
     (pool-name "Code") ; Must be in pool!
 
     (when *file-compilation*
@@ -8283,9 +8283,9 @@ We need more thought here.
     (dolist (field *fields*)
       (write-field field stream))
     ;; methods count
-    (write-u2 (1+ (length (class-file-methods class-file))) stream)
+    (write-u2 (1+ (length (abcl-class-file-methods class-file))) stream)
     ;; methods
-    (dolist (method (class-file-methods class-file))
+    (dolist (method (abcl-class-file-methods class-file))
       (write-method method stream))
     (write-method constructor stream)
     ;; attributes count
@@ -8351,7 +8351,7 @@ We need more thought here.
 ;;   (format t "p2-compiland name = ~S~%" (compiland-name compiland))
   (let* ((p1-result (compiland-p1-result compiland))
          (class-file (compiland-class-file compiland))
-         (*this-class* (class-file-class class-file))
+         (*this-class* (abcl-class-file-class class-file))
          (args (cadr p1-result))
          (closure-args (intersection *closure-variables*
                                      (compiland-arg-vars compiland)))
@@ -8568,15 +8568,15 @@ We need more thought here.
     (setf (method-max-locals execute-method) *registers-allocated*)
     (setf (method-handlers execute-method) (nreverse *handlers*))
 
-    (setf (class-file-superclass class-file)
+    (setf (abcl-class-file-superclass class-file)
           (if (or *hairy-arglist-p*
 		  (and *child-p* *closure-variables*))
 	      +lisp-compiled-closure-class+
 	    +lisp-primitive-class+))
 
-    (setf (class-file-lambda-list class-file) args)
+    (setf (abcl-class-file-lambda-list class-file) args)
 
-    (push execute-method (class-file-methods class-file)))
+    (push execute-method (abcl-class-file-methods class-file)))
   t)
 
 (defun compile-1 (compiland stream)
