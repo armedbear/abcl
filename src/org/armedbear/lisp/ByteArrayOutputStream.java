@@ -2,7 +2,7 @@
  * ByteArrayOutputStream.java
  *
  * Copyright (C) 2009 Alessio Stalla
- * $Id: StringOutputStream.java 11434 2008-12-07 23:24:31Z ehuelsmann $
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -132,4 +132,19 @@ public final class ByteArrayOutputStream extends Stream
             return error(new TypeError(this, Symbol.STREAM)); //TODO
         }
     };
+
+    private static final Primitive GET_OUTPUT_STREAM_ARRAY =
+        new Primitive("%get-output-stream-array", PACKAGE_SYS, false,
+                      "byte-array-output-stream")
+    {
+        @Override
+        public LispObject execute(LispObject arg)
+        {
+            if (arg instanceof ByteArrayOutputStream)
+                return new BasicVector_UnsignedByte8(((ByteArrayOutputStream)arg).getByteArray());
+
+            return error(new TypeError(this, Symbol.STREAM)); // TODO
+        }
+    };
+
 }

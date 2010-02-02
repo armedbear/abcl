@@ -48,8 +48,15 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
     this.capacity = capacity;
   }
 
-  public BasicVector_UnsignedByte8(LispObject[] array)
+  public BasicVector_UnsignedByte8(byte[] array)
+  {
+    capacity = array.length;
+    elements = new byte[capacity];
+    System.arraycopy(array, 0, elements, 0, capacity);
+  }
 
+
+  public BasicVector_UnsignedByte8(LispObject[] array)
   {
     capacity = array.length;
     elements = new byte[capacity];
