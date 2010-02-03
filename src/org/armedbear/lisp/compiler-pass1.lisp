@@ -205,9 +205,8 @@ where each of the vars returned is a list with these elements:
 		       :for var-info :in aux
 		       :collect `(,(var var-info) ,(initform var-info))))))
 	
-	(values
-	 (append req-bindings temp-bindings bindings)
-	 ignorables)))))
+	(values (append req-bindings temp-bindings bindings)
+		ignorables)))))
 
 (defun match-keyword-and-rest-args (key allow-others-p rest arguments)
   (flet ((var (var-info) (car var-info))
@@ -218,7 +217,8 @@ where each of the vars returned is a list with these elements:
       (error 'lambda-list-mismatch
 	     :mismatch-type :odd-number-of-keyword-arguments))
     
-    (let (temp-bindings bindings other-keys-found-p ignorables)
+    (let (temp-bindings bindings other-keys-found-p ignorables already-seen
+	  args)
       ;;If necessary, make up a fake argument to hold :allow-other-keys,
       ;;needed later. This also handles nicely:
       ;;  3.4.1.4.1 Suppressing Keyword Argument Checking
@@ -236,24 +236,34 @@ where each of the vars returned is a list with these elements:
 	 :for var :in arguments :by #'cddr
 	 :for value :in (cdr arguments) by #'cddr
 	 :do (let ((var-info (find var key :key #'keyword)))
-	       (if var-info
+	       (if (and var-info (not (member var already-seen)))
 		   ;;var is one of the declared keyword arguments
 		   (progn
 		     (push-argument-binding (var var-info) value
 					    temp-bindings bindings)
-		     ;(push `(,(var var-info) ,value) bindings)
 		     (when (p-var var-info)
-		       (push `(,(p-var var-info) t) bindings)))
-		   (setf other-keys-found-p t))))
+		       (push `(,(p-var var-info) t) bindings))
+		     (push var args)
+		     (push (var var-info) args)
+		     (push var already-seen))
+		   (let ((g (gensym)))
+		     (push `(,g ,value) temp-bindings)
+		     (push var args)
+		     (push g args)
+		     (push g ignorables)
+		     (unless var-info
+		       (setf other-keys-found-p t))))))
       
       ;;Then, let's bind those arguments that haven't been passed in
       ;;to their default value, in declaration order.
-      (loop
-	 :for var-info :in key
-	 :do (unless (find (var var-info) bindings :key #'car)
-	       (push `(,(var var-info) ,(initform var-info)) bindings)
-	       (when (p-var var-info)
-		 (push `(,(p-var var-info) nil) bindings))))
+      (let (defaults)
+	(loop
+	   :for var-info :in key
+	   :do (unless (find (var var-info) bindings :key #'car)
+		 (push `(,(var var-info) ,(initform var-info)) defaults)
+		 (when (p-var var-info)
+		   (push `(,(p-var var-info) nil) defaults))))
+	(setf bindings (append (nreverse defaults) bindings)))
       
       ;;If necessary, check for unrecognized keyword arguments.
       (when (and other-keys-found-p (not allow-others-p))
@@ -279,23 +289,9 @@ where each of the vars returned is a list with these elements:
 	    ;;is unknown
 	    (error 'lambda-list-mismatch :mismatch-type :unknown-keyword)))
       (when rest
-	(push `(,(var rest)
-		 (list ,@(let (list)
-			   (loop
-			      :for var :in arguments :by #'cddr
-			      :for val :in (cdr arguments) :by #'cddr
-			      :do (let ((bound-var
-					 (var (find var key :key #'keyword))))
-				    (push var list)
-				    (if bound-var 
-					(push bound-var list)
-					(push val list))))
-			   (nreverse list))))
-	      bindings))
-      (values
-       (nreverse bindings)
-       temp-bindings
-       ignorables))))
+	(setf bindings (append bindings `((,(var rest) (list ,@(nreverse args)))))))
+      (print bindings)
+      (values bindings temp-bindings ignorables))))
 
 #||test for the above
 (handler-case
