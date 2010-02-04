@@ -203,7 +203,12 @@
     ((and to
           (not (member (car to) '(:wild :wild-inferiors))))
      (cons (casify (car to) case)
-           (translate-directory-components-aux src from (cdr to) case)))
+           (translate-directory-components-aux 
+            src from (cdr to) case)))
+    ((and (not src) 
+          (eq (car from) :wild-inferiors) 
+          (eq (car to) :wild-inferiors))
+     (translate-directory-components-aux src (cdr from) (cdr to) case))
     ((not (and src from))
      ;; both are NIL --> TO is a wildcard which can't be matched
      ;; either is NIL --> SRC can't be fully matched against FROM, vice versa
@@ -224,8 +229,9 @@
          (NIL) ;; we'll exit the loop in different ways
        (catch 'failed-match
          (return-from translate-directory-components-aux
-           (append (reverse match) (translate-directory-components-aux
-                                        src (cdr from) (cdr to) case))))
+           (append (reverse match) 
+                   (translate-directory-components-aux
+                    src (cdr from) (cdr to) case))))
        (when (null src) ;; SRC is NIL and we're still here: error exit
          (throw 'failed-match))))))
 
