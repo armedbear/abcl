@@ -355,6 +355,7 @@ of the compilands being processed (p1: so far; p2: in total).")
 
 (defstruct local-function
   name
+  definition
   compiland
   inline-expansion
   function    ;; the function loaded through load-compiled-function
