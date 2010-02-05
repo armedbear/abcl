@@ -45,16 +45,26 @@
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun generate-inline-expansion (block-name lambda-list body)
-    (cond ((intersection lambda-list
-                         '(&optional &rest &key &allow-other-keys &aux)
-                         :test #'eq)
-           nil)
-          (t
-           (setf body (copy-tree body))
-           (list 'LAMBDA lambda-list
-                 (list* 'BLOCK block-name body)))))
-  ) ; EVAL-WHEN
+  (defun generate-inline-expansion (name lambda-list body
+				    &optional (args nil args-p))
+    "Generates code that can be used to expand a named local function inline. It can work either per-function (no args provided) or per-call."
+    (if args-p
+	(expand-function-call-inline
+	 nil lambda-list
+	 (copy-tree `((block ,name
+			(locally
+			    (declare (notinline ,name))
+			  ,@body))))
+	 args)
+	(cond ((intersection lambda-list
+			     '(&optional &rest &key &allow-other-keys &aux)
+			     :test #'eq)
+	       nil)
+	      (t
+	       (setf body (copy-tree body))
+	       (list 'LAMBDA lambda-list
+		     (list* 'BLOCK name body))))))
+    ) ; EVAL-WHEN
 
 ;;; Pass 1.
 
@@ -234,7 +244,7 @@ where each of the vars returned is a list with these elements:
       ;;an unknown keyword.
       (loop
 	 :for var :in arguments :by #'cddr
-	 :for value :in (cdr arguments) by #'cddr
+	 :for value :in (cdr arguments) :by #'cddr
 	 :do (let ((var-info (find var key :key #'keyword)))
 	       (if (and var-info (not (member var already-seen)))
 		   ;;var is one of the declared keyword arguments
@@ -290,7 +300,6 @@ where each of the vars returned is a list with these elements:
 	    (error 'lambda-list-mismatch :mismatch-type :unknown-keyword)))
       (when rest
 	(setf bindings (append bindings `((,(var rest) (list ,@(nreverse args)))))))
-      (print bindings)
       (values bindings temp-bindings ignorables))))
 
 #||test for the above
@@ -304,6 +313,20 @@ where each of the vars returned is a list with these elements:
        '((print 1) 3 (print 32) :bar 2)))
   (jvm::lambda-list-mismatch (x) (jvm::lambda-list-mismatch-type x)))
 ||#
+
+(defun expand-function-call-inline (form lambda-list body args)
+  (handler-case
+      (multiple-value-bind (bindings ignorables)
+	  (match-lambda-list (multiple-value-list
+			      (parse-lambda-list lambda-list))
+			     args)
+	`(let* ,bindings
+	   (declare (ignorable ,@ignorables))
+	   ,@body))
+    (lambda-list-mismatch (x)
+      (compiler-warn "Invalid function call: ~S (mismatch type: ~A)"
+		     form (lambda-list-mismatch-type x))
+      form)))
 
 ;; Returns a list of declared free specials, if any are found.
 (declaim (ftype (function (list list block-node) list)
@@ -887,33 +910,37 @@ where each of the vars returned is a list with these elements:
   (with-local-functions-for-flet/labels
       form local-functions lambda-list name body
       ((let ((local-function (make-local-function :name name
-                                                  :compiland compiland)))
+                                                  :compiland compiland))
+	     (definition (cons lambda-list body)))
 	 (multiple-value-bind (body decls) (parse-body body)
 	   (let* ((block-name (fdefinition-block-name name))
 		  (lambda-expression
-                   (rewrite-lambda
-		   `(lambda ,lambda-list ,@decls (block ,block-name ,@body))))
+		   (rewrite-lambda `(lambda ,lambda-list ,@decls (block ,block-name ,@body))))
 		  (*visible-variables* *visible-variables*)
 		  (*local-functions* *local-functions*)
 		  (*current-compiland* compiland))
 	     (setf (compiland-lambda-expression compiland) lambda-expression)
+	     (setf (local-function-definition local-function)
+		   (copy-tree definition))
 	     (setf (local-function-inline-expansion local-function)
 		   (generate-inline-expansion block-name lambda-list body))
 	     (p1-compiland compiland)))
 	 (push local-function local-functions)))
       ((with-saved-compiler-policy
+	 (let ((inline-decls *inline-declarations*))
 	   (process-optimization-declarations (cddr form))
-         (let* ((block (make-flet-node))
-                (*blocks* (cons block *blocks*))
-                (body (cddr form))
-                (*visible-variables* *visible-variables*))
-           (setf (flet-free-specials block)
-                 (process-declarations-for-vars body nil block))
-           (dolist (special (flet-free-specials block))
-             (push special *visible-variables*))
-           (setf (flet-form block)
-                 (list* (car form) local-functions (p1-body (cddr form))))
-           block)))))
+	   (let* ((block (make-flet-node))
+		  (*blocks* (cons block *blocks*))
+		  (body (cddr form))
+		  (*visible-variables* *visible-variables*))
+	     (setf (flet-free-specials block)
+		   (process-declarations-for-vars body nil block))
+	     (dolist (special (flet-free-specials block))
+	       (push special *visible-variables*))
+	     (setf (flet-form block)
+		   (let ((*inline-declarations* inline-decls))
+		     (list* (car form) local-functions (p1-body (cddr form)))))
+	     block))))))
 
 
 (defun p1-labels (form)
@@ -1224,19 +1251,7 @@ the args causes a Java exception handler to be installed, which
 	(args (cdr form)))
     (if (and (listp op)
 	     (eq (car op) 'lambda))
-	(handler-case
-	    (let ((lambda-list
-		   (multiple-value-list (parse-lambda-list (cadr op))))
-		  (body (cddr op)))
-	      (multiple-value-bind (bindings ignorables)
-		  (match-lambda-list lambda-list args)
-		`(let* ,bindings
-		   (declare (ignorable ,@ignorables))
-		   ,@body)))
-	  (lambda-list-mismatch (x)
-	    (compiler-warn "Invalid function call: ~S (mismatch type: ~A)"
-			   form (lambda-list-mismatch-type x))
-	    form))
+	(expand-function-call-inline form (cadr op) (cddr op) args)
 	(if (unsafe-p args)
 	    (let ((arg1 (car args)))
 	      (cond ((and (consp arg1) (eq (car arg1) 'GO))
@@ -1273,14 +1288,19 @@ the args causes a Java exception handler to be installed, which
 ;;            (format t "p1 local call to ~S~%" op)
 ;;            (format t "inline-p = ~S~%" (inline-p op))
 
-           (when (and *enable-inline-expansion* (inline-p op))
-             (let ((expansion (local-function-inline-expansion local-function)))
+           (when (and *enable-inline-expansion* (inline-p op)
+		      (local-function-definition local-function))
+             (let* ((definition (local-function-definition local-function))
+		    (lambda-list (car definition))
+		    (body (cdr definition))
+		    (expansion (generate-inline-expansion op lambda-list body
+							  (cdr form))))
                (when expansion
                  (let ((explain *explain*))
                    (when (and explain (memq :calls explain))
                      (format t ";   inlining call to local function ~S~%" op)))
                  (return-from p1-function-call
-                   (p1 (expand-inline form expansion))))))
+		   (p1 expansion)))))
 
            ;; FIXME
            (dformat t "local function assumed not single-valued~%")
