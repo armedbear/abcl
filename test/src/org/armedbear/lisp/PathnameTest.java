@@ -38,7 +38,7 @@ public class PathnameTest
   
   @Test
   public void getInputStream() throws IOException {
-    File file = File.createTempFile("foo", "lisp");
+    File file = File.createTempFile("foo", ".lisp");
     FileWriter output = new FileWriter(file);
     String contents = "(defun foo () 42)";
     output.append(contents);
@@ -53,6 +53,52 @@ public class PathnameTest
       result.append(buffer, 0, i);
     }
     assertEquals(contents, result.toString());
+    input.close();
     file.delete();
+  }
+
+  @Test
+  public void copyConstructor() {
+      Pathname orig = new Pathname("/a/b/c/d/e/foo.lisp");
+      Pathname copy = new Pathname(orig.getNamestring());
+      assertTrue(orig.getNamestring().equals(copy.getNamestring()));
+  }
+
+  @Test
+  public void mergePathnames1() {
+      Pathname p = new Pathname("a/b/c/d/foo.lisp");
+      Pathname d = new Pathname("/foo/bar/there");
+      Pathname r = Pathname.mergePathnames(p, d);
+      String s = r.getNamestring();
+      assertTrue(s.equals("/foo/bar/a/b/c/d/foo.lisp"));
+  }
+
+  @Test
+  public void mergePathnames2() {
+      Pathname p = new Pathname("/a/b/c/d/foo.lisp");
+      Pathname d = new Pathname("/foo/bar/there");
+      Pathname r = Pathname.mergePathnames(p, d);
+      assertTrue(r.getNamestring().equals("/a/b/c/d/foo.lisp"));
+  }
+
+  @Test
+  public void mergePathnames3() {
+      LispObject args = Lisp.NIL;
+      args = args.push(Keyword.TYPE);
+      args = args.push(new SimpleString("abcl-tmp"));
+      args = args.nreverse();
+      Pathname p = Pathname.makePathname(args);
+      Pathname d = new Pathname("/foo/bar.abcl");
+      Pathname r = Pathname.mergePathnames(p, d);
+      assertTrue(r.getNamestring().equals("/foo/bar.abcl-tmp"));
+  }
+
+  @Test
+  public void mergePathnames4() {
+      Pathname p = new Pathname("jar:file:foo.jar!/bar.abcl");
+      Pathname d = new Pathname("/a/b/c/");
+      Pathname r = Pathname.mergePathnames(p, d);
+      String s = r.getNamestring();
+      assertTrue(s.equals("jar:file:/a/b/c/foo.jar!/bar.abcl"));
   }
 }

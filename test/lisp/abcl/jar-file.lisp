@@ -128,6 +128,50 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
       (load "jar:file:baz.jar!/a/b/eek.lisp"))
   t)
 
+;;; wrapped in PROGN for easy disabling without a network connection
+;;; XXX come up with a better abstraction
+(progn 
+  (deftest jar-file.load.11
+      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/foo")
+    t)
+
+  (deftest jar-file.load.12
+      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/bar")
+    t)
+
+  (deftest jar-file.load.13
+      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/bar.abcl")
+    t)
+
+  (deftest jar-file.load.14
+      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/eek")
+    t)
+
+  (deftest jar-file.load.15
+      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/eek.lisp")
+    t)
+
+  (deftest jar-file.load.16
+      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/a/b/foo")
+    t)
+
+  (deftest jar-file.load.17
+      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/a/b/bar")
+    t)
+
+  (deftest jar-file.load.18
+      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/a/b/bar.abcl")
+    t)
+
+  (deftest jar-file.load.19
+      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/a/b/eek")
+    t)
+
+  (deftest jar-file.load.20
+      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/a/b/eek.lisp")
+    t))
+
+
 (deftest jar-file.probe-file.1
     (with-jar-file-init
         (probe-file "jar:file:baz.jar!/eek.lisp"))
@@ -164,13 +208,18 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
 
 (deftest jar-file.merge-pathnames.2
     (merge-pathnames 
-     "/bar.abcl" #p"jar:file:baz.jar!/foo/")
+     "bar.abcl" #p"jar:file:baz.jar!/foo/")
   #p"jar:file:baz.jar!/foo/bar.abcl")
 
 (deftest jar-file.merge-pathnames.3
     (merge-pathnames 
      "jar:file:baz.jar!/foo" "bar")
   #p"jar:file:baz.jar!/foo")
+
+(deftest jar-file.merge-pathnames.4
+    (merge-pathnames 
+     "jar:file:baz.jar!/foo" "/a/b/c")
+  #p"jar:file:/a/b/baz.jar!/foo")
 
 (deftest jar-file.truename.1
     (signals-error (truename "jar:file:baz.jar!/foo")
