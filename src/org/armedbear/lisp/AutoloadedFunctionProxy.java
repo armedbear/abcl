@@ -246,69 +246,72 @@ public class AutoloadedFunctionProxy extends Function {
         return new JavaObject(new Hashtable());
     }
 
-    // ### proxy-preloaded-function
-    final private static Primitive PROXY_PRELOADED_FUNCTION
-        = new Primitive("proxy-preloaded-function", PACKAGE_SYS, false,
-                        "symbol name")
-    {
-      @Override
-      final public LispObject execute(LispObject symbol, LispObject name) {
-        LispThread thread = LispThread.currentThread();
-        Symbol sym;
-        Function fun;
-        FunctionType fType = FunctionType.NORMAL;
-
-        if (symbol instanceof Symbol)
-            sym = (Symbol)symbol;
-        else if (isValidSetfFunctionName(symbol)) {
-            sym = (Symbol)symbol.cadr();
-            fType = FunctionType.SETF;
-        } else if (isValidMacroFunctionName(symbol)) {
-            sym = (Symbol)symbol.cadr();
-            fType = FunctionType.MACRO;
-        } else {
-            checkSymbol(symbol); // generate an error
-            return null; // not reached
+    // ### proxy-preloaded-function symbol name => function
+    final private static Primitive PROXY_PRELOADED_FUNCTION = new proxy_preloaded_function();
+    final private static class proxy_preloaded_function extends Primitive {
+        proxy_preloaded_function() {
+            super("proxy-preloaded-function", PACKAGE_SYS, false,
+                  "symbol name");
         }
+        @Override
+        final public LispObject execute(LispObject symbol, LispObject name) {
+            LispThread thread = LispThread.currentThread();
+            Symbol sym;
+            Function fun;
+            FunctionType fType = FunctionType.NORMAL;
 
-        LispObject cache = AUTOLOADING_CACHE.symbolValue(thread);
-        if (cache instanceof Nil)
-            // during EVAL-WHEN :compile-toplevel, this function will
-            // be called without a caching environment; we'll need to
-            // forward to the compiled function loader
-            return loadCompiledFunction(name.getStringValue());
-        else {
-            LispObject[] cachedSyms = new LispObject[symsToSave.length];
-            for (int i = 0; i < symsToSave.length; i++)
-                cachedSyms[i] = symsToSave[i].symbolValue(thread);
+            if (symbol instanceof Symbol)
+                sym = (Symbol)symbol;
+            else if (isValidSetfFunctionName(symbol)) {
+                sym = (Symbol)symbol.cadr();
+                fType = FunctionType.SETF;
+            } else if (isValidMacroFunctionName(symbol)) {
+                sym = (Symbol)symbol.cadr();
+                fType = FunctionType.MACRO;
+            } else {
+                checkSymbol(symbol); // generate an error
+                return null; // not reached
+            }
 
-            fun = new AutoloadedFunctionProxy(sym, name, cache,
-                                              cachedSyms, fType);
-            fun.setClassBytes((byte[])((Hashtable)cache.javaInstance())
-                              .get(name.getStringValue()));
+            LispObject cache = AUTOLOADING_CACHE.symbolValue(thread);
+            if (cache instanceof Nil)
+                // during EVAL-WHEN :compile-toplevel, this function will
+                // be called without a caching environment; we'll need to
+                // forward to the compiled function loader
+                return loadCompiledFunction(name.getStringValue());
+            else {
+                LispObject[] cachedSyms = new LispObject[symsToSave.length];
+                for (int i = 0; i < symsToSave.length; i++)
+                    cachedSyms[i] = symsToSave[i].symbolValue(thread);
+
+                fun = new AutoloadedFunctionProxy(sym, name, cache,
+                                                  cachedSyms, fType);
+                fun.setClassBytes((byte[])((Hashtable)cache.javaInstance())
+                                  .get(name.getStringValue()));
+            }
+            return fun;
         }
-
-        return fun;
-      }
-   };
-
-  //  ### function-preload
-  final private static Primitive FUNCTION_PRELOAD
-    = new Primitive("function-preload", PACKAGE_SYS, false, "name")
-  {
-    @SuppressWarnings("unchecked")
-    @Override
-    final public LispObject execute(LispObject name) {
-      String namestring = name.getStringValue();
-      LispThread thread = LispThread.currentThread();
-      Hashtable cache
-          = (Hashtable)AUTOLOADING_CACHE.symbolValue(thread).javaInstance();
-
-      byte[] bytes = readFunctionBytes(namestring);
-      cache.put(namestring, bytes);
-
-      return T;
     }
-  };
 
+    //  ### function-preload name => success
+    final private static Primitive FUNCTION_PRELOAD = new function_preload();
+    private static class function_preload extends Primitive {
+        function_preload() {
+            super("function-preload", PACKAGE_SYS, false, "name");
+        }
+        @SuppressWarnings("unchecked")
+        @Override
+        final public LispObject execute(LispObject name) {
+            String namestring = name.getStringValue();
+            LispThread thread = LispThread.currentThread();
+            Hashtable cache
+                = (Hashtable)AUTOLOADING_CACHE.symbolValue(thread).javaInstance();
+
+            Pathname pathname = new Pathname(namestring);
+            byte[] bytes = readFunctionBytes(pathname);
+            cache.put(namestring, bytes);
+            
+            return T;
+        }
+    }
 }

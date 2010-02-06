@@ -1,0 +1,259 @@
+JARs and JAR entries in ABCL
+============================
+
+Mark Evenson
+Created: 09 JAN 2010
+Modified: 24 JAN 2010
+
+Notes towards sketching an implementation of "jar:" references to be
+contained in PATHNAMEs within ABCL
+
+
+Goals
+-----
+
+1.  Use Common Lisp pathnames to refer to entries in a JAR file.
+
+    
+2.  Use 'jar:' schema as documented in java.net.JarURLConnection for
+    namestring representation.
+
+An entry in a JAR file:
+    #p"jar:file:baz.jar!/foo"
+    
+A JAR file:
+    #p"jar:file:baz.jar!/"
+
+A JAR file accessible via URL
+    #p"jar:http://example.org/abcl.jar!/"
+
+An entry in a ABCL FASL in a URL accessible JAR file
+    #p"jar:jar:http://example.org/abcl.jar!/foo.abcl!/foo-1.cls"
+
+3.  MERGE-PATHNAMES working for JAR entries
+
+    (merge-pathnames "foo-1.cls" "jar:jar:file:baz.jar!/foo.abcl!/foo._")
+    "jar:jar:file:baz.jar!/foo.abcl!/foo-1.cls"
+
+    (merge-pathnames "foo-1.cls" "jar:file:foo.abcl!/")
+    "jar:file:foo.abcl!/foo-1.cls"
+
+4.  TRUENAME and PROBE-FILE working with "jar:" 
+
+4.1  TRUENAME cannonicalizing the JAR reference.
+
+5.  DIRECTORY working within JAR files (and within JAR in JAR).
+
+6.  References "jar:<URL>" for all strings <URL> that java.net.URL can
+    resolve works.
+
+
+Implementation
+--------------
+
+Using PATHNAMES
+
+*   A PATHNAME refering to a file within a JAR is known as a JAR
+    PATHNAME.  It can either refer to the entire JAR file or an entry
+    within the JAR file.
+
+*   A JAR PATHNAME always has a DEVICE which is a proper list.  This
+    distinguishes it from other uses of Pathname.  
+
+*   The DEVICE of a JAR PATHNAME will be a list with either one or two
+    elements.  The first element of the JAR PATHNAME can be either a
+    PATHNAME representing a JAR on the filesystem, or a SimpleString
+    representing a URL.
+
+*   a PATHNAME occuring in the list in the DEVICE of a JAR PATHNAME is
+    known as a DEVICE PATHNAME.
+
+*   If the DEVICE is a String it must be a String that successfully
+    constructs a URL via the java.net.URL(String) constructor
+
+*   Only the first entry in the the DEVICE list may be a String.
+
+*   Otherwise the the DEVICE PATHAME denotes the PATHNAME of the JAR file
+
+*   The DEVICE PATHNAME list of enclosing JARs runs from outermost to
+    innermost.
+    
+
+
+Use Cases
+---------
+
+// UC1 -- JAR
+pathname: {
+  namestring: "jar:file:foo/baz.jar!/"
+  device: ( 
+    pathname: {  
+      device: "jar:file:"
+      directory: (:RELATIVE "foo")
+      name: "baz"
+      type: "jar"
+    }
+  )
+}
+
+
+// UC1 -- JAR entry 
+pathname: {
+  namestring: "jar:file:baz.jar!/foo.abcl"
+  device: ( pathname: {
+    device: "jar:file:"
+    name: "baz"
+    type: "jar"
+  }) 
+  name: "foo"
+  type: "abcl"
+}
+
+
+// UC3 -- JAR file in a JAR entry
+pathname: {
+  namestring: "jar:jar:file:baz.jar!/foo.abcl!/"
+  device: ( 
+    pathname: {
+      name: "baz"
+      type: "jar"
+    }
+    pathname: {
+      name: "foo"
+      type: "abcl"
+    } 
+  )
+}
+
+// UC4 -- JAR entry in a JAR entry with directories
+pathname: {
+  namestring: "jar:jar:file:a/baz.jar!/b/c/foo.abcl!/this/that/foo-20.cls"
+  device: ( 
+    pathname {
+      directory: (:RELATIVE "a")      
+      name: "bar"
+      type: "jar"
+    }
+    pathname {
+      directory: (:RELATIVE "b")
+      name: "foo"
+      type: "abcl"
+    }
+  )
+  directory: (:RELATIVE "this" "that")
+  name: "foo-20"
+  type: "cls" 
+}
+
+// UC5 -- JAR Entry in a JAR Entry
+pathname: {
+  namestring: "jar:jar:file:a/foo/baz.jar!/foo.abcl!/a/b/bar-1.cls"
+  device: (
+    pathname: {
+      device: "jar:file:"
+      name: "baz"
+      type: "jar"
+    }
+    pathname: {
+      name: "foo"
+      type: "abcl"
+    }
+  )
+  name: "bar-1"
+  type: "cls"
+}
+
+// UC6 -- JAR entry in a http: accessible JAR file
+pathname: {
+  namestring: "jar:http://example.org/abcl.jar!/org/armedbear/lisp/Version.class",
+  device: ( 
+    "http://example.org/abcl.jar"
+    pathname: {
+      directory: (:relative "org" "armedbear" "lisp")
+      name: "Version"
+      type: "class"
+   }
+}
+
+// UC7 -- JAR Entry in a JAR Entry in a URL accessible JAR FILE
+pathname: {
+   namestring  "jar:jar:http://example.org/abcl.jar!/foo.abcl!/foo-1.cls"
+   device: (
+     "http://example.org/abcl.jar"
+     pathname: { 
+       name: "foo"
+       type: "abcl"
+     }
+  )
+  name: "foo-1"
+  type: "cls"
+}
+
+// UC8 -- JAR in an absolute directory
+
+pathame: {
+   namestring: "jar:file:/a/b/foo.jar!/"
+   device: (
+     pathname: {
+       directory: (:ABSOLUTE "a" "b")
+       name: "foo"
+       type: "jar"
+     }
+   )
+}
+
+// UC9 -- JAR in an relative directory with entry
+pathname: {
+   namestring: "jar:file:a/b/foo.jar!/c/d/foo.lisp"
+   device: (
+     directory: (:RELATIVE "a" "b")
+     name: "foo"
+     type: "jar"
+   )
+   directory: (:RELATIVE "c" "d")
+   name: "foo"
+   type: "lisp
+}
+
+
+  
+Problems
+--------
+
+1.  DEVICE PATHNAMES require the context within the nested PATHNAME
+    structure to be interpreted correctly.
+
+Result:    Be careful when manipulating PATHNAMEs that refer to JARs
+
+
+History
+-------
+
+In the use of PATHNAMEs linked by the DEVICE field, we found the problem
+that UNC path support uses the DEVICE field
+
+Result:    JARs located on UNC mounts can't be referenced. via '\\'.
+
+           i.e.  jar:jar:file:\\server\share\a\b\foo.jar!/this\that!/foo.java
+
+would not have 
+
+Solution:  Instead of having DEVICE point to a PATHNAME, have DEVICE
+be a list of PATHNAMES
+
+pathname: {
+  namestring: "jar:jar:file:\\server\share\foo.jar!/foo.abcl!/"
+  device: ( pathname: {
+              name: "foo"
+              type: "abcl"
+            }
+            pathname: {
+              host: "server"
+              device: "share"
+              name: "foo"
+              type: "jar"
+            }
+}
+
+Which order for the list? Outermost first or last?  Outermost first.
+

@@ -2909,6 +2909,8 @@ public class Symbol extends LispObject
     PACKAGE_EXT.addExternalSymbol("GETENV");
   public static final Symbol MACROEXPAND_ALL =
     PACKAGE_EXT.addExternalSymbol("MACROEXPAND-ALL");
+  public static final Symbol LOAD_TRUENAME_FASL =
+    PACKAGE_EXT.addExternalSymbol("*LOAD-TRUENAME-FASL*");
 
   // MOP.
   public static final Symbol STANDARD_READER_METHOD =

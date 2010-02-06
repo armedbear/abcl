@@ -1201,134 +1201,63 @@ public final class Lisp
                                              LispThread.currentThread());
   }
 
+    @Deprecated
   public static final LispObject loadCompiledFunction(final String namestring)
-
   {
-      byte[] bytes = readFunctionBytes(namestring);
+      Pathname name = new Pathname(namestring);
+      byte[] bytes = readFunctionBytes(name);
       if (bytes != null)
         return loadClassBytes(bytes);
 
       return null;
   }
 
-  public static final byte[] readFunctionBytes(final String namestring)
-  {
-    final LispThread thread = LispThread.currentThread();
-    final boolean absolute = Utilities.isFilenameAbsolute(namestring);
-    LispObject device = NIL;
-    final Pathname defaultPathname;
-    if (absolute)
-      {
-        defaultPathname =
-          coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue(thread));
+  public static final byte[] readFunctionBytes(final Pathname name) {
+      final LispThread thread = LispThread.currentThread();
+      Pathname load = null;
+      LispObject truenameFasl = Symbol.LOAD_TRUENAME_FASL.symbolValue(thread);
+      LispObject truename = Symbol.LOAD_TRUENAME.symbolValue(thread);
+      Pathname fasl = null;
+      if (truenameFasl instanceof Pathname) {
+          load = Pathname.mergePathnames(name, (Pathname)truenameFasl, Keyword.NEWEST);
+      } else if (truename instanceof Pathname) {
+          load = Pathname.mergePathnames(name, (Pathname) truename, Keyword.NEWEST);
+      } else {
+          load = name;
       }
-    else
-      {
-        LispObject loadTruename = Symbol.LOAD_TRUENAME.symbolValue(thread);
-        if (loadTruename instanceof Pathname)
-          {
-            defaultPathname = (Pathname) loadTruename;
-            // We're loading a file.
-            device = ((Pathname)loadTruename).getDevice();
+      InputStream input = load.getInputStream();
+      byte[] bytes = new byte[4096];
+      try {
+          if (input == null) {
+              Debug.trace("Pathname: " + name);
+              Debug.trace("LOAD_TRUENAME_FASL: " + truenameFasl);
+              Debug.trace("LOAD_TRUENAME: " + truename);
+              Debug.assertTrue(input != null);
           }
-        else
-          {
-            defaultPathname =
-              coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue(thread));
+
+          int n = 0;
+          java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+          try {
+              while (n >= 0) {
+                  n = input.read(bytes, 0, 4096);
+                if (n >= 0) {
+                    baos.write(bytes, 0, n);
+                }
+            }
+          } catch (IOException e) {
+              Debug.trace("Failed to read bytes from "
+                          + "'" + name.getNamestring() + "'");
+              return null;
           }
-      }
-    if (device instanceof Pathname) { //Loading from a jar
-	URL url = null;
-	String jar = ((Pathname)device).getNamestring();
-	if(jar.startsWith("jar:")) {
-	    try {
-		url = new URL(jar + "!/" + namestring);
-	    } catch (MalformedURLException ex) {
-		Debug.trace(ex);
-	    }
-	} else {
-	    url = Lisp.class.getResource(namestring);
-	}
-        if (url != null) {
-            try {
-		InputStream input = null;		
-		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-		try {
-		    input = url.openStream();               
-		    byte[] bytes = new byte[4096];
-		    int n = 0;
-		    while (n >= 0) {
-			n = input.read(bytes, 0, 4096);
-			if(n >= 0) {
-			    baos.write(bytes, 0, n);
-			}
-		    }
-		    bytes = baos.toByteArray();
-		    return bytes;
-		} finally {
-		    baos.close();
-		    if(input != null) {
-			input.close();
-		    }
-		}
-	    } catch (IOException e) {
-                Debug.trace(e);
-	    }
-	}
-        error(new LispError("Unable to load " + namestring));
-        return null; // not reached
-    }
-    Pathname pathname = new Pathname(namestring);
-    final File file = Utilities.getFile(pathname, defaultPathname);
-    if (file != null && file.isFile())
-      {
-        // The .cls file exists.
-        try
-          {
-            byte[] bytes = readFunctionBytes(new FileInputStream(file),
-                                             (int) file.length());
-            // FIXME close stream!
-            if (bytes != null)
-              return bytes;
-          }
-        catch (FileNotFoundException fnf) {
-            error(new LispError("Unable to load " + pathname.writeToString()
-                                + ": " + fnf.getMessage()));
-            return null; // not reached
-        }
-        return null; // not reached
-      }
-    try
-      {
-        LispObject loadTruename = Symbol.LOAD_TRUENAME.symbolValue(thread);
-        String zipFileName = ((Pathname)loadTruename).getNamestring();
-        ZipFile zipFile = ZipCache.getZip(zipFileName);
-        try
-          {
-            ZipEntry entry = zipFile.getEntry(namestring);
-            if (entry != null)
-              {
-                byte[] bytes = readFunctionBytes(zipFile.getInputStream(entry),
-                                                 (int) entry.getSize());
-                if (bytes != null)
-                  return bytes;
-                Debug.trace("Unable to load " + namestring);
-                error(new LispError("Unable to load " + namestring));
-                return null; // not reached
-              }
-          }
-        finally
-          {
-            ZipCache.removeZip(zipFile.getName());
+          bytes = baos.toByteArray();
+      } finally {
+          try {
+              input.close();
+          } catch (IOException e) {
+              Debug.trace("Failed to close InputStream: " + e);
           }
       }
-    catch (IOException t)
-      {
-        Debug.trace(t);
-      }
-    error(new FileError("File not found: " + namestring,
-                        new Pathname(namestring)));
-    return null; // not reached
+      return bytes;
   }
 
     public static final Function makeCompiledFunctionFromClass(Class<?> c) {
@@ -2395,6 +2324,7 @@ public final class Lisp
     Symbol.LOAD_PRINT.initializeSpecial(NIL);
     Symbol.LOAD_PATHNAME.initializeSpecial(NIL);
     Symbol.LOAD_TRUENAME.initializeSpecial(NIL);
+    Symbol.LOAD_TRUENAME_FASL.initializeSpecial(NIL);
     Symbol.COMPILE_VERBOSE.initializeSpecial(T);
     Symbol.COMPILE_PRINT.initializeSpecial(T);
     Symbol._COMPILE_FILE_PATHNAME_.initializeSpecial(NIL);

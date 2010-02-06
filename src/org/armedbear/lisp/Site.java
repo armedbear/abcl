@@ -42,40 +42,36 @@ import java.net.URLDecoder;
 
 public final class Site
 {
-    private static final String LISP_HOME;
+    private static Pathname LISP_HOME;
 
-    static {
-        String lispHome = System.getProperty("abcl.home");
-        if (lispHome == null) {
-            URL url = Lisp.class.getResource("boot.lisp");
-            if (url != null) {
-                String protocol = url.getProtocol();
-                if (protocol != null && protocol.equals("file")) {
-                    String path = url.getPath();
-                    try {
-                        path = URLDecoder.decode(path, "UTF-8");
-                    }
-                    catch (java.io.UnsupportedEncodingException uee) {
-                        // can't happen: Java implementations are required to
-                        // support UTF-8
-                    }
-                    int index = path.lastIndexOf('/');
-                    if (index >= 0) {
-                        lispHome = path.substring(0, index + 1);
-                        if (Utilities.isPlatformWindows) {
-                            if (lispHome.length() > 0 && lispHome.charAt(0) == '/')
-                                lispHome = lispHome.substring(1);
-                        }
-                    }
-                }
+    private static void init() {
+        String s = System.getProperty("abcl.home");
+        if (s != null) {
+            String fileSeparator = System.getProperty("file.separator");
+            if (!s.endsWith(fileSeparator)) {
+                s += fileSeparator;;
             }
+            LISP_HOME = new Pathname(s);
+            return;
         }
-        LISP_HOME = lispHome;
+        URL url = Lisp.class.getResource("boot.lisp");
+        if (url != null) {
+            LISP_HOME = new Pathname(url);
+            LISP_HOME.name = NIL;
+            LISP_HOME.type = NIL;
+            LISP_HOME.invalidateNamestring();
+            return;
+        }
+        Debug.trace("Unable to determine LISP_HOME.");
     }
 
-    public static final String getLispHome()
+
+    public static final Pathname getLispHome()
     {
-        return LISP_HOME;
+      if (LISP_HOME == null) {
+        init();
+      }
+      return LISP_HOME;
     }
 
     // ### *lisp-home*
@@ -83,8 +79,8 @@ public final class Site
         exportSpecial("*LISP-HOME*", PACKAGE_EXT, NIL);
 
     static {
-        String s = Site.getLispHome();
-        if (s != null)
-            _LISP_HOME_.setSymbolValue(new Pathname(s));
+        Pathname p  = Site.getLispHome();
+        if (p != null)
+            _LISP_HOME_.setSymbolValue(p);
     }
 }

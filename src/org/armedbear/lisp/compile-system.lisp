@@ -121,12 +121,13 @@
       (load (do-compile "concatenate.lisp"))
       (load (do-compile "ldb.lisp"))
       (load (do-compile "destructuring-bind.lisp"))
+      (load (do-compile "asdf.lisp"))
       ;; But not for these.
       (mapc #'do-compile '("adjoin.lisp"
                            "and.lisp"
                            "apropos.lisp"
                            "arrays.lisp"
-                           "asdf.lisp"
+                           "asdf-abcl.lisp"
                            "assert.lisp"
                            "assoc.lisp"
                            "autoloads.lisp"
@@ -211,8 +212,8 @@
                            "or.lisp"
                            "parse-integer.lisp"
                            "parse-lambda-list.lisp"
-                           "pathnames.lisp"
                            "package.lisp"
+                           "pathnames.lisp"
                            "print-object.lisp"
                            "print-unreadable-object.lisp"
                            "proclaim.lisp"

@@ -45,8 +45,12 @@ public final class LogicalPathname extends Pathname
 
     private static final HashMap map = new HashMap();
 
-    public LogicalPathname()
+    protected LogicalPathname()
     {
+    }
+
+    protected LogicalPathname(Pathname p) {
+        super(p);
     }
 
     public LogicalPathname(String host, String rest)
@@ -278,28 +282,31 @@ public final class LogicalPathname extends Pathname
     }
 
     // ### canonicalize-logical-host host => canonical-host
-    private static final Primitive CANONICALIZE_LOGICAL_HOST =
-        new Primitive("canonicalize-logical-host", PACKAGE_SYS, true, "host")
-    {
+    private static final Primitive CANONICALIZE_LOGICAL_HOST = new canonicalize_logical_host();
+    private static class canonicalize_logical_host extends Primitive {
+        canonicalize_logical_host() {
+            super("canonicalize-logical-host", PACKAGE_SYS, true, "host");
+        }
         @Override
         public LispObject execute(LispObject arg)
-
         {
-                AbstractString s = checkString(arg);
-                if (s.length() == 0) {
-                    // "The null string, "", is not a valid value for any
-                    // component of a logical pathname." 19.3.2.2
-                    return error(new LispError("Invalid logical host name: \"" +
-                                                s.getStringValue() + '"'));
-                }
-                return canonicalizeStringComponent(s);
+            AbstractString s = checkString(arg);
+            if (s.length() == 0) {
+                // "The null string, "", is not a valid value for any
+                // component of a logical pathname." 19.3.2.2
+                return error(new LispError("Invalid logical host name: \"" +
+                                           s.getStringValue() + '"'));
+            }
+            return canonicalizeStringComponent(s);
         }
-    };
+    }
 
     // ### %make-logical-pathname namestring => logical-pathname
-    private static final Primitive _MAKE_LOGICAL_PATHNAME =
-        new Primitive("%make-logical-pathname", PACKAGE_SYS, true, "namestring")
-    {
+    private static final Primitive _MAKE_LOGICAL_PATHNAME = new _make_logical_pathname();
+    private static class _make_logical_pathname extends Primitive {
+        _make_logical_pathname() {
+            super("%make-logical-pathname", PACKAGE_SYS, true, "namestring");
+        }
         @Override
         public LispObject execute(LispObject arg)
 
@@ -321,5 +328,5 @@ public final class LogicalPathname extends Pathname
             }
             return error(new TypeError("Logical namestring does not specify a host: \"" + s + '"'));
         }
-    };
+    }
 }

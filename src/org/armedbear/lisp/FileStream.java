@@ -280,12 +280,17 @@ public final class FileStream extends Stream
 
         {
             final Pathname pathname;
-            if(first instanceof Pathname) {
+            if (first instanceof Pathname) {
                 pathname = (Pathname) first;
             }
             else {
                 return type_error(first, Symbol.PATHNAME);
             }
+            if (pathname.isJar()) {
+                error(new FileError("Direct stream input/output on entries in JAR files no currently supported.",
+                                    pathname));
+            }
+
             final LispObject namestring = checkString(second);
             LispObject elementType = third;
             LispObject direction = fourth;

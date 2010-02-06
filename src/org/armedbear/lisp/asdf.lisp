@@ -1173,4 +1173,5 @@ output to *VERBOSE-OUT*.  Returns the shell's exit code."
   (pushnew 'module-provide-asdf sb-ext:*module-provider-functions*)
   (pushnew 'contrib-sysdef-search *system-definition-search-functions*))
 
+(require 'asdf-abcl)
 (provide 'asdf)

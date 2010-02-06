@@ -285,8 +285,8 @@ public final class Interpreter
                     if (i + 1 < args.length) {
                         if (arg.equals("--load"))
                             Load.load(new Pathname(args[i + 1]),
-                                      args[i + 1],
                                       false, false, true);
+
                         else
                             Load.loadSystemFile(args[i + 1]);
                         ++i;

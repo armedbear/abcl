@@ -394,7 +394,7 @@ public class Stream extends StructureObject {
 
     {
         LispObject result = readPreservingWhitespace(eofError, eofValue,
-                            recursive, thread);
+                                                     recursive, thread);
         if (result != eofValue && !recursive) {
             try {
                 if (_charReady()) {
@@ -422,9 +422,9 @@ public class Stream extends StructureObject {
         internSpecial("*SHARP-EQUAL-ALIST*", PACKAGE_SYS, NIL);
 
     public LispObject readPreservingWhitespace(boolean eofError,
-            LispObject eofValue,
-            boolean recursive,
-            LispThread thread)
+                                               LispObject eofValue,
+                                               boolean recursive,
+                                               LispThread thread)
 
     {
         if (recursive) {
@@ -434,6 +434,7 @@ public class Stream extends StructureObject {
                 try {
                     n = _readChar();
                 } catch (IOException e) {
+                    Debug.trace(e);
                     error(new StreamError(this, e));
                 }
                 if (n < 0) {

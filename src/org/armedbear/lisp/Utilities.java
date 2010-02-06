@@ -40,6 +40,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -124,60 +125,133 @@ public final class Utilities
             return null;
         }
     }
-    
-    public static byte[] getZippedZipEntryAsByteArray(ZipFile zipfile,
-                                                      String entryName,
-                                                      String subEntryName) 
 
-  {
-      ZipEntry entry = zipfile.getEntry(entryName);
-      
-      ZipInputStream stream = null;
-      try {
-          stream = new ZipInputStream(zipfile.getInputStream(entry));
-      } 
-      catch (IOException e) {
+    public static ZipInputStream getZipInputStream(ZipFile zipfile,
+                                                   String entryName) {
+        return Utilities.getZipInputStream(zipfile, entryName, false);
+    }
+
+  public static ZipInputStream getZipInputStream(ZipFile zipfile,
+                                                 String entryName,
+                                                 boolean errorOnFailure) {
+    ZipEntry zipEntry = zipfile.getEntry(entryName);
+    ZipInputStream stream = null;
+    try {
+      stream = new ZipInputStream(zipfile.getInputStream(zipEntry));
+    } catch (IOException e) {
+      if (errorOnFailure) {
           Lisp.error(new FileError("Failed to open '" + entryName + "' in zipfile '"
                                    + zipfile + "': " + e.getMessage()));
       }
-      //  XXX Cache the zipEntries somehow
-      do {
-          try { 
-              entry = stream.getNextEntry();
-          } catch (IOException e){
-              Lisp.error(new FileError("Failed to seek for '" + subEntryName 
-                                       + "' in '" 
-                                       + zipfile.getName() + ":" + entryName + ".:"
-                                       + e.getMessage()));
-          }
-      } while (!entry.getName().equals(subEntryName));
-      
-      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+      return null;
+    }
+    return stream;
+  }
+
+  public static InputStream getEntryAsInputStream(ZipInputStream zipInputStream,
+                                                    String entryName)
+    {
+        ZipEntry entry = getEntry(zipInputStream, entryName);
+        ByteArrayOutputStream bytes = readEntry(zipInputStream);
+        return new ByteArrayInputStream(bytes.toByteArray());
+
+    }
+
+    public static ByteArrayOutputStream readEntry(ZipInputStream stream) {
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
         int count;
         byte buf[] = new byte[1024];
         try {
             while ((count = stream.read(buf, 0, buf.length)) != -1) {
-                buffer.write(buf, 0, count);
+                result.write(buf, 0, count);
             }
         } catch (java.io.IOException e) {
-          Lisp.error(new FileError("Failed to read compressed '"
-                                   + subEntryName 
-                                   + "' in '" 
-                                   + zipfile.getName() + ":" + entryName + ":"
-                                   + e.getMessage()));
+            Debug.trace("Failed to read entry from " 
+                        + stream
+                        + ": " + e);
+            return null;
         }
-        return buffer.toByteArray();
+        return result;
     }
-    
-    public static InputStream getZippedZipEntryAsInputStream(ZipFile zipfile,
-                                                             String entryName,
-                                                             String subEntryName) 
 
+    public static ZipEntry getEntry(ZipInputStream zipInputStream, String entryName) {
+        return Utilities.getEntry(zipInputStream, entryName, false);
+    }
+
+  public static ZipEntry getEntry(ZipInputStream zipInputStream,
+                                  String entryName,
+                                  boolean errorOnFailure)
   {
-        return 
-            new ByteArrayInputStream(Utilities
-                                     .getZippedZipEntryAsByteArray(zipfile, entryName, 
-                                                                   subEntryName));
-  }
-}
+    ZipEntry entry = null;
+    do {
+      try {
+        entry = zipInputStream.getNextEntry();
+      } catch (IOException e) {
+        if (errorOnFailure) {
+          Lisp.error(new FileError("Failed to seek for "
+            + "'" + entryName + "'"
+            + " in " + zipInputStream.toString()));
+        }
+        return null;
+      }
+    } while (entry != null && !entry.getName().equals(entryName));
+    if (entry != null) {
+      return entry;
+    }
+    if (errorOnFailure) {
+      Lisp.error(new FileError("Failed to find "
+        + "'" + entryName + "'"
+        + " in " + zipInputStream.toString()));
+    }
+    return null;
 
+  }
+    
+    public static final boolean checkZipFile(Pathname name) {
+        InputStream input = name.getInputStream();
+        try {
+            byte[] bytes = new byte[4];
+            int bytesRead = input.read(bytes);
+            return (bytesRead == 4
+                    && bytes[0] == 0x50
+                    && bytes[1] == 0x4b
+                    && bytes[2] == 0x03
+                    && bytes[3] == 0x04);
+        } catch (Throwable t) { // any error probably means 'no'
+            return false;
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                }
+                catch (IOException e) {} // ignore exceptions
+            }
+        }
+    }
+
+    static InputStream getInputStream(JarFile jarFile, Pathname inner) {
+        String entryPath = inner.asEntryPath();
+        ZipEntry entry = jarFile.getEntry(entryPath);
+        if (entry == null) {
+            Debug.trace("Failed to find entry "
+                    + "'" + entryPath + "'"
+                    + " in " 
+                    + "'" + jarFile.getName() + "'");
+            return null;
+        }
+        InputStream result = null;
+        try {
+            result = jarFile.getInputStream(entry);
+        } catch (IOException e) {
+            Debug.trace("Failed to open InputStream for "
+              + "'" + entryPath + "'"
+              + " in "
+              + "'" + jarFile.getName() + "'");
+            return null;
+        }
+        return result;
+    }
+
+
+
+}
