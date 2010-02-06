@@ -1,11 +1,14 @@
 # build.properties
 # $Id: build.properties,v 1.23 2007-03-03 19:19:11 piso Exp $
 
-# Contents show up in JAR Manifest in the Implementation-Source attribute
-#version.src=[abcl]
+# version.src contents show up in JAR Manifest in the Implementation-Source attribute
+#version.src=[abcl svn]
 
-# If set, ABCL attempts to perform incremental compilation
+# abcl.build.incremental attempts to perform incremental compilation
 #abcl.build.incremental=true
 
-# Skip the compilation of Lisp sources (for debugging)
+# abcl.compile.lisp.skip skips the compilation of Lisp sources in Netbeans (for debugging)
 #abcl.compile.lisp.skip=true
+
+# java.options sets the Java options in the abcl wrapper scripts
+#java.options=-Xmx1g
