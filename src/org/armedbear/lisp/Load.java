@@ -151,34 +151,32 @@ public final class Load
             }
         }
 
-        if (truename.type.getStringValue().equals(COMPILE_FILE_TYPE)
-            && Utilities.checkZipFile(truename)) 
-            {
-                String n = truename.getNamestring();
-                if (n.startsWith("jar:")) {
-                    n = "jar:" + n + "!/" + truename.name.getStringValue() + "."
-                      + COMPILE_FILE_INIT_FASL_TYPE;
-                } else {
-                    n = "jar:file:" + n + "!/" + truename.name.getStringValue() + "."
-                      + COMPILE_FILE_INIT_FASL_TYPE;
-                }
-                mergedPathname = new Pathname(n);
-                LispObject initTruename = Pathname.truename(mergedPathname);
-                if (initTruename == null || initTruename.equals(NIL)) {
-                    String errorMessage
-                        = "Loadable FASL not found for"
-                          + "'" + pathname + "'"
-                          + " in "
-                          + "'" + mergedPathname + "'";
-                    if (ifDoesNotExist) {
-                        return error(new FileError(errorMessage, mergedPathname));
-                    } else {
-                        Debug.trace(errorMessage);
-                        return NIL;
-                    }
-                }
-                truename = (Pathname)initTruename;
+        if (Utilities.checkZipFile(truename)) {
+            String n = truename.getNamestring();
+            if (n.startsWith("jar:")) {
+                n = "jar:" + n + "!/" + truename.name.getStringValue() + "."
+                    + COMPILE_FILE_INIT_FASL_TYPE;
+            } else {
+                n = "jar:file:" + n + "!/" + truename.name.getStringValue() + "."
+                    + COMPILE_FILE_INIT_FASL_TYPE;
             }
+            mergedPathname = new Pathname(n);
+            LispObject initTruename = Pathname.truename(mergedPathname);
+            if (initTruename == null || initTruename.equals(NIL)) {
+                String errorMessage
+                    = "Loadable FASL not found for"
+                    + "'" + pathname + "'"
+                    + " in "
+                    + "'" + mergedPathname + "'";
+                if (ifDoesNotExist) {
+                    return error(new FileError(errorMessage, mergedPathname));
+                } else {
+                    Debug.trace(errorMessage);
+                    return NIL;
+                }
+            }
+            truename = (Pathname)initTruename;
+        }
         
         InputStream in = truename.getInputStream();
         Debug.assertTrue(in != null);
