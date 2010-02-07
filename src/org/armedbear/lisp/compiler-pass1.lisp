@@ -51,10 +51,7 @@
     (if args-p
 	(expand-function-call-inline
 	 nil lambda-list
-	 (copy-tree `((block ,name
-			(locally
-			    (declare (notinline ,name))
-			  ,@body))))
+	 (copy-tree `((block ,name ,@body)))
 	 args)
 	(cond ((intersection lambda-list
 			     '(&optional &rest &key &allow-other-keys &aux)
@@ -927,20 +924,18 @@ where each of the vars returned is a list with these elements:
 	     (p1-compiland compiland)))
 	 (push local-function local-functions)))
       ((with-saved-compiler-policy
-	 (let ((inline-decls *inline-declarations*))
-	   (process-optimization-declarations (cddr form))
-	   (let* ((block (make-flet-node))
-		  (*blocks* (cons block *blocks*))
-		  (body (cddr form))
-		  (*visible-variables* *visible-variables*))
-	     (setf (flet-free-specials block)
-		   (process-declarations-for-vars body nil block))
-	     (dolist (special (flet-free-specials block))
-	       (push special *visible-variables*))
-	     (setf (flet-form block)
-		   (let ((*inline-declarations* inline-decls))
-		     (list* (car form) local-functions (p1-body (cddr form)))))
-	     block))))))
+	 (process-optimization-declarations (cddr form))
+	 (let* ((block (make-flet-node))
+		(*blocks* (cons block *blocks*))
+		(body (cddr form))
+		(*visible-variables* *visible-variables*))
+	   (setf (flet-free-specials block)
+		 (process-declarations-for-vars body nil block))
+	   (dolist (special (flet-free-specials block))
+	     (push special *visible-variables*))
+	   (setf (flet-form block)
+		 (list* (car form) local-functions (p1-body (cddr form))))
+	   block)))))
 
 
 (defun p1-labels (form)
@@ -951,6 +946,8 @@ where each of the vars returned is a list with these elements:
 						   :compiland compiland
 						   :variable variable))
               (block-name (fdefinition-block-name name)))
+	 (setf (local-function-definition local-function)
+	       (copy-tree (cons lambda-list body)))
 	 (multiple-value-bind (body decls) (parse-body body)
 	   (setf (compiland-lambda-expression compiland)
                  (rewrite-lambda
@@ -1287,7 +1284,6 @@ the args causes a Java exception handler to be installed, which
     (cond (local-function
 ;;            (format t "p1 local call to ~S~%" op)
 ;;            (format t "inline-p = ~S~%" (inline-p op))
-
            (when (and *enable-inline-expansion* (inline-p op)
 		      (local-function-definition local-function))
              (let* ((definition (local-function-definition local-function))
@@ -1300,7 +1296,9 @@ the args causes a Java exception handler to be installed, which
                    (when (and explain (memq :calls explain))
                      (format t ";   inlining call to local function ~S~%" op)))
                  (return-from p1-function-call
-		   (p1 expansion)))))
+		   (let ((*inline-declarations*
+			  (remove op *inline-declarations* :key #'car)))
+		     (p1 expansion))))))
 
            ;; FIXME
            (dformat t "local function assumed not single-valued~%")
