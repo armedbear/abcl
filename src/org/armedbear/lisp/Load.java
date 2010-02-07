@@ -404,31 +404,51 @@ public final class Load
         final String prefix = getLoadVerbosePrefix(loadDepth);
         try {
             thread.bindSpecial(Symbol.LOAD_PATHNAME, pathname);
-            Pathname truePathname = new Pathname(((Pathname)truename).getNamestring());
-            String type = truePathname.type.getStringValue();
-            if (type.equals(COMPILE_FILE_TYPE)
-                || type.equals(COMPILE_FILE_INIT_FASL_TYPE.toString())) {
-                thread.bindSpecial(Symbol.LOAD_TRUENAME_FASL, truePathname);
-            }
-            if (truePathname.type.getStringValue().equals(COMPILE_FILE_INIT_FASL_TYPE.getStringValue())
-                && truePathname.isJar()) {
-                if (truePathname.device.cdr() != NIL ) {
-                    // set truename to the enclosing JAR
-                    truePathname.host = NIL;
-                    truePathname.directory = NIL;
-                    truePathname.name = NIL;
-                    truePathname.type = NIL;
-                    truePathname.invalidateNamestring();
-                } else {
-                    // XXX There is something fishy in the asymmetry
-                    // between the "jar:jar:http:" and "jar:jar:file:"
-                    // cases but this currently passes the tests.
-                    if (!(truePathname.device.car() instanceof AbstractString)) {
-                         truePathname = (Pathname)truePathname.device.car();
-                         truePathname.invalidateNamestring();
+
+            // The motivation behind the following piece of complexity
+            // is the need to preserve the semantics of
+            // *LOAD-TRUENAME* as always containing the truename of
+            // the current "Lisp file".  Since an ABCL packed FASL
+            // actually has a Lisp file (aka "the init FASL") and one
+            // or more Java classes from the compiler, we endeavor to
+            // make *LOAD-TRUENAME* refer to the "overall" truename so
+            // that a (LOAD *LOAD-TRUENAME*) would be equivalent to
+            // reloading the complete current "Lisp file".  If this
+            // value diverges from the "true" truename, we set the
+            // symbol SYS::*LOAD-TRUENAME-FASL* to that divergent
+            // value.  Currently the only code that uses this value is
+            // Lisp.readFunctionBytes().
+            Pathname truePathname = null;
+            if (!truename.equals(NIL)) {
+                truePathname = new Pathname(((Pathname)truename).getNamestring());
+                String type = truePathname.type.getStringValue();
+                if (type.equals(COMPILE_FILE_TYPE)
+                    || type.equals(COMPILE_FILE_INIT_FASL_TYPE.toString())) {
+                    thread.bindSpecial(Symbol.LOAD_TRUENAME_FASL, truePathname);
+                }
+                if (truePathname.type.getStringValue()
+                    .equals(COMPILE_FILE_INIT_FASL_TYPE.getStringValue())
+                    && truePathname.isJar()) {
+                    if (truePathname.device.cdr() != NIL ) {
+                        // set truename to the enclosing JAR
+                        truePathname.host = NIL;
+                        truePathname.directory = NIL;
+                        truePathname.name = NIL;
+                        truePathname.type = NIL;
+                        truePathname.invalidateNamestring();
+                    } else {
+                        // XXX There is something fishy in the asymmetry
+                        // between the "jar:jar:http:" and "jar:jar:file:"
+                        // cases but this currently passes the tests.
+                        if (!(truePathname.device.car() instanceof AbstractString)) {
+                            truePathname = (Pathname)truePathname.device.car();
+                            truePathname.invalidateNamestring();
+                        }
                     }
-               }
-                thread.bindSpecial(Symbol.LOAD_TRUENAME, truePathname);
+                    thread.bindSpecial(Symbol.LOAD_TRUENAME, truePathname);
+                } else {
+                    thread.bindSpecial(Symbol.LOAD_TRUENAME, truename);
+                }
             } else {
                 thread.bindSpecial(Symbol.LOAD_TRUENAME, truename);
             }
