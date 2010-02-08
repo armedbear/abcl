@@ -3,11 +3,10 @@ JARs and JAR entries in ABCL
 
 Mark Evenson
 Created: 09 JAN 2010
-Modified: 24 JAN 2010
+Modified: 08 FEB 2010
 
 Notes towards sketching an implementation of "jar:" references to be
-contained in PATHNAMEs within ABCL
-
+contained in PATHNAMEs within ABCL.  
 
 Goals
 -----
@@ -30,7 +29,7 @@ A JAR file accessible via URL
 An entry in a ABCL FASL in a URL accessible JAR file
     #p"jar:jar:http://example.org/abcl.jar!/foo.abcl!/foo-1.cls"
 
-3.  MERGE-PATHNAMES working for JAR entries
+3.  MERGE-PATHNAMES working for JAR entries in the following use cases:
 
     (merge-pathnames "foo-1.cls" "jar:jar:file:baz.jar!/foo.abcl!/foo._")
     "jar:jar:file:baz.jar!/foo.abcl!/foo-1.cls"
@@ -46,6 +45,20 @@ An entry in a ABCL FASL in a URL accessible JAR file
 
 6.  References "jar:<URL>" for all strings <URL> that java.net.URL can
     resolve works.
+
+7.  Make jar pathnames work as a valid argument for OPEN.
+
+8.  Enable the loading of ASDF systems packaged within jar files.
+
+Status
+------
+
+As of svn r12431, all the above goals have been implemented and tested
+*except* for:
+
+5.  DIRECTORY working within JAR files
+
+7.  Make jar pathnames work as a valid argument for OPEN.
 
 
 Implementation
@@ -69,7 +82,7 @@ Using PATHNAMES
     known as a DEVICE PATHNAME.
 
 *   If the DEVICE is a String it must be a String that successfully
-    constructs a URL via the java.net.URL(String) constructor
+    references a URL via the java.net.URL(String) constructor
 
 *   Only the first entry in the the DEVICE list may be a String.
 
@@ -97,7 +110,7 @@ pathname: {
 }
 
 
-// UC1 -- JAR entry 
+// UC2 -- JAR entry 
 pathname: {
   namestring: "jar:file:baz.jar!/foo.abcl"
   device: ( pathname: {
@@ -216,44 +229,45 @@ pathname: {
 }
 
 
-  
-Problems
---------
-
-1.  DEVICE PATHNAMES require the context within the nested PATHNAME
-    structure to be interpreted correctly.
-
-Result:    Be careful when manipulating PATHNAMEs that refer to JARs
-
-
 History
 -------
 
-In the use of PATHNAMEs linked by the DEVICE field, we found the problem
-that UNC path support uses the DEVICE field
+Previously, ABCL did have some support for jar pathnames. This support
+used the convention that the if the device field was itself a
+pathname, the device pathname contained the location of the jar.
 
-Result:    JARs located on UNC mounts can't be referenced. via '\\'.
+In the analysis of the desire to treat jar pathnames as valid
+locations for LOAD, we determined that we needed a "double" pathname
+so we could refer to the components of a packed FASL in jar.  At first
+we thought we could support such a syntax by having the device
+pathname's device refer to the inner jar.  But with in this use of
+PATHNAMEs linked by the DEVICE field, we found the problem that UNC
+path support uses the DEVICE field so JARs located on UNC mounts can't
+be referenced. via '\\'.
 
            i.e.  jar:jar:file:\\server\share\a\b\foo.jar!/this\that!/foo.java
 
-would not have 
+would not have a valid representation.
 
-Solution:  Instead of having DEVICE point to a PATHNAME, have DEVICE
-be a list of PATHNAMES
+So instead of having DEVICE point to a PATHNAME, we decided that the
+DEVICE shall be a list of PATHNAMES, so we would have:
 
 pathname: {
   namestring: "jar:jar:file:\\server\share\foo.jar!/foo.abcl!/"
-  device: ( pathname: {
-              name: "foo"
-              type: "abcl"
-            }
+  device: ( 
             pathname: {
               host: "server"
               device: "share"
               name: "foo"
               type: "jar"
             }
+            pathname: {
+              name: "foo"
+              type: "abcl"
+            }
 }
 
-Which order for the list? Outermost first or last?  Outermost first.
+Although there is a fair amount of special logic inside Pathname.java
+itself in the resulting implementation, the logic in Load.java seems
+to have been considerably simplified.  
 
