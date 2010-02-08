@@ -220,43 +220,19 @@ For help on the automatic tests available, use the Ant target 'help.test'.
 
     <path id="abcl.lisp.output.path"
           location="${build.classes.dir}/org/armedbear/lisp/"/>
+    <pathconvert dirsep="/" property="abcl.lisp.output" refid="abcl.lisp.output.path"/>
     
     <target name="abcl.compile.lisp" 
 	    depends="abcl.copy.lisp,abcl.compile.java,abcl.fasls.uptodate"
 	    unless="abcl.fasls.uptodate.p">
-
-      <!-- The following shenanigans are necessary to get something
-           that ABCL under Windows can parse as a pathname with the
-           drive syntax not being interpreted as a Lisp package
-           namespace, and with backslash characters not starting
-           escape sequences.  -->
-      <tempfile property="abcl.compile.lisp.tmp" suffix=".lisp"/>
-
-      <echo file="${abcl.compile.lisp.tmp}">
-      (compile-system :zip nil :quit t 
-          :output-path "${toString:abcl.lisp.output.path}${file.separator}")
-      </echo>
-
-      <tempfile property="abcl.compile.lisp.tmp.2"  suffix=".lisp"/>
-	    
-      <copy file="${abcl.compile.lisp.tmp}"
-            tofile="${abcl.compile.lisp.tmp.2}">
-	 <filterchain>
-	    <replacestring from="\" to="/"/>
-	 </filterchain>
-      </copy>
-
-      <java classpath="${build.classes.dir}"
+      <java classpath="${build.classes.dir}" 
 	    fork="true"
 	    failonerror="true"
+	    inputstring="(compile-system :zip nil :quit t :output-path &quot;${abcl.lisp.output}/&quot;)'"
 	    classname="org.armedbear.lisp.Main">
         <jvmarg value="-Dabcl.home=${abcl.home.dir}${file.separator}"/>
 	<arg value="--noinit"/>
-	<arg value="--load"/>
-	<arg value="${abcl.compile.lisp.tmp.2}"/>
       </java>
-            <delete file="${abcl.compile.lisp.tmp}"/> 
-	    <delete file="${abcl.compile.lisp.tmp.2}"/> 
     </target>
 
     <property name="abcl.build.path"
@@ -722,7 +698,7 @@ ${basedir}/../cl-bench
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
       <echo>Finished recording test output in ${abcl.test.log.file}.</echo>
     </target>
-
+    
     <target name="abcl.release" 
             depends="abcl.binary.tar,abcl.source.tar,abcl.binary.zip,abcl.source.zip">
       <copy file="${abcl.jar.path}"
