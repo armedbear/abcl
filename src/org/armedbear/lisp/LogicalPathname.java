@@ -203,7 +203,7 @@ public final class LogicalPathname extends Pathname
     @Override
     protected String getDirectoryNamestring()
     {
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         // "If a pathname is converted to a namestring, the symbols NIL and
         // :UNSPECIFIC cause the field to be treated as if it were empty. That
         // is, both NIL and :UNSPECIFIC cause the component not to appear in
@@ -244,7 +244,7 @@ public final class LogicalPathname extends Pathname
         final LispThread thread = LispThread.currentThread();
         boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);
         boolean printEscape = (Symbol.PRINT_ESCAPE.symbolValue(thread) != NIL);
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (printReadably || printEscape)
             sb.append("#P\"");
         sb.append(host.getStringValue());

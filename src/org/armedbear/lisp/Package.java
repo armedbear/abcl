@@ -88,7 +88,7 @@ public final class Package extends LispObject
     public LispObject getDescription()
     {
         if (name != null) {
-            FastStringBuffer sb = new FastStringBuffer("The ");
+            StringBuilder sb = new StringBuilder("The ");
             sb.append(name);
             sb.append(" package");
             return new SimpleString(sb);
@@ -405,8 +405,8 @@ public final class Package extends LispObject
                         if (sym == null)
                             sym = s;
                         else if (sym != s) {
-                            FastStringBuffer sb =
-                                new FastStringBuffer("Uninterning the symbol ");
+                            StringBuilder sb =
+                                new StringBuilder("Uninterning the symbol ");
                             sb.append(symbol.getQualifiedName());
                             sb.append(" causes a name conflict between ");
                             sb.append(sym.getQualifiedName());
@@ -442,7 +442,7 @@ public final class Package extends LispObject
             return; // Nothing to do.
         Symbol sym = findAccessibleSymbol(symbol.name);
         if (sym != null && sym != symbol) {
-            FastStringBuffer sb = new FastStringBuffer("The symbol ");
+            StringBuilder sb = new StringBuilder("The symbol ");
             sb.append(sym.getQualifiedName());
             sb.append(" is already accessible in package ");
             sb.append(name);
@@ -461,7 +461,7 @@ public final class Package extends LispObject
         if (symbol.getPackage() != this) {
             Symbol sym = findAccessibleSymbol(symbol.name);
             if (sym != symbol) {
-                FastStringBuffer sb = new FastStringBuffer("The symbol ");
+                StringBuilder sb = new StringBuilder("The symbol ");
                 sb.append(symbol.getQualifiedName());
                 sb.append(" is not accessible in package ");
                 sb.append(name);
@@ -482,7 +482,7 @@ public final class Package extends LispObject
                             pkg.shadowingSymbols.get(symbolName) == sym) {
                             // OK.
                         } else {
-                            FastStringBuffer sb = new FastStringBuffer("The symbol ");
+                            StringBuilder sb = new StringBuilder("The symbol ");
                             sb.append(sym.getQualifiedName());
                             sb.append(" is already accessible in package ");
                             sb.append(pkg.getName());
@@ -501,7 +501,7 @@ public final class Package extends LispObject
         if (externalSymbols.get(symbol.name) == symbol)
             // Symbol is already exported; there's nothing to do.
             return;
-        FastStringBuffer sb = new FastStringBuffer("The symbol ");
+        StringBuilder sb = new StringBuilder("The symbol ");
         sb.append(symbol.getQualifiedName());
         sb.append(" is not accessible in package ");
         sb.append(name);
@@ -528,7 +528,7 @@ public final class Package extends LispObject
                     usedPackages = usedPackages.cdr();
                 }
             }
-            FastStringBuffer sb = new FastStringBuffer("The symbol ");
+            StringBuilder sb = new StringBuilder("The symbol ");
             sb.append(symbol.getQualifiedName());
             sb.append(" is not accessible in package ");
             sb.append(name);
@@ -825,7 +825,7 @@ public final class Package extends LispObject
     public String writeToString()
     {
         if (_PRINT_FASL_.symbolValue() != NIL && name != null) {
-            FastStringBuffer sb = new FastStringBuffer("#.(FIND-PACKAGE \"");
+            StringBuilder sb = new StringBuilder("#.(FIND-PACKAGE \"");
             sb.append(name);
             sb.append("\")");
             return sb.toString();
@@ -836,7 +836,7 @@ public final class Package extends LispObject
     @Override
     public String toString() {
          if (name != null) {
-            FastStringBuffer sb = new FastStringBuffer("#<PACKAGE \"");
+            StringBuilder sb = new StringBuilder("#<PACKAGE \"");
             sb.append(name);
             sb.append("\">");
             return sb.toString();

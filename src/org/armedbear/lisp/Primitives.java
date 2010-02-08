@@ -2178,8 +2178,8 @@ public final class Primitives
         int rank = array.getRank();
         if (rank != args.length - 1)
           {
-            FastStringBuffer sb =
-              new FastStringBuffer("ARRAY-IN-BOUNDS-P: ");
+            StringBuilder sb =
+              new StringBuilder("ARRAY-IN-BOUNDS-P: ");
             sb.append("wrong number of subscripts (");
             sb.append(args.length - 1);
             sb.append(") for array of rank ");
@@ -2235,8 +2235,8 @@ public final class Primitives
         array = checkArray( arg);
         if (array.getRank() == 0)
           return array.AREF(0);
-        FastStringBuffer sb =
-          new FastStringBuffer("Wrong number of subscripts (0) for array of rank ");
+        StringBuilder sb =
+          new StringBuilder("Wrong number of subscripts (0) for array of rank ");
         sb.append(array.getRank());
         sb.append('.');
         return error(new ProgramError(sb.toString()));
@@ -2945,7 +2945,7 @@ public final class Primitives
             int n = ((Fixnum)arg).value;
             if (n >= 0)
               {
-                FastStringBuffer sb = new FastStringBuffer('G');
+                StringBuilder sb = new StringBuilder("G");
                 sb.append(n); // Decimal representation.
                 return new Symbol(new SimpleString(sb));
               }
@@ -2955,7 +2955,7 @@ public final class Primitives
             BigInteger n = ((Bignum)arg).value;
             if (n.signum() >= 0)
               {
-                FastStringBuffer sb = new FastStringBuffer('G');
+                StringBuilder sb = new StringBuilder("G");
                 sb.append(n.toString()); // Decimal representation.
                 return new Symbol(new SimpleString(sb));
               }
@@ -4109,7 +4109,7 @@ public final class Primitives
         final int start = Fixnum.getValue(second);
         if (start < 0)
           {
-            FastStringBuffer sb = new FastStringBuffer("Bad start index (");
+            StringBuilder sb = new StringBuilder("Bad start index (");
             sb.append(start);
             sb.append(") for SUBSEQ.");
             error(new TypeError(sb.toString()));
@@ -4131,7 +4131,7 @@ public final class Primitives
         final int start = Fixnum.getValue(second);
         if (start < 0)
           {
-            FastStringBuffer sb = new FastStringBuffer("Bad start index (");
+            StringBuilder sb = new StringBuilder("Bad start index (");
             sb.append(start);
             sb.append(").");
             error(new TypeError(sb.toString()));
@@ -4142,7 +4142,7 @@ public final class Primitives
             end = Fixnum.getValue(third);
             if (start > end)
               {
-                FastStringBuffer sb = new FastStringBuffer("Start index (");
+                StringBuilder sb = new StringBuilder("Start index (");
                 sb.append(start);
                 sb.append(") is greater than end index (");
                 sb.append(end);

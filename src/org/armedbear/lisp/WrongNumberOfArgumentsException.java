@@ -71,8 +71,8 @@ public final class WrongNumberOfArgumentsException extends ProgramError
 	if(message != null) {
 	    return message;
 	}
-        FastStringBuffer sb =
-            new FastStringBuffer("Wrong number of arguments");
+        StringBuilder sb =
+            new StringBuilder("Wrong number of arguments");
         LispObject lambdaName = operator.getLambdaName();
         if (lambdaName != null && lambdaName != NIL) {
             sb.append(" for ");

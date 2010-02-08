@@ -96,7 +96,7 @@ public final class LispCharacter extends LispObject
   @Override
   public LispObject getDescription()
   {
-    FastStringBuffer sb = new FastStringBuffer("character #\\");
+    StringBuilder sb = new StringBuilder("character #\\");
     sb.append(value);
     sb.append(" char-code #x");
     sb.append(Integer.toHexString(value));
@@ -240,7 +240,7 @@ public final class LispCharacter extends LispObject
     // false."
     boolean printEscape =
       printReadably || (Symbol.PRINT_ESCAPE.symbolValue(thread) != NIL);
-    FastStringBuffer sb = new FastStringBuffer();
+    StringBuilder sb = new StringBuilder();
     if (printEscape)
       {
         sb.append("#\\");

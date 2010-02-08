@@ -470,7 +470,7 @@ public class Pathname extends LispObject {
         if (directory instanceof AbstractString) {
             Debug.assertTrue(false);
         }
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         // "If a pathname is converted to a namestring, the symbols NIL and
         // :UNSPECIFIC cause the field to be treated as if it were empty. That
         // is, both NIL and :UNSPECIFIC cause the component not to appear in
@@ -498,7 +498,7 @@ public class Pathname extends LispObject {
                 sb.append("!/");
                 i = 1;
             }
-            FastStringBuffer prefix = new FastStringBuffer();
+            StringBuilder prefix = new StringBuilder();
             for (; i < jars.length; i++) {
                 prefix.append("jar:");
                 if (i == 0) {
@@ -568,7 +568,7 @@ public class Pathname extends LispObject {
 
     protected String getDirectoryNamestring() {
         validateDirectory(true);
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         // "If a pathname is converted to a namestring, the symbols NIL and
         // :UNSPECIFIC cause the field to be treated as if it were empty. That
         // is, both NIL and :UNSPECIFIC cause the component not to appear in
@@ -733,7 +733,7 @@ public class Pathname extends LispObject {
         } else {
             useNamestring = false;
         }
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (useNamestring) {
             if (printReadably || printEscape) {
                 sb.append("#P\"");
@@ -1182,7 +1182,7 @@ public class Pathname extends LispObject {
                 LispObject second = temp.car();
                 if (second == Keyword.UP || second == Keyword.BACK) {
                     if (signalError) {
-                        FastStringBuffer sb = new FastStringBuffer();
+                        StringBuilder sb = new StringBuilder();
                         sb.append(first.writeToString());
                         sb.append(" may not be followed immediately by ");
                         sb.append(second.writeToString());
@@ -1683,7 +1683,7 @@ public class Pathname extends LispObject {
         }
         error:
         if (errorIfDoesNotExist) {
-            FastStringBuffer sb = new FastStringBuffer("The file ");
+            StringBuilder sb = new StringBuilder("The file ");
             sb.append(pathname.writeToString());
             sb.append(" does not exist.");
             return error(new FileError(sb.toString(), pathname));
@@ -1957,7 +1957,7 @@ public class Pathname extends LispObject {
           @Override
           public LispObject execute(LispObject arg) {
               Pathname p = coerceToPathname(arg);
-              FastStringBuffer sb = new FastStringBuffer();
+              StringBuilder sb = new StringBuilder();
               if (p.name instanceof AbstractString) {
                   sb.append(p.name.getStringValue());
               } else if (p.name == Keyword.WILD) {

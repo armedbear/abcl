@@ -553,13 +553,13 @@ public class Stream extends StructureObject {
     public LispObject readSymbol() {
         final Readtable rt =
             (Readtable) Symbol.CURRENT_READTABLE.symbolValue(LispThread.currentThread());
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         _readToken(sb, rt);
         return new Symbol(sb.toString());
     }
 
     public LispObject readSymbol(Readtable rt) {
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         _readToken(sb, rt);
         return new Symbol(sb.toString());
     }
@@ -784,7 +784,7 @@ public class Stream extends StructureObject {
             if (n < 0)
                 return error(new EndOfFile(this));
             char c = (char) n; // ### BUG: Codepoint conversion
-            FastStringBuffer sb = new FastStringBuffer(c);
+            StringBuilder sb = new StringBuilder(String.valueOf(c));
             while (true) {
                 n = _readChar();
                 if (n < 0)
@@ -887,7 +887,7 @@ public class Stream extends StructureObject {
         if (obj instanceof Cons && obj.length() == 2)
             return Complex.getInstance(obj.car(), obj.cadr());
         // Error.
-        FastStringBuffer sb = new FastStringBuffer("Invalid complex number format");
+        StringBuilder sb = new StringBuilder("Invalid complex number format");
         if (this instanceof FileStream) {
             Pathname p = ((FileStream)this).getPathname();
             if (p != null) {
@@ -914,7 +914,7 @@ public class Stream extends StructureObject {
         if (obj instanceof Cons && obj.length() == 2)
             return Complex.getInstance(obj.car(), obj.cadr());
         // Error.
-        FastStringBuffer sb = new FastStringBuffer("Invalid complex number format");
+        StringBuilder sb = new StringBuilder("Invalid complex number format");
         if (this instanceof FileStream) {
             Pathname p = ((FileStream)this).getPathname();
             if (p != null) {
@@ -934,7 +934,7 @@ public class Stream extends StructureObject {
     }
 
     private String readMultipleEscape(Readtable rt) {
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         try {
             while (true) {
                 int n = _readChar();
@@ -994,7 +994,7 @@ public class Stream extends StructureObject {
     private final LispObject readToken(char c, Readtable rt)
 
     {
-        FastStringBuffer sb = new FastStringBuffer(c);
+        StringBuilder sb = new StringBuilder(String.valueOf(c));
         final LispThread thread = LispThread.currentThread();
         BitSet flags = _readToken(sb, rt);
         if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
@@ -1085,7 +1085,7 @@ public class Stream extends StructureObject {
         return ((Package)Symbol._PACKAGE_.symbolValue(thread)).intern(new SimpleString(token));
     }
 
-    private final BitSet _readToken(FastStringBuffer sb, Readtable rt)
+    private final BitSet _readToken(StringBuilder sb, Readtable rt)
 
     {
         BitSet flags = null;
@@ -1198,7 +1198,7 @@ public class Stream extends StructureObject {
                 state = LOWER;
             }
         }
-        FastStringBuffer sb = new FastStringBuffer(limit);
+        StringBuilder sb = new StringBuilder(limit);
         for (int i = 0; i < limit; i++) {
             char c = s.charAt(i);
             if (flags != null && flags.get(i)) // Escaped.
@@ -1311,7 +1311,7 @@ public class Stream extends StructureObject {
     {
         if (length == 0)
             return null;
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         int i = 0;
         boolean maybe = false;
         char marker = 0;
@@ -1373,7 +1373,7 @@ public class Stream extends StructureObject {
     }
 
     public LispObject readRadix(int radix) {
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         final LispThread thread = LispThread.currentThread();
         final Readtable rt =
             (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
@@ -1402,7 +1402,7 @@ public class Stream extends StructureObject {
     }
 
     public LispObject faslReadRadix(int radix) {
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         final LispThread thread = LispThread.currentThread();
         final Readtable rt = FaslReadtable.getInstance();
         boolean escaped = (_readToken(sb, rt) != null);
@@ -1471,7 +1471,7 @@ public class Stream extends StructureObject {
 
     {
         final LispThread thread = LispThread.currentThread();
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         try {
             while (true) {
                 int n = _readChar();

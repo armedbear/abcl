@@ -118,7 +118,7 @@ public class Symbol extends LispObject
     thread.bindSpecial(Symbol.PRINT_ESCAPE, NIL);
     try
       {
-        FastStringBuffer sb = new FastStringBuffer("The symbol ");
+        StringBuilder sb = new StringBuilder("The symbol ");
         sb.append(name.writeToString());
         sb.append(" at #x");
         sb.append(Integer.toHexString(System.identityHashCode(this)).toUpperCase());
@@ -257,7 +257,7 @@ public class Symbol extends LispObject
       return("#:".concat(n));
     if (pkg == PACKAGE_KEYWORD)
       return ":".concat(n);
-    FastStringBuffer sb = new FastStringBuffer(((Package)pkg).getName());
+    StringBuilder sb = new StringBuilder(((Package)pkg).getName());
     if (((Package)pkg).findExternalSymbol(name) != null)
       sb.append(':');
     else
@@ -444,7 +444,7 @@ public class Symbol extends LispObject
         if (readtableCase != Keyword.UPCASE ||
             printCase != Keyword.UPCASE)
           {
-            FastStringBuffer sb = new FastStringBuffer();
+            StringBuilder sb = new StringBuilder();
             if (pkg == PACKAGE_KEYWORD)
               {
                 sb.append(':');
@@ -572,7 +572,7 @@ public class Symbol extends LispObject
             packageName = invert(packageName);
           }
       }
-    FastStringBuffer sb = new FastStringBuffer(packageName);
+    StringBuilder sb = new StringBuilder(packageName);
     if (((Package)pkg).findExternalSymbol(name) != null
         && DOUBLE_COLON_PACKAGE_SEPARATORS.symbolValue(thread) == NIL)
       sb.append(':');
@@ -607,7 +607,7 @@ public class Symbol extends LispObject
             state = LOWER;
           }
       }
-    FastStringBuffer sb = new FastStringBuffer(limit);
+    StringBuilder sb = new StringBuilder(limit);
     for (int i = 0; i < limit; i++)
       {
         char c = s.charAt(i);
@@ -695,7 +695,7 @@ public class Symbol extends LispObject
 
   private static final String multipleEscape(String s)
   {
-    FastStringBuffer sb = new FastStringBuffer("|");
+    StringBuilder sb = new StringBuilder("|");
     final int limit = s.length();
     for (int i = 0; i < limit; i++)
       {
@@ -713,7 +713,7 @@ public class Symbol extends LispObject
     if (readtableCase == Keyword.INVERT || readtableCase == Keyword.PRESERVE)
       return s;
     final int limit = s.length();
-    FastStringBuffer sb = new FastStringBuffer(limit);
+    StringBuilder sb = new StringBuilder(limit);
     boolean lastCharWasAlphanumeric = false;
     for (int i = 0; i < limit; i++)
       {

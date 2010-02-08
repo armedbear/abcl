@@ -208,7 +208,7 @@ public final class StandardGenericFunction extends StandardObject
     LispObject name = getGenericFunctionName();
     if (name != null)
       {
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(getLispClass().getSymbol().writeToString());
         sb.append(' ');
         sb.append(name.writeToString());

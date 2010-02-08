@@ -584,7 +584,7 @@ public final class StringFunctions
                 return error(new TypeError("Invalid end position " + start + "."));
             if (start > end)
                 return error(new TypeError("Start (" + start + ") is greater than end (" + end + ")."));
-            FastStringBuffer sb = new FastStringBuffer(length);
+            StringBuilder sb = new StringBuilder(length);
             char[] array = s.getStringChars();
             int i;
             for (i = 0; i < start; i++)
@@ -619,7 +619,7 @@ public final class StringFunctions
                 return error(new TypeError("Invalid end position " + start + "."));
             if (start > end)
                 return error(new TypeError("Start (" + start + ") is greater than end (" + end + ")."));
-            FastStringBuffer sb = new FastStringBuffer(length);
+            StringBuilder sb = new StringBuilder(length);
             char[] array = s.getStringChars();
             int i;
             for (i = 0; i < start; i++)
@@ -655,7 +655,7 @@ public final class StringFunctions
                 return error(new TypeError("Invalid end position " + start + "."));
             if (start > end)
                 return error(new TypeError("Start (" + start + ") is greater than end (" + end + ")."));
-            FastStringBuffer sb = new FastStringBuffer(length);
+            StringBuilder sb = new StringBuilder(length);
             char[] array = s.getStringChars();
             boolean lastCharWasAlphanumeric = false;
             int i;
@@ -813,7 +813,7 @@ public final class StringFunctions
         {
             final int n = Fixnum.getValue(size);
             if (n < 0 || n >= ARRAY_DIMENSION_MAX) {
-                FastStringBuffer sb = new FastStringBuffer();
+                StringBuilder sb = new StringBuilder();
                 sb.append("The size specified for this string (");
                 sb.append(n);
                 sb.append(')');

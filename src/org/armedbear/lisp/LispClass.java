@@ -77,8 +77,8 @@ public abstract class LispClass extends StandardObject
       return c;
     if (errorp)
       {
-        FastStringBuffer sb =
-          new FastStringBuffer("There is no class named ");
+        StringBuilder sb =
+          new StringBuilder("There is no class named ");
         sb.append(name.writeToString());
         sb.append('.');
         return error(new LispError(sb.toString()));

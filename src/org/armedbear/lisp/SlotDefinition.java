@@ -88,8 +88,8 @@ public final class SlotDefinition extends StandardObject
   @Override
   public String writeToString()
   {
-    FastStringBuffer sb =
-      new FastStringBuffer(Symbol.SLOT_DEFINITION.writeToString());
+    StringBuilder sb =
+      new StringBuilder(Symbol.SLOT_DEFINITION.writeToString());
     LispObject name = slots[SlotDefinitionClass.SLOT_INDEX_NAME];
     if (name != null && name != NIL)
       {

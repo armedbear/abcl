@@ -87,8 +87,8 @@ public class StandardClass extends SlotClass
   @Override
   public String writeToString()
   {
-    FastStringBuffer sb =
-      new FastStringBuffer(Symbol.STANDARD_CLASS.writeToString());
+    StringBuilder sb =
+      new StringBuilder(Symbol.STANDARD_CLASS.writeToString());
     if (symbol != null)
       {
         sb.append(' ');

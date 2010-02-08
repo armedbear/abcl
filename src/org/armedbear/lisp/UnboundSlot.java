@@ -75,7 +75,7 @@ public final class UnboundSlot extends CellError
         final SpecialBindingsMark mark = thread.markSpecialBindings();
         thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
         try {
-            FastStringBuffer sb = new FastStringBuffer("The slot ");
+            StringBuilder sb = new StringBuilder("The slot ");
             sb.append(getCellName().writeToString());
             sb.append(" is unbound in the object ");
             sb.append(getInstance().writeToString());

@@ -253,7 +253,7 @@ public final class SimpleArray_T extends AbstractArray
     final int rank = dimv.length;
     if (rank != subscripts.length)
       {
-        FastStringBuffer sb = new FastStringBuffer("Wrong number of subscripts (");
+        StringBuilder sb = new StringBuilder("Wrong number of subscripts (");
         sb.append(subscripts.length);
         sb.append(") for array of rank ");
         sb.append(rank);
@@ -270,7 +270,7 @@ public final class SimpleArray_T extends AbstractArray
         int n = subscripts[i];
         if (n < 0 || n >= dim)
           {
-            FastStringBuffer sb = new FastStringBuffer("Invalid index ");
+            StringBuilder sb = new StringBuilder("Invalid index ");
             sb.append(n);
             sb.append(" for array ");
             sb.append(this);

@@ -303,8 +303,8 @@ public final class JavaObject extends LispObject {
 	final String s;
 	if(obj != null) {
 	    Class<?> c = obj.getClass();
-	    FastStringBuffer sb
-		= new FastStringBuffer(c.isArray() ? "jarray" : c.getName());
+	    StringBuilder sb
+		= new StringBuilder(c.isArray() ? "jarray" : c.getName());
 	    sb.append(' ');
 	    String ts = obj.toString();
 	    if(ts.length() > 32) { //random value, should be chosen sensibly
@@ -436,8 +436,8 @@ public final class JavaObject extends LispObject {
     public static String describeJavaObject(final JavaObject javaObject)
 	{
 	final Object obj = javaObject.getObject();
-	final FastStringBuffer sb =
-	    new FastStringBuffer(javaObject.writeToString());
+	final StringBuilder sb =
+	    new StringBuilder(javaObject.writeToString());
 	sb.append(" is an object of type ");
 	sb.append(Symbol.JAVA_OBJECT.writeToString());
 	sb.append(".");

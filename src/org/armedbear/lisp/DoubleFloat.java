@@ -572,12 +572,12 @@ public final class DoubleFloat extends LispObject
     public String writeToString()
     {
         if (value == Double.POSITIVE_INFINITY) {
-            FastStringBuffer sb = new FastStringBuffer("#.");
+            StringBuilder sb = new StringBuilder("#.");
             sb.append(Symbol.DOUBLE_FLOAT_POSITIVE_INFINITY.writeToString());
             return sb.toString();
         }
         if (value == Double.NEGATIVE_INFINITY) {
-            FastStringBuffer sb = new FastStringBuffer("#.");
+            StringBuilder sb = new StringBuilder("#.");
             sb.append(Symbol.DOUBLE_FLOAT_NEGATIVE_INFINITY.writeToString());
             return sb.toString();
         }

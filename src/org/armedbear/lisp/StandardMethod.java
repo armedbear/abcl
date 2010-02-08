@@ -155,7 +155,7 @@ public class StandardMethod extends StandardObject
           ((StandardGenericFunction)genericFunction).getGenericFunctionName();
         if (name != null)
           {
-            FastStringBuffer sb = new FastStringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(getLispClass().getSymbol().writeToString());
             sb.append(' ');
             sb.append(name.writeToString());

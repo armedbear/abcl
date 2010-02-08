@@ -323,7 +323,7 @@ public final class Java
                 throw new NoSuchMethodException();
             }
             catch (NoSuchMethodException e) {
-                FastStringBuffer sb = new FastStringBuffer("No such method: ");
+                StringBuilder sb = new StringBuilder("No such method: ");
                 sb.append(c.getName());
                 sb.append('.');
                 sb.append(methodName);

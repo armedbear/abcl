@@ -138,7 +138,7 @@ public class TypeError extends LispError
                 return s;
             final LispObject datum = getDatum();
             final LispObject expectedType = getExpectedType();
-            FastStringBuffer sb = new FastStringBuffer();
+            StringBuilder sb = new StringBuilder();
             String name = datum != null ? datum.writeToString() : null;
             String type = null;
             if (expectedType != null)

@@ -377,7 +377,7 @@ public class StructureObject extends LispObject
 
   private LispObject badIndex(int n)
   {
-    FastStringBuffer sb = new FastStringBuffer("Invalid slot index ");
+    StringBuilder sb = new StringBuilder("Invalid slot index ");
     sb.append(Fixnum.getInstance(n).writeToString());
     sb.append(" for ");
     sb.append(writeToString());
@@ -431,7 +431,7 @@ public class StructureObject extends LispObject
         int currentLevel = Fixnum.getValue(currentPrintLevel);
         if (currentLevel >= maxLevel && slots.length > 0)
           return "#";
-        FastStringBuffer sb = new FastStringBuffer("#S(");
+        StringBuilder sb = new StringBuilder("#S(");
         sb.append(structureClass.getSymbol().writeToString());
         if (currentLevel < maxLevel)
           {

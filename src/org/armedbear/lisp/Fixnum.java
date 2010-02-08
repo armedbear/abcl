@@ -946,7 +946,7 @@ public final class Fixnum extends LispInteger
     String s = Integer.toString(value, base).toUpperCase();
     if (Symbol.PRINT_RADIX.symbolValue(thread) != NIL)
       {
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         switch (base)
           {
           case 2:

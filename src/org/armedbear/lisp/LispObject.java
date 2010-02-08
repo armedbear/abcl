@@ -64,7 +64,7 @@ public class LispObject //extends Lisp
 
   public LispObject getDescription()
   {
-    FastStringBuffer sb = new FastStringBuffer("An object of type ");
+    StringBuilder sb = new StringBuilder("An object of type ");
     sb.append(typeOf().writeToString());
     sb.append(" at #x");
     sb.append(Integer.toHexString(System.identityHashCode(this)).toUpperCase());
@@ -682,7 +682,7 @@ public class LispObject //extends Lisp
 
   public String unreadableString(String s, boolean identity)
   {
-    FastStringBuffer sb = new FastStringBuffer("#<");
+    StringBuilder sb = new StringBuilder("#<");
     sb.append(s);
     if (identity) {
       sb.append(" {");

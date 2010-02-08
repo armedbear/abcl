@@ -62,7 +62,7 @@ public final class Time
             Stream out =
               checkCharacterOutputStream(Symbol.TRACE_OUTPUT.symbolValue());
             out.freshLine();
-            FastStringBuffer sb = new FastStringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(String.valueOf((float)realElapsed / 1000));
             sb.append(" seconds real time");
             sb.append(System.getProperty("line.separator"));

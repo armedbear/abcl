@@ -259,7 +259,7 @@ public final class Interpreter
                         catch (UnhandledCondition c) {
                             final String separator =
                                 System.getProperty("line.separator");
-                            FastStringBuffer sb = new FastStringBuffer();
+                            StringBuilder sb = new StringBuilder();
                             sb.append(separator);
                             sb.append("Caught ");
                             sb.append(c.getCondition().typeOf().writeToString());
@@ -541,7 +541,7 @@ public final class Interpreter
     private static String banner()
     {
         final String sep = System.getProperty("line.separator");
-        FastStringBuffer sb = new FastStringBuffer("Armed Bear Common Lisp ");
+        StringBuilder sb = new StringBuilder("Armed Bear Common Lisp ");
         sb.append(Version.getVersion());
         if (build != null) {
             sb.append(" (built ");

@@ -72,9 +72,9 @@ public final class SimpleString extends AbstractString
         sb.getChars(0, capacity, chars, 0);
     }
 
-    public SimpleString(FastStringBuffer sb)
+    public SimpleString(StringBuilder sb)
     {
-        chars = sb.toCharArray();
+        chars = sb.toString().toCharArray();
         capacity = chars.length;
     }
 
@@ -111,7 +111,7 @@ public final class SimpleString extends AbstractString
     @Override
     public LispObject getDescription()
     {
-        FastStringBuffer sb = new FastStringBuffer("A simple-string (");
+        StringBuilder sb = new StringBuilder("A simple-string (");
         sb.append(capacity);
         sb.append(") \"");
         sb.append(chars);

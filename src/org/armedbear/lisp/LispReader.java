@@ -74,7 +74,7 @@ public final class LispReader
         {
             final LispThread thread = LispThread.currentThread();
             final Readtable rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
-            FastStringBuffer sb = new FastStringBuffer();
+            StringBuilder sb = new StringBuilder();
             try 
               {
                 while (true) {
@@ -222,7 +222,7 @@ public final class LispReader
             final LispThread thread = LispThread.currentThread();
             final Readtable rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
             final boolean suppress = Symbol.READ_SUPPRESS.symbolValue(thread) != NIL;
-            FastStringBuffer sb = new FastStringBuffer();
+            StringBuilder sb = new StringBuilder();
             try 
               {
                 while (true) {
@@ -467,7 +467,7 @@ public final class LispReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            FastStringBuffer sb = new FastStringBuffer("Illegal # macro character: #\\");
+            StringBuilder sb = new StringBuilder("Illegal # macro character: #\\");
             String s = LispCharacter.charToName(c);
             if (s != null)
                 sb.append(s);

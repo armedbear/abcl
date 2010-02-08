@@ -85,7 +85,7 @@ public final class ShellCommand implements Runnable
             if (command != null) {
                 if (Utilities.isPlatformUnix) {
                     if (directory != null) {
-                        FastStringBuffer sb = new FastStringBuffer("\\cd \"");
+                        StringBuilder sb = new StringBuilder("\\cd \"");
                         sb.append(directory);
                         sb.append("\" && ");
                         sb.append(command);
@@ -100,7 +100,7 @@ public final class ShellCommand implements Runnable
                     list.add("cmd.exe");
                     list.add("/c");
                     if (directory != null) {
-                        FastStringBuffer sb = new FastStringBuffer("cd /d \"");
+                        StringBuilder sb = new StringBuilder("cd /d \"");
                         sb.append(directory);
                         sb.append("\" && ");
                         sb.append(command);

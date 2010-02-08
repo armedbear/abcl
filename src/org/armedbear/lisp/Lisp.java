@@ -1063,7 +1063,7 @@ public final class Lisp
   public static final Symbol gensym(String prefix, LispThread thread)
 
   {
-    FastStringBuffer sb = new FastStringBuffer(prefix);
+    StringBuilder sb = new StringBuilder(prefix);
     SpecialBinding binding = thread.getSpecialBinding(Symbol.GENSYM_COUNTER);
     final LispObject oldValue;
     if (binding != null) {
@@ -1676,7 +1676,7 @@ public final class Lisp
   {
     if (start < 0 || end < 0 || start > end || end > length)
       {
-        FastStringBuffer sb = new FastStringBuffer("The bounding indices ");
+        StringBuilder sb = new StringBuilder("The bounding indices ");
         sb.append(start);
         sb.append(" and ");
         sb.append(end);

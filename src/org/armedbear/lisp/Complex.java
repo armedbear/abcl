@@ -336,7 +336,7 @@ public final class Complex extends LispObject
   @Override
   public String writeToString()
   {
-    FastStringBuffer sb = new FastStringBuffer("#C(");
+    StringBuilder sb = new StringBuilder("#C(");
     sb.append(realpart.writeToString());
     sb.append(' ');
     sb.append(imagpart.writeToString());

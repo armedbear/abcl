@@ -96,7 +96,7 @@ public class JavaClass extends LispClass {
 	}
 
 	public String writeToString() {
-		FastStringBuffer sb = new FastStringBuffer("#<JAVA-CLASS ");
+		StringBuilder sb = new StringBuilder("#<JAVA-CLASS ");
 		sb.append(javaClass.getCanonicalName());
 		sb.append('>');
 		return sb.toString();

@@ -151,7 +151,7 @@ public abstract class AbstractVector extends AbstractArray
 
   protected void badIndex(int index, int limit)
   {
-    FastStringBuffer sb = new FastStringBuffer("Invalid array index ");
+    StringBuilder sb = new StringBuilder("Invalid array index ");
     sb.append(index);
     sb.append(" for ");
     sb.append(writeToString());
@@ -209,7 +209,7 @@ public abstract class AbstractVector extends AbstractArray
     final LispThread thread = LispThread.currentThread();
     if (Symbol.PRINT_READABLY.symbolValue(thread) != NIL)
       {
-        FastStringBuffer sb = new FastStringBuffer("#(");
+        StringBuilder sb = new StringBuilder("#(");
         final int limit = length();
         for (int i = 0; i < limit; i++)
           {

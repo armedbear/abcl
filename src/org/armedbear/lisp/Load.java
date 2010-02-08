@@ -187,8 +187,8 @@ public final class Load
                                       verbose, print, false, returnLastResult);
         }
         catch (FaslVersionMismatch e) {
-            FastStringBuffer sb =
-                new FastStringBuffer("Incorrect fasl version: ");
+            StringBuilder sb =
+                new StringBuilder("Incorrect fasl version: ");
             sb.append(truename);
             return error(new SimpleError(sb.toString()));
         }
@@ -301,8 +301,8 @@ public final class Load
                 return loadFileFromStream(pathname, truename, stream,
                                           verbose, print, auto);
             } catch (FaslVersionMismatch e) {
-                FastStringBuffer sb =
-                    new FastStringBuffer("; Incorrect fasl version: ");
+                StringBuilder sb =
+                    new StringBuilder("; Incorrect fasl version: ");
                 sb.append(truename);
                 System.err.println(sb.toString());
             } finally {
@@ -483,7 +483,7 @@ public final class Load
 
     public static String getLoadVerbosePrefix(int loadDepth)
     {
-        FastStringBuffer sb = new FastStringBuffer(";");
+        StringBuilder sb = new StringBuilder(";");
         for (int i = loadDepth - 1; i-- > 0;)
             sb.append(' ');
         return sb.toString();

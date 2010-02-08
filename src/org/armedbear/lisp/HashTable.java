@@ -234,7 +234,7 @@ public abstract class HashTable extends LispObject
         error(new PrintNotReadable(list(Keyword.OBJECT, this)));
         return null; // Not reached.
       }
-    FastStringBuffer sb = new FastStringBuffer(getTest().writeToString());
+    StringBuilder sb = new StringBuilder(getTest().writeToString());
     sb.append(' ');
     sb.append(Symbol.HASH_TABLE.writeToString());
     sb.append(' ');

@@ -576,7 +576,7 @@ public final class Cons extends LispObject
       maxLevel = ((Fixnum)printLevel).value;
     else
       maxLevel = Integer.MAX_VALUE;
-    FastStringBuffer sb = new FastStringBuffer();
+    StringBuilder sb = new StringBuilder();
     if (car == Symbol.QUOTE)
       {
         if (cdr instanceof Cons)

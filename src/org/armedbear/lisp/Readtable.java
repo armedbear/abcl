@@ -237,7 +237,7 @@ public class Readtable extends LispObject
     if (isInvalid(c))
       {
         String name = LispCharacter.charToName(c);
-        FastStringBuffer sb = new FastStringBuffer("Invalid character");
+        StringBuilder sb = new StringBuilder("Invalid character");
         if (name != null)
           {
             sb.append(" #\\");

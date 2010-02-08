@@ -73,7 +73,7 @@ public class BuiltInClass extends LispClass
   @Override
   public String writeToString()
   {
-    FastStringBuffer sb = new FastStringBuffer("#<BUILT-IN-CLASS ");
+    StringBuilder sb = new StringBuilder("#<BUILT-IN-CLASS ");
     sb.append(symbol.writeToString());
     sb.append('>');
     return sb.toString();

@@ -96,7 +96,7 @@ public abstract class AbstractString extends AbstractVector
         if (Symbol.PRINT_ESCAPE.symbolValue(thread) != NIL ||
             Symbol.PRINT_READABLY.symbolValue(thread) != NIL)
         {
-            FastStringBuffer sb = new FastStringBuffer('"');
+            StringBuilder sb = new StringBuilder("\"");
             for (int i = beginIndex; i < endIndex; i++) {
                 char c = charAt(i);
                 if (c == '\"' || c == '\\')

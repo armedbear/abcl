@@ -81,7 +81,7 @@ public class PrintNotReadable extends LispError
     @Override
     public String getMessage()
     {
-        FastStringBuffer sb = new FastStringBuffer();
+        StringBuilder sb = new StringBuilder();
         LispObject object = UNBOUND_VALUE;
         object = getInstanceSlotValue(Symbol.OBJECT);
         if (object != UNBOUND_VALUE) {

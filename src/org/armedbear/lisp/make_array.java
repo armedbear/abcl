@@ -126,7 +126,7 @@ public final class make_array extends Primitive
         final int size = dimv[0];
         if (size < 0 || size >= ARRAY_DIMENSION_MAX)
           {
-            FastStringBuffer sb = new FastStringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("The size specified for this array (");
             sb.append(size);
             sb.append(')');

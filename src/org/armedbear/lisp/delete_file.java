@@ -77,7 +77,7 @@ public final class delete_file extends Primitive
                 Thread.yield();
             }
             Pathname truename = new Pathname(file.getAbsolutePath());
-            FastStringBuffer sb = new FastStringBuffer("Unable to delete ");
+            StringBuilder sb = new StringBuilder("Unable to delete ");
             sb.append(file.isDirectory() ? "directory " : "file ");
             sb.append(truename.writeToString());
             sb.append('.');
