@@ -2,7 +2,7 @@
  * LispInteger.java
  *
  * Copyright (C) 2003-2007 Peter Graves
- * $Id: Bignum.java 11573 2009-01-21 22:14:47Z ehuelsmann $
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,7 +1,7 @@
 ;;; asdf-abcl.lisp
 ;;;
 ;;; Copyright (C) 2010 Mark Evenson
-;;; $Id: package.lisp 12418 2010-02-05 15:41:42Z mevenson $
+;;; $Id$
 ;;;
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
