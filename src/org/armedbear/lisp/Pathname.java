@@ -1746,7 +1746,8 @@ public class Pathname extends LispObject {
             return null;
         }
         JarURLConnection jarURLConnection = (JarURLConnection) connection;
-
+        // XXX implement custom protocol handler that actual does the necessary caching
+        connection.setUseCaches(false);
         JarFile result;
         try {
             result = jarURLConnection.getJarFile();
