@@ -2392,7 +2392,7 @@ public final class Lisp
   public static final int CHAR_MAX = Character.MAX_VALUE;
   static
   {
-    Symbol.CHAR_CODE_LIMIT.initializeConstant(Fixnum.getInstance(CHAR_MAX));
+    Symbol.CHAR_CODE_LIMIT.initializeConstant(Fixnum.getInstance(CHAR_MAX + 1));
   }
 
   static
