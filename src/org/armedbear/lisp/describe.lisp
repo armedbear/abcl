@@ -139,11 +139,13 @@
         (dolist (slotd (nreverse instance-slotds))
           (describe-slot
            (%slot-definition-name slotd))))
+        (format stream "~%")
       (when class-slotds
         (format stream "The following slots have :CLASS allocation:~%")
         (dolist (slotd (nreverse class-slotds))
           (describe-slot
-           (%slot-definition-name slotd))))))
+           (%slot-definition-name slotd)))
+        (format stream "~%"))))
     (values))
 
 (defmethod describe-object ((object java:java-object) stream)
