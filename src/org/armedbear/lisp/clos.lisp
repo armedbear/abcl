@@ -537,14 +537,7 @@
 (defun canonical-slot-name (canonical-slot)
   (getf canonical-slot :name))
 
-(defun ensure-class (name &rest all-keys
-                     &key (metaclass 'standard-class) &allow-other-keys)
-
-  ;; Don't pass METACLASS on to the initialization routines
-  ;; This only works because we *know* ABCL conses up new &rest lists
-  ;; every time; otherwise, modifying the argument list is discouraged by the spec
-  (remf all-keys :metaclass)
-
+(defun ensure-class (name &rest all-keys &allow-other-keys)
   ;; Check for duplicate slots.
   (let ((slots (getf all-keys :direct-slots)))
     (dolist (s1 slots)
@@ -589,12 +582,8 @@
                   (apply #'std-after-initialization-for-classes old-class all-keys)
                   old-class)))
           (t
-           (let ((class (apply (if (eq metaclass 'standard-class)
-                                   #'make-instance-standard-class
-                                   #'make-instance)
-                               (or (when (symbolp metaclass)
-                                     (find-class metaclass))
-                                   metaclass)
+           (let ((class (apply #'make-instance-standard-class
+                               (find-class 'standard-class)
                                :name name all-keys)))
              (%set-find-class name class)
              class)))))
