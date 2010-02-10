@@ -644,6 +644,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "psxhash", "HashTableFunctions");
         autoload(PACKAGE_SYS, "puthash", "HashTableFunctions");
         autoload(PACKAGE_SYS, "puthash", "HashTableFunctions");
+        autoload(PACKAGE_SYS, "remove-zip-cache-entry", "ZipCache");
         autoload(PACKAGE_SYS, "set-function-info-value", "function_info");
         autoload(PACKAGE_SYS, "set-generic-function-argument-precedence-order","StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "set-generic-function-classes-to-emf-table","StandardGenericFunction", true);

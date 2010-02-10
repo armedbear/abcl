@@ -229,7 +229,7 @@ public final class Utilities
         }
     }
 
-    static InputStream getInputStream(JarFile jarFile, Pathname inner) {
+    static InputStream getInputStream(ZipFile jarFile, Pathname inner) {
         String entryPath = inner.asEntryPath();
         ZipEntry entry = jarFile.getEntry(entryPath);
         if (entry == null) {

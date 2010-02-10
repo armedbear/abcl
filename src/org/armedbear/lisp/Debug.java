@@ -33,8 +33,11 @@
 
 package org.armedbear.lisp;
 
+import static org.armedbear.lisp.Lisp.*;
+
 public final class Debug
 {
+    
     public static final void assertTrue(boolean b)
     {
         if (!b) {
@@ -59,5 +62,22 @@ public final class Debug
     public static final void trace(Throwable t)
     {
         t.printStackTrace();
+    }
+
+    public static final Symbol _DEBUG_WARN_
+        = exportSpecial("*DEBUG-WARN*", PACKAGE_SYS, NIL);
+
+    public static void setDebugWarnings(boolean flag) {
+        if (flag) {
+            _DEBUG_WARN_.setSymbolValue(T);
+        } else {
+            _DEBUG_WARN_.setSymbolValue(NIL);
+        }
+    }
+    
+    public static final void warn(String s) {
+        if (_DEBUG_WARN_.getSymbolValue() != null) {
+            trace(s);
+        }
     }
 }
