@@ -46,232 +46,264 @@ public final class Extensions
                   list(intern("DEFAULT-ED-FUNCTION", PACKAGE_SYS)));
 
   // ### truly-the value-type form => result*
-  private static final SpecialOperator TRULY_THE =
-    new SpecialOperator("truly-the", PACKAGE_EXT, true, "type value")
+  private static final SpecialOperator TRULY_THE = new truly_the();
+  private static class truly_the extends SpecialOperator {
+    truly_the() {
+      super("truly-the", PACKAGE_EXT, true, "type value");
+    }
+    @Override
+    public LispObject execute(LispObject args, Environment env)
     {
-      @Override
-      public LispObject execute(LispObject args, Environment env)
-
-      {
-        if (args.length() != 2)
-          return error(new WrongNumberOfArgumentsException(this));
-        return eval(args.cadr(), env, LispThread.currentThread());
-      }
-    };
+      if (args.length() != 2)
+        return error(new WrongNumberOfArgumentsException(this));
+      return eval(args.cadr(), env, LispThread.currentThread());
+    }
+  }
 
   // ### neq
-  private static final Primitive NEQ =
-    new Primitive(Symbol.NEQ, "obj1 obj2")
+  private static final Primitive NEQ = new neq();
+  private static class neq extends Primitive 
+  {
+    neq() 
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
+      super(Symbol.NEQ, "obj1 obj2");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
         return first != second ? T : NIL;
-      }
-    };
+    }
+  }
 
   // ### memq item list => tail
-  private static final Primitive MEMQ =
-    new Primitive(Symbol.MEMQ, "item list")
+  private static final Primitive MEMQ = new memq();
+  private static class memq extends Primitive 
+  {
+    memq() 
     {
-      @Override
-      public LispObject execute(LispObject item, LispObject list)
-
-      {
-        while (list instanceof Cons)
-          {
-            if (item == ((Cons)list).car)
-              return list;
-            list = ((Cons)list).cdr;
-          }
-        if (list != NIL)
-          type_error(list, Symbol.LIST);
-        return NIL;
-      }
-    };
+      super(Symbol.MEMQ, "item list");
+    }
+    @Override
+    public LispObject execute(LispObject item, LispObject list)
+    {
+      while (list instanceof Cons)
+        {
+          if (item == ((Cons)list).car)
+            return list;
+          list = ((Cons)list).cdr;
+        }
+      if (list != NIL)
+        type_error(list, Symbol.LIST);
+      return NIL;
+    }
+  }
 
   // ### memql item list => tail
-  private static final Primitive MEMQL =
-    new Primitive(Symbol.MEMQL, "item list")
+  private static final Primitive MEMQL = new memql();
+  private static class memql extends Primitive
+  {
+    memql() {
+      super(Symbol.MEMQL, "item list");
+    }
+    @Override
+    public LispObject execute(LispObject item, LispObject list)
     {
-      @Override
-      public LispObject execute(LispObject item, LispObject list)
-
-      {
-        while (list instanceof Cons)
-          {
-            if (item.eql(((Cons)list).car))
-              return list;
-            list = ((Cons)list).cdr;
-          }
-        if (list != NIL)
-          type_error(list, Symbol.LIST);
-        return NIL;
-      }
-    };
+      while (list instanceof Cons)
+        {
+          if (item.eql(((Cons)list).car))
+            return list;
+          list = ((Cons)list).cdr;
+        }
+      if (list != NIL)
+        type_error(list, Symbol.LIST);
+      return NIL;
+    }
+  }
 
   // ### adjoin-eql item list => new-list
-  private static final Primitive ADJOIN_EQL =
-    new Primitive(Symbol.ADJOIN_EQL, "item list")
+  private static final Primitive ADJOIN_EQL = new adjoin_eql();
+  private static class adjoin_eql extends Primitive {
+    adjoin_eql() {
+      super(Symbol.ADJOIN_EQL, "item list");
+    }
+    @Override
+    public LispObject execute(LispObject item, LispObject list)
     {
-      @Override
-      public LispObject execute(LispObject item, LispObject list)
-
-      {
-        return memql(item, list) ? list : new Cons(item, list);
-      }
-    };
+      return memql(item, list) ? list : new Cons(item, list);
+    }
+  }
 
   // ### special-variable-p
-  private static final Primitive SPECIAL_VARIABLE_P =
-    new Primitive("special-variable-p", PACKAGE_EXT, true)
+  private static final Primitive SPECIAL_VARIABLE_P = new special_variable_p();
+  private static class special_variable_p extends Primitive {
+    special_variable_p() {
+      super("special-variable-p", PACKAGE_EXT, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-        return arg.isSpecialVariable() ? T : NIL;
-      }
-    };
+      return arg.isSpecialVariable() ? T : NIL;
+    }
+  }
 
-  // ### source
-  private static final Primitive SOURCE =
-    new Primitive("source", PACKAGE_EXT, true)
+  // ### source symbol 
+  private static final Primitive SOURCE = new source();
+  private static class source extends Primitive {
+    source() {
+      super("source", PACKAGE_EXT, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-        return get(arg, Symbol._SOURCE, NIL);
-      }
-    };
+      return get(arg, Symbol._SOURCE, NIL);
+    }
+  }
 
-  // ### source-file-position
-  private static final Primitive SOURCE_FILE_POSITION =
-    new Primitive("source-file-position", PACKAGE_EXT, true)
+  // ### source-file-position symbol
+  private static final Primitive SOURCE_FILE_POSITION = new source_file_position();
+  private static class source_file_position extends Primitive {
+    source_file_position() {
+      super("source-file-position", PACKAGE_EXT, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-        LispObject obj = get(arg, Symbol._SOURCE, NIL);
-        if (obj instanceof Cons)
-          return obj.cdr();
-        return NIL;
-      }
-    };
+      LispObject obj = get(arg, Symbol._SOURCE, NIL);
+      if (obj instanceof Cons)
+        return obj.cdr();
+      return NIL;
+    }
+  }
 
   // ### source-pathname
-  public static final Primitive SOURCE_PATHNAME =
-    new Primitive("source-pathname", PACKAGE_EXT, true)
+  public static final Primitive SOURCE_PATHNAME = new source_pathname();
+  private static class source_pathname extends Primitive {
+    source_pathname() {
+      super("source-pathname", PACKAGE_EXT, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-        LispObject obj = get(arg, Symbol._SOURCE, NIL);
-        if (obj instanceof Cons)
-          return obj.car();
-        return obj;
-      }
-    };
+      LispObject obj = get(arg, Symbol._SOURCE, NIL);
+      if (obj instanceof Cons)
+        return obj.car();
+      return obj;
+    }
+  }
 
   // ### exit
-  private static final Primitive EXIT =
-    new Primitive("exit", PACKAGE_EXT, true, "&key status")
+  private static final Primitive EXIT = new exit();
+  private static class exit extends Primitive {
+    exit() {
+      super("exit", PACKAGE_EXT, true, "&key status");
+    }
+    @Override
+    public LispObject execute()
     {
-      @Override
-      public LispObject execute()
-      {
-        exit(0);
-        return LispThread.currentThread().nothing();
-      }
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-        int status = 0;
-        if (first == Keyword.STATUS)
-          {
-            if (second instanceof Fixnum)
-              status = ((Fixnum)second).value;
-          }
-        exit(status);
-        return LispThread.currentThread().nothing();
-      }
-    };
+      exit(0);
+      return LispThread.currentThread().nothing();
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+      
+    {
+      int status = 0;
+      if (first == Keyword.STATUS)
+        {
+          if (second instanceof Fixnum)
+            status = ((Fixnum)second).value;
+        }
+      exit(status);
+      return LispThread.currentThread().nothing();
+    }
+  }
 
   // ### quit
-  private static final Primitive QUIT =
-    new Primitive("quit", PACKAGE_EXT, true, "&key status")
+  private static final Primitive QUIT = new quit();
+  private static class quit extends Primitive {
+    quit() {
+      super("quit", PACKAGE_EXT, true, "&key status");
+    }
+    @Override
+    public LispObject execute()
     {
-      @Override
-      public LispObject execute()
-      {
-        exit(0);
-        return LispThread.currentThread().nothing();
-      }
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-        int status = 0;
-        if (first == Keyword.STATUS)
-          {
-            if (second instanceof Fixnum)
-              status = ((Fixnum)second).value;
-          }
-        exit(status);
-        return LispThread.currentThread().nothing();
-      }
-    };
+      exit(0);
+      return LispThread.currentThread().nothing();
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      int status = 0;
+      if (first == Keyword.STATUS)
+        {
+          if (second instanceof Fixnum)
+            status = ((Fixnum)second).value;
+        }
+      exit(status);
+      return LispThread.currentThread().nothing();
+    }
+  }
 
   // ### dump-java-stack
-  private static final Primitive DUMP_JAVA_STACK =
-    new Primitive("dump-java-stack", PACKAGE_EXT, true)
+  private static final Primitive DUMP_JAVA_STACK = new dump_java_stack();
+  private static class dump_java_stack extends Primitive {
+    dump_java_stack() {
+      super("dump-java-stack", PACKAGE_EXT, true);
+    }
+    @Override
+    public LispObject execute()
     {
-      @Override
-      public LispObject execute()
-      {
-        Thread.dumpStack();
-        return LispThread.currentThread().nothing();
-      }
-    };
+      Thread.dumpStack();
+      return LispThread.currentThread().nothing();
+    }
+  }
 
-  // ### make-temp-file => namestring
-  private static final Primitive MAKE_TEMP_FILE =
-    new Primitive("make-temp-file", PACKAGE_EXT, true, "")
+  // ### make-temp-file => pathname
+  private static final Primitive MAKE_TEMP_FILE = new make_temp_file();
+  private static class make_temp_file extends Primitive { 
+    make_temp_file() {
+      super("make-temp-file", PACKAGE_EXT, true, "");
+    }
+    @Override
+    public LispObject execute()
     {
-      @Override
-      public LispObject execute()
-      {
-        try
-          {
-            File file = File.createTempFile("abcl", null, null);
-            if (file != null)
-              return new Pathname(file.getPath());
-          }
-        catch (IOException e)
-          {
-            Debug.trace(e);
-          }
-        return NIL;
-      }
-    };
+      try
+        {
+          File file = File.createTempFile("abcl", null, null);
+          if (file != null)
+            return new Pathname(file.getPath());
+        }
+      catch (IOException e)
+        {
+          Debug.trace(e);
+        }
+      return NIL;
+    }
+  }
 
   // ### interrupt-lisp
-  private static final Primitive INTERRUPT_LISP =
-    new Primitive("interrupt-lisp", PACKAGE_EXT, true, "")
+  private static final Primitive INTERRUPT_LISP = new interrupt_lisp();
+  private static class interrupt_lisp extends Primitive {
+    interrupt_lisp() {
+      super("interrupt-lisp", PACKAGE_EXT, true, "");
+    }
+    @Override
+    public LispObject execute()
     {
-      @Override
-      public LispObject execute()
-      {
-        setInterrupted(true);
-        return T;
-      }
-    };
+      setInterrupted(true);
+      return T;
+    }
+  }
 
-  // ### getenv
-  private static final Primitive GETENV =
-      new Primitive("getenv", PACKAGE_EXT, true)
+  // ### getenv variable => string
+  private static final Primitive GETENV = new getenv();
+  private static class getenv extends Primitive 
   {
+    getenv() 
+    {
+      super("getenv", PACKAGE_EXT, true, "variable",
+             "Return the value of the environment VARIABLE if it exists, otherwise return NIL.");
+    }
     @Override
     public LispObject execute(LispObject arg)
     {
@@ -286,5 +318,5 @@ public final class Extensions
       else
         return NIL;
     }
-  };
+  }
 }
