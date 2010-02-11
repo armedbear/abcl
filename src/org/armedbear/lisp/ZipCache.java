@@ -2,7 +2,7 @@
  * ZipCache.java
  *
  * Copyright (C) 2003-2007 Peter Graves
- * $Id: Pathname.java 12435 2010-02-09 15:42:58Z mevenson $
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
