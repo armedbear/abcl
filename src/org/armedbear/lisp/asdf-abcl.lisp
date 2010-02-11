@@ -44,5 +44,21 @@
     (if (every #'sys:pathname-jar-p files) 
         t
         (call-next-method))))
+
+(defun module-provide-asdf (name) 
+  (handler-case
+      (let* ((*verbose-out* (make-broadcast-stream))
+             (system (asdf:find-system name nil)))
+        (when system
+          (asdf:operate 'asdf:load-op name)
+          t))
+    (missing-component (e) 
+      (declare (ignore e))
+      nil)
+    (t (e)
+      (format *error-output* "ASDF could not load ~A because ~A.~%"
+              name e))))
+
+(pushnew #'module-provide-asdf sys::*module-provider-functions*)
   
 (provide 'asdf-abcl)

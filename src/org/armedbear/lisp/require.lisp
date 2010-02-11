@@ -36,6 +36,20 @@
   (pushnew (string module-name) *modules* :test #'string=)
   t)
 
+(defun module-provide-system (module) 
+  (let ((*readtable* (copy-readtable nil)))
+    (handler-case 
+        (load-system-file (string-downcase (string module)))
+      (t (e) 
+        (unless (and (typep e 'error)
+                     (search "Failed to find loadable system file"
+                             (format nil "~A" e)))
+          (format *error-output* "Failed to require  ~A because '~A'~%" 
+                  module e))
+        nil))))
+    
+(defvar *module-provider-functions* nil)
+
 (defun require (module-name &optional pathnames)
   (unless (member (string module-name) *modules* :test #'string=)
     (let ((saved-modules (copy-list *modules*)))
@@ -44,6 +58,9 @@
              (dolist (x pathnames)
                (load x)))
             (t
-             (let ((*readtable* (copy-readtable nil)))
-               (load-system-file (string-downcase (string module-name))))))
+             (unless (some (lambda (p) (funcall p module-name))
+                           (append (list #'module-provide-system)
+                                 sys::*module-provider-functions*))
+               (error "Don't know how to ~S ~A." 'require module-name))))
       (set-difference *modules* saved-modules))))
+
