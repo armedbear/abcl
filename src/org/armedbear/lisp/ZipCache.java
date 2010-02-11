@@ -166,13 +166,11 @@ public class ZipCache {
     @Override
     public LispObject execute(LispObject arg) {
       Pathname p = coerceToPathname(arg);
-      URL url = Pathname.makeURL(p);
-      boolean result = ZipCache.remove(url);
+      boolean result = ZipCache.remove(p);
       return result ? T : NIL;
     }
   }
       
-
   public static boolean remove(URL url) {
     Entry entry = zipCache.get(url);
     if (entry != null) {
@@ -184,4 +182,18 @@ public class ZipCache {
     }
     return false;
   }
+
+  public static boolean remove(Pathname p) {
+    URL url = Pathname.makeURL(p);
+    if (url == null) {
+      return false;
+    }
+    return ZipCache.remove(url);
   }
+
+  public static boolean remove(File f) {
+    Pathname p = Pathname.makePathname(f);
+    return ZipCache.remove(p);
+  }
+    
+}

@@ -1896,6 +1896,7 @@ public class Pathname extends LispObject {
                 final File destination = new File(newNamestring);
                 if (Utilities.isPlatformWindows) {
                     if (destination.isFile()) {
+			ZipCache.remove(destination);
                         destination.delete();
                     }
                 }

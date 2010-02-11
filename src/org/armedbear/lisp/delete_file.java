@@ -68,6 +68,7 @@ public final class delete_file extends Primitive
             return error(new FileError("Pathname has no namestring: " + defaultedPathname.writeToString(),
                                         defaultedPathname));
         final File file = new File(namestring);
+	ZipCache.remove(file);
         if (file.exists()) {
             // File exists.
             for (int i = 0; i < 5; i++) {
