@@ -1,7 +1,7 @@
 /*
  * ZipCache.java
  *
- * Copyright (C) 2003-2007 Peter Graves
+ * Copyright (C) 2010 Mark Evenson
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
