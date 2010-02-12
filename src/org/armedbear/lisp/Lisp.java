@@ -2566,6 +2566,10 @@ public final class Lisp
   public static final Symbol _SAVED_BACKTRACE_ =
     exportSpecial("*SAVED-BACKTRACE*", PACKAGE_EXT, NIL);
 
+  // ### *command-line-argument-list*
+  public static final Symbol _COMMAND_LINE_ARGUMENT_LIST_ =
+    exportSpecial("*COMMAND-LINE-ARGUMENT-LIST*", PACKAGE_EXT, NIL);
+
   // ### *batch-mode*
   public static final Symbol _BATCH_MODE_ =
     exportSpecial("*BATCH-MODE*", PACKAGE_EXT, NIL);

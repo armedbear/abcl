@@ -211,10 +211,13 @@ public final class Interpreter
     }
 
     // Check for --noinit; verify that arguments are supplied for --load and
-    // --eval options.
+    // --eval options.  Copy all unrecognized arguments into
+    // ext:*command-line-argument-list*
     private static void preprocessCommandLineArguments(String[] args)
 
     {
+        LispObject arglist = NIL;
+
         if (args != null) {
             for (int i = 0; i < args.length; ++i) {
                 String arg = args[i];
@@ -239,9 +242,13 @@ public final class Interpreter
                         System.err.println("No argument supplied to --load");
                         System.exit(1);
                     }
+                } else {
+                    arglist = new Cons(args[i], arglist);
                 }
             }
         }
+
+        _COMMAND_LINE_ARGUMENT_LIST_.setSymbolValue(arglist);
     }
 
     // Do the --load and --eval actions.
