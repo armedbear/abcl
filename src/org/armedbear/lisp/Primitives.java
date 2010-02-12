@@ -41,9 +41,13 @@ import java.util.ArrayList;
 public final class Primitives
 {
   // ### *
-  public static final Primitive MULTIPLY =
-    new Primitive(Symbol.STAR, "&rest numbers")
-    {
+  public static final Primitive MULTIPLY = new pf_multiply();
+  private static final class pf_multiply extends Primitive {
+      pf_multiply()
+      {
+        super(Symbol.STAR, "&rest numbers");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -73,9 +77,13 @@ public final class Primitives
     };
 
   // ### /
-  public static final Primitive DIVIDE =
-    new Primitive(Symbol.SLASH, "numerator &rest denominators")
-    {
+  public static final Primitive DIVIDE = new pf_divide();
+  private static final class pf_divide extends Primitive {
+      pf_divide()
+      {
+        super(Symbol.SLASH, "numerator &rest denominators");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -103,9 +111,13 @@ public final class Primitives
     };
 
   // ### min
-  public static final Primitive MIN =
-    new Primitive(Symbol.MIN, "&rest reals")
-    {
+  public static final Primitive MIN = new pf_min();
+  private static final class pf_min extends Primitive {
+      pf_min()
+      {
+        super(Symbol.MIN, "&rest reals");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -140,9 +152,13 @@ public final class Primitives
     };
 
   // ### max
-  public static final Primitive MAX =
-    new Primitive(Symbol.MAX, "&rest reals")
-    {
+  public static final Primitive MAX = new pf_max();
+  private static final class pf_max extends Primitive {
+      pf_max()
+      {
+        super(Symbol.MAX, "&rest reals");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -177,9 +193,13 @@ public final class Primitives
     };
 
   // ### identity
-  private static final Primitive IDENTITY =
-    new Primitive(Symbol.IDENTITY, "object")
-    {
+  private static final Primitive IDENTITY = new pf_identity();
+  private static final class pf_identity extends Primitive {
+      pf_identity()
+      {
+        super(Symbol.IDENTITY, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -188,9 +208,13 @@ public final class Primitives
     };
 
   // ### compiled-function-p
-  private static final Primitive COMPILED_FUNCTION_P =
-    new Primitive(Symbol.COMPILED_FUNCTION_P, "object")
-    {
+  private static final Primitive COMPILED_FUNCTION_P = new pf_compiled_function_p();
+  private static final class pf_compiled_function_p extends Primitive {
+      pf_compiled_function_p()
+      {
+        super(Symbol.COMPILED_FUNCTION_P, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -199,9 +223,13 @@ public final class Primitives
     };
 
   // ### consp
-  private static final Primitive CONSP =
-    new Primitive(Symbol.CONSP, "object")
-    {
+  private static final Primitive CONSP = new pf_consp();
+  private static final class pf_consp extends Primitive {
+      pf_consp()
+      {
+        super(Symbol.CONSP, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -210,9 +238,13 @@ public final class Primitives
     };
 
   // ### listp
-  private static final Primitive LISTP =
-    new Primitive(Symbol.LISTP, "object")
-    {
+  private static final Primitive LISTP = new pf_listp();
+  private static final class pf_listp extends Primitive {
+      pf_listp()
+      {
+        super(Symbol.LISTP, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -221,9 +253,13 @@ public final class Primitives
     };
 
   // ### abs
-  private static final Primitive ABS =
-    new Primitive(Symbol.ABS, "number")
-    {
+  private static final Primitive ABS = new pf_abs();
+  private static final class pf_abs extends Primitive {
+      pf_abs()
+      {
+        super(Symbol.ABS, "number");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -232,9 +268,13 @@ public final class Primitives
     };
 
   // ### arrayp
-  private static final Primitive ARRAYP =
-    new Primitive(Symbol.ARRAYP, "object")
-    {
+  private static final Primitive ARRAYP = new pf_arrayp();
+  private static final class pf_arrayp extends Primitive {
+      pf_arrayp()
+      {
+        super(Symbol.ARRAYP, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -243,9 +283,13 @@ public final class Primitives
     };
 
   // ### array-has-fill-pointer-p
-  private static final Primitive ARRAY_HAS_FILL_POINTER_P =
-    new Primitive(Symbol.ARRAY_HAS_FILL_POINTER_P, "array")
-    {
+  private static final Primitive ARRAY_HAS_FILL_POINTER_P = new pf_array_has_fill_pointer_p();
+  private static final class pf_array_has_fill_pointer_p extends Primitive {
+      pf_array_has_fill_pointer_p()
+      {
+        super(Symbol.ARRAY_HAS_FILL_POINTER_P, "array");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -254,9 +298,13 @@ public final class Primitives
     };
 
   // ### vectorp
-  private static final Primitive VECTORP =
-    new Primitive(Symbol.VECTORP, "object")
-    {
+  private static final Primitive VECTORP = new pf_vectorp();
+  private static final class pf_vectorp extends Primitive {
+      pf_vectorp()
+      {
+        super(Symbol.VECTORP, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -265,9 +313,13 @@ public final class Primitives
     };
 
   // ### simple-vector-p
-  private static final Primitive SIMPLE_VECTOR_P =
-    new Primitive(Symbol.SIMPLE_VECTOR_P, "object")
-    {
+  private static final Primitive SIMPLE_VECTOR_P = new pf_simple_vector_p();
+  private static final class pf_simple_vector_p extends Primitive {
+      pf_simple_vector_p()
+      {
+        super(Symbol.SIMPLE_VECTOR_P, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -276,9 +328,13 @@ public final class Primitives
     };
 
   // ### bit-vector-p
-  private static final Primitive BIT_VECTOR_P =
-    new Primitive(Symbol.BIT_VECTOR_P, "object")
-    {
+  private static final Primitive BIT_VECTOR_P = new pf_bit_vector_p();
+  private static final class pf_bit_vector_p extends Primitive {
+      pf_bit_vector_p()
+      {
+        super(Symbol.BIT_VECTOR_P, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -287,9 +343,13 @@ public final class Primitives
     };
 
   // ### simple-bit-vector-p
-  private static final Primitive SIMPLE_BIT_VECTOR_P =
-    new Primitive(Symbol.SIMPLE_BIT_VECTOR_P, "object")
-    {
+  private static final Primitive SIMPLE_BIT_VECTOR_P = new pf_simple_bit_vector_p();
+  private static final class pf_simple_bit_vector_p extends Primitive {
+      pf_simple_bit_vector_p()
+      {
+        super(Symbol.SIMPLE_BIT_VECTOR_P, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -298,9 +358,13 @@ public final class Primitives
     };
 
   // ### %eval
-  private static final Primitive _EVAL =
-    new Primitive("%eval", PACKAGE_SYS, false, "form")
-    {
+  private static final Primitive _EVAL = new pf__eval();
+  private static final class pf__eval extends Primitive {
+      pf__eval()
+      {
+        super("%eval", PACKAGE_SYS, false, "form");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -309,8 +373,13 @@ public final class Primitives
     };
 
   // ### eq
-  private static final Primitive EQ = new Primitive(Symbol.EQ, "x y")
-    {
+  private static final Primitive EQ = new pf_eq();
+  private static final class pf_eq extends Primitive {
+      pf_eq()
+      {
+        super(Symbol.EQ, "x y");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -320,8 +389,13 @@ public final class Primitives
     };
 
   // ### eql
-  private static final Primitive EQL = new Primitive(Symbol.EQL, "x y")
-    {
+  private static final Primitive EQL = new pf_eql();
+  private static final class pf_eql extends Primitive {
+      pf_eql()
+      {
+        super(Symbol.EQL, "x y");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -331,8 +405,13 @@ public final class Primitives
     };
 
   // ### equal
-  private static final Primitive EQUAL = new Primitive(Symbol.EQUAL, "x y")
-    {
+  private static final Primitive EQUAL = new pf_equal();
+  private static final class pf_equal extends Primitive {
+      pf_equal()
+      {
+        super(Symbol.EQUAL, "x y");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -342,8 +421,13 @@ public final class Primitives
     };
 
   // ### equalp
-  private static final Primitive EQUALP = new Primitive(Symbol.EQUALP, "x y")
-    {
+  private static final Primitive EQUALP = new pf_equalp();
+  private static final class pf_equalp extends Primitive {
+      pf_equalp()
+      {
+        super(Symbol.EQUALP, "x y");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -353,9 +437,13 @@ public final class Primitives
     };
 
   // ### values
-  private static final Primitive VALUES =
-    new Primitive(Symbol.VALUES, "&rest object")
-    {
+  private static final Primitive VALUES = new pf_values();
+  private static final class pf_values extends Primitive {
+      pf_values()
+      {
+        super(Symbol.VALUES, "&rest object");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -393,9 +481,13 @@ public final class Primitives
 
   // ### values-list list => element*
   // Returns the elements of the list as multiple values.
-  private static final Primitive VALUES_LIST =
-    new Primitive(Symbol.VALUES_LIST, "list")
-    {
+  private static final Primitive VALUES_LIST = new pf_values_list();
+  private static final class pf_values_list extends Primitive {
+      pf_values_list()
+      {
+        super(Symbol.VALUES_LIST, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -408,9 +500,13 @@ public final class Primitives
     };
 
   // ### cons
-  private static final Primitive CONS =
-    new Primitive(Symbol.CONS, "object-1 object-2")
-    {
+  private static final Primitive CONS = new pf_cons();
+  private static final class pf_cons extends Primitive {
+      pf_cons()
+      {
+        super(Symbol.CONS, "object-1 object-2");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -420,9 +516,13 @@ public final class Primitives
     };
 
   // ### length
-  private static final Primitive LENGTH =
-    new Primitive(Symbol.LENGTH, "sequence")
-    {
+  private static final Primitive LENGTH = new pf_length();
+  private static final class pf_length extends Primitive {
+      pf_length()
+      {
+        super(Symbol.LENGTH, "sequence");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -431,9 +531,13 @@ public final class Primitives
     };
 
   // ### elt
-  private static final Primitive ELT =
-    new Primitive(Symbol.ELT, "sequence index")
-    {
+  private static final Primitive ELT = new pf_elt();
+  private static final class pf_elt extends Primitive {
+      pf_elt()
+      {
+        super(Symbol.ELT, "sequence index");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -443,8 +547,13 @@ public final class Primitives
     };
 
   // ### atom
-  private static final Primitive ATOM = new Primitive(Symbol.ATOM, "object")
-    {
+  private static final Primitive ATOM = new pf_atom();
+  private static final class pf_atom extends Primitive {
+      pf_atom()
+      {
+        super(Symbol.ATOM, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -453,9 +562,13 @@ public final class Primitives
     };
 
   // ### constantp
-  private static final Primitive CONSTANTP =
-    new Primitive(Symbol.CONSTANTP, "form &optional environment")
-    {
+  private static final Primitive CONSTANTP = new pf_constantp();
+  private static final class pf_constantp extends Primitive {
+      pf_constantp()
+      {
+        super(Symbol.CONSTANTP, "form &optional environment");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -470,9 +583,13 @@ public final class Primitives
     };
 
   // ### functionp
-  private static final Primitive FUNCTIONP =
-    new Primitive(Symbol.FUNCTIONP, "object")
-    {
+  private static final Primitive FUNCTIONP = new pf_functionp();
+  private static final class pf_functionp extends Primitive {
+      pf_functionp()
+      {
+        super(Symbol.FUNCTIONP, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -481,9 +598,13 @@ public final class Primitives
     };
 
   // ### special-operator-p
-  private static final Primitive SPECIAL_OPERATOR_P =
-    new Primitive(Symbol.SPECIAL_OPERATOR_P, "symbol")
-    {
+  private static final Primitive SPECIAL_OPERATOR_P = new pf_special_operator_p();
+  private static final class pf_special_operator_p extends Primitive {
+      pf_special_operator_p()
+      {
+        super(Symbol.SPECIAL_OPERATOR_P, "symbol");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -492,9 +613,13 @@ public final class Primitives
     };
 
   // ### symbolp
-  private static final Primitive SYMBOLP =
-    new Primitive(Symbol.SYMBOLP, "object")
-    {
+  private static final Primitive SYMBOLP = new pf_symbolp();
+  private static final class pf_symbolp extends Primitive {
+      pf_symbolp()
+      {
+        super(Symbol.SYMBOLP, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -503,8 +628,13 @@ public final class Primitives
     };
 
   // ### endp
-  private static final Primitive ENDP = new Primitive(Symbol.ENDP, "list")
-    {
+  private static final Primitive ENDP = new pf_endp();
+  private static final class pf_endp extends Primitive {
+      pf_endp()
+      {
+        super(Symbol.ENDP, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -513,8 +643,13 @@ public final class Primitives
     };
 
   // ### null
-  private static final Primitive NULL = new Primitive(Symbol.NULL, "object")
-    {
+  private static final Primitive NULL = new pf_null();
+  private static final class pf_null extends Primitive {
+      pf_null()
+      {
+        super(Symbol.NULL, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -523,8 +658,13 @@ public final class Primitives
     };
 
   // ### not
-  private static final Primitive NOT = new Primitive(Symbol.NOT, "x")
-    {
+  private static final Primitive NOT = new pf_not();
+  private static final class pf_not extends Primitive {
+      pf_not()
+      {
+        super(Symbol.NOT, "x");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -533,8 +673,13 @@ public final class Primitives
     };
 
   // ### plusp
-  private static final Primitive PLUSP = new Primitive(Symbol.PLUSP, "real")
-    {
+  private static final Primitive PLUSP = new pf_plusp();
+  private static final class pf_plusp extends Primitive {
+      pf_plusp()
+      {
+        super(Symbol.PLUSP, "real");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -543,9 +688,13 @@ public final class Primitives
     };
 
   // ### minusp
-  private static final Primitive MINUSP =
-    new Primitive(Symbol.MINUSP, "real")
-    {
+  private static final Primitive MINUSP = new pf_minusp();
+  private static final class pf_minusp extends Primitive {
+      pf_minusp()
+      {
+        super(Symbol.MINUSP, "real");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -554,9 +703,13 @@ public final class Primitives
     };
 
   // ### zerop
-  private static final Primitive ZEROP =
-    new Primitive(Symbol.ZEROP, "number")
-    {
+  private static final Primitive ZEROP = new pf_zerop();
+  private static final class pf_zerop extends Primitive {
+      pf_zerop()
+      {
+        super(Symbol.ZEROP, "number");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -565,9 +718,13 @@ public final class Primitives
     };
 
   // ### fixnump
-  private static final Primitive FIXNUMP =
-    new Primitive("fixnump", PACKAGE_EXT, true)
-    {
+  private static final Primitive FIXNUMP = new pf_fixnump();
+  private static final class pf_fixnump extends Primitive {
+      pf_fixnump()
+      {
+        super("fixnump", PACKAGE_EXT, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -576,9 +733,13 @@ public final class Primitives
     };
 
   // ### symbol-value
-  private static final Primitive SYMBOL_VALUE =
-    new Primitive(Symbol.SYMBOL_VALUE, "symbol")
-    {
+  private static final Primitive SYMBOL_VALUE = new pf_symbol_value();
+  private static final class pf_symbol_value extends Primitive {
+      pf_symbol_value()
+      {
+        super(Symbol.SYMBOL_VALUE, "symbol");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -592,9 +753,13 @@ public final class Primitives
     };
 
   // ### set symbol value => value
-  private static final Primitive SET =
-    new Primitive(Symbol.SET, "symbol value")
-    {
+  private static final Primitive SET = new pf_set();
+  private static final class pf_set extends Primitive {
+      pf_set()
+      {
+        super(Symbol.SET, "symbol value");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -605,9 +770,13 @@ public final class Primitives
     };
 
   // ### rplaca
-  private static final Primitive RPLACA =
-    new Primitive(Symbol.RPLACA, "cons object")
-    {
+  private static final Primitive RPLACA = new pf_rplaca();
+  private static final class pf_rplaca extends Primitive {
+      pf_rplaca()
+      {
+        super(Symbol.RPLACA, "cons object");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -618,9 +787,13 @@ public final class Primitives
     };
 
   // ### rplacd
-  private static final Primitive RPLACD =
-    new Primitive(Symbol.RPLACD, "cons object")
-    {
+  private static final Primitive RPLACD = new pf_rplacd();
+  private static final class pf_rplacd extends Primitive {
+      pf_rplacd()
+      {
+        super(Symbol.RPLACD, "cons object");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -631,9 +804,13 @@ public final class Primitives
     };
 
   // ### +
-  private static final Primitive ADD =
-    new Primitive(Symbol.PLUS, "&rest numbers")
-    {
+  private static final Primitive ADD = new pf_add();
+  private static final class pf_add extends Primitive {
+      pf_add()
+      {
+        super(Symbol.PLUS, "&rest numbers");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -671,9 +848,13 @@ public final class Primitives
     };
 
   // ### 1+
-  private static final Primitive ONE_PLUS =
-    new Primitive(Symbol.ONE_PLUS, "number")
-    {
+  private static final Primitive ONE_PLUS = new pf_one_plus();
+  private static final class pf_one_plus extends Primitive {
+      pf_one_plus()
+      {
+        super(Symbol.ONE_PLUS, "number");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -682,9 +863,13 @@ public final class Primitives
     };
 
   // ### -
-  private static final Primitive SUBTRACT =
-    new Primitive(Symbol.MINUS, "minuend &rest subtrahends")
-    {
+  private static final Primitive SUBTRACT = new pf_subtract();
+  private static final class pf_subtract extends Primitive {
+      pf_subtract()
+      {
+        super(Symbol.MINUS, "minuend &rest subtrahends");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -712,9 +897,13 @@ public final class Primitives
     };
 
   // ### 1-
-  private static final Primitive ONE_MINUS =
-    new Primitive(Symbol.ONE_MINUS, "number")
-    {
+  private static final Primitive ONE_MINUS = new pf_one_minus();
+  private static final class pf_one_minus extends Primitive {
+      pf_one_minus()
+      {
+        super(Symbol.ONE_MINUS, "number");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -765,9 +954,13 @@ public final class Primitives
     };
 
   // ### %stream-output-object object stream => object
-  private static final Primitive _STREAM_OUTPUT_OBJECT =
-    new Primitive("%stream-output-object", PACKAGE_SYS, true)
-    {
+  private static final Primitive _STREAM_OUTPUT_OBJECT = new pf__stream_output_object();
+  private static final class pf__stream_output_object extends Primitive {
+      pf__stream_output_object()
+      {
+        super("%stream-output-object", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -778,9 +971,13 @@ public final class Primitives
     };
 
   // ### %output-object object stream => object
-  private static final Primitive _OUTPUT_OBJECT =
-    new Primitive("%output-object", PACKAGE_SYS, true)
-    {
+  private static final Primitive _OUTPUT_OBJECT = new pf__output_object();
+  private static final class pf__output_object extends Primitive {
+      pf__output_object()
+      {
+        super("%output-object", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -798,9 +995,13 @@ public final class Primitives
     };
 
   // ### %write-to-string object => string
-  private static final Primitive _WRITE_TO_STRING =
-    new Primitive("%write-to-string", PACKAGE_SYS, false)
-    {
+  private static final Primitive _WRITE_TO_STRING = new pf__write_to_string();
+  private static final class pf__write_to_string extends Primitive {
+      pf__write_to_string()
+      {
+        super("%write-to-string", PACKAGE_SYS, false);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -809,9 +1010,13 @@ public final class Primitives
     };
 
   // ### %stream-terpri output-stream => nil
-  private static final Primitive _STREAM_TERPRI =
-    new Primitive("%stream-terpri", PACKAGE_SYS, true, "output-stream")
-    {
+  private static final Primitive _STREAM_TERPRI = new pf__stream_terpri();
+  private static final class pf__stream_terpri extends Primitive {
+      pf__stream_terpri()
+      {
+        super("%stream-terpri", PACKAGE_SYS, true, "output-stream");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -821,9 +1026,13 @@ public final class Primitives
     };
 
   // ### %terpri output-stream => nil
-  private static final Primitive _TERPRI =
-    new Primitive("%terpri", PACKAGE_SYS, false, "output-stream")
-    {
+  private static final Primitive _TERPRI = new pf__terpri();
+  private static final class pf__terpri extends Primitive {
+      pf__terpri()
+      {
+        super("%terpri", PACKAGE_SYS, false, "output-stream");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -839,9 +1048,13 @@ public final class Primitives
 
   // ### %fresh-line
   // %fresh-line &optional output-stream => generalized-boolean
-  private static final Primitive _FRESH_LINE =
-    new Primitive("%fresh-line", PACKAGE_SYS, false, "output-stream")
-    {
+  private static final Primitive _FRESH_LINE = new pf__fresh_line();
+  private static final class pf__fresh_line extends Primitive {
+      pf__fresh_line()
+      {
+        super("%fresh-line", PACKAGE_SYS, false, "output-stream");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -858,9 +1071,13 @@ public final class Primitives
   // ### boundp
   // Determines only whether a symbol has a value in the global environment;
   // any lexical bindings are ignored.
-  private static final Primitive BOUNDP =
-    new Primitive(Symbol.BOUNDP, "symbol")
-    {
+  private static final Primitive BOUNDP = new pf_boundp();
+  private static final class pf_boundp extends Primitive {
+      pf_boundp()
+      {
+        super(Symbol.BOUNDP, "symbol");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -879,9 +1096,13 @@ public final class Primitives
     };
 
   // ### fboundp
-  private static final Primitive FBOUNDP =
-    new Primitive(Symbol.FBOUNDP, "name")
-    {
+  private static final Primitive FBOUNDP = new pf_fboundp();
+  private static final class pf_fboundp extends Primitive {
+      pf_fboundp()
+      {
+        super(Symbol.FBOUNDP, "name");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -897,9 +1118,13 @@ public final class Primitives
     };
 
   // ### fmakunbound name => name
-  private static final Primitive FMAKUNBOUND =
-    new Primitive(Symbol.FMAKUNBOUND, "name")
-    {
+  private static final Primitive FMAKUNBOUND = new pf_fmakunbound();
+  private static final class pf_fmakunbound extends Primitive {
+      pf_fmakunbound()
+      {
+        super(Symbol.FMAKUNBOUND, "name");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -918,9 +1143,13 @@ public final class Primitives
     };
 
   // ### setf-function-name-p
-  private static final Primitive SETF_FUNCTION_NAME_P =
-    new Primitive("setf-function-name-p", PACKAGE_SYS, true, "thing")
-    {
+  private static final Primitive SETF_FUNCTION_NAME_P = new pf_setf_function_name_p();
+  private static final class pf_setf_function_name_p extends Primitive {
+      pf_setf_function_name_p()
+      {
+        super("setf-function-name-p", PACKAGE_SYS, true, "thing");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -929,9 +1158,13 @@ public final class Primitives
     };
 
   // ### remprop
-  private static final Primitive REMPROP =
-    new Primitive(Symbol.REMPROP, "symbol indicator")
-    {
+  private static final Primitive REMPROP = new pf_remprop();
+  private static final class pf_remprop extends Primitive {
+      pf_remprop()
+      {
+        super(Symbol.REMPROP, "symbol indicator");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -941,9 +1174,13 @@ public final class Primitives
     };
 
   // ### append
-  public static final Primitive APPEND =
-    new Primitive(Symbol.APPEND, "&rest lists")
-    {
+  public static final Primitive APPEND = new pf_append();
+  private static final class pf_append extends Primitive {
+      pf_append()
+      {
+        super(Symbol.APPEND, "&rest lists");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -1044,9 +1281,13 @@ public final class Primitives
     };
 
   // ### nconc
-  private static final Primitive NCONC =
-    new Primitive(Symbol.NCONC, "&rest lists")
-    {
+  private static final Primitive NCONC = new pf_nconc();
+  private static final class pf_nconc extends Primitive {
+      pf_nconc()
+      {
+        super(Symbol.NCONC, "&rest lists");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -1120,9 +1361,13 @@ public final class Primitives
 
   // ### =
   // Numeric equality.
-  private static final Primitive EQUALS =
-    new Primitive(Symbol.EQUALS, "&rest numbers")
-    {
+  private static final Primitive EQUALS = new pf_equals();
+  private static final class pf_equals extends Primitive {
+      pf_equals()
+      {
+        super(Symbol.EQUALS, "&rest numbers");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -1165,9 +1410,13 @@ public final class Primitives
 
   // ### /=
   // Returns true if no two numbers are the same; otherwise returns false.
-  private static final Primitive NOT_EQUALS =
-    new Primitive(Symbol.NOT_EQUALS, "&rest numbers")
-    {
+  private static final Primitive NOT_EQUALS = new pf_not_equals();
+  private static final class pf_not_equals extends Primitive {
+      pf_not_equals()
+      {
+        super(Symbol.NOT_EQUALS, "&rest numbers");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -1216,9 +1465,13 @@ public final class Primitives
 
   // ### <
   // Numeric comparison.
-  private static final Primitive LT =
-    new Primitive(Symbol.LT, "&rest numbers")
-    {
+  private static final Primitive LT = new pf_lt();
+  private static final class pf_lt extends Primitive {
+      pf_lt()
+      {
+        super(Symbol.LT, "&rest numbers");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -1259,9 +1512,13 @@ public final class Primitives
     };
 
   // ### <=
-  private static final Primitive LE =
-    new Primitive(Symbol.LE, "&rest numbers")
-    {
+  private static final Primitive LE = new pf_le();
+  private static final class pf_le extends Primitive {
+      pf_le()
+      {
+        super(Symbol.LE, "&rest numbers");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -1302,9 +1559,13 @@ public final class Primitives
     };
 
   // ### >
-  private static final Primitive GT =
-    new Primitive(Symbol.GT, "&rest numbers")
-    {
+  private static final Primitive GT = new pf_gt();
+  private static final class pf_gt extends Primitive {
+      pf_gt()
+      {
+        super(Symbol.GT, "&rest numbers");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -1345,9 +1606,13 @@ public final class Primitives
     };
 
   // ### >=
-  private static final Primitive GE =
-    new Primitive(Symbol.GE, "&rest numbers")
-    {
+  private static final Primitive GE = new pf_ge();
+  private static final class pf_ge extends Primitive {
+      pf_ge()
+      {
+        super(Symbol.GE, "&rest numbers");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -1388,8 +1653,13 @@ public final class Primitives
     };
 
   // ### nth n list => object
-  private static final Primitive NTH = new Primitive(Symbol.NTH, "n list")
-    {
+  private static final Primitive NTH = new pf_nth();
+  private static final class pf_nth extends Primitive {
+      pf_nth()
+      {
+        super(Symbol.NTH, "n list");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -1399,9 +1669,13 @@ public final class Primitives
     };
 
   // ### %set-nth n list new-object => new-object
-  private static final Primitive _SET_NTH =
-    new Primitive("%set-nth", PACKAGE_SYS, false)
-    {
+  private static final Primitive _SET_NTH = new pf__set_nth();
+  private static final class pf__set_nth extends Primitive {
+      pf__set_nth()
+      {
+        super("%set-nth", PACKAGE_SYS, false);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
@@ -1430,9 +1704,13 @@ public final class Primitives
     };
 
   // ### nthcdr
-  private static final Primitive NTHCDR =
-    new Primitive(Symbol.NTHCDR, "n list")
-    {
+  private static final Primitive NTHCDR = new pf_nthcdr();
+  private static final class pf_nthcdr extends Primitive {
+      pf_nthcdr()
+      {
+        super(Symbol.NTHCDR, "n list");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -1453,9 +1731,13 @@ public final class Primitives
 
   /** Stub to be replaced later when signal.lisp has been loaded. */
   // ### error
-  private static final Primitive ERROR =
-    new Primitive(Symbol.ERROR, "datum &rest arguments")
-    {
+  private static final Primitive ERROR = new pf_error();
+  private static final class pf_error extends Primitive {
+      pf_error()
+      {
+        super(Symbol.ERROR, "datum &rest arguments");
+      }
+	
       @Override
       public LispObject execute(LispObject[] args)
       {
@@ -1481,9 +1763,13 @@ public final class Primitives
 
   /** Stub replaced when compiler-pass2.lisp has been loaded */
   // ### autocompile
-  private static final Primitive AUTOCOMPILE =
-    new Primitive(Symbol.AUTOCOMPILE, "function")
-    {
+  private static final Primitive AUTOCOMPILE = new pf_autocompile();
+  private static final class pf_autocompile extends Primitive {
+      pf_autocompile()
+      {
+        super(Symbol.AUTOCOMPILE, "function");
+      }
+	
       @Override
       public LispObject execute(LispObject function)
       {
@@ -1498,9 +1784,13 @@ public final class Primitives
    * Calling this function is an error: we're not set up for
    * signalling yet.
    */
-  private static final Primitive SIGNAL =
-    new Primitive(Symbol.SIGNAL, "datum &rest arguments")
-    {
+  private static final Primitive SIGNAL = new pf_signal();
+  private static final class pf_signal extends Primitive {
+      pf_signal()
+      {
+        super(Symbol.SIGNAL, "datum &rest arguments");
+      }
+	
       @Override
       public LispObject execute(LispObject[] args)
       {
@@ -1514,9 +1804,13 @@ public final class Primitives
 
   // ### undefined-function-called
   // Redefined in restart.lisp.
-  private static final Primitive UNDEFINED_FUNCTION_CALLED =
-    new Primitive(Symbol.UNDEFINED_FUNCTION_CALLED, "name arguments")
-    {
+  private static final Primitive UNDEFINED_FUNCTION_CALLED = new pf_undefined_function_called();
+  private static final class pf_undefined_function_called extends Primitive {
+      pf_undefined_function_called()
+      {
+        super(Symbol.UNDEFINED_FUNCTION_CALLED, "name arguments");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -1526,10 +1820,14 @@ public final class Primitives
     };
 
   // ### %format
-  private static final Primitive _FORMAT =
-    new Primitive("%format", PACKAGE_SYS, false,
-                  "destination control-string &rest args")
-    {
+  private static final Primitive _FORMAT = new pf__format();
+  private static final class pf__format extends Primitive {
+      pf__format()
+      {
+        super("%format", PACKAGE_SYS, false,
+                  "destination control-string &rest args");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
@@ -1664,9 +1962,13 @@ public final class Primitives
   }
 
   // ### %defun name definition => name
-  private static final Primitive _DEFUN =
-    new Primitive("%defun", PACKAGE_SYS, true, "name definition")
-    {
+  private static final Primitive _DEFUN = new pf__defun();
+  private static final class pf__defun extends Primitive {
+      pf__defun()
+      {
+        super("%defun", PACKAGE_SYS, true, "name definition");
+      }
+	
       @Override
       public LispObject execute(LispObject name, LispObject definition)
 
@@ -1694,9 +1996,13 @@ public final class Primitives
     };
 
   // ### fdefinition-block-name
-  private static final Primitive FDEFINITION_BLOCK_NAME =
-    new Primitive("fdefinition-block-name", PACKAGE_SYS, true, "function-name")
-    {
+  private static final Primitive FDEFINITION_BLOCK_NAME = new pf_fdefinition_block_name();
+  private static final class pf_fdefinition_block_name extends Primitive {
+      pf_fdefinition_block_name()
+      {
+        super("fdefinition-block-name", PACKAGE_SYS, true, "function-name");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -1709,9 +2015,13 @@ public final class Primitives
     };
 
   // ### macro-function
-  private static final Primitive MACRO_FUNCTION =
-    new Primitive(Symbol.MACRO_FUNCTION, "symbol &optional environment")
-    {
+  private static final Primitive MACRO_FUNCTION = new pf_macro_function();
+  private static final class pf_macro_function extends Primitive {
+      pf_macro_function()
+      {
+        super(Symbol.MACRO_FUNCTION, "symbol &optional environment");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -1805,9 +2115,13 @@ public final class Primitives
     };
 
   // ### make-macro
-  private static final Primitive MAKE_MACRO =
-    new Primitive("make-macro", PACKAGE_SYS, true, "name expansion-function")
-    {
+  private static final Primitive MAKE_MACRO = new pf_make_macro();
+  private static final class pf_make_macro extends Primitive {
+      pf_make_macro()
+      {
+        super("make-macro", PACKAGE_SYS, true, "name expansion-function");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -1817,9 +2131,13 @@ public final class Primitives
     };
 
   // ### macro-function-p
-  private static final Primitive MACRO_FUNCTION_P =
-      new Primitive("macro-function-p", PACKAGE_SYS, true, "value")
-  {
+  private static final Primitive MACRO_FUNCTION_P = new pf_macro_function_p();
+  private static final class pf_macro_function_p extends Primitive {
+      pf_macro_function_p()
+      {
+        super("macro-function-p", PACKAGE_SYS, true, "value");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -1829,9 +2147,13 @@ public final class Primitives
 
 
   // ### make-symbol-macro
-  private static final Primitive MAKE_SYMBOL_MACRO =
-      new Primitive("make-symbol-macro", PACKAGE_SYS, true, "expansion")
-  {
+  private static final Primitive MAKE_SYMBOL_MACRO = new pf_make_symbol_macro();
+  private static final class pf_make_symbol_macro extends Primitive {
+      pf_make_symbol_macro()
+      {
+        super("make-symbol-macro", PACKAGE_SYS, true, "expansion");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -1840,9 +2162,13 @@ public final class Primitives
   };
 
   // ### symbol-macro-p
-  private static final Primitive SYMBOL_MACRO_P =
-      new Primitive("symbol-macro-p", PACKAGE_SYS, true, "value")
-  {
+  private static final Primitive SYMBOL_MACRO_P = new pf_symbol_macro_p();
+  private static final class pf_symbol_macro_p extends Primitive {
+      pf_symbol_macro_p()
+      {
+        super("symbol-macro-p", PACKAGE_SYS, true, "value");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -1851,9 +2177,13 @@ public final class Primitives
   };
 
   // ### %defparameter
-  private static final Primitive _DEFPARAMETER =
-    new Primitive("%defparameter", PACKAGE_SYS, false)
-    {
+  private static final Primitive _DEFPARAMETER = new pf__defparameter();
+  private static final class pf__defparameter extends Primitive {
+      pf__defparameter()
+      {
+        super("%defparameter", PACKAGE_SYS, false);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
@@ -1871,9 +2201,13 @@ public final class Primitives
     };
 
   // ### %defvar
-  private static final Primitive _DEFVAR =
-    new Primitive("%defvar", PACKAGE_SYS, false)
-    {
+  private static final Primitive _DEFVAR = new pf__defvar();
+  private static final class pf__defvar extends Primitive {
+      pf__defvar()
+      {
+        super("%defvar", PACKAGE_SYS, false);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -1894,9 +2228,13 @@ public final class Primitives
     };
 
   // ### %defconstant name initial-value documentation => name
-  private static final Primitive _DEFCONSTANT =
-    new Primitive("%defconstant", PACKAGE_SYS, false)
-    {
+  private static final Primitive _DEFCONSTANT = new pf__defconstant();
+  private static final class pf__defconstant extends Primitive {
+      pf__defconstant()
+      {
+        super("%defconstant", PACKAGE_SYS, false);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
@@ -2061,10 +2399,14 @@ public final class Primitives
 
   // ### upgraded-array-element-type typespec &optional environment
   // => upgraded-typespec
-  private static final Primitive UPGRADED_ARRAY_ELEMENT_TYPE =
-    new Primitive(Symbol.UPGRADED_ARRAY_ELEMENT_TYPE,
-                  "typespec &optional environment")
-    {
+  private static final Primitive UPGRADED_ARRAY_ELEMENT_TYPE = new pf_upgraded_array_element_type();
+  private static final class pf_upgraded_array_element_type extends Primitive {
+      pf_upgraded_array_element_type()
+      {
+        super(Symbol.UPGRADED_ARRAY_ELEMENT_TYPE,
+                  "typespec &optional environment");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -2080,9 +2422,13 @@ public final class Primitives
     };
 
   // ### array-rank array => rank
-  private static final Primitive ARRAY_RANK =
-    new Primitive(Symbol.ARRAY_RANK, "array")
-    {
+  private static final Primitive ARRAY_RANK = new pf_array_rank();
+  private static final class pf_array_rank extends Primitive {
+      pf_array_rank()
+      {
+        super(Symbol.ARRAY_RANK, "array");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -2093,9 +2439,13 @@ public final class Primitives
 
   // ### array-dimensions array => dimensions
   // Returns a list of integers. Fill pointer (if any) is ignored.
-  private static final Primitive ARRAY_DIMENSIONS =
-    new Primitive(Symbol.ARRAY_DIMENSIONS, "array")
-    {
+  private static final Primitive ARRAY_DIMENSIONS = new pf_array_dimensions();
+  private static final class pf_array_dimensions extends Primitive {
+      pf_array_dimensions()
+      {
+        super(Symbol.ARRAY_DIMENSIONS, "array");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -2104,9 +2454,13 @@ public final class Primitives
     };
 
   // ### array-dimension array axis-number => dimension
-  private static final Primitive ARRAY_DIMENSION =
-    new Primitive(Symbol.ARRAY_DIMENSION, "array axis-number")
-    {
+  private static final Primitive ARRAY_DIMENSION = new pf_array_dimension();
+  private static final class pf_array_dimension extends Primitive {
+      pf_array_dimension()
+      {
+        super(Symbol.ARRAY_DIMENSION, "array axis-number");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -2117,9 +2471,13 @@ public final class Primitives
     };
 
   // ### array-total-size array => size
-  private static final Primitive ARRAY_TOTAL_SIZE =
-    new Primitive(Symbol.ARRAY_TOTAL_SIZE, "array")
-    {
+  private static final Primitive ARRAY_TOTAL_SIZE = new pf_array_total_size();
+  private static final class pf_array_total_size extends Primitive {
+      pf_array_total_size()
+      {
+        super(Symbol.ARRAY_TOTAL_SIZE, "array");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -2130,9 +2488,13 @@ public final class Primitives
 
   // ### array-element-type
   // array-element-type array => typespec
-  private static final Primitive ARRAY_ELEMENT_TYPE =
-    new Primitive(Symbol.ARRAY_ELEMENT_TYPE, "array")
-    {
+  private static final Primitive ARRAY_ELEMENT_TYPE = new pf_array_element_type();
+  private static final class pf_array_element_type extends Primitive {
+      pf_array_element_type()
+      {
+        super(Symbol.ARRAY_ELEMENT_TYPE, "array");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -2141,9 +2503,13 @@ public final class Primitives
     };
 
   // ### adjustable-array-p
-  private static final Primitive ADJUSTABLE_ARRAY_P =
-    new Primitive(Symbol.ADJUSTABLE_ARRAY_P, "array")
-    {
+  private static final Primitive ADJUSTABLE_ARRAY_P = new pf_adjustable_array_p();
+  private static final class pf_adjustable_array_p extends Primitive {
+      pf_adjustable_array_p()
+      {
+        super(Symbol.ADJUSTABLE_ARRAY_P, "array");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -2152,9 +2518,13 @@ public final class Primitives
     };
 
   // ### array-displacement array => displaced-to, displaced-index-offset
-  private static final Primitive ARRAY_DISPLACEMENT =
-    new Primitive(Symbol.ARRAY_DISPLACEMENT, "array")
-    {
+  private static final Primitive ARRAY_DISPLACEMENT = new pf_array_displacement();
+  private static final class pf_array_displacement extends Primitive {
+      pf_array_displacement()
+      {
+        super(Symbol.ARRAY_DISPLACEMENT, "array");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -2164,9 +2534,13 @@ public final class Primitives
     };
 
   // ### array-in-bounds-p array &rest subscripts => generalized-boolean
-  private static final Primitive ARRAY_IN_BOUNDS_P =
-    new Primitive(Symbol.ARRAY_IN_BOUNDS_P, "array &rest subscripts")
-    {
+  private static final Primitive ARRAY_IN_BOUNDS_P = new pf_array_in_bounds_p();
+  private static final class pf_array_in_bounds_p extends Primitive {
+      pf_array_in_bounds_p()
+      {
+        super(Symbol.ARRAY_IN_BOUNDS_P, "array &rest subscripts");
+      }
+	
       @Override
       public LispObject execute(LispObject[] args)
       {
@@ -2205,9 +2579,13 @@ public final class Primitives
     };
 
   // ### %array-row-major-index array subscripts => index
-  private static final Primitive _ARRAY_ROW_MAJOR_INDEX =
-    new Primitive("%array-row-major-index", PACKAGE_SYS, false)
-    {
+  private static final Primitive _ARRAY_ROW_MAJOR_INDEX = new pf__array_row_major_index();
+  private static final class pf__array_row_major_index extends Primitive {
+      pf__array_row_major_index()
+      {
+        super("%array-row-major-index", PACKAGE_SYS, false);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -2220,9 +2598,13 @@ public final class Primitives
     };
 
   // ### aref array &rest subscripts => element
-  private static final Primitive AREF =
-    new Primitive(Symbol.AREF, "array &rest subscripts")
-    {
+  private static final Primitive AREF = new pf_aref();
+  private static final class pf_aref extends Primitive {
+      pf_aref()
+      {
+        super(Symbol.AREF, "array &rest subscripts");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -2268,10 +2650,14 @@ public final class Primitives
     };
 
   // ### aset array subscripts new-element => new-element
-  private static final Primitive ASET =
-    new Primitive("aset", PACKAGE_SYS, true,
-                  "array subscripts new-element")
-    {
+  private static final Primitive ASET = new pf_aset();
+  private static final class pf_aset extends Primitive {
+      pf_aset()
+      {
+        super("aset", PACKAGE_SYS, true,
+                  "array subscripts new-element");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -2313,9 +2699,13 @@ public final class Primitives
     };
 
   // ### row-major-aref array index => element
-  private static final Primitive ROW_MAJOR_AREF =
-    new Primitive(Symbol.ROW_MAJOR_AREF, "array index")
-    {
+  private static final Primitive ROW_MAJOR_AREF = new pf_row_major_aref();
+  private static final class pf_row_major_aref extends Primitive {
+      pf_row_major_aref()
+      {
+        super(Symbol.ROW_MAJOR_AREF, "array index");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -2325,9 +2715,13 @@ public final class Primitives
     };
 
   // ### vector
-  private static final Primitive VECTOR =
-    new Primitive(Symbol.VECTOR, "&rest objects")
-    {
+  private static final Primitive VECTOR = new pf_vector();
+  private static final class pf_vector extends Primitive {
+      pf_vector()
+      {
+        super(Symbol.VECTOR, "&rest objects");
+      }
+	
       @Override
       public LispObject execute(LispObject[] args)
       {
@@ -2336,9 +2730,13 @@ public final class Primitives
     };
 
   // ### fill-pointer
-  private static final Primitive FILL_POINTER =
-    new Primitive(Symbol.FILL_POINTER, "vector")
-    {
+  private static final Primitive FILL_POINTER = new pf_fill_pointer();
+  private static final class pf_fill_pointer extends Primitive {
+      pf_fill_pointer()
+      {
+        super(Symbol.FILL_POINTER, "vector");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
 
@@ -2355,9 +2753,13 @@ public final class Primitives
     };
 
   // ### %set-fill-pointer vector new-fill-pointer
-  private static final Primitive _SET_FILL_POINTER =
-    new Primitive("%set-fill-pointer", PACKAGE_SYS, true)
-    {
+  private static final Primitive _SET_FILL_POINTER = new pf__set_fill_pointer();
+  private static final class pf__set_fill_pointer extends Primitive {
+      pf__set_fill_pointer()
+      {
+        super("%set-fill-pointer", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -2379,9 +2781,13 @@ public final class Primitives
     };
 
   // ### vector-push new-element vector => index-of-new-element
-  private static final Primitive VECTOR_PUSH =
-    new Primitive(Symbol.VECTOR_PUSH, "new-element vector")
-    {
+  private static final Primitive VECTOR_PUSH = new pf_vector_push();
+  private static final class pf_vector_push extends Primitive {
+      pf_vector_push()
+      {
+        super(Symbol.VECTOR_PUSH, "new-element vector");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -2400,10 +2806,14 @@ public final class Primitives
 
   // ### vector-push-extend new-element vector &optional extension
   // => index-of-new-element
-  private static final Primitive VECTOR_PUSH_EXTEND =
-    new Primitive(Symbol.VECTOR_PUSH_EXTEND,
-                  "new-element vector &optional extension")
-    {
+  private static final Primitive VECTOR_PUSH_EXTEND = new pf_vector_push_extend();
+  private static final class pf_vector_push_extend extends Primitive {
+      pf_vector_push_extend()
+      {
+        super(Symbol.VECTOR_PUSH_EXTEND,
+                  "new-element vector &optional extension");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -2421,9 +2831,13 @@ public final class Primitives
     };
 
   // ### vector-pop vector => element
-  private static final Primitive VECTOR_POP =
-    new Primitive(Symbol.VECTOR_POP, "vector")
-    {
+  private static final Primitive VECTOR_POP = new pf_vector_pop();
+  private static final class pf_vector_pop extends Primitive {
+      pf_vector_pop()
+      {
+        super(Symbol.VECTOR_POP, "vector");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -2441,9 +2855,13 @@ public final class Primitives
     };
 
   // ### type-of
-  private static final Primitive TYPE_OF =
-    new Primitive(Symbol.TYPE_OF, "object")
-    {
+  private static final Primitive TYPE_OF = new pf_type_of();
+  private static final class pf_type_of extends Primitive {
+      pf_type_of()
+      {
+        super(Symbol.TYPE_OF, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -2452,9 +2870,13 @@ public final class Primitives
     };
 
   // ### class-of
-  private static final Primitive CLASS_OF =
-    new Primitive(Symbol.CLASS_OF, "object")
-    {
+  private static final Primitive CLASS_OF = new pf_class_of();
+  private static final class pf_class_of extends Primitive {
+      pf_class_of()
+      {
+        super(Symbol.CLASS_OF, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -2463,9 +2885,13 @@ public final class Primitives
     };
 
   // ### simple-typep
-  private static final Primitive SIMPLE_TYPEP =
-    new Primitive("simple-typep", PACKAGE_SYS, true)
-    {
+  private static final Primitive SIMPLE_TYPEP = new pf_simple_typep();
+  private static final class pf_simple_typep extends Primitive {
+      pf_simple_typep()
+      {
+        super("simple-typep", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -2476,9 +2902,13 @@ public final class Primitives
 
   // ### function-lambda-expression function =>
   // lambda-expression, closure-p, name
-  private static final Primitive FUNCTION_LAMBDA_EXPRESSION =
-    new Primitive(Symbol.FUNCTION_LAMBDA_EXPRESSION, "function")
-    {
+  private static final Primitive FUNCTION_LAMBDA_EXPRESSION = new pf_function_lambda_expression();
+  private static final class pf_function_lambda_expression extends Primitive {
+      pf_function_lambda_expression()
+      {
+        super(Symbol.FUNCTION_LAMBDA_EXPRESSION, "function");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -2525,9 +2955,13 @@ public final class Primitives
 
   // ### funcall
   // This needs to be public for LispAPI.java.
-  public static final Primitive FUNCALL =
-    new Primitive(Symbol.FUNCALL, "function &rest args")
-    {
+  public static final Primitive FUNCALL = new pf_funcall();
+  private static final class pf_funcall extends Primitive {
+      pf_funcall()
+      {
+        super(Symbol.FUNCALL, "function &rest args");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -2621,9 +3055,13 @@ public final class Primitives
     };
 
   // ### apply
-  public static final Primitive APPLY =
-    new Primitive(Symbol.APPLY, "function &rest args")
-    {
+  public static final Primitive APPLY = new pf_apply();
+  private static final class pf_apply extends Primitive {
+      pf_apply()
+      {
+        super(Symbol.APPLY, "function &rest args");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -2711,9 +3149,13 @@ public final class Primitives
     };
 
   // ### mapcar
-  private static final Primitive MAPCAR =
-    new Primitive(Symbol.MAPCAR, "function &rest lists")
-    {
+  private static final Primitive MAPCAR = new pf_mapcar();
+  private static final class pf_mapcar extends Primitive {
+      pf_mapcar()
+      {
+        super(Symbol.MAPCAR, "function &rest lists");
+      }
+	
       @Override
       public LispObject execute(LispObject fun, LispObject list)
 
@@ -2813,9 +3255,13 @@ public final class Primitives
     };
 
   // ### mapc
-  private static final Primitive MAPC =
-    new Primitive(Symbol.MAPC, "function &rest lists")
-    {
+  private static final Primitive MAPC = new pf_mapc();
+  private static final class pf_mapc extends Primitive {
+      pf_mapc()
+      {
+        super(Symbol.MAPC, "function &rest lists");
+      }
+	
       @Override
       public LispObject execute(LispObject fun, LispObject list)
 
@@ -2887,9 +3333,13 @@ public final class Primitives
     };
 
   // ### macroexpand
-  private static final Primitive MACROEXPAND =
-    new Primitive(Symbol.MACROEXPAND, "form &optional env")
-    {
+  private static final Primitive MACROEXPAND = new pf_macroexpand();
+  private static final class pf_macroexpand extends Primitive {
+      pf_macroexpand()
+      {
+        super(Symbol.MACROEXPAND, "form &optional env");
+      }
+	
       @Override
       public LispObject execute(LispObject form)
       {
@@ -2908,9 +3358,13 @@ public final class Primitives
     };
 
   // ### macroexpand-1
-  private static final Primitive MACROEXPAND_1 =
-    new Primitive(Symbol.MACROEXPAND_1, "form &optional env")
-    {
+  private static final Primitive MACROEXPAND_1 = new pf_macroexpand_1();
+  private static final class pf_macroexpand_1 extends Primitive {
+      pf_macroexpand_1()
+      {
+        super(Symbol.MACROEXPAND_1, "form &optional env");
+      }
+	
       @Override
       public LispObject execute(LispObject form)
       {
@@ -2929,9 +3383,13 @@ public final class Primitives
     };
 
   // ### gensym
-  private static final Primitive GENSYM =
-    new Primitive(Symbol.GENSYM, "&optional x")
-    {
+  private static final Primitive GENSYM = new pf_gensym();
+  private static final class pf_gensym extends Primitive {
+      pf_gensym()
+      {
+        super(Symbol.GENSYM, "&optional x");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -2970,8 +3428,13 @@ public final class Primitives
     };
 
   // ### string
-  private static final Primitive STRING = new Primitive(Symbol.STRING, "x")
-    {
+  private static final Primitive STRING = new pf_string();
+  private static final class pf_string extends Primitive {
+      pf_string()
+      {
+        super(Symbol.STRING, "x");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -2983,9 +3446,13 @@ public final class Primitives
   // STATUS is one of :INHERITED, :EXTERNAL, :INTERNAL or NIL.
   // "It is implementation-dependent whether the string that becomes the new
   // symbol's name is the given string or a copy of it."
-  private static final Primitive INTERN =
-    new Primitive(Symbol.INTERN, "string &optional package")
-    {
+  private static final Primitive INTERN = new pf_intern();
+  private static final class pf_intern extends Primitive {
+      pf_intern()
+      {
+        super(Symbol.INTERN, "string &optional package");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -3014,9 +3481,13 @@ public final class Primitives
 
   // ### unintern
   // unintern symbol &optional package => generalized-boolean
-  private static final Primitive UNINTERN =
-    new Primitive(Symbol.UNINTERN, "symbol &optional package")
-    {
+  private static final Primitive UNINTERN = new pf_unintern();
+  private static final class pf_unintern extends Primitive {
+      pf_unintern()
+      {
+        super(Symbol.UNINTERN, "symbol &optional package");
+      }
+	
       @Override
       public LispObject execute(LispObject[] args)
       {
@@ -3033,9 +3504,13 @@ public final class Primitives
     };
 
   // ### find-package
-  private static final Primitive FIND_PACKAGE =
-    new Primitive(Symbol.FIND_PACKAGE, "name")
-    {
+  private static final Primitive FIND_PACKAGE = new pf_find_package();
+  private static final class pf_find_package extends Primitive {
+      pf_find_package()
+      {
+        super(Symbol.FIND_PACKAGE, "name");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -3065,9 +3540,13 @@ public final class Primitives
 
   // ### %make-package
   // %make-package package-name nicknames use => package
-  private static final Primitive _MAKE_PACKAGE =
-    new Primitive("%make-package", PACKAGE_SYS, false)
-    {
+  private static final Primitive _MAKE_PACKAGE = new pf__make_package();
+  private static final class pf__make_package extends Primitive {
+      pf__make_package()
+      {
+        super("%make-package", PACKAGE_SYS, false);
+      }
+	
       /**
        * This invocation is solely used to be able to create
        * a package to bind to *FASL-ANONYMOUS-PACKAGE*
@@ -3164,9 +3643,13 @@ public final class Primitives
     };
 
   // ### %in-package
-  private static final Primitive _IN_PACKAGE =
-    new Primitive("%in-package", PACKAGE_SYS, true)
-    {
+  private static final Primitive _IN_PACKAGE = new pf__in_package();
+  private static final class pf__in_package extends Primitive {
+      pf__in_package()
+      {
+        super("%in-package", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -3187,9 +3670,13 @@ public final class Primitives
     };
 
   // ### use-package packages-to-use &optional package => t
-  private static final Primitive USE_PACKAGE =
-    new Primitive(Symbol.USE_PACKAGE, "packages-to-use &optional package")
-    {
+  private static final Primitive USE_PACKAGE = new pf_use_package();
+  private static final class pf_use_package extends Primitive {
+      pf_use_package()
+      {
+        super(Symbol.USE_PACKAGE, "packages-to-use &optional package");
+      }
+	
       @Override
       public LispObject execute(LispObject[] args)
       {
@@ -3216,9 +3703,13 @@ public final class Primitives
     };
 
   // ### package-symbols
-  private static final Primitive PACKAGE_SYMBOLS =
-    new Primitive("package-symbols", PACKAGE_SYS, true)
-    {
+  private static final Primitive PACKAGE_SYMBOLS = new pf_package_symbols();
+  private static final class pf_package_symbols extends Primitive {
+      pf_package_symbols()
+      {
+        super("package-symbols", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -3227,9 +3718,13 @@ public final class Primitives
     };
 
   // ### package-internal-symbols
-  private static final Primitive PACKAGE_INTERNAL_SYMBOLS =
-    new Primitive("package-internal-symbols", PACKAGE_SYS, true)
-    {
+  private static final Primitive PACKAGE_INTERNAL_SYMBOLS = new pf_package_internal_symbols();
+  private static final class pf_package_internal_symbols extends Primitive {
+      pf_package_internal_symbols()
+      {
+        super("package-internal-symbols", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -3238,9 +3733,13 @@ public final class Primitives
     };
 
   // ### package-external-symbols
-  private static final Primitive PACKAGE_EXTERNAL_SYMBOLS =
-    new Primitive("package-external-symbols", PACKAGE_SYS, true)
-    {
+  private static final Primitive PACKAGE_EXTERNAL_SYMBOLS = new pf_package_external_symbols();
+  private static final class pf_package_external_symbols extends Primitive {
+      pf_package_external_symbols()
+      {
+        super("package-external-symbols", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -3249,9 +3748,13 @@ public final class Primitives
     };
 
   // ### package-inherited-symbols
-  private static final Primitive PACKAGE_INHERITED_SYMBOLS =
-    new Primitive("package-inherited-symbols", PACKAGE_SYS, true)
-    {
+  private static final Primitive PACKAGE_INHERITED_SYMBOLS = new pf_package_inherited_symbols();
+  private static final class pf_package_inherited_symbols extends Primitive {
+      pf_package_inherited_symbols()
+      {
+        super("package-inherited-symbols", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -3260,9 +3763,13 @@ public final class Primitives
     };
 
   // ### export symbols &optional package
-  private static final Primitive EXPORT =
-    new Primitive(Symbol.EXPORT, "symbols &optional package")
-    {
+  private static final Primitive EXPORT = new pf_export();
+  private static final class pf_export extends Primitive {
+      pf_export()
+      {
+        super(Symbol.EXPORT, "symbols &optional package");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -3294,9 +3801,13 @@ public final class Primitives
     };
 
   // ### find-symbol string &optional package => symbol, status
-  private static final Primitive FIND_SYMBOL =
-    new Primitive(Symbol.FIND_SYMBOL, "string &optional package")
-    {
+  private static final Primitive FIND_SYMBOL = new pf_find_symbol();
+  private static final class pf_find_symbol extends Primitive {
+      pf_find_symbol()
+      {
+        super(Symbol.FIND_SYMBOL, "string &optional package");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -3315,9 +3826,13 @@ public final class Primitives
 
   // ### fset name function &optional source-position arglist documentation
   // => function
-  private static final Primitive FSET =
-    new Primitive("fset", PACKAGE_SYS, true)
-    {
+  private static final Primitive FSET = new pf_fset();
+  private static final class pf_fset extends Primitive {
+      pf_fset()
+      {
+        super("fset", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -3384,9 +3899,13 @@ public final class Primitives
     };
 
   // ### %set-symbol-plist
-  private static final Primitive _SET_SYMBOL_PLIST =
-    new Primitive("%set-symbol-plist", PACKAGE_SYS, false)
-    {
+  private static final Primitive _SET_SYMBOL_PLIST = new pf__set_symbol_plist();
+  private static final class pf__set_symbol_plist extends Primitive {
+      pf__set_symbol_plist()
+      {
+        super("%set-symbol-plist", PACKAGE_SYS, false);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -3397,9 +3916,13 @@ public final class Primitives
     };
 
   // ### getf plist indicator &optional default => value
-  private static final Primitive GETF =
-    new Primitive(Symbol.GETF, "plist indicator &optional default")
-    {
+  private static final Primitive GETF = new pf_getf();
+  private static final class pf_getf extends Primitive {
+      pf_getf()
+      {
+        super(Symbol.GETF, "plist indicator &optional default");
+      }
+	
       @Override
       public LispObject execute(LispObject plist, LispObject indicator)
 
@@ -3416,9 +3939,13 @@ public final class Primitives
     };
 
   // ### get symbol indicator &optional default => value
-  private static final Primitive GET =
-    new Primitive(Symbol.GET, "symbol indicator &optional default")
-    {
+  private static final Primitive GET = new pf_get();
+  private static final class pf_get extends Primitive {
+      pf_get()
+      {
+        super(Symbol.GET, "symbol indicator &optional default");
+      }
+	
       @Override
       public LispObject execute(LispObject symbol, LispObject indicator)
 
@@ -3435,9 +3962,13 @@ public final class Primitives
     };
 
   // ### put symbol indicator value => value
-  private static final Primitive PUT =
-    new Primitive("put", PACKAGE_SYS, true)
-    {
+  private static final Primitive PUT = new pf_put();
+  private static final class pf_put extends Primitive {
+      pf_put()
+      {
+        super("put", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject symbol, LispObject indicator,
                                 LispObject value)
@@ -3492,10 +4023,14 @@ public final class Primitives
       }
     };
 
-  private static final Primitive MAKE_EXPANDER_FOR_MACROLET =
-    new Primitive("make-expander-for-macrolet", PACKAGE_SYS, true,
-                  "definition")
-    {
+  private static final Primitive MAKE_EXPANDER_FOR_MACROLET = new pf_make_expander_for_macrolet();
+  private static final class pf_make_expander_for_macrolet extends Primitive {
+      pf_make_expander_for_macrolet()
+      {
+        super("make-expander-for-macrolet", PACKAGE_SYS, true,
+                  "definition");
+      }
+	
       @Override
       public LispObject execute(LispObject definition)
 
@@ -3994,9 +4529,13 @@ public final class Primitives
     };
 
   // ### call-count
-  private static final Primitive CALL_COUNT =
-    new Primitive("call-count", PACKAGE_SYS, true)
-    {
+  private static final Primitive CALL_COUNT = new pf_call_count();
+  private static final class pf_call_count extends Primitive {
+      pf_call_count()
+      {
+        super("call-count", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4005,9 +4544,13 @@ public final class Primitives
     };
 
   // ### set-call-count
-  private static final Primitive SET_CALL_COUNT =
-    new Primitive("set-call-count", PACKAGE_SYS, true)
-    {
+  private static final Primitive SET_CALL_COUNT = new pf_set_call_count();
+  private static final class pf_set_call_count extends Primitive {
+      pf_set_call_count()
+      {
+        super("set-call-count", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -4018,9 +4561,13 @@ public final class Primitives
     };
 
   // ### call-count
-  private static final Primitive HOT_COUNT =
-    new Primitive("hot-count", PACKAGE_SYS, true)
-    {
+  private static final Primitive HOT_COUNT = new pf_hot_count();
+  private static final class pf_hot_count extends Primitive {
+      pf_hot_count()
+      {
+        super("hot-count", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4029,9 +4576,13 @@ public final class Primitives
     };
 
   // ### set-call-count
-  private static final Primitive SET_HOT_COUNT =
-    new Primitive("set-hot-count", PACKAGE_SYS, true)
-    {
+  private static final Primitive SET_HOT_COUNT = new pf_set_hot_count();
+  private static final class pf_set_hot_count extends Primitive {
+      pf_set_hot_count()
+      {
+        super("set-hot-count", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -4042,9 +4593,13 @@ public final class Primitives
     };
 
     // ### lambda-name
-  private static final Primitive LAMBDA_NAME =
-    new Primitive("lambda-name", PACKAGE_SYS, true)
-    {
+  private static final Primitive LAMBDA_NAME = new pf_lambda_name();
+  private static final class pf_lambda_name extends Primitive {
+      pf_lambda_name()
+      {
+        super("lambda-name", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4061,9 +4616,13 @@ public final class Primitives
     };
 
   // ### %set-lambda-name
-  private static final Primitive _SET_LAMBDA_NAME =
-    new Primitive("%set-lambda-name", PACKAGE_SYS, false)
-    {
+  private static final Primitive _SET_LAMBDA_NAME = new pf__set_lambda_name();
+  private static final class pf__set_lambda_name extends Primitive {
+      pf__set_lambda_name()
+      {
+        super("%set-lambda-name", PACKAGE_SYS, false);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -4086,9 +4645,13 @@ public final class Primitives
   // Destructively alters the vector, changing its length to NEW-SIZE, which
   // must be less than or equal to its current length.
   // shrink-vector vector new-size => vector
-  private static final Primitive SHRINK_VECTOR =
-    new Primitive("shrink-vector", PACKAGE_SYS, true, "vector new-size")
-    {
+  private static final Primitive SHRINK_VECTOR = new pf_shrink_vector();
+  private static final class pf_shrink_vector extends Primitive {
+      pf_shrink_vector()
+      {
+        super("shrink-vector", PACKAGE_SYS, true, "vector new-size");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -4099,9 +4662,13 @@ public final class Primitives
     };
 
   // ### subseq sequence start &optional end
-  private static final Primitive SUBSEQ =
-    new Primitive(Symbol.SUBSEQ, "sequence start &optional end")
-    {
+  private static final Primitive SUBSEQ = new pf_subseq();
+  private static final class pf_subseq extends Primitive {
+      pf_subseq()
+      {
+        super(Symbol.SUBSEQ, "sequence start &optional end");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -4183,9 +4750,13 @@ public final class Primitives
   }
 
   // ### list
-  private static final Primitive LIST =
-    new Primitive(Symbol.LIST, "&rest objects")
-    {
+  private static final Primitive LIST = new pf_list();
+  private static final class pf_list extends Primitive {
+      pf_list()
+      {
+        super(Symbol.LIST, "&rest objects");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -4227,9 +4798,13 @@ public final class Primitives
     };
 
   // ### list*
-  private static final Primitive LIST_STAR =
-    new Primitive(Symbol.LIST_STAR, "&rest objects")
-    {
+  private static final Primitive LIST_STAR = new pf_list_star();
+  private static final class pf_list_star extends Primitive {
+      pf_list_star()
+      {
+        super(Symbol.LIST_STAR, "&rest objects");
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -4274,9 +4849,13 @@ public final class Primitives
     };
 
   // ### nreverse
-  public static final Primitive NREVERSE =
-    new Primitive(Symbol.NREVERSE, "sequence")
-    {
+  public static final Primitive NREVERSE = new pf_nreverse();
+  private static final class pf_nreverse extends Primitive {
+      pf_nreverse()
+      {
+        super(Symbol.NREVERSE, "sequence");
+      }
+	
       @Override
       public LispObject execute (LispObject arg)
       {
@@ -4285,9 +4864,13 @@ public final class Primitives
     };
 
   // ### nreconc
-  private static final Primitive NRECONC =
-    new Primitive(Symbol.NRECONC, "list tail")
-    {
+  private static final Primitive NRECONC = new pf_nreconc();
+  private static final class pf_nreconc extends Primitive {
+      pf_nreconc()
+      {
+        super(Symbol.NRECONC, "list tail");
+      }
+	
       @Override
       public LispObject execute(LispObject list, LispObject obj)
 
@@ -4332,9 +4915,13 @@ public final class Primitives
     };
 
   // ### reverse
-  private static final Primitive REVERSE =
-    new Primitive(Symbol.REVERSE, "sequence")
-    {
+  private static final Primitive REVERSE = new pf_reverse();
+  private static final class pf_reverse extends Primitive {
+      pf_reverse()
+      {
+        super(Symbol.REVERSE, "sequence");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4343,9 +4930,13 @@ public final class Primitives
     };
 
   // ### delete-eq item sequence => result-sequence
-  private static final Primitive DELETE_EQ =
-    new Primitive("delete-eq", PACKAGE_SYS, true, "item sequence")
-    {
+  private static final Primitive DELETE_EQ = new pf_delete_eq();
+  private static final class pf_delete_eq extends Primitive {
+      pf_delete_eq()
+      {
+        super("delete-eq", PACKAGE_SYS, true, "item sequence");
+      }
+	
       @Override
       public LispObject execute(LispObject item, LispObject sequence)
 
@@ -4358,9 +4949,13 @@ public final class Primitives
     };
 
   // ### delete-eql item seqluence => result-seqluence
-  private static final Primitive DELETE_EQL =
-    new Primitive("delete-eql", PACKAGE_SYS, true, "item sequence")
-    {
+  private static final Primitive DELETE_EQL = new pf_delete_eql();
+  private static final class pf_delete_eql extends Primitive {
+      pf_delete_eql()
+      {
+        super("delete-eql", PACKAGE_SYS, true, "item sequence");
+      }
+	
       @Override
       public LispObject execute(LispObject item, LispObject sequence)
 
@@ -4373,9 +4968,13 @@ public final class Primitives
     };
 
   // ### list-delete-eq item list => result-list
-  private static final Primitive LIST_DELETE_EQ =
-    new Primitive("list-delete-eq", PACKAGE_SYS, true, "item list")
-    {
+  private static final Primitive LIST_DELETE_EQ = new pf_list_delete_eq();
+  private static final class pf_list_delete_eq extends Primitive {
+      pf_list_delete_eq()
+      {
+        super("list-delete-eq", PACKAGE_SYS, true, "item list");
+      }
+	
       @Override
       public LispObject execute(LispObject item, LispObject list)
 
@@ -4423,9 +5022,13 @@ public final class Primitives
     };
 
   // ### list-delete-eql item list => result-list
-  private static final Primitive LIST_DELETE_EQL =
-    new Primitive("list-delete-eql", PACKAGE_SYS, true, "item list")
-    {
+  private static final Primitive LIST_DELETE_EQL = new pf_list_delete_eql();
+  private static final class pf_list_delete_eql extends Primitive {
+      pf_list_delete_eql()
+      {
+        super("list-delete-eql", PACKAGE_SYS, true, "item list");
+      }
+	
       @Override
       public LispObject execute(LispObject item, LispObject list)
 
@@ -4473,9 +5076,13 @@ public final class Primitives
     };
 
   // ### vector-delete-eq item vector => result-vector
-  private static final Primitive VECTOR_DELETE_EQ =
-    new Primitive("vector-delete-eq", PACKAGE_SYS, true, "item vector")
-    {
+  private static final Primitive VECTOR_DELETE_EQ = new pf_vector_delete_eq();
+  private static final class pf_vector_delete_eq extends Primitive {
+      pf_vector_delete_eq()
+      {
+        super("vector-delete-eq", PACKAGE_SYS, true, "item vector");
+      }
+	
       @Override
       public LispObject execute(LispObject item, LispObject vector)
 
@@ -4486,9 +5093,13 @@ public final class Primitives
     };
 
   // ### vector-delete-eql item vector => result-vector
-  private static final Primitive VECTOR_DELETE_EQL =
-    new Primitive("vector-delete-eql", PACKAGE_SYS, true, "item vector")
-    {
+  private static final Primitive VECTOR_DELETE_EQL = new pf_vector_delete_eql();
+  private static final class pf_vector_delete_eql extends Primitive {
+      pf_vector_delete_eql()
+      {
+        super("vector-delete-eql", PACKAGE_SYS, true, "item vector");
+      }
+	
       @Override
       public LispObject execute(LispObject item, LispObject vector)
 
@@ -4500,9 +5111,13 @@ public final class Primitives
 
   // ### %set-elt
   // %setelt sequence index newval => newval
-  private static final Primitive _SET_ELT =
-    new Primitive("%set-elt", PACKAGE_SYS, false)
-    {
+  private static final Primitive _SET_ELT = new pf__set_elt();
+  private static final class pf__set_elt extends Primitive {
+      pf__set_elt()
+      {
+        super("%set-elt", PACKAGE_SYS, false);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
@@ -4538,9 +5153,13 @@ public final class Primitives
     };
 
   // ### %make-list
-  private static final Primitive _MAKE_LIST =
-    new Primitive("%make-list", PACKAGE_SYS, true)
-    {
+  private static final Primitive _MAKE_LIST = new pf__make_list();
+  private static final class pf__make_list extends Primitive {
+      pf__make_list()
+      {
+        super("%make-list", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -4557,9 +5176,13 @@ public final class Primitives
     };
 
   // ### %member item list key test test-not => tail
-  private static final Primitive _MEMBER =
-    new Primitive("%member", PACKAGE_SYS, true)
-    {
+  private static final Primitive _MEMBER = new pf__member();
+  private static final class pf__member extends Primitive {
+      pf__member()
+      {
+        super("%member", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject item, LispObject list,
                                 LispObject key, LispObject test,
@@ -4633,9 +5256,13 @@ public final class Primitives
     };
 
   // ### funcall-key function-or-nil element
-  private static final Primitive FUNCALL_KEY =
-    new Primitive("funcall-key", PACKAGE_SYS, false)
-    {
+  private static final Primitive FUNCALL_KEY = new pf_funcall_key();
+  private static final class pf_funcall_key extends Primitive {
+      pf_funcall_key()
+      {
+        super("funcall-key", PACKAGE_SYS, false);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -4647,9 +5274,13 @@ public final class Primitives
     };
 
   // ### coerce-to-function
-  private static final Primitive COERCE_TO_FUNCTION =
-    new Primitive("coerce-to-function", PACKAGE_SYS, true)
-    {
+  private static final Primitive COERCE_TO_FUNCTION = new pf_coerce_to_function();
+  private static final class pf_coerce_to_function extends Primitive {
+      pf_coerce_to_function()
+      {
+        super("coerce-to-function", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4658,9 +5289,13 @@ public final class Primitives
     };
 
   // ### make-closure lambda-form environment => closure
-  private static final Primitive MAKE_CLOSURE =
-    new Primitive("make-closure", PACKAGE_SYS, true)
-    {
+  private static final Primitive MAKE_CLOSURE = new pf_make_closure();
+  private static final class pf_make_closure extends Primitive {
+      pf_make_closure()
+      {
+        super("make-closure", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -4679,9 +5314,13 @@ public final class Primitives
     };
 
   // ### streamp
-  private static final Primitive STREAMP =
-    new Primitive(Symbol.STREAMP, "object")
-    {
+  private static final Primitive STREAMP = new pf_streamp();
+  private static final class pf_streamp extends Primitive {
+      pf_streamp()
+      {
+        super(Symbol.STREAMP, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4690,9 +5329,13 @@ public final class Primitives
     };
 
   // ### integerp
-  private static final Primitive INTEGERP =
-    new Primitive(Symbol.INTEGERP, "object")
-    {
+  private static final Primitive INTEGERP = new pf_integerp();
+  private static final class pf_integerp extends Primitive {
+      pf_integerp()
+      {
+        super(Symbol.INTEGERP, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4701,9 +5344,13 @@ public final class Primitives
     };
 
   // ### evenp
-  private static final Primitive EVENP =
-    new Primitive(Symbol.EVENP, "integer")
-    {
+  private static final Primitive EVENP = new pf_evenp();
+  private static final class pf_evenp extends Primitive {
+      pf_evenp()
+      {
+        super(Symbol.EVENP, "integer");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4712,8 +5359,13 @@ public final class Primitives
     };
 
   // ### oddp
-  private static final Primitive ODDP = new Primitive(Symbol.ODDP, "integer")
-    {
+  private static final Primitive ODDP = new pf_oddp();
+  private static final class pf_oddp extends Primitive {
+      pf_oddp()
+      {
+        super(Symbol.ODDP, "integer");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4722,9 +5374,13 @@ public final class Primitives
     };
 
   // ### numberp
-  private static final Primitive NUMBERP =
-    new Primitive(Symbol.NUMBERP, "object")
-    {
+  private static final Primitive NUMBERP = new pf_numberp();
+  private static final class pf_numberp extends Primitive {
+      pf_numberp()
+      {
+        super(Symbol.NUMBERP, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4733,9 +5389,13 @@ public final class Primitives
     };
 
   // ### realp
-  private static final Primitive REALP =
-    new Primitive(Symbol.REALP, "object")
-    {
+  private static final Primitive REALP = new pf_realp();
+  private static final class pf_realp extends Primitive {
+      pf_realp()
+      {
+        super(Symbol.REALP, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4744,9 +5404,13 @@ public final class Primitives
     };
 
   // ### rationalp
-  private static final Primitive RATIONALP =
-    new Primitive(Symbol.RATIONALP,"object")
-    {
+  private static final Primitive RATIONALP = new pf_rationalp();
+  private static final class pf_rationalp extends Primitive {
+      pf_rationalp()
+      {
+        super(Symbol.RATIONALP,"object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4755,9 +5419,13 @@ public final class Primitives
     };
 
   // ### complex
-  private static final Primitive COMPLEX =
-    new Primitive(Symbol.COMPLEX, "realpart &optional imagpart")
-    {
+  private static final Primitive COMPLEX = new pf_complex();
+  private static final class pf_complex extends Primitive {
+      pf_complex()
+      {
+        super(Symbol.COMPLEX, "realpart &optional imagpart");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4778,9 +5446,13 @@ public final class Primitives
     };
 
   // ### complexp
-  private static final Primitive COMPLEXP =
-    new Primitive(Symbol.COMPLEXP, "object")
-    {
+  private static final Primitive COMPLEXP = new pf_complexp();
+  private static final class pf_complexp extends Primitive {
+      pf_complexp()
+      {
+        super(Symbol.COMPLEXP, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4789,9 +5461,13 @@ public final class Primitives
     };
 
   // ### numerator
-  private static final Primitive NUMERATOR =
-    new Primitive(Symbol.NUMERATOR, "rational")
-    {
+  private static final Primitive NUMERATOR = new pf_numerator();
+  private static final class pf_numerator extends Primitive {
+      pf_numerator()
+      {
+        super(Symbol.NUMERATOR, "rational");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4800,9 +5476,13 @@ public final class Primitives
     };
 
   // ### denominator
-  private static final Primitive DENOMINATOR =
-    new Primitive(Symbol.DENOMINATOR, "rational")
-    {
+  private static final Primitive DENOMINATOR = new pf_denominator();
+  private static final class pf_denominator extends Primitive {
+      pf_denominator()
+      {
+        super(Symbol.DENOMINATOR, "rational");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4811,9 +5491,13 @@ public final class Primitives
     };
 
   // ### realpart
-  private static final Primitive REALPART =
-    new Primitive(Symbol.REALPART, "number")
-    {
+  private static final Primitive REALPART = new pf_realpart();
+  private static final class pf_realpart extends Primitive {
+      pf_realpart()
+      {
+        super(Symbol.REALPART, "number");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4826,9 +5510,13 @@ public final class Primitives
     };
 
   // ### imagpart
-  private static final Primitive IMAGPART =
-    new Primitive(Symbol.IMAGPART, "number")
-    {
+  private static final Primitive IMAGPART = new pf_imagpart();
+  private static final class pf_imagpart extends Primitive {
+      pf_imagpart()
+      {
+        super(Symbol.IMAGPART, "number");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4839,9 +5527,13 @@ public final class Primitives
     };
 
   // ### integer-length
-  private static final Primitive INTEGER_LENGTH =
-    new Primitive(Symbol.INTEGER_LENGTH, "integer")
-    {
+  private static final Primitive INTEGER_LENGTH = new pf_integer_length();
+  private static final class pf_integer_length extends Primitive {
+      pf_integer_length()
+      {
+        super(Symbol.INTEGER_LENGTH, "integer");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4865,9 +5557,13 @@ public final class Primitives
     };
 
   // ### gcd-2
-  private static final Primitive GCD_2 =
-    new Primitive("gcd-2", PACKAGE_SYS, false)
-    {
+  private static final Primitive GCD_2 = new pf_gcd_2();
+  private static final class pf_gcd_2 extends Primitive {
+      pf_gcd_2()
+      {
+        super("gcd-2", PACKAGE_SYS, false);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -4890,9 +5586,13 @@ public final class Primitives
     };
 
   // ### identity-hash-code
-  private static final Primitive IDENTITY_HASH_CODE =
-    new Primitive("identity-hash-code", PACKAGE_SYS, true)
-    {
+  private static final Primitive IDENTITY_HASH_CODE = new pf_identity_hash_code();
+  private static final class pf_identity_hash_code extends Primitive {
+      pf_identity_hash_code()
+      {
+        super("identity-hash-code", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4902,9 +5602,13 @@ public final class Primitives
 
   // ### simple-vector-search pattern vector => position
   // Searches vector for pattern.
-  private static final Primitive SIMPLE_VECTOR_SEARCH =
-    new Primitive("simple-vector-search", PACKAGE_SYS, false)
-    {
+  private static final Primitive SIMPLE_VECTOR_SEARCH = new pf_simple_vector_search();
+  private static final class pf_simple_vector_search extends Primitive {
+      pf_simple_vector_search()
+      {
+        super("simple-vector-search", PACKAGE_SYS, false);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -4977,9 +5681,13 @@ public final class Primitives
     };
 
   // ### uptime
-  private static final Primitive UPTIME =
-    new Primitive("uptime", PACKAGE_EXT, true)
-    {
+  private static final Primitive UPTIME = new pf_uptime();
+  private static final class pf_uptime extends Primitive {
+      pf_uptime()
+      {
+        super("uptime", PACKAGE_EXT, true);
+      }
+	
       @Override
       public LispObject execute()
       {
@@ -4988,9 +5696,13 @@ public final class Primitives
     };
 
   // ### built-in-function-p
-  private static final Primitive BUILT_IN_FUNCTION_P =
-    new Primitive("built-in-function-p", PACKAGE_SYS, true)
-    {
+  private static final Primitive BUILT_IN_FUNCTION_P = new pf_built_in_function_p();
+  private static final class pf_built_in_function_p extends Primitive {
+      pf_built_in_function_p()
+      {
+        super("built-in-function-p", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -4999,9 +5711,13 @@ public final class Primitives
     };
 
   // ### inspected-parts
-  private static final Primitive INSPECTED_PARTS =
-    new Primitive("inspected-parts", PACKAGE_SYS, true)
-    {
+  private static final Primitive INSPECTED_PARTS = new pf_inspected_parts();
+  private static final class pf_inspected_parts extends Primitive {
+      pf_inspected_parts()
+      {
+        super("inspected-parts", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5010,9 +5726,13 @@ public final class Primitives
     };
 
   // ### inspected-description
-  private static final Primitive INSPECTED_DESCRIPTION =
-    new Primitive("inspected-description", PACKAGE_SYS, false)
-    {
+  private static final Primitive INSPECTED_DESCRIPTION = new pf_inspected_description();
+  private static final class pf_inspected_description extends Primitive {
+      pf_inspected_description()
+      {
+        super("inspected-description", PACKAGE_SYS, false);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5021,9 +5741,13 @@ public final class Primitives
     };
 
   // ### symbol-name
-  public static final Primitive SYMBOL_NAME =
-    new Primitive(Symbol.SYMBOL_NAME, "symbol")
-    {
+  public static final Primitive SYMBOL_NAME = new pf_symbol_name();
+  private static final class pf_symbol_name extends Primitive {
+      pf_symbol_name()
+      {
+        super(Symbol.SYMBOL_NAME, "symbol");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5032,9 +5756,13 @@ public final class Primitives
     };
 
   // ### symbol-package
-  public static final Primitive SYMBOL_PACKAGE =
-    new Primitive(Symbol.SYMBOL_PACKAGE, "symbol")
-    {
+  public static final Primitive SYMBOL_PACKAGE = new pf_symbol_package();
+  private static final class pf_symbol_package extends Primitive {
+      pf_symbol_package()
+      {
+        super(Symbol.SYMBOL_PACKAGE, "symbol");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5043,9 +5771,13 @@ public final class Primitives
     };
 
   // ### symbol-function
-  public static final Primitive SYMBOL_FUNCTION =
-    new Primitive(Symbol.SYMBOL_FUNCTION, "symbol")
-    {
+  public static final Primitive SYMBOL_FUNCTION = new pf_symbol_function();
+  private static final class pf_symbol_function extends Primitive {
+      pf_symbol_function()
+      {
+        super(Symbol.SYMBOL_FUNCTION, "symbol");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5058,9 +5790,13 @@ public final class Primitives
     };
 
   // ### %set-symbol-function
-  public static final Primitive _SET_SYMBOL_FUNCTION =
-    new Primitive("%set-symbol-function", PACKAGE_SYS, false, "symbol function")
-    {
+  public static final Primitive _SET_SYMBOL_FUNCTION = new pf__set_symbol_function();
+  private static final class pf__set_symbol_function extends Primitive {
+      pf__set_symbol_function()
+      {
+        super("%set-symbol-function", PACKAGE_SYS, false, "symbol function");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -5071,9 +5807,13 @@ public final class Primitives
     };
 
   // ### symbol-plist
-  public static final Primitive SYMBOL_PLIST =
-    new Primitive(Symbol.SYMBOL_PLIST, "symbol")
-    {
+  public static final Primitive SYMBOL_PLIST = new pf_symbol_plist();
+  private static final class pf_symbol_plist extends Primitive {
+      pf_symbol_plist()
+      {
+        super(Symbol.SYMBOL_PLIST, "symbol");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5082,9 +5822,13 @@ public final class Primitives
     };
 
   // ### keywordp
-  public static final Primitive KEYWORDP =
-    new Primitive(Symbol.KEYWORDP, "object")
-    {
+  public static final Primitive KEYWORDP = new pf_keywordp();
+  private static final class pf_keywordp extends Primitive {
+      pf_keywordp()
+      {
+        super(Symbol.KEYWORDP, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5098,9 +5842,13 @@ public final class Primitives
     };
 
   // ### make-symbol
-  public static final Primitive MAKE_SYMBOL =
-    new Primitive(Symbol.MAKE_SYMBOL, "name")
-    {
+  public static final Primitive MAKE_SYMBOL = new pf_make_symbol();
+  private static final class pf_make_symbol extends Primitive {
+      pf_make_symbol()
+      {
+        super(Symbol.MAKE_SYMBOL, "name");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5114,9 +5862,13 @@ public final class Primitives
     };
 
   // ### makunbound
-  public static final Primitive MAKUNBOUND =
-    new Primitive(Symbol.MAKUNBOUND, "symbol")
-    {
+  public static final Primitive MAKUNBOUND = new pf_makunbound();
+  private static final class pf_makunbound extends Primitive {
+      pf_makunbound()
+      {
+        super(Symbol.MAKUNBOUND, "symbol");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5126,9 +5878,13 @@ public final class Primitives
     };
 
   // ### %class-name
-  private static final Primitive _CLASS_NAME =
-    new Primitive("%class-name", PACKAGE_SYS, true, "class")
-    {
+  private static final Primitive _CLASS_NAME = new pf__class_name();
+  private static final class pf__class_name extends Primitive {
+      pf__class_name()
+      {
+        super("%class-name", PACKAGE_SYS, true, "class");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5137,9 +5893,13 @@ public final class Primitives
     };
 
   // ### %set-class-name
-  private static final Primitive _SET_CLASS_NAME =
-    new Primitive("%set-class-name", PACKAGE_SYS, true)
-    {
+  private static final Primitive _SET_CLASS_NAME = new pf__set_class_name();
+  private static final class pf__set_class_name extends Primitive {
+      pf__set_class_name()
+      {
+        super("%set-class-name", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -5150,9 +5910,13 @@ public final class Primitives
     };
 
   // ### class-layout
-  private static final Primitive CLASS_LAYOUT =
-    new Primitive("class-layout", PACKAGE_SYS, true, "class")
-    {
+  private static final Primitive CLASS_LAYOUT = new pf_class_layout();
+  private static final class pf_class_layout extends Primitive {
+      pf_class_layout()
+      {
+        super("class-layout", PACKAGE_SYS, true, "class");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5162,9 +5926,13 @@ public final class Primitives
     };
 
   // ### %set-class-layout
-  private static final Primitive _SET_CLASS_LAYOUT =
-    new Primitive("%set-class-layout", PACKAGE_SYS, true, "class layout")
-    {
+  private static final Primitive _SET_CLASS_LAYOUT = new pf__set_class_layout();
+  private static final class pf__set_class_layout extends Primitive {
+      pf__set_class_layout()
+      {
+        super("%set-class-layout", PACKAGE_SYS, true, "class layout");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -5179,9 +5947,13 @@ public final class Primitives
     };
 
   // ### class-direct-superclasses
-  private static final Primitive CLASS_DIRECT_SUPERCLASSES =
-    new Primitive("class-direct-superclasses", PACKAGE_SYS, true)
-    {
+  private static final Primitive CLASS_DIRECT_SUPERCLASSES = new pf_class_direct_superclasses();
+  private static final class pf_class_direct_superclasses extends Primitive {
+      pf_class_direct_superclasses()
+      {
+        super("class-direct-superclasses", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5190,9 +5962,13 @@ public final class Primitives
     };
 
   // ### %set-class-direct-superclasses
-  private static final Primitive _SET_CLASS_DIRECT_SUPERCLASSES =
-    new Primitive("%set-class-direct-superclasses", PACKAGE_SYS, true)
-    {
+  private static final Primitive _SET_CLASS_DIRECT_SUPERCLASSES = new pf__set_class_direct_superclasses();
+  private static final class pf__set_class_direct_superclasses extends Primitive {
+      pf__set_class_direct_superclasses()
+      {
+        super("%set-class-direct-superclasses", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -5203,9 +5979,13 @@ public final class Primitives
     };
 
   // ### class-direct-subclasses
-  private static final Primitive CLASS_DIRECT_SUBCLASSES =
-    new Primitive("class-direct-subclasses", PACKAGE_SYS, true)
-    {
+  private static final Primitive CLASS_DIRECT_SUBCLASSES = new pf_class_direct_subclasses();
+  private static final class pf_class_direct_subclasses extends Primitive {
+      pf_class_direct_subclasses()
+      {
+        super("class-direct-subclasses", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5214,10 +5994,14 @@ public final class Primitives
     };
 
   // ### %set-class-direct-subclasses
-  private static final Primitive _SET_CLASS_DIRECT_SUBCLASSES =
-    new Primitive("%set-class-direct-subclasses", PACKAGE_SYS, true,
-                  "class direct-subclasses")
-    {
+  private static final Primitive _SET_CLASS_DIRECT_SUBCLASSES = new pf__set_class_direct_subclasses();
+  private static final class pf__set_class_direct_subclasses extends Primitive {
+      pf__set_class_direct_subclasses()
+      {
+        super("%set-class-direct-subclasses", PACKAGE_SYS, true,
+                  "class direct-subclasses");
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -5228,9 +6012,13 @@ public final class Primitives
     };
 
   // ### %class-precedence-list
-  private static final Primitive _CLASS_PRECEDENCE_LIST =
-    new Primitive("%class-precedence-list", PACKAGE_SYS, true)
-    {
+  private static final Primitive _CLASS_PRECEDENCE_LIST = new pf__class_precedence_list();
+  private static final class pf__class_precedence_list extends Primitive {
+      pf__class_precedence_list()
+      {
+        super("%class-precedence-list", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5239,9 +6027,13 @@ public final class Primitives
     };
 
   // ### set-class-precedence-list
-  private static final Primitive SET_CLASS_PRECEDENCE_LIST =
-    new Primitive("set-class-precedence-list", PACKAGE_SYS, true)
-    {
+  private static final Primitive SET_CLASS_PRECEDENCE_LIST = new pf_set_class_precedence_list();
+  private static final class pf_set_class_precedence_list extends Primitive {
+      pf_set_class_precedence_list()
+      {
+        super("set-class-precedence-list", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -5252,9 +6044,13 @@ public final class Primitives
     };
 
   // ### class-direct-methods
-  private static final Primitive CLASS_DIRECT_METHODS =
-    new Primitive("class-direct-methods", PACKAGE_SYS, true)
-    {
+  private static final Primitive CLASS_DIRECT_METHODS = new pf_class_direct_methods();
+  private static final class pf_class_direct_methods extends Primitive {
+      pf_class_direct_methods()
+      {
+        super("class-direct-methods", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
 
@@ -5264,9 +6060,13 @@ public final class Primitives
     };
 
   // ### %set-class-direct-methods
-  private static final Primitive _SET_CLASS_DIRECT_METHODS =
-    new Primitive("%set-class-direct-methods", PACKAGE_SYS, true)
-    {
+  private static final Primitive _SET_CLASS_DIRECT_METHODS = new pf__set_class_direct_methods();
+  private static final class pf__set_class_direct_methods extends Primitive {
+      pf__set_class_direct_methods()
+      {
+        super("%set-class-direct-methods", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -5277,9 +6077,13 @@ public final class Primitives
     };
 
   // ### class-documentation
-  private static final Primitive CLASS_DOCUMENTATION =
-    new Primitive("class-documentation", PACKAGE_SYS, true)
-    {
+  private static final Primitive CLASS_DOCUMENTATION = new pf_class_documentation();
+  private static final class pf_class_documentation extends Primitive {
+      pf_class_documentation()
+      {
+        super("class-documentation", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
 
@@ -5289,9 +6093,13 @@ public final class Primitives
     };
 
   // ### %set-class-documentation
-  private static final Primitive _SET_CLASS_DOCUMENTATION =
-    new Primitive("%set-class-documentation", PACKAGE_SYS, true)
-    {
+  private static final Primitive _SET_CLASS_DOCUMENTATION = new pf__set_class_documentation();
+  private static final class pf__set_class_documentation extends Primitive {
+      pf__set_class_documentation()
+      {
+        super("%set-class-documentation", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -5302,9 +6110,13 @@ public final class Primitives
     };
 
   // ### class-finalized-p
-  private static final Primitive CLASS_FINALIZED_P =
-    new Primitive("class-finalized-p", PACKAGE_SYS, true)
-    {
+  private static final Primitive CLASS_FINALIZED_P = new pf_class_finalized_p();
+  private static final class pf_class_finalized_p extends Primitive {
+      pf_class_finalized_p()
+      {
+        super("class-finalized-p", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5313,9 +6125,13 @@ public final class Primitives
     };
 
   // ### %set-class-finalized-p
-  private static final Primitive _SET_CLASS_FINALIZED_P =
-    new Primitive("%set-class-finalized-p", PACKAGE_SYS, true)
-    {
+  private static final Primitive _SET_CLASS_FINALIZED_P = new pf__set_class_finalized_p();
+  private static final class pf__set_class_finalized_p extends Primitive {
+      pf__set_class_finalized_p()
+      {
+        super("%set-class-finalized-p", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -5326,9 +6142,13 @@ public final class Primitives
     };
 
   // ### classp
-  private static final Primitive CLASSP =
-    new Primitive("classp", PACKAGE_EXT, true)
-    {
+  private static final Primitive CLASSP = new pf_classp();
+  private static final class pf_classp extends Primitive {
+      pf_classp()
+      {
+        super("classp", PACKAGE_EXT, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5337,9 +6157,13 @@ public final class Primitives
     };
 
   // ### char-to-utf8 char => octets
-  private static final Primitive CHAR_TO_UTF8 =
-    new Primitive("char-to-utf8", PACKAGE_EXT, true)
-    {
+  private static final Primitive CHAR_TO_UTF8 = new pf_char_to_utf8();
+  private static final class pf_char_to_utf8 extends Primitive {
+      pf_char_to_utf8()
+      {
+        super("char-to-utf8", PACKAGE_EXT, true);
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5370,10 +6194,14 @@ public final class Primitives
     };
 
   // ### %documentation
-  private static final Primitive _DOCUMENTATION =
-    new Primitive("%documentation", PACKAGE_SYS, true,
-                  "object doc-type")
-    {
+  private static final Primitive _DOCUMENTATION = new pf__documentation();
+  private static final class pf__documentation extends Primitive {
+      pf__documentation()
+      {
+        super("%documentation", PACKAGE_SYS, true,
+                  "object doc-type");
+      }
+	
       @Override
       public LispObject execute(LispObject object, LispObject docType)
 
@@ -5393,10 +6221,14 @@ public final class Primitives
     };
 
   // ### %set-documentation
-  private static final Primitive _SET_DOCUMENTATION =
-    new Primitive("%set-documentation", PACKAGE_SYS, true,
-                  "object doc-type documentation")
-    {
+  private static final Primitive _SET_DOCUMENTATION = new pf__set_documentation();
+  private static final class pf__set_documentation extends Primitive {
+      pf__set_documentation()
+      {
+        super("%set-documentation", PACKAGE_SYS, true,
+                  "object doc-type documentation");
+      }
+	
       @Override
       public LispObject execute(LispObject object, LispObject docType,
                                 LispObject documentation)
@@ -5408,10 +6240,14 @@ public final class Primitives
     };
 
   // ### %putf
-  private static final Primitive _PUTF =
-    new Primitive("%putf", PACKAGE_SYS, true,
-                  "plist indicator new-value")
-    {
+  private static final Primitive _PUTF = new pf__putf();
+  private static final class pf__putf extends Primitive {
+      pf__putf()
+      {
+        super("%putf", PACKAGE_SYS, true,
+                  "plist indicator new-value");
+      }
+	
       @Override
       public LispObject execute(LispObject plist, LispObject indicator,
                                 LispObject newValue)
@@ -5422,9 +6258,13 @@ public final class Primitives
     };
 
   // ### function-plist
-  private static final Primitive FUNCTION_PLIST =
-    new Primitive("function-plist", PACKAGE_SYS, true, "function")
-    {
+  private static final Primitive FUNCTION_PLIST = new pf_function_plist();
+  private static final class pf_function_plist extends Primitive {
+      pf_function_plist()
+      {
+        super("function-plist", PACKAGE_SYS, true, "function");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5433,9 +6273,13 @@ public final class Primitives
     };
 
   // ### make-keyword
-  private static final Primitive MAKE_KEYWORD =
-    new Primitive("make-keyword", PACKAGE_SYS, true, "symbol")
-    {
+  private static final Primitive MAKE_KEYWORD = new pf_make_keyword();
+  private static final class pf_make_keyword extends Primitive {
+      pf_make_keyword()
+      {
+        super("make-keyword", PACKAGE_SYS, true, "symbol");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5444,9 +6288,13 @@ public final class Primitives
     };
 
   // ### standard-object-p object => generalized-boolean
-  private static final Primitive STANDARD_OBJECT_P =
-    new Primitive("standard-object-p", PACKAGE_SYS, true, "object")
-    {
+  private static final Primitive STANDARD_OBJECT_P = new pf_standard_object_p();
+  private static final class pf_standard_object_p extends Primitive {
+      pf_standard_object_p()
+      {
+        super("standard-object-p", PACKAGE_SYS, true, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -5455,9 +6303,13 @@ public final class Primitives
     };
 
   // ### copy-tree
-  private static final Primitive COPY_TREE =
-    new Primitive(Symbol.COPY_TREE, "object")
-    {
+  private static final Primitive COPY_TREE = new pf_copy_tree();
+  private static final class pf_copy_tree extends Primitive {
+      pf_copy_tree()
+      {
+        super(Symbol.COPY_TREE, "object");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
