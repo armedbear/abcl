@@ -606,6 +606,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "create-new-file", "create_new_file");
         autoload(PACKAGE_SYS, "default-time-zone", "Time");
         autoload(PACKAGE_SYS, "disassemble-class-bytes", "disassemble_class_bytes", true);
+        autoload(PACKAGE_SYS, "disable-zip-cache", "ZipCache", true);
         autoload(PACKAGE_SYS, "double-float-high-bits", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "double-float-low-bits", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "float-infinity-p", "FloatFunctions", true);
