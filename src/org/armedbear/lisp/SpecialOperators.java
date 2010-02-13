@@ -40,9 +40,13 @@ import java.util.LinkedList;
 public final class SpecialOperators
 {
   // ### quote
-  private static final SpecialOperator QUOTE =
-    new SpecialOperator(Symbol.QUOTE, "thing")
-    {
+  private static final SpecialOperator QUOTE = new sf_quote();
+  private static final class sf_quote extends SpecialOperator {
+      sf_quote()
+      {
+        super(Symbol.QUOTE, "thing");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
@@ -54,9 +58,13 @@ public final class SpecialOperators
     };
 
   // ### if
-  private static final SpecialOperator IF =
-    new SpecialOperator(Symbol.IF, "test then &optional else")
-    {
+  private static final SpecialOperator IF = new sf_if();
+  private static final class sf_if extends SpecialOperator {
+      sf_if()
+      {
+        super(Symbol.IF, "test then &optional else");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
@@ -84,9 +92,13 @@ public final class SpecialOperators
     };
 
   // ### let
-  private static final SpecialOperator LET =
-    new SpecialOperator(Symbol.LET, "bindings &body body")
-    {
+  private static final SpecialOperator LET = new sf_let();
+  private static final class sf_let extends SpecialOperator {
+      sf_let()
+      {
+        super(Symbol.LET, "bindings &body body");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
@@ -98,9 +110,13 @@ public final class SpecialOperators
     };
 
   // ### let*
-  private static final SpecialOperator LET_STAR =
-    new SpecialOperator(Symbol.LET_STAR, "bindings &body body")
-    {
+  private static final SpecialOperator LET_STAR = new sf_let_star();
+  private static final class sf_let_star extends SpecialOperator {
+      sf_let_star()
+      {
+        super(Symbol.LET_STAR, "bindings &body body");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
@@ -173,9 +189,13 @@ public final class SpecialOperators
   }
 
   // ### symbol-macrolet
-  private static final SpecialOperator SYMBOL_MACROLET =
-    new SpecialOperator(Symbol.SYMBOL_MACROLET, "macrobindings &body body")
-    {
+  private static final SpecialOperator SYMBOL_MACROLET = new sf_symbol_macrolet();
+  private static final class sf_symbol_macrolet extends SpecialOperator {
+      sf_symbol_macrolet()
+      {
+        super(Symbol.SYMBOL_MACROLET, "macrobindings &body body");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
@@ -223,10 +243,14 @@ public final class SpecialOperators
     };
 
   // ### load-time-value form &optional read-only-p => object
-  private static final SpecialOperator LOAD_TIME_VALUE =
-    new SpecialOperator(Symbol.LOAD_TIME_VALUE,
-                        "form &optional read-only-p")
-    {
+  private static final SpecialOperator LOAD_TIME_VALUE = new sf_load_time_value();
+  private static final class sf_load_time_value extends SpecialOperator {
+      sf_load_time_value()
+      {
+        super(Symbol.LOAD_TIME_VALUE,
+                        "form &optional read-only-p");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
@@ -244,9 +268,13 @@ public final class SpecialOperators
     };
 
   // ### locally
-  private static final SpecialOperator LOCALLY =
-    new SpecialOperator(Symbol.LOCALLY, "&body body")
-    {
+  private static final SpecialOperator LOCALLY = new sf_locally();
+  private static final class sf_locally extends SpecialOperator {
+      sf_locally()
+      {
+        super(Symbol.LOCALLY, "&body body");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
@@ -259,9 +287,13 @@ public final class SpecialOperators
     };
 
   // ### progn
-  private static final SpecialOperator PROGN =
-    new SpecialOperator(Symbol.PROGN, "&rest forms")
-    {
+  private static final SpecialOperator PROGN = new sf_progn();
+  private static final class sf_progn extends SpecialOperator {
+      sf_progn()
+      {
+        super(Symbol.PROGN, "&rest forms");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
@@ -272,9 +304,13 @@ public final class SpecialOperators
     };
 
   // ### flet
-  private static final SpecialOperator FLET =
-    new SpecialOperator(Symbol.FLET, "definitions &body body")
-    {
+  private static final SpecialOperator FLET = new sf_flet();
+  private static final class sf_flet extends SpecialOperator {
+      sf_flet()
+      {
+        super(Symbol.FLET, "definitions &body body");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
@@ -284,9 +320,13 @@ public final class SpecialOperators
     };
 
   // ### labels
-  private static final SpecialOperator LABELS =
-    new SpecialOperator(Symbol.LABELS, "definitions &body body")
-    {
+  private static final SpecialOperator LABELS = new sf_labels();
+  private static final class sf_labels extends SpecialOperator {
+      sf_labels()
+      {
+        super(Symbol.LABELS, "definitions &body body");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
@@ -364,9 +404,13 @@ public final class SpecialOperators
   }
 
   // ### the value-type form => result*
-  private static final SpecialOperator THE =
-    new SpecialOperator(Symbol.THE, "type value")
-    {
+  private static final SpecialOperator THE = new sf_the();
+  private static final class sf_the extends SpecialOperator {
+      sf_the()
+      {
+        super(Symbol.THE, "type value");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
@@ -399,9 +443,13 @@ public final class SpecialOperators
     };
 
   // ### progv
-  private static final SpecialOperator PROGV =
-    new SpecialOperator(Symbol.PROGV, "symbols values &body body")
-    {
+  private static final SpecialOperator PROGV = new sf_progv();
+  private static final class sf_progv extends SpecialOperator {
+      sf_progv()
+      {
+        super(Symbol.PROGV, "symbols values &body body");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
@@ -427,9 +475,13 @@ public final class SpecialOperators
     };
 
   // ### declare
-  private static final SpecialOperator DECLARE =
-    new SpecialOperator(Symbol.DECLARE, "&rest declaration-specifiers")
-    {
+  private static final SpecialOperator DECLARE = new sf_declare();
+  private static final class sf_declare extends SpecialOperator {
+      sf_declare()
+      {
+        super(Symbol.DECLARE, "&rest declaration-specifiers");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
@@ -439,9 +491,13 @@ public final class SpecialOperators
     };
 
   // ### function
-  private static final SpecialOperator FUNCTION =
-    new SpecialOperator(Symbol.FUNCTION, "thing")
-    {
+  private static final SpecialOperator FUNCTION = new sf_function();
+  private static final class sf_function extends SpecialOperator {
+      sf_function()
+      {
+        super(Symbol.FUNCTION, "thing");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
@@ -497,9 +553,13 @@ public final class SpecialOperators
     };
 
   // ### setq
-  private static final SpecialOperator SETQ =
-    new SpecialOperator(Symbol.SETQ, "&rest vars-and-values")
-    {
+  private static final SpecialOperator SETQ = new sf_setq();
+  private static final class sf_setq extends SpecialOperator {
+      sf_setq()
+      {
+        super(Symbol.SETQ, "&rest vars-and-values");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
