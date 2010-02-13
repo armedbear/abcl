@@ -811,8 +811,12 @@ public final class Primitives {
     };
 
     // ### when
-    private static final SpecialOperator WHEN =
-    new SpecialOperator(Symbol.WHEN) {
+    private static final SpecialOperator WHEN = new sf_when();
+    private static final class sf_when extends SpecialOperator {
+        sf_when() {
+            super(Symbol.WHEN);
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -830,8 +834,12 @@ public final class Primitives {
     };
 
     // ### unless
-    private static final SpecialOperator UNLESS =
-    new SpecialOperator(Symbol.UNLESS) {
+    private static final SpecialOperator UNLESS = new sf_unless();
+    private static final class sf_unless extends SpecialOperator {
+        sf_unless() {
+            super(Symbol.UNLESS);
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -1852,8 +1860,12 @@ for (LispObject a : args)
     };
 
     // ### defmacro
-    private static final SpecialOperator DEFMACRO =
-    new SpecialOperator(Symbol.DEFMACRO) {
+    private static final SpecialOperator DEFMACRO = new sf_defmacro();
+    private static final class sf_defmacro extends SpecialOperator {
+        sf_defmacro() {
+            super(Symbol.DEFMACRO);
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -2013,8 +2025,12 @@ for (LispObject a : args)
     };
 
     // ### cond
-    private static final SpecialOperator COND =
-    new SpecialOperator(Symbol.COND, "&rest clauses") {
+    private static final SpecialOperator COND = new sf_cond();
+    private static final class sf_cond extends SpecialOperator {
+        sf_cond() {
+            super(Symbol.COND, "&rest clauses");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -2040,8 +2056,12 @@ for (LispObject a : args)
     };
 
     // ### case
-    private static final SpecialOperator CASE =
-    new SpecialOperator(Symbol.CASE, "keyform &body cases") {
+    private static final SpecialOperator CASE = new sf_case();
+    private static final class sf_case extends SpecialOperator {
+        sf_case() {
+            super(Symbol.CASE, "keyform &body cases");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -2079,8 +2099,12 @@ for (LispObject a : args)
     };
 
     // ### ecase
-    private static final SpecialOperator ECASE =
-    new SpecialOperator(Symbol.ECASE, "keyform &body cases") {
+    private static final SpecialOperator ECASE = new sf_ecase();
+    private static final class sf_ecase extends SpecialOperator {
+        sf_ecase() {
+            super(Symbol.ECASE, "keyform &body cases");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -3561,8 +3585,12 @@ for (LispObject a : args)
     };
 
     // ### macrolet
-    private static final SpecialOperator MACROLET =
-    new SpecialOperator(Symbol.MACROLET, "definitions &rest body") {
+    private static final SpecialOperator MACROLET = new sf_macrolet();
+    private static final class sf_macrolet extends SpecialOperator {
+        sf_macrolet() {
+            super(Symbol.MACROLET, "definitions &rest body");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -3624,8 +3652,12 @@ for (LispObject a : args)
     };
 
     // ### tagbody
-    private static final SpecialOperator TAGBODY =
-    new SpecialOperator(Symbol.TAGBODY, "&rest statements") {
+    private static final SpecialOperator TAGBODY = new sf_tagbody();
+    private static final class sf_tagbody extends SpecialOperator {
+        sf_tagbody() {
+            super(Symbol.TAGBODY, "&rest statements");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -3641,8 +3673,12 @@ for (LispObject a : args)
     };
 
     // ### go
-    private static final SpecialOperator GO =
-    new SpecialOperator(Symbol.GO, "tag") {
+    private static final SpecialOperator GO = new sf_go();
+    private static final class sf_go extends SpecialOperator {
+        sf_go() {
+            super(Symbol.GO, "tag");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -3660,8 +3696,12 @@ for (LispObject a : args)
     };
 
     // ### block
-    private static final SpecialOperator BLOCK =
-    new SpecialOperator(Symbol.BLOCK, "name &rest forms") {
+    private static final SpecialOperator BLOCK = new sf_block();
+    private static final class sf_block extends SpecialOperator {
+        sf_block() {
+            super(Symbol.BLOCK, "name &rest forms");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -3691,8 +3731,12 @@ for (LispObject a : args)
     };
 
     // ### return-from
-    private static final SpecialOperator RETURN_FROM =
-    new SpecialOperator(Symbol.RETURN_FROM, "name &optional value") {
+    private static final SpecialOperator RETURN_FROM = new sf_return_from();
+    private static final class sf_return_from extends SpecialOperator {
+        sf_return_from() {
+            super(Symbol.RETURN_FROM, "name &optional value");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -3711,8 +3755,12 @@ for (LispObject a : args)
     };
 
     // ### catch
-    private static final SpecialOperator CATCH =
-    new SpecialOperator(Symbol.CATCH, "tag &body body") {
+    private static final SpecialOperator CATCH = new sf_catch();
+    private static final class sf_catch extends SpecialOperator {
+        sf_catch() {
+            super(Symbol.CATCH, "tag &body body");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -3741,8 +3789,12 @@ for (LispObject a : args)
     };
 
     // ### throw
-    private static final SpecialOperator THROW =
-    new SpecialOperator(Symbol.THROW, "tag result") {
+    private static final SpecialOperator THROW = new sf_throw();
+    private static final class sf_throw extends SpecialOperator {
+        sf_throw() {
+            super(Symbol.THROW, "tag result");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -3758,8 +3810,12 @@ for (LispObject a : args)
     };
 
     // ### unwind-protect
-    private static final SpecialOperator UNWIND_PROTECT =
-    new SpecialOperator(Symbol.UNWIND_PROTECT, "protected &body cleanup") {
+    private static final SpecialOperator UNWIND_PROTECT = new sf_unwind_protect();
+    private static final class sf_unwind_protect extends SpecialOperator {
+        sf_unwind_protect() {
+            super(Symbol.UNWIND_PROTECT, "protected &body cleanup");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -3788,8 +3844,12 @@ for (LispObject a : args)
     };
 
     // ### eval-when
-    private static final SpecialOperator EVAL_WHEN =
-    new SpecialOperator(Symbol.EVAL_WHEN, "situations &rest forms") {
+    private static final SpecialOperator EVAL_WHEN = new sf_eval_when();
+    private static final class sf_eval_when extends SpecialOperator {
+        sf_eval_when() {
+            super(Symbol.EVAL_WHEN, "situations &rest forms");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -3797,7 +3857,7 @@ for (LispObject a : args)
             LispObject situations = args.car();
             if (situations != NIL) {
                 if (memq(Keyword.EXECUTE, situations) ||
-                memq(Symbol.EVAL, situations)) {
+                        memq(Symbol.EVAL, situations)) {
                     return progn(args.cdr(), env, LispThread.currentThread());
                 }
             }
@@ -3808,9 +3868,13 @@ for (LispObject a : args)
     // ### multiple-value-bind
     // multiple-value-bind (var*) values-form declaration* form*
     // Should be a macro.
-    private static final SpecialOperator MULTIPLE_VALUE_BIND =
-        new SpecialOperator(Symbol.MULTIPLE_VALUE_BIND,
-    "vars value-form &body body") {
+    private static final SpecialOperator MULTIPLE_VALUE_BIND = new sf_multiple_value_bind();
+    private static final class sf_multiple_value_bind extends SpecialOperator {
+        sf_multiple_value_bind() {
+            super(Symbol.MULTIPLE_VALUE_BIND,
+                  "vars value-form &body body");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -3875,9 +3939,13 @@ for (LispObject a : args)
     };
 
     // ### multiple-value-prog1
-    private static final SpecialOperator MULTIPLE_VALUE_PROG1 =
-        new SpecialOperator(Symbol.MULTIPLE_VALUE_PROG1,
-    "values-form &rest forms") {
+    private static final SpecialOperator MULTIPLE_VALUE_PROG1 = new sf_multiple_value_prog1();
+    private static final class sf_multiple_value_prog1 extends SpecialOperator {
+        sf_multiple_value_prog1() {
+            super(Symbol.MULTIPLE_VALUE_PROG1,
+                  "values-form &rest forms");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -3898,8 +3966,12 @@ for (LispObject a : args)
     };
 
     // ### multiple-value-call
-    private static final SpecialOperator MULTIPLE_VALUE_CALL =
-    new SpecialOperator(Symbol.MULTIPLE_VALUE_CALL, "fun &rest args") {
+    private static final SpecialOperator MULTIPLE_VALUE_CALL = new sf_multiple_value_call();
+    private static final class sf_multiple_value_call extends SpecialOperator {
+        sf_multiple_value_call() {
+            super(Symbol.MULTIPLE_VALUE_CALL, "fun &rest args");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -3941,8 +4013,12 @@ for (LispObject a : args)
 
     // ### and
     // Should be a macro.
-    private static final SpecialOperator AND =
-    new SpecialOperator(Symbol.AND, "&rest forms") {
+    private static final SpecialOperator AND = new sf_and();
+    private static final class sf_and extends SpecialOperator {
+        sf_and() {
+            super(Symbol.AND, "&rest forms");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -3966,8 +4042,12 @@ for (LispObject a : args)
 
     // ### or
     // Should be a macro.
-    private static final SpecialOperator OR =
-    new SpecialOperator(Symbol.OR, "&rest forms") {
+    private static final SpecialOperator OR = new sf_or();
+    private static final class sf_or extends SpecialOperator {
+        sf_or() {
+            super(Symbol.OR, "&rest forms");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -3992,8 +4072,12 @@ for (LispObject a : args)
     // ### multiple-value-list form => list
     // Evaluates form and creates a list of the multiple values it returns.
     // Should be a macro.
-    private static final SpecialOperator MULTIPLE_VALUE_LIST =
-    new SpecialOperator(Symbol.MULTIPLE_VALUE_LIST, "value-form") {
+    private static final SpecialOperator MULTIPLE_VALUE_LIST = new sf_multiple_value_list();
+    private static final class sf_multiple_value_list extends SpecialOperator {
+        sf_multiple_value_list() {
+            super(Symbol.MULTIPLE_VALUE_LIST, "value-form");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
@@ -4017,8 +4101,12 @@ for (LispObject a : args)
     // Evaluates n and then form and returns the nth value returned by form, or
     // NIL if n >= number of values returned.
     // Should be a macro.
-    private static final SpecialOperator NTH_VALUE =
-    new SpecialOperator(Symbol.NTH_VALUE, "n form") {
+    private static final SpecialOperator NTH_VALUE = new sf_nth_value();
+    private static final class sf_nth_value extends SpecialOperator {
+        sf_nth_value() {
+            super(Symbol.NTH_VALUE, "n form");
+        }
+
         @Override
         public LispObject execute(LispObject args, Environment env)
 
