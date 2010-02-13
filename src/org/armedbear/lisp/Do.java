@@ -38,9 +38,13 @@ import static org.armedbear.lisp.Lisp.*;
 public final class Do
 {
   // ### do
-  private static final SpecialOperator DO =
-    new SpecialOperator(Symbol.DO, "varlist endlist &body body")
-    {
+  private static final SpecialOperator DO = new sf_do();
+  private static final class sf_do extends SpecialOperator {
+      sf_do()
+      {
+        super(Symbol.DO, "varlist endlist &body body");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
@@ -50,9 +54,13 @@ public final class Do
     };
 
   // ### do*
-  private static final SpecialOperator DO_STAR =
-    new SpecialOperator(Symbol.DO_STAR, "varlist endlist &body body")
-    {
+  private static final SpecialOperator DO_STAR = new sf_do_star();
+  private static final class sf_do_star extends SpecialOperator {
+      sf_do_star()
+      {
+        super(Symbol.DO_STAR, "varlist endlist &body body");
+      }
+	
       @Override
       public LispObject execute(LispObject args, Environment env)
 
