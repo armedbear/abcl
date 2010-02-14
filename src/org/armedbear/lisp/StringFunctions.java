@@ -39,9 +39,13 @@ public final class StringFunctions
 {
     // ### %string=
     // Case sensitive.
-    private static final Primitive _STRING_EQUAL =
-        new Primitive("%string=", PACKAGE_SYS, false)
-    {
+    private static final Primitive _STRING_EQUAL = new pf__string_equal();
+  private static final class pf__string_equal extends Primitive {
+      pf__string_equal()
+      {
+        super("%string=", PACKAGE_SYS, false);
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third, LispObject fourth,
@@ -82,9 +86,13 @@ public final class StringFunctions
 
     // ### %%string=
     // Case sensitive.
-    private static final Primitive __STRING_EQUAL =
-        new Primitive("%%string=", PACKAGE_SYS, false)
-    {
+    private static final Primitive __STRING_EQUAL = new pf___string_equal();
+  private static final class pf___string_equal extends Primitive {
+      pf___string_equal()
+      {
+        super("%%string=", PACKAGE_SYS, false);
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second)
 
@@ -103,9 +111,13 @@ public final class StringFunctions
 
     // ### %string/=
     // Case sensitive.
-    private static final Primitive _STRING_NOT_EQUAL =
-        new Primitive("%string/=", PACKAGE_SYS, true)
-    {
+    private static final Primitive _STRING_NOT_EQUAL = new pf__string_not_equal();
+  private static final class pf__string_not_equal extends Primitive {
+      pf__string_not_equal()
+      {
+        super("%string/=", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -140,9 +152,13 @@ public final class StringFunctions
 
     // ### %string-equal
     // Case insensitive.
-    private static final Primitive _STRING_EQUAL_IGNORE_CASE =
-        new Primitive("%string-equal", PACKAGE_SYS, true)
-    {
+    private static final Primitive _STRING_EQUAL_IGNORE_CASE = new pf__string_equal_ignore_case();
+  private static final class pf__string_equal_ignore_case extends Primitive {
+      pf__string_equal_ignore_case()
+      {
+        super("%string-equal", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third, LispObject fourth,
@@ -175,9 +191,13 @@ public final class StringFunctions
 
     // ### %string-not-equal
     // Case sensitive.
-    private static final Primitive _STRING_NOT_EQUAL_IGNORE_CASE =
-        new Primitive("%string-not-equal", PACKAGE_SYS, true)
-    {
+    private static final Primitive _STRING_NOT_EQUAL_IGNORE_CASE = new pf__string_not_equal_ignore_case();
+  private static final class pf__string_not_equal_ignore_case extends Primitive {
+      pf__string_not_equal_ignore_case()
+      {
+        super("%string-not-equal", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -219,9 +239,13 @@ public final class StringFunctions
 
     // ### %string<
     // Case sensitive.
-    private static final Primitive _STRING_LESS_THAN =
-        new Primitive("%string<", PACKAGE_SYS, true)
-    {
+    private static final Primitive _STRING_LESS_THAN = new pf__string_less_than();
+  private static final class pf__string_less_than extends Primitive {
+      pf__string_less_than()
+      {
+        super("%string<", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -263,9 +287,13 @@ public final class StringFunctions
 
     // ### %string<=
     // Case sensitive.
-    private static final Primitive _STRING_GREATER_THAN =
-        new Primitive("%string>", PACKAGE_SYS, true)
-    {
+    private static final Primitive _STRING_GREATER_THAN = new pf__string_greater_than();
+  private static final class pf__string_greater_than extends Primitive {
+      pf__string_greater_than()
+      {
+        super("%string>", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -305,9 +333,13 @@ public final class StringFunctions
 
     // ### %string<=
     // Case sensitive.
-    private static final Primitive _STRING_LE =
-        new Primitive("%string<=", PACKAGE_SYS, true)
-    {
+    private static final Primitive _STRING_LE = new pf__string_le();
+  private static final class pf__string_le extends Primitive {
+      pf__string_le()
+      {
+        super("%string<=", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -347,9 +379,13 @@ public final class StringFunctions
 
     // ### %string<=
     // Case sensitive.
-    private static final Primitive _STRING_GE =
-        new Primitive("%string>=", PACKAGE_SYS, true)
-    {
+    private static final Primitive _STRING_GE = new pf__string_ge();
+  private static final class pf__string_ge extends Primitive {
+      pf__string_ge()
+      {
+        super("%string>=", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -391,9 +427,13 @@ public final class StringFunctions
 
     // ### %string-lessp
     // Case insensitive.
-    private static final Primitive _STRING_LESSP =
-        new Primitive("%string-lessp", PACKAGE_SYS, true)
-    {
+    private static final Primitive _STRING_LESSP = new pf__string_lessp();
+  private static final class pf__string_lessp extends Primitive {
+      pf__string_lessp()
+      {
+        super("%string-lessp", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -435,9 +475,13 @@ public final class StringFunctions
 
     // ### %string-greaterp
     // Case insensitive.
-    private static final Primitive _STRING_GREATERP =
-        new Primitive("%string-greaterp", PACKAGE_SYS, true)
-    {
+    private static final Primitive _STRING_GREATERP = new pf__string_greaterp();
+  private static final class pf__string_greaterp extends Primitive {
+      pf__string_greaterp()
+      {
+        super("%string-greaterp", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -477,9 +521,13 @@ public final class StringFunctions
 
     // ### %string-not-lessp
     // Case insensitive.
-    private static final Primitive _STRING_NOT_LESSP =
-        new Primitive("%string-not-lessp", PACKAGE_SYS, true)
-    {
+    private static final Primitive _STRING_NOT_LESSP = new pf__string_not_lessp();
+  private static final class pf__string_not_lessp extends Primitive {
+      pf__string_not_lessp()
+      {
+        super("%string-not-lessp", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -521,9 +569,13 @@ public final class StringFunctions
 
     // ### %string-not-greaterp
     // Case insensitive.
-    private static final Primitive _STRING_NOT_GREATERP =
-        new Primitive("%string-not-greaterp", PACKAGE_SYS, true)
-    {
+    private static final Primitive _STRING_NOT_GREATERP = new pf__string_not_greaterp();
+  private static final class pf__string_not_greaterp extends Primitive {
+      pf__string_not_greaterp()
+      {
+        super("%string-not-greaterp", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -562,9 +614,13 @@ public final class StringFunctions
     };
 
     // ### %string-upcase
-    private static final Primitive _STRING_UPCASE =
-        new Primitive("%string-upcase", PACKAGE_SYS, true)
-    {
+    private static final Primitive _STRING_UPCASE = new pf__string_upcase();
+  private static final class pf__string_upcase extends Primitive {
+      pf__string_upcase()
+      {
+        super("%string-upcase", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
@@ -598,9 +654,13 @@ public final class StringFunctions
     };
 
     // ### %string-downcase
-    private static final Primitive _STRING_DOWNCASE =
-        new Primitive("%string-downcase", PACKAGE_SYS, true)
-    {
+    private static final Primitive _STRING_DOWNCASE = new pf__string_downcase();
+  private static final class pf__string_downcase extends Primitive {
+      pf__string_downcase()
+      {
+        super("%string-downcase", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
@@ -633,9 +693,13 @@ public final class StringFunctions
     };
 
     // ### %string-capitalize
-    private static final Primitive _STRING_CAPITALIZE=
-        new Primitive("%string-capitalize", PACKAGE_SYS, true)
-    {
+    private static final Primitive _STRING_CAPITALIZE = new pf__string_capitalize();
+  private static final class pf__string_capitalize extends Primitive {
+      pf__string_capitalize()
+      {
+        super("%string-capitalize", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
@@ -681,9 +745,13 @@ public final class StringFunctions
     };
 
     // ### %nstring-upcase
-    private static final Primitive _NSTRING_UPCASE =
-        new Primitive("%nstring-upcase", PACKAGE_SYS, true)
-    {
+    private static final Primitive _NSTRING_UPCASE = new pf__nstring_upcase();
+  private static final class pf__nstring_upcase extends Primitive {
+      pf__nstring_upcase()
+      {
+        super("%nstring-upcase", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
@@ -710,9 +778,13 @@ public final class StringFunctions
     };
 
     // ### %nstring-downcase
-    private static final Primitive _NSTRING_DOWNCASE =
-        new Primitive("%nstring-downcase", PACKAGE_SYS, true)
-    {
+    private static final Primitive _NSTRING_DOWNCASE = new pf__nstring_downcase();
+  private static final class pf__nstring_downcase extends Primitive {
+      pf__nstring_downcase()
+      {
+        super("%nstring-downcase", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
@@ -739,9 +811,13 @@ public final class StringFunctions
     };
 
     // ### %nstring-capitalize
-    private static final Primitive _NSTRING_CAPITALIZE =
-        new Primitive("%nstring-capitalize", PACKAGE_SYS, true)
-    {
+    private static final Primitive _NSTRING_CAPITALIZE = new pf__nstring_capitalize();
+  private static final class pf__nstring_capitalize extends Primitive {
+      pf__nstring_capitalize()
+      {
+        super("%nstring-capitalize", PACKAGE_SYS, true);
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
@@ -780,8 +856,13 @@ public final class StringFunctions
     };
 
     // ### stringp
-    public static final Primitive STRINGP = new Primitive("stringp", "object")
-    {
+    public static final Primitive STRINGP = new pf_stringp();
+  private static final class pf_stringp extends Primitive {
+      pf_stringp()
+      {
+        super("stringp", "object");
+      }
+	
         @Override
         public LispObject execute(LispObject arg)
         {
@@ -790,9 +871,13 @@ public final class StringFunctions
     };
 
     // ### simple-string-p
-    public static final Primitive SIMPLE_STRING_P =
-        new Primitive("simple-string-p", "object")
-    {
+    public static final Primitive SIMPLE_STRING_P = new pf_simple_string_p();
+  private static final class pf_simple_string_p extends Primitive {
+      pf_simple_string_p()
+      {
+        super("simple-string-p", "object");
+      }
+	
         @Override
         public LispObject execute(LispObject arg)
         {
@@ -803,9 +888,13 @@ public final class StringFunctions
     // ### %make-string
     // %make-string size initial-element element-type => string
     // Returns a simple string.
-    private static final Primitive _MAKE_STRING =
-        new Primitive("%make-string", PACKAGE_SYS, false)
-    {
+    private static final Primitive _MAKE_STRING = new pf__make_string();
+  private static final class pf__make_string extends Primitive {
+      pf__make_string()
+      {
+        super("%make-string", PACKAGE_SYS, false);
+      }
+	
         @Override
         public LispObject execute(LispObject size, LispObject initialElement,
                                   LispObject elementType)
@@ -837,9 +926,13 @@ public final class StringFunctions
     };
 
     // ### char
-    private static final Primitive CHAR =
-        new Primitive(Symbol.CHAR, "string index")
-    {
+    private static final Primitive CHAR = new pf_char();
+  private static final class pf_char extends Primitive {
+      pf_char()
+      {
+        super(Symbol.CHAR, "string index");
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second)
 
@@ -849,9 +942,13 @@ public final class StringFunctions
     };
 
     // ### schar
-    private static final Primitive SCHAR =
-        new Primitive(Symbol.SCHAR, "string index")
-    {
+    private static final Primitive SCHAR = new pf_schar();
+  private static final class pf_schar extends Primitive {
+      pf_schar()
+      {
+        super(Symbol.SCHAR, "string index");
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second)
 
@@ -861,9 +958,13 @@ public final class StringFunctions
     };
 
     // ### set-char
-    private static final Primitive SET_CHAR =
-        new Primitive(Symbol.SET_CHAR, "string index character")
-    {
+    private static final Primitive SET_CHAR = new pf_set_char();
+  private static final class pf_set_char extends Primitive {
+      pf_set_char()
+      {
+        super(Symbol.SET_CHAR, "string index character");
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
@@ -876,9 +977,13 @@ public final class StringFunctions
     };
 
     // ### set-schar
-    private static final Primitive SET_SCHAR =
-        new Primitive(Symbol.SET_SCHAR, "string index character")
-    {
+    private static final Primitive SET_SCHAR = new pf_set_schar();
+  private static final class pf_set_schar extends Primitive {
+      pf_set_schar()
+      {
+        super(Symbol.SET_SCHAR, "string index character");
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
@@ -894,9 +999,13 @@ public final class StringFunctions
     };
 
     // ### string-position
-    private static final Primitive STRING_POSITION =
-        new Primitive("string-position", PACKAGE_EXT, true)
-    {
+    private static final Primitive STRING_POSITION = new pf_string_position();
+  private static final class pf_string_position extends Primitive {
+      pf_string_position()
+      {
+        super("string-position", PACKAGE_EXT, true);
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
@@ -914,9 +1023,13 @@ public final class StringFunctions
     };
 
     // ### string-find
-    private static final Primitive STRING_FIND =
-        new Primitive("string-find", PACKAGE_EXT, true, "char string")
-    {
+    private static final Primitive STRING_FIND = new pf_string_find();
+  private static final class pf_string_find extends Primitive {
+      pf_string_find()
+      {
+        super("string-find", PACKAGE_EXT, true, "char string");
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second)
 
@@ -936,9 +1049,13 @@ public final class StringFunctions
 
     // ### simple-string-search pattern string => position
     // Searches string for a substring that matches pattern.
-    private static final Primitive SIMPLE_STRING_SEARCH =
-        new Primitive("simple-string-search", PACKAGE_EXT, true)
-    {
+    private static final Primitive SIMPLE_STRING_SEARCH = new pf_simple_string_search();
+  private static final class pf_simple_string_search extends Primitive {
+      pf_simple_string_search()
+      {
+        super("simple-string-search", PACKAGE_EXT, true);
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second)
 
@@ -950,9 +1067,13 @@ public final class StringFunctions
     };
 
     // ### simple-string-fill string character => string
-    private static final Primitive STRING_FILL =
-        new Primitive("simple-string-fill", PACKAGE_EXT, true)
-    {
+    private static final Primitive STRING_FILL = new pf_string_fill();
+  private static final class pf_string_fill extends Primitive {
+      pf_string_fill()
+      {
+        super("simple-string-fill", PACKAGE_EXT, true);
+      }
+	
         @Override
         public LispObject execute(LispObject first, LispObject second)
 
