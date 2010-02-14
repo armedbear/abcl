@@ -144,7 +144,7 @@ public class StructureObject extends LispObject
   @Override
   public LispObject typeOf()
   {
-    return structureClass.getSymbol();
+    return structureClass.getName();
   }
 
   @Override
@@ -175,7 +175,7 @@ public class StructureObject extends LispObject
   {
     if (type instanceof StructureClass)
       return memq(type, structureClass.getCPL()) ? T : NIL;
-    if (type == structureClass.getSymbol())
+    if (type == structureClass.getName())
       return T;
     if (type == Symbol.STRUCTURE_OBJECT)
       return T;
@@ -421,7 +421,7 @@ public class StructureObject extends LispObject
             return stream.getString().getStringValue();
           }
         if (_PRINT_STRUCTURE_.symbolValue(thread) == NIL)
-          return unreadableString(structureClass.getSymbol().writeToString());
+          return unreadableString(structureClass.getName().writeToString());
         int maxLevel = Integer.MAX_VALUE;
         LispObject printLevel = Symbol.PRINT_LEVEL.symbolValue(thread);
         if (printLevel instanceof Fixnum)
@@ -432,7 +432,7 @@ public class StructureObject extends LispObject
         if (currentLevel >= maxLevel && slots.length > 0)
           return "#";
         StringBuilder sb = new StringBuilder("#S(");
-        sb.append(structureClass.getSymbol().writeToString());
+        sb.append(structureClass.getName().writeToString());
         if (currentLevel < maxLevel)
           {
             LispObject effectiveSlots = structureClass.getSlotDefinitions();

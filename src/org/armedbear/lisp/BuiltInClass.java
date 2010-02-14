@@ -74,7 +74,7 @@ public class BuiltInClass extends LispClass
   public String writeToString()
   {
     StringBuilder sb = new StringBuilder("#<BUILT-IN-CLASS ");
-    sb.append(symbol.writeToString());
+    sb.append(getName().writeToString());
     sb.append('>');
     return sb.toString();
   }

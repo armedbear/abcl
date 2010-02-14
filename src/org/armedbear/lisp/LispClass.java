@@ -88,46 +88,57 @@ public abstract class LispClass extends StandardObject
 
   private final int sxhash;
 
-  protected Symbol symbol;
+  private LispObject name;
   private LispObject propertyList;
   private Layout classLayout;
   private LispObject directSuperclasses = NIL;
   private LispObject directSubclasses = NIL;
-  public LispObject classPrecedenceList = NIL; // FIXME! Should be private!
-  public LispObject directMethods = NIL; // FIXME! Should be private!
-  public LispObject documentation = NIL; // FIXME! Should be private!
+  private LispObject classPrecedenceList = NIL;
+  private LispObject directMethods = NIL;
+  private LispObject documentation = NIL;
   private boolean finalized;
 
-  protected LispClass()
+  protected LispClass(Layout layout)
   {
+    super(layout, layout == null ? 0 : layout.getLength());
     sxhash = hashCode() & 0x7fffffff;
   }
 
   protected LispClass(Symbol symbol)
   {
-    sxhash = hashCode() & 0x7fffffff;
-    this.symbol = symbol;
-    this.directSuperclasses = NIL;
+    this(null, symbol);
   }
 
-  protected LispClass(Symbol symbol, LispObject directSuperclasses)
+  protected LispClass(Layout layout, Symbol symbol)
   {
+    super(layout, layout == null ? 0 : layout.getLength());
+    setName(symbol);
     sxhash = hashCode() & 0x7fffffff;
-    this.symbol = symbol;
-    this.directSuperclasses = directSuperclasses;
+  }
+
+  protected LispClass(Layout layout,
+                      Symbol symbol, LispObject directSuperclasses)
+  {
+    super(layout, layout == null ? 0 : layout.getLength());
+    sxhash = hashCode() & 0x7fffffff;
+    setName(symbol);
+    setDirectSuperclasses(directSuperclasses);
   }
 
   @Override
   public LispObject getParts()
   {
     LispObject result = NIL;
-    result = result.push(new Cons("NAME", symbol != null ? symbol : NIL));
-    result = result.push(new Cons("LAYOUT", classLayout != null ? classLayout : NIL));
-    result = result.push(new Cons("DIRECT-SUPERCLASSES", directSuperclasses));
-    result = result.push(new Cons("DIRECT-SUBCLASSES", directSubclasses));
-    result = result.push(new Cons("CLASS-PRECEDENCE-LIST", classPrecedenceList));
-    result = result.push(new Cons("DIRECT-METHODS", directMethods));
-    result = result.push(new Cons("DOCUMENTATION", documentation));
+    result = result.push(new Cons("NAME", name != null ? name : NIL));
+    result = result.push(new Cons("LAYOUT",
+                                  getClassLayout() != null
+                                  ? getClassLayout() : NIL));
+    result = result.push(new Cons("DIRECT-SUPERCLASSES",
+                                  getDirectSuperclasses()));
+    result = result.push(new Cons("DIRECT-SUBCLASSES", getDirectSubclasses()));
+    result = result.push(new Cons("CLASS-PRECEDENCE-LIST", getCPL()));
+    result = result.push(new Cons("DIRECT-METHODS", getDirectMethods()));
+    result = result.push(new Cons("DOCUMENTATION", getDocumentation()));
     return result.nreverse();
   }
 
@@ -137,9 +148,14 @@ public abstract class LispClass extends StandardObject
     return sxhash;
   }
 
-  public final Symbol getSymbol()
+  public LispObject getName()
   {
-    return symbol;
+    return name;
+  }
+
+  public void setName(LispObject name)
+  {
+    this.name = name;
   }
 
   @Override
@@ -158,12 +174,12 @@ public abstract class LispClass extends StandardObject
     propertyList = obj;
   }
 
-  public final Layout getClassLayout()
+  public Layout getClassLayout()
   {
     return classLayout;
   }
 
-  public final void setClassLayout(Layout layout)
+  public void setClassLayout(Layout layout)
   {
     classLayout = layout;
   }
@@ -175,12 +191,12 @@ public abstract class LispClass extends StandardObject
     return layout.getLength();
   }
 
-  public final LispObject getDirectSuperclasses()
+  public LispObject getDirectSuperclasses()
   {
     return directSuperclasses;
   }
 
-  public final void setDirectSuperclasses(LispObject directSuperclasses)
+  public void setDirectSuperclasses(LispObject directSuperclasses)
   {
     this.directSuperclasses = directSuperclasses;
   }
@@ -198,97 +214,57 @@ public abstract class LispClass extends StandardObject
   // When there's only one direct superclass...
   public final void setDirectSuperclass(LispObject superclass)
   {
-    directSuperclasses = new Cons(superclass);
+    setDirectSuperclasses(new Cons(superclass));
   }
 
-  public final LispObject getDirectSubclasses()
+  public LispObject getDirectSubclasses()
   {
     return directSubclasses;
   }
 
-  public final void setDirectSubclasses(LispObject directSubclasses)
+  public void setDirectSubclasses(LispObject directSubclasses)
   {
     this.directSubclasses = directSubclasses;
   }
 
-  public final LispObject getCPL()
+  public LispObject getCPL()
   {
     return classPrecedenceList;
   }
 
-  public final void setCPL(LispObject obj1)
+  public void setCPL(LispObject... cpl)
   {
-    if (obj1 instanceof Cons)
+    LispObject obj1 = cpl[0];
+    if (obj1 instanceof Cons && cpl.length == 1)
       classPrecedenceList = obj1;
     else
       {
         Debug.assertTrue(obj1 == this);
-        classPrecedenceList = new Cons(obj1);
+        LispObject l = NIL;
+        for (int i = cpl.length; i-- > 0;)
+            l = new Cons(cpl[i], l);
+        classPrecedenceList = l;
       }
   }
 
-  public final void setCPL(LispObject obj1, LispObject obj2)
+  public LispObject getDirectMethods()
   {
-    Debug.assertTrue(obj1 == this);
-    classPrecedenceList = list(obj1, obj2);
+    return directMethods;
   }
 
-  public final void setCPL(LispObject obj1, LispObject obj2, LispObject obj3)
+  public void setDirectMethods(LispObject methods)
   {
-    Debug.assertTrue(obj1 == this);
-    classPrecedenceList = list(obj1, obj2, obj3);
+    directMethods = methods;
   }
 
-  public final void setCPL(LispObject obj1, LispObject obj2, LispObject obj3,
-                           LispObject obj4)
+  public LispObject getDocumentation()
   {
-    Debug.assertTrue(obj1 == this);
-    classPrecedenceList = list(obj1, obj2, obj3, obj4);
+    return documentation;
   }
 
-  public final void setCPL(LispObject obj1, LispObject obj2, LispObject obj3,
-                           LispObject obj4, LispObject obj5)
+  public void setDocumentation(LispObject doc)
   {
-    Debug.assertTrue(obj1 == this);
-    classPrecedenceList = list(obj1, obj2, obj3, obj4, obj5);
-  }
-
-  public final void setCPL(LispObject obj1, LispObject obj2, LispObject obj3,
-                           LispObject obj4, LispObject obj5, LispObject obj6)
-  {
-    Debug.assertTrue(obj1 == this);
-    classPrecedenceList = list(obj1, obj2, obj3, obj4, obj5, obj6);
-  }
-
-  public final void setCPL(LispObject obj1, LispObject obj2, LispObject obj3,
-                           LispObject obj4, LispObject obj5, LispObject obj6,
-                           LispObject obj7)
-  {
-    Debug.assertTrue(obj1 == this);
-    classPrecedenceList = list(obj1, obj2, obj3, obj4, obj5, obj6, obj7);
-  }
-
-  public final void setCPL(LispObject obj1, LispObject obj2, LispObject obj3,
-                           LispObject obj4, LispObject obj5, LispObject obj6,
-                           LispObject obj7, LispObject obj8)
-  {
-    Debug.assertTrue(obj1 == this);
-    classPrecedenceList =
-      list(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8);
-  }
-
-  public final void setCPL(LispObject obj1, LispObject obj2, LispObject obj3,
-                           LispObject obj4, LispObject obj5, LispObject obj6,
-                           LispObject obj7, LispObject obj8, LispObject obj9)
-  {
-    Debug.assertTrue(obj1 == this);
-    classPrecedenceList =
-      list(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9);
-  }
-
-  public String getName()
-  {
-    return symbol.getName();
+    documentation = doc;
   }
 
   @Override
@@ -315,7 +291,7 @@ public abstract class LispClass extends StandardObject
 
   public boolean subclassp(LispObject obj)
   {
-    LispObject cpl = classPrecedenceList;
+    LispObject cpl = getCPL();
     while (cpl != NIL)
       {
         if (cpl.car() == obj)

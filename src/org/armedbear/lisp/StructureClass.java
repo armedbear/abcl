@@ -79,7 +79,7 @@ public class StructureClass extends SlotClass
     public String writeToString()
     {
         StringBuffer sb = new StringBuffer("#<STRUCTURE-CLASS ");
-        sb.append(symbol.writeToString());
+        sb.append(getName().writeToString());
         sb.append('>');
         return sb.toString();
     }

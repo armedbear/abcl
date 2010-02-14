@@ -35,9 +35,9 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public final class Layout extends LispObject
+public class Layout extends LispObject
 {
-  public final LispClass lispClass;
+  private final LispClass lispClass;
   public final EqHashTable slotTable;
 
   private final LispObject[] slotNames;
@@ -76,7 +76,7 @@ public final class Layout extends LispObject
   // Copy constructor.
   private Layout(Layout oldLayout)
   {
-    lispClass = oldLayout.lispClass;
+    lispClass = oldLayout.getLispClass();
     slotNames = oldLayout.slotNames;
     sharedSlots = oldLayout.sharedSlots;
     slotTable = initializeSlotTable(slotNames);
@@ -94,13 +94,18 @@ public final class Layout extends LispObject
   public LispObject getParts()
   {
     LispObject result = NIL;
-    result = result.push(new Cons("class", lispClass));
+    result = result.push(new Cons("class", getLispClass()));
     for (int i = 0; i < slotNames.length; i++)
       {
         result = result.push(new Cons("slot " + i, slotNames[i]));
       }
     result = result.push(new Cons("shared slots", sharedSlots));
     return result.nreverse();
+  }
+
+  public LispClass getLispClass()
+  {
+    return lispClass;
   }
 
   public boolean isInvalid()
@@ -167,7 +172,7 @@ public final class Layout extends LispObject
       @Override
       public LispObject execute(LispObject arg)
       {
-          return checkLayout(arg).lispClass;
+          return checkLayout(arg).getLispClass();
       }
     };
 

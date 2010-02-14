@@ -69,9 +69,9 @@ public class ForwardReferencedClass extends LispClass
     {
         StringBuffer sb =
             new StringBuffer(Symbol.FORWARD_REFERENCED_CLASS.writeToString());
-        if (symbol != null) {
+        if (getName() != null) {
             sb.append(' ');
-            sb.append(symbol.writeToString());
+            sb.append(getName().writeToString());
         }
         return unreadableString(sb.toString());
     }

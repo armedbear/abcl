@@ -5316,7 +5316,7 @@ for (LispObject a : args)
 
         @Override
         public LispObject execute(LispObject arg) {
-            return checkClass(arg).symbol;
+            return checkClass(arg).getName();
         }
     };
 
@@ -5331,7 +5331,7 @@ for (LispObject a : args)
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            checkClass(first).symbol = checkSymbol(second);
+            checkClass(first).setName(checkSymbol(second));
             return second;
         }
     };
@@ -5452,7 +5452,7 @@ for (LispObject a : args)
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            checkClass(first).classPrecedenceList = second;
+            checkClass(first).setCPL(second);
             return second;
         }
     };
@@ -5468,7 +5468,7 @@ for (LispObject a : args)
         public LispObject execute(LispObject arg)
 
         {
-            return checkClass(arg).directMethods;
+            return checkClass(arg).getDirectMethods();
         }
     };
 
@@ -5483,13 +5483,14 @@ for (LispObject a : args)
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            checkClass(first).directMethods = second;
+            checkClass(first).setDirectMethods(second);
             return second;
         }
     };
 
     // ### class-documentation
-    private static final Primitive CLASS_DOCUMENTATION = new pf_class_documentation();
+    private static final Primitive CLASS_DOCUMENTATION
+        = new pf_class_documentation();
     private static final class pf_class_documentation extends Primitive {
         pf_class_documentation() {
             super("class-documentation", PACKAGE_SYS, true);
@@ -5499,12 +5500,13 @@ for (LispObject a : args)
         public LispObject execute(LispObject arg)
 
         {
-            return checkClass(arg).documentation;
+            return checkClass(arg).getDocumentation();
         }
     };
 
     // ### %set-class-documentation
-    private static final Primitive _SET_CLASS_DOCUMENTATION = new pf__set_class_documentation();
+    private static final Primitive _SET_CLASS_DOCUMENTATION
+        = new pf__set_class_documentation();
     private static final class pf__set_class_documentation extends Primitive {
         pf__set_class_documentation() {
             super("%set-class-documentation", PACKAGE_SYS, true);
@@ -5514,7 +5516,7 @@ for (LispObject a : args)
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            checkClass(first).documentation = second;
+            checkClass(first).setDocumentation(second);
             return second;
         }
     };

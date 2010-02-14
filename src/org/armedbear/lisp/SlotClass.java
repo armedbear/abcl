@@ -42,23 +42,35 @@ public class SlotClass extends LispClass
     private LispObject directDefaultInitargs = NIL;
     private LispObject defaultInitargs = NIL;
 
-    public SlotClass()
+    public SlotClass(Layout layout)
     {
+      super(layout);
     }
 
     public SlotClass(Symbol symbol, LispObject directSuperclasses)
+
+
     {
-        super(symbol, directSuperclasses);
+        this(null, symbol, directSuperclasses);
+    }
+
+    public SlotClass(Layout layout,
+                     Symbol symbol, LispObject directSuperclasses)
+    {
+        super(layout, symbol, directSuperclasses);
     }
 
     @Override
     public LispObject getParts()
     {
         LispObject result = super.getParts().nreverse();
-        result = result.push(new Cons("DIRECT-SLOTS", directSlotDefinitions));
-        result = result.push(new Cons("SLOTS", slotDefinitions));
-        result = result.push(new Cons("DIRECT-DEFAULT-INITARGS", directDefaultInitargs));
-        result = result.push(new Cons("DEFAULT-INITARGS", defaultInitargs));
+        result = result.push(new Cons("DIRECT-SLOTS",
+                                      getDirectSlotDefinitions()));
+        result = result.push(new Cons("SLOTS", getSlotDefinitions()));
+        result = result.push(new Cons("DIRECT-DEFAULT-INITARGS",
+                                      getDirectDefaultInitargs()));
+        result = result.push(new Cons("DEFAULT-INITARGS",
+                                      getDefaultInitargs()));
         return result.nreverse();
     }
 
@@ -78,7 +90,7 @@ public class SlotClass extends LispClass
         this.directSlotDefinitions = directSlotDefinitions;
     }
 
-    public final LispObject getSlotDefinitions()
+    public LispObject getSlotDefinitions()
     {
         return slotDefinitions;
     }
@@ -96,6 +108,11 @@ public class SlotClass extends LispClass
     public void setDirectDefaultInitargs(LispObject directDefaultInitargs)
     {
         this.directDefaultInitargs = directDefaultInitargs;
+    }
+
+    public LispObject getDefaultInitargs()
+    {
+        return defaultInitargs;
     }
 
     public void setDefaultInitargs(LispObject defaultInitargs)
@@ -124,7 +141,8 @@ public class SlotClass extends LispClass
         if (isFinalized())
             return;
 
-        Debug.assertTrue(slotDefinitions == NIL);
+        LispObject defs = getSlotDefinitions();
+        Debug.assertTrue(defs == NIL);
         LispObject cpl = getCPL();
         Debug.assertTrue(cpl != null);
         Debug.assertTrue(cpl.listp());
@@ -133,20 +151,20 @@ public class SlotClass extends LispClass
             LispObject car = cpl.car();
             if (car instanceof StandardClass) {
                 StandardClass cls = (StandardClass) car;
-                LispObject defs = cls.getDirectSlotDefinitions();
-                Debug.assertTrue(defs != null);
-                Debug.assertTrue(defs.listp());
-                while (defs != NIL) {
-                    slotDefinitions = slotDefinitions.push(defs.car());
-                    defs = defs.cdr();
+                LispObject directDefs = cls.getDirectSlotDefinitions();
+                Debug.assertTrue(directDefs != null);
+                Debug.assertTrue(directDefs.listp());
+                while (directDefs != NIL) {
+                    defs = defs.push(directDefs.car());
+                    directDefs = directDefs.cdr();
                 }
             }
             cpl = cpl.cdr();
         }
-        slotDefinitions = slotDefinitions.nreverse();
-        LispObject[] instanceSlotNames = new LispObject[slotDefinitions.length()];
+        setSlotDefinitions(defs.nreverse());
+        LispObject[] instanceSlotNames = new LispObject[defs.length()];
         int i = 0;
-        LispObject tail = slotDefinitions;
+        LispObject tail = getSlotDefinitions();
         while (tail != NIL) {
             SlotDefinition slotDefinition = (SlotDefinition) tail.car();
             slotDefinition.setLocation(i);
@@ -167,7 +185,7 @@ public class SlotClass extends LispClass
 
         {
             if (arg instanceof SlotClass)
-                return ((SlotClass)arg).directSlotDefinitions;
+                return ((SlotClass)arg).getDirectSlotDefinitions();
             if (arg instanceof BuiltInClass)
                 return NIL;
             return type_error(arg, Symbol.STANDARD_CLASS);
@@ -183,7 +201,7 @@ public class SlotClass extends LispClass
 
         {
                 if (first instanceof SlotClass) {
-                ((SlotClass)first).directSlotDefinitions = second;
+                  ((SlotClass)first).setDirectSlotDefinitions(second);
                 return second;
             }
                 else {
@@ -201,7 +219,7 @@ public class SlotClass extends LispClass
 
         {
             if (arg instanceof SlotClass)
-                return ((SlotClass)arg).slotDefinitions;
+                return ((SlotClass)arg).getSlotDefinitions();
             if (arg instanceof BuiltInClass)
                 return NIL;
             return type_error(arg, Symbol.STANDARD_CLASS);
@@ -216,12 +234,12 @@ public class SlotClass extends LispClass
         public LispObject execute(LispObject first, LispObject second)
 
         {
-                if (first instanceof SlotClass) {
-                ((SlotClass)first).slotDefinitions = second;
-                return second;
+            if (first instanceof SlotClass) {
+              ((SlotClass)first).setSlotDefinitions(second);
+              return second;
             }
-                else {
-                return type_error(first, Symbol.STANDARD_CLASS);
+            else {
+              return type_error(first, Symbol.STANDARD_CLASS);
             }
         }
     };
@@ -235,7 +253,7 @@ public class SlotClass extends LispClass
 
         {
             if (arg instanceof SlotClass)
-                return ((SlotClass)arg).directDefaultInitargs;
+                return ((SlotClass)arg).getDirectDefaultInitargs();
             if (arg instanceof BuiltInClass)
                 return NIL;
             return type_error(arg, Symbol.STANDARD_CLASS);
@@ -250,11 +268,11 @@ public class SlotClass extends LispClass
         public LispObject execute(LispObject first, LispObject second)
 
         {
-                   if (first instanceof SlotClass) {                
-                           ((SlotClass)first).directDefaultInitargs = second;                
-                           return second;
-                   }
-                   return type_error(first, Symbol.STANDARD_CLASS);
+            if (first instanceof SlotClass) {
+              ((SlotClass)first).setDirectDefaultInitargs(second);
+              return second;
+            }
+            return type_error(first, Symbol.STANDARD_CLASS);
         }
     };
 
@@ -267,7 +285,7 @@ public class SlotClass extends LispClass
 
         {
             if (arg instanceof SlotClass)
-                return ((SlotClass)arg).defaultInitargs;
+                return ((SlotClass)arg).getDefaultInitargs();
             if (arg instanceof BuiltInClass)
                 return NIL;
             return type_error(arg, Symbol.STANDARD_CLASS);
@@ -283,7 +301,7 @@ public class SlotClass extends LispClass
 
         {
             if (first instanceof SlotClass) {
-                ((SlotClass)first).defaultInitargs = second;
+                ((SlotClass)first).setDefaultInitargs(second);
                 return second;
             }
             return type_error(first, Symbol.STANDARD_CLASS);

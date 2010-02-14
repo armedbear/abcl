@@ -209,7 +209,7 @@ public final class StandardGenericFunction extends StandardObject
     if (name != null)
       {
         StringBuilder sb = new StringBuilder();
-        sb.append(getLispClass().getSymbol().writeToString());
+        sb.append(getLispClass().getName().writeToString());
         sb.append(' ');
         sb.append(name.writeToString());
         return unreadableString(sb.toString());

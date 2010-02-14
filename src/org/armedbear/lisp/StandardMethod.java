@@ -156,7 +156,7 @@ public class StandardMethod extends StandardObject
         if (name != null)
           {
             StringBuilder sb = new StringBuilder();
-            sb.append(getLispClass().getSymbol().writeToString());
+            sb.append(getLispClass().getName().writeToString());
             sb.append(' ');
             sb.append(name.writeToString());
             LispObject specializers =
@@ -169,7 +169,7 @@ public class StandardMethod extends StandardObject
                   {
                     LispObject spec = specs.car();
                     if (spec instanceof LispClass)
-                      names = names.push(((LispClass)spec).getSymbol());
+                      names = names.push(((LispClass)spec).getName());
                     else
                       names = names.push(spec);
                     specs = specs.cdr();

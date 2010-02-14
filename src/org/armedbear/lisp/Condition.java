@@ -139,7 +139,7 @@ public class Condition extends StandardObject
   {
     LispClass c = getLispClass();
     if (c != null)
-      return c.getSymbol();
+      return c.getName();
     return Symbol.CONDITION;
   }
 

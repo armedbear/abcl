@@ -52,7 +52,7 @@ public final class make_condition extends Primitive
         if (type instanceof Symbol)
             symbol = (Symbol) type;
         else if (type instanceof LispClass)
-            symbol = ((LispClass)type).getSymbol();
+            symbol = checkSymbol(((LispClass)type).getName());
         else {
             // This function only works on symbols and classes.
             return NIL;

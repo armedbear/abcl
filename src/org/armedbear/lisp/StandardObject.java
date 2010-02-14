@@ -45,9 +45,19 @@ public class StandardObject extends LispObject
     layout = new Layout(StandardClass.STANDARD_OBJECT, NIL, NIL);
   }
 
+
+  protected StandardObject(Layout layout, int length)
+  {
+    this.layout = layout;
+    slots = new LispObject[length];
+    for (int i = slots.length; i-- > 0;)
+      slots[i] = UNBOUND_VALUE;
+  }
+
+
   protected StandardObject(LispClass cls, int length)
   {
-    layout = cls.getClassLayout();
+    layout = cls == null ? null : cls.getClassLayout();
     slots = new LispObject[length];
     for (int i = slots.length; i-- > 0;)
       slots[i] = UNBOUND_VALUE;
@@ -55,8 +65,8 @@ public class StandardObject extends LispObject
 
   protected StandardObject(LispClass cls)
   {
-    layout = cls.getClassLayout();
-    slots = new LispObject[layout.getLength()];
+    layout = cls == null ? null : cls.getClassLayout();
+    slots = new LispObject[layout == null ? 0 : layout.getLength()];
     for (int i = slots.length; i-- > 0;)
       slots[i] = UNBOUND_VALUE;
   }
@@ -90,7 +100,7 @@ public class StandardObject extends LispObject
 
   public final LispClass getLispClass()
   {
-    return layout.lispClass;
+    return layout.getLispClass();
   }
 
   @Override
@@ -100,16 +110,16 @@ public class StandardObject extends LispObject
     // conditions, TYPE-OF returns the proper name of the class returned by
     // CLASS-OF if it has a proper name, and otherwise returns the class
     // itself."
-    final LispClass c1 = layout.lispClass;
+    final LispClass c1 = layout.getLispClass();
     // The proper name of a class is "a symbol that names the class whose
     // name is that symbol".
-    final Symbol symbol = c1.getSymbol();
-    if (symbol != NIL)
+    final LispObject name = c1.getName();
+    if (name != NIL && name != UNBOUND_VALUE)
       {
         // TYPE-OF.9
-        final LispObject c2 = LispClass.findClass(symbol);
+        final LispObject c2 = LispClass.findClass(checkSymbol(name));
         if (c2 == c1)
-          return symbol;
+          return name;
       }
     return c1;
   }
@@ -117,7 +127,7 @@ public class StandardObject extends LispObject
   @Override
   public LispObject classOf()
   {
-    return layout.lispClass;
+    return layout.getLispClass();
   }
 
   @Override
@@ -127,19 +137,19 @@ public class StandardObject extends LispObject
       return T;
     if (type == StandardClass.STANDARD_OBJECT)
       return T;
-    LispClass cls = layout != null ? layout.lispClass : null;
+    LispClass cls = layout != null ? layout.getLispClass() : null;
     if (cls != null)
       {
         if (type == cls)
           return T;
-        if (type == cls.getSymbol())
+        if (type == cls.getName())
           return T;
         LispObject cpl = cls.getCPL();
         while (cpl != NIL)
           {
             if (type == cpl.car())
               return T;
-            if (type == ((LispClass)cpl.car()).getSymbol())
+            if (type == ((LispClass)cpl.car()).getName())
               return T;
             cpl = cpl.cdr();
           }
@@ -173,7 +183,7 @@ public class StandardObject extends LispObject
   {
     Debug.assertTrue(layout.isInvalid());
     Layout oldLayout = layout;
-    LispClass cls = oldLayout.lispClass;
+    LispClass cls = oldLayout.getLispClass();
     Layout newLayout = cls.getClassLayout();
     Debug.assertTrue(!newLayout.isInvalid());
     StandardObject newInstance = new StandardObject(cls);
@@ -340,7 +350,7 @@ public class StandardObject extends LispObject
       @Override
       public LispObject execute(LispObject arg)
       {
-          return checkStandardObject(arg).layout.lispClass;
+          return checkStandardObject(arg).layout.getLispClass();
       }
     };
 
