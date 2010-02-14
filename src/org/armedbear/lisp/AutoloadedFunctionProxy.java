@@ -219,8 +219,10 @@ public class AutoloadedFunctionProxy extends Function {
       LispThread thread = LispThread.currentThread();
       LispObject value = AUTOLOADING_CACHE.symbolValue(thread);
 
-      if (value instanceof Nil)
-          return loadCompiledFunction(name);
+      if (value instanceof Nil) {
+          byte[] bytes = readFunctionBytes(new Pathname(name));
+          return (bytes == null) ? null : loadClassBytes(bytes);
+      }
 
       Hashtable cache = (Hashtable)value.javaInstance();
       byte[] bytes = (byte[])cache.get(name);
