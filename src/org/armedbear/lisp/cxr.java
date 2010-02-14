@@ -38,9 +38,13 @@ import static org.armedbear.lisp.Lisp.*;
 public final class cxr
 {
   // ### set-car
-  private static final Primitive SET_CAR =
-    new Primitive("set-car", PACKAGE_SYS, true)
-    {
+  private static final Primitive SET_CAR = new pf_set_car();
+  private static final class pf_set_car extends Primitive {
+      pf_set_car()
+      {
+        super("set-car", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -51,9 +55,13 @@ public final class cxr
     };
 
   // ### set-cdr
-  private static final Primitive SET_CDR =
-    new Primitive("set-cdr", PACKAGE_SYS, true)
-    {
+  private static final Primitive SET_CDR = new pf_set_cdr();
+  private static final class pf_set_cdr extends Primitive {
+      pf_set_cdr()
+      {
+        super("set-cdr", PACKAGE_SYS, true);
+      }
+	
       @Override
       public LispObject execute(LispObject first, LispObject second)
 
@@ -64,8 +72,13 @@ public final class cxr
     };
 
   // ### car
-  private static final Primitive CAR = new Primitive(Symbol.CAR, "list")
-    {
+  private static final Primitive CAR = new pf_car();
+  private static final class pf_car extends Primitive {
+      pf_car()
+      {
+        super(Symbol.CAR, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -74,8 +87,13 @@ public final class cxr
     };
 
   // ### cdr
-  private static final Primitive CDR = new Primitive(Symbol.CDR, "list")
-    {
+  private static final Primitive CDR = new pf_cdr();
+  private static final class pf_cdr extends Primitive {
+      pf_cdr()
+      {
+        super(Symbol.CDR, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -84,8 +102,13 @@ public final class cxr
     };
 
   // ### caar
-  private static final Primitive CAAR = new Primitive(Symbol.CAAR, "list")
-    {
+  private static final Primitive CAAR = new pf_caar();
+  private static final class pf_caar extends Primitive {
+      pf_caar()
+      {
+        super(Symbol.CAAR, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -94,8 +117,13 @@ public final class cxr
     };
 
   // ### cadr
-  private static final Primitive CADR = new Primitive(Symbol.CADR, "list")
-    {
+  private static final Primitive CADR = new pf_cadr();
+  private static final class pf_cadr extends Primitive {
+      pf_cadr()
+      {
+        super(Symbol.CADR, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -104,8 +132,13 @@ public final class cxr
     };
 
   // ### cdar
-  private static final Primitive CDAR = new Primitive(Symbol.CDAR, "list")
-    {
+  private static final Primitive CDAR = new pf_cdar();
+  private static final class pf_cdar extends Primitive {
+      pf_cdar()
+      {
+        super(Symbol.CDAR, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -114,8 +147,13 @@ public final class cxr
     };
 
   // ### cddr
-  private static final Primitive CDDR = new Primitive(Symbol.CDDR, "list")
-    {
+  private static final Primitive CDDR = new pf_cddr();
+  private static final class pf_cddr extends Primitive {
+      pf_cddr()
+      {
+        super(Symbol.CDDR, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -124,8 +162,13 @@ public final class cxr
     };
 
   // ### caddr
-  private static final Primitive CADDR = new Primitive(Symbol.CADDR, "list")
-    {
+  private static final Primitive CADDR = new pf_caddr();
+  private static final class pf_caddr extends Primitive {
+      pf_caddr()
+      {
+        super(Symbol.CADDR, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -134,8 +177,13 @@ public final class cxr
     };
 
   // ### caadr
-  private static final Primitive CAADR = new Primitive(Symbol.CAADR, "list")
-    {
+  private static final Primitive CAADR = new pf_caadr();
+  private static final class pf_caadr extends Primitive {
+      pf_caadr()
+      {
+        super(Symbol.CAADR, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -144,8 +192,13 @@ public final class cxr
     };
 
   // ### caaar
-  private static final Primitive CAAAR = new Primitive(Symbol.CAAAR, "list")
-    {
+  private static final Primitive CAAAR = new pf_caaar();
+  private static final class pf_caaar extends Primitive {
+      pf_caaar()
+      {
+        super(Symbol.CAAAR, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -154,8 +207,13 @@ public final class cxr
     };
 
   // ### cdaar
-  private static final Primitive CDAAR = new Primitive(Symbol.CDAAR, "list")
-    {
+  private static final Primitive CDAAR = new pf_cdaar();
+  private static final class pf_cdaar extends Primitive {
+      pf_cdaar()
+      {
+        super(Symbol.CDAAR, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -164,8 +222,13 @@ public final class cxr
     };
 
   // ### cddar
-  private static final Primitive CDDAR = new Primitive(Symbol.CDDAR, "list")
-    {
+  private static final Primitive CDDAR = new pf_cddar();
+  private static final class pf_cddar extends Primitive {
+      pf_cddar()
+      {
+        super(Symbol.CDDAR, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -174,8 +237,13 @@ public final class cxr
     };
 
   // ### cdddr
-  private static final Primitive CDDDR = new Primitive(Symbol.CDDDR, "list")
-    {
+  private static final Primitive CDDDR = new pf_cdddr();
+  private static final class pf_cdddr extends Primitive {
+      pf_cdddr()
+      {
+        super(Symbol.CDDDR, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -184,8 +252,13 @@ public final class cxr
     };
 
   // ### cadar
-  private static final Primitive CADAR = new Primitive(Symbol.CADAR, "list")
-    {
+  private static final Primitive CADAR = new pf_cadar();
+  private static final class pf_cadar extends Primitive {
+      pf_cadar()
+      {
+        super(Symbol.CADAR, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -194,8 +267,13 @@ public final class cxr
     };
 
   // ### cdadr
-  private static final Primitive CDADR = new Primitive(Symbol.CDADR, "list")
-    {
+  private static final Primitive CDADR = new pf_cdadr();
+  private static final class pf_cdadr extends Primitive {
+      pf_cdadr()
+      {
+        super(Symbol.CDADR, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -204,8 +282,13 @@ public final class cxr
     };
 
   // ### first
-  private static final Primitive FIRST = new Primitive(Symbol.FIRST, "list")
-    {
+  private static final Primitive FIRST = new pf_first();
+  private static final class pf_first extends Primitive {
+      pf_first()
+      {
+        super(Symbol.FIRST, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -214,8 +297,13 @@ public final class cxr
     };
 
   // ### second
-  private static final Primitive SECOND = new Primitive(Symbol.SECOND, "list")
-    {
+  private static final Primitive SECOND = new pf_second();
+  private static final class pf_second extends Primitive {
+      pf_second()
+      {
+        super(Symbol.SECOND, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -224,8 +312,13 @@ public final class cxr
     };
 
   // ### third
-  private static final Primitive THIRD = new Primitive(Symbol.THIRD, "list")
-    {
+  private static final Primitive THIRD = new pf_third();
+  private static final class pf_third extends Primitive {
+      pf_third()
+      {
+        super(Symbol.THIRD, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -234,8 +327,13 @@ public final class cxr
     };
 
   // ### fourth
-  private static final Primitive FOURTH = new Primitive(Symbol.FOURTH, "list")
-    {
+  private static final Primitive FOURTH = new pf_fourth();
+  private static final class pf_fourth extends Primitive {
+      pf_fourth()
+      {
+        super(Symbol.FOURTH, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -244,8 +342,13 @@ public final class cxr
     };
 
   // ### rest
-  private static final Primitive REST = new Primitive(Symbol.REST, "list")
-    {
+  private static final Primitive REST = new pf_rest();
+  private static final class pf_rest extends Primitive {
+      pf_rest()
+      {
+        super(Symbol.REST, "list");
+      }
+	
       @Override
       public LispObject execute(LispObject arg)
       {
