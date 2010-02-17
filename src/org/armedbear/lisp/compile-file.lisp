@@ -557,7 +557,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
               (%stream-terpri out)
               (dump-form `(dotimes (,count-sym ,*class-number*)
                             (function-preload
-                             (%format nil "~A-~D.cls" ,(pathname-name output-file)
+                             (%format nil "~A-~D.cls" 
+                                      ,(substitute #\_ #\. (pathname-name output-file))
                                       (1+ ,count-sym)))) out)
               (%stream-terpri out))
 
