@@ -364,7 +364,7 @@ public class Pathname extends LispObject {
             }
             directory = parseDirectory(d);
         }
-        if (s.startsWith(".")) {
+        if (s.startsWith(".") && s.indexOf(".", 1) == -1) {
             name = new SimpleString(s);
             return;
         }
