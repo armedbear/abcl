@@ -255,6 +255,17 @@ public final class StringFunctions {
         }
     };
 
+    private static LispObject 
+        swapReturnValue(int original,
+                        StringIndicesAndChars indicesAndChars) {
+        if (original < 0) {
+            return NIL;
+        }
+        int delta = original - indicesAndChars.start1;
+        int retVal = indicesAndChars.start2 + delta;
+        return Fixnum.getInstance(retVal);
+    }
+
     // ### %string>
     // Case sensitive.
     private static final Primitive _STRING_GREATER_THAN = new pf__string_greater_than();
@@ -273,12 +284,7 @@ public final class StringFunctions {
                                       fifth, sixth,
                                       third, fourth);
             int tmp = lessThan(indicesAndChars);
-            if (tmp < 0) {
-                return NIL;
-            }
-            int delta = tmp - indicesAndChars.start1;
-            int retVal = indicesAndChars.start2 + delta;
-            return Fixnum.getInstance(retVal);
+            return swapReturnValue(tmp, indicesAndChars);
         }
     };
 
@@ -346,12 +352,7 @@ public final class StringFunctions {
                                       fifth, sixth,
                                       third, fourth);
             int tmp = lessThanOrEqual(indicesAndChars);
-            if (tmp < 0) {
-                return NIL;
-            }
-            int delta = tmp - indicesAndChars.start1;
-            int retVal = indicesAndChars.start2 + delta;
-            return Fixnum.getInstance(retVal);
+            return swapReturnValue(tmp, indicesAndChars);
         }
     };
 
@@ -420,12 +421,7 @@ public final class StringFunctions {
                                       fifth, sixth,
                                       third, fourth);
             int tmp = stringLessp(indicesAndChars);
-            if (tmp < 0) {
-                return NIL;
-            }
-            int delta = tmp - indicesAndChars.start1;
-            int retVal = indicesAndChars.start2 + delta;
-            return Fixnum.getInstance(retVal);
+            return swapReturnValue(tmp, indicesAndChars);
         }
     };
 
@@ -495,12 +491,7 @@ public final class StringFunctions {
                                       fifth, sixth,
                                       third, fourth);
             int tmp = stringNotLessp(indicesAndChars);
-            if (tmp < 0) {
-                return NIL;
-            }
-            int delta = tmp - indicesAndChars.start1;
-            int retVal = indicesAndChars.start2 + delta;
-            return Fixnum.getInstance(retVal);
+            return swapReturnValue(tmp, indicesAndChars);
         }
     };
 
