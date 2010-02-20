@@ -364,7 +364,10 @@ public class Pathname extends LispObject {
             }
             directory = parseDirectory(d);
         }
-        if (s.startsWith(".") && s.indexOf(".", 1) == -1) {
+        if (s.startsWith(".") 
+            // No TYPE can be parsed
+            && (s.indexOf(".", 1) == -1 
+                || s.substring(s.length() -1).equals("."))) {
             name = new SimpleString(s);
             return;
         }
@@ -858,9 +861,9 @@ public class Pathname extends LispObject {
         }
     }
     // ### %pathname-host
-    private static final Primitive _PATHNAME_HOST = new _pathname_host();
-    private static class _pathname_host extends Primitive {
-        _pathname_host() {
+    private static final Primitive _PATHNAME_HOST = new pf_pathname_host();
+    private static class pf_pathname_host extends Primitive {
+        pf_pathname_host() {
             super("%pathname-host", PACKAGE_SYS, false);
         }
         @Override
@@ -870,9 +873,9 @@ public class Pathname extends LispObject {
         }
     }
     // ### %pathname-device
-    private static final Primitive _PATHNAME_DEVICE = new _pathname_device(); 
-    private static class _pathname_device extends Primitive {
-        _pathname_device() {
+    private static final Primitive _PATHNAME_DEVICE = new pf_pathname_device(); 
+    private static class pf_pathname_device extends Primitive {
+        pf_pathname_device() {
             super("%pathname-device", PACKAGE_SYS, false);
         }
         @Override
@@ -882,9 +885,9 @@ public class Pathname extends LispObject {
         }
     }
     // ### %pathname-directory
-    private static final Primitive _PATHNAME_DIRECTORY = new _pathname_directory();
-    private static class _pathname_directory extends Primitive {
-        _pathname_directory() {
+    private static final Primitive _PATHNAME_DIRECTORY = new pf_pathname_directory();
+    private static class pf_pathname_directory extends Primitive {
+        pf_pathname_directory() {
             super("%pathname-directory", PACKAGE_SYS, false);
         }
         @Override
@@ -894,9 +897,9 @@ public class Pathname extends LispObject {
         }
     }
     // ### %pathname-name
-    private static final Primitive _PATHNAME_NAME = new _pathname_name();
-    private static class  _pathname_name extends Primitive {
-        _pathname_name() {
+    private static final Primitive _PATHNAME_NAME = new pf_pathname_name();
+    private static class  pf_pathname_name extends Primitive {
+        pf_pathname_name() {
             super ("%pathname-name", PACKAGE_SYS, false);
         }
         @Override
@@ -906,9 +909,9 @@ public class Pathname extends LispObject {
         }
     }
     // ### %pathname-type
-    private static final Primitive _PATHNAME_TYPE = new _pathname_type();
-    private static class _pathname_type extends Primitive {
-        _pathname_type() {
+    private static final Primitive _PATHNAME_TYPE = new pf_pathname_type();
+    private static class pf_pathname_type extends Primitive {
+        pf_pathname_type() {
             super("%pathname-type", PACKAGE_SYS, false);
         }
         @Override
@@ -918,9 +921,9 @@ public class Pathname extends LispObject {
         }
     }
     // ### pathname-version
-    private static final Primitive PATHNAME_VERSION = new pathname_version();
-    private static class pathname_version extends Primitive {
-        pathname_version() {
+    private static final Primitive PATHNAME_VERSION = new pf_pathname_version();
+    private static class pf_pathname_version extends Primitive {
+        pf_pathname_version() {
             super("pathname-version", "pathname");
         }
         @Override
@@ -930,9 +933,9 @@ public class Pathname extends LispObject {
     }
     // ### namestring
     // namestring pathname => namestring
-    private static final Primitive NAMESTRING = new namestring();
-    private static class namestring extends Primitive {
-        namestring() {
+    private static final Primitive NAMESTRING = new pf_namestring();
+    private static class pf_namestring extends Primitive {
+        pf_namestring() {
             super("namestring", "pathname");
         }
         @Override
@@ -948,9 +951,9 @@ public class Pathname extends LispObject {
     }
     // ### directory-namestring
     // directory-namestring pathname => namestring
-    private static final Primitive DIRECTORY_NAMESTRING = new directory_namestring();
-    private static class directory_namestring extends Primitive {
-        directory_namestring() {
+    private static final Primitive DIRECTORY_NAMESTRING = new pf_directory_namestring();
+    private static class pf_directory_namestring extends Primitive {
+        pf_directory_namestring() {
             super("directory-namestring", "pathname");
         }
         @Override
@@ -959,9 +962,9 @@ public class Pathname extends LispObject {
         }
     }
     // ### pathname pathspec => pathname
-    private static final Primitive PATHNAME = new pathname();
-    private static class pathname extends Primitive {
-        pathname() {
+    private static final Primitive PATHNAME = new pf_pathname();
+    private static class pf_pathname extends Primitive {
+        pf_pathname() {
             super("pathname", "pathspec");
         }
         @Override
@@ -970,9 +973,9 @@ public class Pathname extends LispObject {
         }
     }
     // ### %parse-namestring string host default-pathname => pathname, position
-    private static final Primitive _PARSE_NAMESTRING = new _parse_namestring();
-    private static class _parse_namestring extends Primitive {
-        _parse_namestring() {
+    private static final Primitive _PARSE_NAMESTRING = new pf_parse_namestring();
+    private static class pf_parse_namestring extends Primitive {
+        pf_parse_namestring() {
             super("%parse-namestring", PACKAGE_SYS, false,
                   "namestring host default-pathname");
         }
@@ -1002,9 +1005,9 @@ public class Pathname extends LispObject {
         }
     }
     // ### make-pathname
-    private static final Primitive MAKE_PATHNAME = new make_pathname();
-    private static class make_pathname extends Primitive {
-        make_pathname() {
+    private static final Primitive MAKE_PATHNAME = new pf_make_pathname();
+    private static class pf_make_pathname extends Primitive {
+        pf_make_pathname() {
             super("make-pathname",
                   "&key host device directory name type version defaults case");
         }
@@ -1199,9 +1202,9 @@ public class Pathname extends LispObject {
         return true;
     }
     // ### pathnamep
-    private static final Primitive PATHNAMEP = new pathnamep();
-    private static class pathnamep extends Primitive  {
-        pathnamep() {
+    private static final Primitive PATHNAMEP = new pf_pathnamep();
+    private static class pf_pathnamep extends Primitive  {
+        pf_pathnamep() {
             super("pathnamep", "object");
         }
         @Override
@@ -1210,9 +1213,9 @@ public class Pathname extends LispObject {
         }
     }
     // ### logical-pathname-p
-    private static final Primitive LOGICAL_PATHNAME_P = new logical_pathname_p();
-    private static class logical_pathname_p extends Primitive {
-        logical_pathname_p() {
+    private static final Primitive LOGICAL_PATHNAME_P = new pf_logical_pathname_p();
+    private static class pf_logical_pathname_p extends Primitive {
+        pf_logical_pathname_p() {
             super("logical-pathname-p", PACKAGE_SYS, true, "object");
         }
         @Override
@@ -1221,9 +1224,9 @@ public class Pathname extends LispObject {
         }
     }
     // ### user-homedir-pathname &optional host => pathname
-    private static final Primitive USER_HOMEDIR_PATHNAME = new user_homedir_pathname();
-    private static class user_homedir_pathname extends Primitive {
-        user_homedir_pathname() {
+    private static final Primitive USER_HOMEDIR_PATHNAME = new pf_user_homedir_pathname();
+    private static class pf_user_homedir_pathname extends Primitive {
+        pf_user_homedir_pathname() {
             super("user-homedir-pathname", "&optional host");
         }
         @Override
@@ -1244,9 +1247,9 @@ public class Pathname extends LispObject {
         }
     }
     // ### list-directory directory
-    private static final Primitive LIST_DIRECTORY = new list_directory();
-    private static class list_directory extends Primitive {
-        list_directory() {
+    private static final Primitive LIST_DIRECTORY = new pf_list_directory();
+    private static class pf_list_directory extends Primitive {
+        pf_list_directory() {
             super("list-directory", PACKAGE_SYS, true, "directory");
         }
         @Override
@@ -1301,9 +1304,9 @@ public class Pathname extends LispObject {
     }
 
     // ### PATHNAME-JAR-P 
-    private static final Primitive PATHNAME_JAR_P = new pathname_jar_p();
-    private static class pathname_jar_p extends Primitive {
-        pathname_jar_p() {
+    private static final Primitive PATHNAME_JAR_P = new pf_pathname_jar_p();
+    private static class pf_pathname_jar_p extends Primitive {
+        pf_pathname_jar_p() {
             super("pathname-jar-p", PACKAGE_SYS, true, "pathname",
                   "Predicate for whether PATHNAME references a JAR.");
         }
@@ -1348,81 +1351,83 @@ public class Pathname extends LispObject {
         return false;
     }
     // ### %wild-pathname-p
-    private static final Primitive _WILD_PATHNAME_P =
-      new Primitive("%wild-pathname-p", PACKAGE_SYS, true) {
+    private static final Primitive _WILD_PATHNAME_P = new pf_wild_pathname_p();
+    static final class pf_wild_pathname_p extends Primitive {
+        pf_wild_pathname_p() {
+            super("%wild-pathname-p", PACKAGE_SYS, true);
+        }
+        @Override
+        public LispObject execute(LispObject first, LispObject second) {
+            Pathname pathname = coerceToPathname(first);
+            if (second == NIL) {
+                return pathname.isWild() ? T : NIL;
+            }
+            if (second == Keyword.DIRECTORY) {
+                if (pathname.directory instanceof Cons) {
+                    if (memq(Keyword.WILD, pathname.directory)) {
+                        return T;
+                    }
+                    if (memq(Keyword.WILD_INFERIORS, pathname.directory)) {
+                        return T;
+                    }
+                }
+                return NIL;
+            }
+            LispObject value;
+            if (second == Keyword.HOST) {
+                value = pathname.host;
+            } else if (second == Keyword.DEVICE) {
+                value = pathname.device;
+            } else if (second == Keyword.NAME) {
+                value = pathname.name;
+            } else if (second == Keyword.TYPE) {
+                value = pathname.type;
+            } else if (second == Keyword.VERSION) {
+                value = pathname.version;
+            } else {
+                return error(new ProgramError("Unrecognized keyword "
+                                              + second.writeToString() + "."));
+            }
+            if (value == Keyword.WILD || value == Keyword.WILD_INFERIORS) {
+                return T;
+            } else {
+                return NIL;
+            }
+        }
+    }
 
-          @Override
-          public LispObject execute(LispObject first, LispObject second) {
-              Pathname pathname = coerceToPathname(first);
-              if (second == NIL) {
-                  return pathname.isWild() ? T : NIL;
-              }
-              if (second == Keyword.DIRECTORY) {
-                  if (pathname.directory instanceof Cons) {
-                      if (memq(Keyword.WILD, pathname.directory)) {
-                          return T;
-                      }
-                      if (memq(Keyword.WILD_INFERIORS, pathname.directory)) {
-                          return T;
-                      }
-                  }
-                  return NIL;
-              }
-              LispObject value;
-              if (second == Keyword.HOST) {
-                  value = pathname.host;
-              } else if (second == Keyword.DEVICE) {
-                  value = pathname.device;
-              } else if (second == Keyword.NAME) {
-                  value = pathname.name;
-              } else if (second == Keyword.TYPE) {
-                  value = pathname.type;
-              } else if (second == Keyword.VERSION) {
-                  value = pathname.version;
-              } else {
-                  return error(new ProgramError("Unrecognized keyword "
-                    + second.writeToString() + "."));
-              }
-              if (value == Keyword.WILD || value == Keyword.WILD_INFERIORS) {
-                  return T;
-              } else {
-                  return NIL;
-              }
-          }
-      };
-    // ### merge-pathnames
-    private static final Primitive MERGE_PATHNAMES =
-      new Primitive("merge-pathnames",
-      "pathname &optional default-pathname default-version") {
-
-          @Override
-          public LispObject execute(LispObject arg) {
-              Pathname pathname = coerceToPathname(arg);
-              Pathname defaultPathname =
+    // ### merge-pathnames pathname &optional default-pathname default-version"
+    private static final Primitive MERGE_PATHNAMES = new pf_merge_pathnames();
+    static final class pf_merge_pathnames extends Primitive {
+        pf_merge_pathnames() {
+            super("merge-pathnames", "pathname &optional default-pathname default-version");
+        }
+        @Override
+        public LispObject execute(LispObject arg) {
+            Pathname pathname = coerceToPathname(arg);
+            Pathname defaultPathname =
                 coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue());
-              LispObject defaultVersion = Keyword.NEWEST;
-              return mergePathnames(pathname, defaultPathname, defaultVersion);
-          }
-
-          @Override
-          public LispObject execute(LispObject first, LispObject second) {
-              Pathname pathname = coerceToPathname(first);
-              Pathname defaultPathname =
+            LispObject defaultVersion = Keyword.NEWEST;
+            return mergePathnames(pathname, defaultPathname, defaultVersion);
+        }
+        @Override
+        public LispObject execute(LispObject first, LispObject second) {
+            Pathname pathname = coerceToPathname(first);
+            Pathname defaultPathname =
                 coerceToPathname(second);
-              LispObject defaultVersion = Keyword.NEWEST;
-              return mergePathnames(pathname, defaultPathname, defaultVersion);
-          }
-
-          @Override
-          public LispObject execute(LispObject first, LispObject second,
-            LispObject third) {
-              Pathname pathname = coerceToPathname(first);
-              Pathname defaultPathname =
+            LispObject defaultVersion = Keyword.NEWEST;
+            return mergePathnames(pathname, defaultPathname, defaultVersion);
+        }
+        @Override
+        public LispObject execute(LispObject first, LispObject second,
+                                  LispObject third) {
+            Pathname pathname = coerceToPathname(first);
+            Pathname defaultPathname =
                 coerceToPathname(second);
-              LispObject defaultVersion = third;
-              return mergePathnames(pathname, defaultPathname, defaultVersion);
-          }
-      };
+            LispObject defaultVersion = third;
+            return mergePathnames(pathname, defaultPathname, defaultVersion);
+        }
+    }
 
     public static final Pathname mergePathnames(Pathname pathname, Pathname defaultPathname) {
         return mergePathnames(pathname, defaultPathname, Keyword.NEWEST);
@@ -1474,6 +1479,7 @@ public class Pathname extends LispObject {
                 }
                 ((Cons)result.device).car = o;
             }
+            result.directory = p.directory;
         } else {
             result.directory = mergeDirectories(p.directory, d.directory);
         }
@@ -1849,9 +1855,9 @@ public class Pathname extends LispObject {
     }
 
     // ### mkdir pathname
-    private static final Primitive MKDIR = new mkdir();
-    private static class mkdir extends Primitive {
-        mkdir() {
+    private static final Primitive MKDIR = new pf_mkdir();
+    private static class pf_mkdir extends Primitive {
+        pf_mkdir() {
             super("mkdir", PACKAGE_SYS, false, "pathname");
         }
 
@@ -1871,9 +1877,9 @@ public class Pathname extends LispObject {
     }
 
     // ### rename-file filespec new-name => defaulted-new-name, old-truename, new-truename
-    private static final Primitive RENAME_FILE = new rename_file();
-    private static class rename_file extends Primitive {
-        rename_file() {
+    private static final Primitive RENAME_FILE = new pf_rename_file();
+    private static class pf_rename_file extends Primitive {
+        pf_rename_file() {
             super("rename-file", "filespec new-name");
         }
         @Override
@@ -1913,9 +1919,9 @@ public class Pathname extends LispObject {
     }
 
     // ### file-namestring pathname => namestring
-    private static final Primitive FILE_NAMESTRING = new file_namestring();
-    private static class file_namestring extends Primitive {
-        file_namestring() {
+    private static final Primitive FILE_NAMESTRING = new pf_file_namestring();
+    private static class pf_file_namestring extends Primitive {
+        pf_file_namestring() {
             super("file-namestring", "pathname");
         }
         @Override
@@ -1940,9 +1946,9 @@ public class Pathname extends LispObject {
     }
 
     // ### host-namestring pathname => namestring
-    private static final Primitive HOST_NAMESTRING = new host_namestring();
-    private static class host_namestring extends Primitive {
-        host_namestring() {
+    private static final Primitive HOST_NAMESTRING = new pf_host_namestring();
+    private static class pf_host_namestring extends Primitive {
+        pf_host_namestring() {
             super("host-namestring", "pathname");
         }
         @Override

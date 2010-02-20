@@ -221,11 +221,14 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
      "jar:file:baz.jar!/foo" "/a/b/c")
   #p"jar:file:/a/b/baz.jar!/foo")
 
+(deftest jar-file.merge-pathnames.5
+    (merge-pathnames "jar:file:/a/b/c/foo.jar!/bar/baz.lisp")
+  #p"jar:file:/a/b/c/foo.jar!/bar/baz.lisp")
+
 (deftest jar-file.truename.1
     (signals-error (truename "jar:file:baz.jar!/foo")
                    'file-error)
   t)
-
 
 (deftest jar-file.pathname.1
     (let* ((p #p"jar:file:foo/baz.jar!/")
