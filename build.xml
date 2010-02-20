@@ -346,6 +346,41 @@ to   ${abcl.lisp.output}</echo>
       <property name="abcl.wrapper.in.file" value="abcl.bat.in"/>
     </target>
 
+    <!-- XXX Generalize when (if?) we get more contribs --> 
+    <target name="abcl.contrib" depends="abcl.jar">
+      <java fork="true"
+            failonerror="true"
+            classpathref="abcl.classpath.dist"
+            dir="${basedir}/contrib/asdf-install/"
+            inputstring="(require 'asdf) (asdf:operate 'asdf:compile-op :asdf-install)"
+            classname="org.armedbear.lisp.Main">
+        <arg value="--noinit"/>
+      </java>
+      <jar destfile="dist/abcl-contrib.jar"
+           compress="true"
+           basedir="contrib">
+        <patternset>
+          <include name="**/*.asd"/>
+          <include name="**/*.lisp"/>
+          <include name="**/*.abcl"/>
+        </patternset>
+      </jar>
+      <echo>
+Packaged contribs in ${dist.dir}/abcl-contrib.jar. 
+
+To use ASDF-INSTALL, use the following in your ~/.abclrc:
+
+  (require 'asdf)
+  (pushnew "jar:file:${dist.dir}/abcl-contrib.jar!/asdf-install/" asdf:*central-registry*)
+
+Then issuing
+
+  CL-USER> (require 'asdf-install) 
+
+will load ASDF-INSTALL.
+</echo>
+    </target>
+
     <target name="abcl.debug.jpda" depends="abcl.jar">
       <description>Invoke ABCL with JPDA listener on port 6789</description>
       <java fork="true"
