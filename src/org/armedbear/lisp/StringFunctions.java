@@ -34,8 +34,41 @@
 package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
-
+import java.util.Arrays;
 public final class StringFunctions {
+    private final static class StringIndicesAndChars {
+        
+        public char[] array1;
+        public char[] array2;
+        public int start1 = 0;
+        public int end1;
+        public int start2 = 0;
+        public int end2;
+    };
+    private final static StringIndicesAndChars
+        stringIndicesAndChars(LispObject... params) {
+        StringIndicesAndChars retVal = new StringIndicesAndChars();
+        retVal.array1 = params[0].STRING().getStringChars();
+        retVal.array2 = params[1].STRING().getStringChars();
+        retVal.end1 = retVal.array1.length;
+        retVal.end2 = retVal.array2.length;
+        if (params.length > 2) {
+            if (params[2] != NIL) {
+                retVal.start1 = Fixnum.getValue(params[2]);
+            }
+            if (params[3] != NIL) {
+                retVal.end1 = Fixnum.getValue(params[3]);
+            }
+            if (params[4] != NIL) {
+                retVal.start2 = Fixnum.getValue(params[4]);
+            }
+            if (params[5] != NIL) {
+                retVal.end2 = Fixnum.getValue(params[5]);
+            }
+        }
+        return retVal;
+    }
+
     // ### %string=
     // Case sensitive.
     private static final Primitive _STRING_EQUAL = new pf__string_equal();
@@ -50,34 +83,10 @@ public final class StringFunctions {
                                   LispObject fifth, LispObject sixth)
 
         {
-            char[] array1 = first.STRING().getStringChars();
-            char[] array2 = second.STRING().getStringChars();
-            int start1, end1, start2, end2;
-            start1 = Fixnum.getValue(third);
-            if (fourth == NIL) {
-                end1 = array1.length;
-            } else {
-                end1 = Fixnum.getValue(fourth);
-            }
-            start2 = Fixnum.getValue(fifth);
-            if (sixth == NIL) {
-                end2 = array2.length;
-            } else {
-                end2 = Fixnum.getValue(sixth);
-            }
-            if ((end1 - start1) != (end2 - start2))
-                return NIL;
-            try {
-                for (int i = start1, j = start2; i < end1; i++, j++) {
-                    if (array1[i] != array2[j])
-                        return NIL;
-                }
-            } catch (ArrayIndexOutOfBoundsException e) {
-                // Shouldn't happen.
-                Debug.trace(e);
-                return NIL;
-            }
-            return T;
+            return 
+                (_STRING_NOT_EQUAL.execute(first, second, third, 
+                                           fourth, fifth, sixth)
+                 == NIL) ? T : NIL;
         }
     };
 
@@ -93,17 +102,11 @@ public final class StringFunctions {
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            char[] array1 = first.STRING().getStringChars();
-            char[] array2 = second.STRING().getStringChars();
-            if (array1.length != array2.length)
-                return NIL;
-            for (int i = array1.length; i-- > 0;) {
-                if (array1[i] != array2[i])
-                    return NIL;
-            }
-            return T;
-        }
-    };
+            StringIndicesAndChars chars = stringIndicesAndChars(first, second);
+            return Arrays.equals(chars.array1, chars.array2) ?
+                T : NIL;
+        };
+    }
 
     // ### %string/=
     // Case sensitive.
@@ -114,29 +117,26 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject[] args) {
-            if (args.length != 6)
-                return error(new WrongNumberOfArgumentsException(this));
-            char[] array1 = args[0].STRING().getStringChars();
-            char[] array2 = args[1].STRING().getStringChars();
-            int start1 = Fixnum.getValue(args[2]);
-            int end1 = Fixnum.getValue(args[3]);
-            int start2 = Fixnum.getValue(args[4]);
-            int end2 = Fixnum.getValue(args[5]);
-            int i = start1;
-            int j = start2;
+        public LispObject execute(LispObject first, LispObject second,
+                                  LispObject third, LispObject fourth,
+                                  LispObject fifth, LispObject sixth) {
+            StringIndicesAndChars indicesAndChars = 
+                stringIndicesAndChars(first, second, third, fourth,
+                                      fifth, sixth);
+            int i = indicesAndChars.start1;
+            int j = indicesAndChars.start2;
             while (true) {
-                if (i == end1) {
+                if (i == indicesAndChars.end1) {
                     // Reached end of string1.
-                    if (j == end2)
+                    if (j == indicesAndChars.end2)
                         return NIL; // Strings are identical.
                     return Fixnum.getInstance(i);
                 }
-                if (j == end2) {
+                if (j == indicesAndChars.end2) {
                     // Reached end of string2 before end of string1.
                     return Fixnum.getInstance(i);
                 }
-                if (array1[i] != array2[j])
+                if (indicesAndChars.array1[i] != indicesAndChars.array2[j])
                     return Fixnum.getInstance(i);
                 ++i;
                 ++j;
@@ -158,32 +158,14 @@ public final class StringFunctions {
                                   LispObject fifth, LispObject sixth)
 
         {
-            char[] array1 = first.STRING().getStringChars();
-            char[] array2 = second.STRING().getStringChars();
-            int start1 = Fixnum.getValue(third);
-            int end1 = Fixnum.getValue(fourth);
-            int start2 = Fixnum.getValue(fifth);
-            int end2 = Fixnum.getValue(sixth);
-            if ((end1 - start1) != (end2 - start2))
-                return NIL;
-            int i, j;
-            for (i = start1, j = start2; i < end1; i++, j++) {
-                char c1 = array1[i];
-                char c2 = array2[j];
-                if (c1 == c2)
-                    continue;
-                if (LispCharacter.toUpperCase(c1) == LispCharacter.toUpperCase(c2))
-                    continue;
-                if (LispCharacter.toLowerCase(c1) == LispCharacter.toLowerCase(c2))
-                    continue;
-                return NIL;
-            }
-            return T;
+            return (_STRING_NOT_EQUAL_IGNORE_CASE.execute(first, second, third, 
+                                                          fourth, fifth, sixth) 
+                    == NIL) ? T : NIL;
         }
     };
 
     // ### %string-not-equal
-    // Case sensitive.
+    // Case insensitive.
     private static final Primitive _STRING_NOT_EQUAL_IGNORE_CASE = new pf__string_not_equal_ignore_case();
     private static final class pf__string_not_equal_ignore_case extends Primitive {
         pf__string_not_equal_ignore_case() {
@@ -191,30 +173,27 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject[] args) {
-            if (args.length != 6)
-                return error(new WrongNumberOfArgumentsException(this));
-            char[] array1 = args[0].STRING().getStringChars();
-            char[] array2 = args[1].STRING().getStringChars();
-            int start1 = Fixnum.getValue(args[2]);
-            int end1 = Fixnum.getValue(args[3]);
-            int start2 = Fixnum.getValue(args[4]);
-            int end2 = Fixnum.getValue(args[5]);
-            int i = start1;
-            int j = start2;
+        public LispObject execute(LispObject first, LispObject second,
+                                  LispObject third, LispObject fourth,
+                                  LispObject fifth, LispObject sixth) {
+            StringIndicesAndChars indicesAndChars = 
+                stringIndicesAndChars(first, second, third, fourth,
+                                      fifth, sixth);
+            int i = indicesAndChars.start1;
+            int j = indicesAndChars.start2;
             while (true) {
-                if (i == end1) {
+                if (i == indicesAndChars.end1) {
                     // Reached end of string1.
-                    if (j == end2)
+                    if (j == indicesAndChars.end2)
                         return NIL; // Strings are identical.
                     return Fixnum.getInstance(i);
                 }
-                if (j == end2) {
+                if (j == indicesAndChars.end2) {
                     // Reached end of string2.
                     return Fixnum.getInstance(i);
                 }
-                char c1 = array1[i];
-                char c2 = array2[j];
+                char c1 = indicesAndChars.array1[i];
+                char c2 = indicesAndChars.array2[j];
                 if (c1 == c2 ||
                         LispCharacter.toUpperCase(c1) == LispCharacter.toUpperCase(c2) ||
                         LispCharacter.toLowerCase(c1) == LispCharacter.toLowerCase(c2)) {
@@ -229,6 +208,33 @@ public final class StringFunctions {
 
     // ### %string<
     // Case sensitive.
+    private static int lessThan(StringIndicesAndChars indicesAndChars) {
+        int i = indicesAndChars.start1;
+        int j = indicesAndChars.start2;
+        while (true) {
+            if (i == indicesAndChars.end1) {
+                // Reached end of string1.
+                if (j == indicesAndChars.end2)
+                    return -1; // Strings are identical.
+                return i;
+            }
+            if (j == indicesAndChars.end2) {
+                // Reached end of string2.
+                return -1;
+            }
+            char c1 = indicesAndChars.array1[i];
+            char c2 = indicesAndChars.array2[j];
+            if (c1 == c2) {
+                ++i;
+                ++j;
+                continue;
+            }
+            if (c1 < c2)
+                return (i);
+            // c1 > c2
+            return -1;
+        }
+    }
     private static final Primitive _STRING_LESS_THAN = new pf__string_less_than();
     private static final class pf__string_less_than extends Primitive {
         pf__string_less_than() {
@@ -236,44 +242,18 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject[] args) {
-            if (args.length != 6)
-                return error(new WrongNumberOfArgumentsException(this));
-            char[] array1 = args[0].STRING().getStringChars();
-            char[] array2 = args[1].STRING().getStringChars();
-            int start1 = Fixnum.getValue(args[2]);
-            int end1 = Fixnum.getValue(args[3]);
-            int start2 = Fixnum.getValue(args[4]);
-            int end2 = Fixnum.getValue(args[5]);
-            int i = start1;
-            int j = start2;
-            while (true) {
-                if (i == end1) {
-                    // Reached end of string1.
-                    if (j == end2)
-                        return NIL; // Strings are identical.
-                    return Fixnum.getInstance(i);
-                }
-                if (j == end2) {
-                    // Reached end of string2.
-                    return NIL;
-                }
-                char c1 = array1[i];
-                char c2 = array2[j];
-                if (c1 == c2) {
-                    ++i;
-                    ++j;
-                    continue;
-                }
-                if (c1 < c2)
-                    return Fixnum.getInstance(i);
-                // c1 > c2
-                return NIL;
-            }
+        public LispObject execute(LispObject first, LispObject second,
+                                  LispObject third, LispObject fourth,
+                                  LispObject fifth, LispObject sixth) {
+            StringIndicesAndChars indicesAndChars = 
+                stringIndicesAndChars(first, second, third,
+                                      fourth, fifth, sixth);
+            int retVal = lessThan(indicesAndChars);
+            return (retVal >= 0) ? Fixnum.getInstance(retVal) : NIL;
         }
     };
 
-    // ### %string<=
+    // ### %string>
     // Case sensitive.
     private static final Primitive _STRING_GREATER_THAN = new pf__string_greater_than();
     private static final class pf__string_greater_than extends Primitive {
@@ -282,41 +262,48 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject[] args) {
-            if (args.length != 6)
-                return error(new WrongNumberOfArgumentsException(this));
-            char[] array1 = args[0].STRING().getStringChars();
-            char[] array2 = args[1].STRING().getStringChars();
-            int start1 = Fixnum.getValue(args[2]);
-            int end1 = Fixnum.getValue(args[3]);
-            int start2 = Fixnum.getValue(args[4]);
-            int end2 = Fixnum.getValue(args[5]);
-            int i = start1;
-            int j = start2;
-            while (true) {
-                if (i == end1) {
-                    // Reached end of string1.
-                    return NIL;
-                }
-                if (j == end2) {
-                    // Reached end of string2.
-                    return Fixnum.getInstance(i);
-                }
-                char c1 = array1[i];
-                char c2 = array2[j];
-                if (c1 == c2) {
-                    ++i;
-                    ++j;
-                    continue;
-                }
-                if (c1 < c2)
-                    return NIL;
-                // c1 > c2
-                return Fixnum.getInstance(i);
+        public LispObject execute(LispObject first, LispObject second,
+                                  LispObject third, LispObject fourth,
+                                  LispObject fifth, LispObject sixth) {
+            // note the swap of the strings and lengths here..
+            StringIndicesAndChars indicesAndChars = 
+                stringIndicesAndChars(second, first, 
+                                      fifth, sixth,
+                                      third, fourth);
+            int tmp = lessThan(indicesAndChars);
+            if (tmp < 0) {
+                return NIL;
             }
+            int delta = tmp - indicesAndChars.start1;
+            int retVal = indicesAndChars.start2 + delta;
+            return Fixnum.getInstance(retVal);
         }
     };
-
+    private static int lessThanOrEqual(StringIndicesAndChars indicesAndChars) {
+        int i = indicesAndChars.start1;
+        int j = indicesAndChars.start2;
+        while (true) {
+            if (i == indicesAndChars.end1) {
+                // Reached end of string1.
+                return i;
+            }
+            if (j == indicesAndChars.end2) {
+                // Reached end of string2.
+                return -1;
+            }
+            char c1 = indicesAndChars.array1[i];
+            char c2 = indicesAndChars.array2[j];
+            if (c1 == c2) {
+                ++i;
+                ++j;
+                continue;
+            }
+            if (c1 > c2)
+                return -1;
+            // c1 < c2
+            return (i);
+        }
+    }
     // ### %string<=
     // Case sensitive.
     private static final Primitive _STRING_LE = new pf__string_le();
@@ -326,42 +313,19 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject[] args) {
-            if (args.length != 6)
-                return error(new WrongNumberOfArgumentsException(this));
-            char[] array1 = args[0].STRING().getStringChars();
-            char[] array2 = args[1].STRING().getStringChars();
-            int start1 = Fixnum.getValue(args[2]);
-            int end1 = Fixnum.getValue(args[3]);
-            int start2 = Fixnum.getValue(args[4]);
-            int end2 = Fixnum.getValue(args[5]);
-            int i = start1;
-            int j = start2;
-            while (true) {
-                if (i == end1) {
-                    // Reached end of string1.
-                    return Fixnum.getInstance(i);
-                }
-                if (j == end2) {
-                    // Reached end of string2.
-                    return NIL;
-                }
-                char c1 = array1[i];
-                char c2 = array2[j];
-                if (c1 == c2) {
-                    ++i;
-                    ++j;
-                    continue;
-                }
-                if (c1 > c2)
-                    return NIL;
-                // c1 < c2
-                return Fixnum.getInstance(i);
-            }
+        public LispObject execute(LispObject first, LispObject second,
+                                  LispObject third, LispObject fourth,
+                                  LispObject fifth, LispObject sixth) {
+
+            StringIndicesAndChars indicesAndChars = 
+                stringIndicesAndChars(first, second, third,
+                                      fourth, fifth, sixth);
+            int retVal = lessThanOrEqual(indicesAndChars);
+            return (retVal >= 0) ? Fixnum.getInstance(retVal) : NIL;
         }
     };
 
-    // ### %string<=
+    // ### %string>=
     // Case sensitive.
     private static final Primitive _STRING_GE = new pf__string_ge();
     private static final class pf__string_ge extends Primitive {
@@ -370,40 +334,21 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject[] args) {
-            if (args.length != 6)
-                return error(new WrongNumberOfArgumentsException(this));
-            char[] array1 = args[0].STRING().getStringChars();
-            char[] array2 = args[1].STRING().getStringChars();
-            int start1 = Fixnum.getValue(args[2]);
-            int end1 = Fixnum.getValue(args[3]);
-            int start2 = Fixnum.getValue(args[4]);
-            int end2 = Fixnum.getValue(args[5]);
-            int i = start1;
-            int j = start2;
-            while (true) {
-                if (i == end1) {
-                    // Reached end of string1.
-                    if (j == end2)
-                        return Fixnum.getInstance(i); // Strings are identical.
-                    return NIL;
-                }
-                if (j == end2) {
-                    // Reached end of string2.
-                    return Fixnum.getInstance(i);
-                }
-                char c1 = array1[i];
-                char c2 = array2[j];
-                if (c1 == c2) {
-                    ++i;
-                    ++j;
-                    continue;
-                }
-                if (c1 < c2)
-                    return NIL;
-                // c1 > c2
-                return Fixnum.getInstance(i);
+        public LispObject execute(LispObject first, LispObject second,
+                                  LispObject third, LispObject fourth,
+                                  LispObject fifth, LispObject sixth) {
+            // note the swap of the strings and lengths here..
+            StringIndicesAndChars indicesAndChars = 
+                stringIndicesAndChars(second, first,
+                                      fifth, sixth,
+                                      third, fourth);
+            int tmp = lessThanOrEqual(indicesAndChars);
+            if (tmp < 0) {
+                return NIL;
             }
+            int delta = tmp - indicesAndChars.start1;
+            int retVal = indicesAndChars.start2 + delta;
+            return Fixnum.getInstance(retVal);
         }
     };
 
@@ -419,27 +364,22 @@ public final class StringFunctions {
         public LispObject execute(LispObject[] args) {
             if (args.length != 6)
                 return error(new WrongNumberOfArgumentsException(this));
-            char[] array1 = args[0].STRING().getStringChars();
-            char[] array2 = args[1].STRING().getStringChars();
-            int start1 = Fixnum.getValue(args[2]);
-            int end1 = Fixnum.getValue(args[3]);
-            int start2 = Fixnum.getValue(args[4]);
-            int end2 = Fixnum.getValue(args[5]);
-            int i = start1;
-            int j = start2;
+            StringIndicesAndChars indicesAndChars = stringIndicesAndChars(args);
+            int i = indicesAndChars.start1;
+            int j = indicesAndChars.start2;
             while (true) {
-                if (i == end1) {
+                if (i == indicesAndChars.end1) {
                     // Reached end of string1.
-                    if (j == end2)
+                    if (j == indicesAndChars.end2)
                         return NIL; // Strings are identical.
                     return Fixnum.getInstance(i);
                 }
-                if (j == end2) {
+                if (j == indicesAndChars.end2) {
                     // Reached end of string2.
                     return NIL;
                 }
-                char c1 = LispCharacter.toUpperCase(array1[i]);
-                char c2 = LispCharacter.toUpperCase(array2[j]);
+                char c1 = LispCharacter.toUpperCase(indicesAndChars.array1[i]);
+                char c2 = LispCharacter.toUpperCase(indicesAndChars.array2[j]);
                 if (c1 == c2) {
                     ++i;
                     ++j;
@@ -465,25 +405,20 @@ public final class StringFunctions {
         public LispObject execute(LispObject[] args) {
             if (args.length != 6)
                 return error(new WrongNumberOfArgumentsException(this));
-            char[] array1 = args[0].STRING().getStringChars();
-            char[] array2 = args[1].STRING().getStringChars();
-            int start1 = Fixnum.getValue(args[2]);
-            int end1 = Fixnum.getValue(args[3]);
-            int start2 = Fixnum.getValue(args[4]);
-            int end2 = Fixnum.getValue(args[5]);
-            int i = start1;
-            int j = start2;
+            StringIndicesAndChars indicesAndChars = stringIndicesAndChars(args);
+            int i = indicesAndChars.start1;
+            int j = indicesAndChars.start2;
             while (true) {
-                if (i == end1) {
+                if (i == indicesAndChars.end1) {
                     // Reached end of string1.
                     return NIL;
                 }
-                if (j == end2) {
+                if (j == indicesAndChars.end2) {
                     // Reached end of string2.
                     return Fixnum.getInstance(i);
                 }
-                char c1 = LispCharacter.toUpperCase(array1[i]);
-                char c2 = LispCharacter.toUpperCase(array2[j]);
+                char c1 = LispCharacter.toUpperCase(indicesAndChars.array1[i]);
+                char c2 = LispCharacter.toUpperCase(indicesAndChars.array2[j]);
                 if (c1 == c2) {
                     ++i;
                     ++j;
@@ -509,27 +444,22 @@ public final class StringFunctions {
         public LispObject execute(LispObject[] args) {
             if (args.length != 6)
                 return error(new WrongNumberOfArgumentsException(this));
-            char[] array1 = args[0].STRING().getStringChars();
-            char[] array2 = args[1].STRING().getStringChars();
-            int start1 = Fixnum.getValue(args[2]);
-            int end1 = Fixnum.getValue(args[3]);
-            int start2 = Fixnum.getValue(args[4]);
-            int end2 = Fixnum.getValue(args[5]);
-            int i = start1;
-            int j = start2;
+            StringIndicesAndChars indicesAndChars = stringIndicesAndChars(args);
+            int i = indicesAndChars.start1;
+            int j = indicesAndChars.start2;
             while (true) {
-                if (i == end1) {
+                if (i == indicesAndChars.end1) {
                     // Reached end of string1.
-                    if (j == end2)
+                    if (j == indicesAndChars.end2)
                         return Fixnum.getInstance(i); // Strings are identical.
                     return NIL;
                 }
-                if (j == end2) {
+                if (j == indicesAndChars.end2) {
                     // Reached end of string2.
                     return Fixnum.getInstance(i);
                 }
-                char c1 = LispCharacter.toUpperCase(array1[i]);
-                char c2 = LispCharacter.toUpperCase(array2[j]);
+                char c1 = LispCharacter.toUpperCase(indicesAndChars.array1[i]);
+                char c2 = LispCharacter.toUpperCase(indicesAndChars.array2[j]);
                 if (c1 == c2) {
                     ++i;
                     ++j;
@@ -555,25 +485,20 @@ public final class StringFunctions {
         public LispObject execute(LispObject[] args) {
             if (args.length != 6)
                 return error(new WrongNumberOfArgumentsException(this));
-            char[] array1 = args[0].STRING().getStringChars();
-            char[] array2 = args[1].STRING().getStringChars();
-            int start1 = Fixnum.getValue(args[2]);
-            int end1 = Fixnum.getValue(args[3]);
-            int start2 = Fixnum.getValue(args[4]);
-            int end2 = Fixnum.getValue(args[5]);
-            int i = start1;
-            int j = start2;
+            StringIndicesAndChars indicesAndChars = stringIndicesAndChars(args);
+            int i = indicesAndChars.start1;
+            int j = indicesAndChars.start2;
             while (true) {
-                if (i == end1) {
+                if (i == indicesAndChars.end1) {
                     // Reached end of string1.
                     return Fixnum.getInstance(i);
                 }
-                if (j == end2) {
+                if (j == indicesAndChars.end2) {
                     // Reached end of string2.
                     return NIL;
                 }
-                char c1 = LispCharacter.toUpperCase(array1[i]);
-                char c2 = LispCharacter.toUpperCase(array2[j]);
+                char c1 = LispCharacter.toUpperCase(indicesAndChars.array1[i]);
+                char c2 = LispCharacter.toUpperCase(indicesAndChars.array2[j]);
                 if (c1 == c2) {
                     ++i;
                     ++j;
