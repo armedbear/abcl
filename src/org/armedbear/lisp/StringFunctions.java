@@ -124,10 +124,11 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second)
+        public LispObject execute(LispObject string1, LispObject string2)
 
         {
-            StringIndicesAndChars chars = stringIndicesAndChars(first, second);
+            StringIndicesAndChars chars = 
+                stringIndicesAndChars(string1, string2);
             return Arrays.equals(chars.array1, chars.array2) ?
                 T : NIL;
         };
@@ -142,14 +143,15 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third, LispObject fourth,
-                                  LispObject fifth, LispObject sixth)
+        public LispObject execute(LispObject string1, LispObject string2,
+                                  LispObject start1, LispObject end1,
+                                  LispObject start2, LispObject end2)
 
         {
             return 
-                (_STRING_NOT_EQUAL.execute(first, second, third, 
-                                           fourth, fifth, sixth)
+                (_STRING_NOT_EQUAL.execute(string1, string2, 
+                                           start1, end1, 
+                                           start2, end2)
                  == NIL) ? T : NIL;
         }
     };
@@ -164,12 +166,12 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third, LispObject fourth,
-                                  LispObject fifth, LispObject sixth) {
+        public LispObject execute(LispObject string1, LispObject string2,
+                                  LispObject start1, LispObject end1,
+                                  LispObject start2, LispObject end2) {
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(first, second, third, fourth,
-                                      fifth, sixth);
+                stringIndicesAndChars(string1, string2, start1, end1,
+                                      start2, end2);
             int i = indicesAndChars.start1;
             int j = indicesAndChars.start2;
             while (true) {
@@ -200,13 +202,14 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third, LispObject fourth,
-                                  LispObject fifth, LispObject sixth)
+        public LispObject execute(LispObject string1, LispObject string2,
+                                  LispObject start1, LispObject end1,
+                                  LispObject start2, LispObject end2)
 
         {
-            return (_STRING_NOT_EQUAL_IGNORE_CASE.execute(first, second, third, 
-                                                          fourth, fifth, sixth) 
+            return (_STRING_NOT_EQUAL_IGNORE_CASE.execute(string1, string2, 
+                                                          start1, end1, 
+                                                          start2, end2) 
                     == NIL) ? T : NIL;
         }
     };
@@ -220,12 +223,12 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third, LispObject fourth,
-                                  LispObject fifth, LispObject sixth) {
+        public LispObject execute(LispObject string1, LispObject string2,
+                                  LispObject start1, LispObject end1,
+                                  LispObject start2, LispObject end2) {
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(first, second, third, fourth,
-                                      fifth, sixth);
+                stringIndicesAndChars(string1, string2, start1, end1,
+                                      start2, end2);
             int i = indicesAndChars.start1;
             int j = indicesAndChars.start2;
             while (true) {
@@ -290,12 +293,12 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third, LispObject fourth,
-                                  LispObject fifth, LispObject sixth) {
+        public LispObject execute(LispObject string1, LispObject string2,
+                                  LispObject start1, LispObject end1,
+                                  LispObject start2, LispObject end2) {
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(first, second, third,
-                                      fourth, fifth, sixth);
+                stringIndicesAndChars(string1, string2, 
+                                      start1, end1, start2, end2);
             int retVal = lessThan(indicesAndChars);
             return (retVal >= 0) ? Fixnum.getInstance(retVal) : NIL;
         }
@@ -321,14 +324,14 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third, LispObject fourth,
-                                  LispObject fifth, LispObject sixth) {
+        public LispObject execute(LispObject string1, LispObject string2,
+                                  LispObject start1, LispObject end1,
+                                  LispObject start2, LispObject end2) {
             // note the swap of the strings and lengths here..
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(second, first, 
-                                      fifth, sixth,
-                                      third, fourth);
+                stringIndicesAndChars(string2, string1, 
+                                      start2, end2,
+                                      start1, end1);
             int tmp = lessThan(indicesAndChars);
             return swapReturnValue(tmp, indicesAndChars);
         }
@@ -368,13 +371,13 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third, LispObject fourth,
-                                  LispObject fifth, LispObject sixth) {
+        public LispObject execute(LispObject string1, LispObject string2,
+                                  LispObject start1, LispObject end1,
+                                  LispObject start2, LispObject end2) {
 
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(first, second, third,
-                                      fourth, fifth, sixth);
+                stringIndicesAndChars(string1, string2, 
+                                      start1, end1, start2, end2);
             int retVal = lessThanOrEqual(indicesAndChars);
             return (retVal >= 0) ? Fixnum.getInstance(retVal) : NIL;
         }
@@ -389,14 +392,14 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third, LispObject fourth,
-                                  LispObject fifth, LispObject sixth) {
+        public LispObject execute(LispObject string1, LispObject string2,
+                                  LispObject start1, LispObject end1,
+                                  LispObject start2, LispObject end2) {
             // note the swap of the strings and lengths here..
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(second, first,
-                                      fifth, sixth,
-                                      third, fourth);
+                stringIndicesAndChars(string2, string1,
+                                      start2, end2,
+                                      start1, end1);
             int tmp = lessThanOrEqual(indicesAndChars);
             return swapReturnValue(tmp, indicesAndChars);
         }
@@ -438,12 +441,12 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third, LispObject fourth,
-                                  LispObject fifth, LispObject sixth) {
+        public LispObject execute(LispObject string1, LispObject string2,
+                                  LispObject start1, LispObject end1,
+                                  LispObject start2, LispObject end2) {
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(first, second, third,
-                                      fourth, fifth, sixth);
+                stringIndicesAndChars(string1, string2, 
+                                      start1, end1, start2, end2);
             int retVal = stringLessp(indicesAndChars);
             return (retVal >= 0) ? Fixnum.getInstance(retVal) : NIL;
         }
@@ -458,14 +461,14 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third, LispObject fourth,
-                                  LispObject fifth, LispObject sixth) {
+        public LispObject execute(LispObject string1, LispObject string2,
+                                  LispObject start1, LispObject end1,
+                                  LispObject start2, LispObject end2) {
             // note the swap of the strings and lengths here..
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(second, first,
-                                      fifth, sixth,
-                                      third, fourth);
+                stringIndicesAndChars(string2, string1,
+                                      start2, end2,
+                                      start1, end1);
             int tmp = stringLessp(indicesAndChars);
             return swapReturnValue(tmp, indicesAndChars);
         }
@@ -508,12 +511,12 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third, LispObject fourth,
-                                  LispObject fifth, LispObject sixth) {
+        public LispObject execute(LispObject string1, LispObject string2,
+                                  LispObject start1, LispObject end1,
+                                  LispObject start2, LispObject end2) {
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(first, second, third,
-                                      fourth, fifth, sixth);
+                stringIndicesAndChars(string1, string2, 
+                                      start1, end1, start2, end2);
             int retVal = stringNotLessp(indicesAndChars);
             return (retVal >= 0) ? Fixnum.getInstance(retVal) : NIL;
         }
@@ -528,14 +531,14 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third, LispObject fourth,
-                                  LispObject fifth, LispObject sixth) {
+        public LispObject execute(LispObject string1, LispObject string2,
+                                  LispObject start1, LispObject end1,
+                                  LispObject start2, LispObject end2) {
             // note the swap of the strings and lengths here..
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(second, first,
-                                      fifth, sixth,
-                                      third, fourth);
+                stringIndicesAndChars(string2, string1,
+                                      start2, end2,
+                                      start1, end1);
             int tmp = stringNotLessp(indicesAndChars);
             return swapReturnValue(tmp, indicesAndChars);
         }
@@ -549,12 +552,12 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third)
+        public LispObject execute(LispObject string, LispObject start,
+                                  LispObject end)
 
         {
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(first, second, third);
+                stringIndicesAndChars(string, start, end);
             char[] array = new char[indicesAndChars.array1.length];
             System.arraycopy(indicesAndChars.array1, 0,
                              array, 0,
@@ -577,10 +580,10 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third) {
+        public LispObject execute(LispObject string, LispObject start,
+                                  LispObject end) {
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(first, second, third);
+                stringIndicesAndChars(string, start, end);
             char[] array = new char[indicesAndChars.array1.length];
             System.arraycopy(indicesAndChars.array1, 0,
                              array, 0,
@@ -603,12 +606,12 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third)
+        public LispObject execute(LispObject string, LispObject start,
+                                  LispObject end)
 
         {
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(first, second, third);
+                stringIndicesAndChars(string, start, end);
             char[] array = new char[indicesAndChars.array1.length];
             boolean lastCharWasAlphanumeric = false;
             System.arraycopy(indicesAndChars.array1, 0,
@@ -646,17 +649,19 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third)
+        public LispObject execute(LispObject string, LispObject start,
+                                  LispObject end)
 
         {
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(first, second, third);
-            AbstractString string = indicesAndChars.string1; 
+                stringIndicesAndChars(string, start, end);
+            AbstractString retString = indicesAndChars.string1; 
             for (int i = indicesAndChars.start1; i < indicesAndChars.end1; i++) 
-                string.setCharAt(i,
-                                 LispCharacter.toUpperCase(string.charAt(i)));
-            return string;
+                retString.setCharAt(i,
+                                    LispCharacter.
+                                    toUpperCase(
+                                                retString.charAt(i)));
+            return retString;
         }
     };
 
@@ -668,17 +673,18 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third)
+        public LispObject execute(LispObject string, LispObject start,
+                                  LispObject end)
 
         {
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(first, second, third);
-            AbstractString string = indicesAndChars.string1; 
+                stringIndicesAndChars(string, start, end);
+            AbstractString retString = indicesAndChars.string1; 
             for (int i = indicesAndChars.start1; i < indicesAndChars.end1; i++)
-                string.setCharAt(i,
-                                 LispCharacter.toLowerCase(string.charAt(i)));
-            return string;
+                retString.setCharAt(i,
+                                    LispCharacter.
+                                    toLowerCase(retString.charAt(i)));
+            return retString;
         }
     };
 
@@ -690,31 +696,31 @@ public final class StringFunctions {
         }
 
         @Override
-        public LispObject execute(LispObject first, LispObject second,
-                                  LispObject third)
+        public LispObject execute(LispObject string, LispObject start,
+                                  LispObject end)
 
         {
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(first, second, third);
+                stringIndicesAndChars(string, start, end);
             boolean lastCharWasAlphanumeric = false;
-            AbstractString string = indicesAndChars.string1; 
+            AbstractString retString = indicesAndChars.string1; 
             for (int i = indicesAndChars.start1; 
                  i < indicesAndChars.end1; i++) {
-                char c = string.charAt(i);
+                char c = retString.charAt(i);
                 if (Character.isLowerCase(c)) {
                     if (!lastCharWasAlphanumeric)
-                        string.setCharAt(i,
-                                         LispCharacter.toUpperCase(c));
+                        retString.setCharAt(i,
+                                            LispCharacter.toUpperCase(c));
                     lastCharWasAlphanumeric = true;
                 } else if (Character.isUpperCase(c)) {
                     if (lastCharWasAlphanumeric)
-                        string.setCharAt(i,
-                                         LispCharacter.toLowerCase(c));
+                        retString.setCharAt(i,
+                                            LispCharacter.toLowerCase(c));
                     lastCharWasAlphanumeric = true;
                 } else
                     lastCharWasAlphanumeric = Character.isDigit(c);
             }
-            return string;
+            return retString;
         }
     };
 
