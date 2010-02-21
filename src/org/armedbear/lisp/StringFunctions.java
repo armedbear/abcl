@@ -162,6 +162,29 @@ public final class StringFunctions {
     };
 
 
+    private static final int notEqual(StringIndicesAndChars indicesAndChars) {
+        int i = indicesAndChars.start1;
+        int j = indicesAndChars.start2;
+        while (true) {
+            if (i == indicesAndChars.end1) {
+                // Reached end of string1.
+                if (j == indicesAndChars.end2)
+                    return -1; // Strings are identical.
+                return i;
+            }
+            if (j == indicesAndChars.end2) {
+                // Reached end of string2 before end of string1.
+                return i;
+            }
+            if (upcaseIfNeeded(indicesAndChars.array1[i],
+                               indicesAndChars.convertCase)
+                != upcaseIfNeeded(indicesAndChars.array2[j],
+                                  indicesAndChars.convertCase))
+                return i;
+            ++i;
+            ++j;
+        }
+    }
     // ### %string/=
     // Case sensitive.
     private static final Primitive _STRING_NOT_EQUAL = new pf__string_not_equal();
@@ -177,24 +200,8 @@ public final class StringFunctions {
             StringIndicesAndChars indicesAndChars = 
                 stringIndicesAndChars(string1, string2, start1, end1,
                                       start2, end2);
-            int i = indicesAndChars.start1;
-            int j = indicesAndChars.start2;
-            while (true) {
-                if (i == indicesAndChars.end1) {
-                    // Reached end of string1.
-                    if (j == indicesAndChars.end2)
-                        return NIL; // Strings are identical.
-                    return Fixnum.getInstance(i);
-                }
-                if (j == indicesAndChars.end2) {
-                    // Reached end of string2 before end of string1.
-                    return Fixnum.getInstance(i);
-                }
-                if (indicesAndChars.array1[i] != indicesAndChars.array2[j])
-                    return Fixnum.getInstance(i);
-                ++i;
-                ++j;
-            }
+            int tmp = notEqual(indicesAndChars);
+            return (tmp >= 0) ? Fixnum.getInstance(tmp) : NIL;
         }
     };
 
@@ -234,34 +241,13 @@ public final class StringFunctions {
             StringIndicesAndChars indicesAndChars = 
                 stringIndicesAndChars(string1, string2, start1, end1,
                                       start2, end2);
-            int i = indicesAndChars.start1;
-            int j = indicesAndChars.start2;
-            while (true) {
-                if (i == indicesAndChars.end1) {
-                    // Reached end of string1.
-                    if (j == indicesAndChars.end2)
-                        return NIL; // Strings are identical.
-                    return Fixnum.getInstance(i);
-                }
-                if (j == indicesAndChars.end2) {
-                    // Reached end of string2.
-                    return Fixnum.getInstance(i);
-                }
-                char c1 = indicesAndChars.array1[i];
-                char c2 = indicesAndChars.array2[j];
-                if (c1 == c2 ||
-                        LispCharacter.toUpperCase(c1) == LispCharacter.toUpperCase(c2) ||
-                        LispCharacter.toLowerCase(c1) == LispCharacter.toLowerCase(c2)) {
-                    ++i;
-                    ++j;
-                    continue;
-                }
-                return Fixnum.getInstance(i);
-            }
+            indicesAndChars.convertCase = true;
+            int tmp = notEqual(indicesAndChars);
+            return (tmp >= 0) ? Fixnum.getInstance(tmp) : NIL;
         }
     };
 
-    private static int lessThan(StringIndicesAndChars indicesAndChars) {
+    private static final int lessThan(StringIndicesAndChars indicesAndChars) {
         int i = indicesAndChars.start1;
         int j = indicesAndChars.start2;
         while (true) {
@@ -344,7 +330,7 @@ public final class StringFunctions {
         }
     };
 
-    private static int lessThanOrEqual(StringIndicesAndChars indicesAndChars) {
+    private static final int lessThanOrEqual(StringIndicesAndChars indicesAndChars) {
         int i = indicesAndChars.start1;
         int j = indicesAndChars.start2;
         while (true) {
