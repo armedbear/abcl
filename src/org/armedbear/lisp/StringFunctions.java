@@ -38,7 +38,8 @@ import static org.armedbear.lisp.Lisp.*;
 import java.util.Arrays;
 public final class StringFunctions {
     private final static class StringIndicesAndChars {
-        AbstractString string1;
+        public AbstractString string1;
+        public boolean convertCase = false;
         public char[] array1;
         public char[] array2;
         public int start1 = 0;
@@ -78,6 +79,10 @@ public final class StringFunctions {
                                     + indicesAndChars.end2 + ")."));
         }
 
+    }
+    
+    private final static char upcaseIfNeeded(char c, boolean convert) {
+        return convert ? LispCharacter.toUpperCase(c) : c;
     }
 
     private final static StringIndicesAndChars
@@ -270,8 +275,10 @@ public final class StringFunctions {
                 // Reached end of string2.
                 return -1;
             }
-            char c1 = indicesAndChars.array1[i];
-            char c2 = indicesAndChars.array2[j];
+            char c1 = upcaseIfNeeded(indicesAndChars.array1[i], 
+                                     indicesAndChars.convertCase);
+            char c2 = upcaseIfNeeded(indicesAndChars.array2[j],
+                                     indicesAndChars.convertCase);
             if (c1 == c2) {
                 ++i;
                 ++j;
@@ -349,8 +356,10 @@ public final class StringFunctions {
                 // Reached end of string2.
                 return -1;
             }
-            char c1 = indicesAndChars.array1[i];
-            char c2 = indicesAndChars.array2[j];
+            char c1 = upcaseIfNeeded(indicesAndChars.array1[i], 
+                                     indicesAndChars.convertCase);
+            char c2 = upcaseIfNeeded(indicesAndChars.array2[j],
+                                     indicesAndChars.convertCase);
             if (c1 == c2) {
                 ++i;
                 ++j;
@@ -405,33 +414,7 @@ public final class StringFunctions {
         }
     };
 
-    private static int stringLessp(StringIndicesAndChars indicesAndChars) {
-        int i = indicesAndChars.start1;
-        int j = indicesAndChars.start2;
-        while (true) {
-            if (i == indicesAndChars.end1) {
-                // Reached end of string1.
-                if (j == indicesAndChars.end2)
-                    return -1; // Strings are identical.
-                return i;
-            }
-            if (j == indicesAndChars.end2) {
-                // Reached end of string2.
-                return -1;
-            }
-            char c1 = LispCharacter.toUpperCase(indicesAndChars.array1[i]);
-            char c2 = LispCharacter.toUpperCase(indicesAndChars.array2[j]);
-            if (c1 == c2) {
-                ++i;
-                ++j;
-                continue;
-            }
-            if (c1 > c2)
-                return -1;
-            // c1 < c2
-            return i;
-        }
-    }
+
     // ### %string-lessp
     // Case insensitive.
     private static final Primitive _STRING_LESSP = new pf__string_lessp();
@@ -447,7 +430,8 @@ public final class StringFunctions {
             StringIndicesAndChars indicesAndChars = 
                 stringIndicesAndChars(string1, string2, 
                                       start1, end1, start2, end2);
-            int retVal = stringLessp(indicesAndChars);
+            indicesAndChars.convertCase = true;
+            int retVal = lessThan(indicesAndChars);
             return (retVal >= 0) ? Fixnum.getInstance(retVal) : NIL;
         }
     };
@@ -469,39 +453,11 @@ public final class StringFunctions {
                 stringIndicesAndChars(string2, string1,
                                       start2, end2,
                                       start1, end1);
-            int tmp = stringLessp(indicesAndChars);
+            indicesAndChars.convertCase = true;
+            int tmp = lessThan(indicesAndChars);
             return swapReturnValue(tmp, indicesAndChars);
         }
     };
-
-    private static int stringNotLessp(StringIndicesAndChars indicesAndChars) {
-        int i = indicesAndChars.start1;
-        int j = indicesAndChars.start2;
-        while (true) {
-            if (i == indicesAndChars.end1) {
-                // Reached end of string1.
-                if (j == indicesAndChars.end2)
-                    return i; // Strings are identical.
-                return -1;
-            }
-            if (j == indicesAndChars.end2) {
-                // Reached end of string2.
-                return i;
-            }
-            char c1 = LispCharacter.toUpperCase(indicesAndChars.array1[i]);
-            char c2 = LispCharacter.toUpperCase(indicesAndChars.array2[j]);
-            if (c1 == c2) {
-                ++i;
-                ++j;
-                continue;
-            }
-            if (c1 > c2)
-                return i;
-            // c1 < c2
-            return -1;
-        }
-    }
-
     // ### %string-not-lessp
     // Case insensitive.
     private static final Primitive _STRING_NOT_LESSP = new pf__string_not_lessp();
@@ -514,11 +470,14 @@ public final class StringFunctions {
         public LispObject execute(LispObject string1, LispObject string2,
                                   LispObject start1, LispObject end1,
                                   LispObject start2, LispObject end2) {
+            // note the swap of the strings and lengths here..
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(string1, string2, 
-                                      start1, end1, start2, end2);
-            int retVal = stringNotLessp(indicesAndChars);
-            return (retVal >= 0) ? Fixnum.getInstance(retVal) : NIL;
+                stringIndicesAndChars(string2, string1,
+                                      start2, end2,
+                                      start1, end1);
+            indicesAndChars.convertCase = true;
+            int tmp = lessThanOrEqual(indicesAndChars);
+            return swapReturnValue(tmp, indicesAndChars);
         }
     };
 
@@ -534,13 +493,13 @@ public final class StringFunctions {
         public LispObject execute(LispObject string1, LispObject string2,
                                   LispObject start1, LispObject end1,
                                   LispObject start2, LispObject end2) {
-            // note the swap of the strings and lengths here..
             StringIndicesAndChars indicesAndChars = 
-                stringIndicesAndChars(string2, string1,
-                                      start2, end2,
-                                      start1, end1);
-            int tmp = stringNotLessp(indicesAndChars);
-            return swapReturnValue(tmp, indicesAndChars);
+                stringIndicesAndChars(string1, string2,
+                                      start1, end1,
+                                      start2, end2);
+            indicesAndChars.convertCase = true;
+            int tmp = lessThanOrEqual(indicesAndChars);
+            return (tmp >= 0) ? Fixnum.getInstance(tmp) : NIL;
         }
     };
 
