@@ -71,53 +71,25 @@
   (let ((pathname (merge-pathnames pathspec)))
     (when (logical-pathname-p pathname)
       (setq pathname (translate-logical-pathname pathname)))
-    (if (pathname-jar-p pathname)
-        (directory-jar pathspec)
-        (if (or (position #\* (namestring pathname))
-                (wild-pathname-p pathname))
-            (let ((namestring (directory-namestring pathname)))
-              (when (and namestring (> (length namestring) 0))
-                #+windows
-                (let ((device (pathname-device pathname)))
-                  (when device
-                    (setq namestring (concatenate 'string device ":" namestring))))
-                (let ((entries (list-directories-with-wildcards namestring))
-                      (matching-entries ()))
-                  (dolist (entry entries)
-                    (cond ((file-directory-p entry)
-                           (when (pathname-match-p (file-namestring (pathname-as-file entry)) (file-namestring pathname))
-                             (push entry matching-entries)))
-                          ((pathname-match-p (file-namestring entry) (file-namestring pathname))
-                           (push entry matching-entries))))
-                  matching-entries)))
-            ;; Not wild.
-            (let ((truename (probe-file pathname)))
-              (if truename
-                  (list (pathname truename))
-                  nil))))))
-
-;;; Thanks to Alan "Never touch Java unless you have to" Ruttenberg
-;;; XXX need to handle JAR in JAR cases
-;;; XXX doesn't handle non file: JAR entries
-(defun directory-jar (pathname)
-  (let* ((device (pathname-device pathname))
-	 (jarfile (namestring (car device)))
-	 (rest-pathname (namestring (make-pathname :directory `(:absolute ,@(cdr (pathname-directory pathname)))
-						   :name (pathname-name pathname)
-						   :type (pathname-type pathname)))))
-    (if (or (position #\* (namestring rest-pathname))
-	    (wild-pathname-p rest-pathname))
-	(let ((jar (java:jnew "java.util.zip.ZipFile" jarfile)))
-	  (let ((els (java:jcall "entries" jar)))
-	    (loop :while (java:jcall "hasMoreElements" els)
-	       :for name = (java:jcall "getName"
-                                       (java:jcall "nextElement" els))
-	       :when (pathname-match-p (concatenate 'string "/" name) rest-pathname)
-	       :collect (make-pathname :device (pathname-device pathname)
-                                       :name (pathname-name name)
-                                       :type (pathname-type name)
-                                       :directory `(:relative ,@(cdr (pathname-directory name)))))))
-	(let ((truename (probe-file pathname)))
-	  (if truename
-              (list truename)
+    (if (or (position #\* (namestring pathname))
+	    (wild-pathname-p pathname))
+        (let ((namestring (directory-namestring pathname)))
+          (when (and namestring (> (length namestring) 0))
+            #+windows
+            (let ((device (pathname-device pathname)))
+              (when device
+                (setq namestring (concatenate 'string device ":" namestring))))
+            (let ((entries (list-directories-with-wildcards namestring))
+                  (matching-entries ()))
+              (dolist (entry entries)
+                (cond ((file-directory-p entry)
+                       (when (pathname-match-p (file-namestring (pathname-as-file entry)) (file-namestring pathname))
+                         (push entry matching-entries)))
+                      ((pathname-match-p (file-namestring entry) (file-namestring pathname))
+                       (push entry matching-entries))))
+              matching-entries)))
+        ;; Not wild.
+        (let ((truename (probe-file pathname)))
+          (if truename
+              (list (pathname truename))
               nil)))))
