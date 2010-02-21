@@ -555,16 +555,17 @@ public final class StringFunctions {
         {
             StringIndicesAndChars indicesAndChars = 
                 stringIndicesAndChars(first, second, third);
-            StringBuilder sb = new StringBuilder(indicesAndChars.array1.length);
-            int i;
-            for (i = 0; i < indicesAndChars.start1; i++)
-                sb.append(indicesAndChars.array1[i]);
-            for (i = indicesAndChars.start1; i < indicesAndChars.end1; i++)
-                sb.append(LispCharacter.toUpperCase(indicesAndChars.array1[i]));
-            for (i = indicesAndChars.end1; 
-                 i < indicesAndChars.array1.length; i++)
-                sb.append(indicesAndChars.array1[i]);
-            return new SimpleString(sb);
+            char[] array = new char[indicesAndChars.array1.length];
+            System.arraycopy(indicesAndChars.array1, 0,
+                             array, 0,
+                             indicesAndChars.start1);
+            for (int i = indicesAndChars.start1; i < indicesAndChars.end1; i++)
+                array[i] = LispCharacter.toUpperCase(indicesAndChars.array1[i]);
+            System.arraycopy(indicesAndChars.array1, indicesAndChars.end1,
+                      array, indicesAndChars.end1,
+                             indicesAndChars.array1.length 
+                             - indicesAndChars.end1);
+            return new SimpleString(array);
         }
     };
 
@@ -580,16 +581,17 @@ public final class StringFunctions {
                                   LispObject third) {
             StringIndicesAndChars indicesAndChars = 
                 stringIndicesAndChars(first, second, third);
-            StringBuilder sb = new StringBuilder(indicesAndChars.array1.length);
-            int i;
-            for (i = 0; i < indicesAndChars.start1; i++)
-                sb.append(indicesAndChars.array1[i]);
-            for (i = indicesAndChars.start1; i < indicesAndChars.end1; i++)
-                sb.append(LispCharacter.toLowerCase(indicesAndChars.array1[i]));
-            for (i = indicesAndChars.end1; 
-                 i < indicesAndChars.array1.length; i++)
-                sb.append(indicesAndChars.array1[i]);
-            return new SimpleString(sb);
+            char[] array = new char[indicesAndChars.array1.length];
+            System.arraycopy(indicesAndChars.array1, 0,
+                             array, 0,
+                             indicesAndChars.start1);
+            for (int i = indicesAndChars.start1; i < indicesAndChars.end1; i++)
+                array[i] = LispCharacter.toLowerCase(indicesAndChars.array1[i]);
+            System.arraycopy(indicesAndChars.array1, indicesAndChars.end1,
+                      array, indicesAndChars.end1,
+                             indicesAndChars.array1.length 
+                             - indicesAndChars.end1);
+            return new SimpleString(array);
         }
     };
 
@@ -607,28 +609,32 @@ public final class StringFunctions {
         {
             StringIndicesAndChars indicesAndChars = 
                 stringIndicesAndChars(first, second, third);
-            StringBuilder sb = new StringBuilder(indicesAndChars.array1.length);
+            char[] array = new char[indicesAndChars.array1.length];
             boolean lastCharWasAlphanumeric = false;
-            int i;
-            for (i = 0; i < indicesAndChars.start1; i++)
-                sb.append(indicesAndChars.array1[i]);
-            for (i = indicesAndChars.start1; i < indicesAndChars.end1; i++) {
+            System.arraycopy(indicesAndChars.array1, 0,
+                             array, 0,
+                             indicesAndChars.start1);
+            for (int i = indicesAndChars.start1; 
+                 i < indicesAndChars.end1; i++) {
                 char c = indicesAndChars.array1[i];
                 if (Character.isLowerCase(c)) {
-                    sb.append(lastCharWasAlphanumeric ? c : LispCharacter.toUpperCase(c));
+                    array[i] = lastCharWasAlphanumeric ? 
+                        c : LispCharacter.toUpperCase(c);
                     lastCharWasAlphanumeric = true;
                 } else if (Character.isUpperCase(c)) {
-                    sb.append(lastCharWasAlphanumeric ? LispCharacter.toLowerCase(c) : c);
+                    array[i] = lastCharWasAlphanumeric ? 
+                        LispCharacter.toLowerCase(c) : c;
                     lastCharWasAlphanumeric = true;
                 } else {
-                    sb.append(c);
+                    array[i] = c;
                     lastCharWasAlphanumeric = Character.isDigit(c);
                 }
             }
-            for (i = indicesAndChars.end1; 
-                 i < indicesAndChars.array1.length; i++)
-                sb.append(indicesAndChars.array1[i]);
-            return new SimpleString(sb);
+            System.arraycopy(indicesAndChars.array1, indicesAndChars.end1,
+                      array, indicesAndChars.end1,
+                             indicesAndChars.array1.length 
+                             - indicesAndChars.end1);
+            return new SimpleString(array);
         }
     };
 

@@ -78,7 +78,7 @@ public final class SimpleString extends AbstractString
         capacity = chars.length;
     }
 
-    private SimpleString(char[] chars)
+    public SimpleString(char[] chars)
     {
         this.chars = chars;
         capacity = chars.length;
