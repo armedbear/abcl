@@ -7,20 +7,20 @@ Features
 --------
 
 * [svn 12487] An initial port ASDF-INSTALL now forms the first ABCL
-  contrib which are optionally built by the Ant target 'abcl.contrib'.
-  ASDF-INSTALL is not expected to work very well under Windows at the
-  moment.
+  contrib.  Such contribs are optionally built by the Ant target
+  'abcl.contrib'.  ASDF-INSTALL is not expected to work very well
+  under Windows in its present state.
 
-* [svn 12447] REQUIRE now searches for ASDF systems.
+* [svn 12447] [ticket:80] REQUIRE now searches for ASDF systems.
 
 * [svn r12422] Jar pathname support extensively re-worked and tested
   so that LOAD, PROBE-FILE, TRUENAME, and WRITE-FILE-DATE all work
   both for local and remote jar pathnames of the form
   "jar:URL!/JAR-ENTRY".
 
-  Loading ASDF systems from jar files are now possible.
+  The loading ASDF systems from jar files is now possible.
 
-  SYS:PATHNAME-JAR-P predicate signals whether a pathname refences a
+  SYS:PATHNAME-JAR-P predicate signals whether a pathname references a
   jar.
        
   NB: jar pathnames do *not* currently work as an argument to OPEN or
@@ -30,6 +30,9 @@ Features
 
   SYS:ZIP now has a three argument version for creating zip files with
   hierarchical entries.
+
+* [svn r12450] Collect unprocessed command-line arguments in
+  EXT:*COMMAND-LINE-ARGUMENT-LIST* (Dennis Lambe Jr.)
 
 * [svn r12414] SYS::%GET-OUTPUT-STREAM-ARRAY returns a Lisp byte array
   from a Java byte array stream.
@@ -43,7 +46,7 @@ Fixes/Optimizations
 
 * [svn r12485] Pathnames starting with "." can now have TYPE.
 
-* [svn r12484] FASLS containing "." characters not used to indicate
+* [svn r12484] FASLs containing "." characters not used to indicate
   type (i.e. ".foo.bar.baz.abcl") can now be loaded.
 
 * [svn 12422] Pathname.java URL contructor under Windows now properly
@@ -65,14 +68,14 @@ Fixes/Optimizations
 * [svn r12437] CHAR-CODE-LIMIT is the upper execlusive limit (found by
   Paul Griffionen).
 
-* [svn r12436] Describe formatting missing a newline (reported by
+* [svn r12436] Describe formatting was missing a newline (reported by
   Blake McBride).
 
 * [svn 12469] Ensure that FILE-ERROR always has a value (possibly NIL)
   for its PATHNAME member.
 
-* [svn r14222] MERGE-PATHNAMES no longer potentially shares between
-  result and *DEFAULT-PATHNAME-DEFAULTS*.
+* [svn r14222] MERGE-PATHNAMES no longer potentially shares structure
+  between its result and *DEFAULT-PATHNAME-DEFAULTS*.
 
 * [svn r12416] Fixed ANSI LAMBDA.nn test failures caused by errors in
   lambda inlining.
@@ -121,16 +124,16 @@ Other
   support of the (in progress) work on metaclass
 
 * [svn r12422] SYS::*LOAD-TRUENAME-FASL* now contains the TRUENAME of
-  the Java "*.cls" component we loading a packed FASL.
+  the Java "*.cls" component when loading a packed FASL.
 
 * [svn r12461] Human readable Java representations for class cast
   exceptions for NULL and UNBOUND values.
 
-* [svn 12453 et. ff.] Large numbers of Java primitives have been
-  declared in a way so that a stack trace provides a much more
-  readable indication of what has been invoked.  Primitives which
-  extend Primitive are prefixed with "pf_"; those which extend
-  SpecialOperator are prefixed with "sf_".
+* [svn 12453 et. ff.] Large numbers of the implementation of Java
+  primitives have been declared in a way so that a stack trace
+  provides a much more readable indication of what has been invoked.
+  Primitives which extend Primitive are prefixed with "pf_"; those
+  which extend SpecialOperator are prefixed with "sf_".
 
 * [svn 12422] The internal structure of a jar pathname has changed.
   Previously a pathname with a DEVICE that was itself a pathname
