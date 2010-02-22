@@ -1,3 +1,38 @@
+Version 0.19
+============
+(Unreleased)
+
+Features:
+
+
+Fixes/Optimizations:
+
+* The REFERENCES-NEEDED-P field of the LOCAL-FUNCTION structure now
+  tracks whether local functions need the capture of an actual
+  function object.
+
+* Make NIL (as symbol) available to the compiler.
+
+* Move lambda list analysis to compile time where possible.
+
+* BROADCAST-STREAM obeys default external format fixing ANSI
+  MAKE-BROADCAST-STREAM.8.
+
+* Improve arglist display for SLIME (Matthias Hözl).
+
+* Optimize array utilization in closures.
+
+* Optimize array functions in compiler which don't require clearing
+  the VALUES array.
+
+* Optimize/normalize aspects of boot.lisp 
+
+* Prevent duplicated subclasses.
+
+* Print Java objects with PRINT-OBJECT when *PRINT-PRETTY* is false
+  (Alan Ruttenberg).
+
+
 Version 0.18.1
 ==============
 svn://common-lisp.net/project/armedbear/svn/tags/0.18.1/abcl
