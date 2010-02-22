@@ -75,10 +75,10 @@
 	    (wild-pathname-p pathname))
         (let ((namestring (directory-namestring pathname)))
           (when (and namestring (> (length namestring) 0))
-            #+windows
-            (let ((device (pathname-device pathname)))
-              (when device
-                (setq namestring (concatenate 'string device ":" namestring))))
+            (when (featurep :windows)
+              (let ((device (pathname-device pathname)))
+                (when device
+                  (setq namestring (concatenate 'string device ":" namestring)))))
             (let ((entries (list-directories-with-wildcards namestring))
                   (matching-entries ()))
               (dolist (entry entries)
