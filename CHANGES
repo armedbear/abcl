@@ -92,7 +92,7 @@ Fixes/Optimizations
 * [svn r12397] BROADCAST-STREAM obeys default external format fixing
   ANSI MAKE-BROADCAST-STREAM.8.
 
-* [svn r12395] Improve arglist display for SLIME (Matthias Hözl).
+* [svn r12395] Improve arglist display for SLIME (Matthias Hölzl).
 
 * [svn r12394] Optimize array utilization in closures.
 
