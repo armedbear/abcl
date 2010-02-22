@@ -3,7 +3,7 @@ JARs and JAR entries in ABCL
 
 Mark Evenson
 Created: 09 JAN 2010
-Modified: 08 FEB 2010
+Modified: 22 FEB 2010
 
 Notes towards sketching an implementation of "jar:" references to be
 contained in PATHNAMEs within ABCL.  
@@ -53,10 +53,8 @@ An entry in a ABCL FASL in a URL accessible JAR file
 Status
 ------
 
-As of svn r12431, all the above goals have been implemented and tested
+As of svn r12501, all the above goals have been implemented and tested
 *except* for:
-
-5.  DIRECTORY working within JAR files
 
 7.  Make jar pathnames work as a valid argument for OPEN.
 

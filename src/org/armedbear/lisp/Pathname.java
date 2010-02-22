@@ -38,19 +38,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileInputStream;
-import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLDecoder;
-import java.util.HashMap;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipException;
 
 public class Pathname extends LispObject {
 
@@ -1246,6 +1241,20 @@ public class Pathname extends LispObject {
             }
         }
     }
+
+    private static Function pathname_match_p;
+    private static LispObject matchesWildcard(LispObject pathname, LispObject wildcard) {
+        if (pathname_match_p == null) {
+            pathname_match_p
+              = (Function) PACKAGE_SYS.findAccessibleSymbol("PATHNAME-MATCH-P")
+                .getSymbolFunction();
+            if (pathname_match_p == null) {
+                Debug.assertTrue(false);
+            }
+        }
+        return pathname_match_p.execute(pathname, wildcard);
+    }
+
     // ### list-directory directory
     private static final Primitive LIST_DIRECTORY = new pf_list_directory();
     private static class pf_list_directory extends Primitive {
@@ -1258,10 +1267,53 @@ public class Pathname extends LispObject {
             if (pathname instanceof LogicalPathname) {
                 pathname = LogicalPathname.translateLogicalPathname((LogicalPathname) pathname);
             }
-            if (pathname.isJar()) {
-                return error(new FileError("Unimplemented directory listing of JAR files.", pathname));
-            }
+
             LispObject result = NIL;
+            if (pathname.isJar()) {
+                String directory = pathname.asEntryPath();
+                Debug.assertTrue(directory != null);  // We should only be listing directories
+
+                if (pathname.device.cdr() instanceof Cons) {
+                    return error(new FileError("Unimplemented directory listing of JAR within JAR.", pathname));
+                }
+
+                if (directory.length() == 0) {
+                    directory = "/*";
+                } else {
+                    if (directory.endsWith("/")) {
+                        directory = "/" + directory + "*";
+                    } else {
+                        directory = "/" + directory + "/*";
+                    }
+                }
+                SimpleString wildcard = new SimpleString(directory);
+                SimpleString wildcardDirectory = new SimpleString(directory + "/");
+
+                ZipFile jar = ZipCache.get(pathname.device.car());
+                LispObject matches;
+                for (Enumeration<? extends ZipEntry> entries = jar.entries(); 
+                     entries.hasMoreElements();) {
+                    ZipEntry entry = entries.nextElement();
+                    String entryName = "/" + entry.getName();
+
+                    if (entryName.endsWith("/")) {
+                        matches = matchesWildcard(new SimpleString(entryName),
+                                                  wildcardDirectory);
+                    } else {
+                        matches = matchesWildcard(new SimpleString(entryName), 
+                                                  wildcard);
+                    }
+                    if (!matches.equals(NIL)) {
+                        String namestring = new String(pathname.getNamestring());
+                        namestring = namestring.substring(0, namestring.lastIndexOf("!/") + 2)
+                                 + entry.getName();
+                        Pathname p = new Pathname(namestring);
+                        result = new Cons(p, result);
+                    }
+                }
+                return result;
+            }
+
             String s = pathname.getNamestring();
             if (s != null) {
                 File f = new File(s);
@@ -1286,6 +1338,62 @@ public class Pathname extends LispObject {
                     } catch (NullPointerException e) {
                         Debug.trace(e);
                     }
+                }
+            }
+            return result;
+        }
+    }
+
+    // ### match-wild-jar-pathname wild-jar-pathname
+    private static final Primitive LIST_JAR_DIRECTORY = new pf_match_wild_jar_pathname();
+    private static class pf_match_wild_jar_pathname extends Primitive {
+        pf_match_wild_jar_pathname() {
+            super("match-wild-jar-pathname", PACKAGE_SYS, false, "wild-jar-pathname");
+        }
+        @Override
+        public LispObject execute(LispObject arg) {
+            Pathname pathname = coerceToPathname(arg);
+            if (pathname instanceof LogicalPathname) {
+                pathname = LogicalPathname.translateLogicalPathname((LogicalPathname) pathname);
+            }
+            if (!pathname.isJar()) {
+                return new FileError("Not a jar pathname.", pathname);
+            }
+            if (!pathname.isWild()) {
+                return new FileError("Not a wild pathname.", pathname);
+            }
+            Pathname jarPathname = new Pathname(pathname);
+            jarPathname.directory = NIL;
+            jarPathname.name = NIL;
+            jarPathname.type = NIL;
+            jarPathname.invalidateNamestring();
+            // will propagate an appropiate Lisp error if jarPathname
+            // doesn't exist.
+            LispObject jarTruename = truename(jarPathname, true); 
+
+            LispObject result = NIL;
+            String wild = "/" + pathname.asEntryPath();
+
+            if (pathname.device.cdr() instanceof Cons) {
+                return error(new FileError("Unimplemented directory listing of JAR within JAR.", pathname));
+            }
+            
+            final SimpleString wildcard = new SimpleString(wild);
+
+            ZipFile jar = ZipCache.get(pathname.device.car());
+
+            for (Enumeration<? extends ZipEntry> entries = jar.entries(); entries.hasMoreElements();) {
+                ZipEntry entry = entries.nextElement();
+                String entryName = "/" + entry.getName();
+                
+                LispObject matches = matchesWildcard(new SimpleString(entryName), wildcard);
+
+                if (!matches.equals(NIL)) {
+                    String namestring = new String(pathname.getNamestring());
+                    namestring = namestring.substring(0, namestring.lastIndexOf("!/") + 2)
+                        + entry.getName();
+                    Pathname p = new Pathname(namestring);
+                    result = new Cons(p, result);
                 }
             }
             return result;

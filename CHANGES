@@ -14,8 +14,8 @@ Features
 * [svn 12447] [ticket:80] REQUIRE now searches for ASDF systems.
 
 * [svn r12422] Jar pathname support extensively re-worked and tested
-  so that LOAD, PROBE-FILE, TRUENAME, and WRITE-FILE-DATE all work
-  both for local and remote jar pathnames of the form
+  so that LOAD, PROBE-FILE, TRUENAME, DIRECTORY, and WRITE-FILE-DATE
+  all work both for local and remote jar pathnames of the form
   "jar:URL!/JAR-ENTRY".
 
   The loading ASDF systems from jar files is now possible.
@@ -23,8 +23,7 @@ Features
   SYS:PATHNAME-JAR-P predicate signals whether a pathname references a
   jar.
        
-  NB: jar pathnames do *not* currently work as an argument to OPEN or
-  DIRECTORY.
+  NB: jar pathnames do *not* currently work as an argument to OPEN.
 
   SYS:UNZIP implemented to unpack ZIP files.  
 

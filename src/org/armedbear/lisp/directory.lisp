@@ -53,18 +53,20 @@
 				 :name nil :type nil :defaults pathname))
 	 (entries (list-directory newpath)))
     (if (not wild)
-	entries (mapcan (lambda (entry)
-                          (let* ((pathname (pathname entry))
-                                 (directory (pathname-directory pathname))
-                                 (rest-wild (cdr wild)))
-                            (unless (pathname-name pathname)
-			      (when (pathname-match-p (first (last directory)) (if (eql (car wild) :wild) "*" (car wild)))
-				(when rest-wild
-				  (setf directory (nconc directory rest-wild)))
-  				(list-directories-with-wildcards
-				 (make-pathname :directory directory
-						:defaults newpath))))))
-                        entries))))
+	entries 
+        (mapcan (lambda (entry)
+                  (let* ((pathname (pathname entry))
+                         (directory (pathname-directory pathname))
+                         (rest-wild (cdr wild)))
+                    (unless (pathname-name pathname)
+                      (when (pathname-match-p (first (last directory)) 
+                                              (if (eql (car wild) :wild) "*" (car wild)))
+                        (when rest-wild
+                          (setf directory (nconc directory rest-wild)))
+                        (list-directories-with-wildcards
+                         (make-pathname :directory directory
+                                        :defaults newpath))))))
+                entries))))
 
 
 (defun directory (pathspec &key)
@@ -73,21 +75,23 @@
       (setq pathname (translate-logical-pathname pathname)))
     (if (or (position #\* (namestring pathname))
 	    (wild-pathname-p pathname))
-        (let ((namestring (directory-namestring pathname)))
-          (when (and namestring (> (length namestring) 0))
-            (when (featurep :windows)
-              (let ((device (pathname-device pathname)))
-                (when device
-                  (setq namestring (concatenate 'string device ":" namestring)))))
-            (let ((entries (list-directories-with-wildcards namestring))
-                  (matching-entries ()))
-              (dolist (entry entries)
-                (cond ((file-directory-p entry)
-                       (when (pathname-match-p (file-namestring (pathname-as-file entry)) (file-namestring pathname))
-                         (push entry matching-entries)))
-                      ((pathname-match-p (file-namestring entry) (file-namestring pathname))
-                       (push entry matching-entries))))
-              matching-entries)))
+        (if (pathname-jar-p pathname)
+            (match-wild-jar-pathname pathname)
+            (let ((namestring (directory-namestring pathname)))
+              (when (and namestring (> (length namestring) 0))
+                (when (featurep :windows)
+                  (let ((device (pathname-device pathname)))
+                    (when device
+                      (setq namestring (concatenate 'string device ":" namestring)))))
+                (let ((entries (list-directories-with-wildcards namestring))
+                      (matching-entries ()))
+                  (dolist (entry entries)
+                    (cond ((file-directory-p entry)
+                           (when (pathname-match-p (file-namestring (pathname-as-file entry)) (file-namestring pathname))
+                             (push entry matching-entries)))
+                          ((pathname-match-p (file-namestring entry) (file-namestring pathname))
+                           (push entry matching-entries))))
+                  matching-entries))))
         ;; Not wild.
         (let ((truename (probe-file pathname)))
           (if truename
