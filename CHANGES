@@ -1,37 +1,183 @@
 Version 0.19
 ============
+svn://common-lisp.net/project/armedbear/svn/trunk/abcl
 (Unreleased)
 
-Features:
+Features
+--------
+
+* [svn 12487] An initial port ASDF-INSTALL now forms the first ABCL
+  contrib which are optionally built by the Ant target 'abcl.contrib'.
+  ASDF-INSTALL is not expected to work very well under Windows at the
+  moment.
+
+* [svn 12447] REQUIRE now searches for ASDF systems.
+
+* [svn r12422] Jar pathname support extensively re-worked and tested
+  so that LOAD, PROBE-FILE, TRUENAME, and WRITE-FILE-DATE all work
+  both for local and remote jar pathnames of the form
+  "jar:URL!/JAR-ENTRY".
+
+  Loading ASDF systems from jar files are now possible.
+
+  SYS:PATHNAME-JAR-P predicate signals whether a pathname refences a
+  jar.
+       
+  NB: jar pathnames do *not* currently work as an argument to OPEN or
+  DIRECTORY.
+
+  SYS:UNZIP implemented to unpack ZIP files.  
+
+  SYS:ZIP now has a three argument version for creating zip files with
+  hierarchical entries.
+
+* [svn r12414] SYS::%GET-OUTPUT-STREAM-ARRAY returns a Lisp byte array
+  from a Java byte array stream.
+
+* [svn 12402] ABCL.TEST.LISP:RUN-MATCHING will now execute that subset
+  of tests which match a string.
 
 
-Fixes/Optimizations:
+Fixes/Optimizations
+-------------------
 
-* The REFERENCES-NEEDED-P field of the LOCAL-FUNCTION structure now
-  tracks whether local functions need the capture of an actual
-  function object.
+* [svn r12485] Pathnames starting with "." can now have TYPE.
 
-* Make NIL (as symbol) available to the compiler.
+* [svn r12484] FASLS containing "." characters not used to indicate
+  type (i.e. ".foo.bar.baz.abcl") can now be loaded.
 
-* Move lambda list analysis to compile time where possible.
+* [svn 12422] Pathname.java URL contructor under Windows now properly
+  interprets the drive letter.
 
-* BROADCAST-STREAM obeys default external format fixing ANSI
-  MAKE-BROADCAST-STREAM.8.
+* [svn r12449] The 'abcl.jar' produced by Netbeans now contains a valid
+  manifest (found by Paul Griffionen).
 
-* Improve arglist display for SLIME (Matthias Hözl).
+* [svn r12441] ZipCache now caches all references to ZipFiles based on
+  the last-modified time for local files.  Remote files are always
+  retrieved due to problems in the underlying JVM code.  
+  
+  SYS:REMOVE-ZIP-CACHE implements a way to invalidate an entry given a
+  pathname.
 
-* Optimize array utilization in closures.
+* [svn r12439] Remove duplication of java options in Windows
+  'abcl.bat' script.
 
-* Optimize array functions in compiler which don't require clearing
-  the VALUES array.
+* [svn r12437] CHAR-CODE-LIMIT is the upper execlusive limit (found by
+  Paul Griffionen).
 
-* Optimize/normalize aspects of boot.lisp 
+* [svn r12436] Describe formatting missing a newline (reported by
+  Blake McBride).
 
-* Prevent duplicated subclasses.
+* [svn 12469] Ensure that FILE-ERROR always has a value (possibly NIL)
+  for its PATHNAME member.
 
-* Print Java objects with PRINT-OBJECT when *PRINT-PRETTY* is false
+* [svn r14222] MERGE-PATHNAMES no longer potentially shares between
+  result and *DEFAULT-PATHNAME-DEFAULTS*.
+
+* [svn r12416] Fixed ANSI LAMBDA.nn test failures caused by errors in
+  lambda inlining.
+
+* [svn r12417] [ticket:83] Fix TRANSLATE-LOGICAL-PATHNAME regression.
   (Alan Ruttenberg).
 
+* [svn r12412] Optimize memory efficiency of FORMAT by use of a
+  hashtable rather than a CHAR-CODE-LIMIT array.
+
+* [svn r12408] FIND-SYMBOL requires a  string argument.
+
+* [svn r12400] Make NIL (as symbol) available to the compiler.
+
+* [svn r12398] Move lambda list analysis to compile time where possible.
+
+* [svn r12397] BROADCAST-STREAM obeys default external format fixing
+  ANSI MAKE-BROADCAST-STREAM.8.
+
+* [svn r12395] Improve arglist display for SLIME (Matthias Hözl).
+
+* [svn r12394] Optimize array utilization in closures.
+
+* [svn r12393] Optimize array functions in compiler which don't
+  require clearing the VALUES array.
+
+* [svn r12392] Optimize/normalize aspects of boot.lisp
+
+* [svn r12391] Prevent duplicated subclasses form occuring.
+
+
+Other
+-----
+
+* [svn 12447] SYS::*MODULE-PROVIDER-FUNCTION* now provides a mechanism
+  to extend the REQUIRE resolver mechanism at runtime.
+
+* [svn r12430] Ant based build no longer writes temporary files to
+  contain the Lisp build instructions.
+
+* [svn r12481] STANDARD-CLASS now has slots to be inherited by
+  deriving metaclasses in support of the (in progress) work on
+  metaclass.
+
+* [svn r12425] No longer ignore the METACLASS defclass option in
+  support of the (in progress) work on metaclass
+
+* [svn r12422] SYS::*LOAD-TRUENAME-FASL* now contains the TRUENAME of
+  the Java "*.cls" component we loading a packed FASL.
+
+* [svn r12461] Human readable Java representations for class cast
+  exceptions for NULL and UNBOUND values.
+
+* [svn 12453 et. ff.] Large numbers of Java primitives have been
+  declared in a way so that a stack trace provides a much more
+  readable indication of what has been invoked.  Primitives which
+  extend Primitive are prefixed with "pf_"; those which extend
+  SpecialOperator are prefixed with "sf_".
+
+* [svn 12422] The internal structure of a jar pathname has changed.
+  Previously a pathname with a DEVICE that was itself a pathname
+  referenced a jar.  This convention was not able to simultaneously
+  represent both jar entries that were themselves jar files (as occurs
+  with packed FASLs within JARs) and devices which refer to drive
+  letters under Windows.  Now, a pathname which refers to a jar has a
+  DEVICE which is a proper list of at most two entries.  The first
+  entry always references the "outer jar", and the second entry (if it
+  exists) references the "inner jar".
+
+* [svn r12419] Ant 'abcl.release' target centralizes the build steps
+  necessary for creating releases.
+
+* [svn r12409] Compiler now rewrites function calls with (LAMBDA …) as
+  the operator to LET* forms.
+
+* [svn r12415] CLASS-FILE renamed to ABCL-CLASS-FILE to prepare for
+  (in progress) reworking of Stream inheritance.
+
+* [svn r123406] 'test/lisp/abcl/bugs.lisp' forms a default location to
+  add unit tests for current bug testing.  The intention is to move
+  these tests into the proper location elsewhere in the test suite
+  once they have been fixed.
+
+* [svn r124040] Java tests upgraded to use junit-4.8.1.  Netbeans
+  project runtime classpath now uses compilation results before source
+  directory, allowing the invocation of ABCL in interpreted mode if
+  the Ant 'abcl.compile.lisp.skip' property is set.  Java unit tests
+  for some aspects of jar pathname work added.
+
+*  New toplevel 'doc' directory now contains:
+   
+   + [svn r12410] Design for the (in progress) reworking of the Stream
+     inheritance.
+   
+   + [svn r12433] Design and current status for the re-implementation
+     of jar pathnames.
+
+* [svn r12402] Change ABCL unit tests to use the ABCL-TEST-LISP definition
+  contained in 'abcl.asd'.  Fixed and renabled math-tests.  Added new
+  tests for work related to handling jar pathnames. 
+
+* [svn r12401] The REFERENCES-NEEDED-P field of the LOCAL-FUNCTION structure now
+  tracks whether local functions need the capture of an actual
+  function object.
+   
 
 Version 0.18.1
 ==============
