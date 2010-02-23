@@ -32,21 +32,21 @@
  */
 package org.armedbear.lisp;
 
-
+import org.armedbear.lisp.util.HttpHead;
 import static org.armedbear.lisp.Lisp.*;
 
 import java.io.File;
-import java.io.InputStream;
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Enumeration;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipEntry;
 
 /**
  * A cache for all zip/jar file accesses by URL that uses the last
@@ -67,7 +67,7 @@ public class ZipCache {
     // that keeps track of the number of outstanding references handed
     // out, not allowing ZipFile.close() to succeed until that count
     // has been reduced to 1 or the finalizer is executing.
-    // Unfortunately the relatively simple strategy of extended
+    // Unfortunately the relatively simple strategy of extending
     // ZipFile via a CachedZipFile does not work because there is not
     // a null arg constructor for ZipFile.
     static class Entry {
@@ -100,6 +100,9 @@ public class ZipCache {
     synchronized public static ZipFile get(LispObject arg) {
         return get(Pathname.makeURL(arg));
     }
+
+    static final SimpleDateFormat RFC_1123
+        = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 
     synchronized public static ZipFile get(final URL url) {
         if (!cacheEnabled) {
@@ -145,28 +148,31 @@ public class ZipCache {
                         Debug.trace(e.toString()); // XXX
                     }
                 }
-            } else {
+            } else if (url.getProtocol().equals("http")) {
                 // Unfortunately, the Apple JDK under OS X doesn't do
                 // HTTP HEAD requests, instead refetching the entire
-                // resource, so the following code is a waste.  I assume
-                // this is the case in all Sun-dervied JVMs. We'll have
-                // to implement a custom HTTP lastModified checker.
-
-                // URLConnection connection;
-                // try {
-                //     connection = url.openConnection();
-                // } catch (IOException ex) {
-                //     Debug.trace("Failed to open "
-                //                 + "'" + url + "'");
-                //     return null;
-                // }
-                // long current = connection.getLastModified();
-                // if (current > entry.lastModified) {
-                //     try {
-                //         entry.file.close();
-                //     } catch (IOException ex) {}
-                //     entry = fetchURL(url, false);
-                // }
+                // resource, and I assume this is the case in all
+                // Sun-derived JVMs.  So, we use a custom HEAD
+                // implementation only looking for Last-Modified
+                // headers, which if we don't find, we give up and
+                // refetch the resource.n
+                String dateString = HttpHead.get(url, "Last-Modified");
+                Date date = null;
+                try {
+                    date = RFC_1123.parse(dateString);
+                    long current = date.getTime();
+                    if (current > entry.lastModified) {
+                        entry = fetchURL(url, false);
+                        zipCache.put(url, entry);
+                    }
+                } catch (ParseException e) {
+                   Debug.trace("Failed to parse HTTP Last-Modified field: " + e);
+                   entry = fetchURL(url, false);
+                   zipCache.put(url, entry);
+                }
+           } else { 
+                entry = fetchURL(url, false);
+                zipCache.put(url, entry);
             }
         } else {
             if (url.getProtocol().equals("file")) {
