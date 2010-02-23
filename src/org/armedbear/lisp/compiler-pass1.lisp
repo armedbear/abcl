@@ -203,7 +203,6 @@ where each of the vars returned is a list with these elements:
 		(push-argument-binding (var rest) `(list ,@arguments)
 				       temp-bindings rest-binding)
 		(setf bindings (append bindings rest-binding)))))
-
 	;;Aux parameters.
 	(when aux
 	  (setf bindings
@@ -211,7 +210,6 @@ where each of the vars returned is a list with these elements:
 		  ,@(loop
 		       :for var-info :in aux
 		       :collect `(,(var var-info) ,(initform var-info))))))
-	
 	(values (append req-bindings temp-bindings bindings)
 		ignorables)))))
 
@@ -318,7 +316,8 @@ where each of the vars returned is a list with these elements:
 			      (parse-lambda-list lambda-list))
 			     args)
 	`(let* ,bindings
-	   (declare (ignorable ,@ignorables))
+	   ,@(when ignorables
+		   `((declare (ignorable ,@ignorables))))
 	   ,@body))
     (lambda-list-mismatch (x)
       (compiler-warn "Invalid function call: ~S (mismatch type: ~A)"
@@ -1248,7 +1247,7 @@ the args causes a Java exception handler to be installed, which
 	(args (cdr form)))
     (if (and (listp op)
 	     (eq (car op) 'lambda))
-	(expand-function-call-inline form (cadr op) (cddr op) args)
+	(expand-function-call-inline form (cadr op) (copy-tree (cddr op)) args)
 	(if (unsafe-p args)
 	    (let ((arg1 (car args)))
 	      (cond ((and (consp arg1) (eq (car arg1) 'GO))
@@ -1275,9 +1274,6 @@ the args causes a Java exception handler to be installed, which
 (defun p1-function-call (form)
   (let ((new-form (rewrite-function-call form)))
     (when (neq new-form form)
-;;       (let ((*print-structure* nil))
-;;         (format t "old form = ~S~%" form)
-;;         (format t "new form = ~S~%" new-form))
       (return-from p1-function-call (p1 new-form))))
   (let* ((op (car form))
          (local-function (find-local-function op)))
