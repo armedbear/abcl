@@ -1242,19 +1242,6 @@ public class Pathname extends LispObject {
         }
     }
 
-    private static Function pathname_match_p;
-    private static LispObject matchesWildcard(LispObject pathname, LispObject wildcard) {
-        if (pathname_match_p == null) {
-            pathname_match_p
-              = (Function) PACKAGE_SYS.findAccessibleSymbol("PATHNAME-MATCH-P")
-                .getSymbolFunction();
-            if (pathname_match_p == null) {
-                Debug.assertTrue(false);
-            }
-        }
-        return pathname_match_p.execute(pathname, wildcard);
-    }
-
     // ### list-directory directory
     private static final Primitive LIST_DIRECTORY = new pf_list_directory();
     private static class pf_list_directory extends Primitive {
@@ -1297,11 +1284,11 @@ public class Pathname extends LispObject {
                     String entryName = "/" + entry.getName();
 
                     if (entryName.endsWith("/")) {
-                        matches = matchesWildcard(new SimpleString(entryName),
-                                                  wildcardDirectory);
+                        matches = Symbol.PATHNAME_MATCH_P
+                            .execute(new SimpleString(entryName), wildcardDirectory);
                     } else {
-                        matches = matchesWildcard(new SimpleString(entryName), 
-                                                  wildcard);
+                        matches = Symbol.PATHNAME_MATCH_P.
+                            execute(new SimpleString(entryName), wildcard);
                     }
                     if (!matches.equals(NIL)) {
                         String namestring = new String(pathname.getNamestring());
@@ -1386,7 +1373,8 @@ public class Pathname extends LispObject {
                 ZipEntry entry = entries.nextElement();
                 String entryName = "/" + entry.getName();
                 
-                LispObject matches = matchesWildcard(new SimpleString(entryName), wildcard);
+                LispObject matches = Symbol.PATHNAME_MATCH_P
+                    .execute(new SimpleString(entryName), wildcard);
 
                 if (!matches.equals(NIL)) {
                     String namestring = new String(pathname.getNamestring());
