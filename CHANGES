@@ -6,6 +6,10 @@ svn://common-lisp.net/project/armedbear/svn/trunk/abcl
 Features
 --------
 
+* [svn 12505] All calls to anonymous functions and local functions that have
+  been declared inline are now converted to LET* forms, reducing stack usage
+  and the number of generated classes.
+
 * [svn 12487] An initial port ASDF-INSTALL now forms the first ABCL
   contrib.  Such contribs are optionally built by the Ant target
   'abcl.contrib'.  ASDF-INSTALL is not expected to work very well
