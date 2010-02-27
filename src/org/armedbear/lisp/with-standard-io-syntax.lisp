@@ -45,6 +45,7 @@
         (*print-level* nil)
         (*print-lines* nil)
         (*print-miser-width* nil)
+        (*print-pprint-dispatch* (copy-pprint-dispatch nil))
         (*print-pretty* nil)
         (*print-radix* nil)
         (*print-readably* t)
