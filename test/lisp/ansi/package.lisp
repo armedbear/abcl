@@ -1,7 +1,7 @@
 (defpackage :abcl.test.ansi
   (:use :cl :asdf)
   (:nicknames "ansi-tests" "abcl-ansi-tests" "gcl-ansi")
-  (:export :run))
+  (:export :run :report :parse))
 
 (in-package :abcl.test.ansi)
 

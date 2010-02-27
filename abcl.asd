@@ -46,10 +46,11 @@
    (funcall (intern (symbol-name 'run) :abcl.test.lisp)))
 
 ;;; Test ABCL with the interpreted ANSI tests
-(defsystem :ansi-interpreted :version "1.0.1" 
+(defsystem :ansi-interpreted :version "1.1" 
            :components
            ((:module ansi-tests :pathname "test/lisp/ansi/" :components
-	       ((:file "package")))))
+	       ((:file "package")
+                (:file "parse-ansi-errors" :depends-on ("package"))))))
 (defmethod perform :before ((o test-op) (c (eql (find-system :ansi-interpreted))))
   (operate 'load-op :ansi-interpreted))
 (defmethod perform ((o test-op) (c (eql (find-system :ansi-interpreted))))
@@ -57,10 +58,11 @@
 	   :compile-tests nil))
 
 ;;; Test ABCL with the compiled ANSI tests
-(defsystem :ansi-compiled :version "1.0.1" 
+(defsystem :ansi-compiled :version "1.1" 
            :components
            ((:module ansi-tests :pathname "test/lisp/ansi/" :components
-	       ((:file "package")))))
+	       ((:file "package")
+                (:file "parse-ansi-errors" :depends-on ("package"))))))
 (defmethod perform :before ((o test-op) (c (eql (find-system :ansi-compiled))))
   (operate 'load-op :ansi-compiled))
 (defmethod perform ((o test-op) (c (eql (find-system :ansi-compiled))))
