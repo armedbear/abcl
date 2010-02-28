@@ -47,6 +47,10 @@ Features
 Fixes/Optimizations
 -------------------
 
+* [svn r12510] The new ansi-test WITH-STANDARD-IO-SYNTAX.23 passes.
+  Our with-standard-io-syntax implementation now correctly resets all necessary
+  pprint variables. Patch by Douglas R. Miles, thanks for the contribution!
+
 * [svn r12485] Pathnames starting with "." can now have TYPE.
 
 * [svn r12484] FASLs containing "." characters not used to indicate
