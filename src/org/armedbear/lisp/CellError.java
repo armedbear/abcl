@@ -98,10 +98,10 @@ public class CellError extends LispError
     }
 
     @Override
-    public String writeToString()
+    public String getMessage()
     {
         if (Symbol.PRINT_ESCAPE.symbolValue() == NIL)
-            return super.writeToString();
+            return super.getMessage();
         StringBuffer sb = new StringBuffer(typeOf().writeToString());
         sb.append(' ');
         sb.append(getCellName().writeToString());

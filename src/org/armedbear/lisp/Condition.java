@@ -129,9 +129,13 @@ public class Condition extends StandardObject
     setInstanceSlotValue(Symbol.FORMAT_ARGUMENTS, formatArguments);
   }
 
+  /**
+   * Extending classes should override this method if they want to
+   * customize how they will be printed.
+   */
   public String getMessage()
   {
-    return message;
+    return getFormatControl().toString();
   }
 
   @Override
@@ -176,7 +180,7 @@ public class Condition extends StandardObject
   }
 
   @Override
-  public String writeToString()
+  public final String writeToString()
   {
     final LispThread thread = LispThread.currentThread();
     if (Symbol.PRINT_ESCAPE.symbolValue(thread) == NIL)
