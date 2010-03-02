@@ -849,7 +849,7 @@ public class Pathname extends LispObject {
         }
     }
 
-    private static final void checkCaseArgument(LispObject arg) {
+    static final void checkCaseArgument(LispObject arg) {
         if (arg != Keyword.COMMON && arg != Keyword.LOCAL) {
             type_error(arg, list(Symbol.MEMBER, Keyword.COMMON,
               Keyword.LOCAL));
@@ -1029,7 +1029,7 @@ public class Pathname extends LispObject {
         return new Pathname(namestring);
     }
 
-    private static final Pathname _makePathname(LispObject[] args) {
+    static final Pathname _makePathname(LispObject[] args) {
         if (args.length % 2 != 0) {
             error(new ProgramError("Odd number of keyword arguments."));
         }

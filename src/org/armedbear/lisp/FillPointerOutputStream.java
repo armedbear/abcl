@@ -37,9 +37,9 @@ import static org.armedbear.lisp.Lisp.*;
 
 public final class FillPointerOutputStream extends Stream
 {
-    private ComplexString string;
+    ComplexString string;
 
-    private FillPointerOutputStream(ComplexString string)
+    FillPointerOutputStream(ComplexString string)
     {
         super(Symbol.SYSTEM_STREAM);
         elementType = Symbol.CHARACTER;
@@ -69,7 +69,7 @@ public final class FillPointerOutputStream extends Stream
         }
     };
 
-    private class Writer extends java.io.Writer
+    class Writer extends java.io.Writer
     {
         @Override
         public void write(char cbuf[], int off, int len)

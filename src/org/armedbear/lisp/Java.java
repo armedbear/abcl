@@ -49,12 +49,12 @@ import java.util.*;
 
 public final class Java
 {
-    private static final Map<Class,Symbol> registeredExceptions =
+    static final Map<Class,Symbol> registeredExceptions =
        new HashMap<Class,Symbol>();
 
     private static final LispClass java_exception = LispClass.findClass(Symbol.JAVA_EXCEPTION);
 
-    private static boolean isJavaException(LispClass lc)
+    static boolean isJavaException(LispClass lc)
     {
         return lc.subclassp(java_exception);
     }
@@ -93,7 +93,7 @@ public final class Java
         }
     };
 
-    private static Symbol getCondition(Class cl)
+    static Symbol getCondition(Class cl)
     {
 	Class o = classForName("java.lang.Object");
      	for (Class c = cl ; c != o ; c = c.getSuperclass()) {
@@ -146,7 +146,7 @@ public final class Java
     //               derived from the instance.
     //
 
-    private static final LispObject jfield(Primitive fun, LispObject[] args, boolean translate)
+    static final LispObject jfield(Primitive fun, LispObject[] args, boolean translate)
 
     {
         if (args.length < 2 || args.length > 4)
@@ -347,7 +347,7 @@ public final class Java
         }
     };
 
-    private static final LispObject jstatic(Primitive fun, LispObject[] args, boolean translate)
+    static final LispObject jstatic(Primitive fun, LispObject[] args, boolean translate)
 
     {
         if (args.length < 2)
@@ -511,7 +511,7 @@ public final class Java
         }
     };
 
-    private static final LispObject jarray_ref(Primitive fun, LispObject[] args, boolean translate)
+    static final LispObject jarray_ref(Primitive fun, LispObject[] args, boolean translate)
 
     {
         if (args.length < 2)
@@ -623,7 +623,7 @@ public final class Java
         }
     };
 
-    private static LispObject jcall(Primitive fun, LispObject[] args, boolean translate)
+    static LispObject jcall(Primitive fun, LispObject[] args, boolean translate)
 
     {
         if (args.length < 2)
@@ -764,7 +764,7 @@ public final class Java
 	return findMethod(methods, methodName, javaArgs);
     }
 
-    private static Constructor findConstructor(Class<?> c, LispObject[] args) throws NoSuchMethodException {
+    static Constructor findConstructor(Class<?> c, LispObject[] args) throws NoSuchMethodException {
 	int argCount = args.length - 1;
         Object[] javaArgs = translateMethodArguments(args, 1);
         Constructor[] ctors = c.getConstructors();
@@ -1015,7 +1015,7 @@ public final class Java
       }
     };
 
-    private static PropertyDescriptor getPropertyDescriptor(Object obj, LispObject propertyName) throws IntrospectionException {
+    static PropertyDescriptor getPropertyDescriptor(Object obj, LispObject propertyName) throws IntrospectionException {
         String prop = ((AbstractString) propertyName).getStringValue();
         BeanInfo beanInfo = Introspector.getBeanInfo(obj.getClass());
         for(PropertyDescriptor pd : beanInfo.getPropertyDescriptors()) {
@@ -1028,7 +1028,7 @@ public final class Java
         return null; // not reached
     }
     
-    private static Class classForName(String className)
+    static Class classForName(String className)
     {
         try {
             return Class.forName(className);
@@ -1046,7 +1046,7 @@ public final class Java
     }
 
     // Supports Java primitive types too.
-    private static Class javaClass(LispObject obj)
+    static Class javaClass(LispObject obj)
     {
         if (obj instanceof AbstractString || obj instanceof Symbol) {
             String s = javaString(obj);
@@ -1092,7 +1092,7 @@ public final class Java
             return null;
     }
 
-    private static final String getMessage(Throwable t)
+    static final String getMessage(Throwable t)
     {
         String message = t.getMessage();
         if (message == null || message.length() == 0)

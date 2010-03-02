@@ -37,9 +37,9 @@ import static org.armedbear.lisp.Lisp.*;
 
 public final class SynonymStream extends Stream
 {
-    private final Symbol symbol;
+    final Symbol symbol;
 
-    private SynonymStream(Symbol symbol)
+    SynonymStream(Symbol symbol)
     {
         super(Symbol.SYNONYM_STREAM);
         this.symbol = symbol;

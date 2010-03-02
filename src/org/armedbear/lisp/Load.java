@@ -324,7 +324,7 @@ public final class Load
 
     // ### *fasl-version*
     // internal symbol
-    private static final Symbol _FASL_VERSION_ =
+    static final Symbol _FASL_VERSION_ =
         exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(35));
 
     // ### *fasl-external-format*
@@ -530,7 +530,7 @@ public final class Load
         }
     }
 
-    private static final LispObject faslLoadStream(LispThread thread)
+    static final LispObject faslLoadStream(LispThread thread)
     {
         Stream in = (Stream) _LOAD_STREAM_.symbolValue(thread);
         final Environment env = new Environment();
@@ -589,7 +589,7 @@ public final class Load
         }
     }
 
-    private static final LispObject load(LispObject filespec,
+    static final LispObject load(LispObject filespec,
                                          LispObject verbose,
                                          LispObject print,
                                          LispObject ifDoesNotExist,

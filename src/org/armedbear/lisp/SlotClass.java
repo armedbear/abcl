@@ -120,7 +120,7 @@ public class SlotClass extends LispClass
         this.defaultInitargs = defaultInitargs;
     }
 
-    private LispObject computeDefaultInitargs()
+    LispObject computeDefaultInitargs()
     {
         LispObject result = NIL;
         LispObject cpl = getCPL();

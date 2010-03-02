@@ -47,7 +47,7 @@ public final class AutoloadMacro extends Autoload
         super(symbol, fileName, null);
     }
 
-    private static void installAutoloadMacro(Symbol symbol, String fileName)
+    static void installAutoloadMacro(Symbol symbol, String fileName)
 
     {
         AutoloadMacro am = new AutoloadMacro(symbol, fileName);

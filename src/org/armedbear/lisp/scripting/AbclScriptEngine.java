@@ -54,7 +54,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
     /**
      * The function used to evaluate a compiled script.
      */
-    private Function evalCompiledScript;
+    Function evalCompiledScript;
 
     protected AbclScriptEngine() {
 	interpreter = Interpreter.getInstance();
@@ -229,7 +229,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		return Symbol.LIST.getSymbolFunction().execute(argList);
 	}
 
-    private Object eval(Function evaluator, LispObject code, ScriptContext ctx) throws ScriptException {
+    Object eval(Function evaluator, LispObject code, ScriptContext ctx) throws ScriptException {
 	ReaderInputStream in = null;
 	WriterOutputStream out = null;
 	LispObject retVal = null;

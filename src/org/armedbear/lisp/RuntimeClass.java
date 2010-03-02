@@ -41,7 +41,7 @@ import java.util.HashMap;
 
 public class RuntimeClass
 {
-    private static Map<String,RuntimeClass> classes = new HashMap<String,RuntimeClass>();
+    static Map<String,RuntimeClass> classes = new HashMap<String,RuntimeClass>();
 
     private Map<String,Function> methods = new HashMap<String,Function>();
 
@@ -144,7 +144,7 @@ public class RuntimeClass
         return (Function) methods.get(methodName);
     }
 
-    private void addLispMethod(String methodName, Function def) {
+    void addLispMethod(String methodName, Function def) {
         methods.put(methodName, def);
     }
 

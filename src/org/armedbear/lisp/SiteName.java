@@ -40,7 +40,7 @@ import java.net.UnknownHostException;
 
 public final class SiteName
 {
-    private static LispObject getHostName()
+    static LispObject getHostName()
     {
         String hostName = null;
         InetAddress addr;

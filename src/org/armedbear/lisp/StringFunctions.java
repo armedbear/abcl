@@ -37,7 +37,7 @@ package org.armedbear.lisp;
 import static org.armedbear.lisp.Lisp.*;
 import java.util.Arrays;
 public final class StringFunctions {
-    private final static class StringIndicesAndChars {
+    final static class StringIndicesAndChars {
         public AbstractString string1;
         public boolean convertCase = false;
         public char[] array1;
@@ -85,7 +85,7 @@ public final class StringFunctions {
         return convert ? LispCharacter.toUpperCase(c) : c;
     }
 
-    private final static StringIndicesAndChars
+    final static StringIndicesAndChars
         stringIndicesAndChars(LispObject... params) {
         StringIndicesAndChars retVal = new StringIndicesAndChars();
         retVal.string1 = checkString(params[0].STRING());
@@ -162,7 +162,7 @@ public final class StringFunctions {
     };
 
 
-    private static final int notEqual(StringIndicesAndChars indicesAndChars) {
+    static final int notEqual(StringIndicesAndChars indicesAndChars) {
         int i = indicesAndChars.start1;
         int j = indicesAndChars.start2;
         while (true) {
@@ -187,7 +187,7 @@ public final class StringFunctions {
     }
     // ### %string/=
     // Case sensitive.
-    private static final Primitive _STRING_NOT_EQUAL = new pf__string_not_equal();
+    static final Primitive _STRING_NOT_EQUAL = new pf__string_not_equal();
     private static final class pf__string_not_equal extends Primitive {
         pf__string_not_equal() {
             super("%string/=", PACKAGE_SYS, true);
@@ -228,7 +228,7 @@ public final class StringFunctions {
 
     // ### %string-not-equal
     // Case insensitive.
-    private static final Primitive _STRING_NOT_EQUAL_IGNORE_CASE = new pf__string_not_equal_ignore_case();
+    static final Primitive _STRING_NOT_EQUAL_IGNORE_CASE = new pf__string_not_equal_ignore_case();
     private static final class pf__string_not_equal_ignore_case extends Primitive {
         pf__string_not_equal_ignore_case() {
             super("%string-not-equal", PACKAGE_SYS, true);
@@ -247,7 +247,7 @@ public final class StringFunctions {
         }
     };
 
-    private static final int lessThan(StringIndicesAndChars indicesAndChars) {
+    static final int lessThan(StringIndicesAndChars indicesAndChars) {
         int i = indicesAndChars.start1;
         int j = indicesAndChars.start2;
         while (true) {
@@ -297,7 +297,7 @@ public final class StringFunctions {
         }
     };
 
-    private static LispObject 
+    static LispObject 
         swapReturnValue(int original,
                         StringIndicesAndChars indicesAndChars) {
         if (original < 0) {
@@ -330,7 +330,7 @@ public final class StringFunctions {
         }
     };
 
-    private static final int lessThanOrEqual(StringIndicesAndChars indicesAndChars) {
+    static final int lessThanOrEqual(StringIndicesAndChars indicesAndChars) {
         int i = indicesAndChars.start1;
         int j = indicesAndChars.start2;
         while (true) {

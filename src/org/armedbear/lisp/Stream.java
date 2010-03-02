@@ -2066,7 +2066,7 @@ public class Stream extends StructureObject {
         }
     };
 
-    private static final LispObject finishOutput(LispObject arg)
+    static final LispObject finishOutput(LispObject arg)
 
     {
         final LispObject out;

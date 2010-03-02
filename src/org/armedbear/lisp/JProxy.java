@@ -44,7 +44,7 @@ import java.util.WeakHashMap;
 
 public final class JProxy
 {
-  private static final Map<Object,Entry> table = new WeakHashMap<Object,Entry>();
+  static final Map<Object,Entry> table = new WeakHashMap<Object,Entry>();
 
   // ### %jnew-proxy interface &rest method-names-and-defs
   private static final Primitive _JNEW_PROXY =
@@ -135,7 +135,7 @@ public final class JProxy
   	/**
   	 * A weak map associating each proxy instance with a "Lisp-this" object. 
   	 */
-  	private static final Map<Object, LispObject> proxyMap = new WeakHashMap<Object, LispObject>();
+  	static final Map<Object, LispObject> proxyMap = new WeakHashMap<Object, LispObject>();
   
     public static class LispInvocationHandler implements InvocationHandler {
 	
@@ -238,7 +238,7 @@ public final class JProxy
 	      	}
 	    };    
 	    
-	private static LispObject toLispObject(Object obj) {
+	static LispObject toLispObject(Object obj) {
 		return (obj instanceof LispObject) ? (LispObject) obj : new JavaObject(obj);
 	}
 	    

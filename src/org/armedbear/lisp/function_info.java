@@ -37,7 +37,7 @@ import static org.armedbear.lisp.Lisp.*;
 
 public final class function_info
 {
-    private static EqualHashTable FUNCTION_TABLE =
+    static EqualHashTable FUNCTION_TABLE =
         new EqualHashTable(64, NIL, NIL);
 
     // ### function-info name

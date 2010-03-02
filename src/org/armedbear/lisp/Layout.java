@@ -40,8 +40,8 @@ public class Layout extends LispObject
   private final LispClass lispClass;
   public final EqHashTable slotTable;
 
-  private final LispObject[] slotNames;
-  private final LispObject sharedSlots;
+  final LispObject[] slotNames;
+  final LispObject sharedSlots;
 
   private boolean invalid;
 
@@ -74,7 +74,7 @@ public class Layout extends LispObject
   }
 
   // Copy constructor.
-  private Layout(Layout oldLayout)
+  Layout(Layout oldLayout)
   {
     lispClass = oldLayout.getLispClass();
     slotNames = oldLayout.slotNames;

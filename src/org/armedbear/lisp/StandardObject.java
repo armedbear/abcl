@@ -179,7 +179,7 @@ public class StandardObject extends LispObject
     return unreadableString(typeOf().writeToString());
   }
 
-  private Layout updateLayout()
+  Layout updateLayout()
   {
     Debug.assertTrue(layout.isInvalid());
     Layout oldLayout = layout;

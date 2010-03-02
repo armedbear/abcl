@@ -17,7 +17,7 @@ import org.armedbear.lisp.Stream;
  */
 public abstract class DialogPromptStream extends Stream {
 
-	private StringWriter writtenSoFar = new StringWriter();
+	StringWriter writtenSoFar = new StringWriter();
 	private Reader reader = new Reader() {
 
 		private StringReader stringReader = null;

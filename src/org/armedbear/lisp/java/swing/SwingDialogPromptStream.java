@@ -16,7 +16,7 @@ import org.armedbear.lisp.java.DialogPromptStream;
 
 public class SwingDialogPromptStream extends DialogPromptStream {
 
-	private JDialog dialog = new JDialog((Frame)null, true);
+	JDialog dialog = new JDialog((Frame)null, true);
 	private JLabel prompt = new JLabel();
 	private JTextField input = new JTextField(32);
 	

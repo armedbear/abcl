@@ -345,7 +345,7 @@ public final class Primitives {
     };
 
     // ### eql
-    private static final Primitive EQL = new pf_eql();
+    static final Primitive EQL = new pf_eql();
     private static final class pf_eql extends Primitive {
         pf_eql() {
             super(Symbol.EQL, "x y");
@@ -1718,7 +1718,7 @@ for (LispObject a : args)
     private static final Symbol _SIMPLE_FORMAT_FUNCTION_ =
         internSpecial("*SIMPLE-FORMAT-FUNCTION*", PACKAGE_SYS, _FORMAT);
 
-    private static void checkRedefinition(LispObject arg)
+    static void checkRedefinition(LispObject arg)
 
     {
         final LispThread thread = LispThread.currentThread();
@@ -4312,7 +4312,7 @@ for (LispObject a : args)
         }
     };
 
-    private static final LispObject list_subseq(LispObject list, int start,
+    static final LispObject list_subseq(LispObject list, int start,
             int end)
 
     {
@@ -4521,7 +4521,7 @@ for (LispObject a : args)
     };
 
     // ### list-delete-eq item list => result-list
-    private static final Primitive LIST_DELETE_EQ = new pf_list_delete_eq();
+    static final Primitive LIST_DELETE_EQ = new pf_list_delete_eq();
     private static final class pf_list_delete_eq extends Primitive {
         pf_list_delete_eq() {
             super("list-delete-eq", PACKAGE_SYS, true, "item list");
@@ -4565,7 +4565,7 @@ for (LispObject a : args)
     };
 
     // ### list-delete-eql item list => result-list
-    private static final Primitive LIST_DELETE_EQL = new pf_list_delete_eql();
+    static final Primitive LIST_DELETE_EQL = new pf_list_delete_eql();
     private static final class pf_list_delete_eql extends Primitive {
         pf_list_delete_eql() {
             super("list-delete-eql", PACKAGE_SYS, true, "item list");

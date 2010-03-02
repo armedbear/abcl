@@ -198,8 +198,8 @@ public final class FloatFunctions
         }
     };
 
-    private static final Fixnum FIXNUM_24 = Fixnum.getInstance(24);
-    private static final Fixnum FIXNUM_53 = Fixnum.getInstance(53);
+    static final Fixnum FIXNUM_24 = Fixnum.getInstance(24);
+    static final Fixnum FIXNUM_53 = Fixnum.getInstance(53);
 
     // ### float-digits
     // float-digits float => float-digits

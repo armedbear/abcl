@@ -37,8 +37,8 @@ import static org.armedbear.lisp.Lisp.*;
 
 public final class Environment extends LispObject
 {
-  private Binding vars;
-  private FunctionBinding lastFunctionBinding;
+  Binding vars;
+  FunctionBinding lastFunctionBinding;
   private Binding blocks;
   private Binding tags;
   public boolean inactive; //default value: false == active

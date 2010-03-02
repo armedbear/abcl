@@ -46,7 +46,7 @@ public class AutoloadedFunctionProxy extends Function {
     /** List of symbols that need to be saved upon instantiation of a
      * proxy and restored while loading the actual function.
      */
-    final static private Symbol[] symsToSave =
+    final static Symbol[] symsToSave =
         new Symbol[]
         {
             AUTOLOADING_CACHE, // allow loading local preloaded functions

@@ -37,9 +37,9 @@ import static org.armedbear.lisp.Lisp.*;
 
 public final class ConcatenatedStream extends Stream
 {
-    private LispObject streams;
+    LispObject streams;
 
-    private ConcatenatedStream(LispObject streams)
+    ConcatenatedStream(LispObject streams)
     {
         super(Symbol.CONCATENATED_STREAM);
         this.streams = streams;

@@ -42,7 +42,7 @@ import java.math.BigInteger;
 import java.util.*;
 
 public final class JavaObject extends LispObject {
-    private final Object obj;
+    final Object obj;
     private final Class<?> intendedClass;
 
     public JavaObject(Object obj) {

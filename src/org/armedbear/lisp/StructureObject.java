@@ -38,7 +38,7 @@ import static org.armedbear.lisp.Lisp.*;
 public class StructureObject extends LispObject
 {
   private final StructureClass structureClass;
-  private final LispObject[] slots;
+  final LispObject[] slots;
 
   public StructureObject(Symbol symbol)
 

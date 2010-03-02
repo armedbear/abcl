@@ -37,7 +37,7 @@ import static org.armedbear.lisp.Lisp.*;
 
 public class StructureClass extends SlotClass
 {
-    private StructureClass(Symbol symbol)
+    StructureClass(Symbol symbol)
     {
         super(symbol, new Cons(BuiltInClass.STRUCTURE_OBJECT));
     }

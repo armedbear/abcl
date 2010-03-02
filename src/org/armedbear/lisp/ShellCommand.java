@@ -65,12 +65,12 @@ public final class ShellCommand implements Runnable
         return (output != null) ? output.toString() : "";
     }
 
-    private final int exitValue()
+    final int exitValue()
     {
         return exitValue;
     }
 
-    private void processOutput(String s)
+    void processOutput(String s)
     {
         if (outputStream != null)
             outputStream._writeString(s);

@@ -100,7 +100,7 @@ public class ArithmeticError extends LispError
         return super.typep(type);
     }
 
-    private final LispObject getOperation()
+    final LispObject getOperation()
     {
         return getInstanceSlotValue(Symbol.OPERATION);
     }
@@ -111,7 +111,7 @@ public class ArithmeticError extends LispError
         setInstanceSlotValue(Symbol.OPERATION, operation);
     }
 
-    private final LispObject getOperands()
+    final LispObject getOperands()
     {
         return getInstanceSlotValue(Symbol.OPERANDS);
     }

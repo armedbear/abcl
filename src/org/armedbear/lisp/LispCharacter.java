@@ -129,7 +129,7 @@ public final class LispCharacter extends LispObject
     return new SimpleString(value);
   }
 
-  private boolean isStandardChar()
+  boolean isStandardChar()
   {
     if (value >= ' ' && value < 127)
       return true;
@@ -682,7 +682,7 @@ public final class LispCharacter extends LispObject
     } 
   }  
 
-  private static final char[] UPPER_CASE_CHARS = new char[128];
+  static final char[] UPPER_CASE_CHARS = new char[128];
 
   static
   {
@@ -697,7 +697,7 @@ public final class LispCharacter extends LispObject
     return Character.toLowerCase(c);
   }
 
-  private static final char[] LOWER_CASE_CHARS = new char[128];
+  static final char[] LOWER_CASE_CHARS = new char[128];
 
   static
   {

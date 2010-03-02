@@ -44,7 +44,7 @@ public final class ByteArrayOutputStream extends Stream
         this(UNSIGNED_BYTE_8); //Declared in Stream.java
     }
 
-    private ByteArrayOutputStream(LispObject elementType)
+    ByteArrayOutputStream(LispObject elementType)
     {
         super(Symbol.SYSTEM_STREAM);
         this.elementType = elementType;

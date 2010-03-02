@@ -37,9 +37,9 @@ import static org.armedbear.lisp.Lisp.*;
 
 public final class BroadcastStream extends Stream
 {
-    private final Stream[] streams;
+    final Stream[] streams;
 
-    private BroadcastStream(Stream[] streams)
+    BroadcastStream(Stream[] streams)
     {
         super(Symbol.BROADCAST_STREAM);
         this.streams = streams;

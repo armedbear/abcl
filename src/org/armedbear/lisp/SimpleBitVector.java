@@ -247,7 +247,7 @@ public final class SimpleBitVector extends AbstractBitVector
         return new ComplexBitVector(newCapacity, displacedTo, displacement);
     }
 
-    private SimpleBitVector and(SimpleBitVector v, SimpleBitVector result)
+    SimpleBitVector and(SimpleBitVector v, SimpleBitVector result)
     {
         if (result == null)
             result = new SimpleBitVector(capacity);
@@ -256,7 +256,7 @@ public final class SimpleBitVector extends AbstractBitVector
         return result;
     }
 
-    private SimpleBitVector ior(SimpleBitVector v, SimpleBitVector result)
+    SimpleBitVector ior(SimpleBitVector v, SimpleBitVector result)
     {
         if (result == null)
             result = new SimpleBitVector(capacity);
@@ -265,7 +265,7 @@ public final class SimpleBitVector extends AbstractBitVector
         return result;
     }
 
-    private SimpleBitVector xor(SimpleBitVector v, SimpleBitVector result)
+    SimpleBitVector xor(SimpleBitVector v, SimpleBitVector result)
     {
         if (result == null)
             result = new SimpleBitVector(capacity);
@@ -274,7 +274,7 @@ public final class SimpleBitVector extends AbstractBitVector
         return result;
     }
 
-    private SimpleBitVector eqv(SimpleBitVector v, SimpleBitVector result)
+    SimpleBitVector eqv(SimpleBitVector v, SimpleBitVector result)
     {
         if (result == null)
             result = new SimpleBitVector(capacity);
@@ -283,7 +283,7 @@ public final class SimpleBitVector extends AbstractBitVector
         return result;
     }
 
-    private SimpleBitVector nand(SimpleBitVector v, SimpleBitVector result)
+    SimpleBitVector nand(SimpleBitVector v, SimpleBitVector result)
     {
         if (result == null)
             result = new SimpleBitVector(capacity);
@@ -292,7 +292,7 @@ public final class SimpleBitVector extends AbstractBitVector
         return result;
     }
 
-    private SimpleBitVector nor(SimpleBitVector v, SimpleBitVector result)
+    SimpleBitVector nor(SimpleBitVector v, SimpleBitVector result)
     {
         if (result == null)
             result = new SimpleBitVector(capacity);
@@ -301,7 +301,7 @@ public final class SimpleBitVector extends AbstractBitVector
         return result;
     }
 
-    private SimpleBitVector andc1(SimpleBitVector v, SimpleBitVector result)
+    SimpleBitVector andc1(SimpleBitVector v, SimpleBitVector result)
     {
         if (result == null)
             result = new SimpleBitVector(capacity);
@@ -310,7 +310,7 @@ public final class SimpleBitVector extends AbstractBitVector
         return result;
     }
 
-    private SimpleBitVector andc2(SimpleBitVector v, SimpleBitVector result)
+    SimpleBitVector andc2(SimpleBitVector v, SimpleBitVector result)
     {
         if (result == null)
             result = new SimpleBitVector(capacity);
@@ -319,7 +319,7 @@ public final class SimpleBitVector extends AbstractBitVector
         return result;
     }
 
-    private SimpleBitVector orc1(SimpleBitVector v, SimpleBitVector result)
+    SimpleBitVector orc1(SimpleBitVector v, SimpleBitVector result)
     {
         if (result == null)
             result = new SimpleBitVector(capacity);
@@ -328,7 +328,7 @@ public final class SimpleBitVector extends AbstractBitVector
         return result;
     }
 
-    private SimpleBitVector orc2(SimpleBitVector v, SimpleBitVector result)
+    SimpleBitVector orc2(SimpleBitVector v, SimpleBitVector result)
     {
         if (result == null)
             result = new SimpleBitVector(capacity);

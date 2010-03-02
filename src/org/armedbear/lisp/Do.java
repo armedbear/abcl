@@ -66,7 +66,7 @@ public final class Do {
         }
     };
 
-    private static final LispObject _do(LispObject args, Environment env,
+    static final LispObject _do(LispObject args, Environment env,
                                         boolean sequential)
 
     {

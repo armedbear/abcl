@@ -47,7 +47,7 @@ public final class MathFunctions
         }
     };
 
-    private static LispObject sin(LispObject arg)
+    static LispObject sin(LispObject arg)
     {
         if (arg instanceof DoubleFloat)
             return new DoubleFloat(Math.sin(((DoubleFloat)arg).value));
@@ -74,7 +74,7 @@ public final class MathFunctions
         }
     };
 
-    private static LispObject cos(LispObject arg)
+    static LispObject cos(LispObject arg)
     {
         if (arg instanceof DoubleFloat)
             return new DoubleFloat(Math.cos(((DoubleFloat)arg).value));
@@ -114,7 +114,7 @@ public final class MathFunctions
         }
     };
 
-    private static LispObject asin(LispObject arg)
+    static LispObject asin(LispObject arg)
     {
         if (arg instanceof SingleFloat) {
             float f = ((SingleFloat)arg).value;
@@ -155,7 +155,7 @@ public final class MathFunctions
         }
     };
 
-    private static LispObject acos(LispObject arg)
+    static LispObject acos(LispObject arg)
     {
         if (arg instanceof DoubleFloat) {
             double d = ((DoubleFloat)arg).value;
@@ -225,7 +225,7 @@ public final class MathFunctions
         }
     };
 
-    private static LispObject atan(LispObject arg)
+    static LispObject atan(LispObject arg)
     {
         if (arg instanceof Complex) {
             LispObject im = ((Complex)arg).imagpart;
@@ -259,7 +259,7 @@ public final class MathFunctions
         }
     };
 
-    private static LispObject sinh(LispObject arg)
+    static LispObject sinh(LispObject arg)
     {
         if (arg instanceof Complex) {
             LispObject im = ((Complex)arg).getImaginaryPart();
@@ -297,7 +297,7 @@ public final class MathFunctions
         }
     };
 
-    private static LispObject cosh(LispObject arg)
+    static LispObject cosh(LispObject arg)
     {
         if (arg instanceof Complex) {
             LispObject im = ((Complex)arg).getImaginaryPart();
@@ -352,7 +352,7 @@ public final class MathFunctions
         }
     };
 
-    private static LispObject asinh(LispObject arg)
+    static LispObject asinh(LispObject arg)
     {
         if (arg instanceof Complex) {
             LispObject im = ((Complex)arg).getImaginaryPart();
@@ -385,7 +385,7 @@ public final class MathFunctions
         }
     };
 
-    private static LispObject acosh(LispObject arg)
+    static LispObject acosh(LispObject arg)
     {
         if (arg instanceof Complex) {
             LispObject im = ((Complex)arg).getImaginaryPart();
@@ -422,7 +422,7 @@ public final class MathFunctions
         }
     };
 
-    private static LispObject atanh(LispObject arg)
+    static LispObject atanh(LispObject arg)
     {
         if (arg instanceof Complex) {
             LispObject im = ((Complex)arg).getImaginaryPart();
@@ -454,7 +454,7 @@ public final class MathFunctions
         }
     };
 
-    private static LispObject cis(LispObject arg)
+    static LispObject cis(LispObject arg)
     {
         if (arg.realp())
             return Complex.getInstance(cos(arg), sin(arg));
@@ -471,7 +471,7 @@ public final class MathFunctions
         }
     };
 
-    private static LispObject exp(LispObject arg)
+    static LispObject exp(LispObject arg)
     {
         if (arg.realp()) {
             if (arg instanceof DoubleFloat) {
@@ -499,7 +499,7 @@ public final class MathFunctions
         }
     };
 
-    private static final LispObject sqrt(LispObject obj)
+    static final LispObject sqrt(LispObject obj)
     {
         if (obj instanceof DoubleFloat) {
             if (obj.minusp())
@@ -552,7 +552,7 @@ public final class MathFunctions
         }
     };
 
-    private static final LispObject log(LispObject obj)
+    static final LispObject log(LispObject obj)
     {
         if (obj.realp() && !obj.minusp()) {
             // Result is real.
@@ -706,7 +706,7 @@ public final class MathFunctions
      * @param number
      * @return number or signals an appropriate error
      */
-    private final static LispObject OverUnderFlowCheck(LispObject number)
+    final static LispObject OverUnderFlowCheck(LispObject number)
 
     {
         if (number instanceof Complex) {
@@ -773,7 +773,7 @@ public final class MathFunctions
      * @param base A value of any type
      * @param power An integer (fixnum or bignum) value
      */
-    private static final LispObject intexp(LispObject base, LispObject power)
+    static final LispObject intexp(LispObject base, LispObject power)
 
     {
         if (power.isEqualTo(0))

@@ -46,7 +46,7 @@ public final class StringOutputStream extends Stream
         this(Symbol.CHARACTER);
     }
 
-    private StringOutputStream(LispObject elementType)
+    StringOutputStream(LispObject elementType)
     {
         super(Symbol.STRING_OUTPUT_STREAM);
         this.elementType = elementType;

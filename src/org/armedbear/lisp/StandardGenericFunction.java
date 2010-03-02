@@ -39,12 +39,12 @@ import java.util.HashMap;
 
 public final class StandardGenericFunction extends StandardObject
 {
-  private LispObject function;
+  LispObject function;
 
-  private int numberOfRequiredArgs;
+  int numberOfRequiredArgs;
 
-  private HashMap<CacheEntry,LispObject> cache;
-  private HashMap<LispObject,LispObject> slotCache;
+  HashMap<CacheEntry,LispObject> cache;
+  HashMap<LispObject,LispObject> slotCache;
 
   public StandardGenericFunction()
   {
@@ -87,7 +87,7 @@ public final class StandardGenericFunction extends StandardObject
     slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION] = NIL;
   }
 
-  private void finalizeInternal()
+  void finalizeInternal()
   {
     cache = null;
   }
@@ -663,7 +663,7 @@ public final class StandardGenericFunction extends StandardObject
    * { EqlSpecialization('SYMBOL), EqlSpecialization('SYMBOL) }.
    * </pre>
    */     
-  private LispObject getArgSpecialization(LispObject arg)
+  LispObject getArgSpecialization(LispObject arg)
   {
     for (EqlSpecialization eqlSpecialization : eqlSpecializations)
       {
@@ -766,7 +766,7 @@ public final class StandardGenericFunction extends StandardObject
     }
   }
 
-  private EqlSpecialization eqlSpecializations[] = new EqlSpecialization[0];
+  EqlSpecialization eqlSpecializations[] = new EqlSpecialization[0];
 
     // ### %init-eql-specializations
     private static final Primitive _INIT_EQL_SPECIALIZATIONS 

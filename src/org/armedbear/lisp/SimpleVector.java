@@ -40,8 +40,8 @@ import static org.armedbear.lisp.Lisp.*;
 // type is a subtype of type SIMPLE-VECTOR."
 public final class SimpleVector extends AbstractVector
 {
-  private int capacity;
-  private LispObject[] data;
+  int capacity;
+  LispObject[] data;
 
   public SimpleVector(int capacity)
   {

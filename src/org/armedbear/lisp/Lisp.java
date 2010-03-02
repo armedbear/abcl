@@ -2028,7 +2028,7 @@ public final class Lisp
   }
 
   // The compiler's object table.
-  private static final Hashtable<String,LispObject> objectTable =
+  static final Hashtable<String,LispObject> objectTable =
           new Hashtable<String,LispObject>();
 
   public static final LispObject recall(String key)
@@ -2620,7 +2620,7 @@ public final class Lisp
     exportSpecial("*COMPILE-FILE-ENVIRONMENT*", PACKAGE_SYS, NIL);
 
   public static final LispObject UNBOUND_VALUE = new unboundValue();
-  private static class unboundValue extends LispObject
+  static class unboundValue extends LispObject
   {
     @Override
     public String writeToString()
@@ -2630,7 +2630,7 @@ public final class Lisp
   }
 
   public static final LispObject NULL_VALUE = new nullValue();
-  private static class nullValue extends LispObject
+  static class nullValue extends LispObject
   {
     @Override
     public String writeToString()

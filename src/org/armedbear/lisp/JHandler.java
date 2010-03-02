@@ -41,7 +41,7 @@ import java.util.WeakHashMap;
 
 public final class JHandler
 {
-    private static final Map<Object,Map<String,Entry>> table =
+    static final Map<Object,Map<String,Entry>> table =
        new WeakHashMap<Object,Map<String,Entry>>();
 
     public static void callLisp (String s, Object o)

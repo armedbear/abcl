@@ -119,7 +119,7 @@ public final class SpecialOperators {
         }
     };
 
-    private static final LispObject _let(LispObject args, Environment env,
+    static final LispObject _let(LispObject args, Environment env,
                                          boolean sequential)
 
     {
@@ -306,7 +306,7 @@ for (Cons x : nonSequentialVars)
         }
     };
 
-    private static final LispObject _flet(LispObject args, Environment env,
+    static final LispObject _flet(LispObject args, Environment env,
                                           boolean recursive)
 
     {

@@ -41,11 +41,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public final class LispThread extends LispObject
 {
-    private static boolean use_fast_calls = false;
+    static boolean use_fast_calls = false;
 
     // use a concurrent hashmap: we may want to add threads
     // while at the same time iterating the hash
-    final private static ConcurrentHashMap<Thread,LispThread> map =
+    final static ConcurrentHashMap<Thread,LispThread> map =
        new ConcurrentHashMap<Thread,LispThread>();
 
     private static ThreadLocal<LispThread> threads = new ThreadLocal<LispThread>(){
@@ -66,20 +66,20 @@ public final class LispThread extends LispObject
         return threads.get();
     }
 
-    private final Thread javaThread;
+    final Thread javaThread;
     private boolean destroyed;
-    private final LispObject name;
+    final LispObject name;
     public LispObject[] _values;
     private boolean threadInterrupted;
     private LispObject pending = NIL;
 
-    private LispThread(Thread javaThread)
+    LispThread(Thread javaThread)
     {
         this.javaThread = javaThread;
         name = new SimpleString(javaThread.getName());
     }
 
-    private LispThread(final Function fun, LispObject name)
+    LispThread(final Function fun, LispObject name)
     {
         Runnable r = new Runnable() {
             public void run()
@@ -141,17 +141,17 @@ public final class LispThread extends LispObject
         return destroyed;
     }
 
-    private final synchronized boolean isInterrupted()
+    final synchronized boolean isInterrupted()
     {
         return threadInterrupted;
     }
 
-    private final synchronized void setDestroyed(boolean b)
+    final synchronized void setDestroyed(boolean b)
     {
         destroyed = b;
     }
 
-    private final synchronized void interrupt(LispObject function, LispObject args)
+    final synchronized void interrupt(LispObject function, LispObject args)
     {
         pending = new Cons(args, pending);
         pending = new Cons(function, pending);
@@ -159,7 +159,7 @@ public final class LispThread extends LispObject
         javaThread.interrupt();
     }
 
-    private final synchronized void processThreadInterrupts()
+    final synchronized void processThreadInterrupts()
 
     {
         while (pending != NIL) {

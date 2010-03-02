@@ -135,7 +135,7 @@ public class Readtable extends LispObject
   }
 
   // FIXME synchronization
-  private static void copyReadtable(Readtable from, Readtable to)
+  static void copyReadtable(Readtable from, Readtable to)
   {
     Iterator<Character> charIterator = from.syntax.getCharIterator();
       while (charIterator.hasNext()) {
@@ -252,7 +252,7 @@ public class Readtable extends LispObject
     return readerMacroFunctions.get(c);
   }
 
-  private LispObject getMacroCharacter(char c)
+  LispObject getMacroCharacter(char c)
   {
     LispObject function = getReaderMacroFunction(c);
     LispObject non_terminating_p;
@@ -271,7 +271,7 @@ public class Readtable extends LispObject
     return LispThread.currentThread().setValues(function, non_terminating_p);
   }
 
-  private void makeDispatchMacroCharacter(char dispChar, LispObject non_terminating_p)
+  void makeDispatchMacroCharacter(char dispChar, LispObject non_terminating_p)
   {
     byte syntaxType;
     if (non_terminating_p != NIL)

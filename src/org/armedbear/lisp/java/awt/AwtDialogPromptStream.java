@@ -16,7 +16,7 @@ import org.armedbear.lisp.java.DialogPromptStream;
 
 public class AwtDialogPromptStream extends DialogPromptStream {
 
-	private Dialog dialog = new Dialog((Frame)null, true);
+	Dialog dialog = new Dialog((Frame)null, true);
 	private Label prompt = new Label();
 	private TextField input = new TextField(32);
 	
