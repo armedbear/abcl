@@ -80,6 +80,8 @@ For help on the automatic tests available, use the Ant target 'help.test'.
     </patternset>
 
     <patternset id="abcl.objects">
+      <!-- "system.lisp" is dynamically created by COMPILE-SYSTEM -->
+      <include name="org/armedbear/lisp/system.lisp"/> 
       <include name="org/armedbear/lisp/**/*.class"/>
       <include name="org/armedbear/lisp/**/*.cls"/> 
       <include name="org/armedbear/lisp/**/*.abcl"/>

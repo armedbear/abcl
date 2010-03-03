@@ -284,5 +284,20 @@
            (%compile-system :output-path output-path))
          (unless failure-p
            (setf status 0)))))
+    (create-system-logical-translations output-path)
     (when quit
       (quit :status status))))
+
+(defun create-system-logical-translations (output-path)
+  (let* ((dir (directory-namestring (pathname output-path)))
+         (system (merge-pathnames "system.lisp" dir))
+         (home (pathname *lisp-home*))
+         (src (format nil "~A**/*.*" home))
+         (java (format nil "~A../../../**/*.*" home)))
+    (with-open-file (s system :direction :output 
+                       :if-exists :supersede)
+      (write `(setf (logical-pathname-translations "sys")
+                    '(("SYS:SRC;**;*.*" ,src)
+                      ("SYS:JAVA;**;*.*" ,java)))
+       :stream s))))
+      

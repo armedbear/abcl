@@ -191,3 +191,13 @@
   (unless *noinform*
     (%format t "Startup completed in ~A seconds.~%"
              (float (/ (ext:uptime) 1000)))))
+
+;;; "system.lisp" contains system installation specific information
+;;; (currently only the logical pathname definition for "SYS;SRC")
+;;; that is not currently required for ABCL to run.  Since
+;;; LOAD-SYSTEM-FILE exits the JVM if its argument cannot be found, we
+;;; use REQUIRE trapping any error.
+(handler-case 
+    (require 'system)
+  (t ()))
+
