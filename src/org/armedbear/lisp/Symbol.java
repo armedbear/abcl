@@ -2887,10 +2887,14 @@ public class Symbol extends LispObject
     PACKAGE_EXT.addExternalSymbol("MEMQ");
   public static final Symbol MEMQL =
     PACKAGE_EXT.addExternalSymbol("MEMQL");
+  public static final Symbol NIL_VECTOR =
+    PACKAGE_EXT.addExternalSymbol("NIL-VECTOR");
   public static final Symbol COMPILER_ERROR =
     PACKAGE_EXT.addExternalSymbol("COMPILER-ERROR");
   public static final Symbol COMPILER_UNSUPPORTED_FEATURE_ERROR =
     PACKAGE_EXT.addExternalSymbol("COMPILER-UNSUPPORTED-FEATURE-ERROR");
+  public static final Symbol MAILBOX =
+    PACKAGE_EXT.addExternalSymbol("MAILBOX");
   public static final Symbol MUTEX =
     PACKAGE_EXT.addExternalSymbol("MUTEX");
   public static final Symbol THREAD =
@@ -2911,6 +2915,10 @@ public class Symbol extends LispObject
     PACKAGE_EXT.addExternalSymbol("MACROEXPAND-ALL");
   public static final Symbol LOAD_TRUENAME_FASL =
     PACKAGE_EXT.addExternalSymbol("*LOAD-TRUENAME-FASL*");
+  public static final Symbol SLIME_INPUT_STREAM =
+    PACKAGE_EXT.addExternalSymbol("SLIME-INPUT-STREAM");
+  public static final Symbol SLIME_OUTPUT_STREAM =
+    PACKAGE_EXT.addExternalSymbol("SLIME-OUTPUT-STREAM");
 
   // MOP.
   public static final Symbol STANDARD_READER_METHOD =
@@ -2947,14 +2955,6 @@ public class Symbol extends LispObject
     PACKAGE_SYS.addExternalSymbol("ENVIRONMENT");
   public static final Symbol FORWARD_REFERENCED_CLASS =
     PACKAGE_SYS.addExternalSymbol("FORWARD-REFERENCED-CLASS");
-  public static final Symbol MAILBOX =
-    PACKAGE_EXT.addExternalSymbol("MAILBOX");
-  public static final Symbol NIL_VECTOR =
-    PACKAGE_EXT.addExternalSymbol("NIL-VECTOR");
-  public static final Symbol SLIME_INPUT_STREAM =
-    PACKAGE_EXT.addExternalSymbol("SLIME-INPUT-STREAM");
-  public static final Symbol SLIME_OUTPUT_STREAM =
-    PACKAGE_EXT.addExternalSymbol("SLIME-OUTPUT-STREAM");
   public static final Symbol CLASS_BYTES =
     PACKAGE_SYS.addExternalSymbol("CLASS-BYTES");
   public static final Symbol _CLASS_SLOTS =
