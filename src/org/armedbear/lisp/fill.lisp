@@ -31,6 +31,8 @@
 
 (in-package "SYSTEM")
 
+(require "EXTENSIBLE-SEQUENCES-BASE")
+
 ;;; Adapted from CMUCL.
 
 (defun list-fill (sequence item start end)
@@ -48,11 +50,16 @@
     (setf (aref sequence index) item)))
 
 (defun fill (sequence item &key (start 0) end)
-  (cond ((listp sequence)
-         (list-fill sequence item start end))
-        ((and (stringp sequence)
-              (zerop start)
-              (null end))
-         (simple-string-fill sequence item))
-        (t
-         (vector-fill sequence item start end))))
+  "Replace the specified elements of SEQUENCE with ITEM."
+  (sequence::seq-dispatch sequence
+    (list-fill sequence item start end)
+    (cond ((and (stringp sequence)
+		(zerop start)
+		(null end))
+	   (simple-string-fill sequence item))
+	  (t
+	   (vector-fill sequence item start end)))
+    (sequence:fill sequence item
+		   :start start
+		   :end (sequence::%check-generic-sequence-bounds
+			 sequence start end))))

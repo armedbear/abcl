@@ -31,15 +31,19 @@
 
 (in-package #:system)
 
-(defun sort (sequence predicate &key key)
-  (if (listp sequence)
-      (sort-list sequence predicate key)
-      (quick-sort sequence 0 (length sequence) predicate key)))
+(require "EXTENSIBLE-SEQUENCES-BASE")
 
-(defun stable-sort (sequence predicate &key key)
-  (if (listp sequence)
-      (sort-list sequence predicate key)
-      (quick-sort sequence 0 (length sequence) predicate key)))
+(defun sort (sequence predicate &rest args &key key)
+  (sequence::seq-dispatch sequence
+    (sort-list sequence predicate key)
+    (quick-sort sequence 0 (length sequence) predicate key)
+    (apply #'sequence:sort sequence predicate args)))
+
+(defun stable-sort (sequence predicate &rest args &key key)
+  (sequence::seq-dispatch sequence
+    (sort-list sequence predicate key)
+    (quick-sort sequence 0 (length sequence) predicate key)
+    (apply #'sequence:stable-sort sequence predicate args)))
 
 ;; Adapted from SBCL.
 (declaim (ftype (function (list) cons) last-cons-of))
@@ -192,7 +196,8 @@
         (quick-sort seq start j pred key)
         (quick-sort seq (1+ j) end pred key))))
 
-;;; From ECL.
+;;; From ECL. Should already be user-extensible as it does no type dispatch
+;;; and uses only user-extensible functions.
 (defun merge (result-type sequence1 sequence2 predicate
                           &key key
                           &aux (l1 (length sequence1)) (l2 (length sequence2)))

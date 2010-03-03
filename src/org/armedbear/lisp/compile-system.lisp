@@ -102,6 +102,8 @@
       (load (do-compile "compiler-macro.lisp"))
       (load (do-compile "opcodes.lisp"))
       (load (do-compile "setf.lisp"))
+      (load (do-compile "extensible-sequences-base.lisp"))
+      (load (do-compile "require.lisp"))
       (load (do-compile "substitute.lisp"))
       (load (do-compile "clos.lisp"))
       ;; Order matters for these files.
@@ -173,6 +175,7 @@
                            "enough-namestring.lisp"
                            "ensure-directories-exist.lisp"
                            "error.lisp"
+			   "extensible-sequences.lisp"
                            "featurep.lisp"
                            "fdefinition.lisp"
                            "fill.lisp"
@@ -230,7 +233,6 @@
                            "remove-duplicates.lisp"
                            "remove.lisp"
                            "replace.lisp"
-                           "require.lisp"
                            "restart.lisp"
                            "revappend.lisp"
                            "rotatef.lisp"

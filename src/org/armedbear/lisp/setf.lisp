@@ -222,6 +222,7 @@
 (defsetf tenth %set-tenth)
 
 (defsetf rest set-cdr)
+;;Redefined in extensible-sequences-base.lisp
 (defsetf elt %set-elt)
 (defsetf nth %set-nth)
 (defsetf svref svset)

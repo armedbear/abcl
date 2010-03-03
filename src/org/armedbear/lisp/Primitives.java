@@ -462,7 +462,7 @@ public final class Primitives {
     private static final Primitive LENGTH = new pf_length();
     private static final class pf_length extends Primitive {
         pf_length() {
-            super(Symbol.LENGTH, "sequence");
+            super("%LENGTH", PACKAGE_SYS, false, "sequence");
         }
 
         @Override
@@ -475,7 +475,7 @@ public final class Primitives {
     private static final Primitive ELT = new pf_elt();
     private static final class pf_elt extends Primitive {
         pf_elt() {
-            super(Symbol.ELT, "sequence index");
+            super("%ELT", PACKAGE_SYS, false, "sequence index");
         }
 
         @Override
@@ -4159,7 +4159,7 @@ for (LispObject a : args)
         }
     };
 
-    // ### call-count
+    // ### hot-count
     private static final Primitive HOT_COUNT = new pf_hot_count();
     private static final class pf_hot_count extends Primitive {
         pf_hot_count() {
@@ -4172,7 +4172,7 @@ for (LispObject a : args)
         }
     };
 
-    // ### set-call-count
+    // ### set-hot-count
     private static final Primitive SET_HOT_COUNT = new pf_set_hot_count();
     private static final class pf_set_hot_count extends Primitive {
         pf_set_hot_count() {
@@ -4253,7 +4253,7 @@ for (LispObject a : args)
     private static final Primitive SUBSEQ = new pf_subseq();
     private static final class pf_subseq extends Primitive {
         pf_subseq() {
-            super(Symbol.SUBSEQ, "sequence start &optional end");
+            super(PACKAGE_SYS.intern("%SUBSEQ"), "sequence start &optional end");
         }
 
         @Override
@@ -4420,7 +4420,7 @@ for (LispObject a : args)
     public static final Primitive NREVERSE = new pf_nreverse();
     private static final class pf_nreverse extends Primitive {
         pf_nreverse() {
-            super(Symbol.NREVERSE, "sequence");
+            super("%NREVERSE", PACKAGE_SYS, false, "sequence");
         }
 
         @Override
@@ -4475,7 +4475,7 @@ for (LispObject a : args)
     private static final Primitive REVERSE = new pf_reverse();
     private static final class pf_reverse extends Primitive {
         pf_reverse() {
-            super(Symbol.REVERSE, "sequence");
+            super("%reverse", PACKAGE_SYS, false, "sequence");
         }
 
         @Override

@@ -31,6 +31,8 @@
 
 (in-package "SYSTEM")
 
+(require "EXTENSIBLE-SEQUENCES-BASE")
+
 ;; From CMUCL.
 
 (eval-when (:compile-toplevel :execute)
@@ -110,15 +112,16 @@
 
   ) ; eval-when
 
-(defun search (sequence1 sequence2 &key from-end (test #'eql) test-not
-                         (start1 0) end1 (start2 0) end2 key)
+(defun search (sequence1 sequence2 &rest args &key from-end (test #'eql)
+	       test-not (start1 0) end1 (start2 0) end2 key)
   (let ((end1 (or end1 (length sequence1)))
 	(end2 (or end2 (length sequence2))))
     (when key
       (setq key (coerce-to-function key)))
-    (if (listp sequence2)
-        (list-search sequence2 sequence1)
-        (vector-search sequence2 sequence1))))
+    (sequence::seq-dispatch sequence2
+      (list-search sequence2 sequence1)
+      (vector-search sequence2 sequence1)
+      (apply #'sequence:search sequence1 sequence2 args))))
 
 (defun simple-search (sequence1 sequence2)
   (cond ((and (stringp sequence1) (stringp sequence2))

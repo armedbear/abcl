@@ -29,6 +29,8 @@
 ;;; obligated to do so.  If you do not wish to do so, delete this
 ;;; exception statement from your version.
 
+;(require "EXTENSIBLE-SEQUENCES-BASE")
+
 (in-package #:system)
 
 (defmacro type-specifier-atom (type)
@@ -56,4 +58,10 @@
      (error "MAKE-SEQUENCE-OF-TYPE: unsupported case ~S" type))))
 
 (defmacro make-sequence-like (sequence length)
-  `(make-sequence-of-type (type-of ,sequence) ,length))
+  "Return a sequence of the same type as SEQUENCE and the given LENGTH."
+  ;;Can't use gensyms: stack overflow in boot.lisp
+    `(let ((msl-seq-tmp-var ,sequence) (msl-len-tmp-var ,length))
+       (sequence::seq-dispatch msl-seq-tmp-var
+	 (make-sequence-of-type (type-of msl-seq-tmp-var) msl-len-tmp-var)
+	 (make-sequence-of-type (type-of msl-seq-tmp-var) msl-len-tmp-var)
+	 (sequence::make-sequence-like msl-seq-tmp-var msl-len-tmp-var))))

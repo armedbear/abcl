@@ -31,6 +31,8 @@
 
 (in-package "SYSTEM")
 
+(require "EXTENSIBLE-SEQUENCES-BASE")
+
 ;;; From CMUCL.
 
 (defmacro real-count (count)
@@ -133,20 +135,21 @@
         (not (funcall test-not item (funcall-key key (car current))))
         (funcall test item (funcall-key key (car current))))))
 
-(defun delete (item sequence &key from-end (test #'eql) test-not (start 0)
-                    end count key)
+(defun delete (item sequence &rest args &key from-end (test #'eql) test-not
+	       (start 0) end count key)
   (when key
     (setq key (coerce-to-function key)))
   (let* ((length (length sequence))
 	 (end (or end length))
 	 (count (real-count count)))
-    (if (listp sequence)
-        (if from-end
-            (normal-list-delete-from-end)
-            (normal-list-delete))
-        (if from-end
-            (normal-mumble-delete-from-end)
-            (normal-mumble-delete)))))
+    (sequence::seq-dispatch sequence
+      (if from-end
+	  (normal-list-delete-from-end)
+	  (normal-list-delete))
+      (if from-end
+	  (normal-mumble-delete-from-end)
+	  (normal-mumble-delete))
+      (apply #'sequence:delete item sequence args))))
 
 (defmacro if-mumble-delete ()
   `(mumble-delete
@@ -164,19 +167,21 @@
   '(list-delete-from-end
     (funcall predicate (funcall-key key (car current)))))
 
-(defun delete-if (predicate sequence &key from-end (start 0) key end count)
+(defun delete-if (predicate sequence &rest args &key from-end (start 0)
+		  key end count)
   (when key
     (setq key (coerce-to-function key)))
   (let* ((length (length sequence))
 	 (end (or end length))
 	 (count (real-count count)))
-    (if (listp sequence)
-        (if from-end
-            (if-list-delete-from-end)
-            (if-list-delete))
-        (if from-end
-            (if-mumble-delete-from-end)
-            (if-mumble-delete)))))
+    (sequence::seq-dispatch sequence
+      (if from-end
+	  (if-list-delete-from-end)
+	  (if-list-delete))
+      (if from-end
+	  (if-mumble-delete-from-end)
+	  (if-mumble-delete))
+      (apply #'sequence:delete-if predicate sequence args))))
 
 (defmacro if-not-mumble-delete ()
   `(mumble-delete
@@ -194,16 +199,18 @@
   '(list-delete-from-end
     (not (funcall predicate (funcall-key key (car current))))))
 
-(defun delete-if-not (predicate sequence &key from-end (start 0) end key count)
+(defun delete-if-not (predicate sequence &rest args &key from-end (start 0)
+		      end key count)
   (when key
     (setq key (coerce-to-function key)))
   (let* ((length (length sequence))
 	 (end (or end length))
 	 (count (real-count count)))
-    (if (listp sequence)
-        (if from-end
-            (if-not-list-delete-from-end)
-            (if-not-list-delete))
-        (if from-end
-            (if-not-mumble-delete-from-end)
-            (if-not-mumble-delete)))))
+    (sequence::seq-dispatch sequence
+      (if from-end
+	  (if-not-list-delete-from-end)
+	  (if-not-list-delete))
+      (if from-end
+	  (if-not-mumble-delete-from-end)
+	  (if-not-mumble-delete))
+      (apply #'sequence:delete-if-not predicate sequence args))))

@@ -31,6 +31,8 @@
 
 (in-package #:system)
 
+(require "EXTENSIBLE-SEQUENCES-BASE")
+
 ;;; From CMUCL.
 
 (defmacro vector-locater-macro (sequence body-form return-type)
@@ -142,12 +144,12 @@
   `(list-locater ,item ,sequence :position))
 
 
-(defun position (item sequence &key from-end (test #'eql) test-not (start 0)
-                      end key)
-  (if (listp sequence)
-      (list-position* item sequence from-end test test-not start end key)
-      (vector-position* item sequence from-end test test-not start end key)))
-
+(defun position (item sequence &rest args &key from-end (test #'eql) test-not
+		 (start 0) end key)
+  (sequence::seq-dispatch sequence
+    (list-position* item sequence from-end test test-not start end key)
+    (vector-position* item sequence from-end test test-not start end key)
+    (apply #'sequence:position item sequence args)))
 
 (defun list-position* (item sequence from-end test test-not start end key)
   (declare (type fixnum start))
@@ -167,13 +169,14 @@
 (defmacro list-position-if (test sequence)
   `(list-locater-if ,test ,sequence :position))
 
-(defun position-if (test sequence &key from-end (start 0) key end)
+(defun position-if (test sequence &rest args &key from-end (start 0) key end)
   (declare (type fixnum start))
   (let ((end (or end (length sequence))))
     (declare (type fixnum end))
-    (if (listp sequence)
-        (list-position-if test sequence)
-        (vector-position-if test sequence))))
+    (sequence::seq-dispatch sequence
+      (list-position-if test sequence)
+      (vector-position-if test sequence)
+      (apply #'sequence:position-if test sequence args))))
 
 (defmacro vector-position-if-not (test sequence)
   `(vector-locater-if-not ,test ,sequence :position))
@@ -181,13 +184,14 @@
 (defmacro list-position-if-not (test sequence)
   `(list-locater-if-not ,test ,sequence :position))
 
-(defun position-if-not (test sequence &key from-end (start 0) key end)
+(defun position-if-not (test sequence &rest args &key from-end (start 0) key end)
   (declare (type fixnum start))
   (let ((end (or end (length sequence))))
     (declare (type fixnum end))
-    (if (listp sequence)
-        (list-position-if-not test sequence)
-        (vector-position-if-not test sequence))))
+    (sequence::seq-dispatch sequence
+      (list-position-if-not test sequence)
+      (vector-position-if-not test sequence)
+      (apply #'sequence:position-if-not test sequence args))))
 
 (defmacro vector-find (item sequence)
   `(vector-locater ,item ,sequence :element))
@@ -207,12 +211,13 @@
     (setf test 'eql))
   (vector-find item sequence))
 
-(defun find (item sequence &key from-end (test #'eql) test-not (start 0)
-                  end key)
+(defun find (item sequence &rest args &key from-end (test #'eql) test-not
+	     (start 0) end key)
   (let ((end (check-sequence-bounds sequence start end)))
-    (if (listp sequence)
-        (list-find* item sequence from-end test test-not start end key)
-        (vector-find* item sequence from-end test test-not start end key))))
+    (sequence::seq-dispatch sequence
+      (list-find* item sequence from-end test test-not start end key)
+      (vector-find* item sequence from-end test test-not start end key)
+      (apply #'sequence:find item sequence args))))
 
 (defmacro vector-find-if (test sequence)
   `(vector-locater-if ,test ,sequence :element))
@@ -220,12 +225,13 @@
 (defmacro list-find-if (test sequence)
   `(list-locater-if ,test ,sequence :element))
 
-(defun find-if (test sequence &key from-end (start 0) end key)
+(defun find-if (test sequence &rest args &key from-end (start 0) end key)
   (let ((end (or end (length sequence))))
     (declare (type fixnum end))
-    (if (listp sequence)
-        (list-find-if test sequence)
-        (vector-find-if test sequence))))
+    (sequence::seq-dispatch sequence
+      (list-find-if test sequence)
+      (vector-find-if test sequence)
+      (apply #'sequence:find-if test sequence args))))
 
 (defmacro vector-find-if-not (test sequence)
   `(vector-locater-if-not ,test ,sequence :element))
@@ -233,9 +239,10 @@
 (defmacro list-find-if-not (test sequence)
   `(list-locater-if-not ,test ,sequence :element))
 
-(defun find-if-not (test sequence &key from-end (start 0) end key)
+(defun find-if-not (test sequence &rest args &key from-end (start 0) end key)
   (let ((end (or end (length sequence))))
     (declare (type fixnum end))
-    (if (listp sequence)
-        (list-find-if-not test sequence)
-        (vector-find-if-not test sequence))))
+    (sequence::seq-dispatch sequence
+      (list-find-if-not test sequence)
+      (vector-find-if-not test sequence)
+      (apply #'sequence:find-if-not test sequence args))))

@@ -119,7 +119,6 @@ public class BuiltInClass extends LispClass
   public static final BuiltInClass READTABLE            = addClass(Symbol.READTABLE);
   public static final BuiltInClass REAL                 = addClass(Symbol.REAL);
   public static final BuiltInClass RESTART              = addClass(Symbol.RESTART);
-  public static final BuiltInClass SEQUENCE             = addClass(Symbol.SEQUENCE);
   public static final BuiltInClass SIMPLE_ARRAY         = addClass(Symbol.SIMPLE_ARRAY);
   public static final BuiltInClass SIMPLE_BASE_STRING   = addClass(Symbol.SIMPLE_BASE_STRING);
   public static final BuiltInClass SIMPLE_BIT_VECTOR    = addClass(Symbol.SIMPLE_BIT_VECTOR);
@@ -138,6 +137,10 @@ public class BuiltInClass extends LispClass
   public static final StructureClass STRUCTURE_OBJECT =
     (StructureClass)addClass(Symbol.STRUCTURE_OBJECT,
              new StructureClass(Symbol.STRUCTURE_OBJECT, list(CLASS_T)));
+
+    public static final SlotClass SEQUENCE =
+	(SlotClass) addClass(Symbol.SEQUENCE,
+			     new SlotClass(Symbol.SEQUENCE, list(CLASS_T)));
 
     /* All the stream classes below are being defined as structure classes
        but won't be available as such until further action is taken:

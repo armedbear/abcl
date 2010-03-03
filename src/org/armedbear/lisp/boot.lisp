@@ -130,6 +130,22 @@
   (sys::%format t "~A~%" condition)
   (ext:quit))
 
+;;Redefined in extensible-sequences.lisp
+(defun length (sequence)
+  (%length sequence))
+
+(defun elt (sequence index)
+  (%elt sequence index))
+
+(defun subseq (sequence start &optional end)
+  (sys::%subseq sequence start end))
+
+(defun reverse (sequence)
+  (sys::%reverse sequence))
+
+(defun nreverse (sequence)
+  (sys::%nreverse sequence))
+
 (load-system-file "autoloads")
 (load-system-file "early-defuns")
 (load-system-file "backquote")
@@ -161,11 +177,12 @@
 (load-system-file "typep")
 (load-system-file "signal")
 (load-system-file "list")
+(load-system-file "require")
+(load-system-file "extensible-sequences-base")
 (load-system-file "sequences")
 (load-system-file "error")
 (load-system-file "defpackage")
 (load-system-file "define-modify-macro")
-(load-system-file "require")
 (load-system-file "defstruct")
 
 ;; The actual stream and system-stream classes

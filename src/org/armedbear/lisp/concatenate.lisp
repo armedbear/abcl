@@ -51,6 +51,7 @@
               (setf (schar result i) (elt seq j))
               (incf i)))))))
 
+;;It uses make-sequence: it should already be user-extensible as-is
 (defun concatenate (result-type &rest sequences)
   (case result-type
     (LIST

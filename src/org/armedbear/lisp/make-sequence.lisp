@@ -39,11 +39,18 @@
          :format-arguments (list size type)))
 
 (defun make-sequence (type size	&key (initial-element nil iesp))
-  (let (element-type sequence)
+  (let (element-type sequence class)
     (setf type (normalize-type type))
     (cond ((atom type)
+	   (setf class (if (classp type) type (find-class type nil)))
            (when (classp type)
-             (setf type (%class-name type)))
+	     (let ((class-name (%class-name type)))
+	       (when (member class-name '(LIST CONS STRING SIMPLE-STRING
+					  BASE-STRING SIMPLE-BASE-STRING NULL
+					  BIT-VECTOR SIMPLE-BIT-VECTOR VECTOR
+					  SIMPLE-VECTOR))
+		 (setf type class-name))))
+	  ;;Else we suppose it's a user-defined sequence and move on
            (cond ((memq type '(LIST CONS))
                   (when (zerop size)
                     (if (eq type 'CONS)
@@ -66,11 +73,11 @@
                   (setq element-type
                         (cond ((memq type '(BIT-VECTOR SIMPLE-BIT-VECTOR)) 'BIT)
                               ((memq type '(VECTOR SIMPLE-VECTOR)) t)
-                              (t
+                              ((null class)
                                (error 'simple-type-error
                                       :format-control "~S is not a sequence type."
                                       :format-arguments (list type))))))))
-          (t
+	  (t
            (let ((name (%car type))
                  (args (%cdr type)))
              (when (eq name 'LIST)
@@ -108,7 +115,15 @@
                  (when (/= size len)
                    (size-mismatch-error type size)))))))
     (setq sequence
-          (if iesp
-              (make-array size :element-type element-type :initial-element initial-element)
-              (make-array size :element-type element-type)))
+	  (cond ((or (not (atom type)) (subtypep type 'array))
+		 (if iesp
+		     (make-array size :element-type element-type :initial-element initial-element)
+		     (make-array size :element-type element-type)))
+		((and class (subtypep type 'sequence))
+		 (if iesp
+		     (sequence:make-sequence-like (mop::class-prototype class) size :initial-element initial-element)
+		     (sequence:make-sequence-like (mop::class-prototype class) size)))
+		(t (error 'simple-type-error
+			  :format-control "~S is not a sequence type."
+			  :format-arguments (list type)))))
     sequence))

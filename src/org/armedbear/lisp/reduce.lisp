@@ -33,6 +33,8 @@
 
 (in-package #:system)
 
+(require "EXTENSIBLE-SEQUENCES-BASE")
+
 (defmacro list-reduce (function sequence start end initial-value ivp key)
   (let ((what `(if ,key (funcall ,key (car sequence)) (car sequence))))
     `(let ((sequence (nthcdr ,start ,sequence)))
@@ -56,12 +58,12 @@
            ((= count ,end) value)))))
 
 
-(defun reduce (function sequence &key from-end (start 0)
+(defun reduce (function sequence &rest args &key from-end (start 0)
                         end (initial-value nil ivp) key)
   (unless end (setq end (length sequence)))
   (if (= end start)
       (if ivp initial-value (funcall function))
-      (if (listp sequence)
+      (sequence::seq-dispatch sequence
           (if from-end
               (list-reduce-from-end function sequence start end initial-value ivp key)
               (list-reduce function sequence start end initial-value ivp key))
@@ -80,4 +82,5 @@
                     element (if key (funcall key element) element)
                     value (funcall function
                                    (if from-end element value)
-                                   (if from-end value element))))))))
+                                   (if from-end value element)))))
+	  (apply #'sequence:reduce function sequence args))))

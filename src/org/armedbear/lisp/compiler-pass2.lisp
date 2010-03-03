@@ -2573,7 +2573,7 @@ The field type of the object is specified by OBJ-REF."
                     (COMPLEXP        "COMPLEXP")
                     (DENOMINATOR     "DENOMINATOR")
                     (FIRST           "car")
-                    (LENGTH          "LENGTH")
+                    (SYS::%LENGTH    "LENGTH")
                     (NREVERSE        "nreverse")
                     (NUMERATOR       "NUMERATOR")
                     (REST            "cdr")
@@ -8588,7 +8588,6 @@ We need more thought here.
     (with-saved-compiler-policy
       ;; Pass 1.
       (p1-compiland compiland)
-
       ;; *all-variables* doesn't contain variables which
       ;; are in an enclosing lexical environment (variable-environment)
       ;; so we don't need to filter them out
@@ -8896,7 +8895,7 @@ to derive a Java class name from."
   (install-p2-handler 'gethash1            'p2-gethash)
   (install-p2-handler 'go                  'p2-go)
   (install-p2-handler 'if                  'p2-if)
-  (install-p2-handler 'length              'p2-length)
+  (install-p2-handler 'sys::%length        'p2-length)
   (install-p2-handler 'list                'p2-list)
   (install-p2-handler 'sys::backq-list     'p2-list)
   (install-p2-handler 'list*               'p2-list*)

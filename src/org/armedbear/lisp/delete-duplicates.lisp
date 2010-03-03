@@ -31,6 +31,8 @@
 
 (in-package "SYSTEM")
 
+(require "EXTENSIBLE-SEQUENCES-BASE")
+
 ;;; From CMUCL.
 
 (defun list-delete-duplicates* (list test test-not key from-end start end)
@@ -79,10 +81,10 @@
 		      :end (if from-end jndex end) :test-not test-not)
       (setq jndex (1+ jndex)))))
 
-
-(defun delete-duplicates (sequence &key (test #'eql) test-not (start 0) from-end
-                                   end key)
-  (if (listp sequence)
-      (if sequence
-          (list-delete-duplicates* sequence test test-not key from-end start end))
-      (vector-delete-duplicates* sequence test test-not key from-end start end)))
+(defun delete-duplicates (sequence &rest args &key (test #'eql) test-not
+			  (start 0) from-end end key)
+  (sequence::seq-dispatch sequence
+    (if sequence
+	(list-delete-duplicates* sequence test test-not key from-end start end))
+    (vector-delete-duplicates* sequence test test-not key from-end start end)
+    (apply #'sequence:delete-duplicates sequence args)))

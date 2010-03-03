@@ -29,6 +29,8 @@
 ;;; obligated to do so.  If you do not wish to do so, delete this
 ;;; exception statement from your version.
 
+(require "EXTENSIBLE-SEQUENCES-BASE")
+
 (in-package "SYSTEM")
 
 ;; From CMUCL.
@@ -51,6 +53,8 @@
             result)))))
 
 (defun copy-seq (sequence)
-  (if (listp sequence)
-      (list-copy-seq sequence)
-      (vector-copy-seq sequence (type-of sequence))))
+  "Return a copy of SEQUENCE which is EQUAL to SEQUENCE but not EQ."
+  (sequence::seq-dispatch sequence
+    (list-copy-seq sequence)
+    (vector-copy-seq sequence (type-of sequence))
+    (sequence:copy-seq sequence)))

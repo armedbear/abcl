@@ -33,11 +33,13 @@
 
 (in-package #:system)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
+(require "EXTENSIBLE-SEQUENCES-BASE")
+
+#|(eval-when (:compile-toplevel :load-toplevel :execute)
   (defmacro seq-dispatch (sequence list-form array-form)
     `(if (listp ,sequence)
          ,list-form
-         ,array-form)))
+         ,array-form)))|#
 
 (eval-when (:compile-toplevel :execute)
 
@@ -144,20 +146,10 @@
   (when (null source-end) (setq source-end (length source-sequence)))
   (mumble-replace-from-mumble))
 
-(defun %replace (target-sequence source-sequence target-start target-end source-start source-end)
-  (declare (type (integer 0 #.most-positive-fixnum) target-start target-end source-start source-end))
-  (seq-dispatch target-sequence
-                (seq-dispatch source-sequence
-                              (list-replace-from-list)
-                              (list-replace-from-mumble))
-                (seq-dispatch source-sequence
-                              (mumble-replace-from-list)
-                              (mumble-replace-from-mumble))))
-
 ;;; REPLACE cannot default end arguments to the length of sequence since it
 ;;; is not an error to supply nil for their values.  We must test for ends
 ;;; being nil in the body of the function.
-(defun replace (target-sequence source-sequence &key
+(defun replace (target-sequence source-sequence &rest args &key
                                 ((:start1 target-start) 0)
                                 ((:end1 target-end))
                                 ((:start2 source-start) 0)
@@ -166,4 +158,14 @@
 elements into it from the source sequence."
   (let ((target-end (or target-end (length target-sequence)))
 	(source-end (or source-end (length source-sequence))))
-    (%replace target-sequence source-sequence target-start target-end source-start source-end)))
+    (declare (type (integer 0 #.most-positive-fixnum) target-start target-end source-start source-end))
+    (sequence::seq-dispatch target-sequence
+      (sequence::seq-dispatch source-sequence
+        (list-replace-from-list)
+	(list-replace-from-mumble)
+	(apply #'sequence:replace target-sequence source-sequence args))
+      (sequence::seq-dispatch source-sequence
+        (mumble-replace-from-list)
+	(mumble-replace-from-mumble)
+	(apply #'sequence:replace target-sequence source-sequence args))
+      (apply #'sequence:replace target-sequence source-sequence args))))

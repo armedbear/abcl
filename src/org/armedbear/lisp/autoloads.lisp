@@ -83,8 +83,10 @@
 (autoload '(assoc assoc-if assoc-if-not rassoc rassoc-if rassoc-if-not
             acons pairlis copy-alist)
           "assoc")
+(autoload-macro 'sequence::seq-dispatch "extensible-sequences-base")
 (autoload '(mapcan mapl maplist mapcon) "map1")
 (autoload 'make-sequence)
+;(autoload 'sequence::fill "extensible-sequences")
 (autoload '(copy-seq fill replace))
 (autoload '(map map-into))
 (autoload 'reduce)

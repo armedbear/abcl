@@ -87,7 +87,7 @@ public final class Cons extends LispObject
         if (typeSpecifier == T)
           return T;
       }
-    else if (typeSpecifier instanceof BuiltInClass)
+    else if (typeSpecifier instanceof LispClass)
       {
         if (typeSpecifier == BuiltInClass.LIST)
           return T;

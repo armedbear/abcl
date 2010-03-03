@@ -29,6 +29,7 @@
 ;;; obligated to do so.  If you do not wish to do so, delete this
 ;;; exception statement from your version.
 
+(require "EXTENSIBLE-SEQUENCES-BASE")
 
 (in-package "COMMON-LISP")
 
@@ -109,7 +110,7 @@
     result))
 
 (defmacro subst-dispatch (pred)
-  `(if (listp sequence)
+  `(sequence::seq-dispatch sequence
        (if from-end
            (nreverse (list-substitute* ,pred new (reverse sequence)
                                        (- length end)
@@ -122,10 +123,14 @@
                                -1 length (1- end)
                                (1- start) count key test test-not old)
            (vector-substitute* ,pred new sequence 1 0 length length
-                               start end count key test test-not old))))
+                               start end count key test test-not old))
+       ,(ecase (cadr pred) ;;pred is (quote <foo>)
+	  (normal `(apply #'sequence:substitute new old sequence args))
+	  (if `(apply #'sequence:substitute-if new test sequence args))
+	  (if-not `(apply #'sequence:substitute-if-not new test sequence args)))))
 
 
-(defun substitute (new old sequence &key from-end (test #'eql) test-not
+(defun substitute (new old sequence &rest args &key from-end (test #'eql) test-not
                        (start 0) count end key)
   (let* ((length (length sequence))
 	 (end (or end length))
@@ -133,7 +138,7 @@
     (subst-dispatch 'normal)))
 
 
-(defun substitute-if (new test sequence &key from-end (start 0) end count key)
+(defun substitute-if (new test sequence &rest args &key from-end (start 0) end count key)
   (let* ((length (length sequence))
 	 (end (or end length))
 	 (count (real-count count))
@@ -142,7 +147,7 @@
     (subst-dispatch 'if)))
 
 
-(defun substitute-if-not (new test sequence &key from-end (start 0)
+(defun substitute-if-not (new test sequence &rest args &key from-end (start 0)
                               end count key)
   (let* ((length (length sequence))
 	 (end (or end length))

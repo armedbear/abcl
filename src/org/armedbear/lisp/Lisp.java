@@ -87,6 +87,8 @@ public final class Lisp
     Packages.createPackage("XP");
   public static final Package PACKAGE_PRECOMPILER =
     Packages.createPackage("PRECOMPILER");
+  public static final Package PACKAGE_SEQUENCE =
+    Packages.createPackage("SEQUENCE");
 
 
   // ### nil
@@ -134,6 +136,7 @@ public final class Lisp
     PACKAGE_PRECOMPILER.usePackage(PACKAGE_CL);
     PACKAGE_PRECOMPILER.usePackage(PACKAGE_EXT);
     PACKAGE_PRECOMPILER.usePackage(PACKAGE_SYS);
+    PACKAGE_SEQUENCE.usePackage(PACKAGE_CL);
   }
 
   // End-of-file marker.

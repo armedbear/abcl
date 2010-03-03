@@ -2393,5 +2393,16 @@
 ;; FIXME
 (defgeneric function-keywords (method))
 
+(defgeneric class-prototype (class))
+
+(defmethod class-prototype :before (class)
+  (unless (class-finalized-p class)
+    (error "~@<~S is not finalized.~:@>" class)))
+
+(defmethod class-prototype ((class standard-class))
+  (allocate-instance class))
+
+(defmethod class-prototype ((class structure-class))
+  (allocate-instance class))
 
 (provide 'clos)

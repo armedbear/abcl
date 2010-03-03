@@ -32,6 +32,7 @@
 (in-package "SYSTEM")
 
 (require "DELETE") ; MUMBLE-DELETE-FROM-END
+(require "EXTENSIBLE-SEQUENCES-BASE")
 
 ;;; From CMUCL.
 
@@ -155,39 +156,44 @@
   `(list-remove-from-end
     (not (funcall predicate (apply-key key this-element)))))
 
-(defun remove (item sequence &key from-end (test #'eql) test-not (start 0)
-                    end count key)
+(defun remove (item sequence &rest args &key from-end (test #'eql) test-not
+	       (start 0) end count key)
   (let* ((length (length sequence))
 	 (end (or end length))
 	 (count (real-count count)))
-    (if (listp sequence)
-        (if from-end
-            (normal-list-remove-from-end)
-            (normal-list-remove))
-        (if from-end
-            (normal-mumble-remove-from-end)
-            (normal-mumble-remove)))))
+    (sequence::seq-dispatch sequence
+      (if from-end
+	  (normal-list-remove-from-end)
+	  (normal-list-remove))
+      (if from-end
+	  (normal-mumble-remove-from-end)
+	  (normal-mumble-remove))
+      (apply #'sequence:remove item sequence args))))
 
-(defun remove-if (predicate sequence &key from-end (start 0) end count key)
+(defun remove-if (predicate sequence &rest args &key from-end (start 0)
+		  end count key)
   (let* ((length (length sequence))
 	 (end (or end length))
 	 (count (real-count count)))
-    (if (listp sequence)
-        (if from-end
-            (if-list-remove-from-end)
-            (if-list-remove))
-        (if from-end
-            (if-mumble-remove-from-end)
-            (if-mumble-remove)))))
+    (sequence::seq-dispatch sequence
+      (if from-end
+	  (if-list-remove-from-end)
+	  (if-list-remove))
+      (if from-end
+	  (if-mumble-remove-from-end)
+	  (if-mumble-remove))
+      (apply #'sequence:remove-if predicate sequence args))))
 
-(defun remove-if-not (predicate sequence &key from-end (start 0) end count key)
+(defun remove-if-not (predicate sequence &rest args &key from-end (start 0)
+		      end count key)
   (let* ((length (length sequence))
 	 (end (or end length))
 	 (count (real-count count)))
-    (if (listp sequence)
-        (if from-end
-            (if-not-list-remove-from-end)
-            (if-not-list-remove))
-        (if from-end
-            (if-not-mumble-remove-from-end)
-            (if-not-mumble-remove)))))
+    (sequence::seq-dispatch sequence
+      (if from-end
+	  (if-not-list-remove-from-end)
+	  (if-not-list-remove))
+      (if from-end
+	  (if-not-mumble-remove-from-end)
+	  (if-not-mumble-remove))
+      (apply #'sequence:remove-if-not predicate sequence args))))

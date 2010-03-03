@@ -32,6 +32,8 @@
 
 (in-package "COMMON-LISP")
 
+(require "EXTENSIBLE-SEQUENCES-BASE")
+
 (export 'mismatch)
 
 ;;; From ECL.
@@ -70,27 +72,28 @@
 (defun test-error()
   (error "both test and test are supplied"))
 
-(defun mismatch (sequence1 sequence2 &key from-end test test-not
-                           (key #'identity) start1 start2 end1 end2)
+(defun mismatch (sequence1 sequence2 &rest args &key from-end test test-not
+		 (key #'identity) start1 start2 end1 end2)
   (and test test-not (test-error))
-  (with-start-end
-    start1 end1 sequence1
-    (with-start-end
-      start2 end2 sequence2
-      (if (not from-end)
-          (do ((i1 start1 (1+ i1))
-               (i2 start2 (1+ i2)))
-              ((or (>= i1 end1) (>= i2 end2))
-               (if (and (>= i1 end1) (>= i2 end2)) nil i1))
-            (unless (call-test test test-not
-                               (funcall key (elt sequence1 i1))
-                               (funcall key (elt sequence2 i2)))
-              (return i1)))
-          (do ((i1 (1- end1) (1- i1))
-               (i2 (1- end2)  (1- i2)))
-              ((or (< i1 start1) (< i2 start2))
-               (if (and (< i1 start1) (< i2 start2)) nil (1+ i1)))
-            (unless (call-test test test-not
-                               (funcall key (elt sequence1 i1))
-                               (funcall key (elt sequence2 i2)))
-              (return (1+ i1))))))))
+  (if (and (or (listp sequence1) (arrayp sequence1))
+	   (or (listp sequence2) (arrayp sequence2)))
+      (with-start-end start1 end1 sequence1
+        (with-start-end start2 end2 sequence2
+          (if (not from-end)
+	      (do ((i1 start1 (1+ i1))
+		   (i2 start2 (1+ i2)))
+		  ((or (>= i1 end1) (>= i2 end2))
+		   (if (and (>= i1 end1) (>= i2 end2)) nil i1))
+		(unless (call-test test test-not
+				   (funcall key (elt sequence1 i1))
+				   (funcall key (elt sequence2 i2)))
+		  (return i1)))
+	      (do ((i1 (1- end1) (1- i1))
+		   (i2 (1- end2)  (1- i2)))
+		  ((or (< i1 start1) (< i2 start2))
+		   (if (and (< i1 start1) (< i2 start2)) nil (1+ i1)))
+		(unless (call-test test test-not
+				   (funcall key (elt sequence1 i1))
+				   (funcall key (elt sequence2 i2)))
+		  (return (1+ i1)))))))
+      (apply #'sequence:mismatch sequence1 sequence2 args)))
