@@ -979,4 +979,61 @@ the sequence argument to be a proper sequence.
  '(element elements) 'loop-elements-iteration-path loop::*loop-ansi-universe*
  :preposition-groups '((:of :in)) :inclusive-permitted nil)
 
+;;;DOSEQUENCE
+
+;;From SBCL
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun filter-dolist-declarations (decls)
+    (mapcar (lambda (decl)
+	      `(declare ,@(remove-if
+			   (lambda (clause)
+			     (and (consp clause)
+				  (or (eq (car clause) 'type)
+				      (eq (car clause) 'ignore))))
+			   (cdr decl))))
+	    decls)))
+
+;; just like DOLIST, but with one-dimensional arrays
+(defmacro dovector ((elt vector &optional result) &body body)
+  (multiple-value-bind (forms decls)
+      (sys:parse-body body :doc-string-allowed nil)
+    (let ((index (gensym "INDEX")) (length (gensym "LENGTH")) (vec (gensym "VEC")))
+      `(let ((,vec ,vector))
+        (declare (type vector ,vec))
+        (do ((,index 0 (1+ ,index))
+             (,length (length ,vec)))
+            ((>= ,index ,length) (let ((,elt nil))
+                                   ,@(filter-dolist-declarations decls)
+                                   ,elt
+                                   ,result))
+          (let ((,elt (aref ,vec ,index)))
+            ,@decls
+            (tagbody
+               ,@forms)))))))
+
+(defmacro sequence:dosequence ((e sequence &optional return &rest args &key
+				  from-end start end) &body body)
+  (declare (ignore from-end start end))
+  (multiple-value-bind (forms decls)
+      (sys:parse-body body :doc-string-allowed nil)
+    (let ((s sequence)
+          (sequence (gensym "SEQUENCE")))
+      `(block nil
+        (let ((,sequence ,s))
+          (seq-dispatch ,sequence
+            (dolist (,e ,sequence ,return) ,@body)
+            (dovector (,e ,sequence ,return) ,@body)
+            (multiple-value-bind (state limit from-end step endp elt)
+                (sequence:make-sequence-iterator ,sequence ,@args)
+              (do ((state state (funcall step ,sequence state from-end)))
+                  ((funcall endp ,sequence state limit from-end)
+                   (let ((,e nil))
+                     ,@(filter-dolist-declarations decls)
+                     ,e
+                     ,return))
+                (let ((,e (funcall elt ,sequence state)))
+                  ,@decls
+                  (tagbody
+                     ,@forms))))))))))
+
 (provide "EXTENSIBLE-SEQUENCES")
