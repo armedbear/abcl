@@ -6,20 +6,27 @@ svn://common-lisp.net/project/armedbear/svn/trunk/abcl
 Features
 --------
 
-* [svn 12513] Implement SYS:SRC and SYS:JAVA logical pathname
+* [svn r12518] *DISASSEMBLER* may now contain a hook which returns the
+  command to disassemble compiled functions.
+
+* [svn r12516] An implementation of user-extensible sequences as
+  proposed in Christopher Rhodes, "User-extensible sequences in Common
+  Lisp", Proc. of the 2007 International Lisp Conference.
+
+* [svn r12513] Implement SYS:SRC and SYS:JAVA logical pathname
   translations for system Lisp source and the root of the Java package
   structure, respectively.
 
-* [svn 12505] All calls to anonymous functions and local functions that have
+* [svn r12505] All calls to anonymous functions and local functions that have
   been declared inline are now converted to LET* forms, reducing stack usage
   and the number of generated classes.
 
-* [svn 12487] An initial port ASDF-INSTALL now forms the first ABCL
+* [svn r12487] An initial port ASDF-INSTALL now forms the first ABCL
   contrib.  Such contribs are optionally built by the Ant target
   'abcl.contrib'.  ASDF-INSTALL is not expected to work very well
   under Windows in its present state.
 
-* [svn 12447] [ticket:80] REQUIRE now searches for ASDF systems.
+* [svn r12447] [ticket:80] REQUIRE now searches for ASDF systems.
 
 * [svn r12422] Jar pathname support extensively re-worked and tested
   so that LOAD, PROBE-FILE, TRUENAME, DIRECTORY, and WRITE-FILE-DATE
@@ -60,7 +67,7 @@ Fixes/Optimizations
 * [svn r12484] FASLs containing "." characters not used to indicate
   type (i.e. ".foo.bar.baz.abcl") can now be loaded.
 
-* [svn 12422] Pathname.java URL contructor under Windows now properly
+* [svn r12422] Pathname.java URL contructor under Windows now properly
   interprets the drive letter.
 
 * [svn r12449] The 'abcl.jar' produced by Netbeans now contains a valid
@@ -121,7 +128,7 @@ Fixes/Optimizations
 Other
 -----
 
-* [svn 12447] SYS::*MODULE-PROVIDER-FUNCTION* now provides a mechanism
+* [svn r12447] SYS::*MODULE-PROVIDER-FUNCTION* now provides a mechanism
   to extend the REQUIRE resolver mechanism at runtime.
 
 * [svn r12430] Ant based build no longer writes temporary files to
@@ -140,13 +147,13 @@ Other
 * [svn r12461] Human readable Java representations for class cast
   exceptions for NULL and UNBOUND values.
 
-* [svn 12453 et. ff.] Large numbers of the implementation of Java
+* [svn r12453 et. ff.] Large numbers of the implementation of Java
   primitives have been declared in a way so that a stack trace
   provides a much more readable indication of what has been invoked.
   Primitives which extend Primitive are prefixed with "pf_"; those
   which extend SpecialOperator are prefixed with "sf_".
 
-* [svn 12422] The internal structure of a jar pathname has changed.
+* [svn r12422] The internal structure of a jar pathname has changed.
   Previously a pathname with a DEVICE that was itself a pathname
   referenced a jar.  This convention was not able to simultaneously
   represent both jar entries that were themselves jar files (as occurs
