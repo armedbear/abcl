@@ -70,7 +70,7 @@ public final class SlotDefinition extends StandardObject
     slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
   }
   
-  public static SlotDefinition checkSlotDefination(LispObject obj) {
+  public static SlotDefinition checkSlotDefinition(LispObject obj) {
           if (obj instanceof SlotDefinition) return (SlotDefinition)obj;
       return (SlotDefinition)type_error(obj, Symbol.SLOT_DEFINITION);     
   }
@@ -117,7 +117,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg)
       {
-          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_NAME];
+          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_NAME];
       }
     };
 
@@ -130,7 +130,7 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
 
       {
-          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_NAME] = second;
+          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_NAME] = second;
           return second;
       }
     };
@@ -142,7 +142,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg)
       {
-          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION];
+          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION];
       }
     };
 
@@ -155,7 +155,7 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
 
       {
-          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = second;
+          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = second;
           return second;
       }
     };
@@ -168,7 +168,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg)
       {
-          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_INITFORM];
+          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_INITFORM];
       }
     };
 
@@ -181,7 +181,7 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
 
       {
-          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_INITFORM] = second;
+          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_INITFORM] = second;
           return second;
       }
     };
@@ -193,7 +193,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg)
       {
-          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_INITARGS];
+          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_INITARGS];
       }
     };
 
@@ -206,7 +206,7 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
 
       {
-          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] = second;
+          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] = second;
           return second;
       }
     };
@@ -219,7 +219,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg)
       {
-          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_READERS];
+          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_READERS];
       }
     };
 
@@ -232,7 +232,7 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
 
       {
-          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_READERS] = second;
+          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_READERS] = second;
           return second;
       }
     };
@@ -245,7 +245,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg)
       {
-          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_WRITERS];
+          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_WRITERS];
       }
     };
 
@@ -258,7 +258,7 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
 
       {
-          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_WRITERS] = second;
+          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_WRITERS] = second;
           return second;
       }
     };
@@ -271,7 +271,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg)
       {
-          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION];
+          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION];
       }
     };
 
@@ -284,7 +284,7 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
 
       {
-          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = second;
+          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = second;
           return second;
       }
     };
@@ -297,7 +297,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg)
       {
-          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION_CLASS];
+          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION_CLASS];
       }
     };
 
@@ -310,7 +310,7 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
 
       {
-          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION_CLASS] = second;
+          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION_CLASS] = second;
           return second;
       }
     };
@@ -322,7 +322,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject arg)
       {
-          return checkSlotDefination(arg).slots[SlotDefinitionClass.SLOT_INDEX_LOCATION];
+          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_LOCATION];
       }
     };
 
@@ -334,7 +334,7 @@ public final class SlotDefinition extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
 
       {
-          checkSlotDefination(first).slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = second;
+          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = second;
           return second;
       }
     };
