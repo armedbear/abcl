@@ -1226,16 +1226,32 @@ public final class Lisp
       } else if (truename instanceof Pathname) {
           load = Pathname.mergePathnames(name, (Pathname) truename, Keyword.NEWEST);
       } else {
-          load = name;
+          if (!Pathname.truename(name).equals(NIL)) {
+              load = name;
+          } else {
+              load = null;
+          }
       }
-      InputStream input = load.getInputStream();
+      InputStream input = null;
+      if (load != null) {
+          input = load.getInputStream();
+      } else { 
+          // Make a last-ditch attempt to load from the boot classpath XXX OSGi hack
+          URL url = null;
+          try {
+              url = Lisp.class.getResource(name.getNamestring());
+              input = url.openStream();
+          } catch (IOException e) {
+              error(new LispError("Failed to read class bytes from boot class " + url));
+          }
+      }
       byte[] bytes = new byte[4096];
       try {
           if (input == null) {
-              Debug.trace("Pathname: " + name);
-              Debug.trace("LOAD_TRUENAME_FASL: " + truenameFasl);
-              Debug.trace("LOAD_TRUENAME: " + truename);
-              Debug.assertTrue(input != null);
+                  Debug.trace("Pathname: " + name);
+                  Debug.trace("LOAD_TRUENAME_FASL: " + truenameFasl);
+                  Debug.trace("LOAD_TRUENAME: " + truename);
+                  Debug.assertTrue(input != null);
           }
 
           int n = 0;

@@ -42,31 +42,34 @@ import java.net.URLDecoder;
 
 public final class Site
 {
-    private static Pathname LISP_HOME;
+    private static LispObject LISP_HOME;
 
     private static void init() {
         String s = System.getProperty("abcl.home");
         if (s != null) {
             String fileSeparator = System.getProperty("file.separator");
             if (!s.endsWith(fileSeparator)) {
-                s += fileSeparator;;
+                s += fileSeparator;
             }
             LISP_HOME = new Pathname(s);
-            return;
         }
         URL url = Lisp.class.getResource("boot.lisp");
         if (url != null) {
-            LISP_HOME = new Pathname(url);
-            LISP_HOME.name = NIL;
-            LISP_HOME.type = NIL;
-            LISP_HOME.invalidateNamestring();
+            if (!Pathname.isSupportedProtocol(url.getProtocol())) {
+                LISP_HOME = NIL;
+            } else {
+                Pathname p = new Pathname(url);
+                p.name = NIL;
+                p.type = NIL;
+                p.invalidateNamestring();
+                LISP_HOME = p;
+            }
             return;
         }
         Debug.trace("Unable to determine LISP_HOME.");
     }
 
-
-    public static final Pathname getLispHome()
+    public static final LispObject getLispHome()
     {
       if (LISP_HOME == null) {
         init();
@@ -79,7 +82,7 @@ public final class Site
         exportSpecial("*LISP-HOME*", PACKAGE_EXT, NIL);
 
     static {
-        Pathname p  = Site.getLispHome();
+        LispObject p  = Site.getLispHome();
         if (p != null)
             _LISP_HOME_.setSymbolValue(p);
     }

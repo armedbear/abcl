@@ -151,8 +151,16 @@ public class Pathname extends LispObject {
         init(s);
     }
 
+    public static boolean isSupportedProtocol(String protocol) {
+        return "jar".equals(protocol) || "file".equals(protocol);
+    }
+
     public Pathname(URL url) {
         String protocol = url.getProtocol();
+        if (!isSupportedProtocol(protocol)) {
+            error(new LispError("Unsupported URL: '" + url.toString() + "'"));
+        }
+
         if ("jar".equals(protocol)) {
             init(url.toString());
             return;
@@ -181,7 +189,8 @@ public class Pathname extends LispObject {
                 return;
             }
         }
-        error(new LispError("Unsupported URL: '" + url.toString() + "'"));
+        error(new LispError("Failed to construct Pathname from URL: "
+                            + "'" + url.toString() + "'"));
     }
 
     static final private String jarSeparator = "!/";

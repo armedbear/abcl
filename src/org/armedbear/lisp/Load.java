@@ -252,12 +252,19 @@ public final class Load
         Pathname pathname = null;
         Pathname truename = null;
         pathname = new Pathname(filename);
-        Pathname mergedPathname = Pathname.mergePathnames(pathname, Site.getLispHome());
+        LispObject bootPath = Site.getLispHome();
+        Pathname mergedPathname;
+        if (bootPath instanceof Pathname) {
+            mergedPathname = Pathname.mergePathnames(pathname, (Pathname)bootPath);
+        } else {
+            mergedPathname = pathname;
+        }
+        URL url = null;
         truename = findLoadableFile(mergedPathname);
-        if (truename == null || truename.equals(NIL)) {
+        if (truename == null || truename.equals(NIL) || bootPath.equals(NIL)) {
             // Make an attempt to use the boot classpath
             String path = pathname.asEntryPath();
-            URL url = Lisp.class.getResource(path);
+            url = Lisp.class.getResource(path);
             if (url == null || url.toString().endsWith("/")) {
                 url = Lisp.class.getResource(path + ".abcl");
                 if (url == null) {
@@ -269,16 +276,21 @@ public final class Load
                                            + "'" + path + "'"
                                            + " in boot classpath."));
             }                
-            Pathname urlPathname = new Pathname(url);
-            truename = findLoadableFile(urlPathname);
-            if (truename == null) {
-                return error(new LispError("Failed to find loadable system file in boot classpath "
-                                           + "'" + url + "'"));
+            if (!bootPath.equals(NIL)) {
+                Pathname urlPathname = new Pathname(url);
+                truename = findLoadableFile(urlPathname);
+                if (truename == null) {
+                    return error(new LispError("Failed to find loadable system file in boot classpath "
+                                               + "'" + url + "'"));
+                }
+            } else {
+                truename = null; // We can't represent the FASL in a Pathname (q.v. OSGi)
             }
         }
 
         // Look for a init FASL inside a packed FASL
-        if (truename.type.writeToString().equals(COMPILE_FILE_TYPE) && Utilities.checkZipFile(truename))  {
+        if (truename != null
+            && truename.type.writeToString().equals(COMPILE_FILE_TYPE) && Utilities.checkZipFile(truename))  {
             Pathname init = new Pathname(truename.getNamestring());
             init.type = COMPILE_FILE_INIT_FASL_TYPE;
             LispObject t = Pathname.truename(init);
@@ -290,7 +302,19 @@ public final class Load
             }
         }
 
-        in = truename.getInputStream();
+        if (truename != null) {
+            in = truename.getInputStream();
+        } else { 
+            try {
+                Debug.assertTrue(url != null);
+                in = url.openStream();
+            } catch (IOException e) {
+                error(new FileError("Failed to load system file: " 
+                                    + "'" + filename + "'"
+                                    + " from URL: " 
+                                    + "'" + url + "'"));
+            } 
+        }
 
         if (in != null) {
             final LispThread thread = LispThread.currentThread();
@@ -373,7 +397,9 @@ public final class Load
                                                        boolean print,
                                                        boolean auto)
         {
-        return loadFileFromStream(pathname, truename, in, verbose, print, auto, false);
+            return loadFileFromStream(pathname == null ? NIL : pathname, 
+                                      truename == null ? NIL : truename, 
+                                      in, verbose, print, auto, false);
     }
 
     // A nil TRUENAME signals a load from stream which has no possible path

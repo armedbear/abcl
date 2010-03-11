@@ -41,8 +41,9 @@ public final class Debug
     public static final void assertTrue(boolean b)
     {
         if (!b) {
-            System.err.println("Assertion failed!");
-            Error e = new Error();
+            String msg = "ABCL Debug.assertTrue() assertion failed!";
+            System.err.println(msg);
+            Error e = new Error(msg);
             e.printStackTrace();
             throw e;
         }
