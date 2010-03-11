@@ -89,6 +89,34 @@ Using PATHNAMES
 *   The DEVICE PATHNAME list of enclosing JARs runs from outermost to
     innermost.
     
+*   The DIRECTORY component of a JAR PATHNAME should be a list starting
+    with the :RELATIVE keyword, as hierarchial entries in jar files
+    are of the form "foo/bar/a.lisp" not "/foo/bar/a.lisp"
+
+BNF
+---
+
+An incomplete BNF of the syntax of JAR PATHNAME would be:
+
+  JAR-PATHNAME ::= "jar:" URL "!/" [ ENTRY ]
+
+  URL ::= <URL parsable via java.net.URL.URL()>
+        | JAR-FILE-PATHNAME
+  
+  JAR-FILE-PATHNAME ::= "jar:" "file:" JAR-NAMESTRING "!/" [ ENTRY ]
+
+  JAR-NAMESTRING  ::=  ABSOLUTE-FILE-NAMESTRING
+                     | RELATIVE-FILE-NAMESTRING
+
+  ENTRY ::= [ DIRECTORY "/"] * FILE
+
+
+### Notes
+
+1.  ABSOLUTE-FILE-NAMESTRING and RELATIVE-FILE-NAMESTRING use the
+local filesystem conventions, meaning that on Windows this could
+contain '\' as the directory separator, while an ENTRY always uses '/'
+to separate directories within the jar proper.
 
 
 Use Cases
