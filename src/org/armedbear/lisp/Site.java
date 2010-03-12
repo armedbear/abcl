@@ -52,6 +52,7 @@ public final class Site
                 s += fileSeparator;
             }
             LISP_HOME = new Pathname(s);
+            return;
         }
         URL url = Lisp.class.getResource("boot.lisp");
         if (url != null) {
