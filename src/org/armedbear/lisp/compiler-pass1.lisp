@@ -1078,9 +1078,9 @@ where each of the vars returned is a list with these elements:
 ;;      (dolist (name (second symbols-form))
 ;;        (let ((variable (make-variable :name name :special-p t)))
 ;;          (push 
-    (setf (progv-form block)
-          `(progv ,symbols-form ,values-form ,@(p1-body body))
-          (progv-environment-register block) t)
+    (setf (progv-environment-register block) t
+          (progv-form block)
+          `(progv ,symbols-form ,values-form ,@(p1-body body)))
     block))
 
 (defknown rewrite-progv (t) t)
