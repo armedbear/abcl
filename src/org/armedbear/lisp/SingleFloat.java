@@ -56,10 +56,13 @@ public final class SingleFloat extends LispObject
     }
 
     public static SingleFloat getInstance(float f) {
-        if (f == 0)
-            return ZERO;
-        else if (f == -0.0f )
-            return MINUS_ZERO;
+        if (f == 0) {
+            int bits = Float.floatToRawIntBits(f);
+            if (bits < 0)
+                return MINUS_ZERO;
+            else
+                return ZERO;
+        }
         else if (f == 1)
             return ONE;
         else if (f == -1)

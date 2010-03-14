@@ -56,10 +56,13 @@ public final class DoubleFloat extends LispObject
     }
 
     public static DoubleFloat getInstance(double d) {
-        if (d == 0)
-            return ZERO;
-        else if (d == -0.0d )
-            return MINUS_ZERO;
+        if (d == 0) {
+            long bits = Double.doubleToRawLongBits(d);
+            if (bits < 0)
+                return MINUS_ZERO;
+            else
+                return ZERO;
+        }
         else if (d == 1)
             return ONE;
         else if (d == -1)
