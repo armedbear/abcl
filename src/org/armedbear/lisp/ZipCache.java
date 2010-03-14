@@ -159,6 +159,9 @@ public class ZipCache {
                 String dateString = HttpHead.get(url, "Last-Modified");
                 Date date = null;
                 try {
+                    if (dateString == null) {
+                        throw new ParseException("Failed to get HEAD for " + url, 0);
+                    }
                     date = RFC_1123.parse(dateString);
                     long current = date.getTime();
                     if (current > entry.lastModified) {

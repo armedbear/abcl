@@ -2,8 +2,8 @@ JARs and JAR entries in ABCL
 ============================
 
 Mark Evenson
-Created: 09 JAN 2010
-Modified: 22 FEB 2010
+Created:  09 JAN 2010
+Modified: 16 MAR 2010 
 
 Notes towards sketching an implementation of "jar:" references to be
 contained in PATHNAMEs within ABCL.  
@@ -90,8 +90,10 @@ Using PATHNAMES
     innermost.
     
 *   The DIRECTORY component of a JAR PATHNAME should be a list starting
-    with the :RELATIVE keyword, as hierarchial entries in jar files
-    are of the form "foo/bar/a.lisp" not "/foo/bar/a.lisp"
+    with the :ABSOLUTE keyword.  Even though hierarchial entries in
+    jar files are stored in the form "foo/bar/a.lisp" not
+    "/foo/bar/a.lisp", the meaning of DIRECTORY component better
+    represented as an absolute path.
 
 BNF
 ---
@@ -108,7 +110,7 @@ An incomplete BNF of the syntax of JAR PATHNAME would be:
   JAR-NAMESTRING  ::=  ABSOLUTE-FILE-NAMESTRING
                      | RELATIVE-FILE-NAMESTRING
 
-  ENTRY ::= [ DIRECTORY "/"] * FILE
+  ENTRY ::= [ DIRECTORY "/"]* FILE
 
 
 ### Notes
@@ -174,7 +176,7 @@ pathname: {
       type: "jar"
     }
     pathname {
-      directory: (:RELATIVE "b")
+      directory: (:RELATIVE "b" "c")
       name: "foo"
       type: "abcl"
     }
@@ -186,18 +188,20 @@ pathname: {
 
 // UC5 -- JAR Entry in a JAR Entry
 pathname: {
-  namestring: "jar:jar:file:a/foo/baz.jar!/foo.abcl!/a/b/bar-1.cls"
+  namestring: "jar:jar:file:a/foo/baz.jar!/c/d/foo.abcl!/a/b/bar-1.cls"
   device: (
     pathname: {
-      device: "jar:file:"
+      directory: (:RELATIVE "a" "foo")
       name: "baz"
       type: "jar"
     }
     pathname: {
+      directory: (:RELATIVE "c" "d")
       name: "foo"
       type: "abcl"
     }
   )
+  directory: (:ABSOLUTE "a" "b")
   name: "bar-1"
   type: "cls"
 }
@@ -208,7 +212,7 @@ pathname: {
   device: ( 
     "http://example.org/abcl.jar"
     pathname: {
-      directory: (:relative "org" "armedbear" "lisp")
+      directory: (:RELATIVE "org" "armedbear" "lisp")
       name: "Version"
       type: "class"
    }
@@ -249,7 +253,7 @@ pathname: {
      name: "foo"
      type: "jar"
    )
-   directory: (:RELATIVE "c" "d")
+   directory: (:ABSOLUTE "c" "d")
    name: "foo"
    type: "lisp
 }

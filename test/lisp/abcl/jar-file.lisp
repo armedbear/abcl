@@ -130,6 +130,7 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
 
 ;;; wrapped in PROGN for easy disabling without a network connection
 ;;; XXX come up with a better abstraction
+
 (progn 
   (deftest jar-file.load.11
       (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/foo")
@@ -244,7 +245,7 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
        (pathname-name d) (pathname-type d) 
        (pathname-directory p) (pathname-name p) (pathname-type p)))
   "baz" "jar"
-   nil "foo" "abcl")
+   (:absolute) "foo" "abcl")
    
 (deftest jar-file.pathname.3
     (let* ((p #p"jar:jar:file:baz.jar!/foo.abcl!/")
@@ -266,7 +267,7 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
        (pathname-directory p) (pathname-name p) (pathname-type p)))
   (:relative "a") "baz" "jar"
   (:relative "b" "c") "foo" "abcl"
-  (:relative "this" "that") "foo-20" "cls")
+  (:absolute "this" "that") "foo-20" "cls")
 
 (deftest jar-file.pathname.5
     (let* ((p #p"jar:jar:file:a/foo/baz.jar!/b/c/foo.abcl!/armed/bear/bar-1.cls")
@@ -278,7 +279,7 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
        (pathname-directory p) (pathname-name p) (pathname-type p)))
   (:relative "a" "foo" ) "baz" "jar"
   (:relative "b" "c") "foo" "abcl"
-  (:relative "armed" "bear") "bar-1" "cls")
+  (:absolute "armed" "bear") "bar-1" "cls")
 
 (deftest jar-file.pathname.6
     (let* ((p #p"jar:http://example.org/abcl.jar!/org/armedbear/lisp/Version.class")
@@ -288,7 +289,7 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
        d
        (pathname-directory p) (pathname-name p) (pathname-type p)))
   "http://example.org/abcl.jar" 
-  (:relative "org" "armedbear" "lisp") "Version" "class")
+  (:absolute "org" "armedbear" "lisp") "Version" "class")
 
 (deftest jar-file.pathname.7
     (let* ((p #p"jar:jar:http://example.org/abcl.jar!/foo.abcl!/foo-1.cls")
@@ -316,8 +317,8 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
       (values
        (pathname-directory d) (pathname-name d) (pathname-type d)
        (pathname-directory p) (pathname-name p) (pathname-type p)))
-  (:RELATIVE "a" "b") "foo" "jar"
-  (:RELATIVE "c" "d") "foo" "lisp")
+  (:relative "a" "b") "foo" "jar"
+  (:absolute "c" "d") "foo" "lisp")
 
       
       
