@@ -27,8 +27,8 @@ For help on the automatic tests available, use the Ant target 'help.test'.
     </target>
 
     <!-- Behavior of the build system can be customized via setting
-         properties in the 'build.properties' file. -->
-    <property file="build.properties"/>
+         properties in the 'abcl.properties' file. -->
+    <property file="abcl.properties"/>
 
     <property name="build.dir" 
 	      value="${basedir}/build"/>
