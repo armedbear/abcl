@@ -1,7 +1,7 @@
 Version 0.19
 ============
 svn://common-lisp.net/project/armedbear/svn/trunk/abcl
-(Unreleased)
+(14 Mar, 2010)
 
 Features
 --------
@@ -37,10 +37,10 @@ Features
 
   SYS:PATHNAME-JAR-P predicate signals whether a pathname references a
   jar.
-       
+
   NB: jar pathnames do *not* currently work as an argument to OPEN.
 
-  SYS:UNZIP implemented to unpack ZIP files.  
+  SYS:UNZIP implemented to unpack ZIP files.
 
   SYS:ZIP now has a three argument version for creating zip files with
   hierarchical entries.
@@ -57,6 +57,9 @@ Features
 
 Fixes/Optimizations
 -------------------
+
+* [svn r12526] Unbinding of PROGV bound variables on local transfer
+  of control (within-java-function jump targets)
 
 * [svn r12510] The new ansi-test WITH-STANDARD-IO-SYNTAX.23 passes.
   Our with-standard-io-syntax implementation now correctly resets all necessary
