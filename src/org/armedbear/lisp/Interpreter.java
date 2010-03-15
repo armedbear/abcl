@@ -247,6 +247,7 @@ public final class Interpreter
                 }
             }
         }
+        arglist.nreverse();
 
         _COMMAND_LINE_ARGUMENT_LIST_.setSymbolValue(arglist);
     }
