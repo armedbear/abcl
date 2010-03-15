@@ -71,6 +71,15 @@ public class LispObject //extends Lisp
     return new SimpleString(sb);
   }
 
+  /** 
+   *  Implementing the getParts() protocol will allow INSPECT to
+   *  return information about the substructure of a descendent of
+   *  LispObject.
+   *  
+   *  The protocol is to return a List of Cons pairs, where the car of
+   *  each pair contains a decriptive string, and the cdr returns a
+   *  subobject for inspection.
+   */
   public LispObject getParts()
   {
     return NIL;
