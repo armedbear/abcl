@@ -534,8 +534,10 @@ public class Pathname extends LispObject {
         }
         String directoryNamestring = getDirectoryNamestring();
         if (isJar()) {
-            if (directoryNamestring.startsWith(File.separator)) {
+            if (directoryNamestring.startsWith("/")) {
                 sb.append(directoryNamestring.substring(1));
+            } else {
+                sb.append(directoryNamestring);
             }
         } else {
             sb.append(directoryNamestring);
@@ -652,7 +654,6 @@ public class Pathname extends LispObject {
 		    result.append(c);
 		}
 	    }
-	    return result.toString();
         } else  {
             result.append(path);
         }
