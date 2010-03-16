@@ -232,6 +232,10 @@
            (append (reverse match) 
                    (translate-directory-components-aux
                     src (cdr from) (cdr to) case))))
+       (when (and (null src) 
+                  (eq (car from) :wild-inferiors)
+                  (eq (car to) :wild-inferiors))
+         (return-from translate-directory-components-aux nil))
        (when (null src) ;; SRC is NIL and we're still here: error exit
          (throw 'failed-match))))))
 
