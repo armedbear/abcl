@@ -163,16 +163,28 @@ public final class Load
             mergedPathname = new Pathname(n);
             LispObject initTruename = Pathname.truename(mergedPathname);
             if (initTruename == null || initTruename.equals(NIL)) {
-                String errorMessage
-                    = "Loadable FASL not found for"
-                    + "'" + pathname + "'"
-                    + " in "
-                    + "'" + mergedPathname + "'";
-                if (ifDoesNotExist) {
-                    return error(new FileError(errorMessage, mergedPathname));
+                // Maybe the enclosing JAR has been renamed?
+                Pathname p = new Pathname(mergedPathname);
+                p.name = Keyword.WILD;
+                p.invalidateNamestring();
+                LispObject result = Pathname.MATCH_WILD_JAR_PATHNAME.execute(p);
+
+                if      (result instanceof Cons
+                    && ((Cons)result).length() == 1
+                    && ((Cons)result).car() instanceof Pathname) {
+                    initTruename = (Pathname)result.car();
                 } else {
-                    Debug.trace(errorMessage);
-                    return NIL;
+                  String errorMessage
+                      = "Loadable FASL not found for "
+                      + "'" + pathname + "'"
+                      + " in "
+                      + "'" + mergedPathname + "'";
+                  if (ifDoesNotExist) {
+                      return error(new FileError(errorMessage, mergedPathname));
+                  } else {
+                      Debug.trace(errorMessage);
+                      return NIL;
+                  }
                 }
             }
             truename = (Pathname)initTruename;

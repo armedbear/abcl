@@ -1357,7 +1357,7 @@ public class Pathname extends LispObject {
     }
 
     // ### match-wild-jar-pathname wild-jar-pathname
-    private static final Primitive LIST_JAR_DIRECTORY = new pf_match_wild_jar_pathname();
+    static final Primitive MATCH_WILD_JAR_PATHNAME = new pf_match_wild_jar_pathname();
     private static class pf_match_wild_jar_pathname extends Primitive {
         pf_match_wild_jar_pathname() {
             super("match-wild-jar-pathname", PACKAGE_SYS, false, "wild-jar-pathname");
