@@ -1102,7 +1102,9 @@ public class Pathname extends LispObject {
             if (host == NIL) {
                 host = defaults.host;
             }
-            directory = mergeDirectories(directory, defaults.directory);
+            if (directory == NIL && defaults != null) {
+                directory = defaults.directory;
+            }
             if (!deviceSupplied) {
                 device = defaults.device;
             }
