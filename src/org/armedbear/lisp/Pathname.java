@@ -552,7 +552,7 @@ public class Pathname extends LispObject {
         } else if (name == Keyword.WILD) {
             sb.append('*');
         }
-        if (type != NIL) {
+        if (type != NIL && type != Keyword.UNSPECIFIC) {
             sb.append('.');
             if (type instanceof AbstractString) {
                 String t = type.getStringValue();
