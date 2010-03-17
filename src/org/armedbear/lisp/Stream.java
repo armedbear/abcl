@@ -2558,19 +2558,19 @@ public class Stream extends StructureObject {
         }
     };
 
-    public InputStream getInputStream() {
+    public InputStream getWrappedInputStream() {
 	return in;
     }
 
-    public OutputStream getOutputStream() {
+    public OutputStream getWrappedOutputStream() {
 	return out;
     }
 
-    public Writer getWriter() {
+    public Writer getWrappedWriter() {
 	return writer;
     }
 
-    public PushbackReader getReader() {
+    public PushbackReader getWrappedReader() {
 	return reader;
     }
 
