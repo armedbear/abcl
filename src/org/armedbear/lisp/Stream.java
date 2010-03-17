@@ -122,22 +122,22 @@ public class Stream extends StructureObject {
     }
 
     public Stream(Symbol structureClass, InputStream stream) {
-        super(structureClass);
+        this(structureClass);
         initAsBinaryInputStream(stream);
     }
 
     public Stream(Symbol structureClass, Reader r) {
-        super(structureClass);
+        this(structureClass);
         initAsCharacterInputStream(r);
     }
 
     public Stream(Symbol structureClass, OutputStream stream) {
-        super(structureClass);
+        this(structureClass);
         initAsBinaryOutputStream(stream);
     }
 
     public Stream(Symbol structureClass, Writer w) {
-        super(structureClass);
+        this(structureClass);
         initAsCharacterOutputStream(w);
     }
 
@@ -149,7 +149,7 @@ public class Stream extends StructureObject {
     // Input stream constructors.
     public Stream(Symbol structureClass, InputStream inputStream,
                   LispObject elementType, LispObject format) {
-        super(structureClass);
+        this(structureClass);
         this.elementType = elementType;
         setExternalFormat(format);
 
@@ -178,7 +178,7 @@ public class Stream extends StructureObject {
 
     // Output stream constructors.
     public Stream(Symbol structureClass, OutputStream outputStream, LispObject elementType, LispObject format) {
-        super(structureClass);
+        this(structureClass);
         this.elementType = elementType;
         setExternalFormat(format);
         if (elementType == Symbol.CHARACTER || elementType == Symbol.BASE_CHAR) {
@@ -2557,4 +2557,21 @@ public class Stream extends StructureObject {
             return second;
         }
     };
+
+    public InputStream getInputStream() {
+	return in;
+    }
+
+    public OutputStream getOutputStream() {
+	return out;
+    }
+
+    public Writer getWriter() {
+	return writer;
+    }
+
+    public PushbackReader getReader() {
+	return reader;
+    }
+
 }
