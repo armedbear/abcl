@@ -30,13 +30,13 @@ fit.
 Then one configures Emacs with the proper initialization hooks by
 adding code something like the following to "~/.emacs":
 
-  (add-to-list 'load-path "~/work/slime")
-  (setq slime-lisp-implementations 
-    '((abcl ("~/work/abcl/abcl"))
-      (abcl.svn ("~/work/abcl.svn/abcl"))
-      (sbcl ("/opt/local/bin/sbcl"))))
-  (require 'slime)
-  (slime-setup '(slime-fancy slime-asdf slime-banner))
+    (add-to-list 'load-path "~/work/slime")
+    (setq slime-lisp-implementations 
+      '((abcl ("~/work/abcl/abcl"))
+        (abcl.svn ("~/work/abcl.svn/abcl"))
+        (sbcl ("/opt/local/bin/sbcl"))))
+    (require 'slime)
+    (slime-setup '(slime-fancy slime-asdf slime-banner))
 
 One further need to customize the setting of
 SLIME-LISP-IMPLEMENTATIONS to the location(s) of the Lisp(s) you wish to
@@ -71,12 +71,13 @@ connection to Emacs.  The following code will both load and start the swank serv
 from a Lisp image.  One merely needs to change *SLIME-DIRECTORY* to
 point to the top directory of the server process.
 
-  (defvar *slime-directory* #p"~/work/slime/") ;; Don't forget trailing slash
-  (load (merge-pathnames "swank-loader.lisp" *slime-directory*) :verbose t)
-  (swank-loader:init)
-  (swank:start-server "/tmp/swank.port") ;; remove if you don't want
-                                         ;; swank to start listening for connections.
-
+` 
+    (defvar *slime-directory* #p"~/work/slime/") ;; Don't forget trailing slash
+    (load (merge-pathnames "swank-loader.lisp" *slime-directory*) :verbose t)
+    (swank-loader:init)
+    (swank:start-server "/tmp/swank.port") ;; remove if you don't want
+                                          ;; swank to start listening for connections.
+`
 When this code finishes executing, an integer representing the port on
 which the server starts will be written to '/tmp/swank.port' and also
 returned as the result of evaluating SWANK:START-SERVER.  One may
