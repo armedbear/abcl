@@ -528,6 +528,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%get-output-stream-bytes", "ByteArrayOutputStream"); //AS 20090325
         autoload(PACKAGE_SYS, "%get-output-stream-array", "ByteArrayOutputStream");
         autoload(PACKAGE_SYS, "%make-array", "make_array");
+        autoload(PACKAGE_SYS, "%make-byte-array-input-stream", "ByteArrayInputStream"); //AS 20100317
         autoload(PACKAGE_SYS, "%make-byte-array-output-stream", "ByteArrayOutputStream"); //AS 20090325
         autoload(PACKAGE_SYS, "%make-condition", "make_condition", true);
         autoload(PACKAGE_SYS, "%make-hash-table", "HashTableFunctions");
