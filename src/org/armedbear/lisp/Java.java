@@ -60,10 +60,15 @@ public final class Java
     }
 
     // ### register-java-exception exception-name condition-symbol => T
-    private static final Primitive REGISTER_JAVA_EXCEPTION =
-        new Primitive("register-java-exception", PACKAGE_JAVA, true,
-                      "exception-name condition-symbol")
+    private static final Primitive REGISTER_JAVA_EXCEPTION = new pf_register_java_exception();
+    private static final class pf_register_java_exception extends Primitive 
     {
+        pf_register_java_exception() 
+        {
+            super("register-java-exception", PACKAGE_JAVA, true,
+                  "exception-name condition-symbol");
+        }
+
         @Override
         public LispObject execute(LispObject className, LispObject symbol)
 
@@ -80,10 +85,15 @@ public final class Java
     };
 
     // ### unregister-java-exception exception-name => T or NIL
-    private static final Primitive UNREGISTER_JAVA_EXCEPTION =
-        new Primitive("unregister-java-exception", PACKAGE_JAVA, true,
-                      "exception-name")
+    private static final Primitive UNREGISTER_JAVA_EXCEPTION = new pf_unregister_java_exception();
+    private static final class pf_unregister_java_exception extends Primitive
     {
+        pf_unregister_java_exception() 
+        {
+            super("unregister-java-exception", PACKAGE_JAVA, true,
+                  "exception-name");
+        }
+
         @Override
         public LispObject execute(LispObject className)
 
@@ -106,10 +116,15 @@ public final class Java
     }
 
     // ### jclass name-or-class-ref => class-ref
-    private static final Primitive JCLASS =
-        new Primitive(Symbol.JCLASS, "name-or-class-ref",
-"Returns a reference to the Java class designated by NAME-OR-CLASS-REF.")
+    private static final Primitive JCLASS = new pf_jclass();
+    private static final class pf_jclass extends Primitive 
     {
+        pf_jclass() 
+        {
+            super(Symbol.JCLASS, "name-or-class-ref",
+                  "Returns a reference to the Java class designated by NAME-OR-CLASS-REF.");
+        }
+
         @Override
         public LispObject execute(LispObject arg)
         {
@@ -221,10 +236,16 @@ public final class Java
         return NIL;
     }
 
-    private static final Primitive JFIELD =
-        new Primitive("jfield", PACKAGE_JAVA, true,
-                      "class-ref-or-field field-or-instance &optional instance value")
+    // ### jfield class-ref-or-field field-or-instance &optional instance value
+    private static final Primitive JFIELD = new pf_jfield();
+    private static final class pf_jfield extends Primitive 
     {
+        pf_jfield() 
+        {
+            super("jfield", PACKAGE_JAVA, true,
+                  "class-ref-or-field field-or-instance &optional instance value");
+        }
+
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -233,10 +254,15 @@ public final class Java
     };
 
     // ### jfield-raw - retrieve or modify a field in a Java class or instance.
-    private static final Primitive JFIELD_RAW =
-        new Primitive("jfield-raw", PACKAGE_JAVA, true,
-                      "class-ref-or-field field-or-instance &optional instance value")
+    private static final Primitive JFIELD_RAW = new pf_jfield_raw();
+    private static final class pf_jfield_raw extends Primitive
     {
+        pf_jfield_raw() 
+        {
+            super("jfield-raw", PACKAGE_JAVA, true,
+                  "class-ref-or-field field-or-instance &optional instance value");
+        }
+
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -245,10 +271,15 @@ public final class Java
     };
 
     // ### jconstructor class-ref &rest parameter-class-refs
-    private static final Primitive JCONSTRUCTOR =
-        new Primitive("jconstructor", PACKAGE_JAVA, true,
-                      "class-ref &rest parameter-class-refs")
+    private static final Primitive JCONSTRUCTOR = new pf_jconstructor();
+    private static final class pf_jconstructor extends Primitive
     {
+        pf_jconstructor() 
+        {
+            super("jconstructor", PACKAGE_JAVA, true,
+                  "class-ref &rest parameter-class-refs");
+        }
+
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -290,10 +321,15 @@ public final class Java
     };
 
     // ### jmethod class-ref name &rest parameter-class-refs
-    private static final Primitive JMETHOD =
-        new Primitive("jmethod", PACKAGE_JAVA, true,
-                      "class-ref name &rest parameter-class-refs")
+    private static final Primitive JMETHOD = new pf_jmethod();
+    private static final class pf_jmethod extends Primitive 
     {
+        pf_jmethod() 
+        {
+            super("jmethod", PACKAGE_JAVA, true,
+                  "class-ref name &rest parameter-class-refs");
+        }
+
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -413,9 +449,14 @@ public final class Java
     }
 
     // ### jstatic method class &rest args
-    private static final Primitive JSTATIC =
-        new Primitive("jstatic", PACKAGE_JAVA, true, "method class &rest args")
+    private static final Primitive JSTATIC = new pf_jstatic();
+    private static final class pf_jstatic extends Primitive 
     {
+        pf_jstatic() 
+        {
+            super("jstatic", PACKAGE_JAVA, true, "method class &rest args");
+        }
+
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -424,10 +465,15 @@ public final class Java
     };
 
     // ### jstatic-raw method class &rest args
-    private static final Primitive JSTATIC_RAW =
-        new Primitive("jstatic-raw", PACKAGE_JAVA, true,
-                      "method class &rest args")
+    private static final Primitive JSTATIC_RAW = new pf_jstatic_raw();
+    private static final class pf_jstatic_raw extends Primitive
     {
+        pf_jstatic_raw() 
+        {
+            super("jstatic-raw", PACKAGE_JAVA, true,
+                  "method class &rest args");
+        }
+
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -436,9 +482,14 @@ public final class Java
     };
 
     // ### jnew constructor &rest args
-    private static final Primitive JNEW =
-        new Primitive("jnew", PACKAGE_JAVA, true, "constructor &rest args")
+    private static final Primitive JNEW = new pf_jnew();
+    private static final class pf_jnew extends Primitive
     {
+        pf_jnew()
+        {
+            super("jnew", PACKAGE_JAVA, true, "constructor &rest args");
+        }
+
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -487,10 +538,15 @@ public final class Java
     };
 
     // ### jnew-array element-type &rest dimensions
-    private static final Primitive JNEW_ARRAY =
-        new Primitive("jnew-array", PACKAGE_JAVA, true,
-                      "element-type &rest dimensions")
+    private static final Primitive JNEW_ARRAY = new pf_jnew_array();
+    private static final class pf_jnew_array extends Primitive
     {
+        pf_jnew_array()
+        {
+            super("jnew-array", PACKAGE_JAVA, true,
+                  "element-type &rest dimensions");
+        }
+
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -540,10 +596,15 @@ public final class Java
     }
 
     // ### jarray-ref java-array &rest indices
-    private static final Primitive JARRAY_REF =
-        new Primitive("jarray-ref", PACKAGE_JAVA, true,
-                      "java-array &rest indices")
+    private static final Primitive JARRAY_REF = new pf_jarray_ref();
+    private static final class pf_jarray_ref extends Primitive
     {
+        pf_jarray_ref()
+        {
+            super("jarray-ref", PACKAGE_JAVA, true,
+                  "java-array &rest indices");
+        }
+
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -552,10 +613,15 @@ public final class Java
     };
 
     // ### jarray-ref-raw java-array &rest indices
-    private static final Primitive JARRAY_REF_RAW =
-        new Primitive("jarray-ref-raw", PACKAGE_JAVA, true,
-                      "java-array &rest indices")
+    private static final Primitive JARRAY_REF_RAW = new pf_jarray_ref_raw();
+    private static final class pf_jarray_ref_raw extends Primitive
     {
+        pf_jarray_ref_raw() 
+        {
+            super("jarray-ref-raw", PACKAGE_JAVA, true,
+                  "java-array &rest indices");
+        }
+
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -564,10 +630,15 @@ public final class Java
     };
 
     // ### jarray-set java-array new-value &rest indices
-    private static final Primitive JARRAY_SET =
-        new Primitive("jarray-set", PACKAGE_JAVA, true,
-                      "java-array new-value &rest indices")
+    private static final Primitive JARRAY_SET = new pf_jarray_set();
+    private static final class pf_jarray_set extends Primitive
     {
+        pf_jarray_set()
+        {
+            super("jarray-set", PACKAGE_JAVA, true,
+                  "java-array new-value &rest indices");
+        }
+
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -599,10 +670,15 @@ public final class Java
     };
 
     // ### jcall method instance &rest args
-    // Calls makeLispObject() to convert the result to an appropriate Lisp type.
-    private static final Primitive JCALL =
-        new Primitive(Symbol.JCALL, "method-ref instance &rest args")
+    /**  Calls makeLispObject() to convert the result to an appropriate Lisp type. */
+    private static final Primitive JCALL = new pf_jcall();
+    private static final class pf_jcall extends Primitive
     {
+        pf_jcall()
+        {
+            super(Symbol.JCALL, "method-ref instance &rest args");
+        }
+
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -611,11 +687,18 @@ public final class Java
     };
 
     // ### jcall-raw method instance &rest args
-    // Does no type conversion. The result of the call is simply wrapped in a
-    // JavaObject.
-    private static final Primitive JCALL_RAW =
-        new Primitive(Symbol.JCALL_RAW, "method-ref instance &rest args")
+    /** 
+     * Does no type conversion. The result of the call is simply wrapped in a
+     *   JavaObject.
+     */
+    private static final Primitive JCALL_RAW = new pf_jcall_raw();
+    private static final class pf_jcall_raw extends Primitive
     {
+        pf_jcall_raw()
+        {
+            super(Symbol.JCALL_RAW, "method-ref instance &rest args");
+        }
+
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -872,10 +955,15 @@ public final class Java
     }
 
     // ### make-immediate-object object &optional type
-    private static final Primitive MAKE_IMMEDIATE_OBJECT =
-        new Primitive("make-immediate-object", PACKAGE_JAVA, true,
-                      "object &optional type")
+    private static final Primitive MAKE_IMMEDIATE_OBJECT = new pf_make_immediate_object();
+    private static final class pf_make_immediate_object extends Primitive
     {
+        pf_make_immediate_object()
+        {
+            super("make-immediate-object", PACKAGE_JAVA, true,
+                  "object &optional type");
+        }
+
         @Override
         public LispObject execute(LispObject[] args)
         {
@@ -903,9 +991,14 @@ public final class Java
     };
 
     // ### java-object-p
-    private static final Primitive JAVA_OBJECT_P =
-        new Primitive("java-object-p", PACKAGE_JAVA, true, "object")
+    private static final Primitive JAVA_OBJECT_P = new pf_java_object_p();
+    private static final class pf_java_object_p extends Primitive
     {
+        pf_java_object_p() 
+        {
+            super("java-object-p", PACKAGE_JAVA, true, "object");
+        }
+
         @Override
         public LispObject execute(LispObject arg)
         {
@@ -914,9 +1007,14 @@ public final class Java
     };
 
     // ### jobject-lisp-value java-object
-    private static final Primitive JOBJECT_LISP_VALUE =
-        new Primitive("jobject-lisp-value", PACKAGE_JAVA, true, "java-object")
+    private static final Primitive JOBJECT_LISP_VALUE = new pf_jobject_lisp_value();
+    private static final class pf_jobject_lisp_value extends Primitive
     {
+        pf_jobject_lisp_value()
+        {
+            super("jobject-lisp-value", PACKAGE_JAVA, true, "java-object");
+        }
+
         @Override
         public LispObject execute(LispObject arg)
         {
@@ -925,9 +1023,14 @@ public final class Java
     };
 
     // ### jcoerce java-object intended-class
-    private static final Primitive JCOERCE =
-        new Primitive("jcoerce", PACKAGE_JAVA, true, "java-object intended-class")
+    private static final Primitive JCOERCE = new pf_jcoerce();
+    private static final class pf_jcoerce extends Primitive
     {
+        pf_jcoerce()
+        {
+            super("jcoerce", PACKAGE_JAVA, true, "java-object intended-class");
+        }
+
         @Override
         public LispObject execute(LispObject javaObject, LispObject intendedClass)
         {
@@ -940,10 +1043,16 @@ public final class Java
 	    }
         }
     };
-    
-    private static final Primitive JGET_PROPERTY_VALUE =
-	    new Primitive("%jget-property-value", PACKAGE_JAVA, true,
-	                  "java-object property-name") {
+
+    // ### %jget-property-value java-object property-name
+    private static final Primitive JGET_PROPERTY_VALUE = new pf__jget_property_value();
+    private static final class pf__jget_property_value extends Primitive
+    {
+        pf__jget_property_value() 
+        {
+	    super("%jget-property-value", PACKAGE_JAVA, true,
+                  "java-object property-name");
+        }
     	
         @Override
         public LispObject execute(LispObject javaObject, LispObject propertyName) {
@@ -964,9 +1073,15 @@ public final class Java
         }
     };
     
-    private static final Primitive JSET_PROPERTY_VALUE =
-	    new Primitive("%jset-property-value", PACKAGE_JAVA, true,
-	                  "java-object property-name value") {
+    // ### %jset-property-value java-object property-name value 
+    private static final Primitive JSET_PROPERTY_VALUE = new pf__jset_property_value();
+    private static final class pf__jset_property_value extends Primitive
+    {
+        pf__jset_property_value()
+        {
+	    super("%jset-property-value", PACKAGE_JAVA, true,
+                  "java-object property-name value");
+        }
     	
         @Override
         public LispObject execute(LispObject javaObject, LispObject propertyName, LispObject value) {
@@ -995,24 +1110,30 @@ public final class Java
     };
 
 
-    private static final Primitive JRUN_EXCEPTION_PROTECTED =
-        new Primitive("jrun-exception-protected", PACKAGE_JAVA, true,
-                      "closure") {
+    // ### jrun-exception-protected closure
+    private static final Primitive JRUN_EXCEPTION_PROTECTED = new pf_jrun_exception_protection();
+    private static final class pf_jrun_exception_protection extends Primitive
+    {
+        pf_jrun_exception_protection()
+        {
+            super("jrun-exception-protected", PACKAGE_JAVA, true,
+                  "closure");
+        }
 
-      @Override
-      public LispObject execute(LispObject closure) {
-          Function fun = checkFunction(closure);
+        @Override
+        public LispObject execute(LispObject closure) {
+            Function fun = checkFunction(closure);
 
-          try {
-              return LispThread.currentThread().execute(closure);
-          }
-          catch (OutOfMemoryError oom) {
-              return error(new StorageCondition("Out of memory."));
-          }
-          catch (StackOverflowError oos) {
-              return error(new StorageCondition("Stack overflow."));
-          }
-      }
+            try {
+                return LispThread.currentThread().execute(closure);
+            }
+            catch (OutOfMemoryError oom) {
+                return error(new StorageCondition("Out of memory."));
+            }
+            catch (StackOverflowError oos) {
+                return error(new StorageCondition("Stack overflow."));
+            }
+        }
     };
 
     static PropertyDescriptor getPropertyDescriptor(Object obj, LispObject propertyName) throws IntrospectionException {
