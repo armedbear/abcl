@@ -1243,32 +1243,37 @@ the args causes a Java exception handler to be installed, which
 
 (defknown rewrite-function-call (t) t)
 (defun rewrite-function-call (form)
-  (let ((op (car form))
-	(args (cdr form)))
-    (if (and (listp op)
-	     (eq (car op) 'lambda))
-	(expand-function-call-inline form (cadr op) (copy-tree (cddr op)) args)
-	(if (unsafe-p args)
-	    (let ((arg1 (car args)))
-	      (cond ((and (consp arg1) (eq (car arg1) 'GO))
-		     arg1)
-		    (t
-		     (let ((syms ())
-			   (lets ()))
-		       ;; Preserve the order of evaluation of the arguments!
-		       (dolist (arg args)
-			 (cond ((constantp arg)
-				(push arg syms))
-			       ((and (consp arg) (eq (car arg) 'GO))
-				(return-from rewrite-function-call
-				  (list 'LET* (nreverse lets) arg)))
-			       (t
-				(let ((sym (gensym)))
-				  (push sym syms)
-				  (push (list sym arg) lets)))))
-		       (list 'LET* (nreverse lets)
-			     (list* (car form) (nreverse syms)))))))
-	    form))))
+  (let ((op (car form)) (args (cdr form)))
+    (cond
+      ((and (eq op 'funcall) (listp (car args)) (eq (caar args) 'lambda))
+       ;;(funcall (lambda (...) ...) ...)
+       (let ((op (car args)) (args (cdr args)))
+	 (expand-function-call-inline form (cadr op) (copy-tree (cddr op))
+				      args)))
+      ((and (listp op) (eq (car op) 'lambda))
+       ;;((lambda (...) ...) ...)
+       (expand-function-call-inline form (cadr op) (copy-tree (cddr op)) args))
+      (t (if (unsafe-p args)
+	     (let ((arg1 (car args)))
+	       (cond ((and (consp arg1) (eq (car arg1) 'GO))
+		      arg1)
+		     (t
+		      (let ((syms ())
+			    (lets ()))
+			;; Preserve the order of evaluation of the arguments!
+			(dolist (arg args)
+			  (cond ((constantp arg)
+				 (push arg syms))
+				((and (consp arg) (eq (car arg) 'GO))
+				 (return-from rewrite-function-call
+				   (list 'LET* (nreverse lets) arg)))
+				(t
+				 (let ((sym (gensym)))
+				   (push sym syms)
+				   (push (list sym arg) lets)))))
+			(list 'LET* (nreverse lets)
+			      (list* (car form) (nreverse syms)))))))
+	     form)))))
 
 (defknown p1-function-call (t) t)
 (defun p1-function-call (form)
