@@ -45,7 +45,7 @@ command:
 Which should result output like the following:
 
 ----------------
-Armed Bear Common Lisp 0.17.0
+Armed Bear Common Lisp 0.19.1
 Java 1.6.0_14 Sun Microsystems Inc.
 Java HotSpot(TM) Client VM
 Low-level initialization completed in 0.9 seconds.
@@ -135,16 +135,16 @@ BUGS
 
 A lot of (renewed) energy has been spent to make ABCL a compliant
 and practically useable Common Lisp implementation.  Because of this,
-ABCL 0.17.0 now fails only 34 out of 21702 tests in the ANSI CL test
+ABCL 0.19.1 now fails only 29 out of 21702 tests in the ANSI CL test
 suite.  Next to that, the fail count of the Maxima test suite has been
-reduced to only 3 - rounding errors.
+reduced to only 5 - rounding errors.
 
 ABCL's CLOS does not handle on-the-fly redefinition of classes
 correctly. Quite a bit of energy has been spent in versions 0.16.0 and
 0.17.0 to improve CLOS performance. There is no support for the long
 form of DEFINE-METHOD-COMBINATION, and certain other required CLOS
 features are also missing. Enough CLOS is there to run
-ASDF and CL-PPCRE, if you're in no hurry.
+ASDF2 and CL-PPCRE.
 
 There is no MOP worth mentioning.
 
@@ -159,4 +159,4 @@ Have fun!
 
 On behalf of all ABCL development team and contributors,
 Erik Huelsmann
-October 31, 2009
+March 20, 2010
