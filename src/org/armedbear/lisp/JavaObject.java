@@ -35,11 +35,14 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-import java.lang.reflect.*;
-
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.math.BigInteger;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Set;
 
 public final class JavaObject extends LispObject {
     final Object obj;
@@ -242,7 +245,16 @@ public final class JavaObject extends LispObject {
 	    return obj;
 	} else {
 	    c = Java.maybeBoxClass(c);
-	    if(c.isAssignableFrom(intendedClass)) {
+	    if (c.isAssignableFrom(intendedClass) || c.isInstance(obj)) {
+              // XXX In the case that c.isInstance(obj) should we then
+              // "fix" the intendedClass field with the (presumably)
+              // narrower type of 'obj'?
+
+              // ME 20100323: I decided not to because a) we don't
+              // know the "proper" class to narrow to (i.e. maybe
+              // there's something "narrower" and b) I'm not sure how
+              // primitive types relate to their boxed
+              // representations.  
 		return obj;
 	    } else {
 		return error(new TypeError(intendedClass.getName() + " is not assignable to " + c.getName()));
@@ -328,20 +340,22 @@ public final class JavaObject extends LispObject {
     public LispObject getParts() {
 	if(obj != null) {
 	    LispObject parts = NIL;
-	    if(obj.getClass().isArray()) {
-		SimpleString empty = new SimpleString("");
+            parts = parts.push(new Cons("Java class",
+                                        new JavaObject(obj.getClass())));
+            if (intendedClass != null) {
+                parts = parts.push(new Cons("intendedClass", new SimpleString(intendedClass.getCanonicalName())));
+            }
+	    if (obj.getClass().isArray()) {
 		int length = Array.getLength(obj);
-		for(int i = 0; i < length; i++) {
-		    parts = parts.push
-			(new Cons(empty, JavaObject.getInstance(Array.get(obj, i))));
+		for (int i = 0; i < length; i++) {
+		    parts = parts
+                        .push(new Cons(new SimpleString(i), 
+                                       JavaObject.getInstance(Array.get(obj, i))));
 		}
-		parts = parts.nreverse();
 	    } else {
-		parts = parts.push(new Cons("Java class",
-					    new JavaObject(obj.getClass())));
 		parts = Symbol.NCONC.execute(parts, getInspectedFields());
 	    }
-	    return parts;
+	    return parts.nreverse();
 	} else {
 	    return NIL;
 	}

@@ -39,3 +39,36 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
   #p"/usr/lisp/abcl/native/test/foo.fasl")
 
       
+(deftest bugs.pathname.1
+    (namestring (make-pathname :directory '(:relative) :name "file" 
+                   :type :unspecific 
+                   :host nil :device nil))
+  "./file")
+
+(deftest bugs.pathname.2
+    (TRANSLATE-PATHNAME 
+     #P"/Users/evenson/work/bordeaux-threads/src/bordeaux-threads.abcl" 
+     #P"/**/**/*.*" 
+     #P"/Users/evenson/.cache/common-lisp/armedbear-0.20.0-dev-darwin-unknown/**/*.*")
+  #P"/Users/evenson/.cache/common-lisp/armedbear-0.20.0-dev-darwin-unknown/bordeaux-threads.abcl")
+
+(deftest bugs.pathname.3  
+    (namestring (MAKE-PATHNAME :HOST NIL :DEVICE NIL 
+                               :DIRECTORY '(:RELATIVE :WILD-INFERIORS) 
+                               :DEFAULTS "/**/"))
+  "**/")
+
+(deftest bugs.java.1
+    (let* ((a (java:jnew-array "byte" 1))
+           (b (let ((array-list (java:jnew (java:jconstructor
+                                       "java.util.ArrayList"))))
+                (java:jcall (java:jmethod "java.util.AbstractList" "add"
+                                          "java.lang.Object")
+                            array-list a)
+                (java:jcall (java:jmethod "java.util.AbstractList" "get" "int")
+                            array-list 0))))
+      (type-of (sys::%make-byte-array-input-stream b)))
+  stream)
+                
+                    
+                    
