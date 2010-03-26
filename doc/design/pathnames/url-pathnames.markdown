@@ -81,8 +81,8 @@ A PATHNAME refering to a resource referenced by a URL is known as a
 URL PATHNAME.
 
 A URL PATHNAME always has a HOST component which is a proper list.
-This list will be an association list (alist).  The association list
-values must be a string.
+This list will be an property list (plist).  The property list
+values must be character strings.
 
     :SCHEME
         Scheme of URI ("http", "ftp", "bundle", etc.)
