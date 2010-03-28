@@ -1653,15 +1653,6 @@ public final class Lisp
               type_error(obj, Symbol.STRING);
   }
   
-  public final static LispClass checkClass(LispObject obj) 
-
-   {
-          if (obj instanceof LispClass)         
-                  return (LispClass) obj;                         
-          return (LispClass)// Not reached.                    
-                type_error(obj, Symbol.CLASS);
-   }   
-
   public final static Layout checkLayout(LispObject obj) 
 
   {

@@ -48,6 +48,15 @@ public abstract class LispClass extends StandardObject
     return c;
   }
 
+  public static LispObject addClass(Symbol symbol, LispObject c)
+  {
+    synchronized (map)
+      {
+        map.put(symbol, c);
+      }
+    return c;
+  }
+
   public static void removeClass(Symbol symbol)
   {
     synchronized (map)
@@ -68,10 +77,10 @@ public abstract class LispClass extends StandardObject
 
   {
     final Symbol symbol = checkSymbol(name);
-    final LispClass c;
+    final LispObject c;
     synchronized (map)
       {
-        c = (LispClass) map.get(symbol);
+        c = map.get(symbol);
       }
     if (c != null)
       return c;
@@ -179,9 +188,9 @@ public abstract class LispClass extends StandardObject
     return classLayout;
   }
 
-  public void setClassLayout(Layout layout)
+  public void setClassLayout(LispObject layout)
   {
-    classLayout = layout;
+    classLayout = layout == NIL ? null : (Layout)layout;
   }
 
   public final int getLayoutLength()
@@ -201,12 +210,12 @@ public abstract class LispClass extends StandardObject
     this.directSuperclasses = directSuperclasses;
   }
 
-  public final boolean isFinalized()
+  public boolean isFinalized()
   {
     return finalized;
   }
 
-  public final void setFinalized(boolean b)
+  public void setFinalized(boolean b)
   {
     finalized = b;
   }
@@ -291,13 +300,29 @@ public abstract class LispClass extends StandardObject
 
   public boolean subclassp(LispObject obj)
   {
-    LispObject cpl = getCPL();
+    return false;
+  }
+
+  public static boolean subclassp(LispObject cls, LispObject obj)
+  {
+    LispObject cpl;
+
+    if (cls instanceof LispClass)
+      cpl = ((LispClass)cls).getCPL();
+    else
+      cpl = Symbol.CLASS_PRECEDENCE_LIST.execute(cls);
+
     while (cpl != NIL)
       {
         if (cpl.car() == obj)
           return true;
         cpl = ((Cons)cpl).cdr;
       }
+
+    if (cls instanceof LispClass)
+      // additional checks (currently because of JavaClass)
+      return ((LispClass)cls).subclassp(obj);
+
     return false;
   }
 
@@ -340,8 +365,7 @@ public abstract class LispClass extends StandardObject
             removeClass(name);
             return second;
           }
-        final LispClass c = checkClass(second);
-        addClass(name, c);
+        addClass(name, second);
         return second;
       }
     };
@@ -354,8 +378,7 @@ public abstract class LispClass extends StandardObject
       public LispObject execute(LispObject first, LispObject second)
 
       {
-        final LispClass c = checkClass(first);
-        return c.subclassp(second) ? T : NIL;
+        return LispClass.subclassp(first, second) ? T : NIL;
       }
     };
 }

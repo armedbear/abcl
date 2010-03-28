@@ -37,7 +37,7 @@ import static org.armedbear.lisp.Lisp.*;
 
 public class Layout extends LispObject
 {
-  private final LispClass lispClass;
+  private final LispObject lispClass;
   public final EqHashTable slotTable;
 
   final LispObject[] slotNames;
@@ -45,7 +45,7 @@ public class Layout extends LispObject
 
   private boolean invalid;
 
-  public Layout(LispClass lispClass, LispObject instanceSlots, LispObject sharedSlots)
+  public Layout(LispObject lispClass, LispObject instanceSlots, LispObject sharedSlots)
   {
     this.lispClass = lispClass;
     Debug.assertTrue(instanceSlots.listp());
@@ -64,7 +64,7 @@ public class Layout extends LispObject
     slotTable = initializeSlotTable(slotNames);
   }
 
-  public Layout(LispClass lispClass, LispObject[] instanceSlotNames,
+  public Layout(LispObject lispClass, LispObject[] instanceSlotNames,
                 LispObject sharedSlots)
   {
     this.lispClass = lispClass;
@@ -103,7 +103,7 @@ public class Layout extends LispObject
     return result.nreverse();
   }
 
-  public LispClass getLispClass()
+  public LispObject getLispClass()
   {
     return lispClass;
   }
@@ -159,8 +159,7 @@ public class Layout extends LispObject
                                 LispObject third)
 
       {
-          return new Layout(checkClass(first), checkList(second),
-                              checkList(third));
+          return new Layout(first, checkList(second), checkList(third));
       }
 
     };
@@ -235,7 +234,7 @@ public class Layout extends LispObject
       public LispObject execute(LispObject first, LispObject second)
 
       {
-                final Layout layOutFirst = checkLayout(first);
+            final Layout layOutFirst = checkLayout(first);
             final LispObject slotNames[] = layOutFirst.slotNames;
             final int limit = slotNames.length;
             for (int i = 0; i < limit; i++)
@@ -263,11 +262,20 @@ public class Layout extends LispObject
       @Override
       public LispObject execute(LispObject arg)
       {
-        final LispClass lispClass = checkClass(arg);
-        Layout oldLayout = lispClass.getClassLayout();
-        Layout newLayout = new Layout(oldLayout);
-        lispClass.setClassLayout(newLayout);
-        oldLayout.invalidate();
+        final LispObject lispClass = arg;
+        LispObject oldLayout;
+        if (lispClass instanceof LispClass)
+            oldLayout = ((LispClass)lispClass).getClassLayout();
+        else
+            oldLayout = Symbol.CLASS_LAYOUT.execute(lispClass);
+
+        Layout newLayout = new Layout((Layout)oldLayout);
+        if (lispClass instanceof LispClass)
+          ((LispClass)lispClass).setClassLayout(newLayout);
+        else
+          Symbol.CLASS_LAYOUT.getSymbolSetfFunction()
+              .execute(newLayout, lispClass);
+        ((Layout)oldLayout).invalidate();
         return arg;
       }
     };

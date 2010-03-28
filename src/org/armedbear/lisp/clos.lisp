@@ -53,8 +53,52 @@
 
 (export '(class-precedence-list class-slots))
 
-(defun class-slots (class)
-  (%class-slots class))
+;; Don't use DEFVAR, because that disallows loading clos.lisp
+;; after compiling it: the binding won't get assigned to T anymore
+(defparameter *clos-booting* t)
+
+(defmacro define-class->%class-forwarder (name)
+  (let* (($name (if (consp name) (cadr name) name))
+         (%name (intern (concatenate 'string
+                                     "%"
+                                     (if (consp name)
+                                         (symbol-name 'set-) "")
+                                     (symbol-name $name))
+                        (symbol-package $name))))
+    `(progn
+       (declaim (notinline ,name))
+       (defun ,name (&rest args)
+         (apply #',%name args)))))
+
+(define-class->%class-forwarder class-name)
+(define-class->%class-forwarder (setf class-name))
+(define-class->%class-forwarder class-slots)
+(define-class->%class-forwarder (setf class-slots))
+(define-class->%class-forwarder class-direct-slots)
+(define-class->%class-forwarder (setf class-direct-slots))
+(define-class->%class-forwarder class-layout)
+(define-class->%class-forwarder (setf class-layout))
+(define-class->%class-forwarder class-direct-superclasses)
+(define-class->%class-forwarder (setf class-direct-superclasses))
+(define-class->%class-forwarder class-direct-subclasses)
+(define-class->%class-forwarder (setf class-direct-subclasses))
+(define-class->%class-forwarder class-direct-methods)
+(define-class->%class-forwarder (setf class-direct-methods))
+(define-class->%class-forwarder class-precedence-list)
+(define-class->%class-forwarder (setf class-precedence-list))
+(define-class->%class-forwarder class-finalized-p)
+(define-class->%class-forwarder (setf class-finalized-p))
+(define-class->%class-forwarder class-default-initargs)
+(define-class->%class-forwarder (setf class-default-initargs))
+(define-class->%class-forwarder class-direct-default-initargs)
+(define-class->%class-forwarder (setf class-direct-default-initargs))
+
+(defun no-applicable-method (generic-function &rest args)
+  (error "There is no applicable method for the generic function ~S when called with arguments ~S."
+         generic-function
+         args))
+
+
 
 (defmacro push-on-end (value location)
   `(setf ,location (nconc ,location (list ,value))))
@@ -85,15 +129,6 @@
       (cons (funcall fun (car x) (cadr x))
             (mapplist fun (cddr x)))))
 
-(defsetf class-layout %set-class-layout)
-(defsetf class-direct-superclasses %set-class-direct-superclasses)
-(defsetf class-direct-subclasses %set-class-direct-subclasses)
-(defsetf class-direct-methods %set-class-direct-methods)
-(defsetf class-direct-slots %set-class-direct-slots)
-;; (defsetf class-slots %set-class-slots)
-(defsetf class-direct-default-initargs %set-class-direct-default-initargs)
-(defsetf class-default-initargs %set-class-default-initargs)
-(defsetf class-finalized-p %set-class-finalized-p)
 (defsetf std-instance-layout %set-std-instance-layout)
 (defsetf standard-instance-access %set-standard-instance-access)
 
@@ -253,26 +288,30 @@
 
 ;;; finalize-inheritance
 
+(defun std-compute-class-default-initargs (class)
+  (mapcan #'(lambda (c)
+              (copy-list
+               (class-direct-default-initargs c)))
+          (class-precedence-list class)))
+
 (defun std-finalize-inheritance (class)
-  (set-class-precedence-list
-   class
+  (setf (class-precedence-list class)
    (funcall (if (eq (class-of class) (find-class 'standard-class))
                 #'std-compute-class-precedence-list
                 #'compute-class-precedence-list)
             class))
-  (dolist (class (%class-precedence-list class))
+  (dolist (class (class-precedence-list class))
     (when (typep class 'forward-referenced-class)
       (return-from std-finalize-inheritance)))
-  (set-class-slots class
+  (setf (class-slots class)
                    (funcall (if (eq (class-of class) (find-class 'standard-class))
                                 #'std-compute-slots
-                                #'compute-slots)
-                            class))
+                     #'compute-slots) class))
   (let ((old-layout (class-layout class))
         (length 0)
         (instance-slots '())
         (shared-slots '()))
-    (dolist (slot (%class-slots class))
+    (dolist (slot (class-slots class))
       (case (%slot-definition-allocation slot)
         (:instance
          (set-slot-definition-location slot length)
@@ -292,13 +331,14 @@
         (let* ((slot-name (car location))
                (old-location (layout-slot-location old-layout slot-name)))
           (unless old-location
-            (let* ((slot-definition (find slot-name (%class-slots class) :key #'%slot-definition-name))
+            (let* ((slot-definition (find slot-name (class-slots class) :key #'%slot-definition-name))
                    (initfunction (%slot-definition-initfunction slot-definition)))
               (when initfunction
                 (setf (cdr location) (funcall initfunction))))))))
     (setf (class-layout class)
           (make-layout class (nreverse instance-slots) (nreverse shared-slots))))
-  (setf (class-default-initargs class) (compute-class-default-initargs class))
+  (setf (class-default-initargs class)
+        (std-compute-class-default-initargs class))
   (setf (class-finalized-p class) t))
 
 ;;; Class precedence lists
@@ -392,7 +432,7 @@
 
 (defun std-compute-slots (class)
   (let* ((all-slots (mapappend #'class-direct-slots
-                               (%class-precedence-list class)))
+                               (class-precedence-list class)))
          (all-names (remove-duplicates
                      (mapcar #'%slot-definition-name all-slots))))
     (mapcar #'(lambda (name)
@@ -431,7 +471,7 @@
 ;;; references.
 
 (defun find-slot-definition (class slot-name)
-  (dolist (slot (%class-slots class) nil)
+  (dolist (slot (class-slots class) nil)
     (when (eq slot-name (%slot-definition-name slot))
       (return slot))))
 
@@ -481,7 +521,7 @@
       (slot-makunbound-using-class (class-of object) object slot-name)))
 
 (defun std-slot-exists-p (instance slot-name)
-  (not (null (find slot-name (%class-slots (class-of instance))
+  (not (null (find slot-name (class-slots (class-of instance))
                    :key #'%slot-definition-name))))
 
 (defun slot-exists-p (object slot-name)
@@ -499,9 +539,10 @@
                                      &allow-other-keys)
   (declare (ignore metaclass))
   (let ((class (std-allocate-instance (find-class 'standard-class))))
-    (%set-class-name class name)
-    (setf (class-direct-subclasses class) ())
-    (setf (class-direct-methods class) ())
+    (%set-class-name name class)
+    (%set-class-layout nil class)
+    (%set-class-direct-subclasses ()  class)
+    (%set-class-direct-methods ()  class)
     (%set-class-documentation class documentation)
     (std-after-initialization-for-classes class
                                           :direct-superclasses direct-superclasses
@@ -537,8 +578,9 @@
 (defun canonical-slot-name (canonical-slot)
   (getf canonical-slot :name))
 
-(defun ensure-class (name &rest all-keys &allow-other-keys)
+(defun ensure-class (name &rest all-keys &key metaclass &allow-other-keys)
   ;; Check for duplicate slots.
+  (remf all-keys :metaclass)
   (let ((slots (getf all-keys :direct-slots)))
     (dolist (s1 slots)
       (let ((name1 (canonical-slot-name s1)))
@@ -563,7 +605,7 @@
       (when (typep class 'built-in-class)
         (error "Attempt to define a subclass of a built-in-class: ~S" class))))
   (let ((old-class (find-class name nil)))
-    (cond ((and old-class (eq name (%class-name old-class)))
+    (cond ((and old-class (eq name (class-name old-class)))
            (cond ((typep old-class 'built-in-class)
                   (error "The symbol ~S names a built-in class." name))
                  ((typep old-class 'forward-referenced-class)
@@ -582,8 +624,11 @@
                   (apply #'std-after-initialization-for-classes old-class all-keys)
                   old-class)))
           (t
-           (let ((class (apply #'make-instance-standard-class
-                               (find-class 'standard-class)
+           (let ((class (apply (if metaclass
+                                   #'make-instance
+                                   #'make-instance-standard-class)
+                               (or metaclass
+                                   (find-class 'standard-class))
                                :name name all-keys)))
              (%set-find-class name class)
              class)))))
@@ -831,7 +876,8 @@
             (finalize-generic-function gf))
           gf)
         (progn
-          (when (fboundp function-name)
+          (when (and (null *clos-booting*)
+                     (fboundp function-name))
             (error 'program-error
                    :format-control "~A already names an ordinary function, macro, or special operator."
                    :format-arguments (list function-name)))
@@ -1780,26 +1826,68 @@
                                       (autocompile fast-function))
                    )))
 
-(fmakunbound 'class-name)
-(fmakunbound '(setf class-name))
+(defmacro redefine-class-forwarder (name slot &optional alternative-name)
+  (let* (($name (if (consp name) (cadr name) name))
+         (%name (intern (concatenate 'string
+                                     "%"
+                                     (if (consp name)
+                                         (symbol-name 'set-) "")
+                                     (symbol-name $name))
+                        (find-package "SYS"))))
+    (unless alternative-name
+      (setf alternative-name name))
+    (if (consp name)
+        `(progn ;; setter
+           (defgeneric ,alternative-name (new-value class))
+           (defmethod ,alternative-name (new-value (class built-in-class))
+             (,%name new-value class))
+           (defmethod ,alternative-name (new-value (class forward-referenced-class))
+             (,%name new-value class))
+           (defmethod ,alternative-name (new-value (class structure-class))
+             (,%name new-value class))
+           (defmethod ,alternative-name (new-value (class standard-class))
+             (setf (slot-value class ',slot) new-value))
+           ,@(unless (eq name alternative-name)
+                     `((setf (get ',$name 'SETF-FUNCTION)
+                             (symbol-function ',alternative-name))))
+           )
+        `(progn ;; getter
+           (defgeneric ,alternative-name (class))
+           (defmethod ,alternative-name ((class built-in-class))
+             (,%name class))
+           (defmethod ,alternative-name ((class forward-referenced-class))
+             (,%name class))
+           (defmethod ,alternative-name ((class structure-class))
+             (,%name class))
+           (defmethod ,alternative-name ((class standard-class))
+             (slot-value class ',slot))
+           ,@(unless (eq name alternative-name)
+                     `((setf (symbol-function ',$name)
+                             (symbol-function ',alternative-name))))
+           ) )))
 
-(defgeneric class-name (class))
-
-(defmethod class-name ((class class))
-  (%class-name class))
-
-(defgeneric (setf class-name) (new-value class))
-
-(defmethod (setf class-name) (new-value (class class))
-  (%set-class-name class new-value))
-
-(when (autoloadp 'class-precedence-list)
-  (fmakunbound 'class-precedence-list))
-
-(defgeneric class-precedence-list (class))
-
-(defmethod class-precedence-list ((class class))
-  (%class-precedence-list class))
+(redefine-class-forwarder class-name name)
+(redefine-class-forwarder (setf class-name) name)
+(redefine-class-forwarder class-slots slots)
+(redefine-class-forwarder (setf class-slots) slots)
+(redefine-class-forwarder class-direct-slots direct-slots)
+(redefine-class-forwarder (setf class-direct-slots) direct-slots)
+(redefine-class-forwarder class-layout layout)
+(redefine-class-forwarder (setf class-layout) layout)
+(redefine-class-forwarder class-direct-superclasses direct-superclasses)
+(redefine-class-forwarder (setf class-direct-superclasses) direct-superclasses)
+(redefine-class-forwarder class-direct-subclasses direct-subclasses)
+(redefine-class-forwarder (setf class-direct-subclasses) direct-subclasses)
+(redefine-class-forwarder class-direct-methods direct-methods !class-direct-methods)
+(redefine-class-forwarder (setf class-direct-methods) direct-methods !!class-direct-methods)
+(redefine-class-forwarder class-precedence-list precedence-list)
+(redefine-class-forwarder (setf class-precedence-list) precedence-list)
+(redefine-class-forwarder class-finalized-p finalized-p)
+(redefine-class-forwarder (setf class-finalized-p) finalized-p)
+(redefine-class-forwarder class-default-initargs default-initargs)
+(redefine-class-forwarder (setf class-default-initargs) default-initargs)
+(redefine-class-forwarder class-direct-default-initargs direct-default-initargs)
+(redefine-class-forwarder (setf class-direct-default-initargs) direct-default-initargs)
 
 
 
@@ -1950,7 +2038,7 @@
   (std-slot-exists-p instance slot-name))
 
 (defmethod slot-exists-p-using-class ((class structure-class) instance slot-name)
-  (dolist (dsd (%class-slots class))
+  (dolist (dsd (class-slots class))
     (when (eq (sys::dsd-name dsd) slot-name)
       (return-from slot-exists-p-using-class t)))
   nil)
@@ -1986,8 +2074,8 @@
 
 (defmethod allocate-instance ((class structure-class) &rest initargs)
   (declare (ignore initargs))
-  (%make-structure (%class-name class)
-                   (make-list (length (%class-slots class))
+  (%make-structure (class-name class)
+                   (make-list (length (class-slots class))
                               :initial-element +slot-unbound+)))
 
 ;; "The set of valid initialization arguments for a class is the set of valid
@@ -2012,7 +2100,7 @@
 	     (if initargs
 		 `(,instance ,@initargs)
 	       (list instance)))))
-	  (slots (%class-slots (class-of instance))))
+	  (slots (class-slots (class-of instance))))
       (do* ((tail initargs (cddr tail))
             (initarg (car tail) (car tail)))
            ((null tail))
@@ -2095,7 +2183,7 @@
       (error 'program-error
 	     :format-control "Invalid initarg ~S."
 	     :format-arguments (list initarg))))
-  (dolist (slot (%class-slots (class-of instance)))
+  (dolist (slot (class-slots (class-of instance)))
     (let ((slot-name (%slot-definition-name slot)))
       (multiple-value-bind (init-key init-value foundp)
           (get-properties all-keys (%slot-definition-initargs slot))
@@ -2120,8 +2208,8 @@
 
 (defmethod change-class ((old-instance standard-object) (new-class standard-class)
                          &rest initargs)
-  (let ((old-slots (%class-slots (class-of old-instance)))
-        (new-slots (%class-slots new-class))
+  (let ((old-slots (class-slots (class-of old-instance)))
+        (new-slots (class-slots new-class))
         (new-instance (allocate-instance new-class)))
     ;; "The values of local slots specified by both the class CTO and the class
     ;; CFROM are retained. If such a local slot was unbound, it remains
@@ -2153,7 +2241,7 @@
          (remove-if #'(lambda (slot-name)
                        (slot-exists-p old slot-name))
                     (mapcar #'%slot-definition-name
-                            (%class-slots (class-of new))))))
+                            (class-slots (class-of new))))))
     (check-initargs new added-slots initargs)
     (apply #'shared-initialize new added-slots initargs)))
 
@@ -2340,7 +2428,7 @@
 
 (defmethod make-load-form ((class class) &optional environment)
   (declare (ignore environment))
-  (let ((name (%class-name class)))
+  (let ((name (class-name class)))
     (unless (and name (eq (find-class name nil) class))
       (error 'simple-type-error
              :format-control "Can't use anonymous or undefined class as a constant: ~S."
@@ -2355,6 +2443,7 @@
   (let ((message (apply #'format nil format-control args)))
     (error "Method combination error in CLOS dispatch:~%    ~A" message)))
 
+(fmakunbound 'no-applicable-method)
 (defgeneric no-applicable-method (generic-function &rest args))
 
 (defmethod no-applicable-method (generic-function &rest args)
@@ -2392,6 +2481,8 @@
 
 ;; FIXME
 (defgeneric function-keywords (method))
+
+(setf *clos-booting* nil)
 
 (defgeneric class-prototype (class))
 

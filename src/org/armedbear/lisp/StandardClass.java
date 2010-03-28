@@ -38,26 +38,28 @@ import static org.armedbear.lisp.Lisp.*;
 public class StandardClass extends SlotClass
 {
 
-  private static Symbol symName = PACKAGE_MOP.intern("NAME");
-  private static Symbol symLayout = PACKAGE_MOP.intern("LAYOUT");
-  private static Symbol symDirectSuperclasses
+  public static Symbol symName = PACKAGE_MOP.intern("NAME");
+  public static Symbol symLayout = PACKAGE_MOP.intern("LAYOUT");
+  public static Symbol symDirectSuperclasses
     = PACKAGE_MOP.intern("DIRECT-SUPERCLASSES");
-  private static Symbol symDirectSubclasses
+  public static Symbol symDirectSubclasses
     = PACKAGE_MOP.intern("DIRECT-SUBCLASSES");
-  private static Symbol symClassPrecedenceList
-    = PACKAGE_MOP.intern("CLASS-PRECEDENCE-LIST");
-  private static Symbol symDirectMethods
+  public static Symbol symPrecedenceList
+    = PACKAGE_MOP.intern("PRECEDENCE-LIST");
+  public static Symbol symDirectMethods
     = PACKAGE_MOP.intern("DIRECT-METHODS");
-  private static Symbol symDocumentation
+  public static Symbol symDocumentation
     = PACKAGE_MOP.intern("DOCUMENTATION");
-  private static Symbol symDirectSlots
+  public static Symbol symDirectSlots
     = PACKAGE_MOP.intern("DIRECT-SLOTS");
-  private static Symbol symSlots
+  public static Symbol symSlots
     = PACKAGE_MOP.intern("SLOTS");
-  private static Symbol symDirectDefaultInitargs
+  public static Symbol symDirectDefaultInitargs
     = PACKAGE_MOP.intern("DIRECT-DEFAULT-INITARGS");
-  private static Symbol symDefaultInitargs
+  public static Symbol symDefaultInitargs
     = PACKAGE_MOP.intern("DEFAULT-INITARGS");
+  public static Symbol symFinalizedP
+    = PACKAGE_MOP.intern("FINALIZED-P");
 
   static Layout layoutStandardClass =
       new Layout(null,
@@ -65,13 +67,14 @@ public class StandardClass extends SlotClass
                       symLayout,
                       symDirectSuperclasses,
                       symDirectSubclasses,
-                      symClassPrecedenceList,
+                      symPrecedenceList,
                       symDirectMethods,
                       symDocumentation,
                       symDirectSlots,
                       symSlots,
                       symDirectDefaultInitargs,
-                      symDefaultInitargs),
+                      symDefaultInitargs,
+                      symFinalizedP),
                  NIL)
       {
         @Override
@@ -86,6 +89,7 @@ public class StandardClass extends SlotClass
       super(layoutStandardClass);
       setDirectSuperclasses(NIL);
       setDirectSubclasses(NIL);
+      setClassLayout(layoutStandardClass);
       setCPL(NIL);
       setDirectMethods(NIL);
       setDocumentation(NIL);
@@ -93,6 +97,7 @@ public class StandardClass extends SlotClass
       setSlotDefinitions(NIL);
       setDirectDefaultInitargs(NIL);
       setDefaultInitargs(NIL);
+      setFinalized(false);
   }
 
   public StandardClass(Symbol symbol, LispObject directSuperclasses)
@@ -100,6 +105,7 @@ public class StandardClass extends SlotClass
       super(layoutStandardClass,
             symbol, directSuperclasses);
       setDirectSubclasses(NIL);
+      setClassLayout(layoutStandardClass);
       setCPL(NIL);
       setDirectMethods(NIL);
       setDocumentation(NIL);
@@ -107,6 +113,7 @@ public class StandardClass extends SlotClass
       setSlotDefinitions(NIL);
       setDirectDefaultInitargs(NIL);
       setDefaultInitargs(NIL);
+      setFinalized(false);
   }
 
   @Override
@@ -129,7 +136,7 @@ public class StandardClass extends SlotClass
   }
 
   @Override
-  public void setClassLayout(Layout newLayout)
+  public void setClassLayout(LispObject newLayout)
   {
     setInstanceSlotValue(symLayout, newLayout);
   }
@@ -147,6 +154,18 @@ public class StandardClass extends SlotClass
   }
 
   @Override
+  public final boolean isFinalized()
+  {
+    return getInstanceSlotValue(symFinalizedP) != NIL;
+  }
+
+  @Override
+  public final void setFinalized(boolean b)
+  {
+    setInstanceSlotValue(symFinalizedP, b ? T : NIL);
+  }
+
+  @Override
   public LispObject getDirectSubclasses()
   {
     return getInstanceSlotValue(symDirectSubclasses);
@@ -161,7 +180,7 @@ public class StandardClass extends SlotClass
   @Override
   public LispObject getCPL()
   {
-    return getInstanceSlotValue(symClassPrecedenceList);
+    return getInstanceSlotValue(symPrecedenceList);
   }
 
   @Override
@@ -169,14 +188,14 @@ public class StandardClass extends SlotClass
   {
     LispObject obj1 = cpl[0];
     if (obj1.listp() && cpl.length == 1)
-      setInstanceSlotValue(symClassPrecedenceList, obj1);
+      setInstanceSlotValue(symPrecedenceList, obj1);
     else
       {
         Debug.assertTrue(obj1 == this);
         LispObject l = NIL;
         for (int i = cpl.length; i-- > 0;)
             l = new Cons(cpl[i], l);
-        setInstanceSlotValue(symClassPrecedenceList, l);
+        setInstanceSlotValue(symPrecedenceList, l);
       }
   }
 
@@ -252,7 +271,11 @@ public class StandardClass extends SlotClass
     setInstanceSlotValue(symDefaultInitargs, defaultInitargs);
   }
 
-
+  @Override
+  public LispObject typeOf()
+  {
+    return Symbol.STANDARD_CLASS;
+  }
 
   @Override
   public LispObject classOf()
@@ -297,6 +320,42 @@ public class StandardClass extends SlotClass
     return unreadableString(sb.toString());
   }
 
+  private static final LispObject standardClassSlotDefinitions()
+  {
+      // (CONSTANTLY NIL)
+    Function initFunction = new Function() {
+      @Override
+      public LispObject execute()
+      {
+         return NIL;
+      }
+    };
+
+    return
+        list(helperMakeSlotDefinition("NAME", initFunction),
+             helperMakeSlotDefinition("LAYOUT", initFunction),
+             helperMakeSlotDefinition("DIRECT-SUPERCLASSES", initFunction),
+             helperMakeSlotDefinition("DIRECT-SUBCLASSES", initFunction),
+             helperMakeSlotDefinition("PRECEDENCE-LIST", initFunction),
+             helperMakeSlotDefinition("DIRECT-METHODS", initFunction),
+             helperMakeSlotDefinition("DIRECT-SLOTS", initFunction),
+             helperMakeSlotDefinition("SLOTS", initFunction),
+             helperMakeSlotDefinition("DIRECT-DEFAULT-INITARGS", initFunction),
+             helperMakeSlotDefinition("DEFAULT-INITARGS", initFunction),
+             helperMakeSlotDefinition("FINALIZED-P", initFunction));
+  }
+
+
+
+  private static final SlotDefinition helperMakeSlotDefinition(String name,
+                                                               Function init)
+  {
+    return
+        new SlotDefinition(PACKAGE_MOP.intern(name),   // name
+             list(PACKAGE_MOP.intern("CLASS-" + name)), // readers
+             init);
+  }
+
   private static final StandardClass addStandardClass(Symbol name,
                                                       LispObject directSuperclasses)
   {
@@ -321,7 +380,7 @@ public class StandardClass extends SlotClass
     addClass(Symbol.SLOT_DEFINITION, SLOT_DEFINITION);
 
     STANDARD_CLASS.setClassLayout(layoutStandardClass);
-    STANDARD_CLASS.setDirectSlotDefinitions(STANDARD_CLASS.getClassLayout().generateSlotDefinitions());
+    STANDARD_CLASS.setDirectSlotDefinitions(standardClassSlotDefinitions());
   }
 
   // BuiltInClass.FUNCTION is also null here (see previous comment).
@@ -616,6 +675,7 @@ public class StandardClass extends SlotClass
     WARNING.setCPL(WARNING, CONDITION, STANDARD_OBJECT, BuiltInClass.CLASS_T);
 
     // Condition classes.
+    STANDARD_CLASS.finalizeClass();
     ARITHMETIC_ERROR.finalizeClass();
     CELL_ERROR.finalizeClass();
     COMPILER_ERROR.finalizeClass();

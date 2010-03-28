@@ -141,16 +141,18 @@ public class Condition extends StandardObject
   @Override
   public LispObject typeOf()
   {
-    LispClass c = getLispClass();
-    if (c != null)
-      return c.getName();
+    LispObject c = getLispClass();
+    if (c instanceof LispClass)
+        return ((LispClass)c).getName();
+    else if (c != null)
+      return Symbol.CLASS_NAME.execute(c);
     return Symbol.CONDITION;
   }
 
   @Override
   public LispObject classOf()
   {
-    LispClass c = getLispClass();
+    LispObject c = getLispClass();
     if (c != null)
       return c;
     return StandardClass.CONDITION;

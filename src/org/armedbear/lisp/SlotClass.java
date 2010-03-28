@@ -178,7 +178,7 @@ public class SlotClass extends LispClass
 
     // ### class-direct-slots
     private static final Primitive CLASS_DIRECT_SLOTS =
-        new Primitive("class-direct-slots", PACKAGE_SYS, true)
+        new Primitive("%class-direct-slots", PACKAGE_SYS, true)
     {
         @Override
         public LispObject execute(LispObject arg)
@@ -200,12 +200,12 @@ public class SlotClass extends LispClass
         public LispObject execute(LispObject first, LispObject second)
 
         {
-                if (first instanceof SlotClass) {
-                  ((SlotClass)first).setDirectSlotDefinitions(second);
-                return second;
+                if (second instanceof SlotClass) {
+                  ((SlotClass)second).setDirectSlotDefinitions(first);
+                return first;
             }
                 else {
-                return type_error(first, Symbol.STANDARD_CLASS);
+                return type_error(second, Symbol.STANDARD_CLASS);
             }
         }
     };
@@ -227,26 +227,26 @@ public class SlotClass extends LispClass
     };
 
     // ### set-class-slots
-    private static final Primitive SET_CLASS_SLOTS =
-        new Primitive(Symbol.SET_CLASS_SLOTS, "class slot-definitions")
+    private static final Primitive _SET_CLASS_SLOTS =
+        new Primitive(Symbol._SET_CLASS_SLOTS, "class slot-definitions")
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            if (first instanceof SlotClass) {
-              ((SlotClass)first).setSlotDefinitions(second);
-              return second;
+            if (second instanceof SlotClass) {
+              ((SlotClass)second).setSlotDefinitions(first);
+              return first;
             }
             else {
-              return type_error(first, Symbol.STANDARD_CLASS);
+              return type_error(second, Symbol.STANDARD_CLASS);
             }
         }
     };
 
     // ### class-direct-default-initargs
     private static final Primitive CLASS_DIRECT_DEFAULT_INITARGS =
-        new Primitive("class-direct-default-initargs", PACKAGE_SYS, true)
+        new Primitive("%class-direct-default-initargs", PACKAGE_SYS, true)
     {
         @Override
         public LispObject execute(LispObject arg)
@@ -268,17 +268,17 @@ public class SlotClass extends LispClass
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            if (first instanceof SlotClass) {
-              ((SlotClass)first).setDirectDefaultInitargs(second);
-              return second;
+            if (second instanceof SlotClass) {
+              ((SlotClass)second).setDirectDefaultInitargs(first);
+              return first;
             }
-            return type_error(first, Symbol.STANDARD_CLASS);
+            return type_error(second, Symbol.STANDARD_CLASS);
         }
     };
 
     // ### class-default-initargs
     private static final Primitive CLASS_DEFAULT_INITARGS =
-        new Primitive("class-default-initargs", PACKAGE_SYS, true)
+        new Primitive("%class-default-initargs", PACKAGE_SYS, true)
     {
         @Override
         public LispObject execute(LispObject arg)
@@ -300,30 +300,12 @@ public class SlotClass extends LispClass
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            if (first instanceof SlotClass) {
-                ((SlotClass)first).setDefaultInitargs(second);
-                return second;
+            if (second instanceof SlotClass) {
+                ((SlotClass)second).setDefaultInitargs(first);
+                return first;
             }
-            return type_error(first, Symbol.STANDARD_CLASS);
+            return type_error(second, Symbol.STANDARD_CLASS);
         }
     };
 
-    // ### compute-class-default-initargs
-    private static final Primitive COMPUTE_CLASS_DEFAULT_INITARGS =
-        new Primitive("compute-class-default-initargs", PACKAGE_SYS, true)
-    {
-        @Override
-        public LispObject execute(LispObject arg)
-
-        {
-            final SlotClass c;
-            if (arg instanceof SlotClass) {
-                c = (SlotClass) arg;
-            }
-            else {
-                return type_error(arg, Symbol.STANDARD_CLASS);
-            }
-            return c.computeDefaultInitargs();
-        }
-    };
 }

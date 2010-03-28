@@ -3402,7 +3402,6 @@ given a specific common representation.")
                     (BIT-VECTOR-P       p2-test-bit-vector-p)
                     (CHAR=              p2-test-char=)
                     (CHARACTERP         p2-test-characterp)
-                    (CLASSP             p2-test-classp)
                     (CONSP              p2-test-consp)
                     (CONSTANTP          p2-test-constantp)
                     (ENDP               p2-test-endp)
@@ -3542,9 +3541,6 @@ given a specific common representation.")
 
 (defun p2-test-special-variable-p (form)
   (p2-test-predicate form "isSpecialVariable"))
-
-(defun p2-test-classp (form)
-  (p2-test-instanceof-predicate form +lisp-class-class+))
 
 (defun p2-test-symbolp (form)
   (p2-test-instanceof-predicate form +lisp-symbol-class+))
@@ -4826,9 +4822,6 @@ given a specific common representation.")
 
 (defun p2-characterp (form target representation)
   (p2-instanceof-predicate form target representation +lisp-character-class+))
-
-(defun p2-classp (form target representation)
-  (p2-instanceof-predicate form target representation +lisp-class-class+))
 
 (defun p2-consp (form target representation)
   (p2-instanceof-predicate form target representation +lisp-cons-class+))
@@ -8874,7 +8867,6 @@ to derive a Java class name from."
   (install-p2-handler 'java:jmethod        'p2-java-jmethod)
   (install-p2-handler 'char=               'p2-char=)
   (install-p2-handler 'characterp          'p2-characterp)
-  (install-p2-handler 'classp              'p2-classp)
   (install-p2-handler 'coerce-to-function  'p2-coerce-to-function)
   (install-p2-handler 'cons                'p2-cons)
   (install-p2-handler 'sys::backq-cons     'p2-cons)

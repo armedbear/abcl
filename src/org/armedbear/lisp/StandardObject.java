@@ -46,6 +46,11 @@ public class StandardObject extends LispObject
   }
 
 
+  protected StandardObject(Layout layout)
+  {
+    this(layout, layout.getLength());
+  }
+
   protected StandardObject(Layout layout, int length)
   {
     this.layout = layout;
@@ -98,9 +103,27 @@ public class StandardObject extends LispObject
     return parts.nreverse();
   }
 
-  public final LispClass getLispClass()
+  public final LispObject getLispClass()
   {
     return layout.getLispClass();
+  }
+
+  private LispObject helperGetClassName()
+  {
+    final LispObject c1 = layout.getLispClass();
+    if (c1 instanceof LispClass)
+        return ((LispClass)c1).getName();
+    else
+        return LispThread.currentThread().execute(Symbol.CLASS_NAME, c1);
+  }
+
+  private LispObject helperGetCPL()
+  {
+    final LispObject c1 = layout.getLispClass();
+    if (c1 instanceof LispClass)
+        return ((LispClass)c1).getCPL();
+    else
+        return LispThread.currentThread().execute(Symbol.CLASS_PRECEDENCE_LIST, c1);
   }
 
   @Override
@@ -110,14 +133,19 @@ public class StandardObject extends LispObject
     // conditions, TYPE-OF returns the proper name of the class returned by
     // CLASS-OF if it has a proper name, and otherwise returns the class
     // itself."
-    final LispClass c1 = layout.getLispClass();
+    final LispObject c1 = layout.getLispClass();
+    LispObject name;
+    if (c1 instanceof LispClass)
+        name = ((LispClass)c1).getName();
+    else
+        name = LispThread.currentThread().execute(Symbol.CLASS_NAME, c1);
+
     // The proper name of a class is "a symbol that names the class whose
     // name is that symbol".
-    final LispObject name = c1.getName();
     if (name != NIL && name != UNBOUND_VALUE)
       {
         // TYPE-OF.9
-        final LispObject c2 = LispClass.findClass(checkSymbol(name));
+        final LispObject c2 = LispClass.findClass(name, false);
         if (c2 == c1)
           return name;
       }
@@ -137,20 +165,30 @@ public class StandardObject extends LispObject
       return T;
     if (type == StandardClass.STANDARD_OBJECT)
       return T;
-    LispClass cls = layout != null ? layout.getLispClass() : null;
+    LispObject cls = layout != null ? layout.getLispClass() : null;
     if (cls != null)
       {
         if (type == cls)
           return T;
-        if (type == cls.getName())
+        if (type == helperGetClassName())
           return T;
-        LispObject cpl = cls.getCPL();
+        LispObject cpl = helperGetCPL();
         while (cpl != NIL)
           {
             if (type == cpl.car())
               return T;
-            if (type == ((LispClass)cpl.car()).getName())
-              return T;
+
+            LispObject otherName;
+            LispObject otherClass = cpl.car();
+            if (otherClass instanceof LispClass) {
+              if (type == ((LispClass)otherClass).getName())
+                return T;
+            }
+            else
+            if (type == LispThread
+                .currentThread().execute(Symbol.CLASS_NAME, otherClass))
+                return T;
+
             cpl = cpl.cdr();
           }
       }
@@ -183,10 +221,16 @@ public class StandardObject extends LispObject
   {
     Debug.assertTrue(layout.isInvalid());
     Layout oldLayout = layout;
-    LispClass cls = oldLayout.getLispClass();
-    Layout newLayout = cls.getClassLayout();
+    LispObject cls = oldLayout.getLispClass();
+    Layout newLayout;
+
+    if (cls instanceof LispClass)
+        newLayout = ((LispClass)cls).getClassLayout();
+    else
+        newLayout = (Layout)Symbol.CLASS_LAYOUT.execute(cls);
+
     Debug.assertTrue(!newLayout.isInvalid());
-    StandardObject newInstance = new StandardObject(cls);
+    StandardObject newInstance = new StandardObject(newLayout);
     Debug.assertTrue(newInstance.layout == newLayout);
     LispObject added = NIL;
     LispObject discarded = NIL;

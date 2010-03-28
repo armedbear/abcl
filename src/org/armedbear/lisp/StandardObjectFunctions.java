@@ -47,7 +47,11 @@ public class StandardObjectFunctions
         if (arg == StandardClass.STANDARD_CLASS)
           return new StandardClass();
         if (arg instanceof StandardClass)
-                return ((StandardClass)arg).allocateInstance();
+            return ((StandardClass)arg).allocateInstance();
+        if (arg.typep(StandardClass.STANDARD_CLASS) != NIL) {
+            Layout layout = (Layout)Symbol.CLASS_LAYOUT.execute(arg);
+            return new StandardObject(layout);
+        }
         return type_error(arg, Symbol.STANDARD_CLASS);
       }
     };

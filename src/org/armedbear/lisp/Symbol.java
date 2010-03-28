@@ -390,8 +390,15 @@ public class Symbol extends LispObject
     return function;
   }
 
-  public final LispObject getSymbolSetfFunctionOrDie()
+  @Override
+  public final LispObject getSymbolSetfFunction()
+  {
+    return get(this, Symbol.SETF_FUNCTION, NIL);
+  }
 
+
+  @Override
+  public final LispObject getSymbolSetfFunctionOrDie()
   {
     LispObject obj = get(this, Symbol.SETF_FUNCTION, null);
     if (obj == null)
@@ -2921,6 +2928,10 @@ public class Symbol extends LispObject
     PACKAGE_EXT.addExternalSymbol("SLIME-OUTPUT-STREAM");
 
   // MOP.
+  public static final Symbol CLASS_LAYOUT =
+    PACKAGE_MOP.addInternalSymbol("CLASS-LAYOUT");
+  public static final Symbol CLASS_PRECEDENCE_LIST =
+    PACKAGE_MOP.addInternalSymbol("CLASS-PRECEDENCE-LIST");
   public static final Symbol STANDARD_READER_METHOD =
     PACKAGE_MOP.addExternalSymbol("STANDARD-READER-METHOD");
 
@@ -2965,8 +2976,8 @@ public class Symbol extends LispObject
     PACKAGE_SYS.addExternalSymbol("NAMED-LAMBDA");
   public static final Symbol OUTPUT_OBJECT =
     PACKAGE_SYS.addExternalSymbol("OUTPUT-OBJECT");
-  public static final Symbol SET_CLASS_SLOTS =
-    PACKAGE_SYS.addExternalSymbol("SET-CLASS-SLOTS");
+  public static final Symbol _SET_CLASS_SLOTS =
+    PACKAGE_SYS.addExternalSymbol("%SET-CLASS-SLOTS");
   public static final Symbol SETF_FUNCTION =
     PACKAGE_SYS.addExternalSymbol("SETF-FUNCTION");
   public static final Symbol SETF_INVERSE =

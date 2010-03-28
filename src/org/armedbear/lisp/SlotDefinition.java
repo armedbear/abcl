@@ -69,7 +69,21 @@ public final class SlotDefinition extends StandardObject
     slots[SlotDefinitionClass.SLOT_INDEX_READERS] = readers;
     slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
   }
-  
+
+  public SlotDefinition(LispObject name, LispObject readers,
+                        Function initFunction)
+  {
+    this();
+    Debug.assertTrue(name instanceof Symbol);
+    slots[SlotDefinitionClass.SLOT_INDEX_NAME] = name;
+    slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = initFunction;
+    slots[SlotDefinitionClass.SLOT_INDEX_INITFORM] = NIL;
+    slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] =
+      new Cons(PACKAGE_KEYWORD.intern(((Symbol)name).getName()));
+    slots[SlotDefinitionClass.SLOT_INDEX_READERS] = readers;
+    slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
+  }
+
   public static SlotDefinition checkSlotDefinition(LispObject obj) {
           if (obj instanceof SlotDefinition) return (SlotDefinition)obj;
       return (SlotDefinition)type_error(obj, Symbol.SLOT_DEFINITION);     
@@ -147,7 +161,7 @@ public final class SlotDefinition extends StandardObject
     };
 
   // ### set-slot-definition-initfunction
-  private static final Primitive SET_SLOT_DEFINITION_INITFUNCTION =
+  static final Primitive SET_SLOT_DEFINITION_INITFUNCTION =
     new Primitive("set-slot-definition-initfunction", PACKAGE_SYS, true,
                   "slot-definition initfunction")
     {
@@ -173,7 +187,7 @@ public final class SlotDefinition extends StandardObject
     };
 
   // ### set-slot-definition-initform
-  private static final Primitive SET_SLOT_DEFINITION_INITFORM =
+  static final Primitive SET_SLOT_DEFINITION_INITFORM =
     new Primitive("set-slot-definition-initform", PACKAGE_SYS, true,
                   "slot-definition initform")
     {

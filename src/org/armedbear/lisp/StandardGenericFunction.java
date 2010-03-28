@@ -209,7 +209,14 @@ public final class StandardGenericFunction extends StandardObject
     if (name != null)
       {
         StringBuilder sb = new StringBuilder();
-        sb.append(getLispClass().getName().writeToString());
+        LispObject className;
+        LispObject lispClass = getLispClass();
+        if (lispClass instanceof LispClass)
+          className = ((LispClass)lispClass).getName();
+        else
+          className = Symbol.CLASS_NAME.execute(lispClass);
+
+        sb.append(className.writeToString());
         sb.append(' ');
         sb.append(name.writeToString());
         return unreadableString(sb.toString());

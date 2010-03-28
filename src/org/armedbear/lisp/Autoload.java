@@ -685,7 +685,7 @@ public class Autoload extends Function
         autoload(Symbol.SET_CHAR, "StringFunctions");
         autoload(Symbol.SET_SCHAR, "StringFunctions");
 
-        autoload(Symbol.SET_CLASS_SLOTS, "SlotClass");
+        autoload(Symbol._SET_CLASS_SLOTS, "SlotClass");
         autoload(Symbol._CLASS_SLOTS, "SlotClass");
 
         autoload(Symbol.JAVA_EXCEPTION_CAUSE, "JavaException");
