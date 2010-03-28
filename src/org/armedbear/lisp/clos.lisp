@@ -578,6 +578,8 @@
 (defun canonical-slot-name (canonical-slot)
   (getf canonical-slot :name))
 
+(defvar *extensible-built-in-classes* (list (find-class 'sequence)))
+
 (defun ensure-class (name &rest all-keys &key metaclass &allow-other-keys)
   ;; Check for duplicate slots.
   (remf all-keys :metaclass)
@@ -602,7 +604,8 @@
                :format-arguments (list name)))))
   (let ((direct-superclasses (getf all-keys :direct-superclasses)))
     (dolist (class direct-superclasses)
-      (when (typep class 'built-in-class)
+      (when (and (typep class 'built-in-class)
+		 (not (member class *extensible-built-in-classes*)))
         (error "Attempt to define a subclass of a built-in-class: ~S" class))))
   (let ((old-class (find-class name nil)))
     (cond ((and old-class (eq name (class-name old-class)))
