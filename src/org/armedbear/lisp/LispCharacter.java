@@ -63,14 +63,7 @@ public final class LispCharacter extends LispObject
   private String name;
   public static LispCharacter getInstance(char c)
   {
-    try
-      {
-        return lispChars.get(c);
-      }
-    catch (ArrayIndexOutOfBoundsException e)
-      {
-        return new LispCharacter(c);
-      }
+    return lispChars.get(c);
   }
 
   // This needs to be public for the compiler.
@@ -185,8 +178,8 @@ public final class LispCharacter extends LispObject
   }
 
   public static char getValue(LispObject obj)
-  {       
-          if (obj instanceof LispCharacter)
+  {
+      if (obj instanceof LispCharacter)
         return ((LispCharacter)obj).value;
       type_error(obj, Symbol.CHARACTER);
         // Not reached.
