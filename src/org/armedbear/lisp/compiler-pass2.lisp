@@ -2269,15 +2269,9 @@ the Java object representing SYMBOL can be retrieved."
         (*code* *static-code*))
      ;; no need to *declare-inline*: constants
     (declare-field g +lisp-character+ +field-access-private+)
-    (cond ((<= 0 n 255)
-           (emit 'getstatic +lisp-character-class+ "constants" +lisp-character-array+)
-           (emit-push-constant-int n)
-           (emit 'aaload))
-          (t
-           (emit 'new +lisp-character-class+)
-           (emit 'dup)
-           (emit-push-constant-int n)
-           (emit-invokespecial-init +lisp-character-class+ '("C"))))
+    (emit-push-constant-int n)
+    (emit-invokestatic +lisp-character-class+ "getInstance" '("C")
+                       +lisp-character+)
     (emit 'putstatic *this-class* g +lisp-character+)
     (setf *static-code* *code*)
     g))

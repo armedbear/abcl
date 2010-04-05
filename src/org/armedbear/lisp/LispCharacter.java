@@ -67,7 +67,7 @@ public final class LispCharacter extends LispObject
   }
 
   // This needs to be public for the compiler.
-  public LispCharacter(char c)
+  private LispCharacter(char c)
   {
     this.value = c;
   }

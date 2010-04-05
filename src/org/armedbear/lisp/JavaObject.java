@@ -215,7 +215,7 @@ public final class JavaObject extends LispObject {
             return ((Boolean)obj).booleanValue() ? T : NIL;
 
         if (obj instanceof Character)
-            return new LispCharacter((Character)obj);
+            return LispCharacter.getInstance((Character)obj);
 
         if (obj instanceof Object[]) {
             Object[] array = (Object[]) obj;
