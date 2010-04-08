@@ -347,12 +347,9 @@ public final class LispCharacter extends LispObject
       @Override
       public LispObject execute(LispObject arg)
       {
-          int n = Fixnum.getValue(arg);
-          if (n < CHAR_MAX)
-            return lispChars.get((char)n);
-          else if (n <= Character.MAX_VALUE)
-            return new LispCharacter((char)n);
-              // SBCL signals a type-error here: "not of type (UNSIGNED-BYTE 8)"
+        int n = Fixnum.getValue(arg);
+        if (Character.isValidCodePoint(n)
+          return LispCharacter.getInstance((char)n);
         return NIL;
       }
     };
