@@ -69,12 +69,12 @@ public class StandardClass extends SlotClass
                       symDirectSubclasses,
                       symPrecedenceList,
                       symDirectMethods,
-                      symDocumentation,
                       symDirectSlots,
                       symSlots,
                       symDirectDefaultInitargs,
                       symDefaultInitargs,
-                      symFinalizedP),
+                      symFinalizedP,
+                      symDocumentation),
                  NIL)
       {
         @Override
@@ -342,7 +342,8 @@ public class StandardClass extends SlotClass
              helperMakeSlotDefinition("SLOTS", initFunction),
              helperMakeSlotDefinition("DIRECT-DEFAULT-INITARGS", initFunction),
              helperMakeSlotDefinition("DEFAULT-INITARGS", initFunction),
-             helperMakeSlotDefinition("FINALIZED-P", initFunction));
+             helperMakeSlotDefinition("FINALIZED-P", initFunction),
+             helperMakeSlotDefinition("DOCUMENTATION", initFunction));
   }
 
 
