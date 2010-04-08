@@ -31,6 +31,8 @@
 
 (in-package #:system)
 
+(require "JAVA")
+
 (export '(lookup-known-symbol))
 
 (let ((symbols (make-hash-table :test 'eq :size 2048)))

@@ -279,6 +279,8 @@
 (autoload 'jredefine-method "runtime-class")
 (export 'jruntime-class-exists-p "JAVA")
 (autoload 'jruntime-class-exists-p "runtime-class")
+(export 'ensure-java-class "JAVA")
+(autoload 'ensure-java-class "java")
 
 ;; Profiler.
 (in-package "PROFILER")

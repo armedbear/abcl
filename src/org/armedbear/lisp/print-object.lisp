@@ -32,7 +32,6 @@
 (in-package #:system)
 
 (require 'clos)
-(require 'java)
 
 (when (autoloadp 'print-object)
   (fmakunbound 'print-object))
@@ -49,12 +48,6 @@
   (print-unreadable-object (object stream :identity t)
     (format stream "~S" (class-name (class-of object))))
   object)
-
-(defmethod print-object ((obj java:java-object) stream)
-  (write-string (%write-to-string obj) stream))
-
-(defmethod print-object ((class java:java-class) stream)
-  (write-string (%write-to-string class) stream))
 
 (defmethod print-object ((class class) stream)
   (print-unreadable-object (class stream :identity t)
@@ -122,15 +115,5 @@
                 (type-of x)
                 (cell-error-name x)))
       (format stream "The variable ~S is unbound." (cell-error-name x))))
-
-(defmethod print-object ((e java:java-exception) stream)
-  (if *print-escape*
-      (print-unreadable-object (e stream :type t :identity t)
-        (format stream "~A"
-                (java:jcall (java:jmethod "java.lang.Object" "toString")
-                            (java:java-exception-cause e))))
-      (format stream "Java exception '~A'."
-              (java:jcall (java:jmethod "java.lang.Object" "toString")
-                          (java:java-exception-cause e)))))
 
 (provide 'print-object)

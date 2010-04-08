@@ -38,11 +38,7 @@ import static org.armedbear.lisp.Lisp.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 
 public final class JavaObject extends LispObject {
     final Object obj;
@@ -53,6 +49,10 @@ public final class JavaObject extends LispObject {
 	this.intendedClass =
 	    obj != null ? Java.maybeBoxClass(obj.getClass()) : null;
     }
+
+    public static final Symbol JAVA_CLASS_JCLASS = PACKAGE_JAVA.intern("JAVA-CLASS-JCLASS");
+    public static final Symbol JAVA_CLASS = PACKAGE_JAVA.intern("JAVA-CLASS");
+    public static final Symbol ENSURE_JAVA_CLASS = PACKAGE_JAVA.intern("ENSURE-JAVA-CLASS");
 
     /**
      * Constructs a Java Object with the given intended class, used to access
@@ -87,20 +87,24 @@ public final class JavaObject extends LispObject {
         if(obj == null) {
                 return BuiltInClass.JAVA_OBJECT;
         } else {
-                return JavaClass.findJavaClass(obj.getClass());
+	    return ENSURE_JAVA_CLASS.execute(new JavaObject(obj.getClass()));
         }
     }
 
     @Override
-    public LispObject typep(LispObject type)
-    {
+    public LispObject typep(LispObject type) {
         if (type == Symbol.JAVA_OBJECT)
             return T;
         if (type == BuiltInClass.JAVA_OBJECT)
             return T;
-        if(type instanceof JavaClass && obj != null) {
-                return ((JavaClass) type).getJavaClass().isAssignableFrom(obj.getClass()) ? T : NIL;
-        }
+	if(type.typep(LispClass.findClass(JAVA_CLASS, false)) != NIL) {
+	    if(obj != null) {
+		Class c = (Class) JAVA_CLASS_JCLASS.execute(type).javaInstance();
+		return c.isAssignableFrom(obj.getClass()) ? T : NIL;
+	    } else {
+		return T;
+	    }
+	}
         return super.typep(type);
     }
 
@@ -522,4 +526,52 @@ public final class JavaObject extends LispObject {
             return LispThread.currentThread().nothing();
         }
     };
+
+    //JAVA-CLASS support
+
+    //There is no point for this Map to be weak since values keep a reference to the corresponding
+    //key (the Java class). This should not be a problem since Java classes are limited in number - 
+    //if they grew indefinitely, the JVM itself would crash.
+    private static final Map<Class<?>, LispObject> javaClassMap = new HashMap<Class<?>, LispObject>();
+
+    public static LispObject registerJavaClass(Class<?> javaClass, LispObject classMetaObject) {
+	synchronized (javaClassMap) {
+	    javaClassMap.put(javaClass, classMetaObject);
+	    return classMetaObject;
+	}
+    }
+
+    public static LispObject findJavaClass(Class<?> javaClass) {
+	synchronized (javaClassMap) {
+	    LispObject c = javaClassMap.get(javaClass);
+	    if (c != null) {
+		return c;
+	    } else {
+		return NIL;
+	    }
+	}
+    }
+
+    private static final Primitive _FIND_JAVA_CLASS = new Primitive("%find-java-class", PACKAGE_JAVA, false, "class-name-or-class") {
+	    public LispObject execute(LispObject arg) {
+		try {
+		    if(arg instanceof AbstractString) {
+			return findJavaClass(Class.forName((String) arg.getStringValue()));
+		    } else {
+			return findJavaClass((Class<?>) arg.javaInstance());
+		    }
+		} catch (ClassNotFoundException e) {
+		    return error(new LispError("Cannot find Java class " + arg.getStringValue()));
+		}
+	    }
+	    
+	};
+
+    private static final Primitive _REGISTER_JAVA_CLASS = new Primitive("%register-java-class", PACKAGE_JAVA, false, "jclass class-metaobject") {
+	    public LispObject execute(LispObject jclass, LispObject classMetaObject) {
+		return registerJavaClass((Class<?>) jclass.javaInstance(), classMetaObject);
+	    }
+	    
+	};
+
 }

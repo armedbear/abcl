@@ -578,7 +578,7 @@
 (defun canonical-slot-name (canonical-slot)
   (getf canonical-slot :name))
 
-(defvar *extensible-built-in-classes* (list (find-class 'sequence)))
+(defvar *extensible-built-in-classes* (list (find-class 'sequence) (find-class 'java:java-object)))
 
 (defun ensure-class (name &rest all-keys &key metaclass &allow-other-keys)
   ;; Check for duplicate slots.
@@ -971,11 +971,8 @@
            (intern-eql-specializer object)))
 	((and (consp specializer)
               (eq (car specializer) 'java:jclass))
-         (let ((class-name (cadr specializer)))
-           (when (and (consp class-name)
-                      (eq (car class-name) 'quote))
-             (setf class-name (cadr class-name)))
-           (java::%find-java-class class-name)))
+         (let ((jclass (eval specializer)))
+	   (java::ensure-java-class jclass)))
         (t
          (error "Unknown specializer: ~S" specializer))))
 

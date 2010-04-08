@@ -32,6 +32,7 @@
 (in-package "JAVA")
 
 (require "CLOS")
+(require "PRINT-OBJECT")
 
 (defun jregister-handler (object event handler &key data count)
   (%jregister-handler object event handler data count))
@@ -308,4 +309,45 @@
 (defun (setf jproperty-value) (value obj prop)
   (%jset-property-value obj prop value))
 
-(provide "JAVA-EXTENSIONS")
+;;; print-object
+
+(defmethod print-object ((obj java:java-object) stream)
+  (write-string (sys::%write-to-string obj) stream))
+
+(defmethod print-object ((e java:java-exception) stream)
+  (if *print-escape*
+      (print-unreadable-object (e stream :type t :identity t)
+        (format stream "~A"
+                (java:jcall (java:jmethod "java.lang.Object" "toString")
+                            (java:java-exception-cause e))))
+      (format stream "Java exception '~A'."
+              (java:jcall (java:jmethod "java.lang.Object" "toString")
+                          (java:java-exception-cause e)))))
+
+;;; JAVA-CLASS support
+
+(defclass java-class (standard-class)
+  ((jclass :initarg :java-class
+	   :initform (error "class is required")
+	   :reader java-class-jclass)))
+
+(defun ensure-java-class (jclass)
+  (let ((class (%find-java-class jclass)))
+    (if class
+	class
+	(%register-java-class
+	 jclass (mop::ensure-class (make-symbol (jclass-name jclass))
+				   :metaclass (find-class 'java-class)
+				   :direct-superclasses (if (jclass-superclass-p jclass (jclass "java.lang.Object"))
+							    (list (find-class 'java-object))
+							    (mapcar #'ensure-java-class
+								    (delete nil
+									    (concatenate 'list (list (jclass-superclass jclass))
+											 (jclass-interfaces jclass)))))
+				   :java-class jclass)))))
+	  
+(defmethod make-instance ((class java-class) &rest initargs &key &allow-other-keys)
+  (declare (ignore initargs))
+  (error "make-instance not supported for ~S" class))
+
+(provide "JAVA")

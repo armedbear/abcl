@@ -505,7 +505,8 @@ public class Autoload extends Function
         autoload(PACKAGE_EXT, "string-find", "StringFunctions");
         autoload(PACKAGE_EXT, "string-position", "StringFunctions");
         autoload(PACKAGE_JAVA, "%jnew-proxy", "JProxy");
-        autoload(PACKAGE_JAVA, "%find-java-class", "JavaClass");
+        autoload(PACKAGE_JAVA, "%find-java-class", "JavaObject");
+        autoload(PACKAGE_JAVA, "%register-java-class", "JavaObject");
         autoload(PACKAGE_JAVA, "%jmake-invocation-handler", "JProxy");
         autoload(PACKAGE_JAVA, "%jmake-proxy", "JProxy");
         autoload(PACKAGE_JAVA, "%jnew-runtime-class", "RuntimeClass");
