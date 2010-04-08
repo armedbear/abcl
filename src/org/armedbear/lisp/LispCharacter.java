@@ -348,7 +348,7 @@ public final class LispCharacter extends LispObject
       public LispObject execute(LispObject arg)
       {
         int n = Fixnum.getValue(arg);
-        if (Character.isValidCodePoint(n)
+        if (Character.isValidCodePoint(n))
           return LispCharacter.getInstance((char)n);
         return NIL;
       }
