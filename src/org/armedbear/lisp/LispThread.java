@@ -72,6 +72,8 @@ public final class LispThread extends LispObject
     public LispObject[] _values;
     private boolean threadInterrupted;
     private LispObject pending = NIL;
+    private Symbol wrapper =
+        PACKAGE_THREADS.intern("THREAD-FUNCTION-WRAPPER");
 
     LispThread(Thread javaThread)
     {
@@ -85,7 +87,9 @@ public final class LispThread extends LispObject
             public void run()
             {
                 try {
-                    funcall(fun, new LispObject[0], LispThread.this);
+                    funcall(wrapper,
+                            new LispObject[] { fun },
+                            LispThread.this);
                 }
                 catch (ThreadDestroyed ignored) {
                       // Might happen.

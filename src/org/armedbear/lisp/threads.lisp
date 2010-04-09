@@ -34,6 +34,15 @@
 
 
 ;;
+;; MAKE-THREAD helper to establish restarts
+;;
+
+(defun thread-function-wrapper (fun)
+  (restart-case
+      (funcall fun)
+    (abort () :report "Abort thread.")))
+
+;;
 ;; Mailbox implementation
 ;;
 

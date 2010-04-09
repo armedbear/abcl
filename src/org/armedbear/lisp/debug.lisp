@@ -94,8 +94,9 @@
                          (stream-offset *load-stream*)))
         (simple-format *debug-io*
                        (if (fboundp 'tpl::repl)
-                           "Debugger invoked on condition of type ~A:~%"
-                           "Unhandled condition of type ~A:~%")
+                           "~S: Debugger invoked on condition of type ~A~%"
+                           "~S: Unhandled condition of type ~A:~%")
+                       (threads:current-thread)
                        (type-of condition))
         (simple-format *debug-io* "  ~A~%" condition)))))
 

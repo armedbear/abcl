@@ -318,8 +318,10 @@
 
 (in-package "THREADS")
 
+(autoload '(;; MAKE-THREAD helper
+            thread-function-wrapper
 
-(autoload '(;; Mailbox
+            ;; Mailbox
             make-mailbox mailbox-send mailbox-empty-p
             mailbox-read mailbox-peek
 
