@@ -107,24 +107,6 @@ public final class Nil extends Symbol
     }
 
     @Override
-    public final LispObject cadr()
-    {
-        return this;
-    }
-
-    @Override
-    public final LispObject cddr()
-    {
-        return this;
-    }
-
-    @Override
-    public final LispObject caddr()
-    {
-        return this;
-    }
-
-    @Override
     public LispObject nthcdr(int n)
     {
         if (n < 0)

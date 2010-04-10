@@ -134,24 +134,6 @@ public final class Cons extends LispObject
   }
 
   @Override
-  public final LispObject cadr()
-  {
-    return cdr.car();
-  }
-
-  @Override
-  public final LispObject cddr()
-  {
-    return cdr.cdr();
-  }
-
-  @Override
-  public final LispObject caddr()
-  {
-    return cdr.cadr();
-  }
-
-  @Override
   public LispObject nthcdr(int n)
   {
     if (n < 0)

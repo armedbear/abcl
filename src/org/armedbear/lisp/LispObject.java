@@ -195,19 +195,31 @@ public class LispObject //extends Lisp
     return type_error(this, Symbol.CONS);
   }
 
-  public LispObject cadr()
+  public final LispObject cadr()
   {
-    return type_error(this, Symbol.LIST);
+    LispObject tail = cdr();
+    if (!(tail instanceof Nil)) {
+        return tail.car();
+    } else 
+        return NIL;
   }
 
-  public LispObject cddr()
+  public final LispObject cddr()
   {
-    return type_error(this, Symbol.LIST);
+    LispObject tail = cdr();
+    if (!(tail instanceof Nil)) {
+        return tail.cdr();
+    } else 
+        return NIL;
   }
 
-  public LispObject caddr()
+  public final LispObject caddr()
   {
-    return type_error(this, Symbol.LIST);
+    LispObject tail = cddr();
+    if (!(tail instanceof Nil)) {
+        return tail.car();
+    } else 
+        return NIL;
   }
 
   public LispObject nthcdr(int n)
