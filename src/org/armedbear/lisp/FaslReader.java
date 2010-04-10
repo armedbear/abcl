@@ -366,7 +366,7 @@ public final class FaslReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            return stream.readStructure();
+            return stream.readStructure(Stream.faslReadtable);
         }
     };
 

@@ -389,6 +389,42 @@ public class Stream extends StructureObject {
         charPos = n;
     }
 
+    /** Class to abstract readtable access
+     *
+     * Many of the functions below (used to) exist in 2 variants.
+     * One with hardcoded access to the FaslReadtable, the other
+     * with hardcoded access to the *readtable* variable.
+     *
+     * In order to prevent code duplication,
+     * this class abstracts access.
+     */
+    public static abstract class ReadtableAccessor {
+      /** Given the thread passed, return the applicable readtable. */
+      public abstract Readtable rt(LispThread thread);
+    }
+
+   /** pre-instantiated readtable accessor for the *readtable*. */
+   public static ReadtableAccessor currentReadtable
+        = new ReadtableAccessor()
+    {
+      public Readtable rt(LispThread thread)
+      {
+        return
+          (Readtable)Symbol.CURRENT_READTABLE.symbolValue(thread);
+      }
+    };
+
+    /** pre-instantiated readtable accessor for the fasl readtable. */
+    public static ReadtableAccessor faslReadtable
+        = new ReadtableAccessor()
+    {
+      public Readtable rt(LispThread thread)
+      {
+        return FaslReadtable.getInstance();
+      }
+    };
+
+
     public LispObject read(boolean eofError, LispObject eofValue,
                            boolean recursive, LispThread thread)
 
@@ -564,51 +600,9 @@ public class Stream extends StructureObject {
         return new Symbol(sb.toString());
     }
 
-    public LispObject readStructure() {
+    public LispObject readStructure(ReadtableAccessor rta) {
         final LispThread thread = LispThread.currentThread();
         LispObject obj = read(true, NIL, true, thread);
-        if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
-            return NIL;
-        if (obj.listp()) {
-            Symbol structure = checkSymbol(obj.car());
-            LispClass c = LispClass.findClass(structure);
-            if (!(c instanceof StructureClass))
-                return error(new ReaderError(structure.getName() +
-                                             " is not a defined structure type.",
-                                             this));
-            LispObject args = obj.cdr();
-            Symbol DEFSTRUCT_DEFAULT_CONSTRUCTOR =
-                PACKAGE_SYS.intern("DEFSTRUCT-DEFAULT-CONSTRUCTOR");
-            LispObject constructor =
-                DEFSTRUCT_DEFAULT_CONSTRUCTOR.getSymbolFunctionOrDie().execute(structure);
-            final int length = args.length();
-            if ((length % 2) != 0)
-                return error(new ReaderError("Odd number of keyword arguments following #S: " +
-                                             obj.writeToString(),
-                                             this));
-            LispObject[] array = new LispObject[length];
-            LispObject rest = args;
-            for (int i = 0; i < length; i += 2) {
-                LispObject key = rest.car();
-                if (key instanceof Symbol && ((Symbol)key).getPackage() == PACKAGE_KEYWORD) {
-                    array[i] = key;
-                } else {
-                    array[i] = PACKAGE_KEYWORD.intern(javaString(key));
-                }
-                array[i + 1] = rest.cadr();
-                rest = rest.cddr();
-            }
-            return funcall(constructor.getSymbolFunctionOrDie(), array,
-                           thread);
-        }
-        return error(new ReaderError("Non-list following #S: " +
-                                     obj.writeToString(),
-                                     this));
-    }
-
-    public LispObject faslReadStructure() {
-        final LispThread thread = LispThread.currentThread();
-        LispObject obj = faslRead(true, NIL, true, thread);
         if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
             return NIL;
         if (obj.listp()) {
