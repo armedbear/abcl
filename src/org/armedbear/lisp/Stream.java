@@ -574,6 +574,46 @@ public class Stream extends StructureObject {
                                      this));
     }
 
+    public LispObject readString(char terminator, ReadtableAccessor rta)
+    {
+      final LispThread thread = LispThread.currentThread();
+      final Readtable rt = rta.rt(thread);
+      StringBuilder sb = new StringBuilder();
+      try
+      {
+        while (true) {
+          int n = _readChar();
+          if (n < 0) {
+            error(new EndOfFile(this));
+            // Not reached.
+            return null;
+          }
+          char c = (char) n; // ### BUG: Codepoint conversion
+          if (rt.getSyntaxType(c) == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE) {
+            // Single escape.
+            n = _readChar();
+            if (n < 0) {
+              error(new EndOfFile(this));
+              // Not reached.
+              return null;
+            }
+            sb.append((char)n); // ### BUG: Codepoint conversion
+            continue;
+          }
+          if (c == terminator)
+            break;
+          // Default.
+          sb.append(c);
+        }
+      }
+      catch (java.io.IOException e)
+      {
+        //error(new EndOfFile(stream));
+        return new SimpleString(sb);
+      }
+      return new SimpleString(sb);
+    }
+
     public LispObject readList(boolean requireProperList,
                                ReadtableAccessor rta)
     {

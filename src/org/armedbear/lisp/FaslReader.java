@@ -46,41 +46,7 @@ public final class FaslReader
         public LispObject execute(Stream stream, char terminator)
 
         {
-            final Readtable rt = FaslReadtable.getInstance();
-            StringBuilder sb = new StringBuilder();
-            try 
-              {
-                while (true) {
-                  int n = stream._readChar();
-                  if (n < 0) {
-                    error(new EndOfFile(stream));
-                    // Not reached.
-                    return null;
-                  }
-                  char c = (char) n;
-                  if (rt.getSyntaxType(c) == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE) {
-                    // Single escape.
-                    n = stream._readChar();
-                    if (n < 0) {
-                      error(new EndOfFile(stream));
-                      // Not reached.
-                      return null;
-                    }
-                    sb.append((char)n);
-                    continue;
-                  }
-                  if (c == terminator)
-                    break;
-                  // Default.
-                  sb.append(c);
-                }
-                return new SimpleString(sb);
-              }
-            catch (java.io.IOException e)
-              {
-                return new SimpleString(sb);
-		//                return null;
-              }
+            return stream.readString(terminator, Stream.faslReadtable);
         }
     };
 

@@ -72,42 +72,7 @@ public final class LispReader
         public LispObject execute(Stream stream, char terminator)
 
         {
-            final LispThread thread = LispThread.currentThread();
-            final Readtable rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
-            StringBuilder sb = new StringBuilder();
-            try 
-              {
-                while (true) {
-                  int n = stream._readChar();
-                  if (n < 0) {
-                    error(new EndOfFile(stream));
-                    // Not reached.
-                    return null;
-                  }
-                  char c = (char) n; // ### BUG: Codepoint conversion
-                  if (rt.getSyntaxType(c) == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE) {
-                    // Single escape.
-                    n = stream._readChar();
-                    if (n < 0) {
-                      error(new EndOfFile(stream));
-                      // Not reached.
-                      return null;
-                    }
-                    sb.append((char)n); // ### BUG: Codepoint conversion
-                    continue;
-                  }
-                  if (c == terminator)
-                    break;
-                  // Default.
-                  sb.append(c);
-                }
-              }
-            catch (java.io.IOException e)
-              {
-                //error(new EndOfFile(stream));
-		return new SimpleString(sb);
-              }
-            return new SimpleString(sb);
+            return stream.readString(terminator, Stream.currentReadtable);
         }
     };
 
