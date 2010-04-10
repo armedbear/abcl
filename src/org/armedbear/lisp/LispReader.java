@@ -96,24 +96,6 @@ public final class LispReader
                     sb.append((char)n); // ### BUG: Codepoint conversion
                     continue;
                   }
-                  if (Utilities.isPlatformWindows) {
-                    if (c == '\r') {
-                      n = stream._readChar();
-                      if (n < 0) {
-                        error(new EndOfFile(stream));
-                        // Not reached.
-                        return null;
-                      }
-                      if (n == '\n') {
-                        sb.append('\n');
-                      } else {
-                        // '\r' was not followed by '\n'.
-                        stream._unreadChar(n);
-                        sb.append('\r');
-                      }
-                      continue;
-                    }
-                  }
                   if (c == terminator)
                     break;
                   // Default.
