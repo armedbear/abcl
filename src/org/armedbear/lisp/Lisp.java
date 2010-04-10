@@ -1200,8 +1200,9 @@ public final class Lisp
   // Used by the compiler.
   public static final LispObject readObjectFromString(String s)
   {
-    return new StringInputStream(s).faslRead(true, NIL, false,
-                                             LispThread.currentThread());
+    return new StringInputStream(s).read(true, NIL, false,
+                                         LispThread.currentThread(),
+                                         Stream.faslReadtable);
   }
 
     @Deprecated
