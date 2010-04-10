@@ -430,7 +430,8 @@ public class Stream extends StructureObject {
 
     {
         LispObject result = readPreservingWhitespace(eofError, eofValue,
-                                                     recursive, thread);
+                                                     recursive, thread,
+                                                     currentReadtable);
         if (result != eofValue && !recursive) {
             try {
                 if (_charReady()) {
@@ -460,11 +461,12 @@ public class Stream extends StructureObject {
     public LispObject readPreservingWhitespace(boolean eofError,
                                                LispObject eofValue,
                                                boolean recursive,
-                                               LispThread thread)
+                                               LispThread thread,
+                                               ReadtableAccessor rta)
 
     {
         if (recursive) {
-            final Readtable rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
+            final Readtable rt = rta.rt(thread);
             while (true) {
                 int n = -1;
                 try {
@@ -490,7 +492,8 @@ public class Stream extends StructureObject {
             final SpecialBindingsMark mark = thread.markSpecialBindings();
             thread.bindSpecial(_SHARP_EQUAL_ALIST_, NIL);
             try {
-                return readPreservingWhitespace(eofError, eofValue, true, thread);
+                return readPreservingWhitespace(eofError, eofValue, true,
+                                                thread, rta);
             } finally {
                 thread.resetSpecialBindings(mark);
             }
@@ -502,8 +505,9 @@ public class Stream extends StructureObject {
 
     {
         try {
-            LispObject result = faslReadPreservingWhitespace(eofError, eofValue,
-                                recursive, thread);
+            LispObject result =
+                    readPreservingWhitespace(eofError, eofValue, recursive,
+                                             thread, faslReadtable);
             if (result != eofValue && !recursive) {
                 if (_charReady()) {
                     int n = _readChar();
@@ -521,39 +525,6 @@ public class Stream extends StructureObject {
                 return result;
         } catch (IOException e) {
             return error(new StreamError(this, e));
-        }
-    }
-
-    private final LispObject faslReadPreservingWhitespace(boolean eofError,
-            LispObject eofValue,
-            boolean recursive,
-            LispThread thread)
-    throws IOException {
-        if (recursive) {
-            final Readtable rt = FaslReadtable.getInstance();
-            while (true) {
-                int n = _readChar();
-                if (n < 0) {
-                    if (eofError)
-                        return error(new EndOfFile(this));
-                    else
-                        return eofValue;
-                }
-                char c = (char) n; // ### BUG: Codepoint conversion
-                if (rt.isWhitespace(c))
-                    continue;
-                LispObject result = processChar(c, rt);
-                if (result != null)
-                    return result;
-            }
-        } else {
-            final SpecialBindingsMark mark = thread.markSpecialBindings();
-            thread.bindSpecial(_SHARP_EQUAL_ALIST_, NIL);
-            try {
-                return faslReadPreservingWhitespace(eofError, eofValue, true, thread);
-            } finally {
-                thread.resetSpecialBindings(mark);
-            }
         }
     }
 
@@ -2265,7 +2236,7 @@ public class Stream extends StructureObject {
             LispObject result;
             if (preserveWhitespace)
                 result = in.readPreservingWhitespace(eofError, third, false,
-                                                     thread);
+                                                     thread, currentReadtable);
             else
                 result = in.read(eofError, third, false, thread);
             return thread.setValues(result, Fixnum.getInstance(in.getOffset()));
@@ -2350,7 +2321,8 @@ public class Stream extends StructureObject {
             boolean recursive = length > 3 ? (args[3] != NIL) : false;
             return stream.readPreservingWhitespace(eofError, eofValue,
                                                    recursive,
-                                                   LispThread.currentThread());
+                                                   LispThread.currentThread(),
+                                                   currentReadtable);
         }
     };
 
