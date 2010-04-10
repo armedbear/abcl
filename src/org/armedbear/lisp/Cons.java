@@ -134,22 +134,6 @@ public final class Cons extends LispObject
   }
 
   @Override
-  public LispObject nthcdr(int n)
-  {
-    if (n < 0)
-      return type_error(Fixnum.getInstance(n),
-                             list(Symbol.INTEGER, Fixnum.ZERO));
-    LispObject result = this;
-    for (int i = n; i-- > 0;)
-      {
-        result = result.cdr();
-        if (result == NIL)
-          break;
-      }
-    return result;
-  }
-
-  @Override
   public final int sxhash()
   {
     return computeHash(this, 4);
@@ -246,40 +230,6 @@ public final class Cons extends LispObject
   {
     if (index < 0)
       type_error(Fixnum.getInstance(index), Symbol.UNSIGNED_BYTE);
-    int i = 0;
-    LispObject obj = this;
-    while (true)
-      {
-        if (i == index)
-          return obj.car();
-        obj = obj.cdr();
-        if (obj == NIL)
-          return NIL;
-        ++i;
-      }
-  }
-
-  @Override
-  public LispObject NTH(LispObject arg)
-  {
-    int index;
-    if (arg instanceof Fixnum)
-      {
-        index = ((Fixnum)arg).value;
-      }
-    else
-        {
-        if (arg instanceof Bignum)
-          {
-            // FIXME (when machines have enough memory for it to matter)
-            if (arg.minusp())
-              return type_error(arg, Symbol.UNSIGNED_BYTE);
-            return NIL;
-          }
-        return type_error(arg, Symbol.UNSIGNED_BYTE);
-      }
-    if (index < 0)
-      type_error(arg, Symbol.UNSIGNED_BYTE);
     int i = 0;
     LispObject obj = this;
     while (true)

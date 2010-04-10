@@ -222,11 +222,22 @@ public class LispObject //extends Lisp
         return NIL;
   }
 
-  public LispObject nthcdr(int n)
+  public final LispObject nthcdr(int n)
   {
     if (n < 0)
       return type_error(Fixnum.getInstance(n),
                              list(Symbol.INTEGER, Fixnum.ZERO));
+    if (this instanceof Cons) {
+      LispObject result = this;
+      for (int i = n; i-- > 0;) {
+          result = result.cdr();
+          if (result == NIL)
+              break;
+      }
+      return result;
+    } else if (this instanceof Nil) {
+      return NIL;
+    }
     return type_error(this, Symbol.LIST);
   }
 
@@ -482,9 +493,9 @@ public class LispObject //extends Lisp
     return type_error(this, Symbol.LIST);
   }
 
-  public LispObject NTH(LispObject arg)
+  public final LispObject NTH(LispObject arg)
   {
-    return type_error(this, Symbol.LIST);
+    return NTH(Fixnum.getValue(arg));
   }
 
   public LispObject elt(int index)

@@ -107,15 +107,6 @@ public final class Nil extends Symbol
     }
 
     @Override
-    public LispObject nthcdr(int n)
-    {
-        if (n < 0)
-            return type_error(Fixnum.getInstance(n),
-                                   list(Symbol.INTEGER, Fixnum.ZERO));
-        return this;
-    }
-
-    @Override
     public int length()
     {
         return 0;
@@ -128,23 +119,6 @@ public final class Nil extends Symbol
             error(new TypeError(String.valueOf(index) +
                                  " is not of type UNSIGNED-BYTE."));
         return NIL;
-    }
-
-    @Override
-    public LispObject NTH(LispObject arg)
-    {
-        int index;
-                if (arg instanceof Fixnum) {
-                        index = ((Fixnum) arg).value;
-                } else if (arg instanceof Bignum) {
-                        if (arg.minusp())
-                                return error(new TypeError(arg, Symbol.UNSIGNED_BYTE));
-                        return NIL;
-                } else
-                        return error(new TypeError(arg, Symbol.UNSIGNED_BYTE));
-                if (index < 0)
-                        error(new TypeError(arg, Symbol.UNSIGNED_BYTE));
-                return NIL;
     }
 
     @Override
