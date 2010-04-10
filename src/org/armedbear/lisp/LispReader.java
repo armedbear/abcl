@@ -179,7 +179,7 @@ public final class LispReader
         public LispObject execute(Stream stream, char c)
 
         {
-            return stream.readDispatchChar(c, false);
+            return stream.readDispatchChar(c, Stream.currentReadtable);
         }
     };
 

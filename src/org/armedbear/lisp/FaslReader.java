@@ -139,7 +139,7 @@ public final class FaslReader
         public LispObject execute(Stream stream, char c)
 
         {
-            return stream.readDispatchChar(c, true);
+            return stream.readDispatchChar(c, Stream.faslReadtable);
         }
     };
 

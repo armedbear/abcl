@@ -725,8 +725,8 @@ public class Stream extends StructureObject {
         }
     }
 
-    public LispObject readDispatchChar(char dispChar, boolean useFaslReadtable)
-
+    public LispObject readDispatchChar(char dispChar,
+                                       ReadtableAccessor rta)
     {
         int numArg = -1;
         char c = 0;
@@ -746,11 +746,7 @@ public class Stream extends StructureObject {
             error(new StreamError(this, e));
         }
         final LispThread thread = LispThread.currentThread();
-        final Readtable rt;
-        if (useFaslReadtable)
-            rt = FaslReadtable.getInstance();
-        else
-            rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
+        final Readtable rt = rta.rt(thread);
         LispObject fun = rt.getDispatchMacroCharacter(dispChar, c);
         if (fun instanceof DispatchMacroFunction)
             return ((DispatchMacroFunction)fun).execute(this, c, numArg);
