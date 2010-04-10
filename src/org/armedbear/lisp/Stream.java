@@ -1243,11 +1243,10 @@ public class Stream extends StructureObject {
         }
     }
 
-    public LispObject readRadix(int radix) {
+    public LispObject readRadix(int radix, ReadtableAccessor rta) {
         StringBuilder sb = new StringBuilder();
         final LispThread thread = LispThread.currentThread();
-        final Readtable rt =
-            (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
+        final Readtable rt = rta.rt(thread);
         boolean escaped = (_readToken(sb, rt) != null);
         if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
             return NIL;
@@ -1260,30 +1259,6 @@ public class Stream extends StructureObject {
         // does not accept a prefixed '+' character, so we skip over it here
         if (s.charAt(0) == '+')
             s = s.substring(1);
-        try {
-            int n = Integer.parseInt(s, radix);
-            return (n >= 0 && n <= 255) ? Fixnum.constants[n] : Fixnum.getInstance(n);
-        } catch (NumberFormatException e) {}
-        // parseInt() failed.
-        try {
-            return Bignum.getInstance(s, radix);
-        } catch (NumberFormatException e) {}
-        // Not a number.
-        return error(new LispError());
-    }
-
-    public LispObject faslReadRadix(int radix) {
-        StringBuilder sb = new StringBuilder();
-        final LispThread thread = LispThread.currentThread();
-        final Readtable rt = FaslReadtable.getInstance();
-        boolean escaped = (_readToken(sb, rt) != null);
-        if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
-            return NIL;
-        if (escaped)
-            return error(new ReaderError("Illegal syntax for number.", this));
-        String s = sb.toString();
-        if (s.indexOf('/') >= 0)
-            return makeRatio(s, radix);
         try {
             int n = Integer.parseInt(s, radix);
             return (n >= 0 && n <= 255) ? Fixnum.constants[n] : Fixnum.getInstance(n);

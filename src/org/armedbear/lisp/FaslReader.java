@@ -303,7 +303,7 @@ public final class FaslReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            return stream.faslReadRadix(2);
+            return stream.readRadix(2, Stream.faslReadtable);
         }
     };
 
@@ -329,7 +329,7 @@ public final class FaslReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            return stream.faslReadRadix(8);
+            return stream.readRadix(8, Stream.faslReadtable);
         }
     };
 
@@ -355,7 +355,7 @@ public final class FaslReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            return stream.faslReadRadix(n);
+            return stream.readRadix(n, Stream.faslReadtable);
         }
     };
 
@@ -381,7 +381,7 @@ public final class FaslReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            return stream.faslReadRadix(16);
+            return stream.readRadix(16, Stream.faslReadtable);
         }
     };
 

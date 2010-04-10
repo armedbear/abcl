@@ -334,7 +334,7 @@ public final class LispReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            return stream.readRadix(2);
+            return stream.readRadix(2, Stream.currentReadtable);
         }
     };
 
@@ -360,7 +360,7 @@ public final class LispReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            return stream.readRadix(8);
+            return stream.readRadix(8, Stream.currentReadtable);
         }
     };
 
@@ -386,7 +386,7 @@ public final class LispReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            return stream.readRadix(n);
+            return stream.readRadix(n, Stream.currentReadtable);
         }
     };
 
@@ -412,7 +412,7 @@ public final class LispReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            return stream.readRadix(16);
+            return stream.readRadix(16, Stream.currentReadtable);
         }
     };
 
