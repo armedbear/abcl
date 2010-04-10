@@ -193,14 +193,6 @@ public final class ComplexVector extends AbstractVector
         }
     }
 
-    // Ignores fill pointer.
-    // FIXME inline
-    @Override
-    public LispObject AREF(LispObject index)
-    {
-        return AREF(Fixnum.getValue(index));
-    }
-
     @Override
     public void aset(int index, LispObject newValue)
     {

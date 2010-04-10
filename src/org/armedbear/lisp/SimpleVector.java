@@ -175,21 +175,6 @@ public final class SimpleVector extends AbstractVector
   }
 
   @Override
-  public LispObject AREF(LispObject index)
-  {
-        int idx = Fixnum.getValue(index);
-    try
-      {
-        return data[idx];
-      }
-    catch (ArrayIndexOutOfBoundsException e)
-      {
-        badIndex(idx, data.length);
-        return NIL; // Not reached.
-      }
-  }
-
-  @Override
   public void aset(int index, LispObject newValue)
   {
     try

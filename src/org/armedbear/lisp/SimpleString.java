@@ -401,17 +401,6 @@ public final class SimpleString extends AbstractString
         }
     }
 
-    @Override
-    public LispObject AREF(LispObject index)
-    {
-        try {
-            return LispCharacter.getInstance(chars[Fixnum.getValue(index)]);
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-            badIndex(((Fixnum)index).value, capacity);
-            return NIL; // Not reached.
-        }
-    }
 
     @Override
     public void aset(int index, LispObject obj)

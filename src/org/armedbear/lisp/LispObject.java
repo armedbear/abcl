@@ -505,7 +505,7 @@ public class LispObject //extends Lisp
     return type_error(this, Symbol.ARRAY);
   }
 
-  public LispObject AREF(LispObject index)
+  public final LispObject AREF(LispObject index)
   {
       return AREF(Fixnum.getValue(index));
   }
@@ -522,7 +522,7 @@ public class LispObject //extends Lisp
     type_error(this, Symbol.ARRAY);
   }
 
-  public void aset(LispObject index, LispObject newValue)
+  public final void aset(LispObject index, LispObject newValue)
 
   {
       aset(Fixnum.getValue(index), newValue);

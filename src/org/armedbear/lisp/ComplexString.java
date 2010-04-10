@@ -411,13 +411,6 @@ public final class ComplexString extends AbstractString
     return LispCharacter.getInstance(charAt(index));
   }
 
-  // Ignores fill pointer.
-  @Override
-  public LispObject AREF(LispObject index)
-  {
-    return LispCharacter.getInstance(charAt(Fixnum.getValue(index)));
-  }
-
   @Override
   public void aset(int index, LispObject newValue)
   {

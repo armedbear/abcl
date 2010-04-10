@@ -191,13 +191,6 @@ public abstract class AbstractBitVector extends AbstractVector
         }
     }
 
-    // Ignores fill pointer.
-    @Override
-    public LispObject AREF(LispObject index)
-    {
-        return AREF(Fixnum.getValue(index));
-    }
-
     @Override
     public LispObject reverse()
     {

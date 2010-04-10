@@ -155,19 +155,6 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
         }
     }
 
-    // Ignores fill pointer.
-    @Override
-    public LispObject AREF(LispObject index)
-    {
-        try {
-            return Fixnum.getInstance(elements[Fixnum.getValue(index)]);
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-            badIndex(Fixnum.getValue(index), elements.length);
-            return NIL; // Not reached.
-        }
-    }
-
     @Override
     public void aset(int index, int n)
     {
