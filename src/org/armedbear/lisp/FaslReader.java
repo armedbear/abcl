@@ -37,32 +37,6 @@ import static org.armedbear.lisp.Lisp.*;
 
 public final class FaslReader
 {
-    // ### fasl-read-comment
-    public static final ReaderMacroFunction FASL_READ_COMMENT =
-        new ReaderMacroFunction("fasl-read-comment", PACKAGE_SYS, false,
-                                "stream character")
-    {
-        @Override
-        public LispObject execute(Stream stream, char ignored)
-
-        {
-          try 
-            {
-              while (true) {
-                int n = stream._readChar();
-                if (n < 0)
-                  return null;
-                if (n == '\n')
-                  return null;
-              }
-            }
-          catch (java.io.IOException e)
-            {
-              return null;
-            }
-        }
-    };
-
     // ### fasl-read-string
     public static final ReaderMacroFunction FASL_READ_STRING =
         new ReaderMacroFunction("fasl-read-string", PACKAGE_SYS, false,
@@ -138,19 +112,6 @@ public final class FaslReader
 
         {
             return stream.readList(false, true);
-        }
-    };
-
-    // ### fasl-read-right-paren
-    public static final ReaderMacroFunction FASL_READ_RIGHT_PAREN =
-        new ReaderMacroFunction("fasl-read-right-paren", PACKAGE_SYS, false,
-                                "stream character")
-    {
-        @Override
-        public LispObject execute(Stream stream, char ignored)
-
-        {
-            return error(new ReaderError("Unmatched right parenthesis.", stream));
         }
     };
 
@@ -448,40 +409,6 @@ public final class FaslReader
         {
             return stream.readCharacterLiteral(FaslReadtable.getInstance(),
                                                LispThread.currentThread());
-        }
-    };
-
-    // ### fasl-sharp-vertical-bar
-    public static final DispatchMacroFunction FASL_SHARP_VERTICAL_BAR =
-        new DispatchMacroFunction("sharp-vertical-bar", PACKAGE_SYS, false,
-                                  "stream sub-char numarg")
-    {
-        @Override
-        public LispObject execute(Stream stream, char c, int n)
-
-        {
-            stream.skipBalancedComment();
-            return null;
-        }
-    };
-
-    // ### fasl-sharp-illegal
-    public static final DispatchMacroFunction FASL_SHARP_ILLEGAL =
-        new DispatchMacroFunction("fasl-sharp-illegal", PACKAGE_SYS, false,
-                                  "stream sub-char numarg")
-    {
-        @Override
-        public LispObject execute(Stream stream, char c, int n)
-
-        {
-            StringBuilder sb =
-                new StringBuilder("Illegal # macro character: #\\");
-            String s = LispCharacter.charToName(c);
-            if (s != null)
-                sb.append(s);
-            else
-                sb.append(c);
-            return error(new ReaderError(sb.toString(), stream));
         }
     };
 }

@@ -64,10 +64,10 @@ public final class FaslReadtable extends Readtable
         syntax['|']  = SYNTAX_TYPE_MULTIPLE_ESCAPE;
 
         LispObject[] readerMacroFunctions = this.readerMacroFunctions.constants;
-        readerMacroFunctions[';']  = FaslReader.FASL_READ_COMMENT;
+        readerMacroFunctions[';']  = LispReader.READ_COMMENT;
         readerMacroFunctions['"']  = FaslReader.FASL_READ_STRING;
         readerMacroFunctions['(']  = FaslReader.FASL_READ_LIST;
-        readerMacroFunctions[')']  = FaslReader.FASL_READ_RIGHT_PAREN;
+        readerMacroFunctions[')']  = LispReader.READ_RIGHT_PAREN;
         readerMacroFunctions['\''] = FaslReader.FASL_READ_QUOTE;
         readerMacroFunctions['#']  = FaslReader.FASL_READ_DISPATCH_CHAR;
 
@@ -91,15 +91,15 @@ public final class FaslReadtable extends Readtable
         dtfunctions['X']  = FaslReader.FASL_SHARP_X;
         dtfunctions['\''] = FaslReader.FASL_SHARP_QUOTE;
         dtfunctions['\\'] = FaslReader.FASL_SHARP_BACKSLASH;
-        dtfunctions['|']  = FaslReader.FASL_SHARP_VERTICAL_BAR;
-        dtfunctions[')']  = FaslReader.FASL_SHARP_ILLEGAL;
-        dtfunctions['<']  = FaslReader.FASL_SHARP_ILLEGAL;
-        dtfunctions[' ']  = FaslReader.FASL_SHARP_ILLEGAL;
-        dtfunctions[8]    = FaslReader.FASL_SHARP_ILLEGAL; // backspace
-        dtfunctions[9]    = FaslReader.FASL_SHARP_ILLEGAL; // tab
-        dtfunctions[10]   = FaslReader.FASL_SHARP_ILLEGAL; // newline, linefeed
-        dtfunctions[12]   = FaslReader.FASL_SHARP_ILLEGAL; // page
-        dtfunctions[13]   = FaslReader.FASL_SHARP_ILLEGAL; // return
+        dtfunctions['|']  = LispReader.SHARP_VERTICAL_BAR;
+        dtfunctions[')']  = LispReader.SHARP_ILLEGAL;
+        dtfunctions['<']  = LispReader.SHARP_ILLEGAL;
+        dtfunctions[' ']  = LispReader.SHARP_ILLEGAL;
+        dtfunctions[8]    = LispReader.SHARP_ILLEGAL; // backspace
+        dtfunctions[9]    = LispReader.SHARP_ILLEGAL; // tab
+        dtfunctions[10]   = LispReader.SHARP_ILLEGAL; // newline, linefeed
+        dtfunctions[12]   = LispReader.SHARP_ILLEGAL; // page
+        dtfunctions[13]   = LispReader.SHARP_ILLEGAL; // return
         dispatchTables.constants['#'] = dt;
 
         readtableCase = Keyword.UPCASE;
