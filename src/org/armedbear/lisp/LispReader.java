@@ -138,7 +138,7 @@ public final class LispReader
         public LispObject execute(Stream stream, char ignored)
 
         {
-            return stream.readList(false, false);
+            return stream.readList(false, Stream.currentReadtable);
         }
     };
 
@@ -193,7 +193,7 @@ public final class LispReader
 
         {
             final LispThread thread = LispThread.currentThread();
-            LispObject list = stream.readList(true, false);
+            LispObject list = stream.readList(true, Stream.currentReadtable);
             if (_BACKQUOTE_COUNT_.symbolValue(thread).zerop()) {
                 if (n >= 0) {
                     LispObject[] array = new LispObject[n];

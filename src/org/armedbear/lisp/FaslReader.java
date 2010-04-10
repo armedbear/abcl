@@ -111,7 +111,7 @@ public final class FaslReader
         public LispObject execute(Stream stream, char ignored)
 
         {
-            return stream.readList(false, true);
+            return stream.readList(false, Stream.faslReadtable);
         }
     };
 
@@ -153,7 +153,7 @@ public final class FaslReader
 
         {
             final LispThread thread = LispThread.currentThread();
-            LispObject list = stream.readList(true, true);
+            LispObject list = stream.readList(true, Stream.faslReadtable);
             if (_BACKQUOTE_COUNT_.symbolValue(thread).zerop()) {
                 if (n >= 0) {
                     LispObject[] array = new LispObject[n];

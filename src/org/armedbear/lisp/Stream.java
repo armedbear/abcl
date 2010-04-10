@@ -642,19 +642,16 @@ public class Stream extends StructureObject {
                                      this));
     }
 
-    public LispObject readList(boolean requireProperList, boolean useFaslReadtable)
-
+    public LispObject readList(boolean requireProperList,
+                               ReadtableAccessor rta)
     {
         final LispThread thread = LispThread.currentThread();
         Cons first = null;
         Cons last = null;
-        Readtable rt = null;
-        if (useFaslReadtable)
-            rt = FaslReadtable.getInstance();
+        Readtable rt;
         try {
             while (true) {
-                if (!useFaslReadtable)
-                    rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
+                rt = rta.rt(thread);
                 char c = flushWhitespace(rt);
                 if (c == ')') {
                     return first == null ? NIL : first;
