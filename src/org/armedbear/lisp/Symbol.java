@@ -168,12 +168,6 @@ public class Symbol extends LispObject
   }
 
   @Override
-  public final LispObject SYMBOLP()
-  {
-    return T;
-  }
-
-  @Override
   public boolean constantp()
   {
     return (flags & FLAG_CONSTANT) != 0;

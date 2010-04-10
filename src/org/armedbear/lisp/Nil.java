@@ -146,18 +146,6 @@ public final class Nil extends Symbol
     }
 
     @Override
-    public boolean listp()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean endp()
-    {
-        return true;
-    }
-
-    @Override
     public LispObject NOT()
     {
         return T;

@@ -593,14 +593,14 @@ public class LispObject //extends Lisp
     return null;
   }
 
-  public LispObject SYMBOLP()
+  public final LispObject SYMBOLP()
   {
-    return NIL;
+    return (this instanceof Symbol) ? T : NIL;
   }
 
-  public boolean listp()
+  public final boolean listp()
   {
-    return false;
+    return (this instanceof Cons) || (this instanceof Nil);
   }
 
   public final LispObject LISTP()
@@ -608,8 +608,12 @@ public class LispObject //extends Lisp
     return listp() ? T : NIL;
   }
 
-  public boolean endp()
+  public final boolean endp()
   {
+    if (this instanceof Cons)
+        return false;
+    else if (this instanceof Nil)
+        return true;
     type_error(this, Symbol.LIST);
     // Not reached.
     return false;

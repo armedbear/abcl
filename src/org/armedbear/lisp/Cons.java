@@ -330,18 +330,6 @@ public final class Cons extends LispObject
   }
 
   @Override
-  public final boolean listp()
-  {
-    return true;
-  }
-
-  @Override
-  public final boolean endp()
-  {
-    return false;
-  }
-
-  @Override
   public final LispObject[] copyToArray()
   {
     final int length = length();
