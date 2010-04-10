@@ -149,7 +149,8 @@ public final class Interpreter
     public LispObject eval(String s)
     {
         return Lisp.eval(new StringInputStream(s).read(true, NIL, false,
-                                                  LispThread.currentThread()));
+                                                  LispThread.currentThread(),
+                                                  Stream.currentReadtable));
     }
 
     public static synchronized void initializeLisp()
@@ -328,7 +329,8 @@ public final class Interpreter
                     out._writeString("* ");
                     out._finishOutput();
                     LispObject object =
-                        getStandardInput().read(false, EOF, false, thread);
+                        getStandardInput().read(false, EOF, false, thread,
+                                                Stream.currentReadtable);
                     if (object == EOF)
                         break;
                     out.setCharPos(0);
@@ -499,7 +501,8 @@ public final class Interpreter
     public static final LispObject readFromString(String s)
     {
         return new StringInputStream(s).read(true, NIL, false,
-                                             LispThread.currentThread());
+                                             LispThread.currentThread(),
+                                             Stream.currentReadtable);
     }
 
     // For j.
@@ -516,7 +519,8 @@ public final class Interpreter
             initializeJLisp();
         StringInputStream stream = new StringInputStream(s);
         final LispThread thread = LispThread.currentThread();
-        LispObject obj = stream.read(false, EOF, false, thread);
+        LispObject obj = stream.read(false, EOF, false, thread,
+                                     Stream.currentReadtable);
         if (obj == EOF)
             return error(new EndOfFile(stream));
         final SpecialBindingsMark mark = thread.markSpecialBindings();

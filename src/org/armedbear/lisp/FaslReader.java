@@ -125,8 +125,9 @@ public final class FaslReader
 
         {
             return new Cons(Symbol.QUOTE,
-                            new Cons(stream.faslRead(true, NIL, true,
-                                                     LispThread.currentThread())));
+                            new Cons(stream.read(true, NIL, true,
+                                                 LispThread.currentThread(),
+                                                 Stream.faslReadtable)));
         }
     };
 
@@ -255,7 +256,8 @@ public final class FaslReader
                 return error(new ReaderError("Can't read #. when *READ-EVAL* is NIL.",
                                               stream));
             else
-                return eval(stream.faslRead(true, NIL, true, thread),
+                return eval(stream.read(true, NIL, true, thread,
+                                        Stream.faslReadtable),
                             new Environment(), thread);
         }
     };
@@ -288,7 +290,7 @@ public final class FaslReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            return stream.faslReadArray(n);
+            return stream.readArray(n, Stream.faslReadtable);
         }
     };
 
@@ -314,7 +316,7 @@ public final class FaslReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            return stream.faslReadComplex();
+            return stream.readComplex(Stream.faslReadtable);
         }
     };
 
@@ -340,7 +342,7 @@ public final class FaslReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            return stream.faslReadPathname();
+            return stream.readPathname(Stream.faslReadtable);
         }
     };
 
@@ -393,8 +395,9 @@ public final class FaslReader
 
         {
             return new Cons(Symbol.FUNCTION,
-                            new Cons(stream.faslRead(true, NIL, true,
-                                                     LispThread.currentThread())));
+                            new Cons(stream.read(true, NIL, true,
+                                                 LispThread.currentThread(),
+                                                 Stream.faslReadtable)));
         }
     };
 

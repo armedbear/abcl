@@ -424,19 +424,18 @@ public class Stream extends StructureObject {
 
 
     public LispObject read(boolean eofError, LispObject eofValue,
-                           boolean recursive, LispThread thread)
-
+                           boolean recursive, LispThread thread,
+                           ReadtableAccessor rta)
     {
         LispObject result = readPreservingWhitespace(eofError, eofValue,
-                                                     recursive, thread,
-                                                     currentReadtable);
+                                                     recursive, thread, rta);
         if (result != eofValue && !recursive) {
             try {
                 if (_charReady()) {
                     int n = _readChar();
                     if (n >= 0) {
                         char c = (char) n; // ### BUG: Codepoint conversion
-                        Readtable rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
+                        Readtable rt = rta.rt(thread);
                         if (!rt.isWhitespace(c))
                             _unreadChar(c);
                     }
@@ -498,34 +497,6 @@ public class Stream extends StructureObject {
         }
     }
 
-    public LispObject faslRead(boolean eofError, LispObject eofValue,
-                               boolean recursive, LispThread thread)
-
-    {
-        try {
-            LispObject result =
-                    readPreservingWhitespace(eofError, eofValue, recursive,
-                                             thread, faslReadtable);
-            if (result != eofValue && !recursive) {
-                if (_charReady()) {
-                    int n = _readChar();
-                    if (n >= 0) {
-                        char c = (char) n; // ### BUG: Codepoint conversion
-                        Readtable rt = FaslReadtable.getInstance();
-                        if (!rt.isWhitespace(c))
-                            _unreadChar(c);
-                    }
-                }
-            }
-            if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
-                return NIL;
-            else
-                return result;
-        } catch (IOException e) {
-            return error(new StreamError(this, e));
-        }
-    }
-
     private final LispObject processChar(char c, Readtable rt)
 
     {
@@ -537,17 +508,9 @@ public class Stream extends StructureObject {
         return readToken(c, rt);
     }
 
-    public LispObject readPathname() {
-        LispObject obj = read(true, NIL, false, LispThread.currentThread());
-        if (obj instanceof AbstractString)
-            return Pathname.parseNamestring((AbstractString)obj);
-        if (obj.listp())
-            return Pathname.makePathname(obj);
-        return error(new TypeError("#p requires a string or list argument."));
-    }
-
-    public LispObject faslReadPathname() {
-        LispObject obj = faslRead(true, NIL, false, LispThread.currentThread());
+    public LispObject readPathname(ReadtableAccessor rta) {
+        LispObject obj = read(true, NIL, false,
+                              LispThread.currentThread(), rta);
         if (obj instanceof AbstractString)
             return Pathname.parseNamestring((AbstractString)obj);
         if (obj.listp())
@@ -571,7 +534,7 @@ public class Stream extends StructureObject {
 
     public LispObject readStructure(ReadtableAccessor rta) {
         final LispThread thread = LispThread.currentThread();
-        LispObject obj = read(true, NIL, true, thread);
+        LispObject obj = read(true, NIL, true, thread, rta);
         if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
             return NIL;
         if (obj.listp()) {
@@ -639,7 +602,7 @@ public class Stream extends StructureObject {
                                                              this));
                         }
                         _unreadChar(nextChar);
-                        LispObject obj = read(true, NIL, true, thread);
+                        LispObject obj = read(true, NIL, true, thread, rta);
                         if (requireProperList) {
                             if (!obj.listp())
                                 error(new ReaderError("The value " +
@@ -793,9 +756,9 @@ public class Stream extends StructureObject {
         }
     }
 
-    public LispObject readArray(int rank) {
+    public LispObject readArray(int rank, ReadtableAccessor rta) {
         final LispThread thread = LispThread.currentThread();
-        LispObject obj = read(true, NIL, true, thread);
+        LispObject obj = read(true, NIL, true, thread, rta);
         if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
             return NIL;
         switch (rank) {
@@ -814,57 +777,9 @@ public class Stream extends StructureObject {
         }
     }
 
-    public LispObject faslReadArray(int rank) {
+    public LispObject readComplex(ReadtableAccessor rta) {
         final LispThread thread = LispThread.currentThread();
-        LispObject obj = faslRead(true, NIL, true, thread);
-        if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
-            return NIL;
-        switch (rank) {
-        case -1:
-            return error(new ReaderError("No dimensions argument to #A.", this));
-        case 0:
-            return new ZeroRankArray(T, obj, false);
-        case 1: {
-            if (obj.listp() || obj instanceof AbstractVector)
-                return new SimpleVector(obj);
-            return error(new ReaderError(obj.writeToString() + " is not a sequence.",
-                                         this));
-        }
-        default:
-            return new SimpleArray_T(rank, obj);
-        }
-    }
-
-    public LispObject readComplex() {
-        final LispThread thread = LispThread.currentThread();
-        LispObject obj = read(true, NIL, true, thread);
-        if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
-            return NIL;
-        if (obj instanceof Cons && obj.length() == 2)
-            return Complex.getInstance(obj.car(), obj.cadr());
-        // Error.
-        StringBuilder sb = new StringBuilder("Invalid complex number format");
-        if (this instanceof FileStream) {
-            Pathname p = ((FileStream)this).getPathname();
-            if (p != null) {
-                String namestring = p.getNamestring();
-                if (namestring != null) {
-                    sb.append(" in #P\"");
-                    sb.append(namestring);
-                    sb.append('"');
-                }
-            }
-            sb.append(" at offset ");
-            sb.append(_getFilePosition());
-        }
-        sb.append(": #C");
-        sb.append(obj.writeToString());
-        return error(new ReaderError(sb.toString(), this));
-    }
-
-    public LispObject faslReadComplex() {
-        final LispThread thread = LispThread.currentThread();
-        LispObject obj = faslRead(true, NIL, true, thread);
+        LispObject obj = read(true, NIL, true, thread, rta);
         if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
             return NIL;
         if (obj instanceof Cons && obj.length() == 2)
@@ -2236,7 +2151,7 @@ public class Stream extends StructureObject {
                 result = in.readPreservingWhitespace(eofError, third, false,
                                                      thread, currentReadtable);
             else
-                result = in.read(eofError, third, false, thread);
+                result = in.read(eofError, third, false, thread, currentReadtable);
             return thread.setValues(result, Fixnum.getInstance(in.getOffset()));
         }
     };
@@ -2250,7 +2165,7 @@ public class Stream extends StructureObject {
             final LispThread thread = LispThread.currentThread();
             final LispObject obj = Symbol.STANDARD_INPUT.symbolValue(thread);
             final Stream stream = checkStream(obj);
-            return stream.read(true, NIL, false, thread);
+            return stream.read(true, NIL, false, thread, currentReadtable);
         }
         @Override
         public LispObject execute(LispObject arg) {
@@ -2260,7 +2175,7 @@ public class Stream extends StructureObject {
             else if (arg == NIL)
                 arg = Symbol.STANDARD_INPUT.symbolValue(thread);
             final Stream stream = checkStream(arg);
-            return stream.read(true, NIL, false, thread);
+            return stream.read(true, NIL, false, thread, currentReadtable);
         }
         @Override
         public LispObject execute(LispObject first, LispObject second)
@@ -2272,7 +2187,7 @@ public class Stream extends StructureObject {
             else if (first == NIL)
                 first = Symbol.STANDARD_INPUT.symbolValue(thread);
             final Stream stream = checkStream(first);
-            return stream.read(second != NIL, NIL, false, thread);
+            return stream.read(second != NIL, NIL, false, thread, currentReadtable);
         }
         @Override
         public LispObject execute(LispObject first, LispObject second,
@@ -2285,7 +2200,7 @@ public class Stream extends StructureObject {
             else if (first == NIL)
                 first = Symbol.STANDARD_INPUT.symbolValue(thread);
             final Stream stream = checkStream(first);
-            return stream.read(second != NIL, third, false, thread);
+            return stream.read(second != NIL, third, false, thread, currentReadtable);
         }
         @Override
         public LispObject execute(LispObject first, LispObject second,
@@ -2298,7 +2213,8 @@ public class Stream extends StructureObject {
             else if (first == NIL)
                 first = Symbol.STANDARD_INPUT.symbolValue(thread);
             final Stream stream = checkStream(first);
-            return stream.read(second != NIL, third, fourth != NIL, thread);
+            return stream.read(second != NIL, third, fourth != NIL,
+                               thread, currentReadtable);
         }
     };
 

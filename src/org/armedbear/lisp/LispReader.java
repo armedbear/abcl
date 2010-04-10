@@ -166,7 +166,8 @@ public final class LispReader
         {
             return new Cons(Symbol.QUOTE,
                             new Cons(stream.read(true, NIL, true,
-                                                 LispThread.currentThread())));
+                                                 LispThread.currentThread(),
+                                                 Stream.currentReadtable)));
         }
     };
 
@@ -292,7 +293,8 @@ public final class LispReader
                 return error(new ReaderError("Can't read #. when *READ-EVAL* is NIL.",
                                               stream));
             else
-                return eval(stream.read(true, NIL, true, thread),
+                return eval(stream.read(true, NIL, true,
+                                        thread, Stream.currentReadtable),
                             new Environment(), thread);
         }
     };
@@ -319,7 +321,7 @@ public final class LispReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            return stream.readArray(n);
+            return stream.readArray(n, Stream.currentReadtable);
         }
     };
 
@@ -345,7 +347,7 @@ public final class LispReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            return stream.readComplex();
+            return stream.readComplex(Stream.currentReadtable);
         }
     };
 
@@ -371,7 +373,7 @@ public final class LispReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            return stream.readPathname();
+            return stream.readPathname(Stream.currentReadtable);
         }
     };
 
@@ -425,7 +427,8 @@ public final class LispReader
         {
             return new Cons(Symbol.FUNCTION,
                             new Cons(stream.read(true, NIL, true,
-                                                 LispThread.currentThread())));
+                                                 LispThread.currentThread(),
+                                                 Stream.currentReadtable)));
         }
     };
 

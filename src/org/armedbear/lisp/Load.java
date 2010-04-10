@@ -546,7 +546,8 @@ public final class Load
             LispObject result = NIL;
             while (true) {
                 sourcePositionBinding.value = Fixnum.getInstance(in.getOffset());
-                LispObject obj = in.read(false, EOF, false, thread);
+                LispObject obj = in.read(false, EOF, false,
+                                         thread, Stream.currentReadtable);
                 if (obj == EOF)
                     break;
                 result = eval(obj, env, thread);
@@ -580,7 +581,7 @@ public final class Load
                                AutoloadedFunctionProxy.makePreloadingContext());
             in.setExternalFormat(_FASL_EXTERNAL_FORMAT_.symbolValue(thread));
             while (true) {
-                LispObject obj = in.faslRead(false, EOF, true, thread);
+                LispObject obj = in.read(false, EOF, true, thread, Stream.faslReadtable);
                 if (obj == EOF)
                     break;
                 result = eval(obj, env, thread);
