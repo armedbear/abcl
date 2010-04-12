@@ -1,7 +1,7 @@
 /*
  * SpecialBindingsMark.java
  *
- * Copyright (C) 1009 Erik Huelsmann
+ * Copyright (C) 2009 Erik Huelsmann
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
