@@ -140,21 +140,7 @@ public final class LispReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            final LispThread thread = LispThread.currentThread();
-            LispObject list = stream.readList(true, Stream.currentReadtable);
-            if (_BACKQUOTE_COUNT_.symbolValue(thread).zerop()) {
-                if (n >= 0) {
-                    LispObject[] array = new LispObject[n];
-                    for (int i = 0; i < n; i++) {
-                        array[i] = list.car();
-                        if (list.cdr() != NIL)
-                            list = list.cdr();
-                    }
-                    return new SimpleVector(array);
-                } else
-                    return new SimpleVector(list);
-            }
-            return new Cons(_BQ_VECTOR_FLAG_.symbolValue(thread), list);
+          return stream.readSharpLeftParen(c, n, Stream.currentReadtable);
         }
     };
 
@@ -167,62 +153,7 @@ public final class LispReader
         public LispObject execute(Stream stream, char ignored, int n)
 
         {
-            final LispThread thread = LispThread.currentThread();
-            final Readtable rt = (Readtable) Symbol.CURRENT_READTABLE.symbolValue(thread);
-            final boolean suppress = Symbol.READ_SUPPRESS.symbolValue(thread) != NIL;
-            StringBuilder sb = new StringBuilder();
-            try 
-              {
-                while (true) {
-                  int ch = stream._readChar();
-                  if (ch < 0)
-                    break;
-                  char c = (char) ch; // ### BUG: Codepoint conversion
-                  if (c == '0' || c == '1')
-                    sb.append(c);
-                  else {
-                    int syntaxType = rt.getSyntaxType(c);
-                    if (syntaxType == Readtable.SYNTAX_TYPE_WHITESPACE ||
-                        syntaxType == Readtable.SYNTAX_TYPE_TERMINATING_MACRO) {
-                      stream._unreadChar(c);
-                      break;
-                    } else if (!suppress) {
-                      String name = LispCharacter.charToName(c);
-                      if (name == null)
-                        name = "#\\" + c;
-                      error(new ReaderError("Illegal element for bit-vector: " + name,
-                                            stream));
-                    }
-                  }
-                }
-              }
-            catch (java.io.IOException e)
-              {
-                error(new ReaderError("IO error-vector: ",
-                                      stream));
-              }
-            if (suppress)
-                return NIL;
-            if (n >= 0) {
-                // n was supplied.
-                final int length = sb.length();
-                if (length == 0) {
-                    if (n > 0)
-                        return error(new ReaderError("No element specified for bit vector of length " +
-                                                      n + '.',
-                                                      stream));
-                }
-                if (n > length) {
-                    final char c = sb.charAt(length - 1);
-                    for (int i = length; i < n; i++)
-                        sb.append(c);
-                } else if (n < length) {
-                    return error(new ReaderError("Bit vector is longer than specified length: #" +
-                                                  n + '*' + sb.toString(),
-                                                  stream));
-                }
-            }
-            return new SimpleBitVector(sb.toString());
+          return stream.readSharpStar(ignored, n, Stream.currentReadtable);
         }
     };
 
@@ -235,14 +166,7 @@ public final class LispReader
         public LispObject execute(Stream stream, char c, int n)
 
         {
-            final LispThread thread = LispThread.currentThread();
-            if (Symbol.READ_EVAL.symbolValue(thread) == NIL)
-                return error(new ReaderError("Can't read #. when *READ-EVAL* is NIL.",
-                                              stream));
-            else
-                return eval(stream.read(true, NIL, true,
-                                        thread, Stream.currentReadtable),
-                            new Environment(), thread);
+          return stream.readSharpDot(c, n, Stream.currentReadtable);
         }
     };
 

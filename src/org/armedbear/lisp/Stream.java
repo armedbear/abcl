@@ -735,6 +735,105 @@ public class Stream extends StructureObject {
                                      this));
     }
 
+    public LispObject readSharpLeftParen(char c, int n, 
+                                         ReadtableAccessor rta) 
+    {
+        final LispThread thread = LispThread.currentThread();
+        LispObject list = readList(true, rta);
+        if (_BACKQUOTE_COUNT_.symbolValue(thread).zerop()) {
+            if (n >= 0) {
+                LispObject[] array = new LispObject[n];
+                for (int i = 0; i < n; i++) {
+                    array[i] = list.car();
+                    if (list.cdr() != NIL)
+                        list = list.cdr();
+                }
+                return new SimpleVector(array);
+            } else
+                return new SimpleVector(list);
+        }
+        return new Cons(_BQ_VECTOR_FLAG_.symbolValue(thread), list);
+    }
+
+    public LispObject readSharpStar(char ignored, int n, 
+                                    ReadtableAccessor rta) 
+    {
+        final LispThread thread = LispThread.currentThread();
+        final Readtable rt = rta.rt(thread);
+
+        final boolean suppress =
+            (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL);
+        StringBuilder sb = new StringBuilder();
+        try 
+            {
+		while (true) {
+                    int ch = _readChar();
+                    if (ch < 0)
+                        break;
+                    char c = (char) ch;
+                    if (c == '0' || c == '1')
+                        sb.append(c);
+                    else {
+                        int syntaxType = rt.getSyntaxType(c);
+                        if (syntaxType == Readtable.SYNTAX_TYPE_WHITESPACE ||
+                            syntaxType == Readtable.SYNTAX_TYPE_TERMINATING_MACRO) {
+                            _unreadChar(c);
+                            break;
+                        } else if (!suppress) {
+                            String name = LispCharacter.charToName(c);
+                            if (name == null)
+                                name = "#\\" + c;
+                            error(new ReaderError("Illegal element for bit-vector: " + name,
+                                                  this));
+                        }
+                    }
+		}
+            }
+        catch (java.io.IOException e)
+            {
+		error(new ReaderError("IO error: ",
+				      this));
+		return NIL;
+            }
+        
+        if (suppress)
+            return NIL;
+        if (n >= 0) {
+            // n was supplied.
+            final int length = sb.length();
+            if (length == 0) {
+                if (n > 0)
+                    return error(new ReaderError("No element specified for bit vector of length " +
+                                                 n + '.',
+                                                 this));
+            }
+            if (n > length) {
+                final char c = sb.charAt(length - 1);
+                for (int i = length; i < n; i++)
+                    sb.append(c);
+            } else if (n < length) {
+                return error(new ReaderError("Bit vector is longer than specified length: #" +
+                                             n + '*' + sb.toString(),
+                                             this));
+            }
+        }
+        return new SimpleBitVector(sb.toString());
+    }
+
+
+    public LispObject readSharpDot(char c, int n, 
+                                   ReadtableAccessor rta) 
+    {
+        final LispThread thread = LispThread.currentThread();
+        if (Symbol.READ_EVAL.symbolValue(thread) == NIL)
+            return error(new ReaderError("Can't read #. when *READ-EVAL* is NIL.",
+                                         this));
+        else
+            return eval(read(true, NIL, true, thread,
+                             rta),
+                        new Environment(), thread);
+    }
+
     public LispObject readCharacterLiteral(Readtable rt, LispThread thread)
 
     {
