@@ -68,7 +68,6 @@ public final class Cons extends LispObject
     while (rest.car() != NIL) {
       result = result.push(rest.car());
       if (rest.cdr() == NIL) {
-        result = result.push(NIL);
         break;
       }
       rest = (Cons) rest.cdr();

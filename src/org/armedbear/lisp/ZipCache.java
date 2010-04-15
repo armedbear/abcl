@@ -97,8 +97,8 @@ public class ZipCache {
 
     static HashMap<URL, Entry> zipCache = new HashMap<URL, Entry>();
 
-    synchronized public static ZipFile get(LispObject arg) {
-        return get(Pathname.makeURL(arg));
+    synchronized public static ZipFile get(Pathname p) {
+        return get(Pathname.makeURL(p));
     }
 
     static final SimpleDateFormat RFC_1123

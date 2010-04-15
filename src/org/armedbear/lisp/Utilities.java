@@ -151,7 +151,7 @@ public final class Utilities
   }
 
   public static InputStream getEntryAsInputStream(ZipInputStream zipInputStream,
-                                                    String entryName)
+                                                  String entryName)
     {
         ZipEntry entry = getEntry(zipInputStream, entryName);
         ByteArrayOutputStream bytes = readEntry(zipInputStream);
@@ -253,7 +253,6 @@ public final class Utilities
         }
         return result;
     }
-
 
     static String uriEncode(String s) {
         try {
