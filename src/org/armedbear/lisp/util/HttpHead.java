@@ -92,8 +92,8 @@ public class HttpHead {
                 return result;
             }
 
-            String path = url.getPath();
-            out.println("HEAD " + url + " HTTP/1.1");
+            String head = "HEAD " + url + " HTTP/1.1";
+            out.println(head);
             out.println("Connection: close");
             out.println("");
             out.flush();
