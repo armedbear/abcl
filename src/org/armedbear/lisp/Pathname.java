@@ -1543,10 +1543,13 @@ public class Pathname extends LispObject {
             jarPathname.name = NIL;
             jarPathname.type = NIL;
             jarPathname.invalidateNamestring();
-            // will propagate an appropiate Lisp error if jarPathname
-            // doesn't exist.
-            LispObject jarTruename = truename(jarPathname, true); 
-
+            LispObject jarTruename = truename(jarPathname, false); 
+            
+            // We can't match anything in a non-existent jar 
+            if (jarTruename == NIL) {
+                return NIL;
+            }
+            
             LispObject result = NIL;
             String wild = "/" + pathname.asEntryPath();
 
