@@ -3004,6 +3004,11 @@ public class Symbol extends LispObject
     PACKAGE_SYS.addExternalSymbol("SET-CHAR");
   public static final Symbol SET_SCHAR =
     PACKAGE_SYS.addExternalSymbol("SET-SCHAR");
+  public static final Symbol JAR_STREAM =
+    PACKAGE_SYS.addExternalSymbol("JAR-STREAM");
+  public static final Symbol URL_STREAM =
+    PACKAGE_SYS.addExternalSymbol("URL-STREAM");
+
 
   // Internal symbols in SYSTEM package.
   public static final Symbol BACKQUOTE_MACRO =
@@ -3060,6 +3065,10 @@ public class Symbol extends LispObject
     PACKAGE_SYS.addInternalSymbol("LISP-STACK-FRAME");
   public static final Symbol JAVA_STACK_FRAME =
     PACKAGE_SYS.addInternalSymbol("JAVA-STACK-FRAME");
+  public static final Symbol JAR_PATHNAME =
+    PACKAGE_SYS.addExternalSymbol("JAR-PATHNAME");
+  public static final Symbol URL_PATHNAME =
+    PACKAGE_SYS.addExternalSymbol("URL-PATHNAME");
 
   // CDR6
   public static final Symbol _INSPECTOR_HOOK_ =

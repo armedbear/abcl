@@ -3,10 +3,10 @@ JARs and JAR entries in ABCL
 
     Mark Evenson
     Created:  09 JAN 2010
-    Modified: 16 MAR 2010 
+    Modified: 25 MAR 2010 
 
-Notes towards sketching an implementation of "jar:" references to be
-contained in Common Lisp `PATHNAMEs` within ABCL.  
+Notes towards an implementation of "jar:" references to be contained
+in Common Lisp `PATHNAME`s within ABCL.
 
 Goals
 -----
@@ -51,54 +51,60 @@ Goals
 6.  References "jar:<URL>" for all strings <URL> that java.net.URL can
     resolve works.
 
-7.  Make jar pathnames work as a valid argument for OPEN.
+7.  Make jar pathnames work as a valid argument for OPEN with
+:DIRECTION :INPUT.
 
 8.  Enable the loading of ASDF systems packaged within jar files.
+
+9.  Enable the matching of jar pathnames with PATHNAME-MATCH-P
+
+        (pathname-match-p 
+          "jar:file:/a/b/some.jar!/a/system/def.asd"
+          "jar:file:/**/*.jar!/**/*.asd")      
+        ==> t
 
 Status
 ------
 
-As of svn r12501, all the above goals have been implemented and tested
-*except* for:
-
-7.  Make jar pathnames work as a valid argument for OPEN.
+As of svn r125??, all the above goals have been implemented and
+tested.
 
 
 Implementation
 --------------
 
-Using PATHNAMES
+A PATHNAME refering to a file within a JAR is known as a JAR PATHNAME.
+It can either refer to the entire JAR file or an entry within the JAR
+file.
 
-*   A PATHNAME refering to a file within a JAR is known as a JAR
-    PATHNAME.  It can either refer to the entire JAR file or an entry
-    within the JAR file.
+A JAR PATHNAME always has a DEVICE which is a proper list.  This
+distinguishes it from other uses of Pathname.
 
-*   A JAR PATHNAME always has a DEVICE which is a proper list.  This
-    distinguishes it from other uses of Pathname.  
+The DEVICE of a JAR PATHNAME will be a list with either one or two
+elements.  The first element of the JAR PATHNAME can be either a
+PATHNAME representing a JAR on the filesystem, or a SimpleString
+representing a URL.
 
-*   The DEVICE of a JAR PATHNAME will be a list with either one or two
-    elements.  The first element of the JAR PATHNAME can be either a
-    PATHNAME representing a JAR on the filesystem, or a SimpleString
-    representing a URL.
+A PATHNAME occuring in the list in the DEVICE of a JAR PATHNAME is
+known as a DEVICE PATHNAME.
 
-*   a PATHNAME occuring in the list in the DEVICE of a JAR PATHNAME is
-    known as a DEVICE PATHNAME.
+If the DEVICE is a String it must be a String that successfully
+references a URL via the java.net.URL(String) constructor
 
-*   If the DEVICE is a String it must be a String that successfully
-    references a URL via the java.net.URL(String) constructor
+Only the first entry in the the DEVICE list may be a String.
 
-*   Only the first entry in the the DEVICE list may be a String.
+Otherwise the the DEVICE PATHAME denotes the PATHNAME of the JAR file.
 
-*   Otherwise the the DEVICE PATHAME denotes the PATHNAME of the JAR file
-
-*   The DEVICE PATHNAME list of enclosing JARs runs from outermost to
-    innermost.
+The DEVICE PATHNAME list of enclosing JARs runs from outermost to
+innermost.
     
-*   The DIRECTORY component of a JAR PATHNAME should be a list starting
-    with the :ABSOLUTE keyword.  Even though hierarchial entries in
-    jar files are stored in the form "foo/bar/a.lisp" not
-    "/foo/bar/a.lisp", the meaning of DIRECTORY component better
-    represented as an absolute path.
+The DIRECTORY component of a JAR PATHNAME should be a list starting
+with the :ABSOLUTE keyword.  Even though hierarchial entries in jar
+files are stored in the form "foo/bar/a.lisp" not "/foo/bar/a.lisp",
+the meaning of DIRECTORY component better represented as an absolute
+path.
+
+A jar Pathname has type JAR-PATHNAME, derived from PATHNAME.
 
 BNF
 ---

@@ -134,9 +134,24 @@
         wildcard (pathname wildcard))
   (unless (component-match-p (pathname-host pathname) (pathname-host wildcard) nil)
     (return-from pathname-match-p nil))
+  (when (and (pathname-jar-p pathname) 
+             (pathname-jar-p wildcard))
+    (unless 
+        (every (lambda (value) (not (null value)))
+               (mapcar #'pathname-match-p 
+                       (pathname-device pathname)  
+                       (pathname-device wildcard)))
+      (return-from pathname-match-p nil)))
+  (when (or (and (pathname-jar-p pathname)
+                 (not (pathname-jar-p wildcard)))
+            (and (not (pathname-jar-p pathname))
+                 (pathname-jar-p wildcard)))
+    (return-from pathname-match-p nil))
   (let* ((windows-p (featurep :windows))
          (ignore-case (or windows-p (typep pathname 'logical-pathname))))
     (cond ((and windows-p
+                (not (pathname-jar-p pathname))
+                (not (pathname-jar-p wildcard))
                 (not (component-match-p (pathname-device pathname)
                                         (pathname-device wildcard)
                                         ignore-case)))
@@ -195,6 +210,16 @@
          ;; FIXME
          (error "Unsupported wildcard pattern: ~S" to))))
 
+(defun translate-jar-device (source from to &optional case)
+  (declare (ignore case)) ; FIXME
+  (unless to
+    (return-from translate-jar-device nil))
+  (when (not (= (length source) 
+                (length from)
+                (length to)))
+    (error "Unsupported pathname translation for unequal jar ~
+  references: ~S != ~S != ~S" source from to))
+  (mapcar #'translate-pathname source from to))
 
 (defun translate-directory-components-aux (src from to case)
   (cond
@@ -268,9 +293,13 @@
          (to     (pathname to-wildcard))
          (device (if (typep 'to 'logical-pathname)
                      :unspecific
-                     (translate-component (pathname-device source)
-                                          (pathname-device from)
-                                          (pathname-device to))))
+                     (if (pathname-jar-p source)
+                         (translate-jar-device (pathname-device source)
+                                               (pathname-device from)
+                                               (pathname-device to))
+                         (translate-component (pathname-device source)
+                                              (pathname-device from)
+                                              (pathname-device to)))))
          (case   (and (typep source 'logical-pathname)
                       (or (featurep :unix) (featurep :windows))
                       :downcase)))
@@ -388,6 +417,7 @@
   (declare (ignore junk-allowed)) ; FIXME
   (cond ((eq host :unspecific)
          (setf host nil))
+        ((consp host)) ;; A URL 
         (host
          (setf host (canonicalize-logical-host host))))
   (typecase thing

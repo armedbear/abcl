@@ -320,11 +320,43 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
   (:relative "a" "b") "foo" "jar"
   (:absolute "c" "d") "foo" "lisp")
 
-      
-      
-             
+(deftest jar-file.pathname-match-p.1
+    (pathname-match-p "jar:file:/a/b/some.jar!/a/system/def.asd"
+                      "jar:file:/**/*.jar!/**/*.asd")
+  t)
 
-       
+(deftest jar-file.pathname-match-p.2
+    (pathname-match-p "/a/system/def.asd"
+                      "jar:file:/**/*.jar!/**/*.asd")
+  nil)
+
+(deftest jar-file.pathname-match-p.3
+    (pathname-match-p "jar:file:/a/b/some.jar!/a/system/def.asd"
+                      "/**/*.asd")
+  nil)
+
+(deftest jar-file.translate-pathname.1
+    (namestring
+     (translate-pathname "jar:file:/a/b/c.jar!/d/e/f.lisp" 
+                         "jar:file:/**/*.jar!/**/*.*" 
+                         "/foo/**/*.*"))
+  "/foo/d/e/f.lisp")
+
+;; URL Pathname tests
+(deftest pathname-url.1
+    (let* ((p #p"http://example.org/a/b/foo.lisp")
+           (host (pathname-host p)))
+      (values 
+       (check-physical-pathname p '(:absolute "a" "b") "foo" "lisp")
+       (and (consp host)
+            (equal (getf host :scheme) 
+                   "http")
+            (equal (getf host :authority)
+                   "example.org"))))
+  (t t))
+
+      
+
         
 
   

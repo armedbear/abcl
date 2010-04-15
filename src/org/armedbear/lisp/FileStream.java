@@ -286,11 +286,6 @@ public final class FileStream extends Stream
             else {
                 return type_error(first, Symbol.PATHNAME);
             }
-            if (pathname.isJar()) {
-                error(new FileError("Direct stream input/output on entries in JAR files no currently supported.",
-                                    pathname));
-            }
-
             final LispObject namestring = checkString(second);
             LispObject elementType = third;
             LispObject direction = fourth;
@@ -300,16 +295,41 @@ public final class FileStream extends Stream
             if (direction != Keyword.INPUT && direction != Keyword.OUTPUT &&
                 direction != Keyword.IO)
                 error(new LispError("Direction must be :INPUT, :OUTPUT, or :IO."));
-            try {
-                return new FileStream(pathname, namestring.getStringValue(),
-                                      elementType, direction, ifExists,
-                                      externalFormat);
-            }
-            catch (FileNotFoundException e) {
-                return NIL;
-            }
-            catch (IOException e) {
-                return error(new StreamError(null, e));
+
+            if (pathname.isJar())  {
+                if (direction != Keyword.INPUT) {
+                    error(new FileError("Only direction :INPUT is supported for jar files.", pathname));
+                }
+                try { 
+                    return new JarStream(pathname, namestring.getStringValue(),
+                                         elementType, direction, ifExists,
+                                         externalFormat);
+                } catch (IOException e) {
+                    return error(new StreamError(null, e));
+                }
+            } else if (pathname.isURL()) {
+                if (direction != Keyword.INPUT) {
+                    error(new FileError("Only direction :INPUT is supported for URLs.", pathname));
+                }
+                try { 
+                    return new URLStream(pathname, namestring.getStringValue(),
+                                         elementType, direction, ifExists,
+                                         externalFormat);
+                } catch (IOException e) {
+                    return error(new StreamError(null, e));
+                }
+            } else {
+                try {
+                    return new FileStream(pathname, namestring.getStringValue(),
+                                          elementType, direction, ifExists,
+                                          externalFormat);
+                }
+                catch (FileNotFoundException e) {
+                    return NIL;
+                }
+                catch (IOException e) {
+                    return error(new StreamError(null, e));
+                }
             }
         }
     };

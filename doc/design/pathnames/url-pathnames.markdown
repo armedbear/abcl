@@ -110,6 +110,7 @@ absolute.
 The namestring of a URL pathname shall be formed by the usual
 conventions of a URL.
 
+A URL Pathname has type URL-PATHNAME, derived from PATHNAME.
 
 Status
 ------

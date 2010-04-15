@@ -35,7 +35,7 @@
                       (:file "mop-tests-setup")
                       (:file "mop-tests" :depends-on ("mop-tests-setup"))
                       (:file "file-system-tests")
-                      (:file "jar-file")
+                      (:file "jar-file" :depend-on ("pathname-test"))
                       (:file "math-tests")
                       (:file "misc-tests")
                       (:file "bugs")

@@ -61,6 +61,24 @@ public final class Cons extends LispObject
     ++count;
   }
 
+  public Cons(Cons original) 
+  {
+    Cons rest = original;
+    LispObject result = NIL;
+    while (rest.car() != NIL) {
+      result = result.push(rest.car());
+      if (rest.cdr() == NIL) {
+        result = result.push(NIL);
+        break;
+      }
+      rest = (Cons) rest.cdr();
+    }
+    result = result.nreverse();
+    this.car = result.car();
+    this.cdr = result.cdr();
+    ++count;
+  }
+
   @Override
   public LispObject typeOf()
   {

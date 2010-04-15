@@ -40,6 +40,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -253,5 +255,23 @@ public final class Utilities
     }
 
 
+    static String uriEncode(String s) {
+        try {
+            URI uri = new URI("?" + s);
+            return uri.getQuery();
+        } catch (URISyntaxException e) {}
+        return null;
+    }
 
+    static String uriDecode(String s) {
+        try {
+            URI uri = new URI(null, null, null, s, null);
+            return uri.toASCIIString().substring(1);
+        } catch (URISyntaxException e) {}
+        return null;  // Error
+    }
+    
+    static String escapeFormat(String s) {
+        return s.replace("~", "~~");
+    }
 }

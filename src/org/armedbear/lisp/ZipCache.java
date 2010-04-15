@@ -111,11 +111,13 @@ public class ZipCache {
                 try { 
                     return new ZipFile(f);
                 } catch (ZipException e) {
-                    Debug.trace(e); // XXX
-                    return null;
+                    error(new FileError("Failed to construct ZipFile"
+                                        + " because " + e,
+                                        Pathname.makePathname(f)));
                 } catch (IOException e) {
-                    Debug.trace(e); // XXX
-                    return null;
+                    error(new FileError("Failed to contruct ZipFile"
+                                        + " because " + e,
+                                        Pathname.makePathname(f)));
                 }
             } else {
                 Entry e = fetchURL(url, false);
@@ -185,11 +187,13 @@ public class ZipCache {
                 try {
                     entry.file = new ZipFile(f);
                 } catch (ZipException e) {
-                    Debug.trace(e); // XXX
-                    return null;
+                    error(new FileError("Failed to get cached ZipFile"
+                                        + " because " + e,
+                                        Pathname.makePathname(f)));
                 } catch (IOException e) {
-                    Debug.trace(e); // XXX
-                    return null;
+                    error(new FileError("Failed to get cached ZipFile"
+                                        + " because " + e,
+                                        Pathname.makePathname(f)));
                 }
             } else {
                 entry = fetchURL(url, true);
@@ -205,29 +209,31 @@ public class ZipCache {
         try {
             jarURL = new URL("jar:" + url + "!/");
         } catch (MalformedURLException e) {
-            Debug.trace(e);
-            Debug.assertTrue(false); // XXX
+            error(new LispError("Failed to form a jar: URL from "
+                                + "'" + url + "'" 
+                                + " because " + e));
         }
-        URLConnection connection;
+        URLConnection connection = null;
         try {
             connection = jarURL.openConnection();
-        } catch (IOException ex) {
-            Debug.trace("Failed to open "
-                        + "'" + jarURL + "'");
-            return null;
+        } catch (IOException e) {
+            error(new LispError("Failed to open "
+                                + "'" + jarURL + "'"
+                                + " with exception " 
+                                + e));
         }
         if (!(connection instanceof JarURLConnection)) {
-            // XXX
-            Debug.trace("Could not get a URLConnection from " + jarURL);
-            return null;
+            error(new LispError("Could not get a URLConnection from " 
+                                + "'" + jarURL + "'"));
         }
         JarURLConnection jarURLConnection = (JarURLConnection) connection;
         jarURLConnection.setUseCaches(cached);
         try {
             result.file = jarURLConnection.getJarFile();
         } catch (IOException e) {
-            Debug.trace(e);
-            Debug.assertTrue(false); // XXX
+            error(new LispError("Failed to fetch URL "
+                                 + "'" + jarURLConnection + "'"
+                                + " because " + e));
         }
         result.lastModified = jarURLConnection.getLastModified();
         return result;

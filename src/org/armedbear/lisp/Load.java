@@ -462,17 +462,24 @@ public final class Load
                 String type = truePathname.type.getStringValue();
                 if (type.equals(COMPILE_FILE_TYPE)
                     || type.equals(COMPILE_FILE_INIT_FASL_TYPE.toString())) {
-                    thread.bindSpecial(Symbol.LOAD_TRUENAME_FASL, truePathname);
+                    Pathname truenameFasl = new Pathname(truePathname);
+                    thread.bindSpecial(Symbol.LOAD_TRUENAME_FASL, truenameFasl);
                 }
                 if (truePathname.type.getStringValue()
                     .equals(COMPILE_FILE_INIT_FASL_TYPE.getStringValue())
                     && truePathname.isJar()) {
                     if (truePathname.device.cdr() != NIL ) {
-                        // set truename to the enclosing JAR
+                        // We set *LOAD-TRUENAME* to the argument that
+                        // a user would pass to LOAD.
+                        Pathname enclosingJar = (Pathname)truePathname.device.cdr().car();
+                        truePathname.device = new Cons(truePathname.device.car(), NIL);
                         truePathname.host = NIL;
-                        truePathname.directory = NIL;
-                        truePathname.name = NIL;
-                        truePathname.type = NIL;
+                        truePathname.directory = enclosingJar.directory;
+                        if (truePathname.directory.car().equals(Keyword.RELATIVE)) {
+                            truePathname.directory.setCar(Keyword.ABSOLUTE);
+                        }
+                        truePathname.name = enclosingJar.name;
+                        truePathname.type = enclosingJar.type;
                         truePathname.invalidateNamestring();
                     } else {
                         // XXX There is something fishy in the asymmetry

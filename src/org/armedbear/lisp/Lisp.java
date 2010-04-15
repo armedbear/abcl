@@ -1741,8 +1741,13 @@ public final class Lisp
       return Pathname.parseNamestring((AbstractString)arg);
     if (arg instanceof FileStream)
       return ((FileStream)arg).getPathname();
+    if (arg instanceof JarStream)
+      return ((JarStream)arg).getPathname();
+    if (arg instanceof URLStream)
+      return ((URLStream)arg).getPathname();
     type_error(arg, list(Symbol.OR, Symbol.PATHNAME,
-                               Symbol.STRING, Symbol.FILE_STREAM));
+                         Symbol.STRING, Symbol.FILE_STREAM,
+                         Symbol.JAR_STREAM, Symbol.URL_STREAM));
     // Not reached.
     return null;
   }

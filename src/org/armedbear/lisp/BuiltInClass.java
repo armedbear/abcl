@@ -113,6 +113,8 @@ public class BuiltInClass extends LispClass
   public static final BuiltInClass NUMBER               = addClass(Symbol.NUMBER);
   public static final BuiltInClass PACKAGE              = addClass(Symbol.PACKAGE);
   public static final BuiltInClass PATHNAME             = addClass(Symbol.PATHNAME);
+  public static final BuiltInClass JAR_PATHNAME         = addClass(Symbol.JAR_PATHNAME);
+  public static final BuiltInClass URL_PATHNAME         = addClass(Symbol.URL_PATHNAME);
   public static final BuiltInClass RANDOM_STATE         = addClass(Symbol.RANDOM_STATE);
   public static final BuiltInClass RATIO                = addClass(Symbol.RATIO);
   public static final BuiltInClass RATIONAL             = addClass(Symbol.RATIONAL);
@@ -178,6 +180,12 @@ public class BuiltInClass extends LispClass
   public static final LispClass FILE_STREAM =
     addClass(Symbol.FILE_STREAM,
              new StructureClass(Symbol.FILE_STREAM, list(SYSTEM_STREAM)));
+  public static final LispClass JAR_STREAM =
+    addClass(Symbol.JAR_STREAM,
+             new StructureClass(Symbol.JAR_STREAM, list(SYSTEM_STREAM)));
+  public static final LispClass URL_STREAM =
+    addClass(Symbol.URL_STREAM,
+             new StructureClass(Symbol.URL_STREAM, list(SYSTEM_STREAM)));
   public static final LispClass CONCATENATED_STREAM =
     addClass(Symbol.CONCATENATED_STREAM,
              new StructureClass(Symbol.CONCATENATED_STREAM, list(SYSTEM_STREAM)));
@@ -230,6 +238,10 @@ public class BuiltInClass extends LispClass
     FIXNUM.setCPL(FIXNUM, INTEGER, RATIONAL, REAL, NUMBER, CLASS_T);
     FILE_STREAM.setCPL(FILE_STREAM, SYSTEM_STREAM, STREAM,
                        STRUCTURE_OBJECT, CLASS_T);
+    JAR_STREAM.setCPL(JAR_STREAM, SYSTEM_STREAM, STREAM,
+                      STRUCTURE_OBJECT, CLASS_T);
+    URL_STREAM.setCPL(URL_STREAM, SYSTEM_STREAM, STREAM,
+                      STRUCTURE_OBJECT, CLASS_T);
     FLOAT.setDirectSuperclass(REAL);
     FLOAT.setCPL(FLOAT, REAL, NUMBER, CLASS_T);
     FUNCTION.setDirectSuperclass(CLASS_T);
@@ -260,6 +272,10 @@ public class BuiltInClass extends LispClass
     PACKAGE.setCPL(PACKAGE, CLASS_T);
     PATHNAME.setDirectSuperclass(CLASS_T);
     PATHNAME.setCPL(PATHNAME, CLASS_T);
+    JAR_PATHNAME.setDirectSuperclass(PATHNAME);
+    JAR_PATHNAME.setCPL(JAR_PATHNAME, PATHNAME, CLASS_T);
+    URL_PATHNAME.setDirectSuperclass(PATHNAME);
+    URL_PATHNAME.setCPL(URL_PATHNAME, PATHNAME, CLASS_T);
     RANDOM_STATE.setDirectSuperclass(CLASS_T);
     RANDOM_STATE.setCPL(RANDOM_STATE, CLASS_T);
     RATIO.setDirectSuperclass(RATIONAL);
