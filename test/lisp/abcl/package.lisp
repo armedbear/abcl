@@ -2,7 +2,8 @@
   (:use #:cl #:abcl-rt)
   (:nicknames "ABCL-TEST-LISP" "ABCL-TEST")
   (:export 
-   #:run #:run-matching))
+   #:run #:run-matching
+   #:do-test #:do-tests))
 (in-package #:abcl.test.lisp)
 
 (defparameter *abcl-test-directory* 
@@ -15,8 +16,11 @@
   (let ((*default-pathname-defaults* *abcl-test-directory*))
     (do-tests)))
 
+(defvar *last-run-matching* "url-pathname")
+
 ;;; XXX move this into test-utilities.lisp?
-(defun run-matching (&optional (match "jar-file."))
+(defun run-matching (&optional (match *last-run-matching*))
+  (setf *last-run-matching* match)
   (let* ((matching (string-upcase match))
          (tests
           (remove-if-not
