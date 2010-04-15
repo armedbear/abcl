@@ -25,7 +25,7 @@ From: Alan Ruttenberg <alanruttenberg@gmail.com>
                           "/Users/alanr/repos/infectious-disease-ontology/trunk/src/ontology/**/*.*"))
   #P"/users/alanr/repos/infectious-disease-ontology/trunk/src/ontology/")
 
-(deftest bugs.logical.pathname.2
+(deftest bugs.logical-pathname.2
     #|
 Message-Id: <BBE9D0E5-5166-4D24-9A8A-DC4E766976D1@ISI.EDU>
 From: Thomas Russ <tar@ISI.EDU>
