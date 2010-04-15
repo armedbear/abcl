@@ -29,3 +29,16 @@
   "example.org"
   "query=this"  
   "that-fragment")
+
+(deftest url-pathname.3
+    (let* ((p (pathname
+               "http://example.org/a/b/foo.lisp?query=this#that-fragment")))
+      (values 
+       (ext:url-pathname-scheme p)
+       (ext:url-pathname-authority p)
+       (ext:url-pathname-query p)
+       (ext:url-pathname-fragment p)))
+  "http"
+  "example.org"
+  "query=this"  
+  "that-fragment")

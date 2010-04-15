@@ -2920,6 +2920,10 @@ public class Symbol extends LispObject
     PACKAGE_EXT.addExternalSymbol("SLIME-INPUT-STREAM");
   public static final Symbol SLIME_OUTPUT_STREAM =
     PACKAGE_EXT.addExternalSymbol("SLIME-OUTPUT-STREAM");
+  public static final Symbol JAR_PATHNAME =
+    PACKAGE_EXT.addExternalSymbol("JAR-PATHNAME");
+  public static final Symbol URL_PATHNAME =
+    PACKAGE_EXT.addExternalSymbol("URL-PATHNAME");
 
   // MOP.
   public static final Symbol CLASS_LAYOUT =
@@ -3065,10 +3069,6 @@ public class Symbol extends LispObject
     PACKAGE_SYS.addInternalSymbol("LISP-STACK-FRAME");
   public static final Symbol JAVA_STACK_FRAME =
     PACKAGE_SYS.addInternalSymbol("JAVA-STACK-FRAME");
-  public static final Symbol JAR_PATHNAME =
-    PACKAGE_SYS.addExternalSymbol("JAR-PATHNAME");
-  public static final Symbol URL_PATHNAME =
-    PACKAGE_SYS.addExternalSymbol("URL-PATHNAME");
 
   // CDR6
   public static final Symbol _INSPECTOR_HOOK_ =

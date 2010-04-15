@@ -41,7 +41,7 @@
 (defmethod operation-done-p :around ((o compile-op) 
                                      (c cl-source-file)) 
   (let ((files (output-files o c)))
-    (if (every #'sys:pathname-jar-p files) 
+    (if (every #'ext:pathname-jar-p files) 
         t
         (call-next-method))))
 

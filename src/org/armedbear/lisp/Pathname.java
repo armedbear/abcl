@@ -74,6 +74,19 @@ public class Pathname extends LispObject {
     public void invalidateNamestring() {
         namestring = null;
     }
+    
+    // ### %invalidate-namestring
+    private static final Primitive _INVALIDATE_NAMESTRING = new pf_invalidate_namestring();
+    private static class pf_invalidate_namestring extends Primitive {
+        pf_invalidate_namestring() {
+            super("%invalidate-namestring", PACKAGE_EXT, false);
+        }
+        @Override
+        public LispObject execute(LispObject first) {
+            ((Pathname)coerceToPathname(first)).invalidateNamestring();
+            return first;
+        }
+    }
 
     protected Pathname() {}
 
@@ -1610,7 +1623,7 @@ public class Pathname extends LispObject {
     private static final Primitive PATHNAME_JAR_P = new pf_pathname_jar_p();
     private static class pf_pathname_jar_p extends Primitive {
         pf_pathname_jar_p() {
-            super("pathname-jar-p", PACKAGE_SYS, true, "pathname",
+            super("pathname-jar-p", PACKAGE_EXT, true, "pathname",
                   "Predicate for whether PATHNAME references a JAR.");
         }
         @Override
@@ -1628,7 +1641,7 @@ public class Pathname extends LispObject {
     private static final Primitive PATHNAME_URL_P = new pf_pathname_url_p();
     private static class pf_pathname_url_p extends Primitive {
         pf_pathname_url_p() {
-            super("pathname-url-p", PACKAGE_SYS, true, "pathname",
+            super("pathname-url-p", PACKAGE_EXT, true, "pathname",
                   "Predicate for whether PATHNAME references a URL.");
         }
         @Override

@@ -433,3 +433,70 @@
      (error 'type-error
             :format-control "~S cannot be converted to a pathname."
             :format-arguments (list thing)))))
+
+
+;;; Functions for dealing with URL Pathnames
+
+(in-package :extensions)
+
+(defun url-pathname-scheme (p)
+  (unless (pathname-url-p p)
+    (error "~A is not a URL pathname." p))
+  (getf (pathname-host p) :scheme))
+
+(defun set-url-pathname-scheme (p v)
+  (unless (pathname-url-p p)
+    (error "~A is not a URL pathname." p))
+  (let ((host (pathname-host p)))
+    (setf (getf host :scheme) v))
+  (%invalidate-namestring p))
+
+(defsetf url-pathname-scheme set-url-pathname-scheme)
+
+(defun url-pathname-authority (p)
+  (unless (pathname-url-p p)
+    (error "~A is not a URL pathname." p))
+  (getf (pathname-host p) :authority))
+
+(defun set-url-pathname-authority (p v)
+  (unless (pathname-url-p p)
+    (error "~A is not a URL pathname." p))
+  (let ((host (pathname-host p)))
+    (setf (getf host :authority) v))
+  (%invalidate-namestring p))
+
+(defsetf url-pathname-authority set-url-pathname-authority)
+
+(defun url-pathname-query (p)
+  (unless (pathname-url-p p)
+    (error "~A is not a URL pathname." p))
+  (getf (pathname-host p) :query))
+
+(defun set-url-pathname-query (p v)
+  (unless (pathname-url-p p)
+    (error "~A is not a URL pathname." p))
+  (let ((host (pathname-host p)))
+    (setf (getf host :query) v))
+  (%invalidate-namestring p))
+
+(defsetf url-pathname-query set-url-pathname-query)
+
+(defun url-pathname-fragment (p)
+  (unless (pathname-url-p p)
+    (error "~A is not a URL pathname." p))
+  (getf (pathname-host p) :fragment))
+
+(defun set-url-pathname-fragment (p v)
+  (unless (pathname-url-p p)
+    (error "~A is not a URL pathname." p))
+  (let ((host (pathname-host p)))
+    (setf (getf host :fragment) v))
+  (%invalidate-namestring p))
+
+(defsetf url-pathname-query set-url-pathname-fragment)
+
+(export '(url-pathname-scheme
+          url-pathname-authority
+          url-pathname-query
+          url-pathname-fragment) 
+        'ext)
