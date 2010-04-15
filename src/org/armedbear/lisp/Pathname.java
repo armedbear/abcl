@@ -708,9 +708,10 @@ public class Pathname extends LispObject {
             }
         }
         namestring = sb.toString();
-        if (isURL()) { 
-            namestring = Utilities.uriEncode(namestring);
-        }
+        // XXX Decide when this is necessary
+        // if (isURL()) { 
+        //     namestring = Utilities.uriEncode(namestring);
+        // }
         return namestring;
     }
 
