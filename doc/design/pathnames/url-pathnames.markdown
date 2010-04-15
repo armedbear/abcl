@@ -3,7 +3,7 @@ URL Pathnames ABCL
 
     Mark Evenson
     Created:  25 MAR 2010
-    Modified: 26 MAR 2010 
+    Modified: 11 APR 2010
 
 Notes towards an implementation of URL references to be contained in
 Common Lisp `PATHNAME` objects within ABCL.
@@ -89,13 +89,17 @@ values must be character strings.
     :AUTHORITY   
         Valid authority according to the URI scheme.  For "http" this
         could be "example.org:8080".
+    :QUERY
+        The query of the URI
+    :FRAGMENT
+        The fragment portion of the URI
         
 The DIRECTORY, NAME and TYPE fields of the PATHNAME are used to form
 the URI `path` according to the conventions of the UNIX filesystem
-(i.e. '/' is the directory separator). If needed, `query` and `fragment`
-portions of a URL are to be included in the URL pathname NAME
-component.  In a sense the HOST contains the base URL, to which the
-`path` is a relative URL.
+(i.e. '/' is the directory separator).  In a sense the HOST contains
+the base URL, to which the `path` is a relative URL (although this
+abstraction is violated somwhat by the storing of the QUERY and
+FRAGMENT portions of the URI in the HOST component).
 
 For the purposes of PATHNAME-MATCH-P, two URL pathnames may be said to
 match if their HOST compoments are EQUAL, and all other components are

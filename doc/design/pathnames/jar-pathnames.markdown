@@ -3,7 +3,7 @@ JARs and JAR entries in ABCL
 
     Mark Evenson
     Created:  09 JAN 2010
-    Modified: 25 MAR 2010 
+    Modified: 10 APR 2010
 
 Notes towards an implementation of "jar:" references to be contained
 in Common Lisp `PATHNAME`s within ABCL.
@@ -82,16 +82,12 @@ distinguishes it from other uses of Pathname.
 
 The DEVICE of a JAR PATHNAME will be a list with either one or two
 elements.  The first element of the JAR PATHNAME can be either a
-PATHNAME representing a JAR on the filesystem, or a SimpleString
-representing a URL.
+PATHNAME representing a JAR on the filesystem, or a URL PATHNAME.
 
 A PATHNAME occuring in the list in the DEVICE of a JAR PATHNAME is
 known as a DEVICE PATHNAME.
 
-If the DEVICE is a String it must be a String that successfully
-references a URL via the java.net.URL(String) constructor
-
-Only the first entry in the the DEVICE list may be a String.
+Only the first entry in the the DEVICE list may be a URL PATHNAME.
 
 Otherwise the the DEVICE PATHAME denotes the PATHNAME of the JAR file.
 
@@ -101,10 +97,11 @@ innermost.
 The DIRECTORY component of a JAR PATHNAME should be a list starting
 with the :ABSOLUTE keyword.  Even though hierarchial entries in jar
 files are stored in the form "foo/bar/a.lisp" not "/foo/bar/a.lisp",
-the meaning of DIRECTORY component better represented as an absolute
-path.
+the meaning of DIRECTORY component is better represented as an
+absolute path.
 
 A jar Pathname has type JAR-PATHNAME, derived from PATHNAME.
+
 
 BNF
 ---
@@ -221,7 +218,9 @@ Use Cases
     pathname: {
       namestring: "jar:http://example.org/abcl.jar!/org/armedbear/lisp/Version.class",
       device: ( 
-        "http://example.org/abcl.jar"
+        pathname: {
+          namestring: "http://example.org/abcl.jar"
+        }
         pathname: {
           directory: (:RELATIVE "org" "armedbear" "lisp")
           name: "Version"
@@ -233,7 +232,9 @@ Use Cases
     pathname: {
        namestring  "jar:jar:http://example.org/abcl.jar!/foo.abcl!/foo-1.cls"
        device: (
-         "http://example.org/abcl.jar"
+         pathname: {
+           namestring: "http://example.org/abcl.jar"
+         }
          pathname: { 
            name: "foo"
            type: "abcl"
@@ -306,9 +307,15 @@ So instead of having `DEVICE` point to a `PATHNAME`, we decided that the
                   name: "foo"
                   type: "abcl"
                 }
+              )
     }
 
 Although there is a fair amount of special logic inside `Pathname.java`
 itself in the resulting implementation, the logic in `Load.java` seems
 to have been considerably simplified.
+
+When we implemented URL Pathnames, the special syntax for URL as an
+abstract string in the first position of the device list was naturally
+replaced with a URL pathname.
+
 
