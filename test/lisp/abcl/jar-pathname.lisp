@@ -278,7 +278,7 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
     (let* ((p #p"jar:http://example.org/abcl.jar!/org/armedbear/lisp/Version.class")
            (d (first (pathname-device p))))
       (values 
-       (pathname-url-p d)
+       (system:pathname-url-p d)
        (namestring d)
        (pathname-directory p) (pathname-name p) (pathname-type p)))
   t
@@ -291,7 +291,7 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
            (d0 (first d))
            (d1 (second d)))
       (values
-       (pathname-url-p d0)
+       (system:pathname-url-p d0)
        (namestring d0)
        (pathname-name d1) (pathname-type d1)
        (pathname-name p) (pathname-type p)))
