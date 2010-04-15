@@ -24,16 +24,6 @@
 #+(and lispworks win32)
 (pushnew :windows *features*)
 
-#+nil ;; Taken care of by ASDF
-(unless (member "ABCL-RT" *modules* :test #'string=)
-  (load (merge-pathnames "rt-package.lisp" *load-truename*))
-  (load #+abcl (compile-file-if-needed (merge-pathnames "rt.lisp" *load-truename*))
-        ;; Force compilation to avoid fasl name conflict between SBCL and
-        ;; Allegro.
-        #-abcl (compile-file (merge-pathnames "rt.lisp" *load-truename*)))
-  (provide "ABCL-RT"))
-
-
 (in-package #:abcl-regression-test)
 
 (defmacro signals-error (form error-name)
@@ -42,8 +32,6 @@
        (condition (c) (typep c ,error-name))
        (:no-error (&rest ignored) (declare (ignore ignored)) nil))))
 (export '(signals-error))
-
-
 
 #+nil (rem-all-tests)
 

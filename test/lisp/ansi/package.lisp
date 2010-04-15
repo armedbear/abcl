@@ -9,9 +9,12 @@
   "<svn://common-lisp.net/project/ansi-test/svn/trunk/ansi-tests>")  
 
 (defparameter *ansi-tests-directory*
-  (merge-pathnames
-   #p"../ansi-tests/"
-   (asdf:component-pathname (asdf:find-system :abcl))))
+  (if (find :asdf2 *features*)
+      (asdf:system-relative-pathname 
+       :ansi-compiled "../ansi-tests/")
+      (merge-pathnames
+       #p"../ansi-tests/"
+       (asdf:component-pathname (asdf:find-system :ansi-compiled)))))
 
 (defun run (&key (compile-tests nil)) 
   "Run the ANSI-TESTS suite, to be found in *ANSI-TESTS-DIRECTORY*.

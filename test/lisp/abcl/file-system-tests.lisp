@@ -26,12 +26,18 @@
 
 (defparameter *this-file*
   (merge-pathnames (make-pathname :type "lisp")
-                   *load-truename*))
+                   (if (find :asdf2 *features*)
+                       (merge-pathnames 
+                        (make-pathname :name (pathname-name *load-truename*))
+                        (asdf:system-relative-pathname :abcl-test-lisp "test/lisp/abcl/"))
+                       *load-truename*)))
 
 (defparameter *this-directory*
-  (make-pathname :host (pathname-host *load-truename*)
-                 :device (pathname-device *load-truename*)
-                 :directory (pathname-directory *load-truename*)))
+  (if (find :asdf2 *features*)
+      (asdf:system-relative-pathname :abcl-test-lisp "test/lisp/abcl/")
+      (make-pathname :host (pathname-host *load-truename*)
+                     :device (pathname-device *load-truename*)
+                     :directory (pathname-directory *load-truename*))))
 
 (defun pathnames-equal-p (pathname1 pathname2)
   #-(or allegro clisp cmu lispworks)

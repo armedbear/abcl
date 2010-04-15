@@ -129,7 +129,6 @@
                            "and.lisp"
                            "apropos.lisp"
                            "arrays.lisp"
-                           "asdf-abcl.lisp"
                            "assert.lisp"
                            "assoc.lisp"
                            "autoloads.lisp"

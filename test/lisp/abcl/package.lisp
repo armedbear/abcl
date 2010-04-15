@@ -7,9 +7,11 @@
 (in-package #:abcl.test.lisp)
 
 (defparameter *abcl-test-directory* 
-   (make-pathname :host (pathname-host *load-truename*)
-                  :device (pathname-device *load-truename*)
-                  :directory (pathname-directory *load-truename*)))
+  (if (find :asdf2 *features*)
+      (asdf:system-relative-pathname :abcl-test-lisp "test/lisp/abcl/")
+      (make-pathname :host (pathname-host *load-truename*)
+                     :device (pathname-device *load-truename*)
+                     :directory (pathname-directory *load-truename*))))
 
 (defun run ()
   "Run the Lisp test suite for ABCL."
