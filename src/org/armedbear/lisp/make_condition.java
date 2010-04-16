@@ -121,6 +121,8 @@ public final class make_condition extends Primitive
 
         if (symbol == Symbol.COMPILER_ERROR)
             return new CompilerError(initArgs);
+        if (symbol == Symbol.INTERNAL_COMPILER_ERROR)
+            return new InternalCompilerError(initArgs);
         if (symbol == Symbol.COMPILER_UNSUPPORTED_FEATURE_ERROR)
             return new CompilerUnsupportedFeatureError(initArgs);
 

@@ -494,6 +494,9 @@ public class StandardClass extends SlotClass
 
   public static final StandardClass COMPILER_ERROR =
     addStandardClass(Symbol.COMPILER_ERROR, list(CONDITION));
+    
+  public static final StandardClass INTERNAL_COMPILER_ERROR =
+    addStandardClass(Symbol.INTERNAL_COMPILER_ERROR, list(CONDITION));
 
   public static final StandardClass COMPILER_UNSUPPORTED_FEATURE_ERROR =
     addStandardClass(Symbol.COMPILER_UNSUPPORTED_FEATURE_ERROR,
@@ -553,6 +556,8 @@ public class StandardClass extends SlotClass
     CLASS.setCPL(CLASS, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     COMPILER_ERROR.setCPL(COMPILER_ERROR, CONDITION, STANDARD_OBJECT,
                           BuiltInClass.CLASS_T);
+    INTERNAL_COMPILER_ERROR.setCPL(INTERNAL_COMPILER_ERROR, CONDITION, STANDARD_OBJECT,
+                                   BuiltInClass.CLASS_T);
     COMPILER_UNSUPPORTED_FEATURE_ERROR.setCPL(COMPILER_UNSUPPORTED_FEATURE_ERROR,
                                               CONDITION, STANDARD_OBJECT,
                                               BuiltInClass.CLASS_T);
@@ -675,6 +680,7 @@ public class StandardClass extends SlotClass
     ARITHMETIC_ERROR.finalizeClass();
     CELL_ERROR.finalizeClass();
     COMPILER_ERROR.finalizeClass();
+    INTERNAL_COMPILER_ERROR.finalizeClass();
     COMPILER_UNSUPPORTED_FEATURE_ERROR.finalizeClass();
     CONDITION.finalizeClass();
     CONTROL_ERROR.finalizeClass();

@@ -35,6 +35,7 @@
           compiler-style-warn
           compiler-warn
           compiler-error
+          internal-compiler-error
           compiler-unsupported))
 
 (defvar *compiler-error-context* nil)
@@ -51,6 +52,11 @@
 
 (defun compiler-error (format-control &rest format-arguments)
   (error 'compiler-error
+         :format-control format-control
+         :format-arguments format-arguments))
+
+(defun internal-compiler-error (format-control &rest format-arguments)
+  (signal 'internal-compiler-error
          :format-control format-control
          :format-arguments format-arguments))
 

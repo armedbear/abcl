@@ -145,18 +145,26 @@
                  (let* ((expr `(lambda ,lambda-list
                                  ,@decls (block ,block-name ,@body)))
                         (classfile (next-classfile-name))
+                        (compilation-failure-p nil)
                         (result (with-open-file
 				    (f classfile
 				       :direction :output
 				       :element-type '(unsigned-byte 8)
 				       :if-exists :supersede)
-				  (report-error
-				   (jvm:compile-defun name expr nil
-						      classfile f nil))))
-                        (compiled-function (verify-load classfile)))
+                                  (handler-bind 
+                                      ((internal-compiler-error
+                                        #'(lambda (e)
+                                            (setf compilation-failure-p e)
+                                            (continue))))
+                                    (report-error
+                                     (jvm:compile-defun name expr nil
+                                                        classfile f nil)))))
+                        (compiled-function (and (not compilation-failure-p)
+                                                (verify-load classfile))))
 		   (declare (ignore result))
                    (cond
-                     (compiled-function
+                     ((and (not compilation-failure-p)
+                           compiled-function)
                       (setf form
                             `(fset ',name
                                    (proxy-preloaded-function ',name ,(file-namestring classfile))
@@ -169,6 +177,9 @@
                       ;; FIXME Should be a warning or error of some sort...
                       (format *error-output*
                               "; Unable to compile function ~A~%" name)
+                      (when compilation-failure-p
+                        (format *error-output*
+                                "; ~A~%" compilation-failure-p))
                       (let ((precompiled-function
                              (precompiler:precompile-form expr nil
                                               *compile-file-environment*)))
@@ -513,18 +524,19 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                   (*fasl-stream* out)
                   *forms-for-output*)
               (jvm::with-saved-compiler-policy
-                  (jvm::with-file-compilation
-                    (handler-bind ((style-warning #'(lambda (c)
-                                                      (setf warnings-p t)
-                                                      ;; let outer handlers
-                                                      ;; do their thing
-                                                      (signal c)
-                                                      ;; prevent the next
-                                                      ;; handler from running:
-                                                      ;; we're a WARNING subclass
-                                                      (continue)))
-                                   ((or warning
-                                        compiler-error) #'(lambda (c)
+                (jvm::with-file-compilation
+                    (handler-bind ((style-warning 
+                                    #'(lambda (c)
+                                        (setf warnings-p t)
+                                        ;; let outer handlers do their thing
+                                        (signal c)
+                                        ;; prevent the next handler
+                                        ;; from running: we're a
+                                        ;; WARNING subclass
+                                        (continue)))
+                                   ((or warning 
+                                        compiler-error)
+                                    #'(lambda (c)
                                         (declare (ignore c))
                                         (setf warnings-p t
                                               failure-p t))))
