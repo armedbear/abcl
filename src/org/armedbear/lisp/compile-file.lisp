@@ -68,15 +68,14 @@
   (assert nil))
 
 (declaim (ftype (function (t) t) verify-load))
-;(defun verify-load (classfile)
-;  (and classfile
-;       (let ((*load-truename* *output-file-pathname*))
-;         (report-error
-;          (load-compiled-function classfile)))))
 (defun verify-load (classfile)
-  (declare (ignore classfile))
-  t)
-
+  (if (> *safety* 0) 
+    (and classfile
+         (let ((*load-truename* *output-file-pathname*))
+           (report-error
+            (load-compiled-function classfile))))
+    t))
+    
 (declaim (ftype (function (t) t) process-defconstant))
 (defun process-defconstant (form)
   ;; "If a DEFCONSTANT form appears as a top level form, the compiler
