@@ -445,6 +445,8 @@ will load ASDF-INSTALL.
       <include name="make-jar.in"/>
       <include name="make-jar.bat.in"/>
 
+      <include name="build-from-lisp.sh"/>
+
       <include name="build-abcl.lisp"/>
       <include name="customizations.lisp.in"/>
 
