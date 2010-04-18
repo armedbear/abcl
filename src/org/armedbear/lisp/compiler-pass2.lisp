@@ -1341,10 +1341,10 @@ representation, based on the derived type of the LispObject."
       (declare (type fixnum instruction-stack))
       (when instruction-depth
         (unless (= (the fixnum instruction-depth) (the fixnum (+ depth instruction-stack)))
-          (format t "~&Stack inconsistency at index ~D: found ~S, expected ~S.~%"
-                   i instruction-depth (+ depth instruction-stack))
-          (internal-compiler-error "Stack inconsistency detected in ~A." 
-                                   (compiland-name *current-compiland*)))
+          (internal-compiler-error 
+           "Stack inconsistency detected in ~A at index ~D: found ~S, expected ~S." 
+           (compiland-name *current-compiland*)
+           i instruction-depth (+ depth instruction-stack)))
         (return-from walk-code))
       (let ((opcode (instruction-opcode instruction)))
         (setf depth (+ depth instruction-stack))

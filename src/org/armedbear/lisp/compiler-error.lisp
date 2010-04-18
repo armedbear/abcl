@@ -56,9 +56,10 @@
          :format-arguments format-arguments))
 
 (defun internal-compiler-error (format-control &rest format-arguments)
-  (signal 'internal-compiler-error
-         :format-control format-control
-         :format-arguments format-arguments))
+  (cerror "Eventually use interpreted form instead" 
+          'internal-compiler-error
+          :format-control format-control
+          :format-arguments format-arguments))
 
 (defun compiler-unsupported (format-control &rest format-arguments)
   (error 'compiler-unsupported-feature-error

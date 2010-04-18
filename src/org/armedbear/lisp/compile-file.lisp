@@ -145,7 +145,7 @@
                  (let* ((expr `(lambda ,lambda-list
                                  ,@decls (block ,block-name ,@body)))
                         (classfile (next-classfile-name))
-                        (compilation-failure-p nil)
+                        (internal-compiler-errors nil)
                         (result (with-open-file
 				    (f classfile
 				       :direction :output
@@ -154,16 +154,17 @@
                                   (handler-bind 
                                       ((internal-compiler-error
                                         #'(lambda (e)
-                                            (setf compilation-failure-p e)
+                                            (push e internal-compiler-errors)
                                             (continue))))
                                     (report-error
                                      (jvm:compile-defun name expr nil
                                                         classfile f nil)))))
-                        (compiled-function (and (not compilation-failure-p)
-                                                (verify-load classfile))))
+                        (compiled-function (if (not internal-compiler-errors)
+                                               (verify-load classfile)
+                                               nil)))
 		   (declare (ignore result))
                    (cond
-                     ((and (not compilation-failure-p)
+                     ((and (not internal-compiler-errors)
                            compiled-function)
                       (setf form
                             `(fset ',name
@@ -176,10 +177,11 @@
                      (t
                       ;; FIXME Should be a warning or error of some sort...
                       (format *error-output*
-                              "; Unable to compile function ~A~%" name)
-                      (when compilation-failure-p
-                        (format *error-output*
-                                "; ~A~%" compilation-failure-p))
+                              "; Unable to compile function ~A.  Using interpreted form instead.~%" name)
+                      (when internal-compiler-errors
+                        (dolist (e internal-compiler-errors)
+                          (format *error-output*
+                                  "; ~A~%" e)))
                       (let ((precompiled-function
                              (precompiler:precompile-form expr nil
                                               *compile-file-environment*)))
