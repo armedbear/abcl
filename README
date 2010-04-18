@@ -2,7 +2,8 @@ GENERAL INFORMATION
 ===================
 
 Armed Bear Common Lisp is an implementation of ANSI Common Lisp that
-runs in a Java virtual machine.  It compiles its code to Java byte code.
+runs in a Java virtual machine.  It compiles its code to Java byte
+code.
 
 
 LICENSE
@@ -37,56 +38,87 @@ RUNNING FROM BINARY RELEASE
 
 After you have downloaded a binary release archive, unzip or untar it
 into its own directory. To run ABCL directly from this directory, make
-sure Java (version 1.5 or up) is in your path. Then, type the following
-command:
+sure Java (version 1.5 or up) is in your shell's path. Then issue following
+command under UNIX
 
-  $ java -jar abcl.jar
+    unix$ ./abcl
 
-Which should result output like the following:
+or under Windows
 
-----------------
-Armed Bear Common Lisp 0.19.1
-Java 1.6.0_14 Sun Microsystems Inc.
-Java HotSpot(TM) Client VM
-Low-level initialization completed in 0.9 seconds.
-Startup completed in 2.294 seconds.
-Type ":help" for a list of available commands.
-CL-USER(1):
-----------------
+    dos$ abcl.bat
+    
+To start from within Java, one can specify the use of the JAR file
+directly via:
 
-In order to build ABCL, you need the full SDK. However, in order to
-just run it (like the above), the JRE is enough.
+   cmd$ java -jar abcl.jar
+
+Any of these method should result in output like the following:
+
+    Armed Bear Common Lisp 0.19.1
+    Java 1.6.0_14 Sun Microsystems Inc.
+    Java HotSpot(TM) Client VM
+    Low-level initialization completed in 0.9 seconds.
+    Startup completed in 2.294 seconds.
+    Type ":help" for a list of available commands.
+    CL-USER(1):
 
 
 BUILDING
 ========
 
-If you want to build ABCL, you have 3 options. The first option
-applies when you come from a lisp background. The second and thirds
-options are more appropriate when you come from Java development:
+If you want to build ABCL the preferred (and most tested way) is to
+use the Ant build tool.
 
- I)  Bootstrap ABCL using a Common Lisp implementation
-     Supported implementations for this process: SBCL, CMUCL, OpenMCL,
-     Allegro CL, LispWorks or CLISP.
+1. Use the Ant build tool for Java environments.  
 
-II)  Use the Ant make-like build tool for Java environments
-     The tested lowest working version is Ant 1.7.0.
+2. Use the Netbeans 6.x IDE to open ABCL as a project.
 
-III) Use the Netbeans 6.x IDE to open ABCL as a project.
+3. Bootstrap ABCL using a Common Lisp implementation. Supported
+   implementations for this process: SBCL, CMUCL, OpenMCL, Allegro
+   CL, LispWorks or CLISP.
 
 
 In both cases you need a supported JDK version (1.5 and 1.6 have been
-tested).  Just the JRE isn't enough.
+tested).  Just the JRE isn't enough, as you need javac to compile
+files.
 
 
+Using Ant
+---------
 
-I. Lisp-based build
--------------------
+Download a binary distribution [Ant version 1.7.1 or greater][1].
+Unpack the files somewhere convenient, ensuring that the 'ant' (or
+'ant.bat' under Windows) executable is in your path and executable.
+
+[1]: XXX
+
+Then simply executing
+
+    unix$  ant 
+
+or
+    cmd$ ant.bat    
+
+from the directory containing this README file will create an
+executable wrapper ('abcl' under UNIX, 'abcl.bat' under Windows).  Use
+this wrapper to start ABCL.
+
+
+Using NetBeans
+--------------
+
+Obtain the [Netbeans IDE][2] One should be able to open the ABCL directory
+as a project in Netbeans 6.x via the appropiate menu.
+
+[2]: XXX
+
+Building from Lisp
+------------------
 
 Copy the file 'customizations.lisp.in' to customization.lisp', in the
 directory containing this README file, editing to suit your situation,
-paying attention to the comments in the file.
-
+paying attention to the comments in the file.  The ciritical point is
+to have **JDK** point to the root of the Java Development Kit.  
 
 Use ./build-from-lisp.sh <lisp-of-choice>, e.g.
 
@@ -111,23 +143,6 @@ In case of failure in the javac stage, you might try this:
 This invokes javac separately for each .java file, which avoids running
 into limitations on command line length (but is a lot slower).
 
-
-II. Ant-based build
--------------------
-
-With Ant in your path, executing
-
-    ant -find build.xml abcl.wrapper
-
-from the directory containing this README file will create an
-executable wrapper ('abcl' under UNIX, 'abcl.bat' under Windows).
-Use this wrapper to start the ABCL Java program.
-
-
-III. Netbeans-based build
--------------------------
-
-One should be able to open the project as a project in Netbeans 6.x.
 
 
 BUGS
