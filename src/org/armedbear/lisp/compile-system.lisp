@@ -297,8 +297,8 @@
          (java (format nil "~A../../../**/*.*" home)))
     (with-open-file (s system :direction :output 
                        :if-exists :supersede)
-      (write `(setf (logical-pathname-translations "sys")
+      (pprint `(setf (logical-pathname-translations "sys")
                     '(("SYS:SRC;**;*.*" ,src)
                       ("SYS:JAVA;**;*.*" ,java)))
-       :stream s))))
+       s))))
       
