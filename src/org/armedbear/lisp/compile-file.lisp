@@ -175,7 +175,12 @@
                       (when compile-time-too
                         (fset name compiled-function)))
                      (t
-                      ;; FIXME Should be a warning or error of some sort...
+                      ;; Add this warning when the stock ABCL compiles
+                      ;; again, as all warnings in COMPILE-SYSTEM
+                      ;; produce a non-zero exit status that stops
+                      ;; build.xml in its tracks.
+                      #+nil
+                      (compiler-warn "Unable to compile function ~A.  Using interpreted form instead.~%" name)
                       (format *error-output*
                               "; Unable to compile function ~A.  Using interpreted form instead.~%" name)
                       (when internal-compiler-errors
