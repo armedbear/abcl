@@ -463,7 +463,7 @@ public final class Interpreter
         public LispObject execute(LispObject first, LispObject second)
             throws UnhandledCondition
         {
-            final Condition condition = (Condition) first;
+            final LispObject condition = first;
             if (interpreter == null) {
                 final LispThread thread = LispThread.currentThread();
                 final SpecialBindingsMark mark = thread.markSpecialBindings();
