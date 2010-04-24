@@ -48,6 +48,8 @@ public final class LispThread extends LispObject
     final static ConcurrentHashMap<Thread,LispThread> map =
        new ConcurrentHashMap<Thread,LispThread>();
 
+    LispObject threadValue = NIL;
+
     private static ThreadLocal<LispThread> threads = new ThreadLocal<LispThread>(){
         @Override
         public LispThread initialValue() {
@@ -87,7 +89,7 @@ public final class LispThread extends LispObject
             public void run()
             {
                 try {
-                    funcall(wrapper,
+                    threadValue = funcall(wrapper,
                             new LispObject[] { fun },
                             LispThread.this);
                 }
@@ -929,6 +931,35 @@ public final class LispThread extends LispObject
                  return type_error(arg, Symbol.THREAD);
         }
     };
+
+    private static final Primitive THREAD_JOIN =
+        new Primitive("thread-join", PACKAGE_THREADS, true, "thread",
+                      "Waits for thread to finish.")
+    {
+        @Override
+        public LispObject execute(LispObject arg)
+        {
+            // join the thread, and returns it's value.  The second return
+            // value is T if the thread finishes normally, NIL if its 
+            // interrupted. 
+            if (arg instanceof LispThread) {                
+                final LispThread joinedThread = (LispThread) arg;
+                final LispThread waitingThread = currentThread();
+                try {
+                    joinedThread.javaThread.join();
+                    return 
+                        waitingThread.setValues(joinedThread.threadValue, T);
+                } catch (InterruptedException e) {
+                    waitingThread.processThreadInterrupts();
+                    return 
+                        waitingThread.setValues(joinedThread.threadValue, NIL);
+                }
+            } else {
+                return type_error(arg, Symbol.THREAD);
+            } 
+        }
+    };
+
 
     public static final long javaSleepInterval(LispObject lispSleep)
 
