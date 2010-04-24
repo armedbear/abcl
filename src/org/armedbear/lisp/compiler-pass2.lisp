@@ -8540,6 +8540,18 @@ We need more thought here.
       (maybe-initialize-thread-var)
       (setf *code* (nconc code *code*)))
 
+    (setf (abcl-class-file-superclass class-file)
+          (if (or *hairy-arglist-p*
+		  (and *child-p* *closure-variables*))
+	      +lisp-compiled-closure-class+
+	    +lisp-primitive-class+))
+
+    (setf (abcl-class-file-lambda-list class-file) args)
+    (setf (method-max-locals execute-method) *registers-allocated*)
+    (push execute-method (abcl-class-file-methods class-file))
+
+
+    ;;;  Move here
     (finalize-code)
     (optimize-code)
 
@@ -8553,19 +8565,12 @@ We need more thought here.
                        (eql (symbol-value (handler-from handler))
                             (symbol-value (handler-to handler))))
                      *handlers*))
+    ;;; to here
+    ;;; To a separate function which is part of class file finalization
+    ;;;  when we have a section of class-file-generation centered code
 
-    (setf (method-max-locals execute-method) *registers-allocated*)
-    (setf (method-handlers execute-method) (nreverse *handlers*))
 
-    (setf (abcl-class-file-superclass class-file)
-          (if (or *hairy-arglist-p*
-		  (and *child-p* *closure-variables*))
-	      +lisp-compiled-closure-class+
-	    +lisp-primitive-class+))
-
-    (setf (abcl-class-file-lambda-list class-file) args)
-
-    (push execute-method (abcl-class-file-methods class-file)))
+    (setf (method-handlers execute-method) (nreverse *handlers*)))
   t)
 
 (defun compile-1 (compiland stream)
