@@ -84,14 +84,14 @@ public final class Load
             abclPathname.invalidateNamestring();
             LispObject abcl = Pathname.truename(abclPathname, false);
             if (lisp instanceof Pathname && abcl instanceof Pathname) {
-                lispPathname = (Pathname)lisp;
-                abclPathname = (Pathname)abcl;
-                long lispLastModified = lispPathname.getLastModified();
-                long abclLastModified = abclPathname.getLastModified();
+              lispPathname = (Pathname)lisp;
+              abclPathname = (Pathname)abcl;
+              long lispLastModified = lispPathname.getLastModified();
+              long abclLastModified = abclPathname.getLastModified();
               if (abclLastModified > lispLastModified) {
-                  return lispPathname;
+                  return abclPathname;  // fasl file is newer
               } else {
-                  return abclPathname;
+                  return lispPathname;
               }
             } else if (abcl instanceof Pathname) {
                 return (Pathname) abcl;
