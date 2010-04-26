@@ -5006,7 +5006,6 @@ given a specific common representation.")
          (compile-constant (eval (second form)) target representation))))
 
 (defun p2-progv-node (block target representation)
-  (declare (ignore representation))
   (let* ((form (progv-form block))
          (symbols-form (cadr form))
          (values-form (caddr form))
@@ -5027,7 +5026,7 @@ given a specific common representation.")
                        (list +lisp-object+ +lisp-object+ +lisp-thread+) nil)
       ;; Implicit PROGN.
     (let ((*blocks* (cons block *blocks*)))
-      (compile-progn-body (cdddr form) target))
+      (compile-progn-body (cdddr form) target representation))
     (restore-environment-and-make-handler environment-register label-START)))
 
 (defun p2-quote (form target representation)
