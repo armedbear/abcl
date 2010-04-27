@@ -719,14 +719,14 @@ public class LispObject //extends Lisp
     return toString();
   }
 
-  public String unreadableString(String s) {
+  public final String unreadableString(String s) {
      return unreadableString(s, true);
   }
-  public String unreadableString(Symbol sym) {
+  public final String unreadableString(Symbol sym) {
      return unreadableString(sym, true);
   }
 
-  public String unreadableString(String s, boolean identity)
+  public final String unreadableString(String s, boolean identity)
   {
     StringBuilder sb = new StringBuilder("#<");
     sb.append(s);
@@ -739,7 +739,7 @@ public class LispObject //extends Lisp
     return sb.toString();
   }
 
-  public String unreadableString(Symbol symbol, boolean identity) 
+  public final String unreadableString(Symbol symbol, boolean identity) 
 
   {
     return unreadableString(symbol.writeToString(), identity);
