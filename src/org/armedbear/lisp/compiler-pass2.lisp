@@ -6109,8 +6109,7 @@ given a specific common representation.")
                 (emit-push-nil)
                 (emit-invokevirtual +lisp-stream-class+ "readLine"
                                     (list "Z" +lisp-object+) +lisp-object+)
-                (when target
-                  (emit-move-from-stack target)))
+                (emit-move-from-stack target))
                (t
                 (compile-function-call form target representation)))))
       (2
@@ -6125,8 +6124,7 @@ given a specific common representation.")
                 (emit-push-nil)
                 (emit-invokevirtual +lisp-stream-class+ "readLine"
                                     (list "Z" +lisp-object+) +lisp-object+)
-                (when target
-                  (emit-move-from-stack target))
+                (emit-move-from-stack target)
                 )
                (t
                 (compile-function-call form target representation)))))
