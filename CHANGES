@@ -1,3 +1,49 @@
+Version 0.20
+============
+yet-to-be-tagged
+(???)
+
+
+Features
+--------
+
+* [svn r12576] Support for CLOS METACLASS feature
+
+* [svn r12591-602] Consolidation of copy/paste code in the readers
+
+* [svn r12619] Update included ASDF (to ASDF2)
+
+* [svn r12620] Use interpreted function in FASL when compilation fails
+
+* [svn r12616] Pathname functions work with URLs and JARs
+
+* Many small speed improvements (by marking functions 'final')
+
+* Threads started through MAKE-THREAD now have a thread-termination
+    restart available in their debugger
+
+* [svn r12634] THREADS:THREAD-JOIN implemented
+
+
+Fixes
+-----
+
+* [svn r12639] Inlining of READ-LINE broken when the return value
+    is unused
+
+* [svn r12636] Java class verification error when compiling PROGV
+    in a context wanting an unboxed return value (typically a
+    logical expression)
+
+* [svn r12635] ABCL loads stale fasls instead of updated source
+    even when LOAD is called with a file name without extension
+
+* [ticket #92] Codepoints between #xD800 and #xDFFF are incorrectly
+    returned as characters from CODE-CHAR
+
+
+
+
 Version 0.19
 ============
 svn://common-lisp.net/project/armedbear/svn/trunk/abcl
@@ -78,8 +124,8 @@ Fixes/Optimizations
 
 * [svn r12441] ZipCache now caches all references to ZipFiles based on
   the last-modified time for local files.  Remote files are always
-  retrieved due to problems in the underlying JVM code.  
-  
+  retrieved due to problems in the underlying JVM code.
+
   SYS:REMOVE-ZIP-CACHE implements a way to invalidate an entry given a
   pathname.
 
@@ -187,21 +233,21 @@ Other
   for some aspects of jar pathname work added.
 
 *  New toplevel 'doc' directory now contains:
-   
+
    + [svn r12410] Design for the (in progress) reworking of the Stream
      inheritance.
-   
+
    + [svn r12433] Design and current status for the re-implementation
      of jar pathnames.
 
 * [svn r12402] Change ABCL unit tests to use the ABCL-TEST-LISP definition
   contained in 'abcl.asd'.  Fixed and renabled math-tests.  Added new
-  tests for work related to handling jar pathnames. 
+  tests for work related to handling jar pathnames.
 
 * [svn r12401] The REFERENCES-NEEDED-P field of the LOCAL-FUNCTION structure now
   tracks whether local functions need the capture of an actual
   function object.
-   
+
 
 Version 0.18.1
 ==============
