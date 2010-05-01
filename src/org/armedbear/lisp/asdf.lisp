@@ -2516,7 +2516,7 @@ with a different configuration, so the configuration would be re-read then."
     #+ecl (,(translate-logical-pathname "SYS:**;*.*") ()) ; only needed if LPNs are resolved manually.
     #+clozure (,(wilden (ccl::ccl-directory)) ()) ; not needed: no precompiled ASDF system
     #+abcl (#p"jar:file:/**/*.jar!/**/*.*" (:function translate-jar-pathname))
-    #+abcl (#p"/:jar:file/**/*.*" (:user-cache #p"**/*.*"))
+    #+abcl (#p"/___jar___file___root___/**/*.*" (:user-cache #p"**/*.*"))
     ;; All-import, here is where we want user stuff to be:
     :inherit-configuration
     ;; If we want to enable the user cache by default, here would be the place:
@@ -2706,14 +2706,20 @@ effectively disabling the output translation facility."
 #+abcl
 (defun translate-jar-pathname (source wildcard)
   (declare (ignore wildcard))
-  (let ((root (apply-output-translations
-               (concatenate 'string
-                            "/:jar:file/"
-                            (namestring (first (pathname-device
-                                                source))))))
-        (entry (make-pathname :directory (pathname-directory source)
-                              :name (pathname-name source)
-                              :type (pathname-type source))))
+  (let* ((p (first (pathname-device source)))
+	 (r (concatenate 'string  
+			 (if (and (find :windows *features*) 
+				  (not (null (pathname-device p))))
+			     (format nil "~A/" (pathname-device p))
+			     "")
+			 (namestring (make-pathname :directory (pathname-directory p)
+						    :name (pathname-name p)
+						    :type (pathname-type p)))))
+	 (root (apply-output-translations
+		(format nil "/___jar___file___root___/~A" r)))
+	 (entry (make-pathname :directory (pathname-directory source)
+			       :name (pathname-name source)
+			       :type (pathname-type source))))
     (concatenate 'string (namestring root) (namestring entry))))
 
 ;;;; -----------------------------------------------------------------
