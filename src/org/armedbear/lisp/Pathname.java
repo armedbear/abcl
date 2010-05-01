@@ -680,10 +680,13 @@ public class Pathname extends LispObject {
             sb.append('.');
             if (type instanceof AbstractString) {
                 String t = type.getStringValue();
-                if (t.indexOf('.') >= 0) {
-                    Debug.assertTrue(namestring == null);
-                    return null;
-                }
+		// Allow Windows shortcuts to include TYPE
+		if (!(t.endsWith(".lnk") && Utilities.isPlatformWindows)) {
+		    if (t.indexOf('.') >= 0) {
+			Debug.assertTrue(namestring == null);
+			return null;
+		    }
+		}
                 sb.append(t);
             } else if (type == Keyword.WILD) {
                 sb.append('*');
