@@ -657,18 +657,26 @@ public class Stream extends StructureObject {
                     // normal token beginning with '.'
                     _unreadChar(nextChar);
                 }
+
+                thread._values = null;
                 LispObject obj = processChar(c, rt);
                 if (obj == null) {
                     // A comment.
                     continue;
                 }
-                if (first == null) {
-                    first = new Cons(obj);
-                    last = first;
-                } else {
-                    Cons newCons = new Cons(obj);
-                    last.cdr = newCons;
-                    last = newCons;
+
+                if (! (obj == NIL && thread._values != null
+                       && thread._values.length == 0)) {
+                    // Don't add the return value NIL to the list
+                    // if the _values array indicates no values have been returned
+                    if (first == null) {
+                        first = new Cons(obj);
+                        last = first;
+                    } else {
+                        Cons newCons = new Cons(obj);
+                        last.cdr = newCons;
+                        last = newCons;
+                    }
                 }
             }
         } catch (IOException e) {
@@ -1439,8 +1447,14 @@ public class Stream extends StructureObject {
             char c = flushWhitespace(rt);
             if (c == delimiter)
                 break;
+
+            thread._values = null;
             LispObject obj = processChar(c, rt);
-            if (obj != null)
+            if (obj != null &&
+                ! (obj == NIL && thread._values != null
+                   && thread._values.length == 0))
+                // Don't add 'obj' to the list, if _values indicates
+                // no values have been returned
                 result = new Cons(obj, result);
         }
         if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
