@@ -345,7 +345,7 @@ public class Pathname extends LispObject {
             }
             String scheme = url.getProtocol();
             if (scheme.equals("file")) {
-                Pathname p = new Pathname(s);
+                Pathname p = new Pathname(url.getFile());
                 this.host = p.host;
                 this.device = p.device;
                 this.directory = p.directory;
