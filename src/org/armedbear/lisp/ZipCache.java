@@ -182,7 +182,15 @@ public class ZipCache {
         } else {
             if (url.getProtocol().equals("file")) {
                 entry = new Entry();
-                File f = new File(url.getPath());
+                String path = url.getPath();
+
+                if (Utilities.isPlatformWindows) {
+                    String authority = url.getAuthority();
+                    if (authority != null) {
+                        path = authority + path;
+                    }
+                }
+                File f = new File(path);
                 entry.lastModified = f.lastModified();
                 try {
                     entry.file = new ZipFile(f);
