@@ -46,19 +46,19 @@ public final class LispReader
         public LispObject execute(Stream stream, char ignored)
 
         {
-          try 
+          try
             {
               while (true) {
                 int n = stream._readChar();
                 if (n < 0)
-                  return null;
+                  return LispThread.currentThread().setValues();
                 if (n == '\n')
-                  return null;
+                  return LispThread.currentThread().setValues();
               }
             }
           catch (java.io.IOException e)
             {
-              return null;
+                return LispThread.currentThread().setValues();
             }
         }
     };
@@ -328,7 +328,7 @@ public final class LispReader
 
         {
             stream.skipBalancedComment();
-            return null;
+            return LispThread.currentThread().setValues();
         }
     };
 

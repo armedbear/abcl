@@ -481,7 +481,7 @@ public class Stream extends StructureObject {
                 char c = (char) n; // ### BUG: Codepoint conversion
                 if (rt.isWhitespace(c))
                     continue;
-                LispObject result = processChar(c, rt);
+                LispObject result = processChar(thread, c, rt);
                 if (result != null)
                     return result;
             }
@@ -497,15 +497,36 @@ public class Stream extends StructureObject {
         }
     }
 
-    private final LispObject processChar(char c, Readtable rt)
-
+    /** Dispatch macro function if 'c' has one associated,
+     * read a token otherwise.
+     *
+     * When the macro function returns zero values, this function
+     * returns null or the token or returned value otherwise.
+     */
+    private final LispObject processChar(LispThread thread,
+                                         char c, Readtable rt)
     {
         final LispObject handler = rt.getReaderMacroFunction(c);
-        if (handler instanceof ReaderMacroFunction)
-            return ((ReaderMacroFunction)handler).execute(this, c);
-        if (handler != null && handler != NIL)
-            return handler.execute(this, LispCharacter.getInstance(c));
-        return readToken(c, rt);
+        LispObject value;
+
+        if (handler instanceof ReaderMacroFunction) {
+            thread._values = null;
+            value = ((ReaderMacroFunction)handler).execute(this, c);
+        }
+        else if (handler != null && handler != NIL) {
+            thread._values = null;
+            value = handler.execute(this, LispCharacter.getInstance(c));
+        }
+        else
+            return readToken(c, rt);
+
+        // If we're looking at zero return values, set 'value' to null
+        if (value == NIL) {
+            LispObject[] values = thread._values;
+            if (values != null && values.length == 0)
+                value = null;
+        }
+        return value;
     }
 
     public LispObject readPathname(ReadtableAccessor rta) {
@@ -658,25 +679,18 @@ public class Stream extends StructureObject {
                     _unreadChar(nextChar);
                 }
 
-                thread._values = null;
-                LispObject obj = processChar(c, rt);
-                if (obj == null) {
-                    // A comment.
+                LispObject obj = processChar(thread, c, rt);
+                if (obj == null)
                     continue;
-                }
 
-                if (! (obj == NIL && thread._values != null
-                       && thread._values.length == 0)) {
-                    // Don't add the return value NIL to the list
-                    // if the _values array indicates no values have been returned
-                    if (first == null) {
-                        first = new Cons(obj);
-                        last = first;
-                    } else {
-                        Cons newCons = new Cons(obj);
-                        last.cdr = newCons;
-                        last = newCons;
-                    }
+
+                if (first == null) {
+                    first = new Cons(obj);
+                    last = first;
+                } else {
+                    Cons newCons = new Cons(obj);
+                    last.cdr = newCons;
+                    last = newCons;
                 }
             }
         } catch (IOException e) {
@@ -1448,13 +1462,8 @@ public class Stream extends StructureObject {
             if (c == delimiter)
                 break;
 
-            thread._values = null;
-            LispObject obj = processChar(c, rt);
-            if (obj != null &&
-                ! (obj == NIL && thread._values != null
-                   && thread._values.length == 0))
-                // Don't add 'obj' to the list, if _values indicates
-                // no values have been returned
+            LispObject obj = processChar(thread, c, rt);
+            if (obj != null)
                 result = new Cons(obj, result);
         }
         if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
