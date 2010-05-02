@@ -351,18 +351,43 @@ public final class Lisp
 
 
   public static final LispObject error(LispObject condition)
-
   {
     pushJavaStackFrames();
     return Symbol.ERROR.execute(condition);
   }
 
-  public static final LispObject error(LispObject condition, LispObject message)
+  public static final int ierror(LispObject condition)
+  {
+    error(condition);
+    return 0; // Not reached
+  }
 
+  public static final String serror(LispObject condition)
+  {
+    error(condition);
+    return ""; // Not reached
+  }
+
+
+  public static final LispObject error(LispObject condition, LispObject message)
   {
     pushJavaStackFrames();
     return Symbol.ERROR.execute(condition, Keyword.FORMAT_CONTROL, message);
   }
+
+  public static final int ierror(LispObject condition, LispObject message)
+  {
+    error(condition, message);
+    return 0; // Not reached
+  }
+
+  public static final String serror(LispObject condition, LispObject message)
+  {
+    error(condition, message);
+    return ""; // Not reached
+  }
+
+
 
   public static final LispObject type_error(LispObject datum,
                                             LispObject expectedType)

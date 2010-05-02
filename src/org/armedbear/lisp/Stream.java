@@ -604,20 +604,16 @@ public class Stream extends StructureObject {
       {
         while (true) {
           int n = _readChar();
-          if (n < 0) {
-            error(new EndOfFile(this));
-            // Not reached.
-            return null;
-          }
+          if (n < 0)
+            return error(new EndOfFile(this));
+
           char c = (char) n; // ### BUG: Codepoint conversion
           if (rt.getSyntaxType(c) == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE) {
             // Single escape.
             n = _readChar();
-            if (n < 0) {
-              error(new EndOfFile(this));
-              // Not reached.
-              return null;
-            }
+            if (n < 0)
+              return error(new EndOfFile(this));
+
             sb.append((char)n); // ### BUG: Codepoint conversion
             continue;
           }
@@ -970,20 +966,16 @@ public class Stream extends StructureObject {
         try {
             while (true) {
                 int n = _readChar();
-                if (n < 0) {
-                    error(new EndOfFile(this));
-                    // Not reached.
-                    return null;
-                }
+                if (n < 0)
+                    return serror(new EndOfFile(this));
+
                 char c = (char) n; // ### BUG: Codepoint conversion
                 byte syntaxType = rt.getSyntaxType(c);
                 if (syntaxType == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE) {
                     n = _readChar();
-                    if (n < 0) {
-                        error(new EndOfFile(this));
-                        // Not reached.
-                        return null;
-                    }
+                    if (n < 0)
+                        return serror(new EndOfFile(this));
+
                     sb.append((char)n); // ### BUG: Codepoint conversion
                     continue;
                 }
@@ -992,7 +984,7 @@ public class Stream extends StructureObject {
                 sb.append(c);
             }
         } catch (IOException e) {
-            error(new StreamError(this, e));
+            return serror(new StreamError(this, e));
         }
         return sb.toString();
     }
@@ -1136,9 +1128,9 @@ public class Stream extends StructureObject {
                 }
                 if (n < 0) {
                     error(new EndOfFile(this));
-                    // Not reached.
-                    return flags;
+                    return null; // Not reached
                 }
+
                 sb.setCharAt(0, (char) n); // ### BUG: Codepoint conversion
                 flags = new BitSet(1);
                 flags.set(0);
@@ -1252,22 +1244,19 @@ public class Stream extends StructureObject {
         final LispObject readBaseObject = Symbol.READ_BASE.symbolValue(thread);
         if (readBaseObject instanceof Fixnum) {
             readBase = ((Fixnum)readBaseObject).value;
-        } else {
+        } else
             // The value of *READ-BASE* is not a Fixnum.
-            error(new LispError("The value of *READ-BASE* is not of type '(INTEGER 2 36)."));
-            // Not reached.
-            return 10;
-        }
-        if (readBase < 2 || readBase > 36) {
-            error(new LispError("The value of *READ-BASE* is not of type '(INTEGER 2 36)."));
-            // Not reached.
-            return 10;
-        }
+            return ierror(new LispError("The value of *READ-BASE* is not " +
+                                        "of type '(INTEGER 2 36)."));
+
+        if (readBase < 2 || readBase > 36)
+            return ierror(new LispError("The value of *READ-BASE* is not " +
+                                        "of type '(INTEGER 2 36)."));
+
         return readBase;
     }
 
     private final LispObject makeNumber(String token, int length, int radix)
-
     {
         if (length == 0)
             return null;
@@ -1436,11 +1425,9 @@ public class Stream extends StructureObject {
         try {
             while (true) {
                 int n = _readChar();
-                if (n < 0) {
-                    error(new EndOfFile(this));
-                    // Not reached.
-                    return 0;
-                }
+                if (n < 0)
+                    return (char)ierror(new EndOfFile(this));
+
                 char c = (char) n; // ### BUG: Codepoint conversion
                 if (!rt.isWhitespace(c))
                     return c;
@@ -1862,9 +1849,7 @@ public class Stream extends StructureObject {
 
             return n; // Reads an 8-bit byte.
         } catch (IOException e) {
-            error(new StreamError(this, e));
-            // Not reached.
-            return -1;
+            return ierror(new StreamError(this, e));
         }
     }
 
