@@ -8760,7 +8760,6 @@ to derive a Java class name from."
         (*visible-variables* nil)
         (*local-functions* nil)
         (*pathnames-generator* (constantly nil))
-        (sys::*fasl-anonymous-package* (sys::%make-package))
         environment)
     (unless (and (consp definition) (eq (car definition) 'LAMBDA))
       (let ((function definition))

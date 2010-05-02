@@ -361,23 +361,13 @@ public final class Load
     // ### *fasl-version*
     // internal symbol
     static final Symbol _FASL_VERSION_ =
-        exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(35));
+        exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(36));
 
     // ### *fasl-external-format*
     // internal symbol
     private static final Symbol _FASL_EXTERNAL_FORMAT_ =
         internConstant("*FASL-EXTERNAL-FORMAT*", PACKAGE_SYS,
                        new SimpleString("UTF-8"));
-
-    // ### *fasl-anonymous-package*
-    // internal symbol
-    /**
-     * This variable gets bound to a package with no name in which the
-     * reader can intern its uninterned symbols.
-     *
-     */
-    public static final Symbol _FASL_ANONYMOUS_PACKAGE_ =
-        internSpecial("*FASL-ANONYMOUS-PACKAGE*", PACKAGE_SYS, NIL);
 
     // ### *fasl-uninterned-symbols*
     // internal symbol
@@ -404,7 +394,6 @@ public final class Load
                 if (second.eql(_FASL_VERSION_.getSymbolValue())) {
                     // OK
                     final LispThread thread = LispThread.currentThread();
-                    thread.bindSpecial(_FASL_ANONYMOUS_PACKAGE_, NIL);
                     thread.bindSpecial(_FASL_UNINTERNED_SYMBOLS_, NIL);
                     thread.bindSpecial(_SOURCE_, NIL);
                     return faslLoadStream(thread);
@@ -595,7 +584,6 @@ public final class Load
         final SpecialBindingsMark mark = thread.markSpecialBindings();
         LispObject result = NIL;
         try {
-            thread.bindSpecial(_FASL_ANONYMOUS_PACKAGE_, new Package());
             thread.bindSpecial(AUTOLOADING_CACHE,
                                AutoloadedFunctionProxy.makePreloadingContext());
             in.setExternalFormat(_FASL_EXTERNAL_FORMAT_.symbolValue(thread));

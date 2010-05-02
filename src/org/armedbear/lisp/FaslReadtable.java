@@ -100,6 +100,7 @@ public final class FaslReadtable extends Readtable
         dtfunctions[10]   = LispReader.SHARP_ILLEGAL; // newline, linefeed
         dtfunctions[12]   = LispReader.SHARP_ILLEGAL; // page
         dtfunctions[13]   = LispReader.SHARP_ILLEGAL; // return
+        dtfunctions['?']  = FaslReader.FASL_SHARP_QUESTION_MARK;
         dispatchTables.constants['#'] = dt;
 
         readtableCase = Keyword.UPCASE;

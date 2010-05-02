@@ -50,7 +50,6 @@ public class AutoloadedFunctionProxy extends Function {
         new Symbol[]
         {
             AUTOLOADING_CACHE, // allow loading local preloaded functions
-            Load._FASL_ANONYMOUS_PACKAGE_, // package for uninterned symbols
             Load._FASL_UNINTERNED_SYMBOLS_, // vector of uninterned symbols
             Symbol._PACKAGE_,              // current package
             Symbol.LOAD_TRUENAME           // LOAD-TIME-VALUE depends on this

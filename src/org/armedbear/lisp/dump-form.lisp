@@ -103,6 +103,16 @@
              (standard-object-p object)
              (java:java-object-p object))
          (dump-instance object stream))
+        ((and (symbolp object) ;; uninterned symbol
+              (null (symbol-package object)))
+         (let ((index (cdr (assoc object *fasl-uninterned-symbols*))))
+           (unless index
+             (setq index (1+ (or (cdar *fasl-uninterned-symbols*) -1)))
+             (setq *fasl-uninterned-symbols*
+                   (acons object index *fasl-uninterned-symbols*)))
+           (write-string "#" stream)
+           (write index :stream stream)
+           (write-string "?" stream)))
         (t
          (%stream-output-object object stream))))
 

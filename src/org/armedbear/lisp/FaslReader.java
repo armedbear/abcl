@@ -141,12 +141,7 @@ public final class FaslReader
 
         {
             LispThread thread = LispThread.currentThread();
-            Symbol symbol = (Symbol) stream.readSymbol(FaslReadtable.getInstance());
-            LispObject pkg = Load._FASL_ANONYMOUS_PACKAGE_.symbolValue(thread);
-            Debug.assertTrue(pkg != NIL);
-            symbol = ((Package)pkg).intern(symbol.getName());
-            symbol.setPackage(NIL);
-            return symbol;
+            return stream.readSymbol(FaslReadtable.getInstance());
         }
     };
 
@@ -277,10 +272,41 @@ public final class FaslReader
     {
         @Override
         public LispObject execute(Stream stream, char c, int n)
-
         {
             return stream.readCharacterLiteral(FaslReadtable.getInstance(),
                                                LispThread.currentThread());
         }
     };
+
+    // ### fasl-sharp-question-mark
+    public static final DispatchMacroFunction FASL_SHARP_QUESTION_MARK =
+        new DispatchMacroFunction("fasl-sharp-question-mark", PACKAGE_SYS,
+                                  false, "stream sub-char numarg")
+    {
+        @Override
+        public LispObject execute(Stream stream, char c, int n)
+        {
+            LispThread thread = LispThread.currentThread();
+            LispObject uninternedSymbols =
+                Load._FASL_UNINTERNED_SYMBOLS_.symbolValue(thread);
+
+            if (! (uninternedSymbols instanceof Cons)) // it must be a vector
+                return uninternedSymbols.AREF(n);
+
+            // During normal loading, we won't get to this bit, however,
+            // with eval-when processing, we may need to fall back to
+            // *FASL-UNINTERNED-SYMBOLS* being an alist structure
+            LispObject label = LispInteger.getInstance(n);
+            while (uninternedSymbols != NIL)
+              {
+                LispObject item = uninternedSymbols.car();
+                if (label.eql(item.cdr()))
+                  return item.car();
+
+                uninternedSymbols = uninternedSymbols.cdr();
+              }
+            return error(new LispError("No entry for uninterned symbol."));
+        }
+    };
+
 }

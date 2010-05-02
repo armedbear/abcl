@@ -69,13 +69,13 @@
 
 (declaim (ftype (function (t) t) verify-load))
 (defun verify-load (classfile)
-  (if (> *safety* 0) 
+  (if (> *safety* 0)
     (and classfile
          (let ((*load-truename* *output-file-pathname*))
            (report-error
             (load-compiled-function classfile))))
     t))
-    
+
 (declaim (ftype (function (t) t) process-defconstant))
 (defun process-defconstant (form)
   ;; "If a DEFCONSTANT form appears as a top level form, the compiler
@@ -514,7 +514,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
              (*class-number* 0)
              (namestring (namestring *compile-file-truename*))
              (start (get-internal-real-time))
-             elapsed)
+             elapsed
+             *fasl-uninterned-symbols*)
         (when *compile-verbose*
           (format t "; Compiling ~A ...~%" namestring))
         (with-compilation-unit ()
@@ -527,7 +528,6 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                   (*package* *package*)
                   (jvm::*functions-defined-in-current-file* '())
                   (*fbound-names* '())
-                  (*fasl-anonymous-package* (%make-package))
                   (*fasl-stream* out)
                   *forms-for-output*)
               (jvm::with-saved-compiler-policy
@@ -565,19 +565,32 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
             ;; write header
             (write "; -*- Mode: Lisp -*-" :escape nil :stream out)
             (%stream-terpri out)
-            (let ((*package* (find-package '#:cl))
-                  (count-sym (gensym)))
+            (let ((*package* (find-package '#:cl)))
               (write (list 'init-fasl :version *fasl-version*)
                      :stream out)
               (%stream-terpri out)
               (write (list 'setq '*source* *compile-file-truename*)
                      :stream out)
               (%stream-terpri out)
-              (dump-form `(dotimes (,count-sym ,*class-number*)
-                            (function-preload
-                             (%format nil "~A-~D.cls" 
-                                      ,(substitute #\_ #\. (pathname-name output-file))
-                                      (1+ ,count-sym)))) out)
+              ;; Note: Beyond this point, you can't use DUMP-FORM,
+              ;; because the list of uninterned symbols has been fixed now.
+              (when *fasl-uninterned-symbols*
+                (write (list 'setq '*fasl-uninterned-symbols*
+                             (coerce (mapcar #'car
+                                             (nreverse *fasl-uninterned-symbols*))
+                                     'vector))
+                       :stream out))
+              (%stream-terpri out)
+              ;; we work with a fixed variable name here to work around the
+              ;; lack of availability of the circle reader in the fasl reader
+              ;; but it's a toplevel form anyway
+              (write `(dotimes (i ,*class-number*)
+                        (function-preload
+                         (%format nil "~A-~D.cls"
+                                  ,(substitute #\_ #\. (pathname-name output-file))
+                                  (1+ i))))
+                     :stream out
+                     :circle t)
               (%stream-terpri out))
 
 
