@@ -379,6 +379,17 @@ public final class Load
     public static final Symbol _FASL_ANONYMOUS_PACKAGE_ =
         internSpecial("*FASL-ANONYMOUS-PACKAGE*", PACKAGE_SYS, NIL);
 
+    // ### *fasl-uninterned-symbols*
+    // internal symbol
+    /**
+     * This variable gets bound to NIL upon loading a FASL, but
+     * gets set to a vector of symbols as one of the first actions
+     * by the FASL itself.
+     *
+     */
+    public static final Symbol _FASL_UNINTERNED_SYMBOLS_ =
+        internSpecial("*FASL-UNINTERNED-SYMBOLS*", PACKAGE_SYS, NIL);
+
     // ### init-fasl &key version
     private static final Primitive INIT_FASL = new init_fasl();
     private static class init_fasl extends Primitive {
@@ -394,6 +405,7 @@ public final class Load
                     // OK
                     final LispThread thread = LispThread.currentThread();
                     thread.bindSpecial(_FASL_ANONYMOUS_PACKAGE_, NIL);
+                    thread.bindSpecial(_FASL_UNINTERNED_SYMBOLS_, NIL);
                     thread.bindSpecial(_SOURCE_, NIL);
                     return faslLoadStream(thread);
                 }
@@ -409,8 +421,8 @@ public final class Load
                                                        boolean print,
                                                        boolean auto)
         {
-            return loadFileFromStream(pathname == null ? NIL : pathname, 
-                                      truename == null ? NIL : truename, 
+            return loadFileFromStream(pathname == null ? NIL : pathname,
+                                      truename == null ? NIL : truename,
                                       in, verbose, print, auto, false);
     }
 
