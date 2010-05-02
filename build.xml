@@ -143,7 +143,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <condition property="abcl.java.version.p">
 	<or>
 	  <matches string="${java.version}" pattern="1\.5"/>
-	  <matches string="${java.version}" pattern="1\.6\.0_1[0-9]"/>
+	  <matches string="${java.version}" pattern="1\.6\.0_[12][0-9]"/>
 	</or>  
       </condition>
 
