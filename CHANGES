@@ -15,20 +15,22 @@ Features
 
 * [svn r12620] Use interpreted function in FASL when compilation fails
 
-* [svn r12616] Pathname functions work with URLs and JARs
+* [ticket 95] Pathname functions work with URLs and JARs
 
 * Many small speed improvements (by marking functions 'final')
 
-* Threads started through MAKE-THREAD now have a thread-termination
-    restart available in their debugger
+* [ticket #91] Threads started through MAKE-THREAD now have a
+    thread-termination restart available in their debugger
 
 * [svn r12634] THREADS:THREAD-JOIN implemented
 
+* [svn r12638] Experimental feature to allow insertion of byte code
+    in compiled Lisp functions
 
 Fixes
 -----
 
-* [svn r12639] Inlining of READ-LINE broken when the return value
+* [ticket 89] Inlining of READ-LINE broken when the return value
     is unused
 
 * [svn r12636] Java class verification error when compiling PROGV
@@ -41,7 +43,25 @@ Fixes
 * [ticket #92] Codepoints between #xD800 and #xDFFF are incorrectly
     returned as characters from CODE-CHAR
 
+* [ticket #93] Reader doesn't handle zero returned values from
+    macro functions correctly
 
+* [ticket #79] Different, yet similarly named, uninterned symbols
+    are incorrectly coalesced into the same object in a fasl.
+
+* [ticket #86] No restarts available to kill a thread, if none
+    bound by user code
+
+* [svn r12586] Increased function dispatch speed by eliminating
+    FIND-CLASS calls (replacing them by constant references)
+
+Other
+-----
+
+* [svn r12581] LispCharacter() constructors made private, in favor
+    of getInstance() for better re-use of pre-constructed characters
+
+* [svn r12583] JAVA-CLASS reimplemented in Lisp
 
 
 Version 0.19
