@@ -740,8 +740,8 @@ public class Pathname extends LispObject {
         // the namestring." 19.2.2.2.3.1
         if (directory != NIL) {
             final char separatorChar;
-            if (device instanceof Cons) {
-                separatorChar = '/'; // Jar file.
+            if (isJar() || isURL()) {
+                separatorChar = '/'; 
             } else {
                 separatorChar = File.separatorChar;
             }
