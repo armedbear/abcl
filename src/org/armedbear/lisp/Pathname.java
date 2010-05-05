@@ -1795,7 +1795,9 @@ public class Pathname extends LispObject {
         if (pathname.device != NIL) { // XXX if device represent JARs we want to merge
             result.device = p.device;
         } else {
-            result.device = d.device;
+            if (!p.isURL()) {
+                result.device = d.device;
+            }
         }
 
         if (pathname.isJar()) {
