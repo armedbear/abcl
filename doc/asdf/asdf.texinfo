@@ -32,6 +32,9 @@
 This manual describes ASDF, a system definition facility
 for Common Lisp programs and libraries.
 
+You can find the latest version of this manual at
+@url{http://common-lisp.net/project/asdf/asdf.html}.
+
 ASDF Copyright @copyright{} 2001-2010 Daniel Barlow and contributors.
 
 This manual Copyright @copyright{} 2001-2010 Daniel Barlow and contributors.
@@ -167,12 +170,12 @@ to learn how to define a system of your own.
 the ASDF internals and how to extend ASDF.
 
 @emph{Nota Bene}:
-We are preparing for a release of ASDF 2,
+We are preparing for a release of ASDF 2, hopefully for May 2010,
 which will have version 2.000 and later.
-Current releases, in the 1.600 series and beyond,
+Current releases, in the 1.700 series and beyond,
 should be considered as release candidates.
 We're still working on polishing the code and documentation.
-@ref{FAQ,,``What has changed between ASDF 1 and ASDF 2?''}.
+@xref{FAQ,,``What has changed between ASDF 1 and ASDF 2?''}.
 
 
 @node Loading ASDF, Configuring ASDF, Introduction, Top
@@ -238,7 +241,7 @@ If it returns the keyword @code{:OLD},
 then you're using an old version of ASDF (from before 1.635).
 If it returns @code{NIL} then ASDF is not installed.
 
-If you are running a version older than 1.678,
+If you are running a version older than 1.711,
 we recommend that you load a newer ASDF using the method below.
 
 
@@ -532,7 +535,7 @@ other ASDF add-ons offered the same functionality,
 each in subtly different and incompatible ways:
 ASDF-Binary-Locations, cl-launch, common-lisp-controller.
 ASDF-Binary-Locations is now not needed anymore and should not be used.
-cl-launch 3.0 and common-lisp-controller 7.1 have been updated
+cl-launch 2.900 and common-lisp-controller 7.1 have been updated
 to just delegate this functionality to ASDF.
 
 @node Using ASDF, Defining systems with defsystem, Configuring ASDF, Top
@@ -549,7 +552,7 @@ by evaluating the following Lisp form:
 (asdf:load-system :@var{foo})
 @end example
 
-On some implementations (namely, SBCL and Clozure CL),
+On some implementations (namely ABCL, Clozure CL, CMUCL, ECL and SBCL),
 ASDF hooks into the @code{CL:REQUIRE} facility
 and you can just use:
 
@@ -1316,11 +1319,11 @@ Don't hold your breath.
 @code{defsystem} grammar subsection,
 which doesn't provide any obvious way to specify required features.
 Furthermore, in 2009, discussions on the
-@uref{http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-devel,asdf-devel mailing list}
+@url{http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-devel,asdf-devel mailing list}
 suggested that the specification of required features may be broken,
 and that no one may have been using them for a while.
 Please contact the
-@uref{http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-devel,asdf-devel mailing list}
+@url{http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-devel,asdf-devel mailing list}
 if you are interested in getting this features feature fixed.}
 
 Traditionally defsystem users have used reader conditionals
@@ -1671,7 +1674,7 @@ where data files are located,
 where output file caches are located.
 Mentions of XDG variables refer to that document.
 
-@uref{http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html}
+@url{http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html}
 
 This specification allows the user to specify some environment variables
 to customize how applications behave to his preferences.
@@ -2463,7 +2466,7 @@ a slightly older version about which none of the HEAD users have complained.
 There is also a STABLE version, which is earlier than release.
 
 You may get the ASDF source repository using git:
-@kbd{git clone http://common-lisp.net/project/asdf/asdf.git}
+@kbd{git clone git://common-lisp.net/projects/asdf/asdf.git}
 
 You will find the above referenced tags in this repository.
 You can also browse the repository on
@@ -2472,7 +2475,7 @@ You can also browse the repository on
 Discussion of ASDF development is conducted on the
 mailing list
 @kbd{asdf-devel@@common-lisp.net}.
-@uref{http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-devel}
+@url{http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-devel}
 
 
 @node FAQ, TODO list, Getting the latest version, Top
@@ -2484,7 +2487,7 @@ mailing list
 ASDF bugs are tracked on launchpad: @url{https://launchpad.net/asdf}.
 
 If you're unsure about whether something is a bug, of for general discussion,
-use the @uref{http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-devel,asdf-devel mailing list}
+use the @url{http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-devel,asdf-devel mailing list}
 
 
 @section ``What has changed between ASDF 1 and ASDF 2?''
@@ -2496,7 +2499,7 @@ which will have version 2.000 and later.
 While the code and documentation are essentially complete
 we are still working on polishing them before release.
 
-Releases in the 1.600 series and beyond
+Releases in the 1.700 series and beyond
 should be considered as release candidates.
 For all practical purposes,
 ASDF 2 refers to releases later than 1.656,
@@ -2513,12 +2516,14 @@ If you are experiencing problems or limitations of any sort with ASDF 1,
 we recommend that you should upgrade to ASDF 2 or its latest release candidate.
 
 
-@subsection ASDF can portably name files inside systems and components
+@subsection ASDF can portably name files in subdirectories
 
 Common Lisp namestrings are not portable,
 except maybe for logical pathnamestrings,
-that themselves require a lot of setup that is itself ultimately non-portable.
-The only portable ways to refer to pathnames inside systems and components
+that themselves have various limitations and require a lot of setup
+that is itself ultimately non-portable.
+
+In ASDF 1, the only portable ways to refer to pathnames inside systems and components
 were very awkward, using @code{#.(make-pathname ...)} and
 @code{#.(merge-pathnames ...)}.
 Even the above were themselves were inadequate in the general case
@@ -2533,6 +2538,7 @@ Naming files within a system definition becomes easy and portable again.
 @code{asdf::merge-component-name-type}.
 
 @xref{The defsystem grammar,,Pathname specifiers}.
+
 
 @subsection Output translations
 
@@ -2571,12 +2577,23 @@ ASDF 2 provides a well-documented way to configure ASDF,
 with sensible defaults, adequate configuration languages,
 and a coherent set of configuration files and hooks.
 
+We believe it's a vast improvement because it decouples
+application distribution from library distribution.
+The application writer can avoid thinking where the libraries are,
+and the library distributor (dpkg, clbuild, advanced user, etc.)
+can configure them once and for every application.
+Yet settings can be easily overridden where needed,
+so whoever needs control has exactly as much as required.
+
 At the same time, ASDF 2 remains compatible
 with the old magic you may have in your build scripts
+(using @code{*central-registry*} and
+@code{*system-definition-search-functions*})
 to tailor the ASDF configuration to your build automation needs,
 and also allows for new magic, simpler and more powerful magic.
 
 @xref{Controlling where ASDF searches for systems}.
+
 
 @subsection Usual operations are made easier to the user
 
@@ -2592,23 +2609,43 @@ similarly for @code{compile-system}, @code{test-system}.
 
 @subsection Many bugs have been fixed
 
-These issues and many others have been fixed,
-including the following:
+The following issues and many others have been fixed:
 
-Dependencies were not correctly propagated
-across submodules within a system.
+@itemize
+@item
+The infamous TRAVERSE function has been revamped significantly,
+with many bugs squashed.
+In particular, dependencies were not correctly propagated
+across submodules within a system but now are.
+The :version and :feature features and
+the :force (system1 .. systemN) feature have been fixed.
 
+@item
+Performance has been notably improved for large systems
+(say with thousands of components) by using
+hash-tables instead of linear search,
+and linear-time list accumulation
+instead of quadratic-time recursive appends.
+
+@item
 Many features used to not be portable,
 especially where pathnames were involved.
+Windows support was notably quirky because of such non-portability.
 
-The internal test suite used to massively fail
-in many implementations.
+@item
+The internal test suite used to massively fail on many implementations.
+While still incomplete, it now fully passes
+on all implementations supported by the test suite.
 
-Support was broken for some implementations (notably ABCL).
+@item
+Support was lacking for some implementations.
+ABCL was notably wholly broken.
+ECL extensions were not integrated in the ASDF release.
 
+@item
 The documentation was grossly out of date.
 
-ECL extensions were not integrated in the ASDF release.
+@end itemize
 
 
 @subsection ASDF itself is versioned
@@ -2623,8 +2660,9 @@ or take great pains to have the correct version of ASDF installed.
 With ASDF 2, we provide a new stable set of working features
 that everyone can rely on from now on.
 Use @code{#+asdf2} to detect presence of ASDF 2,
-@code{(asdf:version-satisfies (asdf:asdf-version) "1.678")}
+@code{(asdf:version-satisfies (asdf:asdf-version) "1.711")}
 to check the availability of a version no earlier than required.
+
 
 @subsection ASDF can be upgraded
 
@@ -2667,6 +2705,64 @@ This means that release cycles will be causally decoupled,
 the practical consequence of which will mean faster convergence
 towards the latest version for everyone.
 
+
+@subsection Pitfalls of ASDF 2
+
+The main pitfalls in upgrading to ASDF 2 seem to be related
+to the output translation mechanism.
+
+@itemize
+
+@item
+Output translations is enabled by default. This may surprise some users,
+most of them in pleasant way (we hope), a few of them in an unpleasant way.
+It is trivial to disable output translations.
+@xref{FAQ,,``How can I wholly disable the compiler output cache?''}.
+
+@item
+Some systems in the large have been known not to play well with output translations.
+They were relatively easy to fix.
+Once again, it is also easy to disable output translations,
+or to override its configuration.
+
+@item
+The new ASDF output translations are incompatible with ASDF-Binary-Locations.
+They replace A-B-L, and there is compatibility mode to emulate
+your previous A-B-L configuration.
+See @code{asdf:enable-asdf-binary-locations-compatibility} in
+@pxref{Controlling where ASDF saves compiled files,,Backward Compatibility}.
+But thou shall not load ABL on top of ASDF 2.
+
+@end itemize
+
+Other issues include the following:
+
+@itemize
+
+@item
+There is a slight performance bug, notably on SBCL,
+when initially searching for @file{asd} files,
+the implicit @code{(directory "/configured/path/**/*.asd")}
+for every configured path @code{(:tree "/configured/path/")}
+in your @code{source-registry} configuration can cause a slight pause.
+Try to @code{(time (asdf:initialize-source-registry))}
+to see how bad it is or isn't on your system.
+If you insist on not having this pause,
+you can avoid the pause by overriding the default source-registry configuration
+and not use any deep @code{:tree} entry but only @code{:directory} entries
+or shallow @code{:tree} entries.
+Or you can fix your implementation to not be quite that slow
+when recursing through directories.
+
+@item
+On Windows, only LispWorks supports proper default configuration pathnames
+based on the Windows registry.
+Other implementations make do.
+Windows support is largely untested, so please help report and fix bugs.
+
+@end itemize
+
+
 @section Issues with installing the proper version of ASDF
 
 @subsection ``My Common Lisp implementation comes with an outdated version of ASDF. What to do?''
@@ -2690,24 +2786,58 @@ We trust you to thoroughly test it with your implementation before you release i
 If there are any issues with the current release,
 it's a bug that you should report upstream and that we will fix ASAP.
 
-As to how to include ASDF, we recommend that
-if you do have a few magic systems in your implementation path,
-that are specially treated in @code{wrapping-source-registry},
-like SBCL does.
-In this case, we explicitly ask you to @emph{NOT} distribute
-@file{asdf.asd} together with your implementation's ASDF,
-least you separate it from the other systems in this path,
-or otherwise rename the system and its @file{asd} file
-to e.g. @code{asdf-sbcl} and @file{asdf-sbcl.asd}.
+As to how to include ASDF, we recommend the following:
 
+@itemize
+@item
+If ASDF isn't installed yet, then @code{(require :asdf)}
+should load the version of ASDF that is bundled with your system.
+You may have it load some other version configured by the user,
+if you allow such configuration.
+
+@item
+If your system provides a mechanism to hook into @code{CL:REQUIRE},
+then it would be nice to add ASDF to this hook the same way that
+ABCL, CCL, CMUCL, ECL and SBCL do it.
+
+@item
+You may, like SBCL, have ASDF be implicitly used to require systems
+that are bundled with your Lisp distribution.
+If you do have a few magic systems that come with your implementation
+in a precompiled way such that one should only use the binary version
+that goes with your distribution, like SBCL does,
+then you should add them in the beginning of @code{wrapping-source-registry}.
+
+@item
+If you have magic systems as above, like SBCL does,
+then we explicitly ask you to @emph{NOT} distribute
+@file{asdf.asd} as part of those magic systems.
+You should still include the file @file{asdf.lisp} in your source distribution
+and precompile it in your binary distribution,
+but @file{asdf.asd} if included at all,
+should be secluded from the magic systems,
+in a separate file hierarchy,
+or you may otherwise rename the system and its file to e.g.
+@code{asdf-ecl} and @file{asdf-ecl.asd}, or
+@code{sb-asdf} and @file{sb-asdf.asd}.
+Indeed, if you made @file{asdf.asd} a magic system,
+then users would no longer be able to upgrade ASDF using ASDF itself
+to some version of their preference that
+they maintain independently from your Lisp distribution.
+
+@item
 If you do not have any such magic systems, or have other non-magic systems
 that you want to bundle with your implementation,
 then you may add them to the @code{default-source-registry},
 and you are welcome to include @file{asdf.asd} amongst them.
 
-Please send upstream any patches you make to ASDF itself,
+@item
+Please send us upstream any patches you make to ASDF itself,
 so we can merge them back in for the benefit of your users
 when they upgrade to the upstream version.
+
+@end itemize
+
 
 
 @section Issues with configuring ASDF
@@ -2772,9 +2902,9 @@ ASDF provides a predefined test operation, @code{test-op}.
 The test operation, however, is largely left to the system definer to specify.
 @code{test-op} has been
 a topic of considerable discussion on the
-@uref{http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-devel,asdf-devel mailing list},
+@url{http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-devel,asdf-devel mailing list},
 and on the
-@uref{https://launchpad.net/asdf,launchpad bug-tracker}.
+@url{https://launchpad.net/asdf,launchpad bug-tracker}.
 
 Here are some guidelines:
 
