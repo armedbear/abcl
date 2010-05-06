@@ -124,47 +124,52 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
 ;;; wrapped in PROGN for easy disabling without a network connection
 ;;; XXX come up with a better abstraction
 
+(defvar *url-jar-pathname-base*
+  "jar:http://abcl-dynamic-install.googlecode.com/files/baz-20100505a.jar!/")
+
+(defmacro load-url-relative (path) 
+  `(load (format nil "~A~A" *url-jar-pathname-base* ,path)))
+
 (progn 
   (deftest jar-pathname.load.11
-      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/foo")
+      (load-url-relative "foo")
     t)
 
   (deftest jar-pathname.load.12
-      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/bar")
+      (load-url-relative "bar")
     t)
 
   (deftest jar-pathname.load.13
-      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/bar.abcl")
+      (load-url-relative "bar.abcl")
     t)
 
   (deftest jar-pathname.load.14
-      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/eek")
+      (load-url-relative "eek")
     t)
 
   (deftest jar-pathname.load.15
-      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/eek.lisp")
+      (load-url-relative "eek.lisp")
     t)
 
   (deftest jar-pathname.load.16
-      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/a/b/foo")
+      (load-url-relative "a/b/foo")
     t)
 
   (deftest jar-pathname.load.17
-      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/a/b/bar")
+      (load-url-relative "a/b/bar")
     t)
 
   (deftest jar-pathname.load.18
-      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/a/b/bar.abcl")
+      (load-url-relative "a/b/bar.abcl")
     t)
 
   (deftest jar-pathname.load.19
-      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/a/b/eek")
+      (load-url-relative "a/b/eek")
     t)
 
   (deftest jar-pathname.load.20
-      (load "jar:http://abcl-dynamic-install.googlecode.com/files/baz.jar!/a/b/eek.lisp")
+      (load-url-relative "a/b/eek.lisp")
     t))
-
 
 (deftest jar-pathname.probe-file.1
     (with-jar-file-init
@@ -214,6 +219,11 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
     (merge-pathnames 
      "jar:file:baz.jar!/foo" "/a/b/c")
   #p"jar:file:/a/b/baz.jar!/foo")
+
+
+;;; Under win32, we get the device in the merged path
+#+windows 
+(push 'jar-pathname.merge-pathnames.5 *expected-failures*)
 
 (deftest jar-pathname.merge-pathnames.5
     (merge-pathnames "jar:file:/a/b/c/foo.jar!/bar/baz.lisp")
@@ -332,11 +342,10 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
   nil)
 
 (deftest jar-pathname.translate.1
-    (namestring
-     (translate-pathname "jar:file:/a/b/c.jar!/d/e/f.lisp" 
-                         "jar:file:/**/*.jar!/**/*.*" 
-                         "/foo/**/*.*"))
-  "/foo/d/e/f.lisp")
+    (translate-pathname "jar:file:/a/b/c.jar!/d/e/f.lisp" 
+			"jar:file:/**/*.jar!/**/*.*" 
+			"/foo/**/*.*")
+  #p"/foo/d/e/f.lisp")
 
       
 
