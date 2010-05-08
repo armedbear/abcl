@@ -671,9 +671,9 @@ ${basedir}/../cl-bench
       <java fork="true"
 	    classpathref="abcl.test.run.classpath"
 	    classname="org.junit.runner.JUnitCore">
-	<arg value="org.armedbear.lisp.FastStringBufferTest"/>
         <arg value="org.armedbear.lisp.PathnameTest"/>
         <arg value="org.armedbear.lisp.StreamTest"/>
+        <arg value="org.armedbear.lisp.UtilitiesTest"/>
       </java>
     </target>
 
