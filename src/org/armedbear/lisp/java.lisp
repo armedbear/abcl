@@ -325,26 +325,65 @@
                           (java:java-exception-cause e)))))
 
 ;;; JAVA-CLASS support
+(defconstant +java-lang-object+ (jclass "java.lang.Object"))
 
 (defclass java-class (standard-class)
   ((jclass :initarg :java-class
 	   :initform (error "class is required")
 	   :reader java-class-jclass)))
 
+;;init java.lang.Object class
+(defconstant +java-lang-object-class+
+  (%register-java-class +java-lang-object+
+			(mop::ensure-class (make-symbol "java.lang.Object")
+					   :metaclass (find-class 'java-class)
+					   :direct-superclasses (list (find-class 'java-object))
+					   :java-class +java-lang-object+)))
+
 (defun ensure-java-class (jclass)
   (let ((class (%find-java-class jclass)))
     (if class
 	class
 	(%register-java-class
-	 jclass (mop::ensure-class (make-symbol (jclass-name jclass))
-				   :metaclass (find-class 'java-class)
-				   :direct-superclasses (if (jclass-superclass-p jclass (jclass "java.lang.Object"))
-							    (list (find-class 'java-object))
-							    (mapcar #'ensure-java-class
-								    (delete nil
-									    (concatenate 'list (list (jclass-superclass jclass))
-											 (jclass-interfaces jclass)))))
-				   :java-class jclass)))))
+	 jclass (mop::ensure-class
+		 (make-symbol (jclass-name jclass))
+		 :metaclass (find-class 'java-class)
+		 :direct-superclasses (mapcar #'ensure-java-class
+					      (remove-duplicates
+					       (delete nil
+						       (concatenate 'list
+								    (list (jclass-superclass jclass))
+								    (jclass-interfaces jclass)))
+					       :key #'jclass-name :test #'string=))
+		 :java-class jclass)))))
+
+(defmethod mop::compute-class-precedence-list ((class java-class))
+  "Sort classes this way:
+   1. Java classes (but not java.lang.Object)
+   2. Java interfaces
+   3. java.lang.Object
+   4. other classes
+   Rationale:
+   1. Concrete classes are the most specific.
+   2. Then come interfaces.
+     So if a generic function is specialized both on an interface and a concrete class,
+     the concrete class comes first.
+   3. because everything is an Object.
+   4. to handle base CLOS classes.
+   Note: Java interfaces are not sorted among themselves in any way, so if a
+   gf is specialized on two different interfaces and you apply it to an object that
+   implements both, it is unspecified which method will be called."
+  (let ((cpl (call-next-method)))
+    (flet ((score (class)
+	     (if (not (typep class 'java-class))
+		 4
+		 (cond
+		   ((jcall (jmethod "java.lang.Object" "equals" "java.lang.Object")
+			   (java-class-jclass class) +java-lang-object+) 3)
+		   ((jclass-interface-p (java-class-jclass class)) 2)
+		   (t 1)))))
+      (stable-sort cpl #'(lambda (x y)
+			   (< (score x) (score y)))))))
 	  
 (defmethod make-instance ((class java-class) &rest initargs &key &allow-other-keys)
   (declare (ignore initargs))
