@@ -115,20 +115,31 @@ public final class Java
         return null;
     }
 
-    // ### jclass name-or-class-ref => class-ref
+    // ### jclass name-or-class-ref &optional class-loader => class-ref
     private static final Primitive JCLASS = new pf_jclass();
     private static final class pf_jclass extends Primitive 
     {
         pf_jclass() 
         {
             super(Symbol.JCLASS, "name-or-class-ref",
-                  "Returns a reference to the Java class designated by NAME-OR-CLASS-REF.");
+                  "Returns a reference to the Java class designated by NAME-OR-CLASS-REF. If the CLASS-LOADER parameter is passed, the class is resolved with respect to the given ClassLoader.");
         }
 
         @Override
         public LispObject execute(LispObject arg)
         {
             return JavaObject.getInstance(javaClass(arg));
+        }
+
+        @Override
+        public LispObject execute(LispObject className, LispObject classLoader)
+        {
+	    ClassLoader loader = (ClassLoader) classLoader.javaInstance(ClassLoader.class);
+	    if(loader != null) {
+		return JavaObject.getInstance(javaClass(className, loader));
+	    } else {
+		return JavaObject.getInstance(javaClass(className));
+	    }
         }
     };
 
@@ -1149,25 +1160,27 @@ public final class Java
         return null; // not reached
     }
     
-    static Class classForName(String className)
-    {
+    private static Class classForName(String className) {
+	return classForName(className, JavaClassLoader.getPersistentInstance());
+    }
+
+    private static Class classForName(String className, ClassLoader classLoader) {
         try {
-            return Class.forName(className);
+            return Class.forName(className, true, classLoader);
         }
         catch (ClassNotFoundException e) {
-            try {
-                return Class.forName(className, true, JavaClassLoader.getPersistentInstance());
-            }
-            catch (ClassNotFoundException ex) {
-                error(new LispError("Class not found: " + className));
-                // Not reached.
-                return null;
-            }
+	    error(new LispError("Class not found: " + className));
+	    // Not reached.
+	    return null;
         }
     }
 
+    private static Class javaClass(LispObject obj) {
+	return javaClass(obj, null);
+    }
+
     // Supports Java primitive types too.
-    static Class javaClass(LispObject obj)
+    static Class javaClass(LispObject obj, ClassLoader classLoader)
     {
         if (obj instanceof AbstractString || obj instanceof Symbol) {
             String s = javaString(obj);
@@ -1188,7 +1201,12 @@ public final class Java
             if (s.equals("double"))
                 return Double.TYPE;
             // Not a primitive Java type.
-            Class c = classForName(s);
+            Class c;
+	    if(classLoader != null) {
+		c = classForName(s, classLoader);
+	    } else {
+		c = classForName(s);
+	    }
             if (c == null)
                 error(new LispError(s + " does not designate a Java class."));
 
