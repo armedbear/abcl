@@ -348,13 +348,16 @@
 	 jclass (mop::ensure-class
 		 (make-symbol (jclass-name jclass))
 		 :metaclass (find-class 'java-class)
-		 :direct-superclasses (mapcar #'ensure-java-class
-					      (remove-duplicates
-					       (delete nil
-						       (concatenate 'list
-								    (list (jclass-superclass jclass))
-								    (jclass-interfaces jclass)))
-					       :key #'jclass-name :test #'string=))
+		 :direct-superclasses
+		 (let ((supers
+			(mapcar #'ensure-java-class
+				(delete nil
+					(concatenate 'list
+						     (list (jclass-superclass jclass))
+						     (jclass-interfaces jclass))))))
+		   (if (jclass-interface-p jclass)
+		       (append supers (list (find-class 'java-object)))
+		       supers))
 		 :java-class jclass)))))
 
 (defmethod mop::compute-class-precedence-list ((class java-class))
@@ -373,7 +376,7 @@
    Note: Java interfaces are not sorted among themselves in any way, so if a
    gf is specialized on two different interfaces and you apply it to an object that
    implements both, it is unspecified which method will be called."
-  (let ((cpl (call-next-method)))
+  (let ((cpl (nreverse (mop::collect-superclasses* class))))
     (flet ((score (class)
 	     (if (not (typep class 'java-class))
 		 4
