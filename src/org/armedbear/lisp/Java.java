@@ -121,7 +121,7 @@ public final class Java
     {
         pf_jclass() 
         {
-            super(Symbol.JCLASS, "name-or-class-ref",
+            super(Symbol.JCLASS, "name-or-class-ref &optional class-loader",
                   "Returns a reference to the Java class designated by NAME-OR-CLASS-REF. If the CLASS-LOADER parameter is passed, the class is resolved with respect to the given ClassLoader.");
         }
 
