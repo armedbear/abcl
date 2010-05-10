@@ -53,6 +53,13 @@
 
 (export '(class-precedence-list class-slots))
 (defconstant +the-standard-class+ (find-class 'standard-class))
+(defconstant +the-standard-object-class+ (find-class 'standard-object))
+(defconstant +the-standard-method-class+ (find-class 'standard-method))
+(defconstant +the-standard-reader-method-class+
+  (find-class 'standard-reader-method))
+(defconstant +the-standard-generic-function-class+
+  (find-class 'standard-generic-function))
+(defconstant +the-T-class+ (find-class 'T))
 
 ;; Don't use DEFVAR, because that disallows loading clos.lisp
 ;; after compiling it: the binding won't get assigned to T anymore
@@ -556,7 +563,7 @@
                                              direct-default-initargs
                                              &allow-other-keys)
   (let ((supers (or direct-superclasses
-                    (list (find-class 'standard-object)))))
+                    (list +the-standard-object-class+))))
     (setf (class-direct-superclasses class) supers)
     (dolist (superclass supers)
       (pushnew class (class-direct-subclasses superclass))))
@@ -579,7 +586,9 @@
 (defun canonical-slot-name (canonical-slot)
   (getf canonical-slot :name))
 
-(defvar *extensible-built-in-classes* (list (find-class 'sequence) (find-class 'java:java-object)))
+(defvar *extensible-built-in-classes*
+  (list (find-class 'sequence)
+        (find-class 'java:java-object)))
 
 (defun ensure-class (name &rest all-keys &key metaclass &allow-other-keys)
   ;; Check for duplicate slots.
@@ -740,8 +749,6 @@
 (defun (setf classes-to-emf-table) (new-value gf)
   (set-generic-function-classes-to-emf-table gf new-value))
 
-(defvar the-class-standard-method (find-class 'standard-method))
-
 (defun (setf method-lambda-list) (new-value method)
   (set-method-lambda-list method new-value))
 
@@ -850,8 +857,8 @@
                                 &rest all-keys
                                 &key
                                 lambda-list
-                                (generic-function-class (find-class 'standard-generic-function))
-                                (method-class the-class-standard-method)
+                                (generic-function-class +the-standard-generic-function-class+)
+                                (method-class +the-standard-method-class+)
                                 (method-combination 'standard)
                                 (argument-precedence-order nil apo-p)
                                 documentation
@@ -885,7 +892,7 @@
             (error 'program-error
                    :format-control "~A already names an ordinary function, macro, or special operator."
                    :format-arguments (list function-name)))
-          (setf gf (apply (if (eq generic-function-class (find-class 'standard-generic-function))
+          (setf gf (apply (if (eq generic-function-class +the-standard-generic-function-class+)
                               #'make-instance-standard-generic-function
                               #'make-instance)
                           generic-function-class
@@ -898,7 +905,7 @@
 (defun initial-discriminating-function (gf args)
   (set-funcallable-instance-function
    gf
-   (funcall (if (eq (class-of gf) (find-class 'standard-generic-function))
+   (funcall (if (eq (class-of gf) +the-standard-generic-function-class+)
                 #'std-compute-discriminating-function
                 #'compute-discriminating-function)
             gf))
@@ -933,7 +940,7 @@
                                                 argument-precedence-order
                                                 documentation)
   (declare (ignore generic-function-class))
-  (let ((gf (std-allocate-instance (find-class 'standard-generic-function))))
+  (let ((gf (std-allocate-instance +the-standard-generic-function-class+)))
     (%set-generic-function-name gf name)
     (setf (generic-function-lambda-list gf) lambda-list)
     (setf (generic-function-initial-methods gf) ())
@@ -1162,7 +1169,7 @@
         (check-method-lambda-list method-lambda-list (generic-function-lambda-list gf))
         (setf gf (ensure-generic-function name :lambda-list method-lambda-list)))
     (let ((method
-           (if (eq (generic-function-method-class gf) the-class-standard-method)
+           (if (eq (generic-function-method-class gf) +the-standard-method-class+)
                (apply #'make-instance-standard-method gf all-keys)
                (apply #'make-instance (generic-function-method-class gf) all-keys))))
       (%add-method gf method)
@@ -1177,7 +1184,7 @@
                                       function
                                       fast-function)
   (declare (ignore gf))
-  (let ((method (std-allocate-instance the-class-standard-method)))
+  (let ((method (std-allocate-instance +the-standard-method-class+)))
     (setf (method-lambda-list method) lambda-list)
     (setf (method-qualifiers method) qualifiers)
     (%set-method-specializers method (canonicalize-specializers specializers))
@@ -1366,7 +1373,7 @@
   (if (or (null methods) (null (%cdr methods)))
       methods
       (sort methods
-	    (if (eq (class-of gf) (find-class 'standard-generic-function))
+	    (if (eq (class-of gf) +the-standard-generic-function-class+)
 		#'(lambda (m1 m2)
 		    (std-method-more-specific-p m1 m2 required-classes
 						(generic-function-argument-precedence-order gf)))
@@ -1419,7 +1426,7 @@
 (defun slow-method-lookup (gf args)
   (let ((applicable-methods (%compute-applicable-methods gf args)))
     (if applicable-methods
-        (let ((emfun (funcall (if (eq (class-of gf) (find-class 'standard-generic-function))
+        (let ((emfun (funcall (if (eq (class-of gf) +the-standard-generic-function-class+)
                                   #'std-compute-effective-method-function
                                   #'compute-effective-method-function)
                               gf applicable-methods)))
@@ -1430,7 +1437,7 @@
 (defun slow-method-lookup-1 (gf arg arg-specialization)
   (let ((applicable-methods (%compute-applicable-methods gf (list arg))))
     (if applicable-methods
-        (let ((emfun (funcall (if (eq (class-of gf) (find-class 'standard-generic-function))
+        (let ((emfun (funcall (if (eq (class-of gf) +the-standard-generic-function-class+)
                                   #'std-compute-effective-method-function
                                   #'compute-effective-method-function)
                               gf applicable-methods)))
@@ -1516,7 +1523,7 @@
       (around
        (let ((next-emfun
               (funcall
-               (if (eq (class-of gf) (find-class 'standard-generic-function))
+               (if (eq (class-of gf) +the-standard-generic-function-class+)
                    #'std-compute-effective-method-function
                    #'compute-effective-method-function)
                gf (remove around methods))))
@@ -1766,7 +1773,7 @@
                                              fast-function
                                              slot-name)
   (declare (ignore gf))
-  (let ((method (std-allocate-instance (find-class 'standard-reader-method))))
+  (let ((method (std-allocate-instance +the-standard-reader-method-class+)))
     (setf (method-lambda-list method) lambda-list)
     (setf (method-qualifiers method) qualifiers)
     (%set-method-specializers method (canonicalize-specializers specializers))
@@ -1817,7 +1824,7 @@
     (ensure-method function-name
                    :lambda-list '(new-value object)
                    :qualifiers ()
-                   :specializers (list (find-class 't) class)
+                   :specializers (list +the-T-class+ class)
 ;;                    :function `(function ,method-function)
                    :function (if (autoloadp 'compile)
                                  method-function
