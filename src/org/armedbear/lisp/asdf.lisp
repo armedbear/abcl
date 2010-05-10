@@ -2297,7 +2297,8 @@ located."
 (defparameter *architecture-features*
   '((:x86-64 :amd64 :x86_64 :x8664-target)
     (:x86 :i686 :i586 :pentium3 :i486 :i386 :pc386 :iapx386 :x8632-target :pentium4)
-    :hppa64 :hppa :ppc64 (:ppc32 :ppc :powerpc) :sparc64 :sparc))
+    :hppa64 :hppa :ppc64 (:ppc32 :ppc :powerpc) :sparc64 :sparc
+    :java-1.4 :java-1.5 :java-1.6 :java-1.7))
 
 (defun lisp-version-string ()
   (let ((s (lisp-implementation-version)))
@@ -2329,7 +2330,8 @@ located."
     #+lispworks (format nil "~A~@[~A~]" s
                         (when (member :lispworks-64bit *features*) "-64bit"))
     ;; #+sbcl (format nil "~a-fasl~d" s sb-fasl:+fasl-file-version+) ; fasl-f-v is redundant
-    #+(or armedbear cormanlisp mcl sbcl scl) s
+    #+armedbear (format nil "~a-fasl~a" s system::*fasl-version*)
+    #+(or  mcl sbcl scl) s
     #-(or allegro armedbear clisp clozure cmu cormanlisp digitool
           ecl gcl lispworks mcl sbcl scl) s))
 
