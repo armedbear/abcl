@@ -1672,12 +1672,35 @@ public class Pathname extends LispObject {
             if (memq(Keyword.WILD_INFERIORS, directory)) {
                 return true;
             }
+            Cons d = (Cons) directory;
+            while (true) {
+                if (d.car() instanceof AbstractString) {
+                    String s = d.car().writeToString();
+                    if (s.contains("*")) {
+                        return true;
+                    }
+                }
+                if (d.cdr() == NIL || ! (d.cdr() instanceof Cons)) {
+                    break;
+                }
+                d = (Cons)d.cdr();
+            }
         }
         if (name == Keyword.WILD || name == Keyword.WILD_INFERIORS) {
             return true;
         }
+        if (name instanceof AbstractString) {
+            if (name.writeToString().contains("*")) {
+                return true;
+            }
+        }
         if (type == Keyword.WILD || type == Keyword.WILD_INFERIORS) {
             return true;
+        }
+        if (type instanceof AbstractString) {
+            if (type.writeToString().contains("*")) {
+                return true;
+            }
         }
         if (version == Keyword.WILD || version == Keyword.WILD_INFERIORS) {
             return true;
