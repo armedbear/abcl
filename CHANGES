@@ -22,10 +22,9 @@ Features
 * [ticket #91] Threads started through MAKE-THREAD now have a
     thread-termination restart available in their debugger
 
-* [svn r12634] THREADS:THREAD-JOIN implemented
+* [svn r12663] JCLASS supports an optional class-loader argument
 
-* [svn r12638] Experimental feature to allow insertion of byte code
-    in compiled Lisp functions
+* [svn r12634] THREADS:THREAD-JOIN implemented
 
 Fixes
 -----
