@@ -516,7 +516,9 @@ Also, if either argument is NIL, then the other argument is returned unmodified.
             ((:relative)
              (values (pathname-host defaults)
                      (pathname-device defaults)
-                     (append (pathname-directory defaults) (cdr directory))
+                     (if (null (pathname-directory defaults))
+                         directory
+                         (append (pathname-directory defaults) (cdr directory)))
                      (unspecific-handler defaults)))
             #+gcl
             (t
