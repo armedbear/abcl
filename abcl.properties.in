@@ -11,3 +11,6 @@
 
 # java.options sets the Java options in the abcl wrapper scripts
 #java.options=-Xmx1g
+
+# Additional site specific startup code to be merged in 'system.lisp'
+abcl.startup.file=${basedir}/startup.lisp

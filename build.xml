@@ -101,7 +101,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
     <target name="abcl.compile" depends="abcl.clean.maybe,abcl.compile.lisp">
       <echo>Compiled ABCL with Java version: ${java.version}</echo>
     </target>
-    
+
     <target name="abcl.clean.maybe" unless="abcl.build.incremental">
       <echo>Cleaning all intermediate compilation artifacts.</echo>
       <echo>Setting 'abcl.build.incremental' enables incremental compilation.</echo>
@@ -223,9 +223,12 @@ For help on the automatic tests available, use the Ant target 'help.test'.
     <path id="abcl.lisp.output.path"
           location="${build.classes.dir}/org/armedbear/lisp/"/>
     <pathconvert dirsep="/" property="abcl.lisp.output" refid="abcl.lisp.output.path"/>
+
+    <property name="system.lisp.file" 
+              value="${build.classes.dir}/org/armedbear/lisp/system.lisp"/>
     
     <target name="abcl.compile.lisp" 
-	    depends="abcl.copy.lisp,abcl.compile.java,abcl.fasls.uptodate"
+	    depends="abcl.copy.lisp,abcl.compile.java,abcl.system.update.maybe,abcl.fasls.uptodate"
 	    unless="abcl.fasls.uptodate.p">
       <echo>
 Compiling Lisp system 
@@ -241,6 +244,9 @@ to   ${abcl.lisp.output}</echo>
         <arg value="--eval"/>
         <arg value="(setf *load-verbose* t)"/>
       </java>
+      <concat destfile="${system.lisp.file}" append="true">
+        <fileset file="${abcl.startup.file}"/>
+      </concat>
     </target>
 
     <property name="abcl.build.path"
@@ -269,6 +275,16 @@ to   ${abcl.lisp.output}</echo>
     <target name="abcl.stamp.hostname" if="unix">
       <exec executable="hostname" outputproperty="abcl.hostname"/>
       <echo>abcl.hostname: ${abcl.hostname}</echo>
+    </target>
+
+    <target name="abcl.system.uptodate">
+      <uptodate property="abcl.system.needs-update.p" 
+                srcfile="${system.lisp.file}"
+                targetfile="${abcl.startup.file}"/>
+    </target>
+    
+    <target name="abcl.system.update.maybe" depends="abcl.system.uptodate" if="abcl.system.needs-update.p">
+      <touch file="${src.dir}/org/armedbear/lisp/compile-system.lisp"/>
     </target>
 
     <target name="abcl.jar.uptodate" depends="abcl.compile">
