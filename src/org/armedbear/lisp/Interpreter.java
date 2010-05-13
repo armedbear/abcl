@@ -52,6 +52,7 @@ public final class Interpreter
     private final OutputStream outputStream;
 
     private static boolean noinit = false;
+    private static boolean nosystem = false;
     private static boolean noinform = false;
 
     public static synchronized Interpreter getInstance()
@@ -92,7 +93,8 @@ public final class Interpreter
         }
         initializeLisp();
         initializeTopLevel();
-        initializeSystem();
+        if (!nosystem) 
+            initializeSystem();
         if (!noinit)
             processInitializationFile();
         if (args != null)
@@ -231,6 +233,8 @@ public final class Interpreter
                 String arg = args[i];
                 if (arg.equals("--noinit")) {
                     noinit = true;
+                } else if (arg.equals("--nosystem")) {
+                    nosystem = true;
                 } else if (arg.equals("--noinform")) {
                     noinform = true;
                 } else if (arg.equals("--batch")) {

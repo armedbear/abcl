@@ -241,6 +241,7 @@ to   ${abcl.lisp.output}</echo>
 	    classname="org.armedbear.lisp.Main">
         <jvmarg value="-Dabcl.home=${abcl.home.dir}${file.separator}"/>
 	<arg value="--noinit"/>
+        <arg value="--nosystem"/>
         <arg value="--eval"/>
         <arg value="(setf *load-verbose* t)"/>
       </java>
@@ -278,12 +279,19 @@ to   ${abcl.lisp.output}</echo>
     </target>
 
     <target name="abcl.system.uptodate">
-      <uptodate property="abcl.system.needs-update.p" 
+      <condition property="abcl.system.needs-update.p">
+        <and>
+          <available file="${system.lisp.file}"/>
+          <available file="${abcl.startup.file}"/>
+          <uptodate
                 srcfile="${system.lisp.file}"
                 targetfile="${abcl.startup.file}"/>
+        </and>
+      </condition>
     </target>
     
-    <target name="abcl.system.update.maybe" depends="abcl.system.uptodate" if="abcl.system.needs-update.p">
+    <target name="abcl.system.update.maybe" depends="abcl.system.uptodate" 
+            if="abcl.system.needs-update.p">
       <touch file="${src.dir}/org/armedbear/lisp/compile-system.lisp"/>
     </target>
 
