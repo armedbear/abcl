@@ -92,6 +92,7 @@ public final class Interpreter
         }
         initializeLisp();
         initializeTopLevel();
+        initializeSystem();
         if (!noinit)
             processInitializationFile();
         if (args != null)
@@ -117,6 +118,7 @@ public final class Interpreter
 
         initializeJLisp();
         initializeTopLevel();
+        initializeSystem();
         processInitializationFile();
         return interpreter;
     }
@@ -209,6 +211,11 @@ public final class Interpreter
         catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static synchronized void initializeSystem() 
+    {
+        Load.loadSystemFile("system");
     }
 
     // Check for --noinit; verify that arguments are supplied for --load and
