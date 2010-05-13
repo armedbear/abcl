@@ -162,6 +162,11 @@ public class Closure extends Function
                   }
                 else if (obj == Symbol.AND_REST || obj == Symbol.AND_BODY)
                   {
+                    if (_andKey)
+                      {
+                        error(new ProgramError(
+                          "&REST/&BODY must precede &KEY."));
+                      }
                     state = STATE_REST;
                     arity = -1;
                     maxArgs = -1;
