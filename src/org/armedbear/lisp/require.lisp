@@ -38,15 +38,31 @@
 
 (defun module-provide-system (module) 
   (let ((*readtable* (copy-readtable nil)))
-    (handler-case 
-        (load-system-file (string-downcase (string module)))
-      (t (e) 
-        (unless (and (typep e 'error)
-                     (search "Failed to find loadable system file"
-                             (format nil "~A" e)))
-          (format *error-output* "Failed to require  ~A because '~A'~%" 
-                  module e))
-        nil))))
+       (handler-case 
+           (load-system-file (string-downcase (string module)))
+         (t (e) 
+           (unless (and (typep e 'error)
+                        (search "Failed to find loadable system file"
+                                (format nil "~A" e)))
+             (format *error-output* "Failed to require  ~A because '~A'~%" 
+                     module e))
+           nil))))
+
+         ;;   (progn 
+         ;;     (format t "BEFORE~%")
+         ;;     (load-system-file (string-downcase (string module)))
+         ;;     (format t "AFTER~%"))
+         ;; ((error (c) 
+         ;;   (progn 
+         ;;     (format t "MATCHED~%")
+         ;;     ;; XXX It would be much better to detect an error
+         ;;     ;; type rather than searching for a string, but
+
+         ;;     ;; that's tricky as LOAD-SYSTEM-FILE is such an
+         ;;     ;; early primitive.
+         ;;     (when (search "Failed to find loadable system file"
+         ;;                   (format nil "~A" c))
+         ;;       (return-from module-provide-system (values nil c)))))))))
     
 (defvar *module-provider-functions* nil)
 
@@ -61,6 +77,6 @@
              (unless (some (lambda (p) (funcall p module-name))
                            (append (list #'module-provide-system)
                                  sys::*module-provider-functions*))
-               (error "Don't know how to ~S ~A." 'require module-name))))
+               (warn "Failed to require ~A." module-name))))
       (set-difference *modules* saved-modules))))
 
