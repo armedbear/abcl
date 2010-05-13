@@ -2184,50 +2184,33 @@ the Java object representing SYMBOL can be retrieved."
      (setf *static-code* *code*)
      (setf (gethash local-function ht) g))))
 
-(defknown declare-fixnum (fixnum) string)
-(defun declare-fixnum (n)
-  (declare (type fixnum n))
+(defknown declare-integer (integer) string)
+(defun declare-integer (n)
   (declare-with-hashtable
    n *declared-integers* ht g
-   (let ((*code* *static-code*))
-     ;; no need to *declare-inline*: constants
-     (setf g (format nil "FIXNUM_~A~D"
-		     (if (minusp n) "MINUS_" "")
-		     (abs n)))
-     (declare-field g +lisp-integer+ +field-access-private+)
-     (cond ((<= 0 n 255)
-	    (emit 'getstatic +lisp-fixnum-class+ "constants" +lisp-fixnum-array+)
-	    (emit-push-constant-int n)
-	    (emit 'aaload))
-	   (t
-	    (emit-push-constant-int n)
-            (convert-representation :int nil)))
-     (emit 'putstatic *this-class* g +lisp-integer+)
-     (setf *static-code* *code*)
-     (setf (gethash n ht) g))))
-
-(defknown declare-bignum (integer) string)
-(defun declare-bignum (n)
-  (declare-with-hashtable
-   n *declared-integers* ht g
-   (setf g (concatenate 'string "BIGNUM_" (symbol-name (gensym))))
+   (setf g (concatenate 'string "INT_" (symbol-name (gensym))))
    (let ((*code* *static-code*))
      ;; no need to *declare-inline*: constants
      (declare-field g +lisp-integer+ +field-access-private+)
-     (cond ((<= most-negative-java-long n most-positive-java-long)
-;;	    (setf g (format nil "BIGNUM_~A~D"
-;;			    (if (minusp n) "MINUS_" "")
-;;			    (abs n)))
-	    (emit 'ldc2_w (pool-long n))
-	    (emit-invokestatic +lisp-bignum-class+ "getInstance"
-                               '("J") +lisp-integer+))
-	 (t
-	  (let* ((*print-base* 10)
-		 (s (with-output-to-string (stream) (dump-form n stream))))
-	    (emit 'ldc (pool-string s))
-	    (emit-push-constant-int 10)
-	    (emit-invokestatic +lisp-bignum-class+ "getInstance"
-                               (list +java-string+ "I") +lisp-integer+))))
+     (cond((<= 0 n 255)
+           (emit 'getstatic +lisp-fixnum-class+ "constants" +lisp-fixnum-array+)
+           (emit-push-constant-int n)
+           (emit 'aaload))
+          ((<= most-negative-fixnum n most-positive-fixnum)
+           (emit-push-constant-int n)
+           (emit-invokestatic +lisp-fixnum-class+ "getInstance"
+                                  '("I") +lisp-fixnum+))
+          ((<= most-negative-java-long n most-positive-java-long)
+           (emit-push-constant-long n)
+           (emit-invokestatic +lisp-bignum-class+ "getInstance"
+                              '("J") +lisp-integer+))
+          (t
+           (let* ((*print-base* 10)
+                  (s (with-output-to-string (stream) (dump-form n stream))))
+             (emit 'ldc (pool-string s))
+             (emit-push-constant-int 10)
+             (emit-invokestatic +lisp-bignum-class+ "getInstance"
+                                (list +java-string+ "I") +lisp-integer+))))
      (emit 'putstatic *this-class* g +lisp-integer+)
      (setf *static-code* *code*))
    (setf (gethash n ht) g)))
@@ -2435,7 +2418,7 @@ The field type of the object is specified by OBJ-REF."
      (cond ((fixnump form)
             (emit-push-constant-int form))
            ((integerp form)
-            (emit 'getstatic *this-class* (declare-bignum form) +lisp-integer+)
+            (emit 'getstatic *this-class* (declare-integer form) +lisp-integer+)
             (emit-invokevirtual +lisp-object-class+ "intValue" nil "I"))
            (t
             (sys::%format t "compile-constant int representation~%")
@@ -2446,7 +2429,7 @@ The field type of the object is specified by OBJ-REF."
      (cond ((<= most-negative-java-long form most-positive-java-long)
             (emit-push-constant-long form))
            ((integerp form)
-            (emit 'getstatic *this-class* (declare-bignum form) +lisp-integer+)
+            (emit 'getstatic *this-class* (declare-integer form) +lisp-integer+)
             (emit-invokevirtual +lisp-object-class+ "longValue" nil "J"))
            (t
             (sys::%format t "compile-constant long representation~%")
@@ -2490,20 +2473,8 @@ The field type of the object is specified by OBJ-REF."
      (emit-move-from-stack target representation)
      (return-from compile-constant))
     ((NIL)))
-  (cond ((fixnump form)
-         (let ((translation (case form
-                              (0  "ZERO")
-                              (1  "ONE")
-                              (2  "TWO")
-                              (3  "THREE")
-                              (-1 "MINUS_ONE"))))
-           (if translation
-               (emit 'getstatic +lisp-fixnum-class+ translation +lisp-fixnum+)
-               (emit 'getstatic *this-class* (declare-fixnum form)
-                     +lisp-integer+))))
-        ((integerp form)
-         ;; A bignum.
-         (emit 'getstatic *this-class* (declare-bignum form) +lisp-integer+))
+  (cond ((integerp form)
+         (emit 'getstatic *this-class* (declare-integer form) +lisp-integer+))
         ((typep form 'single-float)
          (emit 'getstatic *this-class*
                (declare-float form) +lisp-single-float+))
