@@ -46,9 +46,10 @@
     tpl::repl tpl::top-level-loop))
 
 (defstruct (profile-info
-            (:constructor make-profile-info (object count)))
+            (:constructor make-profile-info (object full-count hot-count)))
   object
-  count)
+  full-count
+  hot-count)
 
 ;; Returns list of all symbols with non-zero call counts.
 (defun list-called-objects ()
@@ -58,16 +59,23 @@
         (unless (memq sym *hidden-functions*)
           (when (fboundp sym)
             (let* ((definition (fdefinition sym))
-                   (count (sys:call-count definition)))
-              (unless (zerop count)
+                   (full-count (sys:call-count definition))
+                   (hot-count (sys:hot-count definition)))
+              (unless (zerop full-count)
                 (cond ((typep definition 'generic-function)
-                       (push (make-profile-info definition count) result)
-                       (dolist (method (mop::generic-function-methods definition))
-                         (setf count (sys:call-count (sys:%method-function method)))
-                         (unless (zerop count)
-                           (push (make-profile-info method count) result))))
+                       (push (make-profile-info definition
+                                                full-count hot-count) result)
+                       (dolist (method
+                                 (mop::generic-function-methods definition))
+                         (let ((function (sys:%method-function method)))
+                           (setf full-count (sys:call-count function))
+                           (setf hot-count (sys:hot-count function)))
+                         (unless (zerop full-count)
+                           (push (make-profile-info method full-count
+                                                    hot-count) result))))
                       (t
-                       (push (make-profile-info sym count) result)))))))))
+                       (push (make-profile-info sym full-count hot-count)
+                             result)))))))))
     (remove-duplicates result :key 'profile-info-object :test 'eq)))
 
 (defun object-name (object)
@@ -90,7 +98,25 @@
 
 (defun show-call-count (info max-count)
   (let* ((object (profile-info-object info))
-         (count (profile-info-count info)))
+         (count (profile-info-full-count info)))
+    (if max-count
+        (format t "~5,1F ~8D ~S~A~%"
+                (/ (* count 100.0) max-count)
+                count
+                (object-name object)
+                (if (object-compiled-function-p object)
+                    ""
+                    " [interpreted function]"))
+        (format t "~8D ~S~A~%"
+                count
+                (object-name object)
+                (if (object-compiled-function-p object)
+                    ""
+                    " [interpreted function]")))))
+
+(defun show-hot-count (info max-count)
+  (let* ((object (profile-info-object info))
+         (count (profile-info-hot-count info)))
     (if max-count
         (format t "~5,1F ~8D ~S~A~%"
                 (/ (* count 100.0) max-count)
@@ -108,17 +134,32 @@
 
 (defun show-call-counts ()
   (let ((list (list-called-objects)))
-    (setf list (sort list #'< :key 'profile-info-count))
+    (setf list (sort list #'< :key 'profile-info-full-count))
     (let ((max-count nil))
       (when (eq *type* :time)
         (let ((last-info (car (last list))))
           (setf max-count (if last-info
-                              (profile-info-count last-info)
+                              (profile-info-full-count last-info)
                               nil))
           (when (eql max-count 0)
             (setf max-count nil))))
       (dolist (info list)
         (show-call-count info max-count))))
+  (values))
+
+(defun show-hot-counts ()
+  (let ((list (list-called-objects)))
+    (setf list (sort list #'< :key 'profile-info-hot-count))
+    (let ((max-count nil))
+      (when (eq *type* :time)
+        (let ((last-info (car (last list))))
+          (setf max-count (if last-info
+                              (profile-info-hot-count last-info)
+                              nil))
+          (when (eql max-count 0)
+            (setf max-count nil))))
+      (dolist (info list)
+        (show-hot-count info max-count))))
   (values))
 
 (defun start-profiler (&key type)

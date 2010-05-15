@@ -284,8 +284,8 @@
 
 ;; Profiler.
 (in-package "PROFILER")
-(export '(*granularity* show-call-counts with-profiling))
-(autoload 'show-call-counts "profiler")
+(export '(*granularity* show-call-counts show-hot-counts with-profiling))
+(autoload '(show-call-counts show-hot-counts) "profiler")
 (autoload-macro 'with-profiling "profiler")
 
 ;; Extensions.
