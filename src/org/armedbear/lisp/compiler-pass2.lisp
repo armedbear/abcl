@@ -2072,11 +2072,12 @@ representation, based on the derived type of the LispObject."
   (declare-with-hashtable
    symbol *declared-symbols* ht g
    (cond ((null (symbol-package symbol))
-	  (setf g (if *file-compilation*
-		      (declare-object-as-string symbol +lisp-symbol+
+          (setf g (if *file-compilation*
+                      (declare-object-as-string symbol +lisp-symbol+
                                                 +lisp-symbol-class+)
-		      (declare-object symbol +lisp-symbol+
-                                      +lisp-symbol-class+))))
+                      (declare-object symbol +lisp-symbol+
+                                      +lisp-symbol-class+))
+                (gethash symbol ht) g))
 	 (t
           (let (saved-code)
             (let ((*code* (if *declare-inline* *code* *static-code*))
