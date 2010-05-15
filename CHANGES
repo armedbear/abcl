@@ -7,60 +7,83 @@ yet-to-be-tagged
 Features
 --------
 
-* [svn r12576] Support for CLOS METACLASS feature
+* [svn r12576] Support for CLOS METACLASS feature.
 
-* [svn r12591-602] Consolidation of copy/paste code in the readers
+* [svn r12591-602] Consolidation of copy/paste code in the readers.
 
-* [svn r12619] Update included ASDF (to ASDF2)
+* [svn r12619] Update to ASDF2 (specifically to ASDF 1.719).
 
-* [svn r12620] Use interpreted function in FASL when compilation fails
+* [svn r12620] Use interpreted function in FASL when compilation fails.
 
-* [ticket 95] Pathname functions work with URLs and JARs
+* [ticket #95] PATHNAME-JAR and PATHNAME-URL subtypes now handle jar
+  and URL references working for OPEN, LOAD, PROBE-FILE,
+  FILE-WRITE-DATE, DIRECTORY, et. al.
 
-* Many small speed improvements (by marking functions 'final')
+* Many small speed improvements (by marking functions 'final').
 
 * [ticket #91] Threads started through MAKE-THREAD now have a
-    thread-termination restart available in their debugger
+    thread-termination restart available in their debugger.
 
-* [svn r12663] JCLASS supports an optional class-loader argument
+* [svn r12663] JCLASS supports an optional class-loader argument.
 
-* [svn r12634] THREADS:THREAD-JOIN implemented
+* [svn r12634] THREADS:THREAD-JOIN implemented.
+
+* [svn r12671] Site specific initialization code can be included in
+  builds via the 'abcl.startup.file' Ant property.
 
 Fixes
 -----
 
-* [ticket 89] Inlining of READ-LINE broken when the return value
-    is unused
+* [ticket #89] Inlining of READ-LINE broken when the return value
+    is unused.
 
 * [svn r12636] Java class verification error when compiling PROGV
     in a context wanting an unboxed return value (typically a
-    logical expression)
+    logical expression).
 
 * [svn r12635] ABCL loads stale fasls instead of updated source
-    even when LOAD is called with a file name without extension
+    even when LOAD is called with a file name without extension.
 
 * [ticket #92] Codepoints between #xD800 and #xDFFF are incorrectly
-    returned as characters from CODE-CHAR
+    returned as characters from CODE-CHAR.
 
 * [ticket #93] Reader doesn't handle zero returned values from
-    macro functions correctly
+    macro functions correctly.
 
 * [ticket #79] Different, yet similarly named, uninterned symbols
     are incorrectly coalesced into the same object in a fasl.
 
 * [ticket #86] No restarts available to kill a thread, if none
-    bound by user code
+    bound by user code.
 
 * [svn r12586] Increased function dispatch speed by eliminating
-    FIND-CLASS calls (replacing them by constant references)
+    FIND-CLASS calls (replacing them by constant references).
+
+* [svn r12656] PATHNAME-JAR now properly uses HTTP/1.1 HEAD requests
+  to detect if remote resource has been changed.
+
+* [svn r12643] PATHNAME-JAR now properly references Windows drive
+    letters on DEVICE other than the default.
+
+* [svn r12621] Missing 'build-from-lisp.sh' referenced in README now
+    included in source release.
 
 Other
 -----
 
 * [svn r12581] LispCharacter() constructors made private, in favor
-    of getInstance() for better re-use of pre-constructed characters
+    of getInstance() for better re-use of pre-constructed characters.
 
-* [svn r12583] JAVA-CLASS reimplemented in Lisp
+* [svn r12583] JAVA-CLASS reimplemented in Lisp.
+
+* [svn r12673] Load 'system.lisp' moved later in boot sequence so
+    unhandled conditions drop to debugger.
+
+* [svn r12675] '--nosystem' commandline option inhibits loading of
+    'system.lisp'.
+
+* [svn r12642] Under Windows, pathname TYPE components can now contain
+    embedded periods iff they end in '.lnk' to support shortcuts.
 
 
 Version 0.19
@@ -542,4 +565,5 @@ svn://common-lisp.net/project/armedbear/svn/tags/0.13.0/abcl
   * Inlining of simple calculations (+/-/*)
   * All static fields declared 'final'
   * Add support for java.lang.Long based on Bignum to our FFI
+
 
