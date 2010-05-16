@@ -750,10 +750,7 @@ Special variables are not considered local."
         (emit 'aaload))))
 
 (defun emit-push-variable-name (variable)
-  (multiple-value-bind
-        (name class)
-      (lookup-or-declare-symbol (variable-name variable))
-  (emit 'getstatic class name +lisp-symbol+)))
+  (emit-load-symbol (variable-name variable)))
 
 (defknown generate-instanceof-type-check-for-variable (t t) t)
 (defun generate-instanceof-type-check-for-variable (variable expected-type)
@@ -2234,15 +2231,14 @@ Code to restore the serialized object is inserted into `*code' or
      (declare-object symbol +lisp-symbol+ +lisp-symbol-class+))
     (t (externalize-object symbol))))
 
-(defun lookup-or-declare-symbol (symbol)
-  "Returns the value-pair (VALUES field class) from which
-the Java object representing SYMBOL can be retrieved."
+(defun emit-load-symbol (symbol)
+  "Loads a symbol, optionally after externalizing it."
   (multiple-value-bind
         (name class)
       (lookup-known-symbol symbol)
     (if name
-        (values name class)
-        (values (declare-symbol symbol) *this-class*))))
+        (emit 'getstatic class name +lisp-symbol+)
+        (emit 'getstatic *this-class* (declare-symbol symbol) +lisp-symbol+))))
 
 (defknown declare-function (symbol &optional setf) string)
 (defun declare-function (symbol &optional setf)
@@ -2256,7 +2252,15 @@ the Java object representing SYMBOL can be retrieved."
    (declare-field f +lisp-object+ +field-access-private+)
    (multiple-value-bind
          (name class)
-       (lookup-or-declare-symbol symbol)
+       (lookup-known-symbol symbol)
+     ;; This is a work-around for the fact that
+     ;; EMIT-LOAD-SYMBOL can't be used due to the fact that
+     ;; here we won't know where to send the code yet (the LET
+     ;; selects between *code* and *static-code*, while
+     ;; EMIT-LOAD-SYMBOL wants to modify those specials too
+     (unless name
+        (setf name (declare-symbol symbol)
+              class *this-class*))
      (let (saved-code)
        (let ((*code* (if *declare-inline* *code* *static-code*)))
          (emit 'getstatic class name +lisp-symbol+)
@@ -3030,16 +3034,10 @@ itself is *not* compiled by this function."
         (emit-push-current-thread))
       (cond ((eq op (compiland-name *current-compiland*)) ; recursive call
              (if (notinline-p op)
-                 (multiple-value-bind
-                       (name class)
-                     (lookup-or-declare-symbol op)
-                   (emit 'getstatic class name +lisp-symbol+))
+                 (emit-load-symbol op)
                  (aload 0)))
             (t
-             (multiple-value-bind
-                   (name class)
-                 (lookup-or-declare-symbol op)
-               (emit 'getstatic class name +lisp-symbol+))))
+             (emit-load-symbol op)))
       (process-args args)
       (if (or (<= *speed* *debug*) *require-stack-frame*)
           (emit-call-thread-execute numargs)
@@ -5024,10 +5022,7 @@ given a specific common representation.")
            (emit 'iconst_1)
            (emit-move-from-stack target representation))
           ((symbolp obj)
-           (multiple-value-bind
-                 (name class)
-               (lookup-or-declare-symbol obj)
-             (emit 'getstatic class name +lisp-symbol+))
+           (emit-load-symbol obj)
            (emit-move-from-stack target representation))
           ((listp obj)
            (let ((g (if *file-compilation*
@@ -5267,10 +5262,7 @@ given a specific common representation.")
                 (declare-function name) +lisp-object+)
           (emit-move-from-stack target))
          (t
-          (multiple-value-bind
-                (name class)
-              (lookup-or-declare-symbol name)
-            (emit 'getstatic class name +lisp-symbol+))
+          (emit-load-symbol name)
           (emit-invokevirtual +lisp-object-class+ "getSymbolFunctionOrDie"
                               nil +lisp-object+)
           (emit-move-from-stack target))))
@@ -5309,10 +5301,7 @@ given a specific common representation.")
                 (declare-object (fdefinition name)) +lisp-object+)
           (emit-move-from-stack target))
          (t
-          (multiple-value-bind
-                (name class)
-              (lookup-or-declare-symbol (cadr name))
-            (emit 'getstatic class name +lisp-symbol+))
+          (emit-load-symbol (cadr name))
           (emit-invokevirtual +lisp-symbol-class+
                               "getSymbolSetfFunctionOrDie"
                               nil +lisp-object+)
@@ -7525,10 +7514,7 @@ We need more thought here.
                  (eq (variable-compiland variable) *current-compiland*)
                  (not (enclosed-by-runtime-bindings-creating-block-p
                        (variable-block variable))))
-      (multiple-value-bind
-            (name class)
-          (lookup-or-declare-symbol name)
-        (emit 'getstatic class name +lisp-symbol+)))
+      (emit-load-symbol name))
     (cond ((constantp name)
            ;; "... a reference to a symbol declared with DEFCONSTANT always
            ;; refers to its global value."
@@ -7631,19 +7617,13 @@ We need more thought here.
              ;; (push thing *special*) => (setq *special* (cons thing *special*))
 ;;              (format t "compiling pushSpecial~%")
              (emit-push-current-thread)
-             (multiple-value-bind
-                   (name class)
-                 (lookup-or-declare-symbol name)
-               (emit 'getstatic class name +lisp-symbol+))
+             (emit-load-symbol name)
 	     (compile-forms-and-maybe-emit-clear-values (second value-form) 'stack nil)
              (emit-invokevirtual +lisp-thread-class+ "pushSpecial"
                                  (list +lisp-symbol+ +lisp-object+) +lisp-object+))
             (t
              (emit-push-current-thread)
-             (multiple-value-bind
-                   (name class)
-                 (lookup-or-declare-symbol name)
-               (emit 'getstatic class name +lisp-symbol+))
+             (emit-load-symbol name)
 	     (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
              (emit-invokevirtual +lisp-thread-class+ "setSpecialVariable"
                                  (list +lisp-symbol+ +lisp-object+) +lisp-object+)))
@@ -8128,10 +8108,7 @@ We need more thought here.
                   (:boolean
                    (emit 'iconst_1))
                   ((nil)
-                   (multiple-value-bind
-                         (name class)
-                       (lookup-or-declare-symbol form)
-                     (emit 'getstatic class name +lisp-symbol+))))
+                   (emit-load-symbol form)))
                 (emit-move-from-stack target representation))
                (t
                 ;; Shouldn't happen.
