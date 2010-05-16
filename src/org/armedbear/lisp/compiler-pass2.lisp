@@ -1,4 +1,4 @@
-﻿;;; compiler-pass2.lisp
+;;; compiler-pass2.lisp
 ;;;
 ;;; Copyright (C) 2003-2008 Peter Graves
 ;;; Copyright (C) 2008 Ville Voutilainen
