@@ -1,4 +1,4 @@
-;;; compiler-pass2.lisp
+﻿;;; compiler-pass2.lisp
 ;;;
 ;;; Copyright (C) 2003-2008 Peter Graves
 ;;; Copyright (C) 2008 Ville Voutilainen
@@ -2065,42 +2065,174 @@ representation, based on the derived type of the LispObject."
        ,@body)
      ,item-var))
 
+;; The protocol of the serialize-* functions is to serialize
+;; the type to which they apply and emit code which leaves the
+;; restored object on the stack.
+
+;; The functions may generate only Java code, or decide to defer
+;; some of the process of restoring the object to the reader. The
+;; latter is generally applicable to more complex structures.
+
+;; This way, the serialize-* functions can be used to depend on
+;; each other to serialize nested constructs. They are also the
+;; building blocks of the EXTERNALIZE-OBJECT function, which is
+;; called from the compiler.
+
+(defun serialize-integer (n)
+  "Generates code to restore a serialized integer."
+  (cond((<= 0 n 255)
+        (emit 'getstatic +lisp-fixnum-class+ "constants" +lisp-fixnum-array+)
+        (emit-push-constant-int n)
+        (emit 'aaload))
+       ((<= most-negative-fixnum n most-positive-fixnum)
+        (emit-push-constant-int n)
+        (emit-invokestatic +lisp-fixnum-class+ "getInstance"
+                           '("I") +lisp-fixnum+))
+       ((<= most-negative-java-long n most-positive-java-long)
+        (emit-push-constant-long n)
+        (emit-invokestatic +lisp-bignum-class+ "getInstance"
+                           '("J") +lisp-integer+))
+       (t
+        (let* ((*print-base* 10)
+               (s (with-output-to-string (stream) (dump-form n stream))))
+          (emit 'ldc (pool-string s))
+          (emit-push-constant-int 10)
+          (emit-invokestatic +lisp-bignum-class+ "getInstance"
+                             (list +java-string+ "I") +lisp-integer+)))))
+
+(defun serialize-character (c)
+  "Generates code to restore a serialized character."
+  (emit-push-constant-int (char-code c))
+  (emit-invokestatic +lisp-character-class+ "getInstance" '("C")
+                     +lisp-character+))
+
+(defun serialize-float (s)
+  "Generates code to restore a serialized single-float."
+  (emit 'new +lisp-single-float-class+)
+  (emit 'dup)
+  (emit 'ldc (pool-float s))
+  (emit-invokespecial-init +lisp-single-float-class+ '("F")))
+
+(defun serialize-double (d)
+  "Generates code to restore a serialized double-float."
+  (emit 'new +lisp-double-float-class+)
+  (emit 'dup)
+  (emit 'ldc2_w (pool-double d))
+  (emit-invokespecial-init +lisp-double-float-class+ '("D")))
+
+(defun serialize-string (string)
+  "Generate code to restore a serialized string."
+  (emit 'new +lisp-simple-string-class+)
+  (emit 'dup)
+  (emit 'ldc (pool-string string))
+  (emit-invokespecial-init +lisp-simple-string-class+ (list +java-string+)))
+
+(defun serialize-package (pkg)
+  "Generate code to restore a serialized package."
+  (emit 'ldc (pool-string (concatenate 'string "#.(FIND-PACKAGE \""
+                                       (package-name pkg) "\")")))
+  (emit-invokestatic +lisp-class+ "readObjectFromString"
+                     (list +java-string+) +lisp-object+))
+
+(defun serialize-object (object)
+  "Generate code to restore a serialized object which is not of any
+of the other types."
+  (let ((s (with-output-to-string (stream)
+             (dump-form object stream))))
+    (emit 'ldc (pool-string s))
+    (emit-invokestatic +lisp-class+ "readObjectFromString"
+                       (list +java-string+) +lisp-object+)))
+
+(defun serialize-symbol (symbol)
+  "Generate code to restore a serialized symbol."
+  (cond
+    ((null (symbol-package symbol))
+     ;; we need to read the #?<n> syntax for uninterned symbols
+
+     ;; TODO: we could use the byte code variant of
+     ;; Load._FASL_UNINTERNED_SYMBOLS_.symbolValue(LispThread.currentThread())
+     ;;    .aref(<index)
+     ;; to eliminate the reader dependency
+     (serialize-object symbol)
+     (emit 'checkcast +lisp-symbol-class+))
+    ((keywordp symbol)
+     (emit 'ldc (pool-string (symbol-name symbol)))
+     (emit-invokestatic +lisp-class+ "internKeyword"
+                        (list +java-string+) +lisp-symbol+))
+    (t
+     (emit 'ldc (pool-string (symbol-name symbol)))
+     (emit 'ldc (pool-string (package-name (symbol-package symbol))))
+     (emit-invokestatic +lisp-class+ "internInPackage"
+                        (list +java-string+ +java-string+)
+                        +lisp-symbol+))))
+
+(defvar serialization-table
+  `((integer "INT" ,#'eql ,#'serialize-integer ,+lisp-integer+)
+    (character "CHR" ,#'eql ,#'serialize-character ,+lisp-character+)
+    (single-float "FLT" ,#'eql ,#'serialize-float ,+lisp-single-float+)
+    (double-float "DBL" ,#'eql ,#'serialize-double ,+lisp-double-float+)
+    (string "STR" ,#'equal ,#'serialize-string ,+lisp-simple-string+)
+    (package "PKG" ,#'eq ,#'serialize-package ,+lisp-object+)
+    (symbol "SYM" ,#'eq ,#'serialize-symbol ,+lisp-symbol+)
+    (T "OBJ" ,#'eq ,#'serialize-object ,+lisp-object+))
+  "A list of 5-element lists. The elements of the sublists mean:
+
+1. The type of the value to be serialized
+2. The string to be used as a field prefix
+3. The function to be used to determine equality (coalescing or not)
+4. The function to dispatch serialization to
+5. The type of the field to save the serialized result to")
+
+(defknown externalize-object (t) string)
+(defun externalize-object (object)
+  "Externalizes `object' for use in a FASL.
+
+Returns the name of the field (in `*this-class*') from which
+the value of the object can be loaded. Objects may be coalesced based
+on the equality indicator in the `serialization-table'.
+
+Code to restore the serialized object is inserted into `*code' or
+`*static-code*' if `*declare-inline*' is non-nil.
+"
+  ;; TODO: rewrite to become EMIT-LOAD-EXTERNALIZED-OBJECT which
+  ;; - instead of returning the name of the field - returns the type
+  ;; of the field it just loaded (to allow casting and what not).
+  ;; The function should still do what it does today: de-serialize the
+  ;; object and storing its value.
+
+  (destructuring-bind
+        (type prefix similarity-fn dispatch-fn field-type)
+      (assoc-if #'(lambda (x)
+                    (typep object x))
+                serialization-table)
+    (declare (ignore type)) ;; the type has been used in the selection process
+    (let ((existing (assoc object *externalized-objects* :test similarity-fn)))
+      (when existing
+        (return-from externalize-object (cdr existing))))
+
+    ;; We need to set up the serialized value
+    (let ((field-name (symbol-name (gensym prefix))))
+      (declare-field field-name field-type +field-access-private+)
+      (push (cons object field-name) *externalized-objects*)
+
+      (if *declare-inline*
+          (progn
+            (funcall dispatch-fn object)
+            (emit 'putstatic *this-class* field-name field-type))
+          (let ((*code* *static-code*))
+            (funcall dispatch-fn object)
+            (emit 'putstatic *this-class* field-name field-type)
+            (setf *static-code* *code*)))
+
+      field-name)))
 
 (defknown declare-symbol (symbol) string)
 (defun declare-symbol (symbol)
-  (declare (type symbol symbol))
-  (declare-with-hashtable
-   symbol *declared-symbols* ht g
-   (cond ((null (symbol-package symbol))
-          (setf g (if *file-compilation*
-                      (declare-object-as-string symbol +lisp-symbol+
-                                                +lisp-symbol-class+)
-                      (declare-object symbol +lisp-symbol+
-                                      +lisp-symbol-class+))
-                (gethash symbol ht) g))
-	 (t
-          (let (saved-code)
-            (let ((*code* (if *declare-inline* *code* *static-code*))
-                  (s (sanitize symbol)))
-              ;; *declare-inline*, because the code below assumes the
-              ;; package to exist, which can be in a previous statement;
-              ;; thus we can't create the symbol out-of-band.
-              (setf g (symbol-name (gensym "SYM")))
-              (when s
-                (setf g (concatenate 'string g "_" s)))
-              (declare-field g +lisp-symbol+ +field-access-private+)
-              (emit 'ldc (pool-string (symbol-name symbol)))
-              (emit 'ldc (pool-string (package-name (symbol-package symbol))))
-              (emit-invokestatic +lisp-class+ "internInPackage"
-                                 (list +java-string+ +java-string+)
-                                 +lisp-symbol+)
-              (emit 'putstatic *this-class* g +lisp-symbol+)
-              (if *declare-inline*
-                  (setf saved-code *code*)
-                  (setf *static-code* *code*))
-              (setf (gethash symbol ht) g))
-            (when *declare-inline*
-              (setf *code* saved-code)))))))
+  (cond
+    ((and (not *file-compilation*)
+          (null (symbol-package symbol)))
+     (declare-object symbol +lisp-symbol+ +lisp-symbol-class+))
+    (t (externalize-object symbol))))
 
 (defun lookup-or-declare-symbol (symbol)
   "Returns the value-pair (VALUES field class) from which
@@ -2111,24 +2243,6 @@ the Java object representing SYMBOL can be retrieved."
     (if name
         (values name class)
         (values (declare-symbol symbol) *this-class*))))
-
-(defknown declare-keyword (symbol) string)
-(defun declare-keyword (symbol)
-  (declare (type symbol symbol))
-  (declare-with-hashtable
-   symbol *declared-symbols* ht g
-   (let ((*code* *static-code*))
-     ;; there's no requirement to declare-inline here:
-     ;; keywords are constants, so they can be created any time,
-     ;; if early enough
-     (setf g (symbol-name (gensym "KEY")))
-     (declare-field g +lisp-symbol+ +field-access-private+)
-     (emit 'ldc (pool-string (symbol-name symbol)))
-     (emit-invokestatic +lisp-class+ "internKeyword"
-			(list +java-string+) +lisp-symbol+)
-     (emit 'putstatic *this-class* g +lisp-symbol+)
-     (setf *static-code* *code*)
-     (setf (gethash symbol ht) g))))
 
 (defknown declare-function (symbol &optional setf) string)
 (defun declare-function (symbol &optional setf)
@@ -2185,99 +2299,28 @@ the Java object representing SYMBOL can be retrieved."
      (setf *static-code* *code*)
      (setf (gethash local-function ht) g))))
 
-(defknown declare-integer (integer) string)
-(defun declare-integer (n)
-  (declare-with-hashtable
-   n *declared-integers* ht g
-   (setf g (concatenate 'string "INT_" (symbol-name (gensym))))
-   (let ((*code* *static-code*))
-     ;; no need to *declare-inline*: constants
-     (declare-field g +lisp-integer+ +field-access-private+)
-     (cond((<= 0 n 255)
-           (emit 'getstatic +lisp-fixnum-class+ "constants" +lisp-fixnum-array+)
-           (emit-push-constant-int n)
-           (emit 'aaload))
-          ((<= most-negative-fixnum n most-positive-fixnum)
-           (emit-push-constant-int n)
-           (emit-invokestatic +lisp-fixnum-class+ "getInstance"
-                                  '("I") +lisp-fixnum+))
-          ((<= most-negative-java-long n most-positive-java-long)
-           (emit-push-constant-long n)
-           (emit-invokestatic +lisp-bignum-class+ "getInstance"
-                              '("J") +lisp-integer+))
-          (t
-           (let* ((*print-base* 10)
-                  (s (with-output-to-string (stream) (dump-form n stream))))
-             (emit 'ldc (pool-string s))
-             (emit-push-constant-int 10)
-             (emit-invokestatic +lisp-bignum-class+ "getInstance"
-                                (list +java-string+ "I") +lisp-integer+))))
-     (emit 'putstatic *this-class* g +lisp-integer+)
-     (setf *static-code* *code*))
-   (setf (gethash n ht) g)))
 
-(defknown declare-float (single-float) string)
-(defun declare-float (s)
-  (declare-with-hashtable
-   s *declared-floats* ht g
-   (let* ((*code* *static-code*))
-     ;; no need to *declare-inline*: constants
-     (setf g (concatenate 'string "FLOAT_" (symbol-name (gensym))))
-     (declare-field g +lisp-single-float+ +field-access-private+)
-     (emit 'new +lisp-single-float-class+)
-     (emit 'dup)
-     (emit 'ldc (pool-float s))
-     (emit-invokespecial-init +lisp-single-float-class+ '("F"))
-     (emit 'putstatic *this-class* g +lisp-single-float+)
-     (setf *static-code* *code*))
-   (setf (gethash s ht) g)))
-
-(defknown declare-double (double-float) string)
-(defun declare-double (d)
-  (declare-with-hashtable
-   d *declared-doubles* ht g
-   (let ((*code* *static-code*))
-     ;; no need to *declare-inline*: constants
-     (setf g (concatenate 'string "DOUBLE_" (symbol-name (gensym))))
-     (declare-field g +lisp-double-float+ +field-access-private+)
-     (emit 'new +lisp-double-float-class+)
-     (emit 'dup)
-     (emit 'ldc2_w (pool-double d))
-     (emit-invokespecial-init +lisp-double-float-class+ '("D"))
-     (emit 'putstatic *this-class* g +lisp-double-float+)
-     (setf *static-code* *code*))
-   (setf (gethash d ht) g)))
-
-(defknown declare-character (t) string)
-(defun declare-character (c)
-  (let ((g (symbol-name (gensym "CHAR")))
-        (n (char-code c))
-        (*code* *static-code*))
-     ;; no need to *declare-inline*: constants
-    (declare-field g +lisp-character+ +field-access-private+)
-    (emit-push-constant-int n)
-    (emit-invokestatic +lisp-character-class+ "getInstance" '("C")
-                       +lisp-character+)
-    (emit 'putstatic *this-class* g +lisp-character+)
-    (setf *static-code* *code*)
-    g))
-
-(defknown declare-object-as-string (t &optional t) string)
-(defun declare-object-as-string (obj &optional (obj-ref +lisp-object+)
-                                     obj-class)
+(defknown declare-object-as-string (t) string)
+(defun declare-object-as-string (obj)
+  ;; TODO: replace with externalize-object
+  ;; just replacing won't work however:
+  ;;  field identification in Java includes the field type
+  ;;  and we're not letting the caller know about the type of
+  ;;  field we're creating in externalize-object.
+  ;;  The solution is te rewrite externalize-object to
+  ;;  EMIT-LOAD-EXTERNALIZED-OBJECT, which serializes *and*
+  ;;  emits the right loading code (not just de-serialization anymore)
   (let (saved-code
         (g (symbol-name (gensym "OBJSTR"))))
     (let* ((s (with-output-to-string (stream) (dump-form obj stream)))
            (*code* (if *declare-inline* *code* *static-code*)))
       ;; strings may contain evaluated bits which may depend on
       ;; previous statements
-      (declare-field g obj-ref +field-access-private+)
+      (declare-field g +lisp-object+ +field-access-private+)
       (emit 'ldc (pool-string s))
       (emit-invokestatic +lisp-class+ "readObjectFromString"
                          (list +java-string+) +lisp-object+)
-      (when (and obj-class (string/= obj-class +lisp-object+))
-        (emit 'checkcast obj-class))
-      (emit 'putstatic *this-class* g obj-ref)
+      (emit 'putstatic *this-class* g +lisp-object+)
       (if *declare-inline*
           (setf saved-code *code*)
           (setf *static-code* *code*)))
@@ -2333,25 +2376,6 @@ the Java object representing SYMBOL can be retrieved."
       (setf *code* saved-code))
     g))
 
-(defun declare-package (obj)
-  (let (saved-code
-        (g (symbol-name (gensym "PKG"))))
-    (let* ((*print-level* nil)
-           (*print-length* nil)
-           (s (format nil "#.(FIND-PACKAGE ~S)" (package-name obj)))
-           (*code* (if *declare-inline* *code* *static-code*)))
-      (declare-field g +lisp-object+ +field-access-private+)
-      (emit 'ldc (pool-string s))
-      (emit-invokestatic +lisp-class+ "readObjectFromString"
-                         (list +java-string+) +lisp-object+)
-      (emit 'putstatic *this-class* g +lisp-object+)
-      (if *declare-inline*
-          (setf saved-code *code*)
-          (setf *static-code* *code*)))
-    (when *declare-inline*
-      (setf *code* saved-code))
-    g))
-
 (declaim (ftype (function (t &optional t) string) declare-object))
 (defun declare-object (obj &optional (obj-ref +lisp-object+)
                            obj-class)
@@ -2395,21 +2419,6 @@ The field type of the object is specified by OBJ-REF."
       (setf *code* saved-code))
     g))
 
-(defun declare-string (string)
-  (declare-with-hashtable
-   string *declared-strings* ht g
-   (let ((*code* *static-code*))
-     ;; constant: no need to *declare-inline*
-     (setf g (symbol-name (gensym "STR")))
-     (declare-field g +lisp-simple-string+ +field-access-private+)
-     (emit 'new +lisp-simple-string-class+)
-     (emit 'dup)
-     (emit 'ldc (pool-string string))
-     (emit-invokespecial-init +lisp-simple-string-class+ (list +java-string+))
-     (emit 'putstatic *this-class* g +lisp-simple-string+)
-     (setf *static-code* *code*)
-     (setf (gethash string ht) g))))
-
 (defknown compile-constant (t t t) t)
 (defun compile-constant (form target representation)
   (unless target
@@ -2419,7 +2428,8 @@ The field type of the object is specified by OBJ-REF."
      (cond ((fixnump form)
             (emit-push-constant-int form))
            ((integerp form)
-            (emit 'getstatic *this-class* (declare-integer form) +lisp-integer+)
+            (emit 'getstatic *this-class* (externalize-object form)
+                  +lisp-integer+)
             (emit-invokevirtual +lisp-object-class+ "intValue" nil "I"))
            (t
             (sys::%format t "compile-constant int representation~%")
@@ -2430,7 +2440,8 @@ The field type of the object is specified by OBJ-REF."
      (cond ((<= most-negative-java-long form most-positive-java-long)
             (emit-push-constant-long form))
            ((integerp form)
-            (emit 'getstatic *this-class* (declare-integer form) +lisp-integer+)
+            (emit 'getstatic *this-class* (externalize-object form)
+                  +lisp-integer+)
             (emit-invokevirtual +lisp-object-class+ "longValue" nil "J"))
            (t
             (sys::%format t "compile-constant long representation~%")
@@ -2475,13 +2486,14 @@ The field type of the object is specified by OBJ-REF."
      (return-from compile-constant))
     ((NIL)))
   (cond ((integerp form)
-         (emit 'getstatic *this-class* (declare-integer form) +lisp-integer+))
+         (emit 'getstatic *this-class* (externalize-object form)
+               +lisp-integer+))
         ((typep form 'single-float)
          (emit 'getstatic *this-class*
-               (declare-float form) +lisp-single-float+))
+               (externalize-object form) +lisp-single-float+))
         ((typep form 'double-float)
          (emit 'getstatic *this-class*
-               (declare-double form) +lisp-double-float+))
+               (externalize-object form) +lisp-double-float+))
         ((numberp form)
          ;; A number, but not a fixnum.
          (emit 'getstatic *this-class*
@@ -2489,7 +2501,7 @@ The field type of the object is specified by OBJ-REF."
         ((stringp form)
          (if *file-compilation*
              (emit 'getstatic *this-class*
-                   (declare-string form) +lisp-simple-string+)
+                   (externalize-object form) +lisp-simple-string+)
              (emit 'getstatic *this-class*
                    (declare-object form) +lisp-object+)))
         ((vectorp form)
@@ -2500,7 +2512,7 @@ The field type of the object is specified by OBJ-REF."
                    (declare-object form) +lisp-object+)))
         ((characterp form)
          (emit 'getstatic *this-class*
-               (declare-character form) +lisp-character+))
+               (externalize-object form) +lisp-character+))
         ((or (hash-table-p form) (typep form 'generic-function))
          (emit 'getstatic *this-class*
                (declare-object form) +lisp-object+))
@@ -2511,7 +2523,7 @@ The field type of the object is specified by OBJ-REF."
            (emit 'getstatic *this-class* g +lisp-object+)))
         ((packagep form)
          (let ((g (if *file-compilation*
-                      (declare-package form)
+                      (externalize-object form)
                       (declare-object form))))
            (emit 'getstatic *this-class* g +lisp-object+)))
         ((or (structure-object-p form)

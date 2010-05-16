@@ -82,12 +82,8 @@
 (defvar *fields* ())
 (defvar *static-code* ())
 
-(defvar *declared-symbols* nil)
+(defvar *externalized-objects* nil)
 (defvar *declared-functions* nil)
-(defvar *declared-strings* nil)
-(defvar *declared-integers* nil)
-(defvar *declared-floats* nil)
-(defvar *declared-doubles* nil)
 
 (defstruct (abcl-class-file (:constructor %make-abcl-class-file))
   pathname ; pathname of output file
@@ -101,12 +97,9 @@
   fields
   methods
   static-code
-  (symbols (make-hash-table :test 'eq))
-  (functions (make-hash-table :test 'equal))
-  (strings (make-hash-table :test 'eq))
-  (integers (make-hash-table :test 'eql))
-  (floats (make-hash-table :test 'eql))
-  (doubles (make-hash-table :test 'eql)))
+  objects ;; an alist of externalized objects and their field names
+  (functions (make-hash-table :test 'equal)) ;; because of (SETF ...) functions
+  )
 
 (defun class-name-from-filespec (filespec)
   (let* ((name (pathname-name filespec)))
@@ -143,29 +136,21 @@ using `make-unique-class-name'."
 (defmacro with-class-file (class-file &body body)
   (let ((var (gensym)))
     `(let* ((,var ,class-file)
-            (*pool*               (abcl-class-file-pool ,var))
-            (*pool-count*         (abcl-class-file-pool-count ,var))
-            (*pool-entries*       (abcl-class-file-pool-entries ,var))
-            (*fields*             (abcl-class-file-fields ,var))
-            (*static-code*        (abcl-class-file-static-code ,var))
-            (*declared-symbols*   (abcl-class-file-symbols ,var))
-            (*declared-functions* (abcl-class-file-functions ,var))
-            (*declared-strings*   (abcl-class-file-strings ,var))
-            (*declared-integers*  (abcl-class-file-integers ,var))
-            (*declared-floats*    (abcl-class-file-floats ,var))
-            (*declared-doubles*   (abcl-class-file-doubles ,var)))
+            (*pool*                 (abcl-class-file-pool ,var))
+            (*pool-count*           (abcl-class-file-pool-count ,var))
+            (*pool-entries*         (abcl-class-file-pool-entries ,var))
+            (*fields*               (abcl-class-file-fields ,var))
+            (*static-code*          (abcl-class-file-static-code ,var))
+            (*externalized-objects* (abcl-class-file-objects ,var))
+            (*declared-functions*   (abcl-class-file-functions ,var)))
        (progn ,@body)
        (setf (abcl-class-file-pool ,var)         *pool*
              (abcl-class-file-pool-count ,var)   *pool-count*
              (abcl-class-file-pool-entries ,var) *pool-entries*
              (abcl-class-file-fields ,var)       *fields*
              (abcl-class-file-static-code ,var)  *static-code*
-             (abcl-class-file-symbols ,var)      *declared-symbols*
-             (abcl-class-file-functions ,var)    *declared-functions*
-             (abcl-class-file-strings ,var)      *declared-strings*
-             (abcl-class-file-integers ,var)     *declared-integers*
-             (abcl-class-file-floats ,var)       *declared-floats*
-             (abcl-class-file-doubles ,var)      *declared-doubles*))))
+             (abcl-class-file-objects ,var)      *externalized-objects*
+             (abcl-class-file-functions ,var)    *declared-functions*))))
 
 (defstruct compiland
   name
