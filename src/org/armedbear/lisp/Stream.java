@@ -735,20 +735,21 @@ public class Stream extends StructureObject {
         final LispThread thread = LispThread.currentThread();
         final Readtable rt = rta.rt(thread);
         LispObject fun = rt.getDispatchMacroCharacter(dispChar, c);
-        if (fun instanceof DispatchMacroFunction)
-            return ((DispatchMacroFunction)fun).execute(this, c, numArg);
         if (fun != NIL) {
-            LispObject result =
-                thread.execute(fun, this, LispCharacter.getInstance(c),
-                               (numArg < 0) ? NIL : Fixnum.getInstance(numArg));
-            LispObject[] values = thread._values;
-            if (values != null && values.length == 0)
-                result = null;
+            LispObject result;
+
             thread._values = null;
-            return result;
+            if (fun instanceof DispatchMacroFunction)
+                return ((DispatchMacroFunction)fun).execute(this, c, numArg);
+            else
+                return
+                    thread.execute(fun, this, LispCharacter.getInstance(c),
+                       (numArg < 0) ? NIL : Fixnum.getInstance(numArg));
         }
+
         if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
             return null;
+
         return error(new ReaderError("No dispatch function defined for #\\" + c,
                                      this));
     }
