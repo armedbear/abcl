@@ -355,7 +355,16 @@ public class Pathname extends LispObject {
                 return;
             }
             Debug.assertTrue(scheme != null);
-            String authority = url.getAuthority();
+      //      String authority = url.getAuthority();
+            URI uri = null;
+            try { 
+                uri = url.toURI().normalize();
+            } catch (URISyntaxException e) {
+                error(new LispError("Could not URI escape characters in "
+                                    + "'" + url + "'"
+                                    + " because: " + e));
+            }
+            String authority = uri.getAuthority();
             Debug.assertTrue(authority != null);
 
             host = NIL;
@@ -367,15 +376,6 @@ public class Pathname extends LispObject {
             device = NIL;
             
             // URI encode necessary characters
-            URI uri = null;
-            try { 
-                uri = url.toURI().normalize();
-            } catch (URISyntaxException e) {
-                error(new LispError("Could not URI escape characters in "
-                                    + "'" + url + "'"
-                                    + " because: " + e));
-            }
-
             String path = uri.getRawPath();
             if (path == null) {
                 path = "";
