@@ -355,12 +355,11 @@ public class Pathname extends LispObject {
                 return;
             }
             Debug.assertTrue(scheme != null);
-      //      String authority = url.getAuthority();
             URI uri = null;
             try { 
                 uri = url.toURI().normalize();
             } catch (URISyntaxException e) {
-                error(new LispError("Could not URI escape characters in "
+                error(new LispError("Could form URI from "
                                     + "'" + url + "'"
                                     + " because: " + e));
             }
@@ -1977,7 +1976,18 @@ public class Pathname extends LispObject {
             }
         } else if (pathname.isURL()) {
             if (pathname.getInputStream() != null) {
-                return pathname;
+              // If there is no type, query or fragment, we check to
+              // see if there is URL available "underneath".
+              if (pathname.name != NIL 
+                  && pathname.type == NIL
+                  && Symbol.GETF.execute(pathname.host, QUERY, NIL) == NIL
+                  && Symbol.GETF.execute(pathname.host, FRAGMENT, NIL) == NIL) {
+                Pathname p = new Pathname(pathname.getNamestring() + "/");
+                if (p.getInputStream() != null) {
+                  return p;
+                }
+              }
+              return pathname;
             }
         } else
         jarfile: {
