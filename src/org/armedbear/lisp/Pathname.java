@@ -2102,13 +2102,13 @@ public class Pathname extends LispObject {
 		if (entry == null) {
 		    Debug.trace("Failed to get InputStream for "    
 				+ "'" + getNamestring() + "'");
-
+                    // XXX should this be fatal?
 		    Debug.assertTrue(false);
 		}
                 try {
                     result = jarFile.getInputStream(entry);
                 } catch (IOException e) {
-                    Debug.trace("Failed to get InputStream from "
+                    Debug.warn("Failed to get InputStream from "
                                 + "'" + getNamestring() + "'"
                                 + ": " + e);
                 }
@@ -2118,7 +2118,7 @@ public class Pathname extends LispObject {
             try { 
                 result = url.openStream();
             } catch (IOException e) {
-                Debug.trace("Failed to get InputStream from "
+                Debug.warn("Failed to get InputStream from "
                             + "'" + getNamestring() + "'"
                             + ": " + e);
             }
@@ -2127,7 +2127,7 @@ public class Pathname extends LispObject {
             try { 
                 result = new FileInputStream(file);
             } catch (IOException e) {
-                Debug.trace("Failed to get InputStream from "
+                Debug.warn("Failed to get InputStream from "
                             + "'" + getNamestring() + "'"
                             + ": " + e);
             }
