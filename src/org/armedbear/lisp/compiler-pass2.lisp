@@ -3185,7 +3185,7 @@ Note: DEFUN implies a named lambda."
            (assert (local-function-references-allowed-p local-function))
            (assert (not *file-compilation*))
            (emit-load-externalized-object
-            (local-function-environmont local-function)
+            (local-function-environment local-function)
             +lisp-environment-class+)
            (emit-load-externalized-object (local-function-name local-function))
            (emit-invokevirtual +lisp-environment-class+ "lookupFunction"
