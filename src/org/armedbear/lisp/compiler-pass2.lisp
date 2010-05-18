@@ -2373,32 +2373,6 @@ Code to restore the serialized object is inserted into `*code' or
       (setf *code* saved-code))
     g))
 
-(defknown declare-instance (t) t)
-(defun declare-instance (obj)
-  (aver (not (null *file-compilation*)))
-  (aver (or (structure-object-p obj) (standard-object-p obj)
-            (java:java-object-p obj)))
-  (let ((g (symbol-name (gensym "INSTANCE")))
-        saved-code)
-    (let* ((s (with-output-to-string (stream) (dump-form obj stream)))
-           (*code* (if *declare-inline* *code* *static-code*)))
-      ;; The readObjectFromString call may require evaluation of
-      ;; lisp code in the string (think #.() syntax), of which the outcome
-      ;; may depend on something which was declared inline
-      (declare-field g +lisp-object+ +field-access-private+)
-      (emit 'ldc (pool-string s))
-      (emit-invokestatic +lisp-class+ "readObjectFromString"
-                         (list +java-string+) +lisp-object+)
-      (emit-invokestatic +lisp-class+ "loadTimeValue"
-                         (lisp-object-arg-types 1) +lisp-object+)
-      (emit 'putstatic *this-class* g +lisp-object+)
-      (if *declare-inline*
-          (setf saved-code *code*)
-          (setf *static-code* *code*)))
-    (when *declare-inline*
-      (setf *code* saved-code))
-    g))
-
 (declaim (ftype (function (t &optional t) string) declare-object))
 (defun declare-object (obj &optional (obj-ref +lisp-object+)
                            obj-class)
@@ -2523,10 +2497,7 @@ The field type of the object is specified by OBJ-REF."
         ((or (structure-object-p form)
              (standard-object-p form)
              (java:java-object-p form))
-         (let ((g (if *file-compilation*
-                      (declare-instance form)
-                      (declare-object form))))
-           (emit 'getstatic *this-class* g +lisp-object+)))
+         (emit-load-externalized-object form))
         (t
          (if *file-compilation*
              (error "COMPILE-CONSTANT unhandled case ~S" form)
