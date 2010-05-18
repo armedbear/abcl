@@ -234,6 +234,7 @@
 (defconstant +lisp-abstract-bit-vector-class+ "org/armedbear/lisp/AbstractBitVector")
 (defconstant +lisp-abstract-vector-class+ "org/armedbear/lisp/AbstractVector")
 (defconstant +lisp-abstract-string-class+ "org/armedbear/lisp/AbstractString")
+(defconstant +lisp-abstract-string+ "Lorg/armedbear/lisp/AbstractString;")
 (defconstant +lisp-simple-vector-class+ "org/armedbear/lisp/SimpleVector")
 (defconstant +lisp-simple-string-class+ "org/armedbear/lisp/SimpleString")
 (defconstant +lisp-simple-string+ "Lorg/armedbear/lisp/SimpleString;")
@@ -2168,7 +2169,8 @@ of the other types."
     (character "CHR" ,#'eql ,#'serialize-character ,+lisp-character+)
     (single-float "FLT" ,#'eql ,#'serialize-float ,+lisp-single-float+)
     (double-float "DBL" ,#'eql ,#'serialize-double ,+lisp-double-float+)
-    (string "STR" ,#'equal ,#'serialize-string ,+lisp-simple-string+)
+    (string "STR" ,#'equal ,#'serialize-string
+            ,+lisp-abstract-string+) ;; because of (not compile-file)
     (package "PKG" ,#'eq ,#'serialize-package ,+lisp-object+)
     (symbol "SYM" ,#'eq ,#'serialize-symbol ,+lisp-symbol+)
     (T "OBJ" ,#'eq ,#'serialize-object ,+lisp-object+))
@@ -2203,6 +2205,8 @@ Code to restore the serialized object is inserted into `*code' or
                     (typep object x))
                 serialization-table)
     (declare (ignore type)) ;; the type has been used in the selection process
+    (when (not *file-compilation*) ;; in-memory compilation wants object EQ-ness
+      (setf similarity-fn #'eq))
     (let ((existing (assoc object *externalized-objects* :test similarity-fn)))
       (when existing
         (emit 'getstatic *this-class* (cdr existing) field-type)
@@ -2215,14 +2219,25 @@ Code to restore the serialized object is inserted into `*code' or
       (declare-field field-name field-type +field-access-private+)
       (push (cons object field-name) *externalized-objects*)
 
-      (if *declare-inline*
-          (progn
-            (funcall dispatch-fn object)
-            (emit 'putstatic *this-class* field-name field-type))
-          (let ((*code* *static-code*))
-            (funcall dispatch-fn object)
-            (emit 'putstatic *this-class* field-name field-type)
-            (setf *static-code* *code*)))
+      (cond
+        ((not *file-compilation*)
+         (let ((*code* *static-code*))
+           (remember field-name object)
+           (emit 'ldc (pool-string field-name))
+           (emit-invokestatic +lisp-class+ "recall"
+                              (list +java-string+) +lisp-object+)
+           (when (string/= field-type +lisp-object+)
+             (emit 'checkcast (subseq field-type 1 (1- (length field-type)))))
+           (emit 'putstatic *this-class* field-name field-type)
+           (setf *static-code* *code*)))
+        (*declare-inline*
+         (funcall dispatch-fn object)
+         (emit 'putstatic *this-class* field-name field-type))
+        (t ;; *file-compilation* and (not *declare-inline*)
+         (let ((*code* *static-code*))
+           (funcall dispatch-fn object)
+           (emit 'putstatic *this-class* field-name field-type)
+           (setf *static-code* *code*))))
 
       (emit 'getstatic *this-class* field-name field-type)
       (when cast
@@ -2494,16 +2509,17 @@ The field type of the object is specified by OBJ-REF."
   (cond ((or (numberp form)
              (typep form 'single-float)
              (typep form 'double-float)
-             (characterp form))
+             (characterp form)
+             (stringp form)
+             (packagep form)
+             (pathnamep form)
+             (vectorp form))
          (emit-load-externalized-object form))
         ((or (stringp form)
              (packagep form)
              (pathnamep form)
              (vectorp form))
-         (if *file-compilation*
-             (emit-load-externalized-object form)
-             (emit 'getstatic *this-class*
-                   (declare-object form) +lisp-object+)))
+         (emit-load-externalized-object form))
         ((or (hash-table-p form)
              (typep form 'generic-function))
          (emit 'getstatic *this-class*
@@ -2518,8 +2534,7 @@ The field type of the object is specified by OBJ-REF."
         (t
          (if *file-compilation*
              (error "COMPILE-CONSTANT unhandled case ~S" form)
-             (emit 'getstatic *this-class*
-                   (declare-object form) +lisp-object+))))
+             (emit-load-externalized-object form))))
   (emit-move-from-stack target representation))
 
 (defparameter *unary-operators* nil)
@@ -3173,14 +3188,10 @@ Note: DEFUN implies a named lambda."
           ((local-function-environment local-function)
            (assert (local-function-references-allowed-p local-function))
            (assert (not *file-compilation*))
-           (emit 'getstatic *this-class*
-                 (declare-object (local-function-environment local-function)
-                                 +lisp-environment+
-                                 +lisp-environment-class+)
-                 +lisp-environment+)
-           (emit 'getstatic *this-class*
-                 (declare-object (local-function-name local-function))
-                 +lisp-object+)
+           (emit-load-externalized-object
+            (local-function-environmont local-function)
+            +lisp-environment-class+)
+           (emit-load-externalized-object (local-function-name local-function))
            (emit-invokevirtual +lisp-environment-class+ "lookupFunction"
                                (list +lisp-object+)
                                +lisp-object+))
@@ -4355,11 +4366,8 @@ given a specific common representation.")
            (emit 'putfield +closure-binding-class+ "value" +lisp-object+))
           ((variable-environment variable)
            (assert (not *file-compilation*))
-           (emit 'getstatic *this-class*
-                 (declare-object (variable-environment variable)
-                                 +lisp-environment+
-                                 +lisp-environment-class+)
-                 +lisp-environment+)
+           (emit-load-externalized-object (variable-environment variable)
+                                          +lisp-environment-class+)
            (emit 'swap)
            (emit-push-variable-name variable)
            (emit 'swap)
@@ -4390,11 +4398,8 @@ given a specific common representation.")
          (emit 'getfield +closure-binding-class+ "value" +lisp-object+))
         ((variable-environment variable)
          (assert (not *file-compilation*))
-         (emit 'getstatic *this-class*
-               (declare-object (variable-environment variable)
-                               +lisp-environment+
-                               +lisp-environment-class+)
-               +lisp-environment+)
+         (emit-load-externalized-object (variable-environment variable)
+                                        +lisp-environment-class+)
          (emit-push-variable-name variable)
          (emit-invokevirtual +lisp-environment-class+ "lookup"
                              (list +lisp-object+)
@@ -4662,11 +4667,7 @@ given a specific common representation.")
         (dolist (tag (remove-if-not #'tag-used-non-locally
                                     (tagbody-tags block)))
           (aload tag-register)
-          (emit 'getstatic *this-class*
-                (if *file-compilation*
-                    (declare-object-as-string (tag-label tag))
-                    (declare-object (tag-label tag)))
-                +lisp-object+)
+          (emit-load-externalized-object (tag-label tag))
           ;; Jump if EQ.
           (emit 'if_acmpeq (tag-label tag)))
         (label RETHROW)
@@ -4724,11 +4725,7 @@ given a specific common representation.")
       (return-from p2-go))
     ;; Non-local GO.
     (emit-push-variable (tagbody-id-variable tag-block))
-    (emit 'getstatic *this-class*
-          (if *file-compilation*
-              (declare-object-as-string (tag-label tag))
-              (declare-object (tag-label tag)))
-          +lisp-object+) ; Tag.
+    (emit-load-externalized-object (tag-label tag)) ; Tag.
     (emit-invokestatic +lisp-class+ "nonLocalGo" (lisp-object-arg-types 2)
                        +lisp-object+)
     ;; Following code will not be reached, but is needed for JVM stack
@@ -4898,11 +4895,7 @@ given a specific common representation.")
     ;; Non-local RETURN.
     (aver (block-non-local-return-p block))
     (emit-push-variable (block-id-variable block))
-    (emit 'getstatic *this-class*
-          (if *file-compilation*
-              (declare-object-as-string (block-name block))
-              (declare-object (block-name block)))
-          +lisp-object+)
+    (emit-load-externalized-object (block-name block))
     (emit-clear-values)
     (compile-form result-form 'stack nil)
     (emit-invokestatic +lisp-class+ "nonLocalReturn" (lisp-object-arg-types 3)
@@ -5003,11 +4996,8 @@ given a specific common representation.")
            (emit-load-symbol obj)
            (emit-move-from-stack target representation))
           ((listp obj)
-           (let ((g (if *file-compilation*
-                        (declare-object-as-string obj)
-                        (declare-object obj))))
-             (emit 'getstatic *this-class* g +lisp-object+)
-             (emit-move-from-stack target representation)))
+           (emit-load-externalized-object obj)
+           (emit-move-from-stack target representation))
           ((constantp obj)
            (compile-constant obj target representation))
           (t
@@ -5187,10 +5177,8 @@ given a specific common representation.")
            (with-open-stream (stream (sys::%make-byte-array-output-stream))
              (compile-and-write-to-stream (compiland-class-file compiland)
                                           compiland stream)
-             (emit 'getstatic *this-class*
-                   (declare-object (load-compiled-function
-                                    (sys::%get-output-stream-bytes stream)))
-                   +lisp-object+))))
+             (emit-load-externalized-object (load-compiled-function
+                                    (sys::%get-output-stream-bytes stream))))))
     (cond ((null *closure-variables*))  ; Nothing to do.
           ((compiland-closure-register *current-compiland*)
            (duplicate-closure-array *current-compiland*)
@@ -5275,8 +5263,7 @@ given a specific common representation.")
          ((and (null *file-compilation*)
                (fboundp name)
                (fdefinition name))
-          (emit 'getstatic *this-class*
-                (declare-object (fdefinition name)) +lisp-object+)
+          (emit-load-externalized-object (fdefinition name))
           (emit-move-from-stack target))
          (t
           (emit-load-symbol (cadr name))
