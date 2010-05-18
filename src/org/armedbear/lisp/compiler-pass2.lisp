@@ -2520,10 +2520,6 @@ The field type of the object is specified by OBJ-REF."
              (pathnamep form)
              (vectorp form))
          (emit-load-externalized-object form))
-        ((or (hash-table-p form)
-             (typep form 'generic-function))
-         (emit 'getstatic *this-class*
-               (declare-object form) +lisp-object+))
         ((or (structure-object-p form)
              (standard-object-p form)
              (java:java-object-p form))
