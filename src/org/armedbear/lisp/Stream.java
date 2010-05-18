@@ -848,8 +848,7 @@ public class Stream extends StructureObject {
             return error(new ReaderError("Can't read #. when *READ-EVAL* is NIL.",
                                          this));
         else
-            return eval(read(true, NIL, true, thread,
-                             rta),
+            return eval(read(true, NIL, true, thread, rta),
                         new Environment(), thread);
     }
 
