@@ -592,6 +592,11 @@ public final class Package extends LispObject
                     if (shadowingSymbols != null)
                         shadowingSymbols.remove(symbolName);
                     unintern(sym);
+                } else if (where == Keyword.INTERNAL) {
+                    // Assert rgument is already correctly a shadowing import
+                    Debug.assertTrue(shadowingSymbols != null);
+                    Debug.assertTrue(shadowingSymbols.get(symbolName) != null);
+                    return;
                 }
             }
         }
