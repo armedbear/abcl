@@ -751,7 +751,7 @@ Special variables are not considered local."
         (emit 'aaload))))
 
 (defun emit-push-variable-name (variable)
-  (emit-load-symbol (variable-name variable)))
+  (emit-load-externalized-object (variable-name variable)))
 
 (defknown generate-instanceof-type-check-for-variable (t t) t)
 (defun generate-instanceof-type-check-for-variable (variable expected-type)
@@ -2143,26 +2143,31 @@ of the other types."
 
 (defun serialize-symbol (symbol)
   "Generate code to restore a serialized symbol."
-  (cond
-    ((null (symbol-package symbol))
-     ;; we need to read the #?<n> syntax for uninterned symbols
+  (multiple-value-bind
+        (name class)
+      (lookup-known-symbol symbol)
+    (cond
+      (name
+       (emit 'getstatic class name +lisp-symbol+))
+      ((null (symbol-package symbol))
+       ;; we need to read the #?<n> syntax for uninterned symbols
 
-     ;; TODO: we could use the byte code variant of
-     ;; Load._FASL_UNINTERNED_SYMBOLS_.symbolValue(LispThread.currentThread())
-     ;;    .aref(<index)
-     ;; to eliminate the reader dependency
-     (serialize-object symbol)
-     (emit 'checkcast +lisp-symbol-class+))
-    ((keywordp symbol)
-     (emit 'ldc (pool-string (symbol-name symbol)))
-     (emit-invokestatic +lisp-class+ "internKeyword"
-                        (list +java-string+) +lisp-symbol+))
-    (t
-     (emit 'ldc (pool-string (symbol-name symbol)))
-     (emit 'ldc (pool-string (package-name (symbol-package symbol))))
-     (emit-invokestatic +lisp-class+ "internInPackage"
-                        (list +java-string+ +java-string+)
-                        +lisp-symbol+))))
+       ;; TODO: we could use the byte code variant of
+       ;; Load._FASL_UNINTERNED_SYMBOLS_.symbolValue(LispThread.currentThread())
+       ;;    .aref(<index)
+       ;; to eliminate the reader dependency
+       (serialize-object symbol)
+       (emit 'checkcast +lisp-symbol-class+))
+      ((keywordp symbol)
+       (emit 'ldc (pool-string (symbol-name symbol)))
+       (emit-invokestatic +lisp-class+ "internKeyword"
+                          (list +java-string+) +lisp-symbol+))
+      (t
+       (emit 'ldc (pool-string (symbol-name symbol)))
+       (emit 'ldc (pool-string (package-name (symbol-package symbol))))
+       (emit-invokestatic +lisp-class+ "internInPackage"
+                          (list +java-string+ +java-string+)
+                          +lisp-symbol+)))))
 
 (defvar serialization-table
   `((integer "INT" ,#'eql ,#'serialize-integer ,+lisp-integer+)
@@ -2244,15 +2249,6 @@ Code to restore the serialized object is inserted into `*code' or
         (emit 'checkcast cast))
       field-type)))
 
-(defun emit-load-symbol (symbol)
-  "Loads a symbol, optionally after externalizing it."
-  (multiple-value-bind
-        (name class)
-      (lookup-known-symbol symbol)
-    (if name
-        (emit 'getstatic class name +lisp-symbol+)
-        (emit-load-externalized-object symbol))))
-
 (defknown declare-function (symbol &optional setf) string)
 (defun declare-function (symbol &optional setf)
   (declare (type symbol symbol))
@@ -2267,10 +2263,10 @@ Code to restore the serialized object is inserted into `*code' or
          (name class)
        (lookup-known-symbol symbol)
      ;; This is a work-around for the fact that
-     ;; EMIT-LOAD-SYMBOL can't be used due to the fact that
+     ;; EMIT-LOAD-EXTERNALIZED-OBJECT can't be used due to the fact that
      ;; here we won't know where to send the code yet (the LET
      ;; selects between *code* and *static-code*, while
-     ;; EMIT-LOAD-SYMBOL wants to modify those specials too
+     ;; EMIT-LOAD-EXTERNALIZED-OBJECT wants to modify those specials too
      (unless name
         (setf name (if *file-compilation*
                        (declare-object-as-string symbol)
@@ -2970,10 +2966,10 @@ itself is *not* compiled by this function."
         (emit-push-current-thread))
       (cond ((eq op (compiland-name *current-compiland*)) ; recursive call
              (if (notinline-p op)
-                 (emit-load-symbol op)
+                 (emit-load-externalized-object op)
                  (aload 0)))
             (t
-             (emit-load-symbol op)))
+             (emit-load-externalized-object op)))
       (process-args args)
       (if (or (<= *speed* *debug*) *require-stack-frame*)
           (emit-call-thread-execute numargs)
@@ -4936,7 +4932,7 @@ given a specific common representation.")
            (emit 'iconst_1)
            (emit-move-from-stack target representation))
           ((symbolp obj)
-           (emit-load-symbol obj)
+           (emit-load-externalized-object obj)
            (emit-move-from-stack target representation))
           ((listp obj)
            (emit-load-externalized-object obj)
@@ -5171,7 +5167,7 @@ given a specific common representation.")
                 (declare-function name) +lisp-object+)
           (emit-move-from-stack target))
          (t
-          (emit-load-symbol name)
+          (emit-load-externalized-object name)
           (emit-invokevirtual +lisp-object-class+ "getSymbolFunctionOrDie"
                               nil +lisp-object+)
           (emit-move-from-stack target))))
@@ -5209,7 +5205,7 @@ given a specific common representation.")
           (emit-load-externalized-object (fdefinition name))
           (emit-move-from-stack target))
          (t
-          (emit-load-symbol (cadr name))
+          (emit-load-externalized-object (cadr name))
           (emit-invokevirtual +lisp-symbol-class+
                               "getSymbolSetfFunctionOrDie"
                               nil +lisp-object+)
@@ -7422,7 +7418,7 @@ We need more thought here.
                  (eq (variable-compiland variable) *current-compiland*)
                  (not (enclosed-by-runtime-bindings-creating-block-p
                        (variable-block variable))))
-      (emit-load-symbol name))
+      (emit-load-externalized-object name))
     (cond ((constantp name)
            ;; "... a reference to a symbol declared with DEFCONSTANT always
            ;; refers to its global value."
@@ -7525,13 +7521,13 @@ We need more thought here.
              ;; (push thing *special*) => (setq *special* (cons thing *special*))
 ;;              (format t "compiling pushSpecial~%")
              (emit-push-current-thread)
-             (emit-load-symbol name)
+             (emit-load-externalized-object name)
 	     (compile-forms-and-maybe-emit-clear-values (second value-form) 'stack nil)
              (emit-invokevirtual +lisp-thread-class+ "pushSpecial"
                                  (list +lisp-symbol+ +lisp-object+) +lisp-object+))
             (t
              (emit-push-current-thread)
-             (emit-load-symbol name)
+             (emit-load-externalized-object name)
 	     (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
              (emit-invokevirtual +lisp-thread-class+ "setSpecialVariable"
                                  (list +lisp-symbol+ +lisp-object+) +lisp-object+)))
@@ -8016,7 +8012,7 @@ We need more thought here.
                   (:boolean
                    (emit 'iconst_1))
                   ((nil)
-                   (emit-load-symbol form)))
+                   (emit-load-externalized-object form)))
                 (emit-move-from-stack target representation))
                (t
                 ;; Shouldn't happen.
