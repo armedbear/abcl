@@ -2394,28 +2394,6 @@ The field type of the object is specified by OBJ-REF."
       (setf *static-code* *code*)
       g)))
 
-(defun declare-lambda (obj)
-  (let (saved-code
-        (g (symbol-name (gensym "LAMBDA"))))
-    (let* ((*print-level* nil)
-           (*print-length* nil)
-           (s (format nil "~S" obj))
-           (*code* (if *declare-inline* *code* *static-code*)))
-      (declare-field g +lisp-object+ +field-access-private+)
-      (emit 'ldc
-            (pool-string s))
-      (emit-invokestatic +lisp-class+ "readObjectFromString"
-                         (list +java-string+) +lisp-object+)
-      (emit-invokestatic +lisp-class+ "coerceToFunction"
-                         (lisp-object-arg-types 1) +lisp-object+)
-      (emit 'putstatic *this-class* g +lisp-object+)
-      (if *declare-inline*
-          (setf saved-code *code*)
-          (setf *static-code* *code*)))
-    (when *declare-inline*
-      (setf *code* saved-code))
-    g))
-
 (defknown compile-constant (t t t) t)
 (defun compile-constant (form target representation)
   (unless target
