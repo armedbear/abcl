@@ -31,7 +31,7 @@
 
 (in-package "SYSTEM")
 
-(export 'dump-form)
+(export '(dump-form dump-uninterned-symbol-index))
 
 (declaim (ftype (function (cons stream) t) dump-cons))
 (defun dump-cons (object stream)
@@ -89,6 +89,15 @@
           (dump-object load-form stream))
         (dump-object creation-form stream))))
 
+(declaim (ftype (function (symbol) integer) dump-uninterned-symbol-index))
+(defun dump-uninterned-symbol-index (symbol)
+  (let ((index (cdr (assoc symbol *fasl-uninterned-symbols*))))
+    (unless index
+      (setq index (1+ (or (cdar *fasl-uninterned-symbols*) -1)))
+      (setq *fasl-uninterned-symbols*
+            (acons symbol index *fasl-uninterned-symbols*)))
+    index))
+
 (declaim (ftype (function (t stream) t) dump-object))
 (defun dump-object (object stream)
   (cond ((consp object)
@@ -105,14 +114,9 @@
          (dump-instance object stream))
         ((and (symbolp object) ;; uninterned symbol
               (null (symbol-package object)))
-         (let ((index (cdr (assoc object *fasl-uninterned-symbols*))))
-           (unless index
-             (setq index (1+ (or (cdar *fasl-uninterned-symbols*) -1)))
-             (setq *fasl-uninterned-symbols*
-                   (acons object index *fasl-uninterned-symbols*)))
-           (write-string "#" stream)
-           (write index :stream stream)
-           (write-string "?" stream)))
+         (write-string "#" stream)
+         (write (dump-uninterned-symbol-index object) :stream stream)
+         (write-string "?" stream))
         (t
          (%stream-output-object object stream))))
 

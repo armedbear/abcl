@@ -213,6 +213,7 @@
 (defconstant +lisp-structure-object-class+ "org/armedbear/lisp/StructureObject")
 (defconstant +lisp-thread-class+ "org/armedbear/lisp/LispThread")
 (defconstant +lisp-thread+ "Lorg/armedbear/lisp/LispThread;")
+(defconstant +lisp-load-class+ "org/armedbear/lisp/Load")
 (defconstant +lisp-cons-class+ "org/armedbear/lisp/Cons")
 (defconstant +lisp-cons+ "Lorg/armedbear/lisp/Cons;")
 (defconstant +lisp-integer-class+ "org/armedbear/lisp/LispInteger")
@@ -2150,13 +2151,9 @@ of the other types."
       (name
        (emit 'getstatic class name +lisp-symbol+))
       ((null (symbol-package symbol))
-       ;; we need to read the #?<n> syntax for uninterned symbols
-
-       ;; TODO: we could use the byte code variant of
-       ;; Load._FASL_UNINTERNED_SYMBOLS_.symbolValue(LispThread.currentThread())
-       ;;    .aref(<index)
-       ;; to eliminate the reader dependency
-       (serialize-object symbol)
+       (emit-push-constant-int (dump-uninterned-symbol-index symbol))
+       (emit-invokestatic +lisp-load-class+ "getUninternedSymbol" '("I")
+                          +lisp-object+)
        (emit 'checkcast +lisp-symbol-class+))
       ((keywordp symbol)
        (emit 'ldc (pool-string (symbol-name symbol)))
