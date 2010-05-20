@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public class Symbol extends LispObject
+public class Symbol extends LispObject implements java.io.Serializable
 {
   // Bit flags.
   private static final int FLAG_SPECIAL           = 0x0001;
@@ -55,11 +55,11 @@ public class Symbol extends LispObject
   /** To be accessed by LispThread only:
    * used to find the index in the LispThread.specials array
    */
-  int specialIndex = LispThread.UNASSIGNED_SPECIAL_INDEX;
+  transient int specialIndex = LispThread.UNASSIGNED_SPECIAL_INDEX;
   private LispObject pkg; // Either a package object or NIL.
-  private LispObject value;
-  private LispObject function;
-  private LispObject propertyList;
+  private transient LispObject value;
+  private transient LispObject function;
+  private transient LispObject propertyList;
   private int flags;
 
   // Construct an uninterned symbol.
@@ -907,6 +907,15 @@ public class Symbol extends LispObject
     if (function != null)
       function.incrementHotCount();
   }
+
+    public Object readResolve() throws java.io.ObjectStreamException {
+	if(pkg instanceof Package) {
+	    Symbol s = ((Package) pkg).intern(name.getStringValue());
+	    return s;
+	} else {
+	    return this;
+	}
+    }
 
 
   // External symbols in CL package.

@@ -164,4 +164,9 @@ public final class Nil extends Symbol
             return "|COMMON-LISP|::|NIL|";
         return "NIL";
     }
+
+    public Object readResolve() throws java.io.ObjectStreamException {
+       return NIL;
+    }
+
 }

@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public abstract class AbstractArray extends LispObject
+public abstract class AbstractArray extends LispObject implements java.io.Serializable
 {
     @Override
     public LispObject typep(LispObject type)

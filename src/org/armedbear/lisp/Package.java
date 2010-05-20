@@ -40,20 +40,20 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-public final class Package extends LispObject
+public final class Package extends LispObject implements java.io.Serializable
 {
     private String name;
-    private SimpleString lispName;
+    private transient SimpleString lispName;
 
-    private LispObject propertyList;
+    private transient LispObject propertyList;
 
-    private final SymbolHashTable internalSymbols = new SymbolHashTable(16);
-    private final SymbolHashTable externalSymbols = new SymbolHashTable(16);
+    private transient final SymbolHashTable internalSymbols = new SymbolHashTable(16);
+    private transient final SymbolHashTable externalSymbols = new SymbolHashTable(16);
 
-    private HashMap<String,Symbol> shadowingSymbols;
-    private ArrayList<String> nicknames;
-    private LispObject useList = null;
-    private ArrayList<Package> usedByList = null;
+    private transient HashMap<String,Symbol> shadowingSymbols;
+    private transient ArrayList<String> nicknames;
+    private transient LispObject useList = null;
+    private transient ArrayList<Package> usedByList = null;
 
     // Anonymous package.
     public Package()
@@ -847,5 +847,14 @@ public final class Package extends LispObject
             return sb.toString();
         } else
             return unreadableString("PACKAGE");
+    }
+
+    public Object readResolve() throws java.io.ObjectStreamException {
+	Package pkg = Packages.findPackage(name);
+	if(pkg != null) {
+	    return pkg;
+	} else {
+	    return error(new PackageError(name + " is not the name of a package."));
+	}
     }
 }

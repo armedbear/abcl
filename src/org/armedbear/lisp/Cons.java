@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public final class Cons extends LispObject
+public final class Cons extends LispObject implements java.io.Serializable
 {
   public LispObject car;
   public LispObject cdr;

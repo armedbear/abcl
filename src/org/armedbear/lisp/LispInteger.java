@@ -36,7 +36,7 @@ package org.armedbear.lisp;
 /** This class merely serves as the super class for
  * Fixnum and Bignum
  */
-public class LispInteger extends LispObject
+public class LispInteger extends LispObject implements java.io.Serializable
 {
 
   public static LispInteger getInstance(long l) {
