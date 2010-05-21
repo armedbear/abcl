@@ -478,7 +478,6 @@ the top-most value's representation being 'rep1'."
 (defmacro defsubst (name lambda-list &rest body)
   (let* ((block-name (fdefinition-block-name name))
          (expansion (generate-inline-expansion block-name lambda-list body)))
-;;     (format t "expansion = ~S~%" expansion)
     `(progn
        (%defun ',name (lambda ,lambda-list (block ,block-name ,@body)))
        (precompile ',name)
@@ -904,8 +903,6 @@ before the emitted code: the code is 'stack-neutral'."
   (declare (optimize speed))
   (dolist (form forms)
     (unless (single-valued-p form)
-;;       (let ((*print-structure* nil))
-;;         (format t "Not single-valued: ~S~%" form))
       (ensure-thread-var-initialized)
       (emit 'clear-values)
       (return))))
@@ -1241,14 +1238,9 @@ representation, based on the derived type of the LispObject."
 
 ;; ldc2_w
 (define-resolver 20 (instruction)
-;;   (format t "resolving ldc2_w...~%")
   (let* ((args (instruction-args instruction)))
-;;     (format t "args = ~S~%" args)
     (unless (= (length args) 1)
       (error "Wrong number of args for LDC2_W."))
-;;     (if (> (car args) 255)
-;;         (inst 19 (u2 (car args))) ; LDC_W
-;;         (inst 18 args))))
     (inst 20 (u2 (car args)))))
 
 ;; getfield, putfield class-name field-name type-name
@@ -1297,26 +1289,6 @@ representation, based on the derived type of the LispObject."
                (vector-push-extend (resolve-instruction instruction) vector))))
           (t
            (vector-push-extend (resolve-instruction instruction) vector)))))))
-
-;; (defconstant +branch-opcodes+
-;;   '(153 ; IFEQ
-;;     154 ; IFNE
-;;     155 ; IFLT
-;;     156 ; IFGE
-;;     157 ; IFGT
-;;     158 ; IFLE
-;;     159 ; IF_ICMPEQ
-;;     160 ; IF_ICMPNE
-;;     161 ; IF_ICMPLT
-;;     162 ; IF_ICMPGE
-;;     163 ; IF_ICMPGT
-;;     164 ; IF_ICMPLE
-;;     165 ; IF_ACMPEQ
-;;     166 ; IF_ACMPNE
-;;     167 ; GOTO
-;;     168 ; JSR
-;;     198 ; IFNULL
-;;     ))
 
 (declaim (ftype (function (t) t) branch-opcode-p))
 (declaim (inline branch-opcode-p))
@@ -1392,11 +1364,6 @@ representation, based on the derived type of the LispObject."
                (instruction-depth (instruction-depth instruction)))
           (when instruction-depth
             (setf max-stack (max max-stack (the fixnum instruction-depth))))))
-;;       (when *compiler-debug*
-;;         (sys::%format t "compiland name = ~S~%" (compiland-name *current-compiland*))
-;;         (sys::%format t "max-stack = ~D~%" max-stack)
-;;         (sys::%format t "----- after stack analysis -----~%")
-;;         (print-code))
       max-stack)))
 
 
@@ -1427,14 +1394,11 @@ representation, based on the derived type of the LispObject."
 
 (declaim (ftype (function (t) boolean) label-p))
 (defun label-p (instruction)
-;;   (declare (optimize safety))
-;;   (declare (type instruction instruction))
   (and instruction
        (= (the fixnum (instruction-opcode (the instruction instruction))) 202)))
 
 (declaim (ftype (function (t) t) instruction-label))
 (defun instruction-label (instruction)
-;;   (declare (optimize safety))
   (and instruction
        (= (instruction-opcode (the instruction instruction)) 202)
        (car (instruction-args instruction))))
@@ -1492,8 +1456,7 @@ representation, based on the derived type of the LispObject."
                             ;; unreachable.
                             (setf (aref code j) nil)
                             (setf changed t))
-                           (;;(equal next-instruction instruction)
-                            (eq (car (instruction-args next-instruction))
+                           ((eq (car (instruction-args next-instruction))
                                 (car (instruction-args instruction)))
                             ;; We've reached another GOTO to the same destination.
                             ;; We don't need the first GOTO; we can just fall
@@ -1938,7 +1901,6 @@ representation, based on the derived type of the LispObject."
     (setf *code* (append *static-code* *code*))
     (emit 'return)
     (finalize-code)
-    ;;(optimize-code)
     (setf *code* (resolve-instructions *code*))
     (setf (method-max-stack constructor) (analyze-stack))
     (setf (method-code constructor) (code-bytes *code*))
@@ -2235,7 +2197,7 @@ Code to restore the serialized object is inserted into `*code' or
         (*declare-inline*
          (funcall dispatch-fn object)
          (emit 'putstatic *this-class* field-name field-type))
-        (t ;; *file-compilation* and (not *declare-inline*)
+        (t
          (let ((*code* *static-code*))
            (funcall dispatch-fn object)
            (emit 'putstatic *this-class* field-name field-type)
@@ -3044,30 +3006,6 @@ is registered (or not)."
         (t
          form)))
 
-;; (define-source-transform min (&whole form &rest args)
-;;   (cond ((= (length args) 2)
-;;          (let* ((arg1 (%car args))
-;;                 (arg2 (%cadr args))
-;;                 (sym1 (gensym))
-;;                 (sym2 (gensym)))
-;;            `(let ((,sym1 ,arg1)
-;;                   (,sym2 ,arg2))
-;;               (if (<= ,sym1 ,sym2) ,sym1 ,sym2))))
-;;         (t
-;;          form)))
-
-;; (define-source-transform max (&whole form &rest args)
-;;   (cond ((= (length args) 2)
-;;          (let* ((arg1 (%car args))
-;;                 (arg2 (%cadr args))
-;;                 (sym1 (gensym))
-;;                 (sym2 (gensym)))
-;;            `(let ((,sym1 ,arg1)
-;;                   (,sym2 ,arg2))
-;;               (if (>= ,sym1 ,sym2) ,sym1 ,sym2))))
-;;         (t
-;;          form)))
-
 (defknown p2-funcall (t t t) t)
 (defun p2-funcall (form target representation)
   (unless (> (length form) 1)
@@ -3078,9 +3016,6 @@ is registered (or not)."
     (return-from p2-funcall (compile-function-call form target representation)))
   (compile-forms-and-maybe-emit-clear-values (cadr form) 'stack nil)
   (compile-call (cddr form))
-;;   (case representation
-;;     (:int (emit-unbox-fixnum))
-;;     (:char (emit-unbox-character)))
   (fix-boxing representation nil)
   (emit-move-from-stack target))
 
@@ -3293,7 +3228,6 @@ given a specific common representation.")
 (defun initialize-p2-test-handlers ()
   (let ((ht (make-hash-table :test 'eq)))
     (dolist (pair '(
-;;                     (CHAR= p2-test-char=)
                     (/=                 p2-test-/=)
                     (<                  p2-test-numeric-comparison)
                     (<=                 p2-test-numeric-comparison)
@@ -3588,11 +3522,9 @@ given a specific common representation.")
              'ifeq)))))
 
 (defun p2-test-equality (form)
-;;   (format t "p2-test-equality ~S~%" (%car form))
   (when (check-arg-count form 2)
     (let* ((op (%car form))
            (translated-op (ecase op
-;;                             (EQL    "eql")
                             (EQUAL  "equal")
                             (EQUALP "equalp")))
            (arg1 (%cadr form))
@@ -3797,19 +3729,8 @@ given a specific common representation.")
          (p2-if (list 'IF (%car args) consequent alternate) target representation))
         (t
          (dolist (arg args)
-;;            (let ((type (derive-compiler-type arg)))
-;;              (cond
-;;               ((eq type 'BOOLEAN)
 	   (compile-forms-and-maybe-emit-clear-values arg 'stack :boolean)
 	   (emit 'ifeq LABEL1)
-;;                )
-;;                    (t
-;;                     (compile-form arg 'stack nil)
-;;                     (maybe-emit-clear-values arg)
-;;                     (emit-push-nil)
-;;                     (emit 'if_acmpeq LABEL1))
-;;                    )
-;;              )
            )
          (compile-form consequent target representation)
          (emit 'goto LABEL2)
@@ -3819,17 +3740,11 @@ given a specific common representation.")
 
 (defknown p2-if-not-and (t t t) t)
 (defun p2-if-not-and (form target representation)
-;;   (format t "p2-if-not-and~%")
-;;   (aver (eq (first form) 'IF))
-;;   (aver (consp (second form)))
-;;   (aver (memq (first (second form)) '(NOT NULL)))
-;;   (aver (eq (first (second (second form))) 'AND))
   (let* ((inverted-test (second (second form)))
          (consequent (third form))
          (alternate (fourth form))
          (LABEL1 (gensym))
          (LABEL2 (gensym)))
-;;     (aver (and (consp inverted-test) (eq (car inverted-test) 'AND)))
     (let* ((args (cdr inverted-test)))
       (case (length args)
         (0
@@ -4006,7 +3921,6 @@ given a specific common representation.")
 ;; Generates code to bind variable to value at top of runtime stack.
 (declaim (ftype (function (t) t) compile-binding))
 (defun compile-binding (variable)
-;;  (dump-1-variable variable)
   (cond ((variable-register variable)
          (astore (variable-register variable)))
         ((variable-special-p variable)
@@ -4055,16 +3969,12 @@ given a specific common representation.")
 (defun restore-dynamic-environment (register)
    (emit-push-current-thread)
    (aload register)
-;;   (emit 'putfield +lisp-thread-class+ "lastSpecialBinding"
-;; 	+lisp-special-binding+)
    (emit-invokevirtual +lisp-thread-class+ "resetSpecialBindings"
                        (list +lisp-special-bindings-mark+) nil)
   )
 
 (defun save-dynamic-environment (register)
    (emit-push-current-thread)
-;;   (emit 'getfield +lisp-thread-class+ "lastSpecialBinding"
-;; 	+lisp-special-binding+)
    (emit-invokevirtual +lisp-thread-class+ "markSpecialBindings"
                        nil +lisp-special-bindings-mark+)
    (astore register)
@@ -4575,8 +4485,6 @@ given a specific common representation.")
              (compile-form subform nil nil)
              (unless must-clear-values
                (unless (single-valued-p subform)
-;;                  (let ((*print-structure* nil))
-;;                    (format t "not single-valued: ~S~%" subform))
                  (setf must-clear-values t))))))
     (label END-BLOCK)
     (emit 'goto EXIT)
@@ -4819,8 +4727,6 @@ given a specific common representation.")
         ;; inside the block we're returning from?
         (unless (enclosed-by-protected-block-p block)
           (unless (compiland-single-valued-p *current-compiland*)
-;;               (format t "compiland not single-valued: ~S~%"
-;;                       (compiland-name *current-compiland*))
             (emit-clear-values))
           (compile-form result-form (block-target block) nil)
           (when (and (block-needs-environment-restoration block)
@@ -5225,10 +5131,6 @@ given a specific common representation.")
          (high2 (and (fixnum-type-p type2) (integer-type-high type2)))
          (constant-shift (fixnum-constant-value type2))
          (result-type (derive-compiler-type form)))
-;;     (format t "~&p2-ash type1 = ~S~%" type1)
-;;     (format t "p2-ash type2 = ~S~%" type2)
-;;     (format t "p2-ash result-type = ~S~%" result-type)
-;;     (format t "p2-ash representation = ~S~%" representation)
     (cond ((and (integerp arg1) (integerp arg2))
            (compile-constant (ash arg1 arg2) target representation))
           ((and constant-shift
@@ -5300,24 +5202,17 @@ given a specific common representation.")
                   (emit 'lshr)
                   (convert-representation :long representation))
                  (t
-;;                   (format t "p2-ash call to LispObject.ash(int)~%")
-;;                   (format t "p2-ash type1 = ~S type2 = ~S~%" type1 type2)
-;;                   (format t "p2-ash result-type = ~S~%" result-type)
 		  (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 							     arg2 'stack :int)
                   (emit-invokevirtual +lisp-object-class+ "ash" '("I") +lisp-object+)
                   (fix-boxing representation result-type)))
            (emit-move-from-stack target representation))
           (t
-;;            (format t "p2-ash full call~%")
            (compile-function-call form target representation)))))
 
 (defknown p2-logand (t t t) t)
 (defun p2-logand (form target representation)
-  (let* ((args (cdr form))
-;;          (len (length args))
-         )
-;;     (cond ((= len 2)
+  (let* ((args (cdr form)))
     (case (length args)
       (2
        (let* ((arg1 (%car args))
@@ -5325,13 +5220,6 @@ given a specific common representation.")
               (type1 (derive-compiler-type arg1))
               (type2 (derive-compiler-type arg2))
               (result-type (derive-compiler-type form)))
-         ;;              (let ((*print-structure* nil))
-         ;;                (format t "~&p2-logand arg1 = ~S~%" arg1)
-         ;;                (format t "p2-logand arg2 = ~S~%" arg2))
-         ;;              (format t "~&p2-logand type1 = ~S~%" type1)
-         ;;              (format t "p2-logand type2 = ~S~%" type2)
-         ;;              (format t "p2-logand result-type = ~S~%" result-type)
-         ;;              (format t "p2-logand representation = ~S~%" representation)
          (cond ((and (integerp arg1) (integerp arg2))
                 (compile-constant (logand arg1 arg2) target representation))
                ((and (integer-type-p type1) (eql arg2 0))
@@ -5344,7 +5232,6 @@ given a specific common representation.")
 		(compile-forms-and-maybe-emit-clear-values arg1 target representation
 							   arg2 nil nil))
                ((and (fixnum-type-p type1) (fixnum-type-p type2))
-                ;;                     (format t "p2-logand fixnum case~%")
                 ;; Both arguments are fixnums.
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 							   arg2 'stack :int)
@@ -5379,14 +5266,12 @@ given a specific common representation.")
                 (convert-representation :long representation)
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type2)
-                ;;                     (format t "p2-logand LispObject.LOGAND(int) 1~%")
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 							   arg2 'stack :int)
                 (emit-invokevirtual +lisp-object-class+ "LOGAND" '("I") +lisp-object+)
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type1)
-                ;;                     (format t "p2-logand LispObject.LOGAND(int) 2~%")
                 ;; arg1 is a fixnum, but arg2 is not
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 							   arg2 'stack nil)
@@ -5396,7 +5281,6 @@ given a specific common representation.")
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
                (t
-                ;;                     (format t "p2-logand LispObject.LOGAND(LispObject)~%")
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 							   arg2 'stack nil)
                 (emit-invokevirtual +lisp-object-class+ "LOGAND"
@@ -5508,7 +5392,6 @@ given a specific common representation.")
 							   arg2 'stack :int)
                 (emit 'ixor))
                ((and (fixnum-type-p type1) (fixnum-type-p type2))
-;;                 (format t "p2-logxor case 2~%")
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 							   arg2 'stack :int)
                 (emit 'ixor)
@@ -5649,36 +5532,6 @@ given a specific common representation.")
                                (lisp-object-arg-types 1) +lisp-object+)
            (fix-boxing representation nil) ; FIXME use derived result type
            (emit-move-from-stack target representation)))))
-
-;; (defknown p2-integerp (t t t) t)
-;; (defun p2-integerp (form target representation)
-;;   (unless (check-arg-count form 1)
-;;     (compile-function-call form target representation)
-;;     (return-from p2-integerp))
-;;   (let ((arg (cadr form)))
-;;     (compile-form arg 'stack nil)
-;;     (maybe-emit-clear-values arg)
-;;     (case representation
-;;       (:boolean
-;;        (emit-invokevirtual +lisp-object-class+ "integerp" nil "Z"))
-;;       (t
-;;        (emit-invokevirtual +lisp-object-class+ "INTEGERP" nil +lisp-object+)))
-;;     (emit-move-from-stack target representation)))
-
-;; (defknown p2-listp (t t t) t)
-;; (defun p2-listp (form target representation)
-;;   (unless (check-arg-count form 1)
-;;     (compile-function-call form target representation)
-;;     (return-from p2-listp))
-;;   (let ((arg (cadr form)))
-;;     (compile-form arg 'stack nil)
-;;     (maybe-emit-clear-values arg)
-;;     (case representation
-;;       (:boolean
-;;        (emit-invokevirtual +lisp-object-class+ "listp" nil "Z"))
-;;       (t
-;;        (emit-invokevirtual +lisp-object-class+ "LISTP" nil +lisp-object+)))
-;;     (emit-move-from-stack target representation)))
 
 (defknown p2-zerop (t t t) t)
 (define-inlined-function p2-zerop (form target representation)
@@ -5968,7 +5821,6 @@ given a specific common representation.")
            (compile-function-call form target representation)))))
 
 (defun p2-read-line (form target representation)
-;;   (format t "p2-read-line~%")
   (let* ((args (cdr form))
          (len (length args)))
     (case len
@@ -5976,7 +5828,6 @@ given a specific common representation.")
        (let* ((arg1 (%car args))
               (type1 (derive-compiler-type arg1)))
          (cond ((compiler-subtypep type1 'stream)
-;;                 (format t "p2-read-line optimized case 1~%")
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
                 (emit 'checkcast +lisp-stream-class+)
                 (emit-push-constant-int 1)
@@ -5991,7 +5842,6 @@ given a specific common representation.")
               (type1 (derive-compiler-type arg1))
               (arg2 (%cadr args)))
          (cond ((and (compiler-subtypep type1 'stream) (null arg2))
-;;                 (format t "p2-read-line optimized case 2~%")
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
                 (emit 'checkcast +lisp-stream-class+)
                 (emit-push-constant-int 0)
@@ -6097,23 +5947,17 @@ given a specific common representation.")
                 (setf result-low 0)
                 (setf result-high (if (and high1 high2)
                                       (min high1 high2)
-                                      (or high1 high2)))
-;;                 (setf result-type (make-integer-type (list 'INTEGER result-low result-high)))
-                )
+                                      (or high1 high2))))
                ((and low1 (>= low1 0))
                 ;; arg1 is non-negative
                 (dformat t "arg1 is non-negative~%")
                 (setf result-low 0)
-                (setf result-high high1)
-;;                 (setf result-type (make-integer-type (list 'INTEGER 0 high1)))
-                )
+                (setf result-high high1))
                ((and low2 (>= low2 0))
                 ;; arg2 is non-negative
                 (dformat t "arg2 is non-negative~%")
                 (setf result-low 0)
-                (setf result-high high2)
-;;                 (setf result-type (make-integer-type (list 'INTEGER 0 high2)))
-                ))
+                (setf result-high high2)))
          (dformat t "result-low = ~S~%" result-low)
          (dformat t "result-high = ~S~%" result-high)
          (setf result-type (make-integer-type (list 'INTEGER result-low result-high)))
@@ -6438,10 +6282,6 @@ for use with derive-type-times.")
                   (derive-type-min form))
                  (READ-CHAR
                   (derive-type-read-char form))
-;;                  (SETQ
-;;                   (if (= (length form) 3)
-;;                       (derive-type (third form))
-;;                       t))
                  ((THE TRULY-THE)
                   (second form))
                  (t
@@ -6670,7 +6510,6 @@ We need more thought here.
               (convert-representation result-rep representation)
 	      (emit-move-from-stack target representation))
              ((fixnump arg2)
-;;               (format t "p2-times case 3~%")
 	      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
               (emit-push-int arg2)
               (emit-invokevirtual +lisp-object-class+ "multiplyBy" '("I") +lisp-object+)
@@ -6753,14 +6592,6 @@ We need more thought here.
             (type2 (derive-compiler-type arg2))
             (result-type (derive-compiler-type form))
             (result-rep (type-representation result-type)))
-;;         (let ((*print-structure* nil))
-;;           (format t "~&p2-plus arg1 = ~S~%" arg1)
-;;           (format t "p2-plus arg2 = ~S~%" arg2))
-;;         (format t "~&p2-plus type1 = ~S~%" type1)
-;;         (format t "p2-plus type2 = ~S~%" type2)
-;;         (format t "p2-plus result-type = ~S~%" result-type)
-;;         (format t "p2-plus result-rep = ~S~%" result-rep)
-;;         (format t "p2-plus representation = ~S~%" representation)
        (cond ((and (numberp arg1) (numberp arg2))
               (compile-constant (+ arg1 arg2) target representation))
              ((and (numberp arg1) (eql arg1 0))
@@ -6935,9 +6766,6 @@ We need more thought here.
          (type1 (derive-compiler-type arg1))
          (type2 (derive-compiler-type arg2))
          (type3 (derive-compiler-type arg3)))
-;;     (format t "p2-set-char/schar type1 = ~S~%" type1)
-;;     (format t "p2-set-char/schar type2 = ~S~%" type2)
-;;     (format t "p2-set-char/schar type3 = ~S~%" type3)
     (cond ((and (< *safety* 3)
                 (or (null representation) (eq representation :char))
                 (compiler-subtypep type1 'STRING)
@@ -6962,7 +6790,6 @@ We need more thought here.
                (convert-representation :char representation)
                (emit-move-from-stack target representation))))
           (t
-;;            (format t "p2-set-char/schar not optimized~%")
            (compile-function-call form target representation)))))
 
 
@@ -7083,31 +6910,12 @@ We need more thought here.
                 (arg3 (third args))
                 (type3 (derive-compiler-type arg3))
                 (*register* *register*)
-                (value-register (unless (null target) (allocate-register)))
-;;                 (array-derived-type t)
-                )
-
-;;            (format t "p2-aset type3 = ~S~%" type3)
-
-;;            (when (symbolp arg1)
-;;              (let ((variable (find-visible-variable (second form))))
-;;                (when variable
-;;                  (setf array-derived-type (derive-type variable)))))
+                (value-register (unless (null target) (allocate-register))))
            ;; array
            (compile-form arg1 'stack nil)
            ;; index
            (compile-form arg2 'stack :int)
            ;; value
-;;            (cond ((subtypep array-derived-type '(array (unsigned-byte 8)))
-;;                   (compile-form (fourth form) 'stack :int)
-;;                   (when value-register
-;;                     (emit 'dup)
-;;                     (emit-move-from-stack value-register :int)))
-;;                  (t
-;;                   (compile-form (fourth form) 'stack nil)
-;;                   (when value-register
-;;                     (emit 'dup)
-;;                     (emit-move-from-stack value-register nil))))
            (cond ((fixnum-type-p type3)
                   (compile-form arg3 'stack :int)
                   (when value-register
@@ -7118,15 +6926,8 @@ We need more thought here.
                   (when value-register
                     (emit 'dup)
                     (emit-move-from-stack value-register nil))))
-
-;;            (unless (and (single-valued-p (second form))
-;;                         (single-valued-p (third form))
-;;                         (single-valued-p (fourth form)))
-;;              (emit-clear-values))
            (maybe-emit-clear-values arg1 arg2 arg3)
-
-           (cond (;;(subtypep array-derived-type '(array (unsigned-byte 8)))
-                  (fixnum-type-p type3)
+           (cond ((fixnum-type-p type3)
                   (emit-invokevirtual +lisp-object-class+ "aset" '("I" "I") nil))
                  (t
                   (emit-invokevirtual +lisp-object-class+ "aset" (list "I" +lisp-object+) nil)))
@@ -7498,8 +7299,6 @@ We need more thought here.
         (when (neq new-form form)
           (return-from p2-setq (compile-form (p1 new-form) target representation))))
       ;; We're setting a special variable.
-;;       (let ((*print-structure* nil))
-;;         (format t "p2-setq name = ~S value-form = ~S~%" name value-form))
       (cond ((and variable
                   (variable-binding-register variable)
                   (eq (variable-compiland variable) *current-compiland*)
@@ -7515,8 +7314,6 @@ We need more thought here.
                   (= (length value-form) 3)
                   (var-ref-p (third value-form))
                   (eq (variable-name (var-ref-variable (third value-form))) name))
-             ;; (push thing *special*) => (setq *special* (cons thing *special*))
-;;              (format t "compiling pushSpecial~%")
              (emit-push-current-thread)
              (emit-load-externalized-object name)
 	     (compile-forms-and-maybe-emit-clear-values (second value-form) 'stack nil)
@@ -7689,8 +7486,6 @@ We need more thought here.
 (defun p2-the (form target representation)
   (let ((type-form (second form))
         (value-form (third form)))
-;;     (let ((*print-structure* nil))
-;;       (format t "p2-the type-form = ~S value-form = ~S~%" type-form value-form))
     (cond ((and (subtypep type-form 'FIXNUM)
                 (consp value-form)
                 (eq (car value-form) 'structure-ref))
@@ -8185,9 +7980,7 @@ We need more thought here.
       (when (memq (type-representation (variable-declared-type variable))
                   '(:int :long))
         (emit-push-variable variable)
-;;        (sys::%format t "declared type: ~S~%" (variable-declared-type variable))
         (derive-variable-representation variable nil)
-;;        (sys::%format t "representation: ~S~%" (variable-representation variable))
         (when (< 1 (representation-size (variable-representation variable)))
           (allocate-variable-register variable))
         (convert-representation nil (variable-representation variable))
@@ -8196,7 +7989,6 @@ We need more thought here.
 
 (defknown p2-compiland (t) t)
 (defun p2-compiland (compiland)
-;;   (format t "p2-compiland name = ~S~%" (compiland-name compiland))
   (let* ((p1-result (compiland-p1-result compiland))
          (class-file (compiland-class-file compiland))
          (*this-class* (abcl-class-file-class class-file))
