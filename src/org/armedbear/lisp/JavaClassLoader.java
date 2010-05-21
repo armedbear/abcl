@@ -38,8 +38,9 @@ import static org.armedbear.lisp.Lisp.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.net.URL;
 
-public class JavaClassLoader extends ClassLoader {
+public class JavaClassLoader extends java.net.URLClassLoader {
 
     private static JavaClassLoader persistentInstance;
 
@@ -47,7 +48,15 @@ public class JavaClassLoader extends ClassLoader {
 
     public JavaClassLoader()
     {
-        super(JavaClassLoader.class.getClassLoader());
+        this(JavaClassLoader.class.getClassLoader());
+    }
+
+    public JavaClassLoader(ClassLoader parent) {
+	super(new URL[] {}, parent);
+    }
+
+    public JavaClassLoader(URL[] classpath, ClassLoader parent) {
+	super(classpath, parent);
     }
 
     public static JavaClassLoader getPersistentInstance()
@@ -117,4 +126,57 @@ public class JavaClassLoader extends ClassLoader {
         }
         return null;
     }
+
+    @Override
+    public void addURL(URL url) {
+	super.addURL(url);
+    }
+
+    public static final Symbol CLASSLOADER = PACKAGE_JAVA.intern("*CLASSLOADER*");
+
+    private static final Primitive GET_DEFAULT_CLASSLOADER = new pf_get_default_classloader();
+    private static final class pf_get_default_classloader extends Primitive {
+	
+	private final LispObject defaultClassLoader = new JavaObject(new JavaClassLoader());
+
+        pf_get_default_classloader() {
+            super("get-default-classloader", PACKAGE_JAVA, true, "");
+        }
+
+        @Override
+        public LispObject execute() {
+	    return defaultClassLoader;
+        }
+    };
+
+    private static final Primitive MAKE_CLASSLOADER = new pf_make_classloader();
+    private static final class pf_make_classloader extends Primitive 
+    {
+        pf_make_classloader() 
+        {
+            super("make-classloader", PACKAGE_JAVA, true, "&optional parent");
+        }
+
+        @Override
+        public LispObject execute() {
+	    return new JavaObject(new JavaClassLoader(getCurrentClassLoader()));
+        }
+
+        @Override
+        public LispObject execute(LispObject parent) {
+	    return new JavaObject(new JavaClassLoader((ClassLoader) parent.javaInstance(ClassLoader.class)));
+        }
+    };
+
+    public static ClassLoader getCurrentClassLoader() {
+	LispObject classLoader = CLASSLOADER.symbolValueNoThrow();
+	if(classLoader != null) {
+	    return (ClassLoader) classLoader.javaInstance(ClassLoader.class);
+	} else {
+	    return Lisp.class.getClassLoader();
+	}
+    }
+
+
+
 }

@@ -59,6 +59,20 @@ public final class Java
         return lc.subclassp(java_exception);
     }
 
+    private static final Primitive ENSURE_JAVA_OBJECT = new pf_ensure_java_object();
+    private static final class pf_ensure_java_object extends Primitive 
+    {
+        pf_ensure_java_object() 
+        {
+            super("ensure-java-object", PACKAGE_JAVA, true, "obj");
+        }
+
+        @Override
+        public LispObject execute(LispObject obj) {
+	    return obj instanceof JavaObject ? obj : new JavaObject(obj);
+        }
+    };
+
     // ### register-java-exception exception-name condition-symbol => T
     private static final Primitive REGISTER_JAVA_EXCEPTION = new pf_register_java_exception();
     private static final class pf_register_java_exception extends Primitive 
@@ -119,6 +133,7 @@ public final class Java
     private static final Primitive JCLASS = new pf_jclass();
     private static final class pf_jclass extends Primitive 
     {
+
         pf_jclass() 
         {
             super(Symbol.JCLASS, "name-or-class-ref &optional class-loader",
@@ -128,18 +143,14 @@ public final class Java
         @Override
         public LispObject execute(LispObject arg)
         {
-            return JavaObject.getInstance(javaClass(arg));
+	    return JavaObject.getInstance(javaClass(arg, JavaClassLoader.getCurrentClassLoader()));
         }
 
         @Override
         public LispObject execute(LispObject className, LispObject classLoader)
         {
 	    ClassLoader loader = (ClassLoader) classLoader.javaInstance(ClassLoader.class);
-	    if(loader != null) {
-		return JavaObject.getInstance(javaClass(className, loader));
-	    } else {
-		return JavaObject.getInstance(javaClass(className));
-	    }
+	    return JavaObject.getInstance(javaClass(className, loader));
         }
     };
 
@@ -1176,7 +1187,7 @@ public final class Java
     }
 
     private static Class javaClass(LispObject obj) {
-	return javaClass(obj, null);
+	return javaClass(obj, JavaClassLoader.getCurrentClassLoader());
     }
 
     // Supports Java primitive types too.
@@ -1202,11 +1213,7 @@ public final class Java
                 return Double.TYPE;
             // Not a primitive Java type.
             Class c;
-	    if(classLoader != null) {
-		c = classForName(s, classLoader);
-	    } else {
-		c = classForName(s);
-	    }
+	    c = classForName(s, classLoader);
             if (c == null)
                 error(new LispError(s + " does not designate a Java class."));
 

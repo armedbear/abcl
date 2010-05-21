@@ -251,10 +251,10 @@
                  (cdr option))))))
     ((:documentation :report)
      (list (car option) `',(cadr option)))
-    (t
-     (error 'program-error
-            :format-control "invalid DEFCLASS option ~S"
-            :format-arguments (list (car option))))))
+    (t (list (car option) `(quote ,(cdr option))))))
+;     (error 'program-error
+;            :format-control "invalid DEFCLASS option ~S"
+;            :format-arguments (list (car option))))))
 
 (defun make-initfunction (initform)
   `(function (lambda () ,initform)))
@@ -541,12 +541,13 @@
   (eq (%slot-definition-allocation slot) :instance))
 
 (defun make-instance-standard-class (metaclass
+				     &rest initargs
                                      &key name direct-superclasses direct-slots
                                      direct-default-initargs
-                                     documentation
-                                     &allow-other-keys)
+                                     documentation)
   (declare (ignore metaclass))
   (let ((class (std-allocate-instance +the-standard-class+)))
+    (check-initargs class t initargs)
     (%set-class-name name class)
     (%set-class-layout nil class)
     (%set-class-direct-subclasses ()  class)
@@ -634,6 +635,7 @@
                  (t
                   ;; We're redefining the class.
                   (%make-instances-obsolete old-class)
+		  (check-initargs old-class t all-keys)
                   (apply #'std-after-initialization-for-classes old-class all-keys)
                   old-class)))
           (t
@@ -2376,6 +2378,7 @@
     (dolist (option options)
       (when (eq (car option) :report)
         (setf report (cadr option))
+	(setf options (delete option options :test #'equal))
         (return)))
     (typecase report
       (null

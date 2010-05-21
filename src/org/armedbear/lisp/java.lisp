@@ -34,6 +34,15 @@
 (require "CLOS")
 (require "PRINT-OBJECT")
 
+(defvar *classloader* (get-default-classloader))
+
+(defun add-url-to-classpath (url &optional (classloader *classloader*))
+  (jcall "addUrl" classloader url))
+
+(defun add-urls-to-classpath (&rest urls)
+  (dolist (url urls)
+    (add-url-to-classpath url)))
+
 (defun jregister-handler (object event handler &key data count)
   (%jregister-handler object event handler data count))
 
@@ -190,6 +199,14 @@
         #+maybe_one_day
         (setf (apply #'jarray-ref jarray (row-major-to-index dimensions i)) (row-major-aref array i))
         (apply #'(setf jarray-ref) (row-major-aref array i) jarray (row-major-to-index dimensions i))))))
+
+(defun jnew-array-from-list (element-type list)
+  (let ((jarray (jnew-array element-type (length list)))
+	(i 0))
+    (dolist (x list)
+      (setf (jarray-ref jarray i) x
+	    i (1+ i)))
+    jarray))
 
 (defun jclass-constructors (class)
   "Returns a vector of constructors for CLASS"

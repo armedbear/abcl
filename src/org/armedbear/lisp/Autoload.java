@@ -513,6 +513,7 @@ public class Autoload extends Function
         autoload(PACKAGE_JAVA, "%jredefine-method", "RuntimeClass");
         autoload(PACKAGE_JAVA, "%jregister-handler", "JHandler");
         autoload(PACKAGE_JAVA, "%load-java-class-from-byte-array", "RuntimeClass");
+        autoload(PACKAGE_JAVA, "get-default-classloader", "JavaClassLoader");
         autoload(PACKAGE_MOP, "funcallable-instance-function", "StandardGenericFunction", false);
         autoload(PACKAGE_MOP, "generic-function-name", "StandardGenericFunction", true);
         autoload(PACKAGE_MOP, "method-qualifiers", "StandardMethod", true);
