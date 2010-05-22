@@ -561,12 +561,6 @@ public final class Load
     }
 
     private static final LispObject loadStream(Stream in, boolean print,
-                                               LispThread thread)
-        {
-        return loadStream(in, print, thread, false);
-    }
-
-    private static final LispObject loadStream(Stream in, boolean print,
                                                LispThread thread, boolean returnLastResult)
 
     {
