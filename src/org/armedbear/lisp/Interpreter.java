@@ -177,7 +177,7 @@ public final class Interpreter
             }
             catch (ClassNotFoundException e) { } // FIXME: what to do?
 
-            Load.loadSystemFile("j.lisp");
+            Load.loadSystemFile("j.lisp", false); // not being autoloaded
 
             initialized = true;
         }
@@ -217,7 +217,7 @@ public final class Interpreter
 
     private static synchronized void initializeSystem() 
     {
-        Load.loadSystemFile("system");
+        Load.loadSystemFile("system", false); // not being autoloaded
     }
 
     // Check for --noinit; verify that arguments are supplied for --load and
@@ -308,7 +308,7 @@ public final class Interpreter
                                       false, false, true);
 
                         else
-                            Load.loadSystemFile(args[i + 1]);
+                            Load.loadSystemFile(args[i + 1], false); // not being autoloaded
                         ++i;
                     } else {
                         // Shouldn't happen.

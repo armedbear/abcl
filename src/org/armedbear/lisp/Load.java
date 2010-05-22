@@ -216,16 +216,6 @@ public final class Load
         }
     }
 
-    public static final LispObject loadSystemFile(String filename)
-
-    {
-        final LispThread thread = LispThread.currentThread();
-        return loadSystemFile(filename,
-                              Symbol.LOAD_VERBOSE.symbolValue(thread) != NIL,
-                              Symbol.LOAD_PRINT.symbolValue(thread) != NIL,
-                              false);
-    }
-
     public static final LispObject loadSystemFile(String filename, boolean auto)
 
     {
