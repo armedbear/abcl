@@ -701,9 +701,8 @@ public final class Lisp
    *
    * This version is used by the interpreter.
    */
-  public static final LispObject nonLocalGo(Binding binding,
-                                            LispObject tag)
-
+  static final LispObject nonLocalGo(Binding binding,
+                                     LispObject tag)
   {
     if (binding.env.inactive)
       return error(new ControlError("Unmatched tag "
@@ -738,10 +737,9 @@ public final class Lisp
    *
    * This version is used by the interpreter.
    */
-  public static final LispObject nonLocalReturn(Binding binding,
-                                                Symbol block,
-                                                LispObject result)
-
+  static final LispObject nonLocalReturn(Binding binding,
+                                         Symbol block,
+                                         LispObject result)
   {
     if (binding == null)
       {
