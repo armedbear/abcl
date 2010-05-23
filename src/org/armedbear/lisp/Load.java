@@ -430,6 +430,12 @@ public final class Load
                                       in, verbose, print, auto, false);
     }
 
+    private static Symbol[] savedSpecials =
+        new Symbol[] { // CLHS Specified
+                       Symbol.CURRENT_READTABLE, Symbol._PACKAGE_,
+                       // Compiler policy
+                       _SPEED_, _SPACE_, _SAFETY_, _DEBUG_, _EXPLAIN_ };
+
     // A nil TRUENAME signals a load from stream which has no possible path
     private static final LispObject loadFileFromStream(LispObject pathname,
                                                        LispObject truename,
@@ -443,18 +449,12 @@ public final class Load
         long start = System.currentTimeMillis();
         final LispThread thread = LispThread.currentThread();
         final SpecialBindingsMark mark = thread.markSpecialBindings();
-        // "LOAD binds *READTABLE* and *PACKAGE* to the values they held before
-        // loading the file."
-        thread.bindSpecialToCurrentValue(Symbol.CURRENT_READTABLE);
-        thread.bindSpecialToCurrentValue(Symbol._PACKAGE_);
+
+        for (Symbol special : savedSpecials)
+            thread.bindSpecialToCurrentValue(special);
+
         int loadDepth = Fixnum.getValue(_LOAD_DEPTH_.symbolValue(thread));
         thread.bindSpecial(_LOAD_DEPTH_, Fixnum.getInstance(++loadDepth));
-        // Compiler policy.
-        thread.bindSpecialToCurrentValue(_SPEED_);
-        thread.bindSpecialToCurrentValue(_SPACE_);
-        thread.bindSpecialToCurrentValue(_SAFETY_);
-        thread.bindSpecialToCurrentValue(_DEBUG_);
-        thread.bindSpecialToCurrentValue(_EXPLAIN_);
         final String prefix = getLoadVerbosePrefix(loadDepth);
         try {
             thread.bindSpecial(Symbol.LOAD_PATHNAME, pathname);
