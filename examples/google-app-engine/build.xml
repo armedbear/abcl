@@ -1,6 +1,9 @@
-<project>
-  <property name="sdk.dir" location="../appengine-java-sdk" />
+<project default="compile">
+
+  <property name="sdk.dir" 
+            location="../../../appengine-java-sdk" />
   <import file="${sdk.dir}/config/user/ant-macros.xml" />
+
   <path id="project.classpath">
 	<pathelement path="war/WEB-INF/classes" />
 	<fileset dir="war/WEB-INF/lib">
@@ -10,6 +13,7 @@
 	  <include name="shared/**/*.jar" />
 	</fileset>
   </path>
+
   <target name="copyjars"
 	  description="Copies the App Engine and ABCL JARs to the WAR.">
 	<copy
@@ -18,7 +22,7 @@
 	  <fileset dir="${sdk.dir}/lib/user">
 		  <include name="**/*.jar" />
 	  </fileset>
-	  <fileset dir="../abcl">
+	  <fileset dir="../..">
 		  <include name="dist/*.jar" />
 	  </fileset>
 	</copy>
@@ -29,7 +33,8 @@
 	  </fileset>
 	</copy>
   </target>
-  <target name="compile" depends="copyjars"
+
+  <target name="compile" depends="copyjars,abcl.jar"
 	  description="Compiles Java source and copies other source files to the WAR.">
 	<mkdir dir="war/WEB-INF/classes" />
 	<copy todir="war/WEB-INF/classes">
@@ -41,8 +46,14 @@
 		srcdir="src"
 		destdir="war/WEB-INF/classes"
 		classpathref="project.classpath"
+                includeantruntime="false"
 		debug="on" />
   </target>
+
+  <target name="abcl.jar">
+    <ant dir="../.." target="abcl.jar"/>
+  </target>
+
   <target name="clean" description="Cleans all the jars and fasls.">
     <delete>
       <fileset dir="." includes="**/*.jar" />

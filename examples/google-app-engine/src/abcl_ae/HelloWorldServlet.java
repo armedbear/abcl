@@ -9,6 +9,7 @@ import org.armedbear.lisp.LispThread;
 import org.armedbear.lisp.Lisp;
 import org.armedbear.lisp.Symbol;
 import org.armedbear.lisp.SpecialBinding;
+import org.armedbear.lisp.SpecialBindingsMark;
 import org.armedbear.lisp.Load;
 import org.armedbear.lisp.Stream;
 
@@ -30,7 +31,8 @@ public class HelloWorldServlet extends HttpServlet {
 		SpecialBindingsMark mark = currentThread.markSpecialBindings();
 		currentThread.bindSpecial(
 			Symbol.STANDARD_OUTPUT, 
-			new Stream(resp.getOutputStream(), Symbol.CHARACTER, false));
+			new Stream(Symbol.SYSTEM_STREAM, resp.getOutputStream(), 
+                                   Symbol.CHARACTER, false));
 
 		try {
 			currentThread.execute(doGet);

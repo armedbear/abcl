@@ -8,7 +8,6 @@ import org.armedbear.lisp.Load;
 import org.armedbear.lisp.Interpreter;
 import org.armedbear.lisp.Symbol;
 import org.armedbear.lisp.Pathname;
-import org.armedbear.lisp.ConditionThrowable;
 
 public final class AbclInit {
 	static private Object lock = new Object();
