@@ -10,6 +10,10 @@ google-app-engine
    This example shows how to run a ABCL in a Java Servlet context in
    general and in Google App Engine (GAE) in particular.
 
+gui
+
+   Examples of how to interact with Swing/AWT GUI elements.
+
 
 java-exception
 
