@@ -12,7 +12,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.armedbear.lisp.java.DialogPromptStream;
+import abcl.DialogPromptStream;
 
 public class SwingDialogPromptStream extends DialogPromptStream {
 
