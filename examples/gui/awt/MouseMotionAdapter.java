@@ -1,5 +1,5 @@
 /*
- * ComponentAdapter.java
+ * MouseMotionAdapter.java
  *
  * Copyright (C) 2003 Peter Graves
  *
@@ -18,35 +18,38 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-package org.armedbear.lisp.java.awt;
+package awt;
 
 import org.armedbear.lisp.JHandler;
 import java.awt.Component;
-import java.awt.event.ComponentEvent;
+import java.awt.event.MouseEvent;
 
-public class ComponentAdapter extends java.awt.event.ComponentAdapter {
-
+public class MouseMotionAdapter extends java.awt.event.MouseMotionAdapter 
+{
     public static synchronized void addTo(Component component) {
-        component.addComponentListener(new ComponentAdapter());
+        component.addMouseMotionListener(new MouseMotionAdapter());
     }
 
-    private void call(String s, ComponentEvent componentevent) {
-        JHandler.callLisp(s, componentevent.getComponent(), componentevent.paramString());
+    private void call(String s, MouseEvent mouseevent) {
+        int ai[] = {
+            mouseevent.getModifiers(), 
+	    mouseevent.isPopupTrigger() ? 1 : 0, 
+	    mouseevent.getClickCount(), 
+	    mouseevent.getX(), 
+	    mouseevent.getY()
+        };
+        JHandler.callLisp(s, mouseevent.getComponent(), mouseevent.paramString(), ai);
     }
 
-    public void componentHidden(ComponentEvent componentevent) {
-        call("COMPONENTHIDDEN", componentevent);
+    public void mouseDragged(MouseEvent mouseevent) {
+        call("MOUSEDRAGGED", mouseevent);
     }
 
-    public void componentMoved(ComponentEvent componentevent) {
-        call("COMPONENTMOVED", componentevent);
+    public void mouseMoved(MouseEvent mouseevent) {
+        call("MOUSEMOVED", mouseevent);
     }
 
-    public void componentResized(ComponentEvent componentevent) {
-        call("COMPONENTRESIZED", componentevent);
-    }
-
-    public void componentShown(ComponentEvent componentevent) {
-        call("COMPONENTSHOWN", componentevent);
+    public void mouseWheel(MouseEvent mouseevent) {
+        call("MOUSEWHEEL", mouseevent);
     }
 }

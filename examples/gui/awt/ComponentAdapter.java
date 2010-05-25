@@ -1,5 +1,5 @@
 /*
- * KeyAdapter.java
+ * ComponentAdapter.java
  *
  * Copyright (C) 2003 Peter Graves
  *
@@ -18,36 +18,35 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-package org.armedbear.lisp.java.awt;
+package awt;
 
 import org.armedbear.lisp.JHandler;
 import java.awt.Component;
-import java.awt.event.KeyEvent;
+import java.awt.event.ComponentEvent;
 
-public class KeyAdapter extends java.awt.event.KeyAdapter {
+public class ComponentAdapter extends java.awt.event.ComponentAdapter {
 
     public static synchronized void addTo(Component component) {
-        component.addKeyListener(new KeyAdapter());
+        component.addComponentListener(new ComponentAdapter());
     }
 
-    private void call(String s, KeyEvent keyevent) {
-        int ai[] = {
-            keyevent.getModifiers(), 
-	    keyevent.isActionKey() ? 1 : 0, 
-	    keyevent.getKeyCode()
-        };
-        JHandler.callLisp(s, keyevent.getComponent(), keyevent.paramString(), ai);
+    private void call(String s, ComponentEvent componentevent) {
+        JHandler.callLisp(s, componentevent.getComponent(), componentevent.paramString());
     }
 
-    public void keyPressed(KeyEvent keyevent) {
-        call("KEYPRESSED", keyevent);
+    public void componentHidden(ComponentEvent componentevent) {
+        call("COMPONENTHIDDEN", componentevent);
     }
 
-    public void keyReleased(KeyEvent keyevent) {
-        call("KEYRELEASED", keyevent);
+    public void componentMoved(ComponentEvent componentevent) {
+        call("COMPONENTMOVED", componentevent);
     }
 
-    public void keyTyped(KeyEvent keyevent) {
-        call("KEYTYPED", keyevent);
+    public void componentResized(ComponentEvent componentevent) {
+        call("COMPONENTRESIZED", componentevent);
+    }
+
+    public void componentShown(ComponentEvent componentevent) {
+        call("COMPONENTSHOWN", componentevent);
     }
 }

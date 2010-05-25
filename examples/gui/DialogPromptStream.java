@@ -1,4 +1,3 @@
-package org.armedbear.lisp.java;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -6,12 +5,17 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 import org.armedbear.lisp.Stream;
+
 /**
- * A bidirectional stream that captures input from a modal dialog. The dialog reports a label (prompt line)
- * which shows to the user everything that has been printed to the stream up to the moment when the dialog
- * became visible. It is usable as a drop-in replacement for e.g. *debug-io*.<br />
- * This is an abstract class that does not depend on any GUI library. Subclasses are expected to provide
- * the actual code to show the dialog and read input from the user.
+ * A bidirectional stream that captures input from a modal dialog. The
+ * dialog reports a label (prompt line) which shows to the user
+ * everything that has been printed to the stream up to the moment
+ * when the dialog became visible. It is usable as a drop-in
+ * replacement for e.g. *debug-io*.<br /> This is an abstract class
+ * that does not depend on any GUI library. Subclasses are expected to
+ * provide the actual code to show the dialog and read input from the
+ * user.
+ *
  * @author Alessio Stalla
  *
  */

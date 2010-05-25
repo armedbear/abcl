@@ -1,4 +1,4 @@
-package org.armedbear.lisp.java.swing;
+package swing;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;

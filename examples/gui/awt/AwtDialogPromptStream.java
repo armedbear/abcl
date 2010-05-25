@@ -1,4 +1,4 @@
-package org.armedbear.lisp.java.awt;
+package awt;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
@@ -11,8 +11,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-
-import org.armedbear.lisp.java.DialogPromptStream;
 
 public class AwtDialogPromptStream extends DialogPromptStream {
 
