@@ -44,6 +44,12 @@ public final class SlotDefinition extends StandardObject
     slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = NIL;
   }
 
+    public SlotDefinition(StandardClass clazz)
+  {
+    super(clazz, clazz.getClassLayout().getLength());
+    slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = NIL;
+  }
+
   public SlotDefinition(LispObject name, LispObject readers)
   {
     this();
@@ -113,14 +119,19 @@ public final class SlotDefinition extends StandardObject
     return unreadableString(sb.toString());
   }
 
-  // ### make-slot-definition
+  // ### make-slot-definition &optional class
   private static final Primitive MAKE_SLOT_DEFINITION =
-    new Primitive("make-slot-definition", PACKAGE_SYS, true, "")
+    new Primitive("make-slot-definition", PACKAGE_SYS, true, "&optional class")
     {
       @Override
       public LispObject execute()
       {
         return new SlotDefinition();
+      }
+      @Override
+      public LispObject execute(LispObject slotDefinitionClass)
+      {
+	  return new SlotDefinition((StandardClass) slotDefinitionClass);
       }
     };
 

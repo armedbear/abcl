@@ -60,6 +60,8 @@
 (defconstant +the-standard-generic-function-class+
   (find-class 'standard-generic-function))
 (defconstant +the-T-class+ (find-class 'T))
+(defconstant +the-direct-slot-definition-class+ (find-class 'direct-slot-definition))
+(defconstant +the-effective-slot-definition-class+ (find-class 'effective-slot-definition))
 
 ;; Don't use DEFVAR, because that disallows loading clos.lisp
 ;; after compiling it: the binding won't get assigned to T anymore
@@ -259,40 +261,46 @@
 (defun make-initfunction (initform)
   `(function (lambda () ,initform)))
 
-(defun make-direct-slot-definition (class &key name
-                                          (initargs ())
-                                          (initform nil)
-                                          (initfunction nil)
-                                          (readers ())
-                                          (writers ())
-                                          (allocation :instance)
-                                          &allow-other-keys)
-  (let ((slot (make-slot-definition)))
-    (set-slot-definition-name slot name)
-    (set-slot-definition-initargs slot initargs)
-    (set-slot-definition-initform slot initform)
-    (set-slot-definition-initfunction slot initfunction)
-    (set-slot-definition-readers slot readers)
-    (set-slot-definition-writers slot writers)
-    (set-slot-definition-allocation slot allocation)
-    (set-slot-definition-allocation-class slot class)
-    slot))
+(defun init-slot-definition (slot &key name
+				    (initargs ())
+				    (initform nil)
+				    (initfunction nil)
+				    (readers ())
+				    (writers ())
+				    (allocation :instance)
+				    &allow-other-keys)
+  (set-slot-definition-name slot name)
+  (set-slot-definition-initargs slot initargs)
+  (set-slot-definition-initform slot initform)
+  (set-slot-definition-initfunction slot initfunction)
+  (set-slot-definition-readers slot readers)
+  (set-slot-definition-writers slot writers)
+  (set-slot-definition-allocation slot allocation)
+  slot)
 
-(defun make-effective-slot-definition (&key name
-                                            (initargs ())
-                                            (initform nil)
-                                            (initfunction nil)
-                                            (allocation :instance)
-                                            (allocation-class nil)
-                                            &allow-other-keys)
-  (let ((slot (make-slot-definition)))
-    (set-slot-definition-name slot name)
-    (set-slot-definition-initargs slot initargs)
-    (set-slot-definition-initform slot initform)
-    (set-slot-definition-initfunction slot initfunction)
-    (set-slot-definition-allocation slot allocation)
-    (set-slot-definition-allocation-class slot allocation-class)
-    slot))
+(defun make-direct-slot-definition (class &rest args)
+  (let ((slot-class (direct-slot-definition-class class)))
+    (if (eq slot-class +the-direct-slot-definition-class+)
+	(let ((slot (make-slot-definition +the-direct-slot-definition-class+)))
+	  (apply #'init-slot-definition slot args)
+	  (set-slot-definition-allocation-class slot class)
+	  slot)
+	(progn
+	  (let ((slot (apply #'make-instance slot-class args)))
+	    (set-slot-definition-allocation-class slot class)
+	    slot)))))
+
+(defun make-effective-slot-definition (class &rest args)
+  (let ((slot-class (effective-slot-definition-class class)))
+    (if (eq slot-class +the-effective-slot-definition-class+)
+	(let ((slot (make-slot-definition +the-effective-slot-definition-class+)))
+	  (apply #'init-slot-definition slot args)
+	  (set-slot-definition-allocation-class slot class)
+	  slot)
+	(progn
+	  (let ((slot (apply #'make-instance slot-class args)))
+	    (set-slot-definition-allocation-class slot class)
+	    slot)))))
 
 ;;; finalize-inheritance
 
@@ -455,10 +463,10 @@
             all-names)))
 
 (defun std-compute-effective-slot-definition (class direct-slots)
-  (declare (ignore class))
   (let ((initer (find-if-not #'null direct-slots
                              :key #'%slot-definition-initfunction)))
     (make-effective-slot-definition
+     class
      :name (%slot-definition-name (car direct-slots))
      :initform (if initer
                    (%slot-definition-initform initer)
@@ -558,6 +566,12 @@
                                           :direct-slots direct-slots
                                           :direct-default-initargs direct-default-initargs)
     class))
+
+;(defun convert-to-direct-slot-definition (class canonicalized-slot)
+;  (apply #'make-instance
+;         (apply #'direct-slot-definition-class
+;                class canonicalized-slot)
+;         canonicalized-slot))
 
 (defun std-after-initialization-for-classes (class
                                              &key direct-superclasses direct-slots
@@ -1899,7 +1913,17 @@
 (redefine-class-forwarder class-direct-default-initargs direct-default-initargs)
 (redefine-class-forwarder (setf class-direct-default-initargs) direct-default-initargs)
 
+(defgeneric direct-slot-definition-class (class &rest initargs))
 
+(defmethod direct-slot-definition-class ((class class) &rest initargs)
+  (declare (ignore initargs))
+  +the-direct-slot-definition-class+)
+
+(defgeneric effective-slot-definition-class (class &rest initargs))
+
+(defmethod effective-slot-definition-class ((class class) &rest initargs)
+  (declare (ignore initargs))
+  +the-effective-slot-definition-class+)
 
 (fmakunbound 'documentation)
 (defgeneric documentation (x doc-type))
@@ -2211,6 +2235,17 @@
 
 (defmethod shared-initialize ((instance standard-object) slot-names &rest initargs)
   (std-shared-initialize instance slot-names initargs))
+
+(defmethod shared-initialize ((slot slot-definition) slot-names
+			      &rest initargs
+			      &key name initargs initform initfunction
+			      readers writers allocation
+			      &allow-other-keys)
+  ;;Keyword args are duplicated from init-slot-definition only to have
+  ;;them checked.
+  (declare (ignore slot-names)) ;;TODO?
+  (declare (ignore name initargs initform initfunction readers writers allocation))
+  (apply #'init-slot-definition slot initargs))
 
 ;;; change-class
 
