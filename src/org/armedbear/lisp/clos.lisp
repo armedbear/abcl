@@ -262,12 +262,13 @@
   `(function (lambda () ,initform)))
 
 (defun init-slot-definition (slot &key name
-				    (initargs ())
-				    (initform nil)
-				    (initfunction nil)
-				    (readers ())
-				    (writers ())
-				    (allocation :instance)
+			     (initargs ())
+			     (initform nil)
+			     (initfunction nil)
+			     (readers ())
+			     (writers ())
+			     (allocation :instance)
+			     (allocation-class nil)
 				    &allow-other-keys)
   (set-slot-definition-name slot name)
   (set-slot-definition-initargs slot initargs)
@@ -276,18 +277,18 @@
   (set-slot-definition-readers slot readers)
   (set-slot-definition-writers slot writers)
   (set-slot-definition-allocation slot allocation)
+  (set-slot-definition-allocation-class slot allocation-class)
   slot)
 
 (defun make-direct-slot-definition (class &rest args)
   (let ((slot-class (direct-slot-definition-class class)))
     (if (eq slot-class +the-direct-slot-definition-class+)
 	(let ((slot (make-slot-definition +the-direct-slot-definition-class+)))
-	  (apply #'init-slot-definition slot args)
-	  (set-slot-definition-allocation-class slot class)
+	  (apply #'init-slot-definition slot :allocation-class class args)
 	  slot)
 	(progn
-	  (let ((slot (apply #'make-instance slot-class args)))
-	    (set-slot-definition-allocation-class slot class)
+	  (let ((slot (apply #'make-instance slot-class :allocation-class class
+			     args)))
 	    slot)))))
 
 (defun make-effective-slot-definition (class &rest args)
@@ -295,11 +296,9 @@
     (if (eq slot-class +the-effective-slot-definition-class+)
 	(let ((slot (make-slot-definition +the-effective-slot-definition-class+)))
 	  (apply #'init-slot-definition slot args)
-	  (set-slot-definition-allocation-class slot class)
 	  slot)
 	(progn
 	  (let ((slot (apply #'make-instance slot-class args)))
-	    (set-slot-definition-allocation-class slot class)
 	    slot)))))
 
 ;;; finalize-inheritance
