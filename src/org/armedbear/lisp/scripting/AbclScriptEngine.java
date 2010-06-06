@@ -278,7 +278,6 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		return new AbclScriptEngineFactory();
 	}
 	
-	@Override
 	public <T> T getInterface(Class<T> clasz) {
 		try {
 			return getInterface(eval("(cl:find-package '#:ABCL-SCRIPT-USER)"), clasz);
@@ -288,14 +287,12 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	}
 
 	@SuppressWarnings("unchecked")
-	@Override
 	public <T> T getInterface(Object thiz, Class<T> clasz) {
 	    Symbol s = findSymbol("jmake-proxy", "JAVA");
 	    JavaObject iface = new JavaObject(clasz);
 	    return (T) ((JavaObject) s.execute(iface, (LispObject) thiz)).javaInstance();
 	}
 	
-    @Override
     public Object invokeFunction(String name, Object... args) throws ScriptException, NoSuchMethodException {
 	Symbol s;
 	if(name.indexOf(':') >= 0) {
@@ -320,7 +317,6 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	}
     }
 
-    @Override
     public Object invokeMethod(Object thiz, String name, Object... args) throws ScriptException, NoSuchMethodException {
 	throw new UnsupportedOperationException("Common Lisp does not have methods in the Java sense. Use invokeFunction instead.");
     }
