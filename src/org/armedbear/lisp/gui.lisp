@@ -1,5 +1,7 @@
 (in-package :extensions)
 
+(require :java)
+
 (defvar *gui-backend* :swing)
 
 (defun init-gui ()

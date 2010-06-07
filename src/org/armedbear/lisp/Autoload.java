@@ -97,7 +97,7 @@ public class Autoload extends Function
             symbol.setSymbolFunction(new Autoload(symbol, null,
                                                   "org.armedbear.lisp.".concat(className)));
     }
-
+    
     public void load()
     {
         if (className != null) {
@@ -683,6 +683,9 @@ public class Autoload extends Function
                  "AutoloadedFunctionProxy", false);
 
         autoload(Symbol.COPY_LIST, "copy_list");
+
+	autoload(PACKAGE_SYS, "make-fasl-class-loader", "FaslClassLoader", false);
+	autoload(PACKAGE_SYS, "get-fasl-function", "FaslClassLoader", false);
 
         autoload(Symbol.SET_CHAR, "StringFunctions");
         autoload(Symbol.SET_SCHAR, "StringFunctions");
