@@ -32,9 +32,12 @@
 (in-package "SYSTEM")
 
 
-(export '(process-optimization-declarations
+(export '(*inline-declarations*
+          process-optimization-declarations
           inline-p notinline-p inline-expansion expand-inline
           *defined-functions* *undefined-functions* note-name-defined))
+
+(defvar *inline-declarations* nil)
 
 (declaim (ftype (function (t) t) process-optimization-declarations))
 (defun process-optimization-declarations (forms)
@@ -83,7 +86,7 @@
 (declaim (ftype (function (t) t) inline-p))
 (defun inline-p (name)
   (declare (optimize speed))
-  (let ((entry (assoc name *inline-declarations* :test #'equal)))
+  (let ((entry (assoc name *inline-declarations*)))
     (if entry
         (eq (cdr entry) 'INLINE)
         (and (symbolp name) (eq (get name '%inline) 'INLINE)))))
@@ -91,7 +94,7 @@
 (declaim (ftype (function (t) t) notinline-p))
 (defun notinline-p (name)
   (declare (optimize speed))
-  (let ((entry (assoc name *inline-declarations* :test #'equal)))
+  (let ((entry (assoc name *inline-declarations*)))
     (if entry
         (eq (cdr entry) 'NOTINLINE)
         (and (symbolp name) (eq (get name '%inline) 'NOTINLINE)))))
@@ -958,8 +961,7 @@
                                                 (symbol-name symbol))
                                   'precompiler))))
     (unless (and handler (fboundp handler))
-      (error "No handler for ~S." (let ((*package* (find-package :keyword)))
-				    (format nil "~S" symbol))))
+      (error "No handler for ~S." symbol))
     (setf (get symbol 'precompile-handler) handler)))
 
 (defun install-handlers ()
@@ -1022,9 +1024,7 @@
                   (TRULY-THE            precompile-truly-the)
 
                   (THREADS:SYNCHRONIZED-ON
-                                        precompile-threads-synchronized-on)
-		  
-		  (JVM::WITH-INLINE-CODE precompile-identity)))
+                                        precompile-threads-synchronized-on)))
     (install-handler (first pair) (second pair))))
 
 (install-handlers)

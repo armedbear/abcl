@@ -464,6 +464,8 @@ will load ASDF-INSTALL.
       <include name="abcl.in"/>
       <include name="abcl.bat.in"/>
       
+      <include name="examples/**"/>
+      
       <!-- The remainder of these files are used by the Lisp hosted
            build in 'build-abcl.lisp' but not used by Ant, so include
            them in the source distribution. -->

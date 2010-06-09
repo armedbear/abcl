@@ -171,19 +171,19 @@ public class Readtable extends LispObject
   }
 
   @Override
-  public final LispObject typeOf()
+  public LispObject typeOf()
   {
     return Symbol.READTABLE;
   }
 
   @Override
-  public final LispObject classOf()
+  public LispObject classOf()
   {
     return BuiltInClass.READTABLE;
   }
 
   @Override
-  public final LispObject typep(LispObject type)
+  public LispObject typep(LispObject type)
   {
     if (type == Symbol.READTABLE)
       return T;
@@ -193,27 +193,27 @@ public class Readtable extends LispObject
   }
 
   @Override
-  public final String toString()
+  public String toString()
   {
     return unreadableString("READTABLE");
   }
 
-  public final LispObject getReadtableCase()
+  public LispObject getReadtableCase()
   {
     return readtableCase;
   }
 
-  public final boolean isWhitespace(char c)
+  public boolean isWhitespace(char c)
   {
     return getSyntaxType(c) == SYNTAX_TYPE_WHITESPACE;
   }
 
-  public final byte getSyntaxType(char c)
+  public byte getSyntaxType(char c)
   {
     return syntax.get(c);
   }
 
-  public final boolean isInvalid(char c)
+  public boolean isInvalid(char c)
   {
     switch (c)
       {
@@ -230,7 +230,7 @@ public class Readtable extends LispObject
       }
   }
 
-  public final void checkInvalid(char c, Stream stream)
+  public void checkInvalid(char c, Stream stream)
   {
     // "... no mechanism is provided for changing the constituent trait of a
     // character." (2.1.4.2)
@@ -247,12 +247,12 @@ public class Readtable extends LispObject
       }
   }
 
-  public final LispObject getReaderMacroFunction(char c)
+  public LispObject getReaderMacroFunction(char c)
   {
     return readerMacroFunctions.get(c);
   }
 
-  final LispObject getMacroCharacter(char c)
+  LispObject getMacroCharacter(char c)
   {
     LispObject function = getReaderMacroFunction(c);
     LispObject non_terminating_p;
@@ -271,7 +271,7 @@ public class Readtable extends LispObject
     return LispThread.currentThread().setValues(function, non_terminating_p);
   }
 
-  final void makeDispatchMacroCharacter(char dispChar, LispObject non_terminating_p)
+  void makeDispatchMacroCharacter(char dispChar, LispObject non_terminating_p)
   {
     byte syntaxType;
     if (non_terminating_p != NIL)
@@ -284,7 +284,7 @@ public class Readtable extends LispObject
     dispatchTables.put(dispChar, new DispatchTable());
   }
 
-  public final LispObject getDispatchMacroCharacter(char dispChar, char subChar)
+  public LispObject getDispatchMacroCharacter(char dispChar, char subChar)
 
   {
     DispatchTable dispatchTable = dispatchTables.get(dispChar);
@@ -299,7 +299,7 @@ public class Readtable extends LispObject
     return (function != null) ? function : NIL;
   }
 
-  public final void setDispatchMacroCharacter(char dispChar, char subChar,
+  public void setDispatchMacroCharacter(char dispChar, char subChar,
                                         LispObject function)
 
   {

@@ -384,11 +384,6 @@ public class StandardClass extends SlotClass
     STANDARD_CLASS.setDirectSlotDefinitions(standardClassSlotDefinitions());
   }
 
-    public static final StandardClass DIRECT_SLOT_DEFINITION =
-      addStandardClass(Symbol.DIRECT_SLOT_DEFINITION, list(SLOT_DEFINITION));
-    public static final StandardClass EFFECTIVE_SLOT_DEFINITION =
-      addStandardClass(Symbol.EFFECTIVE_SLOT_DEFINITION, list(SLOT_DEFINITION));
-
   // BuiltInClass.FUNCTION is also null here (see previous comment).
   public static final StandardClass GENERIC_FUNCTION =
     addStandardClass(Symbol.GENERIC_FUNCTION, list(BuiltInClass.FUNCTION,
@@ -725,13 +720,6 @@ public class StandardClass extends SlotClass
     SLOT_DEFINITION.setDirectSlotDefinitions(SLOT_DEFINITION.getClassLayout().generateSlotDefinitions());
     // There are no inherited slots.
     SLOT_DEFINITION.setSlotDefinitions(SLOT_DEFINITION.getDirectSlotDefinitions());
-
-    DIRECT_SLOT_DEFINITION.setCPL(DIRECT_SLOT_DEFINITION, SLOT_DEFINITION,
-				  STANDARD_OBJECT, BuiltInClass.CLASS_T);
-    DIRECT_SLOT_DEFINITION.finalizeClass();
-    EFFECTIVE_SLOT_DEFINITION.setCPL(EFFECTIVE_SLOT_DEFINITION, SLOT_DEFINITION,
-				     STANDARD_OBJECT, BuiltInClass.CLASS_T);
-    EFFECTIVE_SLOT_DEFINITION.finalizeClass();
 
     // STANDARD-METHOD
     Debug.assertTrue(STANDARD_METHOD.isFinalized());

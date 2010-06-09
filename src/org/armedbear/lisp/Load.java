@@ -216,6 +216,16 @@ public final class Load
         }
     }
 
+    public static final LispObject loadSystemFile(String filename)
+
+    {
+        final LispThread thread = LispThread.currentThread();
+        return loadSystemFile(filename,
+                              Symbol.LOAD_VERBOSE.symbolValue(thread) != NIL,
+                              Symbol.LOAD_PRINT.symbolValue(thread) != NIL,
+                              false);
+    }
+
     public static final LispObject loadSystemFile(String filename, boolean auto)
 
     {
@@ -242,7 +252,6 @@ public final class Load
         }
     }
 
-    private static final Symbol FASL_LOADER = PACKAGE_SYS.intern("*FASL-LOADER*");
     static final LispObject COMPILE_FILE_INIT_FASL_TYPE = new SimpleString("_");
 
     public static final LispObject loadSystemFile(final String filename,
@@ -269,7 +278,7 @@ public final class Load
             String path = pathname.asEntryPath();
             url = Lisp.class.getResource(path);
             if (url == null || url.toString().endsWith("/")) {
-                url = Lisp.class.getResource(path.replace('-', '_') + ".abcl");
+                url = Lisp.class.getResource(path + ".abcl");
                 if (url == null) {
                     url = Lisp.class.getResource(path + ".lisp");
                 }
@@ -323,7 +332,6 @@ public final class Load
             final LispThread thread = LispThread.currentThread();
             final SpecialBindingsMark mark = thread.markSpecialBindings();
             thread.bindSpecial(_WARN_ON_REDEFINITION_, NIL);
-	    thread.bindSpecial(FASL_LOADER, NIL);
             try {
                 Stream stream = new Stream(Symbol.SYSTEM_STREAM, in, Symbol.CHARACTER);
                 return loadFileFromStream(pathname, truename, stream,
@@ -432,12 +440,6 @@ public final class Load
                                       in, verbose, print, auto, false);
     }
 
-    private static Symbol[] savedSpecials =
-        new Symbol[] { // CLHS Specified
-                       Symbol.CURRENT_READTABLE, Symbol._PACKAGE_,
-                       // Compiler policy
-                       _SPEED_, _SPACE_, _SAFETY_, _DEBUG_, _EXPLAIN_ };
-
     // A nil TRUENAME signals a load from stream which has no possible path
     private static final LispObject loadFileFromStream(LispObject pathname,
                                                        LispObject truename,
@@ -451,12 +453,18 @@ public final class Load
         long start = System.currentTimeMillis();
         final LispThread thread = LispThread.currentThread();
         final SpecialBindingsMark mark = thread.markSpecialBindings();
-
-        for (Symbol special : savedSpecials)
-            thread.bindSpecialToCurrentValue(special);
-
+        // "LOAD binds *READTABLE* and *PACKAGE* to the values they held before
+        // loading the file."
+        thread.bindSpecialToCurrentValue(Symbol.CURRENT_READTABLE);
+        thread.bindSpecialToCurrentValue(Symbol._PACKAGE_);
         int loadDepth = Fixnum.getValue(_LOAD_DEPTH_.symbolValue(thread));
         thread.bindSpecial(_LOAD_DEPTH_, Fixnum.getInstance(++loadDepth));
+        // Compiler policy.
+        thread.bindSpecialToCurrentValue(_SPEED_);
+        thread.bindSpecialToCurrentValue(_SPACE_);
+        thread.bindSpecialToCurrentValue(_SAFETY_);
+        thread.bindSpecialToCurrentValue(_DEBUG_);
+        thread.bindSpecialToCurrentValue(_EXPLAIN_);
         final String prefix = getLoadVerbosePrefix(loadDepth);
         try {
             thread.bindSpecial(Symbol.LOAD_PATHNAME, pathname);
@@ -553,6 +561,12 @@ public final class Load
     }
 
     private static final LispObject loadStream(Stream in, boolean print,
+                                               LispThread thread)
+        {
+        return loadStream(in, print, thread, false);
+    }
+
+    private static final LispObject loadStream(Stream in, boolean print,
                                                LispThread thread, boolean returnLastResult)
 
     {
@@ -569,7 +583,7 @@ public final class Load
                                          thread, Stream.currentReadtable);
                 if (obj == EOF)
                     break;
-		result = eval(obj, env, thread);
+                result = eval(obj, env, thread);
                 if (print) {
                     Stream out =
                         checkCharacterOutputStream(Symbol.STANDARD_OUTPUT.symbolValue(thread));

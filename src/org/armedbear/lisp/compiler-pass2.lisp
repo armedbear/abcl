@@ -198,8 +198,6 @@
   (u2 (if (< n 0) (1+ (logxor (- n) #xFFFF))
           n)))
 
-(defconstant +fasl-loader-class+
-  "org/armedbear/lisp/FaslClassLoader")
 (defconstant +java-string+ "Ljava/lang/String;")
 (defconstant +java-object+ "Ljava/lang/Object;")
 (defconstant +lisp-class+ "org/armedbear/lisp/Lisp")
@@ -2269,22 +2267,12 @@ Code to restore the serialized object is inserted into `*code' or
    local-function *declared-functions* ht g
    (setf g (symbol-name (gensym "LFUN")))
    (let* ((pathname (abcl-class-file-pathname (local-function-class-file local-function)))
-	  (class-name (concatenate 'string "org/armedbear/lisp/" (pathname-name pathname)))
 	  (*code* *static-code*))
      ;; fixme *declare-inline*
-     (declare-field g +lisp-object+ +field-access-private+)
-     (emit 'new class-name)
-     (emit 'dup)
-     (emit-invokespecial-init class-name '())
-
-     ;(emit 'ldc (pool-string (pathname-name pathname)))
-     ;(emit-invokestatic +fasl-loader-class+ "faslLoadFunction"
-     ;(list +java-string+) +lisp-object+)
-
-;     (emit 'ldc (pool-string (file-namestring pathname)))
-     
-;     (emit-invokestatic +lisp-function-proxy-class+ "loadPreloadedFunction"
-;			(list +java-string+) +lisp-object+)
+     (declare-field g +lisp-object+ +field-access-default+)
+     (emit 'ldc (pool-string (file-namestring pathname)))
+     (emit-invokestatic +lisp-function-proxy-class+ "loadPreloadedFunction"
+			(list +java-string+) +lisp-object+)
      (emit 'putstatic *this-class* g +lisp-object+)
      (setf *static-code* *code*)
      (setf (gethash local-function ht) g))))
@@ -2429,6 +2417,10 @@ The field type of the object is specified by OBJ-REF."
              (typep form 'single-float)
              (typep form 'double-float)
              (characterp form)
+             (stringp form)
+             (packagep form)
+             (pathnamep form)
+             (vectorp form)
              (stringp form)
              (packagep form)
              (pathnamep form)
@@ -5106,8 +5098,7 @@ given a specific common representation.")
                            (local-function-function local-function)))))
                (emit 'getstatic *this-class*
                      g +lisp-object+))))) ; Stack: template-function
-         ((and (member name *functions-defined-in-current-file* :test #'equal)
-	       (not (notinline-p name)))
+         ((member name *functions-defined-in-current-file* :test #'equal)
           (emit 'getstatic *this-class*
                 (declare-setf-function name) +lisp-object+)
           (emit-move-from-stack target))
@@ -7557,32 +7548,6 @@ We need more thought here.
       ;; delay resolving the method to run-time; it's unavailable now
       (compile-function-call form target representation))))
 
-#|(defknown p2-java-jcall (t t t) t)
-(define-inlined-function p2-java-jcall (form target representation)
-  ((and (> *speed* *safety*)
-	(< 1 (length form))
-	(eq 'jmethod (car (cadr form)))
-	(every #'stringp (cdr (cadr form)))))
-  (let ((m (ignore-errors (eval (cadr form)))))
-    (if m 
-	(let ((must-clear-values nil)
-	      (arg-types (raw-arg-types (jmethod-params m))))
-	  (declare (type boolean must-clear-values))
-	  (dolist (arg (cddr form))
-	    (compile-form arg 'stack nil)
-	    (unless must-clear-values
-	      (unless (single-valued-p arg)
-		(setf must-clear-values t))))
-	  (when must-clear-values
-	    (emit-clear-values))
-	  (dotimes (i (jarray-length raw-arg-types))
-	    (push (jarray-ref raw-arg-types i) arg-types))
-	  (emit-invokevirtual (jclass-name (jmethod-declaring-class m))
-			      (jmethod-name m)
-			      (nreverse arg-types)
-			      (jmethod-return-type m)))
-      ;; delay resolving the method to run-time; it's unavailable now
-      (compile-function-call form target representation))))|#
 
 (defknown p2-char= (t t t) t)
 (defun p2-char= (form target representation)
@@ -8259,13 +8224,6 @@ We need more thought here.
     (setf (method-handlers execute-method) (nreverse *handlers*)))
   t)
 
-(defun p2-with-inline-code (form target representation)
-  ;;form = (with-inline-code (&optional target-var repr-var) ...body...)
-  (destructuring-bind (&optional target-var repr-var) (cadr form)
-    (eval `(let (,@(when target-var `((,target-var ,target)))
-		 ,@(when repr-var `((,repr-var ,representation))))
-	     ,@(cddr form)))))
-
 (defun compile-1 (compiland stream)
   (let ((*all-variables* nil)
         (*closure-variables* nil)
@@ -8558,7 +8516,6 @@ to derive a Java class name from."
   (install-p2-handler 'java:jclass         'p2-java-jclass)
   (install-p2-handler 'java:jconstructor   'p2-java-jconstructor)
   (install-p2-handler 'java:jmethod        'p2-java-jmethod)
-;  (install-p2-handler 'java:jcall          'p2-java-jcall)
   (install-p2-handler 'char=               'p2-char=)
   (install-p2-handler 'characterp          'p2-characterp)
   (install-p2-handler 'coerce-to-function  'p2-coerce-to-function)
@@ -8643,7 +8600,6 @@ to derive a Java class name from."
   (install-p2-handler 'vector-push-extend  'p2-vector-push-extend)
   (install-p2-handler 'write-8-bits        'p2-write-8-bits)
   (install-p2-handler 'zerop               'p2-zerop)
-  (install-p2-handler 'with-inline-code    'p2-with-inline-code)
   t)
 
 (initialize-p2-handlers)

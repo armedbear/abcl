@@ -38,11 +38,10 @@
              (if-does-not-exist t)
              (external-format :default))
   (declare (ignore external-format)) ; FIXME
-  (let (*fasl-loader*)
-    (%load (if (streamp filespec)
-	       filespec
-	       (merge-pathnames (pathname filespec)))
-	   verbose print if-does-not-exist)))
+  (%load (if (streamp filespec)
+             filespec
+             (merge-pathnames (pathname filespec)))
+         verbose print if-does-not-exist))
 
 (defun load-returning-last-result (filespec
              &key
@@ -51,8 +50,7 @@
              (if-does-not-exist t)
              (external-format :default))
   (declare (ignore external-format)) ; FIXME
-  (let (*fasl-loader*)
-    (%load-returning-last-result (if (streamp filespec)
-				     filespec
-				     (merge-pathnames (pathname filespec)))
-				 verbose print if-does-not-exist)))
+  (%load-returning-last-result (if (streamp filespec)
+             filespec
+             (merge-pathnames (pathname filespec)))
+         verbose print if-does-not-exist))

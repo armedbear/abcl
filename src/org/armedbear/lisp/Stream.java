@@ -1138,7 +1138,8 @@ public class Stream extends StructureObject {
                 sb.setLength(0);
                 sb.append(readMultipleEscape(rt));
                 flags = new BitSet(sb.length());
-                flags.set(0, sb.length());
+                for (int i = sb.length(); i-- > 0;)
+                    flags.set(i);
             } else if (rt.isInvalid(c)) {
                 rt.checkInvalid(c, this); // Signals a reader-error.
             } else if (readtableCase == Keyword.UPCASE) {
@@ -1179,7 +1180,8 @@ public class Stream extends StructureObject {
                     int end = sb.length();
                     if (flags == null)
                         flags = new BitSet(sb.length());
-                    flags.set(begin, end);
+                    for (int i = begin; i < end; i++)
+                        flags.set(i);
                     continue;
                 }
                 if (readtableCase == Keyword.UPCASE)
