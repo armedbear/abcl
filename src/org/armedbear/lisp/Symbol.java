@@ -2943,6 +2943,10 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_MOP.addInternalSymbol("CLASS-PRECEDENCE-LIST");
   public static final Symbol STANDARD_READER_METHOD =
     PACKAGE_MOP.addExternalSymbol("STANDARD-READER-METHOD");
+  public static final Symbol DIRECT_SLOT_DEFINITION =
+    PACKAGE_MOP.addExternalSymbol("DIRECT-SLOT-DEFINITION");
+  public static final Symbol EFFECTIVE_SLOT_DEFINITION =
+    PACKAGE_MOP.addExternalSymbol("EFFECTIVE-SLOT-DEFINITION");
 
   // Java interface.
   public static final Symbol JAVA_EXCEPTION =

@@ -1,0 +1,52 @@
+ABCL Examples
+=============
+
+Contributions from: 
+  Ville Voutilainen, Alex Muscar, Blake McBride, and Mark Evenson
+
+
+google-app-engine 
+                  
+   This example shows how to run a ABCL in a Java Servlet context in
+   general and in Google App Engine (GAE) in particular.
+
+gui
+
+   Examples of how to interact with Swing/AWT GUI elements.
+
+
+java-exception
+
+   Handling Java exceptions with the Lisp condition system.
+
+
+java-interface 
+
+   Implementing a Java interface with Lisp.
+
+
+java-to-lisp-1 
+
+   Simple examples of calling Lisp from Java.
+
+
+java-to-lisp-2
+
+   More involved example of calling Lisp from Java including
+   parameters and return values.
+
+
+jsr-223
+
+   Using the implementation of the JSR-223 interface to use Common
+   Lisp as a pluggable scripting language on the JVM.
+
+
+lisp-to-java
+
+   Calling Java code from Lisp.
+
+
+misc
+
+   Code snippets currently without documentation.

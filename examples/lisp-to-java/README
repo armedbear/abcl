@@ -1,0 +1,29 @@
+ABCL Examples Building and Running Instructions
+===============================================
+
+To compile 
+
+    cmd$ javac  -cp ../../dist/abcl.jar  Main.java
+
+where the "../../../dist/abcl.jar" represents the path to your
+abcl.jar file, which is built via the Ant based build.  This path
+could be slightly different depending on how the system was
+constructed, and possibly due to operating system conventions for
+specifying relative paths.  However you resolve this locally, we'll
+refer to this as '$ABCL_ROOT/dist/abcl.jar' for the rest of these
+instructions.
+
+This compiles the Java source file "Main.java" into a JVM runtime or
+class file named "Main.class".
+
+To run the example (Main.class for example) from a Unix-like OS use:
+
+    cmd$ java  -cp $ABCL_ROOT/dist/abcl.jar:.  Main
+
+or in Windows use:
+
+    cmd$  java  -cp  $ABCL_ROOT/dist/abcl.jar;.  Main
+
+where "Main" is the initial class to run in your Java program.
+
+

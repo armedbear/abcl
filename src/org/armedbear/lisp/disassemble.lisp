@@ -47,14 +47,15 @@
     (when (functionp function)
       (unless (compiled-function-p function)
         (setf function (compile nil function)))
-      (when (getf (function-plist function) 'class-bytes)
-        (with-input-from-string
-          (stream (disassemble-class-bytes (getf (function-plist function) 'class-bytes)))
-          (loop
-            (let ((line (read-line stream nil)))
-              (unless line (return))
-              (write-string "; ")
-              (write-string line)
-              (terpri))))
-        (return-from disassemble)))
-    (%format t "; Disassembly is not available.~%")))
+      (let ((class-bytes (function-class-bytes function)))
+	(when class-bytes
+	  (with-input-from-string
+	      (stream (disassemble-class-bytes class-bytes))
+	    (loop
+	       (let ((line (read-line stream nil)))
+		 (unless line (return))
+		 (write-string "; ")
+		 (write-string line)
+		 (terpri))))
+	  (return-from disassemble)))
+      (%format t "; Disassembly is not available.~%"))))

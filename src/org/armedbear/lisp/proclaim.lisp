@@ -31,7 +31,7 @@
 
 (in-package #:system)
 
-(export '(check-declaration-type proclaimed-type proclaimed-ftype ftype-result-type))
+(export '(check-declaration-type proclaimed-type proclaimed-ftype ftype-result-type *inline-declarations*))
 
 (defmacro declaim (&rest decls)
 `(eval-when (:compile-toplevel :load-toplevel :execute)
@@ -43,6 +43,7 @@
          :format-control "The symbol ~S cannot be both the name of a type and the name of a declaration."
          :format-arguments (list name)))
 
+(defvar *inline-declarations* nil)
 (defvar *declaration-types* (make-hash-table :test 'eq))
 
 ;; "A symbol cannot be both the name of a type and the name of a declaration.
@@ -91,8 +92,9 @@
      (apply 'proclaim-type (cdr declaration-specifier)))
     ((INLINE NOTINLINE)
      (dolist (name (cdr declaration-specifier))
-       (when (symbolp name) ; FIXME Need to support non-symbol function names.
-         (setf (get name '%inline) (car declaration-specifier)))))
+       (if (symbolp name)
+         (setf (get name '%inline) (car declaration-specifier))
+	 (push (cons name (car declaration-specifier)) *inline-declarations*))))
     (DECLARATION
      (dolist (name (cdr declaration-specifier))
        (when (or (get name 'deftype-definition)

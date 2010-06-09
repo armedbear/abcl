@@ -43,8 +43,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Hashtable;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 public final class Lisp
 {
@@ -701,9 +699,8 @@ public final class Lisp
    *
    * This version is used by the interpreter.
    */
-  public static final LispObject nonLocalGo(Binding binding,
-                                            LispObject tag)
-
+  static final LispObject nonLocalGo(Binding binding,
+                                     LispObject tag)
   {
     if (binding.env.inactive)
       return error(new ControlError("Unmatched tag "
@@ -738,10 +735,9 @@ public final class Lisp
    *
    * This version is used by the interpreter.
    */
-  public static final LispObject nonLocalReturn(Binding binding,
-                                                Symbol block,
-                                                LispObject result)
-
+  static final LispObject nonLocalReturn(Binding binding,
+                                         Symbol block,
+                                         LispObject result)
   {
     if (binding == null)
       {
@@ -1268,6 +1264,7 @@ public final class Lisp
               url = Lisp.class.getResource(name.getNamestring());
               input = url.openStream();
           } catch (IOException e) {
+	      System.err.println("Failed to read class bytes from boot class " + url);
               error(new LispError("Failed to read class bytes from boot class " + url));
           }
       }
@@ -2387,6 +2384,10 @@ public final class Lisp
   public static final Symbol _LOAD_STREAM_ =
     internSpecial("*LOAD-STREAM*", PACKAGE_SYS, NIL);
 
+    // ### *fasl-loader*
+    public static final Symbol _FASL_LOADER_ =
+	exportSpecial("*FASL-LOADER*", PACKAGE_SYS, NIL);
+
   // ### *source*
   // internal symbol
   public static final Symbol _SOURCE_ =
@@ -2758,6 +2759,18 @@ public final class Lisp
     Symbol.TERMINAL_IO.initializeSpecial(new TwoWayStream(stdin, stdout, true));
     Symbol.QUERY_IO.initializeSpecial(new TwoWayStream(stdin, stdout, true));
     Symbol.DEBUG_IO.initializeSpecial(new TwoWayStream(stdin, stdout, true));
+  }
+
+  private static final SpecialOperator WITH_INLINE_CODE = new with_inline_code();
+  private static class with_inline_code extends SpecialOperator {
+    with_inline_code() {
+      super("with-inline-code", PACKAGE_JVM, true, "(&optional target repr) &body body");
+    }
+    @Override
+    public LispObject execute(LispObject args, Environment env)
+    {
+	return error(new SimpleError("This is a placeholder. It should only be called in compiled code, and tranformed by the compiler using special form handlers."));
+    }
   }
 
 }
