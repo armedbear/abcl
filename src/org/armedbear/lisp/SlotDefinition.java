@@ -90,9 +90,9 @@ public final class SlotDefinition extends StandardObject
     slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
   }
 
-  public static SlotDefinition checkSlotDefinition(LispObject obj) {
-          if (obj instanceof SlotDefinition) return (SlotDefinition)obj;
-      return (SlotDefinition)type_error(obj, Symbol.SLOT_DEFINITION);     
+  public static StandardObject checkSlotDefinition(LispObject obj) {
+          if (obj instanceof StandardObject) return (StandardObject)obj;
+      return (StandardObject)type_error(obj, Symbol.SLOT_DEFINITION);     
   }
 
   public final LispObject getName()
