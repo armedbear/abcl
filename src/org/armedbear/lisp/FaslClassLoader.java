@@ -70,15 +70,7 @@ public class FaslClassLoader extends JavaClassLoader {
 
     public byte[] getFunctionClassBytes(String name) {
 	Pathname pathname = new Pathname(name.substring("org/armedbear/lisp/".length()) + ".cls");
-	final LispThread thread = LispThread.currentThread();
-	SpecialBindingsMark mark = thread.markSpecialBindings();
-	try {
-	    //thread.bindSpecial(Symbol.LOAD_TRUENAME_FASL, NIL);
-	    thread.bindSpecial(Symbol.LOAD_TRUENAME, NIL);
-	    return readFunctionBytes(pathname);
-	} finally {
-	    thread.resetSpecialBindings(mark);
-	}
+	return readFunctionBytes(pathname);
     }
     
     public byte[] getFunctionClassBytes(Class<?> functionClass) {
