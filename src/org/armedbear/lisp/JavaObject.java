@@ -108,6 +108,13 @@ public final class JavaObject extends LispObject {
         return super.typep(type);
     }
 
+
+    @Override
+    public LispObject STRING()
+    {
+        return new SimpleString(obj != null? obj.toString(): "null");
+    }
+
     public final Object getObject()
     {
         return obj;
