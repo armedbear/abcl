@@ -53,6 +53,7 @@
 
 (export '(class-precedence-list class-slots))
 (defconstant +the-standard-class+ (find-class 'standard-class))
+(defconstant +the-structure-class+ (find-class 'structure-class))
 (defconstant +the-standard-object-class+ (find-class 'standard-object))
 (defconstant +the-standard-method-class+ (find-class 'standard-method))
 (defconstant +the-standard-reader-method-class+
@@ -292,6 +293,24 @@
 (defun (setf slot-definition-name) (value slot-definition)
   (set-slot-definition-name slot-definition value))
 
+(defun slot-definition-readers (slot-definition)
+  (%slot-definition-readers slot-definition))
+
+(defun (setf slot-definition-readers) (value slot-definition)
+  (set-slot-definition-readers slot-definition value))
+
+(defun slot-definition-writers (slot-definition)
+  (%slot-definition-writers slot-definition))
+
+(defun (setf slot-definition-writers) (value slot-definition)
+  (set-slot-definition-writers slot-definition value))
+
+(defun slot-definition-allocation-class (slot-definition)
+  (%slot-definition-allocation-class slot-definition))
+
+(defun (setf slot-definition-allocation-class) (value slot-definition)
+  (set-slot-definition-allocation-class slot-definition value))
+
 (defun init-slot-definition (slot &key name
 			     (initargs ())
 			     (initform nil)
@@ -305,10 +324,10 @@
   (setf (slot-definition-initargs slot) initargs)
   (setf (slot-definition-initform slot) initform)
   (setf (slot-definition-initfunction slot) initfunction)
-  (set-slot-definition-readers slot readers)
-  (set-slot-definition-writers slot writers)
+  (setf (slot-definition-readers slot) readers)
+  (setf (slot-definition-writers slot) writers)
   (setf (slot-definition-allocation slot) allocation)
-  (set-slot-definition-allocation-class slot allocation-class)
+  (setf (slot-definition-allocation-class slot) allocation-class)
   slot)
 
 (defun make-direct-slot-definition (class &rest args)
@@ -532,14 +551,16 @@
     (and layout (layout-slot-location layout slot-name))))
 
 (defun slot-value (object slot-name)
-  (if (eq (class-of (class-of object)) +the-standard-class+)
+  (if (or (eq (class-of (class-of object)) +the-standard-class+)
+	  (eq (class-of (class-of object)) +the-structure-class+))
       (std-slot-value object slot-name)
       (slot-value-using-class (class-of object) object slot-name)))
 
 (defsetf std-slot-value set-std-slot-value)
 
 (defun %set-slot-value (object slot-name new-value)
-  (if (eq (class-of (class-of object)) +the-standard-class+)
+  (if (or (eq (class-of (class-of object)) +the-standard-class+)
+	  (eq (class-of (class-of object)) +the-structure-class+))
       (setf (std-slot-value object slot-name) new-value)
       (set-slot-value-using-class new-value (class-of object)
                                   object slot-name)))
@@ -2120,12 +2141,21 @@
 (defgeneric slot-boundp-using-class (class instance slot-name))
 (defmethod slot-boundp-using-class ((class standard-class) instance slot-name)
   (std-slot-boundp instance slot-name))
+(defmethod slot-boundp-using-class ((class structure-class) instance slot-name)
+  "Structure slots can't be unbound, so this method always returns T."
+  (declare (ignore class instance slot-name))
+  t)
 
 (defgeneric slot-makunbound-using-class (class instance slot-name))
 (defmethod slot-makunbound-using-class ((class standard-class)
                                         instance
                                         slot-name)
   (std-slot-makunbound instance slot-name))
+(defmethod slot-makunbound-using-class ((class structure-class)
+                                        instance
+                                        slot-name)
+  (declare (ignore class instance slot-name))
+  (error "Structure slots can't be unbound"))
 
 (defgeneric slot-missing (class instance slot-name operation &optional new-value))
 
@@ -2424,7 +2454,10 @@
 	  slot-definition-initargs
 	  slot-definition-initform
 	  slot-definition-initfunction
-	  slot-definition-name))
+	  slot-definition-name
+	  slot-definition-readers
+	  slot-definition-writers
+	  slot-definition-allocation-class))
 
 (defmacro slot-definition-dispatch (slot-definition std-form generic-form)
   `(let (($cl (class-of ,slot-definition)))
@@ -2494,6 +2527,42 @@
     (slot-definition-dispatch slot-definition
       (set-slot-definition-name slot-definition value)
       (setf (slot-value slot-definition 'sys::name) value))))
+
+(defgeneric slot-definition-readers (slot-definition)
+  (:method ((slot-definition slot-definition))
+    (slot-definition-dispatch slot-definition
+      (%slot-definition-readers slot-definition)
+      (slot-value slot-definition 'sys::readers))))
+
+(defgeneric (setf slot-definition-readers) (value slot-definition)
+  (:method (value (slot-definition slot-definition))
+    (slot-definition-dispatch slot-definition
+      (set-slot-definition-readers slot-definition value)
+      (setf (slot-value slot-definition 'sys::readers) value))))
+
+(defgeneric slot-definition-writers (slot-definition)
+  (:method ((slot-definition slot-definition))
+    (slot-definition-dispatch slot-definition
+      (%slot-definition-writers slot-definition)
+      (slot-value slot-definition 'sys::writers))))
+
+(defgeneric (setf slot-definition-writers) (value slot-definition)
+  (:method (value (slot-definition slot-definition))
+    (slot-definition-dispatch slot-definition
+      (set-slot-definition-writers slot-definition value)
+      (setf (slot-value slot-definition 'sys::writers) value))))
+
+(defgeneric slot-definition-allocation-class (slot-definition)
+  (:method ((slot-definition slot-definition))
+    (slot-definition-dispatch slot-definition
+      (%slot-definition-allocation-class slot-definition)
+      (slot-value slot-definition 'sys::allocation-class))))
+
+(defgeneric (setf slot-definition-allocation-class) (value slot-definition)
+  (:method (value (slot-definition slot-definition))
+    (slot-definition-dispatch slot-definition
+      (set-slot-definition-allocation-class slot-definition value)
+      (setf (slot-value slot-definition 'sys::allocation-class) value))))
 
 ;;; No %slot-definition-type.
 

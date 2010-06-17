@@ -123,7 +123,8 @@
             mop::ensure-method
             define-method-combination
             %defgeneric
-            canonicalize-direct-superclasses)
+            canonicalize-direct-superclasses
+	    slot-value slot-makunbound slot-boundp)
           "clos")
 (export '(ensure-class subclassp %defgeneric canonicalize-direct-superclasses)
         '#:system)
