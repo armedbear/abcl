@@ -323,6 +323,13 @@
 (defun (setf slot-definition-allocation-class) (value slot-definition)
   (set-slot-definition-allocation-class slot-definition value))
 
+(defun slot-definition-location (slot-definition)
+  (%slot-definition-location slot-definition))
+
+(declaim (notinline (setf slot-definition-location-class)))
+(defun (setf slot-definition-location) (value slot-definition)
+  (set-slot-definition-location slot-definition value))
+
 (defun init-slot-definition (slot &key name
 			     (initargs ())
 			     (initform nil)
@@ -391,17 +398,17 @@
     (dolist (slot (class-slots class))
       (case (slot-definition-allocation slot)
         (:instance
-         (set-slot-definition-location slot length)
+         (setf (slot-definition-location slot) length)
          (incf length)
          (push (slot-definition-name slot) instance-slots))
         (:class
-         (unless (%slot-definition-location slot)
+         (unless (slot-definition-location slot)
            (let ((allocation-class (slot-definition-allocation-class slot)))
-             (set-slot-definition-location slot
-                                           (if (eq allocation-class class)
-                                               (cons (slot-definition-name slot) +slot-unbound+)
-                                               (slot-location allocation-class (slot-definition-name slot))))))
-         (push (%slot-definition-location slot) shared-slots))))
+             (setf (slot-definition-location slot)
+		   (if (eq allocation-class class)
+		       (cons (slot-definition-name slot) +slot-unbound+)
+		       (slot-location allocation-class (slot-definition-name slot))))))
+         (push (slot-definition-location slot) shared-slots))))
     (when old-layout
       ;; Redefined class: initialize added shared slots.
       (dolist (location shared-slots)
@@ -559,7 +566,7 @@
 (defun slot-location (class slot-name)
   (let ((slot (find-slot-definition class slot-name)))
     (if slot
-        (%slot-definition-location slot)
+        (slot-definition-location slot)
         nil)))
 
 (defun instance-slot-location (instance slot-name)
@@ -2582,6 +2589,18 @@
     (slot-definition-dispatch slot-definition
       (set-slot-definition-allocation-class slot-definition value)
       (setf (slot-value slot-definition 'sys::allocation-class) value))))
+
+(defgeneric slot-definition-location (slot-definition)
+  (:method ((slot-definition slot-definition))
+    (slot-definition-dispatch slot-definition
+      (%slot-definition-location slot-definition)
+      (slot-value slot-definition 'sys::location))))
+
+(defgeneric (setf slot-definition-location) (value slot-definition)
+  (:method (value (slot-definition slot-definition))
+    (slot-definition-dispatch slot-definition
+      (set-slot-definition-location slot-definition value)
+      (setf (slot-value slot-definition 'sys::location) value))))
 
 ;;; No %slot-definition-type.
 
