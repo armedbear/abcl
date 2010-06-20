@@ -87,38 +87,38 @@ public class DecodingReader
     /** Change the Charset used to decode bytes from the input stream
      * into characters.
      */
-    public void setCharset(Charset cs) {
+    public final void setCharset(Charset cs) {
         this.cd = cs.newDecoder();
         this.ce = cs.newEncoder();
     }
 
     /** Get the Charset used to decode bytes from the input stream. */
-    public Charset getCharset() {
+    public final Charset getCharset() {
         return this.cd.charset();
     }
 
     @Override
-    public void close() throws IOException {
+    public final void close() throws IOException {
         stream.close();
     }
 
     @Override
-    public void mark(int readAheadLimit) throws IOException {
+    public final void mark(int readAheadLimit) throws IOException {
         throw new IOException("mark/reset not supported.");
     }
 
     @Override
-    public boolean markSupported() {
+    public final boolean markSupported() {
         return false;
     }
 
     @Override
-    public boolean ready() throws IOException {
+    public final boolean ready() throws IOException {
         return stream.available() != 0 || bbuf.remaining() != 0;
     }
 
     @Override
-    public void reset() throws IOException {
+    public final void reset() throws IOException {
         throw new IOException("reset/mark not supported.");
     }
 
@@ -128,7 +128,7 @@ public class DecodingReader
      * Returns the number of characters actually skipped
      */
     @Override
-    public long skip(long n) throws IOException {
+    public final long skip(long n) throws IOException {
         char[] cbuf = new char[(int)Math.min(4096, n)];
         long m = n;
 
@@ -151,7 +151,7 @@ public class DecodingReader
      *
      */
     @Override
-    public void unread(int c) throws IOException {
+    public final void unread(int c) throws IOException {
         char[] ch = Character.toChars(c);
         unread(ch, 0, ch.length);
     }
@@ -163,7 +163,7 @@ public class DecodingReader
      * the stream again, using a different charset.
      */
     @Override
-    public void unread(char[] cbuf, int off, int len) throws IOException {
+    public final void unread(char[] cbuf, int off, int len) throws IOException {
 
         ByteBuffer tb = // temp buffer
             ce.encode(CharBuffer.wrap(cbuf, off, len));
@@ -189,7 +189,7 @@ public class DecodingReader
     }
 
     @Override
-    public void unread(char[] cbuf) throws IOException {
+    public final void unread(char[] cbuf) throws IOException {
         unread(cbuf, 0, cbuf.length);
     }
 
@@ -220,7 +220,7 @@ public class DecodingReader
     }
 
     @Override
-    public int read() throws IOException {
+    public final int read() throws IOException {
         // read the first UTF-16 character
         char[] ch = new char[1];
 
@@ -244,13 +244,13 @@ public class DecodingReader
     }
 
     @Override
-    public int read(char[] cbuf, int off, int len) throws IOException {
+    public final int read(char[] cbuf, int off, int len) throws IOException {
         CharBuffer cb = CharBuffer.wrap(cbuf, off, len);
         return read(cb);
     }
 
     @Override
-    public int read(CharBuffer cb) throws IOException {
+    public final int read(CharBuffer cb) throws IOException {
         int len = cb.remaining();
         boolean notEof = true;
         boolean forceRead = false;
@@ -277,7 +277,7 @@ public class DecodingReader
     }
 
     @Override
-    public int read(char[] cbuf) throws IOException {
+    public final int read(char[] cbuf) throws IOException {
         return read(cbuf, 0, cbuf.length);
     }
 
