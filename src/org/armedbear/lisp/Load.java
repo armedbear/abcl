@@ -198,12 +198,6 @@ public final class Load
                                       new Stream(Symbol.SYSTEM_STREAM, in, Symbol.CHARACTER),
                                       verbose, print, false, returnLastResult);
         }
-        catch (FaslVersionMismatch e) {
-            StringBuilder sb =
-                new StringBuilder("Incorrect fasl version: ");
-            sb.append(truename);
-            return error(new SimpleError(sb.toString()));
-        }
         finally {
             if (in != null) {
                 try {
@@ -328,11 +322,6 @@ public final class Load
                 Stream stream = new Stream(Symbol.SYSTEM_STREAM, in, Symbol.CHARACTER);
                 return loadFileFromStream(pathname, truename, stream,
                                           verbose, print, auto);
-            } catch (FaslVersionMismatch e) {
-                StringBuilder sb =
-                    new StringBuilder("; Incorrect fasl version: ");
-                sb.append(truename);
-                System.err.println(sb.toString());
             } finally {
                 thread.resetSpecialBindings(mark);
                 try {
@@ -407,16 +396,21 @@ public final class Load
         public LispObject execute(LispObject first, LispObject second)
 
         {
+            final LispThread thread = LispThread.currentThread();
             if (first == Keyword.VERSION) {
                 if (second.eql(_FASL_VERSION_.getSymbolValue())) {
                     // OK
-                    final LispThread thread = LispThread.currentThread();
                     thread.bindSpecial(_FASL_UNINTERNED_SYMBOLS_, NIL);
                     thread.bindSpecial(_SOURCE_, NIL);
                     return faslLoadStream(thread);
                 }
             }
-            throw new FaslVersionMismatch(second);
+            return
+                error(new SimpleError("FASL version mismatch; found '"
+                        + second.writeToString() + "' but expected '"
+                        + _FASL_VERSION_.getSymbolValue().writeToString()
+                        + "' in "
+                        + Symbol.LOAD_PATHNAME.symbolValue(thread).writeToString()));
         }
     }
 
@@ -698,21 +692,6 @@ public final class Load
                                   Symbol.LOAD_VERBOSE.symbolValue(thread) != NIL,
                                   Symbol.LOAD_PRINT.symbolValue(thread) != NIL,
                                   false);
-        }
-    }
-
-    private static class FaslVersionMismatch extends Error
-    {
-        private final LispObject version;
-
-        public FaslVersionMismatch(LispObject version)
-        {
-            this.version = version;
-        }
-
-        public LispObject getVersion()
-        {
-            return version;
         }
     }
 }
