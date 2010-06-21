@@ -176,7 +176,7 @@
                                             (push e internal-compiler-errors)
                                             (continue))))
                                     (report-error
-                                     (jvm:compile-defun name expr nil
+                                     (jvm:compile-defun name expr *compile-file-environment*
                                                         classfile f nil)))))
                         (compiled-function (if (not internal-compiler-errors)
                                                (verify-load classfile)
@@ -253,7 +253,8 @@
 		      :element-type '(unsigned-byte 8)
 		      :if-exists :supersede)
 		 (ignore-errors
-		   (jvm:compile-defun nil expr nil classfile f nil)))
+		   (jvm:compile-defun nil expr *compile-file-environment*
+                                      classfile f nil)))
                (if (null (verify-load classfile))
                    ;; FIXME error or warning
                    (format *error-output* "; Unable to compile macro ~A~%" name)
@@ -396,7 +397,9 @@
 			 :element-type '(unsigned-byte 8)
 			 :if-exists :supersede)
 		    (report-error
-		     (jvm:compile-defun nil lambda-expression nil classfile f nil))))
+		     (jvm:compile-defun nil lambda-expression
+                                        *compile-file-environment*
+                                        classfile f nil))))
                  (compiled-function (verify-load classfile)))
 	    (declare (ignore result))
             (cond (compiled-function
@@ -443,8 +446,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 		 :direction :output
 		 :element-type '(unsigned-byte 8)
 		 :if-exists :supersede)
-	    (report-error (jvm:compile-defun nil expr nil classfile
-                                             f declare-inline))))
+	    (report-error (jvm:compile-defun nil expr *compile-file-environment*
+                                             classfile f declare-inline))))
          (compiled-function (verify-load classfile)))
     (declare (ignore result))
     (setf form
@@ -703,7 +706,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 		   :direction :output
 		   :element-type '(unsigned-byte 8)
 		   :if-exists :supersede)
-	      (jvm:compile-defun nil expr nil
+	      (jvm:compile-defun nil expr *compile-file-environment*
 				 classfile f nil))))))
 
 (defun compile-file-if-needed (input-file &rest allargs &key force-compile
