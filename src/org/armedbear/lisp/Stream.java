@@ -523,8 +523,10 @@ public class Stream extends StructureObject {
         // If we're looking at zero return values, set 'value' to null
         if (value == NIL) {
             LispObject[] values = thread._values;
-            if (values != null && values.length == 0)
+            if (values != null && values.length == 0) {
                 value = null;
+                thread._values = null; // reset 'no values' indicator
+            }
         }
         return value;
     }
