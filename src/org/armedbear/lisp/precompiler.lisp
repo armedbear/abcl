@@ -788,7 +788,9 @@
   (let ((*precompile-env* (make-environment *precompile-env*))
         (operator (car form))
         (locals (cadr form))
-        (body (cddr form)))
+        ;; precompile (thus macro-expand) the body before inspecting it
+        ;; for the use of our locals and optimizing them away
+        (body (mapcar #'precompile1 (cddr form))))
     (dolist (local locals)
       (let* ((name (car local))
              (used-p (find-use name body)))
@@ -820,7 +822,7 @@
             (return-from precompile-flet/labels (precompile1 new-form))))))
     (list* (car form)
            (precompile-local-functions locals)
-           (mapcar #'precompile1 body))))
+           body)))
 
 (defun precompile-function (form)
   (if (and (consp (cadr form)) (eq (caadr form) 'LAMBDA))
