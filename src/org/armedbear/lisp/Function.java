@@ -40,11 +40,20 @@ public abstract class Function extends Operator
     private LispObject propertyList = NIL;
     private int callCount;
     private int hotCount;
+    /**
+     * The value of *load-truename* which was current when this function
+     * was loaded, used for fetching the class bytes in case of disassebly.
+     */
+    private final LispObject loadedFrom;
 
-    protected Function() {}
+    protected Function() {
+	LispObject loadTruename = Symbol.LOAD_TRUENAME.symbolValueNoThrow();
+	loadedFrom = loadTruename != null ? loadTruename : NIL;
+    }
 
     public Function(String name)
     {
+	this();
         if (name != null) {
             Symbol symbol = Symbol.addFunction(name.toUpperCase(), this);
             if (cold)
@@ -55,6 +64,7 @@ public abstract class Function extends Operator
 
     public Function(Symbol symbol, String arglist)
     {
+	this();
         symbol.setSymbolFunction(this);
         if (cold)
             symbol.setBuiltInFunction(true);
@@ -64,6 +74,7 @@ public abstract class Function extends Operator
 
     public Function(Symbol symbol, String arglist, String docstring)
     {
+	this();
         symbol.setSymbolFunction(this);
         if (cold)
             symbol.setBuiltInFunction(true);
@@ -100,6 +111,7 @@ public abstract class Function extends Operator
     public Function(String name, Package pkg, boolean exported,
                     String arglist, String docstring)
     {
+	this();
         if (arglist instanceof String)
             setLambdaList(new SimpleString(arglist));
         if (name != null) {
@@ -120,11 +132,13 @@ public abstract class Function extends Operator
 
     public Function(LispObject name)
     {
+	this();
         setLambdaName(name);
     }
 
     public Function(LispObject name, LispObject lambdaList)
     {
+	this();
         setLambdaName(name);
         setLambdaList(lambdaList);
     }
@@ -182,7 +196,22 @@ public abstract class Function extends Operator
 	} else {
 	    ClassLoader c = getClass().getClassLoader();
 	    if(c instanceof FaslClassLoader) {
-		return new JavaObject(((FaslClassLoader) c).getFunctionClassBytes(this));
+		final LispThread thread = LispThread.currentThread(); 
+		SpecialBindingsMark mark = thread.markSpecialBindings(); 
+		try { 
+		    thread.bindSpecial(Symbol.LOAD_TRUENAME, loadedFrom); 
+		    return new JavaObject(((FaslClassLoader) c).getFunctionClassBytes(this));
+		} catch(Throwable t) {
+		    //This is because unfortunately getFunctionClassBytes uses
+		    //Debug.assertTrue(false) to signal errors
+		    if(t instanceof ControlTransfer) {
+			throw (ControlTransfer) t;
+		    } else {
+			return NIL;
+		    }
+		} finally { 
+		    thread.resetSpecialBindings(mark); 
+		}		
 	    } else {
 		return NIL;
 	    }
