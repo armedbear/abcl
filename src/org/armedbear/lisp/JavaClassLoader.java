@@ -39,8 +39,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.net.URL;
+import java.net.URLClassLoader;
 
-public class JavaClassLoader extends java.net.URLClassLoader {
+public class JavaClassLoader extends URLClassLoader {
 
     private static JavaClassLoader persistentInstance;
 
@@ -167,6 +168,92 @@ public class JavaClassLoader extends java.net.URLClassLoader {
 	    return new JavaObject(new JavaClassLoader((ClassLoader) parent.javaInstance(ClassLoader.class)));
         }
     };
+
+    private static final Primitive DUMP_CLASSPATH = new pf_dump_classpath();
+    private static final class pf_dump_classpath extends Primitive 
+    {
+        pf_dump_classpath() 
+        {
+            super("dump-classpath", PACKAGE_JAVA, true, "&optional classloader");
+        }
+
+        @Override
+        public LispObject execute() {
+	    return execute(new JavaObject(getCurrentClassLoader()));
+        }
+
+        @Override
+        public LispObject execute(LispObject classloader) {
+	    LispObject list = NIL;
+	    Object o = classloader.javaInstance();
+	    while(o instanceof ClassLoader) {
+		ClassLoader cl = (ClassLoader) o;
+		list = list.push(dumpClassPath(cl));
+		o = cl.getParent();
+	    }
+	    return list.nreverse();
+        }
+    };
+
+    private static final Primitive ADD_TO_CLASSPATH = new pf_add_to_classpath();
+    private static final class pf_add_to_classpath extends Primitive 
+    {
+        pf_add_to_classpath() 
+        {
+            super("add-to-classpath", PACKAGE_JAVA, true, "jar-or-jars &optional (classloader (get-current-classloader))");
+        }
+
+        @Override
+        public LispObject execute(LispObject jarOrJars) {
+	    return execute(jarOrJars, new JavaObject(getCurrentClassLoader()));
+        }
+
+        @Override
+        public LispObject execute(LispObject jarOrJars, LispObject classloader) {
+	    Object o = classloader.javaInstance();
+	    if(o instanceof JavaClassLoader) {
+		JavaClassLoader jcl = (JavaClassLoader) o;
+		if(jarOrJars instanceof Cons) {
+		    while(jarOrJars != NIL) {
+			addURL(jcl, jarOrJars.car());
+			jarOrJars = jarOrJars.cdr();
+		    }
+		} else {
+		    addURL(jcl, jarOrJars);
+		}
+		return T;
+	    } else {
+		return error(new TypeError(o + " must be an instance of " + JavaClassLoader.class.getName()));
+	    }
+        }
+    };
+
+    protected static void addURL(JavaClassLoader jcl, LispObject jar) {
+	try {
+	    if(jar instanceof Pathname) {
+		jcl.addURL(((Pathname) jar).toURL());
+	    } else if(jar instanceof AbstractString) {
+		jcl.addURL(new Pathname(jar.toString()).toURL());
+	    } else {
+		error(new TypeError(jar + " must be a pathname designator"));
+	    }
+	} catch(java.net.MalformedURLException e) {
+	    error(new LispError(jar + " is not a valid URL"));
+	}
+    }
+
+
+    public static LispObject dumpClassPath(ClassLoader o) {
+	if(o instanceof URLClassLoader) {
+	    LispObject list = NIL;
+	    for(URL u : ((URLClassLoader) o).getURLs()) {
+		list = list.push(new Pathname(u));
+	    }
+	    return new Cons(new JavaObject(o), list.nreverse());
+	} else {
+	    return new JavaObject(o);
+	}
+    }
 
     public static ClassLoader getCurrentClassLoader() {
 	LispObject classLoader = CLASSLOADER.symbolValueNoThrow();

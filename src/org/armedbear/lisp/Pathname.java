@@ -2342,6 +2342,22 @@ public class Pathname extends LispObject {
         return getNamestring();
     }
 
+    public URL toURL() throws MalformedURLException {
+	if(isURL()) {
+	    return new URL(getNamestring());
+	} else {
+	    return toFile().toURL();
+	}
+    }
+
+    public File toFile() {
+	if(!isURL()) {
+	    return new File(getNamestring());
+	} else {
+	    throw new RuntimeException(this + " does not represent a file");
+	}
+    }
+
     static {
         LispObject obj = Symbol.DEFAULT_PATHNAME_DEFAULTS.getSymbolValue();
         Symbol.DEFAULT_PATHNAME_DEFAULTS.setSymbolValue(coerceToPathname(obj));
