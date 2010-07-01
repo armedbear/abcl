@@ -210,26 +210,26 @@ public final class JProxy
 
     private static final Primitive _JMAKE_PROXY =
 	    new Primitive("%jmake-proxy", PACKAGE_JAVA, false,
-	                  "interface invocation-handler") {
+	                  "interfaces invocation-handler") {
 		
 	      	public LispObject execute(final LispObject[] args) {
 	      		int length = args.length;
 	      		if (length != 3) {
 	      			return error(new WrongNumberOfArgumentsException(this));
 	      		}
-	      		if(!(args[0] instanceof JavaObject) ||
-	      		   !(((JavaObject) args[0]).javaInstance() instanceof Class)) {
-	      			return error(new TypeError(args[0], new SimpleString(Class.class.getName())));
+	      		if(!(args[0] instanceof Cons)) {
+			    return error(new TypeError(args[0], new SimpleString("CONS")));
 	      		}
-	      		if(!(args[1] instanceof JavaObject) ||
- 	      		   !(((JavaObject) args[1]).javaInstance() instanceof InvocationHandler)) {
- 	      			return error(new TypeError(args[1], new SimpleString(InvocationHandler.class.getName())));
- 	      		}
-	      		Class<?> iface = (Class<?>) ((JavaObject) args[0]).javaInstance();
-	      		InvocationHandler invocationHandler = (InvocationHandler) ((JavaObject) args[1]).javaInstance();
+			Class[] ifaces = new Class[args[0].length()];
+			LispObject ifList = args[0];
+			for(int i = 0; i < ifaces.length; i++) {
+			    ifaces[i] = ifList.car().javaInstance(Class.class);
+			    ifList = ifList.cdr();
+			}
+	      		InvocationHandler invocationHandler = ((JavaObject) args[1]).javaInstance(InvocationHandler.class);
 	      		Object proxy = Proxy.newProxyInstance(
-	      				iface.getClassLoader(),
-	      				new Class[] { iface },
+	      				JavaClassLoader.getCurrentClassLoader(),
+	      				ifaces,
 	      				invocationHandler);
 	      		synchronized(proxyMap) {
 	      			proxyMap.put(proxy, args[2]);

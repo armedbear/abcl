@@ -92,15 +92,21 @@
   (fmakunbound 'jmake-proxy))
 
 (defgeneric jmake-proxy (interface implementation &optional lisp-this)
-  (:documentation "Returns a proxy Java object implementing the provided interface using methods implemented in Lisp - typically closures, but implementations are free to provide other mechanisms. You can pass an optional 'lisp-this' object that will be passed to the implementing methods as their first argument. If you don't provide this object, NIL will be used. The second argument of the Lisp methods is the name of the Java method being implemented. This has the implication that overloaded methods are merged, so you have to manually discriminate them if you want to. The remaining arguments are java-objects wrapping the method's parameters."))
+  (:documentation "Returns a proxy Java object implementing the provided interface(s) using methods implemented in Lisp - typically closures, but implementations are free to provide other mechanisms. You can pass an optional 'lisp-this' object that will be passed to the implementing methods as their first argument. If you don't provide this object, NIL will be used. The second argument of the Lisp methods is the name of the Java method being implemented. This has the implication that overloaded methods are merged, so you have to manually discriminate them if you want to. The remaining arguments are java-objects wrapping the method's parameters."))
+
+(defun canonicalize-jproxy-interfaces (ifaces)
+  (if (listp ifaces)
+      (mapcar #'jclass ifaces)
+      (list (jclass ifaces))))
+
 
 (defmethod jmake-proxy (interface invocation-handler &optional lisp-this)
   "Basic implementation that directly uses an invocation handler."
-  (%jmake-proxy (jclass interface) invocation-handler lisp-this))
+  (%jmake-proxy (canonicalize-jproxy-interfaces interface) invocation-handler lisp-this))
 
 (defmethod jmake-proxy (interface (implementation function) &optional lisp-this)
   "Implements a Java interface forwarding method calls to a Lisp function."
-  (%jmake-proxy (jclass interface) (jmake-invocation-handler implementation) lisp-this))
+  (%jmake-proxy (canonicalize-jproxy-interfaces interface) (jmake-invocation-handler implementation) lisp-this))
 
 (defmethod jmake-proxy (interface (implementation package) &optional lisp-this)
   "Implements a Java interface mapping Java method names to symbols in a given package. javaMethodName is mapped to a JAVA-METHOD-NAME symbol. An error is signaled if no such symbol exists in the package, or if the symbol exists but does not name a function."
@@ -114,7 +120,7 @@
 			    (setf last-lower-p (not upper-p))
 			    (princ (char-upcase char) str)))
 		    name)))))
-    (%jmake-proxy (jclass interface)
+    (%jmake-proxy (canonicalize-jproxy-interfaces interface)
 		  (jmake-invocation-handler 
 		   (lambda (obj method &rest args)
 		     (let ((sym (find-symbol
@@ -133,7 +139,7 @@
 
 (defmethod jmake-proxy (interface (implementation hash-table) &optional lisp-this)
   "Implements a Java interface using closures in an hash-table keyed by Java method name."
-  (%jmake-proxy (jclass interface)
+  (%jmake-proxy (canonicalize-jproxy-interfaces interface)
 		(jmake-invocation-handler 
 		 (lambda (obj method &rest args)
 		   (let ((fn (gethash method implementation)))
