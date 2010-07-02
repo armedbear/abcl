@@ -223,10 +223,10 @@ public final class JProxy
 			Class[] ifaces = new Class[args[0].length()];
 			LispObject ifList = args[0];
 			for(int i = 0; i < ifaces.length; i++) {
-			    ifaces[i] = ifList.car().javaInstance(Class.class);
+                          ifaces[i] = (Class) ifList.car().javaInstance(Class.class);
 			    ifList = ifList.cdr();
 			}
-	      		InvocationHandler invocationHandler = ((JavaObject) args[1]).javaInstance(InvocationHandler.class);
+	      		InvocationHandler invocationHandler = (InvocationHandler) ((JavaObject) args[1]).javaInstance(InvocationHandler.class);
 	      		Object proxy = Proxy.newProxyInstance(
 	      				JavaClassLoader.getCurrentClassLoader(),
 	      				ifaces,
