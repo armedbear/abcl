@@ -606,8 +606,8 @@ public class Pathname extends LispObject {
         // the namestring." 19.2.2.2.3.1
         if (host != NIL) {
             Debug.assertTrue(host instanceof AbstractString 
-                             || host instanceof Cons);
-            if (host instanceof Cons) {
+                             || isURL());
+            if (isURL()) {
                 LispObject scheme = Symbol.GETF.execute(host, SCHEME, NIL);
                 LispObject authority = Symbol.GETF.execute(host, AUTHORITY, NIL);
                 Debug.assertTrue(scheme != NIL);
@@ -631,7 +631,7 @@ public class Pathname extends LispObject {
         }
         if (device == NIL) {
         } else if (device == Keyword.UNSPECIFIC) {
-        } else if (device instanceof Cons) {
+        } else if (isJar()) {
             LispObject[] jars = ((Cons) device).copyToArray();
             StringBuilder prefix = new StringBuilder();
             for (int i = 0; i < jars.length; i++) {
@@ -643,9 +643,6 @@ public class Pathname extends LispObject {
                 sb.append("!/");
             }
             sb = prefix.append(sb);
-        } else if (device instanceof AbstractString
-          && device.getStringValue().startsWith("jar:")) {
-            sb.append(device.getStringValue());
         } else if (device instanceof AbstractString) {
             sb.append(device.getStringValue());
             if (this instanceof LogicalPathname
@@ -723,7 +720,7 @@ public class Pathname extends LispObject {
             }
         }
         namestring = sb.toString();
-        // XXX Decide when this is necessary
+        // XXX Decide if this is necessary
         // if (isURL()) { 
         //     namestring = Utilities.uriEncode(namestring);
         // }
@@ -1236,7 +1233,7 @@ public class Pathname extends LispObject {
             namestring = file.getCanonicalPath();
         } catch (IOException e) {
             Debug.trace("Failed to make a Pathname from "
-              + "." + file + "'");
+              + "'" + file + "'");
             return null;
         }
         return new Pathname(namestring);
@@ -1290,7 +1287,7 @@ public class Pathname extends LispObject {
             if (host == NIL) {
                 host = defaults.host;
             }
-            if (directory == NIL && defaults != null) {
+            if (directory == NIL) {
                 directory = defaults.directory;
             }
             if (!deviceSupplied) {
@@ -2084,7 +2081,8 @@ public class Pathname extends LispObject {
             if (pathname.isURL()) {
                 result = new URL(pathname.getNamestring());
             } else {
-                // XXX ensure that we have cannonical path.
+                // XXX Properly encode Windows drive letters and UNC paths
+                // XXX ensure that we have cannonical path?
                 result = new URL("file://" + pathname.getNamestring());
             }
         } catch (MalformedURLException e) {
