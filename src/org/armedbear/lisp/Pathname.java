@@ -591,16 +591,12 @@ public class Pathname extends LispObject {
                     sb.append("//");
                     sb.append(authority.getStringValue());
                 }
-            } else {
-                if (!(this instanceof LogicalPathname)) {
-                    sb.append("\\\\"); //UNC file support; if there's a host, it's a UNC path.
-                }
+            } else if (this instanceof LogicalPathname) {
                 sb.append(host.getStringValue());
-                if (this instanceof LogicalPathname) {
-                    sb.append(':');
-                } else {
-                    sb.append(File.separatorChar);
-                }
+                sb.append(':');
+            } else { 
+                // UNC paths now use unprintable representation
+                return null;
             }
         }
         if (device == NIL) {
@@ -837,8 +833,8 @@ public class Pathname extends LispObject {
     @Override
     public String writeToString() {
         final LispThread thread = LispThread.currentThread();
-        boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);
-        boolean printEscape = (Symbol.PRINT_ESCAPE.symbolValue(thread) != NIL);
+        final boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);
+        final boolean printEscape = (Symbol.PRINT_ESCAPE.symbolValue(thread) != NIL);
         boolean useNamestring;
         String s = null;
         s = getNamestring();
@@ -882,52 +878,57 @@ public class Pathname extends LispObject {
                 sb.append('"');
             }
         } else {
-            final boolean ANSI_COMPATIBLE = true;
-            final String separator;
-            if (ANSI_COMPATIBLE) {
-                sb.append("#P(");
-                separator = "\"";
-            } else {
-                sb.append("#P(");
-                separator = " ";
-            }
-            if (host != NIL) {
-                sb.append(":HOST ");
-                sb.append(host.writeToString());
-                sb.append(separator);
-            }
-            if (device != NIL) {
-                sb.append(":DEVICE ");
-                sb.append(device.writeToString());
-                sb.append(separator);
-            }
-            if (directory != NIL) {
-                sb.append(":DIRECTORY ");
-                sb.append(directory.writeToString());
-                sb.append(separator);
-            }
-            if (name != NIL) {
-                sb.append(":NAME ");
-                sb.append(name.writeToString());
-                sb.append(separator);
-            }
-            if (type != NIL) {
-                sb.append(":TYPE ");
-                sb.append(type.writeToString());
-                sb.append(separator);
-            }
-            if (version != NIL) {
-                sb.append(":VERSION ");
-                sb.append(version.writeToString());
-                sb.append(separator);
-            }
-            if (sb.charAt(sb.length() - 1) == ' ') { // XXX
-                sb.setLength(sb.length() - 1);
-            }
-            if (ANSI_COMPATIBLE) {
-                sb.append(')' + separator);
-            } else {
-                sb.append(')');
+            final SpecialBindingsMark mark = thread.markSpecialBindings();
+            thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
+            try {
+                final boolean ANSI_COMPATIBLE = true;
+                final String SPACE = " ";
+                if (ANSI_COMPATIBLE) {
+                    sb.append("#P(\"");
+                } else {
+                    sb.append("#P(");
+
+                }
+                if (host != NIL) {
+                    sb.append(":HOST ");
+                    sb.append(host.writeToString());
+                    sb.append(SPACE);
+                }
+                if (device != NIL) {
+                    sb.append(":DEVICE ");
+                    sb.append(device.writeToString());
+                    sb.append(SPACE);
+                }
+                if (directory != NIL) {
+                    sb.append(":DIRECTORY ");
+                    sb.append(directory.writeToString());
+                    sb.append(SPACE);
+                }
+                if (name != NIL) {
+                    sb.append(":NAME ");
+                    sb.append(name.writeToString());
+                    sb.append(SPACE);
+                }
+                if (type != NIL) {
+                    sb.append(":TYPE ");
+                    sb.append(type.writeToString());
+                    sb.append(SPACE);
+                }
+                if (version != NIL) {
+                    sb.append(":VERSION ");
+                    sb.append(version.writeToString());
+                    sb.append(SPACE);
+                }
+                if (sb.charAt(sb.length() - 1) == ' ') { // XXX
+                    sb.setLength(sb.length() - 1);
+                }
+                if (ANSI_COMPATIBLE) {
+                    sb.append(')' + "\"");
+                } else {
+                    sb.append(')');
+                }
+            } finally {
+                thread.resetSpecialBindings(mark);
             }
         }
         return sb.toString();
@@ -1273,17 +1274,22 @@ public class Pathname extends LispObject {
         }
         final Pathname p;
         final boolean logical;
+        LispObject logicalHost = NIL;
         if (host != NIL) {
             if (host instanceof AbstractString) {
-                host = LogicalPathname.canonicalizeStringComponent((AbstractString) host);
+                logicalHost = LogicalPathname.canonicalizeStringComponent((AbstractString) host);
             }
-            if (LOGICAL_PATHNAME_TRANSLATIONS.get(host) == null) {
-                // Not a defined logical pathname host.
-                error(new LispError(host.writeToString() + " is not defined as a logical pathname host."));
+            if (LOGICAL_PATHNAME_TRANSLATIONS.get(logicalHost) == null) {
+                // Not a defined logical pathname host -- A UNC path
+                //warning(new LispError(host.writeToString() + " is not defined as a logical pathname host."));
+                p = new Pathname();
+                logical = false;
+                p.host = host;
+            } else { 
+                p = new LogicalPathname();
+                logical = true;
+                p.host = logicalHost;
             }
-            p = new LogicalPathname();
-            logical = true;
-            p.host = host;
             p.device = Keyword.UNSPECIFIC;
         } else {
             p = new Pathname();

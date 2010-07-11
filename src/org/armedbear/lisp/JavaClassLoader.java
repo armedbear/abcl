@@ -150,7 +150,6 @@ public class JavaClassLoader extends URLClassLoader {
         }
     };
 
-    // ### make-classloader &optional parent => java-class-loader
     private static final Primitive MAKE_CLASSLOADER = new pf_make_classloader();
     private static final class pf_make_classloader extends Primitive 
     {
@@ -170,7 +169,6 @@ public class JavaClassLoader extends URLClassLoader {
         }
     };
 
-    // ### dump-classpath &optional classloader => list-of-pathname-lists
     private static final Primitive DUMP_CLASSPATH = new pf_dump_classpath();
     private static final class pf_dump_classpath extends Primitive 
     {
@@ -197,7 +195,6 @@ public class JavaClassLoader extends URLClassLoader {
         }
     };
 
-    // ### add-to-classpath jar-or-jars &optional (classloader (get-current-classloader))
     private static final Primitive ADD_TO_CLASSPATH = new pf_add_to_classpath();
     private static final class pf_add_to_classpath extends Primitive 
     {
