@@ -788,9 +788,15 @@
   (let ((*precompile-env* (make-environment *precompile-env*))
         (operator (car form))
         (locals (cadr form))
-        ;; precompile (thus macro-expand) the body before inspecting it
-        ;; for the use of our locals and optimizing them away
-        (body (mapcar #'precompile1 (cddr form))))
+	body)
+    ;; first augment the environment with the newly-defined local functions
+    ;; to shadow preexisting macro definitions with the same names
+    (dolist (local locals)
+      (environment-add-function-definition *precompile-env*
+					   (car local) (cddr local)))
+    ;; then precompile (thus macro-expand) the body before inspecting it
+    ;; for the use of our locals and optimizing them away
+    (setq body (mapcar #'precompile1 (cddr form)))
     (dolist (local locals)
       (let* ((name (car local))
              (used-p (find-use name body)))
