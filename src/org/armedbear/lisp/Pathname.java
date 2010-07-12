@@ -61,7 +61,7 @@ public class Pathname extends LispObject {
     // A positive integer, or NIL, :WILD, :UNSPECIFIC, or :NEWEST.
     protected LispObject version = NIL;
 
-    private String namestring;
+    private volatile String namestring;
 
     /** The protocol for changing any instance field (i.e. 'host', 'type', etc.)
      *  is to call this method after changing the field to recompute the namestring.
@@ -242,7 +242,7 @@ public class Pathname extends LispObject {
             return;
         }
         if (Utilities.isPlatformWindows) {
-            if (s.startsWith("\\\\")) {
+            if (s.startsWith("\\\\")) { // XXX What if string starts with '//'?
                 //UNC path support
                 // match \\<server>\<share>\[directories-and-files]
 
@@ -401,24 +401,9 @@ public class Pathname extends LispObject {
         }
 
         if (Utilities.isPlatformWindows) {
-            if (!s.contains(jarSeparator)) {
-                s = s.replace("/", "\\");
-            } else {
-              StringBuilder result = new StringBuilder();
-              for (int i = 0; i < s.length(); i++) {
-                  char c = s.charAt(i);
-                  if ( c != '/') {
-                      result.append(c);
-                  } else {
-                      if (i != 0 && s.charAt(i-1) != '!') {
-                          result.append("\\");
-                      } else {
-                          result.append(c);
-                      }
-                  }
-              }
-              s = result.toString();
-            }
+            if (s.contains("\\")) {
+                s = s.replace("\\", "/");
+            } 
         }
 
         // Expand user home directories
@@ -438,22 +423,11 @@ public class Pathname extends LispObject {
         }
         String d = null;
         // Find last file separator char.
-        if (Utilities.isPlatformWindows) {
-            for (int i = s.length(); i-- > 0;) {
-                char c = s.charAt(i);
-                if (c == '/' || c == '\\') {
-                    d = s.substring(0, i + 1);
-                    s = s.substring(i + 1);
-                    break;
-                }
-            }
-        } else {
-            for (int i = s.length(); i-- > 0;) {
-                if (s.charAt(i) == '/') {
-                    d = s.substring(0, i + 1);
-                    s = s.substring(i + 1);
-                    break;
-                }
+        for (int i = s.length(); i-- > 0;) {
+            if (s.charAt(i) == '/') {
+                d = s.substring(0, i + 1);
+                s = s.substring(i + 1);
+                break;
             }
         }
         if (d != null) {
@@ -617,16 +591,12 @@ public class Pathname extends LispObject {
                     sb.append("//");
                     sb.append(authority.getStringValue());
                 }
-            } else {
-                if (!(this instanceof LogicalPathname)) {
-                    sb.append("\\\\"); //UNC file support; if there's a host, it's a UNC path.
-                }
+            } else if (this instanceof LogicalPathname) {
                 sb.append(host.getStringValue());
-                if (this instanceof LogicalPathname) {
-                    sb.append(':');
-                } else {
-                    sb.append(File.separatorChar);
-                }
+                sb.append(':');
+            } else { 
+                // UNC paths now use unprintable representation
+                return null;
             }
         }
         if (device == NIL) {
@@ -664,7 +634,7 @@ public class Pathname extends LispObject {
         }
         if (name instanceof AbstractString) {
             String n = name.getStringValue();
-            if (n.indexOf(File.separatorChar) >= 0) {
+            if (n.indexOf('/') >= 0) {
                 Debug.assertTrue(namestring == null);
                 return null;
             }
@@ -735,12 +705,7 @@ public class Pathname extends LispObject {
         // is, both NIL and :UNSPECIFIC cause the component not to appear in
         // the namestring." 19.2.2.2.3.1
         if (directory != NIL) {
-            final char separatorChar;
-            if (isJar() || isURL()) {
-                separatorChar = '/'; 
-            } else {
-                separatorChar = File.separatorChar;
-            }
+            final char separatorChar = '/';
             LispObject temp = directory;
             LispObject part = temp.car();
             temp = temp.cdr();
@@ -788,18 +753,8 @@ public class Pathname extends LispObject {
         p.invalidateNamestring();
         String path = p.getNamestring();
         StringBuilder result = new StringBuilder();
-        if (Utilities.isPlatformWindows) {
-	    for (int i = 0; i < path.length(); i++) {
-		char c = path.charAt(i);
-		if (c == '\\') {
-		    result.append('/');
-		} else {
-		    result.append(c);
-		}
-	    }
-        } else  {
-            result.append(path);
-        }
+        result.append(path);
+
         // Entries in jar files are always relative, but Pathname
         // directories are :ABSOLUTE.
         if (result.length() > 1
@@ -878,8 +833,8 @@ public class Pathname extends LispObject {
     @Override
     public String writeToString() {
         final LispThread thread = LispThread.currentThread();
-        boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);
-        boolean printEscape = (Symbol.PRINT_ESCAPE.symbolValue(thread) != NIL);
+        final boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);
+        final boolean printEscape = (Symbol.PRINT_ESCAPE.symbolValue(thread) != NIL);
         boolean useNamestring;
         String s = null;
         s = getNamestring();
@@ -901,7 +856,7 @@ public class Pathname extends LispObject {
                     }
                 }
             }
-        } else {
+        } else { 
             useNamestring = false;
         }
         StringBuilder sb = new StringBuilder();
@@ -923,41 +878,58 @@ public class Pathname extends LispObject {
                 sb.append('"');
             }
         } else {
-            sb.append("#P(");
-            if (host != NIL) {
-                sb.append(":HOST ");
-                sb.append(host.writeToString());
-                sb.append(' ');
+            final SpecialBindingsMark mark = thread.markSpecialBindings();
+            thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
+            try {
+                final boolean ANSI_COMPATIBLE = true;
+                final String SPACE = " ";
+                if (ANSI_COMPATIBLE) {
+                    sb.append("#P(\"");
+                } else {
+                    sb.append("#P(");
+
+                }
+                if (host != NIL) {
+                    sb.append(":HOST ");
+                    sb.append(host.writeToString());
+                    sb.append(SPACE);
+                }
+                if (device != NIL) {
+                    sb.append(":DEVICE ");
+                    sb.append(device.writeToString());
+                    sb.append(SPACE);
+                }
+                if (directory != NIL) {
+                    sb.append(":DIRECTORY ");
+                    sb.append(directory.writeToString());
+                    sb.append(SPACE);
+                }
+                if (name != NIL) {
+                    sb.append(":NAME ");
+                    sb.append(name.writeToString());
+                    sb.append(SPACE);
+                }
+                if (type != NIL) {
+                    sb.append(":TYPE ");
+                    sb.append(type.writeToString());
+                    sb.append(SPACE);
+                }
+                if (version != NIL) {
+                    sb.append(":VERSION ");
+                    sb.append(version.writeToString());
+                    sb.append(SPACE);
+                }
+                if (sb.charAt(sb.length() - 1) == ' ') { // XXX
+                    sb.setLength(sb.length() - 1);
+                }
+                if (ANSI_COMPATIBLE) {
+                    sb.append(')' + "\"");
+                } else {
+                    sb.append(')');
+                }
+            } finally {
+                thread.resetSpecialBindings(mark);
             }
-            if (device != NIL) {
-                sb.append(":DEVICE ");
-                sb.append(device.writeToString());
-                sb.append(' ');
-            }
-            if (directory != NIL) {
-                sb.append(":DIRECTORY ");
-                sb.append(directory.writeToString());
-                sb.append(" ");
-            }
-            if (name != NIL) {
-                sb.append(":NAME ");
-                sb.append(name.writeToString());
-                sb.append(' ');
-            }
-            if (type != NIL) {
-                sb.append(":TYPE ");
-                sb.append(type.writeToString());
-                sb.append(' ');
-            }
-            if (version != NIL) {
-                sb.append(":VERSION ");
-                sb.append(version.writeToString());
-                sb.append(' ');
-            }
-            if (sb.charAt(sb.length() - 1) == ' ') {
-                sb.setLength(sb.length() - 1);
-            }
-            sb.append(')');
         }
         return sb.toString();
     }
@@ -1233,7 +1205,7 @@ public class Pathname extends LispObject {
             namestring = file.getCanonicalPath();
         } catch (IOException e) {
             Debug.trace("Failed to make a Pathname from "
-              + "'" + file + "'");
+              + "." + file + "'");
             return null;
         }
         return new Pathname(namestring);
@@ -1302,17 +1274,22 @@ public class Pathname extends LispObject {
         }
         final Pathname p;
         final boolean logical;
+        LispObject logicalHost = NIL;
         if (host != NIL) {
             if (host instanceof AbstractString) {
-                host = LogicalPathname.canonicalizeStringComponent((AbstractString) host);
+                logicalHost = LogicalPathname.canonicalizeStringComponent((AbstractString) host);
             }
-            if (LOGICAL_PATHNAME_TRANSLATIONS.get(host) == null) {
-                // Not a defined logical pathname host.
-                error(new LispError(host.writeToString() + " is not defined as a logical pathname host."));
+            if (LOGICAL_PATHNAME_TRANSLATIONS.get(logicalHost) == null) {
+                // Not a defined logical pathname host -- A UNC path
+                //warning(new LispError(host.writeToString() + " is not defined as a logical pathname host."));
+                p = new Pathname();
+                logical = false;
+                p.host = host;
+            } else { 
+                p = new LogicalPathname();
+                logical = true;
+                p.host = logicalHost;
             }
-            p = new LogicalPathname();
-            logical = true;
-            p.host = host;
             p.device = Keyword.UNSPECIFIC;
         } else {
             p = new Pathname();
@@ -1375,6 +1352,7 @@ public class Pathname extends LispObject {
         final int limit = s.length();
         for (int i = 0; i < limit; i++) {
             char c = s.charAt(i);
+            // XXX '\\' should be illegal in all Pathnames at this point?
             if (c == '/' || c == '\\' && Utilities.isPlatformWindows) {
                 error(new LispError("Invalid character #\\" + c
                   + " in pathname component \"" + s

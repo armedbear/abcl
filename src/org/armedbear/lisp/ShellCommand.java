@@ -235,9 +235,13 @@ public final class ShellCommand implements Runnable
 
     // run-shell-command command &key directory (output *standard-output*)
     // ### %run-shell-command command directory output => exit-code
-    private static final Primitive _RUN_SHELL_COMMAND =
-        new Primitive("%run-shell-command", PACKAGE_SYS, false)
-    {
+    private static final Primitive _RUN_SHELL_COMMAND = new pf_run_shell_command();
+    private static class pf_run_shell_command extends Primitive {
+        pf_run_shell_command() {
+            super("%run-shell-command", PACKAGE_SYS, false,
+                  "command directory output => exit-code");
+        }
+        
         @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
