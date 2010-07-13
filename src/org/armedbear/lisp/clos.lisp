@@ -209,11 +209,8 @@
              (push-on-end (cadr olist) readers)
              (push-on-end `(setf ,(cadr olist)) writers))
             (t
-	     (push-on-end (car olist) non-std-options)
+	     (push-on-end `(quote ,(car olist)) non-std-options)
              (push-on-end (cadr olist) non-std-options))))
-;	    (error 'program-error
-;                    "invalid initialization argument ~S for slot named ~S"
-;                    (car olist) name))
         `(list
           :name ',name
           ,@(when initfunction
@@ -259,10 +256,7 @@
                  (cdr option))))))
     ((:documentation :report)
      (list (car option) `',(cadr option)))
-    (t (list (car option) `(quote ,(cdr option))))))
-;     (error 'program-error
-;            :format-control "invalid DEFCLASS option ~S"
-;            :format-arguments (list (car option))))))
+    (t (list `(quote ,(car option)) `(quote ,(cdr option))))))
 
 (defun make-initfunction (initform)
   `(function (lambda () ,initform)))
@@ -337,8 +331,7 @@
 			     (readers ())
 			     (writers ())
 			     (allocation :instance)
-			     (allocation-class nil)
-			     &allow-other-keys)
+			     (allocation-class nil))
   (setf (slot-definition-name slot) name)
   (setf (slot-definition-initargs slot) initargs)
   (setf (slot-definition-initform slot) initform)
@@ -2339,7 +2332,7 @@
   (declare (ignore slot-names)) ;;TODO?
   (declare (ignore name initargs initform initfunction readers writers allocation))
   ;;For built-in slots
-  (apply #'init-slot-definition slot args)
+  (apply #'init-slot-definition slot :allow-other-keys t args)
   ;;For user-defined slots
   (call-next-method))
 
