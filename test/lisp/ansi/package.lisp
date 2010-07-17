@@ -32,13 +32,22 @@ Possibly running the compiled version of the tests if COMPILE-TESTS is non-NIL."
 	  (format t "--->  ~A begins.~%" message)
 	  (format t "Invoking ABCL hosted on ~A ~A.~%" 
 		  (software-type) (software-version))
-	  (if (find :unix *features*)
-	      (run-shell-command "cd ~A; make clean" ansi-tests-directory)
-	      ;; XXX -- what to invoke on win32?  Untested:
-	      (run-shell-command 
-	       (format nil "~A~%~A"
-		       (format nil "cd ~A" *ansi-tests-directory*)
-		       (format nil "erase *.cls *.abcl"))))
+          ;; Do what 'make clean' would do from the GCL ANSI tests,
+          ;; so we don't have to hunt for 'make' on win32.
+          (mapcar #'delete-file
+                  (append (directory (format nil "~A/*.cls" *default-pathname-defaults*))
+                          (directory (format nil "~A/*.abcl" *default-pathname-defaults*))
+                          (directory (format nil "~A/scratch/*" *default-pathname-defaults*))
+                          (mapcar (lambda(x) (format nil "~A/~A" *default-pathname-defaults* x))
+                                  '("scratch/"
+                                    "scratch.txt" "foo.txt" "foo.lsp"
+                                    "foo.dat" 
+                                    "tmp.txt" "tmp.dat" "tmp2.dat"
+                                    "temp.dat" "out.class" 
+                                    "file-that-was-renamed.txt"
+                                    "compile-file-test-lp.lsp"
+                                    "compile-file-test-lp.out" 
+                                    "ldtest.lsp"))))
 	  (time (load boot-file))
 	  (format t "<--- ~A ends.~%" message))
       (file-error (e)
