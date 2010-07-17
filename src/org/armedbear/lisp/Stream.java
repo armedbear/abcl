@@ -534,11 +534,12 @@ public class Stream extends StructureObject {
     public LispObject readPathname(ReadtableAccessor rta) {
         LispObject obj = read(true, NIL, false,
                               LispThread.currentThread(), rta);
-        if (obj instanceof AbstractString)
+        if (obj instanceof AbstractString) {
             return Pathname.parseNamestring((AbstractString)obj);
+        }
         if (obj.listp())
             return Pathname.makePathname(obj);
-        return error(new TypeError("#p requires a string or list argument."));
+        return error(new TypeError("#p requires a string argument."));
     }
 
     public LispObject readSymbol() {

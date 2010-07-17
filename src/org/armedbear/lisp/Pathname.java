@@ -860,6 +860,7 @@ public class Pathname extends LispObject {
             useNamestring = false;
         }
         StringBuilder sb = new StringBuilder();
+
         if (useNamestring) {
             if (printReadably || printEscape) {
                 sb.append("#P\"");
@@ -877,61 +878,45 @@ public class Pathname extends LispObject {
             if (printReadably || printEscape) {
                 sb.append('"');
             }
-        } else {
-            final SpecialBindingsMark mark = thread.markSpecialBindings();
-            thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
-            try {
-                final boolean ANSI_COMPATIBLE = true;
-                final String SPACE = " ";
-                if (ANSI_COMPATIBLE) {
-                    sb.append("#P(\"");
-                } else {
-                    sb.append("#P(");
+            return sb.toString();
+        } 
 
-                }
-                if (host != NIL) {
-                    sb.append(":HOST ");
-                    sb.append(host.writeToString());
-                    sb.append(SPACE);
-                }
-                if (device != NIL) {
-                    sb.append(":DEVICE ");
-                    sb.append(device.writeToString());
-                    sb.append(SPACE);
-                }
-                if (directory != NIL) {
-                    sb.append(":DIRECTORY ");
-                    sb.append(directory.writeToString());
-                    sb.append(SPACE);
-                }
-                if (name != NIL) {
-                    sb.append(":NAME ");
-                    sb.append(name.writeToString());
-                    sb.append(SPACE);
-                }
-                if (type != NIL) {
-                    sb.append(":TYPE ");
-                    sb.append(type.writeToString());
-                    sb.append(SPACE);
-                }
-                if (version != NIL) {
-                    sb.append(":VERSION ");
-                    sb.append(version.writeToString());
-                    sb.append(SPACE);
-                }
-                if (sb.charAt(sb.length() - 1) == ' ') { // XXX
-                    sb.setLength(sb.length() - 1);
-                }
-                if (ANSI_COMPATIBLE) {
-                    sb.append(')' + "\"");
-                } else {
-                    sb.append(')');
-                }
-            } finally {
-                thread.resetSpecialBindings(mark);
-            }
+        sb.append("PATHNAME (with no namestring) ");
+        if (host != NIL) {
+            sb.append(":HOST ");
+            sb.append(host.writeToString());
+            sb.append(" ");
         }
-        return sb.toString();
+        if (device != NIL) {
+            sb.append(":DEVICE ");
+            sb.append(device.writeToString());
+            sb.append(" ");
+        }
+        if (directory != NIL) {
+            sb.append(":DIRECTORY ");
+            sb.append(directory.writeToString());
+            sb.append(" ");
+        }
+        if (name != NIL) {
+            sb.append(":NAME ");
+            sb.append(name.writeToString());
+            sb.append(" ");
+        }
+        if (type != NIL) {
+            sb.append(":TYPE ");
+            sb.append(type.writeToString());
+            sb.append(" ");
+        }
+        if (version != NIL) {
+            sb.append(":VERSION ");
+            sb.append(version.writeToString());
+            sb.append(" ");
+        }
+        if (sb.charAt(sb.length() - 1) == ' ') { 
+            sb.setLength(sb.length() - 1);
+        }
+
+        return unreadableString(sb.toString());
     }
     // A logical host is represented as the string that names it.
     // (defvar *logical-pathname-translations* (make-hash-table :test 'equal))
