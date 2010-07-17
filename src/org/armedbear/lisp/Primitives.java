@@ -890,7 +890,16 @@ public final class Primitives {
                 out = Symbol.STANDARD_OUTPUT.symbolValue();
             else
                 out = second;
-            checkStream(out)._writeString(first.writeToString());
+            String output = first.writeToString();
+            if (Symbol.PRINT_READABLY.symbolValue(LispThread.currentThread()) != NIL
+                && output.contains("#<")) {
+                LispObject args = NIL;
+                args = args.push(first);
+                args = args.push(Keyword.OBJECT);
+                args = args.nreverse();
+                return error(new PrintNotReadable(args));
+            }
+            checkStream(out)._writeString(output);
             return first;
         }
     };

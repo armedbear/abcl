@@ -280,6 +280,10 @@
 	   (symbol-package x))))
 
 (defun %print-object (object stream)
+  (when (and *print-readably* 
+             (typep object 'string)
+             (search "#<" object))
+    (error 'print-not-readable :object object))
   (if *print-pretty*
       (xp::output-pretty-object object stream)
       (output-ugly-object object stream)))
