@@ -523,7 +523,19 @@ public final class Java
 		if(classRef instanceof AbstractString) {
 		    constructor = findConstructor(javaClass(classRef), args);
 		} else {
-		    constructor = (Constructor) JavaObject.getObject(classRef);
+		    Object object = JavaObject.getObject(classRef);
+		    if(object instanceof Constructor) {
+			constructor = (Constructor) object;
+		    } else if(object instanceof Class<?>) {
+			constructor = findConstructor((Class<?>) object, args);
+		    } else {
+			return type_error(classRef,
+					  list(Symbol.OR,
+					       list(Symbol.JCLASS,
+						    new SimpleString("java.lang.reflect.Constructor")),
+					       list(Symbol.JCLASS,
+						    new SimpleString("java.lang.Class"))));
+		    }
 		}
                 Class[] argTypes = constructor.getParameterTypes();
                 Object[] initargs = new Object[args.length-1];
