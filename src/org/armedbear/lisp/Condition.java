@@ -104,7 +104,7 @@ public class Condition extends StandardObject
 
   public final LispObject getFormatControl()
   {
-    return getInstanceSlotValue(Symbol.FORMAT_CONTROL);
+      return getInstanceSlotValue(Symbol.FORMAT_CONTROL);
   }
 
   public final void setFormatControl(LispObject formatControl)
@@ -135,7 +135,8 @@ public class Condition extends StandardObject
    */
   public String getMessage()
   {
-    return getFormatControl().toString();
+      LispObject formatControl = getFormatControl();
+      return formatControl != UNBOUND_VALUE ? formatControl.writeToString() : null;
   }
 
   @Override
