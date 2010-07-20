@@ -529,12 +529,7 @@ public final class Java
 		    } else if(object instanceof Class<?>) {
 			constructor = findConstructor((Class<?>) object, args);
 		    } else {
-			return type_error(classRef,
-					  list(Symbol.OR,
-					       list(Symbol.JCLASS,
-						    new SimpleString("java.lang.reflect.Constructor")),
-					       list(Symbol.JCLASS,
-						    new SimpleString("java.lang.Class"))));
+			return error(new LispError(classRef.writeToString() + " is neither a Constructor nor a Class"));
 		    }
 		}
                 Class[] argTypes = constructor.getParameterTypes();
