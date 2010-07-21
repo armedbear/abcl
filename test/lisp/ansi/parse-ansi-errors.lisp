@@ -74,7 +74,9 @@ An example on an entry:
   (getf `(doit ,*doit* compileit ,*compileit*) test))  
 
 (defvar *default-database-file* 
-  (merge-pathnames "ansi-test-failures" (directory-namestring *load-truename*)))
+  (if (find :asdf2 *features*)
+      (asdf:system-relative-pathname :ansi-compiled "test/lisp/ansi/ansi-test-failures")
+      (merge-pathnames "ansi-test-failures" (directory-namestring *load-truename*)))
 
 (defun parse (&optional (file *default-database-file*))
   (format t "Parsing test report database from ~A~%" *default-database-file*)
