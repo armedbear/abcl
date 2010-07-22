@@ -1,6 +1,6 @@
 ;;; threads.lisp
 ;;;
-;;; Copyright (C) 2009 Erik Huelsmann <ehuelsmann@common-lisp.net>
+;;; Copyright (C) 2009-2010 Erik Huelsmann <ehuelsmann@common-lisp.net>
 ;;;
 ;;; $Id$
 ;;;
@@ -142,9 +142,3 @@ and releases the lock."
        (synchronized-on ,glock
           ,@body))))
 
-(defun thread-lock (lock)
-  "Deprecated; due for removal in 0.22"
-  (declare (ignore lock)))
-(defun thread-unlock (lock)
-  "Deprecated; due for removal in 0.22"
-  (declare (ignore lock)))

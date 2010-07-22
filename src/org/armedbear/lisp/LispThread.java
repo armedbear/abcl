@@ -1120,19 +1120,6 @@ public final class LispThread extends LispObject
     };
 
 
-    static {
-        //FIXME: this block has been added for pre-0.16 compatibility
-        // and can be removed the latest at release 0.22
-        PACKAGE_EXT.export(intern("MAKE-THREAD", PACKAGE_THREADS));
-        PACKAGE_EXT.export(intern("THREADP", PACKAGE_THREADS));
-        PACKAGE_EXT.export(intern("THREAD-ALIVE-P", PACKAGE_THREADS));
-        PACKAGE_EXT.export(intern("THREAD-NAME", PACKAGE_THREADS));
-        PACKAGE_EXT.export(intern("MAPCAR-THREADS", PACKAGE_THREADS));
-        PACKAGE_EXT.export(intern("DESTROY-THREAD", PACKAGE_THREADS));
-        PACKAGE_EXT.export(intern("INTERRUPT-THREAD", PACKAGE_THREADS));
-        PACKAGE_EXT.export(intern("CURRENT-THREAD", PACKAGE_THREADS));
-    }
-
     // ### use-fast-calls
     private static final Primitive USE_FAST_CALLS =
         new Primitive("use-fast-calls", PACKAGE_SYS, true)
