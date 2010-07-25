@@ -418,6 +418,8 @@
 
 (in-package "COMMON-LISP")
 
+(sys::autoload '(documentation) "clos")
+
 (sys::autoload '(write print prin1 princ pprint write-to-string
             prin1-to-string princ-to-string write-char
             write-string write-line terpri finish-output
