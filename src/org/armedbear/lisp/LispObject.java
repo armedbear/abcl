@@ -657,6 +657,23 @@ public class LispObject //extends Lisp
         if (entry instanceof Cons)
           return ((Cons)entry).cdr;
       }
+    if(docType == Symbol.FUNCTION && this instanceof Symbol) {
+        Object fn = ((Symbol)this).getSymbolFunction();
+        if(fn instanceof Function) {
+            DocString ds = fn.getClass().getAnnotation(DocString.class);
+            if(ds != null) {
+                String arglist = ds.args();
+                String docstring = ds.doc();
+                if(arglist.length() != 0)
+                    ((Function)fn).setLambdaList(new SimpleString(arglist));
+                if(docstring.length() != 0) {
+                    SimpleString doc = new SimpleString(docstring);
+                    ((Symbol)this).setDocumentation(Symbol.FUNCTION, doc);
+                    return doc;
+                }
+            }
+        }
+    }
     return NIL;
   }
 

@@ -860,7 +860,7 @@ public final class LispThread extends LispObject
         return unreadableString(sb.toString());
     }
 
-    // ### make-thread
+    @DocString(name="make-thread", args="function &optional &key name")
     private static final Primitive MAKE_THREAD =
         new Primitive("make-thread", PACKAGE_THREADS, true, "function &optional &key name")
     {
@@ -886,10 +886,10 @@ public final class LispThread extends LispObject
         }
     };
 
-    // ### threadp
+    @DocString(name="threadp", args="object",
+    doc="Boolean predicate testing if OBJECT is a thread.")
     private static final Primitive THREADP =
-        new Primitive("threadp", PACKAGE_THREADS, true, "object",
-		      "Boolean predicate as whether OBJECT is a thread.")
+        new Primitive("threadp", PACKAGE_THREADS, true)
     {
         @Override
         public LispObject execute(LispObject arg)
@@ -898,7 +898,8 @@ public final class LispThread extends LispObject
         }
     };
 
-    // ### thread-alive-p
+    @DocString(name="thread-alive-p", args="thread",
+    doc="Returns T if THREAD is alive.")
     private static final Primitive THREAD_ALIVE_P =
         new Primitive("thread-alive-p", PACKAGE_THREADS, true, "thread",
 		      "Boolean predicate whether THREAD is alive.")
@@ -917,10 +918,10 @@ public final class LispThread extends LispObject
         }
     };
 
-    // ### thread-name
+    @DocString(name="thread-name", args="thread",
+    doc="Return the name of THREAD, if it has one.")
     private static final Primitive THREAD_NAME =
-        new Primitive("thread-name", PACKAGE_THREADS, true, "thread",
-		      "Return the name of THREAD if it has one.")
+        new Primitive("thread-name", PACKAGE_THREADS, true)
     {
         @Override
         public LispObject execute(LispObject arg)
@@ -972,9 +973,10 @@ public final class LispThread extends LispObject
         return (d < Long.MAX_VALUE ? (long) d : Long.MAX_VALUE);
     }
 
-    // ### sleep
-    private static final Primitive SLEEP = new Primitive("sleep", PACKAGE_CL, true, "seconds",
-							 "Causes the invoking thread to sleep for SECONDS seconds.\nSECONDS may be a value between 0 1and 1.")
+    @DocString(name="sleep", args="seconds",
+    doc="Causes the invoking thread to sleep for SECONDS seconds.\n"+
+        "SECONDS may be a value between 0 1and 1.")
+    private static final Primitive SLEEP = new Primitive("sleep", PACKAGE_CL, true)
     {
         @Override
         public LispObject execute(LispObject arg)
@@ -990,10 +992,10 @@ public final class LispThread extends LispObject
         }
     };
 
-    // ### mapcar-threads
+    @DocString(name="mapcar-threads", args= "function",
+    doc="Applies FUNCTION to all existing threads.")
     private static final Primitive MAPCAR_THREADS =
-        new Primitive("mapcar-threads", PACKAGE_THREADS, true, "function",
-		      "Applies FUNCTION to all existing threads.")
+        new Primitive("mapcar-threads", PACKAGE_THREADS, true)
     {
         @Override
         public LispObject execute(LispObject arg)
@@ -1011,10 +1013,9 @@ public final class LispThread extends LispObject
         }
     };
 
-    // ### destroy-thread
+    @DocString(name="destroy-thread", args="thread", doc="Mark THREAD as destroyed")
     private static final Primitive DESTROY_THREAD =
-        new Primitive("destroy-thread", PACKAGE_THREADS, true, "thread", 
-		      "Mark THREAD as destroyed.")
+        new Primitive("destroy-thread", PACKAGE_THREADS, true)
     {
         @Override
         public LispObject execute(LispObject arg)
@@ -1031,11 +1032,12 @@ public final class LispThread extends LispObject
         }
     };
 
-    // ### interrupt-thread thread function &rest args => T
-    // Interrupts thread and forces it to apply function to args. When the
-    // function returns, the thread's original computation continues. If
-    // multiple interrupts are queued for a thread, they are all run, but the
-    // order is not guaranteed.
+    // => T
+    @DocString(name="interrupt-thread", args="thread function &rest args",
+    doc="Interrupts thread and forces it to apply function to args. When the\n"+
+        "function returns, the thread's original computation continues. If\n"+
+        "multiple interrupts are queued for a thread, they are all run, but the\n"+
+        "order is not guaranteed.")
     private static final Primitive INTERRUPT_THREAD =
         new Primitive("interrupt-thread", PACKAGE_THREADS, true,
 		      "thread function &rest args",
@@ -1062,10 +1064,10 @@ public final class LispThread extends LispObject
         }
     };
 
-    // ### current-thread
+    @DocString(name="current-thread",
+    doc="Returns a reference to invoking thread.")
     private static final Primitive CURRENT_THREAD =
-        new Primitive("current-thread", PACKAGE_THREADS, true, "",
-		      "Returns a reference to invoking thread.")
+        new Primitive("current-thread", PACKAGE_THREADS, true)
     {
         @Override
         public LispObject execute()
@@ -1074,10 +1076,10 @@ public final class LispThread extends LispObject
         }
     };
 
-    // ### backtrace
+    @DocString(name="backtrace",
+               doc="Returns a backtrace of the invoking thread.")
     private static final Primitive BACKTRACE =
-        new Primitive("backtrace", PACKAGE_SYS, true, "",
-		      "Returns a backtrace of the invoking thread.")
+        new Primitive("backtrace", PACKAGE_SYS, true)
     {
         @Override
         public LispObject execute(LispObject[] args)
@@ -1089,9 +1091,9 @@ public final class LispThread extends LispObject
             return currentThread().backtrace(limit);
         }
     };
-    // ### frame-to-string
+    @DocString(name="frame-to-string", args="frame")
     private static final Primitive FRAME_TO_STRING =
-        new Primitive("frame-to-string", PACKAGE_SYS, true, "frame")
+        new Primitive("frame-to-string", PACKAGE_SYS, true)
     {
         @Override
         public LispObject execute(LispObject[] args)
@@ -1104,9 +1106,9 @@ public final class LispThread extends LispObject
         }
     };
 
-    // ### frame-to-list
+    @DocString(name="frame-to-list", args="frame")
     private static final Primitive FRAME_TO_LIST =
-        new Primitive("frame-to-list", PACKAGE_SYS, true, "frame")
+        new Primitive("frame-to-list", PACKAGE_SYS, true)
     {
         @Override
         public LispObject execute(LispObject[] args)
@@ -1120,7 +1122,7 @@ public final class LispThread extends LispObject
     };
 
 
-    // ### use-fast-calls
+    @DocString(name="use-fast-calls")
     private static final Primitive USE_FAST_CALLS =
         new Primitive("use-fast-calls", PACKAGE_SYS, true)
     {
@@ -1132,7 +1134,7 @@ public final class LispThread extends LispObject
         }
     };
 
-    // ### synchronized-on
+    @DocString(name="synchronized-on", args="form &body body")
     private static final SpecialOperator SYNCHRONIZED_ON =
         new SpecialOperator("synchronized-on", PACKAGE_THREADS, true,
                             "form &body body")
@@ -1151,10 +1153,9 @@ public final class LispThread extends LispObject
         }
     };
 
-    // ### object-wait
+    @DocString(name="object-wait", args="object &optional timeout")
     private static final Primitive OBJECT_WAIT =
-        new Primitive("object-wait", PACKAGE_THREADS, true,
-                      "object &optional timeout")
+        new Primitive("object-wait", PACKAGE_THREADS, true)
     {
         @Override
         public LispObject execute(LispObject object)
@@ -1189,7 +1190,7 @@ public final class LispThread extends LispObject
         }
     };
 
-    // ### object-notify
+    @DocString(name="object-notify", args="object")
     private static final Primitive OBJECT_NOTIFY =
         new Primitive("object-notify", PACKAGE_THREADS, true,
                       "object")
@@ -1208,10 +1209,9 @@ public final class LispThread extends LispObject
         }
     };
 
-    // ### object-notify-all
+    @DocString(name="object-notify-all", args="object")
     private static final Primitive OBJECT_NOTIFY_ALL =
-        new Primitive("object-notify-all", PACKAGE_THREADS, true,
-                      "object")
+        new Primitive("object-notify-all", PACKAGE_THREADS, true)
     {
         @Override
         public LispObject execute(LispObject object)

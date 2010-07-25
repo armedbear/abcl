@@ -53,7 +53,14 @@ public abstract class Function extends Operator
 
     public Function(String name)
     {
+        this(name, (String)null);
+    }
+
+    public Function(String name, String arglist)
+    {
 	this();
+        if(arglist != null)
+            setLambdaList(new SimpleString(arglist));
         if (name != null) {
             Symbol symbol = Symbol.addFunction(name.toUpperCase(), this);
             if (cold)
@@ -62,14 +69,14 @@ public abstract class Function extends Operator
         }
     }
 
+    public Function(Symbol symbol)
+    {
+	this(symbol, null, null);
+    }
+
     public Function(Symbol symbol, String arglist)
     {
-	this();
-        symbol.setSymbolFunction(this);
-        if (cold)
-            symbol.setBuiltInFunction(true);
-        setLambdaName(symbol);
-        setLambdaList(new SimpleString(arglist));
+	this(symbol, arglist, null);
     }
 
     public Function(Symbol symbol, String arglist, String docstring)
@@ -79,17 +86,11 @@ public abstract class Function extends Operator
         if (cold)
             symbol.setBuiltInFunction(true);
         setLambdaName(symbol);
-        setLambdaList(new SimpleString(arglist));
-        if (docstring != null) {
+        if(arglist != null)
+            setLambdaList(new SimpleString(arglist));
+        if (docstring != null)
             symbol.setDocumentation(Symbol.FUNCTION,
                                     new SimpleString(docstring));
-        }
-    }
-
-    public Function(String name, String arglist)
-    {
-        this(name);
-        setLambdaList(new SimpleString(arglist));
     }
 
     public Function(String name, Package pkg)

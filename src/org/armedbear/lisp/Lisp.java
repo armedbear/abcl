@@ -89,7 +89,7 @@ public final class Lisp
     Packages.createPackage("SEQUENCE");
 
 
-  // ### nil
+  @DocString(name="nil")
   public static final LispObject NIL = Nil.NIL;
 
   // We need NIL before we can call usePackage().
@@ -261,7 +261,7 @@ public final class Lisp
     return thread.setValues(form, NIL);
   }
 
-  // ### interactive-eval
+  @DocString(name="interactive-eval")
   private static final Primitive INTERACTIVE_EVAL =
     new Primitive("interactive-eval", PACKAGE_SYS, true)
     {

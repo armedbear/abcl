@@ -37,9 +37,9 @@ import static org.armedbear.lisp.Lisp.*;
 
 import java.math.BigInteger;
 
-// ### logorc2
 // logorc2 integer-1 integer-2 => result-integer
 // or integer-1 with complement of integer-2
+@DocString(name="logorc2", args="integer-1 integer-2")
 public final class logorc2 extends Primitive
 {
     private logorc2()

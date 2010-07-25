@@ -1,8 +1,7 @@
 /*
- * Operator.java
+ * DocString.java
  *
- * Copyright (C) 2003-2005 Peter Graves
- * $Id$
+ * Copyright (C) 2010 Matt Seddon
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * As a special exception, the copyright holders of this library give you
  * permission to link this library with independent modules to produce an
@@ -30,48 +29,22 @@
  * obligated to do so.  If you do not wish to do so, delete this
  * exception statement from your version.
  */
-
 package org.armedbear.lisp;
 
-import static org.armedbear.lisp.Lisp.*;
+import java.lang.annotation.*;
 
-public abstract class Operator extends LispObject
-{
-    protected LispObject lambdaName;
-
-    private LispObject lambdaList;
-
-    public final LispObject getLambdaName()
-    {
-        return lambdaName;
-    }
-
-    public final void setLambdaName(LispObject obj)
-    {
-        lambdaName = obj;
-    }
-
-    public final LispObject getLambdaList()
-    {
-        if(lambdaList == null) {
-            DocString ds = getClass().getAnnotation(DocString.class);
-            if(ds != null)
-                lambdaList = new SimpleString(ds.args());
-        }
-        return lambdaList;
-    }
-
-    public final void setLambdaList(LispObject obj)
-    {
-        lambdaList = obj;
-    }
-
-    @Override
-    public LispObject getParts()
-    {
-        LispObject result = NIL;
-        result = result.push(new Cons("lambda-name", lambdaName));
-        result = result.push(new Cons("lambda-list", lambdaList));
-        return result.nreverse();
-    }
+/**
+ * An annotation type to expose documentation to ABCL.
+ * <i>Note:</i> the TAGS ant target also pulls information from here. It
+ * expects <tt>name</tt> to be the first item in the DocString declaration,
+ * and not broken onto multiple lines.
+ */
+@Retention(RetentionPolicy.RUNTIME)
+public @interface DocString {
+    /** The lisp name. */
+    public String name() default "";
+    /** The arguments. */
+    public String args() default "";
+    /** The documentation string. */
+    public String doc() default "";
 }

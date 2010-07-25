@@ -45,6 +45,11 @@ public class Primitive extends Function
         super(name);
     }
 
+    public Primitive(Symbol symbol)
+    {
+        super(symbol);
+    }
+
     public Primitive(Symbol symbol, String arglist)
     {
         super(symbol, arglist);
