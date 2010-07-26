@@ -1,7 +1,46 @@
+Version 0.21
+============
+svn://common-lisp.net/project/armedbear/svn/tags/0.21.0/abcl
+(???, 2010)
+
+
+Features
+--------
+
+* [svn r12818] Update to ASDF 2.004
+
+* [svn r12738-805] Support for custom CLOS slot definitions and custom class options.
+
+* [svn r12756] slot-* functions work on structures too.
+
+* [svn r12774] Improved Java integration: jmake-proxy can implement more than one interface.
+
+* [svn r12773] Improved Java integration: functions to dynamically manipulate the classpath.
+
+* [svn r12755] Improved Java integration: CL:STRING can convert Java strings to Lisp strings.
+
+Fixes
+-----
+
+* [svn 12809-10-20] Various printing fixes.
+
+* [svn 12804] Fixed elimination of unused local functions shadowed by macrolet.
+
+* [svn r12798-803] Fixed pathname serialization across OSes. On Windows pathnames are always printed with forward slashes, but can still be read with backslashes.
+
+* [svn r12740] Make JSR-223 classes compilable with Java 1.5
+
+Other
+-----
+
+* [svn r12754] Changed class file generation and FASL loading to minimize reflection.
+
+* [svn r12734] A minimal Swing GUI Console with a REPL is now included with ABCL.
+
 Version 0.20
 ============
-yet-to-be-tagged
-(???)
+svn://common-lisp.net/project/armedbear/svn/tags/0.20.0/abcl
+(24 May, 2010)
 
 
 Features
