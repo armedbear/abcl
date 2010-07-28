@@ -149,6 +149,11 @@
 				method implementation)))))
 		lisp-this))
 
+(defun jequal (obj1 obj2)
+  "Compares obj1 with obj2 using java.lang.Object.equals()"
+  (jcall (jmethod "java.lang.Object" "equals" "java.lang.Object")
+	 obj1 obj2))
+
 (defun jobject-class (obj)
   "Returns the Java class that OBJ belongs to"
   (jcall (jmethod "java.lang.Object" "getClass") obj))
@@ -363,6 +368,15 @@
 					   :direct-superclasses (list (find-class 'java-object))
 					   :java-class +java-lang-object+)))
 
+(defun jclass-additional-superclasses (jclass)
+  "Extension point to put additional CLOS classes on the CPL of a CLOS Java class."
+  (let ((supers nil))
+    (when (jclass-interface-p jclass)
+      (push (find-class 'java-object) supers))
+    (when (jequal jclass (jclass "java.util.List"))
+      (push (find-class 'sequence) supers))
+    supers))
+
 (defun ensure-java-class (jclass)
   (let ((class (%find-java-class jclass)))
     (if class
@@ -378,9 +392,7 @@
 					(concatenate 'list
 						     (list (jclass-superclass jclass))
 						     (jclass-interfaces jclass))))))
-		   (if (jclass-interface-p jclass)
-		       (append supers (list (find-class 'java-object)))
-		       supers))
+		   (append supers (jclass-additional-superclasses jclass)))
 		 :java-class jclass)))))
 
 (defmethod mop::compute-class-precedence-list ((class java-class))

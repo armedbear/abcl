@@ -186,6 +186,7 @@
                            "inspect.lisp"
                            ;;"j.lisp"
                            "java.lisp"
+                           "java-collections.lisp"
                            "known-functions.lisp"
                            "known-symbols.lisp"
                            "late-setf.lisp"

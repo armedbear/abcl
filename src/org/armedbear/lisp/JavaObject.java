@@ -97,17 +97,30 @@ public final class JavaObject extends LispObject {
             return T;
         if (type == BuiltInClass.JAVA_OBJECT)
             return T;
-	if(type.typep(LispClass.findClass(JAVA_CLASS, false)) != NIL) {
+	LispObject cls = NIL;
+	if(type instanceof Symbol) {
+	    cls = LispClass.findClass(type, false);
+	}
+	if(cls == NIL) {
+	    cls = type;
+	}
+	if(cls.typep(LispClass.findClass(JAVA_CLASS, false)) != NIL) {
 	    if(obj != null) {
-		Class c = (Class) JAVA_CLASS_JCLASS.execute(type).javaInstance();
+		Class c = (Class) JAVA_CLASS_JCLASS.execute(cls).javaInstance();
 		return c.isAssignableFrom(obj.getClass()) ? T : NIL;
 	    } else {
+		return T;
+	    }
+	} else if(cls == BuiltInClass.SEQUENCE) {
+	    //This information is replicated here from java.lisp; it is a very
+	    //specific case, not worth implementing CPL traversal in typep
+	    if(java.util.List.class.isInstance(obj) ||
+	       java.util.Set.class.isInstance(obj)) {
 		return T;
 	    }
 	}
         return super.typep(type);
     }
-
 
     @Override
     public LispObject STRING()
