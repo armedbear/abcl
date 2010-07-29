@@ -37,10 +37,10 @@
     ((s (jclass "java.util.List")) length
      &rest args &key initial-element initial-contents)
   (declare (ignorable initial-element initial-contents))
-  (apply #'make-jsequence-like s #'jlist-add args))
+  (apply #'make-jsequence-like s length #'jlist-add args))
 
 (defun make-jsequence-like
-    (s add-fn &key (initial-element nil iep) (initial-contents nil icp))
+    (s length add-fn &key (initial-element nil iep) (initial-contents nil icp))
   (let ((seq (jnew (jclass-of s))))
     (cond
       ((and icp iep)
@@ -126,7 +126,7 @@
     ((s (jclass "java.util.Set")) length
      &rest args &key initial-element initial-contents)
   (declare (ignorable initial-element initial-contents))
-  (apply #'make-jsequence-like s #'jset-add args))
+  (apply #'make-jsequence-like s length #'jset-add args))
 
 (defmethod sequence:make-simple-sequence-iterator
     ((s (jclass "java.util.Set")) &key from-end (start 0) end)
