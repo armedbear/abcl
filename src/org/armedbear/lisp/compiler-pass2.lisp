@@ -476,22 +476,6 @@ the top-most value's representation being 'rep1'."
 
 (defparameter *descriptors* (make-hash-table :test #'equal))
 
-;; Just an experiment...
-(defmacro defsubst (name lambda-list &rest body)
-  (let* ((block-name (fdefinition-block-name name))
-         (expansion (generate-inline-expansion block-name lambda-list body)))
-    `(progn
-       (%defun ',name (lambda ,lambda-list (block ,block-name ,@body)))
-       (precompile ',name)
-       (eval-when (:compile-toplevel :load-toplevel :execute)
-         (setf (inline-expansion ',name) ',expansion))
-       ',name)))
-
-#+nil
-(defmacro defsubst (&rest args)
-  `(defun ,@args))
-
-
 (declaim (ftype (function (t t) cons) get-descriptor-info))
 (defun get-descriptor-info (arg-types return-type)
   (let* ((key (list arg-types return-type))
@@ -501,7 +485,8 @@ the top-most value's representation being 'rep1'."
     (or descriptor-info
         (setf (gethash key ht) (make-descriptor-info arg-types return-type)))))
 
-(defsubst get-descriptor (arg-types return-type)
+(declaim (inline get-descriptor))
+(defun get-descriptor (arg-types return-type)
   (car (get-descriptor-info arg-types return-type)))
 
 (declaim (ftype (function * t) emit-invokestatic))
