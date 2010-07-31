@@ -342,17 +342,17 @@
 (defknown emit-push-nil () t)
 (declaim (inline emit-push-nil))
 (defun emit-push-nil ()
-  (emit 'getstatic +lisp-class+ "NIL" +lisp-object+))
+  (emit-getstatic +lisp-class+ "NIL" +lisp-object+))
 
 (defknown emit-push-nil-symbol () t)
 (declaim (inline emit-push-nil-symbol))
 (defun emit-push-nil-symbol ()
-  (emit 'getstatic +lisp-nil-class+ "NIL" +lisp-symbol+))
+  (emit-getstatic +lisp-nil-class+ "NIL" +lisp-symbol+))
 
 (defknown emit-push-t () t)
 (declaim (inline emit-push-t))
 (defun emit-push-t ()
-  (emit 'getstatic +lisp-class+ "T" +lisp-symbol+))
+  (emit-getstatic +lisp-class+ "T" +lisp-symbol+))
 
 (defknown emit-push-false (t) t)
 (defun emit-push-false (representation)
@@ -570,6 +570,17 @@ the top-most value's representation being 'rep1'."
       (setf pretty-string (concatenate 'string pretty-string "[]")))
     pretty-string))
 
+(declaim (inline emit-getstatic emit-putstatic))
+(defknown emit-getstatic (t t t) t)
+(defun emit-getstatic (class-name field-name type)
+  (let ((index (pool-field class-name field-name type)))
+    (apply #'%emit 'getstatic (u2 index))))
+
+(defknown emit-putstatic (t t t) t)
+(defun emit-putstatic (class-name field-name type)
+  (let ((index (pool-field class-name field-name type)))
+    (apply #'%emit 'putstatic (u2 index))))
+
 (defvar type-representations '((:int fixnum)
                                (:long (integer #.most-negative-java-long
                                                #.most-positive-java-long))
@@ -772,7 +783,7 @@ before the emitted code: the code is 'stack-neutral'."
     (emit 'instanceof instanceof-class)
     (emit 'ifne LABEL1)
     (emit-load-local-variable variable)
-    (emit 'getstatic +lisp-symbol-class+ expected-type-java-symbol-name
+    (emit-getstatic +lisp-symbol-class+ expected-type-java-symbol-name
           +lisp-symbol+)
     (emit-invokestatic +lisp-class+ "type_error"
                        (lisp-object-arg-types 2) +lisp-object+)
@@ -832,7 +843,7 @@ before the emitted code: the code is 'stack-neutral'."
 (defun maybe-generate-interrupt-check ()
   (unless (> *speed* *safety*)
     (let ((label1 (gensym)))
-      (emit 'getstatic +lisp-class+ "interrupted" "Z")
+      (emit-getstatic +lisp-class+ "interrupted" "Z")
       (emit 'ifeq label1)
       (emit-invokestatic +lisp-class+ "handleInterrupt" nil nil)
       (label label1))))
@@ -1196,9 +1207,8 @@ representation, based on the derived type of the LispObject."
 
 ;; getstatic, putstatic
 (define-resolver (178 179) (instruction)
-  (let* ((args (instruction-args instruction))
-         (index (pool-field (first args) (second args) (third args))))
-    (inst (instruction-opcode instruction) (u2 index))))
+  ;; we used to create the pool-field here; that moved to the emit-* layer
+  instruction)
 
 ;; bipush, sipush
 (define-resolver (16 17) (instruction)
@@ -1834,7 +1844,7 @@ representation, based on the derived type of the LispObject."
              (if (null (third param))               ;; supplied-p
                  (emit-push-nil)
                  (emit-push-t)) ;; we don't need the actual supplied-p symbol
-             (emit 'getstatic +lisp-closure-class+ "OPTIONAL" "I")
+             (emit-getstatic +lisp-closure-class+ "OPTIONAL" "I")
              (emit-invokespecial-init +lisp-closure-parameter-class+
                                       (list +lisp-symbol+ +lisp-object+
                                             +lisp-object+ "I")))
@@ -2032,7 +2042,7 @@ representation, based on the derived type of the LispObject."
 (defun serialize-integer (n)
   "Generates code to restore a serialized integer."
   (cond((<= 0 n 255)
-        (emit 'getstatic +lisp-fixnum-class+ "constants" +lisp-fixnum-array+)
+        (emit-getstatic +lisp-fixnum-class+ "constants" +lisp-fixnum-array+)
         (emit-push-constant-int n)
         (emit 'aaload))
        ((<= most-negative-fixnum n most-positive-fixnum)
@@ -2101,7 +2111,7 @@ of the other types."
       (lookup-known-symbol symbol)
     (cond
       (name
-       (emit 'getstatic class name +lisp-symbol+))
+       (emit-getstatic class name +lisp-symbol+))
       ((null (symbol-package symbol))
        (emit-push-constant-int (dump-uninterned-symbol-index symbol))
        (emit-invokestatic +lisp-load-class+ "getUninternedSymbol" '("I")
@@ -2163,7 +2173,7 @@ Code to restore the serialized object is inserted into `*code' or
       (setf similarity-fn #'eq))
     (let ((existing (assoc object *externalized-objects* :test similarity-fn)))
       (when existing
-        (emit 'getstatic *this-class* (cdr existing) field-type)
+        (emit-getstatic *this-class* (cdr existing) field-type)
         (when cast
           (emit 'checkcast cast))
         (return-from emit-load-externalized-object field-type)))
@@ -2182,18 +2192,18 @@ Code to restore the serialized object is inserted into `*code' or
                               (list +java-string+) +lisp-object+)
            (when (string/= field-type +lisp-object+)
              (emit 'checkcast (subseq field-type 1 (1- (length field-type)))))
-           (emit 'putstatic *this-class* field-name field-type)
+           (emit-putstatic *this-class* field-name field-type)
            (setf *static-code* *code*)))
         (*declare-inline*
          (funcall dispatch-fn object)
-         (emit 'putstatic *this-class* field-name field-type))
+         (emit-putstatic *this-class* field-name field-type))
         (t
          (let ((*code* *static-code*))
            (funcall dispatch-fn object)
-           (emit 'putstatic *this-class* field-name field-type)
+           (emit-putstatic *this-class* field-name field-type)
            (setf *static-code* *code*))))
 
-      (emit 'getstatic *this-class* field-name field-type)
+      (emit-getstatic *this-class* field-name field-type)
       (when cast
         (emit 'checkcast cast))
       field-type)))
@@ -2225,9 +2235,9 @@ Code to restore the serialized object is inserted into `*code' or
        (let ((*code* (if *declare-inline* *code* *static-code*)))
          (if (eq class *this-class*)
              (progn ;; generated by the DECLARE-OBJECT*'s above
-               (emit 'getstatic class name +lisp-object+)
+               (emit-getstatic class name +lisp-object+)
                (emit 'checkcast +lisp-symbol-class+))
-             (emit 'getstatic class name +lisp-symbol+))
+             (emit-getstatic class name +lisp-symbol+))
          (emit-invokevirtual +lisp-symbol-class+
                              (if setf
                                  "getSymbolSetfFunctionOrDie"
@@ -2237,7 +2247,7 @@ Code to restore the serialized object is inserted into `*code' or
          ;; (AutoloadedFunctionProxy) by allowing it to resolve itself
          (emit-invokevirtual +lisp-object-class+
                              "resolve" nil +lisp-object+)
-         (emit 'putstatic *this-class* f +lisp-object+)
+         (emit-putstatic *this-class* f +lisp-object+)
          (if *declare-inline*
              (setf saved-code *code*)
              (setf *static-code* *code*))
@@ -2273,7 +2283,7 @@ Code to restore the serialized object is inserted into `*code' or
      
 ;     (emit-invokestatic +lisp-function-proxy-class+ "loadPreloadedFunction"
 ;			(list +java-string+) +lisp-object+)
-     (emit 'putstatic *this-class* g +lisp-object+)
+     (emit-putstatic *this-class* g +lisp-object+)
      (setf *static-code* *code*)
      (setf (gethash local-function ht) g))))
 
@@ -2298,7 +2308,7 @@ Code to restore the serialized object is inserted into `*code' or
       (emit 'ldc (pool-string s))
       (emit-invokestatic +lisp-class+ "readObjectFromString"
                          (list +java-string+) +lisp-object+)
-      (emit 'putstatic *this-class* g +lisp-object+)
+      (emit-putstatic *this-class* g +lisp-object+)
       (if *declare-inline*
           (setf saved-code *code*)
           (setf *static-code* *code*)))
@@ -2320,7 +2330,7 @@ Code to restore the serialized object is inserted into `*code' or
                          (list +java-string+) +lisp-object+)
       (emit-invokestatic +lisp-class+ "loadTimeValue"
                          (lisp-object-arg-types 1) +lisp-object+)
-      (emit 'putstatic *this-class* g +lisp-object+)
+      (emit-putstatic *this-class* g +lisp-object+)
       (if *declare-inline*
           (setf saved-code *code*)
           (setf *static-code* *code*)))
@@ -2345,7 +2355,7 @@ The field type of the object is specified by OBJ-REF."
                          (list +java-string+) +lisp-object+)
       (when (and obj-class (string/= obj-class +lisp-object-class+))
         (emit 'checkcast obj-class))
-      (emit 'putstatic *this-class* g obj-ref)
+      (emit-putstatic *this-class* g obj-ref)
       (setf *static-code* *code*)
       g)))
 
@@ -3068,7 +3078,7 @@ Note: DEFUN implies a named lambda."
                          (declare-local-function local-function)
                          (declare-object
                           (local-function-function local-function)))))
-             (emit 'getstatic *this-class* g +lisp-object+)
+             (emit-getstatic *this-class* g +lisp-object+)
                                         ; Stack: template-function
              (when *closure-variables*
                (emit 'checkcast +lisp-compiled-closure-class+)
@@ -4789,7 +4799,7 @@ given a specific common representation.")
 
 (defun p2-load-time-value (form target representation)
   (cond (*file-compilation*
-         (emit 'getstatic *this-class*
+         (emit-getstatic *this-class*
                (declare-load-time-value (second form)) +lisp-object+)
          (fix-boxing representation nil)
          (emit-move-from-stack target representation))
@@ -4920,7 +4930,7 @@ given a specific common representation.")
 
 (defun emit-make-compiled-closure-for-labels
     (local-function compiland declaration)
-  (emit 'getstatic *this-class* declaration +lisp-object+)
+  (emit-getstatic *this-class* declaration +lisp-object+)
   (let ((parent (compiland-parent compiland)))
     (when (compiland-closure-register parent)
       (dformat t "(compiland-closure-register parent) = ~S~%"
@@ -5005,7 +5015,7 @@ given a specific common representation.")
            (let ((class-file (compiland-class-file compiland)))
 	     (with-open-class-file (f class-file)
 	       (compile-and-write-to-stream class-file compiland f))
-             (emit 'getstatic *this-class*
+             (emit-getstatic *this-class*
                    (declare-local-function (make-local-function :class-file
                                                                 class-file))
                    +lisp-object+)))
@@ -5051,7 +5061,7 @@ given a specific common representation.")
                           (declare-local-function local-function)
                           (declare-object
                            (local-function-function local-function)))))
-               (emit 'getstatic *this-class* g +lisp-object+)
+               (emit-getstatic *this-class* g +lisp-object+)
                                         ; Stack: template-function
 
                (when (compiland-closure-register *current-compiland*)
@@ -5062,7 +5072,7 @@ given a specific common representation.")
                                     +lisp-object+)))))
           (emit-move-from-stack target))
          ((inline-ok name)
-          (emit 'getstatic *this-class*
+          (emit-getstatic *this-class*
                 (declare-function name) +lisp-object+)
           (emit-move-from-stack target))
          (t
@@ -5092,11 +5102,11 @@ given a specific common representation.")
                           (declare-local-function local-function)
                           (declare-object
                            (local-function-function local-function)))))
-               (emit 'getstatic *this-class*
+               (emit-getstatic *this-class*
                      g +lisp-object+))))) ; Stack: template-function
          ((and (member name *functions-defined-in-current-file* :test #'equal)
 	       (not (notinline-p name)))
-          (emit 'getstatic *this-class*
+          (emit-getstatic *this-class*
                 (declare-setf-function name) +lisp-object+)
           (emit-move-from-stack target))
          ((and (null *file-compilation*)
@@ -7468,7 +7478,7 @@ We need more thought here.
     (emit 'dup)
     (emit 'instanceof instanceof-class)
     (emit 'ifne LABEL1)
-    (emit 'getstatic +lisp-symbol-class+ expected-type-java-symbol-name +lisp-symbol+)
+    (emit-getstatic +lisp-symbol-class+ expected-type-java-symbol-name +lisp-symbol+)
     (emit-invokestatic +lisp-class+ "type_error"
                        (lisp-object-arg-types 2) +lisp-object+)
     (label LABEL1))
