@@ -619,7 +619,7 @@ public final class StandardGenericFunction extends StandardObject
    * argument <tt>arg</tt> in a <tt>CacheEntry</tt>
    *
    * <p>In the simplest case, when this generic function
-   * does not have EQL specialized methos, and therefore
+   * does not have EQL specialized methods, and therefore
    * only argument types are relevant for choosing
    * applicable methods, the value returned is the 
    * class of <tt>arg</tt>
@@ -631,16 +631,16 @@ public final class StandardGenericFunction extends StandardObject
    *   - otherwise class of the <tt>arg</tt> is returned.
    *
    * <p>Note that we do not consider argument position, when
-   * calculating arg specialization. In rare cases (when
-   * one argument is eql-specialized to a symbol specifying
-   * class of another argument) this may result in redundant cache
-   * entries caching the same method. But the method cached is anyway
-   * correct for the arguments (because in case of cache miss, correct method
-   * is calculated by other code, which does not rely on getArgSpecialization;
-   * and because EQL is true only for objects of the same type, which guaranties
-   * that if a type-specialized methods was chached by eql-specialization,
-   * all the cache hits into this records will be from args of the conforming 
-   * type).
+   * calculating arg specialization. In rare cases (when one argument
+   * is eql-specialized to a symbol specifying class of another
+   * argument) this may result in redundant cache entries caching the
+   * same method. But the method cached is anyway correct for the
+   * arguments (because in case of cache miss, correct method is
+   * calculated by other code, which does not rely on
+   * getArgSpecialization; and because EQL is true only for objects of
+   * the same type, which guaranties that if a type-specialized
+   * methods was chached by eql-specialization, all the cache hits
+   * into this records will be from args of the conforming type).
    *
    * <p>Consider:
    * <pre><tt>
