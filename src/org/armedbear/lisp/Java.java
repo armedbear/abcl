@@ -1201,7 +1201,7 @@ public final class Java
                 return LispThread.currentThread().execute(closure);
             }
             catch (OutOfMemoryError oom) {
-                return error(new StorageCondition("Out of memory."));
+                return error(new StorageCondition("Out of memory " + oom.getMessage()));
             }
             catch (StackOverflowError oos) {
                 return error(new StorageCondition("Stack overflow."));

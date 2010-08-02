@@ -277,7 +277,7 @@ public final class Lisp
           }
         catch (OutOfMemoryError e)
           {
-            return error(new LispError("Out of memory."));
+            return error(new StorageCondition("Out of memory " + e.getMessage()));
           }
         catch (StackOverflowError e)
           {
