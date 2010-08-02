@@ -234,8 +234,13 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <echo>
 Compiling Lisp system 
 from ${abcl.home.dir}
-to   ${abcl.lisp.output}</echo>
-      <java classpath="${build.classes.dir}" 
+ to  ${abcl.lisp.output}</echo>
+ 
+     <!-- Not good if ${abcl.home.dir} == ${abcl.lisp.output} -->
+     <delete>
+       <fileset dir="${abcl.home.dir}" includes="**/*.abcl **/*.cls **/*._"/>
+     </delete>
+     <java classpath="${build.classes.dir}" 
 	    fork="true"
 	    failonerror="true"
             inputstring="(handler-case (compile-system :zip nil :quit t :output-path &quot;${abcl.lisp.output}/&quot;) (t (x) (progn (format t &quot;~A: ~A~%&quot; (type-of x) x) (exit :status -1))))"
