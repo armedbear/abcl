@@ -151,20 +151,32 @@
 (defun download-link-for-signature (url)
   (concatenate 'string url ".asc"))
 
+;;; XXX unsightful hack
+(defvar *dont-check-signature* nil)
+
 (defun download-files-for-package (package-name-or-url)
+  (setf *dont-check-signature* nil)
   (multiple-value-bind (package-url package-file) 
       (download-url-to-temporary-file
        (download-link-for-package package-name-or-url))
     (if (verify-gpg-signatures-p package-name-or-url)
-	(multiple-value-bind (signature-url signature-file) 
-	    (download-url-to-temporary-file
-	     (download-link-for-signature package-url))
-	  (declare (ignore signature-url))
-	  (values package-file signature-file))
+        (restart-case
+            (multiple-value-bind (signature-url signature-file) 
+                (download-url-to-temporary-file
+                 (download-link-for-signature package-url))
+              (declare (ignore signature-url))
+              (values package-file signature-file))
+          (skip-gpg-check () 
+            :report "Don't check GPG signature for this package"
+            (progn
+              (setf *dont-check-signature* t)
+              (values package-file nil))))
 	(values package-file nil))))
   
 (defun verify-gpg-signature (file-name signature-name)
   (block verify
+    (when (and (null signature-name) *dont-check-signature*)
+      (return-from verify t))
     (loop
       (restart-case
 	  (let ((tags (gpg-results file-name signature-name)))
