@@ -76,7 +76,7 @@ An example on an entry:
 (defvar *default-database-file* 
   (if (find :asdf2 *features*)
       (asdf:system-relative-pathname :ansi-compiled "test/lisp/ansi/ansi-test-failures")
-      (merge-pathnames "ansi-test-failures" (directory-namestring *load-truename*)))
+      (merge-pathnames "ansi-test-failures" (directory-namestring *load-truename*))))
 
 (defun parse (&optional (file *default-database-file*))
   (format t "Parsing test report database from ~A~%" *default-database-file*)
@@ -151,7 +151,4 @@ An example on an entry:
           (format t "~A[~A] --> ~A[~A] additional failures:~%~A~%" 
                   version-2 id2 version-1 id1 diff-2->1))))))
             
-  
-
-         
         
