@@ -33,14 +33,19 @@
                      ((:file "compiler-tests")
                       (:file "condition-tests")
                       (:file "metaclass")
+                      #+abcl
                       (:file "mop-tests-setup")
+                      #+abcl
                       (:file "mop-tests" :depends-on ("mop-tests-setup"))
                       (:file "file-system-tests")
-                      (:file "jar-pathname" :depend-on ("pathname-test"))
+                      #+abcl
+                      (:file "jar-pathname" :depends-on
+                             ("pathname-tests"))
+                      #+abcl
                       (:file "url-pathname")
                       (:file "math-tests")
                       (:file "misc-tests")
-                      (:file "bugs")
+                      (:file "bugs" :depends-on ("file-system-tests"))
                       (:file "pathname-tests")))))
 
 (defmethod perform ((o test-op) (c (eql (find-system 'abcl-test-lisp))))
