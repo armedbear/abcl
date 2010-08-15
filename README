@@ -36,10 +36,10 @@ exception statement from your version.
 RUNNING FROM BINARY RELEASE
 ===========================
 
-After you have downloaded a binary release archive, unzip or untar it
-into its own directory. To run ABCL directly from this directory, make
-sure Java (version 1.5 or up) is in your shell's path. Then issue
-following command
+After you have downloaded a binary release archive unpack it into its
+own directory. To run ABCL directly from this directory, make sure
+Java (version 1.5 or up) is in your shell's path. Then issue following
+command
 
     cmd$ java -jar abcl.jar
 
@@ -57,21 +57,20 @@ which should result in output like the following
 BUILDING FROM SOURCE RELEASE
 ============================
 
-If you want to build ABCL forom source the preferred (and most tested
-way) is to use the Ant build tool.
+There are three ways to build ABCL from the source release with the
+preferred (and most tested way) is to being to use the Ant build tool:
 
-1. Use the Ant build tool for Java environments.  
+* Use the Ant build tool for Java environments.  
 
-2. Use the Netbeans 6.x IDE to open ABCL as a project.
+* Use the Netbeans 6.x IDE to open ABCL as a project.
 
-3. Bootstrap ABCL using a Common Lisp implementation. Supported
-   implementations for this process: SBCL, CMUCL, OpenMCL, Allegro
-   CL, LispWorks or CLISP.
+* Bootstrap ABCL using a Common Lisp implementation. Supported
+  implementations for this process: SBCL, CMUCL, OpenMCL, Allegro
+  CL, LispWorks or CLISP.
 
-
-In both cases you need a supported JDK version (1.5 and 1.6 have been
-tested).  Just the JRE isn't enough, as you need javac to compile
-files.
+In all cases you need a Java 5 or later JDK (JDK 1.5 and 1.6 have been
+tested).  Just the JRE isn't enough, as you need the Java compiler
+('javac') to compile the Java source of the ABCL implementation.
 
 
 Using Ant
@@ -99,7 +98,9 @@ Using NetBeans
 --------------
 
 Obtain and install the [Netbeans IDE][2]. One should be able to open
-the ABCL directory as a project in the Netbeans 6.x application.
+the ABCL directory as a project in the Netbeans 6.x application,
+whereupon the usual build, run, and debug targets as invoked in the
+GUI are available.
 
 [2]: http://netbeans.org/downloads/
 
@@ -113,20 +114,29 @@ distribution that doesn't share build instructions with the previous
 two methods, but it still may be of interest to those who absolutely
 don't want to know anything about Java.
 
-First, copy the file 'customizations.lisp.in' to customization.lisp', in the
-directory containing this README file, editing to suit your situation,
-paying attention to the comments in the file.  The ciritical point is
-to have **JDK** point to the root of the Java Development Kit.  There
-should be a `**JDK**/bin/javac' java compiler present.  
+First, copy the file 'customizations.lisp.in' to customization.lisp',
+in the directory containing this README file, editing to suit your
+situation, paying attention to the comments in the file.  The critical
+step is to have Lisp special variable '*JDK*' point to the root of the
+Java Development Kit.  Underneath the directory referenced by the
+value of '*JDK*' there should be an exectuable Java compiler in
+'bin/javac' ('bin/java.exe' under Windows).
 
-Use ./build-from-lisp.sh <lisp-of-choice>, e.g.
+Then, one may either use the 'build-from-lisp.sh' shell script or load
+the necessary files into your Lisp image by hand.
+
+** Using the 'build-from-lisp.sh' script
+
+Under UNIX-like systems, you may simply invoke the
+'build-from-lisp.sh' script as './build-from-lisp.sh
+<lisp-of-choice>', e.g.
 
     unix$ ./build-from-lisp.sh sbcl
 
-Use abcl.bat on Windows or ./abcl on Unix to start ABCL.
-Note: abcl.bat and abcl contain absolute paths, so you'll need
-to edit them if you move things around after the build.
-
+After a successful build, you may use 'abcl.bat' on Windows or 'abcl'
+on Unix to start ABCL.  Note that this wrappers contain absolute
+paths, so you'll need to edit them if you move things around after the
+build. 
 
 If you're developing on ABCL, you may want to use
 
@@ -140,15 +150,17 @@ In case of failure in the javac stage, you might try this:
 
 This invokes javac separately for each .java file, which avoids running
 into limitations on command line length (but is a lot slower).
+ 
+** Building from another Lisp by hand
 
-There is also an ASDF definition in 'abcl.asd' for BUILD-ABCL which
-can be used to load the necessary Lisp defintions, after which 
-
+There is also an ASDF definition in 'abcl.asd' for the BUILD-ABCL
+which can be used to load the necessary Lisp definitions, after which
 
     CL-USER> (build-abcl:build-abcl :clean t :full t)
     
-will build ABCL.    
-
+will build ABCL.  If ASDF isn't present, simply LOAD the
+'customizations.lisp' and 'build-abcl.lisp' files to achieve the same
+effect as loading the ASDF definition.
 
 
 BUGS
