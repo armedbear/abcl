@@ -663,7 +663,7 @@ public final class StandardGenericFunction extends StandardObject
    *
    * </tt></pre>
    *
-   * After the two above calls <tt>cache</tt> will contain tree keys:
+   * After the two above calls <tt>cache</tt> will contain three keys:
    * <pre>
    * { class FIXNUM, EqlSpecialization('SYMBOL) }
    * { class SYMBOL, EqlSpecialization('SYMBOL) }
