@@ -473,6 +473,10 @@ will load ASDF-INSTALL.
       <include name="abcl.bat.in"/>
       
       <include name="examples/**"/>
+
+      <include name="contrib/**"/>
+
+      <include name="build-from-lisp.sh"/>
       
       <!-- The remainder of these files are used by the Lisp hosted
            build in 'build-abcl.lisp' but not used by Ant, so include
@@ -480,7 +484,7 @@ will load ASDF-INSTALL.
       <include name="make-jar.in"/>
       <include name="make-jar.bat.in"/>
 
-      <include name="build-from-lisp.sh"/>
+
 
       <include name="build-abcl.lisp"/>
       <include name="customizations.lisp.in"/>
