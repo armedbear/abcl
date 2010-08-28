@@ -45,6 +45,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
+import java.nio.charset.CodingErrorAction;
 
 import org.armedbear.lisp.Debug;
 
@@ -79,6 +80,8 @@ public class DecodingReader
           // we need to be able to unread the byte buffer
         this.stream = new PushbackInputStream(stream, size);
         this.cd = cs.newDecoder();
+        this.cd.onUnmappableCharacter(CodingErrorAction.REPLACE);
+        this.cd.onMalformedInput(CodingErrorAction.REPLACE);
         this.ce = cs.newEncoder();
         bbuf = ByteBuffer.allocate(size);
         bbuf.flip();  // mark the buffer as 'needs refill'
@@ -89,6 +92,8 @@ public class DecodingReader
      */
     public final void setCharset(Charset cs) {
         this.cd = cs.newDecoder();
+        this.cd.onUnmappableCharacter(CodingErrorAction.REPLACE);
+        this.cd.onMalformedInput(CodingErrorAction.REPLACE);
         this.ce = cs.newEncoder();
     }
 
@@ -257,18 +262,23 @@ public class DecodingReader
 
 
         while (cb.remaining() > 0 && notEof) {
+            int oldRemaining = cb.remaining();
             notEof = ensureBbuf(forceRead);
             CoderResult r = cd.decode(bbuf, cb, ! notEof);
-            forceRead = (CoderResult.UNDERFLOW == r);
-
-            if (r.isMalformed()) {
-                throw new RACFMalformedInputException(bbuf.position(),
-                                                      (char)bbuf.get(bbuf.position()),
-                                                      cd.charset().name());
-            } else if (r.isUnmappable()) {
-                // a situation exactly like this is in DecodingReader too
-                Debug.assertTrue(false);
+            if (oldRemaining == cb.remaining()
+                && CoderResult.OVERFLOW == r) {
+                // if this happens, the decoding failed
+                // but the bufs didn't advance. Advance
+                // them manually and do manual replacing,
+                // otherwise we loop endlessly. This occurs
+                // at least when parsing latin1 files with
+                // lowercase o-umlauts in them.
+                // Note that this is at the moment copy-paste
+                // with RandomAccessCharacterFile.read()
+                cb.put('?');
+                bbuf.get();
             }
+            forceRead = (CoderResult.UNDERFLOW == r);
         }
         if (cb.remaining() == len)
             return -1;

@@ -370,23 +370,23 @@ public class RandomAccessCharacterFile {
         boolean decodeWasUnderflow = false;
         boolean atEof = false;
         while ((cbuf.remaining() > 0) && ! atEof) {
-
+            int oldRemaining = cbuf.remaining();
             atEof = ! ensureReadBbuf(decodeWasUnderflow);
             CoderResult r = cdec.decode(bbuf, cbuf, atEof );
+            if (oldRemaining == cbuf.remaining()
+                && CoderResult.OVERFLOW == r) {
+                // if this happens, the decoding failed
+                // but the bufs didn't advance. Advance
+                // them manually and do manual replacing,
+                // otherwise we loop endlessly. This occurs
+                // at least when parsing latin1 files with
+                // lowercase o-umlauts in them
+                // Note that this is at the moment copy-paste
+                // with DecodingReader.read()
+                cbuf.put('?');
+                bbuf.get();
+            }
             decodeWasUnderflow = (CoderResult.UNDERFLOW == r);
-            if (r.isMalformed())
-                // When reading encoded Unicode, we'd expect to require
-                // catching MalformedInput
-                throw new RACFMalformedInputException(bbuf.position(),
-                                                      (char)bbuf.get(bbuf.position()),
-                                                      cset.name());
-            if (r.isUnmappable())
-                // Since we're mapping TO unicode, we'd expect to be able
-                // to map all characters
-                Debug.assertTrue(false);
-            // OVERFLOW is a normal condition:
-            //  it's equal to cbuf.remaining() == 0
-            // ### EHU: really??? EXACTLY equal??
         }
         if (cbuf.remaining() == len) {
             return -1;

@@ -45,6 +45,7 @@
                       (:file "url-pathname")
                       (:file "math-tests")
                       (:file "misc-tests")
+                      (:file "latin1-tests")
                       (:file "bugs" :depends-on ("file-system-tests"))
                       (:file "pathname-tests")))))
 
