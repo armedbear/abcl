@@ -1,1 +1,1 @@
-@"@JAVA@" @ABCL_JAVA_OPTIONS@ -cp "@ABCL_CLASSPATH@"  org.armedbear.lisp.Main %1 %2 %3 %4 %5 %6 %7 %8 %9 
+@"@JAVA@" @ABCL_JAVA_OPTIONS@ -cp "@ABCL_CLASSPATH@";"%CLASSPATH%"  org.armedbear.lisp.Main %1 %2 %3 %4 %5 %6 %7 %8 %9 
