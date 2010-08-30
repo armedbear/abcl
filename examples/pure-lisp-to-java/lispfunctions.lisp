@@ -17,17 +17,10 @@
 ;;; along with this program; if not, write to the Free Software
 ;;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-; we need to get the
-; 1) class (Main)
-; 2) classes of the parameters (int)
-; 3) method reference (getting that requires the class
-; of our object and the classes of the parameters
-
-; After that we can invoke the function with jcall,
-; giving the method reference, the object and the parameters.
-; The result is a lisp object (no need to do jobject-lisp-value), 
-; unless we invoke the method
-; with jcall-raw. 
+; When the java class is in CLASSPATH, we can invoke its functions with
+; for example jstatic. In this example the Main class is to be found
+; in CLASSPATH, so we can just use it without having to load it
+; separately.
 (defun void-function ()
   (let* ((result (jstatic "addTwoNumbers" "Main" 2 4)))
     (format t "in void-function, result of calling addTwoNumbers(2, 4): ~a~%" result)))
