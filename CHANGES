@@ -1,6 +1,6 @@
 Version 0.22
 ============
-unreleased
+svn://common-lisp.net/project/armedbear/svn/tags/0.22.0/abcl
 (September 24, 2010)
 
 Fixes
