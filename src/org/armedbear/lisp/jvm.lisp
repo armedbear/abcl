@@ -42,9 +42,10 @@
   (require "COMPILER-TYPES")
   (require "COMPILER-ERROR")
   (require "KNOWN-FUNCTIONS")
-  (require "KNOWN-SYMBOLS")
   (require "DUMP-FORM")
-  (require "OPCODES")
+  (require "JVM-INSTRUCTIONS")
+  (require "JVM-CLASS-FILE")
+  (require "KNOWN-SYMBOLS")
   (require "JAVA")
   (require "COMPILER-PASS1")
   (require "COMPILER-PASS2"))
@@ -60,6 +61,40 @@
 
 (defmacro dformat (&rest ignored)
   (declare (ignore ignored)))
+
+(declaim (inline u2 s1 s2))
+
+(defknown u2 (fixnum) cons)
+(defun u2 (n)
+  (declare (optimize speed))
+  (declare (type (unsigned-byte 16) n))
+  (when (not (<= 0 n 65535))
+    (error "u2 argument ~A out of 65k range." n))
+  (list (logand (ash n -8) #xff)
+        (logand n #xff)))
+
+(defknown s1 (fixnum) fixnum)
+(defun s1 (n)
+  (declare (optimize speed))
+  (declare (type (signed-byte 8) n))
+  (when (not (<= -128 n 127))
+    (error "s2 argument ~A out of 16-bit signed range." n))
+  (if (< n 0)
+      (1+ (logxor (- n) #xFF))
+      n))
+
+
+(defknown s2 (fixnum) cons)
+(defun s2 (n)
+  (declare (optimize speed))
+  (declare (type (signed-byte 16) n))
+  (when (not (<= -32768 n 32767))
+    (error "s2 argument ~A out of 16-bit signed range." n))
+  (u2 (if (< n 0) (1+ (logxor (- n) #xFFFF))
+          n)))
+
+
+
 
 
 (defmacro with-saved-compiler-policy (&body body)
@@ -77,25 +112,18 @@
 (defvar *compiler-debug* nil)
 
 (defvar *pool* nil)
-(defvar *pool-count* 1)
-(defvar *pool-entries* nil)
-(defvar *fields* ())
 (defvar *static-code* ())
+(defvar *class-file* nil)
 
 (defvar *externalized-objects* nil)
 (defvar *declared-functions* nil)
 
-(defstruct (abcl-class-file (:constructor %make-abcl-class-file))
+(defstruct (abcl-class-file (:include class-file)
+                            (:constructor %make-abcl-class-file))
   pathname ; pathname of output file
+  class-name
   lambda-name
-  class
-  superclass
   lambda-list ; as advertised
-  pool
-  (pool-count 1)
-  (pool-entries (make-hash-table :test #'equal))
-  fields
-  methods
   static-code
   objects ;; an alist of externalized objects and their field names
   (functions (make-hash-table :test 'equal)) ;; because of (SETF ...) functions
@@ -107,20 +135,23 @@
     (dotimes (i (length name))
       (declare (type fixnum i))
       (when (or (char= (char name i) #\-)
-		(char= (char name i) #\Space))
+                (char= (char name i) #\Space))
         (setf (char name i) #\_)))
-    (concatenate 'string "org/armedbear/lisp/" name)))
+    (make-class-name
+     (concatenate 'string "org.armedbear.lisp." name))))
 
 (defun make-unique-class-name ()
   "Creates a random class name for use with a `class-file' structure's
 `class' slot."
-  (concatenate 'string "abcl_"
-          (java:jcall (java:jmethod "java.lang.String" "replace" "char" "char")
-                      (java:jcall (java:jmethod "java.util.UUID" "toString")
-                             (java:jstatic "randomUUID" "java.util.UUID"))
-                      #\- #\_)))
+  (make-class-name
+   (concatenate 'string "abcl_"
+                (substitute #\_ #\-
+                            (java:jcall (java:jmethod "java.util.UUID"
+                                                      "toString")
+                                        (java:jstatic "randomUUID"
+                                                      "java.util.UUID"))))))
 
-(defun make-class-file (&key pathname lambda-name lambda-list)
+(defun make-abcl-class-file (&key pathname lambda-name lambda-list)
   "Creates a `class-file' structure. If `pathname' is non-NIL, it's
 used to derive a class name. If it is NIL, a random one created
 using `make-unique-class-name'."
@@ -128,27 +159,28 @@ using `make-unique-class-name'."
                          (class-name-from-filespec  pathname)
                          (make-unique-class-name)))
          (class-file (%make-abcl-class-file :pathname pathname
-                                            :class class-name
+                                            :class class-name ; to be finalized
+                                            :class-name class-name
                                             :lambda-name lambda-name
-                                            :lambda-list lambda-list)))
+                                            :lambda-list lambda-list
+                                            :access-flags '(:public :final))))
+    (when *file-compilation*
+      (let ((source-attribute
+             (make-source-file-attribute
+              :filename (file-namestring *compile-file-truename*))))
+        (class-add-attribute class-file source-attribute)))
     class-file))
 
 (defmacro with-class-file (class-file &body body)
   (let ((var (gensym)))
-    `(let* ((,var ,class-file)
-            (*pool*                 (abcl-class-file-pool ,var))
-            (*pool-count*           (abcl-class-file-pool-count ,var))
-            (*pool-entries*         (abcl-class-file-pool-entries ,var))
-            (*fields*               (abcl-class-file-fields ,var))
+    `(let* ((,var                   ,class-file)
+            (*class-file*           ,var)
+            (*pool*                 (abcl-class-file-constants ,var))
             (*static-code*          (abcl-class-file-static-code ,var))
             (*externalized-objects* (abcl-class-file-objects ,var))
             (*declared-functions*   (abcl-class-file-functions ,var)))
        (progn ,@body)
-       (setf (abcl-class-file-pool ,var)         *pool*
-             (abcl-class-file-pool-count ,var)   *pool-count*
-             (abcl-class-file-pool-entries ,var) *pool-entries*
-             (abcl-class-file-fields ,var)       *fields*
-             (abcl-class-file-static-code ,var)  *static-code*
+       (setf (abcl-class-file-static-code ,var)  *static-code*
              (abcl-class-file-objects ,var)      *externalized-objects*
              (abcl-class-file-functions ,var)    *declared-functions*))))
 
@@ -195,8 +227,6 @@ using `make-unique-class-name'."
 
 (defvar *this-class* nil)
 
-(defvar *code* ())
-
 ;; All tags visible at the current point of compilation, some of which may not
 ;; be in the current compiland.
 (defvar *visible-tags* ())
@@ -206,16 +236,6 @@ using `make-unique-class-name'."
 
 ;; Total number of registers allocated.
 (defvar *registers-allocated* 0)
-
-(defvar *handlers* ())
-
-(defstruct handler
-  from       ;; label indicating the start of the protected block
-  to         ;; label indicating the end of the protected block
-  code       ;; label to jump to if the specified exception occurs
-  catch-type ;; pool index of the class name of the exception, or 0 (zero)
-             ;; for 'all'
-  )
 
 ;; Variables visible at the current point of compilation.
 (defvar *visible-variables* nil

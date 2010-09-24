@@ -32,6 +32,7 @@
 		     :pathname "test/lisp/abcl/" :components
                      ((:file "compiler-tests")
                       (:file "condition-tests")
+                      (:file "class-file")
                       (:file "metaclass")
                       #+abcl
                       (:file "mop-tests-setup")
