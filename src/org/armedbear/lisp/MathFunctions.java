@@ -37,6 +37,24 @@ import static org.armedbear.lisp.Lisp.*;
 
 public final class MathFunctions
 {
+
+    // Implementation of section 12.1.5.3, which says:
+    // "If the result of any computation would be a complex number whose
+    //  real part is of type rational and whose imaginary part is zero,
+    //  the result is converted to the rational which is the real part."
+    private static final LispObject complexToRealFixup(LispObject result,
+                                                       LispObject arg)
+    {
+        if (result instanceof Complex
+            && ! (arg instanceof Complex)) {
+            Complex c = (Complex)result;
+            LispObject im = c.getImaginaryPart();
+            if (im.zerop())
+                return c.getRealPart();
+        }
+        return result;
+    }
+
     // ### sin
     private static final Primitive SIN = new Primitive("sin", "radians")
     {
@@ -135,14 +153,8 @@ public final class MathFunctions
         result = log(result);
         result = result.multiplyBy(Complex.getInstance(Fixnum.ZERO,
                                                        Fixnum.MINUS_ONE));
-        if (result instanceof Complex) {
-            if (arg instanceof Complex)
-                return result;
-            LispObject im = ((Complex)result).getImaginaryPart();
-            if (im.zerop())
-                return ((Complex)result).getRealPart();
-        }
-        return result;
+
+        return complexToRealFixup(result, arg);
     }
 
     // ### acos
@@ -177,14 +189,8 @@ public final class MathFunctions
                 result = new SingleFloat((float)((DoubleFloat)result).value);
         }
         result = result.subtract(asin(arg));
-        if (result instanceof Complex) {
-            if (arg instanceof Complex)
-                return result;
-            LispObject im = ((Complex)result).getImaginaryPart();
-            if (im.zerop())
-                return ((Complex)result).getRealPart();
-        }
-        return result;
+
+        return complexToRealFixup(result, arg);
     }
 
     // ### atan
@@ -277,14 +283,8 @@ public final class MathFunctions
         LispObject result = exp(arg);
         result = result.subtract(exp(arg.multiplyBy(Fixnum.MINUS_ONE)));
         result = result.divideBy(Fixnum.TWO);
-        if (result instanceof Complex) {
-            if (arg instanceof Complex)
-                return result;
-            LispObject im = ((Complex)result).getImaginaryPart();
-            if (im.zerop())
-                return ((Complex)result).getRealPart();
-        }
-        return result;
+
+        return complexToRealFixup(result, arg);
     }
 
     // ### cosh
@@ -315,14 +315,8 @@ public final class MathFunctions
         LispObject result = exp(arg);
         result = result.add(exp(arg.multiplyBy(Fixnum.MINUS_ONE)));
         result = result.divideBy(Fixnum.TWO);
-        if (result instanceof Complex) {
-            if (arg instanceof Complex)
-                return result;
-            LispObject im = ((Complex)result).getImaginaryPart();
-            if (im.zerop())
-                return ((Complex)result).getRealPart();
-        }
-        return result;
+
+        return complexToRealFixup(result, arg);
     }
 
     // ### tanh
@@ -365,14 +359,8 @@ public final class MathFunctions
         result = sqrt(result);
         result = result.add(arg);
         result = log(result);
-        if (result instanceof Complex) {
-            if (arg instanceof Complex)
-                return result;
-            LispObject im = ((Complex)result).getImaginaryPart();
-            if (im.zerop())
-                return ((Complex)result).getRealPart();
-        }
-        return result;
+
+        return complexToRealFixup(result, arg);
     }
 
     // ### acosh
@@ -402,14 +390,8 @@ public final class MathFunctions
         LispObject result = n1.add(n2);
         result = log(result);
         result = result.multiplyBy(Fixnum.TWO);
-        if (result instanceof Complex) {
-            if (arg instanceof Complex)
-                return result;
-            LispObject im = ((Complex)result).getImaginaryPart();
-            if (im.zerop())
-                return ((Complex)result).getRealPart();
-        }
-        return result;
+
+        return complexToRealFixup(result, arg);
     }
 
     // ### atanh
@@ -434,14 +416,8 @@ public final class MathFunctions
         LispObject n2 = log(Fixnum.ONE.subtract(arg));
         LispObject result = n1.subtract(n2);
         result = result.divideBy(Fixnum.TWO);
-        if (result instanceof Complex) {
-            if (arg instanceof Complex)
-                return result;
-            LispObject im = ((Complex)result).getImaginaryPart();
-            if (im.zerop())
-                return ((Complex)result).getRealPart();
-        }
-        return result;
+
+        return complexToRealFixup(result, arg);
     }
 
     // ### cis
