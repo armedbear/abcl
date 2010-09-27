@@ -348,8 +348,8 @@
       (setf string (subseq string 1)
             len (1- len)))
     (dolist (entry *command-table*)
-      (when (or (string= string (entry-abbreviation entry))
-                (string= string (entry-name entry)))
+      (when (or (string-equal string (entry-abbreviation entry))
+                (string-equal string (entry-name entry)))
         (return (entry-command entry))))))
 
 (defun process-cmd (form)
@@ -376,13 +376,17 @@
 
 (defun read-cmd (stream)
   (let ((c (peek-char-non-whitespace stream)))
-    (cond ((eql c *command-char*)
-           (read-line stream))
-          ((eql c #\newline)
-           (read-line stream)
-           *null-cmd*)
-          (t
-           (read stream nil)))))
+    (if (eql c #\Newline)
+	(progn
+	  (read-line stream)
+	  *null-cmd*)
+	(let ((input (read stream nil)))
+	  (if (not (keywordp input))
+	      input
+	      (let ((name (string-downcase (symbol-name input))))
+		(if (find-command name)
+		    (concatenate 'string ":" name)
+		    input)))))))
 
 (defun repl-read-form-fun (in out)
   (loop
