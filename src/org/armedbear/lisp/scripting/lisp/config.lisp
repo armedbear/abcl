@@ -47,7 +47,7 @@
       (error "Swank directory not specified, please set *swank-dir*"))
     (pushnew *swank-dir* asdf:*central-registry* :test #'equal)
     (asdf:oos 'asdf:load-op :swank)
-    (ext:make-thread (lambda () (funcall (find-symbol
+    (threads:make-thread (lambda () (funcall (find-symbol
 					  (symbol-name '#:create-server)
 					  :swank)
 					 :port *swank-port*))
