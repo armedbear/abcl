@@ -64,12 +64,11 @@
 (defmethod sequence:make-simple-sequence-iterator
     ((s (jclass "java.util.List")) &key from-end (start 0) end)
   (let* ((end (or end (length s)))
-	 (index (if from-end (1- end) start))
+	 (index (if from-end end start))
 	 (it (jcall "listIterator" s index))
 	 (iter (make-jlist-iterator :native-iterator it
-				    :index (if from-end (1+ index)
-					       (1- index))))
-	 (limit (if from-end start (1- end))))
+				    :index (if from-end (1+ index) (1- index))))
+	 (limit (if from-end (1+ start) (1- end))))
     ;;CL iterator semantics are that first element is present from the start
     (unless (sequence:iterator-endp s iter limit from-end)
       (sequence:iterator-step s iter from-end))
@@ -78,22 +77,25 @@
 ;;Collection, and not List, because we want to reuse this for Set when applicable
 (defmethod sequence:iterator-step
     ((s (jclass "java.util.Collection")) it from-end)
-  (if from-end
-      (progn
-	(setf (jlist-it-element it)
-	      (jcall "previous" (jlist-it-native-iterator it)))
-	(decf (jlist-it-index it)))
-      (progn
-	(setf (jlist-it-element it)
-	      (jcall "next" (jlist-it-native-iterator it)))
-	(incf (jlist-it-index it))))
+  (let ((native-it (jlist-it-native-iterator it)))
+    (if from-end
+	(progn
+	  (setf (jlist-it-element it)
+		(when (jcall "hasPrevious" native-it)
+		  (jcall "previous" native-it)))
+	  (decf (jlist-it-index it)))
+	(progn
+	  (setf (jlist-it-element it)
+		(when (jcall "hasNext" native-it)
+		  (jcall "next" native-it)))
+	  (incf (jlist-it-index it)))))
   it)
 
 (defmethod sequence:iterator-endp
     ((s (jclass "java.util.Collection")) it limit from-end)
   (if from-end
-      (<= (jlist-it-index it) limit)
-      (>= (jlist-it-index it) limit)))
+      (< (jlist-it-index it) limit)
+      (> (jlist-it-index it) limit)))
 
 (defmethod sequence:iterator-element
     ((s (jclass "java.util.Collection")) iterator)

@@ -996,7 +996,7 @@ the sequence argument to be a proper sequence.
 ;; just like DOLIST, but with one-dimensional arrays
 (defmacro dovector ((elt vector &optional result) &body body)
   (multiple-value-bind (forms decls)
-      (sys:parse-body body :doc-string-allowed nil)
+      (sys:parse-body body nil)
     (let ((index (gensym "INDEX")) (length (gensym "LENGTH")) (vec (gensym "VEC")))
       `(let ((,vec ,vector))
         (declare (type vector ,vec))
@@ -1015,7 +1015,7 @@ the sequence argument to be a proper sequence.
 				  from-end start end) &body body)
   (declare (ignore from-end start end))
   (multiple-value-bind (forms decls)
-      (sys:parse-body body :doc-string-allowed nil)
+      (sys:parse-body body nil)
     (let ((s sequence)
           (sequence (gensym "SEQUENCE")))
       `(block nil
