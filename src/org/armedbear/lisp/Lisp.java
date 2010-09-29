@@ -2704,7 +2704,7 @@ public final class Lisp
 
   // Floating point traps.
   protected static boolean TRAP_OVERFLOW  = true;
-  protected static boolean TRAP_UNDERFLOW = true;
+  protected static boolean TRAP_UNDERFLOW = false;
 
 
   // Extentions
