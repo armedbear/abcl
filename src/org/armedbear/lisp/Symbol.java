@@ -287,6 +287,9 @@ public class Symbol extends LispObject implements java.io.Serializable
    */
   public final void setSymbolValue(LispObject value)
   {
+    if (isConstant())
+      // Complement the check already done in SpecialOperators.sf_setq
+      error(new ProgramError("Can't change value of constant symbol " + writeToString() + "."));
     this.value = value;
   }
 
