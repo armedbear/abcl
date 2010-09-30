@@ -1,3 +1,20 @@
+Version 0.23
+============
+svn://common-lisp.net/project/armedbear/svn/tags/0.23.0/abcl
+(????, 2010)
+
+Fixes
+-----
+
+* [svn r12930] Fix non-constantness of constant symbols when using SET
+
+* [svn r12929] Don't throw conditions on floating point underflow
+    (fixes Maxima failures)
+
+* [svn r12928] Fix for Java-collections-as-lisp-sequences support
+
+* [svn r12927] Fix for regression to moved threads related symbols
+
 Version 0.22
 ============
 svn://common-lisp.net/project/armedbear/svn/tags/0.22.0/abcl
