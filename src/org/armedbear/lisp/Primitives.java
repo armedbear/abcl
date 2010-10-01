@@ -199,6 +199,21 @@ public final class Primitives {
         }
     };
 
+    // ### compiled-lisp-function-p
+    private static final Primitive COMPILED_LISP_FUNCTION_P =
+        new pf_compiled_lisp_function_p();
+    private static final class pf_compiled_lisp_function_p extends Primitive {
+        pf_compiled_lisp_function_p() {
+            super(Symbol.COMPILED_LISP_FUNCTION_P, "object");
+        }
+
+        @Override
+        public LispObject execute(LispObject arg) {
+            return (arg instanceof CompiledClosure
+                    || arg instanceof CompiledPrimitive) ? T : NIL;
+        }
+    }
+
     // ### consp
     private static final Primitive CONSP = new pf_consp();
     private static final class pf_consp extends Primitive {

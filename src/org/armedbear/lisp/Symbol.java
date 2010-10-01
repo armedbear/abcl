@@ -2986,6 +2986,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("CLASS-BYTES");
   public static final Symbol _CLASS_SLOTS =
     PACKAGE_SYS.addExternalSymbol("%CLASS-SLOTS");
+  public static final Symbol COMPILED_LISP_FUNCTION_P =
+    PACKAGE_SYS.addExternalSymbol("COMPILED-LISP-FUNCTION-P");
   public static final Symbol LAYOUT =
     PACKAGE_SYS.addExternalSymbol("LAYOUT");
   public static final Symbol NAMED_LAMBDA =

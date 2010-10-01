@@ -167,6 +167,8 @@ initialized from the `java-dotted-name'."
 (define-class-name +lisp-return+ "org.armedbear.lisp.Return")
 (define-class-name +lisp-go+ "org.armedbear.lisp.Go")
 (define-class-name +lisp-primitive+ "org.armedbear.lisp.Primitive")
+(define-class-name +lisp-compiled-primitive+
+    "org.armedbear.lisp.CompiledPrimitive")
 (define-class-name +lisp-eql-hash-table+ "org.armedbear.lisp.EqlHashTable")
 (define-class-name +lisp-hash-table+ "org.armedbear.lisp.HashTable")
 (define-class-name +lisp-package+ "org.armedbear.lisp.Package")

@@ -808,7 +808,7 @@ representation, based on the derived type of the LispObject."
          (*code* ())
          (*current-code-attribute* code))
     (setf (code-max-locals code) 1)
-    (unless (eq super +lisp-primitive+)
+    (unless (eq super +lisp-compiled-primitive+)
       (multiple-value-bind
             (req opt key key-p rest
                  allow-other-keys-p)
@@ -876,7 +876,7 @@ representation, based on the derived type of the LispObject."
                                       (list +lisp-symbol+ +lisp-symbol+
                                             +lisp-object+ +lisp-object+))))))
     (aload 0) ;; this
-    (cond ((eq super +lisp-primitive+)
+    (cond ((eq super +lisp-compiled-primitive+)
            (emit-constructor-lambda-name lambda-name)
            (emit-constructor-lambda-list args)
            (emit-invokespecial-init super (lisp-object-arg-types 2)))
@@ -7050,7 +7050,7 @@ We need more thought here.
           (if (or *hairy-arglist-p*
 		  (and *child-p* *closure-variables*))
 	      +lisp-compiled-closure+
-	    +lisp-primitive+))
+	    +lisp-compiled-primitive+))
 
     (setf (abcl-class-file-lambda-list class-file) args)
     (setf (code-max-locals code) *registers-allocated*)
