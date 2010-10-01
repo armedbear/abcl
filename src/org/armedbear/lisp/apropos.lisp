@@ -49,11 +49,12 @@
             (push symbol result)))
         result)
       (mapcan (lambda (package)
-		(apropos-list string-designator package))
-	      (list-all-packages))))
+                (apropos-list string-designator package))
+              (list-all-packages))))
 
 (defun apropos (string-designator &optional package-designator)
-  (dolist (symbol (apropos-list string-designator package-designator))
+  (dolist (symbol (remove-duplicates (apropos-list string-designator
+                                                   package-designator)))
     (fresh-line)
     (prin1 symbol)
     (when (boundp symbol)
