@@ -41,10 +41,11 @@ import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.ParseException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
@@ -101,8 +102,13 @@ public class ZipCache {
         return get(Pathname.makeURL(p));
     }
 
+    static final SimpleDateFormat ASCTIME
+        = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy", Locale.US);
+    static final SimpleDateFormat RFC_1036
+        = new SimpleDateFormat("EEEE, dd-MMM-yy HH:mm:ss zzz", Locale.US);
     static final SimpleDateFormat RFC_1123
-        = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+        = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
+
 
     synchronized public static ZipFile get(final URL url) {
         if (!cacheEnabled) {
@@ -160,22 +166,31 @@ public class ZipCache {
                 // refetch the resource.n
                 String dateString = HttpHead.get(url, "Last-Modified");
                 Date date = null;
-                try {
-                    if (dateString == null) {
-                        throw new ParseException("Failed to get HEAD for " + url, 0);
+                ParsePosition pos = new ParsePosition(0);
+
+                if (dateString != null) {
+                    date = RFC_1123.parse(dateString, pos);
+                    if (date == null) {
+                        date = RFC_1036.parse(dateString, pos);
+                        if (date == null)
+                            date = ASCTIME.parse(dateString, pos);
                     }
-                    date = RFC_1123.parse(dateString);
-                    long current = date.getTime();
-                    if (current > entry.lastModified) {
-                        entry = fetchURL(url, false);
-                        zipCache.put(url, entry);
-                    }
-                } catch (ParseException e) {
-                   Debug.trace("Failed to parse HTTP Last-Modified field: " + e);
-                   entry = fetchURL(url, false);
-                   zipCache.put(url, entry);
                 }
-           } else { 
+
+                if (date == null || date.getTime() > entry.lastModified) {
+                    entry = fetchURL(url, false);
+                    zipCache.put(url, entry);
+                }
+                if (date == null) {
+                    if (dateString == null)
+                        Debug.trace("Failed to retrieve request header: "
+                                    + url.toString());
+                    else
+                        Debug.trace("Failed to parse Last-Modified date: " +
+                                    dateString);
+                }
+
+           } else {
                 entry = fetchURL(url, false);
                 zipCache.put(url, entry);
             }
