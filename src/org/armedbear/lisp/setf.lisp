@@ -241,3 +241,5 @@
 (defsetf function-info %set-function-info)
 
 (defsetf stream-external-format %set-stream-external-format)
+
+(defsetf structure-ref structure-set)

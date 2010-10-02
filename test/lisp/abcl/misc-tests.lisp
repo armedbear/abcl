@@ -96,3 +96,16 @@
   (read-from-string "(1 2 #+nil #k(3 4))")
   (1 2)
   19)
+
+;; executed of the compiled expression below
+;; resulted in an error on pre-0.23 versions
+(defstruct mystruct slot)
+(deftest ticket.107
+    (funcall (compile nil
+                      '(lambda ()
+                         (let ((struct (make-mystruct))
+                               x)
+                           (setf (values (mystruct-slot struct)
+                                         x)
+                                 (values 42 2))))))
+  42 2)
