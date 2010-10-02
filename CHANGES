@@ -15,6 +15,20 @@ Fixes
 
 * [svn r12927] Fix for regression to moved threads related symbols
 
+* [ticket #104] SET changes value of symbols defined with DEFCONSTANT
+
+* [ticket #88] Need a predicate to indicate source of compiled version
+      ie Java vs Lisp
+
+* [ticket #106] DEFSTRUCT :include with :conc-name creating overwriting
+      inherited slot accessors
+
+* [ticket #97] Symbol imported in multiple packages reported multiple
+      times by APROPOS
+
+* [ticket #107] Incorrect compilation of (SETF STRUCTURE-REF) expansion
+
+
 Version 0.22
 ============
 svn://common-lisp.net/project/armedbear/svn/tags/0.22.0/abcl
