@@ -623,6 +623,34 @@ public final class MathFunctions
             }
             // for anything not a rational or complex rational, use
             // float approximation.
+            boolean wantDoubleFloat = false;
+            if (base instanceof DoubleFloat)
+                wantDoubleFloat = true;
+            else if (power instanceof DoubleFloat)
+                wantDoubleFloat = true;
+            else if (base instanceof Complex
+                     && (((Complex)base).getRealPart() instanceof DoubleFloat
+                         || ((Complex)base).getImaginaryPart() instanceof DoubleFloat))
+                wantDoubleFloat = true;
+            else if (power instanceof Complex
+                    && (((Complex)power).getRealPart() instanceof DoubleFloat
+                         || ((Complex)power).getImaginaryPart() instanceof DoubleFloat))
+                wantDoubleFloat = true;
+
+            if (wantDoubleFloat) {
+                if (power instanceof Complex)
+                    power = ((Complex)power).coerceToDoubleFloat();
+                else
+                    power = DoubleFloat.coerceToFloat(power);
+
+                if (base instanceof Complex)
+                    base = ((Complex)base).coerceToDoubleFloat();
+                else
+                    base = DoubleFloat.coerceToFloat(base);
+            }
+
+
+
             if (base instanceof Complex || power instanceof Complex)
                 return exp(power.multiplyBy(log(base)));
             final double x; // base

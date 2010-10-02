@@ -80,6 +80,15 @@ public final class Complex extends LispObject
     return imagpart;
   }
 
+  /** Coerces the complex parts into DoubleFloats
+   *
+   * @return a new complex with double-float real and imaginary parts
+   */
+  public LispObject coerceToDoubleFloat() {
+      return getInstance(DoubleFloat.coerceToFloat(realpart),
+                         DoubleFloat.coerceToFloat(imagpart));
+  }
+
   @Override
   public LispObject typeOf()
   {
