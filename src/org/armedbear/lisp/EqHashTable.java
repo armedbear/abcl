@@ -54,7 +54,7 @@ public final class EqHashTable extends HashTable
     }
 
     @Override
-    public LispObject get(LispObject key)
+    public synchronized LispObject get(LispObject key)
     {
         final int index;
         if (key == cachedKey) {
@@ -74,7 +74,7 @@ public final class EqHashTable extends HashTable
     }
 
     @Override
-    public void put(LispObject key, LispObject value)
+    public synchronized void put(LispObject key, LispObject value)
     {
         int index;
         if (key == cachedKey) {

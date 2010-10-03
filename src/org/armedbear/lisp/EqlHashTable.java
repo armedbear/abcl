@@ -55,7 +55,7 @@ public final class EqlHashTable extends HashTable
   }
 
   @Override
-  public LispObject get(LispObject key)
+  public synchronized LispObject get(LispObject key)
   {
     HashEntry e = buckets[key.sxhash() & mask];
     while (e != null)
@@ -68,7 +68,7 @@ public final class EqlHashTable extends HashTable
   }
 
   @Override
-  public void put(LispObject key, LispObject value)
+  public synchronized void put(LispObject key, LispObject value)
   {
     int index = key.sxhash() & mask;
     HashEntry e = buckets[index];

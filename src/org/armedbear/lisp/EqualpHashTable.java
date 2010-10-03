@@ -48,7 +48,7 @@ public final class EqualpHashTable extends HashTable
   }
 
   @Override
-  public LispObject get(LispObject key)
+  public synchronized LispObject get(LispObject key)
   {
     final int index = key.psxhash() % buckets.length;
     HashEntry e = buckets[index];
@@ -62,7 +62,7 @@ public final class EqualpHashTable extends HashTable
   }
 
   @Override
-  public void put(LispObject key, LispObject value)
+  public synchronized void put(LispObject key, LispObject value)
   {
     int index = key.psxhash() % buckets.length;
     HashEntry e = buckets[index];
