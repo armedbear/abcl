@@ -166,7 +166,7 @@
       (jvm::class-add-method file (jvm::make-method "MBC" nil :int))
       (jvm::class-add-method file (jvm::make-method "MBD" nil jvm::+lisp-object+))
       (jvm::class-add-method file (jvm::make-method :constructor :void nil))
-      (jvm::class-add-method file (jvm::make-method :class-constructor :void nil))
+      (jvm::class-add-method file (jvm::make-method :static-initializer :void nil))
       T)
   T)
 
@@ -187,7 +187,7 @@
 (deftest generate-method.1
     (let* ((class (jvm::make-class-name "org/armedbear/lisp/gm_1"))
            (file (jvm::make-class-file class jvm::+lisp-object+ '(:public)))
-           (method (jvm::make-method :class-constructor :void nil
+           (method (jvm::make-method :static-initializer :void nil
                                       :flags '(:static))))
       (jvm::class-add-method file method)
       (jvm::with-code-to-method (file method)
@@ -257,7 +257,7 @@
            )
       (jvm::class-add-field file (jvm::make-field "N1" jvm::+lisp-object+
                                                   :flags '(:static :private)))
-      (let ((method (jvm::make-method :class-constructor :void nil :flags '(:static))))
+      (let ((method (jvm::make-method :static-initializer :void nil :flags '(:static))))
         (jvm::class-add-method file method)
         (jvm::with-code-to-method (file method)
           (jvm::emit-getstatic jvm::+lisp+ "NIL" jvm::+lisp-object+)
@@ -323,7 +323,7 @@
 (deftest with-code-to-method.1
     (let* ((class (jvm::make-class-name "org/armedbear/lisp/gm_6"))
            (file (jvm::make-class-file class jvm::+lisp-object+ '(:public)))
-           (method (jvm::make-method :class-constructor :void nil
+           (method (jvm::make-method :static-initializer :void nil
 				      :flags '(:static)))
 	   (registers nil))
       (jvm::class-add-method file method)
@@ -347,7 +347,7 @@
 (deftest with-code-to-method.2
     (let* ((class (jvm::make-class-name "org/armedbear/lisp/gm_7"))
            (file (jvm::make-class-file class jvm::+lisp-object+ '(:public)))
-           (method1 (jvm::make-method :class-constructor :void nil
+           (method1 (jvm::make-method :static-initializer :void nil
 				       :flags '(:static)))
 	   (method2 (jvm::make-method "method2" :void nil))
 	   (registers nil))
