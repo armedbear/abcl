@@ -57,9 +57,9 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
       (cl-fad-copy-file (merge-pathnames "eek.lisp")
                  (merge-pathnames "eek.lisp" sub))
       (sys:zip (merge-pathnames "baz.jar")
-               (append
-                (directory (merge-pathnames "*" dir))
-                (directory (merge-pathnames "*" sub)))
+               (print (append
+                       (directory (merge-pathnames "*" dir))
+                       (directory (merge-pathnames "*" sub))))
                dir)
       (delete-directory-and-files dir)))
   (setf *jar-file-init* t))

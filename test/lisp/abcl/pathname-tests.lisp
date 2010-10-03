@@ -99,8 +99,10 @@
   (declare (type string expected))
   (let ((result (namestring (apply 'translate-pathname args))))
     (equal result
-           #-windows expected
-           #+windows (substitute #\\ #\/ expected))))
+           ;;#-windows
+           expected
+           ;;#+windows (substitute #\\ #\/ expected)
+           )))
 
 (defmacro check-readable (pathname)
   `(equal ,pathname (read-from-string (write-to-string ,pathname :readably t))))
@@ -112,8 +114,9 @@
 
 (defmacro check-namestring (pathname namestring)
   `(string= (namestring ,pathname)
-            #+windows (substitute #\\ #\/ ,namestring)
-            #-windows ,namestring))
+            ;;#+windows (substitute #\\ #\/ ,namestring)
+            ;;#-windows
+            ,namestring))
 
 ;; Define a logical host.
 (setf (logical-pathname-translations "effluvia")
@@ -307,10 +310,8 @@
 (pushnew 'namestring.2 *expected-failures*)
 
 (deftest directory-namestring.1
-  (equal (directory-namestring #-windows #p"./"
-                               #+windows #p".\\")
-         #-windows "./"
-         #+windows ".\\")
+  (equal (directory-namestring #p"./")
+         "./")
   t)
 #+lispworks
 (pushnew 'directory-namestring.1 *expected-failures*)
@@ -384,8 +385,7 @@
 (deftest directory-namestring.2
   (equal (directory-namestring #-windows #p"../"
                                #+windows #p"..\\")
-         #-windows "../"
-         #+windows "..\\")
+         "../")
   t)
 
 #-sbcl
@@ -402,8 +402,7 @@
 
 (deftest physical.31
   (string= (namestring (make-pathname :directory '(:relative :up)))
-           #+windows "..\\"
-           #-windows "../")
+           "../")
   t)
 
 #+windows
@@ -918,8 +917,7 @@
 
 (deftest translate-pathname.12
   (string= (namestring (translate-pathname "foo.bar" "*.*" "/usr/local/*.*"))
-           #-windows "/usr/local/foo.bar"
-           #+windows "\\usr\\local\\foo.bar")
+           "/usr/local/foo.bar")
   t)
 
 (deftest translate-pathname.13
@@ -1118,7 +1116,7 @@
   #-windows
   (equal (enough-namestring #p"foo/bar" #p"foo") "foo/bar")
   #+windows
-  (equal (enough-namestring #p"foo\\bar" #p"foo") "foo\\bar")
+  (equal (enough-namestring #p"foo\\bar" #p"foo") "foo/bar")
   t)
 
 (deftest enough-namestring.3
@@ -1251,8 +1249,10 @@
   (signals-error (translate-logical-pathname "demo0:x.y") 'error)
   #-clisp
   (equal (namestring (translate-logical-pathname "demo0:x.y"))
-         #-windows "/tmp/x.y"
-         #+windows "\\tmp\\x.y")
+         ;;#-windows
+         "/tmp/x.y"
+         ;;#+windows "\\tmp\\x.y"
+         )
   t)
 
 #-(or allegro clisp)
@@ -1626,29 +1626,36 @@
 #-allegro
 (deftest sbcl.59
   (string= (with-standard-io-syntax (write-to-string #p"/foo"))
-           #-windows "#P\"/foo\""
-           #+(and windows (not lispworks)) "#P\"\\\\foo\""
-           #+(and windows lispworks) "#P\"/foo\"")
+           ;;#-windows "#P\"/foo\""
+           ;;#+(and windows (not lispworks)) "#P\"\\\\foo\""
+           ;;#+(and windows lispworks)
+           "#P\"/foo\"")
   t)
 
 #-allegro
 (deftest sbcl.60
   (string= (with-standard-io-syntax (write-to-string #p"/foo" :readably nil))
-           #-windows "#P\"/foo\""
-           #+(and windows (not lispworks)) "#P\"\\\\foo\""
-           #+(and windows lispworks) "#P\"/foo\"")
+           ;;#-windows
+           "#P\"/foo\""
+           ;;#+(and windows (not lispworks)) "#P\"\\\\foo\""
+           ;;#+(and windows lispworks) "#P\"/foo\""
+           )
   t)
 
 #-allegro
 (deftest sbcl.61
   (string= (with-standard-io-syntax (write-to-string #p"/foo" :escape nil))
-           #-windows "#P\"/foo\""
-           #+(and windows (not lispworks)) "#P\"\\\\foo\""
-           #+(and windows lispworks) "#P\"/foo\"")
+           ;;#-windows
+           "#P\"/foo\""
+           ;;#+(and windows (not lispworks)) "#P\"\\\\foo\""
+           ;;#+(and windows lispworks) "#P\"/foo\""
+           )
   t)
 
 (deftest sbcl.62
   (string= (with-standard-io-syntax (write-to-string #p"/foo" :readably nil :escape nil))
-           #-windows "/foo"
-           #+windows "\\foo")
+           ;;#-windows
+           "/foo"
+           ;;#+windows "\\foo"
+           )
   t)
