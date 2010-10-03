@@ -130,9 +130,9 @@ public final class zip extends Primitive
                   String d = dir.substring(rootPathLength);
                   int i = 0;
                   int j;
-                  while ((j = d.indexOf(File.separator, i)) != -1) {
+                  while ((j = d.indexOf(Pathname.separator, i)) != -1) {
                     i = j + 1;
-                    directory = d.substring(0, j).replace(File.separatorChar, '/') + "/";
+                    directory = d.substring(0, j) + Pathname.separator;
                     if (!directories.contains(directory)) {
                       directories.add(directory);
                       ZipEntry entry = new ZipEntry(directory);

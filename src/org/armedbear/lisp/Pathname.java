@@ -52,6 +52,11 @@ import java.util.zip.ZipInputStream;
 
 public class Pathname extends LispObject {
 
+    /** The path component separator used by internally generated
+     * path namestrings.
+     */
+    public final static char separator = '/';
+
     protected LispObject host = NIL;
     protected LispObject device = NIL;
     protected LispObject directory = NIL;
