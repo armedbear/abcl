@@ -29,6 +29,13 @@ Fixes
 * [ticket #107] Incorrect compilation of (SETF STRUCTURE-REF) expansion
 
 
+Other
+-----
+
+* [svn r12918] Compiler byte code generator cleanup: introduction
+      of generic class file writer, elimination of special purpose code
+      in the compiler.
+
 Version 0.22
 ============
 svn://common-lisp.net/project/armedbear/svn/tags/0.22.0/abcl
