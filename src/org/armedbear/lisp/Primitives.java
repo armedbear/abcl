@@ -5777,4 +5777,50 @@ for (LispObject a : args)
         }
     };
 
+    /* Added to ABCL because Maxima wants to be able to turn off
+     * underflow conditions. However, the Hyperspec says we have to
+     * signal them. So, we went for CLHS compliant with a switch for
+     * Maxima.
+     */
+    // ### float-underflow-mode
+    private static final Primitive FLOAT_UNDERFLOW_MODE
+        = new pf_float_underflow_mode();
+    private static final class pf_float_underflow_mode extends Primitive {
+        pf_float_underflow_mode() {
+            super(Symbol.FLOAT_UNDERFLOW_MODE, "&optional boolean");
+        }
+
+        @Override
+        public LispObject execute() {
+            return Lisp.TRAP_UNDERFLOW ? T : NIL;
+        }
+
+        @Override
+        public LispObject execute(LispObject arg) {
+            Lisp.TRAP_UNDERFLOW = (arg != NIL);
+            return arg;
+        }
+    };
+
+    /* Implemented for symmetry with the underflow variant. */
+    // ### float-overflow-mode
+    private static final Primitive FLOAT_OVERFLOW_MODE
+        = new pf_float_overflow_mode();
+    private static final class pf_float_overflow_mode extends Primitive {
+        pf_float_overflow_mode() {
+            super(Symbol.FLOAT_OVERFLOW_MODE, "&optional boolean");
+        }
+
+        @Override
+        public LispObject execute() {
+            return Lisp.TRAP_OVERFLOW ? T : NIL;
+        }
+
+        @Override
+        public LispObject execute(LispObject arg) {
+            Lisp.TRAP_OVERFLOW = (arg != NIL);
+            return arg;
+        }
+    };
+
 }

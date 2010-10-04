@@ -2982,6 +2982,10 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("ENVIRONMENT");
   public static final Symbol FORWARD_REFERENCED_CLASS =
     PACKAGE_SYS.addExternalSymbol("FORWARD-REFERENCED-CLASS");
+  public static final Symbol FLOAT_UNDERFLOW_MODE =
+    PACKAGE_SYS.addExternalSymbol("FLOAT-UNDERFLOW-MODE");
+  public static final Symbol FLOAT_OVERFLOW_MODE =
+    PACKAGE_SYS.addExternalSymbol("FLOAT-OVERFLOW-MODE");
   public static final Symbol CLASS_BYTES =
     PACKAGE_SYS.addExternalSymbol("CLASS-BYTES");
   public static final Symbol _CLASS_SLOTS =
