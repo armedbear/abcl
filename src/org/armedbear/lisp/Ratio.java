@@ -181,6 +181,10 @@ public final class Ratio extends LispObject
     @Override
     public float floatValue()
     {
+        float result = (float) doubleValue();
+        if (Float.isInfinite(result) && TRAP_OVERFLOW)
+            type_error(this, Symbol.SINGLE_FLOAT);
+
         return (float) doubleValue();
     }
 
@@ -217,6 +221,9 @@ public final class Ratio extends LispObject
             n = n.shiftRight(1);
             d = d.shiftRight(1);
         }
+        if (Double.isInfinite(result) && TRAP_OVERFLOW)
+            type_error(this, Symbol.DOUBLE_FLOAT);
+
         return negative ? -result : result;
     }
 

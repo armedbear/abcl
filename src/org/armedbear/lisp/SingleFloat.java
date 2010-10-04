@@ -629,8 +629,13 @@ public final class SingleFloat extends LispObject
             return new SingleFloat(((Fixnum)obj).value);
         if (obj instanceof SingleFloat)
             return (SingleFloat) obj;
-        if (obj instanceof DoubleFloat)
-            return new SingleFloat((float)((DoubleFloat)obj).value);
+        if (obj instanceof DoubleFloat) {
+            float result = (float)((DoubleFloat)obj).value;
+            if (Float.isInfinite(result) && TRAP_OVERFLOW)
+                type_error(obj, Symbol.SINGLE_FLOAT);
+
+            return new SingleFloat(result);
+        }
         if (obj instanceof Bignum)
             return new SingleFloat(((Bignum)obj).floatValue());
         if (obj instanceof Ratio)
