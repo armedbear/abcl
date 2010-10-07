@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class StandardGenericFunction extends StandardObject
 {
@@ -43,8 +43,8 @@ public final class StandardGenericFunction extends StandardObject
 
   int numberOfRequiredArgs;
 
-  HashMap<CacheEntry,LispObject> cache;
-  HashMap<LispObject,LispObject> slotCache;
+  ConcurrentHashMap<CacheEntry,LispObject> cache;
+  ConcurrentHashMap<LispObject,LispObject> slotCache;
 
   public StandardGenericFunction()
   {
@@ -581,9 +581,9 @@ public final class StandardGenericFunction extends StandardObject
             args = args.cdr();
           }
         CacheEntry specializations = new CacheEntry(array);
-        HashMap<CacheEntry,LispObject> ht = gf.cache;
+        ConcurrentHashMap<CacheEntry,LispObject> ht = gf.cache;
         if (ht == null)
-            ht = gf.cache = new HashMap<CacheEntry,LispObject>();
+            ht = gf.cache = new ConcurrentHashMap<CacheEntry,LispObject>();
         ht.put(specializations, third);
         return third;
       }
@@ -606,7 +606,7 @@ public final class StandardGenericFunction extends StandardObject
             args = args.cdr();
           }
         CacheEntry specializations = new CacheEntry(array);
-        HashMap<CacheEntry,LispObject> ht = gf.cache;
+        ConcurrentHashMap<CacheEntry,LispObject> ht = gf.cache;
         if (ht == null)
           return NIL;
         LispObject emf = (LispObject) ht.get(specializations);
@@ -705,9 +705,9 @@ public final class StandardGenericFunction extends StandardObject
         final StandardGenericFunction gf = checkStandardGenericFunction(first);
         LispObject layout = second;
         LispObject location = third;
-        HashMap<LispObject,LispObject> ht = gf.slotCache;
+        ConcurrentHashMap<LispObject,LispObject> ht = gf.slotCache;
         if (ht == null)
-          ht = gf.slotCache = new HashMap<LispObject,LispObject>();
+          ht = gf.slotCache = new ConcurrentHashMap<LispObject,LispObject>();
         ht.put(layout, location);
         return third;
       }
@@ -723,7 +723,7 @@ public final class StandardGenericFunction extends StandardObject
       {
         final StandardGenericFunction gf = checkStandardGenericFunction(first);
         LispObject layout = second;
-        HashMap<LispObject,LispObject> ht = gf.slotCache;
+        ConcurrentHashMap<LispObject,LispObject> ht = gf.slotCache;
         if (ht == null)
           return NIL;
         LispObject location = (LispObject) ht.get(layout);
