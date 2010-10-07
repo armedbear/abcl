@@ -33,12 +33,13 @@
 
 package org.armedbear.lisp;
 
+import java.util.concurrent.ConcurrentHashMap;
 import static org.armedbear.lisp.Lisp.*;
 
 public class Layout extends LispObject
 {
   private final LispObject lispClass;
-  public final EqHashTable slotTable;
+  public final ConcurrentHashMap<LispObject, LispObject> slotTable;
 
   final LispObject[] slotNames;
   final LispObject sharedSlots;
@@ -82,9 +83,9 @@ public class Layout extends LispObject
     slotTable = initializeSlotTable(slotNames);
   }
 
-  private EqHashTable initializeSlotTable(LispObject[] slotNames)
+  private ConcurrentHashMap initializeSlotTable(LispObject[] slotNames)
   {
-    EqHashTable ht = new EqHashTable(slotNames.length, NIL, NIL);
+    ConcurrentHashMap ht = new ConcurrentHashMap(slotNames.length);
     for (int i = slotNames.length; i-- > 0;)
       ht.put(slotNames[i], Fixnum.getInstance(i));
     return ht;
