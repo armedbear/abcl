@@ -33,44 +33,34 @@
 
 package org.armedbear.lisp;
 
+import java.util.concurrent.ConcurrentHashMap;
 import static org.armedbear.lisp.Lisp.*;
 
 public abstract class LispClass extends StandardObject
 {
-  private static final EqHashTable map = new EqHashTable(256, NIL, NIL);
+  private static final ConcurrentHashMap<Symbol, LispObject> map
+          = new ConcurrentHashMap<Symbol, LispObject>();
 
   public static LispClass addClass(Symbol symbol, LispClass c)
   {
-    synchronized (map)
-      {
-        map.put(symbol, c);
-      }
+    map.put(symbol, c);
     return c;
   }
 
   public static LispObject addClass(Symbol symbol, LispObject c)
   {
-    synchronized (map)
-      {
-        map.put(symbol, c);
-      }
+    map.put(symbol, c);
     return c;
   }
 
   public static void removeClass(Symbol symbol)
   {
-    synchronized (map)
-      {
-        map.remove(symbol);
-      }
+    map.remove(symbol);
   }
 
   public static LispClass findClass(Symbol symbol)
   {
-    synchronized (map)
-      {
-        return (LispClass) map.get(symbol);
-      }
+    return (LispClass)map.get(symbol);
   }
 
   public static LispObject findClass(LispObject name, boolean errorp)
@@ -78,10 +68,7 @@ public abstract class LispClass extends StandardObject
   {
     final Symbol symbol = checkSymbol(name);
     final LispObject c;
-    synchronized (map)
-      {
-        c = map.get(symbol);
-      }
+    c = map.get(symbol);
     if (c != null)
       return c;
     if (errorp)
