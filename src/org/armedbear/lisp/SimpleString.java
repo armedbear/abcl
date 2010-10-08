@@ -487,4 +487,9 @@ public final class SimpleString extends AbstractString
     {
         return new ComplexString(newCapacity, displacedTo, displacement);
     }
+
+    @Override
+    public String toString()  {
+        return String.valueOf(chars);
+    }
 }
