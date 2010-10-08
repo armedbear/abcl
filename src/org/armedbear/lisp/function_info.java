@@ -33,12 +33,16 @@
 
 package org.armedbear.lisp;
 
+import java.util.Map;
+import java.util.Collections;
+import java.util.WeakHashMap;
 import static org.armedbear.lisp.Lisp.*;
 
 public final class function_info
 {
-    static EqualHashTable FUNCTION_TABLE =
-        new EqualHashTable(64, NIL, NIL);
+    // ### TODO: Replace by a concurrent hashmap, with weak keys, ofcourse.
+    final static Map<LispObject,LispObject> symbolToFunctionMap =
+        Collections.synchronizedMap(new WeakHashMap());
 
     // ### function-info name
     private static final Primitive FUNCTION_INFO =
@@ -47,7 +51,7 @@ public final class function_info
         @Override
         public LispObject execute(LispObject arg)
         {
-            LispObject info = FUNCTION_TABLE.get(arg);
+            LispObject info = symbolToFunctionMap.get(arg);
             return info != null ? info : NIL;
         }
     };
@@ -61,9 +65,9 @@ public final class function_info
 
         {
             if (info == NIL)
-                FUNCTION_TABLE.remhash(name);
+                symbolToFunctionMap.remove(name);
             else
-                FUNCTION_TABLE.put(name, info);
+                symbolToFunctionMap.put(name, info);
             return info;
         }
     };
@@ -78,7 +82,7 @@ public final class function_info
 
         {
             // info is an alist
-            LispObject info = FUNCTION_TABLE.get(name);
+            LispObject info = symbolToFunctionMap.get(name);
             if (info != null) {
                 while (info != NIL) {
                     LispObject cons = info.car();
@@ -107,7 +111,7 @@ public final class function_info
 
         {
             // info is an alist
-            LispObject info = FUNCTION_TABLE.get(name);
+            LispObject info = symbolToFunctionMap.get(name);
             if (info == null)
                 info = NIL;
             LispObject alist = info;
@@ -124,7 +128,7 @@ public final class function_info
                 alist = alist.cdr();
             }
             // Not found.
-            FUNCTION_TABLE.put(name, info.push(new Cons(indicator, value)));
+            symbolToFunctionMap.put(name, info.push(new Cons(indicator, value)));
             return value;
         }
     };
