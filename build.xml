@@ -424,6 +424,18 @@ will load ASDF-INSTALL.
       <echo>JPDA listening on localhost:6789</echo>
     </target>
 
+    <target name="abcl.build.debug.jpda" depends="abcl.compile.java">
+      <description>Invoke ABCL with JPDA listener on port 6789</description>
+      <java fork="true"
+	    classpathref="abcl.classpath.build"
+	    classname="org.armedbear.lisp.Main">
+	<jvmarg
+	    value="-agentlib:jdwp=transport=dt_socket,address=6789,server=y"/>
+        <jvmarg value="-Dabcl.home=${abcl.home.dir}${file.separator}"/>
+      </java>
+      <echo>JPDA listening on localhost:6789</echo>
+    </target>
+
     <target name="abcl.run" depends="abcl.jar">
       <java fork="true"
 	    classpathref="abcl.classpath.dist"
