@@ -36,9 +36,11 @@ package org.armedbear.lisp;
 import static org.armedbear.lisp.Lisp.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class Package extends LispObject implements java.io.Serializable
 {
@@ -47,8 +49,10 @@ public final class Package extends LispObject implements java.io.Serializable
 
     private transient LispObject propertyList;
 
-    private transient final SymbolHashTable internalSymbols = new SymbolHashTable(16);
-    private transient final SymbolHashTable externalSymbols = new SymbolHashTable(16);
+    private transient final ConcurrentHashMap<String, Symbol> internalSymbols
+            = new ConcurrentHashMap<String, Symbol>(16);
+    private transient final ConcurrentHashMap<String, Symbol> externalSymbols
+            = new ConcurrentHashMap<String, Symbol>(16);
 
     private transient HashMap<String,Symbol> shadowingSymbols;
     private transient ArrayList<String> nicknames;
@@ -141,23 +145,13 @@ public final class Package extends LispObject implements java.io.Serializable
     {
         if (name != null) {
             Packages.deletePackage(this);
-            List internals = internalSymbols.getSymbols();
-            for (int i = internals.size(); i-- > 0;) {
-                Symbol symbol = (Symbol) internals.get(i);
-                if (symbol.getPackage() == this)
-                    symbol.setPackage(NIL);
-                internalSymbols.remove(symbol);
-            }
-            List externals = externalSymbols.getSymbols();
-            for (int i = externals.size(); i-- > 0;) {
-                Symbol symbol = (Symbol) externals.get(i);
-                if (symbol.getPackage() == this)
-                    symbol.setPackage(NIL);
-                externalSymbols.remove(symbol);
-            }
+            internalSymbols.clear();
+            externalSymbols.clear();
+
             name = null;
             lispName = null;
             nicknames = null;
+            
             return true;
         }
         return false;
@@ -183,37 +177,37 @@ public final class Package extends LispObject implements java.io.Serializable
         Packages.addPackage(this);
     }
 
-    public synchronized Symbol findInternalSymbol(SimpleString name)
+    public Symbol findInternalSymbol(SimpleString name)
     {
-        return internalSymbols.get(name);
+        return internalSymbols.get(name.toString());
     }
 
-    public synchronized Symbol findExternalSymbol(SimpleString name)
+    public Symbol findExternalSymbol(SimpleString name)
     {
-        return externalSymbols.get(name);
+        return externalSymbols.get(name.toString());
     }
 
-    public synchronized Symbol findExternalSymbol(SimpleString name, int hash)
+    public Symbol findExternalSymbol(SimpleString name, int hash)
     {
-        return externalSymbols.get(name, hash);
+        return externalSymbols.get(name.toString());
     }
 
     // Returns null if symbol is not accessible in this package.
-    public synchronized Symbol findAccessibleSymbol(String name)
+    public Symbol findAccessibleSymbol(String name)
 
     {
         return findAccessibleSymbol(new SimpleString(name));
     }
 
     // Returns null if symbol is not accessible in this package.
-    public synchronized Symbol findAccessibleSymbol(SimpleString name)
+    public Symbol findAccessibleSymbol(SimpleString name)
 
     {
         // Look in external and internal symbols of this package.
-        Symbol symbol = externalSymbols.get(name);
+        Symbol symbol = externalSymbols.get(name.toString());
         if (symbol != null)
             return symbol;
-        symbol = internalSymbols.get(name);
+        symbol = internalSymbols.get(name.toString());
         if (symbol != null)
             return symbol;
         // Look in external symbols of used packages.
@@ -231,16 +225,16 @@ public final class Package extends LispObject implements java.io.Serializable
         return null;
     }
 
-    public synchronized LispObject findSymbol(String name)
+    public LispObject findSymbol(String name)
 
     {
         final SimpleString s = new SimpleString(name);
         final LispThread thread = LispThread.currentThread();
         // Look in external and internal symbols of this package.
-        Symbol symbol = externalSymbols.get(s);
+        Symbol symbol = externalSymbols.get(name);
         if (symbol != null)
             return thread.setValues(symbol, Keyword.EXTERNAL);
-        symbol = internalSymbols.get(s);
+        symbol = internalSymbols.get(name);
         if (symbol != null)
             return thread.setValues(symbol, Keyword.INTERNAL);
         // Look in external symbols of used packages.
@@ -259,52 +253,56 @@ public final class Package extends LispObject implements java.io.Serializable
     }
 
     // Helper function to add NIL to PACKAGE_CL.
-    public synchronized void addSymbol(Symbol symbol)
+    public void addSymbol(Symbol symbol)
     {
         Debug.assertTrue(symbol.getPackage() == this);
         Debug.assertTrue(symbol.getName().equals("NIL"));
-        externalSymbols.put(symbol.name, symbol);
+        externalSymbols.put(symbol.name.toString(), symbol);
     }
 
-    private synchronized Symbol addSymbol(SimpleString name, int hash)
+    private Symbol addSymbol(String name)
     {
-        Symbol symbol = new Symbol(name, hash, this);
+        Symbol symbol = new Symbol(name, this);
         if (this == PACKAGE_KEYWORD) {
             symbol.initializeConstant(symbol);
-            externalSymbols.put(name, symbol);
+            externalSymbols.put(name.toString(), symbol);
         } else
-            internalSymbols.put(name, symbol);
+            internalSymbols.put(name.toString(), symbol);
         
         return symbol;
     }
 
-    public synchronized Symbol addInternalSymbol(String symbolName)
+    private Symbol addSymbol(SimpleString name)
+    {
+        return addSymbol(name.toString());
+    }
+
+    public Symbol addInternalSymbol(String symbolName)
     {
         final Symbol symbol = new Symbol(symbolName, this);
-        internalSymbols.put(symbol);
+        internalSymbols.put(symbolName, symbol);
         return symbol;
     }
 
-    public synchronized Symbol addExternalSymbol(String symbolName)
+    public Symbol addExternalSymbol(String symbolName)
     {
         final Symbol symbol = new Symbol(symbolName, this);
-        externalSymbols.put(symbol);
+        externalSymbols.put(symbolName, symbol);
         return symbol;
-    }
-
-    public synchronized Symbol intern(String symbolName)
-    {
-        return intern(new SimpleString(symbolName));
     }
 
     public synchronized Symbol intern(SimpleString symbolName)
     {
-        final int hash = symbolName.sxhash();
+        return intern(symbolName.toString());
+    }
+
+    public synchronized Symbol intern(String symbolName)
+    {
         // Look in external and internal symbols of this package.
-        Symbol symbol = externalSymbols.get(symbolName, hash);
+        Symbol symbol = externalSymbols.get(symbolName);
         if (symbol != null)
             return symbol;
-        symbol = internalSymbols.get(symbolName, hash);
+        symbol = internalSymbols.get(symbolName);
         if (symbol != null)
             return symbol;
         // Look in external symbols of used packages.
@@ -312,25 +310,24 @@ public final class Package extends LispObject implements java.io.Serializable
             LispObject usedPackages = useList;
             while (usedPackages != NIL) {
                 Package pkg = (Package) usedPackages.car();
-                symbol = pkg.findExternalSymbol(symbolName, hash);
+                symbol = pkg.externalSymbols.get(symbolName);
                 if (symbol != null)
                     return symbol;
                 usedPackages = usedPackages.cdr();
             }
         }
         // Not found.
-        return addSymbol(symbolName, hash);
+        return addSymbol(symbolName);
     }
 
     public synchronized Symbol intern(final SimpleString s,
                                       final LispThread thread)
     {
-        final int hash = s.sxhash();
         // Look in external and internal symbols of this package.
-        Symbol symbol = externalSymbols.get(s, hash);
+        Symbol symbol = externalSymbols.get(s.toString());
         if (symbol != null)
             return (Symbol) thread.setValues(symbol, Keyword.EXTERNAL);
-        symbol = internalSymbols.get(s, hash);
+        symbol = internalSymbols.get(s.toString());
         if (symbol != null)
             return (Symbol) thread.setValues(symbol, Keyword.INTERNAL);
         // Look in external symbols of used packages.
@@ -338,26 +335,25 @@ public final class Package extends LispObject implements java.io.Serializable
             LispObject usedPackages = useList;
             while (usedPackages != NIL) {
                 Package pkg = (Package) usedPackages.car();
-                symbol = pkg.findExternalSymbol(s, hash);
+                symbol = pkg.findExternalSymbol(s);
                 if (symbol != null)
                     return (Symbol) thread.setValues(symbol, Keyword.INHERITED);
                 usedPackages = usedPackages.cdr();
             }
         }
         // Not found.
-        return (Symbol) thread.setValues(addSymbol(s, hash), NIL);
+        return (Symbol) thread.setValues(addSymbol(s), NIL);
     }
 
     public synchronized Symbol internAndExport(String symbolName)
 
     {
         final SimpleString s = new SimpleString(symbolName);
-        final int hash = s.sxhash();
         // Look in external and internal symbols of this package.
-        Symbol symbol = externalSymbols.get(s, hash);
+        Symbol symbol = externalSymbols.get(s.toString());
         if (symbol != null)
             return symbol;
-        symbol = internalSymbols.get(s, hash);
+        symbol = internalSymbols.get(s.toString());
         if (symbol != null) {
             export(symbol);
             return symbol;
@@ -367,7 +363,7 @@ public final class Package extends LispObject implements java.io.Serializable
             LispObject usedPackages = useList;
             while (usedPackages != NIL) {
                 Package pkg = (Package) usedPackages.car();
-                symbol = pkg.findExternalSymbol(s, hash);
+                symbol = pkg.findExternalSymbol(s);
                 if (symbol != null) {
                     export(symbol);
                     return symbol;
@@ -376,10 +372,10 @@ public final class Package extends LispObject implements java.io.Serializable
             }
         }
         // Not found.
-        symbol = new Symbol(s, hash, this);
+        symbol = new Symbol(s, this);
         if (this == PACKAGE_KEYWORD)
             symbol.initializeConstant(symbol);
-        externalSymbols.put(s, symbol);
+        externalSymbols.put(s.toString(), symbol);
         return symbol;
     }
 
@@ -420,10 +416,10 @@ public final class Package extends LispObject implements java.io.Serializable
             }
         }
         // Reaching here, it's OK to remove the symbol.
-        if (internalSymbols.get(symbol.name) == symbol)
-            internalSymbols.remove(symbol.name);
-        else if (externalSymbols.get(symbol.name) == symbol)
-            externalSymbols.remove(symbol.name);
+        if (internalSymbols.get(symbol.name.toString()) == symbol)
+            internalSymbols.remove(symbol.name.toString());
+        else if (externalSymbols.get(symbol.name.toString()) == symbol)
+            externalSymbols.remove(symbol.name.toString());
         else
             // Not found.
             return NIL;
@@ -449,7 +445,7 @@ public final class Package extends LispObject implements java.io.Serializable
             sb.append('.');
             error(new PackageError(sb.toString()));
         }
-        internalSymbols.put(symbol.name, symbol);
+        internalSymbols.put(symbol.name.toString(), symbol);
         if (symbol.getPackage() == NIL)
             symbol.setPackage(this);
     }
@@ -469,10 +465,10 @@ public final class Package extends LispObject implements java.io.Serializable
                 error(new PackageError(sb.toString()));
                 return;
             }
-            internalSymbols.put(symbol.name, symbol);
+            internalSymbols.put(symbol.name.toString(), symbol);
             added = true;
         }
-        if (added || internalSymbols.get(symbol.name) == symbol) {
+        if (added || internalSymbols.get(symbol.name.toString()) == symbol) {
             if (usedByList != null) {
                 for (Iterator it = usedByList.iterator(); it.hasNext();) {
                     Package pkg = (Package) it.next();
@@ -494,11 +490,11 @@ public final class Package extends LispObject implements java.io.Serializable
                 }
             }
             // No conflicts.
-            internalSymbols.remove(symbol.name);
-            externalSymbols.put(symbol.name, symbol);
+            internalSymbols.remove(symbol.name.toString());
+            externalSymbols.put(symbol.name.toString(), symbol);
             return;
         }
-        if (externalSymbols.get(symbol.name) == symbol)
+        if (externalSymbols.get(symbol.name.toString()) == symbol)
             // Symbol is already exported; there's nothing to do.
             return;
         StringBuilder sb = new StringBuilder("The symbol ");
@@ -513,9 +509,9 @@ public final class Package extends LispObject implements java.io.Serializable
 
     {
         if (symbol.getPackage() == this) {
-            if (externalSymbols.get(symbol.name) == symbol) {
-                externalSymbols.remove(symbol.name);
-                internalSymbols.put(symbol.name, symbol);
+            if (externalSymbols.get(symbol.name.toString()) == symbol) {
+                externalSymbols.remove(symbol.name.toString());
+                internalSymbols.put(symbol.name.toString(), symbol);
             }
         } else {
             // Signal an error if symbol is not accessible.
@@ -542,12 +538,12 @@ public final class Package extends LispObject implements java.io.Serializable
         if (shadowingSymbols == null)
             shadowingSymbols = new HashMap<String,Symbol>();
         final SimpleString s = new SimpleString(symbolName);
-        Symbol symbol = externalSymbols.get(s);
+        Symbol symbol = externalSymbols.get(s.toString());
         if (symbol != null) {
             shadowingSymbols.put(symbolName, symbol);
             return;
         }
-        symbol = internalSymbols.get(s);
+        symbol = internalSymbols.get(s.toString());
         if (symbol != null) {
             shadowingSymbols.put(symbolName, symbol);
             return;
@@ -555,7 +551,7 @@ public final class Package extends LispObject implements java.io.Serializable
         if (shadowingSymbols.get(symbolName) != null)
             return;
         symbol = new Symbol(s, this);
-        internalSymbols.put(s, symbol);
+        internalSymbols.put(s.toString(), symbol);
         shadowingSymbols.put(symbolName, symbol);
     }
 
@@ -563,11 +559,11 @@ public final class Package extends LispObject implements java.io.Serializable
     {
         LispObject where = NIL;
         final String symbolName = symbol.getName();
-        Symbol sym = externalSymbols.get(symbol.name);
+        Symbol sym = externalSymbols.get(symbol.name.toString());
         if (sym != null) {
             where = Keyword.EXTERNAL;
         } else {
-            sym = internalSymbols.get(symbol.name);
+            sym = internalSymbols.get(symbol.name.toString());
             if (sym != null) {
                 where = Keyword.INTERNAL;
             } else {
@@ -600,7 +596,7 @@ public final class Package extends LispObject implements java.io.Serializable
                 }
             }
         }
-        internalSymbols.put(symbol.name, symbol);
+        internalSymbols.put(symbol.name.toString(), symbol);
         if (shadowingSymbols == null)
             shadowingSymbols = new HashMap<String,Symbol>();
         Debug.assertTrue(shadowingSymbols.get(symbolName) == null);
@@ -617,9 +613,9 @@ public final class Package extends LispObject implements java.io.Serializable
         if (!memq(pkg, useList)) {
             // "USE-PACKAGE checks for name conflicts between the newly
             // imported symbols and those already accessible in package."
-            List symbols = pkg.getExternalSymbols();
-            for (int i = symbols.size(); i-- > 0;) {
-                Symbol symbol = (Symbol) symbols.get(i);
+            Collection symbols = pkg.getExternalSymbols();
+            for (Iterator<Symbol> i = symbols.iterator(); i.hasNext();) {
+                Symbol symbol = i.next();
                 Symbol existing = findAccessibleSymbol(symbol.name);
                 if (existing != null && existing != symbol) {
                     if (shadowingSymbols == null ||
@@ -731,26 +727,22 @@ public final class Package extends LispObject implements java.io.Serializable
         return list;
     }
 
-    public synchronized List getExternalSymbols()
+    public synchronized Collection getExternalSymbols()
     {
-        return externalSymbols.getSymbols();
+        return externalSymbols.values();
     }
 
     public synchronized List<Symbol> getAccessibleSymbols()
     {
         ArrayList<Symbol> list = new ArrayList<Symbol>();
-        list.addAll(internalSymbols.getSymbols());
-        list.addAll(externalSymbols.getSymbols());
+        list.addAll(internalSymbols.values());
+        list.addAll(externalSymbols.values());
         if (useList instanceof Cons) {
             LispObject usedPackages = useList;
             while (usedPackages != NIL) {
                 Package pkg = (Package) usedPackages.car();
-                List<Symbol> symbols = pkg.externalSymbols.getSymbols();
-                for (int i = 0; i < symbols.size(); i++) {
-                    Symbol symbol = (Symbol) symbols.get(i);
-                    if (shadowingSymbols == null || shadowingSymbols.get(symbol.getName()) == null)
-                        list.add(symbol);
-                }
+                list.addAll(pkg.externalSymbols.values());
+
                 usedPackages = usedPackages.cdr();
             }
         }
@@ -760,18 +752,18 @@ public final class Package extends LispObject implements java.io.Serializable
     public synchronized LispObject PACKAGE_INTERNAL_SYMBOLS()
     {
         LispObject list = NIL;
-        List symbols = internalSymbols.getSymbols();
-        for (int i = symbols.size(); i-- > 0;)
-            list = new Cons((Symbol)symbols.get(i), list);
+        Collection symbols = internalSymbols.values();
+        for (Iterator<Symbol> i = symbols.iterator(); i.hasNext();)
+            list = new Cons(i.next(), list);
         return list;
     }
 
     public synchronized LispObject PACKAGE_EXTERNAL_SYMBOLS()
     {
         LispObject list = NIL;
-        List symbols = externalSymbols.getSymbols();
-        for (int i = symbols.size(); i-- > 0;)
-            list = new Cons((Symbol)symbols.get(i), list);
+        Collection symbols = externalSymbols.values();
+        for (Iterator<Symbol> i = symbols.iterator(); i.hasNext();)
+            list = new Cons(i.next(), list);
         return list;
     }
 
@@ -782,12 +774,12 @@ public final class Package extends LispObject implements java.io.Serializable
             LispObject usedPackages = useList;
             while (usedPackages != NIL) {
                 Package pkg = (Package) usedPackages.car();
-                List externals = pkg.getExternalSymbols();
-                for (int i = externals.size(); i-- > 0;) {
-                    Symbol symbol = (Symbol) externals.get(i);
+                Collection externals = pkg.getExternalSymbols();
+                for (Iterator<Symbol> i = externals.iterator(); i.hasNext();) {
+                    Symbol symbol = i.next();
                     if (shadowingSymbols != null && shadowingSymbols.get(symbol.getName()) != null)
                         continue;
-                    if (externalSymbols.get(symbol.name) == symbol)
+                    if (externalSymbols.get(symbol.name.toString()) == symbol)
                         continue;
                     list = new Cons(symbol, list);
                 }
@@ -800,19 +792,19 @@ public final class Package extends LispObject implements java.io.Serializable
     public synchronized LispObject getSymbols()
     {
         LispObject list = NIL;
-        List internals = internalSymbols.getSymbols();
-        for (int i = internals.size(); i-- > 0;)
-            list = new Cons((Symbol)internals.get(i), list);
-        List externals = externalSymbols.getSymbols();
-        for (int i = externals.size(); i-- > 0;)
-            list = new Cons((Symbol)externals.get(i), list);
+        Collection internals = internalSymbols.values();
+        for (Iterator<Symbol> i = internals.iterator(); i.hasNext();)
+            list = new Cons(i.next(), list);
+        Collection externals = externalSymbols.values();
+        for (Iterator<Symbol> i = externals.iterator(); i.hasNext();)
+            list = new Cons(i.next(), list);
         return list;
     }
 
     public synchronized Symbol[] symbols()
     {
-        List internals = internalSymbols.getSymbols();
-        List externals = externalSymbols.getSymbols();
+        Collection internals = internalSymbols.values();
+        Collection externals = externalSymbols.values();
         Symbol[] array = new Symbol[internals.size() + externals.size()];
         int i = 0;
         for (Iterator it = internals.iterator(); it.hasNext();) {
