@@ -37,10 +37,6 @@ public final class EqlHashTable extends HashTable
 {
   private int mask;
 
-  public EqlHashTable()
-  {
-  }
-
   public EqlHashTable(int size, LispObject rehashSize,
                       LispObject rehashThreshold)
   {
