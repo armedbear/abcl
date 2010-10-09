@@ -33,8 +33,7 @@
  */
 package org.armedbear.lisp;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import static org.armedbear.lisp.Lisp.*;
 
 public abstract class HashTable extends LispObject {
@@ -46,15 +45,12 @@ public abstract class HashTable extends LispObject {
     // of elements exceeds the threshold, the implementation calls rehash().
     protected int threshold;
     // Array containing the actual key-value mappings.
-    
     @SuppressWarnings("VolatileArrayField")
     protected volatile HashEntry[] buckets;
-    
     // The number of key-value pairs.
-    protected int count;
-    private int mask;
+    protected volatile int count;
     final Comparator comparator;
-    final private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    final private ReentrantLock lock = new ReentrantLock();
 
     protected HashTable(Comparator c, int size, LispObject rehashSize,
             LispObject rehashThreshold) {
@@ -63,7 +59,6 @@ public abstract class HashTable extends LispObject {
         buckets = new HashEntry[size];
         threshold = (int) (size * loadFactor);
         comparator = c;
-        mask = buckets.length - 1;
     }
 
     protected static int calculateInitialCapacity(int size) {
@@ -156,12 +151,12 @@ public abstract class HashTable extends LispObject {
     }
 
     public void clear() {
-        lock.writeLock().lock();
+        lock.lock();
         try {
             buckets = new HashEntry[buckets.length];
             count = 0;
         } finally {
-            lock.writeLock().unlock();
+            lock.unlock();
         }
     }
 
@@ -233,8 +228,8 @@ public abstract class HashTable extends LispObject {
     }
 
     protected HashEntry getEntry(LispObject key) {
-        int index = comparator.hash(key) & mask;
-        HashEntry e = buckets[index];
+        HashEntry[] b = buckets;
+        HashEntry e = b[comparator.hash(key) & (b.length - 1)];
         while (e != null) {
             if (comparator.keysEqual(key, e.key)) {
                 return e;
@@ -245,20 +240,26 @@ public abstract class HashTable extends LispObject {
     }
 
     public LispObject get(LispObject key) {
-        lock.readLock().lock();
+        HashEntry e = getEntry(key);
+        LispObject v = (e == null) ? null : e.value;
+
+        if (e == null || v != null) {
+            return v;
+        }
+
+        lock.lock();
         try {
-            HashEntry e = getEntry(key);
-            return (e == null) ? null : e.value;
+            return e.value;
         } finally {
-            lock.readLock().unlock();
+            lock.unlock();
         }
     }
 
     public void put(LispObject key, LispObject value) {
-        lock.writeLock().lock();
+        lock.lock();
         try {
             HashEntry e = getEntry(key);
-            if (e == null) {
+            if (e != null) {
                 e.value = value;
             } else {
                 // Not found. We need to add a new entry.
@@ -266,18 +267,18 @@ public abstract class HashTable extends LispObject {
                     rehash();
                 }
 
-                int index = comparator.hash(key) & mask;
+                int index = comparator.hash(key) & (buckets.length - 1);
                 buckets[index] = new HashEntry(key, value, buckets[index]);
             }
         } finally {
-            lock.writeLock().unlock();
+            lock.unlock();
         }
     }
 
     public LispObject remove(LispObject key) {
-        lock.writeLock().lock();
+        lock.lock();
         try {
-            int index = comparator.hash(key) & mask;
+            int index = comparator.hash(key) & (buckets.length - 1);
 
             HashEntry e = buckets[index];
             HashEntry last = null;
@@ -296,16 +297,16 @@ public abstract class HashTable extends LispObject {
             }
             return null;
         } finally {
-            lock.writeLock().unlock();
+            lock.unlock();
         }
     }
 
     protected void rehash() {
-        lock.writeLock().lock();
+        lock.lock();
         try {
             final int newCapacity = buckets.length * 2;
             threshold = (int) (newCapacity * loadFactor);
-            mask = newCapacity - 1;
+            int mask = newCapacity - 1;
             HashEntry[] newBuckets = new HashEntry[newCapacity];
 
             for (int i = buckets.length; i-- > 0;) {
@@ -318,7 +319,7 @@ public abstract class HashTable extends LispObject {
             }
             buckets = newBuckets;
         } finally {
-            lock.writeLock().unlock();
+            lock.unlock();
         }
     }
 
@@ -415,7 +416,7 @@ public abstract class HashTable extends LispObject {
     protected static class HashEntry {
 
         LispObject key;
-        LispObject value;
+        volatile LispObject value;
         HashEntry next;
 
         HashEntry(LispObject key, LispObject value, HashEntry next) {
