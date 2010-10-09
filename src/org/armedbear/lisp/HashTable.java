@@ -33,6 +33,7 @@
  */
 package org.armedbear.lisp;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import static org.armedbear.lisp.Lisp.*;
 
@@ -45,7 +46,10 @@ public abstract class HashTable extends LispObject {
     // of elements exceeds the threshold, the implementation calls rehash().
     protected int threshold;
     // Array containing the actual key-value mappings.
-    protected HashEntry[] buckets;
+    
+    @SuppressWarnings("VolatileArrayField")
+    protected volatile HashEntry[] buckets;
+    
     // The number of key-value pairs.
     protected int count;
     private int mask;
@@ -137,9 +141,11 @@ public abstract class HashTable extends LispObject {
 
     @Override
     public LispObject getParts() {
+        // No need to take out a read lock, for the same reason as MAPHASH
+        HashEntry[] b = buckets;
         LispObject parts = NIL;
-        for (int i = 0; i < buckets.length; i++) {
-            HashEntry e = buckets[i];
+        for (int i = 0; i < b.length; i++) {
+            HashEntry e = b[i];
             while (e != null) {
                 parts = parts.push(new Cons("KEY [bucket " + i + "]", e.key));
                 parts = parts.push(new Cons("VALUE", e.value));
@@ -226,18 +232,23 @@ public abstract class HashTable extends LispObject {
         return comparator.getTest();
     }
 
+    protected HashEntry getEntry(LispObject key) {
+        int index = comparator.hash(key) & mask;
+        HashEntry e = buckets[index];
+        while (e != null) {
+            if (comparator.keysEqual(key, e.key)) {
+                return e;
+            }
+            e = e.next;
+        }
+        return null;
+    }
+
     public LispObject get(LispObject key) {
         lock.readLock().lock();
         try {
-            int index = comparator.hash(key) & mask;
-            HashEntry e = buckets[index];
-            while (e != null) {
-                if (comparator.keysEqual(key, e.key)) {
-                    return e.value;
-                }
-                e = e.next;
-            }
-            return null;
+            HashEntry e = getEntry(key);
+            return (e == null) ? null : e.value;
         } finally {
             lock.readLock().unlock();
         }
@@ -246,20 +257,18 @@ public abstract class HashTable extends LispObject {
     public void put(LispObject key, LispObject value) {
         lock.writeLock().lock();
         try {
-            int index = comparator.hash(key) & mask;
-            for (HashEntry e = buckets[index]; e != null; e = e.next) {
-                if (comparator.keysEqual(key, e.key)) {
-                    e.value = value;
-                    return;
+            HashEntry e = getEntry(key);
+            if (e == null) {
+                e.value = value;
+            } else {
+                // Not found. We need to add a new entry.
+                if (++count > threshold) {
+                    rehash();
                 }
+
+                int index = comparator.hash(key) & mask;
+                buckets[index] = new HashEntry(key, value, buckets[index]);
             }
-            // Not found. We need to add a new entry.
-            if (++count > threshold) {
-                rehash();
-                // Need a new hash value to suit the bigger table.
-                index = comparator.hash(key) & mask;
-            }
-            buckets[index] = new HashEntry(key, value, buckets[index]);
         } finally {
             lock.writeLock().unlock();
         }
@@ -315,9 +324,11 @@ public abstract class HashTable extends LispObject {
 
     // Returns a list of (key . value) pairs.
     public LispObject ENTRIES() {
+        // No need to take out a read lock, for the same reason as MAPHASH
+        HashEntry[] b = buckets;
         LispObject list = NIL;
-        for (int i = buckets.length; i-- > 0;) {
-            HashEntry e = buckets[i];
+        for (int i = b.length; i-- > 0;) {
+            HashEntry e = b[i];
             while (e != null) {
                 list = new Cons(new Cons(e.key, e.value), list);
                 e = e.next;
@@ -327,8 +338,13 @@ public abstract class HashTable extends LispObject {
     }
 
     public LispObject MAPHASH(LispObject function) {
-        for (int i = buckets.length; i-- > 0;) {
-            HashEntry e = buckets[i];
+        // Don't take out a read lock: it can't be upgraded to a write
+        // lock, which would block the scenario where put() is called to
+        // set the value of the current entry
+
+        HashEntry[] b = buckets;
+        for (int i = b.length; i-- > 0;) {
+            HashEntry e = b[i];
             while (e != null) {
                 function.execute(e.key, e.value);
                 e = e.next;
