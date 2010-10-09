@@ -4561,113 +4561,6 @@ either to stream or the pathname of the class file if `stream' is NIL."
       (fix-boxing representation nil)
       (emit-move-from-stack target representation))))
 
-(defun p2-make-array (form target representation)
-  ;; In safe code, we want to make sure the requested length does not exceed
-  ;; ARRAY-DIMENSION-LIMIT.
-  (cond ((and (< *safety* 3)
-              (= (length form) 2)
-              (fixnum-type-p (derive-compiler-type (second form)))
-              (null representation))
-         (let ((arg (second form)))
-           (emit-new +lisp-simple-vector+)
-           (emit 'dup)
-	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
-           (emit-invokespecial-init +lisp-simple-vector+ '(:int))
-           (emit-move-from-stack target representation)))
-        (t
-         (compile-function-call form target representation))))
-
-;; make-sequence result-type size &key initial-element => sequence
-(define-inlined-function p2-make-sequence (form target representation)
-  ;; In safe code, we want to make sure the requested length does not exceed
-  ;; ARRAY-DIMENSION-LIMIT.
-  ((and (< *safety* 3)
-               (= (length form) 3)
-               (null representation)))
-  (let* ((args (cdr form))
-         (arg1 (first args))
-         (arg2 (second args)))
-    (when (and (consp arg1)
-               (= (length arg1) 2)
-               (eq (first arg1) 'QUOTE))
-      (let* ((result-type (second arg1))
-             (class
-              (case result-type
-                ((STRING SIMPLE-STRING)
-                 (setf class +lisp-simple-string+))
-                ((VECTOR SIMPLE-VECTOR)
-                 (setf class +lisp-simple-vector+)))))
-        (when class
-          (emit-new class)
-          (emit 'dup)
-	  (compile-forms-and-maybe-emit-clear-values arg2 'stack :int)
-          (emit-invokespecial-init class '(:int))
-          (emit-move-from-stack target representation)
-          (return-from p2-make-sequence)))))
-  (compile-function-call form target representation))
-
-(defun p2-make-string (form target representation)
-  ;; In safe code, we want to make sure the requested length does not exceed
-  ;; ARRAY-DIMENSION-LIMIT.
-  (cond ((and (< *safety* 3)
-              (= (length form) 2)
-              (null representation))
-         (let ((arg (second form)))
-           (emit-new +lisp-simple-string+)
-           (emit 'dup)
-	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
-           (emit-invokespecial-init +lisp-simple-string+ '(:int))
-           (emit-move-from-stack target representation)))
-        (t
-         (compile-function-call form target representation))))
-
-(defun p2-%make-structure (form target representation)
-  (cond ((and (check-arg-count form 2)
-              (eq (derive-type (%cadr form)) 'SYMBOL))
-         (emit-new +lisp-structure-object+)
-         (emit 'dup)
-         (compile-form (%cadr form) 'stack nil)
-         (emit-checkcast +lisp-symbol+)
-         (compile-form (%caddr form) 'stack nil)
-         (maybe-emit-clear-values (%cadr form) (%caddr form))
-         (emit-invokevirtual +lisp-object+ "copyToArray"
-                             nil +lisp-object-array+)
-         (emit-invokespecial-init +lisp-structure-object+
-                                  (list +lisp-symbol+ +lisp-object-array+))
-         (emit-move-from-stack target representation))
-        (t
-         (compile-function-call form target representation))))
-
-(defun p2-make-structure (form target representation)
-  (let* ((args (cdr form))
-         (slot-forms (cdr args))
-         (slot-count (length slot-forms)))
-    (cond ((and (<= 1 slot-count 6)
-                (eq (derive-type (%car args)) 'SYMBOL))
-           (emit-new +lisp-structure-object+)
-           (emit 'dup)
-           (compile-form (%car args) 'stack nil)
-           (emit-checkcast +lisp-symbol+)
-           (dolist (slot-form slot-forms)
-             (compile-form slot-form 'stack nil))
-           (apply 'maybe-emit-clear-values args)
-           (emit-invokespecial-init +lisp-structure-object+
-                                    (append (list +lisp-symbol+)
-                                            (make-list slot-count :initial-element +lisp-object+)))
-           (emit-move-from-stack target representation))
-          (t
-           (compile-function-call form target representation)))))
-
-(defun p2-make-hash-table (form target representation)
-  (cond ((= (length form) 1) ; no args
-         (emit-new +lisp-eql-hash-table+)
-         (emit 'dup)
-         (emit-invokespecial-init +lisp-eql-hash-table+ nil)
-         (fix-boxing representation nil)
-         (emit-move-from-stack target representation))
-        (t
-         (compile-function-call form target representation))))
-
 (defknown p2-stream-element-type (t t t) t)
 (define-inlined-function p2-stream-element-type (form target representation)
   ((check-arg-count form 1))
@@ -7342,7 +7235,6 @@ to derive a Java class name from."
                                nth
                                progn))
   (install-p2-handler '%ldb                'p2-%ldb)
-  (install-p2-handler '%make-structure     'p2-%make-structure)
   (install-p2-handler '*                   'p2-times)
   (install-p2-handler '+                   'p2-plus)
   (install-p2-handler '-                   'p2-minus)
@@ -7397,11 +7289,6 @@ to derive a Java class name from."
   (install-p2-handler 'logior              'p2-logior)
   (install-p2-handler 'lognot              'p2-lognot)
   (install-p2-handler 'logxor              'p2-logxor)
-  (install-p2-handler 'make-array          'p2-make-array)
-  (install-p2-handler 'make-hash-table     'p2-make-hash-table)
-  (install-p2-handler 'make-sequence       'p2-make-sequence)
-  (install-p2-handler 'make-string         'p2-make-string)
-  (install-p2-handler 'make-structure      'p2-make-structure)
   (install-p2-handler 'max                 'p2-min/max)
   (install-p2-handler 'memq                'p2-memq)
   (install-p2-handler 'memql               'p2-memql)
