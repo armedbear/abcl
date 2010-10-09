@@ -50,9 +50,6 @@ public abstract class HashTable extends LispObject {
     private int mask;
     final Comparator comparator;
 
-  protected HashTable(int size, LispObject rehashSize,
-                      LispObject rehashThreshold)
-  {
     protected HashTable(Comparator c, int size, LispObject rehashSize,
             LispObject rehashThreshold) {
         this.rehashSize = rehashSize;
