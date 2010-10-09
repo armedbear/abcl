@@ -30,276 +30,366 @@
  * obligated to do so.  If you do not wish to do so, delete this
  * exception statement from your version.
  */
-
 package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public abstract class HashTable extends LispObject
-{
-  private static final int DEFAULT_SIZE = 16;
+public abstract class HashTable extends LispObject {
 
-  protected static final float loadFactor = 0.75f;
-
-  protected final LispObject rehashSize;
-  protected final LispObject rehashThreshold;
-
-  // The rounded product of the capacity and the load factor. When the number
-  // of elements exceeds the threshold, the implementation calls rehash().
-  protected int threshold;
-
-  // Array containing the actual key-value mappings.
-  protected HashEntry[] buckets;
-
-  // The number of key-value pairs.
-  protected int count;
+    private static final int DEFAULT_SIZE = 16;
+    protected static final float loadFactor = 0.75f;
+    protected final LispObject rehashSize;
+    protected final LispObject rehashThreshold;
+    // The rounded product of the capacity and the load factor. When the number
+    // of elements exceeds the threshold, the implementation calls rehash().
+    protected int threshold;
+    // Array containing the actual key-value mappings.
+    protected HashEntry[] buckets;
+    // The number of key-value pairs.
+    protected int count;
+    private int mask;
+    final Comparator comparator;
 
   protected HashTable(int size, LispObject rehashSize,
                       LispObject rehashThreshold)
   {
-    this.rehashSize = rehashSize;
-    this.rehashThreshold = rehashThreshold;
-    buckets = new HashEntry[size];
-    threshold = (int) (size * loadFactor);
-  }
-
-  protected static int calculateInitialCapacity(int size)
-  {
-    int capacity = 1;
-    while (capacity < size)
-      capacity <<= 1;
-    return capacity;
-  }
-
-  public final LispObject getRehashSize()
-  {
-    return rehashSize;
-  }
-
-  public final LispObject getRehashThreshold()
-  {
-    return rehashThreshold;
-  }
-
-  public int getSize()
-  {
-    return buckets.length;
-  }
-
-  public int getCount()
-  {
-    return count;
-  }
-
-  public abstract Symbol getTest();
-
-  @Override
-  public LispObject typeOf()
-  {
-    return Symbol.HASH_TABLE;
-  }
-
-  @Override
-  public LispObject classOf()
-  {
-    return BuiltInClass.HASH_TABLE;
-  }
-
-  @Override
-  public LispObject typep(LispObject type)
-  {
-    if (type == Symbol.HASH_TABLE)
-      return T;
-    if (type == BuiltInClass.HASH_TABLE)
-      return T;
-    return super.typep(type);
-  }
-
-  @Override
-  public boolean equalp(LispObject obj)
-  {
-    if (this == obj)
-      return true;
-    if (obj instanceof HashTable)
-      {
-        HashTable ht = (HashTable) obj;
-        if (count != ht.count)
-          return false;
-        if (getTest() != ht.getTest())
-          return false;
-        LispObject entries = ENTRIES();
-        while (entries != NIL)
-          {
-            LispObject entry = entries.car();
-            LispObject key = entry.car();
-            LispObject value = entry.cdr();
-            if (!value.equalp(ht.get(key)))
-              return false;
-            entries = entries.cdr();
-          }
-        return true;
-      }
-    return false;
-  }
-
-  @Override
-  public LispObject getParts()
-  {
-    LispObject parts = NIL;
-    for (int i = 0; i < buckets.length; i++)
-      {
-        HashEntry e = buckets[i];
-        while (e != null)
-          {
-            parts = parts.push(new Cons("KEY [bucket " + i + "]", e.key));
-            parts = parts.push(new Cons("VALUE", e.value));
-            e = e.next;
-          }
-      }
-    return parts.nreverse();
-  }
-
-  public synchronized void clear()
-  {
-    for (int i = buckets.length; i-- > 0;)
-      buckets[i] = null;
-    count = 0;
-  }
-
-  // gethash key hash-table &optional default => value, present-p
-  public synchronized LispObject gethash(LispObject key)
-
-  {
-    LispObject value = get(key);
-    final LispObject presentp;
-    if (value == null)
-      value = presentp = NIL;
-    else
-      presentp = T;
-    return LispThread.currentThread().setValues(value, presentp);
-  }
-
-  // gethash key hash-table &optional default => value, present-p
-  public synchronized LispObject gethash(LispObject key,
-                                         LispObject defaultValue)
-
-  {
-    LispObject value = get(key);
-    final LispObject presentp;
-    if (value == null)
-      {
-        value = defaultValue;
-        presentp = NIL;
-      }
-    else
-      presentp = T;
-    return LispThread.currentThread().setValues(value, presentp);
-  }
-
-  public synchronized LispObject gethash1(LispObject key)
-
-  {
-    final LispObject value = get(key);
-    return value != null ? value : NIL;
-  }
-
-  public synchronized LispObject puthash(LispObject key, LispObject newValue)
-
-  {
-    put(key, newValue);
-    return newValue;
-  }
-
-  // remhash key hash-table => generalized-boolean
-  public synchronized LispObject remhash(LispObject key)
-
-  {
-    // A value in a Lisp hash table can never be null, so...
-    return remove(key) != null ? T : NIL;
-  }
-
-  @Override
-  public String writeToString()
-  {
-    if (Symbol.PRINT_READABLY.symbolValue(LispThread.currentThread()) != NIL)
-      {
-        error(new PrintNotReadable(list(Keyword.OBJECT, this)));
-        return null; // Not reached.
-      }
-    StringBuilder sb = new StringBuilder(getTest().writeToString());
-    sb.append(' ');
-    sb.append(Symbol.HASH_TABLE.writeToString());
-    sb.append(' ');
-    sb.append(count);
-    if (count == 1)
-      sb.append(" entry");
-    else
-      sb.append(" entries");
-    sb.append(", ");
-    sb.append(buckets.length);
-    sb.append(" buckets");
-    return unreadableString(sb.toString());
-  }
-
-  public abstract LispObject get(LispObject key);
-
-  public abstract void put(LispObject key, LispObject value)
-   ;
-
-  public abstract LispObject remove(LispObject key);
-
-  protected abstract void rehash();
-
-  // Returns a list of (key . value) pairs.
-  public LispObject ENTRIES()
-  {
-    LispObject list = NIL;
-    for (int i = buckets.length; i-- > 0;)
-      {
-        HashEntry e = buckets[i];
-        while (e != null)
-          {
-            list = new Cons(new Cons(e.key, e.value), list);
-            e = e.next;
-          }
-      }
-    return list;
-  }
-
-  public LispObject MAPHASH(LispObject function)
-  {
-    for (int i = buckets.length; i-- > 0;)
-      {
-        HashEntry e = buckets[i];
-        while (e != null)
-          {
-            function.execute(e.key, e.value);
-            e = e.next;
-          }
-      }
-    return NIL;
-  }
-
-  protected static class HashEntry
-  {
-    LispObject key;
-    LispObject value;
-    HashEntry next;
-
-    HashEntry(LispObject key, LispObject value)
-    {
-      this.key = key;
-      this.value = value;
+    protected HashTable(Comparator c, int size, LispObject rehashSize,
+            LispObject rehashThreshold) {
+        this.rehashSize = rehashSize;
+        this.rehashThreshold = rehashThreshold;
+        buckets = new HashEntry[size];
+        threshold = (int) (size * loadFactor);
+        comparator = c;
+        mask = buckets.length - 1;
     }
-  }
 
-  // For EQUALP hash tables.
-  @Override
-  public int psxhash()
-  {
-    long result = 2062775257; // Chosen at random.
-    result = mix(result, count);
-    result = mix(result, getTest().sxhash());
-    return (int) (result & 0x7fffffff);
-  }
+    protected static int calculateInitialCapacity(int size) {
+        int capacity = 1;
+        while (capacity < size) {
+            capacity <<= 1;
+        }
+        return capacity;
+    }
+
+    public final LispObject getRehashSize() {
+        return rehashSize;
+    }
+
+    public final LispObject getRehashThreshold() {
+        return rehashThreshold;
+    }
+
+    public int getSize() {
+        return buckets.length;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    @Override
+    public LispObject typeOf() {
+        return Symbol.HASH_TABLE;
+    }
+
+    @Override
+    public LispObject classOf() {
+        return BuiltInClass.HASH_TABLE;
+    }
+
+    @Override
+    public LispObject typep(LispObject type) {
+        if (type == Symbol.HASH_TABLE) {
+            return T;
+        }
+        if (type == BuiltInClass.HASH_TABLE) {
+            return T;
+        }
+        return super.typep(type);
+    }
+
+    @Override
+    public boolean equalp(LispObject obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof HashTable) {
+            HashTable ht = (HashTable) obj;
+            if (count != ht.count) {
+                return false;
+            }
+            if (getTest() != ht.getTest()) {
+                return false;
+            }
+            LispObject entries = ENTRIES();
+            while (entries != NIL) {
+                LispObject entry = entries.car();
+                LispObject key = entry.car();
+                LispObject value = entry.cdr();
+                if (!value.equalp(ht.get(key))) {
+                    return false;
+                }
+                entries = entries.cdr();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public LispObject getParts() {
+        LispObject parts = NIL;
+        for (int i = 0; i < buckets.length; i++) {
+            HashEntry e = buckets[i];
+            while (e != null) {
+                parts = parts.push(new Cons("KEY [bucket " + i + "]", e.key));
+                parts = parts.push(new Cons("VALUE", e.value));
+                e = e.next;
+            }
+        }
+        return parts.nreverse();
+    }
+
+    public synchronized void clear() {
+        for (int i = buckets.length; i-- > 0;) {
+            buckets[i] = null;
+        }
+        count = 0;
+    }
+
+    // gethash key hash-table &optional default => value, present-p
+    public synchronized LispObject gethash(LispObject key) {
+        LispObject value = get(key);
+        final LispObject presentp;
+        if (value == null) {
+            value = presentp = NIL;
+        } else {
+            presentp = T;
+        }
+        return LispThread.currentThread().setValues(value, presentp);
+    }
+
+    // gethash key hash-table &optional default => value, present-p
+    public synchronized LispObject gethash(LispObject key,
+            LispObject defaultValue) {
+        LispObject value = get(key);
+        final LispObject presentp;
+        if (value == null) {
+            value = defaultValue;
+            presentp = NIL;
+        } else {
+            presentp = T;
+        }
+        return LispThread.currentThread().setValues(value, presentp);
+    }
+
+    public synchronized LispObject gethash1(LispObject key) {
+        final LispObject value = get(key);
+        return value != null ? value : NIL;
+    }
+
+    public synchronized LispObject puthash(LispObject key, LispObject newValue) {
+        put(key, newValue);
+        return newValue;
+    }
+
+    // remhash key hash-table => generalized-boolean
+    public synchronized LispObject remhash(LispObject key) {
+        // A value in a Lisp hash table can never be null, so...
+        return remove(key) != null ? T : NIL;
+    }
+
+    @Override
+    public String writeToString() {
+        if (Symbol.PRINT_READABLY.symbolValue(LispThread.currentThread()) != NIL) {
+            error(new PrintNotReadable(list(Keyword.OBJECT, this)));
+            return null; // Not reached.
+        }
+        StringBuilder sb = new StringBuilder(getTest().writeToString());
+        sb.append(' ');
+        sb.append(Symbol.HASH_TABLE.writeToString());
+        sb.append(' ');
+        sb.append(count);
+        if (count == 1) {
+            sb.append(" entry");
+        } else {
+            sb.append(" entries");
+        }
+        sb.append(", ");
+        sb.append(buckets.length);
+        sb.append(" buckets");
+        return unreadableString(sb.toString());
+    }
+
+    public Symbol getTest() {
+        return comparator.getTest();
+    }
+
+    synchronized public LispObject get(LispObject key) {
+        int index = comparator.hash(key) & mask;
+        HashEntry e = buckets[index];
+        while (e != null) {
+            if (comparator.keysEqual(key, e.key)) {
+                return e.value;
+            }
+            e = e.next;
+        }
+        return null;
+    }
+
+    synchronized public void put(LispObject key, LispObject value) {
+        int index = comparator.hash(key) & mask;
+        for (HashEntry e = buckets[index]; e != null; e = e.next) {
+            if (comparator.keysEqual(key, e.key)) {
+                e.value = value;
+                return;
+            }
+        }
+        // Not found. We need to add a new entry.
+        if (++count > threshold) {
+            rehash();
+            // Need a new hash value to suit the bigger table.
+            index = comparator.hash(key) & mask;
+        }
+        buckets[index] = new HashEntry(key, value, buckets[index]);
+    }
+
+    synchronized public LispObject remove(LispObject key) {
+        int index = comparator.hash(key) & mask;
+
+        HashEntry e = buckets[index];
+        HashEntry last = null;
+        while (e != null) {
+            if (comparator.keysEqual(key, e.key)) {
+                if (last == null) {
+                    buckets[index] = e.next;
+                } else {
+                    last.next = e.next;
+                }
+                --count;
+                return e.value;
+            }
+            last = e;
+            e = e.next;
+        }
+        return null;
+    }
+
+    synchronized protected void rehash() {
+        final int newCapacity = buckets.length * 2;
+        threshold = (int) (newCapacity * loadFactor);
+        mask = newCapacity - 1;
+        HashEntry[] newBuckets = new HashEntry[newCapacity];
+
+        for (int i = buckets.length; i-- > 0;) {
+            HashEntry e = buckets[i];
+            while (e != null) {
+                final int index = comparator.hash(e.key) & mask;
+                newBuckets[index] = new HashEntry(e.key,e.value, newBuckets[index]);
+                e = e.next;
+            }
+        }
+        buckets = newBuckets;
+    }
+
+    // Returns a list of (key . value) pairs.
+    public LispObject ENTRIES() {
+        LispObject list = NIL;
+        for (int i = buckets.length; i-- > 0;) {
+            HashEntry e = buckets[i];
+            while (e != null) {
+                list = new Cons(new Cons(e.key, e.value), list);
+                e = e.next;
+            }
+        }
+        return list;
+    }
+
+    public LispObject MAPHASH(LispObject function) {
+        for (int i = buckets.length; i-- > 0;) {
+            HashEntry e = buckets[i];
+            while (e != null) {
+                function.execute(e.key, e.value);
+                e = e.next;
+            }
+        }
+        return NIL;
+    }
+
+    protected static class Comparator {
+        Symbol getTest() {
+            return Symbol.EQ;
+        }
+
+        boolean keysEqual(LispObject key1, LispObject key2) {
+            return key1 == key2;
+        }
+
+        int hash(LispObject key) {
+            return key.sxhash();
+        }
+    }
+
+    protected static class EqlComparator extends Comparator {
+        @Override
+        Symbol getTest() {
+            return Symbol.EQL;
+        }
+
+        @Override
+        boolean keysEqual(LispObject key1, LispObject key2) {
+            return key1.eql(key2);
+        }
+    }
+
+    protected static class EqualComparator extends Comparator {
+        @Override
+        Symbol getTest() {
+            return Symbol.EQUAL;
+        }
+
+        @Override
+        boolean keysEqual(LispObject key1, LispObject key2) {
+            return key1.equal(key2);
+        }
+    }
+
+    protected static class EqualpComparator extends Comparator {
+        @Override
+        Symbol getTest() {
+            return Symbol.EQUALP;
+        }
+
+        @Override
+        boolean keysEqual(LispObject key1, LispObject key2) {
+            return key1.equalp(key2);
+        }
+
+        @Override
+        int hash(LispObject key) {
+            return key.psxhash();
+        }
+    }
+
+    protected static class HashEntry {
+
+        LispObject key;
+        LispObject value;
+        HashEntry next;
+
+        HashEntry(LispObject key, LispObject value, HashEntry next) {
+            this.key = key;
+            this.value = value;
+            this.next = next;
+        }
+    }
+
+    // For EQUALP hash tables.
+    @Override
+    public int psxhash() {
+        long result = 2062775257; // Chosen at random.
+        result = mix(result, count);
+        result = mix(result, getTest().sxhash());
+        return (int) (result & 0x7fffffff);
+    }
 }
