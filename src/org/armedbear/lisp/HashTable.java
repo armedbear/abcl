@@ -54,14 +54,6 @@ public abstract class HashTable extends LispObject
   // The number of key-value pairs.
   protected int count;
 
-  protected HashTable()
-  {
-    rehashSize = new SingleFloat(1.5f); // FIXME
-    rehashThreshold = new SingleFloat(0.75f); // FIXME
-    buckets = new HashEntry[DEFAULT_SIZE];
-    threshold = (int) (DEFAULT_SIZE * loadFactor);
-  }
-
   protected HashTable(int size, LispObject rehashSize,
                       LispObject rehashThreshold)
   {
