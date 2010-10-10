@@ -57,13 +57,13 @@ public final class HashTableFunctions
       {
         final int n = Fixnum.getValue(size);
         if (test == FUNCTION_EQL || test == NIL)
-          return new EqlHashTable(n, rehashSize, rehashThreshold);
+          return HashTable.newEqlHashTable(n, rehashSize, rehashThreshold);
         if (test == FUNCTION_EQ)
-          return new EqHashTable(n, rehashSize, rehashThreshold);
+          return HashTable.newEqHashTable(n, rehashSize, rehashThreshold);
         if (test == FUNCTION_EQUAL)
-          return new EqualHashTable(n, rehashSize, rehashThreshold);
+          return HashTable.newEqualHashTable(n, rehashSize, rehashThreshold);
         if (test == FUNCTION_EQUALP)
-          return new EqualpHashTable(n, rehashSize, rehashThreshold);
+          return HashTable.newEqualpHashTable(n, rehashSize, rehashThreshold);
         return error(new LispError("Unsupported test for MAKE-HASH-TABLE: " +
                                     test.writeToString()));
       }

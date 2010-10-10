@@ -36,7 +36,7 @@ package org.armedbear.lisp;
 import java.util.concurrent.locks.ReentrantLock;
 import static org.armedbear.lisp.Lisp.*;
 
-public abstract class HashTable extends LispObject {
+public class HashTable extends LispObject {
 
     protected static final float loadFactor = 0.75f;
     protected final LispObject rehashSize;
@@ -67,6 +67,26 @@ public abstract class HashTable extends LispObject {
             capacity <<= 1;
         }
         return capacity;
+    }
+
+    public static HashTable newEqHashTable(int size, LispObject rehashSize,
+            LispObject rehashThreshold) {
+        return new HashTable(new Comparator(), size, rehashSize, rehashThreshold);
+    }
+
+    public static HashTable newEqlHashTable(int size, LispObject rehashSize,
+            LispObject rehashThreshold) {
+        return new HashTable(new EqlComparator(), size, rehashSize, rehashThreshold);
+    }
+
+    public static HashTable newEqualHashTable(int size, LispObject rehashSize,
+            LispObject rehashThreshold) {
+        return new HashTable(new EqualComparator(), size, rehashSize, rehashThreshold);
+    }
+
+    public static LispObject newEqualpHashTable(int size, LispObject rehashSize,
+            LispObject rehashThreshold) {
+        return new HashTable(new EqualpComparator(), size, rehashSize, rehashThreshold);
     }
 
     public final LispObject getRehashSize() {
