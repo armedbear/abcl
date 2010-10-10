@@ -249,9 +249,11 @@ public class HashTable extends LispObject {
 
     protected HashEntry getEntry(LispObject key) {
         HashEntry[] b = buckets;
-        HashEntry e = b[comparator.hash(key) & (b.length - 1)];
+        int hash = comparator.hash(key);
+        HashEntry e = b[hash & (b.length - 1)];
         while (e != null) {
-            if (comparator.keysEqual(key, e.key)) {
+            if (hash == e.hash &&
+                    (key == e.key || comparator.keysEqual(key, e.key))) {
                 return e;
             }
             e = e.next;
@@ -287,8 +289,9 @@ public class HashTable extends LispObject {
                     rehash();
                 }
 
-                int index = comparator.hash(key) & (buckets.length - 1);
-                buckets[index] = new HashEntry(key, value, buckets[index]);
+                int hash = comparator.hash(key);
+                int index = hash & (buckets.length - 1);
+                buckets[index] = new HashEntry(key, hash, value, buckets[index]);
             }
         } finally {
             lock.unlock();
@@ -333,7 +336,8 @@ public class HashTable extends LispObject {
                 HashEntry e = buckets[i];
                 while (e != null) {
                     final int index = comparator.hash(e.key) & mask;
-                    newBuckets[index] = new HashEntry(e.key, e.value, newBuckets[index]);
+                    newBuckets[index] = new HashEntry(e.key, e.hash, e.value,
+                            newBuckets[index]);
                     e = e.next;
                 }
             }
@@ -436,11 +440,13 @@ public class HashTable extends LispObject {
     protected static class HashEntry {
 
         LispObject key;
+        int hash;
         volatile LispObject value;
         HashEntry next;
 
-        HashEntry(LispObject key, LispObject value, HashEntry next) {
+        HashEntry(LispObject key, int hash, LispObject value, HashEntry next) {
             this.key = key;
+            this.hash = hash;
             this.value = value;
             this.next = next;
         }
