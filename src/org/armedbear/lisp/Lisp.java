@@ -54,23 +54,23 @@ public final class Lisp
 
   // Packages.
   public static final Package PACKAGE_CL =
-    Packages.createPackage("COMMON-LISP", 1024);
+    Packages.createPackage("COMMON-LISP", 2048); // EH 10-10-2010: Actual number = 1014
   public static final Package PACKAGE_CL_USER =
     Packages.createPackage("COMMON-LISP-USER", 1024);
   public static final Package PACKAGE_KEYWORD =
     Packages.createPackage("KEYWORD", 1024);
   public static final Package PACKAGE_SYS =
-    Packages.createPackage("SYSTEM");
+    Packages.createPackage("SYSTEM", 2048); // EH 10-10-2010: Actual number = 1216
   public static final Package PACKAGE_MOP =
-    Packages.createPackage("MOP");
+    Packages.createPackage("MOP", 512); // EH 10-10-2010: Actual number = 277
   public static final Package PACKAGE_TPL =
-    Packages.createPackage("TOP-LEVEL");
+    Packages.createPackage("TOP-LEVEL", 128); // EH 10-10-2010: Actual number = 6
   public static final Package PACKAGE_EXT =
-    Packages.createPackage("EXTENSIONS");
+    Packages.createPackage("EXTENSIONS", 256); // EH 10-10-2010: Actual number = 131
   public static final Package PACKAGE_JVM =
-    Packages.createPackage("JVM");
+    Packages.createPackage("JVM", 2048); // EH 10-10-2010: Actual number = 1518
   public static final Package PACKAGE_LOOP =
-    Packages.createPackage("LOOP");
+    Packages.createPackage("LOOP", 512); // EH 10-10-2010: Actual number = 305
   public static final Package PACKAGE_PROF =
     Packages.createPackage("PROFILER");
   public static final Package PACKAGE_JAVA =
@@ -86,7 +86,7 @@ public final class Lisp
   public static final Package PACKAGE_PRECOMPILER =
     Packages.createPackage("PRECOMPILER");
   public static final Package PACKAGE_SEQUENCE =
-    Packages.createPackage("SEQUENCE");
+    Packages.createPackage("SEQUENCE", 128); // EH 10-10-2010: Actual number 62
 
 
   @DocString(name="nil")
