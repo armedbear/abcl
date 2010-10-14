@@ -2004,6 +2004,9 @@ public class Pathname extends LispObject {
                         ZipEntry entry = jarFile.getEntry(entryPath);
                         if (entry != null) {
                             // ensure this isn't a directory
+                            if (entry.isDirectory()) {
+                                return NIL;
+                            }
                             try {
                                 InputStream input = jarFile.getInputStream(entry);
                                 if (input != null) {
