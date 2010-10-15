@@ -2005,7 +2005,7 @@ public class Pathname extends LispObject {
                         if (entry != null) {
                             // ensure this isn't a directory
                             if (entry.isDirectory()) {
-                                return NIL;
+                                break jarfile;
                             }
                             try {
                                 InputStream input = jarFile.getInputStream(entry);
