@@ -44,6 +44,7 @@
 (import '(sys::%format sys::list-traced-functions sys::trace-1 sys::untrace-1 sys::untrace-all))
 
 (defvar *null-cmd* (gensym))
+(defvar *handled-cmd* (gensym))
 
 (defvar *command-char* #\:)
 
@@ -376,17 +377,17 @@
 
 (defun read-cmd (stream)
   (let ((c (peek-char-non-whitespace stream)))
-    (if (eql c #\Newline)
-	(progn
-	  (read-line stream)
-	  *null-cmd*)
-	(let ((input (read stream nil)))
-	  (if (not (keywordp input))
-	      input
-	      (let ((name (string-downcase (symbol-name input))))
-		(if (find-command name)
-		    (concatenate 'string ":" name)
-		    input)))))))
+    (cond ((eql c *command-char*)
+           (let* ((input (read-line stream))
+		  (name (symbol-name (read-from-string input))))
+	     (if (find-command name)
+		 (progn (process-cmd input) *handled-cmd*)
+	       (read-from-string (concatenate 'string ":" name)))))
+          ((eql c #\newline)
+           (read-line stream)
+           *null-cmd*)
+          (t
+           (read stream nil)))))
 
 (defun repl-read-form-fun (in out)
   (loop
@@ -396,7 +397,8 @@
       (setf (charpos out) 0)
       (unless (eq form *null-cmd*)
         (incf *cmd-number*))
-      (cond ((process-cmd form))
+      (cond ((or (eq form *null-cmd*)
+		 (eq form *handled-cmd*)))
             ((and (> *debug-level* 0)
                   (fixnump form))
              (let ((n form)
