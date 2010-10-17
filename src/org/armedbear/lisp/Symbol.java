@@ -2912,8 +2912,6 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_EXT.addExternalSymbol("MAILBOX");
   public static final Symbol MUTEX =
     PACKAGE_EXT.addExternalSymbol("MUTEX");
-  public static final Symbol THREAD =
-    PACKAGE_EXT.addExternalSymbol("THREAD");
   public static final Symbol SUPPRESS_COMPILER_WARNINGS =
     PACKAGE_EXT.addExternalSymbol("*SUPPRESS-COMPILER-WARNINGS*");
   public static final Symbol NEQ =
@@ -3098,6 +3096,11 @@ public class Symbol extends LispObject implements java.io.Serializable
   public static final Symbol _INSPECTOR_HOOK_ =
     PACKAGE_EXT.addExternalSymbol("*INSPECTOR-HOOK*");
 
-  public static final Symbol COMPILER_LET=
+  public static final Symbol COMPILER_LET =
     PACKAGE_LISP.addExternalSymbol("COMPILER-LET");
+
+  // THREADS
+  public static final Symbol THREAD =
+    PACKAGE_THREADS.addExternalSymbol("THREAD");
+
 }
