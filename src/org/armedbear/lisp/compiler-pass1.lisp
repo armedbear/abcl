@@ -918,8 +918,8 @@ where each of the vars returned is a list with these elements:
 	     (setf (compiland-lambda-expression compiland) lambda-expression)
 	     (setf (local-function-definition local-function)
 		   (copy-tree definition))
-	     (setf (local-function-inline-expansion local-function)
-		   (generate-inline-expansion block-name lambda-list body))
+	     ;(setf (local-function-inline-expansion local-function)
+	     ;(generate-inline-expansion block-name lambda-list body))
 	     (p1-compiland compiland)))
 	 (push local-function local-functions)))
       ((with-saved-compiler-policy
@@ -933,7 +933,12 @@ where each of the vars returned is a list with these elements:
 	   (dolist (special (flet-free-specials block))
 	     (push special *visible-variables*))
 	   (setf (flet-form block)
-		 (list* (car form) local-functions (p1-body (cddr form))))
+		 (list* (car form)
+			(remove-if (lambda (fn)
+				     (and (inline-p (local-function-name fn))
+					  (not (local-function-references-needed-p fn))))
+				   local-functions)
+			(p1-body (cddr form))))
 	   block)))))
 
 
