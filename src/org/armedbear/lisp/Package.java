@@ -49,8 +49,13 @@ public final class Package extends LispObject implements java.io.Serializable
 
     private transient LispObject propertyList;
 
+    /** Symbols internal to the package. */
     private transient final ConcurrentHashMap<String, Symbol> internalSymbols
             = new ConcurrentHashMap<String, Symbol>(16);
+    /** Symbols exported from the package.
+     *
+     * Those symbols in this collection are not contained in the internalSymbols
+     */
     private transient final ConcurrentHashMap<String, Symbol> externalSymbols
             = new ConcurrentHashMap<String, Symbol>(16);
 
@@ -141,12 +146,25 @@ public final class Package extends LispObject implements java.io.Serializable
         return nicknames;
     }
 
+    private void makeSymbolsUninterned(ConcurrentHashMap symbolMap) {
+        Symbol sym;
+        for (Iterator<Symbol> it = symbolMap.values().iterator();
+                it.hasNext();) {
+            sym = it.next();
+            if (sym.getPackage() == this) {
+                sym.setPackage(NIL);
+            }
+        }
+        symbolMap.clear();
+    }
+
     public final synchronized boolean delete()
     {
         if (name != null) {
             Packages.deletePackage(this);
-            internalSymbols.clear();
-            externalSymbols.clear();
+
+            makeSymbolsUninterned(internalSymbols);
+            makeSymbolsUninterned(externalSymbols); // also clears externalSymbols
 
             name = null;
             lispName = null;
