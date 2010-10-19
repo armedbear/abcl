@@ -599,22 +599,23 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
               (write (list 'setq '*source* *compile-file-truename*)
                      :stream out)
               (%stream-terpri out)
-	      ;; Note: Beyond this point, you can't use DUMP-FORM,
-	      ;; because the list of uninterned symbols has been fixed now.
-	      (when *fasl-uninterned-symbols*
-		(write (list 'setq '*fasl-uninterned-symbols*
-			     (coerce (mapcar #'car
-					     (nreverse *fasl-uninterned-symbols*))
-				     'vector))
-		       :stream out))
-	      (%stream-terpri out)
+              ;; Note: Beyond this point, you can't use DUMP-FORM,
+              ;; because the list of uninterned symbols has been fixed now.
+              (when *fasl-uninterned-symbols*
+                (write (list 'setq '*fasl-uninterned-symbols*
+                             (coerce (mapcar #'car
+                                             (nreverse *fasl-uninterned-symbols*))
+                                     'vector))
+                       :stream out
+                       :length nil))
+              (%stream-terpri out)
 
-	      (when (> *class-number* 0)
-		(generate-loader-function)
-		(write (list 'setq '*fasl-loader*
-			     `(sys::make-fasl-class-loader
-			       ,*class-number*
-			       ,(concatenate 'string "org.armedbear.lisp." (base-classname)))) :stream out))
+              (when (> *class-number* 0)
+                (generate-loader-function)
+                (write (list 'setq '*fasl-loader*
+                             `(sys::make-fasl-class-loader
+                               ,*class-number*
+                               ,(concatenate 'string "org.armedbear.lisp." (base-classname)))) :stream out))
               (%stream-terpri out))
 
 
