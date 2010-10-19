@@ -1,6 +1,7 @@
 ;;; clos.lisp
 ;;;
 ;;; Copyright (C) 2003-2007 Peter Graves
+;;; Copyright (C) 2010 Mark Evenson
 ;;; $Id$
 ;;;
 ;;; This program is free software; you can redistribute it and/or
@@ -30,7 +31,7 @@
 ;;; exception statement from your version.
 
 ;;; Originally based on Closette.
-
+     
 ;;; Closette Version 1.0 (February 10, 1991)
 ;;;
 ;;; Copyright (c) 1990, 1991 Xerox Corporation.
@@ -740,38 +741,55 @@
                  ,(canonicalize-direct-slots direct-slots)
                  ,@(canonicalize-defclass-options options)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defstruct method-combination
-    name
-    operator
-    identity-with-one-argument
-    documentation)
+(defstruct method-combination
+  name
+  documentation)
 
-  (defun expand-short-defcombin (whole)
-    (let* ((name (cadr whole))
-           (documentation
-            (getf (cddr whole) :documentation ""))
-           (identity-with-one-arg
-            (getf (cddr whole) :identity-with-one-argument nil))
-           (operator
-            (getf (cddr whole) :operator name)))
-      `(progn
-         (setf (get ',name 'method-combination-object)
-               (make-method-combination :name ',name
-                                        :operator ',operator
-                                        :identity-with-one-argument ',identity-with-one-arg
-                                        :documentation ',documentation))
-         ',name)))
+(defstruct (short-method-combination 
+             (:include method-combination))
+  operator
+  identity-with-one-argument)
 
-  (defun expand-long-defcombin (whole)
-    (declare (ignore whole))
-    (error "The long form of DEFINE-METHOD-COMBINATION is not implemented.")))
+(defstruct (long-method-combination
+             (:include method-combination))
+  lambda-list
+  method-group-specs
+  args-lambda-list
+  generic-function-symbol
+  function
+  arguments
+  declarations
+  forms)
 
-(defmacro define-method-combination (&whole form &rest args)
-  (declare (ignore args))
+(defun expand-long-defcombin (name args)
+  (destructuring-bind (lambda-list method-groups &rest body) args
+    `(apply #'define-long-form-method-combination
+            ',name
+            ',lambda-list
+            (list ,@(mapcar #'canonicalize-method-group-spec method-groups))
+            ',body)))
+
+(defun expand-short-defcombin (whole)
+  (let* ((name (cadr whole))
+         (documentation
+          (getf (cddr whole) :documentation ""))
+         (identity-with-one-arg
+          (getf (cddr whole) :identity-with-one-argument nil))
+         (operator
+          (getf (cddr whole) :operator name)))
+    `(progn
+       (setf (get ',name 'method-combination-object)
+             (make-short-method-combination
+              :name ',name
+              :operator ',operator
+              :identity-with-one-argument ',identity-with-one-arg
+              :documentation ',documentation))
+       ',name)))
+
+(defmacro define-method-combination (&whole form name &rest args)
   (if (and (cddr form)
            (listp (caddr form)))
-      (expand-long-defcombin form)
+      (expand-long-defcombin name args)
       (expand-short-defcombin form)))
 
 (define-method-combination +      :identity-with-one-argument t)
@@ -783,6 +801,240 @@
 (define-method-combination nconc  :identity-with-one-argument t)
 (define-method-combination or     :identity-with-one-argument t)
 (define-method-combination progn  :identity-with-one-argument t)
+
+;;;
+;;; long form of define-method-combination (from Sacla and XCL)
+;;;
+(defun define-method-combination-type (name &rest initargs)
+    (setf (get name 'method-combination-object)
+          (apply 'make-long-method-combination initargs)))
+
+(defun method-group-p (selecter qualifiers)
+  ;; selecter::= qualifier-pattern | predicate
+  (etypecase selecter
+    (list (or (equal selecter qualifiers)
+              (let ((last (last selecter)))
+                (when (eq '* (cdr last))
+                  (let* ((prefix `(,@(butlast selecter) ,(car last)))
+                         (pos (mismatch prefix qualifiers)))
+                    (or (null pos) (= pos (length prefix))))))))
+    ((eql *) t)
+    (symbol (funcall (symbol-function selecter) qualifiers))))
+
+(defun check-variable-name (name)
+  (flet ((valid-variable-name-p (name)
+                                (and (symbolp name) (not (constantp name)))))
+    (assert (valid-variable-name-p name))))
+
+(defun canonicalize-method-group-spec (spec)
+  ;; spec ::= (name {qualifier-pattern+ | predicate} [[long-form-option]])
+  ;; long-form-option::= :description description | :order order |
+  ;;                     :required required-p
+  ;; a canonicalized-spec is a simple plist.
+  (let* ((rest spec)
+         (name (prog2 (check-variable-name (car rest))
+                 (car rest)
+                 (setq rest (cdr rest))))
+         (option-names '(:description :order :required))
+         (selecters (let ((end (or (position-if #'(lambda (it)
+                                                   (member it option-names))
+                                                rest)
+                                   (length rest))))
+                      (prog1 (subseq rest 0 end)
+                        (setq rest (subseq rest end)))))
+         (description (getf rest :description ""))
+         (order (getf rest :order :most-specific-first))
+         (required-p (getf rest :required)))
+    `(list :name ',name
+           :predicate (lambda (qualifiers)
+                        (loop for item in ',selecters
+                          thereis (method-group-p item qualifiers)))
+           :description ',description
+           :order ',order
+           :required ',required-p)))
+
+(defun extract-required-part (lambda-list)
+  (flet ((skip (key lambda-list)
+               (if (eq (first lambda-list) key)
+                   (cddr lambda-list)
+                   lambda-list)))
+    (ldiff (skip '&environment (skip '&whole lambda-list))
+           (member-if #'(lambda (it) (member it lambda-list-keywords))
+                      lambda-list))))
+
+(defun extract-specified-part (key lambda-list)
+  (case key
+    ((&eval &whole)
+     (list (second (member key lambda-list))))
+    (t
+     (let ((here (cdr (member key lambda-list))))
+       (ldiff here
+              (member-if #'(lambda (it) (member it lambda-list-keywords))
+                         here))))))
+
+(defun extract-optional-part (lambda-list)
+  (extract-specified-part '&optional lambda-list))
+
+(defun parse-define-method-combination-arguments-lambda-list (lambda-list)
+  ;; Define-method-combination Arguments Lambda Lists
+  ;; http://www.lispworks.com/reference/HyperSpec/Body/03_dj.htm
+  (let ((required (extract-required-part lambda-list))
+        (whole    (extract-specified-part '&whole    lambda-list))
+        (optional (extract-specified-part '&optional lambda-list))
+        (rest     (extract-specified-part '&rest     lambda-list))
+        (keys     (extract-specified-part '&key      lambda-list))
+        (aux      (extract-specified-part '&aux      lambda-list)))
+    (values (first whole)
+            required
+            (mapcar #'(lambda (spec)
+                       (if (consp spec)
+                           `(,(first spec) ,(second spec) ,@(cddr spec))
+                           `(,spec nil)))
+                    optional)
+            (first rest)
+            (mapcar #'(lambda (spec)
+                       (let ((key (if (consp spec) (car spec) spec))
+                             (rest (when (consp spec) (rest spec))))
+                         `(,(if (consp key) key `(,(make-keyword key) ,key))
+                           ,(car rest)
+                           ,@(cdr rest))))
+                    keys)
+            (mapcar #'(lambda (spec)
+                       (if (consp spec)
+                           `(,(first spec) ,(second spec))
+                           `(,spec nil)))
+                    aux))))
+
+(defmacro getk (plist key init-form)
+  "Similar to getf except eval and return INIT-FORM if KEY has no value in PLIST."
+  (let ((not-exist (gensym))
+        (value (gensym)))
+    `(let ((,value (getf ,plist ,key ,not-exist)))
+       (if (eq ,not-exist ,value) ,init-form ,value))))
+
+(defconstant +gf-args-var+ (make-symbol "GF-ARGS-VAR"))
+
+(defmacro with-args-lambda-list (args-lambda-list generic-function-symbol
+                                                  &body forms)
+  (let ((gf-lambda-list (gensym))
+        (nrequired (gensym))
+        (noptional (gensym))
+        (rest-args (gensym)))
+    (multiple-value-bind (whole required optional rest keys aux)
+        (parse-define-method-combination-arguments-lambda-list args-lambda-list)
+      `(let* ((,gf-lambda-list (slot-value ,generic-function-symbol 'lambda-list))
+              (,nrequired (length (extract-required-part ,gf-lambda-list)))
+              (,noptional (length (extract-optional-part ,gf-lambda-list)))
+              (,rest-args (subseq ,+gf-args-var+ (+ ,nrequired ,noptional)))
+              ,@(when whole `((,whole ,+gf-args-var+)))
+              ,@(loop for var in required and i upfrom 0
+                  collect `(,var (when (< ,i ,nrequired)
+                                   (nth ,i ,+gf-args-var+))))
+              ,@(loop for (var init-form) in optional and i upfrom 0
+                  collect
+                  `(,var (if (< ,i ,noptional)
+                             (nth (+ ,nrequired ,i) ,+gf-args-var+)
+                             ,init-form)))
+              ,@(when rest `((,rest ,rest-args)))
+              ,@(loop for ((key var) init-form) in keys and i upfrom 0
+                  collect `(,var (getk ,rest-args ',key ,init-form)))
+              ,@(loop for (var init-form) in aux and i upfrom 0
+                  collect `(,var ,init-form)))
+         ,@forms))))
+
+(defmacro with-method-groups (method-group-specs methods-form &body forms)
+  (flet ((grouping-form (spec methods-var)
+                        (let ((predicate (coerce-to-function (getf spec :predicate)))
+                              (group (gensym))
+                              (leftovers (gensym))
+                              (method (gensym)))
+                          `(let ((,group '())
+                                 (,leftovers '()))
+                             (dolist (,method ,methods-var)
+                               (if (funcall ,predicate (method-qualifiers ,method))
+                                   (push ,method ,group)
+                                   (push ,method ,leftovers)))
+                             (ecase ,(getf spec :order)
+                               (:most-specific-last )
+                               (:most-specific-first (setq ,group (nreverse ,group))))
+                             ,@(when (getf spec :required)
+                                 `((when (null ,group)
+                                     (error "Method group ~S must not be empty."
+                                            ',(getf spec :name)))))
+                             (setq ,methods-var (nreverse ,leftovers))
+                             ,group))))
+    (let ((rest (gensym))
+          (method (gensym)))
+      `(let* ((,rest ,methods-form)
+              ,@(mapcar #'(lambda (spec)
+                           `(,(getf spec :name) ,(grouping-form spec rest)))
+                        method-group-specs))
+         (dolist (,method ,rest)
+           (invalid-method-error ,method
+                                 "Method ~S with qualifiers ~S does not belong to any method group."
+                                 ,method (method-qualifiers ,method)))
+         ,@forms))))
+
+(defun method-combination-type-lambda
+  (&key name lambda-list args-lambda-list generic-function-symbol
+        method-group-specs declarations forms &allow-other-keys)
+  (let ((methods (gensym)))
+    `(lambda (,generic-function-symbol ,methods ,@lambda-list)
+       ,@declarations
+       (let ((*message-prefix* ,(format nil "METHOD COMBINATION TYPE ~S: " name)))
+         (with-method-groups ,method-group-specs
+           ,methods
+           ,@(if (null args-lambda-list)
+                 forms
+                 `((with-args-lambda-list ,args-lambda-list
+                     ,generic-function-symbol
+                     ,@forms))))))))
+
+(defun declarationp (expr)
+  (and (consp expr) (eq (car expr) 'DECLARE)))
+
+(defun long-form-method-combination-args (args)
+  ;; define-method-combination name lambda-list (method-group-specifier*) args
+  ;; args ::= [(:arguments . args-lambda-list)]
+  ;;          [(:generic-function generic-function-symbol)]
+  ;;          [[declaration* | documentation]] form*
+  (let ((rest args))
+    (labels ((nextp (key) (and (consp (car rest)) (eq key (caar rest))))
+             (args-lambda-list ()
+               (when (nextp :arguments)
+                 (prog1 (cdr (car rest)) (setq rest (cdr rest)))))
+             (generic-function-symbol ()
+                (if (nextp :generic-function)
+                    (prog1 (second (car rest)) (setq rest (cdr rest)))
+                    (gensym)))
+             (declaration* ()
+               (let ((end (position-if-not #'declarationp rest)))
+                 (when end
+                   (prog1 (subseq rest 0 end) (setq rest (nthcdr end rest))))))
+             (documentation? ()
+               (when (stringp (car rest))
+                 (prog1 (car rest) (setq rest (cdr rest)))))
+             (form* () rest))
+      (let ((declarations '()))
+        `(:args-lambda-list ,(args-lambda-list)
+                            :generic-function-symbol ,(generic-function-symbol)
+                            :documentation ,(prog2 (setq declarations (declaration*))
+                                              (documentation?))
+                            :declarations (,@declarations ,@(declaration*))
+                            :forms ,(form*))))))
+
+(defun define-long-form-method-combination (name lambda-list method-group-specs
+                                                 &rest args)
+  (let* ((initargs `(:name ,name
+                     :lambda-list ,lambda-list
+                     :method-group-specs ,method-group-specs
+                     ,@(long-form-method-combination-args args)))
+         (lambda-expression (apply #'method-combination-type-lambda initargs)))
+    (apply #'define-method-combination-type name
+           `(,@initargs
+;;              :function ,(compile nil lambda-expression)
+             :function ,(coerce-to-function lambda-expression)))
+    name))
 
 (defstruct eql-specializer
   object)
@@ -1580,27 +1832,30 @@
          (primaries '())
          (arounds '())
          around
-         emf-form)
-    (dolist (m methods)
-      (let ((qualifiers (method-qualifiers m)))
-        (cond ((null qualifiers)
-               (if (eq mc-name 'standard)
-                   (push m primaries)
-                   (error "Method combination type mismatch.")))
-              ((cdr qualifiers)
-               (error "Invalid method qualifiers."))
-              ((eq (car qualifiers) :around)
-               (push m arounds))
-              ((eq (car qualifiers) mc-name)
-               (push m primaries))
-              ((memq (car qualifiers) '(:before :after)))
-              (t
-               (error "Invalid method qualifiers.")))))
+         emf-form
+         (long-method-combination-p 
+          (typep (get mc-name 'method-combination-object) 'long-method-combination)))
+    (unless long-method-combination-p
+      (dolist (m methods)
+        (let ((qualifiers (method-qualifiers m)))
+          (cond ((null qualifiers)
+                 (if (eq mc-name 'standard)
+                     (push m primaries)
+                     (error "Method combination type mismatch.")))
+                ((cdr qualifiers)
+                 (error "Invalid method qualifiers."))
+                ((eq (car qualifiers) :around)
+                 (push m arounds))
+                ((eq (car qualifiers) mc-name)
+                 (push m primaries))
+                ((memq (car qualifiers) '(:before :after)))
+                (t
+                 (error "Invalid method qualifiers."))))))
     (unless (eq order :most-specific-last)
       (setf primaries (nreverse primaries)))
     (setf arounds (nreverse arounds))
     (setf around (car arounds))
-    (when (null primaries)
+    (when (and (null primaries) (not long-method-combination-p))
       (error "No primary methods for the generic function ~S." gf))
     (cond
       (around
@@ -1611,10 +1866,7 @@
                    #'compute-effective-method-function)
                gf (remove around methods))))
          (setf emf-form
-;;;           `(lambda (args)
-;;;          (funcall ,(%method-function around) args ,next-emfun))
-               (generate-emf-lambda (%method-function around) next-emfun)
-               )))
+               (generate-emf-lambda (%method-function around) next-emfun))))
       ((eq mc-name 'standard)
        (let* ((next-emfun (compute-primary-emfun (cdr primaries)))
               (befores (remove-if-not #'before-method-p methods))
@@ -1624,7 +1876,6 @@
                (cond
                  ((and (null befores) (null reverse-afters))
                   (let ((fast-function (%method-fast-function (car primaries))))
-
                     (if fast-function
                         (ecase (length (gf-required-args gf))
                           (1
@@ -1635,14 +1886,10 @@
                            #'(lambda (args)
                                (declare (optimize speed))
                                (funcall fast-function (car args) (cadr args)))))
-                        ;;                               `(lambda (args)
-                        ;;                                  (declare (optimize speed))
-                        ;;                                  (funcall ,(%method-function (car primaries)) args ,next-emfun))
                         (generate-emf-lambda (%method-function (car primaries))
                                              next-emfun))))
                  (t
                   (let ((method-function (%method-function (car primaries))))
-
                     #'(lambda (args)
                         (declare (optimize speed))
                         (dolist (before befores)
@@ -1651,24 +1898,39 @@
                             (funcall method-function args next-emfun)
                           (dolist (after reverse-afters)
                             (funcall (%method-function after) args nil))))))))))
-          (t
-           (let ((mc-obj (get mc-name 'method-combination-object)))
-             (unless mc-obj
-               (error "Unsupported method combination type ~A." mc-name))
-             (let* ((operator (method-combination-operator mc-obj))
-                    (ioa (method-combination-identity-with-one-argument mc-obj)))
-               (setf emf-form
-                     (if (and (null (cdr primaries))
-                              (not (null ioa)))
-;;                          `(lambda (args)
-;;                             (funcall ,(%method-function (car primaries)) args nil))
-                         (generate-emf-lambda (%method-function (car primaries)) nil)
-                         `(lambda (args)
-                            (,operator ,@(mapcar
-                                          (lambda (primary)
-                                            `(funcall ,(%method-function primary) args nil))
-                                          primaries)))))))))
-    (or (ignore-errors (autocompile emf-form))
+      (long-method-combination-p
+       (let* ((mc-obj (get mc-name 'method-combination-object))
+              (function (long-method-combination-function mc-obj))
+              (arguments (rest (slot-value gf 'method-combination))))
+         (assert (typep mc-obj 'long-method-combination))
+         (assert function)
+         (setf emf-form 
+               (let ((result (if arguments
+                                 (apply function gf methods arguments)
+                                 (funcall function gf methods))))
+                 `(lambda (args)
+                    (let ((gf-args-var args))
+                      (macrolet ((call-method (method &optional next-method-list)
+                                   `(funcall ,(%method-function method) args nil)))
+                        ,result)))))))
+      (t
+       (let ((mc-obj (get mc-name 'method-combination-object)))
+         (unless (typep mc-obj 'short-method-combination)
+           (error "Unsupported method combination type ~A."
+                  mc-name))
+         (let* ((operator (short-method-combination-operator mc-obj))
+                (ioa (short-method-combination-identity-with-one-argument mc-obj)))
+           (setf emf-form
+                 (if (and (null (cdr primaries))
+                          (not (null ioa)))
+                     (generate-emf-lambda (%method-function (car primaries)) nil)
+                     `(lambda (args)
+                        (,operator ,@(mapcar
+                                      (lambda (primary)
+                                        `(funcall ,(%method-function primary) args nil))
+                                      primaries)))))))))
+    (assert (not (null emf-form)))
+    (or #+nil (ignore-errors (autocompile emf-form))
         (coerce-to-function emf-form))))
 
 (defun generate-emf-lambda (method-function next-emfun)
@@ -2455,6 +2717,7 @@
   (std-method-more-specific-p method1 method2 required-classes
                               (generic-function-argument-precedence-order gf)))
 
+;;; XXX AMOP has COMPUTE-EFFECTIVE-METHOD
 (defgeneric compute-effective-method-function (gf methods))
 (defmethod compute-effective-method-function ((gf standard-generic-function) methods)
   (std-compute-effective-method-function gf methods))
