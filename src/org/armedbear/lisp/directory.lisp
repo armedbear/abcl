@@ -41,32 +41,53 @@
                    :type nil
                    :version nil)))
 
-(defun list-directories-with-wildcards (pathname)
+(defun wild-inferiors-p (component)
+  (eq component :wild-inferiors))
+
+(defun list-directories-with-wildcards (pathname 
+					&optional (wild-inferiors-found nil))
   (let* ((directory (pathname-directory pathname))
+	 (first-wild-inferior (and (not wild-inferiors-found) 
+				   (position-if #'wild-inferiors-p directory)))
 	 (first-wild (position-if #'wild-p directory))
-	 (wild (when first-wild (nthcdr first-wild directory)))
-	 (non-wild (if first-wild
+	 (wild (when (or first-wild-inferior first-wild)
+		 (nthcdr (or first-wild-inferior first-wild) directory)))
+	 (non-wild (if (or first-wild-inferior first-wild)
 		       (nbutlast directory
-				 (- (length directory) first-wild))
-		       directory))
+				 (- (length directory) 
+				    (or first-wild-inferior first-wild)))
+		     directory))
 	 (newpath (make-pathname :directory non-wild
 				 :name nil :type nil :defaults pathname))
 	 (entries (list-directory newpath)))
-    (if (not wild)
-	entries 
-        (mapcan (lambda (entry)
-                  (let* ((pathname (pathname entry))
-                         (directory (pathname-directory pathname))
-                         (rest-wild (cdr wild)))
-                    (unless (pathname-name pathname)
-                      (when (pathname-match-p (first (last directory)) 
-                                              (if (eql (car wild) :wild) "*" (car wild)))
-                        (when rest-wild
-                          (setf directory (nconc directory rest-wild)))
-                        (list-directories-with-wildcards
-                         (make-pathname :directory directory
-                                        :defaults newpath))))))
-                entries))))
+    (if (not (or wild wild-inferiors-found))
+	entries
+	(let ((inferior-entries (when (or wild-inferiors-found first-wild-inferior) entries)))
+	  (nconc 
+	   (mapcan (lambda (entry) 
+		     (when (pathname-match-p (pathname entry) pathname)
+		       (list entry)))
+		   inferior-entries)
+	   (mapcan (lambda (entry)
+		     (let* ((pathname (pathname entry))
+			    (directory (pathname-directory pathname))
+			    (rest-wild (cdr wild)))
+		       (unless (pathname-name pathname)
+			 (when (pathname-match-p (first (last directory))
+				    (cond ((eql (car wild) :wild)
+					   "*")
+					  ((eql (car wild) :wild-inferiors)
+					   "*")
+					  (wild 
+					   (car wild))
+					  (t "")))
+			   (when rest-wild
+			     (setf directory (nconc directory rest-wild)))
+			   (list-directories-with-wildcards
+			    (make-pathname :directory directory
+					   :defaults newpath)
+			    (or first-wild-inferior wild-inferiors-found))))))
+		   entries))))))
 
 
 (defun directory (pathspec &key)
