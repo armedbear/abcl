@@ -28,6 +28,7 @@ Fixes
 
 * [ticket #107] Incorrect compilation of (SETF STRUCTURE-REF) expansion
 
+* [ticket #105] DIRECTORY ignores :WILD-INFERIORS
 
 Other
 -----
