@@ -327,7 +327,7 @@
             mailbox-read mailbox-peek
 
             ;; Lock
-            make-thread-lock thread-lock thread-unlock
+            make-thread-lock 
 
             ;; Mutex
             make-mutex get-mutex release-mutex)
