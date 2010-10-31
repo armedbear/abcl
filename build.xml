@@ -477,7 +477,7 @@ will load ASDF-INSTALL.
     <patternset id="abcl.dist.misc"
 		description="Additional includes in the source distributions relative to basedir">
       <include name="build.xml"/>
-      <include name="build.properties.in"/>
+      <include name="abcl.properties.in"/>
       <include name="COPYING"/>
       <include name="README"/>
       <include name="CHANGES"/>
