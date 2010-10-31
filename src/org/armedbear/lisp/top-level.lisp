@@ -108,14 +108,14 @@
     (write-string prefix stream))
   (etypecase frame
     (sys::lisp-stack-frame
-     (pprint-logical-block (stream nil :prefix "(" :suffix ")")
-       (setq frame (sys:frame-to-list frame))
-       (ignore-errors
-         (prin1 (car frame) stream)
-         (let ((args (cdr frame)))
-           (if (listp args)
-               (format stream "~{ ~_~S~}" args)
-               (format stream " ~S" args))))))
+     (let ((frame (sys:frame-to-list frame)))
+       (pprint-logical-block (stream nil :prefix "(" :suffix ")")
+         (ignore-errors
+           (prin1 (car frame) stream)
+           (let ((args (cdr frame)))
+             (if (listp args)
+                 (format stream "~{ ~_~S~}" args)
+                 (format stream " ~S" args)))))))
     (sys::java-stack-frame
      (write-string (sys:frame-to-string frame) stream))))
 
