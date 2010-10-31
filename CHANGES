@@ -11,6 +11,8 @@ Features
 Fixes
 -----
 
+* [svn r12946] Fix CLOS thread-safety
+
 * [svn r12930] Fix non-constantness of constant symbols when using SET
 
 * [svn r12929] Don't throw conditions on floating point underflow
