@@ -3,6 +3,11 @@ Version 0.23
 svn://common-lisp.net/project/armedbear/svn/tags/0.23.0/abcl
 (????, 2010)
 
+Features
+--------
+
+* [svn r12986] Update to ASDF 2.010.1
+
 Fixes
 -----
 
