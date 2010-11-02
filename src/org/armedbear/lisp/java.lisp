@@ -337,6 +337,45 @@
 (defun (setf jproperty-value) (value obj prop)
   (%jset-property-value obj prop value))
 
+;;; higher-level operators
+
+(defmacro chain (target op &rest ops)
+  "Performs chained method invocations. `target' is the receiver object (when the first call is a virtual method call) or a list in the form (:static <jclass>) when the first method call is a static method call. `op' and each of the `ops' are either method designators or lists in the form (<method designator> &rest args), where a method designator is either a string naming a method, or a jmethod object. `chain' will perform the method call specified by `op' on `target'; then, for each of the `ops', `chain' will perform the specified method call using the object returned by the previous method call as the receiver, and will ultimately return the result of the last method call.
+  For example, the form:
+
+  (chain (:static \"java.lang.Runtime\") \"getRuntime\" (\"exec\" \"ls\"))
+
+  is equivalent to the following Java code:
+
+  java.lang.Runtime.getRuntime().exec(\"ls\");"
+  (labels ((canonicalize-op (op) (if (listp op) op (list op)))
+	   (compose-arglist (target op) `(,(car op) ,target ,@(cdr op)))
+	   (make-binding-for (form) `(,(gensym) ,form))
+	   (make-binding (bindings next-op &aux (target (caar bindings)))
+	     (cons (make-binding-for
+		    `(jcall ,@(compose-arglist target
+					       (canonicalize-op next-op))))
+		   bindings)))
+    (let* ((first (if (and (consp target) (eq (first target) :static))
+		      `(jstatic ,@(compose-arglist (cadr target) (canonicalize-op op)))
+		      `(jcall ,@(compose-arglist target (canonicalize-op op)))))
+	   (bindings (nreverse
+		      (reduce #'make-binding ops
+			      :initial-value (list (make-binding-for first))))))
+      `(let* ,bindings
+	 (declare (ignore ,@(mapcar #'car bindings)))))))
+
+(defmacro jmethod-let (bindings &body body)
+  (let ((args (gensym)))
+    `(let ,(mapcar (lambda (binding)
+		     `(,(car binding) (jmethod ,@(cdr binding))))
+		   bindings)
+       (macrolet ,(mapcar (lambda (binding)
+			    `(,(car binding) (&rest ,args)
+			       `(jcall ,,(car binding) ,@,args)))
+			  bindings)
+	 ,@body))))
+
 ;;; print-object
 
 (defmethod print-object ((obj java:java-object) stream)

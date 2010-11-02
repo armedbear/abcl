@@ -282,6 +282,10 @@
 (autoload 'jruntime-class-exists-p "runtime-class")
 (export 'ensure-java-class "JAVA")
 (autoload 'ensure-java-class "java")
+(export 'chain "JAVA")
+(autoload-macro 'chain "java")
+(export 'jmethod-let "JAVA")
+(autoload-macro 'jmethod-let "java")
 
 ;; Profiler.
 (in-package "PROFILER")
