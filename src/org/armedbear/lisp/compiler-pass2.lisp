@@ -6447,6 +6447,7 @@ We need more thought here.
            (BEGIN-PROTECTED-RANGE (gensym))
            (END-PROTECTED-RANGE (gensym))
            (THROW-HANDLER (gensym))
+           (RETHROW (gensym))
            (DEFAULT-HANDLER (gensym))
            (EXIT (gensym)))
       (compile-form (second form) tag-register nil) ; Tag.
@@ -6473,6 +6474,11 @@ We need more thought here.
                           (list +lisp-thread+) +lisp-object+)
       (emit-move-from-stack target) ; Stack depth is 0.
       (emit 'goto EXIT)
+      (label RETHROW) ; Start of handler for all other Throwables.
+      ;; A Throwable object is on the runtime stack here. Stack depth is 1.
+      (emit-push-current-thread)
+      (emit-invokevirtual +lisp-thread+ "popCatchTag" nil nil)
+      (emit 'athrow) ; Re-throw.
       (label DEFAULT-HANDLER) ; Start of handler for all other Throwables.
       ;; A Throwable object is on the runtime stack here. Stack depth is 1.
       (emit-push-current-thread)
