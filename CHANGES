@@ -15,6 +15,8 @@ Features
 Fixes
 -----
 
+* Various fixes in order to complete the Maxima test suite without failures
+
 * [ticket #98] THREAD type specifier not exported from the THREADS package
 
 * [svn r12946] Fix CLOS thread-safety
