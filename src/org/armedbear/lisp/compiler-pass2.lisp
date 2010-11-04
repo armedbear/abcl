@@ -6468,7 +6468,7 @@ We need more thought here.
       (aload tag-register) ; Stack depth is 3.
       ;; If it's not the tag we're looking for, we branch to the start of the
       ;; catch-all handler, which will do a re-throw.
-      (emit 'if_acmpne DEFAULT-HANDLER) ; Stack depth is 1.
+      (emit 'if_acmpne RETHROW) ; Stack depth is 1.
       (emit-push-current-thread)
       (emit-invokevirtual +lisp-throw+ "getResult"
                           (list +lisp-thread+) +lisp-object+)
