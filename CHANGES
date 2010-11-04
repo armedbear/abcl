@@ -8,8 +8,14 @@ Features
 
 * [svn r12986] Update to ASDF 2.010.1
 
+* [svn r12982] Basic support for the long form of DEFINE-METHOD-COMBINATION
+
+* [svn r12994] New java-interop macros: CHAIN and JMETHOD-LET
+
 Fixes
 -----
+
+* [ticket #98] THREAD type specifier not exported from the THREADS package
 
 * [svn r12946] Fix CLOS thread-safety
 
@@ -43,6 +49,11 @@ Other
 * [svn r12918] Compiler byte code generator cleanup: introduction
       of generic class file writer, elimination of special purpose code
       in the compiler.
+
+* Number of hashtable implementations reduced to 1 (from 5)
+
+* Reduced use of 'synchronized' global hash table access by using
+      the java.util.concurrent package
 
 Version 0.22
 ============
