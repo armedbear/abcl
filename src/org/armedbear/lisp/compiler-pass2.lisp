@@ -3601,6 +3601,10 @@ given a specific common representation.")
         (emit-push-variable (block-id-variable block))
         ;; If it's not the block we're looking for...
         (emit 'if_acmpeq THIS-BLOCK) ; Stack depth is 1.
+        ;; Not the tag we're looking for.
+        (emit 'aconst_null) ;; load null value
+        (emit-move-to-variable (block-id-variable block))
+        (emit 'athrow)
         (label EXTENT-EXIT-HANDLER)
         ;; Not the tag we're looking for.
         (emit 'aconst_null) ;; load null value
