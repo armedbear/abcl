@@ -8,7 +8,8 @@ Features
 
 * [svn r12986] Update to ASDF 2.010.1
 
-* [svn r12982] Basic support for the long form of DEFINE-METHOD-COMBINATION
+* [svn r12982] Experimental support for the long form
+     of DEFINE-METHOD-COMBINATION
 
 * [svn r12994] New java-interop macros: CHAIN and JMETHOD-LET
 
