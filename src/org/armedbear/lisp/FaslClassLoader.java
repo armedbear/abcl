@@ -52,11 +52,43 @@ public class FaslClassLoader extends JavaClassLoader {
 		this.loader = (LispObject) loadClass(baseName + "_0").newInstance();
 	    } catch(Exception e) {
 		//e.printStackTrace();
-		Debug.trace("useLoaderFunction = true but couldn't fully init FASL loader, will fall back to reflection!");
+		Debug.trace("useLoaderFunction = true but couldn't fully init FASL loader ("+baseName+"), will fall back to reflection!");
 	    }
 	}
     }
 
+    @Override
+    protected Class<?> loadClass(String name, boolean resolve)
+            throws ClassNotFoundException {
+        /* First we check if we should load the class ourselves,
+         * allowing the default handlers to kick in if we don't...
+         *
+         * This strategy eliminates ClassNotFound exceptions inside
+         * the inherited loadClass() eliminated ~80k exceptions during
+         * Maxima compilation. Generally, creation of an exception object
+         * is a pretty heavy operation, because it processes the call stack,
+         * which - in ABCL - is pretty deep, most of the time.
+         */
+        if (name.startsWith(baseName + "_")) {
+            String internalName = "org/armedbear/lisp/" + name;
+            Class<?> c = this.findLoadedClass(internalName);
+
+            if (c == null)
+                c = findClass(name);
+
+            if (c != null) {
+                if (resolve)
+                    resolveClass(c);
+
+                return c;
+            }
+        }
+
+        // Fall through to our super's default handling
+        return super.loadClass(name, resolve);
+    }
+
+    @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
 	try {
 	    byte[] b = getFunctionClassBytes(name);
