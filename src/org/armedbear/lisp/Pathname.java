@@ -936,9 +936,24 @@ public class Pathname extends LispObject {
     }
 
     public static boolean isValidURL(String s) {
+        // On Windows, the scheme "[A-Z]:.*" is ambiguous; reject as urls
+        // This special case reduced exceptions while compiling Maxima by 90%+
+        if (Utilities.isPlatformWindows && s.length() >= 2 && s.charAt(1) == ':') {
+            char c = s.charAt(0);
+            if (('A' <= s.charAt(0) && s.charAt(0) <= 'Z')
+                    || ('a' <= s.charAt(0) && s.charAt(0) <= 'z'))
+                return false;
+        }
+
+        if (s.indexOf(':') == -1) // no schema separator; can't be valid
+            return false;
+        
         try {
             URL url = new URL(s);
         } catch (MalformedURLException e) {
+            // Generating an exception is a heavy operation,
+            // we want to try hard not to get into this branch, without
+            // implementing the URL class ourselves
             return false;
         }
         return true;
