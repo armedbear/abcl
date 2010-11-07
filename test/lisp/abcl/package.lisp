@@ -22,6 +22,7 @@
 
 ;;; XXX move this into test-utilities.lisp?
 (defun run-matching (&optional (match *last-run-matching*))
+  "Run all tests in suite whose symbol contains MATCH in a case-insensitive manner."
   (setf *last-run-matching* match)
   (let* ((matching (string-upcase match))
          (tests
