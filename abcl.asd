@@ -55,6 +55,7 @@
                       (:file "latin1-tests")
                       #+abcl
                       (:file "bugs" :depends-on ("file-system-tests"))
+                      (:file "wild-pathnames" :depends-on ("file-system-tests"))
                       #+abcl
                       (:file "pathname-tests")))))
 
