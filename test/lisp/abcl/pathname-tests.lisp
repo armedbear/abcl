@@ -1659,3 +1659,10 @@
            ;;#+windows "\\foo"
            )
   t)
+
+(deftest make-pathname.1
+    (handler-case 
+        (make-pathname :directory #p"/tmp/")
+      (type-error () t))
+  t)
+
