@@ -20,6 +20,10 @@
   (operate 'test-op :abcl-tests :force t))
 
 ;;; Test ABCL with the Lisp unit tests collected in "test/lisp/abcl"
+;;;
+;;; We guard with #+abcl for tests that other Lisps cannot load.  This
+;;; could be possibly be done at finer granularity in the files
+;;; themselves.
 (defsystem :abcl-test-lisp :version "1.1" :components
 	   ((:module abcl-rt 
                      :pathname "test/lisp/abcl/" :serial t :components
@@ -32,7 +36,9 @@
 		     :pathname "test/lisp/abcl/" :components
                      ((:file "compiler-tests")
                       (:file "condition-tests")
+                      #+abcl
                       (:file "class-file")
+                      #+abcl
                       (:file "metaclass")
                       #+abcl
                       (:file "mop-tests-setup")
@@ -47,7 +53,9 @@
                       (:file "math-tests")
                       (:file "misc-tests")
                       (:file "latin1-tests")
+                      #+abcl
                       (:file "bugs" :depends-on ("file-system-tests"))
+                      #+abcl
                       (:file "pathname-tests")))))
 
 (defmethod perform ((o test-op) (c (eql (find-system 'abcl-test-lisp))))
