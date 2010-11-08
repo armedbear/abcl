@@ -679,7 +679,14 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 (defun generate-loader-function ()
   (let* ((basename (base-classname))
 	 (expr `(lambda (fasl-loader fn-index)
-		  (identity fasl-loader) ;;to avoid unused arg
+                  (declare (type (integer 0 256000) fn-index))
+                  (identity fasl-loader) ;;to avoid unused arg
+                  (jvm::with-inline-code ()
+                    (jvm::emit 'jvm::aload 1)
+                    (jvm::emit-invokevirtual jvm::+lisp-object+ "javaInstance"
+                                             nil jvm::+java-object+)
+                    (jvm::emit-checkcast +fasl-classloader+)
+                    (jvm::emit 'jvm::iload 2))
 		  (ncase fn-index 0 ,(1- *class-number*)
 		    ,@(loop
 			 :for i :from 1 :to *class-number*
@@ -687,20 +694,14 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 			 (let* ((class (%format nil "org/armedbear/lisp/~A_~A"
                                                 basename i))
                                 (class-name (jvm::make-class-name class)))
-			   `(,(1- i)
-			      (jvm::with-inline-code ()
-				(jvm::emit 'jvm::aload 1)
-				(jvm::emit-invokevirtual jvm::+lisp-object+ "javaInstance"
-							 nil jvm::+java-object+)
-				(jvm::emit-checkcast +fasl-classloader+)
-				(jvm::emit 'jvm::dup)
-				(jvm::emit-push-constant-int ,(1- i))
-				(jvm::emit-new ,class-name)
-				(jvm::emit 'jvm::dup)
-				(jvm::emit-invokespecial-init ,class-name '())
-				(jvm::emit-invokevirtual +fasl-classloader+
+                           `(,(1- i)
+                              (jvm::with-inline-code ()
+                                (jvm::emit-new ,class-name)
+                                (jvm::emit 'jvm::dup)
+                                (jvm::emit-invokespecial-init ,class-name '())
+                                (jvm::emit-invokevirtual +fasl-classloader+
                                                          "putFunction"
-							 (list :int jvm::+lisp-object+) jvm::+lisp-object+)
+                                                         (list :int jvm::+lisp-object+) jvm::+lisp-object+)
 				(jvm::emit 'jvm::pop))
 			      t))))))
 	 (classname (fasl-loader-classname))
