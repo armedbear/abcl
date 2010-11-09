@@ -66,23 +66,30 @@ public final class JHandler
     public static void callLisp (String s, Object o, String as[], int ai[])
     {
         if (table.containsKey(o)) {
-            Map<String,Entry> entryTable =  (Map<String,Entry>)table.get(o);
+            Map<String,Entry> entryTable = table.get(o);
             if (entryTable.containsKey(s)) {
-                Function f = ((Entry)entryTable.get(s)).getHandler();
-                LispObject data = ((Entry)entryTable.get(s)).getData();
-                Fixnum count = ((Entry)entryTable.get(s)).getCount();
-                Fixnum[] lispAi = new Fixnum[ai.length];
+                final Entry entry = entryTable.get(s);
+                final Function f = entry.getHandler();
+                final LispObject data = entry.getData();
+                final Fixnum count = entry.getCount();
+                final Fixnum[] lispAi = new Fixnum[ai.length];
                 for (int i = 0; i < ai.length; i++) {
                     lispAi[i] = Fixnum.getInstance(ai[i]);
                 }
-                LispObject lispAiVector = new SimpleVector(lispAi);
-                SimpleString[] lispAs = new SimpleString[as.length];
+                final LispObject lispAiVector = new SimpleVector(lispAi);
+                final SimpleString[] lispAs = new SimpleString[as.length];
                 for (int i = 0; i < as.length; i++) {
                     lispAs[i] = new SimpleString(as[i]);
                 }
-                LispObject lispAsVector = new SimpleVector(lispAs);
-                LispObject[] args = new LispObject[] //FIXME: count -> seq_num
-                { data, new JavaObject(o), lispAiVector, lispAsVector, internKeyword(s), count };
+                final LispObject lispAsVector = new SimpleVector(lispAs);
+                LispObject[] args =
+                    new LispObject[] //FIXME: count -> seq_num
+                    { data,
+                      new JavaObject(o),
+                      lispAiVector,
+                      lispAsVector,
+                      internKeyword(s),
+                      count };
                 f.execute(args);
             }
         }
