@@ -1244,7 +1244,18 @@ public class Pathname extends LispObject {
                 } else if (value == Keyword.WILD) {
                     directory = list(Keyword.ABSOLUTE, Keyword.WILD);
                 } else {
-                    directory = value;
+                  // a valid pathname directory is a string, a list of strings, nil, :wild, :unspecific
+                  // ??? would be nice to (deftype pathname-arg ()
+                  // '(or (member :wild :unspecific) string (and cons ,(mapcar ...
+                  // Is this possible?
+                  if ((value instanceof Cons 
+                       // XXX check that the elements of a list are themselves valid
+                       || value == Keyword.UNSPECIFIC
+                       || value.equals(NIL))) {
+                      directory = value;
+                  } else {
+                      error(new TypeError("DIRECTORY argument not a string, list of strings, nil, :WILD, or :UNSPECIFIC.", value, NIL));
+                  }
                 }
             } else if (key == Keyword.NAME) {
                 name = value;
