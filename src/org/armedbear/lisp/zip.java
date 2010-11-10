@@ -44,17 +44,22 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-// ### zip pathname pathnames
+@DocString(name="zip",
+           args="pathname pathnames &optional topdir",
+           doc="Creates a zip archive at PATHNAME whose entries enumerated via the list of PATHNAMES.\n"
+           + "If the optional TOPDIR argument is specified, the archive will "
+           + "preserve the hierarchy of PATHNAMES relative to TOPDIR.  Without "
+           + "TOPDIR, there will be no sub-directories in the archive, i.e. it will "
+           + "be flat.")
 public final class zip extends Primitive
 {
     private zip()
     {
-        super("zip", PACKAGE_SYS, true, "pathname pathnames &optional topdir");
+        super("zip", PACKAGE_SYS, true);
     }
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
-
     {
         Pathname zipfilePathname = coerceToPathname(first);
         byte[] buffer = new byte[4096];
