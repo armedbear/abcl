@@ -2997,8 +2997,7 @@ given a specific common representation.")
     (let ((*blocks* (cons block *blocks*)))
       (compile-progn-body (cdddr form) target))
     (when bind-special-p
-      (restore-environment-and-make-handler (m-v-b-environment-register block)
-					    label-START))))
+      (restore-dynamic-environment (m-v-b-environment-register block)))))
 
 (defun propagate-vars (block)
   (let ((removed '()))
@@ -3355,8 +3354,7 @@ given a specific common representation.")
       (let ((*blocks* (cons block *blocks*)))
         (compile-progn-body (cddr form) target representation)))
     (when specialp
-      (restore-environment-and-make-handler (let-environment-register block)
-					    label-START))))
+      (restore-dynamic-environment (let-environment-register block)))))
 
 (defknown p2-locally-node (t t t) t)
 (defun p2-locally-node (block target representation)
@@ -3379,7 +3377,9 @@ given a specific common representation.")
          (END-BLOCK (gensym))
          (RETHROW (gensym))
          (EXIT (gensym))
-         (must-clear-values nil))
+         (must-clear-values nil)
+         (specials-register (when (tagbody-non-local-go-p block)
+                              (allocate-register))))
     ;; Scan for tags.
     (dolist (tag (tagbody-tags block))
       (push tag *visible-tags*))
@@ -3391,6 +3391,8 @@ given a specific common representation.")
       (emit 'dup)
       (emit-invokespecial-init +lisp-object+ '())
       (emit-new-closure-binding (tagbody-id-variable block)))
+    (when (tagbody-non-local-go-p block)
+      (save-dynamic-environment specials-register))
     (label BEGIN-BLOCK)
     (do* ((rest body (cdr rest))
           (subform (car rest) (car rest)))
@@ -3427,6 +3429,7 @@ given a specific common representation.")
         (aload go-register)
         (emit-getfield +lisp-go+ "tag" +lisp-object+) ; Stack depth is still 1.
         (astore tag-register)
+        (restore-dynamic-environment specials-register)
         ;; Don't actually generate comparisons for tags
         ;; to which there is no non-local GO instruction
         (dolist (tag (remove-if-not #'tag-used-non-locally
@@ -3572,7 +3575,9 @@ given a specific common representation.")
          (*register* *register*)
          (BEGIN-BLOCK (gensym))
          (END-BLOCK (gensym))
-         (BLOCK-EXIT (block-exit block)))
+         (BLOCK-EXIT (block-exit block))
+         (specials-register (when (block-non-local-return-p block)
+                              (allocate-register))))
     (setf (block-target block) target)
     (when (block-id-variable block)
       ;; we have a block variable; that should be a closure variable
@@ -3583,6 +3588,8 @@ given a specific common representation.")
       (emit-new-closure-binding (block-id-variable block)))
     (dformat t "*all-variables* = ~S~%"
              (mapcar #'variable-name *all-variables*))
+    (when (block-non-local-return-p block)
+      (save-dynamic-environment specials-register))
     (label BEGIN-BLOCK) ; Start of protected range, for non-local returns
     ;; Implicit PROGN.
     (compile-progn-body (cddr (block-form block)) target)
@@ -3610,6 +3617,7 @@ given a specific common representation.")
         (emit-move-to-variable (block-id-variable block))
         (emit 'athrow)
         (label THIS-BLOCK)
+        (restore-dynamic-environment specials-register)
         (emit-getfield +lisp-return+ "result" +lisp-object+)
         (emit-move-from-stack target) ; Stack depth is 0.
         ;; Finally...
@@ -3731,7 +3739,7 @@ given a specific common representation.")
       ;; Implicit PROGN.
     (let ((*blocks* (cons block *blocks*)))
       (compile-progn-body (cdddr form) target representation))
-    (restore-environment-and-make-handler environment-register label-START)))
+    (restore-dynamic-environment environment-register)))
 
 (defun p2-quote (form target representation)
   (aver (or (null representation) (eq representation :boolean)))
@@ -6448,7 +6456,8 @@ We need more thought here.
            (THROW-HANDLER (gensym))
            (RETHROW (gensym))
            (DEFAULT-HANDLER (gensym))
-           (EXIT (gensym)))
+           (EXIT (gensym))
+           (specials-register (allocate-register)))
       (compile-form (second form) tag-register nil) ; Tag.
       (emit-push-current-thread)
       (aload tag-register)
@@ -6456,6 +6465,7 @@ We need more thought here.
                           (lisp-object-arg-types 1) nil)
       (let ((*blocks* (cons block *blocks*)))
         ; Stack depth is 0.
+        (save-dynamic-environment specials-register)
         (label BEGIN-PROTECTED-RANGE) ; Start of protected range.
         (compile-progn-body (cddr form) target) ; Implicit PROGN.
         (label END-PROTECTED-RANGE) ; End of protected range.
@@ -6468,6 +6478,7 @@ We need more thought here.
       ;; If it's not the tag we're looking for, we branch to the start of the
       ;; catch-all handler, which will do a re-throw.
       (emit 'if_acmpne RETHROW) ; Stack depth is 1.
+      (restore-dynamic-environment specials-register)
       (emit-push-current-thread)
       (emit-invokevirtual +lisp-throw+ "getResult"
                           (list +lisp-thread+) +lisp-object+)
@@ -6533,6 +6544,7 @@ We need more thought here.
            (exception-register (allocate-register))
            (result-register (allocate-register))
            (values-register (allocate-register))
+           (specials-register (allocate-register))
            (BEGIN-PROTECTED-RANGE (gensym))
            (END-PROTECTED-RANGE (gensym))
            (HANDLER (gensym))
@@ -6541,6 +6553,7 @@ We need more thought here.
       (emit-clear-values)
 
       (let* ((*blocks* (cons block *blocks*)))
+        (save-dynamic-environment specials-register)
         (label BEGIN-PROTECTED-RANGE)
         (compile-form protected-form result-register nil)
         (unless (single-valued-p protected-form)
@@ -6560,6 +6573,7 @@ We need more thought here.
       (emit-push-current-thread)
       (emit-getfield +lisp-thread+ "_values" +lisp-object-array+)
       (astore values-register)
+      (restore-dynamic-environment specials-register)
       (let ((*register* *register*))
         (compile-progn-body cleanup-forms nil nil))
       (emit-push-current-thread)
@@ -6907,8 +6921,7 @@ We need more thought here.
     (compile-progn-body body 'stack)
 
     (when (compiland-environment-register compiland)
-      (restore-environment-and-make-handler
-       (compiland-environment-register compiland) label-START))
+      (restore-dynamic-environment (compiland-environment-register compiland)))
 
     (unless *code*
       (emit-push-nil))
