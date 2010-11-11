@@ -793,8 +793,11 @@ representation, based on the derived type of the LispObject."
 (defun emit-read-from-string (object)
   (emit-constructor-lambda-list object))
 
-(defun make-constructor (super lambda-name args)
+(defun make-constructor (class)
   (let* ((*compiler-debug* nil)
+         (super (class-file-superclass class))
+         (lambda-name (abcl-class-file-lambda-name class))
+         (args (abcl-class-file-lambda-list class))
          ;; We don't normally need to see debugging output for constructors.
          (method (make-method :constructor :void nil
                               :flags '(:public)))
@@ -915,9 +918,7 @@ representation, based on the derived type of the LispObject."
 
 The compiler calls this function to indicate it doesn't want to
 extend the class any further."
-  (class-add-method class (make-constructor (class-file-superclass class)
-                                            (abcl-class-file-lambda-name class)
-                                            (abcl-class-file-lambda-list class)))
+  (class-add-method class (make-constructor class))
   (finalize-class-file class)
   (write-class-file class stream))
 
