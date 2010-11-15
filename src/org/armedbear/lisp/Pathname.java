@@ -199,6 +199,8 @@ public class Pathname extends LispObject {
             String s;
             try {
                 s = URLDecoder.decode(url.getPath(), "UTF-8");
+                // But rencode \SPACE as '+'
+                s = s.replace(' ', '+');
             } catch (java.io.UnsupportedEncodingException uee) {
                 // Can't happen: every Java is supposed to support
                 // at least UTF-8 encoding

@@ -39,29 +39,32 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
     (compile-file "foo.lisp")
     (compile-file "bar.lisp")
     (compile-file "eek.lisp")
-    (let* ((dir (merge-pathnames "tmp/" *abcl-test-directory*))
-           (sub (merge-pathnames "a/b/" dir)))
-      (when (probe-directory dir)
-        (delete-directory-and-files dir))
-      (ensure-directories-exist sub)
-      (sys:unzip (merge-pathnames "foo.abcl")
-                 dir)
-      (sys:unzip (merge-pathnames "foo.abcl")
-                 sub)
+    (let* ((tmpdir (merge-pathnames "tmp/" *abcl-test-directory*))
+           (subdirs 
+            (mapcar (lambda (p) (merge-pathnames p tmpdir))
+                    '("a/b/" "d/e+f/")))
+           (sub1 (first subdirs))
+           (sub2 (second subdirs)))
+      (when (probe-directory tmpdir)
+        (delete-directory-and-files tmpdir))
+      (mapcar (lambda (p) (ensure-directories-exist p)) subdirs)
+      (sys:unzip (merge-pathnames "foo.abcl") tmpdir)
+      (sys:unzip (merge-pathnames "foo.abcl") sub1)
       (cl-fad-copy-file (merge-pathnames "bar.abcl")
-                 (merge-pathnames "bar.abcl" dir))
+                        (merge-pathnames "bar.abcl" tmpdir))
       (cl-fad-copy-file (merge-pathnames "bar.abcl")
-                 (merge-pathnames "bar.abcl" sub))
+                        (merge-pathnames "bar.abcl" sub1))
+      (cl-fad-copy-file (merge-pathnames "bar.abcl")
+                        (merge-pathnames "bar.abcl" sub2))
       (cl-fad-copy-file (merge-pathnames "eek.lisp")
-                 (merge-pathnames "eek.lisp" dir))
+                        (merge-pathnames "eek.lisp" tmpdir))
       (cl-fad-copy-file (merge-pathnames "eek.lisp")
-                 (merge-pathnames "eek.lisp" sub))
+                        (merge-pathnames "eek.lisp" sub1))
       (sys:zip (merge-pathnames "baz.jar")
-               (append
-                (directory (merge-pathnames "*" dir))
-                (directory (merge-pathnames "*" sub)))
-               dir)
-      (delete-directory-and-files dir)))
+               (loop :for p :in (list tmpdir sub1 sub2)
+                  :appending (directory (merge-pathnames "*" p)))
+               tmpdir)
+      #+nil (delete-directory-and-files dir)))
   (setf *jar-file-init* t))
 
 (defmacro with-jar-file-init (&rest body)
@@ -121,6 +124,11 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
       (load "jar:file:baz.jar!/a/b/eek.lisp"))
   t)
 
+(deftest jar-pathname.load.11
+    (with-jar-file-init
+        (load "jar:file:baz.jar!/d/e+f/bar.abcl"))
+  t)
+
 ;;; wrapped in PROGN for easy disabling without a network connection
 ;;; XXX come up with a better abstraction
 
@@ -131,43 +139,43 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
   `(load (format nil "~A~A" *url-jar-pathname-base* ,path)))
 
 (progn 
-  (deftest jar-pathname.load.11
+  (deftest jar-pathname.load.http.1
       (load-url-relative "foo")
     t)
 
-  (deftest jar-pathname.load.12
+  (deftest jar-pathname.load.http.2
       (load-url-relative "bar")
     t)
 
-  (deftest jar-pathname.load.13
+  (deftest jar-pathname.load.http.3
       (load-url-relative "bar.abcl")
     t)
 
-  (deftest jar-pathname.load.14
+  (deftest jar-pathname.load.http.4
       (load-url-relative "eek")
     t)
 
-  (deftest jar-pathname.load.15
+  (deftest jar-pathname.load.http.5
       (load-url-relative "eek.lisp")
     t)
 
-  (deftest jar-pathname.load.16
+  (deftest jar-pathname.load.http.6
       (load-url-relative "a/b/foo")
     t)
 
-  (deftest jar-pathname.load.17
+  (deftest jar-pathname.load.http.7
       (load-url-relative "a/b/bar")
     t)
 
-  (deftest jar-pathname.load.18
+  (deftest jar-pathname.load.http.8
       (load-url-relative "a/b/bar.abcl")
     t)
 
-  (deftest jar-pathname.load.19
+  (deftest jar-pathname.load.http.9
       (load-url-relative "a/b/eek")
     t)
 
-  (deftest jar-pathname.load.20
+  (deftest jar-pathname.load.http.10
       (load-url-relative "a/b/eek.lisp")
     t))
 
@@ -192,12 +200,19 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
 (deftest jar-pathname.probe-file.4
     (with-jar-file-init
         (probe-file "jar:file:baz.jar!/a/b"))
-  nil)
+  #p#.(format nil "jar:file:~Abaz.jar!/a/b/"
+                       (namestring *abcl-test-directory*)))
 
 (deftest jar-pathname.probe-file.5
     (with-jar-file-init
         (probe-file "jar:file:baz.jar!/a/b/"))
   #p#.(format nil "jar:file:~Abaz.jar!/a/b/"
+                       (namestring *abcl-test-directory*)))
+
+(deftest jar-pathname.probe-file.6
+    (with-jar-file-init
+        (probe-file "jar:file:baz.jar!/d/e+f/bar.abcl"))
+  #p#.(format nil "jar:file:~Abaz.jar!/d/e+f/bar.abcl"
                        (namestring *abcl-test-directory*)))
 
 (deftest jar-pathname.merge-pathnames.1
