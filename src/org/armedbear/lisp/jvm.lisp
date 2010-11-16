@@ -124,7 +124,8 @@
   class-name
   lambda-name
   lambda-list ; as advertised
-  static-code
+  static-initializer
+  constructor
   objects ;; an alist of externalized objects and their field names
   (functions (make-hash-table :test 'equal)) ;; because of (SETF ...) functions
   )
@@ -176,12 +177,10 @@ using `make-unique-class-name'."
     `(let* ((,var                   ,class-file)
             (*class-file*           ,var)
             (*pool*                 (abcl-class-file-constants ,var))
-            (*static-code*          (abcl-class-file-static-code ,var))
             (*externalized-objects* (abcl-class-file-objects ,var))
             (*declared-functions*   (abcl-class-file-functions ,var)))
        (progn ,@body)
-       (setf (abcl-class-file-static-code ,var)  *static-code*
-             (abcl-class-file-objects ,var)      *externalized-objects*
+       (setf (abcl-class-file-objects ,var)      *externalized-objects*
              (abcl-class-file-functions ,var)    *declared-functions*))))
 
 (defstruct compiland

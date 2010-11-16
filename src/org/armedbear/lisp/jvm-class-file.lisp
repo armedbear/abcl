@@ -1139,6 +1139,7 @@ After finalization, the fields contain offsets instead of labels."
 to which it has been attached has been superseded.")
 
 (defvar *current-code-attribute* nil)
+(defvar *method*)
 
 (defun save-code-specials (code)
   (setf (code-code code) *code*
@@ -1158,6 +1159,7 @@ to which it has been attached has been superseded.")
        (when *current-code-attribute*
          (save-code-specials *current-code-attribute*))
        (let* ((,m ,method)
+              (*method* ,m)
               (,c (method-ensure-code ,method))
               (*pool* (class-file-constants ,class-file))
               (*code* (code-code ,c))
