@@ -341,6 +341,19 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
   (:relative "a" "b") "foo" "jar"
   (:absolute "c" "d") "foo" "lisp")
 
+(deftest jar-pathname.10
+    (let ((s "jar:file:/foo/bar/a space/that!/this"))
+      (equal s
+             (namestring (pathname s))))
+  t)
+
+(deftest jar-pathname.11
+    (let ((s "jar:file:/foo/bar/a+space/that!/this"))
+      (equal s
+             (namestring (pathname s))))
+  t)
+
+
 (deftest jar-pathname.match-p.1
     (pathname-match-p "jar:file:/a/b/some.jar!/a/system/def.asd"
                       "jar:file:/**/*.jar!/**/*.asd")

@@ -438,6 +438,21 @@
   (equal #p"c:\\foo.bar" #p"C:\\FOO.BAR")
   t)
 
+#+windows
+(deftest pathname.windows.6
+   (equal (pathname-device #p"z:/foo/bar") "z")
+  t)
+
+#+windows
+(deftest pathname.windows.7
+    (equal (pathname-device #p"file:z:/foo/bar") "z")
+  t)
+
+#+windows
+(deftest pathname.windows.8
+    (equal (pathname-device #p"zoo:/foo/bar") nil)
+  t)
+
 (deftest wild.1
   (check-physical-pathname #p"foo.*" nil "foo" :wild)
   t)

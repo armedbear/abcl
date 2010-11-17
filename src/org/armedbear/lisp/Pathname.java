@@ -196,28 +196,18 @@ public class Pathname extends LispObject {
 
     public Pathname(URL url) {
         if ("file".equals(url.getProtocol())) {
-            String s;
-            try {
-                s = URLDecoder.decode(url.getPath(), "UTF-8");
-                // But rencode \SPACE as '+'
-                s = s.replace(' ', '+');
-            } catch (java.io.UnsupportedEncodingException uee) {
-                // Can't happen: every Java is supposed to support
-                // at least UTF-8 encoding
-                Debug.assertTrue(false);
-                s = null;
-            }
+            String s = url.getPath();
             if (s != null) {
-		if (Utilities.isPlatformWindows) {
-		    //  Workaround for Java's idea of URLs
-		    //  new (URL"file:///c:/a/b").getPath() --> "/c:/a/b"
+                if (Utilities.isPlatformWindows) {
+                    //  Workaround for Java's idea of URLs
+                    //  new (URL"file:///c:/a/b").getPath() --> "/c:/a/b"
                     //  whereas we need "c" to be the DEVICE.
-		    if (s.length() > 2 
-			&& s.charAt(0) == '/'
-			&& s.charAt(2) == ':') {
-			s = s.substring(1);
-		    }
-		}
+                    if (s.length() > 2 
+                        && s.charAt(0) == '/'
+                        && s.charAt(2) == ':') {
+                        s = s.substring(1);
+                    }
+                }
                 init(s);
                 return;
             }
@@ -653,13 +643,13 @@ public class Pathname extends LispObject {
             sb.append('.');
             if (type instanceof AbstractString) {
                 String t = type.getStringValue();
-		// Allow Windows shortcuts to include TYPE
-		if (!(t.endsWith(".lnk") && Utilities.isPlatformWindows)) {
-		    if (t.indexOf('.') >= 0) {
-			Debug.assertTrue(namestring == null);
-			return null;
-		    }
-		}
+                // Allow Windows shortcuts to include TYPE
+                if (!(t.endsWith(".lnk") && Utilities.isPlatformWindows)) {
+                    if (t.indexOf('.') >= 0) {
+                        Debug.assertTrue(namestring == null);
+                        return null;
+                    }
+                }
                 sb.append(t);
             } else if (type == Keyword.WILD) {
                 sb.append('*');
@@ -2106,12 +2096,12 @@ public class Pathname extends LispObject {
                 result =  Utilities.getEntryAsInputStream(zipInputStream, entryPath);
             } else {
                 ZipEntry entry = jarFile.getEntry(entryPath);
-		if (entry == null) {
-		    Debug.trace("Failed to get InputStream for "    
-				+ "'" + getNamestring() + "'");
+                if (entry == null) {
+                    Debug.trace("Failed to get InputStream for "    
+                                + "'" + getNamestring() + "'");
                     // XXX should this be fatal?
-		    Debug.assertTrue(false);
-		}
+                    Debug.assertTrue(false);
+                }
                 try {
                     result = jarFile.getInputStream(entry);
                 } catch (IOException e) {
@@ -2280,7 +2270,7 @@ public class Pathname extends LispObject {
                 final File destination = new File(newNamestring);
                 if (Utilities.isPlatformWindows) {
                     if (destination.isFile()) {
-			ZipCache.remove(destination);
+                        ZipCache.remove(destination);
                         destination.delete();
                     }
                 }
@@ -2340,19 +2330,19 @@ public class Pathname extends LispObject {
     }
 
     public URL toURL() throws MalformedURLException {
-	if(isURL()) {
-	    return new URL(getNamestring());
-	} else {
-	    return toFile().toURL();
-	}
+        if(isURL()) {
+            return new URL(getNamestring());
+        } else {
+            return toFile().toURL();
+        }
     }
 
     public File toFile() {
-	if(!isURL()) {
-	    return new File(getNamestring());
-	} else {
-	    throw new RuntimeException(this + " does not represent a file");
-	}
+        if(!isURL()) {
+            return new File(getNamestring());
+        } else {
+            throw new RuntimeException(this + " does not represent a file");
+        }
     }
 
     static {
