@@ -379,15 +379,17 @@ from ${abcl.home.dir}
     </target>
 
     <!-- XXX Generalize when (if?) we get more contribs --> 
-    <target name="abcl.contrib" depends="abcl.jar">
+    <target name="abcl.contrib.compile" depends="abcl.jar">
       <java fork="true"
-            failonerror="true"
+	    failonerror="true"
             classpathref="abcl.classpath.dist"
-            dir="${basedir}/contrib/asdf-install/"
-            inputstring="(require 'asdf) (asdf:operate 'asdf:compile-op :asdf-install)"
+            inputstring="(require 'asdf) (handler-case (progn (setf *default-pathname-defaults* &quot;${basedir}/contrib/asdf-install/&quot;) (asdf:operate 'asdf:compile-op :asdf-install)) (t (x) (progn (format t &quot;~A: ~A~%&quot; (type-of x) x) (exit :status -1))))"
             classname="org.armedbear.lisp.Main">
         <arg value="--noinit"/>
       </java>
+    </target>
+    
+    <target name="abcl.contrib" depends="abcl.contrib.compile">
       <jar destfile="dist/abcl-contrib.jar"
            compress="true"
            basedir="contrib">
