@@ -114,3 +114,9 @@ namestrings.")
 
 (defvar *temporary-directory* 
   (pathname-sans-name+type (user-homedir-pathname)))
+
+#+abcl
+(eval-when (:load-toplevel)
+  (require 'asdf)
+  (dolist (location *locations*)
+    (pushnew (second location) asdf:*central-registry*)))
