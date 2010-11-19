@@ -2258,6 +2258,7 @@ public final class Lisp
                                              Keyword.ANSI_CL,
                                              Keyword.UNIX,
                                              Keyword.SUNOS,
+                                             Keyword.SOLARIS,
                                              Keyword.CDR6));
       }
     else if (osName.startsWith("Mac OS X") ||

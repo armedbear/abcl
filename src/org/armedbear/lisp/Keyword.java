@@ -126,6 +126,7 @@ public final class Keyword
         RENAME              = internKeyword("RENAME"),
         RENAME_AND_DELETE   = internKeyword("RENAME-AND-DELETE"),
         SIZE                = internKeyword("SIZE"),
+        SOLARIS             = internKeyword("SOLARIS"),
         START               = internKeyword("START"),
         STATUS              = internKeyword("STATUS"),
         STREAM              = internKeyword("STREAM"),
