@@ -1,9 +1,17 @@
 (in-package #:asdf-install)
 
-(defvar *temporary-files*)
-
+;;; 'port.lisp' is loaded before 'variables.lisp' primarily for the
+;;; definiton of GET-ENV-VAR, but still needs the following specials
+;;; which would otherwise be in 'variables.lisp'.
 (defparameter *shell-path* "/bin/sh"
   "The path to a Bourne compatible command shell in physical pathname notation.")
+
+(defvar *gpg-command* "gpg"
+  "Location of the gpg binary, if for some reason, it does not appear
+  in the default path for /bin/sh.")
+;;; End variables
+
+(defvar *temporary-files*)
 
 (eval-when (:load-toplevel :compile-toplevel :execute)
   #+:allegro
