@@ -302,7 +302,7 @@
 
 (defun tar-arguments (source packagename)
   #-(or :win32 :mswindows :scl)
-  (list "-C" (namestring (truename source))
+  (list "-C"    (namestring (truename source))
 	"-xzvf" (namestring (truename packagename)))
   #+(or :win32 :mswindows)
   (list "-l"
@@ -311,7 +311,7 @@
 		(namestring (truename source))
 		(namestring (truename packagename))))
   #+scl
-  (list "-C" (ext:unix-namestring (truename source))
+  (list "-C"    (ext:unix-namestring (truename source))
 	"-xzvf" (ext:unix-namestring (truename packagename))))
 
 (defun extract-using-tar (to-dir tarball)
@@ -333,7 +333,7 @@
   (let* ((tar (extract source packagename))
          ;; Some tar programs (OSX) list entries with preceeding "x "
          ;; as in "x entry/file.asd"
-         (pos-begin (if (= (search "x " tar) 0)
+         (pos-begin (if (string= (subseq tar 0 2) "x ")
                         2
                         0))
 	 (pos-slash (or (position #\/ tar)
@@ -344,7 +344,6 @@
 	   (make-pathname :directory
 			  `(:relative ,(subseq tar pos-begin pos-slash)))
 	   source)))
-    ;(princ tar)
     (loop for sysfile in (append
                           (directory
 		           (make-pathname :defaults *default-pathname-defaults*

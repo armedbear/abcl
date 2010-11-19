@@ -144,7 +144,7 @@
   #+:abcl
   (let ((socket 
          (ext:make-socket (url-host url) (url-port url))))
-    (ext:get-socket-stream socket)))
+    (ext:get-socket-stream socket :external-format :iso-8859-1)))
 
 
 #+:sbcl
@@ -321,6 +321,8 @@
    #+sbcl
    '(:external-format :latin1)
    #+:scl
+   '(:external-format :iso-8859-1)
+   #+abcl
    '(:external-format :iso-8859-1)
    #+(or :clisp :digitool (and :lispworks :win32))
    '(:element-type (unsigned-byte 8))))
