@@ -372,7 +372,7 @@ is infact a child of it while being rooted at the same root as `parent'."
                          '(("\\" . "/")))))
          (cmdline (format nil
                           "~A -cp build/classes -Dabcl.home=\"~A\" ~
-org.armedbear.lisp.Main --noinit ~
+org.armedbear.lisp.Main --noinit --nosystem ~
 --eval \"(compile-system :zip ~A :quit t :output-path \\\"~A\\\")\"~%"
                           java-namestring
                           abcl-home
