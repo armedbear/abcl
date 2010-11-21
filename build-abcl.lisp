@@ -21,8 +21,7 @@
         string)))
 
 (defun safe-namestring (pathname)
-  (let* ((string (namestring pathname))
-         (len (length string)))
+  (let ((string (namestring pathname)))
     (when (position #\space string)
       (setf string (concatenate 'string "\""
                                 (comp string #\\)
@@ -69,9 +68,9 @@ is infact a child of it while being rooted at the same root as `parent'."
   #+clisp
   (cond ((member :win32 *features*)
          :windows)
-        ((zerop (ext:run-shell-command "uname | grep -i darwin" :output nil))
+        ((equal 0 (ext:run-shell-command "uname | grep -i darwin" :output nil))
          :darwin)
-        ((zerop (ext:run-shell-command "uname | grep -i linux" :output nil))
+        ((equal 0 (ext:run-shell-command "uname | grep -i linux" :output nil))
          :linux)
         (t
          :unknown)))
@@ -94,7 +93,7 @@ is infact a child of it while being rooted at the same root as `parent'."
                                "\" && "
                                command)))
   (sb-ext:process-exit-code
-   (sb-ext:run-program
+   (sb-ext:run-program 
     "/bin/sh"
     (list  "-c" command)
     :input nil :output output)))
@@ -168,7 +167,28 @@ is infact a child of it while being rooted at the same root as `parent'."
     (declare (ignore status))
     exitcode))
 
-#+(or sbcl cmu lispworks openmcl)
+#+ecl 
+(defun run-shell-command (command &key directory (output *standard-output*))
+  (when directory
+    (if (member :windows *features*)
+        (error "Unimplemented.")
+        (setf command (concatenate 'string
+                                   "\\cd \""
+                                   (namestring (pathname directory))
+                                   "\" && "
+                                   command))))
+  (ext:system command))
+  ;; (multiple-value-bind (stream exit details)
+  ;;     (ext:run-program 
+  ;;      "/bin/sh" (list "-c" command)
+  ;;      :input nil :output :stream :error :output)
+  ;;   (declare (ignore details))
+  ;;   (loop for line = (read-line stream nil)
+  ;;      while line do (format output "~A~%" line))
+  ;;   exit))
+
+
+#+(or sbcl cmu lispworks openmcl ecl)
 (defun probe-directory (pathspec)
   (let* ((truename (probe-file pathspec)) ; TRUENAME is a pathname.
          (namestring (and truename (namestring truename)))) ; NAMESTRING is a string.
@@ -285,9 +305,9 @@ is infact a child of it while being rooted at the same root as `parent'."
 
 (defun java-compile-file (source-file)
   (let ((cmdline (build-javac-command-line source-file)))
-    (zerop (run-shell-command cmdline :directory *abcl-dir*))))
+    (equal 0 (run-shell-command cmdline :directory *abcl-dir*))))
 
-(defun make-classes (force batch)
+(defun do-compile-classes (force batch)
   (let* ((source-files
           (remove-if-not
            #'(lambda (name)
@@ -299,14 +319,11 @@ is infact a child of it while being rooted at the same root as `parent'."
                        *build-root*)))
                  (or force
                      (file-newer name output-name))))
-           (mapcan #'(lambda (default)
-                       (directory (merge-pathnames "*.java"
-                                                   default)))
-                   (list *abcl-dir*
-                         (merge-pathnames "util/" *abcl-dir*))))))
+           (directory (merge-pathnames "**/*.java" *source-root*)))))
     (format t "~&JDK: ~A~%" *jdk*)
     (format t "Java compiler: ~A~%" *java-compiler*)
     (format t "Compiler options: ~A~%~%" (if *java-compiler-options* *java-compiler-options* ""))
+    (format t "~&Compiling Java sources...")
     (finish-output)
     (cond ((null source-files)
            (format t "Classes are up to date.~%")
@@ -315,22 +332,17 @@ is infact a child of it while being rooted at the same root as `parent'."
           (t
            (cond (batch
                   (ensure-directories-exist *build-root*)
-                  (let* ((dir (pathname-directory *abcl-dir*))
-                         (cmdline (with-output-to-string (s)
+                  (let* ((cmdline (with-output-to-string (s)
                                     (princ *java-compiler-command-line-prefix* s)
                                     (princ " -d " s)
                                     (princ (safe-namestring *build-root*) s)
                                     (princ #\Space s)
                                     (dolist (source-file source-files)
-                                      (princ
-                                       (safe-namestring
-                                        (if (equal (pathname-directory source-file) dir)
-                                            (file-namestring source-file)
-                                            (namestring source-file)))
-                                       s)
+                                      (princ (safe-namestring (namestring source-file)) s)
                                       (princ #\space s))))
-                         (status (run-shell-command cmdline :directory *abcl-dir*)))
-                    (zerop status)))
+                         (status (run-shell-command cmdline :directory *tree-root*)))
+                    (format t "  done.~%")
+                    (equal 0 status)))
                  (t
                   (ensure-directories-exist *build-root*)
                   (dolist (source-file source-files t)
@@ -350,11 +362,12 @@ is infact a child of it while being rooted at the same root as `parent'."
       (copy-with-substitutions source-file target-file substitutions-alist)
       (ensure-directories-exist *dist-root*)
       (let ((status (run-shell-command command :directory *tree-root*)))
-        (unless (zerop status)
+        (unless (equal 0 status)
           (format t "~A returned ~S~%" command status))
         status))))
 
 (defun do-compile-system (&key (zip t))
+  (format t "~&Compiling Lisp sources...")
   (terpri)
   (finish-output)
   (let* ((java-namestring (safe-namestring *java*))
@@ -379,9 +392,8 @@ org.armedbear.lisp.Main --noinit --nosystem ~
                           (not (not zip)) ;; because that ensures T or NIL
                           output-path)))
     (ensure-directories-exist output-path)
-    (setf status
-          (run-shell-command cmdline
-                             :directory *tree-root*))
+    (setf status (run-shell-command cmdline :directory *tree-root*))
+    (format t " done.~%")
     status))
 
 
@@ -433,6 +445,7 @@ org.armedbear.lisp.Main --noinit --nosystem ~
         (delete-file truename)))))
 
 (defun clean ()
+  (format t "~&Cleaning compilation results."
   (dolist (f (list (list *tree-root* "abcl.jar" "abcl.bat" "make-jar.bat"
                          "compile-system.bat")
                    ;; as of 0.14 'compile-system.bat' isn't created anymore
@@ -481,21 +494,21 @@ org.armedbear.lisp.Main --noinit --nosystem ~
     ;; clean
     (when clean
       (clean))
-    ;; classes
-    (unless (make-classes force batch)
+    ;; Compile Java source into classes
+    (unless (do-compile-classes force batch)
       (format t "Build failed.~%")
       (return-from build-abcl nil))
     ;; COMPILE-SYSTEM
     (when (or full compile-system)
       (let* ((zip    (if (or full jar) nil t))
              (status (do-compile-system :zip zip)))
-        (unless (zerop status)
+        (unless (equal 0 status)
           (format t "Build failed.~%")
           (return-from build-abcl nil))))
     ;; abcl.jar
     (when (or full jar)
       (let ((status (make-jar)))
-        (unless (zerop status)
+        (unless (equal 0 status)
           (format t "Build failed.~%")
           (return-from build-abcl nil))))
     ;; abcl/abcl.bat
@@ -518,7 +531,7 @@ org.armedbear.lisp.Main --noinit --nosystem ~
                         (princ #\space s)))
                     (princ "--main=org.armedbear.lisp.Main -o lisp" s)))
          (result (run-shell-command cmdline :directory *abcl-dir*)))
-    (zerop result)))
+    (equal 0 result)))
 
 (defvar *copy-verbose* nil)
 
@@ -591,11 +604,11 @@ org.armedbear.lisp.Main --noinit --nosystem ~
                             (namestring parent-dir)
                             version-string version-string))
            (status (run-shell-command command :directory parent-dir)))
-      (unless (zerop status)
+      (unless (equal 0 status)
         (format t "~A returned ~S~%" command status)))
     (let* ((command (format nil "zip -q -r ~A~A.zip ~A"
                             (namestring parent-dir)
                             version-string version-string))
            (status (run-shell-command command :directory parent-dir)))
-      (unless (zerop status)
+      (unless (equal 0 status)
         (format t "~A returned ~S~%" command status)))))

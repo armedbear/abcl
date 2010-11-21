@@ -72,6 +72,11 @@ abcl()
     exec "$1" --load "$2" --eval "(progn $3 (ext:quit))"
 }
 
+ecl()
+{
+    exec "$1" -norc -load "$2" -eval "(progn $3 (ext:quit))"
+}
+
 clisp()
 { 
     exec "$1" -ansi -q -norc -i "$2" -x "(progn $3 (ext:quit))"
@@ -120,7 +125,7 @@ case "$IMPL" in
     gcl*)
         notimplemented "$IMPL" "$FILE" "$FORM" ;;
     ecl*)
-        notimplemented "$IMPL" "$FILE" "$FORM" ;;
+        ecl   "$IMPL" "$FILE" "$FORM"          ;;
     alisp*)
         notimplemented "$IMPL" "$FILE" "$FORM" ;;
     *)
