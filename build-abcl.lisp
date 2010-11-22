@@ -445,7 +445,7 @@ org.armedbear.lisp.Main --noinit --nosystem ~
         (delete-file truename)))))
 
 (defun clean ()
-  (format t "~&Cleaning compilation results."
+  (format t "~&Cleaning compilation results.")
   (dolist (f (list (list *tree-root* "abcl.jar" "abcl.bat" "make-jar.bat"
                          "compile-system.bat")
                    ;; as of 0.14 'compile-system.bat' isn't created anymore
