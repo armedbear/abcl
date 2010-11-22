@@ -6792,7 +6792,7 @@ We need more thought here.
 
       (when (fixnump *source-line-number*)
         (let ((table (make-line-numbers-attribute)))
-          (method-add-attribute method table)
+          (code-add-attribute *current-code-attribute* table)
           (line-numbers-add-line table 0 *source-line-number*)))
 
       (dolist (var (compiland-arg-vars compiland))
