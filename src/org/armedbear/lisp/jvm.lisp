@@ -138,13 +138,13 @@
       (when (or (char= (char name i) #\-)
                 (char= (char name i) #\Space))
         (setf (char name i) #\_)))
-    (make-class-name
+    (make-jvm-class-name
      (concatenate 'string "org.armedbear.lisp." name))))
 
 (defun make-unique-class-name ()
   "Creates a random class name for use with a `class-file' structure's
 `class' slot."
-  (make-class-name
+  (make-jvm-class-name
    (concatenate 'string "abcl_"
                 (substitute #\_ #\-
                             (java:jcall (java:jmethod "java.util.UUID"

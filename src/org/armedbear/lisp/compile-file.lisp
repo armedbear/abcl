@@ -674,7 +674,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 	`(case ,expr ,@clauses))))
 
 (defconstant +fasl-classloader+
-  (jvm::make-class-name "org.armedbear.lisp.FaslClassLoader"))
+  (jvm::make-jvm-class-name "org.armedbear.lisp.FaslClassLoader"))
 
 (defun generate-loader-function ()
   (let* ((basename (base-classname))
@@ -693,7 +693,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 			 :collect
 			 (let* ((class (%format nil "org/armedbear/lisp/~A_~A"
                                                 basename i))
-                                (class-name (jvm::make-class-name class)))
+                                (class-name (jvm::make-jvm-class-name class)))
                            `(,(1- i)
                               (jvm::with-inline-code ()
                                 (jvm::emit-new ,class-name)

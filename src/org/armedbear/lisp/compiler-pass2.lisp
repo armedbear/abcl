@@ -795,8 +795,8 @@ representation, based on the derived type of the LispObject."
 
 (defun make-constructor (class)
   (let* ((*compiler-debug* nil)
-         (method (make-method :constructor :void nil
-                              :flags '(:public)))
+         (method (make-jvm-method :constructor :void nil
+				  :flags '(:public)))
          ;; We don't normally need to see debugging output for constructors.
          (super (class-file-superclass class))
          (lambda-name (abcl-class-file-lambda-name class))
@@ -909,8 +909,8 @@ representation, based on the derived type of the LispObject."
 
 (defun make-static-initializer (class)
   (let ((*compiler-debug* nil)
-        (method (make-method :static-initializer
-                             :void nil :flags '(:public :static))))
+        (method (make-jvm-method :static-initializer
+				 :void nil :flags '(:public :static))))
     ;; We don't normally need to see debugging output for <clinit>.
     (with-code-to-method (class method)
       (setf (code-max-locals *current-code-attribute*) 0)
@@ -6761,8 +6761,8 @@ We need more thought here.
          (*child-p* (not (null (compiland-parent compiland))))
 
          (arg-types (analyze-args compiland))
-         (method (make-method "execute" +lisp-object+ arg-types
-                               :flags '(:final :public)))
+         (method (make-jvm-method "execute" +lisp-object+ arg-types
+				  :flags '(:final :public)))
          (*visible-variables* *visible-variables*)
 
          (*thread* nil)

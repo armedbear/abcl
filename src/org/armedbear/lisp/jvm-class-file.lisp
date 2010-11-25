@@ -80,8 +80,8 @@ representation to use.
 
 |#
 
-(defstruct (class-name (:conc-name class-)
-                       (:constructor %make-class-name))
+(defstruct (jvm-class-name (:conc-name class-)
+			   (:constructor %make-jvm-class-name))
   "Used for class identification.
 
 The caller should instantiate only one `class-name' per class, as they are
@@ -96,14 +96,14 @@ This class is used to abstract from the difference."
   ;; name comparisons to be EQ: all classes should exist only once,
   )
 
-(defun make-class-name (name)
+(defun make-jvm-class-name (name)
   "Creates a `class-name' structure for the class or interface `name'.
 
 `name' should be specified using Java representation, which is converted
 to 'internal' (JVM) representation by this function."
   (setf name (substitute #\/ #\. name))
-  (%make-class-name :name-internal name
-                    :ref (concatenate 'string "L" name ";")))
+  (%make-jvm-class-name :name-internal name
+			:ref (concatenate 'string "L" name ";")))
 
 (defun class-array (class-name)
   "Returns a class-name representing an array of `class-name'.
@@ -120,14 +120,14 @@ and used on successive calls."
     ;; are identified by the same string
     (let ((name-and-ref (concatenate 'string "[" (class-ref class-name))))
       (setf (class-array-class class-name)
-            (%make-class-name :name-internal name-and-ref
-                              :ref name-and-ref))))
+            (%make-jvm-class-name :name-internal name-and-ref
+				  :ref name-and-ref))))
   (class-array-class class-name))
 
 (defmacro define-class-name (symbol java-dotted-name &optional documentation)
   "Convenience macro to define constants for `class-name' structures,
 initialized from the `java-dotted-name'."
-  `(defconstant ,symbol (make-class-name ,java-dotted-name)
+  `(defconstant ,symbol (make-jvm-class-name ,java-dotted-name)
      ,documentation))
 
 (define-class-name +java-object+ "java.lang.Object")
@@ -835,8 +835,8 @@ Returns NIL if the attribute isn't found."
   (write-attributes (field-attributes field) stream))
 
 
-(defstruct (method (:constructor %make-method)
-                   (:conc-name method-))
+(defstruct (jvm-method (:constructor %make-jvm-method)
+		       (:conc-name method-))
   "Holds information on the properties of methods in the class(-file)."
   access-flags
   name
@@ -858,11 +858,11 @@ be one of two keyword identifiers to identify special methods:
      "<init>")
     (t name)))
 
-(defun make-method (name return args &key (flags '(:public)))
+(defun make-jvm-method (name return args &key (flags '(:public)))
   "Creates a method for addition to a class file."
-  (%make-method :descriptor (cons return args)
-                :access-flags flags
-                :name (map-method-name name)))
+  (%make-jvm-method :descriptor (cons return args)
+		    :access-flags flags
+		    :name (map-method-name name)))
 
 (defun method-add-attribute (method attribute)
   "Add `attribute' to the list of attributes of `method',

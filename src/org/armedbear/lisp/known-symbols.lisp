@@ -38,7 +38,7 @@
 (let ((symbols (make-hash-table :test 'eq :size 2048)))
   (defun initialize-known-symbols (source ht)
     (let* ((source-class (java:jclass source))
-           (class-designator (jvm::make-class-name source))
+           (class-designator (jvm::make-jvm-class-name source))
            (symbol-class (java:jclass "org.armedbear.lisp.Symbol"))
            (fields (java:jclass-fields source-class :declared t :public t)))
       (dotimes (i (length fields))
