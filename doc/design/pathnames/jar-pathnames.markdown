@@ -3,7 +3,7 @@ JARs and JAR entries in ABCL
 
     Mark Evenson
     Created:  09 JAN 2010
-    Modified: 10 APR 2010
+    Modified: 26 NOV 2010
 
 Notes towards an implementation of "jar:" references to be contained
 in Common Lisp `PATHNAME`s within ABCL.
@@ -12,7 +12,6 @@ Goals
 -----
 
 1.  Use Common Lisp pathnames to refer to entries in a jar file.
-
     
 2.  Use `'jar:'` schema as documented in [`java.net.JarURLConnection`][jarURLConnection] for
     namestring representation.
@@ -66,8 +65,7 @@ Goals
 Status
 ------
 
-As of svn r125??, all the above goals have been implemented and
-tested.
+All the above goals have been implemented and tested.
 
 
 Implementation
@@ -92,7 +90,8 @@ Only the first entry in the the DEVICE list may be a URL PATHNAME.
 Otherwise the the DEVICE PATHAME denotes the PATHNAME of the JAR file.
 
 The DEVICE PATHNAME list of enclosing JARs runs from outermost to
-innermost.
+innermost.  The implementaion currently limits this list to have at
+most two elements.
     
 The DIRECTORY component of a JAR PATHNAME should be a list starting
 with the :ABSOLUTE keyword.  Even though hierarchial entries in jar
@@ -123,10 +122,11 @@ An incomplete BNF of the syntax of JAR PATHNAME would be:
 
 ### Notes
 
-1.  `ABSOLUTE-FILE-NAMESTRING` and `RELATIVE-FILE-NAMESTRING` use the
-local filesystem conventions, meaning that on Windows this could
-contain '\' as the directory separator, while an `ENTRY` always uses '/'
-to separate directories within the jar proper.
+1.  `ABSOLUTE-FILE-NAMESTRING` and `RELATIVE-FILE-NAMESTRING` can use
+the local filesystem conventions, meaning that on Windows this could
+contain '\' as the directory separator, which are always normalized to
+'/'.  An `ENTRY` always uses '/' to separate directories within the
+jar archive.
 
 
 Use Cases

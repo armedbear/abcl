@@ -3,7 +3,7 @@ URL Pathnames ABCL
 
     Mark Evenson
     Created:  25 MAR 2010
-    Modified: 11 APR 2010
+    Modified: 26 NOV 2010
 
 Notes towards an implementation of URL references to be contained in
 Common Lisp `PATHNAME` objects within ABCL.
@@ -18,10 +18,10 @@ RFC3986   Uniform Resource Identifier (URI): Generic Syntax
 URL vs URI
 ----------
 
-We use the term URL to describe the URL Pathnames, even though RFC3986
-notes that its use should be obsolete because in the context of Common
-Lisp Pathnames all need a lookup mechanism to be resolved or they
-wouldn't be of much use.
+We use the term URL as shorthand in describing the URL Pathnames, even
+though the corresponding encoding is more akin to a URI as described
+in RFC3986.  
+
 
 Goals
 -----
@@ -34,7 +34,7 @@ enabled by the URLStreamHandler extension mechanism.
 
 3.  Use URL schemes that are understood by the java.net.URL object.
 
-    A file specified by URL
+    Example of a Pathname specified by URL:
     
         #p"http://example.org/org/armedbear/systems/pgp.asd"
     
@@ -49,17 +49,20 @@ enabled by the URLStreamHandler extension mechanism.
 6.  TRUENAME "aliased" to PROBE-FILE signalling an error if the URL is
 not accessible (see "Non-goal 1").
 
-7.  DIRECTORY for non-wildcards
+7.  DIRECTORY works for non-wildcards.
 
 8.  URL pathname work as a valid argument for OPEN with :DIRECTION :INPUT.
 
 9.  Enable the loading of ASDF2 systems referenced by a URL pathname.
 
-10.  The reserved URL characters (`~`, `/`, `?`, etc.) shall be
-encoded in the proper manner on construction of the Pathname.
+10.  Pathnames constructed with the "file" scheme
+(i.e. #p"file:/this/file") need to be properly URI encoded according
+to RFC3986 or otherwise will signal FILE-ERROR.  
 
 11.  The "file" scheme will continue to be represented by an
-"ordinary" Pathname.
+"ordinary" Pathname.  Thus, after construction of a URL Pathname with
+the "file" scheme, the namestring of the resulting PATHNAME will no
+longer contain the "file:" prefix.
 
 12.  The "jar" scheme will continue to be represented by a jar
 Pathname.
@@ -68,10 +71,10 @@ Pathname.
 Non-goals 
 ---------
 
-1.  We will not implement canonicalization of URL schemas (such as following
-"http" redirects).
+1.  We will not implement canonicalization of URL schemas (such as
+following "http" redirects).
 
-2.  DIRECTORY working for URL pathnames containing wildcards.
+2.  DIRECTORY will not work for URL pathnames containing wildcards.
 
 
 Implementation
@@ -119,4 +122,11 @@ A URL Pathname has type URL-PATHNAME, derived from PATHNAME.
 Status
 ------
 
-This design is a proposal.
+This design has been implemented.
+
+History
+-------
+
+26 NOV 2010 Changed implemenation to use URI encodings for the "file"
+  schemes including those nested with the "jar" scheme by like
+  aka. "jar:file:/location/of/some.jar!/".
