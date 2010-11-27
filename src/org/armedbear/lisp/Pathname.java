@@ -38,12 +38,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileInputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
@@ -195,28 +197,10 @@ public class Pathname extends LispObject {
     }
 
     public Pathname(URL url) {
-        if ("file".equals(url.getProtocol())) {
-            String s = url.getPath();
-            if (s != null) {
-                if (Utilities.isPlatformWindows) {
-                    //  Workaround for Java's idea of URLs
-                    //  new (URL"file:///c:/a/b").getPath() --> "/c:/a/b"
-                    //  whereas we need "c" to be the DEVICE.
-                    if (s.length() > 2 
-                        && s.charAt(0) == '/'
-                        && s.charAt(2) == ':') {
-                        s = s.substring(1);
-                    }
-                }
-                init(s);
-                return;
-            }
-        } else {
-            init(url.toString());
-            return;
-        }
-        error(new LispError("Failed to construct Pathname from URL: "
-                            + "'" + url.toString() + "'"));
+         // URL handling is now buried in init(String), as the URI
+         // escaping mechanism didn't interact well with '+' and other
+         // characters. 
+        init(url.toString());
     }
 
     static final Symbol SCHEME = internKeyword("SCHEME");
@@ -279,19 +263,45 @@ public class Pathname extends LispObject {
                 jars = jars.push(p.device.car());
             }
             if (jar.startsWith("jar:file:")) {
-                String jarString 
-                    = jar.substring("jar:".length(),
+                String file
+                    = jar.substring("jar:file:".length(),
                                     jar.length() - jarSeparator.length());
-                // Use URL constructor to normalize Windows' use of device
-                URL url = null;
-                try {
-                    url = new URL(jarString);
-                } catch (MalformedURLException e) {
-                    error(new LispError("Failed to parse '" + jarString + "'"
-                            + " as URL:"
-                            + e.getMessage()));
+                Pathname jarPathname;
+                if (file.length() > 0) {
+                    // Instead of "use URL constructor to normalize Windows' use of device"
+                    // attempt to shorten the URL to pass through the normal constructor.
+                    if (Utilities.isPlatformWindows
+                        && file.charAt(0) == '/'
+                        && file.charAt(2) == ':'
+                        && Character.isLetter(file.charAt(1)))
+                        {
+                            file = file.substring(1);
+                        }
+                    URL url = null;
+                    URI uri = null;
+                    try {
+                        url = new URL("file:" + file);
+                        uri = url.toURI();
+                    } catch (MalformedURLException e1) {
+                        error(new FileError("Failed to create URI from "
+                                            + "'" + file + "'"
+                                            + ": " + e1.getMessage()));
+                    } catch (URISyntaxException e2) {
+                        error(new FileError("Failed to create URI from "
+                                            + "'" + file + "'"
+                                            + ": " + e2.getMessage()));
+                    }
+                    String path = uri.getPath();
+                    if (path == null) {
+                        // We allow "jar:file:baz.jar!/" to construct a relative
+                        // path for jar files, so MERGE-PATHNAMES means something.
+                        jarPathname = new Pathname(uri.getSchemeSpecificPart());
+                    } else {
+                        jarPathname = new Pathname(path);
+                    }
+                } else {
+                    jarPathname = new Pathname("");
                 }
-                Pathname jarPathname = new Pathname(url);
                 jars = jars.push(jarPathname);
             } else {
                 URL url = null;
@@ -315,7 +325,15 @@ public class Pathname extends LispObject {
         final int separatorIndex = s.lastIndexOf(jarSeparator);
         if (separatorIndex > 0 && s.startsWith("jar:")) {
             final String jarURL = s.substring(0, separatorIndex + jarSeparator.length());
-            Pathname d = new Pathname(jarURL);
+            URL url = null;
+            try {
+                url = new URL(jarURL);
+            } catch (MalformedURLException ex) {
+                error(new FileError("Failed to parse URL "
+                                    + "'" + jarURL + "'"
+                                    + ex.getMessage()));
+            }
+            Pathname d = new Pathname(url);
             if (device instanceof Cons) {
                 LispObject[] jars = d.copyToArray();
                 //  XXX Is this ever reached?  If so, need to append lists
@@ -342,7 +360,15 @@ public class Pathname extends LispObject {
             }
             String scheme = url.getProtocol();
             if (scheme.equals("file")) {
-                Pathname p = new Pathname(url.getFile());
+                URI uri = null;
+                try {
+                    uri = url.toURI();
+                } catch (URISyntaxException ex) {
+                    error(new FileError("Improper URI syntax for "
+                                    + "'" + url.toString() + "'"
+                                    + ": " + ex.toString()));
+                }
+                Pathname p = new Pathname(uri.getPath());
                 this.host = p.host;
                 this.device = p.device;
                 this.directory = p.directory;
@@ -596,6 +622,7 @@ public class Pathname extends LispObject {
                 return null;
             }
         }
+        boolean uriEncoded = false;
         if (device == NIL) {
         } else if (device == Keyword.UNSPECIFIC) {
         } else if (isJar()) {
@@ -605,8 +632,16 @@ public class Pathname extends LispObject {
                 prefix.append("jar:");
                 if (!((Pathname)jars[i]).isURL() && i == 0) {
                     sb.append("file:");
+                    uriEncoded = true;
                 }
-                sb.append(((Pathname) jars[i]).getNamestring());
+                Pathname jar = (Pathname) jars[i];
+                String encodedNamestring;
+                if (uriEncoded) {
+                    encodedNamestring = uriEncode(jar.getNamestring());
+                } else { 
+                    encodedNamestring = jar.getNamestring();
+                }
+                sb.append(encodedNamestring);
                 sb.append("!/");
             }
             sb = prefix.append(sb);
@@ -620,6 +655,9 @@ public class Pathname extends LispObject {
             Debug.assertTrue(false);
         }
         String directoryNamestring = getDirectoryNamestring();
+        if (uriEncoded) {
+            directoryNamestring = uriEncode(directoryNamestring);
+        }
         if (isJar()) {
             if (directoryNamestring.startsWith("/")) {
                 sb.append(directoryNamestring.substring(1));
@@ -635,7 +673,11 @@ public class Pathname extends LispObject {
                 Debug.assertTrue(namestring == null);
                 return null;
             }
-            sb.append(n);
+            if (uriEncoded) {
+                sb.append(uriEncode(n));
+            } else {
+                sb.append(n);
+            }
         } else if (name == Keyword.WILD) {
             sb.append('*');
         }
@@ -650,7 +692,11 @@ public class Pathname extends LispObject {
                         return null;
                     }
                 }
-                sb.append(t);
+                if (uriEncoded) {
+                    sb.append(uriEncode(t));
+                } else {
+                    sb.append(t);
+                }
             } else if (type == Keyword.WILD) {
                 sb.append('*');
             } else {
@@ -1981,7 +2027,12 @@ public class Pathname extends LispObject {
                 LispObject truename = Pathname.truename((Pathname)o, errorIfDoesNotExist);
                 if (truename != null
                     && truename instanceof Pathname) {
-                    jars.car = (Pathname)truename;
+                    Pathname truePathname = (Pathname)truename;
+                    // A jar that is a directory makes no sense, so exit
+                    if (truePathname.getNamestring().endsWith("/")) {
+                        break jarfile;
+                    }
+                    jars.car = truePathname;
                 } else {
                     break jarfile;
                 }
@@ -1994,6 +2045,7 @@ public class Pathname extends LispObject {
             // 2.  JAR in JAR
             // 3.  JAR with Entry
             // 4.  JAR in JAR with Entry
+
             ZipFile jarFile = ZipCache.get((Pathname)jars.car());
             String entryPath = pathname.asEntryPath();
             if (jarFile != null) {
@@ -2350,5 +2402,34 @@ public class Pathname extends LispObject {
         Symbol.DEFAULT_PATHNAME_DEFAULTS.setSymbolValue(coerceToPathname(obj));
     }
 
+    static String uriDecode(String s) {
+        try {
+            URI uri = new URI(null, null, null, s, null);
+            return uri.toASCIIString().substring(1);
+        } catch (URISyntaxException e) {}
+        return null;  // Error
+    }
+
+    static String uriEncode(String s) {
+        // The constructor we use here only allows absolute paths, so
+        // we manipulate the input and output correspondingly.
+        String u;
+        if (!s.startsWith("/")) {
+            u = "/" + s;
+        } else {
+            u = new String(s);
+        }
+        try {
+            URI uri = new URI("file", "", u, "");
+            String result = uri.getRawPath();
+            if (!s.startsWith("/")) {
+                return result.substring(1);
+            } 
+            return result;
+        } catch (URISyntaxException e) {
+            Debug.assertTrue(false);
+        }
+        return null; // Error
+    }
 }
 

@@ -153,6 +153,7 @@ public final class Load
 
         if (Utilities.checkZipFile(truename)) {
             String n = truename.getNamestring();
+            n = Pathname.uriEncode(n);
             if (n.startsWith("jar:")) {
                 n = "jar:" + n + "!/" + truename.name.getStringValue() + "."
                     + COMPILE_FILE_INIT_FASL_TYPE;

@@ -254,22 +254,6 @@ public final class Utilities
         return result;
     }
 
-    static String uriEncode(String s) {
-        try {
-            URI uri = new URI("?" + s);
-            return uri.getQuery();
-        } catch (URISyntaxException e) {}
-        return null;
-    }
-
-    static String uriDecode(String s) {
-        try {
-            URI uri = new URI(null, null, null, s, null);
-            return uri.toASCIIString().substring(1);
-        } catch (URISyntaxException e) {}
-        return null;  // Error
-    }
-    
     static String escapeFormat(String s) {
         return s.replace("~", "~~");
     }
