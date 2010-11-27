@@ -115,7 +115,7 @@ public class AbclScriptEngineFactory implements ScriptEngineFactory {
 	return sb.toString();
     }
     
-    public ScriptEngine getScriptEngine() {
+    public synchronized ScriptEngine getScriptEngine() {
         if (THE_ONLY_ONE_ENGINE == null) {
             THE_ONLY_ONE_ENGINE = new AbclScriptEngine();
         }
