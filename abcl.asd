@@ -24,17 +24,19 @@
 ;;; We guard with #+abcl for tests that other Lisps cannot load.  This
 ;;; could be possibly be done at finer granularity in the files
 ;;; themselves.
-(defsystem :abcl-test-lisp :version "1.1" :components
+(defsystem :abcl-test-lisp :version "1.2" :components
 	   ((:module abcl-rt 
                      :pathname "test/lisp/abcl/" :serial t :components
-		     ((:file "rt-package") (:file "rt")
+		     ((:file "rt-package") 
+                      (:file "rt")
                       (:file "test-utilities")))
 	    (:module package  :depends-on (abcl-rt)
 		     :pathname "test/lisp/abcl/" :components
 		     ((:file "package")))
             (:module test :depends-on (package)
 		     :pathname "test/lisp/abcl/" :components
-                     ((:file "compiler-tests")
+                     ((:file "utilities")
+                      (:file "compiler-tests")
                       (:file "condition-tests")
                       #+abcl
                       (:file "class-file")
@@ -47,7 +49,7 @@
                       (:file "file-system-tests")
                       #+abcl
                       (:file "jar-pathname" :depends-on
-                             ("pathname-tests"))
+                             ("utilities" "pathname-tests" "file-system-tests"))
                       #+abcl
                       (:file "url-pathname")
                       (:file "math-tests")
@@ -57,7 +59,7 @@
                       (:file "bugs" :depends-on ("file-system-tests"))
                       (:file "wild-pathnames" :depends-on ("file-system-tests"))
                       #+abcl
-                      (:file "pathname-tests")))))
+                      (:file "pathname-tests" :depends-on ("utilities"))))))
 
 (defmethod perform ((o test-op) (c (eql (find-system 'abcl-test-lisp))))
    "Invoke tests with (asdf:oos 'asdf:test-op :abcl-test-lisp)."

@@ -2,37 +2,6 @@
 
 (defvar *jar-file-init* nil)
 
-;;; From CL-FAD
-(defvar *stream-buffer-size* 8192)
-(defun cl-fad-copy-stream (from to &optional (checkp t))
-  "Copies into TO \(a stream) from FROM \(also a stream) until the end
-of FROM is reached, in blocks of *stream-buffer-size*.  The streams
-should have the same element type.  If CHECKP is true, the streams are
-checked for compatibility of their types."
-  (when checkp
-    (unless (subtypep (stream-element-type to) (stream-element-type from))
-      (error "Incompatible streams ~A and ~A." from to)))
-  (let ((buf (make-array *stream-buffer-size*
-                         :element-type (stream-element-type from))))
-    (loop
-     (let ((pos (read-sequence buf from)))
-       (when (zerop pos) (return))
-       (write-sequence buf to :end pos))))
-  (values))
-
-(defun cl-fad-copy-file (from to &key overwrite)
-  "Copies the file designated by the non-wild pathname designator FROM
-to the file designated by the non-wild pathname designator TO.  If
-OVERWRITE is true overwrites the file designtated by TO if it exists."
-  (let ((element-type '(unsigned-byte 8)))
-    (with-open-file (in from :element-type element-type)
-      (with-open-file (out to :element-type element-type
-                              :direction :output
-                              :if-exists (if overwrite
-                                           :supersede :error))
-        (cl-fad-copy-stream in out))))
-  (values))
-
 (defun jar-file-init ()
   (let* ((*default-pathname-defaults*  *abcl-test-directory*)
          (asdf::*verbose-out* *standard-output*))
@@ -197,12 +166,14 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
    #p#.(format nil "jar:jar:file:~Abaz.jar!/a/b/bar.abcl!/bar._"
                        (namestring *abcl-test-directory*)))
 
+(push 'jar-pathname.probe-file.4 *expected-failures*)
 (deftest jar-pathname.probe-file.4
     (with-jar-file-init
         (probe-file "jar:file:baz.jar!/a/b"))
   #p#.(format nil "jar:file:~Abaz.jar!/a/b/"
                        (namestring *abcl-test-directory*)))
 
+(push 'jar-pathname.probe-file.5 *expected-failures*)
 (deftest jar-pathname.probe-file.5
     (with-jar-file-init
         (probe-file "jar:file:baz.jar!/a/b/"))
@@ -341,18 +312,27 @@ OVERWRITE is true overwrites the file designtated by TO if it exists."
   (:relative "a" "b") "foo" "jar"
   (:absolute "c" "d") "foo" "lisp")
 
+;;; 'jar:file:' forms must be URI encoded, meaning whitespace is not allowed
 (deftest jar-pathname.10
-    (let ((s "jar:file:/foo/bar/a space/that!/this"))
-      (equal s
-             (namestring (pathname s))))
+    (signals-error 
+     (let ((s "jar:file:/foo/bar/a space/that!/this"))
+       (equal s
+              (namestring (pathname s))))
+     'file-error)
   t)
 
 (deftest jar-pathname.11
-    (let ((s "jar:file:/foo/bar/a+space/that!/this"))
-      (equal s
+    (let ((s "jar:file:/foo/bar/a%20space%3f/that!/this"))
+      (string= s
              (namestring (pathname s))))
   t)
 
+;;; We allow jar-pathname to be contructed without a device to allow
+;;; MERGE-PATHNAMES to work, even though #p"file:" is illegal.
+(deftest jar-pathname.12
+    (string= (namestring (first (pathname-device #p"jar:file:!/foo.bar")))
+             "")
+  t)
 
 (deftest jar-pathname.match-p.1
     (pathname-match-p "jar:file:/a/b/some.jar!/a/system/def.asd"

@@ -1681,3 +1681,35 @@
       (type-error () t))
   t)
 
+(deftest pathname.uri-encoding.1
+    (signals-error
+     (let ((s "file:/path with /spaces"))
+       (equal s
+              (namestring (pathname s))))
+     'file-error)
+  t)
+
+(deftest pathname.uri-encoding.2
+    (equal "/path with/uri-escaped/?characters/"
+           (namestring (pathname "file:/path%20with/uri-escaped/%3fcharacters/")))
+  t)
+
+(deftest pathname.load.1
+    (let ((dir (merge-pathnames "dir+with+plus/"
+                                *abcl-test-directory*)))
+      (with-temp-directory (dir)
+        (let ((file (merge-pathnames "foo.lisp" dir)))
+          (with-open-file (s file :direction :output)
+            (write *foo.lisp* :stream s))
+          (load file))))
+  t)
+
+(deftest pathname.load.2
+    (let ((dir (merge-pathnames "dir with space/"
+                                *abcl-test-directory*)))
+      (with-temp-directory (dir)
+        (let ((file (merge-pathnames "foo.lisp" dir)))
+          (with-open-file (s file :direction :output)
+            (write *foo.lisp* :stream s))
+          (load file))))
+  t)
