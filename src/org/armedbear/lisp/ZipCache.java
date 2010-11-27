@@ -163,7 +163,7 @@ public class ZipCache {
                 // Sun-derived JVMs.  So, we use a custom HEAD
                 // implementation only looking for Last-Modified
                 // headers, which if we don't find, we give up and
-                // refetch the resource.n
+                // refetch the resource.
                 String dateString = HttpHead.get(url, "Last-Modified");
                 Date date = null;
                 ParsePosition pos = new ParsePosition(0);
