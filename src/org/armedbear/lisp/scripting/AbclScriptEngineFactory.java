@@ -29,7 +29,7 @@ import javax.script.ScriptEngineFactory;
 
 public class AbclScriptEngineFactory implements ScriptEngineFactory {
 
-    private static final AbclScriptEngine THE_ONLY_ONE_ENGINE = new AbclScriptEngine();
+    private static AbclScriptEngine THE_ONLY_ONE_ENGINE = null;
 	
     public String getEngineName() {
 	return "ABCL Script";
@@ -116,6 +116,9 @@ public class AbclScriptEngineFactory implements ScriptEngineFactory {
     }
     
     public ScriptEngine getScriptEngine() {
+        if (THE_ONLY_ONE_ENGINE == null) {
+            THE_ONLY_ONE_ENGINE = new AbclScriptEngine();
+        }
 	return THE_ONLY_ONE_ENGINE;
     }
 
