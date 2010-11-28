@@ -126,7 +126,7 @@ public final class Interpreter
     }
 
     public static boolean initialized() {
-        return interpreter != null;
+        return initialized;
     }
 
     private Interpreter()
