@@ -778,6 +778,7 @@ ABCL doesn't use interfaces, so don't implement it here at this time
     (:synchronized #x0020)
     (:transient    #x0080)
     (:native       #x0100)
+    (:interface    #x0200)
     (:abstract     #x0400)
     (:strict       #x0800))
   "List of keyword symbols used for human readable representation of (access)
