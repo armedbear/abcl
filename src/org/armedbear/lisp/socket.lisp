@@ -35,7 +35,9 @@
   ":ELEMENT-TYPE must be CHARACTER or (UNSIGNED-BYTE 8); the default is CHARACTER.
 EXTERNAL-FORMAT must be of the same format as specified for OPEN."
   (cond ((eq element-type 'character))
-        ((equal element-type '(unsigned-byte 8)))
+        ((reduce #'equal
+                (mapcar #'sys::normalize-type 
+                        (list element-type '(unsigned-byte 8)))))
         (t
          (error 'simple-type-error
                 :format-control
