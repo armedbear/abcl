@@ -511,11 +511,15 @@ class file as UTF-8 encoded data."
   access-flags
   class
   superclass
-  ;; support for implementing interfaces not yet available
-  ;; interfaces
+  interfaces
   fields
   methods
   attributes)
+
+(defun make-class-interface-file (class)
+  "Create the components of a class file representing a public Java
+interface."
+  (make-class-file class +java-object+ '(:public :abstract :interface)))
 
 (defun class-add-field (class field)
   "Adds a `field' created by `make-field'."
@@ -551,11 +555,34 @@ class file as UTF-8 encoded data."
 structure classes which include the `attribute' structure class."
   (push attribute (class-file-attributes class)))
 
+(defun class-add-superinterface (class interface)
+  "Adds the java-class-name contained in `interface' as a superinterface of the `class'.
+
+For a class that represents an object, the requirements in `interface'
+must then be implemented in the class.  For a class that represents an
+interface, the `interface' imposes additional requirements to the
+classes which implement this class."
+  (push interface (class-file-interfaces class)))
+
 (defun class-attribute (class name)
   "Returns the attribute which is named `name'."
   (find name (class-file-attributes class)
         :test #'string= :key #'attribute-name))
 
+(defun finalize-interfaces (class)
+  "Finalize the interfaces for `class'.
+
+Interface finalization first ensures that all the classes referenced
+by the interfaces members exist in the pool.  Then, it destructively
+modfies the interfaces members with a list of the references to the
+corresponding pool indices."
+  (let ((interface-refs nil))
+    (dolist (interface (class-file-interfaces class))
+      (push 
+       (pool-add-class (class-file-constants class)
+                       interface)
+       interface-refs))
+    (setf (class-file-interfaces class) interface-refs)))
 
 (defun finalize-class-file (class)
   "Transforms the representation of the class-file from one
@@ -574,7 +601,7 @@ The class can't be modified after finalization."
         (class-file-class class)
         (pool-add-class (class-file-constants class)
                         (class-file-class class)))
-  ;;  (finalize-interfaces)
+  (finalize-interfaces class)
   (dolist (field (class-file-fields class))
     (finalize-field field class))
   (dolist (method (class-file-methods class))
@@ -684,7 +711,12 @@ The class can't be modified after finalization."
   (write-u2 (class-file-superclass class) stream)
 
   ;; interfaces
-  (write-u2 0 stream)
+  (if (class-file-interfaces class)
+      (progn 
+        (write-u2 (length (class-file-interfaces class)) stream)
+        (dolist (interface-ref (class-file-interfaces class))
+          (write-u2 interface-ref stream)))
+      (write-u2 0 stream))
 
   ;; fields
   (write-u2 (length (class-file-fields class)) stream)
