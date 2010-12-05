@@ -547,7 +547,7 @@ public class RandomAccessCharacterFile {
     final void write(byte[] b, int off, int len) throws IOException {
         int pos = off;
         while (pos < off + len) {
-            int want = len;
+            int want = len - pos + off;
             if (want > bbuf.remaining()) {
                 want = bbuf.remaining();
             }
