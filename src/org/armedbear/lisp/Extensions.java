@@ -227,6 +227,8 @@ public final class Extensions
     @Override
     public LispObject execute()
     {
+      ((Stream)Symbol.STANDARD_OUTPUT.getSymbolValue())._finishOutput();
+      ((Stream)Symbol.ERROR_OUTPUT.getSymbolValue())._finishOutput();
       exit(0);
       return LispThread.currentThread().nothing();
     }

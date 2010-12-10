@@ -244,7 +244,7 @@ public final class Interpreter
                         ++i;
                     } else {
                         System.err.println("No argument supplied to --eval");
-                        System.exit(1);
+                        exit(1);
                     }
                 } else if (arg.equals("--load") ||
                            arg.equals("--load-system-file")) {
@@ -252,7 +252,7 @@ public final class Interpreter
                         ++i;
                     } else {
                         System.err.println("No argument supplied to --load");
-                        System.exit(1);
+                        exit(1);
                     }
                 } else {
                     arglist = new Cons(args[i], arglist);
@@ -292,13 +292,13 @@ public final class Interpreter
                             sb.append(c.getCondition().writeToString());
                             sb.append(separator);
                             System.err.print(sb.toString());
-                            System.exit(2);
+                            exit(2);
                         }
                         ++i;
                     } else {
                         // Shouldn't happen.
                         System.err.println("No argument supplied to --eval");
-                        System.exit(1);
+                        exit(1);
                     }
                 } else if (arg.equals("--load") ||
                            arg.equals("--load-system-file")) {
@@ -313,10 +313,13 @@ public final class Interpreter
                     } else {
                         // Shouldn't happen.
                         System.err.println("No argument supplied to --load");
-                        System.exit(1);
+                        exit(1);
                     }
                 }
             }
+        }
+        if (_BATCH_MODE_.getSymbolValue() == T) {
+            exit(0);
         }
     }
 
@@ -437,8 +440,11 @@ public final class Interpreter
             catch (IOException e) {
                 Debug.trace(e);
             }
-        } else
+        } else {
+            ((Stream)Symbol.STANDARD_OUTPUT.getSymbolValue())._finishOutput();
+            ((Stream)Symbol.ERROR_OUTPUT.getSymbolValue())._finishOutput();
             System.exit(status);
+        }
     }
 
     public synchronized void dispose()

@@ -1596,7 +1596,7 @@ for (LispObject a : args)
                     System.out.println(a.writeToString());
 
             //###FIXME: Bail out, but do it nicer...
-            System.exit(1);
+            exit(1);
             return NIL;
         }
     };
