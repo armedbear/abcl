@@ -492,7 +492,6 @@ public final class Interpreter
     {
         @Override
         public LispObject execute(LispObject first, LispObject second)
-            throws UnhandledCondition
         {
             final LispObject condition = first;
             if (interpreter == null) {
@@ -525,7 +524,11 @@ public final class Interpreter
                     thread.resetSpecialBindings(mark);
                 }
             }
-            throw new UnhandledCondition(condition);
+            UnhandledCondition uc = new UnhandledCondition(condition);
+            if (condition.typep(Symbol.JAVA_EXCEPTION) != NIL)
+                uc.initCause((Throwable)JavaException
+                        .JAVA_EXCEPTION_CAUSE.execute(condition).javaInstance());
+            throw uc;
         }
     };
 
