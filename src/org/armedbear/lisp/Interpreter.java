@@ -471,6 +471,20 @@ public final class Interpreter
         public LispObject getCondition() {
             return condition;
         }
+
+        @Override
+        public String getMessage() {
+            String conditionText;
+            try {
+                conditionText = getCondition().writeToString();
+            } catch (Throwable t) {
+                conditionText = "<error printing Lisp condition>";
+            }
+
+            return "Unhandled lisp condition: " + conditionText;
+        }
+
+
     };
 
     private static final Primitive _DEBUGGER_HOOK_FUNCTION =
