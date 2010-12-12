@@ -25,15 +25,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.math.BigInteger;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.script.*;
 
 import org.armedbear.lisp.*;
-import org.armedbear.lisp.scripting.util.ReaderInputStream;
-import org.armedbear.lisp.scripting.util.WriterOutputStream;
 
 
 public class AbclScriptEngine extends AbstractScriptEngine implements Invocable, Compilable {
@@ -230,22 +226,14 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	}
 
     Object eval(Function evaluator, LispObject code, ScriptContext ctx) throws ScriptException {
-	ReaderInputStream in = null;
-	WriterOutputStream out = null;
 	LispObject retVal = null;
-	try {
-	    in = new ReaderInputStream(ctx.getReader());
-	    out = new WriterOutputStream(ctx.getWriter());
-	    Stream outStream = new Stream(Symbol.SYSTEM_STREAM, out, Symbol.CHARACTER);
-	    Stream inStream  = new Stream(Symbol.SYSTEM_STREAM, in,  Symbol.CHARACTER);
+	    Stream outStream = new Stream(Symbol.SYSTEM_STREAM, ctx.getWriter());
+	    Stream inStream  = new Stream(Symbol.SYSTEM_STREAM, ctx.getReader());
 	    retVal = evaluator.execute(makeBindings(ctx.getBindings(ScriptContext.GLOBAL_SCOPE)),
 				       makeBindings(ctx.getBindings(ScriptContext.ENGINE_SCOPE)),
 				       inStream, outStream,
 				       code, new JavaObject(ctx));
 	    return retVal.javaInstance();
-	} catch (IOException e) {
-	    throw new ScriptException(e);
-	}
     }
 	
 	@Override
