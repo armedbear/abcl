@@ -49,6 +49,8 @@ public class JavaException extends LispError
         Debug.assertTrue(throwable != null);
         this.throwable = throwable;
         setInstanceSlotValue(Symbol.CAUSE, new JavaObject(throwable));
+        setFormatControl("Java exception: ~A.");
+        setFormatArguments(new Cons(new JavaObject(throwable)));
     }
 
     @Override
@@ -87,7 +89,7 @@ public class JavaException extends LispError
     }
 
     // ### java-exception-cause java-exception => cause
-    private static final Primitive JAVA_EXCEPTION_CAUSE =
+    protected static final Primitive JAVA_EXCEPTION_CAUSE =
         new Primitive(Symbol.JAVA_EXCEPTION_CAUSE, "java-exception",
 "Returns the cause of JAVA-EXCEPTION. (The cause is the Java Throwable\n" +
 "  object that caused JAVA-EXCEPTION to be signalled.)")
