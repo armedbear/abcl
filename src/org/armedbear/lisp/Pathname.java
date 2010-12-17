@@ -38,14 +38,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileInputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
@@ -2096,21 +2093,6 @@ public class Pathname extends LispObject {
         return NIL;
     }
 
-
-    /** Make a JarURL from a Pathname that references a file */
-    private static URL makeJarURL(Pathname p) {
-        String jarURL = "jar:file:" + p.getNamestring() + "!/";
-        URL result = null;
-        try {
-            result = new URL(jarURL);
-        } catch (MalformedURLException ex) {
-            // XXX
-            Debug.trace("Could not form URL from pathname "
-              + "'" + jarURL + "'"
-              + " because " + ex);
-        }
-        return result;
-    }
 
     protected static URL makeURL(Pathname pathname) {
         URL result = null;
