@@ -997,22 +997,18 @@ public class Pathname extends LispObject {
         return true;
     }
 
-    public static URL toURL(Pathname p) {
-        URL url = null;
-        if (!(p.host instanceof Cons)) {
-            Debug.assertTrue(false); // XXX
-        }
-        try {
-            url = new URL(p.getNamestring());
-        } catch (MalformedURLException e) {
-            Debug.assertTrue(false); // XXX
-        }
-        return url;
-    }
+//    public static URL toURL(Pathname p) {
+ //       try {
+//            return p.toURL();
+//        } catch (MalformedURLException e) {
+//            Debug.assertTrue(false);
+//            return null; // not reached
+//        }
+//    }
 
     URLConnection getURLConnection() {
         Debug.assertTrue(isURL());
-        URL url = Pathname.toURL(this);
+        URL url = this.toURL();
         URLConnection result = null;
         try {
             result = url.openConnection();
@@ -2163,7 +2159,7 @@ public class Pathname extends LispObject {
                 }
             }
         } else if (isURL()) {
-            URL url = toURL(this);
+            URL url = this.toURL();
             try { 
                 result = url.openStream();
             } catch (IOException e) {
@@ -2381,11 +2377,16 @@ public class Pathname extends LispObject {
         return getNamestring();
     }
 
-    public URL toURL() throws MalformedURLException {
-        if(isURL()) {
-            return new URL(getNamestring());
-        } else {
-            return toFile().toURL();
+    public URL toURL() {
+        try {
+            if (isURL()) {
+                return new URL(getNamestring());
+            } else {
+                return toFile().toURL();
+            }
+        } catch (MalformedURLException e) {
+            error(new LispError(getNamestring() + " is not a valid URL"));
+            return null; // not reached
         }
     }
 

@@ -232,17 +232,13 @@ public class JavaClassLoader extends URLClassLoader {
     };
 
     protected static void addURL(JavaClassLoader jcl, LispObject jar) {
-	try {
-	    if(jar instanceof Pathname) {
-		jcl.addURL(((Pathname) jar).toURL());
-	    } else if(jar instanceof AbstractString) {
-		jcl.addURL(new Pathname(jar.toString()).toURL());
-	    } else {
-		error(new TypeError(jar + " must be a pathname designator"));
-	    }
-	} catch(java.net.MalformedURLException e) {
-	    error(new LispError(jar + " is not a valid URL"));
-	}
+        if (jar instanceof Pathname) {
+            jcl.addURL(((Pathname) jar).toURL());
+        } else if (jar instanceof AbstractString) {
+            jcl.addURL(new Pathname(jar.toString()).toURL());
+        } else {
+            error(new TypeError(jar + " must be a pathname designator"));
+        }
     }
 
 
