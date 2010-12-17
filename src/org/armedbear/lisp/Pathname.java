@@ -2382,7 +2382,7 @@ public class Pathname extends LispObject {
             if (isURL()) {
                 return new URL(getNamestring());
             } else {
-                return toFile().toURL();
+                return toFile().toURI().toURL();
             }
         } catch (MalformedURLException e) {
             error(new LispError(getNamestring() + " is not a valid URL"));
