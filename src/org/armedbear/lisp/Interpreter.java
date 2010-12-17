@@ -54,6 +54,7 @@ public final class Interpreter
     private static boolean noinit = false;
     private static boolean nosystem = false;
     private static boolean noinform = false;
+    private static boolean help = false;
 
     public static synchronized Interpreter getInstance()
     {
@@ -83,6 +84,12 @@ public final class Interpreter
             Stream out = getStandardOutput();
             out._writeString(banner());
             out._finishOutput();
+        }
+        if (help) {
+            Stream out = getStandardOutput();
+            out._writeString(help());
+            out._finishOutput();
+            exit(0);
         }
         if (noinform)
             _NOINFORM_.setSymbolValue(T);
@@ -237,6 +244,8 @@ public final class Interpreter
                     nosystem = true;
                 } else if (arg.equals("--noinform")) {
                     noinform = true;
+                } else if (arg.equals("--help")) {
+                    help = true;
                 } else if (arg.equals("--batch")) {
                     _BATCH_MODE_.setSymbolValue(T);
                 } else if (arg.equals("--eval")) {
@@ -605,6 +614,30 @@ public final class Interpreter
             sb.append(vm);
             sb.append(sep);
         }
+        return sb.toString();
+    }
+    private static String help()
+    {
+        final String sep = System.getProperty("line.separator");
+        StringBuilder sb = new StringBuilder("Parameters:");
+        sb.append(sep);
+        sb.append("--help displays this help");
+        sb.append(sep);
+        sb.append("--noinform suppresses the printing of version info");
+        sb.append(sep);
+        sb.append("--eval <form> evaluates the <form> before initializing REPL");
+        sb.append(sep);
+        sb.append("--load <file> loads the file <file> before initializing REPL");
+        sb.append(sep);
+        sb.append("--load-system-file <file> loads the system file <file> before initializing REPL");
+        sb.append(sep);
+        sb.append("--batch enables batch mode. The --load, --load-system-file and --eval parameters are handled, and abcl exits without entering REPL");
+        sb.append(sep);
+        sb.append("--noinit suppresses loading a .abclrc startup file");
+        sb.append(sep); 
+        sb.append("--nosystem suppresses loading the system startup file");
+        sb.append(sep);
+       
         return sb.toString();
     }
 }
