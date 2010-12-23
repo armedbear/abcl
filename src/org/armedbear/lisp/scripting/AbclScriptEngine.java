@@ -61,11 +61,12 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	loadFromClasspath("/org/armedbear/lisp/scripting/lisp/abcl-script.lisp");
 	loadFromClasspath("/org/armedbear/lisp/scripting/lisp/config.lisp");
 	if(getClass().getResource("/abcl-script-config.lisp") != null) {
-	    System.out.println("ABCL: loading configuration from " + getClass().getResource("/abcl-script-config.lisp"));
+            //TODO: find a way to log this if wanted
+            //System.out.println("ABCL: loading configuration from " + getClass().getResource("/abcl-script-config.lisp"));
 	    loadFromClasspath("/abcl-script-config.lisp");
 	}
 	((Function) interpreter.eval("#'abcl-script:configure-abcl")).execute(new JavaObject(this));
-	System.out.println("ABCL: configured");
+        //System.out.println("ABCL: configured");
 	evalScript = (Function) this.findSymbol("EVAL-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
 	compileScript = (Function) this.findSymbol("COMPILE-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
 	evalCompiledScript = (Function) this.findSymbol("EVAL-COMPILED-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
@@ -108,18 +109,19 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		return load(stream);
 	}
 
-	public LispObject load(Stream stream) {
-		Symbol keyword_verbose = Lisp.internKeyword("VERBOSE");
-		Symbol keyword_print = Lisp.internKeyword("PRINT");
-		/*
-		 * load (filespec &key (verbose *load-verbose*) (print *load-print*)
-		 * (if-does-not-exist t) (external-format :default)
-		 */
-		return Symbol.LOAD.getSymbolFunction().execute(
-				new LispObject[] { stream, keyword_verbose, Lisp.NIL,
-						keyword_print, Lisp.T, Keyword.IF_DOES_NOT_EXIST,
-						Lisp.T, Keyword.EXTERNAL_FORMAT, Keyword.DEFAULT });
-	}
+    public LispObject load(Stream stream) {
+        Symbol keyword_verbose = Lisp.internKeyword("VERBOSE");
+        Symbol keyword_print = Lisp.internKeyword("PRINT");
+        /*
+         * load (filespec &key (verbose *load-verbose*) (print *load-print*)
+         * (if-does-not-exist t) (external-format :default)
+         */
+        return Symbol.LOAD.getSymbolFunction().execute
+            (new LispObject[] { stream, keyword_verbose, Lisp.NIL,
+                                keyword_print, Lisp.NIL,
+                                Keyword.IF_DOES_NOT_EXIST, Lisp.T,
+                                Keyword.EXTERNAL_FORMAT, Keyword.DEFAULT });
+    }
 
 	public LispObject load(String filespec) {
 		return load(filespec, true);
