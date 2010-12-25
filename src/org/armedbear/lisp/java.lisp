@@ -219,6 +219,26 @@
 	    i (1+ i)))
     jarray))
 
+(defun list-from-jarray (jarray)
+  "Returns a list with the elements of `jarray`."
+  (loop for i from 0 below (jarray-length jarray)
+        collect (jarray-ref jarray i)))
+
+(defun vector-from-jarray (jarray)
+  "Returns a vector with the elements of `jarray`."
+  (loop with vec = (make-array (jarray-length jarray))
+        for i from 0 below (jarray-length jarray)
+        do (setf (aref vec i) (jarray-ref jarray i))
+        finally (return vec)))
+
+(defun list-from-jenumeration (jenumeration)
+  "Returns a list with the elements returned by successive `nextElement`
+calls on the java.util.Enumeration `jenumeration`."
+  (loop while (jcall jenumeration
+                     (jmethod "java.util.Enumeration" "hasMoreElements"))
+        collect (jcall jenumeration
+                       (jmethod "java.util.Enumeration" "nextElement"))))
+
 (defun jclass-constructors (class)
   "Returns a vector of constructors for CLASS"
   (jcall (jmethod "java.lang.Class" "getConstructors") (jclass class)))
