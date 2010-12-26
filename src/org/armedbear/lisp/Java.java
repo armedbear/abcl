@@ -1055,6 +1055,31 @@ public final class Java
         }
     };
 
+    private static final Primitive JNULL_REF = new pf_jnull_ref();
+    @DocString(name="jnull-ref", args="object",
+    doc="Returns a non-NIL value when the JAVA-OBJECT `object` is `null`,\n"
+            + "or signals a TYPE-ERROR condition if the object isn't of\n"
+            + "the right type.")
+    private static final class pf_jnull_ref extends Primitive
+    {
+        pf_jnull_ref()
+        {
+            super("jnull-ref", PACKAGE_JAVA, true);
+        }
+
+        @Override
+        public LispObject execute(LispObject ref)
+        {
+            if (ref instanceof JavaObject)
+            {
+                JavaObject jref = (JavaObject)ref;
+                return (jref.javaInstance() == null) ? T : NIL;
+            } else
+                return Lisp.type_error(ref, Symbol.JAVA_OBJECT);
+        }
+    };
+
+
     private static final Primitive JAVA_OBJECT_P = new pf_java_object_p();
     @DocString(name="java-object-p", args="object",
     doc="Returns T if OBJECT is a JAVA-OBJECT.")
