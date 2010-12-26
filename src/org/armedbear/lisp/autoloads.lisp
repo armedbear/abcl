@@ -286,6 +286,8 @@
 (autoload-macro 'chain "java")
 (export 'jmethod-let "JAVA")
 (autoload-macro 'jmethod-let "java")
+(export 'jequal "JAVA")
+(autoload-macro 'jequal "java")
 
 ;; Profiler.
 (in-package "PROFILER")
