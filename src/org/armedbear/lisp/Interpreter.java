@@ -484,10 +484,15 @@ public final class Interpreter
         @Override
         public String getMessage() {
             String conditionText;
+            LispThread thread = LispThread.currentThread();
+            SpecialBindingsMark mark = thread.markSpecialBindings();
+            thread.bindSpecial(Symbol.PRINT_ESCAPE, NIL);
             try {
                 conditionText = getCondition().writeToString();
             } catch (Throwable t) {
                 conditionText = "<error printing Lisp condition>";
+            } finally {
+                thread.resetSpecialBindings(mark);
             }
 
             return "Unhandled lisp condition: " + conditionText;
