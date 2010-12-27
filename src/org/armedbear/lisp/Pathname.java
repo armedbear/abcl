@@ -265,15 +265,6 @@ public class Pathname extends LispObject {
                                     jar.length() - jarSeparator.length());
                 Pathname jarPathname;
                 if (file.length() > 0) {
-                    // Instead of "use URL constructor to normalize Windows' use of device"
-                    // attempt to shorten the URL to pass through the normal constructor.
-                    if (Utilities.isPlatformWindows
-                        && file.charAt(0) == '/'
-                        && file.charAt(2) == ':'
-                        && Character.isLetter(file.charAt(1)))
-                        {
-                            file = file.substring(1);
-                        }
                     URL url = null;
                     URI uri = null;
                     try {
@@ -294,7 +285,7 @@ public class Pathname extends LispObject {
                         // path for jar files, so MERGE-PATHNAMES means something.
                         jarPathname = new Pathname(uri.getSchemeSpecificPart());
                     } else {
-                        jarPathname = new Pathname(path);
+                        jarPathname = new Pathname((new File(path)).getPath());
                     }
                 } else {
                     jarPathname = new Pathname("");
@@ -365,7 +356,8 @@ public class Pathname extends LispObject {
                                     + "'" + url.toString() + "'"
                                     + ": " + ex.toString()));
                 }
-                Pathname p = new Pathname(uri.getPath());
+                File file = new File(uri.getPath());
+                Pathname p = new Pathname(file.getPath());
                 this.host = p.host;
                 this.device = p.device;
                 this.directory = p.directory;
