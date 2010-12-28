@@ -512,23 +512,11 @@ public final class LispThread extends LispObject
 
     private StackFrame stack = null;
 
-    @Deprecated
-    public LispObject getStack()
+   public final void pushStackFrame(StackFrame frame)
     {
-        return NIL;
+        frame.setNext(stack);
+        stack = frame;
     }
-
-    @Deprecated
-    public void setStack(LispObject stack)
-    {
-    }
-
-    public final void pushStackFrame(StackFrame frame)
-    {
-	frame.setNext(stack);
-	stack = frame;
-    }
-
 
     public final void popStackFrame()
     {
