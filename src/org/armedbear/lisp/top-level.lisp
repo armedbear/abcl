@@ -134,7 +134,9 @@
           (print-frame frame *debug-io* :prefix (format nil "~3D: " n))
           (incf n)
           (when (>= n count)
+            (fresh-line *debug-io*)
             (return))))))
+  (fresh-line *debug-io*)
   (values))
 
 (defun frame-command (args)
