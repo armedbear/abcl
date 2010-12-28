@@ -331,6 +331,19 @@ public final class Lisp
       final LispThread thread = LispThread.currentThread();
       final StackTraceElement[] frames = thread.getJavaStackTrace();
 
+      // frames[0] java.lang.Thread.getStackTrace
+      // frames[1] org.armedbear.lisp.LispThread.getJavaStackTrace
+      // frames[2] org.armedbear.lisp.Lisp.pushJavaStackFrames
+
+      if (frames.length > 5
+        && frames[3].getClassName().equals("org.armedbear.lisp.Lisp")
+        && frames[3].getMethodName().equals("error")
+        && frames[4].getClassName().startsWith("org.armedbear.lisp.Lisp")
+        && frames[4].getMethodName().equals("eval")) {
+          // Error condition arising from within Lisp.eval(), so no
+          // Java stack frames should be visible to the consumer of the stack abstraction
+          return;
+      }
       // Search for last Primitive in the StackTrace; that was the
       // last entry point from Lisp.
       int last = frames.length - 1;
@@ -338,9 +351,8 @@ public final class Lisp
           if (frames[i].getClassName().startsWith("org.armedbear.lisp.Primitive"))
             last = i;
       }
-      // Do not include the first three frames:
-      //   Thread.getStackTrace, LispThread.getJavaStackTrace,
-      //   Lisp.pushJavaStackFrames.
+      // Do not include the first three frames which, as noted above, constitute
+      // the invocation of this method.
       while (last > 2) {
         thread.pushStackFrame(new JavaStackFrame(frames[last]));
         last--;
