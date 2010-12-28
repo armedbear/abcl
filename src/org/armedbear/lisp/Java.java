@@ -1055,14 +1055,14 @@ public final class Java
         }
     };
 
-    private static final Primitive JNULL_REF = new pf_jnull_ref();
+    private static final Primitive JNULL_REF_P = new pf_jnull_ref_p();
     @DocString(name="jnull-ref", args="object",
     doc="Returns a non-NIL value when the JAVA-OBJECT `object` is `null`,\n"
             + "or signals a TYPE-ERROR condition if the object isn't of\n"
             + "the right type.")
-    private static final class pf_jnull_ref extends Primitive
+    private static final class pf_jnull_ref_p extends Primitive
     {
-        pf_jnull_ref()
+        pf_jnull_ref_p()
         {
             super("jnull-ref", PACKAGE_JAVA, true);
         }
