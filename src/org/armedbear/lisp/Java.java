@@ -1056,7 +1056,7 @@ public final class Java
     };
 
     private static final Primitive JNULL_REF_P = new pf_jnull_ref_p();
-    @DocString(name="jnull-ref", args="object",
+    @DocString(name="jnull-ref-p", args="object",
     doc="Returns a non-NIL value when the JAVA-OBJECT `object` is `null`,\n"
             + "or signals a TYPE-ERROR condition if the object isn't of\n"
             + "the right type.")
@@ -1064,7 +1064,7 @@ public final class Java
     {
         pf_jnull_ref_p()
         {
-            super("jnull-ref", PACKAGE_JAVA, true);
+            super("jnull-ref-p", PACKAGE_JAVA, true);
         }
 
         @Override
