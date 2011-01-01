@@ -574,6 +574,14 @@ if that parent belongs to the same compiland."
                (eq name (block-name block)))
       (return block))))
 
+(defun some-nested-block (block predicate)
+  "Applies `predicate` recursively to the children of `block`,
+until predicate returns non-NIL, returning that value."
+  (some #'(lambda (b)
+	    (or (funcall predicate b)
+		(some-nested-block b predicate)))
+	(node-children block)))
+
 (defknown node-constant-p (t) boolean)
 (defun node-constant-p (object)
   (cond ((node-p object)
