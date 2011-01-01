@@ -389,9 +389,18 @@ of the compilands being processed (p1: so far; p2: in total).")
 
 (defstruct node
   form
+  children
   (compiland *current-compiland*))
 ;; No need for a special constructor: nobody instantiates
 ;; nodes directly
+
+(declaim (inline add-node-child))
+(defun add-node-child (parent child)
+  "Add a child node to the `children` list of a parent node,
+if that parent belongs to the same compiland."
+  (when parent
+    (when (eq (node-compiland parent) *current-compiland*)
+      (push child (node-children parent)))))
 
 ;; control-transferring blocks: TAGBODY, CATCH, to do: BLOCK
 
@@ -418,6 +427,7 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defun make-tagbody-node ()
   (let ((block (%make-tagbody-node)))
     (push block (compiland-blocks *current-compiland*))
+    (add-node-child (car *blocks*) block)
     block))
 
 (defstruct (catch-node (:conc-name catch-)
@@ -430,6 +440,7 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defun make-catch-node ()
   (let ((block (%make-catch-node)))
     (push block (compiland-blocks *current-compiland*))
+    (add-node-child (car *blocks*) block)
     block))
 
 (defstruct (block-node (:conc-name block-)
@@ -447,6 +458,7 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defun make-block-node (name)
   (let ((block (%make-block-node name)))
     (push block (compiland-blocks *current-compiland*))
+    (add-node-child (car *blocks*) block)
     block))
 
 ;; binding blocks: LET, LET*, FLET, LABELS, M-V-B, PROGV, LOCALLY
@@ -470,6 +482,7 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defun make-let/let*-node ()
   (let ((block (%make-let/let*-node)))
     (push block (compiland-blocks *current-compiland*))
+    (add-node-child (car *blocks*) block)
     block))
 
 (defstruct (flet-node (:conc-name flet-)
@@ -479,6 +492,7 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defun make-flet-node ()
   (let ((block (%make-flet-node)))
     (push block (compiland-blocks *current-compiland*))
+    (add-node-child (car *blocks*) block)
     block))
 
 (defstruct (labels-node (:conc-name labels-)
@@ -488,6 +502,7 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defun make-labels-node ()
   (let ((block (%make-labels-node)))
     (push block (compiland-blocks *current-compiland*))
+    (add-node-child (car *blocks*) block)
     block))
 
 (defstruct (m-v-b-node (:conc-name m-v-b-)
@@ -497,6 +512,7 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defun make-m-v-b-node ()
   (let ((block (%make-m-v-b-node)))
     (push block (compiland-blocks *current-compiland*))
+    (add-node-child (car *blocks*) block)
     block))
 
 (defstruct (progv-node (:conc-name progv-)
@@ -515,6 +531,7 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defun make-locally-node ()
   (let ((block (%make-locally-node)))
     (push block (compiland-blocks *current-compiland*))
+    (add-node-child (car *blocks*) block)
     block))
 
 ;; blocks requiring non-local exits: UNWIND-PROTECT, SYS:SYNCHRONIZED-ON
@@ -525,6 +542,7 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defun make-protected-node ()
   (let ((block (%make-protected-node)))
     (push block (compiland-blocks *current-compiland*))
+    (add-node-child (car *blocks*) block)
     block))
 
 (defstruct (unwind-protect-node (:conc-name unwind-protect-)
@@ -534,6 +552,7 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defun make-unwind-protect-node ()
   (let ((block (%make-unwind-protect-node)))
     (push block (compiland-blocks *current-compiland*))
+    (add-node-child (car *blocks*) block)
     block))
 
 (defstruct (synchronized-node (:conc-name synchronized-)
@@ -543,6 +562,7 @@ of the compilands being processed (p1: so far; p2: in total).")
 (defun make-synchronized-node ()
   (let ((block (%make-synchronized-node)))
     (push block (compiland-blocks *current-compiland*))
+    (add-node-child (car *blocks*) block)
     block))
 
 
