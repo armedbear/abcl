@@ -1186,8 +1186,8 @@ the args causes a Java exception handler to be installed, which
          (case (%car args)
            (QUOTE
             nil)
-           (LAMBDA
-            nil)
+;;           (LAMBDA
+;;            nil)
            ((RETURN-FROM GO CATCH THROW UNWIND-PROTECT BLOCK)
             t)
            (t
