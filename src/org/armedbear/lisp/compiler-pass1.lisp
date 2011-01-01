@@ -434,6 +434,8 @@ where each of the vars returned is a list with these elements:
 		       (,var (make-variable :name (check-name ,name)
                                             :initform ,initform
                                             :block ,block)))
+		  (when (neq ,initform (cadr ,varspec))
+		    (setf (cadr ,varspec) ,initform))
 		  (push ,var ,variables-var)
 		  ,@body1))
 	       (t
