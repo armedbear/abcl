@@ -183,7 +183,7 @@ public final class make_array extends Primitive
         else if (upgradedType == NIL)
           {
             v = new NilVector(size);
-            defaultInitialElement = NIL;
+            defaultInitialElement = null;
           }
         else
           {
@@ -219,7 +219,8 @@ public final class make_array extends Primitive
           }
         else
           {
-            v.fill(defaultInitialElement);
+            if (defaultInitialElement != null)
+              v.fill(defaultInitialElement);
           }
         if (fillPointer != NIL)
           v.setFillPointer(fillPointer);
