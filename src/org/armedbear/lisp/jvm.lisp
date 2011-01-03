@@ -371,7 +371,7 @@ of the compilands being processed (p1: so far; p2: in total).")
               ;; which itself isn't being compiled
   (references-allowed-p t) ;;whether a reference to the function CAN be captured
   (references-needed-p nil) ;;whether a reference to the function NEEDS to be
-			    ;;captured, because the function name is used in a
+                            ;;captured, because the function name is used in a
                             ;;(function ...) form. Obviously implies
                             ;;references-allowed-p.
   )
@@ -386,6 +386,17 @@ of the compilands being processed (p1: so far; p2: in total).")
 
 (defvar *using-arg-array* nil)
 (defvar *hairy-arglist-p* nil)
+
+
+(defvar *block* nil
+  "The innermost block applicable to the current lexical environment.")
+(defvar *blocks* ()
+  "The list of blocks in effect in the current lexical environment.
+
+The top node does not need to be equal to the value of `*block*`. E.g.
+when processing the bindings of a LET form, `*block*` is bound to the node
+of that LET, while the block is not considered 'in effect': that only happens
+until the body is being processed.")
 
 (defstruct node
   form
@@ -415,7 +426,7 @@ if that parent belongs to the same compiland."
 
 (defstruct (tagbody-node (:conc-name tagbody-)
                          (:include control-transferring-node)
-			 (:constructor %make-tagbody-node ()))
+                         (:constructor %make-tagbody-node ()))
   ;; True if a tag in this tagbody is the target of a non-local GO.
   non-local-go-p
   ;; Tags in the tagbody form; a list of tag structures
@@ -427,12 +438,12 @@ if that parent belongs to the same compiland."
 (defun make-tagbody-node ()
   (let ((block (%make-tagbody-node)))
     (push block (compiland-blocks *current-compiland*))
-    (add-node-child (car *blocks*) block)
+    (add-node-child *block* block)
     block))
 
 (defstruct (catch-node (:conc-name catch-)
                        (:include control-transferring-node)
-		       (:constructor %make-catch-node ()))
+                       (:constructor %make-catch-node ()))
   ;; The catch tag-form is evaluated, meaning we
   ;; have no predefined value to store here
   )
@@ -440,7 +451,7 @@ if that parent belongs to the same compiland."
 (defun make-catch-node ()
   (let ((block (%make-catch-node)))
     (push block (compiland-blocks *current-compiland*))
-    (add-node-child (car *blocks*) block)
+    (add-node-child *block* block)
     block))
 
 (defstruct (block-node (:conc-name block-)
@@ -458,7 +469,7 @@ if that parent belongs to the same compiland."
 (defun make-block-node (name)
   (let ((block (%make-block-node name)))
     (push block (compiland-blocks *current-compiland*))
-    (add-node-child (car *blocks*) block)
+    (add-node-child *block* block)
     block))
 
 ;; binding blocks: LET, LET*, FLET, LABELS, M-V-B, PROGV, LOCALLY
@@ -477,47 +488,47 @@ if that parent belongs to the same compiland."
 
 (defstruct (let/let*-node (:conc-name let-)
                           (:include binding-node)
-			  (:constructor %make-let/let*-node ())))
+                          (:constructor %make-let/let*-node ())))
 (defknown make-let/let*-node () t)
 (defun make-let/let*-node ()
   (let ((block (%make-let/let*-node)))
     (push block (compiland-blocks *current-compiland*))
-    (add-node-child (car *blocks*) block)
+    (add-node-child *block* block)
     block))
 
 (defstruct (flet-node (:conc-name flet-)
                       (:include binding-node)
-		      (:constructor %make-flet-node ())))
+                      (:constructor %make-flet-node ())))
 (defknown make-flet-node () t)
 (defun make-flet-node ()
   (let ((block (%make-flet-node)))
     (push block (compiland-blocks *current-compiland*))
-    (add-node-child (car *blocks*) block)
+    (add-node-child *block* block)
     block))
 
 (defstruct (labels-node (:conc-name labels-)
                         (:include binding-node)
-			(:constructor %make-labels-node ())))
+                        (:constructor %make-labels-node ())))
 (defknown make-labels-node () t)
 (defun make-labels-node ()
   (let ((block (%make-labels-node)))
     (push block (compiland-blocks *current-compiland*))
-    (add-node-child (car *blocks*) block)
+    (add-node-child *block* block)
     block))
 
 (defstruct (m-v-b-node (:conc-name m-v-b-)
                        (:include binding-node)
-		       (:constructor %make-m-v-b-node ())))
+                       (:constructor %make-m-v-b-node ())))
 (defknown make-m-v-b-node () t)
 (defun make-m-v-b-node ()
   (let ((block (%make-m-v-b-node)))
     (push block (compiland-blocks *current-compiland*))
-    (add-node-child (car *blocks*) block)
+    (add-node-child *block* block)
     block))
 
 (defstruct (progv-node (:conc-name progv-)
                        (:include binding-node)
-		       (:constructor %make-progv-node ())))
+                       (:constructor %make-progv-node ())))
 (defknown make-progv-node () t)
 (defun make-progv-node ()
   (let ((block (%make-progv-node)))
@@ -526,47 +537,44 @@ if that parent belongs to the same compiland."
 
 (defstruct (locally-node (:conc-name locally-)
                          (:include binding-node)
-			 (:constructor %make-locally-node ())))
+                         (:constructor %make-locally-node ())))
 (defknown make-locally-node () t)
 (defun make-locally-node ()
   (let ((block (%make-locally-node)))
     (push block (compiland-blocks *current-compiland*))
-    (add-node-child (car *blocks*) block)
+    (add-node-child *block* block)
     block))
 
 ;; blocks requiring non-local exits: UNWIND-PROTECT, SYS:SYNCHRONIZED-ON
 
 (defstruct (protected-node (:include node)
-			   (:constructor %make-protected-node ())))
+                           (:constructor %make-protected-node ())))
 (defknown make-protected-node () t)
 (defun make-protected-node ()
   (let ((block (%make-protected-node)))
     (push block (compiland-blocks *current-compiland*))
-    (add-node-child (car *blocks*) block)
+    (add-node-child *block* block)
     block))
 
 (defstruct (unwind-protect-node (:conc-name unwind-protect-)
                                 (:include protected-node)
-				(:constructor %make-unwind-protect-node ())))
+                                (:constructor %make-unwind-protect-node ())))
 (defknown make-unwind-protect-node () t)
 (defun make-unwind-protect-node ()
   (let ((block (%make-unwind-protect-node)))
     (push block (compiland-blocks *current-compiland*))
-    (add-node-child (car *blocks*) block)
+    (add-node-child *block* block)
     block))
 
 (defstruct (synchronized-node (:conc-name synchronized-)
                               (:include protected-node)
-			      (:constructor %make-synchronized-node ())))
+                              (:constructor %make-synchronized-node ())))
 (defknown make-synchronized-node () t)
 (defun make-synchronized-node ()
   (let ((block (%make-synchronized-node)))
     (push block (compiland-blocks *current-compiland*))
-    (add-node-child (car *blocks*) block)
+    (add-node-child *block* block)
     block))
-
-
-(defvar *blocks* ())
 
 (defun find-block (name)
   (dolist (block *blocks*)
@@ -574,13 +582,50 @@ if that parent belongs to the same compiland."
                (eq name (block-name block)))
       (return block))))
 
-(defun some-nested-block (block predicate)
-  "Applies `predicate` recursively to the children of `block`,
-until predicate returns non-NIL, returning that value."
-  (some #'(lambda (b)
-	    (or (funcall predicate b)
-		(some-nested-block b predicate)))
-	(node-children block)))
+(defun %find-enclosed-blocks (form)
+  "Helper function for `find-enclosed-blocks`, implementing the actual
+algorithm specified there."
+  (cond
+   ((node-p form) (list form))
+   ((atom form) nil)
+   (t
+    ;; We can't use MAPCAN or DOLIST here: they'll choke on dotted lists
+    (do* ((tail form (cdr tail))
+          blocks)
+         ((null tail) blocks)
+      (setf blocks
+            (nconc (%find-enclosed-blocks (if (consp tail)
+                                              (car tail) tail))
+                   blocks))
+      (when (not (listp tail))
+        (return blocks))))))
+
+(defun find-enclosed-blocks (form)
+  "Returns the immediate enclosed blocks by searching the form's subforms.
+
+More deeply nested blocks can be reached through the `node-children`
+field of the immediate enclosed blocks."
+  (when *blocks*
+    ;; when the innermost enclosing block doesn't have node-children,
+    ;;  there's really nothing to search for.
+    (when (null (node-children (car *blocks*)))
+      (return-from find-enclosed-blocks)))
+
+  (%find-enclosed-blocks form))
+    
+
+(defun some-nested-block (predicate blocks)
+  "Applies `predicate` recursively to the `blocks` and its children,
+until predicate returns non-NIL, returning that value.
+
+`blocks` may be a single block or a list of blocks."
+  (when blocks
+    (some #'(lambda (b)
+              (or (funcall predicate b)
+                  (some-nested-block predicate (node-children b))))
+          (if (listp blocks)
+              blocks
+            (list blocks)))))
 
 (defknown node-constant-p (t) boolean)
 (defun node-constant-p (object)
@@ -604,6 +649,11 @@ than just restore the lastSpecialBinding (= dynamic environment).
   (or (unwind-protect-node-p object)
       (catch-node-p object)
       (synchronized-node-p object)))
+
+(defun block-opstack-unsafe-p (block)
+  (or (when (tagbody-node-p block) (tagbody-non-local-go-p block))
+      (when (block-node-p block) (block-non-local-return-p block))
+      (catch-node-p block)))
 
 (defknown block-creates-runtime-bindings-p (t) boolean)
 (defun block-creates-runtime-bindings-p (block)
