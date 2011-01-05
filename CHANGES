@@ -6,23 +6,24 @@ svn://common-lisp.net/project/armedbear/svn/tags/0.24.0/abcl
 Features
 --------
 
-* [svn r13087] Upgraded to ASDF-2.011
+* [svn r130103-r13107] Implemented JNULL_REF_P to distinguish a
+  JAVA-OBJECT which contains a Java "null" from the Lisp NIL.
+
+* [svn r13102] More type-conversion helpers in JAVA package:
+  LIST-FROM-JARRAY, VECTOR-FROM-JARRAY, and LIST-FROM-JENUMERATION.
 
 * [svn r13078] JVM::MAKE-CLASS-INTERFACE-FILE provides an interface
   for the creation of Java interfaces as serialized by the new
   classwriter code.  An example of use can be found in
   "examples/misc/dynamic-interfaces.lisp".
 
-* [svn r13102] More type-conversion helpers in JAVA package:
-  LIST-FROM-JARRAY, VECTOR-FROM-JARRAY, and LIST-FROM-JENUMERATION.
+* [svn r13087] Upgraded to ASDF-2.012
 
-* [svn r130103-r13107] Implemented JNULL_REF_P to distinguish a
-  JAVA-OBJECT which contains a Java "null" from the Lisp NIL.
 
 Fixes
 -----
 
-* [svn 13117][ticket #117] Fix stack inconsistency error.
+* [svn r13117][ticket #117] Fix stack inconsistency error.
 
 * [svn r13018][ticket #114] Fix strange backtrace growth.
 
@@ -30,38 +31,39 @@ Fixes
   "unpacked JAR" situation found by running ABCL in the Glassfish v3
   servlet container.
 
-* [svn r13088] Fix algorithim error in writing byte sequences via
-  RandomAccessCharacterFile.  Found and fixed by David Kirkman.
+* [svn r13096] For arrays, add initialization with the default value
+  of the element type if neither INITIAL-ELEMENT nor INITIAL-CONTENT
+  have been specified.  Found by: dmalves_ (freenode irc nick).
+
+* [svn r13094] Eliminate flushes after every character in
+  javax.scripting support.
 
 * [svn r13090] Make --batch exit, use Lisp.exit() in places where
   applicable so that the streams are flushed, hence allowing --eval
   output to be flushed.
 
-* [svn r13094] Eliminate flushes after every character in
-  javax.scripting support.
+* [svn r13088] Fix algorithim error in writing byte sequences via
+  RandomAccessCharacterFile.  Found and fixed by David Kirkman.
 
-* [svn r13096] For arrays, add initialization with the default value
-  of the element type if neither INITIAL-ELEMENT nor INITIAL-CONTENT
-  have been specified.  Found by: dmalves_ (freenode irc nick).
 
 Changes
 -------
 
-* [svn r13091-2] Better error reporting for UnhandledCondition thrown
-  from the Interpreter, storing the originating Java error in the
-  "cause" field if the cause is a subclass of JAVA_EXCEPTION.
-
-* [svn r13097-13100] Slight refactoring of PATHNAME code, further
-  specifying URI escaping rules.
-
-* [svn r13101] Reduced verbosity of the AbclScriptEngine.
+* [svn r13120] Register each compiler node with its parent.
 
 * [svn r13111] Added a "tools" directory available in SVN repository
   to contain tools for developing ABCL in various states.  The first
   inhabitant is 'code-grapher.lisp' that provides a prototype to
   diagram a JVM instruction sequence via graphviz.
 
-* [svn r13120] Register each compiler node with its parent.
+* [svn r13101] Reduced verbosity of the AbclScriptEngine.
+
+* [svn r13097-13100] Slight refactoring of PATHNAME code, further
+  specifying URI escaping rules.
+
+* [svn r13091-2] Better error reporting for UnhandledCondition thrown
+  from the Interpreter, storing the originating Java error in the
+  "cause" field if the cause is a subclass of JAVA_EXCEPTION.
 
 
 Version 0.23.1
