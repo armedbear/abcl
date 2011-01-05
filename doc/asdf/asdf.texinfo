@@ -1790,7 +1790,10 @@ but will take precedence over the new mechanism if you do use it.
 
 @section Configuration DSL
 
-Here is the grammar of the s-expression (SEXP) DSL for source-registry configuration:
+Here is the grammar of the s-expression (SEXP) DSL for source-registry
+configuration:
+
+@c FIXME: This is too wide for happy compilation into pdf.
 
 @example
 ;; A configuration is a single SEXP starting with keyword :source-registry
@@ -1804,6 +1807,11 @@ DIRECTIVE :=
     ;; exactly one of either of these:
     :inherit-configuration | ; splices inherited configuration (often specified last)
     :ignore-inherited-configuration | ; drop inherited configuration (specified anywhere)
+
+    ;; forward compatibility directive (since ASDF 2.011.4), useful when
+    ;; you want to use new configuration features but have to bootstrap a
+    ;; the newer required ASDF from an older release that doesn't sport said features:
+    :ignore-invalid-entries | ; drops subsequent invalid entries instead of erroring out
 
     ;; add a single directory to be scanned (no recursion)
     (:directory DIRECTORY-PATHNAME-DESIGNATOR) |
@@ -1837,12 +1845,14 @@ ABSOLUTE-COMPONENT-DESIGNATOR :=
     PATHNAME | ;; pathname (better be an absolute path, or bust)
     :HOME | ;; designates the user-homedir-pathname ~/
     :USER-CACHE | ;; designates the default location for the user cache
-    :SYSTEM-CACHE ;; designates the default location for the system cache
+    :SYSTEM-CACHE | ;; designates the default location for the system cache
+    :HERE  ;; designates the location of the configuration file
+           ;; (or *default-pathname-defaults*, if invoked interactively)
 
 RELATIVE-COMPONENT-DESIGNATOR :=
     STRING | ;; namestring (directory assumed where applicable)
     PATHNAME | ;; pathname
-    :IMPLEMENTATION | ;; a directory based on implementation, e.g. sbcl-1.0.32.30-linux-x86-64
+    :IMPLEMENTATION | ;; a directory based on implementation, e.g. sbcl-1.0.45-linux-amd64
     :IMPLEMENTATION-TYPE | ;; a directory based on lisp-implementation-type only, e.g. sbcl
     :UID | ;; current UID -- not available on Windows
     :USER ;; current USER name -- NOT IMPLEMENTED(!)
@@ -1863,7 +1873,7 @@ once contained:
 
 @section Configuration Directories
 
-Configuration directories consist in files each contains
+Configuration directories consist in files each containing
 a list of directives without any enclosing @code{(:source-registry ...)} form.
 The files will be sorted by namestring as if by @code{string<} and
 the lists of directives of these files with be concatenated in order.
@@ -1897,6 +1907,50 @@ alone in its directory with the following contents:
 (:tree "/home/fare/cl/")
 @end example
 
+@subsection The :here directive
+
+The @code{:here} directive is an absolute pathname designator that
+refers to the directory containing the configuration file currently
+being processed.
+
+The @code{:here} directive is intended to simplify the delivery of
+complex CL systems, and for easy configuration of projects shared through
+revision control systems, in accordance with our design principle that
+each participant should be able to provide all and only the information
+available to him or her.
+
+Consider a person X who has set up the source code repository for a
+complex project with a master directory @file{dir/}.  Ordinarily, one
+might simply have the user add a directive that would look something
+like this:
+@example
+   (:tree  "path/to/dir")
+@end example
+But what if X knows that there are very large subtrees
+under dir that are filled with, e.g., Java source code, image files for
+icons, etc.?  All of the asdf system definitions are contained in the
+subdirectories @file{dir/src/lisp/} and @file{dir/extlib/lisp/}, and
+these are the only directories that should be searched.
+
+In this case, X can put into @file{dir/} a file @file{asdf.conf} that
+contains the following:
+@example
+(:source-registry
+   (:tree (:here "src/lisp/"))
+   (:tree (:here "extlib/lisp"))
+   (:directory (:here "outlier/")))
+@end example
+
+Then when someone else (call her Y) checks out a copy of this
+repository, she need only add
+@example
+(:include "/path/to/my/checkout/directory/asdf.conf")
+@end example
+to one of her previously-existing asdf source location configuration
+files, or invoke @code{initialize-source-registry} with a configuration
+form containing that s-expression.  ASDF will find the .conf file that X
+has provided, and then set up source locations within the working
+directory according to X's (relative) instructions.
 
 @section Shell-friendly syntax for configuration
 
@@ -2190,10 +2244,8 @@ output files and find they need to get familiar with output-translations first.
 
 
 @section Backward Compatibility
+@cindex ASDF-BINARY-LOCATIONS compatibility
 
-@c FIXME -- I think we should provide an easy way
-@c to get behavior equivalent to A-B-L and
-@c I will propose a technique for doing this.
 
 We purposefully do NOT provide backward compatibility with earlier versions of
 @code{ASDF-Binary-Locations} (8 Sept 2009),
@@ -2221,7 +2273,7 @@ as configured by the system distributor, or by default.
 Nevertheless, if you are a fan of @code{ASDF-Binary-Locations},
 we provide a limited emulation mode:
 
-@defun asdf:enable-asdf-binary-locations-compatibility @&key centralize-lisp-binaries default-toplevel-directory include-per-user-information map-all-source-files source-to-target-mappings
+@defun enable-asdf-binary-locations-compatibility @&key centralize-lisp-binaries default-toplevel-directory include-per-user-information map-all-source-files source-to-target-mappings
 This function will initialize the new @code{asdf-output-translations} facility in a way
 that emulates the behavior of the old @code{ASDF-Binary-Locations} facility.
 Where you would previously set global variables
@@ -2264,10 +2316,15 @@ DIRECTIVE :=
     :inherit-configuration | ; splices inherited configuration (often specified last)
     :ignore-inherited-configuration | ; drop inherited configuration (specified anywhere)
 
+    ;; forward compatibility directive (since ASDF 2.011.4), useful when
+    ;; you want to use new configuration features but have to bootstrap a
+    ;; the newer required ASDF from an older release that doesn't sport said features:
+    :ignore-invalid-entries | ; drops subsequent invalid entries instead of erroring out
+
     ;; include a configuration file or directory
     (:include PATHNAME-DESIGNATOR) |
 
-    ;; enable global cache in ~/.common-lisp/cache/sbcl-1.0.35-x86-64/ or something.
+    ;; enable global cache in ~/.common-lisp/cache/sbcl-1.0.45-linux-amd64/ or something.
     :enable-user-cache |
     ;; Disable global cache. Map / to /
     :disable-cache |
@@ -2295,8 +2352,11 @@ ABSOLUTE-COMPONENT-DESIGNATOR :=
 RELATIVE-COMPONENT-DESIGNATOR :=
     STRING | ;; namestring, directory is assumed. If the last component, /**/*.* is added
     PATHNAME | ;; pathname unless last component, directory is assumed.
-    :IMPLEMENTATION | ;; a directory based on implementation, e.g. sbcl-1.0.32.30-linux-x86-64
+    :IMPLEMENTATION | ;; a directory based on implementation, e.g. sbcl-1.0.45-linux-amd64
     :IMPLEMENTATION-TYPE | ;; a directory based on lisp-implementation-type only, e.g. sbcl
+    :*/ | ;; any direct subdirectory (since ASDF 2.011.4)
+    :**/ | ;; any recursively inferior subdirectory (since ASDF 2.011.4)
+    :*.*.* | ;; any file (since ASDF 2.011.4)
     :UID | ;; current UID -- not available on Windows
     :USER ;; current USER name -- NOT IMPLEMENTED(!)
 
@@ -2332,8 +2392,26 @@ in the beginning of the directory component of the source pathname
 before it is translated.
 
 When the second designator is @code{t}, the mapping is the identity.
-When the second designator starts with @code{root},
+When the second designator starts with @code{:root},
 the mapping preserves the host and device of the original pathname.
+Notably, this allows you to map files
+to a subdirectory of the whichever directory the file is in.
+Though the syntax is not quite as easy to use as we'd like,
+you can have an (source destination) mapping entry such as follows
+in your configuration file,
+or you may use @code{enable-asdf-binary-locations-compatibility}
+with @code{:centralize-lisp-binaries nil}
+which will do the same thing internally for you:
+@verbatim
+  #.(let ((wild-subdir (make-pathname :directory '(:relative :wild-inferiors)))
+          (wild-file (make-pathname :name :wild :version :wild :type :wild)))
+     `((:root ,wild-subdir ,wild-file) ;; Or using the implicit wildcard, just :root
+       (:root ,wild-subdir :implementation ,wild-file)))
+@end verbatim
+Starting with ASDF 2.011.4, you can use the simpler:
+	@code{`(:root (:root :**/ :implementation :*.*.*))}
+
+
 
 @code{:include} statements cause the search to recurse with the path specifications
 from the file specified.
@@ -2532,7 +2610,7 @@ But so are good design ideas and elegant implementation tricks.
 
 @c @itemize
 @c @item
-@c SBCL, version 1.0 on Mac OS X for intel: @code{sbcl-1.0-darwin-x86}
+@c SBCL, version 1.0.45 on Mac OS X for Intel: @code{sbcl-1.0.45-darwin-x86}
 
 @c @item
 @c Franz Allegro, version 8.0, ANSI Common Lisp: @code{allegro-8.0a-macosx-x86}
@@ -2649,11 +2727,13 @@ look at the beginning of @file{asdf.lisp} to see what it does.
 @chapter Getting the latest version
 
 Decide which version you want.
-HEAD is the newest version and usually OK, whereas
-RELEASE is for cautious people
-(e.g. who already have systems using ASDF that they don't want broken),
-a slightly older version about which none of the HEAD users have complained.
-There is also a STABLE version, which is earlier than release.
+The @code{master} branch is where development happens;
+its @code{HEAD} is usually OK, including the latest fixes and portability tweaks,
+but an occasional regression may happen despite our (limited) test suite.
+
+The @code{release} branch is what cautious people should be using;
+it has usually been tested more, and releases are cut at a point
+where there isn't any known unresolved issue.
 
 You may get the ASDF source repository using git:
 @kbd{git clone git://common-lisp.net/projects/asdf/asdf.git}
@@ -2921,7 +3001,7 @@ or to override its configuration.
 The new ASDF output translations are incompatible with ASDF-Binary-Locations.
 They replace A-B-L, and there is compatibility mode to emulate
 your previous A-B-L configuration.
-See @code{asdf:enable-asdf-binary-locations-compatibility} in
+See @code{enable-asdf-binary-locations-compatibility} in
 @pxref{Controlling where ASDF saves compiled files,,Backward Compatibility}.
 But thou shall not load ABL on top of ASDF 2.
 
@@ -2999,7 +3079,7 @@ In the meantime, you can load @file{asdf.lisp} directly.
 Starting with current candidate releases of ASDF 2,
 it should always be a good time to upgrade to a recent ASDF.
 You may consult with the maintainer for which specific version they recommend,
-but the latest RELEASE should be correct.
+but the latest @code{release} should be correct.
 We trust you to thoroughly test it with your implementation before you release it.
 If there are any issues with the current release,
 it's a bug that you should report upstream and that we will fix ASAP.
