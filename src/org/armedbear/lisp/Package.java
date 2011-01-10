@@ -161,6 +161,13 @@ public final class Package extends LispObject implements java.io.Serializable
     public final synchronized boolean delete()
     {
         if (name != null) {
+            LispObject usedPackages = useList;
+            while (usedPackages != NIL) {
+                Package pkg = (Package) usedPackages.car();
+                unusePackage(pkg);
+                usedPackages = usedPackages.cdr();
+            }
+
             Packages.deletePackage(this);
 
             makeSymbolsUninterned(internalSymbols);
