@@ -368,10 +368,8 @@
   ;; however, binding *load-truename* isn't fully compliant, I think.
   (when compile-time-too
     (let ((*load-truename* *output-file-pathname*)
-	  (*fasl-loader* (make-fasl-class-loader
-			  *class-number*
-			  (concatenate 'string "org.armedbear.lisp." (base-classname))
-			  nil)))
+          (*fasl-loader* (make-fasl-class-loader
+                          (concatenate 'string "org.armedbear.lisp." (base-classname)))))
       (eval form))))
 
 (declaim (ftype (function (t) t) convert-ensure-method))
@@ -611,10 +609,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
               (%stream-terpri out)
 
               (when (> *class-number* 0)
-                (generate-loader-function)
                 (write (list 'setq '*fasl-loader*
                              `(sys::make-fasl-class-loader
-                               ,*class-number*
                                ,(concatenate 'string "org.armedbear.lisp." (base-classname)))) :stream out))
               (%stream-terpri out))
 
@@ -660,62 +656,6 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
           (format t "~&; Wrote ~A (~A seconds)~%"
                   (namestring output-file) elapsed))))
     (values (truename output-file) warnings-p failure-p)))
-
-(defmacro ncase (expr min max &rest clauses)
-  "A CASE where all test clauses are numbers ranging from a minimum to a maximum."
-  ;;Expr is subject to multiple evaluation, but since we only use ncase for
-  ;;fn-index below, let's ignore it.
-  (let* ((half (floor (/ (- max min) 2)))
-	 (middle (+ min half)))
-    (if (> (- max min) 10)
-	`(if (< ,expr ,middle)
-	     (ncase ,expr ,min ,middle ,@(subseq clauses 0 half))
-	     (ncase ,expr ,middle ,max ,@(subseq clauses half)))
-	`(case ,expr ,@clauses))))
-
-(defconstant +fasl-classloader+
-  (jvm::make-jvm-class-name "org.armedbear.lisp.FaslClassLoader"))
-
-(defun generate-loader-function ()
-  (let* ((basename (base-classname))
-	 (expr `(lambda (fasl-loader fn-index)
-                  (declare (type (integer 0 256000) fn-index))
-                  (identity fasl-loader) ;;to avoid unused arg
-                  (jvm::with-inline-code ()
-                    (jvm::emit 'jvm::aload 1)
-                    (jvm::emit-invokevirtual jvm::+lisp-object+ "javaInstance"
-                                             nil jvm::+java-object+)
-                    (jvm::emit-checkcast +fasl-classloader+)
-                    (jvm::emit 'jvm::iload 2))
-		  (ncase fn-index 0 ,(1- *class-number*)
-		    ,@(loop
-			 :for i :from 1 :to *class-number*
-			 :collect
-			 (let* ((class (%format nil "org/armedbear/lisp/~A_~A"
-                                                basename i))
-                                (class-name (jvm::make-jvm-class-name class)))
-                           `(,(1- i)
-                              (jvm::with-inline-code ()
-                                (jvm::emit-new ,class-name)
-                                (jvm::emit 'jvm::dup)
-                                (jvm::emit-invokespecial-init ,class-name '())
-                                (jvm::emit-invokevirtual +fasl-classloader+
-                                                         "putFunction"
-                                                         (list :int jvm::+lisp-object+) jvm::+lisp-object+)
-				(jvm::emit 'jvm::pop))
-			      t))))))
-	 (classname (fasl-loader-classname))
-	 (classfile (namestring (merge-pathnames (make-pathname :name classname :type "cls")
-						 *output-file-pathname*))))
-    (jvm::with-saved-compiler-policy
-	(jvm::with-file-compilation
-	    (with-open-file
-		(f classfile
-		   :direction :output
-		   :element-type '(unsigned-byte 8)
-		   :if-exists :supersede)
-	      (jvm:compile-defun nil expr *compile-file-environment*
-				 classfile f nil))))))
 
 (defun compile-file-if-needed (input-file &rest allargs &key force-compile
                                &allow-other-keys)

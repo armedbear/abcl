@@ -39,22 +39,12 @@ import java.util.*;
 
 public class FaslClassLoader extends JavaClassLoader {
 
-    private final LispObject[] functions;
     private String baseName;
     private LispObject loader; //The function used to load FASL functions by number
     private final JavaObject boxedThis = new JavaObject(this);
-    
-    public FaslClassLoader(int functionCount, String baseName, boolean useLoaderFunction) {
-	functions = new LispObject[functionCount];
-	this.baseName = baseName;
-	if(useLoaderFunction) {
-	    try {
-		this.loader = (LispObject) loadClass(baseName + "_0").newInstance();
-	    } catch(Exception e) {
-		//e.printStackTrace();
-		Debug.trace("useLoaderFunction = true but couldn't fully init FASL loader ("+baseName+"), will fall back to reflection!");
-	    }
-	}
+
+    public FaslClassLoader(String baseName) {
+        this.baseName = baseName;
     }
 
     @Override
@@ -90,81 +80,54 @@ public class FaslClassLoader extends JavaClassLoader {
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-	try {
-	    byte[] b = getFunctionClassBytes(name);
-	    return defineClass(name, b, 0, b.length);
-	} catch(Throwable e) { //TODO handle this better, readFunctionBytes uses Debug.assert() but should return null
-	    e.printStackTrace();
-	    if(e instanceof ControlTransfer) { throw (ControlTransfer) e; }
-	    throw new ClassNotFoundException("Function class not found: " + name, e);
-	}
+        try {
+            byte[] b = getFunctionClassBytes(name);
+            return defineClass(name, b, 0, b.length);
+        } catch(Throwable e) { //TODO handle this better, readFunctionBytes uses Debug.assert() but should return null
+            e.printStackTrace();
+            if(e instanceof ControlTransfer) { throw (ControlTransfer) e; }
+            throw new ClassNotFoundException("Function class not found: " + name, e);
+        }
     }
 
     public byte[] getFunctionClassBytes(String name) {
-	Pathname pathname = new Pathname(name.substring("org/armedbear/lisp/".length()) + ".cls");
-	return readFunctionBytes(pathname);
+        Pathname pathname = new Pathname(name.substring("org/armedbear/lisp/".length()) + ".cls");
+        return readFunctionBytes(pathname);
     }
     
     public byte[] getFunctionClassBytes(Class<?> functionClass) {
-	return getFunctionClassBytes(functionClass.getName());
+        return getFunctionClassBytes(functionClass.getName());
     }
 
     public byte[] getFunctionClassBytes(Function f) {
-	byte[] b = getFunctionClassBytes(f.getClass());
-	f.setClassBytes(b);
-	return b;
+        byte[] b = getFunctionClassBytes(f.getClass());
+        f.setClassBytes(b);
+        return b;
     }
 
     public LispObject loadFunction(int fnNumber) {
-	try {
-	    //Function name is fnIndex + 1
-	    LispObject o = (LispObject) loadClass(baseName + "_" + (fnNumber + 1)).newInstance();
-	    functions[fnNumber] = o;
-	    return o;
-	} catch(Exception e) {
-	    e.printStackTrace();
-	    if(e instanceof ControlTransfer) { throw (ControlTransfer) e; }
-	    throw new RuntimeException(e);
-	}
-    }
-    
-    public LispObject getFunction(int fnNumber) {
-	if(fnNumber >= functions.length) {
-	    return error(new LispError("Compiled function not found: " + baseName + "_" + (fnNumber + 1) + " " + Symbol.LOAD_TRUENAME.symbolValue()));
-	}
-	LispObject o = functions[fnNumber];
-	if(o == null) {
-	    if(loader != null) {
-		loader.execute(boxedThis, Fixnum.getInstance(fnNumber));
-		return functions[fnNumber];
-	    } else { //Fallback to reflection
-		return loadFunction(fnNumber);
-	    }
-	} else {
-	    return o;
-	}
-    }
-
-    public LispObject putFunction(int fnNumber, LispObject fn) {
-	functions[fnNumber] = fn;
-	return fn;
+        try {
+            //Function name is fnIndex + 1
+            LispObject o = (LispObject) loadClass(baseName + "_" + (fnNumber + 1)).newInstance();
+            return o;
+        } catch(Exception e) {
+            if(e instanceof ControlTransfer) { throw (ControlTransfer) e; }
+            Debug.trace(e);
+            return error(new LispError("Compiled function can't be loaded: " + baseName + "_" + (fnNumber + 1) + " " + Symbol.LOAD_TRUENAME.symbolValue()));
+        }
     }
 
     private static final Primitive MAKE_FASL_CLASS_LOADER = new pf_make_fasl_class_loader();
     private static final class pf_make_fasl_class_loader extends Primitive {
-	pf_make_fasl_class_loader() {
-            super("make-fasl-class-loader", PACKAGE_SYS, false, "function-count base-name");
+        pf_make_fasl_class_loader() {
+            super("make-fasl-class-loader", PACKAGE_SYS, false, "base-name");
         }
 
         @Override
-        public LispObject execute(LispObject functionCount, LispObject baseName) {
-            return execute(functionCount, baseName, T);
+        public LispObject execute(LispObject baseName) {
+            return new FaslClassLoader(baseName.getStringValue()).boxedThis;
         }
 
-        @Override
-        public LispObject execute(LispObject functionCount, LispObject baseName, LispObject init) {
-            return new FaslClassLoader(functionCount.intValue(), baseName.getStringValue(), init != NIL).boxedThis;
-        }
     };
 
     private static final Primitive GET_FASL_FUNCTION = new pf_get_fasl_function();
@@ -176,7 +139,7 @@ public class FaslClassLoader extends JavaClassLoader {
         @Override
         public LispObject execute(LispObject loader, LispObject fnNumber) {
             FaslClassLoader l = (FaslClassLoader) loader.javaInstance(FaslClassLoader.class);
-	    return l.getFunction(fnNumber.intValue());
+	    return l.loadFunction(fnNumber.intValue());
         }
     };
 
