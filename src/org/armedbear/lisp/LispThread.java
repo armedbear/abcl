@@ -342,8 +342,14 @@ public final class LispThread extends LispObject
      * SpecialBinding object, but the value field of it is null, that
      * indicates an "UNBOUND VARIABLE" situation.
      */
-    final SpecialBinding[] specials
+    SpecialBinding[] specials
         = new SpecialBinding[Integer.valueOf(System.getProperty("abcl.specials.initialSize","4096"))+1];
+
+    /** The number of slots to grow the specials table in
+     * case of insufficient storage.
+     */
+    final int specialsDelta
+        = Integer.valueOf(System.getProperty("abcl.specials.grow.delta","1024"));
 
     /** This variable points to the head of a linked list of saved
      * special bindings. Its main purpose is to allow a mark/reset
@@ -382,7 +388,7 @@ public final class LispThread extends LispObject
     /** Assigns a specials array index number to the symbol,
      * if it doesn't already have one.
      */
-    private static final void assignSpecialIndex(Symbol sym)
+    private void assignSpecialIndex(Symbol sym)
     {
         if (sym.specialIndex != 0)
             return;
@@ -391,6 +397,13 @@ public final class LispThread extends LispObject
             // Don't use an atomic access: we'll be swapping values only once.
             if (sym.specialIndex == 0) {
                 Integer next = freeSpecialIndices.poll();
+                if (next == null
+                        && specials.length < lastSpecial.get()
+                        && null == System.getProperty("abcl.specials.grow.slowly")) {
+                    // free slots are exhausted; in the middle and at the end.
+                    System.gc();
+                    next = freeSpecialIndices.poll();
+                }
                 if (next == null)
                     sym.specialIndex = lastSpecial.incrementAndGet();
                 else
@@ -429,12 +442,36 @@ public final class LispThread extends LispObject
         }
     }
 
+    private void growSpecials() {
+        SpecialBinding[] newSpecials
+                = new SpecialBinding[specials.length + specialsDelta];
+        System.arraycopy(specials, 0, newSpecials, 0, specials.length);
+        specials = newSpecials;
+    }
+
+    private SpecialBinding ensureSpecialBinding(int idx) {
+        SpecialBinding binding;
+        boolean assigned;
+        do {
+            try {
+                binding = specials[idx];
+                assigned = true;
+            }
+            catch (ArrayIndexOutOfBoundsException e) {
+                assigned = false;
+                binding = null;  // suppresses 'unassigned' error
+                growSpecials();
+            }
+        } while (! assigned);
+        return binding;
+    }
+
     public final SpecialBinding bindSpecial(Symbol name, LispObject value)
     {
         int idx;
 
         assignSpecialIndex(name);
-        SpecialBinding binding = specials[idx = name.specialIndex];
+        SpecialBinding binding = ensureSpecialBinding(idx = name.specialIndex);
         savedSpecials = new SpecialBindingsMark(idx, binding, savedSpecials);
         return specials[idx] = new SpecialBinding(idx, value);
     }
@@ -444,7 +481,7 @@ public final class LispThread extends LispObject
         int idx;
 
         assignSpecialIndex(name);
-        SpecialBinding binding = specials[idx = name.specialIndex];
+        SpecialBinding binding = ensureSpecialBinding(idx = name.specialIndex);
         savedSpecials = new SpecialBindingsMark(idx, binding, savedSpecials);
         return specials[idx]
             = new SpecialBinding(idx,
@@ -465,18 +502,18 @@ public final class LispThread extends LispObject
      */
     public final LispObject lookupSpecial(Symbol name)
     {
-        SpecialBinding binding = specials[name.specialIndex];
+        SpecialBinding binding = ensureSpecialBinding(name.specialIndex);
         return (binding == null) ? null : binding.value;
     }
 
     public final SpecialBinding getSpecialBinding(Symbol name)
     {
-        return specials[name.specialIndex];
+        return ensureSpecialBinding(name.specialIndex);
     }
 
     public final LispObject setSpecialVariable(Symbol name, LispObject value)
     {
-        SpecialBinding binding = specials[name.specialIndex];
+        SpecialBinding binding = ensureSpecialBinding(name.specialIndex);
         if (binding != null)
             return binding.value = value;
 
@@ -487,7 +524,7 @@ public final class LispThread extends LispObject
     public final LispObject pushSpecial(Symbol name, LispObject thing)
 
     {
-        SpecialBinding binding = specials[name.specialIndex];
+        SpecialBinding binding = ensureSpecialBinding(name.specialIndex);
         if (binding != null)
             return binding.value = new Cons(thing, binding.value);
 
@@ -503,7 +540,7 @@ public final class LispThread extends LispObject
     // Returns symbol value or NIL if unbound.
     public final LispObject safeSymbolValue(Symbol name)
     {
-        SpecialBinding binding = specials[name.specialIndex];
+        SpecialBinding binding = ensureSpecialBinding(name.specialIndex);
         if (binding != null)
             return binding.value;
 
