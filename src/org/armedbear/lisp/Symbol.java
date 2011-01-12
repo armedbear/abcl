@@ -94,6 +94,17 @@ public class Symbol extends LispObject implements java.io.Serializable
     this.pkg = pkg;
   }
 
+    @Override
+    @SuppressWarnings("FinalizeDeclaration")
+    protected void finalize() throws Throwable {
+        try {
+            if (specialIndex != LispThread.UNASSIGNED_SPECIAL_INDEX)
+                LispThread.releaseSpecialIndex(this);
+        } finally {
+            super.finalize();
+        }
+    }
+
   @Override
   public LispObject typeOf()
   {

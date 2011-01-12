@@ -37,6 +37,7 @@ import static org.armedbear.lisp.Lisp.*;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class LispThread extends LispObject
@@ -327,6 +328,12 @@ public final class LispThread extends LispObject
     final static AtomicInteger lastSpecial
         = new AtomicInteger(UNASSIGNED_SPECIAL_INDEX);
 
+    /** A list of indices which can be (re)used for symbols to
+     * be assigned a special slot index.
+     */
+    final static ConcurrentLinkedQueue<Integer> freeSpecialIndices
+        = new ConcurrentLinkedQueue<Integer>();
+    
     /** This array stores the current special binding for every symbol
      * which has been globally or locally declared special.
      *
@@ -335,12 +342,8 @@ public final class LispThread extends LispObject
      * SpecialBinding object, but the value field of it is null, that
      * indicates an "UNBOUND VARIABLE" situation.
      */
-    final SpecialBinding[] specials = new SpecialBinding[4097];
-
-    /** This array stores the symbols associated with the special
-     * bindings slots.
-     */
-    final static Symbol[] specialNames = new Symbol[4097];
+    final SpecialBinding[] specials
+        = new SpecialBinding[Integer.valueOf(System.getProperty("abcl.specials.initialSize","4096"))+1];
 
     /** This variable points to the head of a linked list of saved
      * special bindings. Its main purpose is to allow a mark/reset
@@ -387,9 +390,42 @@ public final class LispThread extends LispObject
         synchronized (sym) {
             // Don't use an atomic access: we'll be swapping values only once.
             if (sym.specialIndex == 0) {
-                sym.specialIndex = lastSpecial.incrementAndGet();
-                specialNames[sym.specialIndex] = sym;
+                Integer next = freeSpecialIndices.poll();
+                if (next == null)
+                    sym.specialIndex = lastSpecial.incrementAndGet();
+                else
+                    sym.specialIndex = next.intValue();
             }
+        }
+    }
+
+    /** Frees up an index previously assigned to a symbol for re-assignment
+     * to another symbol. Returns without effect if the symbol has the
+     * default UNASSIGNED_SPECIAL_INDEX special index.
+     */
+    protected static void releaseSpecialIndex(Symbol sym)
+    {
+        int index = sym.specialIndex;
+        if (index != UNASSIGNED_SPECIAL_INDEX) {
+            // clear out the values in the
+            Iterator<LispThread> it = map.values().iterator();
+            while (it.hasNext()) {
+                LispThread thread = it.next();
+
+                // clear out the values in the saved specials list
+                SpecialBindingsMark savedSpecial = thread.savedSpecials;
+                while (savedSpecial != null) {
+                    if (savedSpecial.idx == index) {
+                        savedSpecial.idx = 0;
+                        savedSpecial.binding = null;
+                    }
+                    savedSpecial = savedSpecial.next;
+                }
+
+                thread.specials[index] = null;
+            }
+
+            freeSpecialIndices.add(new Integer(index));
         }
     }
 
