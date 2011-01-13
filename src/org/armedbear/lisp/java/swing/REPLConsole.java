@@ -302,7 +302,7 @@ public class REPLConsole extends DefaultStyledDocument {
       repl = Interpreter.createInstance().eval("#'top-level::top-level-loop");
     } catch (Throwable e) {
       e.printStackTrace();
-      exit(1);
+      System.exit(1);
     }
     final REPLConsole d = new REPLConsole(repl);
     final JTextComponent txt = new JTextArea(d);
