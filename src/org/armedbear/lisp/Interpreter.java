@@ -429,11 +429,6 @@ public final class Interpreter
             thread.printBacktrace();
     }
 
-    public void kill()
-    {
-        kill(0);
-    }
-
     public void kill(int status)
     {
         if (jlisp) {
