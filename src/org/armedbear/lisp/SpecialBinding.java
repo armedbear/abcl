@@ -59,7 +59,7 @@ final public class SpecialBinding
     {
         if (value == null)
             // return or not: error doesn't return anyway
-            Lisp.error(new UnboundVariable(LispThread.specialNames[idx]));
+            Lisp.error(new UnboundVariable(LispThread.specialNames.get(new Integer(idx)).get()));
 
         return value;
     }

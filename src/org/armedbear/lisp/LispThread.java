@@ -33,6 +33,7 @@
 
 package org.armedbear.lisp;
 
+import java.lang.ref.WeakReference;
 import static org.armedbear.lisp.Lisp.*;
 
 import java.util.Iterator;
@@ -333,7 +334,10 @@ public final class LispThread extends LispObject
      */
     final static ConcurrentLinkedQueue<Integer> freeSpecialIndices
         = new ConcurrentLinkedQueue<Integer>();
-    
+
+    final static int specialsInitialSize
+        = Integer.valueOf(System.getProperty("abcl.specials.initialSize","4096"));
+
     /** This array stores the current special binding for every symbol
      * which has been globally or locally declared special.
      *
@@ -343,12 +347,15 @@ public final class LispThread extends LispObject
      * indicates an "UNBOUND VARIABLE" situation.
      */
     SpecialBinding[] specials
-        = new SpecialBinding[Integer.valueOf(System.getProperty("abcl.specials.initialSize","4096"))+1];
+        = new SpecialBinding[specialsInitialSize + 1];
+
+    final static ConcurrentHashMap<Integer, WeakReference<Symbol>> specialNames
+        = new ConcurrentHashMap<Integer, WeakReference<Symbol>>();
 
     /** The number of slots to grow the specials table in
      * case of insufficient storage.
      */
-    final int specialsDelta
+    final static int specialsDelta
         = Integer.valueOf(System.getProperty("abcl.specials.grow.delta","1024"));
 
     /** This variable points to the head of a linked list of saved
