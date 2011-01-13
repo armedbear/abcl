@@ -200,8 +200,7 @@ public final class Extensions
     @Override
     public LispObject execute()
     {
-      exit(0);
-      return LispThread.currentThread().nothing();
+      throw new ProcessingTerminated();
     }
     @Override
     public LispObject execute(LispObject first, LispObject second)
@@ -213,8 +212,7 @@ public final class Extensions
           if (second instanceof Fixnum)
             status = ((Fixnum)second).value;
         }
-      exit(status);
-      return LispThread.currentThread().nothing();
+      throw new ProcessingTerminated(status);
     }
   }
 
@@ -229,8 +227,7 @@ public final class Extensions
     {
       ((Stream)Symbol.STANDARD_OUTPUT.getSymbolValue())._finishOutput();
       ((Stream)Symbol.ERROR_OUTPUT.getSymbolValue())._finishOutput();
-      exit(0);
-      return LispThread.currentThread().nothing();
+      throw new ProcessingTerminated();
     }
     @Override
     public LispObject execute(LispObject first, LispObject second)
@@ -241,8 +238,7 @@ public final class Extensions
           if (second instanceof Fixnum)
             status = ((Fixnum)second).value;
         }
-      exit(status);
-      return LispThread.currentThread().nothing();
+      throw new ProcessingTerminated(status);
     }
   }
 

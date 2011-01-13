@@ -1583,7 +1583,7 @@ public final class Primitives {
         @Override
         @SuppressWarnings("CallToThreadDumpStack")
         public LispObject execute(LispObject[] args) {
-            Error e = new Error();
+            Error e = new IntegrityError();
 
             e.printStackTrace();
 
@@ -1596,9 +1596,7 @@ public final class Primitives {
             for (LispObject a : args)
                 System.out.println(a.writeToString());
 
-            //###FIXME: Bail out, but do it nicer...
-            exit(1);
-            return NIL;
+            throw e;
         }
     };
 

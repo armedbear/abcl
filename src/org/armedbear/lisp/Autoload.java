@@ -141,7 +141,7 @@ public class Autoload extends Function
             if (symbol != null) {
                 if (symbol.getSymbolFunction() instanceof Autoload) {
                     Debug.trace("Unable to autoload " + symbol.writeToString());
-                    System.exit(-1);
+                    throw new IntegrityError();
                 }
             }
         }
