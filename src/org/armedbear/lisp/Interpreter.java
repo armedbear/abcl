@@ -89,7 +89,7 @@ public final class Interpreter
             Stream out = getStandardOutput();
             out._writeString(help());
             out._finishOutput();
-            exit(0);
+            exit(0); // FIXME
         }
         if (noinform)
             _NOINFORM_.setSymbolValue(T);
@@ -253,7 +253,7 @@ public final class Interpreter
                         ++i;
                     } else {
                         System.err.println("No argument supplied to --eval");
-                        exit(1);
+                        exit(1); // FIXME
                     }
                 } else if (arg.equals("--load") ||
                            arg.equals("--load-system-file")) {
@@ -261,7 +261,7 @@ public final class Interpreter
                         ++i;
                     } else {
                         System.err.println("No argument supplied to --load");
-                        exit(1);
+                        exit(1); // FIXME
                     }
                 } else {
                     arglist = new Cons(args[i], arglist);
@@ -301,13 +301,13 @@ public final class Interpreter
                             sb.append(c.getCondition().writeToString());
                             sb.append(separator);
                             System.err.print(sb.toString());
-                            exit(2);
+                            exit(2); // FIXME
                         }
                         ++i;
                     } else {
                         // Shouldn't happen.
                         System.err.println("No argument supplied to --eval");
-                        exit(1);
+                        exit(1); // FIXME
                     }
                 } else if (arg.equals("--load") ||
                            arg.equals("--load-system-file")) {
@@ -322,13 +322,13 @@ public final class Interpreter
                     } else {
                         // Shouldn't happen.
                         System.err.println("No argument supplied to --load");
-                        exit(1);
+                        exit(1);  // FIXME
                     }
                 }
             }
         }
         if (_BATCH_MODE_.getSymbolValue() == T) {
-            exit(0);
+            exit(0); // FIXME
         }
     }
 
