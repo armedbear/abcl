@@ -42,14 +42,12 @@ public final class Main {
         Runnable r = new Runnable() {
 
             public void run() {
-                Interpreter interpreter = Interpreter.createDefaultInstance(args);
-                if (interpreter != null) {
-                    try {
-                        interpreter.run();
-                    } catch (ProcessingTerminated e) {
-                        System.exit(e.getStatus());
-                    }
-
+               try {
+                    Interpreter interpreter = Interpreter.createDefaultInstance(args);
+                    if (interpreter != null)
+                            interpreter.run();
+                } catch (ProcessingTerminated e) {
+                    System.exit(e.getStatus());
                 }
             }
         };

@@ -406,6 +406,12 @@ public final class Interpreter
                 // we're toast...
                 reportError(c, thread);
             }
+            catch (ProcessingTerminated e) {
+                throw e;
+            }
+            catch (IntegrityError e) {
+                return;
+            }
             catch (Throwable t) {
                 getStandardInput().clearInput();
                 out.printStackTrace(t);

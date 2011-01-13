@@ -289,6 +289,14 @@ public final class Lisp
           {
             throw c;
           }
+        catch (ProcessingTerminated c)
+          {
+            throw c;
+          }
+        catch (IntegrityError c)
+          {
+            throw c;
+          }
         catch (Throwable t) // ControlTransfer handled above
           {
             Debug.trace(t);
