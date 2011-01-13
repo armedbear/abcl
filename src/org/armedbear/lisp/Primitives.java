@@ -1581,6 +1581,7 @@ public final class Primitives {
         }
 
         @Override
+        @SuppressWarnings("CallToThreadDumpStack")
         public LispObject execute(LispObject[] args) {
             Error e = new Error();
 
@@ -1592,8 +1593,8 @@ public final class Primitives {
                 System.out.println(args[0].writeToString());
                 System.out.println(((Condition)args[0]).getConditionReport());
             } else
-for (LispObject a : args)
-                    System.out.println(a.writeToString());
+            for (LispObject a : args)
+                System.out.println(a.writeToString());
 
             //###FIXME: Bail out, but do it nicer...
             exit(1);
