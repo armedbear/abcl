@@ -33,6 +33,12 @@
 
 package org.armedbear.lisp;
 
+/** This error is thrown when the EXT:EXIT or EXT:QUIT function
+ * is being invoked.  In the stand-alone case, it terminates the
+ * entire JVM, if caught in Interpreter.run().
+ *
+ * In the embedding case, it's up to the embedder what to do with it.
+ */
 public class ProcessingTerminated extends Error
 {
     private int status;

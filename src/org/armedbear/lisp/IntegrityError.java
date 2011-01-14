@@ -33,6 +33,10 @@
 
 package org.armedbear.lisp;
 
+/** This error is invoked in situations where the code can't continue
+ * because some precondition isn't met, although it's not an assertion
+ * error per se.
+ */
 public class IntegrityError extends Error
 {
     public IntegrityError()
