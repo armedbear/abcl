@@ -369,7 +369,9 @@
   (when compile-time-too
     (let ((*load-truename* *output-file-pathname*)
           (*fasl-loader* (make-fasl-class-loader
-                          (concatenate 'string "org.armedbear.lisp." (base-classname)))))
+                          nil
+                          (concatenate 'string "org.armedbear.lisp." (base-classname))
+                          nil)))
       (eval form))))
 
 (declaim (ftype (function (t) t) convert-ensure-method))
@@ -611,7 +613,9 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
               (when (> *class-number* 0)
                 (write (list 'setq '*fasl-loader*
                              `(sys::make-fasl-class-loader
-                               ,(concatenate 'string "org.armedbear.lisp." (base-classname)))) :stream out))
+                               nil
+                               ,(concatenate 'string "org.armedbear.lisp." (base-classname))
+                               nil)) :stream out))
               (%stream-terpri out))
 
 
@@ -620,7 +624,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                while (not (eq line :eof))
                do (write-line line out))))
         (delete-file temp-file)
-	(remove-zip-cache-entry output-file) ;; Necessary under windows
+        (remove-zip-cache-entry output-file) ;; Necessary under windows
         (rename-file temp-file2 output-file)
 
         (when *compile-file-zip*

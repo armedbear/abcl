@@ -342,6 +342,14 @@ public final class Load
 
     // ### *fasl-version*
     // internal symbol
+
+    /* TODO when bumping the version for any reason, remember to:
+     *  - remove the overload taking 3 args in
+     *    FaslClassLoader.MAKE_FASL_CLASS_LOADER
+     *  - remove the extra args (1 and 3, both NIL) passed to
+     *    make-fasl-class-loader in compile-file.lisp
+     *  - delete this comment :)
+     */
     static final Symbol _FASL_VERSION_ =
         exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(37));
 

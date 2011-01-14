@@ -1292,6 +1292,7 @@ public final class Lisp
       try {
           if (input == null) {
                   Debug.trace("Pathname: " + name);
+                  Debug.trace("load: " + load);
                   Debug.trace("LOAD_TRUENAME_FASL: " + truenameFasl);
                   Debug.trace("LOAD_TRUENAME: " + truename);
                   Debug.assertTrue(input != null);
