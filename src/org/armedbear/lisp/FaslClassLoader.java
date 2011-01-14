@@ -39,8 +39,7 @@ import java.util.*;
 
 public class FaslClassLoader extends JavaClassLoader {
 
-    private String baseName;
-    private LispObject loader; //The function used to load FASL functions by number
+    private final String baseName;
     private final JavaObject boxedThis = new JavaObject(this);
 
     public FaslClassLoader(String baseName) {
@@ -63,13 +62,13 @@ public class FaslClassLoader extends JavaClassLoader {
             String internalName = "org/armedbear/lisp/" + name;
             Class<?> c = this.findLoadedClass(internalName);
 
-            if (c == null)
+            if (c == null) {
                 c = findClass(name);
-
+            }
             if (c != null) {
-                if (resolve)
+                if (resolve) {
                     resolveClass(c);
-
+                }
                 return c;
             }
         }
@@ -94,7 +93,7 @@ public class FaslClassLoader extends JavaClassLoader {
         Pathname pathname = new Pathname(name.substring("org/armedbear/lisp/".length()) + ".cls");
         return readFunctionBytes(pathname);
     }
-    
+
     public byte[] getFunctionClassBytes(Class<?> functionClass) {
         return getFunctionClassBytes(functionClass.getName());
     }
@@ -108,8 +107,10 @@ public class FaslClassLoader extends JavaClassLoader {
     public LispObject loadFunction(int fnNumber) {
         try {
             //Function name is fnIndex + 1
-            LispObject o = (LispObject) loadClass(baseName + "_" + (fnNumber + 1)).newInstance();
-            return o;
+            String name = baseName + "_" + (fnNumber + 1);
+            Function f = (Function) loadClass(name).newInstance();
+            f.setClassBytes(getFunctionClassBytes(name));
+            return f;
         } catch(Exception e) {
             if(e instanceof ControlTransfer) { throw (ControlTransfer) e; }
             Debug.trace(e);
