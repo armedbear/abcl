@@ -1289,39 +1289,30 @@ the args causes a Java exception handler to be installed, which
       (return-from p1-function-call (p1 new-form))))
   (let* ((op (car form))
          (local-function (find-local-function op)))
-    (cond (local-function
+    (when local-function
 ;;            (format t "p1 local call to ~S~%" op)
 ;;            (format t "inline-p = ~S~%" (inline-p op))
-           (when (and *enable-inline-expansion* (inline-p op)
-		      (local-function-definition local-function))
-             (let* ((definition (local-function-definition local-function))
-		    (lambda-list (car definition))
-		    (body (cdr definition))
-		    (expansion (generate-inline-expansion op lambda-list body
-							  (cdr form))))
-               (when expansion
-                 (let ((explain *explain*))
-                   (when (and explain (memq :calls explain))
-                     (format t ";   inlining call to local function ~S~%" op)))
-                 (return-from p1-function-call
-		   (let ((*inline-declarations*
-			  (remove op *inline-declarations* :key #'car :test #'equal)))
-		     (p1 expansion))))))
 
-           ;; FIXME
-           (dformat t "local function assumed not single-valued~%")
-           (setf (compiland-%single-valued-p *current-compiland*) nil)
+      (when (and *enable-inline-expansion* (inline-p op)
+                 (local-function-definition local-function))
+        (let* ((definition (local-function-definition local-function))
+               (lambda-list (car definition))
+               (body (cdr definition))
+               (expansion (generate-inline-expansion op lambda-list body
+                                                     (cdr form))))
+          (when expansion
+            (let ((explain *explain*))
+              (when (and explain (memq :calls explain))
+                (format t ";   inlining call to local function ~S~%" op)))
+            (return-from p1-function-call
+                         (let ((*inline-declarations*
+                                (remove op *inline-declarations* :key #'car :test #'equal)))
+                           (p1 expansion))))))
 
-           (let ((variable (local-function-variable local-function)))
-             (when variable
-               (dformat t "p1 ~S used non-locally~%" (variable-name variable))
-               (setf (variable-used-non-locally-p variable) t))))
-          (t
-           ;; Not a local function call.
-           (dformat t "p1 non-local call to ~S~%" op)
-           (unless (single-valued-p form)
-;;                (format t "not single-valued op = ~S~%" op)
-             (setf (compiland-%single-valued-p *current-compiland*) nil)))))
+      (let ((variable (local-function-variable local-function)))
+        (when variable
+          (dformat t "p1 ~S used non-locally~%" (variable-name variable))
+          (setf (variable-used-non-locally-p variable) t)))))
   (p1-default form))
 
 (defun %funcall (fn &rest args)
@@ -1457,7 +1448,8 @@ the args causes a Java exception handler to be installed, which
            (*visible-variables* *visible-variables*)
            (closure (make-closure `(lambda ,lambda-list nil) nil))
            (syms (sys::varlist closure))
-           (vars nil))
+           (vars nil)
+           compiland-result)
       (dolist (sym syms)
         (let ((var (make-variable :name sym
                                   :special-p (special-variable-p sym))))
@@ -1469,7 +1461,11 @@ the args causes a Java exception handler to be installed, which
         (setf (compiland-free-specials compiland) free-specials)
         (dolist (var free-specials)
           (push var *visible-variables*)))
+      (setf compiland-result
+            (list* 'LAMBDA lambda-list (p1-body body)))
+      (setf (compiland-%single-valued-p compiland)
+            (single-valued-p compiland-result))
       (setf (compiland-p1-result compiland)
-            (list* 'LAMBDA lambda-list (p1-body body))))))
+            compiland-result))))
 
 (provide "COMPILER-PASS1")
