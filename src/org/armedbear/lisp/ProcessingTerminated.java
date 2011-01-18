@@ -52,7 +52,7 @@ public class ProcessingTerminated extends Error
         this.status = status;
     }
 
-    int getStatus() {
+    public int getStatus() {
         return status;
     }
 }
