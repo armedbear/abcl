@@ -45,10 +45,10 @@ command
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 0.19.1
-    Java 1.6.0_14 Sun Microsystems Inc.
+    Armed Bear Common Lisp 0.25.0
+    Java 1.6.0_21 Sun Microsystems Inc.
     Java HotSpot(TM) Client VM
-    Low-level initialization completed in 0.9 seconds.
+    Low-level initialization completed in 0.3 seconds.
     Startup completed in 2.294 seconds.
     Type ":help" for a list of available commands.
     CL-USER(1):
@@ -60,7 +60,7 @@ BUILDING FROM SOURCE RELEASE
 There are three ways to build ABCL from the source release with the
 preferred (and most tested way) is to being to use the Ant build tool:
 
-* Use the Ant build tool for Java environments.  
+* Use the Ant build tool for Java environments.
 
 * Use the Netbeans 6.x IDE to open ABCL as a project.
 
@@ -71,6 +71,10 @@ preferred (and most tested way) is to being to use the Ant build tool:
 In all cases you need a Java 5 or later JDK (JDK 1.5 and 1.6 have been
 tested).  Just the JRE isn't enough, as you need the Java compiler
 ('javac') to compile the Java source of the ABCL implementation.
+
+When deploying ABCL, the JDK isn't a requirement for the installation
+site: ABCL compiles directly to byte code, avoiding the need for the
+'javac' compiler in deployment environments.
 
 
 Using Ant
@@ -84,10 +88,10 @@ Unpack the files somewhere convenient, ensuring that the 'ant' (or
 
 Then simply executing
 
-    unix$  ant 
+    unix$  ant
 
 or
-    cmd$ ant.bat    
+    cmd$ ant.bat
 
 from the directory containing this README file will create an
 executable wrapper ('abcl' under UNIX, 'abcl.bat' under Windows).  Use
@@ -136,7 +140,7 @@ Under UNIX-like systems, you may simply invoke the
 After a successful build, you may use 'abcl.bat' on Windows or 'abcl'
 on Unix to start ABCL.  Note that this wrappers contain absolute
 paths, so you'll need to edit them if you move things around after the
-build. 
+build.
 
 If you're developing on ABCL, you may want to use
 
@@ -150,14 +154,14 @@ In case of failure in the javac stage, you might try this:
 
 This invokes javac separately for each .java file, which avoids running
 into limitations on command line length (but is a lot slower).
- 
+
 ** Building from another Lisp by hand
 
 There is also an ASDF definition in 'abcl.asd' for the BUILD-ABCL
 which can be used to load the necessary Lisp definitions, after which
 
     CL-USER> (build-abcl:build-abcl :clean t :full t)
-    
+
 will build ABCL.  If ASDF isn't present, simply LOAD the
 'customizations.lisp' and 'build-abcl.lisp' files to achieve the same
 effect as loading the ASDF definition.
@@ -168,21 +172,15 @@ BUGS
 
 A lot of (renewed) energy has been spent to make ABCL a compliant
 and practically useable Common Lisp implementation.  Because of this,
-ABCL 0.19.1 now fails only 29 out of 21702 tests in the ANSI CL test
-suite.  Next to that, the fail count of the Maxima test suite has been
-reduced to only 5 - rounding errors.
-
-ABCL's CLOS does not handle on-the-fly redefinition of classes
-correctly. Quite a bit of energy has been spent in versions 0.16.0 and
-0.17.0 to improve CLOS performance. There is no support for the long
-form of DEFINE-METHOD-COMBINATION, and certain other required CLOS
-features are also missing. Enough CLOS is there to run
-ASDF2 and CL-PPCRE.
+ABCL 0.25.0 now fails only 28 out of 21702 tests in the ANSI CL test
+suite.  In addition, Maxima's test suite runs without failures now
+and ABCL's CLOS complete, with the exception of the long form of
+DEFINE-METHOD-COMBINATION - which is an ongoing effort.
 
 There is no MOP worth mentioning.
 
-Patches to address any of the issues mentioned above will be gladly
-accepted.
+Patches to address any of the issues mentioned above will
+be gladly accepted.
 
 Please report problems to the development mailing list:
 
@@ -192,4 +190,4 @@ Have fun!
 
 On behalf of all ABCL development team and contributors,
 Erik Huelsmann
-March 20, 2010
+January 20, 2011
