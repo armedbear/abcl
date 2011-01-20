@@ -23,6 +23,9 @@ Features
 Fixes
 -----
 
+* [svn r13135] Fix the problem that FASLs can contain
+  a limited number of functions.
+
 * [svn r13117][ticket #117] Fix stack inconsistency error.
 
 * [svn r13018][ticket #114] Fix strange backtrace growth.
