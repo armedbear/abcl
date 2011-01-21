@@ -2,15 +2,15 @@ GENERAL INFORMATION
 ===================
 
 Armed Bear Common Lisp is an implementation of ANSI Common Lisp that
-runs in a Java virtual machine.  It compiles its code to Java byte
-code.
+runs in a Java virtual machine.  It compiles Lisp code directly to
+Java byte code.
 
 
 LICENSE
 =======
 
 Armed Bear Common Lisp is distributed under the GNU General Public
-License with classpath exception (described below).
+License with a classpath exception (see "Classpath Exception" below).
 
 A copy of GNU General Public License (GPL) is included in this
 distribution, in the file COPYING.
@@ -19,6 +19,8 @@ Linking this software statically or dynamically with other modules is
 making a combined work based on this software. Thus, the terms and
 conditions of the GNU General Public License cover the whole
 combination.
+
+** Classpath Exception 
 
 As a special exception, the copyright holders of this software give
 you permission to link this software with independent modules to
@@ -38,8 +40,8 @@ RUNNING FROM BINARY RELEASE
 
 After you have downloaded a binary release archive unpack it into its
 own directory. To run ABCL directly from this directory, make sure
-Java (version 1.5 or up) is in your shell's path. Then issue following
-command
+Java (version 1.5 or up) is in your shell's path. Then issue the
+following command:
 
     cmd$ java -jar abcl.jar
 
@@ -72,9 +74,10 @@ In all cases you need a Java 5 or later JDK (JDK 1.5 and 1.6 have been
 tested).  Just the JRE isn't enough, as you need the Java compiler
 ('javac') to compile the Java source of the ABCL implementation.
 
-When deploying ABCL, the JDK isn't a requirement for the installation
-site: ABCL compiles directly to byte code, avoiding the need for the
-'javac' compiler in deployment environments.
+Note that when deploying ABCL having JDK isn't a requirement for the
+installation site, just the equivalent JRE, as ABCL compiles directly
+to byte code, avoiding the need for the 'javac' compiler in deployment
+environments.
 
 
 Using Ant
@@ -88,10 +91,10 @@ Unpack the files somewhere convenient, ensuring that the 'ant' (or
 
 Then simply executing
 
-    unix$  ant
+    unix$ ant
 
 or
-    cmd$ ant.bat
+    dos> ant.bat
 
 from the directory containing this README file will create an
 executable wrapper ('abcl' under UNIX, 'abcl.bat' under Windows).  Use
@@ -118,7 +121,7 @@ distribution that doesn't share build instructions with the previous
 two methods, but it still may be of interest to those who absolutely
 don't want to know anything about Java.
 
-First, copy the file 'customizations.lisp.in' to customization.lisp',
+First, copy the file 'customizations.lisp.in' to 'customization.lisp',
 in the directory containing this README file, editing to suit your
 situation, paying attention to the comments in the file.  The critical
 step is to have Lisp special variable '*JDK*' point to the root of the
@@ -137,10 +140,9 @@ Under UNIX-like systems, you may simply invoke the
 
     unix$ ./build-from-lisp.sh sbcl
 
-After a successful build, you may use 'abcl.bat' on Windows or 'abcl'
-on Unix to start ABCL.  Note that this wrappers contain absolute
-paths, so you'll need to edit them if you move things around after the
-build.
+After a successful build, you may use 'abcl' ('abcl.bat' on Windows)
+to start ABCL.  Note that this wrappers contain absolute paths, so
+you'll need to edit them if you move things around after the build.
 
 If you're developing on ABCL, you may want to use
 
@@ -177,7 +179,7 @@ suite.  In addition, Maxima's test suite runs without failures now
 and ABCL's CLOS complete, with the exception of the long form of
 DEFINE-METHOD-COMBINATION - which is an ongoing effort.
 
-There is no MOP worth mentioning.
+The MOP implementation is incomplete.
 
 Patches to address any of the issues mentioned above will
 be gladly accepted.
