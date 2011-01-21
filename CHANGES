@@ -52,7 +52,10 @@ Fixes
 Changes
 -------
 
-* [svn r13120] Register each compiler node with its parent.
+* [svn r13141-13146,13156] Make ABCL a well behaving library to better
+  support embedding: NEVER call System.exit() again.  Instead, ABCL now
+  throws org.armedbear.lisp.ProcessingTerminated and
+  org.armedbear.lisp.IntegrityError.
 
 * [svn r13111] Added a "tools" directory available in SVN repository
   to contain tools for developing ABCL in various states.  The first
