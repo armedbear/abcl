@@ -1329,7 +1329,6 @@ public class Stream extends StructureObject {
 
     private static final LispObject makeFloat(final String token,
             final int length)
-
     {
         if (length == 0)
             return null;
@@ -1377,6 +1376,13 @@ public class Stream extends StructureObject {
             return null;
         // Append rest of token.
         sb.append(token.substring(i));
+        c = sb.charAt(sb.length()-1);
+        if (! ('0' <= c && c <= '9'))
+            // we need to check that the last item is a number:
+            // the Double.parseDouble routine accepts numbers ending in 'D'
+            // like 1e2d. The same is true for Float.parseFloat and the 'F'
+            // character. However, these are not valid Lisp floats.
+            return null;
         try {
             if (marker == 0) {
                 LispObject format = Symbol.READ_DEFAULT_FLOAT_FORMAT.symbolValue();
