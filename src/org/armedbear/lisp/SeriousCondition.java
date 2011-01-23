@@ -51,12 +51,6 @@ public class SeriousCondition extends Condition
         super(initArgs);
     }
 
-    @Override
-    protected void initialize(LispObject initArgs)
-    {
-        super.initialize(initArgs);
-    }
-
     public SeriousCondition(String message)
     {
         super(message);
