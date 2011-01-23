@@ -55,6 +55,8 @@ public final class PackageError extends LispError
            // name, because it may omit an (important) package name part.
            // Two problems: (1) symbols can be contained in sublists
            //               (2) symbols may not be printed, but used otherwise.
+           // ### FIXME: why special-case that here: binding *PRINT-ESCAPE* to T
+           // will do exactly this, if the reader requests it.
            for (LispObject arg = initArgs.cdr(); arg != NIL; arg = arg.cdr()) {
               if (arg.car() instanceof Symbol)
                  arg.setCar(new SimpleString(((Symbol)arg.car()).getQualifiedName()));
