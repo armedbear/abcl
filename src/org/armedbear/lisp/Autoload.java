@@ -97,46 +97,59 @@ public class Autoload extends Function
             symbol.setSymbolFunction(new Autoload(symbol, null,
                                                   "org.armedbear.lisp.".concat(className)));
     }
-    
-    public void load()
-    {
+
+
+    private static void effectiveLoad(String className, String fileName) {
         if (className != null) {
-            final LispThread thread = LispThread.currentThread();
-            final SpecialBindingsMark mark = thread.markSpecialBindings();
-            int loadDepth = Fixnum.getValue(_LOAD_DEPTH_.symbolValue());
-            thread.bindSpecial(_LOAD_DEPTH_, Fixnum.getInstance(++loadDepth));
             try {
-                if (_AUTOLOAD_VERBOSE_.symbolValue(thread) != NIL
-                    || "Y".equals(System.getProperty("abcl.autoload.verbose")))
-                {
-                    final String prefix = Load.getLoadVerbosePrefix(loadDepth);
-                    Stream out = getStandardOutput();
-                    out._writeString(prefix);
-                    out._writeString(" Autoloading ");
-                    out._writeString(className);
-                    out._writeLine(" ...");
-                    out._finishOutput();
-                    long start = System.currentTimeMillis();
-                    Class.forName(className);
-                    long elapsed = System.currentTimeMillis() - start;
-                    out._writeString(prefix);
-                    out._writeString(" Autoloaded ");
-                    out._writeString(className);
-                    out._writeString(" (");
-                    out._writeString(String.valueOf(((float)elapsed)/1000));
-                    out._writeLine(" seconds)");
-                    out._finishOutput();
-                } else
-                    Class.forName(className);
+                Class.forName(className);
             }
             catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
-            finally {
-                thread.resetSpecialBindings(mark);
-            }
-        } else
-            Load.loadSystemFile(getFileName(), true);
+        } else {
+            Load.loadSystemFile(fileName, true);
+        }
+    }
+
+    private static void loadVerbose(int loadDepth, String className,
+            String fileName) {
+        final String prefix = Load.getLoadVerbosePrefix(loadDepth);
+        Stream out = getStandardOutput();
+        out._writeString(prefix);
+        out._writeString(" Autoloading ");
+        out._writeString(className == null ? fileName : className);
+        out._writeLine(" ...");
+        out._finishOutput();
+        long start = System.currentTimeMillis();
+        effectiveLoad(className, fileName);
+        long elapsed = System.currentTimeMillis() - start;
+        out._writeString(prefix);
+        out._writeString(" Autoloaded ");
+        out._writeString(className == null ? fileName : className);
+        out._writeString(" (");
+        out._writeString(String.valueOf(((float)elapsed)/1000));
+        out._writeLine(" seconds)");
+        out._finishOutput();
+    }
+
+    public void load()
+    {
+        final LispThread thread = LispThread.currentThread();
+        final SpecialBindingsMark mark = thread.markSpecialBindings();
+        int loadDepth = Fixnum.getValue(_LOAD_DEPTH_.symbolValue());
+        thread.bindSpecial(_LOAD_DEPTH_, Fixnum.getInstance(++loadDepth));
+        try {
+            if (_AUTOLOAD_VERBOSE_.symbolValue(thread) != NIL
+                || "Y".equals(System.getProperty("abcl.autoload.verbose")))
+            {
+                loadVerbose(loadDepth, className, getFileName());
+            } else
+                effectiveLoad(className, getFileName());
+        }
+        finally {
+            thread.resetSpecialBindings(mark);
+        }
         if (debug) {
             if (symbol != null) {
                 if (symbol.getSymbolFunction() instanceof Autoload) {
