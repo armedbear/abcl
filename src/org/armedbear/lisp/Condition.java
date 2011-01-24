@@ -135,8 +135,7 @@ public class Condition extends StandardObject
    */
   public String getMessage()
   {
-      LispObject formatControl = getFormatControl();
-      return formatControl != UNBOUND_VALUE ? formatControl.writeToString() : null;
+    return null;
   }
 
   @Override
