@@ -1472,7 +1472,7 @@
             ~S."
                   gf-keywords)))))))
 
-(defun check-method-lambda-list (method-lambda-list gf-lambda-list)
+(defun check-method-lambda-list (name method-lambda-list gf-lambda-list)
   (let* ((gf-restp (not (null (memq '&rest gf-lambda-list))))
          (gf-plist (analyze-lambda-list gf-lambda-list))
          (gf-keysp (getf gf-plist :keysp))
@@ -1484,24 +1484,34 @@
          (method-allow-other-keys-p (getf method-plist :allow-other-keys)))
     (unless (= (length (getf gf-plist :required-args))
                (length (getf method-plist :required-args)))
-      (error "The method has the wrong number of required arguments for the generic function."))
+      (error "The method-lambda-list ~S ~
+              has the wrong number of required arguments ~
+              for the generic function ~S." method-lambda-list name))
     (unless (= (length (getf gf-plist :optional-args))
                (length (getf method-plist :optional-args)))
-      (error "The method has the wrong number of optional arguments for the generic function."))
+      (error "The method-lambda-list ~S ~
+              has the wrong number of optional arguments ~
+              for the generic function ~S." method-lambda-list name))
     (unless (eq (or gf-restp gf-keysp) (or method-restp method-keysp))
-      (error "The method and the generic function differ in whether they accept &REST or &KEY arguments."))
+      (error "The method-lambda-list ~S ~
+              and the generic function ~S ~
+              differ in whether they accept &REST or &KEY arguments."
+             method-lambda-list name))
     (when (consp gf-keywords)
       (unless (or (and method-restp (not method-keysp))
                   method-allow-other-keys-p
                   (every (lambda (k) (memq k method-keywords)) gf-keywords))
-        (error "The method does not accept all of the keyword arguments defined for the generic function.")))))
+        (error "The method-lambda-list ~S does not accept ~
+                all of the keyword arguments defined for the ~
+                generic function." method-lambda-list name)))))
 
 (declaim (ftype (function * method) ensure-method))
 (defun ensure-method (name &rest all-keys)
   (let ((method-lambda-list (getf all-keys :lambda-list))
         (gf (find-generic-function name nil)))
     (if gf
-        (check-method-lambda-list method-lambda-list (generic-function-lambda-list gf))
+        (check-method-lambda-list name method-lambda-list
+                                  (generic-function-lambda-list gf))
         (setf gf (ensure-generic-function name :lambda-list method-lambda-list)))
     (let ((method
            (if (eq (generic-function-method-class gf) +the-standard-method-class+)
@@ -2139,8 +2149,10 @@
     (let ((method-lambda-list '(object))
           (gf (find-generic-function function-name nil)))
       (if gf
-          (check-method-lambda-list method-lambda-list (generic-function-lambda-list gf))
-          (setf gf (ensure-generic-function function-name :lambda-list method-lambda-list)))
+          (check-method-lambda-list function-name
+                                    method-lambda-list
+                                    (generic-function-lambda-list gf))
+        (setf gf (ensure-generic-function function-name :lambda-list method-lambda-list)))
       (let ((method
              (make-instance-standard-reader-method gf
                                                    :lambda-list '(object)
@@ -2959,15 +2971,17 @@
                          &optional errorp))
 
 (defmethod find-method ((generic-function standard-generic-function)
-			qualifiers specializers &optional (errorp t))
+                        qualifiers specializers &optional (errorp t))
   (%find-method generic-function qualifiers specializers errorp))
 
 (defgeneric add-method (generic-function method))
 
-(defmethod add-method ((generic-function standard-generic-function) (method method))
+(defmethod add-method ((generic-function standard-generic-function)
+                       (method method))
   (let ((method-lambda-list (method-lambda-list method))
         (gf-lambda-list (generic-function-lambda-list generic-function)))
-    (check-method-lambda-list method-lambda-list gf-lambda-list))
+    (check-method-lambda-list (%generic-function-name generic-function)
+                              method-lambda-list gf-lambda-list))
   (%add-method generic-function method))
 
 (defgeneric remove-method (generic-function method))
