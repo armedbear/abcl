@@ -1738,11 +1738,7 @@ public final class Primitives {
         }
     };
 
-    private static final Symbol _SIMPLE_FORMAT_FUNCTION_ =
-        internSpecial("*SIMPLE-FORMAT-FUNCTION*", PACKAGE_SYS, _FORMAT);
-
     static void checkRedefinition(LispObject arg)
-
     {
         final LispThread thread = LispThread.currentThread();
         if (_WARN_ON_REDEFINITION_.symbolValue(thread) != NIL) {

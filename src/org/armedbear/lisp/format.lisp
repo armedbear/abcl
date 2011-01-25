@@ -2866,7 +2866,7 @@
                    (t (args param)))))
              (apply (fdefinition symbol) stream (next-arg) colonp atsignp (args)))))
 
-(setf sys::*simple-format-function* #'format)
+(setf (symbol-function 'sys::simple-format) #'format)
 
 
 (provide 'format)

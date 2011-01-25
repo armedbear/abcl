@@ -121,7 +121,7 @@
 (in-package #:system)
 
 (defun simple-format (destination control-string &rest args)
-  (apply *simple-format-function* destination control-string args))
+  (apply #'format destination control-string args))
 
 (export 'simple-format '#:system)
 

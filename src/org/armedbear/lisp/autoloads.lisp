@@ -435,3 +435,11 @@
 
 (sys::autoload-macro '(pprint-logical-block) "pprint")
 
+(in-package "SYSTEM")
+
+;; This one must be last, or at least past print-object and clos:
+;; we don't want FORMATs executed before we can load those to end us
+;; in a debugger. This command replaces the earlier function binding
+;; where simple-format calls sys::%format
+
+(autoload 'simple-format "format")
