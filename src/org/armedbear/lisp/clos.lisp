@@ -165,7 +165,7 @@
             (readers ())
             (writers ())
             (other-options ())
-	    (non-std-options ()))
+            (non-std-options ()))
         (do ((olist (cdr spec) (cddr olist)))
             ((null olist))
           (case (car olist)
@@ -174,9 +174,8 @@
                (error 'program-error
                       "duplicate slot option :INITFORM for slot named ~S"
                       name))
-             (setq initfunction
-                   `(function (lambda () ,(cadr olist))))
-             (setq initform `',(cadr olist)))
+             (setq initfunction t)
+             (setq initform (cadr olist)))
             (:initarg
              (push-on-end (cadr olist) initargs))
             (:allocation
@@ -210,13 +209,21 @@
              (push-on-end (cadr olist) readers)
              (push-on-end `(setf ,(cadr olist)) writers))
             (t
-	     (push-on-end `(quote ,(car olist)) non-std-options)
+             (push-on-end `(quote ,(car olist)) non-std-options)
              (push-on-end (cadr olist) non-std-options))))
         `(list
           :name ',name
           ,@(when initfunction
-              `(:initform ,initform
-                          :initfunction ,initfunction))
+              `(:initform ',initform
+                :initfunction ,(if (eq allocation :class)
+                                   ;; CLHS specifies the initform for a
+                                   ;; class allocation level slot needs
+                                   ;; to be evaluated in the dynamic
+                                   ;; extent of the DEFCLASS form
+                                   (let ((var (gensym)))
+                                     `(let ((,var ,initform))
+                                        (lambda () ,var)))
+                                 `(lambda () ,initform))))
           ,@(when initargs `(:initargs ',initargs))
           ,@(when readers `(:readers ',readers))
           ,@(when writers `(:writers ',writers))
@@ -1312,10 +1319,10 @@
                       (eq (car object) 'quote))
              (setf object (cadr object)))
            (intern-eql-specializer object)))
-	((and (consp specializer)
+        ((and (consp specializer)
               (eq (car specializer) 'java:jclass))
          (let ((jclass (eval specializer)))
-	   (java::ensure-java-class jclass)))
+           (java::ensure-java-class jclass)))
         (t
          (error "Unknown specializer: ~S" specializer))))
 
