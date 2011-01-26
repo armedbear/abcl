@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="antlib:org.apache.tools.ant"
+         default="compile">
+
+<!--
+    XXX not working
+  <import file="../../build.xml"/>
+  
+  <target name="compile" depends="abcl-master.abcl.jar"
+-->
+  <target name="compile">
+    <javac 
+        classpath="../../dist/abcl.jar"
+        srcdir=".">
+    </javac>
+  </target>
+</project>
