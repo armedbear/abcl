@@ -103,7 +103,12 @@ public final class FaslReadtable extends Readtable
         dtfunctions['?']  = FaslReader.FASL_SHARP_QUESTION_MARK;
         dispatchTables.constants['#'] = dt;
 
-        readtableCase = Keyword.UPCASE;
+        readtableCase = Keyword.PRESERVE;
+        // after all, all symbols will have been uppercased by the reader,
+        // if applicable, when reading the source file; so, any lower-case
+        // symbols are really meant to be lower case, even if printed without
+        // pipe characters, which may happen if  the READTABLE-CASE of the
+        // current readtable is :PRESERVE when printing the symbols
     }
 
     private static final FaslReadtable instance = new FaslReadtable();
