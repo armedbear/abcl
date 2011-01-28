@@ -366,7 +366,7 @@
 (export 'describe-compiler-policy)
 (autoload 'describe-compiler-policy)
 (export 'macroexpand-all)
-(autoload 'macroexpand-all)
+(autoload 'macroexpand-all "format")
 
 (export '*gui-backend*)
 (export 'init-gui)
