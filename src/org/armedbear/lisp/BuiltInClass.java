@@ -55,6 +55,12 @@ public class BuiltInClass extends LispClass
   }
 
   @Override
+  public boolean isFinalized()
+  {
+    return true;
+  }
+
+  @Override
   public LispObject typep(LispObject type)
   {
     if (type == Symbol.BUILT_IN_CLASS)
