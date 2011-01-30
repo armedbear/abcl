@@ -49,8 +49,11 @@ public class StandardObjectFunctions
         if (arg instanceof StandardClass)
             return ((StandardClass)arg).allocateInstance();
         if (arg.typep(StandardClass.STANDARD_CLASS) != NIL) {
-            Layout layout = (Layout)Symbol.CLASS_LAYOUT.execute(arg);
-            return new StandardObject(layout);
+            LispObject l = Symbol.CLASS_LAYOUT.execute(arg);
+            if (! (l instanceof Layout))
+                return error(new ProgramError("Invalid standard class layout for: " + arg.writeToString()));
+            
+            return new StandardObject((Layout)l);
         }
         return type_error(arg, Symbol.STANDARD_CLASS);
       }
