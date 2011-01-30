@@ -112,12 +112,12 @@ public class Autoload extends Function
         }
     }
 
-    private static void loadVerbose(int loadDepth, String className,
+    private static void loadVerbose(Symbol sym, int loadDepth, String className,
             String fileName) {
         final String prefix = Load.getLoadVerbosePrefix(loadDepth);
         Stream out = getStandardOutput();
         out._writeString(prefix);
-        out._writeString(" Autoloading ");
+        out._writeString(sym.getQualifiedName() + " triggers autoloading of ");
         out._writeString(className == null ? fileName : className);
         out._writeLine(" ...");
         out._finishOutput();
@@ -143,7 +143,7 @@ public class Autoload extends Function
             if (_AUTOLOAD_VERBOSE_.symbolValue(thread) != NIL
                 || "Y".equals(System.getProperty("abcl.autoload.verbose")))
             {
-                loadVerbose(loadDepth, className, getFileName());
+                loadVerbose(symbol, loadDepth, className, getFileName());
             } else
                 effectiveLoad(className, getFileName());
         }
