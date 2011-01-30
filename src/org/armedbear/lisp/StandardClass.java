@@ -694,6 +694,8 @@ public class StandardClass extends SlotClass
 
     // Condition classes.
     STANDARD_CLASS.finalizeClass();
+    STANDARD_OBJECT.finalizeClass();
+    CLASS.finalizeClass();
     ARITHMETIC_ERROR.finalizeClass();
     CELL_ERROR.finalizeClass();
     COMPILER_ERROR.finalizeClass();
