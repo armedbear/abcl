@@ -45,6 +45,12 @@ public class Autoload extends Function
 
     private final Symbol symbol;
 
+    private final static Symbol AUTOLOADS_IN_PROGRESS
+            = PACKAGE_SYS.addInternalSymbol("*AUTOLOADS-IN-PROGRESS*");
+    {
+        AUTOLOADS_IN_PROGRESS.setSymbolValue(NIL);
+    }
+
     protected Autoload(Symbol symbol)
     {
         super();
@@ -133,12 +139,34 @@ public class Autoload extends Function
         out._finishOutput();
     }
 
+    private void detectCircularity(LispThread thread) {
+        SimpleString val = new SimpleString((getFileName() == null)
+                ? className : getFileName());
+        LispObject autoloads = AUTOLOADS_IN_PROGRESS.symbolValue(thread);
+        LispObject list = autoloads;
+        while (list != NIL) {
+            if (val.equal(list.car()))
+                Lisp.error(new SimpleString("Autoloading circularity detected while resolving "
+                        + symbol.getQualifiedName() + "; autoloads in "
+                        + "progress: " + autoloads.writeToString()));
+
+            list = list.cdr();
+        }
+
+        return;
+    }
+
     public void load()
     {
         final LispThread thread = LispThread.currentThread();
+
+        detectCircularity(thread);
+
         final SpecialBindingsMark mark = thread.markSpecialBindings();
         int loadDepth = Fixnum.getValue(_LOAD_DEPTH_.symbolValue());
         thread.bindSpecial(_LOAD_DEPTH_, Fixnum.getInstance(++loadDepth));
+        thread.pushSpecial(AUTOLOADS_IN_PROGRESS,
+                new SimpleString((getFileName() == null) ? className : getFileName()));
         try {
             if (_AUTOLOAD_VERBOSE_.symbolValue(thread) != NIL
                 || "Y".equals(System.getProperty("abcl.autoload.verbose")))

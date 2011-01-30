@@ -36,23 +36,30 @@
   (pushnew (string module-name) *modules* :test #'string=)
   t)
 
-(defun module-provide-system (module) 
+(defun module-provide-system (module)
   (let ((*readtable* (copy-readtable nil)))
-    (handler-case 
+    (handler-case
         (load-system-file (string-downcase (string module)))
-      (t (e) 
+      (t (e)
         (unless (and (typep e 'error)
                      (search "Failed to find loadable system file"
                              (format nil "~A" e)))
-          (format *error-output* "Failed to require  ~A because '~A'~%" 
+          (format *error-output* "Failed to require  ~A because '~A'~%"
                   module e))
         nil))))
-    
+
 (defvar *module-provider-functions* nil)
+(defvar *requires-in-progress* nil)
 
 (defun require (module-name &optional pathnames)
   (unless (member (string module-name) *modules* :test #'string=)
-    (let ((saved-modules (copy-list *modules*)))
+    (unless (member (string module-name) *requires-in-progress*
+                    :test #'string=)
+      (error "Circularity detected while requiring ~A; ~
+              nesting list: ~S." module-name *requires-in-progress*))
+    (let ((saved-modules (copy-list *modules*))
+          (*requires-in-progress* (cons (string module-name)
+                                        *requires-in-progress*)))
       (cond (pathnames
              (unless (listp pathnames) (setf pathnames (list pathnames)))
              (dolist (x pathnames)
