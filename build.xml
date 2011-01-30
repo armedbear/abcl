@@ -271,19 +271,41 @@ from ${abcl.home.dir}
         <available
             file="${basedir}/.svn"
             type="dir"/>
-        <available
-            file="svnversion"
-            filepath="${env.PATH}"/>
+        <or>
+            <available
+                file="svnversion.exe"
+                filepath="${env.Path}"/>
+            <available
+                file="svnversion.exe"
+                filepath="${env.PATH}"/>
+             <available
+                file="svnversion"
+                filepath="${env.Path}"/>
+            <available
+                file="svnversion"
+                filepath="${env.PATH}"/>
+        </or>
       </and>
     </condition>
 
     <target name="abcl.version.src" depends="abcl.version.src.3"/>
 
-    <target name="abcl.version.src.1">
+    <target name="abcl.version.src.0" if="windows">
+      <exec
+          executable="svnversion.exe"
+          outputproperty="abcl.version.svn"
+          failifexecutionfails="false"
+          searchpath="true" />
+    </target>
+
+
+
+    <target name="abcl.version.src.1" depends="abcl.version.src.0">
       <exec 
           executable="svnversion"
           outputproperty="abcl.version.svn"
-          failifexecutionfails="false" />
+          failifexecutionfails="false"
+          searchpath="true" />
     </target>
 
     <target name="abcl.version.src.2" 
