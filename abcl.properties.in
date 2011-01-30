@@ -1,8 +1,5 @@
 # $Id$
 
-# version.src contents show up in JAR Manifest in the Implementation-Source attribute
-#version.src=[abcl svn]
-
 # abcl.build.incremental attempts to perform incremental compilation
 #abcl.build.incremental=true
 

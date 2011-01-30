@@ -85,6 +85,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <include name="org/armedbear/lisp/**/*.class"/>
       <include name="org/armedbear/lisp/**/*.cls"/> 
       <include name="org/armedbear/lisp/**/*.abcl"/>
+      <include name="org/armedbear/lisp/version"/>
       <include name="org/armedbear/lisp/scripting/*.class" if="abcl.jsr-223.p"/>
       <include name="org/armedbear/lisp/scripting/util/*.class" if="abcl.jsr-223.p"/>
       <patternset refid="abcl.source.lisp.dist"/>
@@ -146,10 +147,6 @@ For help on the automatic tests available, use the Ant target 'help.test'.
 	  <matches string="${java.version}" pattern="1\.6\.0_[12][0-9]"/>
 	</or>  
       </condition>
-
-      <!-- Set from commandline via -D or in 'build.properties' -->
-      <property name="build.version" value="abcl.svn"/>
-      <echo>Implementation-Source: ${version.src}</echo>
 
     </target>
     
@@ -258,25 +255,85 @@ from ${abcl.home.dir}
 
     <property name="abcl.build.path"
 	      value="${build.classes.dir}/org/armedbear/lisp/build"/>
-    <target name="abcl.stamp" depends="abcl.compile,abcl.stamp.version,abcl.stamp.hostname">
+    <target name="abcl.stamp" 
+            depends="abcl.compile,abcl.stamp.version,abcl.stamp.hostname">
       <mkdir dir="${abcl.build.path}/.."/>
       <echo message="${build}" file="${abcl.build.path}"/>    
+    </target>
+
+
+    <!-- Environment variables may be accessed as ${env.NAME} -->
+    <property environment="env"/>
+
+    <!-- Can we derive an SVN version from the current build tree? -->
+    <condition property="abcl.version.svn.p">
+      <and>
+        <available
+            file="${basedir}/.svn"
+            type="dir"/>
+        <available
+            file="svnversion"
+            filepath="${env.PATH}"/>
+      </and>
+    </condition>
+
+    <target name="abcl.version.src" depends="abcl.version.src.3"/>
+
+    <target name="abcl.version.src.1">
+      <exec 
+          executable="svnversion"
+          outputproperty="abcl.version.svn"
+          failifexecutionfails="false" />
+    </target>
+
+    <target name="abcl.version.src.2" 
+            depends="abcl.version.src.1"
+            if="abcl.version.svn.p">
+      <echo>abcl.version.svn: ${abcl.version.svn}</echo>
+      <property name="abcl.version.src"
+                value="svn-${abcl.version.svn}"/>
+    </target>
+
+    <target name="abcl.version.src.3"
+            depends="abcl.version.src.2"
+            unless="abcl.version.svn.p">
+      <property name="abcl.version.src"
+                value=""/>
     </target>
 
     <property name="abcl.home.dir"
               value="${src.dir}/org/armedbear/lisp/"/>
     <property name="abcl.version.path"
 	      value="${build.classes.dir}/org/armedbear/lisp/version"/>
-    <target name="abcl.stamp.version" depends="abcl.compile.java"  >
+
+    <target name="abcl.stamp.version" 
+            depends="abcl.version.src,abcl.stamp.version.1,abcl.stamp.version.2">
+      <mkdir dir="${abcl.version.path}/.."/>
+      <echo>ABCL implementation version: ${abcl.implementation.version}</echo>
+      <echo file="${abcl.version.path}">${abcl.implementation.version}</echo>
+    </target>
+    
+    <target name="abcl.stamp.version.0" 
+            depends="abcl.compile.java">
       <java fork="true"
 	    classpath="${build.classes.dir}"
 	    outputproperty="abcl.version"
 	    classname="org.armedbear.lisp.Version"
             logerror="yes"/> <!-- Don't catch stderr output -->
+    </target>
 
-      <echo>ABCL version: ${abcl.version}</echo>
-      <mkdir dir="${abcl.version.path}/.."/>
-      <echo message="${abcl.version}" file="${abcl.version.path}"/> 
+    <target name="abcl.stamp.version.1"
+            depends="abcl.stamp.version.0"
+            unless="abcl.version.svn.p">
+      <property name="abcl.implementation.version"
+                value="${abcl.version}"/>
+    </target>
+
+    <target name="abcl.stamp.version.2" 
+            depends="abcl.stamp.version.0"
+            if="abcl.version.svn.p">
+      <property name="abcl.implementation.version"
+                value="${abcl.version}-${abcl.version.src}"/>
     </target>
 
     <target name="abcl.stamp.hostname" if="unix">
@@ -324,11 +381,9 @@ from ${abcl.home.dir}
 	    <attribute name="Implementation-Title" 
 		       value="ABCL"/>
 	    <attribute name="Implementation-Version"  
-		       value="${abcl.version}"/>
+		       value="${abcl.implementation.version}"/>
 	    <attribute name="Implementation-Build" 
 		       value="${build}"/>
-	    <attribute name="Implementation-Source" 
-		       value="${version.src}"/>
 	  </section>
 	</manifest>
 	<metainf dir="${src.dir}/META-INF"> 

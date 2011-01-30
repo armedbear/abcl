@@ -33,15 +33,34 @@
 
 package org.armedbear.lisp;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 public final class Version
 {
-  private Version()
-  {
+  private Version() {}
+  
+  static final String baseVersion = "0.25.0-dev";
+  
+  static void init() {
+    try {
+      InputStream input = Version.class.getResourceAsStream("version");
+      BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+      String v = reader.readLine().trim();
+      version = v;
+    } catch (Throwable t) {
+      version = baseVersion;
+    } 
   }
-
-  public static String getVersion()
+  
+  static String version = "";
+  public synchronized static String getVersion()
   {
-    return "0.25.0-dev";
+    if ("".equals(version)) {
+      init();
+    }
+    return version;
   }
 
   public static void main(String args[]) {
