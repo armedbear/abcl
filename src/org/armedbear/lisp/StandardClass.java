@@ -132,6 +132,18 @@ public class StandardClass extends SlotClass
   public Layout getClassLayout()
   {
     LispObject layout = getInstanceSlotValue(symLayout);
+    if (layout == UNBOUND_VALUE)
+        return null;
+
+    if (! (layout instanceof Layout)) {
+        (new Error()).printStackTrace();
+        LispThread.currentThread().printBacktrace();
+        return (Layout)Lisp.error(Symbol.TYPE_ERROR,
+                new SimpleString("The value " + layout.writeToString()
+                    + " is not of expected type " + Symbol.LAYOUT.writeToString()
+                    + " in class " + this.writeToString() + "."));
+      }
+    
     return (layout == UNBOUND_VALUE) ? null : (Layout)layout;
   }
 
