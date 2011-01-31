@@ -2198,16 +2198,21 @@
                                       (autocompile fast-function))
                    )))
 
-(defmacro redefine-class-forwarder (name slot &optional alternative-name)
+(defmacro redefine-class-forwarder (name slot)
+  "Define a generic function on a temporary symbol as an accessor
+for the slot `slot'. Then, when definition is complete (including
+allocation of methods), swap the definition in place.
+
+Without this approach, we can't depend the old forwarders to be
+in place, while we still need them to "
   (let* (($name (if (consp name) (cadr name) name))
          (%name (intern (concatenate 'string
                                      "%"
                                      (if (consp name)
                                          (symbol-name 'set-) "")
                                      (symbol-name $name))
-                        (find-package "SYS"))))
-    (unless alternative-name
-      (setf alternative-name name))
+                        (find-package "SYS")))
+         (alternative-name (gensym)))
     (if (consp name)
         `(progn ;; setter
            (defgeneric ,alternative-name (new-value class))
@@ -2219,10 +2224,9 @@
              (,%name new-value class))
            (defmethod ,alternative-name (new-value (class standard-class))
              (setf (slot-value class ',slot) new-value))
-           ,@(unless (eq name alternative-name)
-                     `((setf (get ',$name 'SETF-FUNCTION)
-                             (symbol-function ',alternative-name))))
-           )
+           (let ((gf (symbol-function ',alternative-name)))
+             (setf (get ',$name 'SETF-FUNCTION) gf)
+             (%set-generic-function-name gf ',name)))
         `(progn ;; getter
            (defgeneric ,alternative-name (class))
            (defmethod ,alternative-name ((class built-in-class))
@@ -2233,10 +2237,9 @@
              (,%name class))
            (defmethod ,alternative-name ((class standard-class))
              (slot-value class ',slot))
-           ,@(unless (eq name alternative-name)
-                     `((setf (symbol-function ',$name)
-                             (symbol-function ',alternative-name))))
-           ) )))
+           (let ((gf (symbol-function ',alternative-name)))
+             (setf (symbol-function ',$name) gf)
+             (%set-generic-function-name gf ',name))))))
 
 (redefine-class-forwarder class-name name)
 (redefine-class-forwarder (setf class-name) name)
@@ -2250,8 +2253,8 @@
 (redefine-class-forwarder (setf class-direct-superclasses) direct-superclasses)
 (redefine-class-forwarder class-direct-subclasses direct-subclasses)
 (redefine-class-forwarder (setf class-direct-subclasses) direct-subclasses)
-(redefine-class-forwarder class-direct-methods direct-methods !class-direct-methods)
-(redefine-class-forwarder (setf class-direct-methods) direct-methods !!class-direct-methods)
+(redefine-class-forwarder class-direct-methods direct-methods)
+(redefine-class-forwarder (setf class-direct-methods) direct-methods)
 (redefine-class-forwarder class-precedence-list precedence-list)
 (redefine-class-forwarder (setf class-precedence-list) precedence-list)
 (redefine-class-forwarder class-finalized-p finalized-p)
