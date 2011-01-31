@@ -687,7 +687,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "set-slot-definition-writers", "SlotDefinition", true);
         autoload(PACKAGE_SYS, "simple-list-remove-duplicates", "simple_list_remove_duplicates");
         autoload(PACKAGE_SYS, "single-float-bits", "FloatFunctions", true);
-        autoload(PACKAGE_SYS, "std-allocate-instance", "StandardObjectFunctions", true);
+        autoload(PACKAGE_SYS, "%std-allocate-instance", "StandardObjectFunctions", true);
         autoload(PACKAGE_SYS, "unzip", "unzip", true);
         autoload(PACKAGE_SYS, "zip", "zip", true);
 

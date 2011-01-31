@@ -37,9 +37,9 @@ import static org.armedbear.lisp.Lisp.*;
 
 public class StandardObjectFunctions
 {
-  // ### std-allocate-instance class => instance
-  private static final Primitive STD_ALLOCATE_INSTANCE =
-    new Primitive("std-allocate-instance", PACKAGE_SYS, true, "class")
+  // ### %std-allocate-instance class => instance
+  private static final Primitive _STD_ALLOCATE_INSTANCE =
+    new Primitive("%std-allocate-instance", PACKAGE_SYS, true, "class")
     {
       @Override
       public LispObject execute(LispObject arg)

@@ -623,6 +623,13 @@
 (defun instance-slot-p (slot)
   (eq (slot-definition-allocation slot) :instance))
 
+(defun std-allocate-instance (class)
+  ;; AMOP says ALLOCATE-INSTANCE checks if the class is finalized
+  ;; and if not, tries to finalize it.
+  (unless (class-finalized-p class)
+    (std-finalize-inheritance class))
+  (sys::%std-allocate-instance class))
+
 (defun make-instance-standard-class (metaclass
 				     &rest initargs
                                      &key name direct-superclasses direct-slots
