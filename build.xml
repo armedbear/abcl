@@ -298,8 +298,6 @@ from ${abcl.home.dir}
           searchpath="true" />
     </target>
 
-
-
     <target name="abcl.version.src.1" depends="abcl.version.src.0">
       <exec 
           executable="svnversion"
@@ -328,8 +326,12 @@ from ${abcl.home.dir}
     <property name="abcl.version.path"
 	      value="${build.classes.dir}/org/armedbear/lisp/version"/>
 
+    <target name="abcl.clean.version">
+      <delete file="${abcl.version.path}"/>
+    </target>
+
     <target name="abcl.stamp.version" 
-            depends="abcl.version.src,abcl.stamp.version.1,abcl.stamp.version.2">
+            depends="abcl.clean.version,abcl.version.src,abcl.stamp.version.1,abcl.stamp.version.2">
       <mkdir dir="${abcl.version.path}/.."/>
       <echo>ABCL implementation version: ${abcl.implementation.version}</echo>
       <echo file="${abcl.version.path}">${abcl.implementation.version}</echo>
