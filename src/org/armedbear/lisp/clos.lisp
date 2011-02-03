@@ -52,6 +52,50 @@
 
 (in-package #:mop)
 
+;;
+;;
+;;
+;; In order to bootstrap CLOS, first implement the required API as
+;; normal functions which only apply to the "root" metaclass
+;; STANDARD-CLASS.
+;;
+;; After putting the normal functions in place, the building blocks
+;; are in place to gradually swap the normal functions with
+;; generic functions and methods.
+;;
+;; Some functionality implemented in the temporary regular functions
+;; needs to be available later as a method definition to be dispatched
+;; to for the STANDARD-CLASS case.  To prevent repeated code, the
+;; functions are implemented in functions by the same name as the
+;; API functions, but with the STD- prefix.
+;;
+;; When hacking this file, note that some important parts are implemented
+;; in the Java world. These Java bits can be found in the files
+;;
+;; * LispClass.java
+;; * SlotClass.java
+;; * StandardClass.java
+;; * BuiltInClass.java
+;; * StandardObject.java
+;; * StandardObjectFunctions.java
+;; * Layout.java
+;;
+;; In case of function names, those defined on the Java side can be
+;; recognized by their prefixed percent sign.
+;;
+;; The API functions need to be declaimed NOTINLINE explicitly, because
+;; that prevents inlining in the current FASL (which is allowed by the
+;; CLHS without the declaration); this is a hard requirement to in order
+;; to be able to swap the symbol's function slot with a generic function
+;; later on - with it actually being used.
+;;
+;;
+;;
+;; ### Note that the "declares all API functions as regular functions"
+;; isn't true when I write the above, but it's definitely the target.
+;;
+;;
+
 (export '(class-precedence-list class-slots))
 (defconstant +the-standard-class+ (find-class 'standard-class))
 (defconstant +the-structure-class+ (find-class 'structure-class))
