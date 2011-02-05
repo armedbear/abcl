@@ -470,6 +470,11 @@
         (std-compute-class-default-initargs class))
   (setf (class-finalized-p class) t))
 
+(declaim (notinline finalize-inheritance))
+(defun finalize-inheritance (class)
+  (std-finalize-inheritance class))
+
+
 ;;; Class precedence lists
 
 (defun std-compute-class-precedence-list (class)
@@ -2249,6 +2254,24 @@
                                       (autocompile fast-function))
                    )))
 
+(defmacro atomic-defgeneric (function-name &rest rest)
+  "Macro to define a generic function and 'swap it into place' after
+it's been fully defined with all its methods.
+
+Note: the user should really use the (:method ..) method description
+way of defining methods; there's not much use in atomically defining
+generic functions without providing sensible behaviour..."
+  (let ((temp-sym (gensym)))
+    `(progn
+       (defgeneric ,temp-sym ,@rest)
+       (let ((gf (symbol-function ',temp-sym)))
+         (setf ,(if (and (consp function-name)
+                         (eq (car function-name) 'setf))
+                    `(get ',(second function-name) 'setf-function)
+                  `(symbol-function ',function-name)) gf)
+         (%set-generic-function-name gf ',function-name)
+         gf))))
+
 (defmacro redefine-class-forwarder (name slot)
   "Define a generic function on a temporary symbol as an accessor
 for the slot `slot'. Then, when definition is complete (including
@@ -2262,35 +2285,26 @@ in place, while we still need them to "
                                      (if (consp name)
                                          (symbol-name 'set-) "")
                                      (symbol-name $name))
-                        (find-package "SYS")))
-         (alternative-name (gensym)))
-    (if (consp name)
-        `(progn ;; setter
-           (defgeneric ,alternative-name (new-value class))
-           (defmethod ,alternative-name (new-value (class built-in-class))
-             (,%name new-value class))
-           (defmethod ,alternative-name (new-value (class forward-referenced-class))
-             (,%name new-value class))
-           (defmethod ,alternative-name (new-value (class structure-class))
-             (,%name new-value class))
-           (defmethod ,alternative-name (new-value (class standard-class))
-             (setf (slot-value class ',slot) new-value))
-           (let ((gf (symbol-function ',alternative-name)))
-             (setf (get ',$name 'SETF-FUNCTION) gf)
-             (%set-generic-function-name gf ',name)))
-        `(progn ;; getter
-           (defgeneric ,alternative-name (class))
-           (defmethod ,alternative-name ((class built-in-class))
-             (,%name class))
-           (defmethod ,alternative-name ((class forward-referenced-class))
-             (,%name class))
-           (defmethod ,alternative-name ((class structure-class))
-             (,%name class))
-           (defmethod ,alternative-name ((class standard-class))
-             (slot-value class ',slot))
-           (let ((gf (symbol-function ',alternative-name)))
-             (setf (symbol-function ',$name) gf)
-             (%set-generic-function-name gf ',name))))))
+                        (find-package "SYS"))))
+    `(atomic-defgeneric ,name (;; splice a new-value parameter for setters
+                               ,@(when (consp name) (list 'new-value))
+                               class)
+         ,@(mapcar (if (consp name)
+                       #'(lambda (class-name)
+                           `(:method (new-value (class ,class-name))
+                                     (,%name new-value class)))
+                     #'(lambda (class-name)
+                         `(:method ((class ,class-name))
+                                   (,%name class))))
+                   '(built-in-class
+                     forward-referenced-class
+                     structure-class))
+         (:method (,@(when (consp name) (list 'new-value))
+                   (class standard-class))
+             ,(if (consp name)
+                  `(setf (slot-value class ',slot) new-value)
+                `(slot-value class ',slot))))))
+
 
 (redefine-class-forwarder class-name name)
 (redefine-class-forwarder (setf class-name) name)
@@ -2327,22 +2341,18 @@ in place, while we still need them to "
   (declare (ignore initargs))
   +the-effective-slot-definition-class+)
 
-(fmakunbound 'documentation)
-(defgeneric documentation (x doc-type))
+(atomic-defgeneric documentation (x doc-type)
+    (:method ((x symbol) doc-type)
+        (%documentation x doc-type))
+    (:method ((x function) doc-type)
+        (%documentation x doc-type)))
 
-(defgeneric (setf documentation) (new-value x doc-type))
+(atomic-defgeneric (setf documentation) (new-value x doc-type)
+    (:method (new-value (x symbol) doc-type)
+        (%set-documentation x doc-type new-value))
+    (:method (new-value (x function) doc-type)
+        (%set-documentation x doc-type new-value)))
 
-(defmethod documentation ((x symbol) doc-type)
-  (%documentation x doc-type))
-
-(defmethod (setf documentation) (new-value (x symbol) doc-type)
-  (%set-documentation x doc-type new-value))
-
-(defmethod documentation ((x function) doc-type)
-  (%documentation x doc-type))
-
-(defmethod (setf documentation) (new-value (x function) doc-type)
-  (%set-documentation x doc-type new-value))
 
 ;; FIXME This should be a weak hashtable!
 (defvar *list-documentation-hashtable* (make-hash-table :test #'equal))
@@ -2750,10 +2760,9 @@ in place, while we still need them to "
 
 ;;; Finalize inheritance
 
-(defgeneric finalize-inheritance (class))
-
-(defmethod finalize-inheritance ((class standard-class))
-  (std-finalize-inheritance class))
+(atomic-defgeneric finalize-inheritance (class)
+    (:method ((class standard-class))
+       (std-finalize-inheritance class)))
 
 ;;; Class precedence lists
 
@@ -2801,19 +2810,6 @@ in place, while we still need them to "
 
 ;;; Slot definition accessors
 
-(map nil (lambda (sym)
-	   (fmakunbound sym) ;;we need to redefine them as GFs
-	   (fmakunbound `(setf ,sym))
-	   (export sym))
-	'(slot-definition-allocation 
-	  slot-definition-initargs
-	  slot-definition-initform
-	  slot-definition-initfunction
-	  slot-definition-name
-	  slot-definition-readers
-	  slot-definition-writers
-	  slot-definition-allocation-class))
-
 (defmacro slot-definition-dispatch (slot-definition std-form generic-form)
   `(let (($cl (class-of ,slot-definition)))
      (case $cl
@@ -2823,109 +2819,110 @@ in place, while we still need them to "
 	,std-form)
        (t ,generic-form))))
 
-(defgeneric slot-definition-allocation (slot-definition)
+(atomic-defgeneric slot-definition-allocation (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (%slot-definition-allocation slot-definition)
       (slot-value slot-definition 'sys::allocation))))
 
-(defgeneric (setf slot-definition-allocation) (value slot-definition)
+(atomic-defgeneric (setf slot-definition-allocation) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (set-slot-definition-allocation slot-definition value)
       (setf (slot-value slot-definition 'sys::allocation) value))))
 
-(defgeneric slot-definition-initargs (slot-definition)
+(atomic-defgeneric slot-definition-initargs (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (%slot-definition-initargs slot-definition)
       (slot-value slot-definition 'sys::initargs))))
 
-(defgeneric (setf slot-definition-initargs) (value slot-definition)
+(atomic-defgeneric (setf slot-definition-initargs) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (set-slot-definition-initargs slot-definition value)
       (setf (slot-value slot-definition 'sys::initargs) value))))
 
-(defgeneric slot-definition-initform (slot-definition)
+(atomic-defgeneric slot-definition-initform (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (%slot-definition-initform slot-definition)
       (slot-value slot-definition 'sys::initform))))
 
-(defgeneric (setf slot-definition-initform) (value slot-definition)
+(atomic-defgeneric (setf slot-definition-initform) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (set-slot-definition-initform slot-definition value)
       (setf (slot-value slot-definition 'sys::initform) value))))
 
-(defgeneric slot-definition-initfunction (slot-definition)
+(atomic-defgeneric slot-definition-initfunction (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (%slot-definition-initfunction slot-definition)
       (slot-value slot-definition 'sys::initfunction))))
 
-(defgeneric (setf slot-definition-initfunction) (value slot-definition)
+(atomic-defgeneric (setf slot-definition-initfunction) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (set-slot-definition-initfunction slot-definition value)
       (setf (slot-value slot-definition 'sys::initfunction) value))))
 
-(defgeneric slot-definition-name (slot-definition)
+(atomic-defgeneric slot-definition-name (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (%slot-definition-name slot-definition)
       (slot-value slot-definition 'sys::name))))
 
-(defgeneric (setf slot-definition-name) (value slot-definition)
+(atomic-defgeneric (setf slot-definition-name) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (set-slot-definition-name slot-definition value)
       (setf (slot-value slot-definition 'sys::name) value))))
 
-(defgeneric slot-definition-readers (slot-definition)
+(atomic-defgeneric slot-definition-readers (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (%slot-definition-readers slot-definition)
       (slot-value slot-definition 'sys::readers))))
 
-(defgeneric (setf slot-definition-readers) (value slot-definition)
+(atomic-defgeneric (setf slot-definition-readers) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (set-slot-definition-readers slot-definition value)
       (setf (slot-value slot-definition 'sys::readers) value))))
 
-(defgeneric slot-definition-writers (slot-definition)
+(atomic-defgeneric slot-definition-writers (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (%slot-definition-writers slot-definition)
       (slot-value slot-definition 'sys::writers))))
 
-(defgeneric (setf slot-definition-writers) (value slot-definition)
+(atomic-defgeneric (setf slot-definition-writers) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (set-slot-definition-writers slot-definition value)
       (setf (slot-value slot-definition 'sys::writers) value))))
 
-(defgeneric slot-definition-allocation-class (slot-definition)
+(atomic-defgeneric slot-definition-allocation-class (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (%slot-definition-allocation-class slot-definition)
       (slot-value slot-definition 'sys::allocation-class))))
 
-(defgeneric (setf slot-definition-allocation-class) (value slot-definition)
+(atomic-defgeneric (setf slot-definition-allocation-class)
+                       (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (set-slot-definition-allocation-class slot-definition value)
       (setf (slot-value slot-definition 'sys::allocation-class) value))))
 
-(defgeneric slot-definition-location (slot-definition)
+(atomic-defgeneric slot-definition-location (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (%slot-definition-location slot-definition)
       (slot-value slot-definition 'sys::location))))
 
-(defgeneric (setf slot-definition-location) (value slot-definition)
+(atomic-defgeneric (setf slot-definition-location) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (set-slot-definition-location slot-definition value)
@@ -3018,13 +3015,15 @@ in place, while we still need them to "
   (let ((message (apply #'format nil format-control args)))
     (error "Method combination error in CLOS dispatch:~%    ~A" message)))
 
-(fmakunbound 'no-applicable-method)
-(defgeneric no-applicable-method (generic-function &rest args))
 
-(defmethod no-applicable-method (generic-function &rest args)
-  (error "There is no applicable method for the generic function ~S when called with arguments ~S."
-         generic-function
-         args))
+(atomic-defgeneric no-applicable-method (generic-function &rest args)
+  (:method (generic-function &rest args)
+      (error "There is no applicable method for the generic function ~S ~
+              when called with arguments ~S."
+             generic-function
+             args)))
+
+
 
 (defgeneric find-method (generic-function
                          qualifiers
