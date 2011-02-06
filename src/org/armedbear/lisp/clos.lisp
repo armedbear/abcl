@@ -2560,24 +2560,19 @@ in place, while we still need them to "
     (error 'program-error
            :format-control "Odd number of keyword arguments."))
   (unless (getf initargs :allow-other-keys)
-    (let ((methods 
-	   (nconc 
-	    (compute-applicable-methods 
-	     #'shared-initialize
-	     (if initargs
-		 `(,instance ,shared-initialize-param ,@initargs)
-	       (list instance shared-initialize-param)))
-	    (compute-applicable-methods 
-	     #'initialize-instance
-	     (if initargs
-		 `(,instance ,@initargs)
-	       (list instance)))))
-	  (slots (class-slots (class-of instance))))
+    (let ((methods
+           (nconc
+            (compute-applicable-methods #'shared-initialize
+                                        (list* instance shared-initialize-param
+                                               initargs))
+            (compute-applicable-methods #'initialize-instance
+                                        (list* instance initargs))))
+          (slots (class-slots (class-of instance))))
       (do* ((tail initargs (cddr tail))
             (initarg (car tail) (car tail)))
            ((null tail))
         (unless (or (valid-initarg-p initarg slots)
-		    (valid-methodarg-p initarg methods)
+                    (valid-methodarg-p initarg methods)
                     (eq initarg :allow-other-keys))
           (error 'program-error
                  :format-control "Invalid initarg ~S."
