@@ -776,6 +776,8 @@
                                           +the-standard-class+
                                           :name name all-keys)))
                     (%set-find-class name new-class)
+                    (setf (class-direct-subclasses new-class)
+                          (class-direct-subclasses old-class))
                     (dolist (subclass (class-direct-subclasses old-class))
                       (setf (class-direct-superclasses subclass)
                             (substitute new-class old-class
