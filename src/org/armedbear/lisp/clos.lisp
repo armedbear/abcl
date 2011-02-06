@@ -424,6 +424,10 @@
           (class-precedence-list class)))
 
 (defun std-finalize-inheritance (class)
+  ;; In case the class is already finalized, return
+  ;; immediately, as per AMOP.
+  (when (class-finalized-p class)
+    (return-from std-finalize-inheritance))
   (setf (class-precedence-list class)
    (funcall (if (eq (class-of class) +the-standard-class+)
                 #'std-compute-class-precedence-list
@@ -780,7 +784,8 @@
                  (t
                   ;; We're redefining the class.
                   (%make-instances-obsolete old-class)
-		  (check-initargs old-class t all-keys)
+                  (setf (class-finalized-p old-class) nil)
+                  (check-initargs old-class t all-keys)
                   (apply #'std-after-initialization-for-classes old-class all-keys)
                   old-class)))
           (t
