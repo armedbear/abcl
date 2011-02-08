@@ -2560,6 +2560,11 @@ in place, while we still need them to "
 ;; 7.1.2
 
 (defun check-initargs (gf-list args instance shared-initialize-param initargs)
+  "Checks the validity of `initargs' for the generic functions in `gf-list' when
+called with `args' by calculating the applicable methods for each gf.
+The applicable methods for SHARED-INITIALIZE based on `instance',
+`shared-initialize-param' and `initargs' are added to the list of
+applicable methods."
   (when (oddp (length initargs))
     (error 'program-error
            :format-control "Odd number of keyword arguments."))
