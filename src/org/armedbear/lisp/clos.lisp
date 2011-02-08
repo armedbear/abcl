@@ -690,7 +690,9 @@
                                      documentation)
   (declare (ignore metaclass))
   (let ((class (std-allocate-instance +the-standard-class+)))
-    (check-initargs class t initargs)
+    (check-initargs (list #'allocate-instance #'initialize-instance)
+                    (list* class initargs)
+                    class t initargs)
     (%set-class-name name class)
     (%set-class-layout nil class)
     (%set-class-direct-subclasses ()  class)
@@ -787,7 +789,9 @@
                   ;; We're redefining the class.
                   (%make-instances-obsolete old-class)
                   (setf (class-finalized-p old-class) nil)
-                  (check-initargs old-class t all-keys)
+                  (check-initargs (list #'allocate-instance #'initialize-instance)
+                                  (list* old-class all-keys)
+                                  old-class t all-keys)
                   (apply #'std-after-initialization-for-classes old-class all-keys)
                   old-class)))
           (t
@@ -2555,7 +2559,7 @@ in place, while we still need them to "
 ;; methods, along with the predefined initialization argument :ALLOW-OTHER-KEYS."
 ;; 7.1.2
 
-(defun check-initargs (instance shared-initialize-param initargs)
+(defun check-initargs (gf-list args instance shared-initialize-param initargs)
   (when (oddp (length initargs))
     (error 'program-error
            :format-control "Odd number of keyword arguments."))
@@ -2565,8 +2569,9 @@ in place, while we still need them to "
             (compute-applicable-methods #'shared-initialize
                                         (list* instance shared-initialize-param
                                                initargs))
-            (compute-applicable-methods #'initialize-instance
-                                        (list* instance initargs))))
+            (mapcan #'(lambda (gf)
+                        (compute-applicable-methods gf args))
+                    gf-list)))
           (slots (class-slots (class-of instance))))
       (do* ((tail initargs (cddr tail))
             (initarg (car tail) (car tail)))
@@ -2617,7 +2622,9 @@ in place, while we still need them to "
         (setf initargs (append initargs default-initargs)))))
 
   (let ((instance (std-allocate-instance class)))
-    (check-initargs instance t initargs)
+    (check-initargs (list #'allocate-instance #'initialize-instance)
+                    (list* instance initargs)
+                    instance t initargs)
     (apply #'initialize-instance instance initargs)
     instance))
 
@@ -2723,7 +2730,9 @@ in place, while we still need them to "
                        (slot-exists-p old slot-name))
                     (mapcar 'slot-definition-name
                             (class-slots (class-of new))))))
-    (check-initargs new added-slots initargs)
+    (check-initargs (list #'update-instance-for-different-class)
+                    (list old new initargs)
+                    new added-slots initargs)
     (apply #'shared-initialize new added-slots initargs)))
 
 ;;; make-instances-obsolete
@@ -2752,7 +2761,10 @@ in place, while we still need them to "
 						discarded-slots
 						property-list
 						&rest initargs)
-  (check-initargs instance added-slots initargs)
+  (check-initargs (list #'update-instance-for-redefined-class)
+                  (list* instance added-slots discarded-slots
+                         property-list initargs)
+                  instance added-slots initargs)
   (apply #'shared-initialize instance added-slots initargs))
 
 ;;;  Methods having to do with class metaobjects.
