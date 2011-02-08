@@ -2650,18 +2650,23 @@ applicable methods."
 ;; slots should be initialized according to their initforms), and the initargs
 ;; it received."
 (defmethod reinitialize-instance ((instance standard-object) &rest initargs)
+  (check-initargs (list #'reinitialize-instance) (list* instance initargs)
+                  instance () initargs)
   (apply #'shared-initialize instance () initargs))
 
 (defun std-shared-initialize (instance slot-names all-keys)
   (when (oddp (length all-keys))
     (error 'program-error :format-control "Odd number of keyword arguments."))
+  ;; do a quick scan of the arguments list to see if it's a real
+  ;; 'initialization argument list' (which is not the same as
+  ;; checking initarg validity
   (do* ((tail all-keys (cddr tail))
-	(initarg (car tail) (car tail)))
+        (initarg (car tail) (car tail)))
       ((null tail))
     (when (and initarg (not (symbolp initarg)))
       (error 'program-error
-	     :format-control "Invalid initarg ~S."
-	     :format-arguments (list initarg))))
+             :format-control "Invalid initarg ~S."
+             :format-arguments (list initarg))))
   (dolist (slot (class-slots (class-of instance)))
     (let ((slot-name (slot-definition-name slot)))
       (multiple-value-bind (init-key init-value foundp)
