@@ -2663,7 +2663,7 @@ applicable methods."
   (do* ((tail all-keys (cddr tail))
         (initarg (car tail) (car tail)))
       ((null tail))
-    (when (and initarg (not (symbolp initarg)))
+    (unless (symbolp initarg)
       (error 'program-error
              :format-control "Invalid initarg ~S."
              :format-arguments (list initarg))))
