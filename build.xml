@@ -625,7 +625,7 @@ will load ASDF-INSTALL.
       <include name="abcl.bat.in"/>
     </patternset>
 
-    <target name="abcl.source.tar" depends="abcl.source.prepare">
+    <target name="abcl.source.unix" depends="abcl.source.prepare">
       <fixcrlf srcdir="${abcl.build.src.dir}"
                preservelastmodified="true"
                eol="lf">
@@ -642,7 +642,9 @@ will load ASDF-INSTALL.
                eol="lf">
           <patternset refid="abcl.dist.lf"/>
       </fixcrlf>
+    </target>
 
+    <target name="abcl.source.tar" depends="abcl.source.unix">
       <mkdir dir="${dist.dir}"/>
       <tar destfile="${dist.dir}/abcl-src-${abcl.version}.tar.gz"
 	   compression="gzip">
@@ -652,7 +654,7 @@ will load ASDF-INSTALL.
       </tar>
     </target>
 
-    <target name="abcl.source.zip" depends="abcl.source.prepare">
+    <target name="abcl.source.windows" depends="abcl.source.prepare">
       <fixcrlf srcdir="${abcl.build.src.dir}"
                preservelastmodified="true"
                eol="crlf">
@@ -669,14 +671,29 @@ will load ASDF-INSTALL.
                eol="lf">
           <patternset refid="abcl.dist.lf"/>
       </fixcrlf>
+    </target>
 
+    <target name="abcl.source.zip" depends="abcl.source.windows">
       <mkdir dir="${dist.dir}"/>
       <zip destfile="${dist.dir}/abcl-src-${abcl.version}.zip"
 	   compress="true">
 	<zipfileset dir="${abcl.build.src.dir}" prefix="abcl-src-${abcl.version}"/>
       </zip>
     </target>
-    
+
+    <target name="abcl.source.jar" depends="abcl.source.unix">
+      <mkdir dir="${dist.dir}"/>
+      <jar destfile="${dist.dir}/abcl-${abcl.version}-sources.jar">
+        <metainf dir="${abcl.build.src.dir}">
+          <include name="COPYING"/>
+        </metainf>
+        <fileset dir="${abcl.build.src.dir}/src">
+          <include name="**/*.java"/>
+          <include name="**/*.lisp"/>
+        </fileset>
+      </jar>
+    </target>
+
     <target name="abcl.binary.prepare" depends="abcl.jar,abcl.stamp.version">
       <property name="abcl.build.binary.dir"
                 value="${build.dir}/abcl-bin-${abcl.version}"/>
