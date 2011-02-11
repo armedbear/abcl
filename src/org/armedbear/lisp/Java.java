@@ -1207,13 +1207,13 @@ public final class Java
         }
     };
 
-    private static final Primitive JRUN_EXCEPTION_PROTECTED = new pf_jrun_exception_protection();
+    private static final Primitive JRUN_EXCEPTION_PROTECTED = new pf_jrun_exception_protected();
     @DocString(name="jrun-exception-protected", args="closure",
     doc="Invokes the function CLOSURE and returns the result.  "+
         "Signals an error if stack or heap exhaustion occurs.")
-    private static final class pf_jrun_exception_protection extends Primitive
+    private static final class pf_jrun_exception_protected extends Primitive
     {
-        pf_jrun_exception_protection()
+        pf_jrun_exception_protected()
         {
             super("jrun-exception-protected", PACKAGE_JAVA, true);
         }
@@ -1229,6 +1229,7 @@ public final class Java
                 return error(new StorageCondition("Out of memory " + oom.getMessage()));
             }
             catch (StackOverflowError oos) {
+                oos.printStackTrace();
                 return error(new StorageCondition("Stack overflow."));
             }
         }
