@@ -694,6 +694,21 @@ will load ASDF-INSTALL.
       </jar>
     </target>
 
+    <property name="abcl.javadoc.dir" value="${build.dir}/javadoc"/>
+
+    <target name="abcl.javadoc">
+      <mkdir dir="${abcl.javadoc.dir}"/>
+      <javadoc destdir="${abcl.javadoc.dir}"
+               sourcepath="${src.dir}"/>
+    </target>
+    
+    <target name="abcl.javadoc.jar" depends="abcl.stamp.version,abcl.javadoc">
+      <mkdir dir="${dist.dir}"/>
+      <jar destfile="${dist.dir}/abcl-${abcl.version}-javadoc.jar">
+        <fileset dir="${abcl.javadoc.dir}"/>
+      </jar>
+    </target>
+
     <target name="abcl.binary.prepare" depends="abcl.jar,abcl.stamp.version">
       <property name="abcl.build.binary.dir"
                 value="${build.dir}/abcl-bin-${abcl.version}"/>
