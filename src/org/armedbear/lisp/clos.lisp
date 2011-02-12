@@ -2600,15 +2600,15 @@ applicable methods."
   (when (symbolp initarg)
     (dolist (method methods nil)
       (let ((valid-initargs (method-lambda-list method)))
-	(when (find (symbol-value initarg) valid-initargs 
-		     :test #'(lambda (a b)
-			       (if (listp b)
-				   (string= a (car b))
-				 (or
-				  (string= a b)
-				  (string= b "&ALLOW-OTHER-KEYS")))))
+        (when (find (symbol-value initarg) valid-initargs 
+                     :test #'(lambda (a b)
+                               (if (listp b)
+                                   (eq a (car b))
+                                 (or
+                                  (eq a b)
+                                  (eq b 'cl:&allow-other-keys)))))
 
-	  (return t))))))
+          (return t))))))
 
 (defun valid-initarg-p (initarg slots)
   (dolist (slot slots nil)
