@@ -784,6 +784,7 @@
                       (setf (class-direct-superclasses subclass)
                             (substitute new-class old-class
                                         (class-direct-superclasses subclass))))
+                    (finalize-class-subtree new-class)
                     new-class))
                  (t
                   ;; We're redefining the class.
@@ -803,6 +804,13 @@
                                :name name all-keys)))
              (%set-find-class name class)
              class)))))
+
+
+(defun finalize-class-subtree (class)
+  (when (every #'class-finalized-p (class-direct-superclasses class))
+    (finalize-inheritance class)
+    (dolist (subclass (class-direct-subclasses class))
+       (finalize-class-subtree subclass))))
 
 (defmacro defclass (&whole form name direct-superclasses direct-slots &rest options)
   (unless (>= (length form) 3)
@@ -2577,12 +2585,12 @@ applicable methods."
             (mapcan #'(lambda (gf)
                         (compute-applicable-methods gf args))
                     gf-list)))
-          (slots (class-slots (class-of instance))))
+	  (slots (class-slots (class-of instance))))
       (do* ((tail initargs (cddr tail))
             (initarg (car tail) (car tail)))
            ((null tail))
         (unless (or (valid-initarg-p initarg slots)
-                    (valid-methodarg-p initarg methods)
+		    (valid-methodarg-p initarg methods)
                     (eq initarg :allow-other-keys))
           (error 'program-error
                  :format-control "Invalid initarg ~S."
@@ -2661,12 +2669,12 @@ applicable methods."
   ;; 'initialization argument list' (which is not the same as
   ;; checking initarg validity
   (do* ((tail all-keys (cddr tail))
-        (initarg (car tail) (car tail)))
+	(initarg (car tail) (car tail)))
       ((null tail))
     (unless (symbolp initarg)
       (error 'program-error
-             :format-control "Invalid initarg ~S."
-             :format-arguments (list initarg))))
+	     :format-control "Invalid initarg ~S."
+	     :format-arguments (list initarg))))
   (dolist (slot (class-slots (class-of instance)))
     (let ((slot-name (slot-definition-name slot)))
       (multiple-value-bind (init-key init-value foundp)
