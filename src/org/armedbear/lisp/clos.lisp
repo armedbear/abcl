@@ -744,6 +744,9 @@
 (defvar *make-instance-initargs-cache*
   (make-hash-table :test #'eq)
   "Cached sets of allowable initargs, keyed on the class they belong to.")
+(defvar *reinitialize-instance-initargs-cache*
+  (make-hash-table :test #'eq)
+  "Cached sets of allowable initargs, keyed on the class they belong to.")
 
 (defun ensure-class (name &rest all-keys &key metaclass &allow-other-keys)
   ;; Check for duplicate slots.
@@ -792,6 +795,7 @@
                  (t
                   ;; We're redefining the class.
                   (remhash old-class *make-instance-initargs-cache*)
+                  (remhash old-class *reinitialize-instance-initargs-cache*)
                   (%make-instances-obsolete old-class)
                   (setf (class-finalized-p old-class) nil)
                   (check-initargs (list #'allocate-instance
@@ -1617,7 +1621,8 @@ Initialized with the true value near the end of the file.")
       ;; ### Clearly, this can be targeted much more exact
       ;; as we only need to remove the specializing class and all
       ;; its subclasses from the hash.
-      (clrhash *make-instance-initargs-cache*))
+      (clrhash *make-instance-initargs-cache*)
+      (clrhash *reinitialize-instance-initargs-cache*))
     (if gf
         (check-method-lambda-list name method-lambda-list
                                   (generic-function-lambda-list gf))
@@ -2716,7 +2721,7 @@ or T when any keyword is acceptable due to presence of
 (defmethod reinitialize-instance ((instance standard-object) &rest initargs)
   (check-initargs (list #'reinitialize-instance) (list* instance initargs)
                   instance () initargs
-                  nil)
+                  *reinitialize-instance-initargs-cache*)
   (apply #'shared-initialize instance () initargs))
 
 (defun std-shared-initialize (instance slot-names all-keys)
