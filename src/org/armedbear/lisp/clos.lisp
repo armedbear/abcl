@@ -2617,16 +2617,14 @@ or T when any keyword is acceptable due to presence of
 &allow-other-keys."
   (when (member '&allow-other-keys lambda-list)
     (return-from extract-lambda-list-keywords t))
-  (let* ((keyword-args (cdr (memq '&key lambda-list)))
-         (aux-vars (position '&aux keyword-args)))
-    (when keyword-args
-      (when aux-vars
-        (setq keyword-args (subseq keyword-args 0 aux-vars)))
-      (let (result)
-        (dolist (key keyword-args result)
-          (when (listp key)
-            (setq key (car key)))
-          (push (if (symbolp key) (make-keyword key) (car key)) result))))))
+  (loop with keyword-args = (cdr (memq '&key lambda-list))
+        for key in keyword-args
+        when (eq key '&aux) do (loop-finish)
+        when (eq key '&allow-other-keys) do (return t)
+        when (listp key) do (setq key (car key))
+        collect (if (symbolp key)
+                    (make-keyword key)
+                  (car key))))
 
 
 (defgeneric make-instance (class &rest initargs &key &allow-other-keys))
