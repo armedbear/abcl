@@ -433,9 +433,6 @@
                 #'std-compute-class-precedence-list
                 #'compute-class-precedence-list)
             class))
-  (dolist (class (class-precedence-list class))
-    (when (typep class 'forward-referenced-class)
-      (return-from std-finalize-inheritance)))
   (setf (class-slots class)
                    (funcall (if (eq (class-of class) +the-standard-class+)
                                 #'std-compute-slots
@@ -483,6 +480,10 @@
 
 (defun std-compute-class-precedence-list (class)
   (let ((classes-to-order (collect-superclasses* class)))
+    (dolist (super classes-to-order)
+      (when (typep super 'forward-referenced-class)
+        (error "Can't compute class precedence list for class ~A ~
+                which depends on forward referenced class ~A." class super)))
     (topological-sort classes-to-order
                       (remove-duplicates
                        (mapappend #'local-precedence-ordering
@@ -729,10 +730,7 @@
       (dolist (writer (slot-definition-writers direct-slot))
         (add-writer-method class writer (slot-definition-name direct-slot)))))
   (setf (class-direct-default-initargs class) direct-default-initargs)
-  (funcall (if (eq (class-of class) +the-standard-class+)
-               #'std-finalize-inheritance
-               #'finalize-inheritance)
-           class)
+  (maybe-finalize-class-subtree class)
   (values))
 
 (defun canonical-slot-name (canonical-slot)
@@ -784,7 +782,7 @@
                       (setf (class-direct-superclasses subclass)
                             (substitute new-class old-class
                                         (class-direct-superclasses subclass))))
-                    (finalize-class-subtree new-class)
+                    (maybe-finalize-class-subtree new-class)
                     new-class))
                  (t
                   ;; We're redefining the class.
@@ -806,11 +804,11 @@
              class)))))
 
 
-(defun finalize-class-subtree (class)
+(defun maybe-finalize-class-subtree (class)
   (when (every #'class-finalized-p (class-direct-superclasses class))
     (finalize-inheritance class)
     (dolist (subclass (class-direct-subclasses class))
-       (finalize-class-subtree subclass))))
+       (maybe-finalize-class-subtree subclass))))
 
 (defmacro defclass (&whole form name direct-superclasses direct-slots &rest options)
   (unless (>= (length form) 3)
