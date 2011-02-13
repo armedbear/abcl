@@ -693,7 +693,8 @@
   (let ((class (std-allocate-instance +the-standard-class+)))
     (check-initargs (list #'allocate-instance #'initialize-instance)
                     (list* class initargs)
-                    class t initargs)
+                    class t initargs
+                    *make-instance-initargs-cache*)
     (%set-class-name name class)
     (%set-class-layout nil class)
     (%set-class-direct-subclasses ()  class)
@@ -739,6 +740,10 @@
 (defvar *extensible-built-in-classes*
   (list (find-class 'sequence)
         (find-class 'java:java-object)))
+
+(defvar *make-instance-initargs-cache*
+  (make-hash-table :test #'eq)
+  "Cached sets of allowable initargs, keyed on the class they belong to.")
 
 (defun ensure-class (name &rest all-keys &key metaclass &allow-other-keys)
   ;; Check for duplicate slots.
@@ -786,11 +791,14 @@
                     new-class))
                  (t
                   ;; We're redefining the class.
+                  (remhash old-class *make-instance-initargs-cache*)
                   (%make-instances-obsolete old-class)
                   (setf (class-finalized-p old-class) nil)
-                  (check-initargs (list #'allocate-instance #'initialize-instance)
+                  (check-initargs (list #'allocate-instance
+                                        #'initialize-instance)
                                   (list* old-class all-keys)
-                                  old-class t all-keys)
+                                  old-class t all-keys
+                                  nil)
                   (apply #'std-after-initialization-for-classes old-class all-keys)
                   old-class)))
           (t
@@ -1585,10 +1593,31 @@
                 all of the keyword arguments defined for the ~
                 generic function." method-lambda-list name)))))
 
+(defvar *gf-initialize-instance* nil
+  "Cached value of the INITIALIZE-INSTANCE generic function.
+Initialized with the true value near the end of the file.")
+(defvar *gf-allocate-instance* nil
+  "Cached value of the ALLOCATE-INSTANCE generic function.
+Initialized with the true value near the end of the file.")
+(defvar *gf-shared-initialize* nil
+  "Cached value of the SHARED-INITIALIZE generic function.
+Initialized with the true value near the end of the file.")
+(defvar *gf-reinitialize-instance* nil
+  "Cached value of the REINITIALIZE-INSTANCE generic function.
+Initialized with the true value near the end of the file.")
+
 (declaim (ftype (function * method) ensure-method))
 (defun ensure-method (name &rest all-keys)
   (let ((method-lambda-list (getf all-keys :lambda-list))
         (gf (find-generic-function name nil)))
+    (when (or (eq gf *gf-initialize-instance*)
+              (eq gf *gf-allocate-instance*)
+              (eq gf *gf-shared-initialize*)
+              (eq gf *gf-reinitialize-instance*))
+      ;; ### Clearly, this can be targeted much more exact
+      ;; as we only need to remove the specializing class and all
+      ;; its subclasses from the hash.
+      (clrhash *make-instance-initargs-cache*))
     (if gf
         (check-method-lambda-list name method-lambda-list
                                   (generic-function-lambda-list gf))
@@ -2565,18 +2594,11 @@ in place, while we still need them to "
 ;; methods, along with the predefined initialization argument :ALLOW-OTHER-KEYS."
 ;; 7.1.2
 
-(defun check-initargs (gf-list args instance shared-initialize-param initargs)
-  "Checks the validity of `initargs' for the generic functions in `gf-list' when
-called with `args' by calculating the applicable methods for each gf.
-The applicable methods for SHARED-INITIALIZE based on `instance',
-`shared-initialize-param' and `initargs' are added to the list of
-applicable methods."
-  (when (oddp (length initargs))
-    (error 'program-error
-           :format-control "Odd number of keyword arguments."))
-  (unless (getf initargs :allow-other-keys)
-    (let* ((methods
-            (nconc
+(defun calculate-allowable-initargs (gf-list args instance
+                                             shared-initialize-param
+                                             initargs)
+  (let* ((methods
+          (nconc
              (compute-applicable-methods #'shared-initialize
                                          (list* instance
                                                 shared-initialize-param
@@ -2584,26 +2606,48 @@ applicable methods."
              (mapcan #'(lambda (gf)
                          (compute-applicable-methods gf args))
                      gf-list)))
-           (method-keyword-args
-            (reduce #'merge-initargs-sets
-                    (mapcar #'method-lambda-list methods)
-                    :key #'extract-lambda-list-keywords
-                    :initial-value nil))
-           (slots-initargs
-            (mapappend #'slot-definition-initargs
-                       (class-slots (class-of instance))))
-           (allowable-initargs
-            (merge-initargs-sets
-             (merge-initargs-sets slots-initargs method-keyword-args)
-             '(:allow-other-keys)))) ;; allow-other-keys is always allowed
-      (unless (eq t allowable-initargs)
-        (do* ((tail initargs (cddr tail))
-              (initarg (car tail) (car tail)))
-             ((null tail))
-          (unless (memq initarg allowable-initargs)
-            (error 'program-error
-                   :format-control "Invalid initarg ~S."
-                   :format-arguments (list initarg))))))))
+         (method-keyword-args
+          (reduce #'merge-initargs-sets
+                  (mapcar #'method-lambda-list methods)
+                  :key #'extract-lambda-list-keywords
+                  :initial-value nil))
+         (slots-initargs
+          (mapappend #'slot-definition-initargs
+                     (class-slots (class-of instance)))))
+    (merge-initargs-sets
+     (merge-initargs-sets slots-initargs method-keyword-args)
+     '(:allow-other-keys))))  ;; allow-other-keys is always allowed
+
+(defun check-initargs (gf-list args instance
+                       shared-initialize-param initargs
+                       cache)
+  "Checks the validity of `initargs' for the generic functions in `gf-list'
+when called with `args' by calculating the applicable methods for each gf.
+The applicable methods for SHARED-INITIALIZE based on `instance',
+`shared-initialize-param' and `initargs' are added to the list of
+applicable methods."
+  (when (oddp (length initargs))
+    (error 'program-error
+           :format-control "Odd number of keyword arguments."))
+  (unless (getf initargs :allow-other-keys)
+    (multiple-value-bind (allowable-initargs present-p)
+                         (when cache
+                           (gethash (class-of instance) cache))
+       (unless present-p
+         (setf allowable-initargs
+               (calculate-allowable-initargs gf-list args instance
+                                             shared-initialize-param initargs))
+         (when cache
+           (setf (gethash (class-of instance) cache)
+                 allowable-initargs)))
+       (unless (eq t allowable-initargs)
+         (do* ((tail initargs (cddr tail))
+               (initarg (car tail) (car tail)))
+              ((null tail))
+              (unless (memq initarg allowable-initargs)
+                (error 'program-error
+                       :format-control "Invalid initarg ~S."
+                       :format-arguments (list initarg))))))))
 
 (defun merge-initargs-sets (list1 list2)
   (cond
@@ -2648,7 +2692,8 @@ or T when any keyword is acceptable due to presence of
   (let ((instance (std-allocate-instance class)))
     (check-initargs (list #'allocate-instance #'initialize-instance)
                     (list* instance initargs)
-                    instance t initargs)
+                    instance t initargs
+                    *make-instance-initargs-cache*)
     (apply #'initialize-instance instance initargs)
     instance))
 
@@ -2670,7 +2715,8 @@ or T when any keyword is acceptable due to presence of
 ;; it received."
 (defmethod reinitialize-instance ((instance standard-object) &rest initargs)
   (check-initargs (list #'reinitialize-instance) (list* instance initargs)
-                  instance () initargs)
+                  instance () initargs
+                  nil)
   (apply #'shared-initialize instance () initargs))
 
 (defun std-shared-initialize (instance slot-names all-keys)
@@ -2761,7 +2807,8 @@ or T when any keyword is acceptable due to presence of
                             (class-slots (class-of new))))))
     (check-initargs (list #'update-instance-for-different-class)
                     (list old new initargs)
-                    new added-slots initargs)
+                    new added-slots initargs
+                    nil)
     (apply #'shared-initialize new added-slots initargs)))
 
 ;;; make-instances-obsolete
@@ -2793,7 +2840,8 @@ or T when any keyword is acceptable due to presence of
   (check-initargs (list #'update-instance-for-redefined-class)
                   (list* instance added-slots discarded-slots
                          property-list initargs)
-                  instance added-slots initargs)
+                  instance added-slots initargs
+                  nil)
   (apply #'shared-initialize instance added-slots initargs))
 
 ;;;  Methods having to do with class metaobjects.
@@ -3101,6 +3149,11 @@ or T when any keyword is acceptable due to presence of
 ;; FIXME
 (defgeneric function-keywords (method))
 
+
+(setf *gf-initialize-instance* (symbol-function 'initialize-instance))
+(setf *gf-allocate-instance* (symbol-function 'allocate-instance))
+(setf *gf-shared-initialize* (symbol-function 'shared-initialize))
+(setf *gf-reinitialize-instance* (symbol-function 'reinitialize-instance))
 (setf *clos-booting* nil)
 
 (defgeneric class-prototype (class))
