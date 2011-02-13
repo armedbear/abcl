@@ -2577,44 +2577,59 @@ applicable methods."
     (error 'program-error
            :format-control "Odd number of keyword arguments."))
   (unless (getf initargs :allow-other-keys)
-    (let ((methods
-           (nconc
-            (compute-applicable-methods #'shared-initialize
-                                        (list* instance shared-initialize-param
-                                               initargs))
-            (mapcan #'(lambda (gf)
-                        (compute-applicable-methods gf args))
-                    gf-list)))
-	  (slots (class-slots (class-of instance))))
-      (do* ((tail initargs (cddr tail))
-            (initarg (car tail) (car tail)))
-           ((null tail))
-        (unless (or (valid-initarg-p initarg slots)
-		    (valid-methodarg-p initarg methods)
-                    (eq initarg :allow-other-keys))
-          (error 'program-error
-                 :format-control "Invalid initarg ~S."
-                 :format-arguments (list initarg)))))))
+    (let* ((methods
+            (nconc
+             (compute-applicable-methods #'shared-initialize
+                                         (list* instance
+                                                shared-initialize-param
+                                                initargs))
+             (mapcan #'(lambda (gf)
+                         (compute-applicable-methods gf args))
+                     gf-list)))
+           (method-keyword-args
+            (reduce #'merge-initargs-sets
+                    (mapcar #'method-lambda-list methods)
+                    :key #'extract-lambda-list-keywords
+                    :initial-value nil))
+           (slots-initargs
+            (mapappend #'slot-definition-initargs
+                       (class-slots (class-of instance))))
+           (allowable-initargs
+            (merge-initargs-sets
+             (merge-initargs-sets slots-initargs method-keyword-args)
+             '(:allow-other-keys)))) ;; allow-other-keys is always allowed
+      (unless (eq t allowable-initargs)
+        (do* ((tail initargs (cddr tail))
+              (initarg (car tail) (car tail)))
+             ((null tail))
+          (unless (memq initarg allowable-initargs)
+            (error 'program-error
+                   :format-control "Invalid initarg ~S."
+                   :format-arguments (list initarg))))))))
 
-(defun valid-methodarg-p (initarg methods)
-  (when (symbolp initarg)
-    (dolist (method methods nil)
-      (let ((valid-initargs (method-lambda-list method)))
-        (when (find (symbol-value initarg) valid-initargs 
-                     :test #'(lambda (a b)
-                               (if (listp b)
-                                   (eq a (car b))
-                                 (or
-                                  (eq a b)
-                                  (eq b 'cl:&allow-other-keys)))))
+(defun merge-initargs-sets (list1 list2)
+  (cond
+   ((eq list1 t)  t)
+   ((eq list2 t)  t)
+   (t             (union list1 list2))))
 
-          (return t))))))
+(defun extract-lambda-list-keywords (lambda-list)
+  "Returns a list of keywords acceptable as keyword arguments,
+or T when any keyword is acceptable due to presence of
+&allow-other-keys."
+  (when (member '&allow-other-keys lambda-list)
+    (return-from extract-lambda-list-keywords t))
+  (let* ((keyword-args (cdr (memq '&key lambda-list)))
+         (aux-vars (position '&aux keyword-args)))
+    (when keyword-args
+      (when aux-vars
+        (setq keyword-args (subseq keyword-args 0 aux-vars)))
+      (let (result)
+        (dolist (key keyword-args result)
+          (when (listp key)
+            (setq key (car key)))
+          (push (if (symbolp key) (make-keyword key) (car key)) result))))))
 
-(defun valid-initarg-p (initarg slots)
-  (dolist (slot slots nil)
-    (let ((valid-initargs (slot-definition-initargs slot)))
-      (when (memq initarg valid-initargs)
-        (return t)))))
 
 (defgeneric make-instance (class &rest initargs &key &allow-other-keys))
 
