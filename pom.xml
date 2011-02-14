@@ -13,9 +13,9 @@
   </parent>
   <groupId>org.armedbear.lisp</groupId>
   <artifactId>abcl</artifactId>
+  <version>0.24.0</version>
   <packaging>jar</packaging>
   <name>ABCL - Armed Bear Common Lisp</name>
-  <version>0.24.0</version>
   <description>Common Lisp implementation running on the JVM</description>
   <url>http://common-lisp/project/armedbear</url>
   <licenses>

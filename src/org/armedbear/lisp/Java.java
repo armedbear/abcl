@@ -91,9 +91,9 @@ public final class Java
         public LispObject execute(LispObject className, LispObject symbol)
 
         {
-            // FIXME Verify that CONDITION-SYMBOL is a symbol that names a condition.
+            LispClass lispClass = (LispClass) LispClass.findClass(symbol, true);
             // FIXME Signal a continuable error if the exception is already registered.
-            if ((symbol instanceof Symbol) && isJavaException(LispClass.findClass((Symbol) symbol))) {
+            if (isJavaException(lispClass)) {
                 registeredExceptions.put(classForName(className.getStringValue()),
                                          (Symbol)symbol);
                 return T;
@@ -122,13 +122,15 @@ public final class Java
         }
     };
 
-    static Symbol getCondition(Class cl)
-    {
-	Class o = classForName("java.lang.Object");
-     	for (Class c = cl ; c != o ; c = c.getSuperclass()) {
+    static Symbol getCondition(Class cl) {
+        Class o = classForName("java.lang.Object");
+        for (Class c = cl ; c != o ; c = c.getSuperclass()) {
             Object object = registeredExceptions.get(c);
-            if (object != null && isJavaException(LispClass.findClass((Symbol) object))) {
-                return (Symbol) object;
+            if (object instanceof Symbol) {
+                LispClass lispClass = (LispClass) LispClass.findClass((Symbol) object, true);
+                if(isJavaException(lispClass)) {
+                    return (Symbol) object;
+                }
             }
         }
         return null;

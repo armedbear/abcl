@@ -287,7 +287,7 @@ public abstract class LispClass extends StandardObject
 
   public boolean subclassp(LispObject obj)
   {
-    return false;
+      return subclassp(this, obj);
   }
 
   public static boolean subclassp(LispObject cls, LispObject obj)
@@ -305,11 +305,6 @@ public abstract class LispClass extends StandardObject
           return true;
         cpl = ((Cons)cpl).cdr;
       }
-
-    if (cls instanceof LispClass)
-      // additional checks (currently because of JavaClass)
-      return ((LispClass)cls).subclassp(obj);
-
     return false;
   }
 
