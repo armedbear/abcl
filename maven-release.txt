@@ -1,0 +1,34 @@
+# Releasing ABCL on Sonatype's OSS Maven repository - instructions
+#
+# This assumes your settings.xml (/etc/maven2/settings.xml for Ubuntu-packaged Maven) contains something like this in its <servers></servers> section:
+#
+# <server>
+#   <id>sonatype-nexus-snapshots</id>
+#   <username>sonatype-jira-username</username>
+#   <password>sonatype-jira-password</password>
+# </server>
+# <server>
+#   <id>sonatype-nexus-staging</id>
+#   <username>sonatype-jira-username</username>
+#   <password>sonatype-jira-password</password>
+# </server>
+
+# First, remember to build it!
+ant abcl.jar
+ant abcl.source.jar
+ant abcl.javadoc.jar
+# And maybe test it as well
+ant abcl.test
+
+# For snapshots - development versions - the version in the POM should be like x.y.z-SNAPSHOT
+mvn gpg:sign-and-deploy-file -Dfile=dist/abcl.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/content/repositories/snapshots/ -DrepositoryId=sonatype-nexus-snapshots
+mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-${abcl.version}-sources.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/content/repositories/snapshots/ -DrepositoryId=sonatype-nexus-snapshots -Dclassifier=sources
+mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-${abcl.version}-javadoc.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/content/repositories/snapshots/ -DrepositoryId=sonatype-nexus-snapshots -Dclassifier=javadoc
+
+# For releases - the version in the POM should be x.y.z
+mvn gpg:sign-and-deploy-file -Dfile=dist/abcl.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging
+mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-${abcl.version}-sources.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=sources
+mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-${abcl.version}-javadoc.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=javadoc
+
+
+

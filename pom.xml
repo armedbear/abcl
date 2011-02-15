@@ -13,7 +13,7 @@
   </parent>
   <groupId>org.armedbear.lisp</groupId>
   <artifactId>abcl</artifactId>
-  <version>0.24.0</version>
+  <version>0.25.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>ABCL - Armed Bear Common Lisp</name>
   <description>Common Lisp implementation running on the JVM</description>
@@ -34,22 +34,22 @@
     <developer>
       <id>ehu</id>
       <name>Erik Huelsmann</name>
-      <email>ehuels@gmail.com</email>
+      <email>ehuels (at) gmail (dot) com</email>
     </developer>
     <developer>
       <id>easyE</id>
       <name>Mark Evenson</name>
-      <email>evenson@panix.com</email>
+      <email>evenson (at) panix (dot) com</email>
     </developer>
     <developer>
       <id>V-ille</id>
       <name>Ville Voutilainen</name>
-      <email>ville.voutilainen@gmail.com</email>
+      <email>ville.voutilainen (at) gmail (dot) com</email>
     </developer>
     <developer>
       <id>astalla</id>
       <name>Alessio Stalla</name>
-      <email>alessiostalla@gmail.com</email>
+      <email>alessiostalla (at) gmail (dot) com</email>
     </developer>
   </developers>
 
