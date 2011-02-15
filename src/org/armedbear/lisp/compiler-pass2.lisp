@@ -345,12 +345,6 @@ supported (and used) by the compiler.")
                 (compiler-subtypep the-type (make-compiler-type type)))
         (return-from type-representation (caar types))))))
 
-(defun representation-size (representation)
-  (ecase representation
-    ((NIL :int :boolean :float :char) 1)
-    ((:long :double) 2)))
-
-
 (defknown emit-unbox-boolean () t)
 (defun emit-unbox-boolean ()
   (emit-instanceof +lisp-nil+)
@@ -579,9 +573,29 @@ before the emitted code: the code is 'stack-neutral'."
 (defknown single-valued-p (t) t)
 (defun single-valued-p (form)
   (cond ((node-p form)
-         (if (tagbody-node-p form)
-             (not (unsafe-p (node-form form)))
-             (single-valued-p (node-form form))))
+         (cond ((tagbody-node-p form)
+                t)
+               ((block-node-p form)
+                (and (single-valued-p (car (last (node-form form))))
+                     ;; return-from value forms
+                     (every #'single-valued-p
+                            (block-return-value-forms form))))
+               ((or (flet-node-p form)
+                    (labels-node-p form)
+                    (let/let*-node-p form)
+                    (m-v-b-node-p form)
+                    (progv-node-p form)
+                    (locally-node-p form)
+                    (synchronized-node-p form))
+                (single-valued-p (car (last (node-form form)))))
+               ((unwind-protect-node-p form)
+                (single-valued-p (second (node-form form))))
+               ((catch-node-p form)
+                nil)
+               ((jump-node-p form)
+                (single-valued-p (node-form form)))
+               (t
+                (assert (not "SINGLE-VALUED-P unhandled NODE-P branch")))))
         ((var-ref-p form)
          t)
         ((atom form)
@@ -590,15 +604,15 @@ before the emitted code: the code is 'stack-neutral'."
          (let ((op (%car form))
                result-type
                compiland)
+           (assert (not (member op '(LET LET* FLET LABELS TAGBODY CATCH
+                                         MULTIPLE-VALUE-BIND
+                                         UNWIND-PROTECT BLOCK PROGV
+                                         LOCALLY))))
            (cond ((eq op 'IF)
                   (and (single-valued-p (third form))
                        (single-valued-p (fourth form))))
                  ((eq op 'PROGN)
                   (single-valued-p (car (last form))))
-                 ((eq op 'BLOCK)
-                  (single-valued-p (car (last form))))
-                 ((memq op '(LET LET*))
-                  (single-valued-p (car (last (cddr form)))))
                  ((memq op '(AND OR))
                   (every #'single-valued-p (cdr form)))
                  ((eq op 'RETURN-FROM)
@@ -644,6 +658,126 @@ before the emitted code: the code is 'stack-neutral'."
             do (compile-form form arg1 arg2)
             collecting form)))
     (apply #'maybe-emit-clear-values forms-for-emit-clear)))
+
+
+(declaim (special *saved-operands* *operand-representations*))
+(defmacro with-operand-accumulation ((&body argument-accumulation-body)
+                                     &body call-body)
+  "Macro used to operand-stack-safely collect arguments in the
+`argument-accumulation-body' to be available on the stack upon entry of the
+`call-body'. The argument-accumulation-body code may not assume arguments
+are actually on the stack while accumulating.
+
+This macro closes over a code-generating block. Operands can be collected
+using the `accumulate-operand', `compile-operand', `emit-variable-operand'
+and `emit-load-externalized-object-operand'."
+  `(let (*saved-operands*
+         *operand-representations*
+         (*register* *register*)
+         ) ;; hmm can we do this?? either body
+                                  ;; could allocate registers ...
+     ,@argument-accumulation-body
+     (load-saved-operands)
+     ,@call-body))
+
+(defmacro accumulate-operand ((representation &key unsafe-p)
+                              &body body)
+  "Macro used to collect a single operand.
+
+This macro closes over a code-generating block. The generated code should
+leave a single operand on the stack, with representation `representation'.
+The value `unsafe-p', when provided, is an expression evaluated at run time
+to indicate if the body is opstack unsafe."
+  `(progn
+     ,@(when unsafe-p
+         `((when ,unsafe-p
+             (save-existing-operands))))
+     ,@body
+     (save-operand ,representation)))
+
+(defun load-saved-operands ()
+  "Load any operands which have been saved into registers
+back onto the stack in preparation of the execution of the opcode."
+  (mapcar #'emit-push-register
+          (reverse *saved-operands*)
+          (reverse *operand-representations*)))
+
+(defun save-existing-operands ()
+  "If any operands have been compiled to the stack,
+save them in registers."
+  (when (null *saved-operands*)
+    (dolist (representation *operand-representations*)
+      (let ((register (allocate-register representation)))
+        (push register *saved-operands*)
+        (emit-move-from-stack register representation)))
+
+    (setf *saved-operands* (nreverse *saved-operands*))))
+
+(defun save-operand (representation)
+  "Saves an operand from the stack (with `representation') to
+a register and updates associated operand collection variables."
+  (push representation *operand-representations*)
+
+  (when *saved-operands*
+    (let ((register (allocate-register representation)))
+      (push register *saved-operands*)
+      (emit-move-from-stack register representation))))
+
+(defun compile-operand (form representation &optional cast)
+  "Compiles `form' into `representation', storing the resulting value
+on the operand stack, if it's safe to do so. Otherwise stores the value
+in a register"
+  (let ((unsafe (or *saved-operands*
+                    (some-nested-block #'node-opstack-unsafe-p
+                                       (find-enclosed-blocks form)))))
+    (when (and unsafe (null *saved-operands*))
+      (save-existing-operands))
+
+    (compile-form form 'stack representation)
+    (when cast
+      (emit-checkcast cast))
+    (when unsafe
+      (let ((register (allocate-register representation)))
+        (push register *saved-operands*)
+        (emit-move-from-stack register representation)))
+
+  (push representation *operand-representations*)))
+
+(defun emit-variable-operand (variable)
+  "Pushes a variable onto the operand stack, if it's safe to do so. Otherwise
+stores the value in a register."
+  (push (variable-representation variable) *operand-representations*)
+  (cond
+   ((and *saved-operands*
+         (variable-register variable))
+    ;; we're in 'safe mode' and the  variable is in a register,
+    ;; instead of binding a new register, just load the existing one
+    (push (variable-register variable) *saved-operands*))
+   (t
+    (emit-push-variable variable)
+    (when *saved-operands* ;; safe-mode
+      (let ((register (allocate-register (variable-representation variable))))
+        (push register *saved-operands*)
+        (emit-move-from-stack register (variable-representation variable)))))))
+
+(defun emit-register-operand (register representation)
+  (push representation *operand-representations*)
+  (cond (*saved-operands*
+         (push register *saved-operands*))
+        (t
+         (emit-push-register register representation))))
+
+(defun emit-thread-operand ()
+  (ensure-thread-var-initialized)
+  (emit-register-operand *thread* nil))
+
+(defun emit-load-externalized-object-operand (object)
+  (push nil *operand-representations*)
+  (emit-load-externalized-object object)
+  (when *saved-operands* ;; safe-mode
+    (let ((register (allocate-register nil)))
+      (push register *saved-operands*)
+      (emit 'astore register))))
 
 (defknown emit-unbox-fixnum () t)
 (defun emit-unbox-fixnum ()
@@ -728,6 +862,19 @@ representation, based on the derived type of the LispObject."
          (sys::%format t "emit-move-from-stack general case~%")
          (aver nil))))
 
+(defknown emit-push-register (t &optional t) t)
+(defun emit-push-register (source &optional representation)
+  (declare (optimize speed))
+  (assert (fixnump source))
+  (emit (ecase representation
+               ((:int :boolean :char)
+                        'iload)
+               (:long   'lload)
+               (:float  'fload)
+               (:double 'dload)
+               ((nil)   'aload))
+        source))
+
 ;; Expects value on stack.
 (defknown emit-invoke-method (t t t) t)
 (defun emit-invoke-method (method-name target representation)
@@ -808,7 +955,7 @@ representation, based on the derived type of the LispObject."
          keys-p
          more-keys-p)
     (with-code-to-method (class method)
-      (allocate-register)
+      (allocate-register nil)
       (unless (eq super +lisp-compiled-primitive+)
         (multiple-value-bind
              (req opt key key-p rest
@@ -824,7 +971,7 @@ representation, based on the derived type of the LispObject."
                       (emit-push-constant-int (length ,params))
                       (emit-anewarray +lisp-closure-parameter+)
                       (astore (setf ,register *registers-allocated*))
-                      (allocate-register)
+                      (allocate-register nil)
                       (do* ((,count-sym 0 (1+ ,count-sym))
                             (,params ,params (cdr ,params))
                             (,param (car ,params) (car ,params)))
@@ -1494,10 +1641,12 @@ The field type of the object is specified by OBJ-REF."
 (defun compile-binary-operation (op args target representation)
   (let ((arg1 (car args))
         (arg2 (cadr args)))
-    (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                               arg2 'stack nil)
-    (emit-invokevirtual +lisp-object+ op
-                        (lisp-object-arg-types 1) +lisp-object+)
+    (with-operand-accumulation
+        ((compile-operand arg1 nil)
+         (compile-operand arg2 nil)
+         (maybe-emit-clear-values arg1 arg2))
+      (emit-invokevirtual +lisp-object+ op
+                          (lisp-object-arg-types 1) +lisp-object+))
     (fix-boxing representation nil)
     (emit-move-from-stack target representation)))
 
@@ -1547,16 +1696,18 @@ The field type of the object is specified by OBJ-REF."
          (args (%cdr form))
          (arg1 (%car args))
          (arg2 (%cadr args)))
-    (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                               arg2 'stack nil)
-     (let ((LABEL1 (gensym))
-           (LABEL2 (gensym)))
-       (emit (if (eq op 'EQ) 'if_acmpne 'if_acmpeq) LABEL1)
-       (emit-push-true representation)
-       (emit 'goto LABEL2)
-       (label LABEL1)
-       (emit-push-false representation)
-       (label LABEL2))
+    (with-operand-accumulation
+         ((compile-operand arg1 nil)
+          (compile-operand arg2 nil)
+          (maybe-emit-clear-values arg1 arg2))
+      (let ((LABEL1 (gensym))
+            (LABEL2 (gensym)))
+        (emit (if (eq op 'EQ) 'if_acmpne 'if_acmpeq) LABEL1)
+        (emit-push-true representation)
+        (emit 'goto LABEL2)
+        (label LABEL1)
+        (emit-push-false representation)
+        (label LABEL2)))
      (emit-move-from-stack target representation))
    t)
 
@@ -1574,8 +1725,10 @@ The field type of the object is specified by OBJ-REF."
          (type2 (derive-compiler-type arg2)))
     (cond ((and (fixnum-type-p type1)
                 (fixnum-type-p type2))
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                      arg2 'stack :int)
+           (with-operand-accumulation
+                ((compile-operand arg1 :int)
+                 (compile-operand arg2 :int)
+                 (maybe-emit-clear-values arg1 arg2)))
            (let ((label1 (gensym))
                  (label2 (gensym)))
              (emit 'if_icmpeq label1)
@@ -1585,26 +1738,36 @@ The field type of the object is specified by OBJ-REF."
              (emit-push-true representation)
              (label label2)))
           ((fixnum-type-p type2)
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                      arg2 'stack :int)
+           (with-operand-accumulation
+                ((compile-operand arg1 nil)
+                 (compile-operand arg2 :int)
+                 (maybe-emit-clear-values arg1 arg2)))
            (emit-ifne-for-eql representation '(:int)))
           ((fixnum-type-p type1)
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                      arg2 'stack nil)
+           (with-operand-accumulation
+                ((compile-operand arg1 :int)
+                 (compile-operand arg2 nil)
+                 (maybe-emit-clear-values arg1 arg2)))
            (emit 'swap)
            (emit-ifne-for-eql representation '(:int)))
           ((eq type2 'CHARACTER)
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                      arg2 'stack :char)
+           (with-operand-accumulation
+                ((compile-operand arg1 nil)
+                 (compile-operand arg2 :char)
+                 (maybe-emit-clear-values arg1 arg2)))
            (emit-ifne-for-eql representation '(:char)))
           ((eq type1 'CHARACTER)
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack :char
-                                                      arg2 'stack nil)
+           (with-operand-accumulation
+                ((compile-operand arg1 :char)
+                 (compile-operand arg2 nil)
+                 (maybe-emit-clear-values arg1 arg2)))
            (emit 'swap)
            (emit-ifne-for-eql representation '(:char)))
           (t
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                      arg2 'stack nil)
+           (with-operand-accumulation
+                ((compile-operand arg1 nil)
+                 (compile-operand arg2 nil)
+                 (maybe-emit-clear-values arg1 arg2)))
            (ecase representation
              (:boolean
               (emit-invokevirtual +lisp-object+ "eql"
@@ -1621,8 +1784,10 @@ The field type of the object is specified by OBJ-REF."
          (let* ((args (cdr form))
                 (arg1 (first args))
                 (arg2 (second args)))
-           (compile-form arg1 'stack nil)
-           (compile-form arg2 'stack nil)
+           (with-operand-accumulation
+               ((compile-operand arg1 nil)
+                (compile-operand arg2 nil)
+                (maybe-emit-clear-values arg1 arg2)))
            (emit-invokestatic +lisp+ "memq"
                               (lisp-object-arg-types 2) :boolean)
            (emit-move-from-stack target representation)))
@@ -1637,8 +1802,10 @@ The field type of the object is specified by OBJ-REF."
                 (arg1 (first args))
                 (arg2 (second args))
                 (type1 (derive-compiler-type arg1)))
-           (compile-form arg1 'stack nil)
-           (compile-form arg2 'stack nil)
+           (with-operand-accumulation
+               ((compile-operand arg1 nil)
+                (compile-operand arg2 nil)
+                (maybe-emit-clear-values arg1 arg2)))
            (cond ((eq type1 'SYMBOL) ; FIXME
                   (emit-invokestatic +lisp+ "memq"
                                      (lisp-object-arg-types 2) :boolean))
@@ -1666,13 +1833,12 @@ The field type of the object is specified by OBJ-REF."
          (arg3 (third args)))
     (case (length args)
       ((2 3)
-       (compile-form arg1 'stack nil)
-       (compile-form arg2 'stack nil)
-       (cond ((null arg3)
-              (maybe-emit-clear-values arg1 arg2))
-             (t
-              (compile-form arg3 'stack nil)
-              (maybe-emit-clear-values arg1 arg2 arg3)))
+       (with-operand-accumulation
+           ((compile-operand arg1 nil)
+            (compile-operand arg2 nil)
+            (when arg3
+              (compile-operand arg3 nil))
+            (maybe-emit-clear-values arg1 arg2 arg3)))
        (emit-invokestatic +lisp+ "get"
                           (lisp-object-arg-types (if arg3 3 2))
                           +lisp-object+)
@@ -1692,9 +1858,11 @@ The field type of the object is specified by OBJ-REF."
        (let ((arg1 (first args))
              (arg2 (second args))
              (arg3 (third args)))
-         (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                    arg2 'stack nil
-                                                    arg3 'stack nil)
+       (with-operand-accumulation
+           ((compile-operand arg1 nil)
+            (compile-operand arg2 nil)
+            (compile-operand arg3 nil)
+            (maybe-emit-clear-values arg1 arg2 arg3)))
          (emit-invokestatic +lisp+ "getf"
                             (lisp-object-arg-types 3) +lisp-object+)
          (fix-boxing representation nil)
@@ -1709,10 +1877,10 @@ The field type of the object is specified by OBJ-REF."
               (eq (derive-type (%caddr form)) 'HASH-TABLE))
          (let ((key-form (%cadr form))
                (ht-form (%caddr form)))
-           (compile-form ht-form 'stack nil)
-           (emit-checkcast +lisp-hash-table+)
-           (compile-form key-form 'stack nil)
-           (maybe-emit-clear-values ht-form key-form)
+           (with-operand-accumulation
+               ((compile-operand ht-form nil +lisp-hash-table+)
+                (compile-operand key-form nil)
+                (maybe-emit-clear-values ht-form key-form)))
            (emit-invokevirtual +lisp-hash-table+ "gethash1"
                                (lisp-object-arg-types 1) +lisp-object+)
            (fix-boxing representation nil)
@@ -1727,11 +1895,11 @@ The field type of the object is specified by OBJ-REF."
          (let ((key-form (%cadr form))
                (ht-form (%caddr form))
                (value-form (fourth form)))
-           (compile-form ht-form 'stack nil)
-           (emit-checkcast +lisp-hash-table+)
-           (compile-form key-form 'stack nil)
-           (compile-form value-form 'stack nil)
-           (maybe-emit-clear-values ht-form key-form value-form)
+           (with-operand-accumulation
+               ((compile-operand ht-form nil +lisp-hash-table+)
+                (compile-operand key-form nil)
+                (compile-operand value-form nil)
+                (maybe-emit-clear-values ht-form key-form value-form)))
            (cond (target
                   (emit-invokevirtual +lisp-hash-table+ "puthash"
                                       (lisp-object-arg-types 2) +lisp-object+)
@@ -1756,8 +1924,8 @@ The field type of the object is specified by OBJ-REF."
         (t
          nil)))
 
-(defknown process-args (t) t)
-(defun process-args (args)
+(defknown process-args (t t) t)
+(defun process-args (args stack)
   "Compiles forms specified as function call arguments.
 
 The results are either accumulated on the stack or in an array
@@ -1765,27 +1933,76 @@ in order to call the relevant `execute' form. The function call
 itself is *not* compiled by this function."
   (when args
     (let ((numargs (length args)))
-      (let ((must-clear-values nil))
+      (let ((must-clear-values nil)
+            (unsafe-args (some-nested-block #'node-opstack-unsafe-p
+                                            (mapcan #'find-enclosed-blocks
+                                                    args))))
         (declare (type boolean must-clear-values))
-        (cond ((<= numargs call-registers-limit)
+        (cond ((and unsafe-args
+                    (<= numargs call-registers-limit))
+               (let ((*register* *register*)
+                     operand-registers)
+                 (dolist (stack-item stack)
+                   (let ((register (allocate-register nil)))
+                     (push register operand-registers)
+                     (emit-move-from-stack register stack-item)))
+                 (setf operand-registers (reverse operand-registers))
+                 (dolist (arg args)
+                   (push (allocate-register nil) operand-registers)
+                   (compile-form arg (car operand-registers) nil)
+                   (unless must-clear-values
+                     (unless (single-valued-p arg)
+                       (setf must-clear-values t))))
+                 (dolist (register (nreverse operand-registers))
+                   (aload register))))
+              ((<= numargs call-registers-limit)
                (dolist (arg args)
                  (compile-form arg 'stack nil)
                  (unless must-clear-values
                    (unless (single-valued-p arg)
                      (setf must-clear-values t)))))
               (t
-               (emit-push-constant-int numargs)
-               (emit-anewarray +lisp-object+)
-               (let ((i 0))
-                 (dolist (arg args)
-                   (emit 'dup)
-                   (emit-push-constant-int i)
-                   (compile-form arg 'stack nil)
-                   (emit 'aastore) ; store value in array
-                   (unless must-clear-values
-                     (unless (single-valued-p arg)
-                       (setf must-clear-values t)))
-                   (incf i)))))
+               (let* ((*register* *register*) ;; ### FIXME: this doesn't work, but why not?
+                     (array-register (allocate-register nil))
+                     saved-stack)
+                 (when unsafe-args
+                   (dolist (stack-item stack)
+                     (let ((register (allocate-register nil)))
+                       (push register saved-stack)
+                       (emit-move-from-stack register stack-item))))
+                 (emit-push-constant-int numargs)
+                 (emit-anewarray +lisp-object+)
+                 ;; be operand stack safe by not accumulating
+                 ;; any arguments on the stack.
+                 ;;
+                 ;; The overhead of storing+loading the array register
+                 ;; at the beginning and ending is small: there are at
+                 ;; least nine parameters to be calculated.
+                 (astore array-register)
+                 (let ((i 0))
+                   (dolist (arg args)
+                     (cond
+                      ((not (some-nested-block #'node-opstack-unsafe-p
+                                               (find-enclosed-blocks arg)))
+                       (aload array-register)
+                       (emit-push-constant-int i)
+                       (compile-form arg 'stack nil))
+                      (t
+                       (compile-form arg 'stack nil)
+                       (aload array-register)
+                       (emit 'swap)
+                       (emit-push-constant-int i)
+                       (emit 'swap)))
+                     (emit 'aastore) ; store value in array
+                     (unless must-clear-values
+                       (unless (single-valued-p arg)
+                         (setf must-clear-values t)))
+                     (incf i))
+                   (when unsafe-args
+                     (mapcar #'emit-push-register
+                             saved-stack
+                             (reverse stack)))
+                   (aload array-register)))))
         (when must-clear-values
           (emit-clear-values)))))
   t)
@@ -1853,26 +2070,28 @@ itself is *not* compiled by this function."
                  (aload 0)))
             (t
              (emit-load-externalized-object op)))
-      (process-args args)
+      (process-args args
+                    (if (or (<= *speed* *debug*) *require-stack-frame*)
+                        '(nil nil) '(nil)))
       (if (or (<= *speed* *debug*) *require-stack-frame*)
           (emit-call-thread-execute numargs)
           (emit-call-execute numargs))
       (fix-boxing representation (derive-compiler-type form))
       (emit-move-from-stack target representation))))
 
-(defun compile-call (args)
+(defun compile-call (args stack)
   "Compiles a function call.
 
 Depending on the `*speed*' and `*debug*' settings, a stack frame
 is registered (or not)."
   (let ((numargs (length args)))
     (cond ((> *speed* *debug*)
-           (process-args args)
+           (process-args args stack)
            (emit-call-execute numargs))
           (t
            (emit-push-current-thread)
            (emit 'swap) ; Stack: thread function
-           (process-args args)
+           (process-args args (list* (car stack) nil (cdr stack)))
            (emit-call-thread-execute numargs)))))
 
 (define-source-transform funcall (&whole form fun &rest args)
@@ -1939,14 +2158,14 @@ is registered (or not)."
   (when (> *debug* *speed*)
     (return-from p2-funcall (compile-function-call form target representation)))
   (compile-forms-and-maybe-emit-clear-values (cadr form) 'stack nil)
-  (compile-call (cddr form))
+  (compile-call (cddr form) '(nil))
   (fix-boxing representation nil)
   (emit-move-from-stack target))
 
 
 (defun duplicate-closure-array (compiland)
   (let* ((*register* *register*)
-         (register (allocate-register)))
+         (register (allocate-register nil)))
     (aload (compiland-closure-register compiland))        ;; src
     (emit-push-constant-int 0)                            ;; srcPos
     (emit-push-constant-int (length *closure-variables*))
@@ -2004,7 +2223,7 @@ Note: DEFUN implies a named lambda."
                (emit-invokestatic +lisp+ "makeCompiledClosure"
                                   (list +lisp-object+ +closure-binding-array+)
                                   +lisp-object+)))))
-    (process-args args)
+    (process-args args '(nil))
     (emit-call-execute (length args))
     (fix-boxing representation nil)
     (emit-move-from-stack target representation))
@@ -2059,15 +2278,16 @@ given a specific common representation.")
                (common-rep
                 (let ((LABEL1 (gensym))
                       (LABEL2 (gensym)))
-                  (compile-forms-and-maybe-emit-clear-values
-                          arg1 'stack common-rep
-                          arg2 'stack common-rep)
-                  (emit-numeric-comparison op common-rep LABEL1)
-                  (emit-push-true representation)
-                  (emit 'goto LABEL2)
-                  (label LABEL1)
-                  (emit-push-false representation)
-                  (label LABEL2))
+                  (with-operand-accumulation
+                       ((compile-operand arg1 common-rep)
+                        (compile-operand arg2 common-rep)
+                        (maybe-emit-clear-values arg1 arg2))
+                    (emit-numeric-comparison op common-rep LABEL1)
+                    (emit-push-true representation)
+                    (emit 'goto LABEL2)
+                    (label LABEL1)
+                    (emit-push-false representation)
+                    (label LABEL2)))
                 (emit-move-from-stack target representation)
                 (return-from p2-numeric-comparison))
                ((fixnump arg2)
@@ -2108,20 +2328,20 @@ given a specific common representation.")
                  (unless (and (or (node-constant-p arg2)
                                   (var-ref-p arg2))
                               (node-constant-p arg3))
-                   (allocate-register)))
+                   (allocate-register nil)))
                 (arg3-register
-                 (unless (node-constant-p arg3) (allocate-register))))
-           (compile-form arg1 'stack :int)
-           (compile-form arg2 'stack :int)
-           (when arg2-register
-             (emit 'dup)
-             (emit 'istore arg2-register))
-           (cond (arg3-register
-                  (compile-form arg3 'stack :int)
-                  (emit 'istore arg3-register)
-                  (maybe-emit-clear-values arg1 arg2 arg3))
-                 (t
-                  (maybe-emit-clear-values arg1 arg2)))
+                 (unless (node-constant-p arg3) (allocate-register nil))))
+           (with-operand-accumulation
+               ((compile-operand arg1 :int)
+                (compile-operand arg2 :int)
+                (when arg3-register
+                  (compile-operand arg3 :int))
+                (maybe-emit-clear-values arg1 arg2 arg3))
+             (when arg3-register
+               (emit 'istore arg3-register))
+             (when arg2-register
+               (emit 'dup)
+               (emit 'istore arg2-register)))
            ;; First test.
            (emit test LABEL1)
            ;; Second test.
@@ -2371,16 +2591,20 @@ given a specific common representation.")
   (when (check-arg-count form 2)
     (let* ((arg1 (%cadr form))
            (arg2 (%caddr form)))
-      (compile-forms-and-maybe-emit-clear-values arg1 'stack :char
-                                                 arg2 'stack :char)
+      (with-operand-accumulation
+           ((compile-operand arg1 :char)
+            (compile-operand arg2 :char)
+            (maybe-emit-clear-values arg1 arg2)))
       'if_icmpne)))
 
 (defun p2-test-eq (form)
   (when (check-arg-count form 2)
     (let ((arg1 (%cadr form))
           (arg2 (%caddr form)))
-      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                 arg2 'stack nil)
+      (with-operand-accumulation
+           ((compile-operand arg1 nil)
+            (compile-operand arg2 nil)
+            (maybe-emit-clear-values arg1 arg2)))
      'if_acmpne)))
 
 (defun p2-test-and (form)
@@ -2409,38 +2633,52 @@ given a specific common representation.")
            (type1 (derive-compiler-type arg1))
            (type2 (derive-compiler-type arg2)))
       (cond ((and (fixnum-type-p type1) (fixnum-type-p type2))
-             (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                        arg2 'stack :int)
+             (with-operand-accumulation
+                  ((compile-operand arg1 :int)
+                   (compile-operand arg2 :int)
+                   (maybe-emit-clear-values arg1 arg2)))
              'if_icmpne)
             ((and (eq type1 'CHARACTER) (eq type2 'CHARACTER))
-             (compile-forms-and-maybe-emit-clear-values arg1 'stack :char
-                                                        arg2 'stack :char)
+             (with-operand-accumulation
+                  ((compile-operand arg1 :char)
+                   (compile-operand arg2 :char)
+                   (maybe-emit-clear-values arg1 arg2)))
              'if_icmpne)
             ((eq type2 'CHARACTER)
-             (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                        arg2 'stack :char)
+             (with-operand-accumulation
+                  ((compile-operand arg1 nil)
+                   (compile-operand arg2 :char)
+                   (maybe-emit-clear-values arg1 arg2)))
              (emit-invokevirtual +lisp-object+ "eql" '(:char) :boolean)
              'ifeq)
             ((eq type1 'CHARACTER)
-             (compile-forms-and-maybe-emit-clear-values arg1 'stack :char
-                                                        arg2 'stack nil)
+             (with-operand-accumulation
+                  ((compile-operand arg1 :char)
+                   (compile-operand arg2 nil)
+                   (maybe-emit-clear-values arg1 arg2)))
              (emit 'swap)
              (emit-invokevirtual +lisp-object+ "eql" '(:char) :boolean)
              'ifeq)
             ((fixnum-type-p type2)
-             (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                        arg2 'stack :int)
+             (with-operand-accumulation
+                  ((compile-operand arg1 nil)
+                   (compile-operand arg2 :int)
+                   (maybe-emit-clear-values arg1 arg2)))
              (emit-invokevirtual +lisp-object+ "eql" '(:int) :boolean)
              'ifeq)
             ((fixnum-type-p type1)
-             (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                        arg2 'stack nil)
+             (with-operand-accumulation
+                  ((compile-operand arg1 :int)
+                   (compile-operand arg2 nil)
+                   (maybe-emit-clear-values arg1 arg2)))
              (emit 'swap)
              (emit-invokevirtual +lisp-object+ "eql" '(:int) :boolean)
              'ifeq)
             (t
-             (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                        arg2 'stack nil)
+             (with-operand-accumulation
+                  ((compile-operand arg1 nil)
+                   (compile-operand arg2 nil)
+                   (maybe-emit-clear-values arg1 arg2)))
              (emit-invokevirtual +lisp-object+ "eql"
                                  (lisp-object-arg-types 1) :boolean)
              'ifeq)))))
@@ -2454,14 +2692,18 @@ given a specific common representation.")
            (arg1 (%cadr form))
            (arg2 (%caddr form)))
       (cond ((fixnum-type-p (derive-compiler-type arg2))
-             (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                        arg2 'stack :int)
+             (with-operand-accumulation
+                  ((compile-operand arg1 nil)
+                   (compile-operand arg2 :int)
+                   (maybe-emit-clear-values arg1 arg2)))
              (emit-invokevirtual +lisp-object+
                                  translated-op
                                  '(:int) :boolean))
             (t
-             (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                        arg2 'stack nil)
+             (with-operand-accumulation
+                  ((compile-operand arg1 nil)
+                   (compile-operand arg2 nil)
+                   (maybe-emit-clear-values arg1 arg2)))
              (emit-invokevirtual +lisp-object+
                                  translated-op
                                  (lisp-object-arg-types 1) :boolean)))
@@ -2471,8 +2713,10 @@ given a specific common representation.")
   (when (check-arg-count form 2)
     (let ((arg1 (%cadr form))
           (arg2 (%caddr form)))
-      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                 arg2 'stack nil)
+      (with-operand-accumulation
+                  ((compile-operand arg1 nil)
+                   (compile-operand arg2 nil)
+                   (maybe-emit-clear-values arg1 arg2)))
       (emit-invokevirtual +lisp-object+ "typep"
                           (lisp-object-arg-types 1) +lisp-object+)
       (emit-push-nil)
@@ -2482,8 +2726,10 @@ given a specific common representation.")
   (when (check-arg-count form 2)
     (let ((arg1 (%cadr form))
           (arg2 (%caddr form)))
-      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                 arg2 'stack nil)
+      (with-operand-accumulation
+                  ((compile-operand arg1 nil)
+                   (compile-operand arg2 nil)
+                   (maybe-emit-clear-values arg1 arg2)))
       (emit-invokestatic +lisp+ "memq"
                          (lisp-object-arg-types 2) :boolean)
       'ifeq)))
@@ -2492,8 +2738,10 @@ given a specific common representation.")
   (when (check-arg-count form 2)
     (let ((arg1 (%cadr form))
           (arg2 (%caddr form)))
-      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                 arg2 'stack nil)
+      (with-operand-accumulation
+                  ((compile-operand arg1 nil)
+                   (compile-operand arg2 nil)
+                   (maybe-emit-clear-values arg1 arg2)))
       (emit-invokestatic +lisp+ "memql"
                          (lisp-object-arg-types 2) :boolean)
       'ifeq)))
@@ -2508,25 +2756,33 @@ given a specific common representation.")
              (if (/= arg1 arg2) :consequent :alternate))
             ((and (fixnum-type-p type1)
                   (fixnum-type-p type2))
-             (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                        arg2 'stack :int)
+             (with-operand-accumulation
+                 ((compile-operand arg1 :int)
+                  (compile-operand arg2 :int)
+                  (maybe-emit-clear-values arg1 arg2)))
              'if_icmpeq)
             ((fixnum-type-p type2)
-             (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                        arg2 'stack :int)
+             (with-operand-accumulation
+                 ((compile-operand arg1 nil)
+                  (compile-operand arg2 :int)
+                  (maybe-emit-clear-values arg1 arg2)))
              (emit-invokevirtual +lisp-object+ "isNotEqualTo" '(:int) :boolean)
              'ifeq)
             ((fixnum-type-p type1)
              ;; FIXME Compile the args in reverse order and avoid the swap if
              ;; either arg is a fixnum or a lexical variable.
-             (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                        arg2 'stack nil)
+             (with-operand-accumulation
+                 ((compile-operand arg1 :int)
+                  (compile-operand arg2 nil)
+                  (maybe-emit-clear-values arg1 arg2)))
              (emit 'swap)
              (emit-invokevirtual +lisp-object+ "isNotEqualTo" '(:int) :boolean)
              'ifeq)
             (t
-             (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                        arg2 'stack nil)
+             (with-operand-accumulation
+                 ((compile-operand arg1 nil)
+                  (compile-operand arg2 nil)
+                  (maybe-emit-clear-values arg1 arg2)))
              (emit-invokevirtual +lisp-object+ "isNotEqualTo"
                                  (lisp-object-arg-types 1) :boolean)
              'ifeq)))))
@@ -2543,8 +2799,10 @@ given a specific common representation.")
         (cond ((and (fixnump arg1) (fixnump arg2))
                (if (funcall op arg1 arg2) :consequent :alternate))
               ((and (fixnum-type-p type1) (fixnum-type-p type2))
-               (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                          arg2 'stack :int)
+               (with-operand-accumulation
+                 ((compile-operand arg1 :int)
+                  (compile-operand arg2 :int)
+                  (maybe-emit-clear-values arg1 arg2)))
                (ecase op
                  (<  'if_icmpge)
                  (<= 'if_icmpgt)
@@ -2552,8 +2810,10 @@ given a specific common representation.")
                  (>= 'if_icmplt)
                  (=  'if_icmpne)))
               ((and (java-long-type-p type1) (java-long-type-p type2))
-               (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
-                                                          arg2 'stack :long)
+               (with-operand-accumulation
+                 ((compile-operand arg1 :long)
+                  (compile-operand arg2 :long)
+                  (maybe-emit-clear-values arg1 arg2)))
                (emit 'lcmp)
                (ecase op
                  (<  'ifge)
@@ -2562,8 +2822,10 @@ given a specific common representation.")
                  (>= 'iflt)
                  (=  'ifne)))
               ((fixnum-type-p type2)
-               (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                          arg2 'stack :int)
+               (with-operand-accumulation
+                 ((compile-operand arg1 nil)
+                  (compile-operand arg2 :int)
+                  (maybe-emit-clear-values arg1 arg2)))
                (emit-invokevirtual +lisp-object+
                                    (ecase op
                                      (<  "isLessThan")
@@ -2576,8 +2838,10 @@ given a specific common representation.")
               ((fixnum-type-p type1)
                ;; FIXME We can compile the args in reverse order and avoid
                ;; the swap if either arg is a fixnum or a lexical variable.
-               (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                          arg2 'stack nil)
+               (with-operand-accumulation
+                 ((compile-operand arg1 :int)
+                  (compile-operand arg2 nil)
+                  (maybe-emit-clear-values arg1 arg2)))
                (emit 'swap)
                (emit-invokevirtual +lisp-object+
                                    (ecase op
@@ -2589,8 +2853,10 @@ given a specific common representation.")
                                    '(:int) :boolean)
                'ifeq)
               (t
-               (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                          arg2 'stack nil)
+               (with-operand-accumulation
+                 ((compile-operand arg1 nil)
+                  (compile-operand arg2 nil)
+                  (maybe-emit-clear-values arg1 arg2)))
                (emit-invokevirtual +lisp-object+
                                    (ecase op
                                      (<  "isLessThan")
@@ -2621,8 +2887,10 @@ given a specific common representation.")
                   ;; ERROR CHECKING HERE!
                   (let ((arg1 (second arg))
                         (arg2 (third arg)))
-                    (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                               arg2 'stack nil)
+                    (with-operand-accumulation
+                         ((compile-operand arg1 nil)
+                          (compile-operand arg2 nil)
+                          (maybe-emit-clear-values arg1 arg2)))
                     (emit 'if_acmpeq LABEL1)))
                  ((eq (derive-compiler-type arg) 'BOOLEAN)
                   (compile-forms-and-maybe-emit-clear-values arg 'stack :boolean)
@@ -2741,8 +3009,8 @@ given a specific common representation.")
 (defun compile-multiple-value-prog1 (form target representation)
   (let ((first-subform (cadr form))
         (subforms (cddr form))
-        (result-register (allocate-register))
-        (values-register (allocate-register)))
+        (result-register (allocate-register nil))
+        (values-register (allocate-register nil)))
     ;; Make sure there are no leftover values from previous calls.
     (emit-clear-values)
     (compile-form first-subform result-register nil)
@@ -2773,7 +3041,7 @@ given a specific common representation.")
      (emit-invokevirtual +lisp-object+ "execute" nil +lisp-object+))
     (3
      (let* ((*register* *register*)
-            (function-register (allocate-register)))
+            (function-register (allocate-register nil)))
        (compile-form (second form) function-register nil)
        (compile-form (third form) 'stack nil)
        (aload function-register)
@@ -2784,8 +3052,8 @@ given a specific common representation.")
     (t
      ;; The general case.
      (let* ((*register* *register*)
-            (function-register (allocate-register))
-            (values-register (allocate-register)))
+            (function-register (allocate-register nil))
+            (values-register (allocate-register nil)))
        (compile-form (second form) 'stack nil)
        (emit-invokestatic +lisp+ "coerceToFunction"
                           (lisp-object-arg-types 1) +lisp-object+)
@@ -2903,8 +3171,8 @@ given a specific common representation.")
   )
 
 (defun restore-environment-and-make-handler (register label-START)
-  (let ((label-END (gensym))
-        (label-EXIT (gensym)))
+  (let ((label-END (gensym "U"))
+        (label-EXIT (gensym "E")))
     (emit 'goto label-EXIT)
     (label label-END)
     (restore-dynamic-environment register)
@@ -2921,19 +3189,20 @@ given a specific common representation.")
          (vars (second form))
          (bind-special-p nil)
          (variables (m-v-b-vars block))
-         (label-START (gensym)))
+         (label-START (gensym "F")))
     (dolist (variable variables)
       (let ((special-p (variable-special-p variable)))
         (cond (special-p
                (setf bind-special-p t))
               (t
                (unless (variable-closure-index variable)
-                 (setf (variable-register variable) (allocate-register)))))))
+                 (setf (variable-register variable)
+                       (allocate-register nil)))))))
     ;; If we're going to bind any special variables...
     (when bind-special-p
       (dformat t "p2-m-v-b-node lastSpecialBinding~%")
       ;; Save current dynamic environment.
-      (setf (m-v-b-environment-register block) (allocate-register))
+      (setf (m-v-b-environment-register block) (allocate-register nil))
       (save-dynamic-environment (m-v-b-environment-register block))
       (label label-START))
     ;; Make sure there are no leftover values from previous calls.
@@ -2945,8 +3214,8 @@ given a specific common representation.")
            (compile-binding (car variables)))
           (t
            (let* ((*register* *register*)
-                  (result-register (allocate-register))
-                  (values-register (allocate-register))
+                  (result-register (allocate-register nil))
+                  (values-register (allocate-register nil))
                   (LABEL1 (gensym))
                   (LABEL2 (gensym)))
              ;; Store primary value from values form in result register.
@@ -3101,9 +3370,7 @@ given a specific common representation.")
 
 (defun allocate-variable-register (variable)
   (setf (variable-register variable)
-        (if (= 2 (representation-size (variable-representation variable)))
-            (allocate-register-pair)
-            (allocate-register))))
+        (allocate-register (variable-representation variable))))
 
 (defun emit-move-to-variable (variable)
   (let ((representation (variable-representation variable)))
@@ -3213,9 +3480,9 @@ given a specific common representation.")
                  (allocate-variable-register variable))
                (when (variable-special-p variable)
                  (setf (variable-binding-register variable)
-                       (allocate-register)))
+                       (allocate-register nil)))
                (cond ((variable-special-p variable)
-                      (let ((temp-register (allocate-register)))
+                      (let ((temp-register (allocate-register nil)))
                         ;; FIXME: this permanently allocates a register
                         ;; which has only a single local use
                         (push (cons temp-register variable)
@@ -3277,7 +3544,8 @@ given a specific common representation.")
                              (not (variable-special-p variable))
                              (eq (variable-declared-type variable) 'BOOLEAN))
                         (setf (variable-representation variable) :boolean)
-                        (setf (variable-register variable) (allocate-register))
+                        (setf (variable-register variable)
+                              (allocate-register nil))
                         (emit 'iconst_0)
                         (emit 'istore (variable-register variable))
                         (setf boundp t))
@@ -3307,11 +3575,13 @@ given a specific common representation.")
         (unless (or boundp (variable-special-p variable))
           (unless (or (variable-closure-index variable)
                       (variable-register variable))
-            (setf (variable-register variable) (allocate-register))))
+            (setf (variable-register variable)
+                  (allocate-register nil))))
         (push variable *visible-variables*)
         (unless boundp
           (when (variable-special-p variable)
-            (setf (variable-binding-register variable) (allocate-register)))
+            (setf (variable-binding-register variable)
+                  (allocate-register nil)))
           (compile-binding variable))
         (maybe-generate-type-check variable)))
     (when must-clear-values
@@ -3324,7 +3594,7 @@ given a specific common representation.")
          (form (let-form block))
          (*visible-variables* *visible-variables*)
          (specialp nil)
-         (label-START (gensym)))
+         (label-START (gensym "F")))
     ;; Walk the variable list looking for special bindings and unused lexicals.
     (dolist (variable (let-vars block))
       (cond ((variable-special-p variable)
@@ -3334,7 +3604,7 @@ given a specific common representation.")
     ;; If there are any special bindings...
     (when specialp
       ;; We need to save current dynamic environment.
-      (setf (let-environment-register block) (allocate-register))
+      (setf (let-environment-register block) (allocate-register nil))
       (save-dynamic-environment (let-environment-register block))
       (label label-START))
     (propagate-vars block)
@@ -3371,13 +3641,13 @@ given a specific common representation.")
          (*register* *register*)
          (form (tagbody-form block))
          (body (cdr form))
-         (BEGIN-BLOCK (gensym))
-         (END-BLOCK (gensym))
-         (RETHROW (gensym))
-         (EXIT (gensym))
+         (BEGIN-BLOCK (gensym "F"))
+         (END-BLOCK (gensym "U"))
+         (RETHROW (gensym "T"))
+         (EXIT (gensym "E"))
          (must-clear-values nil)
          (specials-register (when (tagbody-non-local-go-p block)
-                              (allocate-register))))
+                              (allocate-register nil))))
     ;; Scan for tags.
     (dolist (tag (tagbody-tags block))
       (push tag *visible-tags*))
@@ -3411,11 +3681,11 @@ given a specific common representation.")
     (emit 'goto EXIT)
     (when (tagbody-non-local-go-p block)
       ; We need a handler to catch non-local GOs.
-      (let* ((HANDLER (gensym))
-             (EXTENT-EXIT-HANDLER (gensym))
+      (let* ((HANDLER (gensym "H"))
+             (EXTENT-EXIT-HANDLER (gensym "HE"))
              (*register* *register*)
-             (go-register (allocate-register))
-             (tag-register (allocate-register)))
+             (go-register (allocate-register nil))
+             (tag-register (allocate-register nil)))
         (label HANDLER)
         ;; The Go object is on the runtime stack. Stack depth is 1.
         (emit 'dup)
@@ -3465,9 +3735,11 @@ given a specific common representation.")
 (defun p2-go (form target representation)
   ;; FIXME What if we're called with a non-NIL representation?
   (declare (ignore target representation))
-  (let* ((name (cadr form))
-         (tag (find-tag name))
-         (tag-block (when tag (tag-block tag))))
+  (let* ((node form)
+         (form (node-form form))
+         (name (cadr form))
+         (tag (jump-target-tag node))
+         (tag-block (when tag (jump-target-block node))))
     (unless tag
       (error "p2-go: tag not found: ~S" name))
     (when (and (eq (tag-compiland tag) *current-compiland*)
@@ -3571,11 +3843,11 @@ given a specific common representation.")
     (aver (block-node-p block)))
   (let* ((*blocks* (cons block *blocks*))
          (*register* *register*)
-         (BEGIN-BLOCK (gensym))
-         (END-BLOCK (gensym))
+         (BEGIN-BLOCK (gensym "F"))
+         (END-BLOCK (gensym "U"))
          (BLOCK-EXIT (block-exit block))
          (specials-register (when (block-non-local-return-p block)
-                              (allocate-register))))
+                              (allocate-register nil))))
     (setf (block-target block) target)
     (when (block-id-variable block)
       ;; we have a block variable; that should be a closure variable
@@ -3595,8 +3867,8 @@ given a specific common representation.")
     (when (block-non-local-return-p block)
       ;; We need a handler to catch non-local RETURNs.
       (emit 'goto BLOCK-EXIT) ; Jump over handler, when inserting one
-      (let ((HANDLER (gensym))
-            (EXTENT-EXIT-HANDLER (gensym))
+      (let ((HANDLER (gensym "H"))
+            (EXTENT-EXIT-HANDLER (gensym "HE"))
             (THIS-BLOCK (gensym)))
         (label HANDLER)
         ;; The Return object is on the runtime stack. Stack depth is 1.
@@ -3631,9 +3903,11 @@ given a specific common representation.")
 (defun p2-return-from (form target representation)
   ;; FIXME What if we're called with a non-NIL representation?
   (declare (ignore target representation))
-  (let* ((name (second form))
+  (let* ((node form)
+         (form (node-form form))
+         (name (second form))
          (result-form (third form))
-         (block (find-block name)))
+         (block (jump-target-block node)))
     (when (null block)
       (error "No block named ~S is currently visible." name))
     (let ((compiland *current-compiland*))
@@ -3651,12 +3925,13 @@ given a specific common representation.")
           (return-from p2-return-from))))
     ;; Non-local RETURN.
     (aver (block-non-local-return-p block))
-    (emit-push-variable (block-id-variable block))
-    (emit-load-externalized-object (block-name block))
     (emit-clear-values)
-    (compile-form result-form 'stack nil)
-    (emit-invokestatic +lisp+ "nonLocalReturn" (lisp-object-arg-types 3)
-                       +lisp-object+)
+    (with-operand-accumulation
+         ((emit-variable-operand (block-id-variable block))
+	  (emit-load-externalized-object-operand (block-name block))
+	  (compile-operand result-form nil))
+       (emit-invokestatic +lisp+ "nonLocalReturn" (lisp-object-arg-types 3)
+			  +lisp-object+))
     ;; Following code will not be reached, but is needed for JVM stack
     ;; consistency.
     (emit 'areturn)))
@@ -3683,15 +3958,26 @@ given a specific common representation.")
 
 (define-inlined-function p2-cons (form target representation)
   ((check-arg-count form 2))
-  (emit-new +lisp-cons+)
-  (emit 'dup)
   (let* ((args (%cdr form))
          (arg1 (%car args))
-         (arg2 (%cadr args)))
-    (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                               arg2 'stack nil))
-  (emit-invokespecial-init +lisp-cons+ (lisp-object-arg-types 2))
-  (emit-move-from-stack target))
+         (arg2 (%cadr args))
+         (cons-register (when (some-nested-block #'node-opstack-unsafe-p
+                                                 (find-enclosed-blocks args))
+                          (allocate-register nil))))
+    (emit-new +lisp-cons+)
+    (if cons-register
+        (astore cons-register)
+      (emit 'dup))
+    (with-operand-accumulation
+        ((when cons-register
+           (emit-register-operand cons-register nil))
+         (compile-operand arg1 nil)
+         (compile-operand arg2 nil)
+         (maybe-emit-clear-values arg1 arg2)))
+    (emit-invokespecial-init +lisp-cons+ (lisp-object-arg-types 2))
+    (when cons-register
+      (emit-push-register cons-register nil))
+    (emit-move-from-stack target)))
 
 (defun compile-progn (form target representation)
   (compile-progn-body (cdr form) target)
@@ -3721,19 +4007,20 @@ given a specific common representation.")
          (values-form (caddr form))
          (*register* *register*)
          (environment-register
-          (setf (progv-environment-register block) (allocate-register)))
-         (label-START (gensym)))
-    (compile-form symbols-form 'stack nil)
-    (compile-form values-form 'stack nil)
-    (unless (and (single-valued-p symbols-form)
-                 (single-valued-p values-form))
-      (emit-clear-values))
-    (save-dynamic-environment environment-register)
-    (label label-START)
-    ;; Compile call to Lisp.progvBindVars().
-    (emit-push-current-thread)
-    (emit-invokestatic +lisp+ "progvBindVars"
-                       (list +lisp-object+ +lisp-object+ +lisp-thread+) nil)
+          (setf (progv-environment-register block) (allocate-register nil)))
+         (label-START (gensym "F")))
+    (with-operand-accumulation
+        ((compile-operand symbols-form nil)
+	 (compile-operand values-form nil))
+      (unless (and (single-valued-p symbols-form)
+		   (single-valued-p values-form))
+	(emit-clear-values))
+      (save-dynamic-environment environment-register)
+      (label label-START)
+      ;; Compile call to Lisp.progvBindVars().
+      (emit-push-current-thread)
+      (emit-invokestatic +lisp+ "progvBindVars"
+			 (list +lisp-object+ +lisp-object+ +lisp-thread+) nil))
       ;; Implicit PROGN.
     (let ((*blocks* (cons block *blocks*)))
       (compile-progn-body (cdddr form) target representation))
@@ -3762,32 +4049,52 @@ given a specific common representation.")
 
 (define-inlined-function p2-rplacd (form target representation)
   ((check-arg-count form 2))
-  (let ((args (cdr form)))
-    (compile-form (first args) 'stack nil)
-    (when target
-      (emit 'dup))
-    (compile-form (second args) 'stack nil)
+  (let* ((args (cdr form))
+         (*register* *register*)
+         (target-register (allocate-register nil)))
+    (with-operand-accumulation
+        ((accumulate-operand (nil
+                              :unsafe-p (some-nested-block
+                                         #'node-opstack-unsafe-p
+                                         (find-enclosed-blocks (first args))))
+          (compile-form (first args) 'stack nil)
+          (when target-register
+            (emit 'dup)
+            (astore target-register)))
+         (compile-operand (second args) nil)))
+    (maybe-emit-clear-values (car args) (cadr args))
     (emit-invokevirtual +lisp-object+
                         "setCdr"
                         (lisp-object-arg-types 1)
                         nil)
-    (when target
+    (when target-register
+      (aload target-register)
       (fix-boxing representation nil)
       (emit-move-from-stack target representation))))
 
 (define-inlined-function p2-set-car/cdr (form target representation)
   ((check-arg-count form 2))
-  (let ((op (%car form))
-        (args (%cdr form)))
-    (compile-form (%car args) 'stack nil)
-    (compile-form (%cadr args) 'stack nil)
-    (when target
-      (emit-dup nil :past nil))
+  (let* ((op (%car form))
+         (args (%cdr form))
+         (*register* *register*)
+         (target-register (when target (allocate-register nil))))
+    (with-operand-accumulation
+         ((compile-operand (%car args) nil)
+          (accumulate-operand (nil
+                               :unsafe-p (some-nested-block
+                                          #'node-opstack-unsafe-p
+                                          (find-enclosed-blocks (cadr args))))
+           (compile-form (%cadr args) 'stack nil)
+           (when target-register
+             (emit 'dup)
+             (astore target-register)))
+          (maybe-emit-clear-values (car args) (cadr args))))
     (emit-invokevirtual +lisp-object+
                         (if (eq op 'sys:set-car) "setCar" "setCdr")
                         (lisp-object-arg-types 1)
                         nil)
-    (when target
+    (when target-register
+      (aload target-register)
       (fix-boxing representation nil)
       (emit-move-from-stack target representation))))
 
@@ -3898,7 +4205,7 @@ either to stream or the pathname of the class file if `stream' is NIL."
       (let ((variable (local-function-variable local-function)))
         (aver (null (variable-register variable)))
         (unless (variable-closure-index variable)
-          (setf (variable-register variable) (allocate-register)))))
+          (setf (variable-register variable) (allocate-register nil)))))
     (dolist (local-function local-functions)
       (p2-labels-process-compiland local-function))
     (dolist (special (labels-free-specials block))
@@ -4130,12 +4437,24 @@ either to stream or the pathname of the class file if `stream' is NIL."
                 (compile-forms-and-maybe-emit-clear-values arg1 nil nil
                                                            arg2 target representation))
                ((eql (fixnum-constant-value type2) -1)
-                (compile-forms-and-maybe-emit-clear-values arg1 target representation
-                                                           arg2 nil nil))
+                (let ((target-register
+                       (if (or (not (eq target 'stack))
+                               (not (some-nested-block #'node-opstack-unsafe-p
+                                               (find-enclosed-blocks arg2))))
+                           target
+                         (allocate-register representation))))
+                  (compile-form arg1 target-register representation)
+                  (compile-form arg2 nil nil)
+                  (when (and (eq target 'stack)
+                             (not (eq target-register 'stack)))
+                    (emit-push-register target-register))
+                  (maybe-emit-clear-values arg1 arg2)))
                ((and (fixnum-type-p type1) (fixnum-type-p type2))
                 ;; Both arguments are fixnums.
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                           arg2 'stack :int)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :int)
+                     (compile-operand arg2 :int)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'iand)
                 (convert-representation :int representation)
                 (emit-move-from-stack target representation))
@@ -4144,15 +4463,19 @@ either to stream or the pathname of the class file if `stream' is NIL."
                     (and (fixnum-type-p type2)
                          (compiler-subtypep type2 'unsigned-byte)))
                 ;; One of the arguments is a positive fixnum.
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                           arg2 'stack :int)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :int)
+                     (compile-operand arg2 :int)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'iand)
                 (convert-representation :int representation)
                 (emit-move-from-stack target representation))
                ((and (java-long-type-p type1) (java-long-type-p type2))
                 ;; Both arguments are longs.
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
-                                                           arg2 'stack :long)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :long)
+                     (compile-operand arg2 :long)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'land)
                 (convert-representation :long representation)
                 (emit-move-from-stack target representation))
@@ -4161,29 +4484,37 @@ either to stream or the pathname of the class file if `stream' is NIL."
                     (and (java-long-type-p type2)
                          (compiler-subtypep type2 'unsigned-byte)))
                 ;; One of the arguments is a positive long.
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
-                                                           arg2 'stack :long)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :long)
+                     (compile-operand arg2 :long)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'land)
                 (convert-representation :long representation)
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type2)
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                           arg2 'stack :int)
+                (with-operand-accumulation
+                    ((compile-operand arg1 nil)
+                     (compile-operand arg2 :int)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit-invokevirtual +lisp-object+ "LOGAND" '(:int) +lisp-object+)
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type1)
                 ;; arg1 is a fixnum, but arg2 is not
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                           arg2 'stack nil)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :int)
+                     (compile-operand arg2 nil)
+                     (maybe-emit-clear-values arg1 arg2)))
                 ;; swap args
                 (emit 'swap)
                 (emit-invokevirtual +lisp-object+ "LOGAND" '(:int) +lisp-object+)
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
                (t
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                           arg2 'stack nil)
+                (with-operand-accumulation
+                    ((compile-operand arg1 nil)
+                     (compile-operand arg2 nil)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit-invokevirtual +lisp-object+ "LOGAND"
                                     (lisp-object-arg-types 1) +lisp-object+)
                 (fix-boxing representation result-type)
@@ -4214,14 +4545,14 @@ either to stream or the pathname of the class file if `stream' is NIL."
                type2 (derive-compiler-type arg2)
                result-type (derive-compiler-type form))
          (cond ((and (fixnum-constant-value type1) (fixnum-constant-value type2))
-                (compile-forms-and-maybe-emit-clear-values arg1 nil nil
-                                                           arg2 nil nil)
                 (compile-constant (logior (fixnum-constant-value type1)
                                           (fixnum-constant-value type2))
                                   target representation))
                ((and (fixnum-type-p type1) (fixnum-type-p type2))
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                           arg2 'stack :int)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :int)
+                     (compile-operand arg2 :int)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'ior)
                 (convert-representation :int representation)
                 (emit-move-from-stack target representation))
@@ -4229,16 +4560,32 @@ either to stream or the pathname of the class file if `stream' is NIL."
                 (compile-forms-and-maybe-emit-clear-values arg1 nil nil
                                                            arg2 target representation))
                ((and (eql (fixnum-constant-value type2) 0) (< *safety* 3))
-                (compile-forms-and-maybe-emit-clear-values arg1 target representation
-                                                           arg2 nil nil))
+                (let ((target-register
+                       (if (or (not (eq target 'stack))
+                               (not (some-nested-block #'node-opstack-unsafe-p
+                                               (find-enclosed-blocks arg2))))
+                           target
+                         (allocate-register representation))))
+                  (compile-form arg1 target-register representation)
+                  (compile-form arg2 nil nil)
+                  (when (and (eq target 'stack)
+                             (not (eq target-register 'stack)))
+                    (emit-push-register target-register))
+                  (maybe-emit-clear-values arg1 arg2)))
                ((or (eq representation :long)
                     (and (java-long-type-p type1) (java-long-type-p type2)))
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
-                                                           arg2 'stack :long)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :long)
+                     (compile-operand arg2 :long)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'lor)
                 (convert-representation :long representation)
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type2)
+                (with-operand-accumulation
+                    ((compile-operand arg1 nil)
+                     (compile-operand arg2 :int)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
                                                            arg2 'stack :int)
                 (emit-invokevirtual +lisp-object+ "LOGIOR" '(:int) +lisp-object+)
@@ -4246,16 +4593,20 @@ either to stream or the pathname of the class file if `stream' is NIL."
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type1)
                 ;; arg1 is of fixnum type, but arg2 is not
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                           arg2 'stack nil)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :int)
+                     (compile-operand arg2 nil)
+                     (maybe-emit-clear-values arg1 arg2)))
                 ;; swap args
                 (emit 'swap)
                 (emit-invokevirtual +lisp-object+ "LOGIOR" '(:int) +lisp-object+)
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
                (t
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                           arg2 'stack nil)
+                (with-operand-accumulation
+                    ((compile-operand arg1 nil)
+                     (compile-operand arg2 nil)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit-invokevirtual +lisp-object+ "LOGIOR"
                                     (lisp-object-arg-types 1) +lisp-object+)
                 (fix-boxing representation result-type)
@@ -4288,28 +4639,33 @@ either to stream or the pathname of the class file if `stream' is NIL."
          (setf type1       (derive-compiler-type arg1)
                type2       (derive-compiler-type arg2)
                result-type (derive-compiler-type form))
-         (cond ((eq representation :int)
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                           arg2 'stack :int)
-                (emit 'ixor))
-               ((and (fixnum-type-p type1) (fixnum-type-p type2))
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                           arg2 'stack :int)
+         (cond ((or (eq representation :int)
+                    (and (fixnum-type-p type1) (fixnum-type-p type2)))
+                (with-operand-accumulation
+                    ((compile-operand arg1 :int)
+                     (compile-operand arg2 :int)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'ixor)
                 (convert-representation :int representation))
                ((and (java-long-type-p type1) (java-long-type-p type2))
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
-                                                           arg2 'stack :long)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :long)
+                     (compile-operand arg2 :long)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'lxor)
                 (convert-representation :long representation))
                ((fixnum-type-p type2)
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                           arg2 'stack :int)
+                (with-operand-accumulation
+                    ((compile-operand arg1 nil)
+                     (compile-operand arg2 :int)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit-invokevirtual +lisp-object+ "LOGXOR" '(:int) +lisp-object+)
                 (fix-boxing representation result-type))
                (t
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                           arg2 'stack nil)
+                (with-operand-accumulation
+                    ((compile-operand arg1 nil)
+                     (compile-operand arg2 nil)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit-invokevirtual +lisp-object+ "LOGXOR"
                                     (lisp-object-arg-types 1) +lisp-object+)
                 (fix-boxing representation result-type)))
@@ -4394,9 +4750,11 @@ either to stream or the pathname of the class file if `stream' is NIL."
                   (emit-move-from-stack target representation))))
           ((and (fixnum-type-p size-type)
                 (fixnum-type-p position-type))
-           (compile-forms-and-maybe-emit-clear-values size-arg 'stack :int
-                                                      position-arg 'stack :int
-                                                      arg3 'stack nil)
+           (with-operand-accumulation
+                ((compile-operand size-arg :int)
+                 (compile-operand position-arg :int)
+                 (compile-operand arg3 nil)
+                 (maybe-emit-clear-values size-arg position-arg arg3)))
            (emit 'dup_x2) ;; use not supported by emit-dup: 3 values involved
            (emit 'pop)
            (emit-invokevirtual +lisp-object+ "LDB" '(:int :int) +lisp-object+)
@@ -4416,19 +4774,25 @@ either to stream or the pathname of the class file if `stream' is NIL."
     (cond ((and (eq representation :int)
                 (fixnum-type-p type1)
                 (fixnum-type-p type2))
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                      arg2 'stack :int)
+           (with-operand-accumulation
+               ((compile-operand arg1 :int)
+                (compile-operand arg2 :int)
+                (maybe-emit-clear-values arg1 arg2)))
            (emit-invokestatic +lisp+ "mod" '(:int :int) :int)
            (emit-move-from-stack target representation))
           ((fixnum-type-p type2)
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                      arg2 'stack :int)
+           (with-operand-accumulation
+               ((compile-operand arg1 nil)
+                (compile-operand arg2 :int)
+                (maybe-emit-clear-values arg1 arg2)))
            (emit-invokevirtual +lisp-object+ "MOD" '(:int) +lisp-object+)
            (fix-boxing representation nil) ; FIXME use derived result type
            (emit-move-from-stack target representation))
           (t
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                      arg2 'stack nil)
+           (with-operand-accumulation
+               ((compile-operand arg1 nil)
+                (compile-operand arg2 nil)
+                (maybe-emit-clear-values arg1 arg2)))
            (emit-invokevirtual +lisp-object+ "MOD"
                                (lisp-object-arg-types 1) +lisp-object+)
            (fix-boxing representation nil) ; FIXME use derived result type
@@ -4503,8 +4867,10 @@ either to stream or the pathname of the class file if `stream' is NIL."
        (emit-move-from-stack target representation))
       (2
        (let ((arg2 (second args)))
-         (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                    arg2 'stack :boolean)
+         (with-operand-accumulation
+             ((compile-operand arg1 nil)
+              (compile-operand arg2 :boolean)
+              (maybe-emit-clear-values arg1 arg2)))
          (emit-invokestatic +lisp-class+ "findClass"
                             (list +lisp-object+ :boolean) +lisp-object+)
          (fix-boxing representation nil)
@@ -4520,8 +4886,10 @@ either to stream or the pathname of the class file if `stream' is NIL."
          (arg2 (second args)))
     (case arg-count
       (2
-       (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                  arg2 'stack nil)
+       (with-operand-accumulation
+           ((compile-operand arg1 nil)
+            (compile-operand arg2 nil)))
+       (maybe-emit-clear-values arg1 arg2)
        (emit 'swap)
        (cond (target
               (emit-invokevirtual +lisp-object+ "VECTOR_PUSH_EXTEND"
@@ -4540,8 +4908,10 @@ either to stream or the pathname of the class file if `stream' is NIL."
   (let* ((args (cdr form))
          (arg1 (first args))
          (arg2 (second args)))
-    (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                               arg2 'stack nil)
+    (with-operand-accumulation
+        ((compile-operand arg1 nil)
+         (compile-operand arg2 nil)))
+    (maybe-emit-clear-values arg1 arg2)
     (emit-invokevirtual +lisp-object+ "SLOT_VALUE"
                         (lisp-object-arg-types 1) +lisp-object+)
     (fix-boxing representation nil)
@@ -4556,13 +4926,15 @@ either to stream or the pathname of the class file if `stream' is NIL."
          (arg2 (second args))
          (arg3 (third args))
          (*register* *register*)
-         (value-register (when target (allocate-register))))
-    (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                               arg2 'stack nil
-                                               arg3 'stack nil)
+         (value-register (when target (allocate-register nil))))
+    (with-operand-accumulation
+        ((compile-operand arg1 nil)
+         (compile-operand arg2 nil)
+         (compile-operand arg3 nil)))
     (when value-register
       (emit 'dup)
       (astore value-register))
+    (maybe-emit-clear-values arg1 arg2 arg3)
     (emit-invokevirtual +lisp-object+ "setSlotValue"
                         (lisp-object-arg-types 2) nil)
     (when value-register
@@ -4593,9 +4965,9 @@ either to stream or the pathname of the class file if `stream' is NIL."
          (type2 (derive-compiler-type arg2)))
     (cond ((and (compiler-subtypep type1 '(UNSIGNED-BYTE 8))
                 (eq type2 'STREAM))
-           (compile-form arg1 'stack :int)
-           (compile-form arg2 'stack nil)
-           (emit-checkcast +lisp-stream+)
+           (with-operand-accumulation
+               ((compile-operand arg1 :int)
+                (compile-operand arg2 nil +lisp-stream+)))
            (maybe-emit-clear-values arg1 arg2)
            (emit 'swap)
            (emit-invokevirtual +lisp-stream+ "_writeByte" '(:int) nil)
@@ -4603,8 +4975,9 @@ either to stream or the pathname of the class file if `stream' is NIL."
              (emit-push-nil)
              (emit-move-from-stack target)))
           ((fixnum-type-p type1)
-           (compile-form arg1 'stack :int)
-           (compile-form arg2 'stack nil)
+           (with-operand-accumulation
+               ((compile-operand arg1 :int)
+                (compile-operand arg2 nil)))
            (maybe-emit-clear-values arg1 arg2)
            (emit-invokestatic +lisp+ "writeByte"
                               (list :int +lisp-object+) nil)
@@ -5184,9 +5557,9 @@ We need more thought here.
              (type2 (derive-type arg2))
              (test (if (memq type1 '(SYMBOL NULL)) 'eq 'eql)))
         (cond ((subtypep type2 'VECTOR)
-               (compile-form arg1 'stack nil)
-               (compile-form arg2 'stack nil)
-               (emit-checkcast +lisp-abstract-vector+)
+               (with-operand-accumulation
+                    ((compile-operand arg1 nil)
+                     (compile-operand arg2 nil +lisp-abstract-vector+)))
                (maybe-emit-clear-values arg1 arg2)
                (emit 'swap)
                (emit-invokevirtual +lisp-abstract-vector+
@@ -5226,7 +5599,9 @@ We need more thought here.
          (cons-heads (if list-star-p
                          (butlast args 1)
                          args)))
-    (cond ((>= 4 length 1)
+    (cond ((and (not (some-nested-block #'node-opstack-unsafe-p
+                                        (find-enclosed-blocks args)))
+                (>= 4 length 1))
            (dolist (cons-head cons-heads)
              (emit-new +lisp-cons+)
              (emit 'dup)
@@ -5262,10 +5637,12 @@ We need more thought here.
   ((check-arg-count form 2))
   (let ((index-form (second form))
         (list-form (third form)))
-    (compile-forms-and-maybe-emit-clear-values index-form 'stack :int
-                                               list-form 'stack nil)
-    (emit 'swap)
-    (emit-invokevirtual +lisp-object+ "NTH" '(:int) +lisp-object+)
+    (with-operand-accumulation
+        ((compile-operand index-form :int)
+         (compile-operand list-form nil)
+         (maybe-emit-clear-values index-form list-form))
+      (emit 'swap)
+      (emit-invokevirtual +lisp-object+ "NTH" '(:int) +lisp-object+))
     (fix-boxing representation nil) ; FIXME use derived result type
     (emit-move-from-stack target representation)))
 
@@ -5289,16 +5666,17 @@ We need more thought here.
               (dformat t "p2-times case 1a~%")
               (compile-constant value target representation))
              (result-rep
-              (compile-forms-and-maybe-emit-clear-values
-                          arg1 'stack result-rep
-                          arg2 'stack result-rep)
-              (emit (case result-rep
-                      (:int    'imul)
-                      (:long   'lmul)
-                      (:float  'fmul)
-                      (:double 'dmul)
-                      (t
-                       (sys::format t "p2-times: unsupported rep case"))))
+              (with-operand-accumulation
+                   ((compile-operand arg1 result-rep)
+                    (compile-operand arg2 result-rep)
+                    (maybe-emit-clear-values arg1 arg2))
+                 (emit (case result-rep
+                          (:int    'imul)
+                          (:long   'lmul)
+                          (:float  'fmul)
+                          (:double 'dmul)
+                          (t
+                           (sys::format t "p2-times: unsupported rep case")))))
               (convert-representation result-rep representation)
               (emit-move-from-stack target representation))
              ((fixnump arg2)
@@ -5323,8 +5701,10 @@ We need more thought here.
     (3 (let* ((op (%car form))
               (args (%cdr form))
               (arg1 (%car args))
-              (arg2 (%cadr args)))
+              (arg2 (%cadr args))
+              (*register* *register*))
          (when (null target)
+           ;; compile for effect
            (compile-forms-and-maybe-emit-clear-values arg1 nil nil
                                                       arg2 nil nil)
            (return-from p2-min/max))
@@ -5334,38 +5714,51 @@ We need more thought here.
          (let ((type1 (derive-compiler-type arg1))
                (type2 (derive-compiler-type arg2)))
            (cond ((and (java-long-type-p type1) (java-long-type-p type2))
-                  (let ((common-rep (if (and (fixnum-type-p type1)
-                                             (fixnum-type-p type2))
-                                        :int :long))
-                        (LABEL1 (gensym)))
-                    (compile-form arg1 'stack common-rep)
-                    (emit-dup common-rep)
+                  (let* ((common-rep (if (and (fixnum-type-p type1)
+                                              (fixnum-type-p type2))
+                                         :int :long))
+                        (LABEL1 (gensym))
+                        (LABEL2 (gensym))
+                        (arg1-register (allocate-register common-rep))
+                        (arg2-register (allocate-register common-rep)))
+                    (compile-form arg1 arg1-register common-rep)
                     (compile-form arg2 'stack common-rep)
-                    (emit-dup common-rep :past common-rep)
+                    (emit-dup common-rep)
+                    (emit-move-from-stack arg2-register common-rep)
+                    (emit-push-register arg1-register common-rep)
+                    ;; note: we've now reversed the arguments on the stack!
                     (emit-numeric-comparison (if (eq op 'max) '<= '>=)
                                              common-rep LABEL1)
-                    (emit-swap common-rep common-rep)
+                    (emit-push-register arg1-register common-rep)
+                    (emit 'goto LABEL2)
                     (label LABEL1)
-                    (emit-move-from-stack nil common-rep)
+                    (emit-push-register arg2-register common-rep)
+                    (label LABEL2)
                     (convert-representation common-rep representation)
                     (emit-move-from-stack target representation)))
                  (t
-                  (compile-form arg1 'stack nil)
-                  (emit-dup nil)
-                  (compile-form arg2 'stack nil)
-                  (emit-dup nil :past nil)
-                  (emit-invokevirtual +lisp-object+
-                                      (if (eq op 'max)
-                                          "isLessThanOrEqualTo"
+                  (let* ((arg1-register (allocate-register nil))
+                         (arg2-register (allocate-register nil)))
+                    (compile-form arg1 arg1-register nil)
+                    (compile-form arg2 'stack nil)
+                    (emit-dup nil)
+                    (astore arg2-register)
+                    (emit-push-register arg1-register nil)
+                    (emit-invokevirtual +lisp-object+
+                                        (if (eq op 'max)
+                                            "isLessThanOrEqualTo"
                                           "isGreaterThanOrEqualTo")
-                                      (lisp-object-arg-types 1) :boolean)
-                  (let ((LABEL1 (gensym)))
-                    (emit 'ifeq LABEL1)
-                    (emit 'swap)
-                    (label LABEL1)
-                    (emit 'pop))
-                  (fix-boxing representation nil)
-                  (emit-move-from-stack target representation))))))
+                                        (lisp-object-arg-types 1) :boolean)
+                    (let ((LABEL1 (gensym))
+                          (LABEL2 (gensym)))
+                      (emit 'ifeq LABEL1)
+                      (emit-push-register arg1-register nil)
+                      (emit 'goto LABEL2)
+                      (label LABEL1)
+                      (emit-push-register arg2-register nil)
+                      (label LABEL2))
+                    (fix-boxing representation nil)
+                    (emit-move-from-stack target representation)))))))
     (t
      (p2-min/max `(,(car form) (,(car form) ,(second form) ,(third form))
                     ,@(nthcdr 3 form)) target representation))))
@@ -5395,19 +5788,20 @@ We need more thought here.
                                                          arg2 nil nil)
               (emit-move-from-stack target representation))
              (result-rep
-              (compile-forms-and-maybe-emit-clear-values
-                        arg1 'stack result-rep
-                        arg2 'stack result-rep)
-              (emit (case result-rep
-                      (:int    'iadd)
-                      (:long   'ladd)
-                      (:float  'fadd)
-                      (:double 'dadd)
-                      (t
-                       (sys::format
-                        t "p2-plus: Unexpected result-rep ~S for form ~S."
-                        result-rep form)
-                       (assert nil))))
+              (with-operand-accumulation
+                   ((compile-operand arg1 result-rep)
+                    (compile-operand arg2 result-rep)
+                    (maybe-emit-clear-values arg1 arg2))
+                (emit (case result-rep
+                        (:int    'iadd)
+                        (:long   'ladd)
+                        (:float  'fadd)
+                        (:double 'dadd)
+                        (t
+                         (sys::format
+                          t "p2-plus: Unexpected result-rep ~S for form ~S."
+                          result-rep form)
+                         (assert nil)))))
               (convert-representation result-rep representation)
               (emit-move-from-stack target representation))
              ((eql arg2 1)
@@ -5417,13 +5811,15 @@ We need more thought here.
               (compile-forms-and-maybe-emit-clear-values arg2 'stack nil)
               (emit-invoke-method "incr" target representation))
              ((or (fixnum-type-p type1) (fixnum-type-p type2))
-              (compile-forms-and-maybe-emit-clear-values
-                    arg1 'stack (when (fixnum-type-p type1) :int)
-                    arg2 'stack (when (null (fixnum-type-p type1)) :int))
-              (when (fixnum-type-p type1)
-                (emit 'swap))
-              (emit-invokevirtual +lisp-object+ "add"
-                                  '(:int) +lisp-object+)
+              (with-operand-accumulation
+                   ((compile-operand arg1 (when (fixnum-type-p type1) :int))
+                    (compile-operand arg2 (when (null (fixnum-type-p type1))
+                                            :int))
+                    (maybe-emit-clear-values arg1 arg2))
+                 (when (fixnum-type-p type1)
+                   (emit 'swap))
+                 (emit-invokevirtual +lisp-object+ "add"
+                                     '(:int) +lisp-object+))
               (fix-boxing representation result-type)
               (emit-move-from-stack target representation))
              (t
@@ -5475,27 +5871,29 @@ We need more thought here.
        (cond ((and (numberp arg1) (numberp arg2))
               (compile-constant (- arg1 arg2) target representation))
              (result-rep
-              (compile-forms-and-maybe-emit-clear-values
-                        arg1 'stack result-rep
-                        arg2 'stack result-rep)
-              (emit (case result-rep
-                      (:int    'isub)
-                      (:long   'lsub)
-                      (:float  'fsub)
-                      (:double 'dsub)
-                      (t
-                       (sys::%format t "p2-minus sub-instruction (rep: ~S); form: ~S~%"
-                                     result-rep form)
-                       (assert nil))))
+              (with-operand-accumulation
+                  ((compile-operand arg1 result-rep)
+                   (compile-operand arg2 result-rep)
+                   (maybe-emit-clear-values arg1 arg2))
+                (emit (case result-rep
+                        (:int    'isub)
+                        (:long   'lsub)
+                        (:float  'fsub)
+                        (:double 'dsub)
+                        (t
+                         (sys::%format t "p2-minus sub-instruction (rep: ~S); form: ~S~%"
+                                       result-rep form)
+                         (assert nil)))))
               (convert-representation result-rep representation)
               (emit-move-from-stack target representation))
              ((fixnum-type-p type2)
-              (compile-forms-and-maybe-emit-clear-values
-                    arg1 'stack nil
-                    arg2 'stack :int)
-              (emit-invokevirtual +lisp-object+
-                                  "subtract"
-                                  '(:int) +lisp-object+)
+              (with-operand-accumulation
+                  ((compile-operand arg1 nil)
+                   (compile-operand arg2 :int)
+                   (maybe-emit-clear-values arg1 arg2))
+                (emit-invokevirtual +lisp-object+
+                                    "subtract"
+                                    '(:int) +lisp-object+))
               (fix-boxing representation result-type)
               (emit-move-from-stack target representation))
              (t
@@ -5514,29 +5912,24 @@ We need more thought here.
          (arg2 (%cadr args))
          (type1 (derive-compiler-type arg1))
          (type2 (derive-compiler-type arg2)))
-    (cond ((and (eq representation :char)
-                (zerop *safety*))
-           (compile-form arg1 'stack nil)
-           (emit-checkcast +lisp-abstract-string+)
-           (compile-form arg2 'stack :int)
-           (maybe-emit-clear-values arg1 arg2)
-           (emit-invokevirtual +lisp-abstract-string+ "charAt"
-                               '(:int) :char)
-           (emit-move-from-stack target representation))
-          ((and (eq representation :char)
+    (cond ((or (and (eq representation :char)
+                    (zerop *safety*))
+               (and (eq representation :char)
                 (or (eq op 'CHAR) (< *safety* 3))
                 (compiler-subtypep type1 'STRING)
-                (fixnum-type-p type2))
-           (compile-form arg1 'stack nil)
-           (emit-checkcast +lisp-abstract-string+)
-           (compile-form arg2 'stack :int)
+                (fixnum-type-p type2)))
+           (with-operand-accumulation
+               ((compile-operand arg1 nil +lisp-abstract-string+)
+                (compile-operand arg2 :int)))
            (maybe-emit-clear-values arg1 arg2)
            (emit-invokevirtual +lisp-abstract-string+ "charAt"
                                '(:int) :char)
            (emit-move-from-stack target representation))
           ((fixnum-type-p type2)
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                      arg2 'stack :int)
+           (with-operand-accumulation
+               ((compile-operand arg1 nil)
+                (compile-operand arg2 :int)
+                (maybe-emit-clear-values arg1 arg2)))
            (emit-invokevirtual +lisp-object+
                                (symbol-name op) ;; "CHAR" or "SCHAR"
                                '(:int) +lisp-object+)
@@ -5564,17 +5957,21 @@ We need more thought here.
                 (fixnum-type-p type2)
                 (compiler-subtypep type3 'CHARACTER))
            (let* ((*register* *register*)
-                  (value-register (when target (allocate-register)))
+                  (value-register (when target (allocate-register nil)))
                   (class (if (eq op 'SCHAR)
                              +lisp-simple-string+
                              +lisp-abstract-string+)))
-             (compile-form arg1 'stack nil)
-             (emit-checkcast class)
-             (compile-form arg2 'stack :int)
-             (compile-form arg3 'stack :char)
-             (when target
-               (emit 'dup)
-               (emit-move-from-stack value-register :char))
+             (with-operand-accumulation
+                  ((compile-operand arg1 nil class)
+                   (compile-operand arg2 :int)
+                   (accumulate-operand (:char
+                                        :unsafe-p (some-nested-block
+                                                   #'node-opstack-unsafe-p
+                                                   (find-enclosed-blocks arg3)))
+                      (compile-form arg3 'stack :char)
+                      (when target
+                        (emit 'dup)
+                        (emit-move-from-stack value-register :char)))))
              (maybe-emit-clear-values arg1 arg2 arg3)
              (emit-invokevirtual class "setCharAt" '(:int :char) nil)
              (when target
@@ -5590,8 +5987,10 @@ We need more thought here.
               (neq representation :char)) ; FIXME
          (let ((arg1 (%cadr form))
                (arg2 (%caddr form)))
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                      arg2 'stack :int)
+           (with-operand-accumulation
+               ((compile-operand arg1 nil)
+                (compile-operand arg2 :int)))
+           (maybe-emit-clear-values arg1 arg2)
            (emit-invokevirtual +lisp-object+ "SVREF" '(:int) +lisp-object+)
            (fix-boxing representation nil)
            (emit-move-from-stack target representation)))
@@ -5604,10 +6003,12 @@ We need more thought here.
                 (arg2 (%caddr form))
                 (arg3 (fourth form))
                 (*register* *register*)
-                (value-register (when target (allocate-register))))
-           (compile-form arg1 'stack nil) ;; vector
-           (compile-form arg2 'stack :int) ;; index
-           (compile-form arg3 'stack nil) ;; new value
+                (value-register (when target (allocate-register nil))))
+           (with-operand-accumulation
+               ((compile-operand arg1 nil) ;; vector
+                (compile-operand arg2 :int) ;; intex
+                (compile-operand arg3 nil) ;; new value
+                ))
            (when value-register
              (emit 'dup)
              (emit-move-from-stack value-register nil))
@@ -5635,9 +6036,12 @@ We need more thought here.
                       'truncate (length args))
        (compile-function-call form target representation)
        (return-from p2-truncate)))
-    (compile-form arg1 'stack nil)
-    (compile-form arg2 'stack nil)
-    (emit-invokevirtual +lisp-object+ "truncate" (lisp-object-arg-types 1) +lisp-object+)
+    (with-operand-accumulation
+        ((compile-operand arg1 nil)
+         (compile-operand arg2 nil)))
+    (maybe-emit-clear-values arg1 arg2)
+    (emit-invokevirtual +lisp-object+ "truncate"
+                        (lisp-object-arg-types 1) +lisp-object+)
     (fix-boxing representation nil) ; FIXME use derived result type
     (emit-move-from-stack target representation)))
 
@@ -5645,8 +6049,10 @@ We need more thought here.
   (cond ((and (check-arg-count form 2)
               (fixnum-type-p (derive-compiler-type (third form)))
               (neq representation :char)) ; FIXME
-         (compile-form (second form) 'stack nil)
-         (compile-form (third form) 'stack :int)
+         (with-operand-accumulation
+              ((compile-operand (second form) nil)
+               (compile-operand (third form) :int)
+               (maybe-emit-clear-values (second form) (third form))))
          (emit-invokevirtual +lisp-object+ "elt" '(:int) +lisp-object+)
          (fix-boxing representation nil) ; FIXME use derived result type
          (emit-move-from-stack target representation))
@@ -5660,35 +6066,30 @@ We need more thought here.
      (let* ((arg1 (%cadr form))
             (arg2 (%caddr form))
             (type1 (derive-compiler-type arg1)))
-       (ecase representation
-         (:int
-          (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                     arg2 'stack :int)
-          (emit-invokevirtual +lisp-object+ "aref" '(:int) :int))
-         (:long
-          (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                     arg2 'stack :int)
-          (emit-invokevirtual +lisp-object+ "aref_long" '(:int) :long))
-         (:char
-          (cond ((compiler-subtypep type1 'string)
-                 (compile-form arg1 'stack nil) ; array
-                 (emit-checkcast +lisp-abstract-string+)
-                 (compile-form arg2 'stack :int) ; index
-                 (maybe-emit-clear-values arg1 arg2)
-                 (emit-invokevirtual +lisp-abstract-string+
-                                     "charAt" '(:int) :char))
-                (t
-                 (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                            arg2 'stack :int)
-                 (emit-invokevirtual +lisp-object+ "AREF" '(:int) +lisp-object+)
-                 (emit-unbox-character))))
-         ((nil :float :double :boolean)
-          ;;###FIXME for float and double, we probably want
-          ;; separate java methods to retrieve the values.
-          (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                     arg2 'stack :int)
-          (emit-invokevirtual +lisp-object+ "AREF" '(:int) +lisp-object+)
-          (convert-representation nil representation)))
+       (with-operand-accumulation
+            ((compile-operand arg1 nil
+                              (when (compiler-subtypep type1 'string)
+                                +lisp-abstract-string+))
+             (compile-operand arg2 :int)
+             (maybe-emit-clear-values arg1 arg2))
+          (ecase representation
+            (:int
+             (emit-invokevirtual +lisp-object+ "aref" '(:int) :int))
+            (:long
+             (emit-invokevirtual +lisp-object+ "aref_long" '(:int) :long))
+            (:char
+             (cond ((compiler-subtypep type1 'string)
+                    (emit-invokevirtual +lisp-abstract-string+
+                                        "charAt" '(:int) :char))
+                   (t
+                    (emit-invokevirtual +lisp-object+
+                                        "AREF" '(:int) +lisp-object+)
+                    (emit-unbox-character))))
+            ((nil :float :double :boolean)
+             ;;###FIXME for float and double, we probably want
+             ;; separate java methods to retrieve the values.
+             (emit-invokevirtual +lisp-object+ "AREF" '(:int) +lisp-object+)
+             (convert-representation nil representation))))
        (emit-move-from-stack target representation)))
     (t
      (compile-function-call form target representation))))
@@ -5702,27 +6103,35 @@ We need more thought here.
                 (arg3 (third args))
                 (type3 (derive-compiler-type arg3))
                 (*register* *register*)
-                (value-register (unless (null target) (allocate-register))))
+                (value-register (unless (null target) (allocate-register nil))))
+           (with-operand-accumulation
+               (
            ;; array
-           (compile-form arg1 'stack nil)
+                (compile-operand arg1 nil)
            ;; index
-           (compile-form arg2 'stack :int)
+                (compile-operand arg2 :int)
            ;; value
-           (cond ((fixnum-type-p type3)
-                  (compile-form arg3 'stack :int)
-                  (when value-register
-                    (emit 'dup)
-                    (emit-move-from-stack value-register :int)))
-                 (t
-                  (compile-form arg3 'stack nil)
-                  (when value-register
-                    (emit 'dup)
-                    (emit-move-from-stack value-register nil))))
+                (accumulate-operand
+                         ((when (fixnum-type-p type3) :int)
+                          :unsafe-p (some-nested-block
+                                     #'node-opstack-unsafe-p
+                                     (find-enclosed-blocks arg3)))
+                   (cond ((fixnum-type-p type3)
+                          (compile-form arg3 'stack :int)
+                          (when value-register
+                            (emit 'dup)
+                            (emit-move-from-stack value-register :int)))
+                         (t
+                          (compile-form arg3 'stack nil)
+                          (when value-register
+                            (emit 'dup)
+                            (emit-move-from-stack value-register nil)))))))
            (maybe-emit-clear-values arg1 arg2 arg3)
            (cond ((fixnum-type-p type3)
                   (emit-invokevirtual +lisp-object+ "aset" '(:int :int) nil))
                  (t
-                  (emit-invokevirtual +lisp-object+ "aset" (list :int +lisp-object+) nil)))
+                  (emit-invokevirtual +lisp-object+ "aset"
+                                      (list :int +lisp-object+) nil)))
            (when value-register
              (cond ((fixnum-type-p type3)
                     (emit 'iload value-register)
@@ -5790,12 +6199,14 @@ We need more thought here.
    (cond ((and (fixnump arg2)
                (<= 0 arg2 3))
           (let* ((*register* *register*)
-                 (value-register (when target (allocate-register))))
-            (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                       arg3 'stack nil)
+                 (value-register (when target (allocate-register nil))))
+            (with-operand-accumulation
+                ((compile-operand arg1 nil)
+                 (compile-operand arg3 nil)))
             (when value-register
               (emit 'dup)
               (astore value-register))
+            (maybe-emit-clear-values arg1 arg3)
             (emit-invokevirtual +lisp-object+
                                 (format nil "setSlotValue_~D" arg2)
                                 (lisp-object-arg-types 1) nil)
@@ -5805,14 +6216,17 @@ We need more thought here.
               (emit-move-from-stack target representation))))
          ((fixnump arg2)
           (let* ((*register* *register*)
-                 (value-register (when target (allocate-register))))
-            (compile-form arg1 'stack nil)
-            (emit-push-constant-int arg2)
-            (compile-form arg3 'stack nil)
+                 (value-register (when target (allocate-register nil))))
+            (with-operand-accumulation
+                ((compile-operand arg1 nil)
+                 (compile-operand arg3 nil)))
             (maybe-emit-clear-values arg1 arg3)
             (when value-register
               (emit 'dup)
               (astore value-register))
+            (emit-push-constant-int arg2)
+            (emit 'swap)  ;; prevent the integer
+                          ;; from being pushed, saved and restored
             (emit-invokevirtual +lisp-object+ "setSlotValue"
                                 (list :int +lisp-object+) nil)
             (when value-register
@@ -5876,8 +6290,10 @@ We need more thought here.
          (arg1 (%car args))
          (arg2 (%cadr args)))
     (cond ((fixnum-type-p (derive-compiler-type arg1))
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                      arg2 'stack nil)
+           (with-operand-accumulation
+               ((compile-operand arg1 :int)
+                (compile-operand arg2 nil)
+                (maybe-emit-clear-values arg1 arg2)))
            (emit 'swap)
            (emit-invokevirtual +lisp-object+ "nthcdr" '(:int) +lisp-object+)
            (fix-boxing representation nil)
@@ -5961,20 +6377,24 @@ We need more thought here.
        (let ((arg (%car args)))
          (compile-forms-and-maybe-emit-clear-values arg target representation)))
       (2
-       (emit-push-current-thread)
        (let ((arg1 (%car args))
              (arg2 (%cadr args)))
          (cond ((and (eq arg1 t)
                      (eq arg2 t))
+                (emit-push-current-thread)
                 (emit-push-t)
                 (emit 'dup))
                ((and (eq arg1 nil)
                      (eq arg2 nil))
+                (emit-push-current-thread)
                 (emit-push-nil)
                 (emit 'dup))
                (t
-                (compile-form arg1 'stack nil)
-                (compile-form arg2 'stack nil))))
+                (with-operand-accumulation
+                   ((emit-thread-operand)
+                    (compile-operand arg1 nil)
+                    (compile-operand arg2 nil)
+                    (maybe-emit-clear-values arg1 arg2))))))
        (emit-invokevirtual +lisp-thread+
                            "setValues"
                            (lisp-object-arg-types len)
@@ -5982,9 +6402,12 @@ We need more thought here.
        (fix-boxing representation nil)
        (emit-move-from-stack target))
       ((3 4)
-       (emit-push-current-thread)
-       (dolist (arg args)
-         (compile-form arg 'stack nil))
+       (with-operand-accumulation
+           ((emit-thread-operand)
+            (dolist (arg args)
+              (compile-operand arg nil))))
+       (when (notevery #'single-valued-p args)
+         (emit-clear-values))
        (emit-invokevirtual +lisp-thread+
                            "setValues"
                            (lisp-object-arg-types len)
@@ -6052,10 +6475,10 @@ We need more thought here.
 (defun p2-set (form target representation)
   (cond ((and (check-arg-count form 2)
               (eq (derive-type (%cadr form)) 'SYMBOL))
-         (emit-push-current-thread)
-         (compile-form (%cadr form) 'stack nil)
-         (emit-checkcast +lisp-symbol+)
-         (compile-form (%caddr form) 'stack nil)
+         (with-operand-accumulation
+             ((emit-thread-operand)
+              (compile-operand (%cadr form) nil +lisp-symbol+)
+              (compile-operand (%caddr form) nil)))
          (maybe-emit-clear-values (%cadr form) (%caddr form))
          (emit-invokevirtual +lisp-thread+ "setSpecialVariable"
                              (list +lisp-symbol+ +lisp-object+) +lisp-object+)
@@ -6063,14 +6486,6 @@ We need more thought here.
          (emit-move-from-stack target representation))
         (t
          (compile-function-call form target representation))))
-
-(declaim (ftype (function (t) t) rewrite-setq))
-(defun rewrite-setq (form)
-  (let ((expr (%caddr form)))
-    (if (unsafe-p expr)
-        (let ((sym (gensym)))
-          (list 'LET (list (list sym expr)) (list 'SETQ (%cadr form) sym)))
-        form)))
 
 (defknown p2-setq (t t t) t)
 (defun p2-setq (form target representation)
@@ -6081,36 +6496,43 @@ We need more thought here.
          (value-form (%caddr form)))
     (when (or (null variable)
               (variable-special-p variable))
-      (let ((new-form (rewrite-setq form)))
-        (when (neq new-form form)
-          (return-from p2-setq (compile-form (p1 new-form) target representation))))
       ;; We're setting a special variable.
       (cond ((and variable
                   (variable-binding-register variable)
                   (eq (variable-compiland variable) *current-compiland*)
                   (not (enclosed-by-runtime-bindings-creating-block-p
                         (variable-block variable))))
-             (aload (variable-binding-register variable))
+             ;; choose this compilation order to prevent
+             ;; with-operand-accumulation
              (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
-             (emit 'dup_x1) ;; copy past th
+             (emit 'dup)
+             (aload (variable-binding-register variable))
+             (emit 'swap)
              (emit-putfield +lisp-special-binding+ "value"
                    +lisp-object+))
             ((and (consp value-form)
                   (eq (first value-form) 'CONS)
                   (= (length value-form) 3)
                   (var-ref-p (third value-form))
-                  (eq (variable-name (var-ref-variable (third value-form))) name))
-             (emit-push-current-thread)
-             (emit-load-externalized-object name)
-             (compile-forms-and-maybe-emit-clear-values (second value-form) 'stack nil)
-             (emit-invokevirtual +lisp-thread+ "pushSpecial"
-                                 (list +lisp-symbol+ +lisp-object+) +lisp-object+))
+                  (eq (variable-name (var-ref-variable (third value-form)))
+                      name))
+             (with-operand-accumulation
+                 ((emit-thread-operand)
+                  (emit-load-externalized-object-operand name)
+                  (compile-operand (second value-form) nil)
+                  (maybe-emit-clear-values (second value-form)))
+                 (emit-invokevirtual +lisp-thread+ "pushSpecial"
+                                     (list +lisp-symbol+ +lisp-object+)
+                                     +lisp-object+)))
             (t
-             (emit-push-current-thread)
-             (emit-load-externalized-object name)
-             (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
-             (emit-invokevirtual +lisp-thread+ "setSpecialVariable"
-                                 (list +lisp-symbol+ +lisp-object+) +lisp-object+)))
+             (with-operand-accumulation
+                 ((emit-thread-operand)
+                  (emit-load-externalized-object-operand name)
+                  (compile-operand value-form nil)
+                  (maybe-emit-clear-values value-form))
+                 (emit-invokevirtual +lisp-thread+ "setSpecialVariable"
+                                     (list +lisp-symbol+ +lisp-object+)
+                                     +lisp-object+))))
       (fix-boxing representation nil)
       (emit-move-from-stack target representation)
       (return-from p2-setq))
@@ -6382,14 +6804,17 @@ We need more thought here.
         (emit-move-from-stack target representation)
         (return-from p2-char=))
       (cond ((characterp arg1)
-             (emit-push-constant-int (char-code arg1))
-             (compile-forms-and-maybe-emit-clear-values arg2 'stack :char))
+               ;; prevent need for with-operand-accumulation: reverse args
+             (compile-forms-and-maybe-emit-clear-values arg2 'stack :char)
+             (emit-push-constant-int (char-code arg1)))
             ((characterp arg2)
              (compile-forms-and-maybe-emit-clear-values arg1 'stack :char)
              (emit-push-constant-int (char-code arg2)))
             (t
-             (compile-forms-and-maybe-emit-clear-values arg1 'stack :char
-                                                        arg2 'stack :char)))
+             (with-operand-accumulation
+                 ((compile-operand arg1 :char)
+                  (compile-operand arg2 :char)
+                  (maybe-emit-clear-values arg1 arg2)))))
       (let ((LABEL1 (gensym))
             (LABEL2 (gensym)))
         (emit 'if_icmpeq LABEL1)
@@ -6404,10 +6829,10 @@ We need more thought here.
 (defun p2-threads-synchronized-on (block target)
   (let* ((form (synchronized-form block))
          (*register* *register*)
-         (object-register (allocate-register))
-         (BEGIN-PROTECTED-RANGE (gensym))
-         (END-PROTECTED-RANGE (gensym))
-         (EXIT (gensym)))
+         (object-register (allocate-register nil))
+         (BEGIN-PROTECTED-RANGE (gensym "F"))
+         (END-PROTECTED-RANGE (gensym "U"))
+         (EXIT (gensym "E")))
     (compile-form (cadr form) 'stack nil)
     (emit-invokevirtual +lisp-object+ "lockableInstance" nil
                         +java-object+) ; value to synchronize
@@ -6440,14 +6865,14 @@ We need more thought here.
         (emit-move-from-stack target))
       (return-from p2-catch-node))
     (let* ((*register* *register*)
-           (tag-register (allocate-register))
-           (BEGIN-PROTECTED-RANGE (gensym))
-           (END-PROTECTED-RANGE (gensym))
-           (THROW-HANDLER (gensym))
+           (tag-register (allocate-register nil))
+           (BEGIN-PROTECTED-RANGE (gensym "F"))
+           (END-PROTECTED-RANGE (gensym "U"))
+           (THROW-HANDLER (gensym "H"))
            (RETHROW (gensym))
            (DEFAULT-HANDLER (gensym))
-           (EXIT (gensym))
-           (specials-register (allocate-register)))
+           (EXIT (gensym "E"))
+           (specials-register (allocate-register nil)))
       (compile-form (second form) tag-register nil) ; Tag.
       (emit-push-current-thread)
       (aload tag-register)
@@ -6499,12 +6924,13 @@ We need more thought here.
 (defun p2-throw (form target representation)
   ;; FIXME What if we're called with a non-NIL representation?
   (declare (ignore representation))
-  (emit-push-current-thread)
-  (compile-form (second form) 'stack nil) ; Tag.
-  (emit-clear-values) ; Do this unconditionally! (MISC.503)
-  (compile-form (third form) 'stack nil) ; Result.
-  (emit-invokevirtual +lisp-thread+ "throwToTag"
-                      (lisp-object-arg-types 2) nil)
+  (with-operand-accumulation
+      ((emit-thread-operand)
+       (compile-operand (second form) nil) ; Tag.
+       (emit-clear-values) ; Do this unconditionally! (MISC.503)
+       (compile-operand (third form) nil)) ; Result.
+    (emit-invokevirtual +lisp-thread+ "throwToTag"
+			 (lisp-object-arg-types 2) nil))
   ;; Following code will not be reached.
   (when target
     (emit-push-nil)
@@ -6531,14 +6957,14 @@ We need more thought here.
            (unwinding-form (caddr form))
            (cleanup-forms (cdddr form))
            (*register* *register*)
-           (exception-register (allocate-register))
-           (result-register (allocate-register))
-           (values-register (allocate-register))
-           (specials-register (allocate-register))
-           (BEGIN-PROTECTED-RANGE (gensym))
-           (END-PROTECTED-RANGE (gensym))
-           (HANDLER (gensym))
-           (EXIT (gensym)))
+           (exception-register (allocate-register nil))
+           (result-register (allocate-register nil))
+           (values-register (allocate-register nil))
+           (specials-register (allocate-register nil))
+           (BEGIN-PROTECTED-RANGE (gensym "F"))
+           (END-PROTECTED-RANGE (gensym "U"))
+           (HANDLER (gensym "H"))
+           (EXIT (gensym "E")))
       ;; Make sure there are no leftover multiple return values from previous calls.
       (emit-clear-values)
 
@@ -6627,6 +7053,15 @@ We need more thought here.
          (compile-var-ref form target representation))
         ((node-p form)
          (cond
+           ((jump-node-p form)
+            (let ((op (car (node-form form))))
+              (cond
+               ((eq op 'go)
+                (p2-go form target representation))
+               ((eq op 'return-from)
+                (p2-return-from form target representation))
+               (t
+                (assert (not "jump-node: can't happen"))))))
            ((block-node-p form)
             (p2-block-node form target representation))
            ((let/let*-node-p form)
@@ -6761,7 +7196,7 @@ We need more thought here.
 
          (*thread* nil)
          (*initialize-thread-var* nil)
-         (label-START (gensym)))
+         (label-START (gensym "F")))
 
     (class-add-method class-file method)
 
@@ -6795,7 +7230,7 @@ We need more thought here.
         (push var *visible-variables*))
 
       (when *using-arg-array*
-        (setf (compiland-argument-register compiland) (allocate-register)))
+        (setf (compiland-argument-register compiland) (allocate-register nil)))
 
       ;; Assign indices or registers, depending on where the args are
       ;; located: the arg-array or the call-stack
@@ -6805,14 +7240,14 @@ We need more thought here.
           (aver (null (variable-index variable)))
           (if *using-arg-array*
               (setf (variable-index variable) index)
-              (setf (variable-register variable) (allocate-register)))
+              (setf (variable-register variable) (allocate-register nil)))
           (incf index)))
 
       ;; Reserve the next available slot for the thread register.
-      (setf *thread* (allocate-register))
+      (setf *thread* (allocate-register nil))
 
       (when *closure-variables*
-        (setf (compiland-closure-register compiland) (allocate-register))
+        (setf (compiland-closure-register compiland) (allocate-register nil))
         (dformat t "p2-compiland 2 closure register = ~S~%"
                  (compiland-closure-register compiland)))
 
@@ -6883,7 +7318,7 @@ We need more thought here.
                       (null (variable-index variable)) ;; not in the array anymore
                       (< (+ (variable-reads variable)
                             (variable-writes variable)) 2))
-            (let ((register (allocate-register)))
+            (let ((register (allocate-register nil)))
               (aload (compiland-argument-register compiland))
               (emit-push-constant-int (variable-index variable))
               (emit 'aaload)
@@ -6902,12 +7337,12 @@ We need more thought here.
       (when (some #'variable-special-p (compiland-arg-vars compiland))
         ;; Save the dynamic environment
         (setf (compiland-environment-register compiland)
-              (allocate-register))
+              (allocate-register nil))
         (save-dynamic-environment (compiland-environment-register compiland))
         (label label-START)
         (dolist (variable (compiland-arg-vars compiland))
           (when (variable-special-p variable)
-            (setf (variable-binding-register variable) (allocate-register))
+            (setf (variable-binding-register variable) (allocate-register nil))
             (emit-push-current-thread)
             (emit-push-variable-name variable)
             (cond ((variable-register variable)

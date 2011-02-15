@@ -721,6 +721,12 @@
       (let ((opcode (instruction-opcode instruction)))
         (setf depth (+ depth instruction-stack))
         (setf (instruction-depth instruction) depth)
+        (unless (<= 0 depth)
+          (internal-compiler-error "Stack inconsistency detected ~
+                                    in ~A at index ~D: ~
+                                    negative depth ~S."
+                                   (compiland-name *current-compiland*)
+                                   i depth))
         (when (branch-p opcode)
           (let ((label (car (instruction-args instruction))))
             (declare (type symbol label))

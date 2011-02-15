@@ -398,24 +398,7 @@ where each of the vars returned is a list with these elements:
   (setf (cdr form) (p1-body (cdr form)))
   form)
 
-(defknown p1-if (t) t)
-(defun p1-if (form)
-  (let ((test (cadr form)))
-    (cond ((unsafe-p test)
-           (cond ((and (consp test)
-                       (memq (%car test) '(GO RETURN-FROM THROW)))
-                  (p1 test))
-                 (t
-                  (let* ((var (gensym))
-                         (new-form
-                          `(let ((,var ,test))
-                             (if ,var ,(third form) ,(fourth form)))))
-                    (p1 new-form)))))
-          (t
-           (p1-default form)))))
-
-
-(defmacro p1-let/let*-vars 
+(defmacro p1-let/let*-vars
     (block varlist variables-var var body1 body2)
   (let ((varspec (gensym))
 	(initform (gensym))
@@ -468,6 +451,7 @@ where each of the vars returned is a list with these elements:
   (declare (type cons form))
   (let* ((*visible-variables* *visible-variables*)
          (block (make-let/let*-node))
+	 (*block* block)
          (op (%car form))
          (varlist (cadr form))
          (body (cddr form)))
@@ -506,6 +490,7 @@ where each of the vars returned is a list with these elements:
 (defun p1-locally (form)
   (let* ((*visible-variables* *visible-variables*)
          (block (make-locally-node))
+	 (*block* block)
          (free-specials (process-declarations-for-vars (cdr form) nil block)))
     (setf (locally-free-specials block) free-specials)
     (dolist (special free-specials)
@@ -523,6 +508,7 @@ where each of the vars returned is a list with these elements:
       (return-from p1-m-v-b (p1-let/let* new-form))))
   (let* ((*visible-variables* *visible-variables*)
          (block (make-m-v-b-node))
+	 (*block* block)
          (varlist (cadr form))
          ;; Process the values-form first. ("The scopes of the name binding and
          ;; declarations do not include the values-form.")
@@ -552,6 +538,7 @@ where each of the vars returned is a list with these elements:
 
 (defun p1-block (form)
   (let* ((block (make-block-node (cadr form)))
+	 (*block* block)
          (*blocks* (cons block *blocks*)))
     (setf (cddr form) (p1-body (cddr form)))
     (setf (block-form block) form)
@@ -568,6 +555,7 @@ where each of the vars returned is a list with these elements:
   (let* ((tag (p1 (cadr form)))
          (body (cddr form))
          (block (make-catch-node))
+	 (*block* block)
          ;; our subform processors need to know
          ;; they're enclosed in a CATCH block
          (*blocks* (cons block *blocks*))
@@ -591,6 +579,7 @@ where each of the vars returned is a list with these elements:
   (let* ((synchronized-object (p1 (cadr form)))
          (body (cddr form))
          (block (make-synchronized-node))
+	 (*block* block)
          (*blocks* (cons block *blocks*))
          result)
     (dolist (subform body)
@@ -614,6 +603,7 @@ where each of the vars returned is a list with these elements:
       ;; However, p1 transforms the forms being processed, so, we
       ;; need to copy the forms to create a second copy.
       (let* ((block (make-unwind-protect-node))
+	     (*block* block)
              ;; a bit of jumping through hoops...
              (unwinding-forms (p1-body (copy-tree (cddr form))))
              (unprotected-forms (p1-body (cddr form)))
@@ -629,11 +619,9 @@ where each of the vars returned is a list with these elements:
 
 (defknown p1-return-from (t) t)
 (defun p1-return-from (form)
-  (let ((new-form (rewrite-return-from form)))
-    (when (neq form new-form)
-      (return-from p1-return-from (p1 new-form))))
   (let* ((name (second form))
-         (block (find-block name)))
+         (block (find-block name))
+         non-local-p)
     (when (null block)
       (compiler-error "RETURN-FROM ~S: no block named ~S is currently visible."
                       name name))
@@ -647,20 +635,26 @@ where each of the vars returned is a list with these elements:
            (let ((protected (enclosed-by-protected-block-p block)))
              (dformat t "p1-return-from protected = ~S~%" protected)
              (if protected
-                 (setf (block-non-local-return-p block) t)
+                 (setf (block-non-local-return-p block) t
+                       non-local-p t)
                  ;; non-local GO's ensure environment restoration
                  ;; find out about this local GO
                  (when (null (block-needs-environment-restoration block))
                    (setf (block-needs-environment-restoration block)
                          (enclosed-by-environment-setting-block-p block))))))
           (t
-           (setf (block-non-local-return-p block) t)))
+           (setf (block-non-local-return-p block) t
+                 non-local-p t)))
     (when (block-non-local-return-p block)
-      (dformat t "non-local return from block ~S~%" (block-name block))))
-  (list* 'RETURN-FROM (cadr form) (mapcar #'p1 (cddr form))))
+      (dformat t "non-local return from block ~S~%" (block-name block)))
+    (let ((value-form (p1 (caddr form))))
+      (push value-form (block-return-value-forms block))
+      (make-jump-node (list 'RETURN-FROM name value-form)
+                      non-local-p block))))
 
 (defun p1-tagbody (form)
   (let* ((block (make-tagbody-node))
+	 (*block* block)
          (*blocks* (cons block *blocks*))
          (*visible-tags* *visible-tags*)
          (local-tags '())
@@ -705,12 +699,14 @@ where each of the vars returned is a list with these elements:
     (unless tag
       (error "p1-go: tag not found: ~S" name))
     (setf (tag-used tag) t)
-    (let ((tag-block (tag-block tag)))
+    (let ((tag-block (tag-block tag))
+          non-local-p)
       (cond ((eq (tag-compiland tag) *current-compiland*)
              ;; Does the GO leave an enclosing UNWIND-PROTECT or CATCH?
              (if (enclosed-by-protected-block-p tag-block)
                  (setf (tagbody-non-local-go-p tag-block) t
-                       (tag-used-non-locally tag) t)
+                       (tag-used-non-locally tag) t
+                       non-local-p t)
                  ;; non-local GO's ensure environment restoration
                  ;; find out about this local GO
                  (when (null (tagbody-needs-environment-restoration tag-block))
@@ -718,8 +714,9 @@ where each of the vars returned is a list with these elements:
                          (enclosed-by-environment-setting-block-p tag-block)))))
             (t
              (setf (tagbody-non-local-go-p tag-block) t
-                   (tag-used-non-locally tag) t)))))
-  form)
+                   (tag-used-non-locally tag) t
+                   non-local-p t)))
+      (make-jump-node form non-local-p tag-block tag))))
 
 (defun validate-function-name (name)
   (unless (or (symbolp name) (setf-function-name-p name))
@@ -927,6 +924,7 @@ where each of the vars returned is a list with these elements:
       ((with-saved-compiler-policy
 	 (process-optimization-declarations (cddr form))
 	 (let* ((block (make-flet-node))
+		(*block* block)
 		(*blocks* (cons block *blocks*))
 		(body (cddr form))
 		(*visible-variables* *visible-variables*))
@@ -965,6 +963,7 @@ where each of the vars returned is a list with these elements:
 	       (*current-compiland* (local-function-compiland local-function)))
 	   (p1-compiland (local-function-compiland local-function))))
        (let* ((block (make-labels-node))
+	      (*block* block)
               (*blocks* (cons block *blocks*))
               (body (cddr form))
               (*visible-variables* *visible-variables*))
@@ -1068,13 +1067,10 @@ where each of the vars returned is a list with these elements:
 (defknown p1-progv (t) t)
 (defun p1-progv (form)
   ;; We've already checked argument count in PRECOMPILE-PROGV.
-
-  (let ((new-form (rewrite-progv form)))
-    (when (neq new-form form)
-      (return-from p1-progv (p1 new-form))))
   (let* ((symbols-form (p1 (cadr form)))
          (values-form (p1 (caddr form)))
          (block (make-progv-node))
+	 (*block* block)
          (*blocks* (cons block *blocks*))
          (body (cdddr form)))
 ;;  The (commented out) block below means to detect compile-time
@@ -1089,20 +1085,6 @@ where each of the vars returned is a list with these elements:
           (progv-form block)
           `(progv ,symbols-form ,values-form ,@(p1-body body)))
     block))
-
-(defknown rewrite-progv (t) t)
-(defun rewrite-progv (form)
-  (let ((symbols-form (cadr form))
-        (values-form (caddr form))
-        (body (cdddr form)))
-    (cond ((or (unsafe-p symbols-form) (unsafe-p values-form))
-           (let ((g1 (gensym))
-                 (g2 (gensym)))
-             `(let ((,g1 ,symbols-form)
-                    (,g2 ,values-form))
-                (progv ,g1 ,g2 ,@body))))
-          (t
-           form))))
 
 (defun p1-quote (form)
   (unless (= (length form) 2)
@@ -1168,84 +1150,8 @@ where each of the vars returned is a list with these elements:
                     (1- (length form))))
   (list 'TRULY-THE (%cadr form) (p1 (%caddr form))))
 
-(defknown unsafe-p (t) t)
-(defun unsafe-p (args)
-  "Determines whether the args can cause 'stack unsafe situations'.
-Returns T if this is the case.
-
-When a 'stack unsafe situation' is encountered, the stack cannot
-be used for temporary storage of intermediary results. This happens
-because one of the forms in ARGS causes a local transfer of control
-- local GO instruction - which assumes an empty stack, or if one of
-the args causes a Java exception handler to be installed, which
-- when triggered - clears out the stack.
-"
-  (cond ((node-p args)
-         (unsafe-p (node-form args)))
-        ((atom args)
-         nil)
-        (t
-         (case (%car args)
-           (QUOTE
-            nil)
-;;           (LAMBDA
-;;            nil)
-           ((RETURN-FROM GO CATCH THROW UNWIND-PROTECT BLOCK)
-            t)
-           (t
-            (dolist (arg args)
-              (when (unsafe-p arg)
-                (return t))))))))
-
-(defknown rewrite-return-from (t) t)
-(defun rewrite-return-from (form)
-  (let* ((args (cdr form))
-         (result-form (second args))
-         (var (gensym)))
-    (if (unsafe-p (cdr args))
-        (if (single-valued-p result-form)
-            `(let ((,var ,result-form))
-               (return-from ,(first args) ,var))
-            `(let ((,var (multiple-value-list ,result-form)))
-               (return-from ,(first args) (values-list ,var))))
-        form)))
-
-
-(defknown rewrite-throw (t) t)
-(defun rewrite-throw (form)
-  (let ((args (cdr form)))
-    (if (unsafe-p args)
-        (let ((syms ())
-              (lets ()))
-          ;; Tag.
-          (let ((arg (first args)))
-            (if (constantp arg)
-                (push arg syms)
-                (let ((sym (gensym)))
-                  (push sym syms)
-                  (push (list sym arg) lets))))
-          ;; Result. "If the result-form produces multiple values, then all the
-          ;; values are saved."
-          (let ((arg (second args)))
-            (if (constantp arg)
-                (push arg syms)
-                (let ((sym (gensym)))
-                  (cond ((single-valued-p arg)
-                         (push sym syms)
-                         (push (list sym arg) lets))
-                        (t
-                         (push (list 'VALUES-LIST sym) syms)
-                         (push (list sym
-                                     (list 'MULTIPLE-VALUE-LIST arg))
-                               lets))))))
-          (list 'LET* (nreverse lets) (list* 'THROW (nreverse syms))))
-        form)))
-
 (defknown p1-throw (t) t)
 (defun p1-throw (form)
-  (let ((new-form (rewrite-throw form)))
-    (when (neq new-form form)
-      (return-from p1-throw (p1 new-form))))
   (list* 'THROW (mapcar #'p1 (cdr form))))
 
 (defknown rewrite-function-call (t) t)
@@ -1255,32 +1161,12 @@ the args causes a Java exception handler to be installed, which
       ((and (eq op 'funcall) (listp (car args)) (eq (caar args) 'lambda))
        ;;(funcall (lambda (...) ...) ...)
        (let ((op (car args)) (args (cdr args)))
-	 (expand-function-call-inline form (cadr op) (copy-tree (cddr op))
-				      args)))
+         (expand-function-call-inline form (cadr op) (copy-tree (cddr op))
+                                      args)))
       ((and (listp op) (eq (car op) 'lambda))
        ;;((lambda (...) ...) ...)
        (expand-function-call-inline form (cadr op) (copy-tree (cddr op)) args))
-      (t (if (unsafe-p args)
-	     (let ((arg1 (car args)))
-	       (cond ((and (consp arg1) (eq (car arg1) 'GO))
-		      arg1)
-		     (t
-		      (let ((syms ())
-			    (lets ()))
-			;; Preserve the order of evaluation of the arguments!
-			(dolist (arg args)
-			  (cond ((constantp arg)
-				 (push arg syms))
-				((and (consp arg) (eq (car arg) 'GO))
-				 (return-from rewrite-function-call
-				   (list 'LET* (nreverse lets) arg)))
-				(t
-				 (let ((sym (gensym)))
-				   (push sym syms)
-				   (push (list sym arg) lets)))))
-			(list 'LET* (nreverse lets)
-			      (list* (car form) (nreverse syms)))))))
-	     form)))))
+      (t form))))
 
 (defknown p1-function-call (t) t)
 (defun p1-function-call (form)
@@ -1406,7 +1292,11 @@ the args causes a Java exception handler to be installed, which
                   (FUNCALL              p1-funcall)
                   (FUNCTION             p1-function)
                   (GO                   p1-go)
-                  (IF                   p1-if)
+                  (IF                   p1-default)
+                  ;; used to be p1-if, which was used to rewrite the test
+                  ;; form to a LET-binding; that's not necessary, because
+                  ;; the test form doesn't lead to multiple operands on the
+                  ;; operand stack
                   (LABELS               p1-labels)
                   (LAMBDA               p1-lambda)
                   (LET                  p1-let/let*)

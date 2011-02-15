@@ -1020,7 +1020,6 @@ has been finalized."
 
 (defun finalize-code-attribute (code parent class)
   "Prepares the `code' attribute for serialization, within method `parent'."
-  (declare (ignore parent))
   (let* ((handlers (code-exception-handlers code))
          (c (finalize-code
                      (code-code code)
@@ -1028,6 +1027,8 @@ has been finalized."
                             (mapcar #'exception-end-pc handlers)
                             (mapcar #'exception-handler-pc handlers))
                      t)))
+    (invoke-callbacks :code-finalized class parent
+                      (coerce c 'list) handlers)
     (unless (code-max-stack code)
       (setf (code-max-stack code)
             (analyze-stack c (mapcar #'exception-handler-pc handlers))))

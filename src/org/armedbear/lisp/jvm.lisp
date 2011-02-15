@@ -53,6 +53,14 @@
 (defvar *closure-variables* nil)
 
 (defvar *enable-dformat* nil)
+(defvar *callbacks* nil
+  "A list of functions to be called by the compiler and code generator
+in order to generate 'compilation events'.")
+
+(declaim (inline invoke-callbacks))
+(defun invoke-callbacks (&rest args)
+  (dolist (cb *callbacks*)
+    (apply cb args)))
 
 #+nil
 (defun dformat (destination control-string &rest args)
@@ -337,25 +345,20 @@ of the compilands being processed (p1: so far; p2: in total).")
     (when (eq name (variable-name variable))
       (return variable))))
 
-(defknown allocate-register () (integer 0 65535))
-(defun allocate-register ()
-  (let* ((register *register*)
-         (next-register (1+ register)))
-    (declare (type (unsigned-byte 16) register next-register))
-    (setf *register* next-register)
-    (when (< *registers-allocated* next-register)
-      (setf *registers-allocated* next-register))
+(defknown representation-size (t) (integer 0 65535))
+(defun representation-size (representation)
+  (ecase representation
+    ((NIL :int :boolean :float :char) 1)
+    ((:long :double) 2)))
+
+(defknown allocate-register (t) (integer 0 65535))
+(defun allocate-register (representation)
+  (let ((register *register*))
+    (incf *register* (representation-size representation))
+    (setf *registers-allocated*
+          (max *registers-allocated* *register*))
     register))
 
-(defknown allocate-register-pair () (integer 0 65535))
-(defun allocate-register-pair ()
-  (let* ((register *register*)
-         (next-register (+ register 2)))
-    (declare (type (unsigned-byte 16) register next-register))
-    (setf *register* next-register)
-    (when (< *registers-allocated* next-register)
-      (setf *registers-allocated* next-register))
-    register))
 
 (defstruct local-function
   name
@@ -464,13 +467,31 @@ if that parent belongs to the same compiland."
   non-local-return-p
   ;; Contains a variable whose value uniquely identifies the
   ;; lexical scope from this block, to be used by RETURN-FROM
-  id-variable)
+  id-variable
+  ;; A list of all RETURN-FROM value forms associated with this block
+  return-value-forms)
+
 (defknown make-block-node (t) t)
 (defun make-block-node (name)
   (let ((block (%make-block-node name)))
     (push block (compiland-blocks *current-compiland*))
     (add-node-child *block* block)
     block))
+
+(defstruct (jump-node (:conc-name jump-)
+                      (:include node)
+                      (:constructor
+                       %make-jump-node (non-local-p target-block target-tag)))
+  non-local-p
+  target-block
+  target-tag)
+(defun make-jump-node (form non-local-p target-block &optional target-tag)
+  (let ((node (%make-jump-node non-local-p target-block target-tag)))
+    ;; Don't push into compiland blocks, as this as a node rather than a block
+    (setf (node-form node) form)
+    (add-node-child *block* node)
+    node))
+
 
 ;; binding blocks: LET, LET*, FLET, LABELS, M-V-B, PROGV, LOCALLY
 ;;
@@ -608,11 +629,14 @@ field of the immediate enclosed blocks."
   (when *blocks*
     ;; when the innermost enclosing block doesn't have node-children,
     ;;  there's really nothing to search for.
-    (when (null (node-children (car *blocks*)))
-      (return-from find-enclosed-blocks)))
+    (let ((first-enclosing-block (car *blocks*)))
+      (when (and (eq *current-compiland*
+                     (node-compiland first-enclosing-block))
+                 (null (node-children first-enclosing-block)))
+        (return-from find-enclosed-blocks))))
 
   (%find-enclosed-blocks form))
-    
+
 
 (defun some-nested-block (predicate blocks)
   "Applies `predicate` recursively to the `blocks` and its children,
@@ -650,10 +674,14 @@ than just restore the lastSpecialBinding (= dynamic environment).
       (catch-node-p object)
       (synchronized-node-p object)))
 
-(defun block-opstack-unsafe-p (block)
-  (or (when (tagbody-node-p block) (tagbody-non-local-go-p block))
-      (when (block-node-p block) (block-non-local-return-p block))
-      (catch-node-p block)))
+(defun node-opstack-unsafe-p (node)
+  (or (when (jump-node-p node)
+        (let ((target-block (jump-target-block node)))
+          (and (null (jump-non-local-p node))
+               (member target-block *blocks*))))
+      (when (tagbody-node-p node) (tagbody-non-local-go-p node))
+      (when (block-node-p node) (block-non-local-return-p node))
+      (catch-node-p node)))
 
 (defknown block-creates-runtime-bindings-p (t) boolean)
 (defun block-creates-runtime-bindings-p (block)
