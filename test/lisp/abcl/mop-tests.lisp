@@ -1,6 +1,7 @@
 ;;; mop-tests.lisp
 ;;;
 ;;; Copyright (C) 2010 Matthias Hölzl
+;;; Copyright (C) 2010 Erik Huelsmann
 ;;;
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -298,5 +299,64 @@
      (mop:compute-applicable-methods-using-classes
       #'mop-test.quux (find-classes 'fixnum  'simple-base-string)))
   t)
+
+
+
+;; tests for D-M-C, long form, taken from SBCL
+
+;; D-M-C should return the name of the new method combination, nothing else.
+
+(deftest dmc-return.1
+    (define-method-combination dmc-test-return-foo)
+  'dmc-test-return-foo)
+
+(deftest dmc-return.2
+    (define-method-combination dmc-test-return-bar :operator and)
+  'dmc-test-return-bar)
+
+(deftest dmc-return.3
+    (define-method-combination dmc-test-return
+        (&optional (order :most-specific-first))
+      ((around (:around))
+       (primary (dmc-test-return) :order order :required t))
+      (let ((form (if (rest primary)
+                      `(and ,@(mapcar #'(lambda (method)
+                                          `(call-method ,method))
+                                      primary))
+                      `(call-method ,(first primary)))))
+        (if around
+            `(call-method ,(first around)
+                          (,@(rest around)
+                             (make-method ,form)))
+            form)))
+  'dmc-test-return)
+
+;; A method combination which originally failed;
+;;   for different reasons in SBCL than in ABCL (hence leaving out
+;;   the original comment)
+
+(define-method-combination dmc-test-mc.1
+    (&optional (order :most-specific-first))
+  ((around (:around))
+   (primary (dmc-test-mc) :order order :required t))
+  (let ((form (if (rest primary)
+                  `(and ,@(mapcar #'(lambda (method)
+                                      `(call-method ,method))
+                                  primary))
+                  `(call-method ,(first primary)))))
+    (if around
+        `(call-method ,(first around)
+                      (,@(rest around)
+                         (make-method ,form)))
+        form)))
+
+(defgeneric dmc-test-mc.1 (&key k) (:method-combination dmc-test-mc.1))
+
+(defmethod dmc-test-mc.1 dmc-test-mc (&key k)
+  k)
+
+(deftest dmc-test-mc.1
+    (dmc-test-mc.1 :k 1)
+  1)
 
 
