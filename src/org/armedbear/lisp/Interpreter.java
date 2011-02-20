@@ -662,6 +662,8 @@ public final class Interpreter
         sb.append(sep); 
         sb.append("--nosystem suppresses loading the system startup file");
         sb.append(sep);
+        sb.append("-- alone prevents further argument handling");
+        sb.append(sep);
        
         return sb.toString();
     }
