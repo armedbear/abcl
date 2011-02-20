@@ -55,6 +55,7 @@ public final class Interpreter
     private static boolean nosystem = false;
     private static boolean noinform = false;
     private static boolean help = false;
+    private static boolean doubledash = false;
 
     public static synchronized Interpreter getInstance()
     {
@@ -104,6 +105,7 @@ public final class Interpreter
             initializeSystem();
         if (!noinit)
             processInitializationFile();
+        doubledash = false;
         if (args != null)
             postprocessCommandLineArguments(args);
 
@@ -238,7 +240,11 @@ public final class Interpreter
         if (args != null) {
             for (int i = 0; i < args.length; ++i) {
                 String arg = args[i];
-                if (arg.equals("--noinit")) {
+                if (doubledash) {
+                    arglist = new Cons(args[i], arglist);
+                } else if (arg.equals("--")) {
+                    doubledash = true;
+                } else if (arg.equals("--noinit")) {
                     noinit = true;
                 } else if (arg.equals("--nosystem")) {
                     nosystem = true;
@@ -280,7 +286,11 @@ public final class Interpreter
         if (args != null) {
             for (int i = 0; i < args.length; ++i) {
                 String arg = args[i];
-                if (arg.equals("--eval")) {
+                if (doubledash) {
+                    continue;
+                } else if (arg.equals("--")) {
+                    doubledash = true;
+                } else if (arg.equals("--eval")) {
                     if (i + 1 < args.length) {
                         try {
                             evaluate(args[i + 1]);
