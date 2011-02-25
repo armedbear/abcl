@@ -932,14 +932,15 @@ where each of the vars returned is a list with these elements:
 		 (process-declarations-for-vars body nil block))
 	   (dolist (special (flet-free-specials block))
 	     (push special *visible-variables*))
-	   (setf (flet-form block)
-		 (list* (car form)
-			(remove-if (lambda (fn)
-				     (and (inline-p (local-function-name fn))
-					  (not (local-function-references-needed-p fn))))
-				   local-functions)
-			(p1-body (cddr form))))
-	   block)))))
+           (let ((body (p1-body (cddr form))))
+             (setf (flet-form block)
+                   (list* (car form)
+                          (remove-if (lambda (fn)
+                                       (and (inline-p (local-function-name fn))
+                                            (not (local-function-references-needed-p fn))))
+                                     local-functions)
+                          body)))
+           block)))))
 
 
 (defun p1-labels (form)
@@ -1033,9 +1034,9 @@ where each of the vars returned is a list with these elements:
                  (p1-compiland compiland)))
              (list 'FUNCTION compiland)))
           ((setf local-function (find-local-function (cadr form)))
-           (dformat t "p1-function local function ~S~%" (cadr form))
-	   ;;we found out that the function needs a reference
-	   (setf (local-function-references-needed-p local-function) t)
+           (dformat "p1-function local function ~S~%" (cadr form))
+           ;;we found out that the function needs a reference
+           (setf (local-function-references-needed-p local-function) t)
            (let ((variable (local-function-variable local-function)))
              (when variable
                  (dformat t "p1-function ~S used non-locally~%"
