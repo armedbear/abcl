@@ -348,7 +348,7 @@
 
 (export '(make-mailbox mailbox-send mailbox-empty-p
           mailbox-read mailbox-peek))
-(export '(make-thread-lock thread-lock thread-unlock with-thread-lock))
+(export '(make-thread-lock with-thread-lock))
 (export '(make-mutex get-mutex release-mutex with-mutex))
 
 
