@@ -6,9 +6,66 @@ svn://common-lisp.net/project/armedbear/svn/tags/0.25.0/abcl
 Features
 --------
 
-* [svn r13230] Add :resolve-symlinks keyword argument for DIRECTORY.
+* Add :resolve-symlinks keyword argument for DIRECTORY.
 
-* [svn r13226] Support -- as a command line parameter for the REPL.
+* Support -- as a command line parameter for the REPL.
+
+* Preliminary support for Maven deployment.
+
+* Add an initargs cache for speedups in check-initargs. This should
+  make the initarg checking in CLOS quite a bit faster.
+
+* Incorporate output of 'svnversion' into LISP-IMPLEMENTATION-VERSION.
+
+* Ant target for generating Javadoc.
+
+Fixes
+-----
+
+* [svn r13229] Remove non-existing THREAD-LOCK and THREAD-UNLOCK from autoloads.
+
+* [svn 13228] Fix incorrect elimination of named local functions
+  declared inline when they're actually reified in the flet/labels body.
+
+* [svn r13217] Forward-referenced classes work properly now.
+
+* [svn r13209] Add initarg checking to REINITIALIZE-INSTANCE.
+
+* [svn r13204] FINALIZE-INHERITANCE is (more) AMOP compatible.
+
+* [svn r13203] Create ATOMIC-DEFGENERIC macro, in order to eliminate
+  FMAKUNBOUND calls and the resulting windows where no function is bound to
+  symbols which are the most essential building blocks in CLOS/AMOP.
+
+* [svn r13200] Atomically swap generic functions into place of temporary
+  DEFUNs for all standard-class slot accessors.
+  Note: This addresses the recursive requirement to be able
+  to allocate objects and classes while changing the functions
+  used to create them.
+
+* [svn r13196] Provide more context regarding the reason of autoloading.
+  Note: This change *hugely* helps debugging.
+
+* [svn r13189] Fix MACROEXPAND-ALL autoloader which should be
+  loaded from 'format.lisp'.
+
+* [svn r13188] Fix DEFSTRUCT trying to generate accessors named NIL
+
+* [svn r13187] Fix #125: FASL reader should not convert symbol
+  case [Qi FASL loading issues].
+
+* [svn r13185] Fix #119: Incorrect dynamic environment for
+  evaluation of :CLASS allocation slot initforms.
+
+* [svn r13182-r13184] Fix error printing issues.
+
+* [svn r13181] Increase autoload verbosity: include FASLs too
+  (not only Java classes).
+
+Changes
+-------
+
+* Merge 'unsafe-p-removal' branch.
 
 Version 0.24.0
 ==============
