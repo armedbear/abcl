@@ -45,7 +45,8 @@
   (eq component :wild-inferiors))
 
 (defun list-directories-with-wildcards (pathname 
-					&optional (wild-inferiors-found nil))
+                                        wild-inferiors-found
+                                        resolve-symlinks)
   (let* ((directory (pathname-directory pathname))
 	 (first-wild-inferior (and (not wild-inferiors-found) 
 				   (position-if #'wild-inferiors-p directory)))
@@ -59,7 +60,7 @@
 		     directory))
 	 (newpath (make-pathname :directory non-wild
 				 :name nil :type nil :defaults pathname))
-	 (entries (list-directory newpath)))
+	 (entries (list-directory newpath resolve-symlinks)))
     (if (not (or wild wild-inferiors-found))
 	entries
 	(let ((inferior-entries (when (or wild-inferiors-found first-wild-inferior) entries)))
@@ -86,11 +87,12 @@
 			   (list-directories-with-wildcards
 			    (make-pathname :directory directory
 					   :defaults newpath)
-			    (or first-wild-inferior wild-inferiors-found))))))
+			    (or first-wild-inferior wild-inferiors-found)
+                            resolve-symlinks)))))
 		   entries))))))
 
 
-(defun directory (pathspec &key)
+(defun directory (pathspec &key (resolve-symlinks t))
   (let ((pathname (merge-pathnames pathspec)))
     (when (logical-pathname-p pathname)
       (setq pathname (translate-logical-pathname pathname)))
@@ -104,7 +106,8 @@
                   (let ((device (pathname-device pathname)))
                     (when device
                       (setq namestring (concatenate 'string device ":" namestring)))))
-                (let ((entries (list-directories-with-wildcards namestring))
+                (let ((entries (list-directories-with-wildcards 
+                                namestring nil resolve-symlinks))
                       (matching-entries ()))
                   (dolist (entry entries)
                     (cond ((file-directory-p entry)

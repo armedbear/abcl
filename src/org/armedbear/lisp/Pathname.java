@@ -1475,10 +1475,14 @@ public class Pathname extends LispObject {
     private static final Primitive LIST_DIRECTORY = new pf_list_directory();
     private static class pf_list_directory extends Primitive {
         pf_list_directory() {
-            super("list-directory", PACKAGE_SYS, true, "directory");
+            super("list-directory", PACKAGE_SYS, true, "directory &optional (resolve-symlinks t)");
         }
         @Override
         public LispObject execute(LispObject arg) {
+            return execute(arg, T);
+        }
+        @Override
+        public LispObject execute(LispObject arg, LispObject arg2) {
             Pathname pathname = coerceToPathname(arg);
             if (pathname instanceof LogicalPathname) {
                 pathname = LogicalPathname.translateLogicalPathname((LogicalPathname) pathname);
@@ -1546,7 +1550,11 @@ public class Pathname extends LispObject {
                             if (file.isDirectory()) {
                                 p = Utilities.getDirectoryPathname(file);
                             } else {
-                                p = new Pathname(file.getCanonicalPath());
+                                if (arg2 != NIL) {
+                                    p = new Pathname(file.getCanonicalPath());
+                                } else {
+                                    p = new Pathname(file.getAbsolutePath());
+                                }
                             }
                             result = new Cons(p, result);
                         }
