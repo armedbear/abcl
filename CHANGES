@@ -1,3 +1,15 @@
+Version 0.25.0
+==============
+svn://common-lisp.net/project/armedbear/svn/tags/0.25.0/abcl
+(?? March 2011)
+
+Features
+--------
+
+* [svn r13230] Add :resolve-symlinks keyword argument for DIRECTORY.
+
+* [svn r13226] Support -- as a command line parameter for the REPL.
+
 Version 0.24.0
 ==============
 svn://common-lisp.net/project/armedbear/svn/tags/0.24.0/abcl
