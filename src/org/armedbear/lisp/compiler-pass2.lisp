@@ -4586,8 +4586,6 @@ either to stream or the pathname of the class file if `stream' is NIL."
                     ((compile-operand arg1 nil)
                      (compile-operand arg2 :int)
                      (maybe-emit-clear-values arg1 arg2)))
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                           arg2 'stack :int)
                 (emit-invokevirtual +lisp-object+ "LOGIOR" '(:int) +lisp-object+)
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
