@@ -48,48 +48,53 @@
                                         wild-inferiors-found
                                         resolve-symlinks)
   (let* ((directory (pathname-directory pathname))
-	 (first-wild-inferior (and (not wild-inferiors-found) 
-				   (position-if #'wild-inferiors-p directory)))
-	 (first-wild (position-if #'wild-p directory))
-	 (wild (when (or first-wild-inferior first-wild)
-		 (nthcdr (or first-wild-inferior first-wild) directory)))
-	 (non-wild (if (or first-wild-inferior first-wild)
-		       (nbutlast directory
-				 (- (length directory) 
-				    (or first-wild-inferior first-wild)))
-		     directory))
-	 (newpath (make-pathname :directory non-wild
-				 :name nil :type nil :defaults pathname))
-	 (entries (list-directory newpath resolve-symlinks)))
+         (first-wild-inferior (and (not wild-inferiors-found) 
+                                   (position-if #'wild-inferiors-p directory)))
+         (first-wild (position-if #'wild-p directory))
+         (wild (when (or first-wild-inferior first-wild)
+                 (nthcdr (or first-wild-inferior first-wild) directory)))
+         (non-wild (if (or first-wild-inferior first-wild)
+                       (nbutlast directory
+                                 (- (length directory) 
+                                    (or first-wild-inferior first-wild)))
+                     directory))
+         (newpath (make-pathname :directory non-wild
+                                 :name nil :type nil :defaults pathname))
+         (entries (list-directory newpath resolve-symlinks)))
     (if (not (or wild wild-inferiors-found))
-	entries
-	(let ((inferior-entries (when (or wild-inferiors-found first-wild-inferior) entries)))
-	  (nconc 
-	   (mapcan (lambda (entry) 
-		     (when (pathname-match-p (pathname entry) pathname)
-		       (list entry)))
-		   inferior-entries)
-	   (mapcan (lambda (entry)
-		     (let* ((pathname (pathname entry))
-			    (directory (pathname-directory pathname))
-			    (rest-wild (cdr wild)))
-		       (unless (pathname-name pathname)
-			 (when (pathname-match-p (first (last directory))
-				    (cond ((eql (car wild) :wild)
-					   "*")
-					  ((eql (car wild) :wild-inferiors)
-					   "*")
-					  (wild 
-					   (car wild))
-					  (t "")))
-			   (when rest-wild
-			     (setf directory (nconc directory rest-wild)))
-			   (list-directories-with-wildcards
-			    (make-pathname :directory directory
-					   :defaults newpath)
-			    (or first-wild-inferior wild-inferiors-found)
-                            resolve-symlinks)))))
-		   entries))))))
+        entries
+        (let ((inferior-entries (when (or wild-inferiors-found first-wild-inferior) entries)))
+          (nconc 
+           (mapcan (lambda (entry) 
+                     (when (pathname-match-p (pathname entry) pathname)
+                       (list entry)))
+                   inferior-entries)
+           (mapcan (lambda (entry)
+                     (let* ((pathname (pathname entry))
+                            (directory (pathname-directory pathname))
+                            (rest-wild (cdr wild)))
+                       (unless (pathname-name pathname)
+                         (when (pathname-match-p (first (last directory))
+                                    (cond ((eql (car wild) :wild)
+                                           "*")
+                                          ((eql (car wild) :wild-inferiors)
+                                           "*")
+                                          (wild 
+                                           (car wild))
+                                          (t "")))
+                           (when (and 
+                                  (not (or first-wild-inferior 
+                                           wild-inferiors-found)) 
+                                  rest-wild)
+                             (setf directory (nconc directory rest-wild)))
+                           (let ((recurse (make-pathname :directory directory
+                                                  :defaults newpath)))
+                             (when (not (equal recurse newpath))
+                               (list-directories-with-wildcards
+                                recurse
+                                (or first-wild-inferior wild-inferiors-found)
+                                resolve-symlinks)))))))
+                   entries))))))
 
 
 (defun directory (pathspec &key (resolve-symlinks t))
@@ -97,7 +102,7 @@
     (when (logical-pathname-p pathname)
       (setq pathname (translate-logical-pathname pathname)))
     (if (or (position #\* (namestring pathname))
-	    (wild-pathname-p pathname))
+            (wild-pathname-p pathname))
         (if (pathname-jar-p pathname)
             (match-wild-jar-pathname pathname)
             (let ((namestring (directory-namestring pathname)))
@@ -113,7 +118,7 @@
                     (cond ((file-directory-p entry)
                            (when (pathname-match-p (file-namestring (pathname-as-file entry)) (file-namestring pathname))
                              (push entry matching-entries)))
-                          ((pathname-match-p (file-namestring entry) (file-namestring pathname))
+                          ((pathname-match-p (or (file-namestring entry) "") (file-namestring pathname))
                            (push entry matching-entries))))
                   matching-entries))))
         ;; Not wild.
