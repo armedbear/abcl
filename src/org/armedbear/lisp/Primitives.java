@@ -2,6 +2,7 @@
  * Primitives.java
  *
  * Copyright (C) 2002-2007 Peter Graves
+ * Copyright (C) 2011 Erik Huelsmann
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -5815,6 +5816,36 @@ public final class Primitives {
         public LispObject execute(LispObject arg) {
             Lisp.TRAP_OVERFLOW = (arg != NIL);
             return arg;
+        }
+    };
+
+    // ### finalize
+    private static final Primitive FINALIZE
+        = new pf_finalize();
+    private static final class pf_finalize extends Primitive {
+        pf_finalize() {
+            super("finalize", PACKAGE_EXT, true, "object function");
+        }
+
+        @Override
+        public LispObject execute(LispObject obj, LispObject fun) {
+            obj.addFinalizer(fun);
+            return obj;
+        }
+    };
+
+    // ### cancel-finalization
+    private static final Primitive CANCEL_FINALIZATION
+        = new pf_cancel_finalization();
+    private static final class pf_cancel_finalization extends Primitive {
+        pf_cancel_finalization() {
+            super("cancel-finalization", PACKAGE_EXT, true, "object");
+        }
+
+        @Override
+        public LispObject execute(LispObject obj) {
+            obj.cancelFinalizers();
+            return obj;
         }
     };
 

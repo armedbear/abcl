@@ -1284,4 +1284,25 @@ public class LispObject //extends Lisp
   public void incrementHotCount()
   {
   }
+
+  private Cons finalizers = null;
+
+  synchronized public void addFinalizer(LispObject fun) {
+      finalizers = new Cons(fun, finalizers);
+  }
+
+  synchronized public void cancelFinalizers() {
+      finalizers = null;
+  }
+
+  @Override
+  @SuppressWarnings("FinalizeDeclaration")
+  protected void finalize()
+    throws Throwable {
+      while (finalizers != null) {
+          finalizers.car.execute();
+          finalizers = (Cons)finalizers.cdr;
+      }
+      super.finalize();
+  }
 }
