@@ -76,7 +76,7 @@ public class ForwardReferencedClass extends LispClass
         return unreadableString(sb.toString());
     }
 
-    @DocString(name="make-forward-referenced=class")
+    @DocString(name="make-forward-referenced-class")
     private static final Primitive MAKE_FORWARD_REFERENCED_CLASS =
         new Primitive("make-forward-referenced-class", PACKAGE_SYS, true)
     {
