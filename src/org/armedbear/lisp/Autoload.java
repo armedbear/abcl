@@ -517,6 +517,8 @@ public class Autoload extends Function
         autoload(PACKAGE_EXT, "string-input-stream-current", "StringInputStream", true);
         autoload(PACKAGE_EXT, "string-find", "StringFunctions");
         autoload(PACKAGE_EXT, "string-position", "StringFunctions");
+        autoload(PACKAGE_EXT, "make-weak-reference", "WeakReference", true);
+        autoload(PACKAGE_EXT, "weak-reference-value", "WeakReference", true);
         autoload(PACKAGE_JAVA, "%jnew-proxy", "JProxy");
         autoload(PACKAGE_JAVA, "%find-java-class", "JavaObject");
         autoload(PACKAGE_JAVA, "%register-java-class", "JavaObject");
