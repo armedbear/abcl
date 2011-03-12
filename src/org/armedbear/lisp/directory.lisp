@@ -116,9 +116,9 @@
                       (matching-entries ()))
                   (dolist (entry entries)
                     (cond ((file-directory-p entry)
-                           (when (pathname-match-p (file-namestring (pathname-as-file entry)) (file-namestring pathname))
+                           (when (pathname-match-p (make-pathname :name (file-namestring (pathname-as-file entry))) (make-pathname :name (file-namestring pathname)))
                              (push entry matching-entries)))
-                          ((pathname-match-p (or (file-namestring entry) "") (file-namestring pathname))
+                          ((pathname-match-p (make-pathname :name (or (file-namestring entry) "")) (make-pathname :name (file-namestring pathname)))
                            (push entry matching-entries))))
                   matching-entries))))
         ;; Not wild.
