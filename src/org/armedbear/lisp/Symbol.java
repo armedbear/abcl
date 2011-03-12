@@ -2947,6 +2947,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_EXT.addExternalSymbol("JAR-PATHNAME");
   public static final Symbol URL_PATHNAME =
     PACKAGE_EXT.addExternalSymbol("URL-PATHNAME");
+  public static final Symbol WEAK_REFERENCE =
+    PACKAGE_EXT.addExternalSymbol("WEAK-REFERENCE");
 
   // MOP.
   public static final Symbol CLASS_LAYOUT =

@@ -141,6 +141,7 @@ public class BuiltInClass extends LispClass
   public static final BuiltInClass STACK_FRAME          = addClass(Symbol.STACK_FRAME);
   public static final BuiltInClass LISP_STACK_FRAME     = addClass(Symbol.LISP_STACK_FRAME);
   public static final BuiltInClass JAVA_STACK_FRAME     = addClass(Symbol.JAVA_STACK_FRAME);
+  public static final BuiltInClass WEAK_REFERENCE      = addClass(Symbol.WEAK_REFERENCE);
 
 
   public static final StructureClass STRUCTURE_OBJECT =
