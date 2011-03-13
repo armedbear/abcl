@@ -1,8 +1,8 @@
 /*
  * Finalizer.java
  *
- * Copyright (C) 2010 Mark Evenson
- * $Id: HttpHead.java 12656 2010-05-06 20:15:26Z mevenson $
+ * Copyright (C) 2011 Erik Huelsmann
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
