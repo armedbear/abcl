@@ -57,10 +57,25 @@
 ;;;;
 ;;;; Notes
 ;;;; =====
+;;;;
+;;;; NB: The ABCL implementation has been extensively reworked since these
+;;;; notes were included.  Please see the ABCL revision history via
+;;;; the interface at
+;;;;
+;;;; http://trac.common-lisp.net/armedbear/browser/trunk/abcl/src/org/armedbear/lisp/gray-streams.lisp 
+;;;;
+;;;; for a more relevant history vis a vis the ABCL implementation.
+;;;;
 ;;;; A simple implementation of Gray streams for Corman Lisp 1.42.
 ;;;; Gray streams are 'clos' based streams as described at:
 ;;;;
 ;;;; ftp://parcftp.xerox.com/pub/cl/cleanup/mail/stream-definition-by-user.mail
+;;;;
+;;;; 20110319 
+;;;;   The xerox.com ftp URI doesn't resolve.  Instead see Kent Pitman's
+;;;;   archival copy at
+;;;;
+;;;;     http://www.nhplace.com/kent/CL/Issues/stream-definition-by-user.html
 ;;;;
 ;;;; Some differences exist between this implementation and the
 ;;;; specification above. See notes below for details.
@@ -105,12 +120,6 @@
   (:nicknames "GS") ;; # fb 1.01
   (:export
    "FUNDAMENTAL-STREAM"
-   "STREAM-OPEN-STREAM-P"
-   "STREAM-STREAMP"
-   "STREAM-INPUT-STREAM-P"
-   "STREAM-OUTPUT-STREAM-P"
-   "STREAM-STREAM-ELEMENT-TYPE"
-   "STREAM-CLOSE"
    "FUNDAMENTAL-OUTPUT-STREAM"
    "FUNDAMENTAL-INPUT-STREAM"
    "FUNDAMENTAL-CHARACTER-STREAM"
@@ -138,48 +147,52 @@
    "STREAM-ADVANCE-TO-COLUMN"
    "STREAM-READ-SEQUENCE"
    "STREAM-WRITE-SEQUENCE"
+   "STREAM-FILE-POSITION"
    "FUNDAMENTAL-BINARY-INPUT-STREAM"
    "FUNDAMENTAL-BINARY-OUTPUT-STREAM"))
 
 (in-package :gray-streams)
 
-(defvar *old-read-char* #'read-char)
-(defvar *old-peek-char* #'peek-char)
-(defvar *old-unread-char* #'unread-char)
-(defvar *old-listen* nil)
-(defvar *old-read-line* #'read-line)
-(defvar *old-read-char-no-hang* #'read-char-no-hang)
-(defvar *old-write-char* #'write-char)
-(defvar *old-fresh-line* #'fresh-line)
-(defvar *old-terpri* #'terpri)
-(defvar *old-write-string* #'write-string)
-(defvar *old-write-line* #'write-line)
-(defvar *old-force-output* #'sys::%force-output)
-(defvar *old-finish-output* #'sys::%finish-output)
-(defvar *old-clear-output* #'sys::%clear-output)
-(defvar *old-clear-input* #'clear-input)
-(defvar *old-read-byte* #'read-byte)
-(defvar *old-write-byte* #'write-byte)
-(defvar *old-stream-element-type* #'cl::stream-element-type)
-(defvar *old-close* #'cl::close)
-(defvar *old-input-character-stream-p*
+(defvar *ansi-read-char* #'read-char)
+(defvar *ansi-peek-char* #'peek-char)
+(defvar *ansi-unread-char* #'unread-char)
+(defvar *ansi-listen* nil)
+(defvar *ansi-read-line* #'read-line)
+(defvar *ansi-read-char-no-hang* #'read-char-no-hang)
+(defvar *ansi-write-char* #'write-char)
+(defvar *ansi-fresh-line* #'fresh-line)
+(defvar *ansi-terpri* #'terpri)
+(defvar *ansi-write-string* #'write-string)
+(defvar *ansi-write-line* #'write-line)
+(defvar *ansi-force-output* #'sys::%force-output)
+(defvar *ansi-finish-output* #'sys::%finish-output)
+(defvar *ansi-clear-output* #'sys::%clear-output)
+(defvar *ansi-clear-input* #'clear-input)
+(defvar *ansi-read-byte* #'read-byte)
+(defvar *ansi-write-byte* #'write-byte)
+(defvar *ansi-stream-element-type* #'cl::stream-element-type)
+(defvar *ansi-close* #'cl::close)
+(defvar *ansi-input-character-stream-p*
   #'(lambda (s) (and (input-stream-p s) (eql (stream-element-type s) 'character))))
-(defvar *old-input-stream-p* #'cl::input-stream-p)
-(defvar *old-output-stream-p* #'cl::output-stream-p)
-(defvar *old-open-stream-p* #'cl::open-stream-p)
-(defvar *old-streamp* #'cl::streamp)
-(defvar *old-read-sequence* #'cl::read-sequence)
-(defvar *old-write-sequence* #'cl::write-sequence)
-(defvar *old-make-two-way-stream* #'cl:make-two-way-stream)
-(defvar *old-two-way-stream-input-stream* #'cl:two-way-stream-input-stream)
-(defvar *old-two-way-stream-output-stream* #'cl:two-way-stream-output-stream)
+(defvar *ansi-input-stream-p* #'cl::input-stream-p)
+(defvar *ansi-output-stream-p* #'cl::output-stream-p)
+(defvar *ansi-open-stream-p* #'cl::open-stream-p)
+(defvar *ansi-streamp* #'cl::streamp)
+(defvar *ansi-read-sequence* #'cl::read-sequence)
+(defvar *ansi-write-sequence* #'cl::write-sequence)
+(defvar *ansi-make-two-way-stream* #'cl:make-two-way-stream)
+(defvar *ansi-two-way-stream-input-stream* #'cl:two-way-stream-input-stream)
+(defvar *ansi-two-way-stream-output-stream* #'cl:two-way-stream-output-stream)
+(defvar *ansi-file-position* #'cl:file-position)
 
-
-(defun old-streamp (stream)
+(defun ansi-streamp (stream)
   (or (xp::xp-structure-p stream)
-      (funcall *old-streamp* stream)))
+      (funcall *ansi-streamp* stream)))
 
-(defclass fundamental-stream (standard-object stream))
+(defclass fundamental-stream (standard-object stream)
+  ((open-p :initform t
+           :accessor stream-open-p))
+  (:documentation "The base class of all Gray streams"))
 
 (defgeneric gray-close (stream &key abort))
 (defgeneric gray-open-stream-p (stream))
@@ -189,29 +202,42 @@
 (defgeneric gray-output-stream-p (stream))
 (defgeneric gray-stream-element-type (stream))
 
+(defmethod gray-close ((stream fundamental-stream) &key abort)
+  (declare (ignore abort))
+  (setf (stream-open-p stream) nil)
+  t)
 
-(defmethod stream-streamp ((s fundamental-stream))
+(defmethod gray-open-stream-p ((stream fundamental-stream))
+  (stream-open-p stream))
+
+(defmethod gray-streamp ((s fundamental-stream))
   s)
 
 (defclass fundamental-input-stream (fundamental-stream))
 
-(defmethod stream-input-character-stream-p (s)  ;; # fb 1.01
-  (and (stream-input-stream-p s)
-       (eq (stream-stream-element-type s) 'character)))
+(defmethod gray-input-character-stream-p (s)  ;; # fb 1.01
+  (and (gray-input-stream-p s)
+       (eq (gray-stream-element-type s) 'character)))
 
-(defmethod stream-input-stream-p ((s fundamental-input-stream))
+(defmethod gray-input-stream-p ((s fundamental-input-stream))
   (declare (ignore s))
   t)
 
 (defclass fundamental-output-stream (fundamental-stream))
 
-(defmethod stream-output-stream-p ((s fundamental-output-stream))
+(defmethod gray-input-stream-p ((s fundamental-output-stream))
+  (typep s 'fundamental-input-stream))
+
+(defmethod gray-output-stream-p ((s fundamental-output-stream))
   (declare (ignore s))
   t)
 
+(defmethod gray-output-stream-p ((s fundamental-input-stream))
+  (typep s 'fundamental-output-stream))
+
 (defclass fundamental-character-stream (fundamental-stream))
 
-(defmethod stream-stream-element-type ((s fundamental-character-stream))
+(defmethod gray-stream-element-type ((s fundamental-character-stream))
   (declare (ignore s))
   'character)
 
@@ -382,15 +408,15 @@
 
 (defun gray-read-char (&optional input-stream (eof-errorp t) eof-value recursive-p)
   (let ((stream (decode-read-arg input-stream)))
-    (if (old-streamp stream)
-        (funcall *old-read-char* stream eof-errorp eof-value recursive-p)
+    (if (ansi-streamp stream)
+        (funcall *ansi-read-char* stream eof-errorp eof-value recursive-p)
         (check-for-eof (stream-read-char stream) stream eof-errorp eof-value))))
 
 (defun gray-peek-char (&optional peek-type input-stream (eof-errorp t)
                                  eof-value recursive-p)
   (let ((stream (decode-read-arg input-stream)))
-    (if (old-streamp stream)
-        (funcall *old-peek-char* peek-type stream eof-errorp eof-value recursive-p)
+    (if (ansi-streamp stream)
+        (funcall *ansi-peek-char* peek-type stream eof-errorp eof-value recursive-p)
         (if (null peek-type)
             (check-for-eof (stream-peek-char stream) stream eof-errorp eof-value)
             (loop
@@ -406,21 +432,21 @@
 
 (defun gray-unread-char (character &optional input-stream)
   (let ((stream (decode-read-arg input-stream)))
-    (if (old-streamp stream)
-        (funcall *old-unread-char* character stream)
+    (if (ansi-streamp stream)
+        (funcall *ansi-unread-char* character stream)
         (stream-unread-char stream character))))
 
 (defun gray-listen (&optional input-stream)
   (let ((stream (decode-read-arg input-stream)))
-    (if (old-streamp stream)
-        (funcall *old-listen* stream)
+    (if (ansi-streamp stream)
+        (funcall *ansi-listen* stream)
         (stream-listen stream))))
 
 (defun gray-read-line (&optional input-stream (eof-error-p t)
                                  eof-value recursive-p)
   (let ((stream (decode-read-arg input-stream)))
-    (if (old-streamp stream)
-        (funcall *old-read-line* stream eof-error-p eof-value recursive-p)
+    (if (ansi-streamp stream)
+        (funcall *ansi-read-line* stream eof-error-p eof-value recursive-p)
         (multiple-value-bind (string eofp)
           (stream-read-line stream)
           (if eofp
@@ -431,46 +457,46 @@
 
 (defun gray-clear-input (&optional input-stream)
   (let ((stream (decode-read-arg input-stream)))
-    (if (old-streamp stream)
-        (funcall *old-clear-input* stream)
+    (if (ansi-streamp stream)
+        (funcall *ansi-clear-input* stream)
         (stream-clear-input stream))))
 
 (defun gray-read-char-no-hang (&optional input-stream (eof-errorp t)
                                          eof-value recursive-p)
   (let ((stream (decode-read-arg input-stream)))
-    (if (old-streamp stream)
-        (funcall *old-read-char-no-hang* stream eof-errorp eof-value recursive-p)
+    (if (ansi-streamp stream)
+        (funcall *ansi-read-char-no-hang* stream eof-errorp eof-value recursive-p)
         (check-for-eof (stream-read-char-no-hang stream)
                        stream eof-errorp eof-value))))
 
 (defun gray-write-char (character &optional output-stream)
   (let ((stream (decode-print-arg output-stream)))
-    (if (old-streamp stream)
-        (funcall *old-write-char* character stream)
+    (if (ansi-streamp stream)
+        (funcall *ansi-write-char* character stream)
         (stream-write-char stream character))))
 
 (defun gray-fresh-line (&optional output-stream)
   (let ((stream (decode-print-arg output-stream)))
-    (if (old-streamp stream)
-        (funcall *old-fresh-line* stream)
+    (if (ansi-streamp stream)
+        (funcall *ansi-fresh-line* stream)
         (stream-fresh-line stream))))
 
 (defun gray-terpri (&optional output-stream)
   (let ((stream (decode-print-arg output-stream)))
-    (if (old-streamp stream)
-        (funcall *old-terpri* stream)
+    (if (ansi-streamp stream)
+        (funcall *ansi-terpri* stream)
         (stream-terpri stream))))
 
 (defun gray-write-string (string &optional output-stream &key (start 0) end)
   (let ((stream (decode-print-arg output-stream)))
-    (if (old-streamp stream)
-        (funcall *old-write-string* string stream :start start :end end)
+    (if (ansi-streamp stream)
+        (funcall *ansi-write-string* string stream :start start :end end)
         (stream-write-string stream string start end))))
 
 (defun gray-write-line (string &optional output-stream &key (start 0) end)
   (let ((stream (decode-print-arg output-stream)))
-    (if (old-streamp stream)
-        (funcall *old-write-line* string stream :start start :end end)
+    (if (ansi-streamp stream)
+        (funcall *ansi-write-line* string stream :start start :end end)
         (progn
           (stream-write-string stream string start end)
           (stream-terpri stream)
@@ -478,31 +504,31 @@
 
 (defun gray-force-output (&optional output-stream)
   (let ((stream (decode-print-arg output-stream)))
-    (if (old-streamp stream)
-        (funcall *old-force-output* stream)
+    (if (ansi-streamp stream)
+        (funcall *ansi-force-output* stream)
         (stream-force-output stream))))
 
 (defun gray-finish-output (&optional output-stream)
   (let ((stream (decode-print-arg output-stream)))
-    (if (old-streamp stream)
-        (funcall *old-finish-output* stream)
+    (if (ansi-streamp stream)
+        (funcall *ansi-finish-output* stream)
         (stream-finish-output stream))))
 
 (defun gray-clear-output (&optional output-stream)
   (let ((stream (decode-print-arg output-stream)))
-    (if (old-streamp stream)
-        (funcall *old-clear-output* stream)
+    (if (ansi-streamp stream)
+        (funcall *ansi-clear-output* stream)
         (stream-clear-output stream))))
 
 (defun gray-read-byte (binary-input-stream &optional (eof-errorp t) eof-value)
-  (if (old-streamp binary-input-stream)
-      (funcall *old-read-byte* binary-input-stream eof-errorp eof-value)
+  (if (ansi-streamp binary-input-stream)
+      (funcall *ansi-read-byte* binary-input-stream eof-errorp eof-value)
       (check-for-eof (stream-read-byte binary-input-stream)
                      binary-input-stream eof-errorp eof-value)))
 
 (defun gray-write-byte (integer binary-output-stream)
-  (if (old-streamp binary-output-stream)
-      (funcall *old-write-byte* integer binary-output-stream)
+  (if (ansi-streamp binary-output-stream)
+      (funcall *ansi-write-byte* integer binary-output-stream)
       (stream-write-byte binary-output-stream integer)))
 
 (defmethod stream-line-column ((stream stream))
@@ -510,58 +536,69 @@
 
 (defun gray-stream-column (&optional input-stream)
   (let ((stream (decode-read-arg input-stream)))
-    (if (old-streamp stream)
-        nil ;(funcall *old-stream-column* stream)
+    (if (ansi-streamp stream)
+        nil ;(funcall *ansi-stream-column* stream)
         (stream-line-column stream))))
 
 (defmethod gray-stream-element-type (stream)
-  (funcall *old-stream-element-type* stream))
+  (funcall *ansi-stream-element-type* stream))
 
 (defmethod gray-close (stream &key abort)
-  (funcall *old-close* stream :abort abort))
+  (funcall *ansi-close* stream :abort abort))
 
 (defmethod gray-input-stream-p (stream)
-  (funcall *old-input-stream-p* stream))
+  (funcall *ansi-input-stream-p* stream))
 
 (defmethod gray-input-character-stream-p (stream)
-  (funcall *old-input-character-stream-p* stream))
+  (funcall *ansi-input-character-stream-p* stream))
 
 (defmethod gray-output-stream-p (stream)
-  (funcall *old-output-stream-p* stream))
+  (funcall *ansi-output-stream-p* stream))
 
 (defmethod gray-open-stream-p (stream)
-  (funcall *old-open-stream-p* stream))
+  (funcall *ansi-open-stream-p* stream))
 
 (defmethod gray-streamp (stream)
-  (funcall *old-streamp* stream))
+  (funcall *ansi-streamp* stream))
 
 (defun gray-write-sequence (sequence stream &key (start 0) end)
-  (if (old-streamp stream)
-      (funcall *old-write-sequence* sequence stream :start start :end end)
+  (if (ansi-streamp stream)
+      (funcall *ansi-write-sequence* sequence stream :start start :end end)
       (stream-write-sequence stream sequence start end)))
 
 (defun gray-read-sequence (sequence stream &key (start 0) end)
-  (if (old-streamp stream)
-      (funcall *old-read-sequence* sequence stream :start start :end end)
+  (if (ansi-streamp stream)
+      (funcall *ansi-read-sequence* sequence stream :start start :end end)
       (stream-read-sequence stream sequence start end)))
 
+(defgeneric stream-file-position (stream &optional position-spec))
+
+(defun gray-file-position (stream &optional position-spec)
+  (if position-spec
+      (if (ansi-streamp stream)
+          (funcall *ansi-file-position* stream position-spec)
+          (stream-file-position stream position-spec))
+      (if (ansi-streamp stream)
+          (funcall *ansi-file-position* stream)
+          (stream-file-position stream))))
+  
 #|
 (defstruct (two-way-stream-g (:include stream))
   input-stream output-stream)
 
 (defun gray-make-two-way-stream (in out)
-  (if (and (old-streamp in) (old-streamp out))
-      (funcall *old-make-two-way-stream* in out)
+  (if (and (ansi-streamp in) (ansi-streamp out))
+      (funcall *ansi-make-two-way-stream* in out)
       (make-two-way-stream-g :input-stream in :output-stream out)))
 
 (defun gray-two-way-stream-input-stream (stream)
-  (if (old-streamp stream)
-      (funcall *old-two-way-stream-input-stream* stream)
+  (if (ansi-streamp stream)
+      (funcall *ansi-two-way-stream-input-stream* stream)
       (two-way-stream-g-input-stream stream)))
 
 (defun gray-two-way-stream-output-stream (stream)
-  (if (old-streamp stream)
-      (funcall *old-two-way-stream-output-stream* stream)
+  (if (ansi-streamp stream)
+      (funcall *ansi-two-way-stream-output-stream* stream)
       (two-way-stream-g-output-stream stream)))
 
 |#
@@ -592,6 +629,7 @@
 (setf (symbol-function 'common-lisp::streamp) #'gray-streamp)
 (setf (symbol-function 'common-lisp::read-sequence) #'gray-read-sequence)
 (setf (symbol-function 'common-lisp::write-sequence) #'gray-write-sequence)
+(setf (symbol-function 'common-lisp::file-position) #'gray-file-position)
 
 #|
 (setf (symbol-function 'common-lisp::make-two-way-stream) #'gray-make-two-way-stream)
