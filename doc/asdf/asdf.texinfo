@@ -35,11 +35,11 @@ for Common Lisp programs and libraries.
 You can find the latest version of this manual at
 @url{http://common-lisp.net/project/asdf/asdf.html}.
 
-ASDF Copyright @copyright{} 2001-2010 Daniel Barlow and contributors.
+ASDF Copyright @copyright{} 2001-2011 Daniel Barlow and contributors.
 
-This manual Copyright @copyright{} 2001-2010 Daniel Barlow and contributors.
+This manual Copyright @copyright{} 2001-2011 Daniel Barlow and contributors.
 
-This manual revised @copyright{} 2009-2010 Robert P. Goldman and Francois-Rene Rideau.
+This manual revised @copyright{} 2009-2011 Robert P. Goldman and Francois-Rene Rideau.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -668,7 +668,7 @@ usually be saved as @file{hello-lisp.asd}:
 
 (defsystem "hello-lisp"
   :description "hello-lisp: a sample Lisp system."
-  :version "0.2"
+  :version "0.2.1"
   :author "Joe User <joe@@example.com>"
   :licence "Public Domain"
   :components ((:file "packages")
@@ -724,6 +724,19 @@ It is possible, though almost never necessary, to override this behaviour.}.
 This is a good thing because the user can move the system sources
 without having to edit the system definition.
 
+@c FIXME: Should have cross-reference to "Version specifiers" in the
+@c defsystem grammar, but the cross-referencing is so broken by
+@c insufficient node breakdown that I have not put one in.
+@item
+Make sure you know how the @code{:version} numbers will be parsed!  They
+are parsed as period-separated lists of integers.  I.e., in the example,
+@code{0.2.1} is to be interpreted, roughly speaking, as @code{(0 2 1)}.
+In particular, version @code{0.2.1} is interpreted the same as
+@code{0.0002.1} and is strictly version-less-than version @code{0.20.1},
+even though the two are the same when interpreted as decimal fractions.
+@cindex version specifiers
+@cindex :version
+
 @end itemize
 
 @node  A more involved example, The defsystem grammar, The defsystem form, Defining systems with defsystem
@@ -735,7 +748,7 @@ slightly convoluted example:
 
 @lisp
 (defsystem "foo"
-  :version "1.0"
+  :version "1.0.0"
   :components ((:module "mod"
                             :components ((:file "bar")
                                                   (:file"baz")
@@ -853,7 +866,6 @@ component-dep-fail-option := :fail | :try-next | :ignore
 @end example
 
 
-
 @subsection Component names
 
 Component names (@code{simple-component-name})
@@ -953,6 +965,22 @@ fulfills whatever constraints are required from that component type
 (e.g. naming a directory or a file with appropriate type);
 on the other hand, you can circumvent the file type that would otherwise
 be forced upon you if you were specifying a string.
+
+@subsection Version specifiers
+@cindex version specifiers
+@cindex :version
+
+Version specifiers are parsed as period-separated lists of integers.  I.e., in the example,
+@code{0.2.1} is to be interpreted, roughly speaking, as @code{(0 2 1)}.
+In particular, version @code{0.2.1} is interpreted the same as
+@code{0.0002.1} and is strictly version-less-than version @code{0.20.1},
+even though the two are the same when interpreted as decimal fractions.
+
+System definers are encouraged to use version identifiers of the form
+@var{x}.@var{y}.@var{z} for major version, minor version (compatible
+API) and patch level.
+
+@xref{Common attributes of components}.
 
 
 @subsection Warning about logical pathnames
@@ -1392,17 +1420,23 @@ to a Unix-style syntax.
 @xref{The defsystem grammar,,Pathname specifiers}.
 
 @subsubsection Version identifier
+@findex version-satisfies
+@cindex :version
 
-This optional attribute is used by the @code{test-system-version} operation.
-@xref{Predefined operations of ASDF}.
-For the default method of @code{test-system-version},
+This optional attribute is used by the generic function
+@code{version-satisfies}, which tests to see if @code{:version}
+dependencies are satisfied.
 the version should be a string of integers separated by dots,
 for example @samp{1.0.11}.
+For more information on the semantics of version specifiers, see @ref{The defsystem grammar}.
 
-@emph{Nota Bene}:
-This operation, planned for ASDF 1,
-is still not implement yet as of ASDF 2.
-Don't hold your breath.
+@c This optional attribute is intended to be used by the @code{test-system-version} operation.
+@c @xref{Predefined operations of ASDF}.
+@c @emph{Nota Bene}:
+@c This operation, planned for ASDF 1,
+@c is still not implemented yet as of ASDF 2.
+@c Don't hold your breath.
+
 
 
 @subsubsection Required features
@@ -1508,6 +1542,14 @@ But, we need to support CLISP.
 If you have the time for some CLISP hacking,
 I'm sure they'd welcome your fixes.
 @c Doesn't CLISP now support LIST method combination?
+
+See the discussion of the semantics of @code{:version} in the defsystem
+grammar.
+
+@c FIXME: Should have cross-reference to "Version specifiers" in the
+@c defsystem grammar, but the cross-referencing is so broken by
+@c insufficient node breakdown that I have not put one in.
+
 
 @subsubsection pathname
 
@@ -2351,7 +2393,7 @@ ABSOLUTE-COMPONENT-DESIGNATOR :=
 
 RELATIVE-COMPONENT-DESIGNATOR :=
     STRING | ;; namestring, directory is assumed. If the last component, /**/*.* is added
-    PATHNAME | ;; pathname unless last component, directory is assumed.
+    PATHNAME | ;; pathname; unless last component, directory is assumed.
     :IMPLEMENTATION | ;; a directory based on implementation, e.g. sbcl-1.0.45-linux-amd64
     :IMPLEMENTATION-TYPE | ;; a directory based on lisp-implementation-type only, e.g. sbcl
     :*/ | ;; any direct subdirectory (since ASDF 2.011.4)
@@ -2660,24 +2702,54 @@ The valid values for these variables are
 ASDF includes several additional features that are generally
 useful for system definition and development. These include:
 
+@defun coerce-pathname name @&key type defaults
+
+This function takes an argument, and portably interprets it as a pathname.
+If the argument @var{name} is a pathname or @code{nil}, it is passed through;
+if it's a symbol, it's interpreted as a string by downcasing it;
+if it's a string, it is first separated using @code{/} into substrings;
+the leading substrings denote subdirectories of a relative pathname.
+If @var{type} is @code{:directory} or the string ends with @code{/},
+the last substring is also a subdirectory;
+if @var{type} is a string, it is used as the type of the pathname, and
+the last substring is the name component of the pathname;
+if @var{type} is @code{nil}, the last substring specifies both name and type components
+of the pathname, with the last @code{.} separating them, or only the name component
+if there's no last @code{.} or if there is only one dot and it's the first character.
+The host, device and version components come from @var{defaults}, which defaults to
+@var{*default-pathname-defaults*}; but that shouldn't matter if you use @code{merge-pathnames*}.
+
+@end defun
+
+@defun merge-pathnames* @&key specified defaults
+
+This function is a replacement for @code{merge-pathnames} that uses the host and device
+from the @var{defaults} rather than the @var{specified} pathname when the latter
+is a relative pathname. This allows ASDF and its users to create and use relative pathnames
+without having to know beforehand what are the host and device
+of the absolute pathnames they are relative to.
+
+@end defun
+
 @defun system-relative-pathname system name @&key type
 
 It's often handy to locate a file relative to some system.
 The @code{system-relative-pathname} function meets this need.
-It takes two arguments: the name of a system and a relative pathname.
-It returns a pathname built from the location of the system's source file
-and the relative pathname. For example
+
+It takes two mandatory arguments @var{system} and @var{name}
+and a keyword argument @var{type}:
+@var{system} is name of a system, whereas @var{name} and optionally @var{type}
+specify a relative pathname, interpreted like a component pathname specifier
+by @code{coerce-pathname}. @xref{The defsystem grammar,,Pathname specifiers}.
+
+It returns a pathname built from the location of the system's
+source directory and the relative pathname. For example:
 
 @lisp
-> (asdf:system-relative-pathname 'cl-ppcre #p"regex.data")
+> (asdf:system-relative-pathname 'cl-ppcre "regex.data")
 #P"/repository/other/cl-ppcre/regex.data"
 @end lisp
 
-Instead of a pathname, you can provide a symbol or a string,
-and optionally a keyword argument @code{type}.
-The arguments will then be interpreted in the same way
-as pathname specifiers for components.
-@xref{The defsystem grammar,,Pathname specifiers}.
 @end defun
 
 @defun system-source-directory system-designator
@@ -2799,8 +2871,8 @@ leading to much confusion and greavance.
 ASDF 2 implements its own portable syntax for strings as pathname specifiers.
 Naming files within a system definition becomes easy and portable again.
 @xref{Miscellaneous additional functionality,asdf:system-relative-pathname},
-@code{asdf-utilities:merge-pathnames*},
-@code{asdf::merge-component-name-type}.
+@code{merge-pathnames*},
+@code{coerce-pathname}.
 
 On the other hand, there are places where systems used to accept namestrings
 where you must now use an explicit pathname object:
@@ -3051,7 +3123,7 @@ and you would
 @code{(defmethod source-file-type ((component cl-source-file) (system (eql (find-system 'foo))))
   (declare (ignorable component system)) "cl")}.
 Now, the pathname for a component is eagerly computed when defining the system,
-and instead you will @code{(defclass my-cl-source-file (cl-source-file) ((type :iniform "cl")))}
+and instead you will @code{(defclass my-cl-source-file (cl-source-file) ((type :initform "cl")))}
 and use @code{:default-component-class my-cl-source-file} as argument to @code{defsystem},
 as detailed in a @pxref{FAQ,How do I create a system definition where all the source files have a .cl extension?} below.
 
