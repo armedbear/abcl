@@ -553,6 +553,14 @@ public final class LispCharacter extends LispObject
     String lower = s.toLowerCase();
     LispCharacter lc = namedToChar.get(lower);
     if (lc!=null) return lc.value;
+    if (lower.length() == 5
+        && lower.startsWith("u")) {
+        try {
+            int i = Integer.parseInt(lower.substring(1, 5), 16);
+            return i;
+        } catch (NumberFormatException e) {};
+    }
+
     if (lower.equals("null"))
       return 0;
     if (lower.equals("bell"))
@@ -617,7 +625,12 @@ public final class LispCharacter extends LispObject
       case 127:
         return "Rubout";
       }
-    if (c<0 || c>255) return null;
+
+    if (c > 255) {
+        return "U" + Integer.toString(c, 16);
+    }
+        
+    if (c<0) return null;
     return lispChars.get(c).name;
   }
 
