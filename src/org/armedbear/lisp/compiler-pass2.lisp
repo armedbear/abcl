@@ -4408,9 +4408,9 @@ either to stream or the pathname of the class file if `stream' is NIL."
                 (emit 'iand)
                 (convert-representation :int representation)
                 (emit-move-from-stack target representation))
-               ((or (and (fixnum-type-p type1)
+               ((or (and (fixnum-type-p type1) (member type2 '(:long :int))
                          (compiler-subtypep type1 'unsigned-byte))
-                    (and (fixnum-type-p type2)
+                    (and (fixnum-type-p type2) (member type1 '(:long :int))
                          (compiler-subtypep type2 'unsigned-byte)))
                 ;; One of the arguments is a positive fixnum.
                 (with-operand-accumulation
@@ -4429,9 +4429,9 @@ either to stream or the pathname of the class file if `stream' is NIL."
                 (emit 'land)
                 (convert-representation :long representation)
                 (emit-move-from-stack target representation))
-               ((or (and (java-long-type-p type1)
+               ((or (and (java-long-type-p type1) (member type2 '(:long :int))
                          (compiler-subtypep type1 'unsigned-byte))
-                    (and (java-long-type-p type2)
+                    (and (java-long-type-p type2) (member type1 '(:long :int))
                          (compiler-subtypep type2 'unsigned-byte)))
                 ;; One of the arguments is a positive long.
                 (with-operand-accumulation
