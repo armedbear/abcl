@@ -42,7 +42,7 @@ public final class WrongNumberOfArgumentsException extends ProgramError
     private String message;
 
     public WrongNumberOfArgumentsException(Operator operator) {
-	this(operator, -1);
+        this(operator, -1);
     }
 
     public WrongNumberOfArgumentsException(Operator operator, int expectedArgs) {

@@ -2970,7 +2970,7 @@ public class Symbol extends LispObject implements java.io.Serializable
   public static final Symbol JAVA_OBJECT =
     PACKAGE_JAVA.addExternalSymbol("JAVA-OBJECT");
   public static final Symbol JAVA_CLASS =
-	    PACKAGE_JAVA.addExternalSymbol("JAVA-CLASS");
+      PACKAGE_JAVA.addExternalSymbol("JAVA-CLASS");
   public static final Symbol JCALL =
     PACKAGE_JAVA.addExternalSymbol("JCALL");
   public static final Symbol JCALL_RAW =
@@ -2983,6 +2983,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_JAVA.addExternalSymbol("JCLASS-OF");
   public static final Symbol JMETHOD_RETURN_TYPE =
     PACKAGE_JAVA.addExternalSymbol("JMETHOD-RETURN-TYPE");
+  public static final Symbol JRESOLVE_METHOD =
+    PACKAGE_JAVA.addExternalSymbol("JRESOLVE-METHOD");
 
   // External symbols in SYSTEM package.
   public static final Symbol _ENABLE_AUTOCOMPILE_ =

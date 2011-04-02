@@ -105,16 +105,16 @@ public class FaslClassLoader extends JavaClassLoader {
     }
 
     public LispObject loadFunction(int fnNumber) {
+        //Function name is fnIndex + 1
+        String name = baseName + "_" + (fnNumber + 1);
         try {
-            //Function name is fnIndex + 1
-            String name = baseName + "_" + (fnNumber + 1);
             Function f = (Function) loadClass(name).newInstance();
             f.setClassBytes(getFunctionClassBytes(name));
             return f;
-        } catch(Exception e) {
+        } catch(Throwable e) {
             if(e instanceof ControlTransfer) { throw (ControlTransfer) e; }
             Debug.trace(e);
-            return error(new LispError("Compiled function can't be loaded: " + baseName + "_" + (fnNumber + 1) + " " + Symbol.LOAD_TRUENAME.symbolValue()));
+            return error(new LispError("Compiled function can't be loaded: " + name + " from " + Symbol.LOAD_TRUENAME.symbolValue()));
         }
     }
 
