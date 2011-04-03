@@ -52,7 +52,8 @@
                              ("utilities" "pathname-tests" "file-system-tests"))
                       #+abcl
                       (:file "url-pathname")
-                      (:file "math-tests")
+                      (:file "math-tests" 
+                             :depends-on ("compiler-tests"))
                       (:file "misc-tests")
                       (:file "latin1-tests")
                       #+abcl
