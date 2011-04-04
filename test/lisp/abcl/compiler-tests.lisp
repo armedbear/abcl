@@ -66,10 +66,10 @@
              (not (null (second list)))
              (third list)))
      (unused.2)))
-  #+(or abcl allegro) (unused.2 t   nil)
-  #+clisp             (unused.2 1   nil)
-  #+(or cmu sbcl)     (unused.2 nil nil)
-  #+lispworks         (unused.2 t   nil)
+  #+allegro            (unused.2 t   nil)
+  #+clisp              (unused.2 1   nil)
+  #+(or cmu sbcl abcl) (unused.2 nil nil)
+  #+lispworks          (unused.2 t   nil)
   17)
 
 (deftest plus.1
@@ -104,6 +104,7 @@
   #.(+ most-positive-fixnum most-positive-fixnum))
 #+allegro (pushnew 'plus.3 *expected-failures*)
 
+#-clisp
 (define-compiler-test plus.4
   (lambda (x y)
     (declare (type (integer #.most-negative-java-long #.most-positive-java-long) x y))
@@ -118,6 +119,7 @@
   :args (#.most-negative-fixnum)
   :results #.(- most-negative-fixnum))
 
+#-clisp
 (define-compiler-test minus.2
   (lambda (x)
     (declare (type (integer #.most-negative-java-long #.most-positive-java-long) x))
@@ -125,6 +127,7 @@
   :args (#.most-negative-java-long)
   :results #.(- most-negative-java-long))
 
+#-clisp
 (define-compiler-test minus.3
   (lambda (x y)
     (declare (type (integer #.most-negative-java-long #.most-positive-java-long) x y))
@@ -132,6 +135,7 @@
   :args (#.most-negative-java-long #.most-positive-java-long)
   :results #.(- most-negative-java-long most-positive-java-long))
 
+#-clisp
 (define-compiler-test logxor-minus.1
   (lambda (x)
     (declare (type (integer 0 255) x))
@@ -139,6 +143,7 @@
   :args (17)
   :results -9223372036854775792)
 
+#-clisp
 (deftest times.1
   (progn
     (fmakunbound 'times.1)
@@ -255,6 +260,7 @@
   134217727
   3)
 
+#-clisp
 (deftest bignum-constant.1
   (progn
     (fmakunbound 'bignum-constant.1)
@@ -268,6 +274,7 @@
   t
   #.most-positive-java-long)
 
+#-clisp
 (deftest bignum-constant.2
   (progn
     (fmakunbound 'bignum-constant.2)
@@ -281,6 +288,7 @@
   t
   #.(1+ most-positive-java-long))
 
+#-clisp
 (deftest bignum-constant.3
   (progn
     (fmakunbound 'bignum-constant.3)
@@ -294,6 +302,7 @@
   t
   #.most-negative-java-long)
 
+#-clisp
 (deftest bignum-constant.4
   (progn
     (fmakunbound 'bignum-constant.4)
@@ -387,6 +396,7 @@
   :args (#.most-positive-fixnum #.most-negative-fixnum)
   :results #.most-negative-fixnum)
 
+#-clisp
 (define-compiler-test min.3
   (lambda (x y)
     (declare (type (integer #.most-negative-java-long #.most-positive-java-long) x y))
@@ -394,6 +404,7 @@
   :args (3 4)
   :results 3)
 
+#-clisp
 (define-compiler-test min.4
   (lambda (x y)
     (declare (type (integer #.most-negative-java-long #.most-positive-java-long) x y))
@@ -408,6 +419,7 @@
   :args (3 4)
   :results 4)
 
+#-clisp
 (define-compiler-test max.2
   (lambda (x y)
     (declare (type fixnum x y))
@@ -415,6 +427,7 @@
   :args (#.most-positive-fixnum #.most-negative-fixnum)
   :results #.most-positive-fixnum)
 
+#-clisp
 (define-compiler-test max.3
   (lambda (x y)
     (declare (type (integer #.most-negative-java-long #.most-positive-java-long) x y))
@@ -422,6 +435,7 @@
   :args (3 4)
   :results 4)
 
+#-clisp
 (define-compiler-test max.4
   (lambda (x y)
     (declare (type (integer #.most-negative-java-long #.most-positive-java-long) x y))
