@@ -2,22 +2,15 @@
 ;;; $Id$
 
 (require 'asdf)
-(defpackage :abcl-asdf
-  (:use :cl :asdf))
-(in-package :abcl-asdf)
+(in-package :asdf)
 
 ;;; Wrapper for all ABCL ASDF definitions.
-(defsystem :abcl :version "0.5.0")
-
-(defmethod perform :after ((o load-op) (c (eql (find-system :abcl))))
-  (operate 'load-op :abcl-test-lisp :force t)
-  (operate 'load-op :cl-bench :force t)
-  (operate 'load-op :ansi-compiled :force t)
-  (operate 'load-op :ansi-interpreted :force t))
+(defsystem :abcl :version "0.6.0")
 
 ;;;  Run via (asdf:operate 'asdf:test-op :abcl :force t)
 (defmethod perform ((o test-op) (c (eql (find-system :abcl))))
-  (operate 'test-op :abcl-tests :force t))
+  (load-system (find-system :abcl-test-lisp))
+  (operate 'test-op :abcl-test-lisp))
 
 ;;; Test ABCL with the Lisp unit tests collected in "test/lisp/abcl"
 ;;;
@@ -45,22 +38,26 @@
                       #+abcl
                       (:file "mop-tests-setup")
                       #+abcl
-                      (:file "mop-tests" :depends-on ("mop-tests-setup"))
+                      (:file "mop-tests" :depends-on 
+                             ("mop-tests-setup"))
                       (:file "file-system-tests")
                       #+abcl
-                      (:file "jar-pathname" :depends-on
+                      (:file "jar-pathname" :depends-on 
                              ("utilities" "pathname-tests" "file-system-tests"))
                       #+abcl
                       (:file "url-pathname")
-                      (:file "math-tests" 
-                             :depends-on ("compiler-tests"))
+                      (:file "math-tests" :depends-on 
+                             ("compiler-tests"))
                       (:file "misc-tests")
                       (:file "latin1-tests")
                       #+abcl
-                      (:file "bugs" :depends-on ("file-system-tests"))
-                      (:file "wild-pathnames" :depends-on ("file-system-tests"))
+                      (:file "bugs" :depends-on 
+                             ("file-system-tests"))
+                      (:file "wild-pathnames" :depends-on 
+                             ("file-system-tests"))
                       #+abcl
-                      (:file "pathname-tests" :depends-on ("utilities"))))))
+                      (:file "pathname-tests" :depends-on 
+                             ("utilities"))))))
 
 (defmethod perform ((o test-op) (c (eql (find-system 'abcl-test-lisp))))
    "Invoke tests with (asdf:oos 'asdf:test-op :abcl-test-lisp)."
@@ -73,7 +70,7 @@
 	       ((:file "package")
                 (:file "parse-ansi-errors" :depends-on ("package"))))))
 (defmethod perform :before ((o test-op) (c (eql (find-system :ansi-interpreted))))
-  (operate 'load-op :ansi-interpreted))
+  (load-system  :ansi-interpreted))
 (defmethod perform ((o test-op) (c (eql (find-system :ansi-interpreted))))
   (funcall (intern (symbol-name 'run) :abcl.test.ansi)
 	   :compile-tests nil))
@@ -85,11 +82,10 @@
 	       ((:file "package")
                 (:file "parse-ansi-errors" :depends-on ("package"))))))
 (defmethod perform :before ((o test-op) (c (eql (find-system :ansi-compiled))))
-  (operate 'load-op :ansi-compiled))
+  (load-system :ansi-compiled))
 (defmethod perform ((o test-op) (c (eql (find-system :ansi-compiled))))
   (funcall (intern (symbol-name 'run) :abcl.test.ansi)
 	   :compile-tests t))
-
 
 ;;; Test ABCL with CL-BENCH 
 (defsystem :cl-bench :components
@@ -99,7 +95,7 @@
                      :depends-on (cl-bench-package) :components
                      ((:file "wrapper")))))
 (defmethod perform :before ((o test-op) (c (eql (find-system :cl-bench))))
-  (operate 'load-op :cl-bench :force t))
+  (load-system :cl-bench))
 (defmethod perform ((o test-op) (c (eql (find-system :cl-bench))))
   (funcall (intern (symbol-name 'run) :abcl.test.cl-bench)))
  
