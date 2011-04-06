@@ -1713,3 +1713,7 @@
             (write *foo.lisp* :stream s))
           (load file))))
   t)
+
+(deftest pathname.make-pathname.1
+    (make-pathname :directory nil :defaults "/home/fare/")
+  #p"")
