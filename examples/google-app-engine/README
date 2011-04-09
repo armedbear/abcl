@@ -5,11 +5,31 @@ Alex Muscar
 
 Running ABCL in a Google App Engine container.
 
-This example shows how to run your servlet off ABCL in general
+This example shows how to run your Java servlet off ABCL in general
 and in Google App Engine (GAE) in particular.
 
 When uploading your code to the server, be sure to put abcl.jar
 in war/WEB-INF/lib.
+
+
+Running Locally
+---------------
+
+1.  Download the [Google App Engine SDK for Java][1], unzipping the
+    distribution somewhere on your filesystem
+    (e.g. "~/work/appengine-java-sdk-1.4.3").
+
+[1]: http://googleappengine.googlecode.com/files/appengine-java-sdk-1.4.3.zip
+
+2.  Simply invoke Ant on the `build.xml' in this directory with the
+    `runserver' target, setting the `sdk.dir' JVM property to specify
+    the location of the SDK.
+
+        unix$ ant -Dsdk.dir=$HOME/work/appengine-java-sdk-1.4.3/ runserver
+
+3.  Visit `http://localhost:8080/hello' in a web browser to see the example run.
+
+
 
 
 
