@@ -17,15 +17,19 @@
     </fileset>
   </path>
 
-  <target name="copyjars"
-	  description="Copies the App Engine and ABCL JARs to the WAR.">
+  <property name="abcl.dir"
+            location="${basedir}/../.."/>
+
+  <target name="resources.copy"
+          depends="compile.lisp,abcl.jar"
+	  description="Copies the necessary resources to the WAR.">
     <copy
         todir="war/WEB-INF/lib"
         flatten="true">
       <fileset dir="${sdk.dir}/lib/user">
         <include name="**/*.jar" />
       </fileset>
-      <fileset dir="../..">
+      <fileset dir="${abcl.dir}">
         <include name="dist/*.jar" />
       </fileset>
     </copy>
@@ -40,7 +44,7 @@
   <target name="compile"
           depends="compile.java,compile.lisp"/>
 
-  <target name="compile.java" depends="copyjars,abcl.jar"
+  <target name="compile.java" depends="resources.copy,abcl.jar"
 	  description="Compiles Java source and copies other source files to the WAR.">
     <mkdir dir="war/WEB-INF/classes" />
     <copy todir="war/WEB-INF/classes">
@@ -55,22 +59,22 @@
            debug="on" />
   </target>
   
-  <property name="abcl.jar" value="${basedir}/../../dist/abcl.jar"/>
+  <property name="abcl.jar" value="${abcl.dir}/dist/abcl.jar"/>
   <target name="compile.lisp" depends="abcl.jar">
     <java fork="true"
           classpath="${abcl.jar}"
           classname="org.armedbear.lisp.Main"
-          inputstring="(compile-file &quot;${basedir}/war/WEB-INF/classes/first-servlet.lisp&quot;)">
+          inputstring="(compile-file &quot;${basedir}/src/first-servlet.lisp&quot;)">
       <arg value="--noinit"/>
     </java>
   </target>
 
   <available file="${abcl.jar}" property="abcl.jar.p"/>
   <target name="abcl.jar" unless="abcl.jar.p">
-    <ant dir="${basedir}/../.." target="abcl.jar"/>
+    <ant dir="${abcl.dir}" target="abcl.jar"/>
   </target>
 
-  <target name="clean" description="Cleans all the jars and fasls.">
+  <target name="clean" description="Cleans all the jars, classes, and FASLs.">
     <delete>
       <fileset dir="${basedir}">
         <include name="**/*.jar" />
@@ -81,11 +85,12 @@
   </target>
 
   <target name="runserver" 
-          depends="compile"
+          depends="compile,resources.copy"
 	  description="Starts the development server.">
     <dev_appserver war="war" />
   </target>
-  <target name="runserver-debug" depends="compile"
+
+  <target name="runserver-debug" depends="compile,resources.copy"
 	  description="Starts the development server.">
     <dev_appserver war="war" port="8888"/>
   </target>
