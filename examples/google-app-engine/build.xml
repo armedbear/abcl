@@ -26,9 +26,11 @@
     <copy
         todir="war/WEB-INF/lib"
         flatten="true">
+      <!--
       <fileset dir="${sdk.dir}/lib/user">
         <include name="**/*.jar" />
       </fileset>
+      -->
       <fileset dir="${abcl.dir}">
         <include name="dist/*.jar" />
       </fileset>
@@ -90,8 +92,14 @@
     <dev_appserver war="war" />
   </target>
 
-  <target name="runserver-debug" depends="compile,resources.copy"
+  <target name="runserver-debug" depends="compile"
 	  description="Starts the development server.">
     <dev_appserver war="war" port="8888"/>
   </target>
+  
+  <target name="update" depends="compile"
+          description="Uploads the application to App Engine.">
+    <appcfg action="update" war="war" />
+  </target>
+   
 </project>
