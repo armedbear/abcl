@@ -1253,6 +1253,7 @@ public class Pathname extends LispObject {
         boolean deviceSupplied = false;
         boolean nameSupplied = false;
         boolean typeSupplied = false;
+        boolean directorySupplied = false;
         for (int i = 0; i < args.length; i += 2) {
             LispObject key = args[i];
             LispObject value = args[i + 1];
@@ -1262,6 +1263,7 @@ public class Pathname extends LispObject {
                 device = value;
                 deviceSupplied = true;
             } else if (key == Keyword.DIRECTORY) {
+                directorySupplied = true;
                 if (value instanceof AbstractString) {
                     directory = list(Keyword.ABSOLUTE, value);
                 } else if (value == Keyword.WILD) {
@@ -1298,7 +1300,7 @@ public class Pathname extends LispObject {
             if (host == NIL) {
                 host = defaults.host;
             }
-            if (directory == NIL) {
+            if (!directorySupplied) {
                 directory = defaults.directory;
             }
             if (!deviceSupplied) {
