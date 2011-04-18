@@ -36,54 +36,16 @@
 ;;Vaguely inspired by sb-ext:run-program in SBCL. See <http://www.sbcl.org/manual/Running-external-programs.html>. This implementation uses the JVM facilities for running external processes: <http://download.oracle.com/javase/6/docs/api/java/lang/ProcessBuilder.html>.
 (defun run-program (program args &key environment (wait t))
   ;;For documentation, see below.
-  (let ((pb (java:jnew "java.lang.ProcessBuilder"
-                       (java:jnew-array-from-list "java.lang.String" (cons program args)))))
+  (let ((pb (%make-process-builder program args)))
     (when environment
-      (let ((env-map (java:jcall "environment" pb)))
+      (let ((env-map (%process-builder-environment pb)))
         (dolist (entry environment)
-          (java:jcall "put" env-map
-                 (princ-to-string (car entry))
-                 (princ-to-string (cdr entry))))))
-    (let ((process (make-process (java:jcall "start" pb))))
+          (%process-builder-env-put env-map
+                                    (princ-to-string (car entry))
+                                    (princ-to-string (cdr entry))))))
+    (let ((process (make-process (%process-builder-start pb))))
       (when wait (process-wait process))
       process)))
-
-;;The process structure.
-
-(defstruct (process (:constructor %make-process (jprocess)))
-  jprocess input output error)
-
-(defun make-process (proc)
-  (let ((process (%make-process proc)))
-    (setf (process-input process)
-          (java:jnew "org.armedbear.lisp.Stream" 'system-stream
-                     (java:jcall "getOutputStream" proc)
-                     'character)) ;;not a typo!
-    (setf (process-output process)
-          (java:jnew "org.armedbear.lisp.Stream" 'system-stream
-                (java:jcall "getInputStream" proc) ;;not a typo|
-                'character))
-    (setf (process-error process)
-          (java:jnew "org.armedbear.lisp.Stream" 'system-stream
-                (java:jcall "getErrorStream" proc)
-                'character))
-    process))
-
-(defun process-alive-p (process)
-  "Return t if process is still alive, nil otherwise."
-  (not (ignore-errors (java:jcall "exitValue" (process-jprocess process)))))
-
-(defun process-wait (process)
-  "Wait for process to quit running for some reason."
-  (java:jcall "waitFor" (process-jprocess process)))
-
-(defun process-exit-code (instance)
-  "The exit code of a process."
-  (ignore-errors (java:jcall "exitValue" (process-jprocess instance))))
-
-(defun process-kill (process)
-  "Kills the process."
-  (java:jcall "destroy" (process-jprocess process)))
 
 (setf (documentation 'run-program 'function)
       "run-program creates a new process specified by the program argument. args are the standard arguments that can be passed to a program. For no arguments, use nil (which means that just the name of the program is passed as arg 0).
@@ -101,3 +63,75 @@ The &key arguments have the following meanings:
     a alist of STRINGs (name . value) describing the new environment. The default is to copy the environment of the current process.
 :wait
     If non-NIL (default), wait until the created process finishes. If nil, continue running Lisp until the program finishes.")
+
+;;The process structure.
+
+(defstruct (process (:constructor %make-process (jprocess)))
+  jprocess input output error)
+
+(defun make-process (proc)
+  (let ((process (%make-process proc)))
+    (setf (process-input process) (%make-process-input-stream proc))
+    (setf (process-output process) (%make-process-output-stream proc))
+    (setf (process-error process) (%make-process-error-stream proc))
+    process))
+
+(defun process-alive-p (process)
+  "Return t if process is still alive, nil otherwise."
+  (%process-alive-p (process-jprocess process)))
+
+(defun process-wait (process)
+  "Wait for process to quit running for some reason."
+  (%process-wait (process-jprocess process)))
+
+(defun process-exit-code (instance)
+  "The exit code of a process."
+  (%process-exit-code (process-jprocess instance)))
+
+(defun process-kill (process)
+  "Kills the process."
+  (%process-kill (process-jprocess process)))
+
+;;Low-level functions. For now they're just a refactoring of the initial implementation with direct
+;;jnew & jcall forms in the code. As per Ville's suggestion, these should really be implemented as
+;;primitives.
+
+(defun %make-process-builder (program args)
+  (java:jnew "java.lang.ProcessBuilder"
+             (java:jnew-array-from-list "java.lang.String" (cons program args))))
+
+(defun %process-builder-environment (pb)
+  (java:jcall "environment" pb))
+
+(defun %process-builder-env-put (env-map key value)
+  (java:jcall "put" env-map key value))
+
+(defun %process-builder-start (pb)
+  (java:jcall "start" pb))
+
+(defun %make-process-input-stream (proc)
+  (java:jnew "org.armedbear.lisp.Stream" 'system-stream
+             (java:jcall "getOutputStream" proc) ;;not a typo!
+             'character))
+
+(defun %make-process-output-stream (proc)
+  (java:jnew "org.armedbear.lisp.Stream" 'system-stream
+             (java:jcall "getInputStream" proc) ;;not a typo|
+             'character))
+
+(defun %make-process-error-stream (proc)
+  (java:jnew "org.armedbear.lisp.Stream" 'system-stream
+             (java:jcall "getErrorStream" proc)
+             'character))
+
+(defun %process-alive-p (jprocess)
+  (not (ignore-errors (java:jcall "exitValue" jprocess))))
+
+(defun %process-wait (jprocess)
+  (java:jcall "waitFor" jprocess))
+
+(defun %process-exit-code (jprocess)
+  (ignore-errors (java:jcall "exitValue" jprocess)))
+
+(defun %process-kill (jprocess)
+  (java:jcall "destroy" jprocess))
