@@ -39,16 +39,26 @@ public final class SlotDefinition extends StandardObject
 {
   public SlotDefinition()
   {
-    super(StandardClass.SLOT_DEFINITION,
-          StandardClass.SLOT_DEFINITION.getClassLayout().getLength());
+    super(StandardClass.STANDARD_SLOT_DEFINITION,
+          StandardClass.STANDARD_SLOT_DEFINITION.getClassLayout().getLength());
     slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = NIL;
   }
 
-    public SlotDefinition(StandardClass clazz)
-  {
-    super(clazz, clazz.getClassLayout().getLength());
-    slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = NIL;
-  }
+    public SlotDefinition(StandardClass clazz) {
+        super(clazz, clazz.getClassLayout().getLength());
+        slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = NIL;
+    }
+
+    public SlotDefinition(StandardClass clazz, LispObject name) {
+        super(clazz, clazz.getClassLayout().getLength());
+        slots[SlotDefinitionClass.SLOT_INDEX_NAME] = name;
+        slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = NIL;
+        slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] =
+            new Cons(PACKAGE_KEYWORD.intern(((Symbol)name).getName()));
+        slots[SlotDefinitionClass.SLOT_INDEX_READERS] = NIL;
+        slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
+        slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = NIL;
+    }
 
   public SlotDefinition(LispObject name, LispObject readers)
   {
@@ -92,7 +102,7 @@ public final class SlotDefinition extends StandardObject
 
   public static StandardObject checkSlotDefinition(LispObject obj) {
           if (obj instanceof StandardObject) return (StandardObject)obj;
-      return (StandardObject)type_error(obj, Symbol.SLOT_DEFINITION);     
+      return (StandardObject)type_error(obj, Symbol.SLOT_DEFINITION);
   }
 
   public final LispObject getName()
@@ -131,7 +141,7 @@ public final class SlotDefinition extends StandardObject
       @Override
       public LispObject execute(LispObject slotDefinitionClass)
       {
-	  return new SlotDefinition((StandardClass) slotDefinitionClass);
+          return new SlotDefinition((StandardClass) slotDefinitionClass);
       }
     };
 

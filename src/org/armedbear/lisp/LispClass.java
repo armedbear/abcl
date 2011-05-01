@@ -41,7 +41,7 @@ public abstract class LispClass extends StandardObject
   private static final ConcurrentHashMap<Symbol, LispObject> map
           = new ConcurrentHashMap<Symbol, LispObject>();
 
-  public static LispClass addClass(Symbol symbol, LispClass c)
+  public static <T extends LispClass> T addClass(Symbol symbol, T c)
   {
     map.put(symbol, c);
     return c;

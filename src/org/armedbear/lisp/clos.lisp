@@ -31,7 +31,7 @@
 ;;; exception statement from your version.
 
 ;;; Originally based on Closette.
-     
+
 ;;; Closette Version 1.0 (February 10, 1991)
 ;;;
 ;;; Copyright (c) 1990, 1991 Xerox Corporation.
@@ -96,7 +96,8 @@
 ;;
 ;;
 
-(export '(class-precedence-list class-slots))
+(export '(class-precedence-list class-slots
+          slot-definition-name))
 (defconstant +the-standard-class+ (find-class 'standard-class))
 (defconstant +the-structure-class+ (find-class 'structure-class))
 (defconstant +the-standard-object-class+ (find-class 'standard-object))
@@ -106,9 +107,9 @@
 (defconstant +the-standard-generic-function-class+
   (find-class 'standard-generic-function))
 (defconstant +the-T-class+ (find-class 'T))
-(defconstant +the-slot-definition-class+ (find-class 'slot-definition))
-(defconstant +the-direct-slot-definition-class+ (find-class 'direct-slot-definition))
-(defconstant +the-effective-slot-definition-class+ (find-class 'effective-slot-definition))
+(defconstant +the-standard-slot-definition-class+ (find-class 'standard-slot-definition))
+(defconstant +the-standard-direct-slot-definition-class+ (find-class 'standard-direct-slot-definition))
+(defconstant +the-standard-effective-slot-definition-class+ (find-class 'standard-effective-slot-definition))
 
 ;; Don't use DEFVAR, because that disallows loading clos.lisp
 ;; after compiling it: the binding won't get assigned to T anymore
@@ -254,7 +255,7 @@
              (push-on-end `(setf ,(cadr olist)) writers))
             (t
              (push-on-end `(quote ,(car olist)) non-std-options)
-             (push-on-end (cadr olist) non-std-options))))
+             (push-on-end `(quote ,(cadr olist)) non-std-options))))
         `(list
           :name ',name
           ,@(when initfunction
@@ -377,13 +378,13 @@
   (set-slot-definition-location slot-definition value))
 
 (defun init-slot-definition (slot &key name
-			     (initargs ())
-			     (initform nil)
-			     (initfunction nil)
-			     (readers ())
-			     (writers ())
-			     (allocation :instance)
-			     (allocation-class nil))
+                             (initargs ())
+                             (initform nil)
+                             (initfunction nil)
+                             (readers ())
+                             (writers ())
+                             (allocation :instance)
+                             (allocation-class nil))
   (setf (slot-definition-name slot) name)
   (setf (slot-definition-initargs slot) initargs)
   (setf (slot-definition-initform slot) initform)
@@ -396,8 +397,8 @@
 
 (defun make-direct-slot-definition (class &rest args)
   (let ((slot-class (direct-slot-definition-class class)))
-    (if (eq slot-class +the-direct-slot-definition-class+)
-	(let ((slot (make-slot-definition +the-direct-slot-definition-class+)))
+    (if (eq slot-class +the-standard-direct-slot-definition-class+)
+	(let ((slot (make-slot-definition +the-standard-direct-slot-definition-class+)))
 	  (apply #'init-slot-definition slot :allocation-class class args)
 	  slot)
 	(progn
@@ -407,8 +408,8 @@
 
 (defun make-effective-slot-definition (class &rest args)
   (let ((slot-class (effective-slot-definition-class class)))
-    (if (eq slot-class +the-effective-slot-definition-class+)
-	(let ((slot (make-slot-definition +the-effective-slot-definition-class+)))
+    (if (eq slot-class +the-standard-effective-slot-definition-class+)
+	(let ((slot (make-slot-definition +the-standard-effective-slot-definition-class+)))
 	  (apply #'init-slot-definition slot args)
 	  slot)
 	(progn
@@ -580,17 +581,18 @@
                     #'std-compute-effective-slot-definition
                     #'compute-effective-slot-definition)
                 class
+                name
                 (remove name all-slots
                         :key 'slot-definition-name
                         :test-not #'eq)))
             all-names)))
 
-(defun std-compute-effective-slot-definition (class direct-slots)
+(defun std-compute-effective-slot-definition (class name direct-slots)
   (let ((initer (find-if-not #'null direct-slots
                              :key 'slot-definition-initfunction)))
     (make-effective-slot-definition
      class
-     :name (slot-definition-name (car direct-slots))
+     :name name
      :initform (if initer
                    (slot-definition-initform initer)
                    nil)
@@ -773,7 +775,7 @@
   (let ((direct-superclasses (getf all-keys :direct-superclasses)))
     (dolist (class direct-superclasses)
       (when (and (typep class 'built-in-class)
-		 (not (member class *extensible-built-in-classes*)))
+                 (not (member class *extensible-built-in-classes*)))
         (error "Attempt to define a subclass of a built-in-class: ~S" class))))
   (let ((old-class (find-class name nil)))
     (cond ((and old-class (eq name (class-name old-class)))
@@ -794,16 +796,7 @@
                     new-class))
                  (t
                   ;; We're redefining the class.
-                  (remhash old-class *make-instance-initargs-cache*)
-                  (remhash old-class *reinitialize-instance-initargs-cache*)
-                  (%make-instances-obsolete old-class)
-                  (setf (class-finalized-p old-class) nil)
-                  (check-initargs (list #'allocate-instance
-                                        #'initialize-instance)
-                                  (list* old-class all-keys)
-                                  old-class t all-keys
-                                  nil)
-                  (apply #'std-after-initialization-for-classes old-class all-keys)
+                  (apply #'reinitialize-instance old-class all-keys)
                   old-class)))
           (t
            (let ((class (apply (if metaclass
@@ -2384,13 +2377,13 @@ in place, while we still need them to "
 
 (defmethod direct-slot-definition-class ((class class) &rest initargs)
   (declare (ignore initargs))
-  +the-direct-slot-definition-class+)
+  +the-standard-direct-slot-definition-class+)
 
 (defgeneric effective-slot-definition-class (class &rest initargs))
 
 (defmethod effective-slot-definition-class ((class class) &rest initargs)
   (declare (ignore initargs))
-  +the-effective-slot-definition-class+)
+  +the-standard-effective-slot-definition-class+)
 
 (atomic-defgeneric documentation (x doc-type)
     (:method ((x symbol) doc-type)
@@ -2731,12 +2724,12 @@ or T when any keyword is acceptable due to presence of
   ;; 'initialization argument list' (which is not the same as
   ;; checking initarg validity
   (do* ((tail all-keys (cddr tail))
-	(initarg (car tail) (car tail)))
+        (initarg (car tail) (car tail)))
       ((null tail))
     (unless (symbolp initarg)
       (error 'program-error
-	     :format-control "Invalid initarg ~S."
-	     :format-arguments (list initarg))))
+             :format-control "Invalid initarg ~S."
+             :format-arguments (list initarg))))
   (dolist (slot (class-slots (class-of instance)))
     (let ((slot-name (slot-definition-name slot)))
       (multiple-value-bind (init-key init-value foundp)
@@ -2757,10 +2750,10 @@ or T when any keyword is acceptable due to presence of
   (std-shared-initialize instance slot-names initargs))
 
 (defmethod shared-initialize ((slot slot-definition) slot-names
-			      &rest args
-			      &key name initargs initform initfunction
-			      readers writers allocation
-			      &allow-other-keys)
+                              &rest args
+                              &key name initargs initform initfunction
+                              readers writers allocation
+                              &allow-other-keys)
   ;;Keyword args are duplicated from init-slot-definition only to have
   ;;them checked.
   (declare (ignore slot-names)) ;;TODO?
@@ -2854,6 +2847,18 @@ or T when any keyword is acceptable due to presence of
 (defmethod initialize-instance :after ((class standard-class) &rest args)
   (apply #'std-after-initialization-for-classes class args))
 
+(defmethod reinitialize-instance :after ((class standard-class) &rest all-keys)
+  (remhash class *make-instance-initargs-cache*)
+  (remhash class *reinitialize-instance-initargs-cache*)
+  (%make-instances-obsolete class)
+  (setf (class-finalized-p class) nil)
+  (check-initargs (list #'allocate-instance
+                        #'initialize-instance)
+                  (list* class all-keys)
+                  class t all-keys
+                  nil)
+  (apply #'std-after-initialization-for-classes class all-keys))
+
 ;;; Finalize inheritance
 
 (atomic-defgeneric finalize-inheritance (class)
@@ -2872,10 +2877,10 @@ or T when any keyword is acceptable due to presence of
 (defmethod compute-slots ((class standard-class))
   (std-compute-slots class))
 
-(defgeneric compute-effective-slot-definition (class direct-slots))
+(defgeneric compute-effective-slot-definition (class name direct-slots))
 (defmethod compute-effective-slot-definition
-  ((class standard-class) direct-slots)
-  (std-compute-effective-slot-definition class direct-slots))
+  ((class standard-class) name direct-slots)
+  (std-compute-effective-slot-definition class name direct-slots))
 
 ;;; Methods having to do with generic function metaobjects.
 
@@ -2909,10 +2914,10 @@ or T when any keyword is acceptable due to presence of
 (defmacro slot-definition-dispatch (slot-definition std-form generic-form)
   `(let (($cl (class-of ,slot-definition)))
      (case $cl
-       ((+the-slot-definition-class+
-	 +the-direct-slot-definition-class+
-	 +the-effective-slot-definition-class+)
-	,std-form)
+       ((+the-standard-slot-definition-class+
+         +the-standard-direct-slot-definition-class+
+         +the-standard-effective-slot-definition-class+)
+        ,std-form)
        (t ,generic-form))))
 
 (atomic-defgeneric slot-definition-allocation (slot-definition)
@@ -2932,12 +2937,6 @@ or T when any keyword is acceptable due to presence of
     (slot-definition-dispatch slot-definition
       (%slot-definition-initargs slot-definition)
       (slot-value slot-definition 'sys::initargs))))
-
-(atomic-defgeneric (setf slot-definition-initargs) (value slot-definition)
-  (:method (value (slot-definition slot-definition))
-    (slot-definition-dispatch slot-definition
-      (set-slot-definition-initargs slot-definition value)
-      (setf (slot-value slot-definition 'sys::initargs) value))))
 
 (atomic-defgeneric slot-definition-initform (slot-definition)
   (:method ((slot-definition slot-definition))

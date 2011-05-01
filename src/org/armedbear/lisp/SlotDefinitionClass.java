@@ -47,9 +47,12 @@ public final class SlotDefinitionClass extends StandardClass
     public static final int SLOT_INDEX_ALLOCATION_CLASS = 7;
     public static final int SLOT_INDEX_LOCATION         = 8;
 
-    public SlotDefinitionClass()
-    {
-        super(Symbol.SLOT_DEFINITION, list(StandardClass.STANDARD_OBJECT));
+    /**
+     * For internal use only. This constructor hardcodes the layout of the class, and can't be used
+     * to create arbitrary subclasses of slot-definition.
+     */
+    public SlotDefinitionClass(Symbol symbol, LispObject cpl) {
+        super(symbol, cpl);
         Package pkg = PACKAGE_SYS;
         LispObject[] instanceSlotNames = {
             pkg.intern("NAME"),
@@ -63,6 +66,14 @@ public final class SlotDefinitionClass extends StandardClass
             pkg.intern("LOCATION")
         };
         setClassLayout(new Layout(this, instanceSlotNames, NIL));
+        //Set up slot definitions so that this class can be extended by users
+        LispObject slotDefinitions = NIL;
+        for(int i = instanceSlotNames.length - 1; i >= 0; i--) {
+            slotDefinitions = slotDefinitions.push(new SlotDefinition(this, instanceSlotNames[i]));
+        }
+        setDirectSlotDefinitions(slotDefinitions);
+        setSlotDefinitions(slotDefinitions);
+
         setFinalized(true);
     }
 }

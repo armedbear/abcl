@@ -386,11 +386,14 @@ public class StandardClass extends SlotClass
   public static final StandardClass STANDARD_OBJECT =
     addStandardClass(Symbol.STANDARD_OBJECT, list(BuiltInClass.CLASS_T));
 
-  public static final StandardClass SLOT_DEFINITION =
-    new SlotDefinitionClass();
+    public static final StandardClass SLOT_DEFINITION =
+        addStandardClass(Symbol.SLOT_DEFINITION, list(STANDARD_OBJECT));
+    public static final StandardClass STANDARD_SLOT_DEFINITION =
+        addClass(Symbol.STANDARD_SLOT_DEFINITION, new SlotDefinitionClass(Symbol.STANDARD_SLOT_DEFINITION, list(SLOT_DEFINITION)));
+
   static
   {
-    addClass(Symbol.SLOT_DEFINITION, SLOT_DEFINITION);
+      SLOT_DEFINITION.finalizeClass();
 
     STANDARD_CLASS.setClassLayout(layoutStandardClass);
     STANDARD_CLASS.setDirectSlotDefinitions(standardClassSlotDefinitions());
@@ -399,7 +402,17 @@ public class StandardClass extends SlotClass
     public static final StandardClass DIRECT_SLOT_DEFINITION =
       addStandardClass(Symbol.DIRECT_SLOT_DEFINITION, list(SLOT_DEFINITION));
     public static final StandardClass EFFECTIVE_SLOT_DEFINITION =
-      addStandardClass(Symbol.EFFECTIVE_SLOT_DEFINITION, list(SLOT_DEFINITION));
+        addStandardClass(Symbol.EFFECTIVE_SLOT_DEFINITION, list(SLOT_DEFINITION));
+    //      addStandardClass(Symbol.STANDARD_SLOT_DEFINITION, list(SLOT_DEFINITION));
+    public static final StandardClass STANDARD_DIRECT_SLOT_DEFINITION =
+        addClass(Symbol.STANDARD_DIRECT_SLOT_DEFINITION,
+                 new SlotDefinitionClass(Symbol.STANDARD_DIRECT_SLOT_DEFINITION,
+                                         list(STANDARD_SLOT_DEFINITION, DIRECT_SLOT_DEFINITION)));
+    public static final StandardClass STANDARD_EFFECTIVE_SLOT_DEFINITION =
+        addClass(Symbol.STANDARD_EFFECTIVE_SLOT_DEFINITION,
+                 new SlotDefinitionClass(Symbol.STANDARD_EFFECTIVE_SLOT_DEFINITION,
+                                         list(STANDARD_SLOT_DEFINITION, EFFECTIVE_SLOT_DEFINITION)));
+
 
   // BuiltInClass.FUNCTION is also null here (see previous comment).
   public static final StandardClass GENERIC_FUNCTION =
@@ -741,11 +754,22 @@ public class StandardClass extends SlotClass
     SLOT_DEFINITION.setSlotDefinitions(SLOT_DEFINITION.getDirectSlotDefinitions());
 
     DIRECT_SLOT_DEFINITION.setCPL(DIRECT_SLOT_DEFINITION, SLOT_DEFINITION,
-				  STANDARD_OBJECT, BuiltInClass.CLASS_T);
+                                  STANDARD_OBJECT, BuiltInClass.CLASS_T);
     DIRECT_SLOT_DEFINITION.finalizeClass();
     EFFECTIVE_SLOT_DEFINITION.setCPL(EFFECTIVE_SLOT_DEFINITION, SLOT_DEFINITION,
-				     STANDARD_OBJECT, BuiltInClass.CLASS_T);
+                                     STANDARD_OBJECT, BuiltInClass.CLASS_T);
     EFFECTIVE_SLOT_DEFINITION.finalizeClass();
+    STANDARD_SLOT_DEFINITION.setCPL(STANDARD_SLOT_DEFINITION, SLOT_DEFINITION,
+                                    STANDARD_OBJECT, BuiltInClass.CLASS_T);
+    STANDARD_SLOT_DEFINITION.finalizeClass();
+    STANDARD_DIRECT_SLOT_DEFINITION.setCPL(STANDARD_DIRECT_SLOT_DEFINITION, STANDARD_SLOT_DEFINITION,
+                                           DIRECT_SLOT_DEFINITION, SLOT_DEFINITION, STANDARD_OBJECT,
+                                           BuiltInClass.CLASS_T);
+    STANDARD_DIRECT_SLOT_DEFINITION.finalizeClass();
+    STANDARD_EFFECTIVE_SLOT_DEFINITION.setCPL(STANDARD_EFFECTIVE_SLOT_DEFINITION, STANDARD_SLOT_DEFINITION,
+                                              EFFECTIVE_SLOT_DEFINITION, SLOT_DEFINITION, STANDARD_OBJECT,
+                                              BuiltInClass.CLASS_T);
+    STANDARD_EFFECTIVE_SLOT_DEFINITION.finalizeClass();
 
     // STANDARD-METHOD
     Debug.assertTrue(STANDARD_METHOD.isFinalized());

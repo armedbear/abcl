@@ -2961,6 +2961,12 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_MOP.addExternalSymbol("DIRECT-SLOT-DEFINITION");
   public static final Symbol EFFECTIVE_SLOT_DEFINITION =
     PACKAGE_MOP.addExternalSymbol("EFFECTIVE-SLOT-DEFINITION");
+  public static final Symbol STANDARD_SLOT_DEFINITION =
+    PACKAGE_MOP.addExternalSymbol("STANDARD-SLOT-DEFINITION");
+  public static final Symbol STANDARD_DIRECT_SLOT_DEFINITION =
+    PACKAGE_MOP.addExternalSymbol("STANDARD-DIRECT-SLOT-DEFINITION");
+  public static final Symbol STANDARD_EFFECTIVE_SLOT_DEFINITION =
+    PACKAGE_MOP.addExternalSymbol("STANDARD-EFFECTIVE-SLOT-DEFINITION");
 
   // Java interface.
   public static final Symbol JAVA_EXCEPTION =
