@@ -600,6 +600,12 @@ public final class Load
         try {
             thread.bindSpecial(AUTOLOADING_CACHE,
                                AutoloadedFunctionProxy.makePreloadingContext());
+
+            // Same bindings are established in Lisp.readObjectFromString()
+            thread.bindSpecial(Symbol.READ_BASE, LispInteger.getInstance(10));
+            thread.bindSpecial(Symbol.READ_EVAL, Symbol.T);
+            thread.bindSpecial(Symbol.READ_SUPPRESS, Nil.NIL);
+
             in.setExternalFormat(_FASL_EXTERNAL_FORMAT_.symbolValue(thread));
             while (true) {
                 LispObject obj = in.read(false, EOF, true, thread, Stream.faslReadtable);

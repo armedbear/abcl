@@ -123,13 +123,36 @@
 (declaim (ftype (function (t stream) t) dump-form))
 (defun dump-form (form stream)
   (let ((*print-fasl* t)
-        (*print-level* nil)
-        (*print-length* nil)
+        (*print-array* t)
+        (*print-base* 10)
+        (*print-case* :upcase)
         (*print-circle* nil)
+        (*print-escape* t)
+        (*print-gensym* t)
+        (*print-length* nil)
+        (*print-level* nil)
+        (*print-lines* nil)
+        (*print-pretty* nil)
+        (*print-radix* nil)
+        (*print-readably* t)
+        (*print-right-margin* nil)
         (*print-structure* t)
+
         ;; make sure to write all floats with their exponent marker:
         ;; the dump-time default may not be the same at load-time
-        (*read-default-float-format* nil))
+        (*read-default-float-format* nil)
+
+        ;; these values are also bound by WITH-STANDARD-IO-SYNTAX,
+        ;; but not used by our reader/printer, so don't bind them,
+        ;; for efficiency reasons.
+        ;;        (*read-eval* t)
+        ;;        (*read-suppress* nil)
+        ;;        (*print-miser-width* nil)
+        ;;        (*print-pprint-dispatch* (copy-pprint-dispatch nil))
+        ;;        (*read-base* 10)
+        ;;        (*read-default-float-format* 'single-float)
+        ;;        (*readtable* (copy-readtable nil))
+        )
     (dump-object form stream)))
 
 (provide 'dump-form)

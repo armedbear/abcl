@@ -1241,9 +1241,25 @@ public final class Lisp
   // Used by the compiler.
   public static final LispObject readObjectFromString(String s)
   {
-    return new StringInputStream(s).read(true, NIL, false,
-                                         LispThread.currentThread(),
-                                         Stream.faslReadtable);
+    LispThread thread = LispThread.currentThread();
+    SpecialBindingsMark mark = thread.markSpecialBindings();
+    try {
+        thread.bindSpecial(Symbol.READ_BASE, LispInteger.getInstance(10));
+        thread.bindSpecial(Symbol.READ_EVAL, Symbol.T);
+        thread.bindSpecial(Symbol.READ_SUPPRESS, Nil.NIL);
+        // No need to bind read default float format: all floats are written
+        // with their correct exponent markers due to the fact that DUMP-FORM
+        // binds read-default-float-format to NIL
+
+        // No need to bind the default read table, because the default fasl
+        // read table is used below
+        return new StringInputStream(s).read(true, NIL, false,
+                                             LispThread.currentThread(),
+                                             Stream.faslReadtable);
+    }
+    finally {
+        thread.resetSpecialBindings(mark);
+    }
   }
 
     @Deprecated
