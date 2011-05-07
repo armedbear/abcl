@@ -929,12 +929,7 @@ representation, based on the derived type of the LispObject."
 
 (defun emit-constructor-lambda-list (lambda-list)
   (if lambda-list
-      (let* ((*print-level* nil)
-             (*print-length* nil)
-             (s (sys::%format nil "~S" lambda-list)))
-        (emit 'ldc (pool-string s))
-        (emit-invokestatic +lisp+ "readObjectFromString"
-                           (list +java-string+) +lisp-object+))
+      (serialize-object lambda-list)
       (emit-push-nil)))
 
 (defun emit-read-from-string (object)
