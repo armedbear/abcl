@@ -401,6 +401,41 @@ public final class JavaObject extends LispObject {
             } else {
                 parts = Symbol.NCONC.execute(parts, getInspectedFields());
             }
+            if (obj instanceof java.lang.Class) {
+                Class o = (java.lang.Class)obj;
+                try {
+                    Class[] classes = o.getClasses();
+                    LispObject classesList = NIL;
+                    for (int i = 0; i < classes.length; i++) {
+                        classesList = classesList.push(JavaObject.getInstance(classes[i]));
+                    }
+                    if (!classesList.equals(NIL)) {
+                        parts = parts
+                            .push(new Cons("Member classes", classesList.nreverse()));
+                    }
+                } catch (SecurityException e) {
+                    Debug.trace(e);
+                }
+                Class[] interfaces = o.getInterfaces();
+                LispObject interfacesList = NIL;
+                for (int i = 0; i < interfaces.length; i++) {
+                    interfacesList = interfacesList.push(JavaObject.getInstance(interfaces[i]));
+                }
+                if (!interfacesList.equals(NIL)) {
+                    parts = parts
+                        .push(new Cons("Interfaces", interfacesList.nreverse()));
+                }
+                LispObject superclassList = NIL;
+                Class superclass = o.getSuperclass();
+                while (superclass != null) {
+                    superclassList = superclassList.push(JavaObject.getInstance(superclass));
+                    superclass = superclass.getSuperclass();
+                }
+                if (!superclassList.equals(NIL)) {
+                    parts = parts
+                        .push(new Cons("Superclasses", superclassList.nreverse()));
+                }
+            }
             return parts.nreverse();
         } else {
             return NIL;
