@@ -331,6 +331,20 @@ public final class JavaObject extends LispObject {
         return obj == null ? 0 : (obj.hashCode() & 0x7ffffff);
     }
 
+    public static LispObject JAVA_OBJECT_TO_STRING_LENGTH 
+        = LispInteger.getInstance(32);
+
+    public static final Symbol _JAVA_OBJECT_TO_STRING_LENGTH 
+        = exportSpecial("*JAVA-OBJECT-TO-STRING-LENGTH*", 
+                        PACKAGE_JAVA, JAVA_OBJECT_TO_STRING_LENGTH);
+
+    static {
+        String doc = "Length to truncate toString() PRINT-OBJECT output for an otherwise "
+                  +  "unspecialized JAVA-OBJECT.  Can be set to NIL to indicate no limit.";
+        _JAVA_OBJECT_TO_STRING_LENGTH
+            .setDocumentation(Symbol.VARIABLE, new SimpleString(doc));
+    }
+
     @Override
     public String writeToString()
     {
@@ -343,8 +357,16 @@ public final class JavaObject extends LispObject {
                 = new StringBuilder(c.isArray() ? "jarray" : c.getName());
             sb.append(' ');
             String ts = obj.toString();
-            if(ts.length() > 32) { //random value, should be chosen sensibly
-                sb.append(ts.substring(0, 32) + "...");
+            int length = -1;
+            LispObject stringLength = _JAVA_OBJECT_TO_STRING_LENGTH.symbolValueNoThrow();
+            if (stringLength instanceof Fixnum) {
+                length = Fixnum.getValue(stringLength);
+            }
+            if (length < 0) {
+                sb.append(ts);
+            }else if (ts.length() > length) { 
+                // use '....' to not confuse user with PPRINT conventions
+                sb.append(ts.substring(0, length)).append("...."); 
             } else {
                 sb.append(ts);
             }
