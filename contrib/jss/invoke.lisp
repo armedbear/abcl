@@ -120,7 +120,7 @@
 ;;
 ;; Tested on windows, linux.
 
-(in-package :cl-user)
+(in-package :jss)
 
 ;; invoke takes it's arguments in a java array. In order to not cons
 ;; one up each time, but to be thread safe, we allocate a static array
@@ -152,7 +152,6 @@
   (defvar *do-auto-imports* t))
 
 (defvar *imports-resolved-classes* (make-hash-table :test 'equal))
-(defvar *classpath-manager* nil)
 
 
 (defun find-java-class (name)
@@ -216,16 +215,14 @@
 			      (if (eq arg t) true (if (eq arg nil) false arg))))
 		      argv))))
       (if (eq method 'new)
-	  (progn
-	    (jstatic-raw ic invoke-class (or object-as-class-name object) argv))
+          (apply #'jnew (or object-as-class-name object) args)
 	  (if raw?
 	      (if (symbolp object)
-		  (jstatic-raw is invoke-class object-as-class method argv)
-		  (jstatic-raw ii invoke-class object method argv true))
+		  (apply #'jstatic-raw method object-as-class  args)
+		  (apply #'jcall-raw method object  args))
 	      (if (symbolp object)
-		  (jstatic is invoke-class object-as-class method argv)
-		  (jstatic ii invoke-class object method argv true)
-		  )))))))
+		  (apply #'jstatic method object-as-class args)
+		  (apply #'jcall method object args))))))))
 
 ;; (defconstant no-args (load-time-value (jnew-array "java.lang.Object" 0)))
 ;; (defconstant invoke-class (load-time-value (jclass "jsint.Invoke")))
@@ -410,7 +407,6 @@
 	 (pushnew full-class-name (gethash name *class-name-to-full-case-insensitive*) 
 		  :test 'equal))))
 
-
 (defun new (class-name &rest args)
   (invoke-restargs 'new class-name args))
 
@@ -431,8 +427,8 @@
 	(values (#"get" jfield object) jfield))
     (if (symbolp object)
 	(let ((class (find-java-class object)))
-	  (#"peekStatic" 'invoke class field))
-      (#"peek" 'invoke object field))))
+          (jfield class field)
+        (jfield field object)))))
 
 ;; use #"getSuperclass" and #"getInterfaces" to see whether there are fields in superclasses that we might set
 (defun set-java-field (object field value &optional (try-harder *running-in-osgi*))
@@ -452,11 +448,16 @@
 	  (#"pokeStatic" 'invoke class field value))
       (#"poke" 'invoke object field value))))
 
+(defconstant +for-name+ 
+  (jmethod "java.lang.Class" "forName" "java.lang.String" "boolean" "java.lang.ClassLoader"))
+
+(defconstant +true+
+  (jstatic-raw "parseBoolean" "java.lang.Boolean" "true"))
+
 (defun find-java-class (name)
-  (if *classpath-manager*
-      (or (#1"classForName" *classpath-manager* (maybe-resolve-class-against-imports name))
-	  (ignore-errors (jclass (maybe-resolve-class-against-imports name))))
-    (jclass (maybe-resolve-class-against-imports name))))
+  (or (jstatic +for-name+ "java.lang.Class" 
+               (maybe-resolve-class-against-imports name) +true+ java::*classloader*)
+      (ignore-errors (jclass (maybe-resolve-class-against-imports name)))))
 
 (defmethod print-object ((obj (jclass "java.lang.Class")) stream) 
   (print-unreadable-object (obj stream :identity nil)
@@ -530,9 +531,7 @@
 	 (find "classes" (#"getDeclaredFields" (jclass "java.lang.ClassLoader"))
 	       :key #"getName" :test 'equal)))
     (#"setAccessible" classes-field t)
-    (loop for classloader in 
-	 (list* (#"getClassLoader" (jclass "org.armedbear.lisp.Lisp"))
-		(and *classpath-manager* (list (#"getBaseLoader" *classpath-manager*))))
+    (loop for classloader in (mapcar #'first (dump-classpath))
 	 append
 	 (loop with classesv = (#"get" classes-field classloader)
 	    for i below (#"size" classesv)
@@ -555,37 +554,24 @@
 ;;     }
 ;; http://www.javaworld.com/javaworld/jw-10-1996/jw-10-indepth-p2.html
 
-(defvar *classpath-manager* nil)
-
 (defvar *added-to-classpath* nil)
-
-(defun maybe-install-bsh-classloader ()
-  (unless *classpath-manager*
-    (when (ignore-errors (jclass "bsh.classpath.ClassManagerImpl"))
-      (let* ((urls (jnew-array "java.net.URL" 0))
-	     (manager (jnew "bsh.classpath.ClassManagerImpl"))
-	     (bshclassloader (jnew "bsh.classpath.BshClassLoader" manager urls)))
-	(#"setClassLoader" '|jsint.Import| bshclassloader)
-	(setq *classpath-manager* manager)))))
-
-(defun ensure-dynamic-classpath ()
-  (assert *classpath-manager* () "Can't add to classpath unless bean shell jar is in your classpath"))
 
 (defvar *inhibit-add-to-classpath* nil)
 
 (defun add-to-classpath (path &optional force)
   (unless *inhibit-add-to-classpath*
-    (ensure-dynamic-classpath)
-    (clear-invoke-imports)
+;;;    (ensure-dynamic-classpath)
+;;;    (clear-invoke-imports)
     (let ((absolute (namestring (truename path))))
 ;;       (when (not (equal (pathname-type absolute) (pathname-type path)))
 ;; 	(warn "HEY! ~a, ~a ~a, ~a" path (pathname-type path) absolute (pathname-type absolute))
 ;; 	(setq @ (list path absolute)))
       ;; NOTE: for jar files, specified as a component, the ".jar" is part of the pathname-name :(
       (when (or force (not (member absolute *added-to-classpath* :test 'equalp)))
-	(#"addClassPath" *classpath-manager* (new 'java.net.url (#"replaceAll" (#"replaceAll" (concatenate 'string "file://" absolute) "\\\\" "/") "C:" "")))
-	(#"setClassLoader" '|jsint.Import| (#"getBaseLoader" *classpath-manager*))
+;;;	(#"addClassPath" *classpath-manager* (new 'java.net.url (#"replaceAll" (#"replaceAll" (concatenate 'string "file://" absolute) "\\\\" "/") "C:" "")))
+;;;	(#"setClassLoader" '|jsint.Import| (#"getBaseLoader" *classpath-manager*))
 ;	(format t "path=~a type=~a~%"  absolute (pathname-type absolute))
+        (java:add-to-classpath path)
 	(cond ((equal (pathname-type absolute) "jar")
 	       (jar-import absolute))
 	      ((file-directory-p absolute)
@@ -593,7 +579,8 @@
 	(push absolute *added-to-classpath*)))))
 
 (defun get-dynamic-class-path ()
-  (ensure-dynamic-classpath)
+  (dump-classpath)
+#+nil
   (map 'list (lambda(el) 
 	       (let ((path (#"toString" el)))
 		 (if (eql (search "file:/" path) 0)
@@ -601,6 +588,7 @@
 		     path)))
        (#"getPathComponents" (#"getClassPath" *classpath-manager*))))
 
+#+nil
 (eval-when (:load-toplevel :execute)
   (maybe-install-bsh-classloader))
 
@@ -671,8 +659,8 @@
 
 (defun add-directory-jars-to-class-path (directory recursive-p)
   (if recursive-p
-      (loop for jar in (all-jars-below directory) do (cl-user::add-to-classpath jar))
-      (loop for jar in (directory (merge-pathnames "*.jar" directory)) do (cl-user::add-to-classpath jar))))
+      (loop for jar in (all-jars-below directory) do (add-to-classpath jar))
+      (loop for jar in (directory (merge-pathnames "*.jar" directory)) do (add-to-classpath jar))))
 
 (defun need-to-add-directory-jar? (directory recursive-p)
   (if recursive-p
@@ -773,10 +761,10 @@
 	    do (assert (stringp m) (m) "Method names must be strings: ~s" m) and collect m
 	    else
 	    do (assert (or (symbolp m) (functionp m)) (m) "Methods must be function designators: ~s" m))) 
-        (null (make-immediate-object nil :ref)))
+#+nil   (null (make-immediate-object nil :ref)))
     (let ((safe-method-names-and-defs 
 	   (loop for (name function) on method-names-and-defs by #'cddr
-	      collect name collect (safely  function name))))
+	      collect name collect (safely function name))))
       (loop for method across
 	   (jclass-methods interface :declared nil :public t)
 	   for method-name = (jmethod-name method)
@@ -784,7 +772,7 @@
 	   do
 	   (let* ((def  `(lambda
 			     (&rest args)
-			   (cl-user::invoke-restargs ,(jmethod-name method) ,dispatch-to args t)
+			   (invoke-restargs ,(jmethod-name method) ,dispatch-to args t)
 			   )))
 	     (push (coerce def 'function) safe-method-names-and-defs)
 	     (push method-name safe-method-names-and-defs)))
@@ -802,52 +790,4 @@
 	  (write-string (#"replaceFirst" (#"toString" writer) "(?s)\\s*at sun.reflect.*" "") s))
 	)
       (#"replaceFirst" (princ-to-string condition) "(?s)\\\\s*at jsint.E.*" "")))
-
-(in-package :asdf)
-
-
-(defclass jar-directory (static-file) ())
-
-(defmethod perform ((operation compile-op) (c jar-directory))
-  (unless cl-user::*inhibit-add-to-classpath*
-    (cl-user::add-directory-jars-to-class-path (truename (component-pathname c)) t)))
-
-(defmethod perform ((operation load-op) (c jar-directory))
-  (unless cl-user::*inhibit-add-to-classpath*
-    (cl-user::add-directory-jars-to-class-path (truename (component-pathname c)) t)))
-
-(defmethod operation-done-p ((operation load-op) (c jar-directory))
-  (or cl-user::*inhibit-add-to-classpath*
-    (not (cl-user::need-to-add-directory-jar? (component-pathname c) t))))
-
-(defmethod operation-done-p ((operation compile-op) (c jar-directory))
-  t)
-
-(defclass jar-file (static-file) ())
-
-(defmethod perform ((operation compile-op) (c jar-file))
-  (cl-user::add-to-classpath (component-pathname c)))
-
-(defmethod perform ((operation load-op) (c jar-file))
-  (or cl-user::*inhibit-add-to-classpath*
-      (cl-user::add-to-classpath (component-pathname c))))
-
-(defmethod operation-done-p ((operation load-op) (c jar-file))
-  (or cl-user::*inhibit-add-to-classpath*
-      (member (namestring (truename (component-pathname c))) cl-user::*added-to-classpath* :test 'equal)))
-
-(defmethod operation-done-p ((operation compile-op) (c jar-file))
-  t)
-
-(defclass class-file-directory (static-file) ())
-
-(defmethod perform ((operation compile-op) (c class-file-directory))
-  (cl-user::add-to-classpath (component-pathname c)))
-
-(defmethod perform ((operation load-op) (c class-file-directory))
-  (cl-user::add-to-classpath (component-pathname c)))
-
-;; ****************************************************************
-
-
 
