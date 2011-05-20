@@ -330,21 +330,32 @@ from ${abcl.home.dir}
       <delete file="${abcl.version.path}"/>
     </target>
 
+    <target name="abcl.stamp.version.uptodate">
+      <uptodate property="abcl.stamp.version.uptodate.p" 
+                targetfile="${abcl.version.path}"
+                srcfile="${build.classes.dir}/org/armedbear/lisp/Version.class"/>
+    </target>
+
     <target name="abcl.stamp.version" 
-            depends="abcl.clean.version,abcl.version.src,abcl.stamp.version.1,abcl.stamp.version.2">
+            depends="abcl.version.src,abcl.stamp.version.1,abcl.stamp.version.2"
+            unless="abcl.stamp.version.uptodate.p">
       <mkdir dir="${abcl.version.path}/.."/>
       <echo>ABCL implementation version: ${abcl.implementation.version}</echo>
       <echo file="${abcl.version.path}">${abcl.implementation.version}</echo>
     </target>
     
-    <target name="abcl.stamp.version.0" 
-            depends="abcl.compile.java">
+    <target name="abcl.stamp.version.generate" 
+            depends="abcl.compile.java"
+            unless="abcl.stamp.version.uptodate.p">
       <java fork="true"
 	    classpath="${build.classes.dir}"
 	    outputproperty="abcl.version"
 	    classname="org.armedbear.lisp.Version"
             logerror="yes"/> <!-- Don't catch stderr output -->
     </target>
+
+    <target name="abcl.stamp.version.0" 
+            depends="abcl.stamp.version.uptodate,abcl.stamp.version.generate"/>
 
     <target name="abcl.stamp.version.1"
             depends="abcl.stamp.version.0"
@@ -382,7 +393,7 @@ from ${abcl.home.dir}
       <touch file="${src.dir}/org/armedbear/lisp/compile-system.lisp"/>
     </target>
 
-    <target name="abcl.jar.uptodate" depends="abcl.compile">
+    <target name="abcl.jar.uptodate" depends="abcl.compile,abcl.stamp">
       <uptodate property="abcl.jar.uptodate.p" targetfile="${abcl.jar.path}">
         <srcfiles dir="${build.classes.dir}">
           <patternset refid="abcl.objects"/>
@@ -390,11 +401,11 @@ from ${abcl.home.dir}
       </uptodate>
     </target>
 
-    <target name="abcl.jar" depends="abcl.stamp,abcl.jar.uptodate"
+    <target name="abcl.jar" depends="abcl.jar.uptodate"
 	    unless="abcl.jar.uptodate.p">
       <mkdir dir="${dist.dir}"/>
       <loadfile property="abcl.version"
-		  srcFile="${abcl.version.path}"/>
+                srcFile="${abcl.version.path}"/>
       <jar destfile="${abcl.jar.path}"
 	   compress="true"
 	   basedir="${build.classes.dir}">
