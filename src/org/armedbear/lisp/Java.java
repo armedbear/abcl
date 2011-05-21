@@ -771,13 +771,12 @@ public final class Java
     };
 
     private static final Primitive JRESOLVE_METHOD = new pf_jresolve_method();
-    @DocString(name="jresolve_method", args="method-name instance &rest args",
+    @DocString(name="jresolve-method", args="method-name instance &rest args",
     doc="Finds the most specific Java method METHOD-NAME on INSTANCE " +
         "applicable to arguments ARGS. Returns NIL if no suitable method is " +
         "found. The algorithm used for resolution is the same used by JCALL " +
         "when it is called with a string as the first parameter (METHOD-REF).")
     private static final class pf_jresolve_method extends Primitive {
-
         pf_jresolve_method() {
             super(Symbol.JRESOLVE_METHOD);
         }
@@ -806,6 +805,18 @@ public final class Java
             String methodName = methodArg.getStringValue();
             Object[] methodArgs = translateMethodArguments(args, 2);
             Method method = findMethod(instance, intendedClass, methodName, methodArgs);
+            if (method != null) {
+                return JavaObject.getInstance(method);
+            } else if (instanceArg instanceof JavaObject) {
+                // Sometimes JavaObject.intendedClass has the default
+                // value java.lang.Object, so we try again to resolve
+                // the method using a dynamically requested value for
+                // java.lang.Class.
+                intendedClass = ((JavaObject)instanceArg).getObject().getClass();
+                method = findMethod(instance, intendedClass, methodName, methodArgs);
+            } else {
+                return NIL;
+            }
             if (method != null) {
                 return JavaObject.getInstance(method);
             } else {
