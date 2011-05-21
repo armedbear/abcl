@@ -5,7 +5,7 @@
 
 (defun ensure-compatiblity ()
   (setf *cl-user-compatibility* t)
-  (dolist (symbol '(get-java-field))
+  (dolist (symbol '(get-java-field new))
     (unintern symbol :cl-user)
     (import symbol :cl-user)))
 

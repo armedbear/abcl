@@ -14,8 +14,3 @@
    #:get-java-field)
    (:shadow #:add-to-classpath))
 
-(eval-when (:compile-toplevel :load-toplevel)
-  (java:add-to-classpath
-   (merge-pathnames "../../../lsw2/lib/jscheme.jar" (asdf:component-pathname (asdf:find-system :jss)))))
-
-

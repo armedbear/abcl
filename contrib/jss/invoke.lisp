@@ -120,6 +120,9 @@
 ;;
 ;; Tested on windows, linux.
 
+;; 2011-05-21 Mark Evenson
+;;   "ported" to native ABCL without needing the jscheme.jar or bsh-2.0b4.jar
+
 (in-package :jss)
 
 ;; invoke takes it's arguments in a java array. In order to not cons
@@ -192,91 +195,56 @@
     (load-time-value (jcall (jmethod "java.lang.Class" "getMethods" ) (jclass "jsint.Invoke")))))
 
 (defun invoke-restargs (method object args &optional (raw? nil))
-  (symbol-macrolet 
-      ((no-argss (load-time-value (jnew-array "java.lang.Object" 0)))
-       (invoke-class (load-time-value (jclass "jsint.Invoke")))
-       (ic (load-time-value (find "invokeConstructor" *invoke-methods* :key  'jmethod-name :test 'equal)))
-       (is (load-time-value (find "invokeStatic"  *invoke-methods* :key  'jmethod-name :test 'equal)))
-       (ii (load-time-value (find "invokeInstance"  *invoke-methods* :key  'jmethod-name :test 'equal)))
-       (true (load-time-value (make-immediate-object t :boolean)))
-       (false (load-time-value (make-immediate-object nil :boolean))))
-    (let* (
-	  ;; these two lookups happen before argv is filled, because they themselves call invoke.)
-	 (object-as-class-name (if (symbolp object) (maybe-resolve-class-against-imports object)))
-	 (object-as-class (if object-as-class-name (find-java-class object-as-class-name)))
-	 )
-;    (declare (optimize (speed 3) (safety 0)))
-    (let ((argv (if (null (the list args))
-		    no-argss
-		    (let ((argv (jarray-ref-raw (argvs) (length (the list args))))
-			  (i -1))
-		      (dolist (arg args) 
-			(setf (jarray-ref argv (incf (the fixnum i)))
-			      (if (eq arg t) true (if (eq arg nil) false arg))))
-		      argv))))
-      (if (eq method 'new)
-          (apply #'jnew (or object-as-class-name object) args)
-	  (if raw?
-	      (if (symbolp object)
-		  (apply #'jstatic-raw method object-as-class  args)
-		  (apply #'jcall-raw method object  args))
-	      (if (symbolp object)
-		  (apply #'jstatic method object-as-class args)
-		  (apply #'jcall method object args))))))))
+  (let* ((object-as-class-name 
+          (if (symbolp object) (maybe-resolve-class-against-imports object)))
+         (object-as-class 
+          (if object-as-class-name (find-java-class object-as-class-name))))
+    (if (eq method 'new)
+        (apply #'jnew (or object-as-class-name object) args)
+        (if raw?
+            (if (symbolp object)
+                (apply #'jstatic-raw method object-as-class  args)
+                (apply #'jcall-raw method object  args))
+            (if (symbolp object)
+                (apply #'jstatic method object-as-class args)
+                (apply #'jcall method object args))))))
 
-;; (defconstant no-args (load-time-value (jnew-array "java.lang.Object" 0)))
-;; (defconstant invoke-class (load-time-value (jclass "jsint.Invoke")))
-;; (defconstant ic (load-time-value (find "invokeConstructor" *invoke-methods* :key  'jmethod-name :test 'equal)))
-;; (defconstant is (load-time-value (find "invokeStatic"  *invoke-methods* :key  'jmethod-name :test 'equal)))
-;; (defconstant ii (load-time-value (find "invokeInstance"  *invoke-methods* :key  'jmethod-name :test 'equal)))
-;; (defconstant true (load-time-value (make-immediate-object t :boolean)))
-;; (defconstant false (load-time-value (make-immediate-object nil :boolean)))
+;;; Method name --> Object --> jmethod
+;;;
+(defvar *methods-cache* (make-hash-table :test #'equal))
 
-;; (defun invoke-restargs (method object args &optional (raw? nil))
-;;   (let* (;; these two lookups happen before argv is filled, because they themselves call invoke.
-;; 	 (object-as-class-name (if (symbolp object) (maybe-resolve-class-against-imports object)))
-;; 	 (object-as-class (if object-as-class-name (find-java-class object-as-class-name)))
-;; 	 )
-;;     (declare (optimize (speed 3) (safety 0)))
-;;     (let ((argv (if (null args) 
-;; 		    no-args
-;; 		    (let ((argv (jarray-ref-raw (argvs) (length args)))
-;; 			  (i -1))
-;; 		      (dolist (arg args) 
-;; 			(setf (jarray-ref argv (incf (the fixnum i)))
-;; 			      (if (eq arg t) true (if (eq arg nil) false arg))))
-;; 		      argv))))
-;;       (if (eq method 'new)
-;; 	  (progn
-;; 	    (jstatic-raw ic invoke-class object-as-class-name argv))
-;; 	  (if raw?
-;; 	      (if (symbolp object)
-;; 		  (jstatic-raw is invoke-class object-as-class method argv)
-;; 		  (jstatic-raw ii invoke-class object method argv true))
-;; 	      (if (symbolp object)
-;; 		  (jstatic is invoke-class object-as-class method argv)
-;; 		  (jstatic ii invoke-class object method argv true)
-;; 		  ))))))
+(defun get-jmethod (method object) 
+  (when (gethash method *methods-cache*)
+    (gethash 
+     (if (symbolp object) (lookup-class-name object) (jobject-class object))
+     (gethash method *methods-cache*))))
 
+(defun set-jmethod (method object jmethod) 
+  (unless (gethash method *methods-cache*)
+    (setf (gethash method *methods-cache*) (make-hash-table :test #'equal)))
+  (setf 
+   (gethash 
+    (if (symbolp object) (lookup-class-name object) (jobject-class object))
+    (gethash method *methods-cache*))
+   jmethod))
+
+(defparameter *last-invoke-find-method-args* nil)
+;;; TODO optimize me!
 (defun invoke-find-method (method object args)
-  (let* ((no-args (load-time-value (jnew-array "java.lang.Object" 0)))
-	 (invoke-class (load-time-value (jclass "jsint.Invoke")))
-	 (ifm (load-time-value (jmethod (jclass "jsint.Invoke") "findMethod" (jclass "[Ljava.lang.Object;") (jclass "[Ljava.lang.Object;"))))
-	 (imt (load-time-value (find "methodTable"  *invoke-methods* :key  'jmethod-name :test 'equal)))
-	 (true (load-time-value (make-immediate-object t :boolean)))
-	 (false (load-time-value (make-immediate-object nil :boolean))))
-    (let ((args (if (null args) 
-		    no-args
-		    (let ((argv (jarray-ref-raw (argvs) (length args)))
-			  (i -1))
-		      (dolist (arg args) 
-			(setf (jarray-ref argv (incf i))
-			      (if (eq arg t) true (if (eq arg nil) false arg))))
-		      argv))))
-      (if (symbolp object)
-	  (jstatic ifm invoke-class (jstatic-raw imt invoke-class (lookup-class-name object) method true true) args)
-	  (jstatic ifm invoke-class (jstatic-raw imt invoke-class (jobject-class object) method false true) args)))))
-
+  (setf *last-invoke-find-method-args* (list method object args))
+  (let ((jmethod (get-jmethod method object)))
+    (unless jmethod
+      (setf jmethod 
+            (if (symbolp object)
+                ;;; static method
+                (apply #'jmethod (lookup-class-name object) 
+                       method (mapcar #'jobject-class args))
+                  ;;; instance method
+                (apply #'jresolve-method 
+                       method object args)))
+      (jcall "setAccessible" jmethod +true+)
+      (set-jmethod method object jmethod))
+    jmethod))
 
 ;; This is the reader macro for java methods. it translates the method
 ;; into a lambda form that calls invoke. Which is nice because you
@@ -295,33 +263,10 @@
   (defun read-invoke (stream char arg) 
     (unread-char char stream)
     (let ((name (read stream)))
-      (if (and arg (eql (abs arg) 1))
-	  (let ((cell (intern (format nil "G~a" (incf *lcount*)) 'lambdas)) ; work around bug that gensym here errors when compiling
-		(object-var (intern (format nil "G~a" (incf *lcount*)) 'lambdas)) ;; work around bug in 0.18 symbol-macrolet
-		(args-var (intern (format nil "G~a" (incf *lcount*)) 'lambdas)))
-	    (proclaim `(special ,cell))
-					;	    (set cell nil)
-	    `(lambda (,object-var &rest ,args-var)
-	       (declare (optimize (speed 3) (safety 0)))
-	       (if (boundp ',cell) ;costing me 10% here because I can't force cell to be bound and hence do null test.
-		   (if (null ,args-var)
-		       (jcall ,cell ,object-var)
-		       (if (null (cdr (the cons ,args-var)))
-			   ,(if (minusp arg)
-				`(jcall-static ,cell ,object-var (car (the cons ,args-var)))
-				`(jcall ,cell ,object-var (car (the cons ,args-var))))
-			   ,(if (minusp arg)
-				`(apply 'jcall-static ,cell ,object-var (the list ,args-var))
-				`(apply 'jcall ,cell ,object-var (the list ,args-var)))))
-		   (progn
-		     (setq ,cell (invoke-find-method ,name ,object-var ,args-var))
-		     ,(if (minusp arg)
-			  `(apply 'jcall-static ,cell ,object-var ,args-var)
-			  `(apply 'jcall ,cell ,object-var ,args-var))))))
-	  (let ((object-var (intern (format nil "G~a" (incf *lcount*)) 'lambdas)) ;; work around bug in 0.18 symbol-macrolet
-		(args-var (intern (format nil "G~a" (incf *lcount*)) 'lambdas)))
-	    `(lambda (,object-var &rest ,args-var) 
-	       (invoke-restargs ,name  ,object-var ,args-var ,(eql arg 0)))))))
+      (let ((object-var (intern (format nil "G~a" (incf *lcount*)) 'lambdas)) ;; work around bug in 0.18 symbol-macrolet
+            (args-var (intern (format nil "G~a" (incf *lcount*)) 'lambdas)))
+        `(lambda (,object-var &rest ,args-var) 
+           (invoke-restargs ,name  ,object-var ,args-var ,(eql arg 0))))))
   (set-dispatch-macro-character #\# #\" 'read-invoke))
 
 (defmacro with-constant-signature (fname-jname-pairs &body body)
@@ -452,7 +397,7 @@
   (jmethod "java.lang.Class" "forName" "java.lang.String" "boolean" "java.lang.ClassLoader"))
 
 (defconstant +true+
-  (jstatic-raw "parseBoolean" "java.lang.Boolean" "true"))
+  (make-immediate-object t :boolean))
 
 (defun find-java-class (name)
   (or (jstatic +for-name+ "java.lang.Class" 
