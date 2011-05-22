@@ -223,17 +223,12 @@
 ;; #0"toString" returns a java.lang.String object, where as #"toString" returns
 ;; a regular Lisp string as ABCL converts the Java string to a Lisp string.
 
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defpackage lambdas (:use))
-  (defvar *lcount* 0))
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun read-invoke (stream char arg) 
     (unread-char char stream)
     (let ((name (read stream)))
-      (let ((object-var (intern (format nil "G~a" (incf *lcount*)) 'lambdas)) ;; work around bug in 0.18 symbol-macrolet
-            (args-var (intern (format nil "G~a" (incf *lcount*)) 'lambdas)))
+      (let ((object-var (gensym))
+            (args-var (gensym)))
         `(lambda (,object-var &rest ,args-var) 
            (invoke-restargs ,name  ,object-var ,args-var ,(eql arg 0))))))
   (set-dispatch-macro-character #\# #\" 'read-invoke))
@@ -331,18 +326,19 @@
   (if try-harder
       (let* ((class (if (symbolp object)
 			(setq object (find-java-class object))
-		      (if (equal "java.lang.Class" (jclass-name (jobject-class object)) )
-			  object
-			(jobject-class object))))
+                        (if (equal "java.lang.Class" (jclass-name (jobject-class object)))
+                            object
+                            (jobject-class object))))
 	     (jfield (if (java-object-p field)
 			 field
-		       (find field (#"getDeclaredFields" class) :key 'jfield-name :test 'equal))))
+                         (find field (#"getDeclaredFields" class) 
+                               :key 'jfield-name :test 'equal))))
 	(#"setAccessible" jfield t)
 	(values (#"get" jfield object) jfield))
-    (if (symbolp object)
-	(let ((class (find-java-class object)))
-          (jfield class field)
-        (jfield field object)))))
+      (if (symbolp object)
+          (let ((class (find-java-class object)))
+            (jfield class field))
+          (jfield field object))))
 
 ;; use #"getSuperclass" and #"getInterfaces" to see whether there are fields in superclasses that we might set
 (defun set-java-field (object field value &optional (try-harder *running-in-osgi*))
