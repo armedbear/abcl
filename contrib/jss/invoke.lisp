@@ -134,34 +134,16 @@
 ;; between when we call invoke and when invoke calls the actual
 ;; function you care about.
 
-(defvar *max-java-method-args* 20 "Increase if you call java methods with more than 20 arguments")
-
-(defun argvs ()
-  (let ((get (load-time-value (jmethod (jclass "java.lang.ThreadLocal") "get")))
-	(argvs (load-time-value (jnew (jconstructor "java.lang.ThreadLocal"))))
-	(null (load-time-value (make-immediate-object nil :ref))))
-    (let ((res (jcall-raw get argvs)))
-      (if (equal res null)
-	  (let ((it (jnew-array "java.lang.Object" *max-java-method-args*)))
-	    (dotimes (i *max-java-method-args*)
-	      (setf (jarray-ref it i) (jnew-array "java.lang.Object" i)))
-	    (jcall (jmethod (jclass "java.lang.ThreadLocal") "set" "java.lang.Object")
-		   argvs it)
-	    it)
-	  res))))
-
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defvar *do-auto-imports* t))
 
 (defvar *imports-resolved-classes* (make-hash-table :test 'equal))
 
-
 (defun find-java-class (name)
   (jclass (maybe-resolve-class-against-imports name)))
 
 (defmacro invoke-add-imports (&rest imports)
-  "push these imports onto the search path. If multiple, earlier in list take precedence"
+  "Push these imports onto the search path. If multiple, earlier in list take precedence"
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (clrhash *imports-resolved-classes*)
      (dolist (i (reverse ',imports))
@@ -182,17 +164,15 @@
 
 (defvar *class-name-to-full-case-insensitive* (make-hash-table :test 'equalp))
 
-;; This is the function that calls invoke to call your java method. The first argument is the 
-;; method name or 'new. The second is the object you are calling it on, followed by the rest of the
-;; arguments. If the "object" is a symbol, then that symbol is assumed to be a java class, and 
-;; a static method on the class is called, otherwise a regular method is called. 
+;; This is the function that calls invoke to call your java
+;; method. The first argument is the method name or 'new. The second
+;; is the object you are calling it on, followed by the rest of the
+;; arguments. If the "object" is a symbol, then that symbol is assumed
+;; to be a java class, and a static method on the class is called,
+;; otherwise a regular method is called.
 
 (defun invoke (method object &rest args)
     (invoke-restargs method object args))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar *invoke-methods*
-    (load-time-value (jcall (jmethod "java.lang.Class" "getMethods" ) (jclass "jsint.Invoke")))))
 
 (defun invoke-restargs (method object args &optional (raw? nil))
   (let* ((object-as-class-name 
@@ -209,8 +189,7 @@
                 (apply #'jstatic method object-as-class args)
                 (apply #'jcall method object args))))))
 
-;;; Method name --> Object --> jmethod
-;;;
+;;; Method name as String --> String  | Symbol --> jmethod
 (defvar *methods-cache* (make-hash-table :test #'equal))
 
 (defun get-jmethod (method object) 
@@ -422,10 +401,10 @@
 		  (cond 
 		    ((file-directory-p s) )
 		    ((equal (pathname-type s) "jar")
-		     (jar-import (merge-pathnames (jcall "toString" s) (format nil "~a/" (jstatic "getProperty" "java.lang.System" "user.dir")))))))
-		
-		(jcall "split" cp (string (jstatic "peekStatic" '|jsint.Invoke| (jclass "java.io.File") "pathSeparatorChar")))
-		)))
+		     (jar-import (merge-pathnames (jcall "toString" s) 
+                                                  (format nil "~a/" (jstatic "getProperty" "java.lang.System" "user.dir")))))))
+		(jcall "split" cp 
+                       (string (jfield (jclass "java.io.File") "pathSeparatorChar"))))))
     (import-class-path (jcall "getClassPath" (jstatic "getRuntimeMXBean" '|java.lang.management.ManagementFactory|)))
     (import-class-path (jcall "getBootClassPath" (jstatic "getRuntimeMXBean" '|java.lang.management.ManagementFactory|)))
     ))
@@ -486,19 +465,6 @@
 	    for i below (#"size" classesv)
 	    collect (#"getName" (#"elementAt" classesv i))))))
 	 
-
-;; Modifiy this from Java.java to add a lisp defined classloader.
-;;     private static Class classForName(String className) throws ClassNotFoundException
-;;     {
-;;         try {
-;;             return Class.forName(className);
-;;         }
-;;         catch (ClassNotFoundException e) {
-;;             return Class.forName(className, true, JavaClassLoader.getPersistentInstance());
-;;         }
-;;     }
-;; http://www.javaworld.com/javaworld/jw-10-1996/jw-10-indepth-p2.html
-
 (defvar *added-to-classpath* nil)
 
 (defvar *inhibit-add-to-classpath* nil)
@@ -524,36 +490,12 @@
 	(push absolute *added-to-classpath*)))))
 
 (defun get-dynamic-class-path ()
-  (dump-classpath)
-#+nil
-  (map 'list (lambda(el) 
-	       (let ((path (#"toString" el)))
-		 (if (eql (search "file:/" path) 0)
-		     (subseq path 5)
-		     path)))
-       (#"getPathComponents" (#"getClassPath" *classpath-manager*))))
-
-#+nil
-(eval-when (:load-toplevel :execute)
-  (maybe-install-bsh-classloader))
-
-
-
-; http://java.sun.com/j2se/1.5.0/docs/api/java/lang/management/MemoryMXBean.html
-; http://java.sun.com/docs/hotspot/gc/
-; http://www.javaworld.com/javaworld/jw-01-2002/jw-0111-hotspotgc-p2.html
-; http://java.sun.com/docs/hotspot/VMOptions.html
-; http://java.sun.com/docs/hotspot/gc5.0/gc_tuning_5.html
-; http://java.sun.com/docs/hotspot/gc1.4.2/faq.html
-; http://java.sun.com/developer/technicalArticles/Programming/turbo/
-;-XX:MinFreeHeapRatio=
-;-XX:MaxHeapFreeRatio=
-;-XX:NewRatio=
-;-XX:SurvivorRatio=
-;-XX:SoftRefLRUPolicyMSPerMB=10000
-;-XX:+PrintTenuringDistribution
-;-XX:MaxLiveObjectEvacuationRatio
-
+  (rest 
+   (find-if (lambda (loader) 
+              (string= "org.armedbear.lisp.JavaClassLoader"
+                       (jclass-name (jobject-class loader))))
+            (dump-classpath)
+            :key #'car)))
 
 (defun java-gc ()
   (#"gc" (#"getRuntime" 'java.lang.runtime))
@@ -698,7 +640,7 @@
    (strings) and method definitions (closures).
 
    For missing methods, a dummy implementation is provided that
-   calls the method on DISPATCH-TO"
+   calls the method on DISPATCH-TO."
   (let ((implemented-methods
          (loop for m in method-names-and-defs
 	    for i from 0
@@ -723,16 +665,4 @@
 	     (push method-name safe-method-names-and-defs)))
       (apply #'java::%jnew-proxy  interface safe-method-names-and-defs))))
 
-
-(defun java-exception-report (condition)
-  (if (and (typep condition 'java-exception)
-	   (java-exception-cause condition)
-	   (equal (jclass-name (jobject-class (java-exception-cause condition)))
-		  "jsint.BacktraceException"))
-      (with-output-to-string (s)
-	(let ((writer (new 'stringwriter)))
-	  (#"printStackTrace" (#"getBaseException"(java-exception-cause condition)) (new 'printwriter writer))
-	  (write-string (#"replaceFirst" (#"toString" writer) "(?s)\\s*at sun.reflect.*" "") s))
-	)
-      (#"replaceFirst" (princ-to-string condition) "(?s)\\\\s*at jsint.E.*" "")))
 
