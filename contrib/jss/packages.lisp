@@ -6,6 +6,10 @@
    #:*added-to-classpath*
    #:*do-auto-imports*
 
+   #:invoke-restargs
+   #:with-constant-signature
+
+   #:invoke-add-imports
    #:add-directory-jars-to-class-path
    #:add-to-classpath
    #:find-java-class

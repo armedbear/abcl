@@ -1,6 +1,7 @@
-;; invoke.lisp v1.0
+;; invoke.lisp v2.0
 ;;
 ;; Copyright (C) 2005 Alan Ruttenberg
+;; Copyright (C) 2011 Mark Evenson
 ;;
 ;; Since most of this code is derivative of the Jscheme System, it is
 ;; licensed under the same terms, namely:
@@ -28,17 +29,12 @@
 ;; 3. This notice may not be removed or altered from any source
 ;;    distribution.
 
-;; This file uses invoke.java from jscheme
-;; (http://jscheme.sourceforge.net/jscheme/src/jsint/Invoke.java).
-;; The easiest way to use it is to download 
-;; http://jscheme.sourceforge.net/jscheme/lib/jscheme.jar
-;; and add it to the classpath in the file that invokes abcl.
 
-;; Invoke.java  effectively implements dynamic dispatch of java methods. This
-;; is used to make it real easy, if perhaps less efficient, to write
-;; java code since you don't need to be bothered with imports, or with
-;; figuring out which method to call.  The only time that you need to
-;; know a class name is when you want to call a static method, or a
+;; The dynamic dispatch of the java.lang.reflect package is used to
+;; make it real easy, if perhaps less efficient, to write Java code
+;; since you don't need to be bothered with imports, or with figuring
+;; out which method to call.  The only time that you need to know a
+;; class name is when you want to call a static method, or a
 ;; constructor, and in those cases, you only need to know enough of
 ;; the class name that is unique wrt to the classes on your classpath.
 ;;
@@ -51,21 +47,22 @@
 ;;   (#"write" sw "World")
 ;;   (print (#"toString" sw)))
 
-;; What's happened here? First, all the classes in all the jars in the classpath have
-;; been collected.  For each class a.b.C.d, we have recorded that
-;; b.c.d, b.C.d, C.d, c.d, and d potentially refer to this class. In
-;; your call to new, as long as the symbol can refer to only one class, we use that
-;; class. In this case, it is java.io.StringWriter. You could also have written
-;; (new 'io.stringwriter), (new '|io.StringWriter|), (new 'java.io.StringWriter)...
+;; What's happened here? First, all the classes in all the jars in the
+;; classpath have been collected.  For each class a.b.C.d, we have
+;; recorded that b.c.d, b.C.d, C.d, c.d, and d potentially refer to
+;; this class. In your call to new, as long as the symbol can refer to
+;; only one class, we use that class. In this case, it is
+;; java.io.StringWriter. You could also have written (new
+;; 'io.stringwriter), (new '|io.StringWriter|), (new
+;; 'java.io.StringWriter)...
 
 ;; the call (#"write" sw "Hello "), uses the code in invoke.java to
-;; call the method named "write" with the arguments sw and "Hello
-;; ". Invoke.java figures out the right java method to call, and calls
-;; it.
+;; call the method named "write" with the arguments sw and "Hello ". 
+;; JSS figures out the right java method to call, and calls it.
 
 ;; If you want to do a raw java call, use #0"toString". Raw calls
-;; return their results as java objects, avoiding doing the usual java
-;; object to lisp object conversions that abcl does.
+;; return their results as Java objects, avoiding doing the usual Java
+;; object to Lisp object conversions that ABCL does.
 
 ;; (with-constant-signature ((name jname raw?)*) &body body)
 ;; binds a macro which expands to a jcall, promising that the same method 
@@ -87,7 +84,6 @@
 ;; (jcmn class-name) lists the names of all methods for the class
 ;;
 ;; TODO
-;;   - Use a package other than common-lisp-user
 ;;   - Make with-constant-signature work for static methods too.
 ;;   - #2"toString" to work like function scoped (with-constant-signature ((tostring "toString")) ...)
 ;;   - #3"toString" to work like runtime scoped (with-constant-signature ((tostring "toString")) ...)
@@ -124,15 +120,6 @@
 ;;   "ported" to native ABCL without needing the jscheme.jar or bsh-2.0b4.jar
 
 (in-package :jss)
-
-;; invoke takes it's arguments in a java array. In order to not cons
-;; one up each time, but to be thread safe, we allocate a static array
-;; of such arrays and save them in threadlocal storage. I'm lazy and
-;; so I just assume you will never call a java method with more than
-;; *max-java-method-args*. Fix this if it is a problem for you. We
-;; don't need to worry about reentrancy as the array is used only
-;; between when we call invoke and when invoke calls the actual
-;; function you care about.
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defvar *do-auto-imports* t))
@@ -189,6 +176,8 @@
                 (apply #'jstatic method object-as-class args)
                 (apply #'jcall method object args))))))
 
+(defconstant +true+ (make-immediate-object t :boolean))
+
 ;;; Method name as String --> String  | Symbol --> jmethod
 (defvar *methods-cache* (make-hash-table :test #'equal))
 
@@ -207,10 +196,11 @@
     (gethash method *methods-cache*))
    jmethod))
 
-(defparameter *last-invoke-find-method-args* nil)
+(defconstant +set-accessible+ 
+  (jmethod "java.lang.reflect.AccessibleObject" "setAccessible" "boolean"))
+
 ;;; TODO optimize me!
 (defun invoke-find-method (method object args)
-  (setf *last-invoke-find-method-args* (list method object args))
   (let ((jmethod (get-jmethod method object)))
     (unless jmethod
       (setf jmethod 
@@ -221,7 +211,7 @@
                   ;;; instance method
                 (apply #'jresolve-method 
                        method object args)))
-      (jcall "setAccessible" jmethod +true+)
+      (jcall +set-accessible+ jmethod +true+)
       (set-jmethod method object jmethod))
     jmethod))
 
@@ -231,7 +221,7 @@
 ;; macro takes one arg. If 0, then jstatic-raw is called, so that abcl doesn't
 ;; automagically convert the returned java object into a lisp object. So
 ;; #0"toString" returns a java.lang.String object, where as #"toString" returns
-;; a regular lisp string as abcl converts the java string to a lisp string.
+;; a regular Lisp string as ABCL converts the Java string to a Lisp string.
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -374,9 +364,6 @@
 
 (defconstant +for-name+ 
   (jmethod "java.lang.Class" "forName" "java.lang.String" "boolean" "java.lang.ClassLoader"))
-
-(defconstant +true+
-  (make-immediate-object t :boolean))
 
 (defun find-java-class (name)
   (or (jstatic +for-name+ "java.lang.Class" 

@@ -5,8 +5,12 @@
 
 (defun ensure-compatiblity ()
   (setf *cl-user-compatibility* t)
-  (dolist (symbol '(get-java-field new))
-    (unintern symbol :cl-user)
-    (import symbol :cl-user)))
+  (let ((dont-export '(add-to-classpath *cl-user-compatibility*)))
+    (loop :for symbol :being :each :external-symbol :in :jss 
+       :when (not (find symbol dont-export))
+       :do 
+         (unintern symbol :cl-user)
+       :and :do
+         (import symbol :cl-user))))
 
     
