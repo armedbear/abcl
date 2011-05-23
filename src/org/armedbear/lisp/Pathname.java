@@ -1254,6 +1254,7 @@ public class Pathname extends LispObject {
         boolean nameSupplied = false;
         boolean typeSupplied = false;
         boolean directorySupplied = false;
+        boolean versionSupplied = false;
         for (int i = 0; i < args.length; i += 2) {
             LispObject key = args[i];
             LispObject value = args[i + 1];
@@ -1290,6 +1291,7 @@ public class Pathname extends LispObject {
                 typeSupplied = true;
             } else if (key == Keyword.VERSION) {
                 version = value;
+                versionSupplied = true;
             } else if (key == Keyword.DEFAULTS) {
                 defaults = coerceToPathname(value);
             } else if (key == Keyword.CASE) {
@@ -1311,6 +1313,9 @@ public class Pathname extends LispObject {
             }
             if (!typeSupplied) {
                 type = defaults.type;
+            }
+            if (!versionSupplied) {
+                version = defaults.version;
             }
         }
         final Pathname p;
