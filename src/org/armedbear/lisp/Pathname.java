@@ -1876,15 +1876,32 @@ public class Pathname extends LispObject {
         } else {
             result.type = d.type;
         }
-        if (pathname.version != NIL) {
-            result.version = pathname.version;
-        } else if (pathname.name instanceof AbstractString) {
+        //  CLHS Function MERGE-PATHNAMES 
+        //  "If no version is supplied, default-version is used. If
+        //  default-version is nil, the version component will remain
+        //  unchanged."
+        if (p.version == NIL && defaultVersion != NIL) {
             result.version = defaultVersion;
-        } else if (defaultPathname.version != NIL) {
+        } else if (p.version == NIL && defaultVersion == NIL) {
+            result.version = p.version;
+        // "If pathname does not specify a name, then the version, if
+        //  not provided, will come from default-pathname, just like
+        //  the other components. If pathname does specify a name,
+        //  then the version is not affected by default-pathname. If
+        //  this process leaves the version missing, the
+        //  default-version is used."
+        } else if (p.name == NIL && p.version == NIL) {
             result.version = defaultPathname.version;
+        } else if (p.name != NIL) {
+            if (defaultVersion != NIL) {
+                result.version = defaultVersion;
+            } else {
+                result.version = p.version;
+            }
         } else {
-            result.version = defaultVersion;
+            result.version = defaultPathname.version;
         }
+
         if (pathname instanceof LogicalPathname) {
             // When we're returning a logical
             result.device = Keyword.UNSPECIFIC;
