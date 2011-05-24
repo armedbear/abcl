@@ -1717,3 +1717,11 @@
 (deftest pathname.make-pathname.1
     (make-pathname :directory nil :defaults "/home/fare/")
   #p"")
+
+(deftest pathname.make-pathname.2
+    (let ((p (make-pathname 
+              :defaults (make-pathname :name :wild :type :wild :version :wild :directory :wild))))
+      (values 
+       (pathname-name p) (pathname-type p) (pathname-version p) (pathname-directory p)))
+  :wild :wild :wild (:absolute :wild))
+      
