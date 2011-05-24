@@ -408,6 +408,7 @@ from ${abcl.home.dir}
                 srcFile="${abcl.version.path}"/>
       <jar destfile="${abcl.jar.path}"
            compress="true"
+           update="true"
            basedir="${build.classes.dir}">
         <patternset refid="abcl.objects"/>
         <manifest>
