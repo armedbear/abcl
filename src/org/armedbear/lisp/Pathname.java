@@ -1818,10 +1818,10 @@ public class Pathname extends LispObject {
     public static final Pathname mergePathnames(Pathname pathname, Pathname defaultPathname) {
         return mergePathnames(pathname, defaultPathname, Keyword.NEWEST);
     }
-
+    
     public static final Pathname mergePathnames(final Pathname pathname,
                                                 final Pathname defaultPathname,
-                                                final LispObject defaultVersion) 
+                                                final LispObject defaultVersion)
     {
         Pathname result;
         Pathname p = new Pathname(pathname);
@@ -1886,26 +1886,25 @@ public class Pathname extends LispObject {
         //  "If no version is supplied, default-version is used. If
         //  default-version is nil, the version component will remain
         //  unchanged."
-        if (p.version == NIL && defaultVersion != NIL) {
-            result.version = defaultVersion;
-        } else if (p.version == NIL && defaultVersion == NIL) {
-            result.version = p.version;
         // "If pathname does not specify a name, then the version, if
         //  not provided, will come from default-pathname, just like
         //  the other components. If pathname does specify a name,
         //  then the version is not affected by default-pathname. If
         //  this process leaves the version missing, the
         //  default-version is used."
-        } else if (p.name == NIL && p.version == NIL) {
-            result.version = defaultPathname.version;
-        } else if (p.name != NIL) {
-            if (defaultVersion != NIL) {
+        if (p.version != NIL) {
+            result.version = p.version;
+        } else if (p.name == NIL) {
+            if (defaultPathname.version == NIL) {
                 result.version = defaultVersion;
             } else {
-                result.version = p.version;
+                result.version = defaultPathname.version;
             }
-        } else {
-            result.version = defaultPathname.version;
+        } else if (defaultVersion == NIL) {
+            result.version = p.version;
+        } 
+        if (result.version == NIL) {
+            result.version = defaultVersion;
         }
 
         if (pathname instanceof LogicalPathname) {
