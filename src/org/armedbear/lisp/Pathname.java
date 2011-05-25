@@ -1882,16 +1882,23 @@ public class Pathname extends LispObject {
         } else {
             result.type = d.type;
         }
-        //  CLHS Function MERGE-PATHNAMES 
-        //  "If no version is supplied, default-version is used. If
-        //  default-version is nil, the version component will remain
-        //  unchanged."
-        // "If pathname does not specify a name, then the version, if
-        //  not provided, will come from default-pathname, just like
-        //  the other components. If pathname does specify a name,
-        //  then the version is not affected by default-pathname. If
-        //  this process leaves the version missing, the
-        //  default-version is used."
+        //  CLtLv2 MERGE-PATHNAMES 
+	
+	// "[T]he missing components in the given pathname are filled
+	// in from the defaults pathname, except that if no version is
+	// specified the default version is used."
+
+	// "The merging rules for the version are more complicated and
+	// depend on whether the pathname specifies a name. If the
+	// pathname doesn't specify a name, then the version, if not
+	// provided, will come from the defaults, just like the other
+	// components. However, if the pathname does specify a name,
+	// then the version is not affected by the defaults. The
+	// reason is that the version ``belongs to'' some other file
+	// name and is unlikely to have anything to do with the new
+	// one. Finally, if this process leaves the
+	// version missing, the default version is used."
+
         if (p.version != NIL) {
             result.version = p.version;
         } else if (p.name == NIL) {
