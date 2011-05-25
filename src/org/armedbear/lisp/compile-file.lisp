@@ -523,9 +523,12 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (let ((pathname (merge-pathnames (make-pathname :type "lisp") input-file)))
       (when (probe-file pathname)
         (setf input-file pathname))))
-  (setf output-file (if output-file
-                        (merge-pathnames output-file *default-pathname-defaults*)
-                        (compile-file-pathname input-file)))
+  (setf output-file (make-pathname 
+		     :defaults (if output-file
+				   (merge-pathnames output-file 
+						    *default-pathname-defaults*)
+				   (compile-file-pathname input-file))
+		     :version nil))
   (let* ((*output-file-pathname* output-file)
          (type (pathname-type output-file))
          (temp-file (merge-pathnames (make-pathname :type (concatenate 'string type "-tmp"))
@@ -535,7 +538,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
          (warnings-p nil)
          (failure-p nil))
     (with-open-file (in input-file :direction :input)
-      (let* ((*compile-file-pathname* (pathname in))
+      (let* ((*compile-file-pathname* (make-pathname :defaults (pathname in)
+						     :version nil))
              (*compile-file-truename* (make-pathname :defaults (truename in)
                                                      :version nil))
              (*source* *compile-file-truename*)
