@@ -168,6 +168,15 @@ public class Pathname extends LispObject {
                 Debug.assertTrue(false);
             }
         }
+	if (p.version != NIL) {
+	    if (p.version instanceof Symbol) {
+		version = p.version;
+	    } else if (p.version instanceof LispInteger) {
+		version = p.version;
+	    } else {
+		Debug.assertTrue(false);
+	    }
+	}
     }
 
     public Pathname(String s) {
