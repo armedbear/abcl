@@ -126,7 +126,8 @@
       (load (do-compile "destructuring-bind.lisp"))
       (load (do-compile "asdf.lisp"))
       ;; But not for these.
-      (mapc #'do-compile '("adjoin.lisp"
+      (mapc #'do-compile '("abcl-contrib.lisp"
+			   "adjoin.lisp"
                            "and.lisp"
                            "apropos.lisp"
                            "arrays.lisp"

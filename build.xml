@@ -469,40 +469,30 @@ from ${abcl.home.dir}
       <property name="abcl.wrapper.in.file" value="abcl.bat.in"/>
     </target>
 
-    <!-- XXX Generalize when (if?) we get more contribs --> 
-    <target name="abcl.contrib.compile" depends="abcl.jar">
-      <java fork="true"
-            failonerror="true"
-            classpathref="abcl.classpath.dist"
-            inputstring="(require 'asdf) (handler-case (progn (setf *default-pathname-defaults* &quot;${basedir}/contrib/asdf-install/&quot;) (asdf:operate 'asdf:compile-op :asdf-install)) (t (x) (progn (format t &quot;~A: ~A~%&quot; (type-of x) x) (exit :status -1))))"
-            classname="org.armedbear.lisp.Main">
-        <arg value="--noinit"/>
-      </java>
-    </target>
-    
-    <target name="abcl.contrib" depends="abcl.contrib.compile">
+    <target name="abcl.contrib">
       <jar destfile="dist/abcl-contrib.jar"
            compress="true"
            basedir="contrib">
         <patternset>
           <include name="**/*.asd"/>
           <include name="**/*.lisp"/>
-          <include name="**/*.abcl"/>
         </patternset>
       </jar>
       <echo>
 Packaged contribs in ${dist.dir}/abcl-contrib.jar. 
 
-To use ASDF-INSTALL, use the following in your ~/.abclrc:
+To use contribs, ensure that 'abcl-contrib.jar' is in the same
+directory as 'abcl.jar', then
 
-  (require 'asdf)
-  (pushnew "jar:file:${dist.dir}/abcl-contrib.jar!/asdf-install/" asdf:*central-registry*)
+  CL-USER> (require 'abcl-contrib)
 
-Then issuing
+will place all the contribs in the ASDF registry path. 
 
-  CL-USER> (require 'asdf-install) 
+To load a contrib, something like
 
-will load ASDF-INSTALL.
+  CL-USER> (require 'jss) 
+
+will compile (if necessary) and load JSS.
 </echo>
     </target>
 
