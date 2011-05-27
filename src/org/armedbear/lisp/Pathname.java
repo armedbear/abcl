@@ -356,8 +356,12 @@ public class Pathname extends LispObject {
                                     + "'" + url.toString() + "'"
                                     + ": " + ex.toString()));
                 }
-                File file = new File(uri.getPath());
-                Pathname p = new Pathname(file.getPath());
+                final String uriPath = uri.getPath();
+                if (null == uriPath) {
+                    error(new FileError("The URI has no path: " + uri));
+                }
+                final File file = new File(uriPath);
+                final Pathname p = new Pathname(file.getPath());
                 this.host = p.host;
                 this.device = p.device;
                 this.directory = p.directory;
@@ -371,7 +375,7 @@ public class Pathname extends LispObject {
             try { 
                 uri = url.toURI().normalize();
             } catch (URISyntaxException e) {
-                error(new LispError("Could form URI from "
+                error(new LispError("Couldn't form URI from "
                                     + "'" + url + "'"
                                     + " because: " + e));
             }
