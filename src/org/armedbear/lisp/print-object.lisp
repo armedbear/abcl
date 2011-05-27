@@ -39,15 +39,11 @@
 (defgeneric print-object (object stream))
 
 (defmethod print-object ((object t) stream)
-  (print-unreadable-object (object stream :type t :identity t)))
+  (print-unreadable-object (object stream :type t :identity t)
+     (write-string (%write-to-string object) stream)))
 
 (defmethod print-object ((object structure-object) stream)
   (write-string (%write-to-string object) stream))
-
-(defmethod print-object ((object standard-object) stream)
-  (print-unreadable-object (object stream :identity t)
-    (format stream "~S" (class-name (class-of object))))
-  object)
 
 (defmethod print-object ((class class) stream)
   (print-unreadable-object (class stream :identity t)
