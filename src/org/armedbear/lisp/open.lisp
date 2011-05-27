@@ -118,6 +118,10 @@
          (namestring (namestring (if (typep pathname 'logical-pathname)
                                      (translate-logical-pathname pathname)
                                      pathname))))
+    (when (wild-pathname-p pathname)
+      (error 'file-error
+	     :pathname pathname
+	     :format-control "Bad place for a wild pathname."))
     (when (memq direction '(:output :io))
       (unless if-exists-given
         (setf if-exists
