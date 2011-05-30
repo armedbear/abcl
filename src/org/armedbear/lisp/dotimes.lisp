@@ -54,9 +54,9 @@
           (let ((limit (gensym "LIMIT-")))
             ;; Annotations for the compiler.
             (setf (get limit 'dotimes-limit-variable-p) t)
-            (setf (get limit 'dotimes-index-variable-name) index)
+            (setf (get index 'dotimes-index-variable-name) index)
             (setf (get index 'dotimes-index-variable-p) t)
-            (setf (get index 'dotimes-limit-variable-name) limit)
+            (setf (get limit 'dotimes-limit-variable-name) limit)
             `(block nil
                (let ((,var 0)
                      (,limit ,count)
