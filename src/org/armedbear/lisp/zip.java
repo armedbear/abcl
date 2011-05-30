@@ -36,6 +36,7 @@ package org.armedbear.lisp;
 import static org.armedbear.lisp.Lisp.*;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -83,14 +84,7 @@ public final class zip extends Primitive
                                                   pathname.writeToString()));
                 }
                 File file = new File(namestring);
-                FileInputStream in = new FileInputStream(file);
-                ZipEntry entry = new ZipEntry(file.getName());
-                out.putNextEntry(entry);
-                int n;
-                while ((n = in.read(buffer)) > 0)
-                    out.write(buffer, 0, n);
-                out.closeEntry();
-                in.close();
+		makeEntry(out, file);
                 list = list.cdr();
             }
             out.close();
@@ -105,7 +99,6 @@ public final class zip extends Primitive
     public LispObject execute(LispObject first, LispObject second, LispObject third)
     {
         Pathname zipfilePathname = coerceToPathname(first);
-        byte[] buffer = new byte[4096];
         try {
             String zipfileNamestring = zipfilePathname.getNamestring();
             if (zipfileNamestring == null)
@@ -151,14 +144,7 @@ public final class zip extends Primitive
                     list = list.cdr();
                     continue;
                 }
-                FileInputStream in = new FileInputStream(file);
-                ZipEntry entry = new ZipEntry(directory + file.getName());
-                out.putNextEntry(entry);
-                int n;
-                while ((n = in.read(buffer)) > 0)
-                    out.write(buffer, 0, n);
-                out.closeEntry();
-                in.close();
+		makeEntry(out, file, directory + file.getName());
                 list = list.cdr();
             }
             out.close();
@@ -169,6 +155,30 @@ public final class zip extends Primitive
         return zipfilePathname;
     }
 
-
     private static final Primitive zip = new zip();
+
+    private void makeEntry(ZipOutputStream zip, File file) 
+	throws FileNotFoundException, IOException
+    {
+	makeEntry(zip, file, file.getName());
+    }
+
+    private void makeEntry(ZipOutputStream zip, File file, String name) 
+	throws FileNotFoundException, IOException
+    {
+        byte[] buffer = new byte[4096];
+	long lastModified = file.lastModified();
+	FileInputStream in = new FileInputStream(file);
+	ZipEntry entry = new ZipEntry(name);
+	if (lastModified > 0) {
+	    entry.setTime(lastModified);
+	}
+	zip.putNextEntry(entry);
+	int n;
+	while ((n = in.read(buffer)) > 0)
+	    zip.write(buffer, 0, n);
+	zip.closeEntry();
+	in.close();
+    }
+	
 }
