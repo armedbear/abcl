@@ -55,6 +55,8 @@
                              ("file-system-tests"))
                       (:file "wild-pathnames" :depends-on 
                              ("file-system-tests"))
+                      #+abcl 
+                      (:file "weak-hash-tables")
                       #+abcl
                       (:file "pathname-tests" :depends-on 
                              ("utilities"))))))
