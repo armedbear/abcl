@@ -45,10 +45,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
-
-
-
-
 // ??? Replace standard Hashtable when this code is working; maybe not
 // because we have additional places for locking here.
 // 
@@ -78,6 +74,7 @@ public class WeakHashTable
     final Comparator comparator;
     final private ReentrantLock lock = new ReentrantLock();
     HashEntry bucketType;
+    final LispObject weakness;
 
     private WeakHashTable(Comparator c, int size, LispObject rehashSize, 
                           LispObject rehashThreshold, LispObject weakness) 
@@ -85,6 +82,7 @@ public class WeakHashTable
         this.rehashSize = rehashSize;
         this.rehashThreshold = rehashThreshold;
         bucketType = null;
+        this.weakness = weakness;
         if (weakness.equals(Keyword.KEY)) {
             bucketType = this.new HashEntryWeakKey();
         } else if (weakness.equals(Keyword.VALUE)) {
@@ -349,6 +347,10 @@ public class WeakHashTable
 
     public Symbol getTest() {
         return comparator.getTest();
+    }
+    
+    public LispObject getWeakness() {
+        return weakness;
     }
 
     HashEntry[] getTable() {

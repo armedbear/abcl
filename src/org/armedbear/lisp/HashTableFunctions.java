@@ -412,6 +412,27 @@ public final class HashTableFunctions
       }
     };
 
+  @DocString(name="hash-table-weakness",
+             args="hash-table",
+             doc="Return weakness property of HASH-TABLE, or NIL if it has none.")
+  private static final Primitive HASH_TABLE_WEAKNESS
+    = new pf_hash_table_weakness();
+  private static final class pf_hash_table_weakness extends Primitive {
+      pf_hash_table_weakness() {
+          super(Symbol.HASH_TABLE_WEAKNESS, "hash-table");
+      }
+      @Override
+      public LispObject execute(LispObject first) 
+      {
+          if (first instanceof HashTable) {
+              return NIL;
+          } else if (first instanceof WeakHashTable) {
+              return ((WeakHashTable)first).getWeakness();
+          }
+          return error(new TypeError(first, Symbol.HASH_TABLE));
+      }
+  };
+
   protected static HashTable checkHashTable(LispObject ht) {
     if (ht instanceof HashTable) return (HashTable)ht;
     type_error(ht, Symbol.HASH_TABLE);    

@@ -3045,6 +3045,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("GETHASH1");
   public static final Symbol PUTHASH =
     PACKAGE_SYS.addExternalSymbol("PUTHASH");
+  public static final Symbol HASH_TABLE_WEAKNESS =
+    PACKAGE_SYS.addExternalSymbol("HASH-TABLE-WEAKNESS");
   public static final Symbol UNDEFINED_FUNCTION_CALLED =
     PACKAGE_SYS.addExternalSymbol("UNDEFINED-FUNCTION-CALLED");
   public static final Symbol SET_CHAR =
