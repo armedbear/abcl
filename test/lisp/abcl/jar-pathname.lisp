@@ -2,13 +2,64 @@
 
 (defvar *jar-file-init* nil)
 
+(defparameter *tmp-directory*
+  (make-pathname 
+   :directory (append 
+               (pathname-directory (pathname
+                                    (java:jcall "getAbsolutePath" 
+                                                (java:jstatic "createTempFile" "java.io.File" 
+                                                              "jar" "tmp"))))
+               '("jar-pathname-tests"))))
+
+
+(defvar *foo.lisp*
+  `((defun foo ()
+      (labels ((output ()
+                 (format t "FOO here.")))
+        (output)))))
+
+(defvar *bar.lisp*
+  `((defvar *pathname* *load-pathname*)
+    (defvar *truename* *load-truename*)
+
+    (defun bar () 
+      (labels 
+          ((output () 
+             (format t "Some BAR~%*load-pathname* ~S~%*load-truename* ~S~%"
+                     *pathname* *truename*)))
+        (output)))
+    (defvar *bar* t)
+
+    (defun baz ()
+      (format t "Some BAZ"))))
+
+(defvar *eek.lisp* 
+  `((defun eek ()
+      (format t "Another EEK."))
+    (defun ook ()
+      (let ((*load-verbose* t))
+        (load (merge-pathnames #p"bar" *load-truename*))))
+    (defun aak ()
+      (format t "*LOAD-TRUENAME* is '~A'" *load-truename*))))
+
+(defun write-forms (forms path)
+  (with-open-file (s path :direction :output :if-exists :supersede)
+    (with-standard-io-syntax
+      (dolist (form forms)
+        (print form s)))))
+
 (defun jar-file-init ()
-  (let* ((*default-pathname-defaults*  *abcl-test-directory*)
+  (format t "~&Using ~A to create files for testing jar-pathnames.~%" *tmp-directory*)
+  (ensure-directories-exist *tmp-directory*)
+  (let* ((*default-pathname-defaults*  *tmp-directory*)
          (asdf::*verbose-out* *standard-output*))
+    (write-forms *foo.lisp* "foo.lisp")
     (compile-file "foo.lisp")
+    (write-forms *bar.lisp* "bar.lisp")
     (compile-file "bar.lisp")
+    (write-forms *eek.lisp* "eek.lisp")
     (compile-file "eek.lisp")
-    (let* ((tmpdir (merge-pathnames "tmp/" *abcl-test-directory*))
+    (let* ((tmpdir (merge-pathnames "tmp/" *tmp-directory*))
            (subdirs 
             (mapcar (lambda (p) (merge-pathnames p tmpdir))
                     '("a/b/" "d/e+f/")))
@@ -37,7 +88,7 @@
   (setf *jar-file-init* t))
 
 (defmacro with-jar-file-init (&rest body)
-  `(let ((*default-pathname-defaults* *abcl-test-directory*))
+  `(let ((*default-pathname-defaults* *tmp-directory*))
      (progn
        (unless *jar-file-init*
          (jar-file-init))
@@ -158,33 +209,33 @@
     (with-jar-file-init
         (probe-file "jar:file:baz.jar!/a/b/bar.abcl"))
   #p#.(format nil "jar:file:~A/baz.jar!/a/b/bar.abcl"
-              (namestring *abcl-test-directory*)))
+              (namestring *tmp-directory*)))
 
 (deftest jar-pathname.probe-file.3
     (with-jar-file-init
         (probe-file "jar:jar:file:baz.jar!/a/b/bar.abcl!/bar._"))
    #p#.(format nil "jar:jar:file:~Abaz.jar!/a/b/bar.abcl!/bar._"
-                       (namestring *abcl-test-directory*)))
+                       (namestring *tmp-directory*)))
 
 (push 'jar-pathname.probe-file.4 *expected-failures*)
 (deftest jar-pathname.probe-file.4
     (with-jar-file-init
         (probe-file "jar:file:baz.jar!/a/b"))
   #p#.(format nil "jar:file:~Abaz.jar!/a/b/"
-                       (namestring *abcl-test-directory*)))
+                       (namestring *tmp-directory*)))
 
 (push 'jar-pathname.probe-file.5 *expected-failures*)
 (deftest jar-pathname.probe-file.5
     (with-jar-file-init
         (probe-file "jar:file:baz.jar!/a/b/"))
   #p#.(format nil "jar:file:~Abaz.jar!/a/b/"
-                       (namestring *abcl-test-directory*)))
+                       (namestring *tmp-directory*)))
 
 (deftest jar-pathname.probe-file.6
     (with-jar-file-init
         (probe-file "jar:file:baz.jar!/d/e+f/bar.abcl"))
   #p#.(format nil "jar:file:~Abaz.jar!/d/e+f/bar.abcl"
-                       (namestring *abcl-test-directory*)))
+                       (namestring *tmp-directory*)))
 
 (deftest jar-pathname.merge-pathnames.1
     (merge-pathnames 
