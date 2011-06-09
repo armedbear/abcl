@@ -430,7 +430,7 @@ from ${abcl.home.dir}
     </target>
     
     <target name="abcl.wrapper" 
-            depends="abcl.jar,abcl.wrapper.unix,abcl.wrapper.windows">
+            depends="abcl.jar,abcl.contrib,abcl.wrapper.unix,abcl.wrapper.windows">
       <description>
         Creates in-place exectuable shell wrapper in '${abcl.wrapper.file}'
       </description>
@@ -469,8 +469,19 @@ from ${abcl.home.dir}
       <property name="abcl.wrapper.in.file" value="abcl.bat.in"/>
     </target>
 
-    <target name="abcl.contrib">
-      <jar destfile="dist/abcl-contrib.jar"
+    <property name="abcl-contrib.jar"
+              value="${dist.dir}/abcl-contrib.jar"/>
+    <condition property="abcl.contrib.uptodate.p">
+      <uptodate targetfile="${abcl-contrib.jar}">
+        <srcfiles dir="contrib">
+          <include name="**/*.asd"/>
+          <include name="**/*.lisp"/>
+        </srcfiles>
+      </uptodate>
+    </condition>
+
+    <target name="abcl.contrib" unless="abcl.contrib.uptodate.p">
+      <jar destfile="${abcl-contrib.jar}"
            compress="true"
            basedir="contrib">
         <patternset>
@@ -479,14 +490,12 @@ from ${abcl.home.dir}
         </patternset>
       </jar>
       <echo>
-Packaged contribs in ${dist.dir}/abcl-contrib.jar. 
-
-To use contribs, ensure that 'abcl-contrib.jar' is in the same
-directory as 'abcl.jar', then
+Packaged contribs in ${abcl-contrib.jar}. To use contribs, ensure that
+this file is in the same directory as 'abcl.jar', and then
 
   CL-USER> (require 'abcl-contrib)
 
-will place all the contribs in the ASDF registry path. 
+will place all the contribs in the ASDF registry. 
 
 To load a contrib, something like
 
@@ -711,7 +720,7 @@ will compile (if necessary) and load JSS.
       </jar>
     </target>
 
-    <target name="abcl.binary.prepare" depends="abcl.jar,abcl.stamp.version">
+    <target name="abcl.binary.prepare" depends="abcl.jar,abcl.contrib,abcl.stamp.version">
       <property name="abcl.build.binary.dir"
                 value="${build.dir}/abcl-bin-${abcl.version}"/>
       <mkdir dir="${abcl.build.binary.dir}"/>
@@ -720,6 +729,7 @@ will compile (if necessary) and load JSS.
         <fileset dir="${basedir}/dist">
           <patternset>
             <include name="abcl.jar"/>
+            <include name="abcl-contrib.jar"/>
           </patternset>
         </fileset>
         <fileset dir="${basedir}">
