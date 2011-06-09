@@ -2,15 +2,16 @@
 
 (defvar *jar-file-init* nil)
 
-(defparameter *tmp-directory*
-  (make-pathname 
-   :directory (append 
-               (pathname-directory (pathname
-                                    (java:jcall "getAbsolutePath" 
-                                                (java:jstatic "createTempFile" "java.io.File" 
-                                                              "jar" "tmp"))))
-               '("jar-pathname-tests"))))
+(defparameter *tmp-directory* nil)
 
+(eval-when (:compile-toplevel :load-toplevel)
+  (let ((temp-file (java:jcall "getAbsolutePath" 
+                               (java:jstatic "createTempFile" "java.io.File" "jar" "tmp"))))
+    (setf *tmp-directory*
+          (make-pathname :directory 
+                         (append 
+                          (pathname-directory (pathname temp-file))
+                          '("jar-pathname-tests"))))))
 
 (defvar *foo.lisp*
   `((defun foo ()
