@@ -2135,7 +2135,9 @@ recursive calls to traverse.")
 
 ;;; perform is required to check output-files to find out where to put
 ;;; its answers, in case it has been overridden for site policy
+(defvar *debug-perform-compile-op* nil)
 (defmethod perform ((operation compile-op) (c cl-source-file))
+  (push (list operation c) *debug-perform-compile-op*)
   #-:broken-fasl-loader
   (let ((source-file (component-pathname c))
         ;; on some implementations, there are more than one output-file,
@@ -3523,7 +3525,16 @@ effectively disabling the output translation facility."
 
 (defun* compile-file-pathname* (input-file &rest keys &key output-file &allow-other-keys)
   (if (absolute-pathname-p output-file)
-      (apply 'compile-file-pathname (lispize-pathname input-file) keys)
+      ;;; If the default ABCL rules for translating from a jar path to
+      ;;; a non-jar path have been affected, no further computation of
+      ;;; the output location is necessary.
+      (if (and (find :abcl *features*)
+               (pathname-device input-file) ; input-file is in a jar
+               (not (pathname-device output-file)) ; output-file is not in a jar
+               (equal (pathname-type input-file) "lisp")
+               (equal (pathname-type output-file) "abcl"))
+          output-file
+          (apply 'compile-file-pathname (lispize-pathname input-file) keys))
       (apply-output-translations
        (apply 'compile-file-pathname
               (truenamize (lispize-pathname input-file))
