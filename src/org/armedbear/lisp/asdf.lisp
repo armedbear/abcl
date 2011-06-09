@@ -2135,9 +2135,7 @@ recursive calls to traverse.")
 
 ;;; perform is required to check output-files to find out where to put
 ;;; its answers, in case it has been overridden for site policy
-(defvar *debug-perform-compile-op* nil)
 (defmethod perform ((operation compile-op) (c cl-source-file))
-  (push (list operation c) *debug-perform-compile-op*)
   #-:broken-fasl-loader
   (let ((source-file (component-pathname c))
         ;; on some implementations, there are more than one output-file,
