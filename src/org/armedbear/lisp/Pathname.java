@@ -2429,13 +2429,51 @@ public class Pathname extends LispObject {
         Symbol.DEFAULT_PATHNAME_DEFAULTS.setSymbolValue(coerceToPathname(obj));
     }
 
+    
+    @DocString(name="uri-decode",
+               args="string => string",
+               doc="Decode percent escape sequences in the manner of URI encodings.")
+    private static final Primitive URI_DECODE = new pf_uri_decode();
+    private static final class pf_uri_decode extends Primitive {
+        pf_uri_decode() {
+            super("uri-decode", PACKAGE_EXT, true);
+        }
+        @Override
+        public LispObject execute(LispObject arg) {
+            if (!(arg instanceof AbstractString)) {
+                return error(new TypeError(arg, Symbol.STRING));
+            }
+            String result = uriDecode(((AbstractString)arg).toString());
+            return new SimpleString(result);
+        }
+    };
+
     static String uriDecode(String s) {
         try {
-            URI uri = new URI(null, null, null, s, null);
-            return uri.toASCIIString().substring(1);
+            URI uri = new URI("file://foo?" + s);
+            return uri.getQuery();
         } catch (URISyntaxException e) {}
         return null;  // Error
     }
+
+
+    @DocString(name="uri-encode",
+               args="string => string",
+               doc="Encode percent escape sequences in the manner of URI encodings.")
+    private static final Primitive URI_ENCODE = new pf_uri_encode();
+    private static final class pf_uri_encode extends Primitive {
+        pf_uri_encode() {
+            super("uri-encode", PACKAGE_EXT, true);
+        }
+        @Override
+        public LispObject execute(LispObject arg) {
+            if (!(arg instanceof AbstractString)) {
+                return error(new TypeError(arg, Symbol.STRING));
+            }
+            String result = uriEncode(((AbstractString)arg).toString());
+            return new SimpleString(result);
+        }
+    };
 
     static String uriEncode(String s) {
         // The constructor we use here only allows absolute paths, so
