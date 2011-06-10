@@ -1,8 +1,9 @@
 (in-package #:abcl.test.lisp)
 
-(defvar *jar-file-init* nil)
-
 (defparameter *tmp-directory* nil)
+(defparameter *tmp-directory-whitespace* nil)
+(defparameter *tmp-jar-path* nil)
+(defparameter *tmp-jar-path-whitespace* nil)
 
 (eval-when (:compile-toplevel :load-toplevel)
   (let ((temp-file (java:jcall "getAbsolutePath" 
@@ -11,7 +12,9 @@
           (truename (make-pathname :directory 
                                    (append 
                                     (pathname-directory (pathname temp-file))
-                                    '("jar-pathname-tests")))))))
+                                    '("jar-pathname-tests"))))
+          *tmp-directory-whitespace*
+          (merge-pathnames "a/directory with/s p a/" *tmp-directory*))))
 
 (defvar *foo.lisp*
   `((defun foo ()
@@ -56,6 +59,8 @@
          (asdf::*verbose-out* *standard-output*))
     (write-forms *foo.lisp* "foo.lisp")
     (compile-file "foo.lisp")
+    (write-forms *foo.lisp* "foo bar.lisp")
+    (compile-file "foo bar.lisp")
     (write-forms *bar.lisp* "bar.lisp")
     (compile-file "bar.lisp")
     (write-forms *eek.lisp* "eek.lisp")
@@ -63,101 +68,130 @@
     (let* ((tmpdir (merge-pathnames "tmp/" *tmp-directory*))
            (subdirs 
             (mapcar (lambda (p) (merge-pathnames p tmpdir))
-                    '("a/b/" "d/e+f/")))
+                    '("a/b/" "d/e+f/" "path/with a couple/spaces/in it/")))
            (sub1 (first subdirs))
-           (sub2 (second subdirs)))
+           (sub2 (second subdirs))
+           (sub3 (third subdirs)))
       (when (probe-directory tmpdir)
         (delete-directory-and-files tmpdir))
       (mapcar (lambda (p) (ensure-directories-exist p)) subdirs)
       (sys:unzip (merge-pathnames "foo.abcl") tmpdir)
       (sys:unzip (merge-pathnames "foo.abcl") sub1)
+      (sys:unzip (merge-pathnames "foo.abcl") sub3)
+      (sys:unzip (merge-pathnames "foo bar.abcl") sub3)
       (cl-fad-copy-file (merge-pathnames "bar.abcl")
                         (merge-pathnames "bar.abcl" tmpdir))
       (cl-fad-copy-file (merge-pathnames "bar.abcl")
                         (merge-pathnames "bar.abcl" sub1))
+      (cl-fad-copy-file (merge-pathnames "foo bar.abcl")
+                        (merge-pathnames "foo bar.abcl" sub1))
       (cl-fad-copy-file (merge-pathnames "bar.abcl")
                         (merge-pathnames "bar.abcl" sub2))
+      (cl-fad-copy-file (merge-pathnames "bar.abcl")
+                        (merge-pathnames "bar.abcl" sub3))
+      (cl-fad-copy-file (merge-pathnames "foo bar.abcl")
+                        (merge-pathnames "foo bar.abcl" sub3))
       (cl-fad-copy-file (merge-pathnames "eek.lisp")
                         (merge-pathnames "eek.lisp" tmpdir))
       (cl-fad-copy-file (merge-pathnames "eek.lisp")
                         (merge-pathnames "eek.lisp" sub1))
-      (sys:zip (merge-pathnames "baz.jar")
-               (loop :for p :in (list tmpdir sub1 sub2)
-                  :appending (directory (merge-pathnames "*" p)))
-               tmpdir)
-      #+nil (delete-directory-and-files dir)))
-  (setf *jar-file-init* t))
+      (setf *tmp-jar-path*
+           (sys:zip (merge-pathnames "baz.jar")
+                    (loop :for p :in (list tmpdir sub1 sub2 sub3)
+                       :appending (directory (merge-pathnames "*" p)))
+                    tmpdir))
+      (ensure-directories-exist *tmp-directory-whitespace*)
+      (setf *tmp-jar-path-whitespace*
+            (merge-pathnames "baz.jar" *tmp-directory-whitespace*))
+      (cl-fad-copy-file *tmp-jar-path* *tmp-jar-path-whitespace*))))
+
+(defun clean-jar-tests () 
+  (when (probe-file *tmp-directory*)
+    (delete-directory-and-files *tmp-directory*)))
 
 (defmacro with-jar-file-init (&rest body)
   `(let ((*default-pathname-defaults* *tmp-directory*))
      (progn
-       (unless *jar-file-init*
+       (unless (and *tmp-jar-path* (probe-file *tmp-jar-path*))
          (jar-file-init))
        ,@body)))
 
+(defmacro load-from-jar (jar path) 
+  `(with-jar-file-init 
+       (load (format nil "jar:file:~A!/~A" ,jar ,path))))
+
 (deftest jar-pathname.load.1
-    (with-jar-file-init
-      (load "jar:file:baz.jar!/foo"))
+    (load-from-jar *tmp-jar-path* "foo")
   t)
 
 (deftest jar-pathname.load.2
-    (with-jar-file-init
-      (load "jar:file:baz.jar!/bar"))
+    (load-from-jar *tmp-jar-path* "bar")
   t)
 
 (deftest jar-pathname.load.3
-    (with-jar-file-init
-      (load "jar:file:baz.jar!/bar.abcl"))
+    (load-from-jar *tmp-jar-path* "bar.abcl")
   t)
 
 (deftest jar-pathname.load.4
-    (with-jar-file-init
-      (load "jar:file:baz.jar!/eek"))
+    (load-from-jar *tmp-jar-path* "eek")
   t)
 
 (deftest jar-pathname.load.5
-    (with-jar-file-init
-      (load "jar:file:baz.jar!/eek.lisp"))
+    (load-from-jar *tmp-jar-path* "eek.lisp")
   t)
 
 (deftest jar-pathname.load.6
-    (with-jar-file-init
-      (load "jar:file:baz.jar!/a/b/foo"))
+    (load-from-jar *tmp-jar-path* "foo")
   t)
 
 (deftest jar-pathname.load.7
-    (with-jar-file-init
-      (load "jar:file:baz.jar!/a/b/bar"))
+    (load-from-jar *tmp-jar-path* "a/b/bar")
   t)
 
 (deftest jar-pathname.load.8
-    (with-jar-file-init
-      (load "jar:file:baz.jar!/a/b/bar.abcl"))
+    (load-from-jar *tmp-jar-path* "a/b/bar.abcl")
   t)
 
 (deftest jar-pathname.load.9
-    (with-jar-file-init
-      (load "jar:file:baz.jar!/a/b/eek"))
+    (load-from-jar *tmp-jar-path* "a/b/eek")
   t)
 
 (deftest jar-pathname.load.10
-    (with-jar-file-init
-      (load "jar:file:baz.jar!/a/b/eek.lisp"))
+    (load-from-jar *tmp-jar-path* "a/b/eek.lisp")
   t)
 
 (deftest jar-pathname.load.11
-    (with-jar-file-init
-        (load "jar:file:baz.jar!/d/e+f/bar.abcl"))
+    (load-from-jar *tmp-jar-path* "d/e+f/bar.abcl")
   t)
 
-;;; wrapped in PROGN for easy disabling without a network connection
-;;; XXX come up with a better abstraction
+(deftest jar-pathname.load.12
+    (load-from-jar *tmp-jar-path* "a/b/foo%20bar.abcl")
+  t)
 
-(defvar *url-jar-pathname-base*
+(deftest jar-pathname.load.13
+    (load-from-jar *tmp-jar-path* "a/b/foo bar.abcl")
+  t)
+
+(deftest jar-pathname.load.14
+    (load-from-jar *tmp-jar-path-whitespace* "a/b/foo.abcl")
+  t)
+
+(deftest jar-pathname.load.15
+    (load-from-jar *tmp-jar-path-whitespace* "a/b/foo bar.abcl")
+  t)
+
+(deftest jar-pathname.load.16
+    (load-from-jar *tmp-jar-path-whitespace* "a/b/foo%20bar.abcl")
+  t)
+
+(defparameter *url-jar-pathname-base*
   "jar:http://abcl-dynamic-install.googlecode.com/files/baz-20110610a.jar!/")
 
 (defmacro load-url-relative (path) 
   `(load (format nil "~A~A" *url-jar-pathname-base* ,path)))
+
+;;; wrapped in PROGN for easy disabling without a network connection
+;;; XXX come up with a better abstraction
 
 (progn 
   (deftest jar-pathname.load.http.1
