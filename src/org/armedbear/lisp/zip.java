@@ -106,13 +106,13 @@ public final class zip extends Primitive
                                               zipfilePathname.writeToString()));
             ZipOutputStream out =
                 new ZipOutputStream(new FileOutputStream(zipfileNamestring));
-            Pathname root = (Pathname)coerceToPathname(third);
+            Pathname root = (Pathname) Pathname.truename(coerceToPathname(third));
             String rootPath = root.getDirectoryNamestring();
             int rootPathLength = rootPath.length();
             Set<String> directories = new HashSet<String>();
             LispObject list = second;
             while (list != NIL) {
-                Pathname pathname = coerceToPathname(list.car());
+                Pathname pathname = (Pathname) Pathname.truename(coerceToPathname(list.car()));
                 String namestring = pathname.getNamestring();
                 if (namestring == null) {
                     // Clean up before signalling error.
