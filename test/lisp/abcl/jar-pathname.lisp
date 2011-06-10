@@ -8,10 +8,10 @@
   (let ((temp-file (java:jcall "getAbsolutePath" 
                                (java:jstatic "createTempFile" "java.io.File" "jar" "tmp"))))
     (setf *tmp-directory*
-          (make-pathname :directory 
-                         (append 
-                          (pathname-directory (pathname temp-file))
-                          '("jar-pathname-tests"))))))
+          (truename (make-pathname :directory 
+                                   (append 
+                                    (pathname-directory (pathname temp-file))
+                                    '("jar-pathname-tests")))))))
 
 (defvar *foo.lisp*
   `((defun foo ()
@@ -204,7 +204,7 @@
     (with-jar-file-init
         (probe-file "jar:file:baz.jar!/eek.lisp"))
   #p#.(format nil "jar:file:~A/baz.jar!/eek.lisp" 
-              (namestring *abcl-test-directory*)))
+              (namestring *tmp-directory*)))
 
 (deftest jar-pathname.probe-file.2
     (with-jar-file-init
@@ -374,9 +374,9 @@
   t)
 
 (deftest jar-pathname.11
-    (let ((s "jar:file:/foo/bar/a%20space%3f/that!/this"))
+    (let ((s (string-downcase "jar:file:/foo/bar/a%20space%3f/that!/this")))
       (string= s
-             (namestring (pathname s))))
+               (string-downcase (namestring (pathname s)))))
   t)
 
 ;;; We allow jar-pathname to be contructed without a device to allow
