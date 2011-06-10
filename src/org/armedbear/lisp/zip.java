@@ -84,7 +84,7 @@ public final class zip extends Primitive
                                                   pathname.writeToString()));
                 }
                 File file = new File(namestring);
-		makeEntry(out, file);
+                makeEntry(out, file);
                 list = list.cdr();
             }
             out.close();
@@ -144,7 +144,7 @@ public final class zip extends Primitive
                     list = list.cdr();
                     continue;
                 }
-		makeEntry(out, file, directory + file.getName());
+                makeEntry(out, file, directory + file.getName());
                 list = list.cdr();
             }
             out.close();
@@ -158,27 +158,27 @@ public final class zip extends Primitive
     private static final Primitive zip = new zip();
 
     private void makeEntry(ZipOutputStream zip, File file) 
-	throws FileNotFoundException, IOException
+        throws FileNotFoundException, IOException
     {
-	makeEntry(zip, file, file.getName());
+        makeEntry(zip, file, file.getName());
     }
 
     private void makeEntry(ZipOutputStream zip, File file, String name) 
-	throws FileNotFoundException, IOException
+        throws FileNotFoundException, IOException
     {
         byte[] buffer = new byte[4096];
-	long lastModified = file.lastModified();
-	FileInputStream in = new FileInputStream(file);
-	ZipEntry entry = new ZipEntry(name);
-	if (lastModified > 0) {
-	    entry.setTime(lastModified);
-	}
-	zip.putNextEntry(entry);
-	int n;
-	while ((n = in.read(buffer)) > 0)
-	    zip.write(buffer, 0, n);
-	zip.closeEntry();
-	in.close();
+        long lastModified = file.lastModified();
+        FileInputStream in = new FileInputStream(file);
+        ZipEntry entry = new ZipEntry(name);
+        if (lastModified > 0) {
+            entry.setTime(lastModified);
+        }
+        zip.putNextEntry(entry);
+        int n;
+        while ((n = in.read(buffer)) > 0)
+            zip.write(buffer, 0, n);
+        zip.closeEntry();
+        in.close();
     }
-	
+        
 }
