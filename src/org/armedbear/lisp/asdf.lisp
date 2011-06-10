@@ -3526,13 +3526,13 @@ effectively disabling the output translation facility."
       ;;; If the default ABCL rules for translating from a jar path to
       ;;; a non-jar path have been affected, no further computation of
       ;;; the output location is necessary.
-      (if (and (find :abcl *features*)
-               (pathname-device input-file) ; input-file is in a jar
-               (not (pathname-device output-file)) ; output-file is not in a jar
-               (equal (pathname-type input-file) "lisp")
-               (equal (pathname-type output-file) "abcl"))
-          output-file
-          (apply 'compile-file-pathname (lispize-pathname input-file) keys))
+      ;; (if (and (find :abcl *features*)
+      ;;          (pathname-device input-file) ; input-file is in a jar
+      ;;          (not (pathname-device output-file)) ; output-file is not in a jar
+      ;;          (equal (pathname-type input-file) "lisp")
+      ;;          (equal (pathname-type output-file) "abcl"))
+      ;;     output-file
+          (apply 'compile-file-pathname (lispize-pathname input-file) keys);)
       (apply-output-translations
        (apply 'compile-file-pathname
               (truenamize (lispize-pathname input-file))
