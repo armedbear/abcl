@@ -709,7 +709,14 @@ public final class Java
                 LispObject v = args[1];
                 for (int i = 2; i<args.length - 1; i++)
                     a = Array.get(a, ((Integer)args[i].javaInstance()).intValue());
-                Array.set(a, ((Integer)args[args.length - 1].javaInstance()).intValue(), v.javaInstance());
+                Object value = v.javaInstance();
+                int index = ((Integer)args[args.length - 1].javaInstance()).intValue();
+                if (value instanceof java.lang.Number
+                    && a.getClass().getComponentType().equals(Byte.TYPE)) {
+                    Array.setByte(a, index, ((java.lang.Number)value).byteValue());
+                } else {
+                    Array.set(a, index, value);
+                }
                 return v;
             }
             catch (Throwable t) { // no code -> no ControlTransfer
