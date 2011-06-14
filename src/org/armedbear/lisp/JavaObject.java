@@ -68,6 +68,14 @@ public final class JavaObject extends LispObject {
         if(intendedClass != null) {
             intendedClass = Java.maybeBoxClass(intendedClass);
             if(!intendedClass.isInstance(obj)) {
+                if (intendedClass.equals(java.lang.Byte.class)
+                    && obj instanceof java.lang.Number) {
+                    // Maps any number to two's complement 8bit byte representation
+                    // ??? Is this a reasonable thing?
+                    this.obj = ((java.lang.Number)obj).byteValue();
+                    this.intendedClass = intendedClass;
+                    return;
+                }
                 throw new ClassCastException(obj + " can not be cast to " + intendedClass);
             }
         }
