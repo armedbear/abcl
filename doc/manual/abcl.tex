@@ -1,0 +1,73 @@
+\documentclass[10pt]{article}
+
+\usepackage{color,hyperref}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.3}
+\hypersetup{colorlinks,breaklinks,
+            linkcolor=darkblue,urlcolor=darkblue,
+            anchorcolor=darkblue,citecolor=darkblue}
+
+\usepackage{a4wide}
+
+\begin{document}
+\title{A Manual for Armed Bear Common Lisp}
+\date{June 15, 2011}
+\author{Mark Evenson, Erik Huelsmann, Alessio Stallo, Ville Voutilainen}
+
+\section{Introduction}
+\subsection{Version}
+
+This manual corresponds to abcl-0.26.0, as yet unreleased.
+
+\section{Obtaining}
+
+\subsection{Requirements}
+
+java-1.5.xx, java-1.6.0_10+ recommended.
+
+\subsection{Building from Source}
+% TODO repeat install 
+
+\subsection{Contributing}
+
+\section{Interaction with host JVM}
+
+% describe calling Java from Lisp, and calling Lisp from Java,
+% probably in two separate sections.  Presumably, we can partition our
+% audience into those who are more comfortable with Java, and those
+% that are more comforable with Lisp
+
+\subsection{Lisp to Java}
+
+\subsection{Lisp from Java}
+
+\subsection{JAVA}
+
+% include autogen docs for the JAVA package.
+
+\section{ANSI Common Lisp Conformance}
+
+ABCL is currently a non-conforming ANSI Common Lisp implementation due
+to the following (known) issues:
+
+\begin{itemize}
+  \item Lack of long form of DEFINE-METHOD-COMBINATION
+  \item Missing statement of conformance in accompanying documentation
+  \item Incomplete MOP 
+    % TODO go through AMOP with symbols, starting by looking for
+    % matching function signature.
+\end{itemize}
+
+ABCL aims to be be a fully conforming ANSI Common Lisp
+implementation.  Any other behavior should be reported as a bug.
+
+\section{Extensions}
+
+% TODO document the EXTENSIONS package.
+
+\section{Multithreading}
+
+% TODO document the THREADS package.
+
+\section{History}
+
+\end{document}
