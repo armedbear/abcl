@@ -1,3 +1,8 @@
+% TODO
+%   1.  Create mechanism for swigging DocString and Lisp docs into
+%       sections.
+
+
 \documentclass[10pt]{article}
 
 \usepackage{color,hyperref}
@@ -10,7 +15,7 @@
 
 \begin{document}
 \title{A Manual for Armed Bear Common Lisp}
-\date{June 15, 2011}
+\date{June 16, 2011}
 \author{Mark Evenson, Erik Huelsmann, Alessio Stallo, Ville Voutilainen}
 
 \section{Introduction}
@@ -38,7 +43,39 @@ java-1.5.xx, java-1.6.0_10+ recommended.
 
 \subsection{Lisp to Java}
 
+ABCL offers a number of mechanisms to manipulate Java libraries from
+Lisp.
+
+\begin{itemize}
+\item Java values are accessible as objects of type JAVA:JAVA-OBJECT.
+\item The Java FFI presents a Lisp package (JAVA) with many useful
+  symbols for manipulating the artifacts of executation on the JVM,
+  including creation of new objects (JAVA:JNEW, JAVA:JMETHOD), the
+  introspection of values (JAVA:JFIELD), the execution of methods
+  (JAVA:JCALL, JAVA:JCALL-RAW, JAVA:JSTATIC)
+\item The JSS package (JSS) in contrib introduces a convenient macro
+  syntax (JSS:SHARPSIGN_HASH_DOUBLQUOTE_MACRO) for accessing Java
+  methods, and additional convenience funtions.
+\item Java classes and libraries may be dynamically added to the
+  classpath at runtime (JAVA:ADD-TO-CLASSPATH).
+\end{itemize}
+
 \subsection{Lisp from Java}
+
+Manipulation of the Lisp API is currently lacking a stable interface,
+so what is documented here is subject to change.  
+
+\begin{itemize}
+\item All Lisp values are descendents of LispObject.java
+\item Lisp symbols are accessible via either directly referening the
+  Symbol.java instance or by dynamically introspecting the
+  corresponding Package.java instance.
+\item The Lisp dynamic envrionment may be saved via
+  LispThread.bindSpecial(BINDING) and restored via
+  LispThread.resetSpecialBindings(mark).
+\item Functions may be executed by invocation of the
+  Function.execute(args [...]) 
+\end{itemize}
 
 \subsection{JAVA}
 
