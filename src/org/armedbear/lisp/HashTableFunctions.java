@@ -46,9 +46,9 @@ public final class HashTableFunctions
   static final LispObject FUNCTION_EQUALP =
     Symbol.EQUALP.getSymbolFunction();
 
-  @DocString(name="%make-hash-table")
   private static final Primitive _MAKE_HASH_TABLE 
       = new pf__make_hash_table();
+  @DocString(name="%make-hash-table")
   private static final class pf__make_hash_table extends Primitive {
       pf__make_hash_table() {
         super("%make-hash-table", PACKAGE_SYS, false);
@@ -73,10 +73,10 @@ public final class HashTableFunctions
       }
     };
 
-  @DocString(name="%make-weak-hash-table")
+
   private static final Primitive _MAKE_WEAK_HASH_TABLE 
     = new pf__make_weak_hash_table();
-
+  @DocString(name="%make-weak-hash-table")
   private static final class pf__make_weak_hash_table extends Primitive {
       pf__make_weak_hash_table() {
         super("%make-weak-hash-table", PACKAGE_SYS, false);
@@ -106,11 +106,12 @@ public final class HashTableFunctions
       }
     };
 
-  @DocString(name="gethash",
-             args="key hash-table &optional default => value, present-p",
-             doc="Returns the value associated with KEY in HASH-TABLE.")
   private static final Primitive GETHASH 
     = new pf_gethash();
+  @DocString(name="gethash",
+             args="key hash-table &optional default",
+             returns="value, present-p",
+             doc="Returns the value associated with KEY in HASH-TABLE.")
   private static final class pf_gethash extends Primitive {
       pf_gethash() {
         super(Symbol.GETHASH, "key hash-table &optional default");
@@ -137,10 +138,10 @@ public final class HashTableFunctions
       }
     };
 
-  @DocString(name="gethash1",
-             args="key hash-table => value")
   private static final Primitive GETHASH1 
     = new pf_gethash1();
+  @DocString(name="gethash1",
+             args="key hash-table", returns="value")
   private static final class pf_gethash1 extends Primitive {
       pf_gethash1() {
         super(Symbol.GETHASH1, "key hash-table");
@@ -163,12 +164,10 @@ public final class HashTableFunctions
       }
     };
 
-  // ### puthash key hash-table new-value &optional default => value
-  @DocString(name="puthash",
-             args="key hash-table new-value &optional default => value")
   private static final Primitive PUTHASH 
     = new pf_puthash();
-
+  @DocString(name="puthash",
+             args="key hash-table new-value &optional default", returns="value")
   private static final class pf_puthash extends Primitive {
       pf_puthash() {
         super(Symbol.PUTHASH,
@@ -194,11 +193,11 @@ public final class HashTableFunctions
       }
     };
 
-  @DocString(name="remhash",
-             args="key hash-table => generalized-boolean",
-             doc="Removes the value for KEY in HASH-TABLE, if any.")
   private static final Primitive REMHASH 
     = new pf_remhash();
+  @DocString(name="remhash",
+             args="key hash-table", returns="generalized-boolean",
+             doc="Removes the value for KEY in HASH-TABLE, if any.")
   private static final class pf_remhash extends Primitive {
       pf_remhash() {
         super(Symbol.REMHASH, "key hash-table");
@@ -212,10 +211,10 @@ public final class HashTableFunctions
       }
     };
 
-  @DocString(name="clrhash",
-             args="hash-table => hash-table")
   private static final Primitive CLRHASH 
     = new pf_clrhash();
+  @DocString(name="clrhash",
+             args="hash-table", returns="hash-table")
   private static final class pf_clrhash extends Primitive {
       pf_clrhash() {
         super(Symbol.CLRHASH, "hash-table");
@@ -232,11 +231,11 @@ public final class HashTableFunctions
       }
     };
 
+  private static final Primitive HASH_TABLE_COUNT 
+    = new pf_hash_table_count();
   @DocString(name="hash-table-count",
              args="hash-table",
              doc="Returns the number of entries in HASH-TABLE.")
-  private static final Primitive HASH_TABLE_COUNT 
-    = new pf_hash_table_count();
   private static final class pf_hash_table_count extends Primitive {
       pf_hash_table_count() {
           super(Symbol.HASH_TABLE_COUNT, "hash-table");
@@ -251,10 +250,10 @@ public final class HashTableFunctions
       }
     };
 
-  @DocString(name="sxhash",
-             args="object => hash-code")
   private static final Primitive SXHASH 
     = new pf_sxhash();
+  @DocString(name="sxhash",
+             args="object => hash-code")
   private static final class pf_sxhash extends Primitive {
       pf_sxhash() {
         super(Symbol.SXHASH, "object");
@@ -282,11 +281,11 @@ public final class HashTableFunctions
       }
     };
 
+  private static final Primitive HASH_TABLE_P 
+    = new pf_hash_table_p();
   @DocString(name="hash-table-p",
              args="object",
              doc="Whether OBJECT is an instance of a hash-table.")
-  private static final Primitive HASH_TABLE_P 
-    = new pf_hash_table_p();
   private static final class pf_hash_table_p extends Primitive {
       pf_hash_table_p(){
         super(Symbol.HASH_TABLE_P,"object");
@@ -299,11 +298,11 @@ public final class HashTableFunctions
       }
     };
 
+  private static final Primitive HASH_TABLE_ENTRIES 
+    = new pf_hash_table_entries();
   @DocString(name="hah-table-entries",
              args="hash-table",
              doc="Returns a list of all key/values pairs in HASH-TABLE.")
-  private static final Primitive HASH_TABLE_ENTRIES 
-    = new pf_hash_table_entries();
   private static final class pf_hash_table_entries extends Primitive {
       pf_hash_table_entries() {
         super("hash-table-entries", PACKAGE_SYS, false);
@@ -318,11 +317,11 @@ public final class HashTableFunctions
       }
     };
 
+  private static final Primitive HASH_TABLE_TEST 
+    = new pf_hash_table_test();
   @DocString(name="hash-table-test",
              args="hash-table",
              doc="Return the test used for the keys of HASH-TABLE.")
-  private static final Primitive HASH_TABLE_TEST 
-    = new pf_hash_table_test();
   private static final class pf_hash_table_test extends Primitive {
       pf_hash_table_test() {
         super(Symbol.HASH_TABLE_TEST, "hash-table");
@@ -336,11 +335,11 @@ public final class HashTableFunctions
       }
     };
 
+  private static final Primitive HASH_TABLE_SIZE 
+    = new pf_hash_table_size();
   @DocString(name="hash-table-size",
              args="hash-table",
              doc="Returns the number of storage buckets in HASH-TABLE.")
-  private static final Primitive HASH_TABLE_SIZE 
-    = new pf_hash_table_size();
   private static final class pf_hash_table_size extends Primitive {
       pf_hash_table_size() {
         super(Symbol.HASH_TABLE_SIZE, "hash-table");
@@ -355,10 +354,10 @@ public final class HashTableFunctions
       }
     };
 
-  @DocString(name="hash-table-rehash-size",
-             args="hash-table")
   private static final Primitive HASH_TABLE_REHASH_SIZE 
     = new pf_hash_table_rehash_size();
+  @DocString(name="hash-table-rehash-size",
+             args="hash-table")
   private static final class pf_hash_table_rehash_size extends Primitive {
       pf_hash_table_rehash_size() {
         super(Symbol.HASH_TABLE_REHASH_SIZE, "hash-table");
@@ -373,10 +372,10 @@ public final class HashTableFunctions
       }
     };
 
-  @DocString(name="hash-table-rehash-threshold",
-             args="hash-table")
   private static final Primitive HASH_TABLE_REHASH_THRESHOLD 
     = new pf_hash_table_rehash_threshold();
+  @DocString(name="hash-table-rehash-threshold",
+             args="hash-table")
   private static final class pf_hash_table_rehash_threshold extends Primitive {
       pf_hash_table_rehash_threshold() {
         super(Symbol.HASH_TABLE_REHASH_THRESHOLD, "hash-table");
@@ -391,13 +390,13 @@ public final class HashTableFunctions
       }
     };
 
+  private static final Primitive MAPHASH 
+    = new pf_maphash();
   @DocString(name="maphash",
              args="function hash-table",
              doc="Iterates over all entries in the hash-table. For each entry,"
              + " the function is called with two arguments--the key and the"
              + " value of that entry.")
-  private static final Primitive MAPHASH 
-    = new pf_maphash();
   private static final class pf_maphash extends Primitive {
       pf_maphash() {
         super(Symbol.MAPHASH, "function hash-table");
@@ -412,11 +411,11 @@ public final class HashTableFunctions
       }
     };
 
+  private static final Primitive HASH_TABLE_WEAKNESS
+    = new pf_hash_table_weakness();
   @DocString(name="hash-table-weakness",
              args="hash-table",
              doc="Return weakness property of HASH-TABLE, or NIL if it has none.")
-  private static final Primitive HASH_TABLE_WEAKNESS
-    = new pf_hash_table_weakness();
   private static final class pf_hash_table_weakness extends Primitive {
       pf_hash_table_weakness() {
           super(Symbol.HASH_TABLE_WEAKNESS, "hash-table");
