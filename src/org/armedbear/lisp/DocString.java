@@ -45,6 +45,8 @@ public @interface DocString {
     public String name() default "";
     /** The arguments. */
     public String args() default "";
+    /** The return value(s) of a function */
+    public String returns() default "";
     /** The documentation string. */
     public String doc() default "";
 }
