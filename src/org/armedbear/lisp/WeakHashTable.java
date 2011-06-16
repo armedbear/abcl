@@ -57,6 +57,7 @@ import java.util.concurrent.locks.ReentrantLock;
 // WeakHashTable type to be parameterized on an enclosed type.
 public class WeakHashTable
     extends LispObject
+    implements org.armedbear.lisp.protocol.Hashtable
 {
     protected static final float loadFactor = 0.75f;
     protected final LispObject rehashSize;
@@ -508,8 +509,13 @@ public class WeakHashTable
         }
     }
 
-    // Returns a list of (key . value) pairs.
+    @Deprecated
     public LispObject ENTRIES() {
+        return getEntries();
+    }
+
+    /** @returns A list of (key . value) pairs. */
+    public LispObject getEntries() {
         HashEntry[] b = getTable();
         LispObject list = NIL;
         for (int i = b.length; i-- > 0;) {

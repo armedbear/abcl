@@ -57,6 +57,8 @@
                              ("file-system-tests"))
                       #+abcl 
                       (:file "weak-hash-tables")
+                      #+abcl 
+                      (:file "zip")
                       #+abcl
                       (:file "pathname-tests" :depends-on 
                              ("utilities"))))))

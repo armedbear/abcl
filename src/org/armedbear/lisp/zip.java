@@ -58,11 +58,15 @@ public final class zip extends Primitive
     {
         super("zip", PACKAGE_SYS, true);
     }
+    
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
     {
         Pathname zipfilePathname = coerceToPathname(first);
+        if (second instanceof org.armedbear.lisp.protocol.Hashtable) {
+            return execute(zipfilePathname, (org.armedbear.lisp.protocol.Hashtable)second);
+        }
         byte[] buffer = new byte[4096];
         try {
             String zipfileNamestring = zipfilePathname.getNamestring();
@@ -80,8 +84,8 @@ public final class zip extends Primitive
                     out.close();
                     File zipfile = new File(zipfileNamestring);
                     zipfile.delete();
-                    return error(new SimpleError("Pathname has no namestring: " +
-                                                  pathname.writeToString()));
+                    return error(new SimpleError("Pathname has no namestring: "
+                                                 + pathname.writeToString()));
                 }
                 File file = new File(namestring);
                 makeEntry(out, file);
@@ -94,6 +98,8 @@ public final class zip extends Primitive
         }
         return zipfilePathname;
     }
+
+    
 
     @Override
     public LispObject execute(LispObject first, LispObject second, LispObject third)
@@ -151,6 +157,82 @@ public final class zip extends Primitive
         }
         catch (IOException e) {
             return error(new LispError(e.getMessage()));
+        }
+        return zipfilePathname;
+    }
+
+    static class Directories extends HashSet<String> {
+        private Directories() {
+            super();
+        }
+        
+        ZipOutputStream out;
+        public Directories(ZipOutputStream out) {
+            this.out = out;
+        }
+            
+        public void ensure(String path) 
+            throws IOException
+        {
+            int i = 0;
+            int j;
+            while ((j = path.indexOf(Pathname.separator, i)) != -1) {
+                i = j + 1;
+                final String directory = path.substring(0, j) + Pathname.separator;
+                if (!contains(directory)) {
+                    add(directory);
+                    ZipEntry entry = new ZipEntry(directory);
+                    out.putNextEntry(entry);
+                    out.closeEntry();
+                }
+            }
+        }
+    }
+
+    public LispObject execute(final Pathname zipfilePathname, final org.armedbear.lisp.protocol.Hashtable table) {
+        LispObject entriesObject = (LispObject)table.getEntries();
+        if (!(entriesObject instanceof Cons)) {
+            return NIL;
+        }
+        Cons entries = (Cons)entriesObject;
+
+        String zipfileNamestring = zipfilePathname.getNamestring();
+        if (zipfileNamestring == null)
+            return error(new SimpleError("Pathname has no namestring: " +
+                                         zipfilePathname.writeToString()));
+        ZipOutputStream out = null;
+        try {
+            out = new ZipOutputStream(new FileOutputStream(zipfileNamestring));
+        } catch (FileNotFoundException e) {
+            return error(new FileError("Failed to create file for writing zip archive", zipfilePathname));
+        }
+        Directories directories = new Directories(out);
+
+
+        for (LispObject head = entries; head != NIL; head = head.cdr()) {
+            final LispObject key = head.car().car();
+            final LispObject value = head.car().cdr();
+
+            final Pathname source = Lisp.coerceToPathname(key);
+            final Pathname destination = Lisp.coerceToPathname(value);
+            final File file = Utilities.getFile(source);
+            try {
+                String jarEntry = destination.getNamestring();
+                if (jarEntry.startsWith("/")) {
+                    jarEntry = jarEntry.substring(1);
+                }
+                directories.ensure(jarEntry);
+                makeEntry(out, file, jarEntry);
+            } catch (FileNotFoundException e) {
+                return error(new FileError("Failed to read file for incoporation in zip archive.", source));
+            } catch (IOException e) {
+                return error(new FileError("Failed to add file to zip archive.", source));
+            }
+        } 
+        try {
+            out.close();
+        } catch (IOException ex) {
+            return error(new FileError("Failed to close zip archive.", zipfilePathname));
         }
         return zipfilePathname;
     }

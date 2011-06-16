@@ -36,7 +36,10 @@ package org.armedbear.lisp;
 import java.util.concurrent.locks.ReentrantLock;
 import static org.armedbear.lisp.Lisp.*;
 
-public class HashTable extends LispObject {
+public class HashTable 
+    extends LispObject
+    implements org.armedbear.lisp.protocol.Hashtable
+{
 
     protected static final float loadFactor = 0.75f;
     protected final LispObject rehashSize;
@@ -347,8 +350,13 @@ public class HashTable extends LispObject {
         }
     }
 
-    // Returns a list of (key . value) pairs.
+
     public LispObject ENTRIES() {
+        return getEntries();
+    }
+
+    // Returns a list of (key . value) pairs.        
+    public LispObject getEntries() {
         // No need to take out a read lock, for the same reason as MAPHASH
         HashEntry[] b = buckets;
         LispObject list = NIL;
