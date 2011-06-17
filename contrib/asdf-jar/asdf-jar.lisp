@@ -21,7 +21,7 @@
          (package-jar-name 
           (format nil "~A~A-~A.jar" name (when recursive "-all") version))
          (package-jar
-          (make-pathname :directory out :defaults package-jar-name))
+          (make-pathname :directory (pathname-directory out) :defaults package-jar-name))
          (mapping (make-hash-table :test 'equal)))
     (when verbose 
       (format verbose "~&Packaging ASDF definition of ~A~&as ~A." system package-jar))
@@ -40,25 +40,35 @@
           ;;; XXX iterate through the rest of the contents of the
           ;;; system, adding appropiate entries
         (let ((sources
-               (mapwalk (lambda (c) (typep c 'asdf::source-file))
-                        (lambda (c) (input-files c )))))
+               (mapwalk system
+                        (lambda (c) (typep c 'asdf::source-file))
+                        (lambda (c) (slot-value c 'asdf::absolute-pathname)))))
           (loop :for source :in sources
-             :do (setf (gethash (pathname-namestring source) mapping)
-                       (make-pathname :defaults source
-                                      :type "abcl"))))))
-  (system:zip package-jar mapping)))
+             :for source-entry = (relative-pathname base source)
+             :for output = (make-pathname 
+                             :defaults (asdf:apply-output-translations source)
+                             :type "abcl")
+             :for output-entry = (relative-pathname base output)
+             :do (setf (gethash (namestring source) mapping)
+                       source-entry)
+             :do (setf (gethash (namestring output) mapping)
+                       output-entry)))))
+      (system:zip package-jar mapping)))
+
+(defun relative-pathname (base source)
+  (declare (ignore base source))
+  (error "unimplemented."))
 
 ;;; This more Map than Walk at this point ...
 (defun mapwalk (system test-if callable)
   (declare (type system asdf:system))
-  (let ((components 
-         (loop 
-            :for component :being :each :hash-value
-              :of (slot-value system 'asdf::components-by-name)
-            :when (funcall test-if component)
-            :collect component)))
-    (loop :for component :in components
-       :collecting (apply callable component))))
+  (loop 
+     :for component :being :each :hash-value
+     :of (slot-value system 'asdf::components-by-name)
+     :when 
+       (funcall test-if component)
+     :collect 
+       (funcall callable component)))
 
 (defun relative-path (base dir file) 
   (let* ((relative 
