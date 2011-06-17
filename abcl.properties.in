@@ -1,13 +1,24 @@
 # $Id$
 
-# abcl.build.incremental attempts to perform incremental compilation
+# Template for settings the Ant based build process.
+
+# Attempt to perform incremental compilation? 
 #abcl.build.incremental=true
 
-# abcl.compile.lisp.skip skips the compilation of Lisp sources in Netbeans (for debugging)
+# skips the compilation of Lisp sources in Netbeans (for debugging)
 #abcl.compile.lisp.skip=true
 
 # java.options sets the Java options in the abcl wrapper scripts
-#java.options=-Xmx1g
+
+# Examples
+
+# set the JVM to use a maximum of 1GB of RAM (only works for 64bit JVMs)
+#java.options=-d64 -Xmx1g
+
+# The unloading of class definitions is a per jvm policy.  For those
+# implementations which run out of permgen space, the following should
+# help things out.
+#java.options=-d64 -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g
 
 # Additional site specific startup code to be merged in 'system.lisp'
 #abcl.startup.file=${basedir}/startup.lisp
