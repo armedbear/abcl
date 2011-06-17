@@ -6,13 +6,12 @@
   (:use :cl)
   (:export #:satisfy))
 
-(in-package :asdf-jar)
+(in-package :abcl-asdf)
 
 (in-package :asdf)
 (defclass iri (static-class) ())
 
 (defclass mvn (iri) ())
-
 
 ;;; We interpret compilation to ensure that load-op will succeed
 (defmethod perform ((operation compile-op) (component mvn))
