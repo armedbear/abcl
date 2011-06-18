@@ -1,9 +1,9 @@
 ;;;; -*- Mode: LISP -*-
-(in-package :Asdf)
+(in-package :asdf)                      
 
 (defsystem :asdf-jar
   :author "Mark Evenson"
-  :version "0.1.0"
+  :version "0.2.0"
   :components 
   ((:module base :pathname "" :components
 	    ((:file "asdf-jar")))))
