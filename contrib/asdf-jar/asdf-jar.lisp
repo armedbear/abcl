@@ -10,8 +10,12 @@
 
 (defun package (system-name 
                 &key (out #p"/var/tmp/") 
-                     (recursive t) 
+                     (recursive t)          ; whether to package dependencies
+                     (force t)              ; whether to force ASDF compilation
                      (verbose t))
+"Compile and package the asdf SYSTEM-NAME in a jar.
+
+Place the resulting packaging in the OUT directory."
   (let* ((system 
           (asdf:find-system system-name))
 	 (name 
@@ -19,16 +23,16 @@
          (version 
           (slot-value system 'asdf:version))
          (package-jar-name 
-          (format nil "~A~A-~A.jar" name (when recursive "-all") version))
+          (format nil "~A~A-~A.jar" name (if recursive "-all" "") version))
          (package-jar
           (make-pathname :directory (pathname-directory out) :defaults package-jar-name))
          (mapping (make-hash-table :test 'equal)))
     (when verbose 
-      (format verbose "~&Packaging ASDF definition of ~A~&as ~A." system package-jar))
+      (format verbose "~&Packaging ASDF definition of ~A~&  as ~A." system package-jar))
     (setf *systems* nil)
     (when verbose
       (format verbose "~&Forcing recursive compilation of ~A." package-jar))
-    (asdf:compile-system system :force t)
+    (asdf:compile-system system :force force)
     (when verbose
       (format verbose "~&Packaging contents in ~A." package-jar))
     (dolist (system (append (list system) *systems*))
@@ -36,31 +40,29 @@
             (name (slot-value system 'asdf::name))
             (asdf (slot-value system 'asdf::source-file)))
         (setf (gethash asdf mapping) (relative-path base name asdf))
-        
-          ;;; XXX iterate through the rest of the contents of the
-          ;;; system, adding appropiate entries
         (let ((sources
                (mapwalk system
                         (lambda (c) (typep c 'asdf::source-file))
                         (lambda (c) (slot-value c 'asdf::absolute-pathname)))))
           (loop :for source :in sources
-             :for source-entry = (relative-pathname base source)
+             :for source-entry = (relative-path base name source)
              :for output = (make-pathname 
                              :defaults (asdf:apply-output-translations source)
                              :type "abcl")
-             :for output-entry = (relative-pathname base output)
+             :for output-entry = (make-pathname
+                                  :defaults source-entry
+                                  :type "abcl")
              :do (setf (gethash (namestring source) mapping)
                        source-entry)
              :do (setf (gethash (namestring output) mapping)
                        output-entry)))))
       (system:zip package-jar mapping)))
 
-(defun relative-pathname (base source)
-  (declare (ignore base source))
-  (error "unimplemented."))
-
 ;;; This more Map than Walk at this point ...
 (defun mapwalk (system test-if callable)
+  "Apply CALLABLE to all components of asdf SYSTEM which satisfy TEST-IF.
+
+Both CALLABLE and TEST-IF are functions taking an asdf:component as their argument."
   (declare (type system asdf:system))
   (loop 
      :for component :being :each :hash-value
@@ -85,6 +87,7 @@
     (make-pathname 
      :directory (nconc (pathname-directory temp-path)
                        (list name)))))
+
 
 
 
