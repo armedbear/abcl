@@ -469,13 +469,18 @@ from ${abcl.home.dir}
       <property name="abcl.wrapper.in.file" value="abcl.bat.in"/>
     </target>
 
+    <patternset id="abcl.contrib.source">
+          <include name="**/*.asd"/>
+          <include name="**/*.lisp"/>
+          <include name="**/README.markdown"/>
+    </patternset>
+
     <property name="abcl-contrib.jar"
               value="${dist.dir}/abcl-contrib.jar"/>
     <condition property="abcl.contrib.uptodate.p">
       <uptodate targetfile="${abcl-contrib.jar}">
         <srcfiles dir="contrib">
-          <include name="**/*.asd"/>
-          <include name="**/*.lisp"/>
+          <patternset refid="abcl.contrib.source"/>
         </srcfiles>
       </uptodate>
     </condition>
@@ -484,10 +489,7 @@ from ${abcl.home.dir}
       <jar destfile="${abcl-contrib.jar}"
            compress="true"
            basedir="contrib">
-        <patternset>
-          <include name="**/*.asd"/>
-          <include name="**/*.lisp"/>
-        </patternset>
+        <patternset refid="abcl.contrib.source"/>
       </jar>
       <echo>
 Packaged contribs in ${abcl-contrib.jar}. To use contribs, ensure that

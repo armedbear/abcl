@@ -6,4 +6,5 @@
   :version "0.2.0"
   :components 
   ((:module base :pathname "" :components
-	    ((:file "asdf-jar")))))
+	    ((:file "asdf-jar")
+             (:static-file "README.markdown))))

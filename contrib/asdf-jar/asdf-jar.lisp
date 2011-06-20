@@ -1,6 +1,11 @@
+;;; This file is part of ABCL contrib
+;;;
+;;; Copyright 2011 Mark <evenson@panix.com>
+
 (defpackage #:asdf-jar
   (:use :cl)
-  (:export #:package))
+  (:export #:package 
+           #:add-to-asdf))
 
 (in-package :asdf-jar)
 
@@ -9,16 +14,18 @@
 (defun package (system-name 
                 &key (out #p"/var/tmp/") 
                      (recursive t)          ; whether to package dependencies
-                     (force nil)              ; whether to force ASDF compilation
+                     (force nil)             ; whether to force ASDF compilation
                      (verbose t))
 "Compile and package the asdf SYSTEM-NAME in a jar.
 
 When RECURSIVE is true (the default), recursively add all asdf
 dependencies into the same jar.
 
-Place the resulting packaging in the OUT directory.
+Place the resulting packaged jar in the OUT directory.
 
-Returns the pathname of the created jar archive.
+If FORCE is true, force asdf to recompile all the necessary fasls.
+
+Returns the pathname of the packaged jar archive.
 "
   (let* ((system 
           (asdf:find-system system-name))
@@ -106,6 +113,30 @@ Returns the pathname of the created jar archive.
      :directory (nconc (pathname-directory temp-path)
                        (list name)))))
 
+(defun add-to-asdf (jar &key (use-jar-fasls t))
+  "Make a given JAR output by the package mechanism loadable by asdf.
+
+The parameter passed to :USE-JAR-FASLS determines whether to instruct
+asdf to use the fasls packaged in the jar.  If this is nil, the fasls
+will be compiled with respect to the ususual asdf output translation
+conventions."
+  (when (not (typep jar 'pathname))
+    (setf jar (pathname jar)))
+  (when (null (pathname-device jar))
+    (setf jar (make-pathname :device (list jar))))
+
+  ;;; Inform ASDF of all the system definitions in the jar
+  (loop :for asd 
+     :in (directory (merge-pathnames "*/*.asd" jar))
+     :do (pushnew (make-pathname :defaults asd
+                                 :name nil :type nil)
+                  asdf:*central-registry*))
+
+  ;;; Load the FASLs directly from the jar
+  (when use-jar-fasls                    
+    (asdf:initialize-output-translations
+     `(:output-translations (,(merge-pathnames "/**/*.*" jar)) 
+                            :inherit-configuration))))
 
 
 
