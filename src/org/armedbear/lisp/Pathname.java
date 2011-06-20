@@ -1625,29 +1625,61 @@ public class Pathname extends LispObject {
             
             LispObject result = NIL;
             String wild = "/" + pathname.asEntryPath();
-
-            if (pathname.device.cdr() instanceof Cons) {
-                return error(new FileError("Unimplemented directory listing of JAR within JAR.", pathname));
-            }
-            
             final SimpleString wildcard = new SimpleString(wild);
 
-            ZipFile jar = ZipCache.get((Pathname)pathname.device.car());
-
-            for (Enumeration<? extends ZipEntry> entries = jar.entries(); entries.hasMoreElements();) {
-                ZipEntry entry = entries.nextElement();
-                String entryName = "/" + entry.getName();
-                
-                LispObject matches = Symbol.PATHNAME_MATCH_P
-                    .execute(new SimpleString(entryName), wildcard);
-
-                if (!matches.equals(NIL)) {
-                    String namestring = new String(pathname.getNamestring());
-                    namestring = namestring.substring(0, namestring.lastIndexOf("!/") + 2)
-                        + entry.getName();
-                    Pathname p = new Pathname(namestring);
-                    result = new Cons(p, result);
+            if (pathname.device.cdr() instanceof Cons) {
+                ZipFile outerJar = ZipCache.get((Pathname)pathname.device.car());
+                String entryPath = ((Pathname)pathname.device.cdr().car()).getNamestring(); //???
+                if (entryPath.startsWith("/")) {
+                    entryPath = entryPath.substring(1);
                 }
+                ZipEntry entry = outerJar.getEntry(entryPath);
+                InputStream inputStream = null;
+                try {
+                    inputStream = outerJar.getInputStream(entry);
+                } catch (IOException e) {
+                    return new FileError("Failed to read zip input stream inside zip.",
+                                         pathname);
+                }
+                ZipInputStream zipInputStream
+                    = new ZipInputStream(inputStream);
+
+                try {
+                    while ((entry = zipInputStream.getNextEntry()) != null) {
+                        String entryName = "/" + entry.getName();
+                        LispObject matches = Symbol.PATHNAME_MATCH_P
+                            .execute(new SimpleString(entryName), wildcard);
+                    
+                        if (!matches.equals(NIL)) {
+                            String namestring = new String(pathname.getNamestring());
+                            namestring = namestring.substring(0, namestring.lastIndexOf("!/") + 2)
+                                + entry.getName();
+                            Pathname p = new Pathname(namestring);
+                            result = new Cons(p, result);
+                        }
+                    }
+                } catch (IOException e) {
+                    return new FileError("Failed to seek through zip inputstream inside zip.",
+                                         pathname);
+                }
+            } else {
+                ZipFile jar = ZipCache.get((Pathname)pathname.device.car());
+                for (Enumeration<? extends ZipEntry> entries = jar.entries(); 
+                     entries.hasMoreElements();) 
+                    {
+                        ZipEntry entry = entries.nextElement();
+                        String entryName = "/" + entry.getName();
+                        LispObject matches = Symbol.PATHNAME_MATCH_P
+                            .execute(new SimpleString(entryName), wildcard);
+
+                        if (!matches.equals(NIL)) {
+                            String namestring = new String(pathname.getNamestring());
+                            namestring = namestring.substring(0, namestring.lastIndexOf("!/") + 2)
+                                + entry.getName();
+                            Pathname p = new Pathname(namestring);
+                            result = new Cons(p, result);
+                        }
+                    }
             }
             return result;
         }
