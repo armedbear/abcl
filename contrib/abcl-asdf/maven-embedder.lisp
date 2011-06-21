@@ -1,112 +1,140 @@
+;;; Use the Aether system in a default maven distribution to download
+;;; and install dependencies.
+;;;
+;;; https://docs.sonatype.org/display/AETHER/Home
+;;;
+
 (in-package :abcl-asdf)
 
 (require :abcl-contrib)
 (require :jss)
 
-(defvar *mvn-directory*
+(defparameter *mvn-directory*
   "/export/home/evenson/work/apache-maven-3.0.3/lib/"
   "Location of 'maven-core-3.<m>.<p>.jar', 'maven-embedder-3.<m>.<p>.jar' etc.")
 
 (defun init () 
+  (unless (probe-file *mvn-directory*)
+    (error "You must download Maven 3 from http://maven.apache.org/download.html, then set ABCL-ASDF:*MVN-DIRECTORY* appropiately."))
   (jss:add-directory-jars-to-class-path *mvn-directory* nil))
 
-(defconstant +null+
-  (java:make-immediate-object :ref nil))
-
-(defun resolve (group-id artifact-id version)
-  (let* ((configuration (find-configuration))
-         (embedder (jss:new 'MavenEmbedder configuration))
-         (artifact (#"create" embedder group-id version +null+ "jar")))
-    (pathname (#"toString" (#"getFile" artifact)))))
-
-(defun find-configuration ())
-
-
-
+(defun repository-system ()
+  (let ((locator 
+         (java:jnew "org.apache.maven.repository.internal.DefaultServiceLocator"))
+        (wagon-class 
+         (java:jclass "org.sonatype.aether.connector.wagon.WagonProvider"))
+        (wagon-provider 
+         (jss:find-java-class "LightweightHttpWagon"))
+        (repository-connector-factory-class
+         (java:jclass "org.sonatype.aether.connector.wagon.WagonRepositoryConnector"))
+        (wagon-repository-connector-factory-class
+         (java:jclass "org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory"))
+        (repository-system-class
+         (java:jclass "org.sonatype.aether.RepositorySystem")))
+    (#"setService" locator wagon-class wagon-provider)
+    (#"addService" locator 
+                   repository-connector-factory-class
+                   wagon-repository-connector-factory-class)
+    (#"getService" locator repository-system-class)))
 
 #|
-// http://developers-blog.org/blog/default/2009/09/18/How-to-resolve-an-artifact-with-maven-embedder
+private static RepositorySystem newRepositorySystem()
+{
+  DefaultServiceLocator locator = new DefaultServiceLocator();
+  locator.setServices( WagonProvider.class, new ManualWagonProvider() );
+  locator.addService( RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class );
 
-import java.util.ArrayList; 
+  return locator.getService( RepositorySystem.class );
+}
+|#
 
-import java.util.List; 
-import org.apache.log4j.Logger; 
-import org.apache.maven.artifact.Artifact; 
-import org.apache.maven.artifact.repository.ArtifactRepository; 
-import org.apache.maven.artifact.repository.DefaultArtifactRepository; 
-import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout; 
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException; 
-import org.apache.maven.artifact.resolver.ArtifactResolutionException; 
-import org.apache.maven.embedder.Configuration; 
-import org.apache.maven.embedder.ConfigurationValidationResult; 
-import org.apache.maven.embedder.DefaultConfiguration; 
-import org.apache.maven.embedder.MavenEmbedder; 
-import org.apache.maven.embedder.MavenEmbedderException; 
-import org.apache.maven.model.Profile; 
-import org.apache.maven.model.Repository; 
-import org.apache.maven.settings.SettingsUtils; 
+(defun new-session (repository-system)
+  (let ((session 
+         (java:jnew (jss:find-java-class "MavenRepositorySystemSession")))
+        (local-repository 
+         (java:jnew (jss:find-java-class "LocalRepository")
+                  (namestring (merge-pathnames ".m2/repository/"
+                                               (user-homedir-pathname))))))
+    (#"setLocalRepositoryManager" 
+     session
+     (#"newLocalRepositoryManager" repository-system local-repository))))
 
+#|
+private static RepositorySystemSession newSession( RepositorySystem system )
+{
+  MavenRepositorySystemSession session = new MavenRepositorySystemSession();
 
-/** 
- * resolve artifact. 
- * @param groupId group id of artifact 
- * @param artifactId artifact id of artifact 
- * @param version version of artifact 
- * @return downloaded artifact file 
- * @throws HostingOrderException error occured during resolution 
- */ 
+  LocalRepository localRepo = new LocalRepository( "target/local-repo" );
+  session.setLocalRepositoryManager( system.newLocalRepositoryManager( localRepo ) );
+  
+  return session;
+}
+|#
 
-public File resolveArtifact(String groupId, String artifactId, String version) 
-  throws Exception 
-{ 
-  LOG.debug("request to resolve '" + groupId + ":" 
-            + artifactId + ":" + version + "'"); 
-  Artifact artifact = null; 
-  LOG.debug("using settings: " + this.settingsFile); 
-  File settings = new File(this.getClass().getClassLoader() 
-                           .getResource(this.settingsFile).getFile()); 
-  Configuration configuration = new DefaultConfiguration() 
-    .setGlobalSettingsFile(SETTINGS) 
-    .setClassLoader(this.classLoader); 
-  ConfigurationValidationResult validationResult = 
-    MavenEmbedder.validateConfiguration(configuration); 
-  if (validationResult.isValid()) { 
-    try { 
-      MavenEmbedder embedder = new MavenEmbedder(configuration); 
-      artifact = embedder.createArtifact(groupId, 
-                                         artifactId, version, null, "jar"); 
-      // assign repos, 
-      List repos = new ArrayList(); 
-      Profile profile = SettingsUtils.convertFromSettingsProfile((org.apache.maven.settings.Profile) 
-                                                                 embedder.getSettings().getProfiles().get(0)); 
-      for (Repository r : (List < Repository > ) profile. 
-             getRepositories()) { 
-        ArtifactRepository repo = new DefaultArtifactRepository(r.getId(), 
-                                                                r.getUrl(), 
-                                                                new DefaultRepositoryLayout()); 
-        repos.add(repo); 
-        LOG.debug("added repo " + r.getId() + ":" 
-                  + r.getUrl()); 
-      } 
-      embedder.resolve(artifact, repos, 
-                       embedder.getLocalRepository()); 
-    } catch (MavenEmbedderException mee) {
-    } catch (ArtifactResolutionException are) { 
-    } catch (ArtifactNotFoundException ane) { 
-    } finally {
-      configuration = null; 
-      validationResult = null; 
-    } 
-    LOG.info(artifact.getFile().getPath()); 
-    return artifact.getFile(); 
-  } else { 
-    LOG.error("settings file did not validate !!"); 
-    if (!validationResult.isUserSettingsFilePresent()) { 
-      LOG.warn("The specific user settings file "'  + settings + "' is not present.);
-    } else if (!validationResult.isUserSettingsFileParses()) { 
-      LOG.warn("Please check your settings file, it is not well formed XML.");
-    } 
-  } 
-  return null; 
-} 
+;;; XXX make-immediate-object is deprecated
+(defconstant +null+ (java:make-immediate-object nil :ref))
+
+(defun resolve (group-id artifact-id version)
+  (let* ((system 
+          (repository-system))
+         (session 
+          (new-session system))
+         (artifact
+          (java:jnew (jss:find-java-class "aether.util.artifact.DefaultArtifact")
+                     (format nil "~A:~A:~A"
+                             group-id artifact-id version)))
+         (dependency 
+          (java:jnew (jss:find-java-class "aether.graph.Dependency")
+                     artifact "compile"))
+         (central
+          (java:jnew (jss:find-java-class "RemoteRepository")
+                     "central" "default" 
+                     "http://repo1.maven.org/maven2/"))
+         (collect-request (java:jnew (jss:find-java-class "CollectRequest"))))
+    (#"setRoot" collect-request dependency)
+    (#"addRepository" collect-request central)
+    (let* ((node 
+            (#"getRoot" (#"collectDependencies" system session collect-request)))
+           (dependency-request 
+            (java:jnew (jss:find-java-class "DependencyRequest")
+                       node +null+))
+           (nlg 
+            (java:jnew (jss:find-java-class "PreorderNodeListGenerator"))))
+      (#"resolveDependencies" system session dependency-request)
+      (#"accept" node nlg)
+      (#"getClassPath" nlg))))
+
+#|
+public static void main( String[] args )
+  throws Exception
+{
+  RepositorySystem repoSystem = newRepositorySystem();
+
+  RepositorySystemSession session = newSession( repoSystem );
+
+  Dependency dependency =
+    new Dependency( new DefaultArtifact( "org.apache.maven:maven-profile:2.2.1" ), "compile" );
+  RemoteRepository central = new RemoteRepository( "central", "default", "http://repo1.maven.org/maven2/" );
+
+  CollectRequest collectRequest = new CollectRequest();
+  collectRequest.setRoot( dependency );
+  collectRequest.addRepository( central );
+  DependencyNode node = repoSystem.collectDependencies( session, collectRequest ).getRoot();
+
+  DependencyRequest dependencyRequest = new DependencyRequest( node, null );
+
+  repoSystem.resolveDependencies( session, dependencyRequest  );
+
+  PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
+  node.accept( nlg );
+  System.out.println( nlg.getClassPath() );
+}
+|#
+
+#| 
+
+Test:
+
+(init)
+(resolve "org.slf4j" "slf4j-api" "1.6.1")
 |#
