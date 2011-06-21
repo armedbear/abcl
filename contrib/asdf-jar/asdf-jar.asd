@@ -3,8 +3,8 @@
 
 (defsystem :asdf-jar
   :author "Mark Evenson"
-  :version "0.2.0"
+  :version "0.2.1"
   :components 
   ((:module base :pathname "" :components
 	    ((:file "asdf-jar")
-             (:static-file "README.markdown))))
+             (:static-file "README.markdown")))))

@@ -11,12 +11,12 @@
 
 (defvar *debug* nil)
 
-(defun package (system-name 
-                &key (out #p"/var/tmp/") 
-                     (recursive t)          ; whether to package dependencies
-                     (force nil)             ; whether to force ASDF compilation
-                     (verbose t))
-"Compile and package the asdf SYSTEM-NAME in a jar.
+(defun package (system
+          &key (out #p"/var/tmp/") 
+               (recursive t)          ; whether to package dependencies
+               (force nil)            ; whether to force ASDF compilation
+               (verbose t))
+"Compile and package the asdf SYSTEM in a jar.
 
 When RECURSIVE is true (the default), recursively add all asdf
 dependencies into the same jar.
@@ -27,14 +27,13 @@ If FORCE is true, force asdf to recompile all the necessary fasls.
 
 Returns the pathname of the packaged jar archive.
 "
-  (let* ((system 
-          (asdf:find-system system-name))
-	 (name 
+  (when (not (typep system 'asdf:system))
+             (setf system (asdf:find-system system)))
+  (let* ((name 
           (slot-value system 'asdf::name))
          (version 
           (handler-case (slot-value system 'asdf:version)
             (unbound-slot () "unknown")))
-
          (package-jar-name 
           (format nil "~A~A-~A.jar" name (if recursive "-all" "") version))
          (package-jar
@@ -42,13 +41,13 @@ Returns the pathname of the packaged jar archive.
          (mapping (make-hash-table :test 'equal))
          (dependencies (dependent-systems system)))
     (when verbose 
-      (format verbose "~&Packaging ASDF definition of ~A~&  as ~A." system package-jar))
+      (format verbose "~&Packaging ASDF definition of ~A" system))
     (when (and verbose force)
       (format verbose "~&Forcing recursive compilation of ~A." package-jar))
     (asdf:compile-system system :force force)
     (when verbose
       (format verbose "~&Packaging contents in ~A" package-jar))
-    (when (and verbose recursive) 
+    (when (and verbose recursive dependencies) 
       (format verbose "~&  with recursive dependencies~{ ~A~^, ~}." dependencies))
     (dolist (system (append (list system) 
                             (when recursive 
