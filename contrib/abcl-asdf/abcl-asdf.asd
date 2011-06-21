@@ -3,7 +3,8 @@
 
 (defsystem :abcl-asdf
   :author "Mark Evenson"
-  :version "0.1.0"
+  :version "0.2.0"
   :components 
   ((:module base :pathname "" :components
-	    ((:file "abcl-asdf")))))
+	    ((:file "abcl-asdf")
+             (:file "maven-embedder" :depends-on ("abcl-asdf"))))))
