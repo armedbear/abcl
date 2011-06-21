@@ -3,7 +3,7 @@ JARs and JAR entries in ABCL
 
     Mark Evenson
     Created:  09 JAN 2010
-    Modified: 26 NOV 2010
+    Modified: 21 JUN 2011
 
 Notes towards an implementation of "jar:" references to be contained
 in Common Lisp `PATHNAME`s within ABCL.
@@ -269,6 +269,14 @@ Use Cases
        name: "foo"
        type: "lisp
     }
+
+
+URI Encoding 
+------------
+
+As a subtype of URL-PATHNAMES, JAR-PATHNAMES follow all the rules for
+that type.  Most notably this means that all #\Space characters should
+be encoded as '%20' when dealing with jar entries.
 
 
 History

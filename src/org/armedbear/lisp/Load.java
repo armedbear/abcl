@@ -153,12 +153,12 @@ public final class Load
 
         if (Utilities.checkZipFile(truename)) {
             String n = truename.getNamestring();
-            n = Pathname.uriEncode(n);
+            String name = Pathname.uriEncode(truename.name.getStringValue());
             if (n.startsWith("jar:")) {
-                n = "jar:" + n + "!/" + truename.name.getStringValue() + "."
+                n = "jar:" + n + "!/" + name + "."
                     + COMPILE_FILE_INIT_FASL_TYPE;
             } else {
-                n = "jar:file:" + n + "!/" + truename.name.getStringValue() + "."
+                n = "jar:file:" + n + "!/" + name + "."
                     + COMPILE_FILE_INIT_FASL_TYPE;
             }
             mergedPathname = new Pathname(n);

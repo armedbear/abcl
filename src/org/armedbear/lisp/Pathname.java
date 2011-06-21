@@ -280,11 +280,11 @@ public class Pathname extends LispObject {
                         url = new URL("file:" + file);
                         uri = url.toURI();
                     } catch (MalformedURLException e1) {
-                        error(new FileError("Failed to create URI from "
+                        error(new SimpleError("Failed to create URI from "
                                             + "'" + file + "'"
                                             + ": " + e1.getMessage()));
                     } catch (URISyntaxException e2) {
-                        error(new FileError("Failed to create URI from "
+                        error(new SimpleError("Failed to create URI from "
                                             + "'" + file + "'"
                                             + ": " + e2.getMessage()));
                     }
@@ -326,7 +326,7 @@ public class Pathname extends LispObject {
             try {
                 url = new URL(jarURL);
             } catch (MalformedURLException ex) {
-                error(new FileError("Failed to parse URL "
+                error(new LispError("Failed to parse URL "
                                     + "'" + jarURL + "'"
                                     + ex.getMessage()));
             }
@@ -339,7 +339,7 @@ public class Pathname extends LispObject {
                 device = d.device;
             }
             s = "/" + s.substring(separatorIndex + jarSeparator.length());
-            Pathname p = new Pathname(s);
+            Pathname p = new Pathname("file:" + s); // Use URI escaping rules
             directory = p.directory;
             name = p.name;
             type = p.type;
@@ -361,13 +361,13 @@ public class Pathname extends LispObject {
                 try {
                     uri = url.toURI();
                 } catch (URISyntaxException ex) {
-                    error(new FileError("Improper URI syntax for "
+                    error(new SimpleError("Improper URI syntax for "
                                     + "'" + url.toString() + "'"
                                     + ": " + ex.toString()));
                 }
                 final String uriPath = uri.getPath();
                 if (null == uriPath) {
-                    error(new FileError("The URI has no path: " + uri));
+                    error(new LispError("The URI has no path: " + uri));
                 }
                 final File file = new File(uriPath);
                 final Pathname p = new Pathname(file.getPath());
@@ -2487,9 +2487,8 @@ public class Pathname extends LispObject {
         } catch (URISyntaxException e) {}
         return null;  // Error
     }
-
-
-    @DocString(name="uri-encode",
+    
+        @DocString(name="uri-encode",
                args="string => string",
                doc="Encode percent escape sequences in the manner of URI encodings.")
     private static final Primitive URI_ENCODE = new pf_uri_encode();

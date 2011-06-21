@@ -3,7 +3,7 @@ URL Pathnames ABCL
 
     Mark Evenson
     Created:  25 MAR 2010
-    Modified: 26 NOV 2010
+    Modified: 21 JUN 2011
 
 Notes towards an implementation of URL references to be contained in
 Common Lisp `PATHNAME` objects within ABCL.
@@ -119,10 +119,32 @@ conventions of a URL.
 
 A URL Pathname has type URL-PATHNAME, derived from PATHNAME.
 
+
+URI Encoding 
+------------
+
+For dealing with URI Encoding (also known as [Percent Encoding]() we
+adopt the following rules
+
+[Percent Encoding]: http://en.wikipedia.org/wiki/Percent-encoding
+
+1.  All pathname components are represented "as is" without escaping.
+
+2.  Namestrings are suitably escaped if the Pathname is a URL-PATHNAME
+    or a JAR-PATHNAME.
+
+3.  Namestrings should all "round-trip":
+
+    (when (typep p 'pathname)
+       (equal (namestring p)
+              (namestring (pathname p))))
+
+
 Status
 ------
 
 This design has been implemented.
+
 
 History
 -------
@@ -130,3 +152,6 @@ History
 26 NOV 2010 Changed implemenation to use URI encodings for the "file"
   schemes including those nested with the "jar" scheme by like
   aka. "jar:file:/location/of/some.jar!/".
+
+21 JUN 2011 Fixed implementation to properly handle URI encodings
+  refering nested jar archive.

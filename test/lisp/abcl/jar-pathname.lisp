@@ -116,9 +116,13 @@
          (jar-file-init))
        ,@body)))
 
+(defun jar-pathname-escaped (jar path)
+  (pathname (format nil "jar:file:~A!/~A" 
+                    (ext:uri-encode (namestring jar)) path)))
+
 (defmacro load-from-jar (jar path) 
   `(with-jar-file-init 
-       (load (format nil "jar:file:~A!/~A" ,jar ,path))))
+       (load (jar-pathname-escaped ,jar ,path))))
 
 (deftest jar-pathname.load.1
     (load-from-jar *tmp-jar-path* "foo")
@@ -136,7 +140,7 @@
     (load-from-jar *tmp-jar-path* "eek")
   t)
 
-(deftest jar-pathname.load.5
+çu(deftest jar-pathname.load.5
     (load-from-jar *tmp-jar-path* "eek.lisp")
   t)
 
@@ -169,15 +173,19 @@
   t)
 
 (deftest jar-pathname.load.13
-    (load-from-jar *tmp-jar-path* "a/b/foo bar.abcl")
+    (signals-error 
+     (load-from-jar *tmp-jar-path* "a/b/foo bar.abcl")
+     'error)
   t)
 
 (deftest jar-pathname.load.14
-    (load-from-jar *tmp-jar-path-whitespace* "a/b/foo.abcl")
+    (load-from-jar *tmp-jar-path-whitespace* "a/b/bar.abcl")
   t)
 
 (deftest jar-pathname.load.15
-    (load-from-jar *tmp-jar-path-whitespace* "a/b/foo bar.abcl")
+    (signals-error
+     (load-from-jar *tmp-jar-path-whitespace* "a/b/foo bar.abcl")
+     'error)
   t)
 
 (deftest jar-pathname.load.16
@@ -279,7 +287,7 @@
 
 (deftest jar-pathname.merge-pathnames.2
     (merge-pathnames 
-     "bar.abcl" #p"jar:file:baz.jar!/foo/")
+     "bar.abcl" #p"jar:file:baz.jar!/foo/baz")
   #p"jar:file:baz.jar!/foo/bar.abcl")
 
 (deftest jar-pathname.merge-pathnames.3
@@ -404,7 +412,7 @@
      (let ((s "jar:file:/foo/bar/a space/that!/this"))
        (equal s
               (namestring (pathname s))))
-     'file-error)
+     'error)
   t)
 
 (deftest jar-pathname.11
