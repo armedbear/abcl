@@ -355,7 +355,10 @@ from ${abcl.home.dir}
     </target>
 
     <target name="abcl.stamp.version.0" 
-            depends="abcl.stamp.version.uptodate,abcl.stamp.version.generate"/>
+            depends="abcl.stamp.version.uptodate,abcl.stamp.version.generate">
+      <loadfile property="abcl.version"
+                srcFile="${abcl.version.path}"/>
+    </target>
 
     <target name="abcl.stamp.version.1"
             depends="abcl.stamp.version.0"
@@ -404,8 +407,6 @@ from ${abcl.home.dir}
     <target name="abcl.jar" depends="abcl.jar.uptodate"
             unless="abcl.jar.uptodate.p">
       <mkdir dir="${dist.dir}"/>
-      <loadfile property="abcl.version"
-                srcFile="${abcl.version.path}"/>
       <jar destfile="${abcl.jar.path}"
            compress="true"
            update="true"
