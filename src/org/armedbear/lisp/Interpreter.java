@@ -215,7 +215,15 @@ public final class Interpreter
             String userHome = System.getProperty("user.home");
             File file = new File(userHome, ".abclrc");
             if (file.isFile()) {
+                final double startLoad = System.currentTimeMillis();
                 Load.load(file.getCanonicalPath());
+                if (!noinform) {
+                    final double loadtime 
+                        = (System.currentTimeMillis() - startLoad) / 1000.0;
+                    getStandardOutput()
+                        ._writeString("Loading " + file + " completed in " 
+                                      + loadtime + " seconds.\n");
+                }
                 return;
             }
         }
