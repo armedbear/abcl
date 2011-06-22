@@ -258,6 +258,8 @@ from ${abcl.home.dir}
     <target name="abcl.stamp" 
             depends="abcl.compile,abcl.stamp.version,abcl.stamp.hostname">
       <mkdir dir="${abcl.build.path}/.."/>
+      <loadfile property="abcl.version"
+                srcFile="${abcl.version.path}"/>
       <echo message="${build}" file="${abcl.build.path}"/>    
     </target>
 
@@ -356,8 +358,6 @@ from ${abcl.home.dir}
 
     <target name="abcl.stamp.version.0" 
             depends="abcl.stamp.version.uptodate,abcl.stamp.version.generate">
-      <loadfile property="abcl.version"
-                srcFile="${abcl.version.path}"/>
     </target>
 
     <target name="abcl.stamp.version.1"
