@@ -176,8 +176,6 @@
                 (apply #'jstatic method object-as-class args)
                 (apply #'jcall method object args))))))
 
-(defconstant +true+ (make-immediate-object t :boolean))
-
 ;;; Method name as String --> String  | Symbol --> jmethod
 (defvar *methods-cache* (make-hash-table :test #'equal))
 
@@ -630,8 +628,7 @@
 	    if (evenp i) 
 	    do (assert (stringp m) (m) "Method names must be strings: ~s" m) and collect m
 	    else
-	    do (assert (or (symbolp m) (functionp m)) (m) "Methods must be function designators: ~s" m))) 
-#+nil   (null (make-immediate-object nil :ref)))
+	    do (assert (or (symbolp m) (functionp m)) (m) "Methods must be function designators: ~s" m))))
     (let ((safe-method-names-and-defs 
 	   (loop for (name function) on method-names-and-defs by #'cddr
 	      collect name collect (safely function name))))
