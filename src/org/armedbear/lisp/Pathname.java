@@ -67,10 +67,15 @@ public class Pathname extends LispObject {
 
     private volatile String namestring;
 
-    /** The protocol for changing any instance field (i.e. 'host', 'type', etc.)
-     *  is to call this method after changing the field to recompute the namestring.
-     *  We could do this with setter/getters, but that choose not to in order to avoid the
+    /** The protocol for changing any instance field (i.e. 'host',
+     *  'type', etc.)  is to call this method after changing the field
+     *  to recompute the namestring.  We could do this with
+     *  setter/getters, but that choose not to in order to avoid the
      *  performance indirection penalty.
+     *
+     *  TODO There is no "perfomance penalty" in contemporary
+     *  compilers which inline such access, so it would be better to
+     *  implement this as setter/getter ME 20110622
      * 
      *  Although, given the number of bugs that crop up when this
      *  protocol is not adhered to, maybe we should consider it.
@@ -79,8 +84,11 @@ public class Pathname extends LispObject {
         namestring = null;
     }
     
-    // ### %invalidate-namestring
-    private static final Primitive _INVALIDATE_NAMESTRING = new pf_invalidate_namestring();
+    private static final Primitive _INVALIDATE_NAMESTRING 
+        = new pf_invalidate_namestring();
+    @DocString(name="%invalidate-namestring",
+               args="pathname",
+               returns="pathname")
     private static class pf_invalidate_namestring extends Primitive {
         pf_invalidate_namestring() {
             super("%invalidate-namestring", PACKAGE_EXT, false);
@@ -789,7 +797,9 @@ public class Pathname extends LispObject {
         return sb.toString();
     }
 
-    /** @return The representation of this pathname suitable for referencing an entry in a Zip/JAR file */
+    /** @return The representation of this pathname suitable for
+     *  referencing an entry in a Zip/JAR file 
+     */
     protected String asEntryPath() {
         Pathname p = new Pathname();
         p.directory = directory;
@@ -1078,68 +1088,73 @@ public class Pathname extends LispObject {
               Keyword.LOCAL));
         }
     }
-    // ### %pathname-host
+
     private static final Primitive _PATHNAME_HOST = new pf_pathname_host();
+    @DocString(name="%pathname-host")
     private static class pf_pathname_host extends Primitive {
         pf_pathname_host() {
             super("%pathname-host", PACKAGE_SYS, false);
         }
         @Override
         public LispObject execute(LispObject first, LispObject second) {
-            checkCaseArgument(second);
+            checkCaseArgument(second); // FIXME Why is this ignored?
             return coerceToPathname(first).host;
         }
     }
-    // ### %pathname-device
     private static final Primitive _PATHNAME_DEVICE = new pf_pathname_device(); 
+    @DocString(name="%pathname-device")
     private static class pf_pathname_device extends Primitive {
         pf_pathname_device() {
             super("%pathname-device", PACKAGE_SYS, false);
         }
         @Override
         public LispObject execute(LispObject first, LispObject second) {
-            checkCaseArgument(second);
+            checkCaseArgument(second); // FIXME Why is this ignored?
             return coerceToPathname(first).device;
         }
     }
-    // ### %pathname-directory
     private static final Primitive _PATHNAME_DIRECTORY = new pf_pathname_directory();
+    @DocString(name="%pathname-directory")
     private static class pf_pathname_directory extends Primitive {
         pf_pathname_directory() {
             super("%pathname-directory", PACKAGE_SYS, false);
         }
         @Override
         public LispObject execute(LispObject first, LispObject second) {
-            checkCaseArgument(second);
+            checkCaseArgument(second); // FIXME Why is this ignored?
             return coerceToPathname(first).directory;
         }
     }
-    // ### %pathname-name
     private static final Primitive _PATHNAME_NAME = new pf_pathname_name();
+    @DocString(name="%pathname-name")
     private static class  pf_pathname_name extends Primitive {
         pf_pathname_name() {
             super ("%pathname-name", PACKAGE_SYS, false);
         }
         @Override
         public LispObject execute(LispObject first, LispObject second) {
-            checkCaseArgument(second);
+            checkCaseArgument(second); // FIXME Why is this ignored?
             return coerceToPathname(first).name;
         }
     }
-    // ### %pathname-type
     private static final Primitive _PATHNAME_TYPE = new pf_pathname_type();
+    @DocString(name="%pathname-type")
     private static class pf_pathname_type extends Primitive {
         pf_pathname_type() {
             super("%pathname-type", PACKAGE_SYS, false);
         }
         @Override
         public LispObject execute(LispObject first, LispObject second) {
-            checkCaseArgument(second);
+            checkCaseArgument(second); // FIXME Why is this ignored?
             return coerceToPathname(first).type;
         }
     }
-    // ### pathname-version
+    
     private static final Primitive PATHNAME_VERSION = new pf_pathname_version();
+    @DocString(name="pathname-version",
+               args="pathname",
+               returns="version",
+               doc="Return the version component of PATHNAME.")
     private static class pf_pathname_version extends Primitive {
         pf_pathname_version() {
             super("pathname-version", "pathname");
@@ -1149,9 +1164,16 @@ public class Pathname extends LispObject {
             return coerceToPathname(arg).version;
         }
     }
-    // ### namestring
-    // namestring pathname => namestring
     private static final Primitive NAMESTRING = new pf_namestring();
+    @DocString(name="namestring",
+               args="pathname",
+               returns="namestring",
+    doc="Returns the NAMESTRING of PATHNAME if it has one.\n"
+      + "\n"
+      + "If PATHNAME is of type url-pathname or jar-pathname the NAMESTRING is encoded\n"
+      + "according to the uri percent escape rules.\n"
+      + "\n"
+      + "Signals an error if PATHNAME lacks a printable NAMESTRING representation.\n")
     private static class pf_namestring extends Primitive {
         pf_namestring() {
             super("namestring", "pathname");
@@ -1167,9 +1189,13 @@ public class Pathname extends LispObject {
             return new SimpleString(namestring);
         }
     }
-    // ### directory-namestring
-    // directory-namestring pathname => namestring
+    
     private static final Primitive DIRECTORY_NAMESTRING = new pf_directory_namestring();
+    // TODO clarify uri encoding rules in implementation, then document
+    @DocString(name="directory-namestring",
+               args="pathname",
+               returns="namestring",
+    doc="Returns the NAMESTRING of directory porition of PATHNAME if it has one.")
     private static class pf_directory_namestring extends Primitive {
         pf_directory_namestring() {
             super("directory-namestring", "pathname");
@@ -1179,8 +1205,11 @@ public class Pathname extends LispObject {
             return new SimpleString(coerceToPathname(arg).getDirectoryNamestring());
         }
     }
-    // ### pathname pathspec => pathname
     private static final Primitive PATHNAME = new pf_pathname();
+    @DocString(name="pathname",
+               args="pathspec",
+               returns="pathname",
+               doc="Returns the PATHNAME denoted by PATHSPEC.")
     private static class pf_pathname extends Primitive {
         pf_pathname() {
             super("pathname", "pathspec");
@@ -1190,8 +1219,10 @@ public class Pathname extends LispObject {
             return coerceToPathname(arg);
         }
     }
-    // ### %parse-namestring string host default-pathname => pathname, position
     private static final Primitive _PARSE_NAMESTRING = new pf_parse_namestring();
+    @DocString(name="%parse-namestring",
+               args="namestring host default-pathname",
+               returns="pathname, position")
     private static class pf_parse_namestring extends Primitive {
         pf_parse_namestring() {
             super("%parse-namestring", PACKAGE_SYS, false,
@@ -1222,8 +1253,11 @@ public class Pathname extends LispObject {
                                     namestring.LENGTH());
         }
     }
-    // ### make-pathname
     private static final Primitive MAKE_PATHNAME = new pf_make_pathname();
+    @DocString(name="make-pathname",
+               args="&key host device directory name type version defaults case",
+               returns="pathname",
+    doc="Constructs and returns a pathname from the supplied keyword arguments.")
     private static class pf_make_pathname extends Primitive {
         pf_make_pathname() {
             super("make-pathname",
@@ -1446,8 +1480,11 @@ public class Pathname extends LispObject {
         }
         return true;
     }
-    // ### pathnamep
     private static final Primitive PATHNAMEP = new pf_pathnamep();
+    @DocString(name="pathnamep",
+               args="object",
+               returns="generalized-boolean",
+    doc="Returns true if OBJECT is of type pathname; otherwise, returns false.")
     private static class pf_pathnamep extends Primitive  {
         pf_pathnamep() {
             super("pathnamep", "object");
@@ -1457,8 +1494,12 @@ public class Pathname extends LispObject {
             return arg instanceof Pathname ? T : NIL;
         }
     }
-    // ### logical-pathname-p
     private static final Primitive LOGICAL_PATHNAME_P = new pf_logical_pathname_p();
+    @DocString(name="logical-pathname-p",
+               args="object",
+               returns="generalized-boolean",
+
+    doc="Returns true if OBJECT is of type logical-pathname; otherwise, returns false.")
     private static class pf_logical_pathname_p extends Primitive {
         pf_logical_pathname_p() {
             super("logical-pathname-p", PACKAGE_SYS, true, "object");
@@ -1468,8 +1509,14 @@ public class Pathname extends LispObject {
             return arg instanceof LogicalPathname ? T : NIL;
         }
     }
-    // ### user-homedir-pathname &optional host => pathname
+
     private static final Primitive USER_HOMEDIR_PATHNAME = new pf_user_homedir_pathname();
+    @DocString(name="user-homedir-pathname",
+               args="&optional host",
+               returns="pathname",
+    doc="Determines the pathname that corresponds to the user's home directory.\n"
+      + "The value returned is obtained from the JVM system propoerty 'user.home'.\n"
+      + "If HOST is specified, returns NIL.")
     private static class pf_user_homedir_pathname extends Primitive {
         pf_user_homedir_pathname() {
             super("user-homedir-pathname", "&optional host");
@@ -1492,8 +1539,11 @@ public class Pathname extends LispObject {
         }
     }
 
-    // ### list-directory directory
     private static final Primitive LIST_DIRECTORY = new pf_list_directory();
+    @DocString(name="list-directory",
+               args="directory &optional (resolve-symlinks t)",
+               returns="pathnames",
+    doc="Lists the contents of DIRECTORY, optionally resolving symbolic links.")
     private static class pf_list_directory extends Primitive {
         pf_list_directory() {
             super("list-directory", PACKAGE_SYS, true, "directory &optional (resolve-symlinks t)");
@@ -1593,7 +1643,10 @@ public class Pathname extends LispObject {
         }
     }
 
-    // ### match-wild-jar-pathname wild-jar-pathname
+    @DocString(name="match-wild-jar-pathname",
+               args="wild-jar-pathname",
+               returns="pathnames",
+    doc="Returns the pathnames matching WILD-JAR-PATHNAME which is both wild and a jar-pathname.")
     static final Primitive MATCH_WILD_JAR_PATHNAME = new pf_match_wild_jar_pathname();
     private static class pf_match_wild_jar_pathname extends Primitive {
         pf_match_wild_jar_pathname() {
@@ -1696,12 +1749,14 @@ public class Pathname extends LispObject {
         return false;
     }
 
-    // ### PATHNAME-JAR-P 
+    @DocString(name="pathname-jar-p",
+               args="pathname",
+               returns="generalized-boolean",
+    doc="Predicate functionfor whether PATHNAME references a jar.")
     private static final Primitive PATHNAME_JAR_P = new pf_pathname_jar_p();
     private static class pf_pathname_jar_p extends Primitive {
         pf_pathname_jar_p() {
-            super("pathname-jar-p", PACKAGE_EXT, true, "pathname",
-                  "Predicate for whether PATHNAME references a JAR.");
+            super("pathname-jar-p", PACKAGE_EXT, true);
         }
         @Override
         public LispObject execute(LispObject arg) {
@@ -1714,7 +1769,10 @@ public class Pathname extends LispObject {
         return (device instanceof Cons);
     }
 
-    // ### PATHNAME-URL-P 
+    @DocString(name="pathname-url-p",
+               args="pathname",
+               returns="generalized-boolean",
+    doc="Predicate function for whether PATHNAME references a jaurl.")
     private static final Primitive PATHNAME_URL_P = new pf_pathname_url_p();
     private static class pf_pathname_url_p extends Primitive {
         pf_pathname_url_p() {
@@ -1781,8 +1839,15 @@ public class Pathname extends LispObject {
         }
         return false;
     }
-    // ### %wild-pathname-p
+
     private static final Primitive _WILD_PATHNAME_P = new pf_wild_pathname_p();
+    @DocString(name="%wild-pathname-p",
+               args="pathname keyword",
+               returns="generalized-boolean",
+    doc="Predicate for determing whether PATHNAME contains wild components.\n"
+      + "KEYWORD, if non-nil, should be one of :directory, :host, :device,\n"
+      + ":name, :type, or :version indicating that only the specified component\n"
+      + "should be checked for wildness.")
     static final class pf_wild_pathname_p extends Primitive {
         pf_wild_pathname_p() {
             super("%wild-pathname-p", PACKAGE_SYS, true);
@@ -1827,8 +1892,12 @@ public class Pathname extends LispObject {
         }
     }
 
-    // ### merge-pathnames pathname &optional default-pathname default-version"
     private static final Primitive MERGE_PATHNAMES = new pf_merge_pathnames();
+    @DocString(name="merge-pathnames",
+               args="pathname &optional default-pathname default-version",
+               returns="pathname",
+    doc="Constructs a pathname from PATHNAME by filling in any unsupplied components\n"
+     +  "with the corresponding values from DEFAULT-PATHNAME and DEFAULT-VERSION.")
     static final class pf_merge_pathnames extends Primitive {
         pf_merge_pathnames() {
             super("merge-pathnames", "pathname &optional default-pathname default-version");
@@ -2308,8 +2377,11 @@ public class Pathname extends LispObject {
         return 0;
     }
 
-    // ### mkdir pathname
     private static final Primitive MKDIR = new pf_mkdir();
+    @DocString(name="mkdir",
+               args="pathname",
+               returns="generalized-boolean",
+    doc="Attempts to create directory at PATHNAME returning the success or failure.")
     private static class pf_mkdir extends Primitive {
         pf_mkdir() {
             super("mkdir", PACKAGE_SYS, false, "pathname");
@@ -2337,8 +2409,11 @@ public class Pathname extends LispObject {
         }
     }
 
-    // ### rename-file filespec new-name => defaulted-new-name, old-truename, new-truename
     private static final Primitive RENAME_FILE = new pf_rename_file();
+    @DocString(name="rename-file",
+               args="filespec new-name",
+               returns="defaulted-new-name, old-truename, new-truename",
+    doc="rename-file modifies the file system in such a way that the file indicated by FILESPEC is renamed to DEFAULTED-NEW-NAME.")
     private static class pf_rename_file extends Primitive {
         pf_rename_file() {
             super("rename-file", "filespec new-name");
@@ -2391,9 +2466,13 @@ public class Pathname extends LispObject {
                                        + "."));
         }
     }
-
-    // ### file-namestring pathname => namestring
+    
+    // TODO clarify uri encoding cases in implementation and document
     private static final Primitive FILE_NAMESTRING = new pf_file_namestring();
+    @DocString(name="file-namestring",
+               args="pathname",
+               returns="namestring",
+    doc="Returns just the name, type, and version components of PATHNAME.")
     private static class pf_file_namestring extends Primitive {
         pf_file_namestring() {
             super("file-namestring", "pathname");
@@ -2419,8 +2498,11 @@ public class Pathname extends LispObject {
         }
     }
 
-    // ### host-namestring pathname => namestring
     private static final Primitive HOST_NAMESTRING = new pf_host_namestring();
+    @DocString(name="host-namestring",
+               args="pathname",
+               returns="namestring",
+    doc="Returns the host name of PATHNAME.")
     private static class pf_host_namestring extends Primitive {
         pf_host_namestring() {
             super("host-namestring", "pathname");
@@ -2463,8 +2545,9 @@ public class Pathname extends LispObject {
 
     
     @DocString(name="uri-decode",
-               args="string => string",
-               doc="Decode percent escape sequences in the manner of URI encodings.")
+               args="string",
+               returns="string",
+    doc="Decode STRING percent escape sequences in the manner of URI encodings.")
     private static final Primitive URI_DECODE = new pf_uri_decode();
     private static final class pf_uri_decode extends Primitive {
         pf_uri_decode() {
@@ -2488,9 +2571,10 @@ public class Pathname extends LispObject {
         return null;  // Error
     }
     
-        @DocString(name="uri-encode",
-               args="string => string",
-               doc="Encode percent escape sequences in the manner of URI encodings.")
+    @DocString(name="uri-encode",
+               args="string",
+               returns="string",
+    doc="Encode percent escape sequences in the manner of URI encodings.")
     private static final Primitive URI_ENCODE = new pf_uri_encode();
     private static final class pf_uri_encode extends Primitive {
         pf_uri_encode() {
