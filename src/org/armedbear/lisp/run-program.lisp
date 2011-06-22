@@ -33,7 +33,13 @@
 
 (require "JAVA")
 
-;;Vaguely inspired by sb-ext:run-program in SBCL. See <http://www.sbcl.org/manual/Running-external-programs.html>. This implementation uses the JVM facilities for running external processes: <http://download.oracle.com/javase/6/docs/api/java/lang/ProcessBuilder.html>.
+;;; Vaguely inspired by sb-ext:run-program in SBCL. 
+;;;
+;;; See <http://www.sbcl.org/manual/Running-external-programs.html>. 
+;;;
+;;; This implementation uses the JVM facilities for running external
+;;; processes.
+;;; <http://download.oracle.com/javase/6/docs/api/java/lang/ProcessBuilder.html>.
 (defun run-program (program args &key environment (wait t))
   ;;For documentation, see below.
   (let ((pb (%make-process-builder program args)))
@@ -48,21 +54,40 @@
       process)))
 
 (setf (documentation 'run-program 'function)
-      "run-program creates a new process specified by the program argument. args are the standard arguments that can be passed to a program. For no arguments, use nil (which means that just the name of the program is passed as arg 0).
+      "Creates a new process running the the PROGRAM.
+ARGS are a list of strings to be passed to the program as arguments. 
 
-run-program will return a process structure.
+For no arguments, use nil which means that just the name of the
+program is passed as arg 0.
+
+Returns a process structure containing the JAVA-OBJECT wrapped Process
+object, and the PROCESS-INPUT, PROCESS-OUTPUT, and PROCESS-ERROR streams.
+
+c.f. http://download.oracle.com/javase/6/docs/api/java/lang/Process.html
 
 Notes about Unix environments (as in the :environment):
 
-    * The ABCL implementation of run-program, like SBCL, Perl and many other programs, copies the Unix environment by default.
-    * Running Unix programs from a setuid process, or in any other situation where the Unix environment is under the control of someone else, is a mother lode of security problems. If you are contemplating doing this, read about it first. (The Perl community has a lot of good documentation about this and other security issues in script-like programs.)
+    * The ABCL implementation of run-program, like SBCL, Perl and many
+      other programs, copies the Unix environment by default.
+
+    * Running Unix programs from a setuid process, or in any other
+      situation where the Unix environment is under the control of
+      someone else, is a mother lode of security problems. If you are
+      contemplating doing this, read about it first. (The Perl
+      community has a lot of good documentation about this and other
+      security issues in script-like programs.)
 
 The &key arguments have the following meanings:
 
-:environment
-    a alist of STRINGs (name . value) describing the new environment. The default is to copy the environment of the current process.
-:wait
-    If non-NIL (default), wait until the created process finishes. If nil, continue running Lisp until the program finishes.")
+:environment 
+    An alist of STRINGs (name . value) describing the new
+    environment. The default is to copy the environment of the current
+    process.
+
+:wait 
+    If non-NIL, which is the default, wait until the created process
+    finishes. If NIL, continue running Lisp until the program
+    finishes.")
 
 ;;The process structure.
 
@@ -92,10 +117,10 @@ The &key arguments have the following meanings:
   "Kills the process."
   (%process-kill (process-jprocess process)))
 
-;;Low-level functions. For now they're just a refactoring of the initial implementation with direct
-;;jnew & jcall forms in the code. As per Ville's suggestion, these should really be implemented as
-;;primitives.
-
+;;; Low-level functions. For now they're just a refactoring of the
+;;; initial implementation with direct jnew & jcall forms in the
+;;; code. As per Ville's suggestion, these should really be implemented
+;;; as primitives.
 (defun %make-process-builder (program args)
   (java:jnew "java.lang.ProcessBuilder"
              (java:jnew-array-from-list "java.lang.String" (cons program args))))
