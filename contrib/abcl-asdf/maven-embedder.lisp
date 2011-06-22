@@ -9,16 +9,72 @@
 (require :abcl-contrib)
 (require :jss)
 
-(defparameter *mvn-directory*
-  "/export/home/evenson/work/apache-maven-3.0.3/lib/"
+#| 
+Test:
+
+(resolve "org.slf4j" "slf4j-api" "1.6.1")
+|#
+
+(defvar *mavens* '("/opt/local/bin/mvn3" "mvn3" "mvn"))
+
+(defun find-mvn () 
+  (dolist (mvn-path *mavens*)
+    (let ((mvn 
+           (handler-case 
+               (truename (read-line (sys::process-output 
+                                     (sys::run-program "which" `(,mvn-path)))))
+             ('end-of-file () 
+               nil))))
+      (when mvn
+        (return-from find-mvn mvn)))))
+
+(defun find-mvn-libs ()
+  (let ((mvn (find-mvn)))
+    (unless mvn
+      (warn "Failed to find Maven3 libraries.")
+      (return-from find-mvn-libs))
+    (truename (make-pathname 
+               :defaults (merge-pathnames "../lib/" mvn)
+               :name nil :type nil))))
+
+(defparameter *mvn-libs-directory*
+  nil
   "Location of 'maven-core-3.<m>.<p>.jar', 'maven-embedder-3.<m>.<p>.jar' etc.")
 
-(defun init () 
-  (unless (probe-file *mvn-directory*)
-    (error "You must download Maven 3 from http://maven.apache.org/download.html, then set ABCL-ASDF:*MVN-DIRECTORY* appropiately."))
-  (jss:add-directory-jars-to-class-path *mvn-directory* nil))
+(defun mvn-version ()
+  (let ((line
+         (read-line (sys::process-output (sys::run-program 
+                                          (namestring (find-mvn)) '("-version")))))
+        (prefix "Apache Maven "))
+
+    (unless (eql (search prefix line) 0)
+      (return-from mvn-version nil))
+    (let ((version (subseq line (length prefix))))
+      version)))
+
+;;; XXX will break with release of Maven 3.1.x
+(defun ensure-mvn-version ()
+  "Return t if Maven version is 3.0.3 or greater."
+  (let ((version-string (mvn-version)))
+    (and (search "3.0" version-string)
+         (>= (parse-integer (subseq version-string 
+                                    4 (search " (" version-string)))
+             3))))
+
+(defparameter *init* nil)
+
+(defun init ()
+  (unless *mvn-libs-directory*
+    (setf *mvn-libs-directory* (find-mvn-libs)))
+  (unless (probe-file *mvn-libs-directory*)
+    (error "You must download maven-3.0.3 from http://maven.apache.org/download.html, then set ABCL-ASDF:*MVN-DIRECTORY* appropiately."))
+  (unless (ensure-mvn-version)
+    (error "We need maven-3.0.3 or later."))
+  (jss:add-directory-jars-to-class-path *mvn-libs-directory* nil)
+  (setf *init* t))
 
 (defun repository-system ()
+  (unless *init* (init))
   (let ((locator 
          (java:jnew "org.apache.maven.repository.internal.DefaultServiceLocator"))
         (wagon-class 
@@ -71,10 +127,8 @@ private static RepositorySystemSession newSession( RepositorySystem system )
 }
 |#
 
-;;; XXX make-immediate-object is deprecated
-(defconstant +null+ (java:make-immediate-object nil :ref))
-
 (defun resolve (group-id artifact-id version)
+  (unless *init* (init))
   (let* ((system 
           (repository-system))
          (session 
@@ -97,7 +151,7 @@ private static RepositorySystemSession newSession( RepositorySystem system )
             (#"getRoot" (#"collectDependencies" system session collect-request)))
            (dependency-request 
             (java:jnew (jss:find-java-class "DependencyRequest")
-                       node +null+))
+                       node java:+null+))
            (nlg 
             (java:jnew (jss:find-java-class "PreorderNodeListGenerator"))))
       (#"resolveDependencies" system session dependency-request)
@@ -131,10 +185,3 @@ public static void main( String[] args )
 }
 |#
 
-#| 
-
-Test:
-
-(init)
-(resolve "org.slf4j" "slf4j-api" "1.6.1")
-|#
