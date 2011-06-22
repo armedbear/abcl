@@ -1085,12 +1085,18 @@ public final class Java
         }
     }
 
+    // DEPRECATED Remove MAKE-IMMEDIATE-OBJECT in abcl-0.29
     private static final Primitive MAKE_IMMEDIATE_OBJECT = new pf_make_immediate_object();
     @DocString(name="make-immediate-object", args="object &optional type",
-    doc="Attempts to coerce a given Lisp object into a java-object of the\n"+
-        "given type.  If type is not provided, works as jobject-lisp-value.\n"+
-        "Currently, type may be :BOOLEAN, treating the object as a truth value,\n"+
-        "or :REF, which returns Java null if NIL is provided.")
+    doc="Attempts to coerce a given Lisp object into a java-object of the\n"
+      + "given type.  If type is not provided, works as jobject-lisp-value.\n"
+      + "Currently, type may be :BOOLEAN, treating the object as a truth value,\n"
+      + "or :REF, which returns Java null if NIL is provided.\n"
+      + "\n"
+      + "Deprecated.  Please use JAVA:+NULL+, JAVA:+TRUE+, and JAVA:+FALSE+ for\n"
+      + "constructing wrapped primitive types, JAVA:JOBJECT-LISP-VALUE for converting a\n"
+      + "JAVA:JAVA-OBJECT to a Lisp value, or JAVA:JNULL_REF_P to distinguish a wrapped\n"
+      + "null JAVA_OBJECT from nil.")
     private static final class pf_make_immediate_object extends Primitive
     {
         pf_make_immediate_object()
@@ -1101,6 +1107,8 @@ public final class Java
         @Override
         public LispObject execute(LispObject[] args)
         {
+            Symbol.WARN.getSymbolFunction()
+                .execute(new SimpleString("JAVA:MAKE-IMMEDIATE-OBJECT is deprecated."));
             if (args.length < 1)
                 error(new WrongNumberOfArgumentsException(this));
             LispObject object = args[0];

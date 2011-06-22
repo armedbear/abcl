@@ -659,4 +659,10 @@ public final class JavaObject extends LispObject {
             
         };
 
+    public final static Symbol NULL 
+        = Lisp.exportConstant("+NULL+", PACKAGE_JAVA, new JavaObject(null));
+    public final static Symbol TRUE
+        = Lisp.exportConstant("+TRUE+", PACKAGE_JAVA, new JavaObject(true));
+    public final static Symbol FALSE
+        = Lisp.exportConstant("+FALSE+", PACKAGE_JAVA, new JavaObject(false));
 }
