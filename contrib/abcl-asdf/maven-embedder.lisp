@@ -23,8 +23,7 @@ Test:
            (handler-case 
                (truename (read-line (sys::process-output 
                                      (sys::run-program "which" `(,mvn-path)))))
-             ('end-of-file () 
-               nil))))
+             (end-of-file () nil))))
       (when mvn
         (return-from find-mvn mvn)))))
 
@@ -42,24 +41,34 @@ Test:
   "Location of 'maven-core-3.<m>.<p>.jar', 'maven-embedder-3.<m>.<p>.jar' etc.")
 
 (defun mvn-version ()
-  (let ((line
-         (read-line (sys::process-output (sys::run-program 
-                                          (namestring (find-mvn)) '("-version")))))
-        (prefix "Apache Maven "))
-
-    (unless (eql (search prefix line) 0)
+  (let* ((line
+         (read-line (sys::process-output 
+                     (sys::run-program 
+                      (namestring (find-mvn)) '("-version")))))
+         (pattern (#"compile" 
+                   'regex.Pattern
+                   "Apache Maven ([0-9]+)\\.([0-9]+)\\.([0-9]+)"))
+         (matcher (#"matcher" pattern line))
+         (found (#"find" matcher)))
+    (unless found 
       (return-from mvn-version nil))
-    (let ((version (subseq line (length prefix))))
-      version)))
+    (mapcar #'parse-integer
+            `(,(#"group" matcher 1)
+              ,(#"group" matcher 2)
+              ,(#"group" matcher 3)))))
 
-;;; XXX will break with release of Maven 3.1.x
 (defun ensure-mvn-version ()
   "Return t if Maven version is 3.0.3 or greater."
-  (let ((version-string (mvn-version)))
-    (and (search "3.0" version-string)
-         (>= (parse-integer (subseq version-string 
-                                    4 (search " (" version-string)))
-             3))))
+  (let* ((version (mvn-version))
+         (major (first version))
+         (minor (second version))
+         (patch (third version)))
+    (or 
+     (and (>= major 3)
+          (>= minor 1))
+     (and (>= major 3)
+          (>= major 0)
+          (>= patch 3)))))
 
 (defparameter *init* nil)
 
