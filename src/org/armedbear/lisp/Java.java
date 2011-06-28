@@ -45,6 +45,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.text.MessageFormat;
 import java.util.*;
 
 public final class Java
@@ -861,6 +862,10 @@ public final class Java
                 methodArgs = translateMethodArguments(args, 2);
                 method = findMethod(instance, intendedClass, methodName, methodArgs);
                 if (method == null) {
+                    if (intendedClass == null) {
+                        String msg = MessageFormat.format("No instance method named {0} found for type {1}", methodName, instance.getClass().getName());
+                        throw new NoSuchMethodException(msg);
+                    }
                     String classes = intendedClass.getName();
                     Class<?> actualClass = instance.getClass();
                     if(actualClass != intendedClass) {
