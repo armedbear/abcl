@@ -66,8 +66,7 @@
            if (evenp i)
            do (assert (stringp m) (m) "Method names must be strings: ~s" m) and collect m
            else
-           do (assert (or (symbolp m) (functionp m)) (m) "Methods must be function designators: ~s" m)))
-        (null (make-immediate-object nil :ref)))
+           do (assert (or (symbolp m) (functionp m)) (m) "Methods must be function designators: ~s" m))))
     (loop for method across
       (jclass-methods interface :declared nil :public t)
       for method-name = (jmethod-name method)
@@ -78,7 +77,7 @@
              (def `(lambda
                      ,arglist
                      ,(when arglist '(declare (ignore ignore)))
-                     ,(if void-p '(values) null))))
+                     ,(if void-p '(values) java:+null+))))
         (warn "Implementing dummy method ~a for interface ~a"
               method-name (jclass-name interface))
         (push (coerce def 'function) method-names-and-defs)
