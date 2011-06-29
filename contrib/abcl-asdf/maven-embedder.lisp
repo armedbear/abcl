@@ -11,11 +11,13 @@
 
 #| 
 Test:
+(resolve-dependencies "org.slf4j" "slf4j-api" "1.6.1")
 
-(resolve "org.slf4j" "slf4j-api" "1.6.1")
+(resolve-dependencies "org.apache.maven" "maven-aether-provider" "3.0.3")
 |#
 
-(defvar *mavens* '("/opt/local/bin/mvn3" "mvn3" "mvn"))
+(defvar *mavens* '("/opt/local/bin/mvn3" "mvn3" "mvn" "mvn.bat")
+  "Locations to search for the Maven executable.")
 
 (defun find-mvn () 
   (dolist (mvn-path *mavens*)
@@ -82,37 +84,43 @@ Test:
   (jss:add-directory-jars-to-class-path *mvn-libs-directory* nil)
   (setf *init* t))
 
+(defun make-wagon-provider ()
+  (unless *init* (init))
+  (java:jinterface-implementation 
+   "org.sonatype.aether.connector.wagon.WagonProvider"
+   "lookup"
+   (lambda (role-hint)
+     (if (string-equal "http" role-hint)
+       (java:jnew "org.apache.maven.wagon.providers.http.LightweightHttpWagon")
+       java:+null+))
+   "release"
+   (lambda (wagon)
+     (declare (ignore wagon)))))
+
 (defun repository-system ()
   (unless *init* (init))
   (let ((locator 
          (java:jnew "org.apache.maven.repository.internal.DefaultServiceLocator"))
-        (wagon-class 
-         (java:jclass "org.sonatype.aether.connector.wagon.WagonProvider"))
-        (wagon-provider 
-         (jss:find-java-class "LightweightHttpWagon"))
-        (repository-connector-factory-class
-         (java:jclass "org.sonatype.aether.connector.wagon.WagonRepositoryConnector"))
+        (repository-connector-factory-class 
+         (java:jclass "org.sonatype.aether.spi.connector.RepositoryConnectorFactory"))
         (wagon-repository-connector-factory-class
          (java:jclass "org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory"))
+        (wagon-provider-class 
+         (java:jclass "org.sonatype.aether.connector.wagon.WagonProvider"))
         (repository-system-class
          (java:jclass "org.sonatype.aether.RepositorySystem")))
-    (#"setService" locator wagon-class wagon-provider)
-    (#"addService" locator 
-                   repository-connector-factory-class
+    (#"addService" locator
+                   repository-connector-factory-class 
                    wagon-repository-connector-factory-class)
-    (#"getService" locator repository-system-class)))
-
-#|
-private static RepositorySystem newRepositorySystem()
-{
-  DefaultServiceLocator locator = new DefaultServiceLocator();
-  locator.setServices( WagonProvider.class, new ManualWagonProvider() );
-  locator.addService( RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class );
-
-  return locator.getService( RepositorySystem.class );
-}
-|#
-
+    (#"setServices" locator
+                    wagon-provider-class
+                    (java:jnew-array-from-list 
+                     "org.sonatype.aether.connector.wagon.WagonProvider"
+                     (list 
+                      (make-wagon-provider))))
+    (#"getService" locator
+                   repository-system-class)))
+        
 (defun new-session (repository-system)
   (let ((session 
          (java:jnew (jss:find-java-class "MavenRepositorySystemSession")))
@@ -124,19 +132,25 @@ private static RepositorySystem newRepositorySystem()
      session
      (#"newLocalRepositoryManager" repository-system local-repository))))
 
-#|
-private static RepositorySystemSession newSession( RepositorySystem system )
-{
-  MavenRepositorySystemSession session = new MavenRepositorySystemSession();
+(defun resolve-artifact (group-id artifact-id version)
+  (let* ((system 
+          (repository-system))
+         (session 
+          (new-session system))
+         (repository 
+          (jss:new "org.sonatype.aether.repository.RemoteRepository"
+                   "central" "default" "http://repo1.maven.org/maven2/"))
+         (artifact-string (format nil "~A:~A:~A"
+                                  group-id artifact-id version))
+         (artifact 
+          (jss:new "org.sonatype.aether.util.artifact.DefaultArtifact" artifact-string))
+         (artifact-request 
+          (java:jnew "org.sonatype.aether.resolution.ArtifactRequest")))
+    (#"setArtifact" artifact-request artifact)
+    (#"addRepository" artifact-request repository)
+    (#"resolveArtifact" system session artifact-request)))
 
-  LocalRepository localRepo = new LocalRepository( "target/local-repo" );
-  session.setLocalRepositoryManager( system.newLocalRepositoryManager( localRepo ) );
-  
-  return session;
-}
-|#
-
-(defun resolve (group-id artifact-id version)
+(defun resolve-dependencies (group-id artifact-id version)
   (unless *init* (init))
   (let* ((system 
           (repository-system))
@@ -151,8 +165,7 @@ private static RepositorySystemSession newSession( RepositorySystem system )
                      artifact "compile"))
          (central
           (java:jnew (jss:find-java-class "RemoteRepository")
-                     "central" "default" 
-                     "http://repo1.maven.org/maven2/"))
+                     "central" "default" "http://repo1.maven.org/maven2/"))
          (collect-request (java:jnew (jss:find-java-class "CollectRequest"))))
     (#"setRoot" collect-request dependency)
     (#"addRepository" collect-request central)
@@ -167,30 +180,8 @@ private static RepositorySystemSession newSession( RepositorySystem system )
       (#"accept" node nlg)
       (#"getClassPath" nlg))))
 
-#|
-public static void main( String[] args )
-  throws Exception
-{
-  RepositorySystem repoSystem = newRepositorySystem();
 
-  RepositorySystemSession session = newSession( repoSystem );
 
-  Dependency dependency =
-    new Dependency( new DefaultArtifact( "org.apache.maven:maven-profile:2.2.1" ), "compile" );
-  RemoteRepository central = new RemoteRepository( "central", "default", "http://repo1.maven.org/maven2/" );
 
-  CollectRequest collectRequest = new CollectRequest();
-  collectRequest.setRoot( dependency );
-  collectRequest.addRepository( central );
-  DependencyNode node = repoSystem.collectDependencies( session, collectRequest ).getRoot();
-
-  DependencyRequest dependencyRequest = new DependencyRequest( node, null );
-
-  repoSystem.resolveDependencies( session, dependencyRequest  );
-
-  PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
-  node.accept( nlg );
-  System.out.println( nlg.getClassPath() );
-}
-|#
+         
 
