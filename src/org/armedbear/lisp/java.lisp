@@ -431,8 +431,6 @@ calls on the java.util.Enumeration `jenumeration`."
   (let ((supers nil))
     (when (jclass-interface-p jclass)
       (push (find-class 'java-object) supers))
-    (when (jequal jclass (jclass "java.util.List"))
-      (push (find-class 'sequence) supers))
     supers))
 
 (defun ensure-java-class (jclass)

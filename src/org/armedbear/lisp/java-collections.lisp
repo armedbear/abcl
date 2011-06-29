@@ -4,6 +4,25 @@
 
 (in-package :java)
 
+(let* ((jclass (jclass "java.util.List"))
+       (class (%find-java-class jclass)))
+  (if class
+      (error "java.util.List is already registered as a Lisp class; since JAVA-CLASSes can't be redefined, I can't inject SEQUENCE in its class precedence list. Ensure that you require :java-collections before specializing any method on java.util.List and in general before using java.util.List as a CLOS class.")
+      ;;The code below is adapted from ensure-java-class in java.lisp
+      (%register-java-class
+       jclass (mop::ensure-class
+               (make-symbol (jclass-name jclass))
+               :metaclass (find-class 'java-class)
+               :direct-superclasses
+               (let ((supers
+                      (mapcar #'ensure-java-class
+                              (delete nil
+                                      (concatenate 'list
+                                                   (list (jclass-superclass jclass))
+                                                   (jclass-interfaces jclass))))))
+                 (append supers (list (find-class 'sequence)) (jclass-additional-superclasses jclass)))
+               :java-class jclass))))
+
 (defmethod print-object ((coll (jclass "java.util.Collection")) stream)
   (print-unreadable-object (coll stream :type t :identity t)
     (format stream "~A ~A"
@@ -115,7 +134,7 @@
   (declare (ignore s iterator))
   (error "iterator-copy not supported for Java iterators."))
 
-;;However, it makes sense to have some sequence functions available for Sets
+;;It makes sense to have some sequence functions available for Sets
 ;;(java.util.Set) too, even if they're not sequences.
 (defun jset-add (set item)
   (jcall (jmethod "java.util.Set" "add" "java.lang.Object")
