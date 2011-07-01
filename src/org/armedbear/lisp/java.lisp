@@ -43,6 +43,11 @@
   (dolist (url urls)
     (add-url-to-classpath url)))
 
+(defgeneric add-to-classpath (jar-or-jars &optional classloader))
+
+(defmethod add-to-classpath (jar-or-jars &optional (classloader (get-current-classloader)))
+  (%add-to-classpath jar-or-jars classloader))
+
 (defun jregister-handler (object event handler &key data count)
   (%jregister-handler object event handler data count))
 

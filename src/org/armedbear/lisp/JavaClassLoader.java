@@ -197,13 +197,26 @@ public class JavaClassLoader extends URLClassLoader {
         }
     };
 
-    // ### add-to-classpath jar-or-jars &optional (classloader (get-current-classloader))
+    private static final Primitive GET_CURRENT_CLASSLOADER = new pf_get_current_classloader();
+    @DocString(name="get-current-classloader")
+    private static final class pf_get_current_classloader extends Primitive {
+        pf_get_current_classloader() {
+            super("get-current-classloader", PACKAGE_JAVA, true);
+        }
+        @Override 
+        public LispObject execute() {
+            return new JavaObject(getCurrentClassLoader());
+        }
+    };
+        
+    // ### %add-to-classpath jar-or-jars &optional (classloader (get-current-classloader))
     private static final Primitive ADD_TO_CLASSPATH = new pf_add_to_classpath();
     private static final class pf_add_to_classpath extends Primitive 
     {
         pf_add_to_classpath() 
         {
-            super("add-to-classpath", PACKAGE_JAVA, true, "jar-or-jars &optional (classloader (get-current-classloader))");
+            super("%add-to-classpath", PACKAGE_JAVA, false, 
+                  "jar-or-jars &optional (classloader (get-current-classloader))");
         }
 
         @Override
