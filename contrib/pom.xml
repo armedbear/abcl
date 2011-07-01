@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+   xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <!-- NOT USABLE FOR BUILDS, only for installing into a repository! -->
+
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>6</version>
+  </parent>
+  <groupId>org.armedbear.lisp</groupId>
+  <artifactId>abcl-contrib</artifactId>
+  <version>0.26.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>Armed Bear Common Lisp (ABCL) Contribs</name>
+  <description>Extra packages--contribs--for ABCL</description>
+  <url>http://common-lisp/project/armedbear</url>
+  <licenses>
+    <license>
+      <name>GNU General Public License with Classpath exception</name>
+      <url>http://www.gnu.org/software/classpath/license.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:svn:svn://common-lisp.net/project/armedbear/svn/trunk/</connection>
+    <developerConnection>scm:svn:svn+ssh://common-lisp.net/project/armedbear/svn/trunk/</developerConnection>
+    <url>http://common-lisp.net/websvn/listing.php?repname=armedbear</url>
+  </scm>
+  <developers>
+    <developer>
+      <id>ehu</id>
+      <name>Erik Huelsmann</name>
+      <email>ehuels (at) gmail (dot) com</email>
+    </developer>
+    <developer>
+      <id>easyE</id>
+      <name>Mark Evenson</name>
+      <email>evenson (at) panix (dot) com</email>
+    </developer>
+    <developer>
+      <id>V-ille</id>
+      <name>Ville Voutilainen</name>
+      <email>ville.voutilainen (at) gmail (dot) com</email>
+    </developer>
+    <developer>
+      <id>astalla</id>
+      <name>Alessio Stalla</name>
+      <email>alessiostalla (at) gmail (dot) com</email>
+    </developer>
+  </developers>
+  <dependencies />
+</project>

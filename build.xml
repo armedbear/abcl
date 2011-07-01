@@ -927,6 +927,8 @@ ${basedir}/../cl-bench
             depends="abcl.binary.tar,abcl.source.tar,abcl.binary.zip,abcl.source.zip">
       <copy file="${abcl.jar.path}"
             tofile="${dist.dir}/abcl-${abcl.version}.jar"/>
+      <copy file="${abcl-contrib.jar}"
+            tofile="${dist.dir}/abcl-contrib-${abcl.version}.jar"/>
     </target>
 
     <import file="netbeans-build.xml" optional="true"/> 
