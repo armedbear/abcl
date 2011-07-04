@@ -368,6 +368,40 @@ the garbage collector and others.
 
 \include{extensions}
 
+\subsection{Beyond ANSI}
+
+Naturally, in striving to be a useful contemporary Common Lisp
+implementation, ABCL endeavors to include extensions beyond the ANSI
+specification which are either widely adopted or are especially useful
+in working with the hosting JVM.
+
+\subsubsection{Extensions to CLOS}
+
+There is an additional syntax for specializing the parameter of a
+generic function on a java class, viz. (java:jclass CLASS__STRING)
+where CLASS__STRING is a string naming a Java class in dotted package
+form.
+
+For instance the following specialization would perhaps allow one to
+print more information about the contents of a java.util.Collection
+object
+
+\begin[java]{code}
+(defmethod print-object ((coll (java:jclass "java.util.Collection")) stream)
+ …
+ \end[java]{code}
+
+If the class had been loaded via a classloader other than the original
+the class you wish to specialize on, one needs to specify the
+classloader as an optional third argument.
+
+\begin[java]{code}
+(defmethod print-object ((device-id (java:jclass "dto.nbi.service.hdm.alcatel.com.NBIDeviceID" 
+                                    (#"getBaseLoader" cl-user::*classpath-manager*)))
+ …
+ \end[java]{code}
+
+
 \section{Multithreading}
 
 % TODO document the THREADS package.
