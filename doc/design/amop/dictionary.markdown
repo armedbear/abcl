@@ -37,7 +37,6 @@ remove-dependent metaobject dependent
 remove-direct-method specializer method
 remove-direct-subclass superclass subclass
 remove-method generic-function method
-set-funcallable-instance-function funcallable-instance function
 slot-boundp-using-class class object slot
 
 slot-makunbound-using-class class object slot
@@ -107,3 +106,4 @@ intern-eql-specializer object
 (setf class-name) new-name class
 (setf generic-function-name) new-name generic-function
 (setf slot-value-using-class) new-value class object slot
+set-funcallable-instance-function funcallable-instance function
