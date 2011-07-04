@@ -42,7 +42,7 @@ public abstract class Function extends Operator
     private int hotCount;
     /**
      * The value of *load-truename* which was current when this function
-     * was loaded, used for fetching the class bytes in case of disassebly.
+     * was loaded, used for fetching the class bytes in case of disassembly.
      */
     private final LispObject loadedFrom;
 
