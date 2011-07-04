@@ -32,7 +32,36 @@
                (eql (class-name superclass) 'standard-class)))))
 
 (export '(funcallable-standard-class
-          validate-superclass))
+          validate-superclass
+          direct-slot-definition-class
+          effective-slot-definition-class
+          compute-effective-slot-definition
+          compute-class-precedence-list
+          compute-effective-slot-definition
+          compute-slots
+          finalize-inheritance
+          slot-boundp-using-class
+          slot-makunbound-using-class
+          
+          class-default-initargs
+          class-direct-default-initargs
+          class-direct-slots
+          class-direct-subclasses
+          class-direct-superclasses
+          class-finalized-p
+          class-prototype
+          
+          generic-function-lambda-list
+
+          method-function
+          
+          slot-definition-readers
+          slot-definition-writers
+
+          eql-specializer-object
+          extract-lambda-list
+
+          intern-eql-specializer))
 
 (provide 'mop)
 

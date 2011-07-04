@@ -5,13 +5,10 @@ From http://www.lisp.org/mop/dictionary.html
 add-dependent metaobject dependent
 add-direct-method specializer method
 add-direct-subclass superclass subclass
-add-direct-method specializer method
-add-direct-subclass superclass subclass
 add-method generic-function method
 allocate-instance class &rest initargs
 
 compute-applicable-methods generic-function arguments
-compute-applicable-methods-using-classes generic-function classes
 compute-applicable-methods-using-classes generic-function classes
 compute-class-precedence-list class
 compute-default-initargs class
@@ -24,10 +21,9 @@ effective-slot-definition-class class &rest initargs
 
 ensure-class-using-class class name &key direct-default-initargs direct-slots direct-superclasses
 name metaclass &allow-other-keys
-ensure-generic-function-using-class generic-function function-name &key argument-precedence-order
-declarations documentation generic-function-class lambda-list method-class method-combination
-name &allow-other-keys
+ensure-generic-function-using-class generic-function function-name &key argument-precedence-order declarations documentation generic-function-class lambda-list method-class method-combination name &allow-other-keys
 find-method-combination generic-function method-combination-type-name method-combination-options
+finalize-inheritance class
 
 make-method-lambda generic-function method lambda-expression environment
 map-dependents metaobject function
@@ -68,7 +64,8 @@ generic-function-declarations generic-function
 generic-function-lambda-list generic-function
 generic-function-method-class generic-function
 generic-function-method-combination generic-function
-generic-function-methods and generic-function-name generic-function
+generic-function-methods generic-function
+generic-function-name generic-function
 
 ## Readers for Method Metaobjects
 
