@@ -1686,12 +1686,12 @@
      (let ((s "file:/path with /spaces"))
        (equal s
               (namestring (pathname s))))
-     'file-error)
+     'error)
   t)
 
 (deftest pathname.uri-encoding.2
-    (equal "/path with/uri-escaped/?characters/"
-           (namestring (pathname "file:/path%20with/uri-escaped/%3fcharacters/")))
+    (string-equal "/path with/uri-escaped/?characters/"
+                  (namestring (pathname "file:/path%20with/uri-escaped/%3fcharacters/")))
   t)
 
 (deftest pathname.load.1
