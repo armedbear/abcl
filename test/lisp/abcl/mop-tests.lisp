@@ -360,3 +360,14 @@
   1)
 
 
+(defclass foo-class (standard-class))
+(defmethod mop:validate-superclass ((class foo-class) (superclass standard-object))
+  t)
+
+(deftest validate-superclass.1 
+    (mop:validate-superclass 
+     (make-instance 'foo-class) 
+     (make-instance 'standard-object))
+  t)
+
+

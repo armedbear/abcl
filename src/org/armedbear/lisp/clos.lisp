@@ -3172,4 +3172,8 @@ or T when any keyword is acceptable due to presence of
 (defmethod class-prototype ((class structure-class))
   (allocate-instance class))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (require "MOP"))
+
 (provide 'clos)
+

@@ -107,6 +107,7 @@
       (load (do-compile "require.lisp"))
       (load (do-compile "substitute.lisp"))
       (load (do-compile "clos.lisp"))
+      (load (do-compile "mop.lisp"))
       ;; Order matters for these files.
       (mapc #'do-compile '("collect.lisp"
                            "macros.lisp"
