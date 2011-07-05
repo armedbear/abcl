@@ -42,6 +42,9 @@
   (print-unreadable-object (object stream :type t :identity t)
      (write-string (%write-to-string object) stream)))
 
+(defmethod print-object ((object standard-object) stream)
+  (write-string (%write-to-string object) stream))
+
 (defmethod print-object ((object structure-object) stream)
   (write-string (%write-to-string object) stream))
 
