@@ -61,6 +61,7 @@ generic-function-methods
   Present in SYSTEM.
   
 method-generic-function
+  Check %method-generic-function
 
 method-lambda-list
   Present in SYSTEM.
