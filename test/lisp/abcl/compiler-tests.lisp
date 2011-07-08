@@ -443,3 +443,38 @@
   :args (#.most-positive-java-long #.most-negative-java-long)
   :results #.most-positive-java-long)
 
+;;; ticket #147
+(deftest compiler.1 
+    (let ((tmpfile (ext::make-temp-file))
+          (forms `((in-package :cl-user)
+                     (eval-when (:compile-toplevel :load-toplevel :execute)
+                       (setf *print-case* ':downcase))
+                     (defstruct rec a b))))
+      (with-open-file (s tmpfile :direction :output)
+        (dolist (form forms)
+          (write form :stream s)))
+      (let ((result (compile-file tmpfile)))
+        (delete-file tmpfile)
+        (not (null result))))
+  t)
+
+;;; ticket #156
+(deftest compiler.2
+    (let ((tmpfile (ext::make-temp-file))
+          (line "(defconstant a #.(make-array '(8 256) 
+                    :element-type '(unsigned-byte 32) :initial-element 0))"))
+      (with-open-file (s tmpfile :direction :output)
+        (format s "~A" line))
+      (let ((result (compile-file tmpfile)))
+    #+nil    (delete-file tmpfile)
+        (not (null result))))
+  t)
+
+
+
+
+
+        
+
+        
+        

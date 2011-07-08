@@ -134,6 +134,11 @@
         (*print-lines* nil)
         (*print-pretty* nil)
         (*print-radix* nil)
+#+nil ;; XXX Some types (q.v. (UNSIGNED-BYTE 32)) don't have a
+      ;; readable syntax because they don't roundtrip to the same
+      ;; type, but still return a Lisp object that "works", albeit
+      ;; perhaps inefficiently when READ from their DUMP-FORM
+      ;; representation.
         (*print-readably* t)
         (*print-right-margin* nil)
         (*print-structure* t)
