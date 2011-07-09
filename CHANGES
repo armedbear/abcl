@@ -1,3 +1,91 @@
+Version 0.26.0
+==============
+svn://common-lisp.net/project/armedbear/svn/tags/0.26.0/abcl
+(?? ???? 2011)
+
+Features
+--------
+
+ * Add support for weak reference objects
+
+ * Add support for finalizers on LispObject derived classes
+
+ * Upgrade ASDF to 2.0.16.1
+
+ * #\ reader macro now understands #\uNNNN as unicode codepoints
+
+ * JAVA:JRESOLVE-METHOD returns same method as would have been
+   called by JAVA:JCALL with the same arguments
+
+ * Ant 'update' target to upload application to Google App Engine
+
+ * Simple RUN-PROGRAM implementation
+
+ * Support for custom slot definitions according to AMOP
+
+ * New JAVA:*JAVA-OBJECT-TO-STRING-LENGTH* variable to control pretty
+   printing of Java objects
+
+ * JSS - more dynamic Lisp/Java FFI - (http://lsw2.googlecode.com/svn/trunk)
+   imported
+
+ * (REQUIRE :ABCL-CONTRIB) adds 'abcl-contrib.jar' to the ASDF search path
+
+ * Support for weak references in hash tables through a :WEAKNESS keyword
+   argument to MAKE-HASH-TABLE; with SYS:HASH-TABLE-WEAKNESS for inspection
+
+ * Support for loading ASDF systems from JAR archives
+
+ * Fast SHA1, SHA256 and SHA512 cryptographic hashes for files
+
+ * Beginnings of a manual
+
+ * ABCL/ASDF integration with Maven provided systems
+
+ * ASDF-JAR:PACKAGE function to package ASDF systems into JARs
+
+Changes
+=======
+
+ * Reduced code size in the compiler by changing COMPILE-TEST-FORM
+
+ * Enhanced SLIME inspector for JAVA:JAVA-OBJECT
+
+ * Reimplemented MERGE-PATHNAMES
+
+ * TRANSLATE-PATHNAME aligned with SBCL's behaviour if version is wild
+
+ * Removed PRINT-OBJECT methods duplicating Java side code
+
+ * Refactored code in SYSTEM:ZIP function
+
+ * Allow JCOERCE to convert any number to java.lang.Byte (using
+   its two's complement)
+
+ * Replace MAKE-IMMEDIATE-OBJECT with +NULL+, +TRUE+ and +FALSE+ constants
+   (the only supported ones)
+
+ * Better separation between java-collections package and Java FFI
+
+ * JAVA:ADD-TO-CLASSPATH is now a generic function
+
+Fixes
+=====
+
+ * Google App Engine example fixed
+
+ * MAKE-PATHNAME erroneously merges directories as in MERGE-PATHNAME
+
+ * Pretty printer routines using SYS:OUTPUT-OBJECT with GRAY-STREAM
+
+ * Value of *PRINT-CASE* affects file (to FASL) compilation
+
+ * MAKE-PATHNAME ignores version in :DEFAULTS
+
+ * URI decoding algorithm in Pathname.java
+
+ * JNEW-ARRAY-FROM-ARRAY should create byte[] arrays
+
 Version 0.25.0
 ==============
 svn://common-lisp.net/project/armedbear/svn/tags/0.25.0/abcl
