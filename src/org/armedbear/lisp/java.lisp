@@ -223,6 +223,14 @@
 	    i (1+ i)))
     jarray))
 
+(defun jarray-from-list (list)
+  "Return a Java array from LIST whose type is inferred from the first element.
+
+For more control over the type of the array, use JNEW-ARRAY-FROM-LIST."
+  (jnew-array-from-list
+   (jobject-class (first list))
+   list))
+
 (defun list-from-jarray (jarray)
   "Returns a list with the elements of `jarray`."
   (loop for i from 0 below (jarray-length jarray)
