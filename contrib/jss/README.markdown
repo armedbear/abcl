@@ -29,29 +29,61 @@ classpath have been collected.  For each class a.b.C.d, we have
 recorded that b.c.d, b.C.d, C.d, c.d, and d potentially refer to this
 class. In your call to new, as long as the symbol can refer to only
 one class, we use that class. In this case, it is
-java.io.StringWriter. You could also have written (new
-'io.stringwriter), (new '|io.StringWriter|), (new
-'java.io.StringWriter)...
+java.io.StringWriter. You could also have written 
 
-the call (#"write" sw "Hello "), uses the code in invoke.java to
-call the method named "write" with the arguments sw and "Hello ". 
-JSS figures out the right java method to call, and calls it.
+     (new 'io.stringwriter)
+
+or      
+     (new '|io.StringWriter|)
+
+or     
+     (new 'java.io.StringWriter)
+
+The call 
+
+     (#"write" sw "Hello ")
+     
+uses the code in invoke.java to call the method named "write" with
+the arguments sw and "Hello ".  JSS figures out the right java method
+to call, and calls it.
+
+Static calls are possible as well with the #" macro, but the
+first argument MUST BE A SYMBOL to distinguish 
+
+     (#"getProperties" "java.lang.System")
+     
+from 
+
+     (#"getProperties" 'java.lang.System)     
+     
+The first attempts to call a method on the java.lang.String object
+with the contents "java.lang.System", which results in an error, while
+the second invokes the static java.lang.System.getProperties() method.     
 
 If you want to do a raw java call, use #0"toString". Raw calls
 return their results as Java objects, avoiding doing the usual Java
 object to Lisp object conversions that ABCL does.
 
-(with-constant-signature ((name jname raw?)*) &body body)
+
+    (with-constant-signature ((name jname raw?)*) &body body)
+    
 binds a macro which expands to a jcall, promising that the same method 
 will be called every time. Use this if you are making a lot of calls and 
 want to avoid the overhead of a the dynamic dispatch. 
-e.g. (with-constant-signature ((tostring "toString")) 
+e.g.
+ 
+    (with-constant-signature ((tostring "toString")) 
         (time (dotimes (i 10000) (tostring "foo"))))
-runs about 3x faster than (time (dotimes (i 10000) (#"toString" "foo")))
 
-(with-constant-signature ((tostring "toString" t)) ...) will cause the
-toString to be a raw java call. see get-all-jar-classnames below for
-an example.
+runs about three times faster than 
+ 
+    (time (dotimes (i 10000) (#"toString" "foo")))
+
+
+    (with-constant-signature ((tostring "toString" t)) ...) 
+    
+will cause the toString to be a raw java call. See
+JSS::GET-ALL-JAR-CLASSNAMES for an example.
  
 Implementation is that the first time the function is called, the
 method is looked up based on the arguments passed, and thereafter
@@ -61,3 +93,19 @@ the moment (lazy)
 (japropos string) finds all class names matching string
 
 (jcmn class-name) lists the names of all methods for the class
+
+
+Compatibility
+-------------
+
+The function ENSURE-COMPATIBILITY attempts to provide a compatibility
+mode to existing users of JSS by importing the necessary symbols into
+CL-USER.
+
+Some notes on other compatibilty issues:
+
+*classpath-manager* 
+
+   Since we are no longer using Beanshell, this is no longer present.
+   For obtaining the current classloader use JAVA:*CLASSLOADER*.
+   

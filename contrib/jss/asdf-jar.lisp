@@ -24,11 +24,9 @@
 
 (defmethod perform ((operation load-op) (c jar-file))
   (or jss:*inhibit-add-to-classpath*
-      (jss::add-to-classpath (component-pathname c))))
+      (jss:add-to-classpath (component-pathname c))))
 
 (defmethod operation-done-p ((operation load-op) (c jar-file))
-  t
-#+nil
   (or jss:*inhibit-add-to-classpath*
       (member (namestring (truename (component-pathname c))) jss:*added-to-classpath* :test 'equal)))
 

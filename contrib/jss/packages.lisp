@@ -16,6 +16,7 @@
    #:need-to-add-directory-jar?
    #:jcmn
    #:japropos
+   #:new 
 
 ;;; Useful utilities to convert common Java items to Lisp counterparts
    #:hashmap-to-hashtable
@@ -25,7 +26,7 @@
    #:vector-to-list
 
 ;;; deprecated
-   #:new ; use JAVA:NEW
+
    #:get-java-field ; use JAVA:JFIELD
 
 ;;; Move to JAVA?
