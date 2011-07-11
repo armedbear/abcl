@@ -58,6 +58,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
     <patternset id="abcl.source.java">
       <include name="org/armedbear/lisp/*.java"/>
       <include name="org/armedbear/lisp/util/*.java"/>
+      <include name="org/armedbear/lisp/protocol/*.java"/>
       <include name="org/armedbear/lisp/java/**/*.java"/>
       <include name="org/armedbear/lisp/scripting/*.java" if="abcl.jsr-223.p"/>
       <include name="org/armedbear/lisp/scripting/util/*.java" if="abcl.jsr-223.p"/>
