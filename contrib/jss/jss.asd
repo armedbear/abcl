@@ -3,7 +3,7 @@
 
 (defsystem :jss
   :author "Alan Ruttenberg, Mark Evenson"
-  :version "2.1.0" 
+  :version "2.1.1" 
   :components 
   ((:module base :pathname "" :serial t 
             :components ((:file "packages")

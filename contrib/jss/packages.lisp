@@ -34,6 +34,6 @@
 
 
 ;;; Enable compatibility with jss-1.0 by placing symbols in CL-USER
-   #:ensure-compatiblity #:*cl-user-compatibility*)
+   #:ensure-compatibility #:*cl-user-compatibility*)
    (:shadow #:add-to-classpath))
 
