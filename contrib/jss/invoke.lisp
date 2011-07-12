@@ -551,15 +551,28 @@
        collect item)))
 
 (defun jlist-to-list (list)
+  "Convert a LIST implementing java.util.List to a Lisp list."
+  (declare (optimize (speed 3) (safety 0)))
+  (loop :for i :from 0 :below (jcall "size" list)
+     :collecting (jcall "get" list i)))
+
+(defun jarray-to-list (jarray)
+  (declare (optimize (speed 3) (safety 0)))
+  (jlist-to-list
+   (jstatic "asList" "java.util.Arrays" jarray)))
+
+;;; Deprecated 
+;;; 
+;;; XXX unclear what sort of list this would actually work on, as it
+;;; certainly doesn't seem to be any of the Java collection types
+;;; (what implements getNext())?
+(defun list-to-list (list)
   (declare (optimize (speed 3) (safety 0)))
   (with-constant-signature ((isEmpty "isEmpty") (getfirst "getFirst")
-			    (getNext "getNext"))
+                            (getNext "getNext"))
     (loop until (isEmpty list)
        collect (getFirst list)
        do (setq list (getNext list)))))
-
-;;; Deprecated
-(setf (symbol-function 'list-to-list) #'jlist-to-list)
 
 ;; Contribution of Luke Hope. (Thanks!)
 

@@ -24,6 +24,7 @@
    #:jlist-to-list
    #:set-to-list
    #:vector-to-list
+   #:jarray-to-list
 
 ;;; deprecated
    #:get-java-field ; use JAVA:JFIELD
