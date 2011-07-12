@@ -783,7 +783,7 @@ ${basedir}/../ansi-tests.
 
 [1]: svn://common-lisp.net/project/ansi-test/svn/trunk/ansi-tests
 
-The CL-BENCH test require that [cl-bench][2] be maunally installed in
+The CL-BENCH tests require that [cl-bench][2] be manually installed in
 ${basedir}/../cl-bench
 
 [2]: http://www.chez.com/emarsden/downloads/cl-bench.tar.gz
