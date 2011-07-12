@@ -550,13 +550,16 @@
        for item = (next iterator)
        collect item)))
 
-(defun list-to-list (list)
+(defun jlist-to-list (list)
   (declare (optimize (speed 3) (safety 0)))
   (with-constant-signature ((isEmpty "isEmpty") (getfirst "getFirst")
 			    (getNext "getNext"))
     (loop until (isEmpty list)
        collect (getFirst list)
        do (setq list (getNext list)))))
+
+;;; Deprecated
+(setf (symbol-function 'list-to-list) #'jlist-to-list)
 
 ;; Contribution of Luke Hope. (Thanks!)
 

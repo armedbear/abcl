@@ -21,17 +21,16 @@
 ;;; Useful utilities to convert common Java items to Lisp counterparts
    #:hashmap-to-hashtable
    #:iterable-to-list
-   #:list-to-list
+   #:jlist-to-list
    #:set-to-list
    #:vector-to-list
 
 ;;; deprecated
-
    #:get-java-field ; use JAVA:JFIELD
+   #:list-to-list
 
 ;;; Move to JAVA?
    #:jclass-all-interfaces
-
 
 ;;; Enable compatibility with jss-1.0 by placing symbols in CL-USER
    #:ensure-compatibility #:*cl-user-compatibility*)
