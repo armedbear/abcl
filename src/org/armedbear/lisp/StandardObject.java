@@ -208,12 +208,6 @@ public class StandardObject extends LispObject
     int currentLevel = Fixnum.getValue(currentPrintLevel);
     if (currentLevel >= maxLevel)
       return "#";
-    if (typep(Symbol.CONDITION) != NIL)
-      {
-        StringOutputStream stream = new StringOutputStream();
-        Symbol.PRINT_OBJECT.execute(this, stream);
-        return stream.getString().getStringValue();
-      }
     return unreadableString(typeOf().writeToString());
   }
 
