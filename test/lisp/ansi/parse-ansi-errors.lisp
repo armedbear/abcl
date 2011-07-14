@@ -71,7 +71,11 @@ An example on an entry:
   (clrhash *id*))
 
 (defun get-hash-table (test)
-  (getf `(doit ,*doit* compileit ,*compileit*) test))  
+  (let ((name (symbol-name test)))
+    (when (string-equal name "doit")
+      (return-from get-hash-table *doit*))
+    (when (string-equal name "compileit")
+      (return-from get-hash-table *compileit*))))
 
 (defvar *default-database-file* 
   (if (find :asdf2 *features*)
@@ -79,6 +83,9 @@ An example on an entry:
       (merge-pathnames "ansi-test-failures" (directory-namestring *load-truename*))))
 
 (defun parse (&optional (file *default-database-file*))
+  "Parse the ansi test database present at *DEFAULT-DATABASE-FILE*.
+
+Optionally the file to parse may be specified by the FILE argument."
   (format t "Parsing test report database from ~A~%" *default-database-file*)
   (with-open-file (s file :direction :input)
     (do ((form (read s) (read s nil nil)))
@@ -94,13 +101,13 @@ An example on an entry:
             (push 'noid args) 
             (push :id args))
           (setf id (getf args :id))
+          (unless (gethash version (get-hash-table test))
+            (setf (gethash version (get-hash-table test))
+                  (make-hash-table)))
           (if (> (length args) 2)
               (setf (gethash id *id*) args)
               (if (null (gethash id *id*))
                   (setf (gethash id *id*) args)))
-          (when (null (gethash version (get-hash-table test)))
-            (setf (gethash version (get-hash-table test))
-                  (make-hash-table)))
           (setf (gethash id
                          (gethash version (get-hash-table test)))
                 failures))))))
@@ -139,6 +146,13 @@ An example on an entry:
                                                       failure-2)))))))
 
 (defun report (test version-1 version-2)
+  "Report on the difference of test failures for TEST between VERSION-1 and VERSION-2.
+
+TEST is symbol with a value of 'DOIT specifying the interpreted
+version of the tests, or 'COMPILEIT specifiying the compiled verision of the tests.
+
+VERSION-1 and VERSION-2 are symbols of two versions contained in the test database."
+
   (let ((reports (generate-report test version-1 version-2)))
     (dolist (report reports)
       (destructuring-bind ((id1 . id2) ((total-failures1 diff-1->2)
@@ -151,4 +165,32 @@ An example on an entry:
           (format t "~A[~A] --> ~A[~A] additional failures:~%~A~%" 
                   version-2 id2 version-1 id1 diff-2->1))))))
             
+(defun full-report (version-1 version-2)
+  (let ((interpreted-reports (generate-report 'doit version-1 version-2))
+        (compiled-reports (generate-report 'compileit version-1 version-2)))
+    (dolist (interpreted interpreted-reports)
+      (destructuring-bind ((id1 . id2) ((total-failures1 diff-1->2)
+                                        (total-failures2 diff-2->1)))
+          interpreted
+        (format t "~2&Interpreted~%")
+        (format t "~&~20<~A-~A~>~20<~A-~A~>" id1  version-1 id2 version-2)
+        (format t "~&~20<~A failures~>~20<~A failures~>" 
+                total-failures1 total-failures2)
+        (format t "~&~A-~A:~&  ~A" id1 version-1 diff-1->2)
+        (format t "~&~A-~A:~&  ~A" id2 version-2 diff-2->1)))
+    (dolist (compiled compiled-reports)
+      (destructuring-bind ((id1 . id2) ((total-failures1 diff-1->2)
+                                        (total-failures2 diff-2->1)))
+          compiled
+        (format t "~2&Compiled~%")
+        (format t "~&~20<~A-~A~>~20<~A-~A~>" id1  version-1 id2 version-2)
+        (format t "~&~20<~A failures~>~20<~A failures~>" 
+                total-failures1 total-failures2)
+        (format t "~&~A-~A:~&  ~A" id1 version-1 diff-1->2)
+        (format t "~&~A-~A:~&  ~A" id2 version-2 diff-2->1)))))
+
+      
+    
+  
+    
         
