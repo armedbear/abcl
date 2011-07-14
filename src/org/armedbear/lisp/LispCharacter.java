@@ -627,7 +627,8 @@ public final class LispCharacter extends LispObject
       }
 
     if (c > 255) {
-        return "U" + Integer.toString(c, 16);
+        final String result = "0000" + Integer.toString(c, 16);
+        return "U" + result.substring(result.length() - 4, result.length());
     }
         
     if (c<0) return null;
