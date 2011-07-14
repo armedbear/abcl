@@ -5,6 +5,7 @@
 	   #:verify-ansi-tests
 	   #:load-tests
 	   #:clean-tests
+           #:full-report
 	   #:report #:parse))
 
 (in-package :abcl.test.ansi)
