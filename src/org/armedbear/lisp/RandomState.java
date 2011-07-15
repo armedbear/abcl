@@ -35,9 +35,8 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
@@ -55,16 +54,14 @@ public final class RandomState extends LispObject
     public RandomState(RandomState rs)
     {
         try {
-            File file = File.createTempFile("MAKE-RANDOM-STATE", null);
-            FileOutputStream fileOut = new FileOutputStream(file);
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(byteOut);
             out.writeObject(rs.random);
             out.close();
-            FileInputStream fileIn = new FileInputStream(file);
-            ObjectInputStream in = new ObjectInputStream(fileIn);
+            ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray());
+            ObjectInputStream in = new ObjectInputStream(byteIn);
             random = (Random) in.readObject();
             in.close();
-            file.delete(); // FIXME: file leak on exception
         }
         catch (Throwable t) { // ANY exception gets converted to a lisp error
             error(new LispError("Unable to copy random state."));
