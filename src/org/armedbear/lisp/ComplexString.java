@@ -330,7 +330,7 @@ public final class ComplexString extends AbstractString
   @Override
   public Object javaInstance()
   {
-    return new String(chars());
+    return new String(getStringValue());
   }
 
   @Override
