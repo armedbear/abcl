@@ -22,9 +22,13 @@ This manual corresponds to abcl-0.26.0, as yet unreleased.
 
 \subsection{Requirements}
 
-java-1.5.xx, java-1.6.0_10+ recommended.
+java-1.5.xx, java-1.6.0__10+ recommended.
 
+% Omit the build instructions?  This really doesn't belong in a User
+% Manual, or if it does, then in an appendix.  --ME 20110725
 \subsection{Building from Source}
+
+
 
 There are three ways to build ABCL from the source release with the
 preferred (and most tested way) is to being to use the Ant build tool:
@@ -238,7 +242,6 @@ safer invocation pattern might be:
 \end{code}
 
 
-
 The Lisp \code{eval} primitive may be simply passed strings for evaluation,
 as follows
 
@@ -249,12 +252,12 @@ as follows
 
 Notice that all possible return values from an arbitrary Lisp
 computation are collapsed into a single return value.  Doing useful
-further computation on the `LispObject` depends on knowing what the
+further computation on the ``LispObject'' depends on knowing what the
 result of the computation might be, usually involves some amount
 of \code{instanceof} introspection, and forms a whole topic to itself
 (c.f. [Introspecting a LispObject](#introspecting)).  
 
-Using `EVAL` involves the Lisp interpreter.  Lisp functions may be
+Using ``EVAL'' involves the Lisp interpreter.  Lisp functions may be
 directly invoked by Java method calls as follows.  One simply locates
 the package containing the symbol, then obtains a reference to the
 symbol, and then invokes the `execute()` method with the desired
@@ -268,7 +271,7 @@ parameters.
     JavaObject parameter = new JavaObject("Lisp is fun!");
     LispObject result = fooFunction.execute(parameter);
     // How to get the "naked string value"?
-    System.out.prinln("The result was " + result.writeToString()); 
+    System.out.println("The result was " + result.writeToString()); 
 \end{code}
 
 If one is calling an primitive function in the CL package the syntax
@@ -401,6 +404,18 @@ classloader as an optional third argument.
  …
  \end[java]{code}
 
+\subsubsection{Extensions to the Reader}
+
+We implement a special hexadecimal escape sequence for specifying
+characters to the Lisp reader, namely we allow a sequences of the form
+#\Uxxxx to be processed by the reader as character whose code is
+specified by the hexadecimal digits `xxxx'.  The hexadecimal sequence
+must be exactly four digits long, padded by leading zeros for values
+less than 0x1000.
+
+Note that this sequence is never output by the implementation.  Instead,
+the corresponding Unicode character is output for characters whose
+code is greater than 0x00ff.
 
 \section{Multithreading}
 
@@ -408,6 +423,17 @@ classloader as an optional third argument.
 \include{threads}
 
 \section{History}
+
+ABCL was originally the extension language for the J editor, which was
+started in 1998 by Peter Graves.  Sometime in 2003, it seems that a
+lot of code that had previously not been released publically was
+suddenly committed that enabled ABCL to be plausibly termed an ANSI
+Common Lisp implementation.  
+
+In 2006, the implementation was transferred to the current
+maintainers, who have strived to improve its usability as a
+contemporary Common Lisp implementation.
+
 
 \end{document}
 
