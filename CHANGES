@@ -1,3 +1,31 @@
+Version 0.26.1
+==============
+svn://common-lisp.net/project/armedbear/svn/tags/0.26.1/abcl
+
+Features
+--------
+
+ * Upgrade ASDF to 2.017.
+
+Fixes
+-----
+
+ * Fix compilation problems by including the
+   org.armedbear.lisp.protocol source in the build process
+
+ * Printing of conditions defined with DEFINE-CONDITION
+
+ * Regression with failing SYNTAX.SHARP-BACKSLASH.6
+   and SYNTAX.SHARP-BACKSLASH.7 ANSI test suite failures
+
+ * Multiple failures in PPRINT.* ANSI test suite failures
+
+ * String interop with Java for strings with fill pointer
+
+ * Made #\Uxxxx a synonym for character codes with values greater than
+   255 on input, but never output as the character name by the
+   implementation.
+
 Version 0.26.0
 ==============
 svn://common-lisp.net/project/armedbear/svn/tags/0.26.0/abcl
