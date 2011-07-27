@@ -431,7 +431,7 @@ between the machine where you save it at the time you save it
 and the machine you resume it at the time you resume it.
 
 
-@section Configuring ASDF to find your systems -- old style
+@section Configuring ASDF to find your systems --- old style
 
 The old way to configure ASDF to find your systems is by
 @code{push}ing directory pathnames onto the variable
@@ -498,7 +498,8 @@ instead of pushing each of the many involved directories
 to the @code{asdf:*central-registry*}.
 ASDF knows how to follow such @emph{symlinks}
 to the actual file location when resolving the paths of system components
-(on Windows, you can use Windows shortcuts instead of POSIX symlinks).
+(on Windows, you can use Windows shortcuts instead of POSIX symlinks;
+if you try aliases under MacOS, we are curious to hear about your experience).
 
 For example, if @code{#p"/home/me/cl/systems/"} (note the trailing slash)
 is a member of @code{*central-registry*}, you could set up the
@@ -1898,7 +1899,7 @@ ASDF will first search for @code{.asd} files in the directories specified in
 @code{asdf:*central-registry*}
 before it searches in the source registry above.
 
-@xref{Configuring ASDF,,Configuring ASDF to find your systems -- old style}.
+@xref{Configuring ASDF,,Configuring ASDF to find your systems --- old style}.
 
 By default, @code{asdf:*central-registry*} will be empty.
 
@@ -1937,9 +1938,9 @@ DIRECTIVE :=
     (:tree DIRECTORY-PATHNAME-DESIGNATOR) |
 
     ;; override the defaults for exclusion patterns
-    (:exclude PATTERN ...) |
+    (:exclude EXCLUSION-PATTERN ...) |
     ;; augment the defaults for exclusion patterns
-    (:also-exclude PATTERN ...) |
+    (:also-exclude EXCLUSION-PATTERN ...) |
     ;; Note that the scope of a an exclude pattern specification is
     ;; the rest of the current configuration expression or file.
 
@@ -1953,35 +1954,56 @@ REGULAR-FILE-PATHNAME-DESIGNATOR := PATHNAME-DESIGNATOR ;; interpreted as a file
 DIRECTORY-PATHNAME-DESIGNATOR := PATHNAME-DESIGNATOR ;; interpreted as a directory name
 
 PATHNAME-DESIGNATOR :=
-    NULL | ;; Special: skip this entry.
-    ABSOLUTE-COMPONENT-DESIGNATOR |
-    (ABSOLUTE-COMPONENT-DESIGNATOR RELATIVE-COMPONENT-DESIGNATOR ...)
+    NIL | ;; Special: skip this entry.
+    ABSOLUTE-COMPONENT-DESIGNATOR ;; see pathname DSL
 
-ABSOLUTE-COMPONENT-DESIGNATOR :=
-    STRING | ;; namestring (better be absolute or bust, directory assumed where applicable)
-    PATHNAME | ;; pathname (better be an absolute path, or bust)
-    :HOME | ;; designates the user-homedir-pathname ~/
-    :USER-CACHE | ;; designates the default location for the user cache
-    :SYSTEM-CACHE | ;; designates the default location for the system cache
-    :HERE  ;; designates the location of the configuration file
-           ;; (or *default-pathname-defaults*, if invoked interactively)
-
-RELATIVE-COMPONENT-DESIGNATOR :=
-    STRING | ;; namestring (directory assumed where applicable)
-    PATHNAME | ;; pathname
-    :IMPLEMENTATION | ;; a directory based on implementation, e.g. sbcl-1.0.45-linux-amd64
-    :IMPLEMENTATION-TYPE | ;; a directory based on lisp-implementation-type only, e.g. sbcl
-    :UID | ;; current UID -- not available on Windows
-    :USER ;; current USER name -- NOT IMPLEMENTED(!)
-
-PATTERN := a string without wildcards, that will be matched exactly
+EXCLUSION-PATTERN := a string without wildcards, that will be matched exactly
 	against the name of a any subdirectory in the directory component
         of a path. e.g. @code{"_darcs"} will match @file{#p"/foo/bar/_darcs/src/bar.asd"}
 @end example
 
+Pathnames are designated using another DSL,
+shared with the output-translations configuration DSL below.
+The DSL is resolved by the function @code{asdf::resolve-location},
+to be documented and exported at some point in the future.
+
+@example
+ABSOLUTE-COMPONENT-DESIGNATOR :=
+    (ABSOLUTE-COMPONENT-DESIGNATOR RELATIVE-COMPONENT-DESIGNATOR ...) |
+    STRING | ;; namestring (better be absolute or bust, directory assumed where applicable).
+             ;; In output-translations, directory is assumed and **/*.*.* added if it's last.
+             ;; On MCL, a MacOSX-style POSIX namestring (for MacOS9 style, use #p"...");
+             ;; Note that none of the above applies to strings used in *central-registry*,
+             ;; which doesn't use this DSL: they are processed as normal namestrings.
+             ;; however, you can compute what you put in the *central-registry*
+             ;; based on the results of say (asdf::resolve-location "/Users/fare/cl/cl-foo/")
+    PATHNAME | ;; pathname (better be an absolute path, or bust)
+               ;; In output-translations, unless followed by relative components,
+               ;; it better have appropriate wildcards, as in **/*.*.*
+    :HOME | ;; designates the user-homedir-pathname ~/
+    :USER-CACHE | ;; designates the default location for the user cache
+    :HERE | ;; designates the location of the configuration file
+            ;; (or *default-pathname-defaults*, if invoked interactively)
+    :ROOT ;; magic, for output-translations source only: paths that are relative
+          ;; to the root of the source host and device
+    ;; Not valid anymore: :SYSTEM-CACHE (was a security hazard)
+
+RELATIVE-COMPONENT-DESIGNATOR :=
+    (RELATIVE-COMPONENT-DESIGNATOR RELATIVE-COMPONENT-DESIGNATOR ...) |
+    STRING | ;; relative directory pathname as interpreted by coerce-pathname.
+             ;; In output translations, if last component, **/*.*.* is added
+    PATHNAME | ;; pathname; unless last component, directory is assumed.
+    :IMPLEMENTATION | ;; directory based on implementation, e.g. sbcl-1.0.49-linux-x64
+    :IMPLEMENTATION-TYPE | ;; a directory based on lisp-implementation-type only, e.g. sbcl
+    :DEFAULT-DIRECTORY | ;; a relativized version of the default directory
+    :*/ | ;; any direct subdirectory (since ASDF 2.011.4)
+    :**/ | ;; any recursively inferior subdirectory (since ASDF 2.011.4)
+    :*.*.* | ;; any file (since ASDF 2.011.4)
+    ;; Not supported (anymore): :UID and :USERNAME
+@end example
+
 For instance, as a simple case, my @file{~/.config/common-lisp/source-registry.conf},
-which is the default place ASDF looks for this configuration,
-once contained:
+which is the default place ASDF looks for this configuration, once contained:
 @example
 (:source-registry
   (:tree (:home "cl")) ;; will expand to e.g. "/home/joeluser/cl/"
@@ -2453,29 +2475,9 @@ DIRECTIVE :=
     (DIRECTORY-DESIGNATOR (:function TRANSLATION-FUNCTION))
 
 DIRECTORY-DESIGNATOR :=
+    NIL | ;; As source: skip this entry. As destination: same as source
     T | ;; as source matches anything, as destination leaves pathname unmapped.
-    ABSOLUTE-COMPONENT-DESIGNATOR |
-    (ABSOLUTE-COMPONENT-DESIGNATOR RELATIVE-COMPONENT-DESIGNATOR ...)
-
-ABSOLUTE-COMPONENT-DESIGNATOR :=
-    NULL | ;; As source: skip this entry. As destination: same as source
-    :ROOT | ;; magic: paths that are relative to the root of the source host and device
-    STRING | ;; namestring (directory is assumed, better be absolute or bust, ``/**/*.*'' added)
-    PATHNAME | ;; pathname (better be an absolute directory or bust)
-    :HOME | ;; designates the user-homedir-pathname ~/
-    :USER-CACHE | ;; designates the default location for the user cache
-    :SYSTEM-CACHE ;; designates the default location for the system cache
-
-RELATIVE-COMPONENT-DESIGNATOR :=
-    STRING | ;; namestring, directory is assumed. If the last component, /**/*.* is added
-    PATHNAME | ;; pathname; unless last component, directory is assumed.
-    :IMPLEMENTATION | ;; a directory based on implementation, e.g. sbcl-1.0.45-linux-amd64
-    :IMPLEMENTATION-TYPE | ;; a directory based on lisp-implementation-type only, e.g. sbcl
-    :*/ | ;; any direct subdirectory (since ASDF 2.011.4)
-    :**/ | ;; any recursively inferior subdirectory (since ASDF 2.011.4)
-    :*.*.* | ;; any file (since ASDF 2.011.4)
-    :UID | ;; current UID -- not available on Windows
-    :USER ;; current USER name -- NOT IMPLEMENTED(!)
+    ABSOLUTE-COMPONENT-DESIGNATOR ;; same as in the source-registry language
 
 TRANSLATION-FUNCTION :=
     SYMBOL | ;; symbol of a function that takes two arguments,
@@ -3183,7 +3185,7 @@ and not use any deep @code{:tree} entry but only @code{:directory} entries
 or shallow @code{:tree} entries.
 Or you can fix your implementation to not be quite that slow
 when recursing through directories.
-@underline{Update}: performance bug fixed the hard way in 2.010.
+@emph{Update}: performance bug fixed the hard way in 2.010.
 
 @item
 On Windows, only LispWorks supports proper default configuration pathnames
