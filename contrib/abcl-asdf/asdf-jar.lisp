@@ -27,6 +27,14 @@
                 (return-from need-to-add-directory-jar? t)))
   nil)
 
+(defmethod java:add-to-classpath :around ((uri-or-uris t) &optional classloader)
+  (declare (ignore classloader))
+  (call-next-method)
+  (if (listp uri-or-uris)
+      (dolist (uri uri-or-uris)
+        (pushnew uri *added-to-classpath*))
+      (pushnew uri-or-uris *added-to-classpath*)))
+
 (in-package :asdf)
 
 (defclass jar-directory (static-file) ())

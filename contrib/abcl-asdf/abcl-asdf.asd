@@ -3,7 +3,7 @@
 
 (defsystem :abcl-asdf
   :author "Mark Evenson"
-  :version "0.3.1"
+  :version "0.3.2"
   :depends-on ("jss") 
   :components 
   ((:module base :pathname "" :components
