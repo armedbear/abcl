@@ -10,13 +10,13 @@
    #:with-constant-signature
 
    #:invoke-add-imports
-   #:add-directory-jars-to-class-path
-   #:add-to-classpath
    #:find-java-class
-   #:need-to-add-directory-jar?
    #:jcmn
    #:japropos
    #:new 
+   
+   #:jar-import
+   #:classfiles-import
 
 ;;; Useful utilities to convert common Java items to Lisp counterparts
    #:hashmap-to-hashtable
@@ -34,6 +34,6 @@
    #:jclass-all-interfaces
 
 ;;; Enable compatibility with jss-1.0 by placing symbols in CL-USER
-   #:ensure-compatibility #:*cl-user-compatibility*)
-   (:shadow #:add-to-classpath))
+   #:ensure-compatibility #:*cl-user-compatibility*))
+
 

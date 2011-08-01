@@ -3,9 +3,12 @@
 
 (defsystem :abcl-asdf
   :author "Mark Evenson"
-  :version "0.2.0"
-  :depends-on ("jss") ;;; XXX move the JSS ASDf defintions here? uggh.
+  :version "0.3.0"
+  :depends-on ("jss") 
   :components 
   ((:module base :pathname "" :components
 	    ((:file "abcl-asdf")
-             (:file "maven-embedder" :depends-on ("abcl-asdf"))))))
+             (:file "asdf-jar" 
+                    :depends-on ("abcl-asdf"))
+             (:file "maven-embedder" 
+                    :depends-on ("abcl-asdf" "asdf-jar"))))))

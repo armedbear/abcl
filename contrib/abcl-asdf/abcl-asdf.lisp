@@ -5,7 +5,13 @@
    #:as-classpath
 
    #:resolve-artifact
-   #:resolve-dependencies))
+   #:resolve-dependencies
+
+   #:add-directory-jars-to-class-path
+   #:need-to-add-directory-jar?
+   
+   #:*added-to-classpath*
+   #:*inhibit-add-to-classpath*))
 
 (in-package :asdf)
 (defclass iri (static-class) 

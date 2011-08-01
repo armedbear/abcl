@@ -446,30 +446,6 @@
 	    for i below (#"size" classesv)
 	    collect (#"getName" (#"elementAt" classesv i))))))
 	 
-(defvar *added-to-classpath* nil)
-
-(defvar *inhibit-add-to-classpath* nil)
-
-(defun add-to-classpath (path &optional force)
-  (unless *inhibit-add-to-classpath*
-;;;    (ensure-dynamic-classpath)
-;;;    (clear-invoke-imports)
-    (let ((absolute (namestring (truename path))))
-;;       (when (not (equal (pathname-type absolute) (pathname-type path)))
-;; 	(warn "HEY! ~a, ~a ~a, ~a" path (pathname-type path) absolute (pathname-type absolute))
-;; 	(setq @ (list path absolute)))
-      ;; NOTE: for jar files, specified as a component, the ".jar" is part of the pathname-name :(
-      (when (or force (not (member absolute *added-to-classpath* :test 'equalp)))
-;;;	(#"addClassPath" *classpath-manager* (new 'java.net.url (#"replaceAll" (#"replaceAll" (concatenate 'string "file://" absolute) "\\\\" "/") "C:" "")))
-;;;	(#"setClassLoader" '|jsint.Import| (#"getBaseLoader" *classpath-manager*))
-;	(format t "path=~a type=~a~%"  absolute (pathname-type absolute))
-        (java:add-to-classpath path)
-	(cond ((equal (pathname-type absolute) "jar")
-	       (jar-import absolute))
-	      ((file-directory-p absolute)
-	       (classfiles-import absolute)))
-	(push absolute *added-to-classpath*)))))
-
 (defun get-dynamic-class-path ()
   (rest 
    (find-if (lambda (loader) 
@@ -524,23 +500,6 @@
      do
        (pushnew full-class-name (gethash name *class-name-to-full-case-insensitive*) 
 		:test 'equal)))
-
-(defun add-directory-jars-to-class-path (directory recursive-p)
-  (if recursive-p
-      (loop for jar in (all-jars-below directory) do (add-to-classpath jar))
-      (loop for jar in (directory (merge-pathnames "*.jar" directory)) do (add-to-classpath jar))))
-
-(defun need-to-add-directory-jar? (directory recursive-p)
-  (if recursive-p
-      (loop for jar in (all-jars-below directory)
-	 do
-	   (if (not (member (namestring (truename jar)) *added-to-classpath* :test 'equal))
-	       (return-from need-to-add-directory-jar? t)))
-      (loop for jar in (directory (merge-pathnames "*.jar" directory))
-	 do
-	   (if (not (member (namestring (truename jar)) *added-to-classpath* :test 'equal))
-	       (return-from need-to-add-directory-jar? t))))
-  nil)
 
 (defun set-to-list (set)
   (declare (optimize (speed 3) (safety 0)))

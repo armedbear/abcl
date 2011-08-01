@@ -81,7 +81,7 @@ Test:
     (error "You must download maven-3.0.3 from http://maven.apache.org/download.html, then set ABCL-ASDF:*MVN-DIRECTORY* appropiately."))
   (unless (ensure-mvn-version)
     (error "We need maven-3.0.3 or later."))
-  (jss:add-directory-jars-to-class-path *mvn-libs-directory* nil)
+  (add-directory-jars-to-class-path *mvn-libs-directory* nil)
   (setf *init* t))
 
 (defun make-wagon-provider ()
