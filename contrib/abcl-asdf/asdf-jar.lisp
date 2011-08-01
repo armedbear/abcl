@@ -22,7 +22,8 @@
   (loop :for jar :in (if recursive-p 
                          (all-jars-below directory)
                          (directory (merge-pathnames "*.jar" directory)))
-     :doing (if (not (member (namestring (truename jar)) *added-to-classpath* :test 'equal))
+     :doing (if (not (member (namestring (truename jar)) 
+                             *added-to-classpath* :test 'equal))
                 (return-from need-to-add-directory-jar? t)))
   nil)
 
@@ -55,6 +56,29 @@
 (defmethod perform ((operation load-op) (c jar-file))
   (or abcl-asdf:*inhibit-add-to-classpath*
       (java:add-to-classpath (component-pathname c))))
+
+;;; The original JSS specified jar pathnames as having a NAME ending
+;;; in ".jar" without a TYPE.  If we encounter such a definition, we
+;;; clean it up.
+(defmethod perform :before ((operation load-op) (c jar-file))
+  (when (#"endsWith" (slot-value c 'name) ".jar")
+    (with-slots (name absolute-pathname) c
+      (let* ((new-name 
+              (subseq name 0 (- (length name) 4)))
+             (new-absolute-pathname 
+              (make-pathname :defaults absolute-pathname :name new-name)))
+        (setf name new-name
+              absolute-pathname new-absolute-pathname)))))
+
+(defmethod operation-done-p :before ((operation load-op) (c jar-file))
+  (when (#"endsWith" (slot-value c 'name) ".jar")
+    (with-slots (name absolute-pathname) c
+      (let* ((new-name 
+              (subseq name 0 (- (length name) 4)))
+             (new-absolute-pathname 
+              (make-pathname :defaults absolute-pathname :name new-name)))
+        (setf name new-name
+              absolute-pathname new-absolute-pathname)))))
 
 (defmethod operation-done-p ((operation load-op) (c jar-file))
   (or abcl-asdf:*inhibit-add-to-classpath*
