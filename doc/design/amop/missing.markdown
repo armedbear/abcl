@@ -77,3 +77,6 @@ extract-specializer-names
 
 funcallable-standard-instance-access
 
+## Problems
+
+finalize-inheritance is not a generic function
