@@ -533,7 +533,7 @@ interface."
 
 (defun class-add-method (class method)
   "Adds a `method' to `class'; the method must have been created using
-`make-method'."
+`make-jvm-method'."
   (push method (class-file-methods class)))
 
 (defun class-methods-by-name (class name)
