@@ -1,160 +1,20 @@
 % http://en.wikibooks.org/wiki/LaTeX/
-
-\include{index.sty}
+\include{index}
 
 \begin{document}
 \title{A Manual for Armed Bear Common Lisp}
-\date{June 17, 2011}
+\date{August 4, 2011}
 \author{Mark Evenson, Erik Huelsmann, Alessio Stallo, Ville Voutilainen}
 
 \section{Introduction}
+
+Armed Bear is a mostly conforming implementation of the ANSI Common
+Lisp standard.  This manual documents the Armed Bear Common Lisp
+implementation for users of the system.
+
 \subsection{Version}
+This manual corresponds to abcl-0.27.0, as yet unreleased.
 
-This manual corresponds to abcl-0.26.0, as yet unreleased.
-
-\section{Obtaining}
-
-\subsection{Source Repositories}
-
-\begin[shell]{code} 
-  svn co http://svn.common-lisp.net/armedbear/trunk abcl
-\end{code}
-
-\subsection{Requirements}
-
-java-1.5.xx, java-1.6.0__10+ recommended.
-
-% Omit the build instructions?  This really doesn't belong in a User
-% Manual, or if it does, then in an appendix.  --ME 20110725
-\subsection{Building from Source}
-
-
-
-There are three ways to build ABCL from the source release with the
-preferred (and most tested way) is to being to use the Ant build tool:
-
-\begin{itemize}
-
-\item Use the Ant build tool for Java environments.
-
-\item Use the Netbeans 6.x IDE to open ABCL as a project.
-
-\item Bootstrap ABCL using a Common Lisp implementation. Supported
-  implementations for this process: SBCL, CMUCL, OpenMCL, Allegro
-  CL, LispWorks or CLISP.
-\end{itemize}
-
-In all cases you need a Java 5 or later JDK (JDK 1.5 and 1.6 have been
-tested).  Just the JRE isn't enough, as you need the Java compiler
-('javac') to compile the Java source of the ABCL implementation.
-
-Note that when deploying ABCL having JDK isn't a requirement for the
-installation site, just the equivalent JRE, as ABCL compiles directly
-to byte code, avoiding the need for the 'javac' compiler in deployment
-environments.
-
-
-\subsubsection{Using Ant}
-
-Download a binary distribution [Ant version 1.7.1 or greater][1].
-Unpack the files somewhere convenient, ensuring that the 'ant' (or
-'ant.bat' under Windows) executable is in your path and executable.
-
-[1]: http://ant.apache.org/bindownload.cgi
-
-Then simply executing
-
-\begin[shell]{code}
-       unix$ ant
-\end{code}
-
-or
-
-\begin[shell]{code}
-    dos> ant.bat
-\end{code}
-
-from the directory containing this README file will create an
-executable wrapper ('abcl' under UNIX, 'abcl.bat' under Windows).  Use
-this wrapper to start ABCL.
-
-
-\subsubsection{Using NetBeans}
-
-Obtain and install the [Netbeans IDE][2]. One should be able to open
-the ABCL directory as a project in the Netbeans 6.x application,
-whereupon the usual build, run, and debug targets as invoked in the
-GUI are available.
-
-[2]: http://netbeans.org/downloads/
-
-
-\subsubsection{Building from Lisp}
-
-
-Building from a Lisp is the most venerable and untested way of
-building ABCL.  It produces a "non-standard" version of the
-distribution that doesn't share build instructions with the previous
-two methods, but it still may be of interest to those who absolutely
-don't want to know anything about Java.
-
-First, copy the file 'customizations.lisp.in' to 'customization.lisp',
-in the directory containing this README file, editing to suit your
-situation, paying attention to the comments in the file.  The critical
-step is to have Lisp special variable '*JDK*' point to the root of the
-Java Development Kit.  Underneath the directory referenced by the
-value of '*JDK*' there should be an exectuable Java compiler in
-'bin/javac' ('bin/java.exe' under Windows).
-
-Then, one may either use the 'build-from-lisp.sh' shell script or load
-the necessary files into your Lisp image by hand.
-
-\paragraph{Using the 'build-from-lisp.sh' script}
-
-Under UNIX-like systems, you may simply invoke the
-'build-from-lisp.sh' script as './build-from-lisp.sh
-<lisp-of-choice>', e.g.
-
-\begin[shell]{code}
-    unix$ ./build-from-lisp.sh sbcl
-\end{code}
-
-After a successful build, you may use \file{abcl} (\file{abcl.bat} on
-Windows) to start ABCL.  Note that this wrappers contain absolute
-paths, so you'll need to edit them if you move things around after the
-build.
-
-If you're developing on ABCL, you may want to use
-
-\begin[shell]{code}
-    unix$ ./build-from-lisp.sh <implementation> --clean=nil
-\end{code}
-
-to not do a full rebuild.
-
-In case of failure in the javac stage, you might try this:
-
-\begin[shell]{code}
-    unix$ ./build-from-lisp.sh <implementation> --full=t --clean=t --batch=nil
-\end{code}
-
-This invokes javac separately for each .java file, which avoids running
-into limitations on command line length (but is a lot slower).
-
-\subsubsubsection{Building from another Lisp by hand}
-
-There is also an ASDF definition in 'abcl.asd' for the BUILD-ABCL
-which can be used to load the necessary Lisp definitions, after which
-
-\begin[lisp]{code}
-    CL-USER> (build-abcl:build-abcl :clean t :full t)
-\end{code}
-
-will build ABCL.  If ASDF isn't present, simply LOAD the
-'customizations.lisp' and 'build-abcl.lisp' files to achieve the same
-effect as loading the ASDF definition.
-
-\subsection{Contributing}
 
 \section{Interaction with host JVM}
 
@@ -193,8 +53,8 @@ so what is documented here is subject to change.
   Symbol.java instance or by dynamically introspecting the
   corresponding Package.java instance.
 \item The Lisp dynamic environment may be saved via
-  \code{LispThread.bindSpecial(BINDING)} and restored via
-  LispThread.resetSpecialBindings(mark).
+  \code{LispThread.bindSpecial(Binding)} and restored via
+  \code{LispThread.resetSpecialBindings(Mark)}.
 \item Functions may be executed by invocation of the
   Function.execute(args [...]) 
 \end{itemize}
@@ -208,16 +68,17 @@ describes the various ways that one interacts with Lisp world of ABCL
 from Java, considering the hosted Lisp as the "Foreign Function" that
 needs to be "Interfaced".
 
-\subsubsubsection{Calling Lisp from Java}
+\subsubsection{Calling Lisp from Java}
 
 Note: As the entire ABCL Lisp system resides in the org.armedbear.lisp
 package the following code snippets do not show the relevant import
 statements in the interest of brevity.  An example of the import
 statement would be
 
-\begin[java]{code}
+\lstset{language=Java}
+\begin{lstlisting}
   import org.armedbear.lisp.*;
-\end{document}
+\end{lstliting}
 
 to potentially import all the JVM symbol from the `org.armedbear.lisp'
 namespace.
@@ -225,7 +86,7 @@ namespace.
 Per JVM, there can only ever be a single Lisp interpreter.  This is
 started by calling the static method `Interpreter.createInstance()`.
 
-\begin[java]{code}
+\begin{code}[java]
   Interpreter interpreter = Interpreter.createInstance();
 \end{code}
 
@@ -234,7 +95,7 @@ Java process it will return null, so if you are writing Java whose
 life-cycle is a bit out of your control (like in a Java servlet), a
 safer invocation pattern might be:
 
-\begin[java]{code}
+\begin{code}[java]
   Interpreter interpreter = Interpreter.getInstance();
   if (interpreter == null) {
     interpreter = Interpreter.createInstance();
@@ -245,7 +106,7 @@ safer invocation pattern might be:
 The Lisp \code{eval} primitive may be simply passed strings for evaluation,
 as follows
 
-\begin[java]{code}
+\begin{code}[java]
   String line = "(load \"file.lisp\")";
   LispObject result = interpreter.eval(line);
 \end{code}
@@ -255,7 +116,7 @@ computation are collapsed into a single return value.  Doing useful
 further computation on the ``LispObject'' depends on knowing what the
 result of the computation might be, usually involves some amount
 of \code{instanceof} introspection, and forms a whole topic to itself
-(c.f. [Introspecting a LispObject](#introspecting)).  
+(c.f. [Introspecting a LispObject])
 
 Using ``EVAL'' involves the Lisp interpreter.  Lisp functions may be
 directly invoked by Java method calls as follows.  One simply locates
@@ -263,7 +124,7 @@ the package containing the symbol, then obtains a reference to the
 symbol, and then invokes the `execute()` method with the desired
 parameters.
 
-\begin[java]{code}
+\begin{code}[java]
     interpreter.eval("(defun foo (msg) (format nil \"You told me '~A'~%\" msg))");
     Package pkg = Packages.findPackage("CL-USER");
     Symbol foo = pkg.findAccessibleSymbol("FOO"); 
@@ -279,7 +140,7 @@ becomes considerably simpler if we can locate the instance of
 definition in the ABCL source, we can invoke the symbol directly.  To
 tell if a `LispObject` contains a reference to a symbol.
 
-\begin[java]{code}
+\begin{code}[java]
     boolean nullp(LispObject object) {
       LispObject result = Primitives.NULL.execute(object);
       if (result == NIL) {
@@ -296,12 +157,12 @@ We present various patterns for introspecting an an arbitrary
 `LispObject` which can represent the result of every Lisp evaluation
 into semantics that Java can meaniningfully deal with.
 
-\paragragh{LispObject as \code{boolean}}
+\paragraph{LispObject as \code{boolean}}
 
 If the LispObject a generalized boolean values, one can use
-\java{getBooleanValue()} to convert to Java:
+\code{getBooleanValue()} to convert to Java:
 
-\begin[java]{code}
+\begin{code}[java]
      LispObject object = Symbol.NIL;
      boolean javaValue = object.getBooleanValue();
 \end{code}
@@ -309,17 +170,17 @@ If the LispObject a generalized boolean values, one can use
 Although since in Lisp, any value other than NIL means "true", the
 use of Java equality it quite a bit easier and more optimal:
 
-\begin[java]{code}}
+\begin{code}[java]
     boolean javaValue = (object != Symbol.NIL);
 \end{code}
 
-\subsubsubsubsection{LispObject is a list}
+\paragraph{LispObject is a list}
 
 If LispObject is a list, it will have the type `Cons`.  One can then use
 the \code{copyToArray} to make things a bit more suitable for Java
 iteration.
 
-\begin[java]{code}
+\begin{code}[java]
     LispObject result = interpreter.eval("'(1 2 4 5)");
     if (result instanceof Cons) {
       LispObject array[] = ((Cons)result.copyToArray());
@@ -330,7 +191,7 @@ iteration.
 A more Lispy way to iterated down a list is to use the `cdr()` access
 function just as like one would traverse a list in Lisp:;
 
-\begin[java]{code}
+\begin{code}[java]
     LispObject result = interpreter.eval("'(1 2 4 5)");
     while (result != Symbol.NIL) {
       doSomething(result.car());
@@ -381,35 +242,35 @@ in working with the hosting JVM.
 \subsubsection{Extensions to CLOS}
 
 There is an additional syntax for specializing the parameter of a
-generic function on a java class, viz. (java:jclass CLASS__STRING)
-where CLASS__STRING is a string naming a Java class in dotted package
+generic function on a java class, viz. \code{(java:jclass CLASS-STRING)}
+where \code{CLASS-STRING} is a string naming a Java class in dotted package
 form.
 
 For instance the following specialization would perhaps allow one to
 print more information about the contents of a java.util.Collection
 object
 
-\begin[java]{code}
+\begin{code}[lisp]
 (defmethod print-object ((coll (java:jclass "java.util.Collection")) stream)
- …
- \end[java]{code}
+\ldots
+\end{code}
 
 If the class had been loaded via a classloader other than the original
 the class you wish to specialize on, one needs to specify the
 classloader as an optional third argument.
 
-\begin[java]{code}
-(defmethod print-object ((device-id (java:jclass "dto.nbi.service.hdm.alcatel.com.NBIDeviceID" 
-                                    (#"getBaseLoader" cl-user::*classpath-manager*)))
- …
- \end[java]{code}
+\begin{code}[lisp]
+(defmethod print-object ((device-id (java:jclass "dto.nbi.service.hdm.alcatel.com.nNBIDeviceID" 
+                                    (\#"getBaseLoader" cl-user::*classpath-manager*)))
+\ldots
+\end{code}
 
 \subsubsection{Extensions to the Reader}
 
 We implement a special hexadecimal escape sequence for specifying
 characters to the Lisp reader, namely we allow a sequences of the form
-#\Uxxxx to be processed by the reader as character whose code is
-specified by the hexadecimal digits `xxxx'.  The hexadecimal sequence
+\# \textbackslash Uxxxx to be processed by the reader as character whose code is
+specified by the hexadecimal digits ``xxxx''.  The hexadecimal sequence
 must be exactly four digits long, padded by leading zeros for values
 less than 0x1000.
 
