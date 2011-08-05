@@ -2,7 +2,7 @@
  * ByteArrayInputStream.java
  *
  * Copyright (C) 2010 Alessio Stalla
- * $Id: ByteArrayInputStream.java 12513 2010-03-02 22:35:36Z ehuelsmann $
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
