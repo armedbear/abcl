@@ -271,11 +271,6 @@ public class Symbol extends LispObject implements java.io.Serializable
     return sb.toString();
   }
 
-  @Override
-  public String toString() {
-      return getQualifiedName();
-  }
-
   /** Gets the value associated with the symbol
    * as set by SYMBOL-VALUE.
    *

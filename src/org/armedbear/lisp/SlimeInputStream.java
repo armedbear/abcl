@@ -138,13 +138,6 @@ public class SlimeInputStream extends Stream
         lineNumber = 0;
     }
 
-
-    @Override
-    public String toString()
-    {
-        return unreadableString("SLIME-INPUT-STREAM");
-    }
-
     // ### make-slime-input-stream
     // make-slime-input-stream function output-stream => slime-input-stream
     private static final Primitive MAKE_SLIME_INPUT_STREAM =

@@ -157,14 +157,6 @@ public final class Nil extends Symbol
         return null;
     }
 
-    @Override
-    public String toString()
-    {
-        if (Symbol.PRINT_READABLY.symbolValueNoThrow() != NIL)
-            return "|COMMON-LISP|::|NIL|";
-        return "NIL";
-    }
-
     public Object readResolve() throws java.io.ObjectStreamException {
        return NIL;
     }

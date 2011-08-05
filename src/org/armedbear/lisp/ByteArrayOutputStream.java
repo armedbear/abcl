@@ -92,12 +92,6 @@ public final class ByteArrayOutputStream extends Stream
 	}
     }
 
-    @Override
-    public String toString()
-    {
-        return unreadableString("BYTE-ARRAY-OUTPUT-STREAM");
-    }
-
     // ### %make-byte-array-output-stream
     // %make-byte-array-output-stream &optional element-type => byte-array-output-stream
     private static final Primitive MAKE_BYTE_ARRAY_OUTPUT_STREAM =

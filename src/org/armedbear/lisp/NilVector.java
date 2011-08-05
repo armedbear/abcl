@@ -237,12 +237,6 @@ public final class NilVector extends AbstractString
     }
 
     @Override
-    public String toString()
-    {
-        return unreadableString("NIL-VECTOR");
-    }
-
-    @Override
     public int sxhash()
     {
         return 0;

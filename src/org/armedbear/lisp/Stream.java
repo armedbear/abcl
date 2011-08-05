@@ -1576,11 +1576,6 @@ public class Stream extends StructureObject {
         return T;
     }
 
-    @Override
-    public String toString() {
-        return unreadableString("STREAM");
-    }
-
     // read-byte stream &optional eof-error-p eof-value => byte
     // Reads an 8-bit byte.
     public LispObject readByte(boolean eofError, LispObject eofValue)

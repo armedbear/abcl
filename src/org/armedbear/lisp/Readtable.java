@@ -192,12 +192,6 @@ public class Readtable extends LispObject
     return super.typep(type);
   }
 
-  @Override
-  public final String toString()
-  {
-    return unreadableString("READTABLE");
-  }
-
   public final LispObject getReadtableCase()
   {
     return readtableCase;

@@ -98,12 +98,6 @@ public final class StringOutputStream extends Stream
         return s;
     }
 
-    @Override
-    public String toString()
-    {
-        return unreadableString("STRING-OUTPUT-STREAM");
-    }
-
     // ### %make-string-output-stream
     // %make-string-output-stream element-type => string-stream
     private static final Primitive MAKE_STRING_OUTPUT_STREAM =

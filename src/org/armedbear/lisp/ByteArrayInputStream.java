@@ -69,12 +69,6 @@ public final class ByteArrayInputStream extends Stream
         return super.typep(type); //TODO
     }
 
-    @Override
-    public String toString()
-    {
-        return unreadableString("BYTE-ARRAY-INPUT-STREAM");
-    }
-
     // ### %make-byte-array-input-stream
     // %make-byte-array-input-stream bytes &optional element-type => byte-array-input-stream
     private static final Primitive MAKE_BYTE_ARRAY_INPUT_STREAM =

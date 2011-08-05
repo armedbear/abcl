@@ -80,10 +80,4 @@ public final class SocketStream extends TwoWayStream
 	    return error(new LispError(e.getMessage()));
 	}
     }
-
-    @Override
-    public String toString()
-    {
-        return unreadableString("SOCKET-STREAM");
-    }
 }

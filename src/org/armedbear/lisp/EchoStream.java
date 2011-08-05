@@ -239,12 +239,6 @@ public final class EchoStream extends Stream
         return out.freshLine();
     }
 
-    @Override
-    public String toString()
-    {
-        return unreadableString("ECHO-STREAM");
-    }
-
     // ### make-echo-stream
     // input-stream output-stream => echo-stream
     private static final Primitive MAKE_ECHO_STREAM =

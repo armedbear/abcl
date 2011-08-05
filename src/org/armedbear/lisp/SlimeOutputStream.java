@@ -137,12 +137,6 @@ public final class SlimeOutputStream extends Stream
         }
     }
 
-    @Override
-    public String toString()
-    {
-        return unreadableString("SLIME-OUTPUT-STREAM");
-    }
-
     // ### %make-slime-output-stream
     // %make-slime-output-stream function => stream
     private static final Primitive MAKE_SLIME_OUTPUT_STREAM =

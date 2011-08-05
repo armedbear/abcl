@@ -92,12 +92,6 @@ public final class StringInputStream extends Stream
     }
 
     @Override
-    public String toString()
-    {
-        return unreadableString("STRING-INPUT-STREAM");
-    }
-
-    @Override
     public int getOffset() {
         return start + super.getOffset();
     }

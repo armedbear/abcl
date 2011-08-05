@@ -2513,10 +2513,6 @@ public class Pathname extends LispObject {
         }
     }
     
-    public String toString() {
-        return getNamestring();
-    }
-
     public URL toURL() {
         try {
             if (isURL()) {

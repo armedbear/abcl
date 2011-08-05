@@ -853,19 +853,15 @@ public final class Package extends LispObject implements java.io.Serializable
             sb.append(name);
             sb.append("\")");
             return sb.toString();
-        } else
-            return toString();
-    }
-    
-    @Override
-    public String toString() {
-         if (name != null) {
-            StringBuilder sb = new StringBuilder("#<PACKAGE \"");
-            sb.append(name);
-            sb.append("\">");
-            return sb.toString();
-        } else
-            return unreadableString("PACKAGE");
+        } else {
+             if (name != null) {
+                StringBuilder sb = new StringBuilder("#<PACKAGE \"");
+                sb.append(name);
+                sb.append("\">");
+                return sb.toString();
+            } else
+                return unreadableString("PACKAGE");
+        }
     }
 
     public Object readResolve() throws java.io.ObjectStreamException {
