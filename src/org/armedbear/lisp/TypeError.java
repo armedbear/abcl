@@ -139,10 +139,10 @@ public class TypeError extends LispError
             final LispObject datum = getDatum();
             final LispObject expectedType = getExpectedType();
             StringBuilder sb = new StringBuilder();
-            String name = datum != null ? datum.writeToString() : null;
+            String name = datum != null ? datum.princToString() : null;
             String type = null;
             if (expectedType != null)
-                type = expectedType.writeToString();
+                type = expectedType.princToString();
             if (type != null) {
                 if (name != null) {
                     sb.append("The value ");

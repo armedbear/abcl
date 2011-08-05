@@ -421,9 +421,9 @@ public class StructureObject extends LispObject
   private LispObject badIndex(int n)
   {
     StringBuilder sb = new StringBuilder("Invalid slot index ");
-    sb.append(Fixnum.getInstance(n).writeToString());
+    sb.append(Fixnum.getInstance(n).princToString());
     sb.append(" for ");
-    sb.append(writeToString());
+    sb.append(princToString());
     return error(new LispError(sb.toString()));
   }
 
@@ -449,7 +449,7 @@ public class StructureObject extends LispObject
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     try
       {
@@ -464,7 +464,7 @@ public class StructureObject extends LispObject
             return stream.getString().getStringValue();
           }
         if (_PRINT_STRUCTURE_.symbolValue(thread) == NIL)
-          return unreadableString(structureClass.getName().writeToString());
+          return unreadableString(structureClass.getName().printObject());
         int maxLevel = Integer.MAX_VALUE;
         LispObject printLevel = Symbol.PRINT_LEVEL.symbolValue(thread);
         if (printLevel instanceof Fixnum)
@@ -475,7 +475,7 @@ public class StructureObject extends LispObject
         if (currentLevel >= maxLevel && slots.length > 0)
           return "#";
         StringBuilder sb = new StringBuilder("#S(");
-        sb.append(structureClass.getName().writeToString());
+        sb.append(structureClass.getName().printObject());
         if (currentLevel < maxLevel)
           {
             LispObject effectiveSlots = structureClass.getSlotDefinitions();
@@ -507,7 +507,7 @@ public class StructureObject extends LispObject
                     sb.append(stream.getString().getStringValue());
                   }
                 else
-                  sb.append(slots[i].writeToString());
+                  sb.append(slots[i].printObject());
               }
             if (limit < slots.length)
               sb.append(" ...");

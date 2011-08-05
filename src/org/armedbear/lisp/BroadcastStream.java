@@ -219,7 +219,7 @@ public final class BroadcastStream extends Stream
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         return unreadableString("BROADCAST-STREAM");
     }

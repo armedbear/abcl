@@ -55,7 +55,7 @@ public final class UnboundVariable extends CellError
     thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
     StringBuffer sb = new StringBuffer("The variable ");
     try {
-        sb.append(getCellName().writeToString());
+        sb.append(getCellName().princToString());
     }
     finally {
         thread.resetSpecialBindings(mark);

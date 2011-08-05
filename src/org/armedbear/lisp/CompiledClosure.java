@@ -236,10 +236,10 @@ public class CompiledClosure extends Closure
 	      return loadClassBytes((byte[]) arg.javaInstance(byte[].class));
 	  } catch(Throwable t) {
 	      Debug.trace(t);
-	      return error(new LispError("Unable to load " + arg.writeToString()));
+	      return error(new LispError("Unable to load " + arg.princToString()));
 	  }
       }
-      return error(new LispError("Unable to load " + arg.writeToString()));
+      return error(new LispError("Unable to load " + arg.princToString()));
     }
   };
 

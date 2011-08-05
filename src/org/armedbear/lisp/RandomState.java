@@ -91,7 +91,7 @@ public final class RandomState extends LispObject
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         return unreadableString(Symbol.RANDOM_STATE);
     }

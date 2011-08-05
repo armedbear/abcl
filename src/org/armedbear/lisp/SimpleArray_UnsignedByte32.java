@@ -281,7 +281,7 @@ public final class SimpleArray_UnsignedByte32 extends AbstractArray
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         if (Symbol.PRINT_READABLY.symbolValue() != NIL) {
             error(new PrintNotReadable(list(Keyword.OBJECT, this)));

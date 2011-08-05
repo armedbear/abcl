@@ -498,7 +498,7 @@ public final class Cons extends LispObject implements java.io.Serializable
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     final LispThread thread = LispThread.currentThread();
     final LispObject printLength = Symbol.PRINT_LENGTH.symbolValue(thread);
@@ -522,7 +522,7 @@ public final class Cons extends LispObject implements java.io.Serializable
             if (cdr.cdr() == NIL)
               {
                 sb.append('\'');
-                sb.append(cdr.car().writeToString());
+                sb.append(cdr.car().printObject());
                 return sb.toString();
               }
           }
@@ -535,7 +535,7 @@ public final class Cons extends LispObject implements java.io.Serializable
             if (cdr.cdr() == NIL)
               {
                 sb.append("#'");
-                sb.append(cdr.car().writeToString());
+                sb.append(cdr.car().printObject());
                 return sb.toString();
               }
           }
@@ -555,14 +555,14 @@ public final class Cons extends LispObject implements java.io.Serializable
             if (count < maxLength)
               {
                 LispObject p = this;
-                sb.append(p.car().writeToString());
+                sb.append(p.car().printObject());
                 ++count;
                 while ((p = p.cdr()) instanceof Cons)
                   {
                     sb.append(' ');
                     if (count < maxLength)
                       {
-                        sb.append(p.car().writeToString());
+                        sb.append(p.car().printObject());
                         ++count;
                       }
                     else
@@ -574,7 +574,7 @@ public final class Cons extends LispObject implements java.io.Serializable
                 if (!truncated && p != NIL)
                   {
                     sb.append(" . ");
-                    sb.append(p.writeToString());
+                    sb.append(p.printObject());
                   }
               }
             else

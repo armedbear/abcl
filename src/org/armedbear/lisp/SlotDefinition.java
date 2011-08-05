@@ -116,15 +116,15 @@ public final class SlotDefinition extends StandardObject
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     StringBuilder sb =
-      new StringBuilder(Symbol.SLOT_DEFINITION.writeToString());
+      new StringBuilder(Symbol.SLOT_DEFINITION.printObject());
     LispObject name = slots[SlotDefinitionClass.SLOT_INDEX_NAME];
     if (name != null && name != NIL)
       {
         sb.append(' ');
-        sb.append(name.writeToString());
+        sb.append(name.printObject());
       }
     return unreadableString(sb.toString());
   }

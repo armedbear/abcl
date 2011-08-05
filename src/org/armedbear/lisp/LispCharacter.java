@@ -223,7 +223,7 @@ public final class LispCharacter extends LispObject
   }
 
   @Override
-  public final String writeToString()
+  public final String printObject()
   {
     final LispThread thread = LispThread.currentThread();
     boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);

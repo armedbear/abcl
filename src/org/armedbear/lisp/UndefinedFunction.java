@@ -73,7 +73,7 @@ public final class UndefinedFunction extends CellError
   public String getMessage()
   {
     StringBuilder sb = new StringBuilder("The function ");
-    sb.append(getCellName().writeToString());
+    sb.append(getCellName().princToString());
     sb.append(" is undefined.");
     return sb.toString();
   }

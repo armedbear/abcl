@@ -259,7 +259,7 @@ public final class ShellCommand implements Runnable
                     Pathname pathname = coerceToPathname(second);
                     namestring = pathname.getNamestring();
                     if (namestring == null) {
-                        return error(new FileError("Pathname has no namestring: " + pathname.writeToString(),
+                        return error(new FileError("Pathname has no namestring: " + pathname.princToString(),
                                                     pathname));
                     }
                 }

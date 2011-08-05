@@ -85,16 +85,7 @@ public class PrintNotReadable extends LispError
         LispObject object = UNBOUND_VALUE;
         object = getInstanceSlotValue(Symbol.OBJECT);
         if (object != UNBOUND_VALUE) {
-            final LispThread thread = LispThread.currentThread();
-            final SpecialBindingsMark mark = thread.markSpecialBindings();
-            thread.bindSpecial(Symbol.PRINT_READABLY, NIL);
-            thread.bindSpecial(Symbol.PRINT_ARRAY, NIL);
-            try {
-                sb.append(object.writeToString());
-            }
-            finally {
-                thread.resetSpecialBindings(mark);
-            }
+            sb.append(object.princToString());
         } else
             sb.append("Object");
         sb.append(" cannot be printed readably.");

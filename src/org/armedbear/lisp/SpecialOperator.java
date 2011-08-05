@@ -146,10 +146,10 @@ public class SpecialOperator extends Operator
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         StringBuffer sb = new StringBuffer("#<SPECIAL-OPERATOR ");
-        sb.append(lambdaName.writeToString());
+        sb.append(lambdaName.princToString());
         sb.append(">");
         return sb.toString();
     }

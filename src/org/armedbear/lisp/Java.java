@@ -413,7 +413,7 @@ public final class Java
                 sb.append(methodName);
                 sb.append('(');
                 for (int i = 2; i < args.length; i++) {
-                    sb.append(args[i].writeToString());
+                    sb.append(args[i].princToString());
                     if (i < args.length - 1)
                         sb.append(',');
                 }
@@ -558,7 +558,7 @@ public final class Java
 		    } else if(object instanceof Class<?>) {
 			constructor = findConstructor((Class<?>) object, args);
 		    } else {
-			return error(new LispError(classRef.writeToString() + " is neither a Constructor nor a Class"));
+			return error(new LispError(classRef.princToString() + " is neither a Constructor nor a Class"));
 		    }
 		}
                 Class[] argTypes = constructor.getParameterTypes();
@@ -1393,7 +1393,7 @@ public final class Java
         if (javaObjectgetObject instanceof Class) {
             return (Class) javaObjectgetObject;
         }
-            error(new LispError(obj.writeToString() + " does not designate a Java class."));
+            error(new LispError(obj.princToString() + " does not designate a Java class."));
             return null;
     }
 

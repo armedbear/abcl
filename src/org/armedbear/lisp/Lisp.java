@@ -514,7 +514,7 @@ public final class Lisp
               }
             else
               return error(new ProgramError("Illegal function object: " +
-                                             first.writeToString()));
+                                             first.princToString()));
           }
       }
     else
@@ -707,7 +707,7 @@ public final class Lisp
   {
     if (tagbody == null)
       return error(new ControlError("Unmatched tag "
-                                    + tag.writeToString() +
+                                    + tag.princToString() +
                                     " for GO outside lexical extent."));
 
     throw new Go(tagbody, tag);
@@ -724,7 +724,7 @@ public final class Lisp
   {
     if (binding.env.inactive)
       return error(new ControlError("Unmatched tag "
-                                    + binding.symbol.writeToString() +
+                                    + binding.symbol.princToString() +
                                     " for GO outside of lexical extent."));
 
     throw new Go(binding.env, binding.symbol);
@@ -743,7 +743,7 @@ public final class Lisp
   {
     if (blockId == null)
       return error(new ControlError("Unmatched block "
-                                    + blockName.writeToString() + " for " +
+                                    + blockName.princToString() + " for " +
                                     "RETURN-FROM outside lexical extent."));
 
     throw new Return(blockId, result);
@@ -767,7 +767,7 @@ public final class Lisp
 
     if (binding.env.inactive)
       return error(new ControlError("Unmatched block "
-                                    + binding.symbol.writeToString() +
+                                    + binding.symbol.princToString() +
                                     " for RETURN-FROM outside of" +
                                     " lexical extent."));
 
@@ -796,7 +796,7 @@ public final class Lisp
                   Binding binding = env.getTagBinding(tag);
                   if (binding == null)
                     return error(new ControlError("No tag named " +
-                                                  tag.writeToString() +
+                                                  tag.princToString() +
                                                   " is currently visible."));
                   else if (memql(tag, localTags))
                     {
@@ -1118,7 +1118,7 @@ public final class Lisp
         else {
            Symbol.GENSYM_COUNTER.setSymbolValue(Fixnum.ZERO);
            error(new TypeError("The value of *GENSYM-COUNTER* was not a nonnegative integer. Old value: " +
-                                oldValue.writeToString() + " New value: 0"));
+                                oldValue.princToString() + " New value: 0"));
         }
     } else {
         // we're manipulating a global resource
@@ -1131,7 +1131,7 @@ public final class Lisp
             else {
                Symbol.GENSYM_COUNTER.setSymbolValue(Fixnum.ZERO);
                error(new TypeError("The value of *GENSYM-COUNTER* was not a nonnegative integer. Old value: " +
-                                    oldValue.writeToString() + " New value: 0"));
+                                    oldValue.princToString() + " New value: 0"));
             }
         }
     }
@@ -1421,7 +1421,7 @@ public final class Lisp
   public static final String safeWriteToString(LispObject obj)
   {
     try {
-        return obj.writeToString();
+        return obj.printObject();
       }
     catch (NullPointerException e)
       {
@@ -1635,7 +1635,7 @@ public final class Lisp
           if (stream.isCharacterInputStream())      
                   return stream;                        
           return (Stream) // Not reached.                      
-          error(new TypeError("The value " + obj.writeToString() +
+          error(new TypeError("The value " + obj.princToString() +
                         " is not a character input stream."));
   }
 
@@ -1646,7 +1646,7 @@ public final class Lisp
           if (stream.isCharacterOutputStream())      
                   return stream;                        
         return (Stream) // Not reached.
-        error(new TypeError("The value " + obj.writeToString() +
+        error(new TypeError("The value " + obj.princToString() +
                             " is not a character output stream."));
   }
 
@@ -1657,7 +1657,7 @@ public final class Lisp
           if (stream.isBinaryInputStream())      
                   return stream;                        
         return (Stream) // Not reached.
-        error(new TypeError("The value " + obj.writeToString() +
+        error(new TypeError("The value " + obj.princToString() +
                              " is not a binary input stream."));
   }
   
@@ -1786,7 +1786,7 @@ public final class Lisp
     Package pkg = Packages.findPackage(javaString(obj));
     if (pkg != null)
       return pkg;
-    error(new PackageError(obj.writeToString() + " is not the name of a package."));
+    error(new PackageError(obj.princToString() + " is not the name of a package."));
     // Not reached.
     return null;
   }
@@ -1873,7 +1873,7 @@ public final class Lisp
           list = list.cddr();
         else
           return error(new TypeError("Malformed property list: " +
-                                      plist.writeToString()));
+                                      plist.princToString()));
       }
     return defaultValue;
   }
@@ -1956,7 +1956,7 @@ public final class Lisp
     while (list != NIL)
       {
         if (!(list.cdr() instanceof Cons))
-          error(new ProgramError("The symbol " + symbol.writeToString() +
+          error(new ProgramError("The symbol " + symbol.princToString() +
                                   " has an odd number of items in its property list."));
         if (list.car() == indicator)
           {
@@ -2010,7 +2010,7 @@ public final class Lisp
                         thread.bindSpecial(Symbol.PRINT_ESCAPE, NIL);
                         thread.bindSpecial(Symbol.PRINT_READABLY, NIL);
                         try {
-                            sb.append(obj.writeToString());
+                            sb.append(obj.printObject());
                         }
                         finally {
                             thread.resetSpecialBindings(mark);
@@ -2025,7 +2025,7 @@ public final class Lisp
                         final SpecialBindingsMark mark = thread.markSpecialBindings();
                         thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
                         try {
-                            sb.append(obj.writeToString());
+                            sb.append(obj.printObject());
                         }
                         finally {
                             thread.resetSpecialBindings(mark);
@@ -2042,7 +2042,7 @@ public final class Lisp
                         thread.bindSpecial(Symbol.PRINT_RADIX, NIL);
                         thread.bindSpecial(Symbol.PRINT_BASE, Fixnum.constants[10]);
                         try {
-                            sb.append(obj.writeToString());
+                            sb.append(obj.printObject());
                         }
                         finally {
                             thread.resetSpecialBindings(mark);
@@ -2059,7 +2059,7 @@ public final class Lisp
                         thread.bindSpecial(Symbol.PRINT_RADIX, NIL);
                         thread.bindSpecial(Symbol.PRINT_BASE, Fixnum.constants[16]);
                         try {
-                            sb.append(obj.writeToString());
+                            sb.append(obj.printObject());
                         }
                         finally {
                             thread.resetSpecialBindings(mark);
@@ -2703,7 +2703,7 @@ public final class Lisp
   static class unboundValue extends LispObject
   {
     @Override
-    public String writeToString()
+    public String printObject()
     {
       return "#<UNBOUND>";
     }
@@ -2713,7 +2713,7 @@ public final class Lisp
   static class nullValue extends LispObject
   {
     @Override
-    public String writeToString()
+    public String printObject()
     {
       return "null";
     }

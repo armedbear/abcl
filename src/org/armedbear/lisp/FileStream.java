@@ -183,7 +183,7 @@ public final class FileStream extends Stream
             String namestring = pathname.getNamestring();
             if (namestring == null)
                 return error(new SimpleError("Pathname has no namestring: " +
-                                              pathname.writeToString()));
+                                              pathname.princToString()));
             File file = new File(namestring);
             length = file.length(); // in 8-bit bytes
         }
@@ -263,7 +263,7 @@ public final class FileStream extends Stream
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         return unreadableString(Symbol.FILE_STREAM);
     }

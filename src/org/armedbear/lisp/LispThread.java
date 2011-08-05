@@ -586,7 +586,7 @@ public final class LispThread extends LispObject
             rest = rest.cdr();
         }
         error(new ControlError("Attempt to throw to the nonexistent tag " +
-                                tag.writeToString() + "."));
+                                tag.princToString() + "."));
     }
 
 
@@ -871,7 +871,7 @@ public final class LispThread extends LispObject
                 sb.append(' ');
             stream._writeString(sb.toString());
         }
-        String raw = obj.writeToString();
+        String raw = obj.printObject();
         if (stream.getCharPos() + raw.length() < 80) {
             // It fits.
             stream._writeString(raw);
@@ -917,7 +917,7 @@ public final class LispThread extends LispObject
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         StringBuffer sb = new StringBuffer("THREAD");
         if (name != NIL) {
@@ -948,7 +948,7 @@ public final class LispThread extends LispObject
                     name = args[2].STRING();
                 else
                     error(new ProgramError("Unrecognized keyword argument " +
-                                            args[1].writeToString() + "."));
+                                            args[1].princToString() + "."));
             }
             return new LispThread(checkFunction(args[0]), name);
         }

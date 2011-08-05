@@ -63,13 +63,13 @@ public final class FloatFunctions
                             trap_underflow = true;
                         else
                             error(new LispError("Unsupported floating point trap: " +
-                                                 car.writeToString()));
+                                                 car.princToString()));
                         value = value.cdr();
                     }
                     TRAP_OVERFLOW  = trap_overflow;
                     TRAP_UNDERFLOW = trap_underflow;
                 } else
-                    error(new LispError("Unrecognized keyword: " + key.writeToString()));
+                    error(new LispError("Unrecognized keyword: " + key.princToString()));
             }
             return LispThread.currentThread().nothing();
         }

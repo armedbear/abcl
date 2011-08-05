@@ -130,7 +130,7 @@ public class Symbol extends LispObject implements java.io.Serializable
     try
       {
         StringBuilder sb = new StringBuilder("The symbol ");
-        sb.append(name.writeToString());
+        sb.append(name.princToString());
         sb.append(" at #x");
         sb.append(Integer.toHexString(System.identityHashCode(this)).toUpperCase());
         if (pkg instanceof Package)
@@ -300,7 +300,7 @@ public class Symbol extends LispObject implements java.io.Serializable
   {
     if (isConstant())
       // Complement the check already done in SpecialOperators.sf_setq
-      error(new ProgramError("Can't change value of constant symbol " + writeToString() + "."));
+      error(new ProgramError("Can't change value of constant symbol " + princToString() + "."));
     this.value = value;
   }
 
@@ -445,7 +445,7 @@ public class Symbol extends LispObject implements java.io.Serializable
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     final String n = name.getStringValue();
     final LispThread thread = LispThread.currentThread();

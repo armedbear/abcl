@@ -667,7 +667,7 @@ public final class MathFunctions
                 x = ((DoubleFloat)base).value;
             else
                 return error(new LispError("EXPT: unsupported case: base is of type " +
-                                            base.typeOf().writeToString()));
+                                            base.typeOf().princToString()));
 
             if (power instanceof Fixnum)
                 y = ((Fixnum)power).value;
@@ -681,7 +681,7 @@ public final class MathFunctions
                 y = ((DoubleFloat)power).value;
             else
                 return error(new LispError("EXPT: unsupported case: power is of type " +
-                                            power.typeOf().writeToString()));
+                                            power.typeOf().princToString()));
             double r = Math.pow(x, y);
             if (Double.isNaN(r)) {
                 if (x < 0) {

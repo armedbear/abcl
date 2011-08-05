@@ -245,7 +245,7 @@ public final class Environment extends LispObject
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     return unreadableString(Symbol.ENVIRONMENT);
   }

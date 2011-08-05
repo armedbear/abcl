@@ -288,7 +288,7 @@ public final class Load
 
         // Look for a init FASL inside a packed FASL
         if (truename != null
-            && truename.type.writeToString().equals(COMPILE_FILE_TYPE) && Utilities.checkZipFile(truename))  {
+            && truename.type.princToString().equals(COMPILE_FILE_TYPE) && Utilities.checkZipFile(truename))  {
             Pathname init = new Pathname(truename.getNamestring());
             init.type = COMPILE_FILE_INIT_FASL_TYPE;
             LispObject t = Pathname.truename(init);
@@ -416,10 +416,10 @@ public final class Load
             }
             return
                 error(new SimpleError("FASL version mismatch; found '"
-                        + second.writeToString() + "' but expected '"
-                        + _FASL_VERSION_.getSymbolValue().writeToString()
+                        + second.princToString() + "' but expected '"
+                        + _FASL_VERSION_.getSymbolValue().princToString()
                         + "' in "
-                        + Symbol.LOAD_PATHNAME.symbolValue(thread).writeToString()));
+                        + Symbol.LOAD_PATHNAME.symbolValue(thread).princToString()));
         }
     }
 
@@ -525,7 +525,7 @@ public final class Load
                 out.freshLine();
                 out._writeString(prefix);
                 out._writeString(auto ? " Autoloading " : " Loading ");
-                out._writeString(!truename.equals(NIL) ? truePathname.writeToString() : "stream");
+                out._writeString(!truename.equals(NIL) ? truePathname.princToString() : "stream");
                 out._writeLine(" ...");
                 out._finishOutput();
                 LispObject result = loadStream(in, print, thread, returnLastResult);
@@ -533,7 +533,7 @@ public final class Load
                 out.freshLine();
                 out._writeString(prefix);
                 out._writeString(auto ? " Autoloaded " : " Loaded ");
-                out._writeString(!truename.equals(NIL) ? truePathname.writeToString() : "stream");
+                out._writeString(!truename.equals(NIL) ? truePathname.princToString() : "stream");
                 out._writeString(" (");
                 out._writeString(String.valueOf(((float)elapsed)/1000));
                 out._writeLine(" seconds)");
@@ -576,7 +576,7 @@ public final class Load
                 if (print) {
                     Stream out =
                         checkCharacterOutputStream(Symbol.STANDARD_OUTPUT.symbolValue(thread));
-                    out._writeLine(result.writeToString());
+                    out._writeLine(result.printObject());
                     out._finishOutput();
                 }
             }

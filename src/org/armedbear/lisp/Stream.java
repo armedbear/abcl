@@ -576,7 +576,7 @@ public class Stream extends StructureObject {
             final int length = args.length();
             if ((length % 2) != 0)
                 return error(new ReaderError("Odd number of keyword arguments following #S: " +
-                                             obj.writeToString(),
+                                             obj.princToString(),
                                              this));
             LispObject[] array = new LispObject[length];
             LispObject rest = args;
@@ -594,7 +594,7 @@ public class Stream extends StructureObject {
                            thread);
         }
         return error(new ReaderError("Non-list following #S: " +
-                                     obj.writeToString(),
+                                     obj.princToString(),
                                      this));
     }
 
@@ -666,9 +666,9 @@ public class Stream extends StructureObject {
                         if (requireProperList) {
                             if (!obj.listp())
                                 error(new ReaderError("The value " +
-                                                      obj.writeToString() +
+                                                      obj.princToString() +
                                                       " is not of type " +
-                                                      Symbol.LIST.writeToString() + ".",
+                                                      Symbol.LIST.princToString() + ".",
                                                       this));
                         }
                         last.cdr = obj;
@@ -929,7 +929,7 @@ public class Stream extends StructureObject {
         case 1: {
             if (obj.listp() || obj instanceof AbstractVector)
                 return new SimpleVector(obj);
-            return error(new ReaderError(obj.writeToString() + " is not a sequence.",
+            return error(new ReaderError(obj.princToString() + " is not a sequence.",
                                          this));
         }
         default:
@@ -960,7 +960,7 @@ public class Stream extends StructureObject {
             sb.append(_getFilePosition());
         }
         sb.append(": #C");
-        sb.append(obj.writeToString());
+        sb.append(obj.printObject());
         return error(new ReaderError(sb.toString(), this));
     }
 
@@ -1619,7 +1619,7 @@ public class Stream extends StructureObject {
         final SpecialBindingsMark mark = thread.markSpecialBindings();
         thread.bindSpecial(Symbol.PRINT_ESCAPE, T);
         try {
-            _writeString(obj.writeToString());
+            _writeString(obj.printObject());
         } finally {
             thread.resetSpecialBindings(mark);
         }
@@ -1671,7 +1671,7 @@ public class Stream extends StructureObject {
             }
             return number(arg.length());
         }
-        return error(new TypeError(arg.writeToString() +
+        return error(new TypeError(arg.princToString() +
                                    " is neither a string nor a character."));
     }
 
@@ -1971,23 +1971,23 @@ public class Stream extends StructureObject {
     }
 
     protected LispObject streamNotInputStream() {
-        return error(new StreamError(this, writeToString() + " is not an input stream."));
+        return error(new StreamError(this, princToString() + " is not an input stream."));
     }
 
     protected LispObject streamNotCharacterInputStream() {
-        return error(new StreamError(this, writeToString() + " is not a character input stream."));
+        return error(new StreamError(this, princToString() + " is not a character input stream."));
     }
 
     protected LispObject streamNotOutputStream() {
-        return error(new StreamError(this, writeToString() + " is not an output stream."));
+        return error(new StreamError(this, princToString() + " is not an output stream."));
     }
 
     protected LispObject streamNotBinaryOutputStream() {
-        return error(new StreamError(this, writeToString() + " is not a binary output stream."));
+        return error(new StreamError(this, princToString() + " is not a binary output stream."));
     }
 
     protected LispObject streamNotCharacterOutputStream() {
-        return error(new StreamError(this, writeToString() + " is not a character output stream."));
+        return error(new StreamError(this, princToString() + " is not a character output stream."));
     }
 
     // ### %stream-write-char character output-stream => character
@@ -2130,7 +2130,7 @@ public class Stream extends StructureObject {
             if (second == Keyword.ABORT)
                 return stream.close(third);
             return error(new ProgramError("Unrecognized keyword argument " +
-                                          second.writeToString() + "."));
+                                          second.princToString() + "."));
         }
     };
 

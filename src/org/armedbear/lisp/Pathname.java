@@ -773,7 +773,7 @@ public class Pathname extends LispObject {
                 // else: Nothing to do.
             } else {
                 error(new FileError("Unsupported directory component "
-                  + part.writeToString() + ".",
+                  + part.printObject() + ".",
                   this));
             }
             while (temp != NIL) {
@@ -787,7 +787,7 @@ public class Pathname extends LispObject {
                 } else if (part == Keyword.UP) {
                     sb.append("..");
                 } else {
-                    error(new FileError("Unsupported directory component " + part.writeToString() + ".",
+                    error(new FileError("Unsupported directory component " + part.princToString() + ".",
                       this));
                 }
                 sb.append(separatorChar);
@@ -886,7 +886,7 @@ public class Pathname extends LispObject {
     }
 
     @Override
-    public String writeToString() {
+    public String printObject() {
         final LispThread thread = LispThread.currentThread();
         final boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);
         final boolean printEscape = (Symbol.PRINT_ESCAPE.symbolValue(thread) != NIL);
@@ -939,32 +939,32 @@ public class Pathname extends LispObject {
         sb.append("PATHNAME (with no namestring) ");
         if (host != NIL) {
             sb.append(":HOST ");
-            sb.append(host.writeToString());
+            sb.append(host.printObject());
             sb.append(" ");
         }
         if (device != NIL) {
             sb.append(":DEVICE ");
-            sb.append(device.writeToString());
+            sb.append(device.printObject());
             sb.append(" ");
         }
         if (directory != NIL) {
             sb.append(":DIRECTORY ");
-            sb.append(directory.writeToString());
+            sb.append(directory.printObject());
             sb.append(" ");
         }
         if (name != NIL) {
             sb.append(":NAME ");
-            sb.append(name.writeToString());
+            sb.append(name.printObject());
             sb.append(" ");
         }
         if (type != NIL) {
             sb.append(":TYPE ");
-            sb.append(type.writeToString());
+            sb.append(type.printObject());
             sb.append(" ");
         }
         if (version != NIL) {
             sb.append(":VERSION ");
-            sb.append(version.writeToString());
+            sb.append(version.printObject());
             sb.append(" ");
         }
         if (sb.charAt(sb.length() - 1) == ' ') { 
@@ -1067,7 +1067,7 @@ public class Pathname extends LispObject {
             // A defined logical pathname host.
             return new LogicalPathname(host.getStringValue(), s);
         }
-        error(new LispError(host.writeToString() + " is not defined as a logical pathname host."));
+        error(new LispError(host.princToString() + " is not defined as a logical pathname host."));
         // Not reached.
         return null;
     }
@@ -1184,7 +1184,7 @@ public class Pathname extends LispObject {
             String namestring = pathname.getNamestring();
             if (namestring == null) {
                 error(new SimpleError("Pathname has no namestring: "
-                                      + pathname.writeToString()));
+                                      + pathname.princToString()));
             }
             return new SimpleString(namestring);
         }
@@ -1374,7 +1374,7 @@ public class Pathname extends LispObject {
             }
             if (LOGICAL_PATHNAME_TRANSLATIONS.get(logicalHost) == null) {
                 // Not a defined logical pathname host -- A UNC path
-                //warning(new LispError(host.writeToString() + " is not defined as a logical pathname host."));
+                //warning(new LispError(host.printObject() + " is not defined as a logical pathname host."));
                 p = new Pathname();
                 logical = false;
                 p.host = host;
@@ -1415,7 +1415,7 @@ public class Pathname extends LispObject {
                 } else if (directory == Keyword.WILD || directory == Keyword.WILD_INFERIORS) {
                     p.directory = directory;
                 } else {
-                    error(new LispError("Invalid directory component for logical pathname: " + directory.writeToString()));
+                    error(new LispError("Invalid directory component for logical pathname: " + directory.princToString()));
                 }
             } else {
                 p.directory = directory;
@@ -1468,9 +1468,9 @@ public class Pathname extends LispObject {
                 if (second == Keyword.UP || second == Keyword.BACK) {
                     if (signalError) {
                         StringBuilder sb = new StringBuilder();
-                        sb.append(first.writeToString());
+                        sb.append(first.printObject());
                         sb.append(" may not be followed immediately by ");
-                        sb.append(second.writeToString());
+                        sb.append(second.printObject());
                         sb.append('.');
                         error(new FileError(sb.toString(), this));
                     }
@@ -1630,7 +1630,7 @@ public class Pathname extends LispObject {
                             result = new Cons(p, result);
                         }
                     } catch (IOException e) {
-                        return error(new FileError("Unable to list directory " + pathname.writeToString() + ".",
+                        return error(new FileError("Unable to list directory " + pathname.princToString() + ".",
                                                    pathname));
                     } catch (SecurityException e) {
                         Debug.trace(e);
@@ -1807,7 +1807,7 @@ public class Pathname extends LispObject {
             Cons d = (Cons) directory;
             while (true) {
                 if (d.car() instanceof AbstractString) {
-                    String s = d.car().writeToString();
+                    String s = d.car().printObject();
                     if (s.contains("*")) {
                         return true;
                     }
@@ -1822,7 +1822,7 @@ public class Pathname extends LispObject {
             return true;
         }
         if (name instanceof AbstractString) {
-            if (name.writeToString().contains("*")) {
+            if (name.printObject().contains("*")) {
                 return true;
             }
         }
@@ -1830,7 +1830,7 @@ public class Pathname extends LispObject {
             return true;
         }
         if (type instanceof AbstractString) {
-            if (type.writeToString().contains("*")) {
+            if (type.printObject().contains("*")) {
                 return true;
             }
         }
@@ -1882,7 +1882,7 @@ public class Pathname extends LispObject {
                 value = pathname.version;
             } else {
                 return error(new ProgramError("Unrecognized keyword "
-                                              + second.writeToString() + "."));
+                                              + second.princToString() + "."));
             }
             if (value == Keyword.WILD || value == Keyword.WILD_INFERIORS) {
                 return T;
@@ -2126,7 +2126,7 @@ public class Pathname extends LispObject {
             final String namestring = pathname.getNamestring();
             if (namestring == null) {
                 return error(new FileError("Pathname has no namestring: " 
-                                           + pathname.writeToString(),
+                                           + pathname.princToString(),
                                            pathname));
             }
             
@@ -2231,7 +2231,7 @@ public class Pathname extends LispObject {
         error:
         if (errorIfDoesNotExist) {
             StringBuilder sb = new StringBuilder("The file ");
-            sb.append(pathname.writeToString());
+            sb.append(pathname.princToString());
             sb.append(" does not exist.");
             return error(new FileError(sb.toString(), pathname));
         }
@@ -2461,8 +2461,8 @@ public class Pathname extends LispObject {
                 }
             }
             return error(new FileError("Unable to rename "
-                                       + original.writeToString()
-                                       + " to " + newName.writeToString()
+                                       + original.princToString()
+                                       + " to " + newName.princToString()
                                        + "."));
         }
     }

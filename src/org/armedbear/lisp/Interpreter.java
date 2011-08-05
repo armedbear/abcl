@@ -309,14 +309,14 @@ public final class Interpreter
                             StringBuilder sb = new StringBuilder();
                             sb.append(separator);
                             sb.append("Caught ");
-                            sb.append(c.getCondition().typeOf().writeToString());
+                            sb.append(c.getCondition().typeOf().printObject());
                             sb.append(" while processing --eval option \"" +
                                       args[i + 1] + "\":");
                             sb.append(separator);
                             sb.append("  ");
                             final LispThread thread = LispThread.currentThread();
                             thread.bindSpecial(Symbol.PRINT_ESCAPE, NIL);
-                            sb.append(c.getCondition().writeToString());
+                            sb.append(c.getCondition().princToString());
                             sb.append(separator);
                             System.err.print(sb.toString());
                             exit(2); // FIXME
@@ -408,10 +408,10 @@ public final class Interpreter
                         slash = new Cons(values[i], slash);
                     Symbol.SLASH.setSymbolValue(slash);
                     for (int i = 0; i < values.length; i++)
-                        out._writeLine(values[i].writeToString());
+                        out._writeLine(values[i].printObject());
                 } else {
                     Symbol.SLASH.setSymbolValue(new Cons(result));
-                    out._writeLine(result.writeToString());
+                    out._writeLine(result.printObject());
                 }
                 out._finishOutput();
             }
@@ -445,7 +445,7 @@ public final class Interpreter
         out.freshLine();
         Condition condition = (Condition) c.getCondition();
         out._writeLine("Error: unhandled condition: " +
-                       condition.writeToString());
+                       condition.princToString());
         if (thread != null)
             thread.printBacktrace();
     }
@@ -457,7 +457,7 @@ public final class Interpreter
         out.freshLine();
         Condition condition = (Condition) c.getCondition();
         out._writeLine("Error: unhandled condition: " +
-                       condition.writeToString());
+                       condition.princToString());
         if (thread != null)
             thread.printBacktrace();
     }
@@ -516,7 +516,7 @@ public final class Interpreter
             SpecialBindingsMark mark = thread.markSpecialBindings();
             thread.bindSpecial(Symbol.PRINT_ESCAPE, NIL);
             try {
-                conditionText = getCondition().writeToString();
+                conditionText = getCondition().princToString();
             } catch (Throwable t) {
                 conditionText = "<error printing Lisp condition>";
             } finally {
@@ -552,14 +552,14 @@ public final class Interpreter
                             final int offset =
                                 ((Stream)stream).getOffset();
                             Debug.trace("Error loading " +
-                                        truename.writeToString() +
+                                        truename.princToString() +
                                         " at line " + lineNumber +
                                         " (offset " + offset + ")");
                         }
                     }
                     Debug.trace("Encountered unhandled condition of type " +
-                                condition.typeOf().writeToString() + ':');
-                    Debug.trace("  " + condition.writeToString());
+                                condition.typeOf().princToString() + ':');
+                    Debug.trace("  " + condition.princToString());
                 }
                 catch (Throwable t) {} // catch any exception to throw below
                 finally {

@@ -139,9 +139,9 @@ public class StandardClass extends SlotClass
         (new Error()).printStackTrace();
         LispThread.currentThread().printBacktrace();
         return (Layout)Lisp.error(Symbol.TYPE_ERROR,
-                new SimpleString("The value " + layout.writeToString()
-                    + " is not of expected type " + Symbol.LAYOUT.writeToString()
-                    + " in class " + this.writeToString() + "."));
+                new SimpleString("The value " + layout.princToString()
+                    + " is not of expected type " + Symbol.LAYOUT.princToString()
+                    + " in class " + this.princToString() + "."));
       }
     
     return (layout == UNBOUND_VALUE) ? null : (Layout)layout;
@@ -320,14 +320,14 @@ public class StandardClass extends SlotClass
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     StringBuilder sb =
-      new StringBuilder(Symbol.STANDARD_CLASS.writeToString());
+      new StringBuilder(Symbol.STANDARD_CLASS.printObject());
     if (getName() != null)
       {
         sb.append(' ');
-        sb.append(getName().writeToString());
+        sb.append(getName().printObject());
       }
     return unreadableString(sb.toString());
   }

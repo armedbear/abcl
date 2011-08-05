@@ -131,7 +131,7 @@ public class Closure extends Function
     final LispObject lambdaList = lambdaExpression.cadr();
     setLambdaList(lambdaList);
     if (!(lambdaList == NIL || lambdaList instanceof Cons))
-      error(new ProgramError("The lambda list " + lambdaList.writeToString() +
+      error(new ProgramError("The lambda list " + lambdaList.princToString() +
                            " is invalid."));
     boolean _andKey = false;
     boolean _allowOtherKeys = false;
@@ -387,7 +387,7 @@ public class Closure extends Function
   private static final void invalidParameter(LispObject obj)
 
   {
-    error(new ProgramError(obj.writeToString() +
+    error(new ProgramError(obj.princToString() +
                          " may not be used as a variable in a lambda list."));
   }
 
@@ -860,7 +860,7 @@ public class Closure extends Function
                             if (!allowOtherKeys &&
                                 (allowOtherKeysValue == null || allowOtherKeysValue == NIL))
                               error(new ProgramError("Unrecognized keyword argument " +
-                                                      unrecognizedKeyword.writeToString()));
+                                                      unrecognizedKeyword.printObject()));
                           }
                       }
                   }

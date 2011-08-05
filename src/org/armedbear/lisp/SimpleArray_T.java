@@ -319,7 +319,7 @@ public final class SimpleArray_T extends AbstractArray
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     return writeToString(dimv);
   }

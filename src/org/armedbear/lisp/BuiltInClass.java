@@ -73,14 +73,14 @@ public class BuiltInClass extends LispClass
   @Override
   public LispObject getDescription()
   {
-    return new SimpleString(writeToString());
+    return new SimpleString(princToString());
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     StringBuilder sb = new StringBuilder("#<BUILT-IN-CLASS ");
-    sb.append(getName().writeToString());
+    sb.append(getName().printObject());
     sb.append('>');
     return sb.toString();
   }

@@ -129,7 +129,7 @@ public final class MacroObject extends Function
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     return unreadableString("MACRO-OBJECT");
   }

@@ -215,10 +215,10 @@ public final class SynonymStream extends Stream
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         StringBuffer sb = new StringBuffer("SYNONYM-STREAM ");
-        sb.append(symbol.writeToString());
+        sb.append(symbol.printObject());
         return unreadableString(sb.toString());
     }
 

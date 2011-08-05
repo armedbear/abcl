@@ -135,7 +135,7 @@ public class Layout extends LispObject
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     return unreadableString(Symbol.LAYOUT);
   }

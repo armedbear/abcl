@@ -214,7 +214,7 @@ public class TwoWayStream extends Stream
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         return unreadableString(Symbol.TWO_WAY_STREAM);
     }

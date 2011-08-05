@@ -939,7 +939,7 @@ public final class Fixnum extends LispInteger
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     final LispThread thread = LispThread.currentThread();
     int base = Fixnum.getValue(Symbol.PRINT_BASE.symbolValue(thread));

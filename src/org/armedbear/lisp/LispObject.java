@@ -65,7 +65,7 @@ public class LispObject //extends Lisp
   public LispObject getDescription()
   {
     StringBuilder sb = new StringBuilder("An object of type ");
-    sb.append(typeOf().writeToString());
+    sb.append(typeOf().princToString());
     sb.append(" at #x");
     sb.append(Integer.toHexString(System.identityHashCode(this)).toUpperCase());
     return new SimpleString(sb);
@@ -130,7 +130,7 @@ public class LispObject //extends Lisp
   {
       if (c.isAssignableFrom(getClass()))
 	  return this;
-      return error(new LispError("The value " + writeToString() +
+      return error(new LispError("The value " + princToString() +
 				 " is not of class " + c.getName()));
   }
 
@@ -731,7 +731,25 @@ public class LispObject //extends Lisp
     return type_error(this, Symbol.SYMBOL);
   }
 
-  public String writeToString()
+  /** PRINC-TO-STRING function to be used with Java objects
+   * 
+   * @return A string in human-readable format, as per PRINC definition
+   */
+  public String princToString()
+  {
+      LispThread thread = LispThread.currentThread();
+      SpecialBindingsMark mark = thread.markSpecialBindings();
+      try {
+          thread.bindSpecial(Symbol.PRINT_READABLY, NIL);
+          thread.bindSpecial(Symbol.PRINT_ESCAPE, NIL);
+          return printObject();
+      }
+      finally {
+          thread.resetSpecialBindings(mark);
+      }
+  }
+  
+  public String printObject()
   {
     return toString();
   }
@@ -759,7 +777,7 @@ public class LispObject //extends Lisp
   public final String unreadableString(Symbol symbol, boolean identity) 
 
   {
-    return unreadableString(symbol.writeToString(), identity);
+    return unreadableString(symbol.printObject(), identity);
   }
 
   // Special operator
@@ -1149,7 +1167,7 @@ public class LispObject //extends Lisp
 
   public LispObject STRING()
   {
-    return error(new TypeError(writeToString() + " cannot be coerced to a string."));
+    return error(new TypeError(princToString() + " cannot be coerced to a string."));
   }
 
   public char[] chars()

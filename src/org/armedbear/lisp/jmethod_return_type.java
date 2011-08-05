@@ -55,7 +55,7 @@ public final class jmethod_return_type extends Primitive
             if (method instanceof Method)
             return new JavaObject(((Method)method).getReturnType());
         }
-        return error(new LispError(arg.writeToString() + " does not designate a Java method."));
+        return error(new LispError(arg.princToString() + " does not designate a Java method."));
     }
 
     private static final Primitive JMETHOD_RETURN_TYPE = new jmethod_return_type();

@@ -72,7 +72,7 @@ public final class Return extends ControlTransfer
     public LispObject getCondition()
     {
         StringBuilder sb = new StringBuilder("No block named ");
-        sb.append(tag.writeToString());
+        sb.append(tag.princToString());
         sb.append(" is currently visible.");
         return new ControlError(sb.toString());
     }

@@ -196,7 +196,7 @@ public class StandardObject extends LispObject
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     final LispThread thread = LispThread.currentThread();
     int maxLevel = Integer.MAX_VALUE;
@@ -208,7 +208,7 @@ public class StandardObject extends LispObject
     int currentLevel = Fixnum.getValue(currentPrintLevel);
     if (currentLevel >= maxLevel)
       return "#";
-    return unreadableString(typeOf().writeToString());
+    return unreadableString(typeOf().printObject());
   }
 
   Layout updateLayout()
@@ -304,7 +304,7 @@ public class StandardObject extends LispObject
     int index = layout.getSlotIndex(slotName);
     //### FIXME: should call SLOT-MISSING (clhs)
     if (index < 0)
-      return error(new LispError("Missing slot " + slotName.writeToString()));
+      return error(new LispError("Missing slot " + slotName.princToString()));
     return slots[index];
   }
 
@@ -322,7 +322,7 @@ public class StandardObject extends LispObject
     int index = layout.getSlotIndex(slotName);
     //### FIXME: should call SLOT-MISSING (clhs)
     if (index < 0)
-      error(new LispError("Missing slot " + slotName.writeToString()));
+      error(new LispError("Missing slot " + slotName.princToString()));
     slots[index] = newValue;
   }
 

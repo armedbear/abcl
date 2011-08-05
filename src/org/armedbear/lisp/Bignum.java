@@ -289,7 +289,7 @@ public final class Bignum extends LispInteger
   {
     float f = value.floatValue();
     if (Float.isInfinite(f))
-      error(new TypeError("The value " + writeToString() +
+      error(new TypeError("The value " + princToString() +
                            " is too large to be converted to a single float."));
     return f;
   }
@@ -299,7 +299,7 @@ public final class Bignum extends LispInteger
   {
     double d = value.doubleValue();
     if (Double.isInfinite(d))
-      error(new TypeError("The value " + writeToString() +
+      error(new TypeError("The value " + princToString() +
                            " is too large to be converted to a double float."));
     return d;
   }
@@ -755,7 +755,7 @@ public final class Bignum extends LispInteger
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     final LispThread thread = LispThread.currentThread();
     final int base = Fixnum.getValue(Symbol.PRINT_BASE.symbolValue(thread));

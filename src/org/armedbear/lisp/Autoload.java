@@ -153,7 +153,7 @@ public class Autoload extends Function
         if (debug) {
             if (symbol != null) {
                 if (symbol.getSymbolFunction() instanceof Autoload) {
-                    Debug.trace("Unable to autoload " + symbol.writeToString());
+                    Debug.trace("Unable to autoload " + symbol.princToString());
                     throw new IntegrityError();
                 }
             }
@@ -259,10 +259,10 @@ public class Autoload extends Function
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         StringBuffer sb = new StringBuffer("#<AUTOLOAD ");
-        sb.append(symbol.writeToString());
+        sb.append(symbol.princToString());
         sb.append(" \"");
         if (className != null) {
             int index = className.lastIndexOf('.');

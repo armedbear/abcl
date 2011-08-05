@@ -203,7 +203,7 @@ public final class StandardGenericFunction extends StandardObject
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     LispObject name = getGenericFunctionName();
     if (name != null)
@@ -216,12 +216,12 @@ public final class StandardGenericFunction extends StandardObject
         else
           className = Symbol.CLASS_NAME.execute(lispClass);
 
-        sb.append(className.writeToString());
+        sb.append(className.princToString());
         sb.append(' ');
-        sb.append(name.writeToString());
+        sb.append(name.princToString());
         return unreadableString(sb.toString());
       }
-    return super.writeToString();
+    return super.printObject();
   }
 
   // Profiling.

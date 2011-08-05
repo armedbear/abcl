@@ -134,7 +134,7 @@ public final class ZeroRankArray extends AbstractArray
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         final LispThread thread = LispThread.currentThread();
         boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);
@@ -153,14 +153,14 @@ public final class ZeroRankArray extends AbstractArray
                                data, stream);
                 sb.append(stream.getString().getStringValue());
             } else
-                sb.append(data.writeToString());
+                sb.append(data.printObject());
             return sb.toString();
         }
         StringBuffer sb = new StringBuffer();
         if (!adjustable)
             sb.append("SIMPLE-");
         sb.append("ARRAY ");
-        sb.append(elementType.writeToString());
+        sb.append(elementType.printObject());
         sb.append(" NIL");
         return unreadableString(sb.toString());
     }

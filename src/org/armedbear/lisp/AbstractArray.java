@@ -160,7 +160,7 @@ public abstract class AbstractArray extends LispObject implements java.io.Serial
                 // ### i18n
                 final String errorMsg =
                     "Invalid index %d for array %s.";
-                error(new ProgramError(String.format(errorMsg, n, writeToString())));
+                error(new ProgramError(String.format(errorMsg, n, printObject())));
             }
             sum += n * lastSize;
         }
@@ -218,7 +218,7 @@ public abstract class AbstractArray extends LispObject implements java.io.Serial
         sb.append('(');
         if (this instanceof SimpleArray_T)
             sb.append("SIMPLE-");
-        sb.append("ARRAY " + getElementType().writeToString() + " (");
+        sb.append("ARRAY " + getElementType().printObject() + " (");
         for (int i = 0; i < dimv.length; i++) {
             sb.append(dimv[i]);
             if (i < dimv.length - 1)
@@ -228,7 +228,7 @@ public abstract class AbstractArray extends LispObject implements java.io.Serial
         return unreadableString(sb.toString());
     }
 
-    // Helper for writeToString().
+    // Helper for printObject().
     private void appendContents(int[] dimensions, int index, StringBuilder sb,
                                 LispThread thread)
 
@@ -240,7 +240,7 @@ public abstract class AbstractArray extends LispObject implements java.io.Serial
                                AREF(index), stream);
                 sb.append(stream.getString().getStringValue());
             } else
-                sb.append(AREF(index).writeToString());
+                sb.append(AREF(index).printObject());
         } else {
             final LispObject printReadably =
                 Symbol.PRINT_READABLY.symbolValue(thread);

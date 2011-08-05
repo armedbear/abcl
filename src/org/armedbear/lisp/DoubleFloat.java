@@ -529,26 +529,26 @@ public final class DoubleFloat extends LispObject
             else
                 m = (bits & 0xfffffffffffffL) | 0x10000000000000L;
             LispObject significand = number(m);
-//             Debug.trace("significand = " + significand.writeToString());
+//             Debug.trace("significand = " + significand.printObject());
             Fixnum exponent = Fixnum.getInstance(e - 1075);
-//             Debug.trace("exponent = " + exponent.writeToString());
+//             Debug.trace("exponent = " + exponent.printObject());
             Fixnum sign = Fixnum.getInstance(s);
-//             Debug.trace("sign = " + sign.writeToString());
+//             Debug.trace("sign = " + sign.printObject());
             LispObject result = significand;
-//             Debug.trace("result = " + result.writeToString());
+//             Debug.trace("result = " + result.printObject());
             result =
                 result.multiplyBy(MathFunctions.EXPT.execute(Fixnum.TWO, exponent));
-//             Debug.trace("result = " + result.writeToString());
+//             Debug.trace("result = " + result.printObject());
 
 
             result = result.truncate(Fixnum.ONE);
             LispObject remainder = coerceToFloat(thread._values[1]);
 
             result = result.multiplyBy(sign);
-//             Debug.trace("result = " + result.writeToString());
+//             Debug.trace("result = " + result.printObject());
 //             // Calculate remainder.
 //             LispObject product = result.multiplyBy(obj);
-//             Debug.trace("product = " + product.writeToString());
+//             Debug.trace("product = " + product.printObject());
 //             LispObject remainder = subtract(product);
             return thread.setValues(result, remainder);
         }
@@ -572,16 +572,16 @@ public final class DoubleFloat extends LispObject
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         if (value == Double.POSITIVE_INFINITY) {
             StringBuilder sb = new StringBuilder("#.");
-            sb.append(Symbol.DOUBLE_FLOAT_POSITIVE_INFINITY.writeToString());
+            sb.append(Symbol.DOUBLE_FLOAT_POSITIVE_INFINITY.printObject());
             return sb.toString();
         }
         if (value == Double.NEGATIVE_INFINITY) {
             StringBuilder sb = new StringBuilder("#.");
-            sb.append(Symbol.DOUBLE_FLOAT_NEGATIVE_INFINITY.writeToString());
+            sb.append(Symbol.DOUBLE_FLOAT_NEGATIVE_INFINITY.printObject());
             return sb.toString();
         }
 
@@ -646,7 +646,7 @@ public final class DoubleFloat extends LispObject
             return new DoubleFloat(((SingleFloat)obj).value);
         if (obj instanceof Ratio)
             return new DoubleFloat(((Ratio)obj).doubleValue());
-        error(new TypeError("The value " + obj.writeToString() +
+        error(new TypeError("The value " + obj.princToString() +
                              " cannot be converted to type DOUBLE-FLOAT."));
         // Not reached.
         return null;

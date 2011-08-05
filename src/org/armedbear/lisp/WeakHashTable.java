@@ -315,14 +315,14 @@ public class WeakHashTable
     }
 
     @Override
-    public String writeToString() {
+    public String printObject() {
         if (Symbol.PRINT_READABLY.symbolValue(LispThread.currentThread()) != NIL) {
             error(new PrintNotReadable(list(Keyword.OBJECT, this)));
             return null; // Not reached.
         }
-        StringBuilder sb = new StringBuilder(getTest().writeToString());
+        StringBuilder sb = new StringBuilder(getTest().princToString());
         sb.append(' ');
-        sb.append(Symbol.HASH_TABLE.writeToString());
+        sb.append(Symbol.HASH_TABLE.princToString());
         sb.append(' ');
         if (bucketType instanceof HashEntryWeakKey) {
             sb.append("WEAKNESS :KEY");

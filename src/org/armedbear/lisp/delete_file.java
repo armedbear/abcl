@@ -65,7 +65,7 @@ public final class delete_file extends Primitive
                                     NIL);
         final String namestring = defaultedPathname.getNamestring();
         if (namestring == null)
-            return error(new FileError("Pathname has no namestring: " + defaultedPathname.writeToString(),
+            return error(new FileError("Pathname has no namestring: " + defaultedPathname.princToString(),
                                         defaultedPathname));
         final File file = new File(namestring);
 	ZipCache.remove(file);
@@ -80,7 +80,7 @@ public final class delete_file extends Primitive
             Pathname truename = new Pathname(file.getAbsolutePath());
             StringBuilder sb = new StringBuilder("Unable to delete ");
             sb.append(file.isDirectory() ? "directory " : "file ");
-            sb.append(truename.writeToString());
+            sb.append(truename.princToString());
             sb.append('.');
             return error(new FileError(sb.toString(), truename));
         } else {

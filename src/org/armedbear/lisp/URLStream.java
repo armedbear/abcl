@@ -135,10 +135,10 @@ public final class URLStream extends Stream
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         StringBuffer sb = new StringBuffer();
-        sb.append(Symbol.URL_STREAM.writeToString());
+        sb.append(Symbol.URL_STREAM.printObject());
         String namestring = pathname.getNamestring();
         if (namestring != null) {
             sb.append(" ");

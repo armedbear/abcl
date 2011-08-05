@@ -561,16 +561,16 @@ public final class SingleFloat extends LispObject
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         if (value == Float.POSITIVE_INFINITY) {
             StringBuffer sb = new StringBuffer("#.");
-            sb.append(Symbol.SINGLE_FLOAT_POSITIVE_INFINITY.writeToString());
+            sb.append(Symbol.SINGLE_FLOAT_POSITIVE_INFINITY.printObject());
             return sb.toString();
         }
         if (value == Float.NEGATIVE_INFINITY) {
             StringBuffer sb = new StringBuffer("#.");
-            sb.append(Symbol.SINGLE_FLOAT_NEGATIVE_INFINITY.writeToString());
+            sb.append(Symbol.SINGLE_FLOAT_NEGATIVE_INFINITY.printObject());
             return sb.toString();
         }
 
@@ -640,7 +640,7 @@ public final class SingleFloat extends LispObject
             return new SingleFloat(((Bignum)obj).floatValue());
         if (obj instanceof Ratio)
             return new SingleFloat(((Ratio)obj).floatValue());
-        error(new TypeError("The value " + obj.writeToString() +
+        error(new TypeError("The value " + obj.princToString() +
                              " cannot be converted to type SINGLE-FLOAT."));
         // Not reached.
         return null;

@@ -53,7 +53,7 @@ public class WeakReference extends LispObject {
     }
 
     @Override
-    public String writeToString() {
+    public String printObject() {
         return unreadableString("WEAK-REFERENCE "
                 + toString());
     }

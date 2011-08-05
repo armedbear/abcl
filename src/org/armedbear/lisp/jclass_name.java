@@ -66,7 +66,7 @@ public final class jclass_name extends Primitive
                 return new SimpleString(((Class)obj).getName());
             // Fall through.
         }
-        return error(new LispError(arg.writeToString() + " does not designate a Java class."));
+        return error(new LispError(arg.princToString() + " does not designate a Java class."));
     }
 
     // When called with two arguments, JCLASS-NAME tests whether CLASS-REF
@@ -88,7 +88,7 @@ public final class jclass_name extends Primitive
                 className = ((Class)obj).getName();
         }
         if (className == null)
-            return error(new LispError(first.writeToString() + " does not designate a Java class."));
+            return error(new LispError(first.princToString() + " does not designate a Java class."));
         final AbstractString name = checkString(second);
         return LispThread.currentThread().setValues(name.getStringValue().equals(className) ? T : NIL,
                                                     new SimpleString(className));

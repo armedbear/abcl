@@ -72,14 +72,14 @@ public class StructureClass extends SlotClass
     @Override
     public LispObject getDescription()
     {
-        return new SimpleString(writeToString());
+        return new SimpleString(princToString());
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         StringBuffer sb = new StringBuffer("#<STRUCTURE-CLASS ");
-        sb.append(getName().writeToString());
+        sb.append(getName().princToString());
         sb.append('>');
         return sb.toString();
     }

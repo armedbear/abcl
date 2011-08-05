@@ -154,7 +154,7 @@ public abstract class AbstractVector extends AbstractArray
     StringBuilder sb = new StringBuilder("Invalid array index ");
     sb.append(index);
     sb.append(" for ");
-    sb.append(writeToString());
+    sb.append(princToString());
     if (limit > 0)
       {
         sb.append(" (should be >= 0 and < ");
@@ -204,7 +204,7 @@ public abstract class AbstractVector extends AbstractArray
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     final LispThread thread = LispThread.currentThread();
     if (Symbol.PRINT_READABLY.symbolValue(thread) != NIL)
@@ -215,7 +215,7 @@ public abstract class AbstractVector extends AbstractArray
           {
             if (i > 0)
               sb.append(' ');
-            sb.append(AREF(i).writeToString());
+            sb.append(AREF(i).printObject());
           }
         sb.append(')');
         return sb.toString();
@@ -248,7 +248,7 @@ public abstract class AbstractVector extends AbstractArray
                   {
                     if (i > 0)
                       sb.append(' ');
-                    sb.append(AREF(i).writeToString());
+                    sb.append(AREF(i).printObject());
                   }
               }
             finally

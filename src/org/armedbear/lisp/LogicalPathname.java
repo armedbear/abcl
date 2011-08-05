@@ -215,7 +215,7 @@ public final class LogicalPathname extends Pathname
             } else if (part == Keyword.RELATIVE)
                 sb.append(';');
             else
-                error(new FileError("Unsupported directory component " + part.writeToString() + ".",
+                error(new FileError("Unsupported directory component " + part.princToString() + ".",
                                      this));
             temp = temp.cdr();
             while (temp != NIL) {
@@ -229,7 +229,7 @@ public final class LogicalPathname extends Pathname
                 else if (part == Keyword.UP)
                     sb.append("..");
                 else
-                    error(new FileError("Unsupported directory component " + part.writeToString() + ".",
+                    error(new FileError("Unsupported directory component " + part.princToString() + ".",
                                          this));
                 sb.append(';');
                 temp = temp.cdr();
@@ -239,7 +239,7 @@ public final class LogicalPathname extends Pathname
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         final LispThread thread = LispThread.currentThread();
         boolean printReadably = (Symbol.PRINT_READABLY.symbolValue(thread) != NIL);

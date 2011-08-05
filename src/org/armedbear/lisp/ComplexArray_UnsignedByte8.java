@@ -226,7 +226,7 @@ public final class ComplexArray_UnsignedByte8 extends AbstractArray
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         if (Symbol.PRINT_READABLY.symbolValue() != NIL) {
             error(new PrintNotReadable(list(Keyword.OBJECT, this)));

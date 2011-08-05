@@ -69,7 +69,7 @@ public final class HashTableFunctions
         if (test == FUNCTION_EQUALP)
           return HashTable.newEqualpHashTable(n, rehashSize, rehashThreshold);
         return error(new LispError("Unsupported test for MAKE-HASH-TABLE: " +
-                                    test.writeToString()));
+                                    test.princToString()));
       }
     };
 
@@ -102,7 +102,7 @@ public final class HashTableFunctions
           return WeakHashTable.newEqualpHashTable(n, rehashSize, 
 						  rehashThreshold, weakness);
         return error(new LispError("Unsupported test for MAKE-HASH-TABLE: " +
-                                    test.writeToString()));
+                                    test.princToString()));
       }
     };
 

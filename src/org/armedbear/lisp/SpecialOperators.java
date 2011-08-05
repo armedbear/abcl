@@ -141,7 +141,7 @@ public final class SpecialOperators {
                     if (obj.length() > 2)
                         return error(new LispError("The " + (sequential ? "LET*" : "LET")
                                                    + " binding specification " +
-                                                   obj.writeToString() + " is invalid."));
+                                                   obj.princToString() + " is invalid."));
                     symbol = checkSymbol(((Cons)obj).car);
                     value = eval(obj.cadr(), sequential ? ext : env, thread);
                 } else {
@@ -201,14 +201,14 @@ for (Cons x : nonSequentialVars)
                                 || ext.isDeclaredSpecial(symbol)) {
                             return error(new ProgramError(
                                              "Attempt to bind the special variable " +
-                                             symbol.writeToString() +
+                                             symbol.princToString() +
                                              " with SYMBOL-MACROLET."));
                         }
                         bindArg(null, symbol, new SymbolMacro(obj.cadr()), ext, thread);
                     } else {
                         return error(new ProgramError(
                                          "Malformed symbol-expansion pair in SYMBOL-MACROLET: " +
-                                         obj.writeToString()));
+                                         obj.princToString()));
                     }
                 }
                 return progn(body, ext, thread);
@@ -519,7 +519,7 @@ for (Cons x : nonSequentialVars)
             while (args != NIL) {
                 Symbol symbol = checkSymbol(args.car());
                 if (symbol.isConstant()) {
-                    return error(new ProgramError(symbol.writeToString() +
+                    return error(new ProgramError(symbol.princToString() +
                                                   " is a constant and thus cannot be set."));
                 }
                 args = args.cdr();

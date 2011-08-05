@@ -846,7 +846,7 @@ public final class Package extends LispObject implements java.io.Serializable
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         if (_PRINT_FASL_.symbolValue() != NIL && name != null) {
             StringBuilder sb = new StringBuilder("#.(FIND-PACKAGE \"");

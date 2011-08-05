@@ -110,7 +110,7 @@ public abstract class AbstractString extends AbstractVector
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         return writeToString(0, length());
     }

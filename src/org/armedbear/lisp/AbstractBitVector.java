@@ -172,7 +172,7 @@ public abstract class AbstractBitVector extends AbstractVector
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         final LispThread thread = LispThread.currentThread();
         final int length = length();

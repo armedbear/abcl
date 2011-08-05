@@ -102,9 +102,9 @@ public class CellError extends LispError
     {
         if (Symbol.PRINT_ESCAPE.symbolValue() == NIL)
             return super.getMessage();
-        StringBuffer sb = new StringBuffer(typeOf().writeToString());
+        StringBuffer sb = new StringBuffer(typeOf().princToString());
         sb.append(' ');
-        sb.append(getCellName().writeToString());
+        sb.append(getCellName().princToString());
         return unreadableString(sb.toString());
     }
 }

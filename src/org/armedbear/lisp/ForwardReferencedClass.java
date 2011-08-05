@@ -65,13 +65,13 @@ public class ForwardReferencedClass extends LispClass
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         StringBuffer sb =
-            new StringBuffer(Symbol.FORWARD_REFERENCED_CLASS.writeToString());
+            new StringBuffer(Symbol.FORWARD_REFERENCED_CLASS.printObject());
         if (getName() != null) {
             sb.append(' ');
-            sb.append(getName().writeToString());
+            sb.append(getName().printObject());
         }
         return unreadableString(sb.toString());
     }
@@ -90,7 +90,7 @@ public class ForwardReferencedClass extends LispClass
                 LispClass.addClass(name, c);
                 return c;
             }
-                return error(new TypeError(arg.writeToString() +
+                return error(new TypeError(arg.princToString() +
                                             " is not a valid class name."));
         }
     };

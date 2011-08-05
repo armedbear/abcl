@@ -354,7 +354,7 @@ public final class JavaObject extends LispObject {
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         if (obj instanceof ControlTransfer)
             return obj.toString();
@@ -540,9 +540,9 @@ public final class JavaObject extends LispObject {
         {
         final Object obj = javaObject.getObject();
         final StringBuilder sb =
-            new StringBuilder(javaObject.writeToString());
+            new StringBuilder(javaObject.princToString());
         sb.append(" is an object of type ");
-        sb.append(Symbol.JAVA_OBJECT.writeToString());
+        sb.append(Symbol.JAVA_OBJECT.princToString());
         sb.append(".");
         sb.append(System.getProperty("line.separator"));
         sb.append("The wrapped Java object is ");

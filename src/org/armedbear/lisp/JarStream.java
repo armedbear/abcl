@@ -136,10 +136,10 @@ public final class JarStream extends Stream
     }
 
     @Override
-    public String writeToString()
+    public String printObject()
     {
         StringBuffer sb = new StringBuffer();
-        sb.append(Symbol.JAR_STREAM.writeToString());
+        sb.append(Symbol.JAR_STREAM.princToString());
         String namestring = pathname.getNamestring();
         if (namestring != null) {
             sb.append(" ");

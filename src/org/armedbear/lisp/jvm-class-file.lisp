@@ -903,21 +903,22 @@ returning `attribute'."
   (push attribute (method-attributes method))
   attribute)
 
-(defun method-add-code (method)
+(defun method-add-code (method &optional (optimize t))
   "Creates an (empty) 'Code' attribute for the method,
 returning the created attribute."
   (method-add-attribute
    method
    (make-code-attribute (+ (length (cdr (method-descriptor method)))
                            (if (member :static (method-access-flags method))
-                               0 1))))) ;; 1 == implicit 'this'
+                               0 1)) ;; 1 == implicit 'this'
+			optimize)))
 
-(defun method-ensure-code (method)
+(defun method-ensure-code (method &optional (optimize t))
   "Ensures the existence of a 'Code' attribute for the method,
 returning the attribute."
   (let ((code (method-attribute method "Code")))
     (if (null code)
-        (method-add-code method)
+        (method-add-code method optimize)
         code)))
 
 (defun method-attribute (method name)
@@ -1002,7 +1003,7 @@ an attribute of a method."
 
   ;; labels contains offsets into the code array after it's finalized
   labels ;; an alist
-
+  optimize
   (current-local 0)) ;; used for handling nested WITH-CODE-TO-METHOD blocks
 
 
@@ -1026,7 +1027,7 @@ has been finalized."
                      (nconc (mapcar #'exception-start-pc handlers)
                             (mapcar #'exception-end-pc handlers)
                             (mapcar #'exception-handler-pc handlers))
-                     t)))
+                     (code-optimize code))))
     (invoke-callbacks :code-finalized class parent
                       (coerce c 'list) handlers)
     (unless (code-max-stack code)
@@ -1086,10 +1087,10 @@ has been finalized."
 
   (write-attributes (code-attributes code) stream))
 
-(defun make-code-attribute (arg-count)
+(defun make-code-attribute (arg-count &optional optimize)
   "Creates an empty 'Code' attribute for a method which takes
 `arg-count` parameters, including the implicit `this` parameter."
-  (%make-code-attribute :max-locals arg-count))
+  (%make-code-attribute :max-locals arg-count :optimize optimize))
 
 (defun code-add-attribute (code attribute)
   "Adds `attribute' to `code', returning `attribute'."
@@ -1192,20 +1193,24 @@ to which it has been attached has been superseded.")
     `(progn
        (when *current-code-attribute*
          (save-code-specials *current-code-attribute*))
-       (let* ((,m ,method)
-              (*method* ,m)
-              (,c (method-ensure-code ,method))
-              (*pool* (class-file-constants ,class-file))
-              (*code* (code-code ,c))
-              (*registers-allocated* (code-max-locals ,c))
-              (*register* (code-current-local ,c))
-              (*current-code-attribute* ,c))
-         ,@body
-         (setf (code-code ,c) *code*
-               (code-current-local ,c) *register*
-               (code-max-locals ,c) *registers-allocated*))
-       (when *current-code-attribute*
-         (restore-code-specials *current-code-attribute*)))))
+       (unwind-protect
+           (let* ((,m ,method)
+                  (*method* ,m)
+                  (,c (method-ensure-code ,method))
+                  (*pool* (class-file-constants ,class-file))
+                  (*code* (code-code ,c))
+                  (*registers-allocated* (code-max-locals ,c))
+                  (*register* (code-current-local ,c))
+                  (*current-code-attribute* ,c))
+             (unwind-protect
+                 ,@body
+               ;; in case of a RETURN-FROM or GO, save the current state
+               (setf (code-code ,c) *code*
+                     (code-current-local ,c) *register*
+                     (code-max-locals ,c) *registers-allocated*)))
+         ;; using the same line of reasoning, restore the outer-scope state
+         (when *current-code-attribute*
+           (restore-code-specials *current-code-attribute*))))))
 
 
 (defstruct (source-file-attribute (:conc-name source-)

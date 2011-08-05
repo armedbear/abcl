@@ -104,7 +104,7 @@ public final class Utilities
         String namestring = merged.getNamestring();
         if (namestring != null)
             return new File(namestring);
-        error(new FileError("Pathname has no namestring: " + merged.writeToString(),
+        error(new FileError("Pathname has no namestring: " + merged.princToString(),
                              merged));
         // Not reached.
         return null;

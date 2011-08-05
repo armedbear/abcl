@@ -178,11 +178,11 @@ public class Condition extends StandardObject
       {
         return format(formatControl, getFormatArguments());
       }
-    return unreadableString(typeOf().writeToString());
+    return unreadableString(typeOf().princToString());
   }
 
   @Override
-  public final String writeToString()
+  public final String printObject()
   {
     final LispThread thread = LispThread.currentThread();
     if (Symbol.PRINT_ESCAPE.symbolValue(thread) == NIL)
@@ -216,6 +216,6 @@ public class Condition extends StandardObject
     int currentLevel = ((Fixnum)currentPrintLevel).value;
     if (currentLevel >= maxLevel)
       return "#";
-    return unreadableString(typeOf().writeToString());
+    return unreadableString(typeOf().princToString());
   }
 }

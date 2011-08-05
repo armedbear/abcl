@@ -72,7 +72,7 @@ public final class zip extends Primitive
             String zipfileNamestring = zipfilePathname.getNamestring();
             if (zipfileNamestring == null)
                 return error(new SimpleError("Pathname has no namestring: " +
-                                              zipfilePathname.writeToString()));
+                                              zipfilePathname.princToString()));
             ZipOutputStream out =
                 new ZipOutputStream(new FileOutputStream(zipfileNamestring));
             LispObject list = second;
@@ -85,7 +85,7 @@ public final class zip extends Primitive
                     File zipfile = new File(zipfileNamestring);
                     zipfile.delete();
                     return error(new SimpleError("Pathname has no namestring: "
-                                                 + pathname.writeToString()));
+                                                 + pathname.princToString()));
                 }
                 File file = new File(namestring);
                 makeEntry(out, file);
@@ -109,7 +109,7 @@ public final class zip extends Primitive
             String zipfileNamestring = zipfilePathname.getNamestring();
             if (zipfileNamestring == null)
                 return error(new SimpleError("Pathname has no namestring: " +
-                                              zipfilePathname.writeToString()));
+                                              zipfilePathname.princToString()));
             ZipOutputStream out =
                 new ZipOutputStream(new FileOutputStream(zipfileNamestring));
             Pathname root = (Pathname) Pathname.truename(coerceToPathname(third));
@@ -126,7 +126,7 @@ public final class zip extends Primitive
                     File zipfile = new File(zipfileNamestring);
                     zipfile.delete();
                     return error(new SimpleError("Pathname has no namestring: " +
-                                                  pathname.writeToString()));
+                                                  pathname.princToString()));
                 }
                 String directory = "";
                 String dir = pathname.getDirectoryNamestring();
@@ -199,7 +199,7 @@ public final class zip extends Primitive
         String zipfileNamestring = zipfilePathname.getNamestring();
         if (zipfileNamestring == null)
             return error(new SimpleError("Pathname has no namestring: " +
-                                         zipfilePathname.writeToString()));
+                                         zipfilePathname.princToString()));
         ZipOutputStream out = null;
         try {
             out = new ZipOutputStream(new FileOutputStream(zipfileNamestring));

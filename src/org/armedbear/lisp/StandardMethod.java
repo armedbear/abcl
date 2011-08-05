@@ -145,7 +145,7 @@ public class StandardMethod extends StandardObject
   }
 
   @Override
-  public String writeToString()
+  public String printObject()
   {
     LispObject genericFunction =
       slots[StandardMethodClass.SLOT_INDEX_GENERIC_FUNCTION];
@@ -163,9 +163,9 @@ public class StandardMethod extends StandardObject
             else
               className = Symbol.CLASS_NAME.execute(lispClass);
 
-            sb.append(className.writeToString());
+            sb.append(className.printObject());
             sb.append(' ');
-            sb.append(name.writeToString());
+            sb.append(name.printObject());
             LispObject specializers =
               slots[StandardMethodClass.SLOT_INDEX_SPECIALIZERS];
             if (specializers != null)
@@ -182,12 +182,12 @@ public class StandardMethod extends StandardObject
                     specs = specs.cdr();
                   }
                 sb.append(' ');
-                sb.append(names.nreverse().writeToString());
+                sb.append(names.nreverse().printObject());
               }
             return unreadableString(sb.toString());
           }
       }
-    return super.writeToString();
+    return super.printObject();
   }
 
   // ### %method-generic-function

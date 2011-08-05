@@ -291,7 +291,7 @@ public class Readtable extends LispObject
     if (dispatchTable == null)
       {
         LispCharacter c = LispCharacter.getInstance(dispChar);
-        return error(new LispError(c.writeToString() +
+        return error(new LispError(c.princToString() +
                                     " is not a dispatch character."));
       }
     LispObject function =
@@ -307,7 +307,7 @@ public class Readtable extends LispObject
     if (dispatchTable == null)
       {
         LispCharacter c = LispCharacter.getInstance(dispChar);
-        error(new LispError(c.writeToString() +
+        error(new LispError(c.princToString() +
                              " is not a dispatch character."));
       }
     dispatchTable.functions.put(LispCharacter.toUpperCase(subChar), function);
@@ -426,7 +426,7 @@ public class Readtable extends LispObject
         else if (second instanceof Symbol)
           designator = second;
         else
-          return error(new LispError(second.writeToString() +
+          return error(new LispError(second.princToString() +
                                       " does not designate a function."));
         byte syntaxType;
         if (third != NIL)

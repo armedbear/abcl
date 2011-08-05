@@ -677,7 +677,7 @@ public final class Primitives {
             final LispObject value;
             value = checkSymbol(arg).symbolValue();
             if (value instanceof SymbolMacro)
-                return error(new LispError(arg.writeToString() +
+                return error(new LispError(arg.princToString() +
                                            " has no dynamic value."));
             return value;
         }
@@ -884,7 +884,7 @@ public final class Primitives {
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            checkStream(second)._writeString(first.writeToString());
+            checkStream(second)._writeString(first.printObject());
             return first;
         }
     };
@@ -907,7 +907,7 @@ public final class Primitives {
                 out = Symbol.STANDARD_OUTPUT.symbolValue();
             else
                 out = second;
-            String output = first.writeToString();
+            String output = first.printObject();
             if (Symbol.PRINT_READABLY.symbolValue(LispThread.currentThread()) != NIL
                 && output.contains("#<")) {
                 //### Ticket #160: the cause lies here.
@@ -934,7 +934,7 @@ public final class Primitives {
 
         @Override
         public LispObject execute(LispObject arg) {
-            return new SimpleString(arg.writeToString());
+            return new SimpleString(arg.printObject());
         }
     };
 
@@ -1596,11 +1596,11 @@ public final class Primitives {
             System.out.println("ERROR placeholder called with arguments:");
 
             if (args.length == 1 && args[0] instanceof Condition) {
-                System.out.println(args[0].writeToString());
+                System.out.println(args[0].princToString());
                 System.out.println(((Condition)args[0]).getConditionReport());
             } else
             for (LispObject a : args)
-                System.out.println(a.writeToString());
+                System.out.println(a.princToString());
 
             throw e;
         }
@@ -1733,7 +1733,7 @@ public final class Primitives {
                     return NIL;
                 }
                 error(new TypeError("The value " +
-                                    destination.writeToString() +
+                                    destination.princToString() +
                                     " is not a character output stream."));
             }
             if (destination instanceof Stream) {
@@ -2423,7 +2423,7 @@ public final class Primitives {
                 array = (ZeroRankArray) first;
             } else {
                 return error(new TypeError("The value " +
-                                           first.writeToString() +
+                                           first.princToString() +
                                            " is not an array of rank 0."));
             }
             array.aset(0, second);
@@ -3262,7 +3262,7 @@ public final class Primitives {
                         String s = javaString(obj);
                         Package p = Packages.findPackage(s);
                         if (p == null) {
-                            error(new LispError(obj.writeToString() +
+                            error(new LispError(obj.princToString() +
                                                 " is not the name of a package."));
                             return NIL;
                         }
@@ -3287,7 +3287,7 @@ public final class Primitives {
                     String s = javaString(obj);
                     Package p = Packages.findPackage(s);
                     if (p == null) {
-                        error(new LispError(obj.writeToString() +
+                        error(new LispError(obj.princToString() +
                                             " is not the name of a package."));
                         return NIL;
                     }
@@ -3713,7 +3713,7 @@ public final class Primitives {
             Binding binding = env.getTagBinding(args.car());
             if (binding == null)
                 return error(new ControlError("No tag named " +
-                                              args.car().writeToString() +
+                                              args.car().princToString() +
                                               " is currently visible."));
 
             return nonLocalGo(binding, args.car());
@@ -4014,7 +4014,7 @@ public final class Primitives {
             } else if (obj instanceof Function) {
                 function = obj;
             } else {
-                error(new LispError(obj.writeToString() +
+                error(new LispError(obj.princToString() +
                                     " is not a function name."));
                 return NIL;
             }

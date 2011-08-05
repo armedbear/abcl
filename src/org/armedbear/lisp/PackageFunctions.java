@@ -342,7 +342,7 @@ public final class PackageFunctions
                     LispObject string = obj.STRING();
                     Package p = Packages.findPackage(string.getStringValue());
                     if (p == null)
-                        return error(new LispError(obj.writeToString() +
+                        return error(new LispError(obj.princToString() +
                                                     " is not the name of a package."));
                     pkg.usePackage(p);
                 }

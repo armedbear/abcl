@@ -51,7 +51,7 @@ public class StandardObjectFunctions
         if (arg.typep(StandardClass.STANDARD_CLASS) != NIL) {
             LispObject l = Symbol.CLASS_LAYOUT.execute(arg);
             if (! (l instanceof Layout))
-                return error(new ProgramError("Invalid standard class layout for: " + arg.writeToString()));
+                return error(new ProgramError("Invalid standard class layout for: " + arg.princToString()));
             
             return new StandardObject((Layout)l);
         }
