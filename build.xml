@@ -297,7 +297,7 @@ from ${abcl.home.dir}
     <target name="abcl.version.src.0" if="windows">
       <exec
           executable="svnversion.exe"
-          outputproperty="abcl.version.svn"
+          outputproperty="abcl.version.svn.raw"
           failifexecutionfails="false"
           searchpath="true" />
     </target>
@@ -305,7 +305,7 @@ from ${abcl.home.dir}
     <target name="abcl.version.src.1" depends="abcl.version.src.0">
       <exec 
           executable="svnversion"
-          outputproperty="abcl.version.svn"
+          outputproperty="abcl.version.svn.raw"
           failifexecutionfails="false"
           searchpath="true" />
     </target>
@@ -313,6 +313,16 @@ from ${abcl.home.dir}
     <target name="abcl.version.src.2" 
             depends="abcl.version.src.1"
             if="abcl.version.svn.p">
+
+      <!-- Transform all occurances of ":" ==> "-" in the version string -->
+      <tempfile property="version-tmp.path"/>
+      <echo message="${abcl.version.svn.raw}"
+            file="${version-tmp.path}"/>
+      <replace file="${version-tmp.path}"
+               token=":" value="-"/>
+      <loadfile property="abcl.version.svn" srcFile="${version-tmp.path}"/>
+      <delete file="${version-tmp.path}"/>
+
       <echo>abcl.version.svn: ${abcl.version.svn}</echo>
       <property name="abcl.version.src"
                 value="svn-${abcl.version.svn}"/>
