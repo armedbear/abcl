@@ -4,8 +4,6 @@
 % leaving the manual itself as much as a pure content to be
 % comfortably read and modified with a text editor.
 
-\documentclass[10pt]{article}
-
 \usepackage{color,hyperref}
 \definecolor{darkblue}{rgb}{0.0,0.0,0.3}
 \hypersetup{colorlinks,breaklinks,
@@ -21,9 +19,15 @@
 \usepackage{listings}
 
 
-\newenvironment{xx}[1]%
-               {\begin{lstlisting} }%
-               {\end{lstlisting}}
+\lstnewenvironment{listing-java}
+ {\lstset{language=Java}}
+ {}
+
+
+\lstnewenvironment{listing-lisp}
+ {\lstset{language=Lisp}}
+ {}
 
 \usepackage{verbatim}
 
+\ProvidesPackage{abcl}

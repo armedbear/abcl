@@ -1,12 +1,16 @@
+% -*- mode: latex; -*-
 % http://en.wikibooks.org/wiki/LaTeX/
-\include{index}
+\documentclass[10pt]{book}
+\usepackage{abcl}
 
 \begin{document}
 \title{A Manual for Armed Bear Common Lisp}
 \date{August 4, 2011}
-\author{Mark Evenson, Erik Huelsmann, Alessio Stallo, Ville Voutilainen}
+\author{Mark~Evenson, Erik~Huelsmann, Alessio~Stallo, Ville~Voutilainen}
 
-\section{Introduction}
+\maketitle
+
+\chapter{Introduction}
 
 Armed Bear is a mostly conforming implementation of the ANSI Common
 Lisp standard.  This manual documents the Armed Bear Common Lisp
@@ -15,15 +19,42 @@ implementation for users of the system.
 \subsection{Version}
 This manual corresponds to abcl-0.27.0, as yet unreleased.
 
+\chapter{Conformance}
 
-\section{Interaction with host JVM}
+
+\section{ANSI Common Lisp}
+ABCL is currently a non-conforming ANSI Common Lisp implementation due
+to the following (known) issues:
+
+\begin{itemize}
+  \item Lack of long form of DEFINE-METHOD-COMBINATION
+  \item Missing statement of conformance in accompanying documentation
+\end{itemize}
+
+ABCL aims to be be a fully conforming ANSI Common Lisp
+implementation.  Any other behavior should be reported as a bug.
+
+\section{Contemporary Common Lisp}
+In addition to ANSI conformance, ABCL strives to implement features
+expected of a contemporary Common Lisp.
+\begin{itemize}
+  \item Incomplete MOP 
+    % N.B. 
+    % TODO go through AMOP with symbols, starting by looking for
+    % matching function signature.
+    % XXX is this really blocking ANSI conformance?  Answer: we have
+    % to start with such a ``census'' to determine what we have.
+  \item Incomplete Gray Streams
+\end{itemize}
+
+\chapter{Interaction with host JVM}
 
 % describe calling Java from Lisp, and calling Lisp from Java,
 % probably in two separate sections.  Presumably, we can partition our
 % audience into those who are more comfortable with Java, and those
 % that are more comforable with Lisp
 
-\subsection{Lisp to Java}
+\section{Lisp to Java}
 
 ABCL offers a number of mechanisms to manipulate Java libraries from
 Lisp.
@@ -42,7 +73,7 @@ Lisp.
   classpath at runtime (JAVA:ADD-TO-CLASSPATH).
 \end{itemize}
 
-\subsection{Lisp from Java}
+\section{Lisp from Java}
 
 Manipulation of the Lisp API is currently lacking a stable interface,
 so what is documented here is subject to change.  
@@ -59,7 +90,7 @@ so what is documented here is subject to change.
   Function.execute(args [...]) 
 \end{itemize}
 
-\subsubsection{Lisp FFI}
+\subsection{Lisp FFI}
 
 FFI stands for "Foreign Function Interface" which is the phase which
 the contemporary Lisp world refers to methods of "calling out" from
@@ -68,17 +99,16 @@ describes the various ways that one interacts with Lisp world of ABCL
 from Java, considering the hosted Lisp as the "Foreign Function" that
 needs to be "Interfaced".
 
-\subsubsection{Calling Lisp from Java}
+\subsection{Calling Lisp from Java}
 
 Note: As the entire ABCL Lisp system resides in the org.armedbear.lisp
 package the following code snippets do not show the relevant import
 statements in the interest of brevity.  An example of the import
 statement would be
 
-\lstset{language=Java}
-\begin{lstlisting}
+\begin{listing-java}
   import org.armedbear.lisp.*;
-\end{lstliting}
+\end{listing-java}
 
 to potentially import all the JVM symbol from the `org.armedbear.lisp'
 namespace.
@@ -86,9 +116,9 @@ namespace.
 Per JVM, there can only ever be a single Lisp interpreter.  This is
 started by calling the static method `Interpreter.createInstance()`.
 
-\begin{code}[java]
+\begin{listing-java}
   Interpreter interpreter = Interpreter.createInstance();
-\end{code}
+\end{listing-java}
 
 If this method has already been invoked in the lifetime of the current
 Java process it will return null, so if you are writing Java whose
@@ -102,14 +132,13 @@ safer invocation pattern might be:
   }
 \end{code}
 
-
 The Lisp \code{eval} primitive may be simply passed strings for evaluation,
 as follows
 
-\begin{code}[java]
+\begin{listing-java}
   String line = "(load \"file.lisp\")";
   LispObject result = interpreter.eval(line);
-\end{code}
+\end{listing-java}
 
 Notice that all possible return values from an arbitrary Lisp
 computation are collapsed into a single return value.  Doing useful
@@ -118,13 +147,13 @@ result of the computation might be, usually involves some amount
 of \code{instanceof} introspection, and forms a whole topic to itself
 (c.f. [Introspecting a LispObject])
 
-Using ``EVAL'' involves the Lisp interpreter.  Lisp functions may be
-directly invoked by Java method calls as follows.  One simply locates
-the package containing the symbol, then obtains a reference to the
-symbol, and then invokes the `execute()` method with the desired
-parameters.
+Using \code{eval} involves the Lisp interpreter.  Lisp functions may
+be directly invoked by Java method calls as follows.  One simply
+locates the package containing the symbol, then obtains a reference to
+the symbol, and then invokes the \code{execute()} method with the
+desired parameters.
 
-\begin{code}[java]
+\begin{listing-java}
     interpreter.eval("(defun foo (msg) (format nil \"You told me '~A'~%\" msg))");
     Package pkg = Packages.findPackage("CL-USER");
     Symbol foo = pkg.findAccessibleSymbol("FOO"); 
@@ -133,14 +162,14 @@ parameters.
     LispObject result = fooFunction.execute(parameter);
     // How to get the "naked string value"?
     System.out.println("The result was " + result.writeToString()); 
-\end{code}
+\end{listing-java}
 
 If one is calling an primitive function in the CL package the syntax
 becomes considerably simpler if we can locate the instance of
 definition in the ABCL source, we can invoke the symbol directly.  To
 tell if a `LispObject` contains a reference to a symbol.
 
-\begin{code}[java]
+\begin{listing-java}
     boolean nullp(LispObject object) {
       LispObject result = Primitives.NULL.execute(object);
       if (result == NIL) {
@@ -148,31 +177,31 @@ tell if a `LispObject` contains a reference to a symbol.
       }
       return true;
    }
-\end{code}
+\end{listing-java}
 
-\paragraph{Introspecting a LispObject}
+\subsubsection{Introspecting a LispObject}
 \label{topic:Introspecting a LispObject}
 
 We present various patterns for introspecting an an arbitrary
 `LispObject` which can represent the result of every Lisp evaluation
 into semantics that Java can meaniningfully deal with.
 
-\paragraph{LispObject as \code{boolean}}
+\subsubsection{LispObject as \code{boolean}}
 
 If the LispObject a generalized boolean values, one can use
 \code{getBooleanValue()} to convert to Java:
 
-\begin{code}[java]
+\begin{listing-java}
      LispObject object = Symbol.NIL;
      boolean javaValue = object.getBooleanValue();
-\end{code}
+\end{listing-java}
 
 Although since in Lisp, any value other than NIL means "true", the
 use of Java equality it quite a bit easier and more optimal:
 
-\begin{code}[java]
+\begin{listing-java}
     boolean javaValue = (object != Symbol.NIL);
-\end{code}
+\end{listing-java}
 
 \paragraph{LispObject is a list}
 
@@ -180,47 +209,35 @@ If LispObject is a list, it will have the type `Cons`.  One can then use
 the \code{copyToArray} to make things a bit more suitable for Java
 iteration.
 
-\begin{code}[java]
+\begin{listing-java}
     LispObject result = interpreter.eval("'(1 2 4 5)");
     if (result instanceof Cons) {
       LispObject array[] = ((Cons)result.copyToArray());
       ...
     }
-\end{code}
+\end{listing-java}
     
 A more Lispy way to iterated down a list is to use the `cdr()` access
 function just as like one would traverse a list in Lisp:;
 
-\begin{code}[java]
+\begin{listing-java}
     LispObject result = interpreter.eval("'(1 2 4 5)");
     while (result != Symbol.NIL) {
       doSomething(result.car());
       result = result.cdr();
     }
-\end{code}
+\end{listing-java}
 
 
-\subsection{JAVA}
+\section{Java}
 
 % include autogen docs for the JAVA package.
+\include{java}
 
-\section{ANSI Common Lisp Conformance}
+\section{Multithreading}
 
-ABCL is currently a non-conforming ANSI Common Lisp implementation due
-to the following (known) issues:
-
-\begin{itemize}
-  \item Lack of long form of DEFINE-METHOD-COMBINATION
-  \item Missing statement of conformance in accompanying documentation
-  \item Incomplete MOP 
-    % TODO go through AMOP with symbols, starting by looking for
-    % matching function signature.
-    % XXX is this really blocking ANSI conformance?  Answer: we have
-    % to start with such a ``census'' to determine what we have.
-\end{itemize}
-
-ABCL aims to be be a fully conforming ANSI Common Lisp
-implementation.  Any other behavior should be reported as a bug.
+% TODO document the THREADS package.
+\include{threads}
 
 \section{Extensions}
 
@@ -232,14 +249,14 @@ the garbage collector and others.
 
 \include{extensions}
 
-\subsection{Beyond ANSI}
+\chapter{Beyond ANSI}
 
 Naturally, in striving to be a useful contemporary Common Lisp
 implementation, ABCL endeavors to include extensions beyond the ANSI
 specification which are either widely adopted or are especially useful
 in working with the hosting JVM.
 
-\subsubsection{Extensions to CLOS}
+\section{Extensions to CLOS}
 
 There is an additional syntax for specializing the parameter of a
 generic function on a java class, viz. \code{(java:jclass CLASS-STRING)}
@@ -250,22 +267,29 @@ For instance the following specialization would perhaps allow one to
 print more information about the contents of a java.util.Collection
 object
 
-\begin{code}[lisp]
-(defmethod print-object ((coll (java:jclass "java.util.Collection")) stream)
-\ldots
-\end{code}
+\begin{listing-lisp}
+(defmethod print-object ((coll (java:jclass "java.util.Collection"))
+                         stream)
+  ;;; ...
+)
+\end{listing-lisp}
 
 If the class had been loaded via a classloader other than the original
 the class you wish to specialize on, one needs to specify the
 classloader as an optional third argument.
 
-\begin{code}[lisp]
-(defmethod print-object ((device-id (java:jclass "dto.nbi.service.hdm.alcatel.com.nNBIDeviceID" 
-                                    (\#"getBaseLoader" cl-user::*classpath-manager*)))
-\ldots
-\end{code}
+\begin{listing-lisp}
 
-\subsubsection{Extensions to the Reader}
+(defparameter *other-classloader*
+  (jcall "getBaseLoader" cl-user::*classpath-manager*))
+  
+(defmethod print-object ((device-id (java:jclass "dto.nbi.service.hdm.alcatel.com.NBIDeviceID" *other-classloader*))
+                         stream)
+  ;;; ...
+)
+\end{listing-lisp}
+
+\section{Extensions to the Reader}
 
 We implement a special hexadecimal escape sequence for specifying
 characters to the Lisp reader, namely we allow a sequences of the form
@@ -278,12 +302,7 @@ Note that this sequence is never output by the implementation.  Instead,
 the corresponding Unicode character is output for characters whose
 code is greater than 0x00ff.
 
-\section{Multithreading}
-
-% TODO document the THREADS package.
-\include{threads}
-
-\section{History}
+\chapter{History}
 
 ABCL was originally the extension language for the J editor, which was
 started in 1998 by Peter Graves.  Sometime in 2003, it seems that a
