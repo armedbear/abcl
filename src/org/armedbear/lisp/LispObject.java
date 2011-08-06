@@ -781,6 +781,10 @@ public class LispObject //extends Lisp
    */
   public final String unreadableString(String s, boolean identity)
   {
+    if (Symbol.PRINT_READABLY.symbolValue() != NIL) {
+        error(new PrintNotReadable(list(Keyword.OBJECT, this)));
+        return null; // not reached
+    }
     StringBuilder sb = new StringBuilder("#<");
     sb.append(s);
     if (identity) {

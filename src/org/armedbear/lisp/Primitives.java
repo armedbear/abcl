@@ -908,18 +908,6 @@ public final class Primitives {
             else
                 out = second;
             String output = first.printObject();
-            if (Symbol.PRINT_READABLY.symbolValue(LispThread.currentThread()) != NIL
-                && output.contains("#<")) {
-                //### Ticket #160: the cause lies here.
-                // You can't just go scan the content of the printed string,
-                // because the marker being sought may be part of the readable
-                // presentation
-                LispObject args = NIL;
-                args = args.push(first);
-                args = args.push(Keyword.OBJECT);
-                args = args.nreverse();
-                return error(new PrintNotReadable(args));
-            }
             checkStream(out)._writeString(output);
             return first;
         }
