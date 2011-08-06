@@ -233,7 +233,7 @@ public final class ComplexArray_UnsignedByte8 extends AbstractArray
             // Not reached.
             return null;
         }
-        return writeToString(dimv);
+        return printObject(dimv);
     }
 
 

@@ -83,7 +83,7 @@ public abstract class AbstractString extends AbstractVector
 
     public abstract void setCharAt(int index, char c);
 
-    public final String writeToString(int beginIndex, int endIndex)
+    public final String printObject(int beginIndex, int endIndex)
 
     {
         if (beginIndex < 0)
@@ -112,7 +112,7 @@ public abstract class AbstractString extends AbstractVector
     @Override
     public String printObject()
     {
-        return writeToString(0, length());
+        return printObject(0, length());
     }
 
     public String toString() {

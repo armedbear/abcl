@@ -231,7 +231,7 @@ public final class ComplexArray_UnsignedByte32 extends AbstractArray
     @Override
     public String printObject()
     {
-        return writeToString(dimv);
+        return printObject(dimv);
     }
 
 

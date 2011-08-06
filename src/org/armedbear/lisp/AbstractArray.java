@@ -180,7 +180,7 @@ public abstract class AbstractArray extends LispObject implements java.io.Serial
 
     public abstract void fill(LispObject obj);
 
-    public String writeToString(int[] dimv)
+    public String printObject(int[] dimv)
     {
         StringBuilder sb = new StringBuilder();
         LispThread thread = LispThread.currentThread();

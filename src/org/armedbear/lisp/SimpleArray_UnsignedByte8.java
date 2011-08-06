@@ -285,7 +285,7 @@ public final class SimpleArray_UnsignedByte8 extends AbstractArray
             // Not reached.
             return null;
         }
-        return writeToString(dimv);
+        return printObject(dimv);
     }
 
     public AbstractArray adjustArray(int[] dimv, LispObject initialElement,
