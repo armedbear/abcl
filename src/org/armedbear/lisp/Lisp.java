@@ -2705,7 +2705,7 @@ public final class Lisp
     @Override
     public String printObject()
     {
-      return "#<UNBOUND>";
+      return unreadableString("UNBOUND", false);
     }
   }
 
@@ -2715,7 +2715,7 @@ public final class Lisp
     @Override
     public String printObject()
     {
-      return "null";
+      return unreadableString("null", false);
     }
   }
 

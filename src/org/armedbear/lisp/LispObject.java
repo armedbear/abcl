@@ -757,6 +757,8 @@ public class LispObject //extends Lisp
   /** Calls unreadableString(String s, boolean identity) with a default
    * identity value of 'true'.
    * 
+   * This function is a helper for printObject()
+   * 
    * @param s String representation of this object.
    * @return String enclosed in the non-readable #< ... > markers
    */
@@ -769,6 +771,8 @@ public class LispObject //extends Lisp
    * 
    * If the current value of the variable *PRINT-READABLY* is T, a
    * Lisp error is thrown and no value is returned.
+   * 
+   * This function is a helper for printObject()
    * 
    * @param s
    * @param identity when 'true', includes Java's identityHash for the object

@@ -261,7 +261,7 @@ public class Autoload extends Function
     @Override
     public String printObject()
     {
-        StringBuffer sb = new StringBuffer("#<AUTOLOAD ");
+        StringBuilder sb = new StringBuilder();
         sb.append(symbol.princToString());
         sb.append(" \"");
         if (className != null) {
@@ -273,8 +273,7 @@ public class Autoload extends Function
             sb.append(".class");
         } else
             sb.append(getFileName());
-        sb.append("\">");
-        return sb.toString();
+        return unreadableString(sb.toString());
     }
 
     // ### autoload

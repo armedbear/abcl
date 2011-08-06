@@ -855,10 +855,7 @@ public final class Package extends LispObject implements java.io.Serializable
             return sb.toString();
         } else {
              if (name != null) {
-                StringBuilder sb = new StringBuilder("#<PACKAGE \"");
-                sb.append(name);
-                sb.append("\">");
-                return sb.toString();
+                return unreadableString("PACKAGE " + name, false);
             } else
                 return unreadableString("PACKAGE");
         }

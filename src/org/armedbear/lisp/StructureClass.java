@@ -78,10 +78,9 @@ public class StructureClass extends SlotClass
     @Override
     public String printObject()
     {
-        StringBuffer sb = new StringBuffer("#<STRUCTURE-CLASS ");
+        StringBuilder sb = new StringBuilder("STRUCTURE-CLASS ");
         sb.append(getName().princToString());
-        sb.append('>');
-        return sb.toString();
+        return unreadableString(sb.toString(), false);
     }
 
     // ### make-structure-class name direct-slots slots include => class

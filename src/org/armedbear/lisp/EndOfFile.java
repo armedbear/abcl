@@ -70,10 +70,4 @@ public final class EndOfFile extends StreamError
             return T;
         return super.typep(type);
     }
-
-    @Override
-    public String getMessage()
-    {
-        return unreadableString("END-OF-STREAM");
-    }
 }

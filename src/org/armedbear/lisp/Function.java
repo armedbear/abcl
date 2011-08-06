@@ -317,17 +317,12 @@ public abstract class Function extends Operator
     {
         LispObject name = getLambdaName();
         if (name != null && name != NIL) {
-            StringBuffer sb = new StringBuffer("#<FUNCTION ");
-            sb.append(name.printObject());
-            sb.append(" {");
-            sb.append(Integer.toHexString(System.identityHashCode(this)).toUpperCase());
-            sb.append("}>");
-            return sb.toString();
+            return unreadableString(name.princToString());
         }
         // No name.
         LispObject lambdaList = getLambdaList();
         if (lambdaList != null) {
-            StringBuffer sb = new StringBuffer("#<FUNCTION ");
+            StringBuilder sb = new StringBuilder("FUNCTION ");
             sb.append("(LAMBDA ");
             if (lambdaList == NIL) {
                 sb.append("()");
@@ -343,10 +338,7 @@ public abstract class Function extends Operator
                 }
             }
             sb.append(")");
-            sb.append(" {");
-            sb.append(Integer.toHexString(System.identityHashCode(this)).toUpperCase());
-            sb.append("}>");
-            return sb.toString();
+            return unreadableString(sb.toString());
         }
         return unreadableString("FUNCTION");
     }

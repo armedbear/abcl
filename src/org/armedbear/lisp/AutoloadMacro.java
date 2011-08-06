@@ -66,12 +66,11 @@ public final class AutoloadMacro extends Autoload
     @Override
     public String printObject()
     {
-        StringBuffer sb = new StringBuffer("#<AUTOLOAD-MACRO ");
+        StringBuilder sb = new StringBuilder();
         sb.append(getSymbol().princToString());
         sb.append(" \"");
         sb.append(getFileName());
-        sb.append("\">");
-        return sb.toString();
+        return unreadableString(sb.toString());
     }
 
     // ### autoload-macro

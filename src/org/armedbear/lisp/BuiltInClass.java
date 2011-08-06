@@ -79,10 +79,7 @@ public class BuiltInClass extends LispClass
   @Override
   public String printObject()
   {
-    StringBuilder sb = new StringBuilder("#<BUILT-IN-CLASS ");
-    sb.append(getName().printObject());
-    sb.append('>');
-    return sb.toString();
+    return unreadableString(getName().princToString());
   }
 
   private static BuiltInClass addClass(Symbol symbol)

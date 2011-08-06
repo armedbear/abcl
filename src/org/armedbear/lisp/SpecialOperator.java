@@ -148,10 +148,9 @@ public class SpecialOperator extends Operator
     @Override
     public String printObject()
     {
-        StringBuffer sb = new StringBuffer("#<SPECIAL-OPERATOR ");
+        StringBuilder sb = new StringBuilder("SPECIAL-OPERATOR ");
         sb.append(lambdaName.princToString());
-        sb.append(">");
-        return sb.toString();
+        return unreadableString(sb.toString(), false);
     }
 
     // Profiling.
