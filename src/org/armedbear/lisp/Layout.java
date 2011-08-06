@@ -137,7 +137,7 @@ public class Layout extends LispObject
   @Override
   public String printObject()
   {
-    return unreadableString(Symbol.LAYOUT);
+    return unreadableString("LAYOUT");
   }
 
   // Generates a list of slot definitions for the slot names in this layout.

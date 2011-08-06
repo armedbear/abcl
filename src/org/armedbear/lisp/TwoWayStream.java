@@ -216,7 +216,7 @@ public class TwoWayStream extends Stream
     @Override
     public String printObject()
     {
-        return unreadableString(Symbol.TWO_WAY_STREAM);
+        return unreadableString("TWO-WAY-STREAM");
     }
 
     // ### make-two-way-stream input-stream output-stream => two-way-stream

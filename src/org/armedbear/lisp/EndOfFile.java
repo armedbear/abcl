@@ -74,6 +74,6 @@ public final class EndOfFile extends StreamError
     @Override
     public String getMessage()
     {
-        return unreadableString(Symbol.END_OF_FILE);
+        return unreadableString("END-OF-STREAM");
     }
 }

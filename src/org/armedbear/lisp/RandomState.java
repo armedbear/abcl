@@ -93,7 +93,7 @@ public final class RandomState extends LispObject
     @Override
     public String printObject()
     {
-        return unreadableString(Symbol.RANDOM_STATE);
+        return unreadableString("RANDOM-STATE");
     }
 
     public LispObject random(LispObject arg)

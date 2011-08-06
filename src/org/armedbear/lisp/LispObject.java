@@ -754,13 +754,27 @@ public class LispObject //extends Lisp
     return toString();
   }
 
+  /** Calls unreadableString(String s, boolean identity) with a default
+   * identity value of 'true'.
+   * 
+   * @param s String representation of this object.
+   * @return String enclosed in the non-readable #< ... > markers
+   */
   public final String unreadableString(String s) {
      return unreadableString(s, true);
   }
-  public final String unreadableString(Symbol sym) {
-     return unreadableString(sym, true);
-  }
 
+  /** Creates a non-readably (as per CLHS terminology) representation
+   * of the 'this' object, using string 's'.
+   * 
+   * If the current value of the variable *PRINT-READABLY* is T, a
+   * Lisp error is thrown and no value is returned.
+   * 
+   * @param s
+   * @param identity when 'true', includes Java's identityHash for the object
+   *            in the output.
+   * @return a non reabable string (i.e. one enclosed in the #< > markers)
+   */
   public final String unreadableString(String s, boolean identity)
   {
     StringBuilder sb = new StringBuilder("#<");
@@ -772,12 +786,6 @@ public class LispObject //extends Lisp
     }
     sb.append(">");
     return sb.toString();
-  }
-
-  public final String unreadableString(Symbol symbol, boolean identity) 
-
-  {
-    return unreadableString(symbol.printObject(), identity);
   }
 
   // Special operator
