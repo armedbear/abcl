@@ -88,11 +88,6 @@
               `(getf ,get ,ptemp ,@(if default `(,def-temp)))))))
 
 (define-setf-expander apply (functionoid &rest args)
-  (unless (and (listp functionoid)
-               (= (length functionoid) 2)
-               (eq (first functionoid) 'function)
-               (memq (second functionoid) '(aref bit sbit)))
-    (error "SETF of APPLY is only defined for #'AREF, #'BIT and #'SBIT."))
   (let ((function (second functionoid))
         (new-var (gensym))
         (vars (make-gensym-list (length args))))
