@@ -297,6 +297,8 @@ of the compilands being processed (p1: so far; p2: in total).")
 ;;  4. if the variable is part of the outer scope of a function with a
 ;;     non-null lexical environment, the variable is to be looked up
 ;;     from a lexical environment object
+;;  5. the variable is a special variable and its binding has been looked
+;;     up and cached in a local register (binding-register)
 
 ;; a variable can be either special-p *or* have a register *or*
 ;; have an index *or* a closure-index *or* an environment
