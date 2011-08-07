@@ -287,14 +287,27 @@ of the compilands being processed (p1: so far; p2: in total).")
   ignorable-p
   representation
   special-p     ; indicates whether a variable is special
+
+;; A variable can be stored in a number of locations.
+;;  1. if it's passed as a normal argument, it'll be in a register (max 8)
+;;     the same is true if the variable is a local variable (at any index)
+;;  2. if it's passed in the argument array, it'll be in the array in
+;;     register 1 (register 0 contains the function object)
+;;  3. if the variable is part of a closure, it'll be in the closure array
+;;  4. if the variable is part of the outer scope of a function with a
+;;     non-null lexical environment, the variable is to be looked up
+;;     from a lexical environment object
+
+;; a variable can be either special-p *or* have a register *or*
+;; have an index *or* a closure-index *or* an environment
+
   register      ; register number for a local variable
   binding-register ; register number containing the binding reference
   index         ; index number for a variable in the argument array
   closure-index ; index number for a variable in the closure context array
   environment   ; the environment for the variable, if we're compiling in
                 ; a non-null lexical environment with variables
-    ;; a variable can be either special-p *or* have a register *or*
-    ;; have an index *or* a closure-index *or* an environment
+
   (reads 0 :type fixnum)
   (writes 0 :type fixnum)
   references
