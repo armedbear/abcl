@@ -329,44 +329,82 @@
              `((defun ,pred (object)
                  (simple-typep object ',*dd-name*))))))))
 
+(defun make-list-reader (index)
+  #'(lambda (instance)
+      (elt instance index)))
+
+(defun make-vector-reader (index)
+  #'(lambda (instance)
+      (aref instance index)))
+
+(defun make-structure-reader (index structure-type)
+  (declare (ignore structure-type))
+  #'(lambda (instance)
+      ;; (unless (typep instance structure-type)
+      ;;   (error 'type-error
+      ;;          :datum instance
+      ;;          :expected-type structure-type))
+      (structure-ref instance index)))
+
 (defun define-reader (slot)
   (let ((accessor-name (dsd-reader slot))
         (index (dsd-index slot))
         (type (dsd-type slot)))
     (cond ((eq *dd-type* 'list)
            `((declaim (ftype (function * ,type) ,accessor-name))
-             (defun ,accessor-name (instance) (elt instance ,index))))
+             (setf (symbol-function ',accessor-name)
+                   (make-list-reader ,index))))
           ((or (eq *dd-type* 'vector)
                (and (consp *dd-type*) (eq (car *dd-type*) 'vector)))
            `((declaim (ftype (function * ,type) ,accessor-name))
-             (defun ,accessor-name (instance) (aref instance ,index))
+             (setf (symbol-function ',accessor-name)
+                   (make-vector-reader ,index))
              (define-source-transform ,accessor-name (instance)
                `(aref (truly-the ,',*dd-type* ,instance) ,,index))))
           (t
            `((declaim (ftype (function * ,type) ,accessor-name))
-             (defun ,accessor-name (instance)
-               (structure-ref (the ,*dd-name* instance) ,index))
+             (setf (symbol-function ',accessor-name)
+                   (make-structure-reader ,index ',*dd-name*))
              (define-source-transform ,accessor-name (instance)
                ,(if (eq type 't)
                     ``(structure-ref (the ,',*dd-name* ,instance) ,,index)
                     ``(the ,',type
                         (structure-ref (the ,',*dd-name* ,instance) ,,index)))))))))
 
+(defun make-list-writer (index)
+  #'(lambda (value instance)
+      (%set-elt instance index value)))
+
+(defun make-vector-writer (index)
+  #'(lambda (value instance)
+      (aset instance index value)))
+
+(defun make-structure-writer (index structure-type)
+  (declare (ignore structure-type))
+  #'(lambda (value instance)
+      ;; (unless (typep instance structure-type)
+      ;;   (error 'type-error
+      ;;          :datum instance
+      ;;          :expected-type structure-type))
+      (structure-set instance index value)))
+
+
+
 (defun define-writer (slot)
   (let ((accessor-name (dsd-reader slot))
         (index (dsd-index slot)))
     (cond ((eq *dd-type* 'list)
-           `((defun (setf ,accessor-name) (value instance)
-               (%set-elt instance ,index value))))
+           `((setf (get ',accessor-name 'setf-function)
+                   (make-list-writer ,index))))
           ((or (eq *dd-type* 'vector)
                (and (consp *dd-type*) (eq (car *dd-type*) 'vector)))
-           `((defun (setf ,accessor-name) (value instance)
-               (aset instance ,index value))
+           `((setf (get ',accessor-name 'setf-function)
+                   (make-vector-writer ,index))
              (define-source-transform (setf ,accessor-name) (value instance)
                `(aset (truly-the ,',*dd-type* ,instance) ,,index ,value))))
           (t
-           `((defun (setf ,accessor-name) (value instance)
-               (structure-set (the ,*dd-name* instance) ,index value))
+           `((setf (get ',accessor-name 'setf-function)
+                   (make-structure-writer ,index ',*dd-name*))
              (define-source-transform (setf ,accessor-name) (value instance)
                `(structure-set (the ,',*dd-name* ,instance)
                                ,,index ,value)))))))

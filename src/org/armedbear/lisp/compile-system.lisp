@@ -89,6 +89,7 @@
                                        :defaults (merge-pathnames
                                                   file output-path))))
                (compile-file-if-needed file :output-file out))))
+      (load (do-compile "defstruct.lisp"))
       (load (do-compile "coerce.lisp"))
       (load (do-compile "open.lisp"))
       (load (do-compile "dump-form.lisp"))
@@ -157,7 +158,6 @@
                            "defmacro.lisp"
                            "defpackage.lisp"
                            "defsetf.lisp"
-                           "defstruct.lisp"
                            "deftype.lisp"
                            "delete-duplicates.lisp"
                            "deposit-field.lisp"
