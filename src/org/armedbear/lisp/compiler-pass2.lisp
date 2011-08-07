@@ -3115,26 +3115,13 @@ given a specific common representation.")
    (astore register)
   )
 
-(defun restore-environment-and-make-handler (register label-START)
-  (let ((label-END (gensym "U"))
-        (label-EXIT (gensym "E")))
-    (emit 'goto label-EXIT)
-    (label label-END)
-    (restore-dynamic-environment register)
-    (emit 'athrow)
-    ;; Restore dynamic environment.
-    (label label-EXIT)
-    (restore-dynamic-environment register)
-    (add-exception-handler label-START label-END label-END nil)))
-
 (defun p2-m-v-b-node (block target)
   (let* ((*register* *register*)
          (form (m-v-b-form block))
          (*visible-variables* *visible-variables*)
          (vars (second form))
          (bind-special-p nil)
-         (variables (m-v-b-vars block))
-         (label-START (gensym "F")))
+         (variables (m-v-b-vars block)))
     (dolist (variable variables)
       (let ((special-p (variable-special-p variable)))
         (cond (special-p
@@ -3148,8 +3135,7 @@ given a specific common representation.")
       (dformat t "p2-m-v-b-node lastSpecialBinding~%")
       ;; Save current dynamic environment.
       (setf (m-v-b-environment-register block) (allocate-register nil))
-      (save-dynamic-environment (m-v-b-environment-register block))
-      (label label-START))
+      (save-dynamic-environment (m-v-b-environment-register block)))
     ;; Make sure there are no leftover values from previous calls.
     (emit-clear-values)
     ;; Bind the variables.
@@ -3538,8 +3524,7 @@ given a specific common representation.")
          (*register* *register*)
          (form (let-form block))
          (*visible-variables* *visible-variables*)
-         (specialp nil)
-         (label-START (gensym "F")))
+         (specialp nil))
     ;; Walk the variable list looking for special bindings and unused lexicals.
     (dolist (variable (let-vars block))
       (cond ((variable-special-p variable)
@@ -3550,8 +3535,7 @@ given a specific common representation.")
     (when specialp
       ;; We need to save current dynamic environment.
       (setf (let-environment-register block) (allocate-register nil))
-      (save-dynamic-environment (let-environment-register block))
-      (label label-START))
+      (save-dynamic-environment (let-environment-register block)))
     (propagate-vars block)
     (ecase (car form)
       (LET
@@ -3952,8 +3936,7 @@ given a specific common representation.")
          (values-form (caddr form))
          (*register* *register*)
          (environment-register
-          (setf (progv-environment-register block) (allocate-register nil)))
-         (label-START (gensym "F")))
+          (setf (progv-environment-register block) (allocate-register nil))))
     (with-operand-accumulation
         ((compile-operand symbols-form nil)
 	 (compile-operand values-form nil))
@@ -3961,7 +3944,6 @@ given a specific common representation.")
 		   (single-valued-p values-form))
 	(emit-clear-values))
       (save-dynamic-environment environment-register)
-      (label label-START)
       ;; Compile call to Lisp.progvBindVars().
       (emit-push-current-thread)
       (emit-invokestatic +lisp+ "progvBindVars"
@@ -7138,8 +7120,7 @@ We need more thought here.
          (*visible-variables* *visible-variables*)
 
          (*thread* nil)
-         (*initialize-thread-var* nil)
-         (label-START (gensym "F")))
+         (*initialize-thread-var* nil))
 
     (class-add-method class-file method)
 
@@ -7282,7 +7263,6 @@ We need more thought here.
         (setf (compiland-environment-register compiland)
               (allocate-register nil))
         (save-dynamic-environment (compiland-environment-register compiland))
-        (label label-START)
         (dolist (variable (compiland-arg-vars compiland))
           (when (variable-special-p variable)
             (setf (variable-binding-register variable) (allocate-register nil))
