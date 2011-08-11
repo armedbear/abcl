@@ -241,7 +241,6 @@ public final class Interpreter
     // --eval options.  Copy all unrecognized arguments into
     // ext:*command-line-argument-list*
     private static void preprocessCommandLineArguments(String[] args)
-
     {
         LispObject arglist = NIL;
 
@@ -654,23 +653,34 @@ public final class Interpreter
         final String sep = System.getProperty("line.separator");
         StringBuilder sb = new StringBuilder("Parameters:");
         sb.append(sep);
-        sb.append("--help displays this help");
+        sb.append("--help").append(sep)
+          .append("    Displays this message.");
         sb.append(sep);
-        sb.append("--noinform suppresses the printing of version info");
+        sb.append("--noinform").append(sep)
+          .append("    Suppresses the printing of startup information and banner.");
         sb.append(sep);
-        sb.append("--eval <form> evaluates the <form> before initializing REPL");
-        sb.append(sep);
-        sb.append("--load <file> loads the file <file> before initializing REPL");
-        sb.append(sep);
-        sb.append("--load-system-file <file> loads the system file <file> before initializing REPL");
-        sb.append(sep);
-        sb.append("--batch enables batch mode. The --load, --load-system-file and --eval parameters are handled, and abcl exits without entering REPL");
-        sb.append(sep);
-        sb.append("--noinit suppresses loading a .abclrc startup file");
+        sb.append("--noinit").append(sep)
+          .append("    Suppresses the loading of the '~/.abclrc' startup file.");
         sb.append(sep); 
-        sb.append("--nosystem suppresses loading the system startup file");
+        sb.append("--nosystem").append(sep)
+          .append("    Suppresses loading the 'system.lisp' customization file. ");
         sb.append(sep);
-        sb.append("-- alone prevents further argument handling");
+        sb.append("--eval <FORM>").append(sep)
+          .append("    Evaluates the <FORM> before initializing REPL.");
+        sb.append(sep);
+        sb.append("--load <FILE>").append(sep)
+          .append("    Loads the file <FILE> before initializing REPL.");
+        sb.append(sep);
+        sb.append("--load-system-file <FILE>").append(sep)
+          .append("    Loads the system file <FILE> before initializing REPL.");
+        sb.append(sep);
+        sb.append("--batch").append(sep)
+          .append("    The process evaluates forms specified by arguments and possibly by those").append(sep)
+          .append("    by those in the intialization file '~/.abcl', and then exits.");
+        sb.append(sep);
+        sb.append(sep);
+        sb.append("The occurance of '--' copies the remaining arguments, unprocessed, into").append(sep)
+          .append("the variable EXTENSIONS:*COMMAND-LINE-ARGUMENT-LIST*.");
         sb.append(sep);
        
         return sb.toString();
