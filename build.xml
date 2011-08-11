@@ -596,6 +596,8 @@ will compile (if necessary) and load JSS.
       <include name="examples/**"/>
 
       <include name="contrib/**"/>
+      
+      <include name="test/**"/>
 
       <include name="build-from-lisp.sh"/>
       
@@ -604,8 +606,6 @@ will compile (if necessary) and load JSS.
            them in the source distribution. -->
       <include name="make-jar.in"/>
       <include name="make-jar.bat.in"/>
-
-
 
       <include name="build-abcl.lisp"/>
       <include name="customizations.lisp.in"/>
