@@ -82,7 +82,7 @@ public final class Primitives {
 
         @Override
         public LispObject execute() {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg) {
@@ -112,7 +112,7 @@ public final class Primitives {
 
         @Override
         public LispObject execute() {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg) {
@@ -148,7 +148,7 @@ public final class Primitives {
 
         @Override
         public LispObject execute() {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg) {
@@ -793,7 +793,7 @@ public final class Primitives {
 
         @Override
         public LispObject execute() {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg) {
@@ -839,7 +839,7 @@ public final class Primitives {
 
         {
             if (args == NIL)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, -1));
             final LispThread thread = LispThread.currentThread();
             if (eval(args.car(), env, thread) != NIL) {
                 args = args.cdr();
@@ -862,7 +862,7 @@ public final class Primitives {
 
         {
             if (args == NIL)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, -1));
             final LispThread thread = LispThread.currentThread();
             if (eval(args.car(), env, thread) == NIL) {
                 args = args.cdr();
@@ -1244,7 +1244,7 @@ public final class Primitives {
 
         @Override
         public LispObject execute() {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg) {
@@ -1288,7 +1288,7 @@ public final class Primitives {
 
         @Override
         public LispObject execute() {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg) {
@@ -1337,7 +1337,7 @@ public final class Primitives {
 
         @Override
         public LispObject execute() {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg) {
@@ -1379,7 +1379,7 @@ public final class Primitives {
 
         @Override
         public LispObject execute() {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg) {
@@ -1421,7 +1421,7 @@ public final class Primitives {
 
         @Override
         public LispObject execute() {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg) {
@@ -1463,7 +1463,7 @@ public final class Primitives {
 
         @Override
         public LispObject execute() {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg) {
@@ -1624,7 +1624,7 @@ public final class Primitives {
         @Override
         public LispObject execute(LispObject[] args) {
             if (args.length < 1)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, -1));
             if (args[0] instanceof Condition)
                 return error((Condition)args[0]);
             return error(new SimpleCondition());
@@ -1685,7 +1685,7 @@ public final class Primitives {
         @Override
         public LispObject execute(LispObject[] args) {
             if (args.length < 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 2, -1));
             LispObject destination = args[0];
             // Copy remaining arguments.
             LispObject[] _args = new LispObject[args.length - 1];
@@ -2299,7 +2299,7 @@ public final class Primitives {
         @Override
         public LispObject execute(LispObject[] args) {
             if (args.length < 1)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, -1));
             final AbstractArray array;
             LispObject r = args[0];
             array = checkArray(r);
@@ -2355,7 +2355,7 @@ public final class Primitives {
 
         @Override
         public LispObject execute() {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg) {
@@ -2679,7 +2679,7 @@ public final class Primitives {
 
         @Override
         public LispObject execute() {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg) {
@@ -2772,11 +2772,11 @@ public final class Primitives {
 
         @Override
         public LispObject execute() {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 2, -1));
         }
         @Override
         public LispObject execute(LispObject arg) {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 2, -1));
         }
         @Override
         public LispObject execute(LispObject fun, LispObject args)
@@ -2910,7 +2910,7 @@ public final class Primitives {
         {
             final int numArgs = args.length;
             if (numArgs < 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 2, -1));
             int commonLength = -1;
             for (int i = 1; i < numArgs; i++) {
                 if (!args[i].listp())
@@ -2986,7 +2986,7 @@ public final class Primitives {
         {
             final int numArgs = args.length;
             if (numArgs < 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 2, -1));
             int commonLength = -1;
             for (int i = 1; i < numArgs; i++) {
                 if (!args[i].listp())
@@ -3154,7 +3154,7 @@ public final class Primitives {
         @Override
         public LispObject execute(LispObject[] args) {
             if (args.length == 0 || args.length > 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, 2));
             Symbol symbol = checkSymbol(args[0]);
             Package pkg;
             if (args.length == 2)
@@ -3322,7 +3322,7 @@ public final class Primitives {
         @Override
         public LispObject execute(LispObject[] args) {
             if (args.length < 1 || args.length > 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, 2));
             Package pkg;
             if (args.length == 2)
                 pkg = coerceToPackage(args[1]);
@@ -3697,7 +3697,7 @@ public final class Primitives {
 
         {
             if (args.length() != 1)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1));
             Binding binding = env.getTagBinding(args.car());
             if (binding == null)
                 return error(new ControlError("No tag named " +
@@ -3720,7 +3720,7 @@ public final class Primitives {
 
         {
             if (args == NIL)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, -1));
             LispObject tag;
             tag = checkSymbol(args.car());
             LispObject body = ((Cons)args).cdr();
@@ -3756,7 +3756,7 @@ public final class Primitives {
         {
             final int length = args.length();
             if (length < 1 || length > 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, 2));
             Symbol symbol;
             symbol = checkSymbol(args.car());
 
@@ -3779,7 +3779,7 @@ public final class Primitives {
 
         {
             if (args.length() < 1)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, -1));
             final LispThread thread = LispThread.currentThread();
             LispObject tag = eval(args.car(), env, thread);
             thread.pushCatchTag(tag);
@@ -3813,7 +3813,7 @@ public final class Primitives {
 
         {
             if (args.length() != 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 2));
             final LispThread thread = LispThread.currentThread();
             thread.throwToTag(eval(args.car(), env, thread),
                               eval(args.cadr(), env, thread));
@@ -3964,7 +3964,7 @@ public final class Primitives {
 
         {
             if (args.length() == 0)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, -1));
             final LispThread thread = LispThread.currentThread();
             LispObject result = eval(args.car(), env, thread);
             LispObject[] values = thread._values;
@@ -3990,7 +3990,7 @@ public final class Primitives {
 
         {
             if (args.length() == 0)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, -1));
             final LispThread thread = LispThread.currentThread();
             LispObject function;
             LispObject obj = eval(args.car(), env, thread);
@@ -4096,7 +4096,7 @@ public final class Primitives {
 
         {
             if (args.length() != 1)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1));
             final LispThread thread = LispThread.currentThread();
             LispObject result = eval(((Cons)args).car, env, thread);
             LispObject[] values = thread._values;
@@ -4125,7 +4125,7 @@ public final class Primitives {
 
         {
             if (args.length() != 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 2));
             final LispThread thread = LispThread.currentThread();
             int n = Fixnum.getValue(eval(args.car(), env, thread));
             if (n < 0)
@@ -4391,7 +4391,7 @@ public final class Primitives {
 
         @Override
         public LispObject execute() {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg) {

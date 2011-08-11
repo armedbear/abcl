@@ -2080,7 +2080,7 @@ public class Stream extends StructureObject {
         @Override
         public LispObject execute(LispObject[] args) {
             if (args.length > 1)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, -1, 1));
             final Stream in;
             if (args.length == 0)
                 in = checkCharacterInputStream(Symbol.STANDARD_INPUT.symbolValue());
@@ -2178,7 +2178,7 @@ public class Stream extends StructureObject {
         public LispObject execute (LispObject[] args) {
             int length = args.length;
             if (length < 1 || length > 3)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, 3));
             final Stream in = checkBinaryInputStream(args[0]);
             boolean eofError = length > 1 ? (args[1] != NIL) : true;
             LispObject eofValue = length > 2 ? args[2] : NIL;
@@ -2351,7 +2351,7 @@ public class Stream extends StructureObject {
         public LispObject execute(LispObject[] args) {
             int length = args.length;
             if (length > 4)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, -1, 4));
             Stream stream =
                 length > 0 ? inSynonymOf(args[0]) : getStandardInput();
             boolean eofError = length > 1 ? (args[1] != NIL) : true;
@@ -2408,7 +2408,7 @@ public class Stream extends StructureObject {
         public LispObject execute(LispObject[] args) {
             int length = args.length;
             if (length > 4)
-                error(new WrongNumberOfArgumentsException(this));
+                error(new WrongNumberOfArgumentsException(this, -1, 4));
             Stream stream =
                 length > 0 ? inSynonymOf(args[0]) : getStandardInput();
             boolean eofError = length > 1 ? (args[1] != NIL) : true;
@@ -2427,7 +2427,7 @@ public class Stream extends StructureObject {
         public LispObject execute(LispObject[] args) {
             int length = args.length;
             if (length < 1 || length > 3)
-                error(new WrongNumberOfArgumentsException(this));
+                error(new WrongNumberOfArgumentsException(this, 1, 3));
             char c = LispCharacter.getValue(args[0]);
             Stream stream =
                 length > 1 ? inSynonymOf(args[1]) : getStandardInput();

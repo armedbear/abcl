@@ -38,21 +38,28 @@ import static org.armedbear.lisp.Lisp.*;
 public final class WrongNumberOfArgumentsException extends ProgramError
 {
     private Operator operator;
-    private int expectedArgs;
+    private int expectedMinArgs;
+    private int expectedMaxArgs;
     private String message;
 
     public WrongNumberOfArgumentsException(Operator operator) {
         this(operator, -1);
     }
 
-    public WrongNumberOfArgumentsException(Operator operator, int expectedArgs) {
+    public WrongNumberOfArgumentsException(Operator operator, int expectedMin,
+            int expectedMax) {
         // This is really just an ordinary PROGRAM-ERROR, broken out into its
         // own Java class as a convenience for the implementation.
         super(StandardClass.PROGRAM_ERROR);
         this.operator = operator;
-	this.expectedArgs = expectedArgs;
+	this.expectedMinArgs = expectedMinArgs;
+	this.expectedMaxArgs = expectedMaxArgs;
         setFormatControl(getMessage());
         setFormatArguments(NIL);
+    }
+    
+    public WrongNumberOfArgumentsException(Operator operator, int expectedArgs) {
+        this(operator, expectedArgs, expectedArgs);
     }
 
     public WrongNumberOfArgumentsException(String message) {
@@ -74,9 +81,22 @@ public final class WrongNumberOfArgumentsException extends ProgramError
         StringBuilder sb =
             new StringBuilder("Wrong number of arguments for "
                               + operator.princToString());
-	if(expectedArgs >= 0) {
+	if(expectedMinArgs >= 0 || expectedMaxArgs >= 0) {
 	    sb.append("; ");
-	    sb.append(expectedArgs);
+            
+            if (expectedMinArgs == expectedMaxArgs) {
+                sb.append(expectedMinArgs);
+            } else if (expectedMaxArgs < 0) {
+                sb.append("at least ");
+                sb.append(expectedMinArgs);
+            } else if (expectedMinArgs < 0) {
+                sb.append("at most ");
+                sb.append(expectedMaxArgs);
+            } else {
+                sb.append("between ").append(expectedMinArgs);
+                sb.append(" and ").append(expectedMaxArgs);
+            }
+            
 	    sb.append(" expected");
 	}
         sb.append('.');

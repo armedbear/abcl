@@ -666,12 +666,12 @@ public class Closure extends Function
       {
         // Fixed arity.
         if (argsLength != arity)
-          error(new WrongNumberOfArgumentsException(this));
+          error(new WrongNumberOfArgumentsException(this, arity));
         return args;
       }
     // Not fixed arity.
     if (argsLength < minArgs)
-      error(new WrongNumberOfArgumentsException(this));
+      error(new WrongNumberOfArgumentsException(this, minArgs, -1));
     final LispObject[] array = new LispObject[variables.length];
     int index = 0;
     // The bindings established here (if any) are lost when this function
@@ -925,12 +925,12 @@ public class Closure extends Function
       {
         // Fixed arity.
         if (argsLength != arity)
-          error(new WrongNumberOfArgumentsException(this));
+          error(new WrongNumberOfArgumentsException(this, arity));
         return args;
       }
     // Not fixed arity.
     if (argsLength < minArgs)
-      error(new WrongNumberOfArgumentsException(this));
+      error(new WrongNumberOfArgumentsException(this, minArgs, -1));
     final LispObject[] array = new LispObject[variables.length];
     int index = 0;
     // Required parameters.

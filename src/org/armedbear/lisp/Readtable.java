@@ -445,7 +445,7 @@ public class Readtable extends LispObject
       public LispObject execute(LispObject[] args)
       {
         if (args.length < 1 || args.length > 3)
-          return error(new WrongNumberOfArgumentsException(this));
+          return error(new WrongNumberOfArgumentsException(this, 1, 3));
         char dispChar = LispCharacter.getValue(args[0]);
         LispObject non_terminating_p;
         if (args.length > 1)
@@ -472,7 +472,7 @@ public class Readtable extends LispObject
       public LispObject execute(LispObject[] args)
       {
         if (args.length < 2 || args.length > 3)
-          return error(new WrongNumberOfArgumentsException(this));
+          return error(new WrongNumberOfArgumentsException(this, 1, 3));
         char dispChar = LispCharacter.getValue(args[0]);
         char subChar = LispCharacter.getValue(args[1]);
         Readtable readtable;
@@ -494,7 +494,7 @@ public class Readtable extends LispObject
       public LispObject execute(LispObject[] args)
       {
         if (args.length < 3 || args.length > 4)
-          return error(new WrongNumberOfArgumentsException(this));
+          return error(new WrongNumberOfArgumentsException(this, 3, 4));
         char dispChar = LispCharacter.getValue(args[0]);
         char subChar = LispCharacter.getValue(args[1]);
         LispObject function = coerceToFunction(args[2]);
@@ -518,7 +518,7 @@ public class Readtable extends LispObject
       public LispObject execute(LispObject[] args)
       {
         if (args.length < 2 || args.length > 4)
-          return error(new WrongNumberOfArgumentsException(this));
+          return error(new WrongNumberOfArgumentsException(this, 2, 4));
         char toChar = LispCharacter.getValue(args[0]);
         char fromChar = LispCharacter.getValue(args[1]);
         Readtable toReadtable;

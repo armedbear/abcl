@@ -49,7 +49,7 @@ public final class adjust_array extends Primitive
     public LispObject execute(LispObject[] args)
     {
         if (args.length != 10)
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 10));
         AbstractArray array = checkArray(args[0]);
         LispObject dimensions = args[1];
         LispObject elementType = args[2];

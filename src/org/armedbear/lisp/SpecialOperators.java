@@ -50,7 +50,7 @@ public final class SpecialOperators {
 
         {
             if (args.cdr() != NIL)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1));
             return args.car();
         }
     };
@@ -80,7 +80,7 @@ public final class SpecialOperators {
                 return eval((((Cons)args).cdr).cadr(), env, thread);
             }
             default:
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 2, 3));
             }
         }
     };
@@ -97,7 +97,7 @@ public final class SpecialOperators {
 
         {
             if (args == NIL)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, -1));
             return _let(args, env, false);
         }
     };
@@ -114,7 +114,7 @@ public final class SpecialOperators {
 
         {
             if (args == NIL)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, -1));
             return _let(args, env, true);
         }
     };
@@ -237,7 +237,7 @@ for (Cons x : nonSequentialVars)
                 return eval(args.car(), new Environment(),
                             LispThread.currentThread());
             default:
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, 2));
             }
         }
     };
@@ -378,7 +378,7 @@ for (Cons x : nonSequentialVars)
 
         {
             if (args.length() != 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 2));
             LispObject rv = eval(args.cadr(), env, LispThread.currentThread());
 
             // check only the most simple types: single symbols
@@ -416,7 +416,7 @@ for (Cons x : nonSequentialVars)
 
         {
             if (args.length() < 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 2, -1));
             final LispThread thread = LispThread.currentThread();
             final LispObject symbols = checkList(eval(args.car(), env, thread));
             LispObject values = checkList(eval(args.cadr(), env, thread));

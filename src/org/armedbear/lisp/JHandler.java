@@ -103,7 +103,7 @@ public final class JHandler
         public LispObject execute(LispObject[] args)
         {
             if (args.length != 5)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 5));
             Map<String,Entry> entryTable = null;
             Object object = args[0].javaInstance();
             String event = ((Symbol)args[1]).getName();

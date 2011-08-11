@@ -1538,7 +1538,7 @@ public class Pathname extends LispObject {
             case 1:
                 return NIL; 
             default:
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 0, 1));
             }
         }
     }

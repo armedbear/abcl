@@ -604,6 +604,10 @@ public final class LispThread extends LispObject
             stack = stack.getNext();
     }
 
+    public final Environment setEnv(Environment env) {
+        return (stack != null) ? stack.setEnv(env) : null;
+    }
+
     public void resetStack()
     {
         stack = null;
@@ -928,22 +932,22 @@ public final class LispThread extends LispObject
         return unreadableString(sb.toString());
     }
 
-    @DocString(name="make-thread", args="function &optional &key name")
+    @DocString(name="make-thread", args="function &key name")
     private static final Primitive MAKE_THREAD =
-        new Primitive("make-thread", PACKAGE_THREADS, true, "function &optional &key name")
+        new Primitive("make-thread", PACKAGE_THREADS, true, "function &key name")
     {
         @Override
         public LispObject execute(LispObject[] args)
         {
             final int length = args.length;
             if (length == 0)
-                error(new WrongNumberOfArgumentsException(this));
+                error(new WrongNumberOfArgumentsException(this, 1, -1));
             LispObject name = NIL;
             if (length > 1) {
                 if ((length - 1) % 2 != 0)
                     error(new ProgramError("Odd number of keyword arguments."));
                 if (length > 3)
-                    error(new WrongNumberOfArgumentsException(this));
+                    error(new WrongNumberOfArgumentsException(this, -1, 2)); // don't count the keyword itself as an argument
                 if (args[1] == Keyword.NAME)
                     name = args[2].STRING();
                 else
@@ -1115,7 +1119,7 @@ public final class LispThread extends LispObject
         public LispObject execute(LispObject[] args)
         {
             if (args.length < 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 2, -1));
             final LispThread thread;
             if (args[0] instanceof LispThread) {
                 thread = (LispThread) args[0];
@@ -1154,7 +1158,7 @@ public final class LispThread extends LispObject
 
         {
             if (args.length > 1)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, -1, 1));
             int limit = args.length > 0 ? Fixnum.getValue(args[0]) : 0;
             return currentThread().backtrace(limit);
         }
@@ -1168,7 +1172,7 @@ public final class LispThread extends LispObject
 
         {
             if (args.length != 1)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1));
             
             return checkStackFrame(args[0]).toLispString();
         }
@@ -1183,7 +1187,7 @@ public final class LispThread extends LispObject
 
         {
             if (args.length != 1)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1));
 
             return checkStackFrame(args[0]).toLispList();
         }
@@ -1212,7 +1216,7 @@ public final class LispThread extends LispObject
 
         {
           if (args == NIL)
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1));
 
           LispThread thread = LispThread.currentThread();
           synchronized (eval(args.car(), env, thread).lockableInstance()) {

@@ -47,7 +47,7 @@ public final class room extends Primitive
     public LispObject execute(LispObject[] args)
     {
         if (args.length > 1)
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, -1, 1));
         Runtime runtime = Runtime.getRuntime();
         long total = runtime.totalMemory();
         long free = runtime.freeMemory();

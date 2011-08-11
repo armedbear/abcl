@@ -55,7 +55,7 @@ public final class Extensions
     public LispObject execute(LispObject args, Environment env)
     {
       if (args.length() != 2)
-        return error(new WrongNumberOfArgumentsException(this));
+        return error(new WrongNumberOfArgumentsException(this, 2));
       return eval(args.cadr(), env, LispThread.currentThread());
     }
   }

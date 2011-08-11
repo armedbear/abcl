@@ -199,7 +199,7 @@ public final class JProxy
 	      	public LispObject execute(LispObject[] args) {
 	      		int length = args.length;
 	      		if (length != 1) {
-	      			return error(new WrongNumberOfArgumentsException(this));
+	      			return error(new WrongNumberOfArgumentsException(this, 1));
 	      		}
 	      		if(!(args[0] instanceof Function)) {
 	      			return error(new TypeError(args[0], Symbol.FUNCTION));
@@ -215,7 +215,7 @@ public final class JProxy
 	      	public LispObject execute(final LispObject[] args) {
 	      		int length = args.length;
 	      		if (length != 3) {
-	      			return error(new WrongNumberOfArgumentsException(this));
+	      			return error(new WrongNumberOfArgumentsException(this, 3));
 	      		}
 	      		if(!(args[0] instanceof Cons)) {
 			    return error(new TypeError(args[0], new SimpleString("CONS")));

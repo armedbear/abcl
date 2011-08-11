@@ -49,7 +49,7 @@ public final class make_array extends Primitive
   public LispObject execute(LispObject[] args)
   {
     if (args.length != 9)
-      return error(new WrongNumberOfArgumentsException(this));
+      return error(new WrongNumberOfArgumentsException(this, 9));
     LispObject dimensions = args[0];
     LispObject elementType = args[1];
     LispObject initialElement = args[2];

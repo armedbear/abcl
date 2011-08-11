@@ -105,7 +105,7 @@ public final class PackageFunctions
         public LispObject execute(LispObject[] args)
         {
             if (args.length == 0 || args.length > 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, 2));
             LispObject symbols = args[0];
             Package pkg =
                 args.length == 2 ? coerceToPackage(args[1]) : getCurrentPackage();
@@ -129,7 +129,7 @@ public final class PackageFunctions
         public LispObject execute(LispObject[] args)
         {
             if (args.length == 0 || args.length > 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, 2));
             LispObject symbols = args[0];
             Package pkg =
                 args.length == 2 ? coerceToPackage(args[1]) : getCurrentPackage();
@@ -153,7 +153,7 @@ public final class PackageFunctions
         public LispObject execute(LispObject[] args)
         {
             if (args.length == 0 || args.length > 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, 2));
             LispObject symbols = args[0];
             Package pkg =
                 args.length == 2 ? coerceToPackage(args[1]) : getCurrentPackage();
@@ -177,7 +177,7 @@ public final class PackageFunctions
         public LispObject execute(LispObject[] args)
         {
             if (args.length == 0 || args.length > 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, 2));
             LispObject symbols = args[0];
             Package pkg =
                 args.length == 2 ? coerceToPackage(args[1]) : getCurrentPackage();
@@ -224,7 +224,7 @@ public final class PackageFunctions
         public LispObject execute(LispObject[] args)
         {
             if (args.length < 1 || args.length > 2)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 1, 2));
             Package pkg;
             if (args.length == 2)
                 pkg = coerceToPackage(args[1]);
@@ -251,7 +251,7 @@ public final class PackageFunctions
         public LispObject execute(LispObject[] args)
         {
             if (args.length < 2 || args.length > 3)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 2, 3));
             Package pkg = coerceToPackage(args[0]);
             String newName = javaString(args[1]);
             LispObject nicknames = args.length == 3 ? checkList(args[2]) : NIL;
@@ -279,7 +279,7 @@ public final class PackageFunctions
         public LispObject execute(LispObject[] args)
         {
             if (args.length != 10)
-                return error(new WrongNumberOfArgumentsException(this));
+                return error(new WrongNumberOfArgumentsException(this, 10));
             final String packageName = args[0].getStringValue();
             LispObject nicknames = checkList(args[1]);
             // FIXME size is ignored

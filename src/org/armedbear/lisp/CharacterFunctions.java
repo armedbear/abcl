@@ -44,7 +44,7 @@ public final class CharacterFunctions
         @Override
         public LispObject execute()
         {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg)
@@ -79,7 +79,7 @@ public final class CharacterFunctions
         @Override
         public LispObject execute()
         {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg)
@@ -129,7 +129,7 @@ public final class CharacterFunctions
         @Override
         public LispObject execute()
         {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg)
@@ -168,7 +168,7 @@ public final class CharacterFunctions
         @Override
         public LispObject execute()
         {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg)
@@ -207,7 +207,7 @@ public final class CharacterFunctions
         @Override
         public LispObject execute()
         {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg)
@@ -245,7 +245,7 @@ public final class CharacterFunctions
         @Override
         public LispObject execute()
         {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg)
@@ -294,7 +294,7 @@ public final class CharacterFunctions
         @Override
         public LispObject execute()
         {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg)
@@ -333,7 +333,7 @@ public final class CharacterFunctions
         @Override
         public LispObject execute()
         {
-            return error(new WrongNumberOfArgumentsException(this));
+            return error(new WrongNumberOfArgumentsException(this, 1, -1));
         }
         @Override
         public LispObject execute(LispObject arg)

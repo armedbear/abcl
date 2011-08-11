@@ -168,7 +168,7 @@ public final class Java
 
     {
         if (args.length < 2 || args.length > 4)
-            error(new WrongNumberOfArgumentsException(fun));
+            error(new WrongNumberOfArgumentsException(fun, 2, 4));
         String fieldName = null;
         Class c;
         Field f;
@@ -330,7 +330,7 @@ public final class Java
         public LispObject execute(LispObject[] args)
         {
             if (args.length < 1)
-                error(new WrongNumberOfArgumentsException(this));
+                error(new WrongNumberOfArgumentsException(this, 1, -1));
             try {
                 final Class<?> c = javaClass(args[0]);
                 int argCount = 0;
@@ -382,7 +382,7 @@ public final class Java
         public LispObject execute(LispObject[] args)
         {
             if (args.length < 2)
-                error(new WrongNumberOfArgumentsException(this));
+                error(new WrongNumberOfArgumentsException(this, 2, -1));
             final Class<?> c = javaClass(args[0]);
             String methodName = args[1].getStringValue();
             try {
@@ -435,7 +435,7 @@ public final class Java
 
     {
         if (args.length < 2)
-            error(new WrongNumberOfArgumentsException(fun));
+            error(new WrongNumberOfArgumentsException(fun, 2, -1));
         try {
             Method m = null;
             LispObject methodRef = args[0];
@@ -545,7 +545,7 @@ public final class Java
         public LispObject execute(LispObject[] args)
         {
             if (args.length < 1)
-                error(new WrongNumberOfArgumentsException(this));
+                error(new WrongNumberOfArgumentsException(this, 1, -1));
             LispObject classRef = args[0];
             try {
                 Constructor constructor;
@@ -610,7 +610,7 @@ public final class Java
         public LispObject execute(LispObject[] args)
         {
             if (args.length < 2)
-                error(new WrongNumberOfArgumentsException(this));
+                error(new WrongNumberOfArgumentsException(this, 2, -1));
             try {
                 Class c = javaClass(args[0]);
                 int[] dimensions = new int[args.length - 1];
@@ -630,7 +630,7 @@ public final class Java
 
     {
         if (args.length < 2)
-            error(new WrongNumberOfArgumentsException(fun));
+            error(new WrongNumberOfArgumentsException(fun, 2, -1));
         try {
             Object a = args[0].javaInstance();
             for (int i = 1; i<args.length - 1; i++)
@@ -704,7 +704,7 @@ public final class Java
         public LispObject execute(LispObject[] args)
         {
             if (args.length < 3)
-                error(new WrongNumberOfArgumentsException(this));
+                error(new WrongNumberOfArgumentsException(this, 3, -1));
             try {
                 Object a = args[0].javaInstance();
                 LispObject v = args[1];
@@ -792,7 +792,7 @@ public final class Java
         @Override
         public LispObject execute(LispObject[] args) {
             if (args.length < 2) {
-                error(new WrongNumberOfArgumentsException(this, 2));
+                error(new WrongNumberOfArgumentsException(this, 2, -1));
             }
             final LispObject methodArg = args[0];
             final LispObject instanceArg = args[1];
@@ -837,7 +837,7 @@ public final class Java
 
     {
         if (args.length < 2)
-            error(new WrongNumberOfArgumentsException(fun, 2));
+            error(new WrongNumberOfArgumentsException(fun, 2, -1));
         try {
             final LispObject methodArg = args[0];
             final LispObject instanceArg = args[1];
@@ -1115,7 +1115,7 @@ public final class Java
             Symbol.WARN.getSymbolFunction()
                 .execute(new SimpleString("JAVA:MAKE-IMMEDIATE-OBJECT is deprecated."));
             if (args.length < 1)
-                error(new WrongNumberOfArgumentsException(this));
+                error(new WrongNumberOfArgumentsException(this, 1, -1));
             LispObject object = args[0];
             if (args.length > 1) {
                 LispObject type = args[1];

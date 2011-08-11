@@ -49,7 +49,7 @@ public final class peek_char extends Primitive
     {
         int length = args.length;
         if (length > 5)
-            error(new WrongNumberOfArgumentsException(this));
+            error(new WrongNumberOfArgumentsException(this, -1, 5));
         LispObject peekType = length > 0 ? args[0] : NIL;
         Stream stream = length > 1 ? inSynonymOf(args[1]) : getStandardInput();
         boolean eofError = length > 2 ? (args[2] != NIL) : true;
