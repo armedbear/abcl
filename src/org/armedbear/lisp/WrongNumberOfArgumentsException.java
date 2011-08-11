@@ -72,12 +72,8 @@ public final class WrongNumberOfArgumentsException extends ProgramError
 	    return message;
 	}
         StringBuilder sb =
-            new StringBuilder("Wrong number of arguments");
-        LispObject lambdaName = operator.getLambdaName();
-        if (lambdaName != null && lambdaName != NIL) {
-            sb.append(" for ");
-            sb.append(operator.getLambdaName().princToString());
-        }
+            new StringBuilder("Wrong number of arguments for "
+                              + operator.princToString());
 	if(expectedArgs >= 0) {
 	    sb.append("; ");
 	    sb.append(expectedArgs);
