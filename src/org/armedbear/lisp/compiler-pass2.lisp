@@ -2162,17 +2162,20 @@ is registered (or not)."
   (let* ((*register* *register*)
          (register (allocate-register nil)))
     (aload (compiland-closure-register compiland))        ;; src
-    (emit-push-constant-int 0)                            ;; srcPos
-    (emit-push-constant-int (length *closure-variables*))
-    (emit-anewarray +lisp-closure-binding+)             ;; dest
-    (emit 'dup)
-    (astore register)  ;; save dest value
-    (emit-push-constant-int 0)                            ;; destPos
-    (emit-push-constant-int (length *closure-variables*)) ;; length
-    (emit-invokestatic +java-system+ "arraycopy"
-                       (list +java-object+ :int
-                             +java-object+ :int :int) nil)
-    (aload register))) ;; reload dest value
+    (when (some #'(lambda (var)
+                    (< 1 (variable-writes var)))
+                *closure-variables*)
+      (emit-push-constant-int 0) ;; srcPos
+      (emit-push-constant-int (length *closure-variables*))
+      (emit-anewarray +lisp-closure-binding+) ;; dest
+      (emit 'dup)
+      (astore register)        ;; save dest value
+      (emit-push-constant-int 0)                          ;; destPos
+      (emit-push-constant-int (length *closure-variables*)) ;; length
+      (emit-invokestatic +java-system+ "arraycopy"
+                         (list +java-object+ :int
+                               +java-object+ :int :int) nil)
+      (aload register)))) ;; reload dest value
 
 
 
