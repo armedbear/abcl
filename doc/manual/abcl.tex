@@ -19,8 +19,71 @@ implementation for users of the system.
 \subsection{Version}
 This manual corresponds to abcl-0.27.0, as yet unreleased.
 
-\chapter{Conformance}
 
+\chapter{Running}
+
+ABCL is packaged as a single jar file (usually named either
+``abcl.jar'' or something like``abcl-0.27.1.jar'' if you are using a
+versioned package) that can be executed under the
+control of a suitable JVM as follows
+
+\begin{listing-shell}
+  cmd\$ java -jar abcl.jar
+\end{listing-shell}
+
+For this command to work, the ``java'' exectuable needs to be in your
+path.
+
+To make it easier to faciliate the use of ABCL in tool chains (such as
+SLIME) the invocation is wrapped in a Bourne shell script under UNIX
+or a DOS command script under Windows so that ABCL may be executed
+simplly as:
+
+\begin{listing-shell}
+  cmd\$ abcl
+\end{listing-shell}
+
+\section{Options}
+
+ABCL supports the following options:
+
+\begin{verbatim}
+--help
+    Displays this message.
+--noinform
+    Suppresses the printing of startup information and banner.
+--noinit
+    Suppresses the loading of the '~/.abclrc' startup file.
+--nosystem
+    Suppresses loading the 'system.lisp' customization file. 
+--eval <FORM>
+    Evaluates the <FORM> before initializing REPL.
+--load <FILE>
+    Loads the file <FILE> before initializing REPL.
+--load-system-file <FILE>
+    Loads the system file <FILE> before initializing REPL.
+--batch
+    The process evaluates forms specified by arguments and possibly by those
+    by those in the intialization file '~/.abcl', and then exits.
+
+The occurance of '--' copies the remaining arguments, unprocessed, into
+the variable EXTENSIONS:*COMMAND-LINE-ARGUMENT-LIST*.
+\end{verbatim}
+
+All of the command line arguments which follow the occurance of ``--''
+are passed into a list bound to the EXT:*COMMAND-LINE-ARGUMENT-LIST*
+variable.
+
+\section{Initialization}
+
+If the ABCL process is started without the ``--noinit'' flag, it
+attempts to load a file named ``.abclrc'' located in the user's home
+directory and then interpret its contents.  
+
+The user's home directory is determined by the value of the JVM system
+property ``user.home''.
+
+\chapter{Conformance}
 
 \section{ANSI Common Lisp}
 ABCL is currently a non-conforming ANSI Common Lisp implementation due
