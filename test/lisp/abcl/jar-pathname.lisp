@@ -5,17 +5,6 @@
 (defparameter *tmp-jar-path* nil)
 (defparameter *tmp-jar-path-whitespace* nil)
 
-(eval-when (:compile-toplevel :load-toplevel)
-  (let ((temp-file (java:jcall "getAbsolutePath" 
-                               (java:jstatic "createTempFile" "java.io.File" "jar" "tmp"))))
-    (setf *tmp-directory*
-          (truename (make-pathname :directory 
-                                   (append 
-                                    (pathname-directory (pathname temp-file))
-                                    '("jar-pathname-tests"))))
-          *tmp-directory-whitespace*
-          (merge-pathnames "a/directory with/s p a/" *tmp-directory*))))
-
 (defvar *foo.lisp*
   `((defun foo ()
       (labels ((output ()
@@ -53,6 +42,16 @@
         (print form s)))))
 
 (defun jar-file-init ()
+  (let* ((temp-file (java:jcall "getAbsolutePath" 
+                               (java:jstatic "createTempFile" "java.io.File" "jar" "tmp")))
+         (temp-dir (make-pathname :directory (append 
+                                              (pathname-directory (pathname temp-file))
+                                              '("jar-pathname-tests")))))
+    (ensure-directories-exist temp-dir)
+    (setf *tmp-directory*
+          (truename temp-dir)
+          *tmp-directory-whitespace*
+          (merge-pathnames "a/directory with/s p a/" *tmp-directory*)))
   (format t "~&Using ~A to create files for testing jar-pathnames.~%" *tmp-directory*)
   (ensure-directories-exist *tmp-directory*)
   (let* ((*default-pathname-defaults*  *tmp-directory*)
@@ -110,10 +109,10 @@
     (delete-directory-and-files *tmp-directory*)))
 
 (defmacro with-jar-file-init (&rest body)
-  `(let ((*default-pathname-defaults* *tmp-directory*))
-     (progn
-       (unless (and *tmp-jar-path* (probe-file *tmp-jar-path*))
-         (jar-file-init))
+  `(progn 
+     (unless (and *tmp-jar-path* (probe-file *tmp-jar-path*))
+       (jar-file-init))
+     (let ((*default-pathname-defaults* *tmp-directory*))
        ,@body)))
 
 (defun jar-pathname-escaped (jar path)
@@ -123,6 +122,13 @@
 (defmacro load-from-jar (jar path) 
   `(with-jar-file-init 
        (load (jar-pathname-escaped ,jar ,path))))
+
+;;; XXX Figure out correct use of macros so this isn't necessary
+(push 'jar-pathname.load.init *expected-failures*)
+(deftest jar-pathname.load.init
+    (with-jar-file-init
+        nil)
+  t)
 
 (deftest jar-pathname.load.1
     (load-from-jar *tmp-jar-path* "foo")
@@ -243,42 +249,68 @@
     t))
 
 (deftest jar-pathname.probe-file.1
-    (with-jar-file-init
-        (probe-file "jar:file:baz.jar!/eek.lisp"))
-  #p#.(format nil "jar:file:~A/baz.jar!/eek.lisp" 
-              (namestring *tmp-directory*)))
+    (let ((result 
+           (with-jar-file-init
+               (probe-file "jar:file:baz.jar!/eek.lisp"))))
+      (string=
+       (if result (namestring result) "")
+       (format nil "jar:file:~Abaz.jar!/eek.lisp" 
+               (namestring *tmp-directory*))))
+  t)
 
 (deftest jar-pathname.probe-file.2
-    (with-jar-file-init
-        (probe-file "jar:file:baz.jar!/a/b/bar.abcl"))
-  #p#.(format nil "jar:file:~A/baz.jar!/a/b/bar.abcl"
-              (namestring *tmp-directory*)))
+    (let ((result 
+          (with-jar-file-init
+              (probe-file "jar:file:baz.jar!/a/b/bar.abcl"))))
+      (string=
+       (if result (namestring result) "")
+       (format nil "jar:file:~Abaz.jar!/a/b/bar.abcl" 
+               (namestring *tmp-directory*))))
+  t)
 
 (deftest jar-pathname.probe-file.3
-    (with-jar-file-init
-        (probe-file "jar:jar:file:baz.jar!/a/b/bar.abcl!/bar._"))
-   #p#.(format nil "jar:jar:file:~Abaz.jar!/a/b/bar.abcl!/bar._"
-                       (namestring *tmp-directory*)))
+    (let ((result 
+          (with-jar-file-init
+              (probe-file "jar:jar:file:baz.jar!/a/b/bar.abcl!/bar._"))))
+      (string=
+       (if result (namestring result) "")
+       (format nil "jar:jar:file:~Abaz.jar!/a/b/bar.abcl!/bar._" 
+               (namestring *tmp-directory*))))
+  t)
+
 
 (push 'jar-pathname.probe-file.4 *expected-failures*)
 (deftest jar-pathname.probe-file.4
-    (with-jar-file-init
-        (probe-file "jar:file:baz.jar!/a/b"))
-  #p#.(format nil "jar:file:~Abaz.jar!/a/b/"
-                       (namestring *tmp-directory*)))
+    (let ((result 
+          (with-jar-file-init
+              (probe-file "jar:file:baz.jar!/a/b"))))
+      (string=
+       (if result (namestring result) "")
+       (format nil "jar:file:~Abaz.jar!/a/b/"
+               (namestring *tmp-directory*))))
+  t)
 
 (push 'jar-pathname.probe-file.5 *expected-failures*)
 (deftest jar-pathname.probe-file.5
-    (with-jar-file-init
-        (probe-file "jar:file:baz.jar!/a/b/"))
-  #p#.(format nil "jar:file:~Abaz.jar!/a/b/"
-                       (namestring *tmp-directory*)))
+    (let ((result 
+          (with-jar-file-init
+              (probe-file "jar:file:baz.jar!/a/b/"))))
+      (string=
+       (if result (namestring result) "")
+       (format nil "jar:file:~Abaz.jar!/a/b/"
+               (namestring *tmp-directory*))))
+  t)
+
 
 (deftest jar-pathname.probe-file.6
-    (with-jar-file-init
-        (probe-file "jar:file:baz.jar!/d/e+f/bar.abcl"))
-  #p#.(format nil "jar:file:~Abaz.jar!/d/e+f/bar.abcl"
-                       (namestring *tmp-directory*)))
+    (let ((result 
+          (with-jar-file-init
+              (probe-file "jar:file:baz.jar!/d/e+f/bar.abcl"))))
+      (string=
+       (if result (namestring result) "")
+       (format nil "jar:file:~Abaz.jar!/d/e+f/bar.abcl"
+               (namestring *tmp-directory*))))
+  t)
 
 (deftest jar-pathname.merge-pathnames.1
     (merge-pathnames 
