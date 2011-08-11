@@ -896,13 +896,9 @@
   t)
 
 (deftest translate-pathname.5
-  #-abcl
   (equal (translate-pathname "foobar" "foo*" "")
          #+(or allegro clisp) #p"bar"
-         #+(or cmu sbcl lispworks) #p"foobar")
-  #+abcl
-  ;; ABCL doesn't implement this translation. Verify that it signals an error.
-  (signals-error (translate-pathname "foobar" "foo*" "") 'error)
+         #+(or cmu sbcl lispworks abcl) #p"foobar")
   t)
 
 (deftest translate-pathname.6
