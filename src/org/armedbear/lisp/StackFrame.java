@@ -50,14 +50,27 @@ public abstract class StackFrame
    }
   
   StackFrame next;
-  
+  Environment env = null;
+
   void setNext(StackFrame nextFrame) {
     this.next = nextFrame;
   }
   StackFrame getNext() {
     return this.next;
   }
-  
+
+  /** Sets the applicable environment for this stack frame to 'env',
+   * returning the last value.
+   */
+  public Environment setEnv(Environment env) {
+    Environment e = this.env;
+    this.env = env;
+    return e;
+  }
+  /** Gets the current lexical environment of this stack frame. */
+  public Environment getEnv() {
+    return env;
+  }
   public abstract LispObject toLispList();
   public abstract SimpleString toLispString();
 }
