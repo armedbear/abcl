@@ -158,7 +158,7 @@ public final class Load
                 n = "jar:" + n + "!/" + name + "."
                     + COMPILE_FILE_INIT_FASL_TYPE;
             } else {
-                n = "jar:file:" + n + "!/" + name + "."
+                n = "jar:file:" + Pathname.uriEncode(n) + "!/" + name + "."
                     + COMPILE_FILE_INIT_FASL_TYPE;
             }
             mergedPathname = new Pathname(n);

@@ -373,9 +373,13 @@ public class Pathname extends LispObject {
                                     + "'" + url.toString() + "'"
                                     + ": " + ex.toString()));
                 }
-                final String uriPath = uri.getPath();
+                String uriPath = uri.getPath();
                 if (null == uriPath) {
-                    error(new LispError("The URI has no path: " + uri));
+		    // We make an exception for forms like "file:z:/foo/path"
+		    uriPath = uri.getSchemeSpecificPart();
+		    if (uriPath == null || uriPath.equals("")) {
+		       error(new LispError("The URI has no path: " + uri));
+     		    }
                 }
                 final File file = new File(uriPath);
                 final Pathname p = new Pathname(file.getPath());
