@@ -590,6 +590,8 @@ will compile (if necessary) and load JSS.
       <include name="CHANGES"/>
       <include name="abcl.in"/>
       <include name="abcl.bat.in"/>
+
+      <include name="abcl.asd"/>
       
       <include name="examples/**"/>
 
