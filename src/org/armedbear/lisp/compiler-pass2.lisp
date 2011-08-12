@@ -49,6 +49,8 @@
                  pool-class pool-field pool-method pool-int
                  pool-float pool-long pool-double))
 
+(declaim (special *memory-class-loader*))
+
 (defun pool-name (name)
   (pool-add-utf8 *pool* name))
 
@@ -2206,10 +2208,7 @@ Note: DEFUN implies a named lambda."
                                +lisp-object+))
           (t
            (dformat t "compile-local-function-call default case~%")
-           (let* ((g (if *file-compilation*
-                         (declare-local-function local-function)
-                         (declare-object
-                          (local-function-function local-function)))))
+           (let* ((g (declare-local-function local-function)))
              (emit-getstatic *this-class* g +lisp-object+)
                                         ; Stack: template-function
              (when *closure-variables*
@@ -4063,9 +4062,12 @@ either to stream or the pathname of the class file if `stream' is NIL."
              (compile-and-write-to-stream compiland stream)
              (setf (local-function-class-file local-function)
                    (compiland-class-file compiland))
-             (setf (local-function-function local-function)
-                   (load-compiled-function
-                    (sys::%get-output-stream-bytes stream))))))))
+             (let ((bytes (sys::%get-output-stream-bytes stream)))
+               (sys::put-memory-function *memory-class-loader*
+                                         (class-name-internal
+                                          (abcl-class-file-class-name
+                                           (compiland-class-file compiland)))
+                   bytes)))))))
 
 (defun emit-make-compiled-closure-for-labels
     (local-function compiland declaration)
@@ -4096,11 +4098,16 @@ either to stream or the pathname of the class file if `stream' is NIL."
              (compile-and-write-to-stream compiland stream)
              (setf (local-function-class-file local-function)
                    (compiland-class-file compiland))
-             (let ((g (declare-object
-                       (load-compiled-function
-                        (sys::%get-output-stream-bytes stream)))))
+             (let* ((bytes (sys::%get-output-stream-bytes stream))
+                    (g (declare-local-function local-function)))
+               (sys::put-memory-function *memory-class-loader*
+                                         (class-name-internal
+                                          (abcl-class-file-class-name
+                                           (compiland-class-file compiland)))
+                  bytes)
                (emit-make-compiled-closure-for-labels
-                local-function compiland g)))))))
+                local-function compiland g)
+               ))))))
 
 (defknown p2-flet-node (t t t) t)
 (defun p2-flet-node (block target representation)
@@ -4152,8 +4159,17 @@ either to stream or the pathname of the class file if `stream' is NIL."
         (t
          (with-open-stream (stream (sys::%make-byte-array-output-stream))
            (compile-and-write-to-stream compiland stream)
-           (emit-load-externalized-object (load-compiled-function
-                                           (sys::%get-output-stream-bytes stream))))))
+           (let ((bytes (sys::%get-output-stream-bytes stream)))
+             (sys::put-memory-function *memory-class-loader*
+                                       (class-name-internal
+                                        (abcl-class-file-class-name
+                                         (compiland-class-file compiland)))
+                  bytes)
+             (emit-getstatic *this-class*
+                         (declare-local-function
+                          (make-local-function
+                           :class-file (compiland-class-file compiland)))
+                         +lisp-object+)))))
   (cond ((null *closure-variables*))    ; Nothing to do.
         ((compiland-closure-register *current-compiland*)
          (duplicate-closure-array *current-compiland*)
@@ -4185,10 +4201,7 @@ either to stream or the pathname of the class file if `stream' is NIL."
                                (local-function-variable local-function))
                               'stack nil))
             (t
-             (let ((g (if *file-compilation*
-                          (declare-local-function local-function)
-                          (declare-object
-                           (local-function-function local-function)))))
+             (let ((g (declare-local-function local-function)))
                (emit-getstatic *this-class* g +lisp-object+)
                                         ; Stack: template-function
 
@@ -4226,10 +4239,7 @@ either to stream or the pathname of the class file if `stream' is NIL."
                                (local-function-variable local-function))
                               'stack nil))
             (t
-             (let ((g (if *file-compilation*
-                          (declare-local-function local-function)
-                          (declare-object
-                           (local-function-function local-function)))))
+             (let ((g (declare-local-function local-function)))
                (emit-getstatic *this-class*
                      g +lisp-object+))))) ; Stack: template-function
          ((and (member name *functions-defined-in-current-file* :test #'equal)
@@ -7380,7 +7390,10 @@ We need more thought here.
 (defun compile-defun (name form environment filespec stream *declare-inline*)
   "Compiles a lambda expression `form'. If `filespec' is NIL,
 a random Java class name is generated, if it is non-NIL, it's used
-to derive a Java class name from."
+to derive a Java class name from.
+
+Returns the a abcl-class-file structure containing the description of the
+generated class."
   (aver (eq (car form) 'LAMBDA))
   (catch 'compile-defun-abort
     (let* ((class-file (make-abcl-class-file :pathname filespec
@@ -7402,7 +7415,8 @@ to derive a Java class name from."
                                  (precompiler:precompile-form form t
                                                               environment)
                                  :class-file class-file)
-                 stream))))
+                 stream)
+      class-file)))
 
 (defvar *catch-errors* t)
 
@@ -7496,15 +7510,22 @@ to derive a Java class name from."
 (defun %jvm-compile (name definition expr env)
   ;; This function is part of the call chain from COMPILE, but
   ;; not COMPILE-FILE
-  (let* (compiled-function)
+  (let* (compiled-function
+         (*memory-class-loader* (sys::make-memory-class-loader)))
     (with-compilation-unit ()
       (with-saved-compiler-policy
           (setf compiled-function
-                (load-compiled-function
-                 (with-open-stream (s (sys::%make-byte-array-output-stream))
-                   (compile-defun name expr env nil s nil)
-                   (finish-output s)
-                   (sys::%get-output-stream-bytes s))))))
+                (with-open-stream (s (sys::%make-byte-array-output-stream))
+                  (let* ((class-file (compile-defun name expr env nil s nil))
+                         (bytes (progn
+                                  (finish-output s)
+                                  (sys::%get-output-stream-bytes s)))
+                         (class-name (class-name-internal
+                                      (abcl-class-file-class-name class-file))))
+                    (sys::put-memory-function *memory-class-loader*
+                                              class-name bytes)
+                    (sys::get-memory-function *memory-class-loader*
+                                              class-name))))))
     (when (and name (functionp compiled-function))
       (sys::set-function-definition name compiled-function definition))
     (or name compiled-function)))

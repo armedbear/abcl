@@ -706,6 +706,10 @@ public class Autoload extends Function
 	autoload(PACKAGE_SYS, "make-fasl-class-loader", "FaslClassLoader", false);
 	autoload(PACKAGE_SYS, "get-fasl-function", "FaslClassLoader", false);
 
+	autoload(PACKAGE_SYS, "make-memory-class-loader", "MemoryClassLoader", false);
+	autoload(PACKAGE_SYS, "put-memory-function", "MemoryClassLoader", false);
+	autoload(PACKAGE_SYS, "get-memory-function", "MemoryClassLoader", false);
+        
         autoload(Symbol.SET_CHAR, "StringFunctions");
         autoload(Symbol.SET_SCHAR, "StringFunctions");
 
