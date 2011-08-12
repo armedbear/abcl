@@ -4160,7 +4160,7 @@ either to stream or the pathname of the class file if `stream' is NIL."
              (emit-getstatic *this-class*
                          (declare-local-function
                           (make-local-function
-                           :class-file (compiland-class-file compiland)))
+                           :compiland compiland))
                          +lisp-object+)))))
   (cond ((null *closure-variables*))    ; Nothing to do.
         ((compiland-closure-register *current-compiland*)
