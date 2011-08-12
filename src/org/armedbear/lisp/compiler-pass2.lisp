@@ -7088,7 +7088,7 @@ We need more thought here.
     (when (and register
                (not (variable-special-p variable))
                (not (variable-used-non-locally-p variable))
-               (zerop (compiland-children *current-compiland*)))
+               (null (compiland-children *current-compiland*)))
       (when (memq (type-representation (variable-declared-type variable))
                   '(:int :long))
         (emit-push-variable variable)

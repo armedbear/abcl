@@ -726,16 +726,16 @@ where each of the vars returned is a list with these elements:
     (form local-functions-var lambda-list-var name-var body-var body1 body2)
   `(let ((*visible-variables* *visible-variables*)
          (*local-functions* *local-functions*)
-         (*current-compiland* *current-compiland*)
+         (parent-compiland *current-compiland*)
          (,local-functions-var '()))
-     (incf (compiland-children *current-compiland*) (length (cadr ,form)))
      (dolist (definition (cadr ,form))
        (let ((,name-var (car definition))
              (,lambda-list-var (cadr definition)))
          (validate-function-name ,name-var)
          (let* ((,body-var (cddr definition))
                 (compiland (make-compiland :name ,name-var
-                                           :parent *current-compiland*)))
+                                           :parent parent-compiland)))
+           (push compiland (compiland-children parent-compiland))
            ,@body1)))
      (setf ,local-functions-var (nreverse ,local-functions-var))
      ;; Make the local functions visible.
@@ -1021,8 +1021,7 @@ where each of the vars returned is a list with these elements:
                                                        name (gensym "ANONYMOUS-LAMBDA-"))
                                              :lambda-expression lambda-form
                                              :parent *current-compiland*)))
-             (when *current-compiland*
-               (incf (compiland-children *current-compiland*)))
+             (push compiland (compiland-children *current-compiland*))
              (multiple-value-bind (body decls)
                  (parse-body body)
                (setf (compiland-lambda-expression compiland)
