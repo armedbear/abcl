@@ -718,34 +718,6 @@ where each of the vars returned is a list with these elements:
                    non-local-p t)))
       (make-jump-node form non-local-p tag-block tag))))
 
-(defun validate-function-name (name)
-  (unless (or (symbolp name) (setf-function-name-p name))
-    (compiler-error "~S is not a valid function name." name)))
-
-(defmacro with-local-functions-for-flet/labels
-    (form local-functions-var lambda-list-var name-var body-var body1 body2)
-  `(let ((*visible-variables* *visible-variables*)
-         (*local-functions* *local-functions*)
-         (parent-compiland *current-compiland*)
-         (,local-functions-var '()))
-     (dolist (definition (cadr ,form))
-       (let ((,name-var (car definition))
-             (,lambda-list-var (cadr definition)))
-         (validate-function-name ,name-var)
-         (let* ((,body-var (cddr definition))
-                (compiland (make-compiland :name ,name-var
-                                           :parent parent-compiland)))
-           (push compiland (compiland-children parent-compiland))
-           ,@body1)))
-     (setf ,local-functions-var (nreverse ,local-functions-var))
-     ;; Make the local functions visible.
-     (dolist (local-function ,local-functions-var)
-       (push local-function *local-functions*)
-       (let ((variable (local-function-variable local-function)))
-         (when variable
-           (push variable *visible-variables*))))
-     ,@body2))
-
 (defun split-decls (forms specific-vars)
   (let ((other-decls nil)
         (specific-decls nil))
@@ -901,6 +873,34 @@ where each of the vars returned is a list with these elements:
                           ,@decls ,@body))))
                 rv)))))))
 
+(defun validate-function-name (name)
+  (unless (or (symbolp name) (setf-function-name-p name))
+    (compiler-error "~S is not a valid function name." name)))
+
+(defmacro with-local-functions-for-flet/labels
+    (form local-functions-var lambda-list-var name-var body-var body1 body2)
+  `(let ((*visible-variables* *visible-variables*)
+         (*local-functions* *local-functions*)
+         (parent-compiland *current-compiland*)
+         (,local-functions-var '()))
+     (dolist (definition (cadr ,form))
+       (let ((,name-var (car definition))
+             (,lambda-list-var (cadr definition)))
+         (validate-function-name ,name-var)
+         (let* ((,body-var (cddr definition))
+                (compiland (make-compiland :name ,name-var
+                                           :parent parent-compiland)))
+           (push compiland (compiland-children parent-compiland))
+           ,@body1)))
+     (setf ,local-functions-var (nreverse ,local-functions-var))
+     ;; Make the local functions visible.
+     (dolist (local-function ,local-functions-var)
+       (push local-function *local-functions*)
+       (let ((variable (local-function-variable local-function)))
+         (when variable
+           (push variable *visible-variables*))))
+     ,@body2))
+
 (defun p1-flet (form)
   (with-local-functions-for-flet/labels
       form local-functions lambda-list name body
@@ -910,15 +910,12 @@ where each of the vars returned is a list with these elements:
 	 (multiple-value-bind (body decls) (parse-body body)
 	   (let* ((block-name (fdefinition-block-name name))
 		  (lambda-expression
-		   (rewrite-lambda `(lambda ,lambda-list ,@decls (block ,block-name ,@body))))
-		  (*visible-variables* *visible-variables*)
-		  (*local-functions* *local-functions*)
-		  (*current-compiland* compiland))
+		   (rewrite-lambda `(lambda ,lambda-list
+                                      ,@decls
+                                      (block ,block-name ,@body)))))
 	     (setf (compiland-lambda-expression compiland) lambda-expression)
 	     (setf (local-function-definition local-function)
 		   (copy-tree definition))
-	     ;(setf (local-function-inline-expansion local-function)
-	     ;(generate-inline-expansion block-name lambda-list body))
 	     (p1-compiland compiland)))
 	 (push local-function local-functions)))
       ((with-saved-compiler-policy
@@ -960,8 +957,7 @@ where each of the vars returned is a list with these elements:
 	 (push variable *all-variables*)
 	 (push local-function local-functions)))
       ((dolist (local-function local-functions)
-	 (let ((*visible-variables* *visible-variables*)
-	       (*current-compiland* (local-function-compiland local-function)))
+	 (let ((*visible-variables* *visible-variables*))
 	   (p1-compiland (local-function-compiland local-function))))
        (let* ((block (make-labels-node))
 	      (*block* block)
@@ -1328,34 +1324,37 @@ where each of the vars returned is a list with these elements:
 
 (defun p1-compiland (compiland)
 ;;   (format t "p1-compiland name = ~S~%" (compiland-name compiland))
-  (let ((form (compiland-lambda-expression compiland)))
+  (let ((*current-compiland* compiland)
+        (*local-functions* *local-functions*)
+        (*visible-variables* *visible-variables*)
+        (form (compiland-lambda-expression compiland)))
     (aver (eq (car form) 'LAMBDA))
     (setf form (rewrite-lambda form))
-    (process-optimization-declarations (cddr form))
+    (with-saved-compiler-policy
+      (process-optimization-declarations (cddr form))
 
-    (let* ((lambda-list (cadr form))
-           (body (cddr form))
-           (*visible-variables* *visible-variables*)
-           (closure (make-closure `(lambda ,lambda-list nil) nil))
-           (syms (sys::varlist closure))
-           (vars nil)
-           compiland-result)
-      (dolist (sym syms)
-        (let ((var (make-variable :name sym
-                                  :special-p (special-variable-p sym))))
-          (push var vars)
-          (push var *all-variables*)
-          (push var *visible-variables*)))
-      (setf (compiland-arg-vars compiland) (nreverse vars))
-      (let ((free-specials (process-declarations-for-vars body vars nil)))
-        (setf (compiland-free-specials compiland) free-specials)
-        (dolist (var free-specials)
-          (push var *visible-variables*)))
-      (setf compiland-result
-            (list* 'LAMBDA lambda-list (p1-body body)))
-      (setf (compiland-%single-valued-p compiland)
-            (single-valued-p compiland-result))
-      (setf (compiland-p1-result compiland)
-            compiland-result))))
+      (let* ((lambda-list (cadr form))
+             (body (cddr form))
+             (closure (make-closure `(lambda ,lambda-list nil) nil))
+             (syms (sys::varlist closure))
+             (vars nil)
+             compiland-result)
+        (dolist (sym syms)
+          (let ((var (make-variable :name sym
+                                    :special-p (special-variable-p sym))))
+            (push var vars)
+            (push var *all-variables*)
+            (push var *visible-variables*)))
+        (setf (compiland-arg-vars compiland) (nreverse vars))
+        (let ((free-specials (process-declarations-for-vars body vars nil)))
+          (setf (compiland-free-specials compiland) free-specials)
+          (dolist (var free-specials)
+            (push var *visible-variables*)))
+        (setf compiland-result
+              (list* 'LAMBDA lambda-list (p1-body body)))
+        (setf (compiland-%single-valued-p compiland)
+              (single-valued-p compiland-result))
+        (setf (compiland-p1-result compiland)
+              compiland-result)))))
 
 (provide "COMPILER-PASS1")
