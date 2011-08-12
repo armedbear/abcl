@@ -380,7 +380,6 @@ of the compilands being processed (p1: so far; p2: in total).")
   definition
   compiland
   inline-expansion
-  class-file  ;; the class file structure for this function
   variable    ;; the variable which contains the loaded compiled function
               ;; or compiled closure
   environment ;; the environment in which the function is stored in

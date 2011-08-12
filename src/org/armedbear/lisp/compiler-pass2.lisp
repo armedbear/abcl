@@ -1347,7 +1347,8 @@ the constructor if `*declare-inline*' is non-nil.
    local-function *declared-functions* ht g
    (setf g (symbol-name (gensym "LFUN")))
    (let ((class-name (abcl-class-file-class-name
-                      (local-function-class-file local-function))))
+                      (compiland-class-file
+                       (local-function-compiland local-function)))))
      (with-code-to-method
          (*class-file* (abcl-class-file-constructor *class-file*))
        ;; fixme *declare-inline*
@@ -4054,14 +4055,10 @@ either to stream or the pathname of the class file if `stream' is NIL."
 (defun p2-flet-process-compiland (local-function)
   (let* ((compiland (local-function-compiland local-function)))
     (cond (*file-compilation*
-           (compile-and-write-to-stream compiland)
-           (setf (local-function-class-file local-function)
-                 (compiland-class-file compiland)))
+           (compile-and-write-to-stream compiland))
           (t
            (with-open-stream (stream (sys::%make-byte-array-output-stream))
              (compile-and-write-to-stream compiland stream)
-             (setf (local-function-class-file local-function)
-                   (compiland-class-file compiland))
              (let ((bytes (sys::%get-output-stream-bytes stream)))
                (sys::put-memory-function *memory-class-loader*
                                          (class-name-internal
@@ -4088,16 +4085,12 @@ either to stream or the pathname of the class file if `stream' is NIL."
   (let* ((compiland (local-function-compiland local-function)))
     (cond (*file-compilation*
            (compile-and-write-to-stream compiland)
-           (setf (local-function-class-file local-function)
-                 (compiland-class-file compiland))
            (let ((g (declare-local-function local-function)))
              (emit-make-compiled-closure-for-labels
               local-function compiland g)))
           (t
            (with-open-stream (stream (sys::%make-byte-array-output-stream))
              (compile-and-write-to-stream compiland stream)
-             (setf (local-function-class-file local-function)
-                   (compiland-class-file compiland))
              (let* ((bytes (sys::%get-output-stream-bytes stream))
                     (g (declare-local-function local-function)))
                (sys::put-memory-function *memory-class-loader*
@@ -4153,8 +4146,7 @@ either to stream or the pathname of the class file if `stream' is NIL."
          (compile-and-write-to-stream compiland)
          (emit-getstatic *this-class*
                          (declare-local-function
-                          (make-local-function
-                           :class-file (compiland-class-file compiland)))
+                          (make-local-function :compiland compiland))
                          +lisp-object+))
         (t
          (with-open-stream (stream (sys::%make-byte-array-output-stream))
