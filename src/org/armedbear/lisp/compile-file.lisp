@@ -405,7 +405,6 @@
             (cond (compiled-function
                    (setf (getf tail key)
 			 `(sys::get-fasl-function *fasl-loader* ,saved-class-number)))
-;;                         `(load-compiled-function ,(file-namestring classfile))))
                   (t
                    ;; FIXME This should be a warning or error of some sort...
                    (format *error-output* "; Unable to compile method~%")))))))))
