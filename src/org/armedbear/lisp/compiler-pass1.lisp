@@ -724,27 +724,27 @@ where each of the vars returned is a list with these elements:
 
 (defmacro with-local-functions-for-flet/labels
     (form local-functions-var lambda-list-var name-var body-var body1 body2)
-  `(progn (incf (compiland-children *current-compiland*) (length (cadr ,form)))
-	  (let ((*visible-variables* *visible-variables*)
-		(*local-functions* *local-functions*)
-		(*current-compiland* *current-compiland*)
-		(,local-functions-var '()))
-	    (dolist (definition (cadr ,form))
-	      (let ((,name-var (car definition))
-		    (,lambda-list-var (cadr definition)))
-		(validate-function-name ,name-var)
-		(let* ((,body-var (cddr definition))
-		       (compiland (make-compiland :name ,name-var
-						  :parent *current-compiland*)))
-		  ,@body1)))
-	    (setf ,local-functions-var (nreverse ,local-functions-var))
-	    ;; Make the local functions visible.
-	    (dolist (local-function ,local-functions-var)
-	      (push local-function *local-functions*)
-	      (let ((variable (local-function-variable local-function)))
-		(when variable
-		  (push variable *visible-variables*))))
-	    ,@body2)))
+  `(let ((*visible-variables* *visible-variables*)
+         (*local-functions* *local-functions*)
+         (*current-compiland* *current-compiland*)
+         (,local-functions-var '()))
+     (incf (compiland-children *current-compiland*) (length (cadr ,form)))
+     (dolist (definition (cadr ,form))
+       (let ((,name-var (car definition))
+             (,lambda-list-var (cadr definition)))
+         (validate-function-name ,name-var)
+         (let* ((,body-var (cddr definition))
+                (compiland (make-compiland :name ,name-var
+                                           :parent *current-compiland*)))
+           ,@body1)))
+     (setf ,local-functions-var (nreverse ,local-functions-var))
+     ;; Make the local functions visible.
+     (dolist (local-function ,local-functions-var)
+       (push local-function *local-functions*)
+       (let ((variable (local-function-variable local-function)))
+         (when variable
+           (push variable *visible-variables*))))
+     ,@body2))
 
 (defun split-decls (forms specific-vars)
   (let ((other-decls nil)
