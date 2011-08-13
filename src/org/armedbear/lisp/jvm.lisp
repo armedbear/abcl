@@ -199,7 +199,7 @@ using `make-unique-class-name'."
   arity             ; number of args, or NIL if the number of args can vary.
   p1-result         ; the parse tree as created in pass 1
   parent            ; the parent for compilands which defined within another
-  children          ; List of local compilands
+  children          ; List of local functions
                     ; defined with FLET, LABELS or LAMBDA
   blocks            ; TAGBODY, PROGV, BLOCK, etc. blocks
   argument-register

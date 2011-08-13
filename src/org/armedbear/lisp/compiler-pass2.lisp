@@ -4140,37 +4140,35 @@ either to stream or the pathname of the class file if `stream' is NIL."
     (let ((*blocks* (cons block *blocks*)))
       (compile-progn-body body target representation))))
 
-(defun p2-lambda (compiland target)
-  (aver (null (compiland-class-file compiland)))
-  (cond (*file-compilation*
-         (compile-and-write-to-stream compiland)
-         (emit-getstatic *this-class*
-                         (declare-local-function
-                          (make-local-function :compiland compiland))
-                         +lisp-object+))
-        (t
-         (with-open-stream (stream (sys::%make-byte-array-output-stream))
-           (compile-and-write-to-stream compiland stream)
-           (let ((bytes (sys::%get-output-stream-bytes stream)))
-             (sys::put-memory-function *memory-class-loader*
-                                       (class-name-internal
-                                        (abcl-class-file-class-name
-                                         (compiland-class-file compiland)))
-                  bytes)
-             (emit-getstatic *this-class*
-                         (declare-local-function
-                          (make-local-function
-                           :compiland compiland))
-                         +lisp-object+)))))
-  (cond ((null *closure-variables*))    ; Nothing to do.
-        ((compiland-closure-register *current-compiland*)
-         (duplicate-closure-array *current-compiland*)
-         (emit-invokestatic +lisp+ "makeCompiledClosure"
-                            (list +lisp-object+ +closure-binding-array+)
-                            +lisp-object+))
+(defun p2-lambda (local-function target)
+  (let ((compiland (local-function-compiland local-function)))
+    (aver (null (compiland-class-file compiland)))
+    (cond (*file-compilation*
+           (compile-and-write-to-stream compiland)
+           (emit-getstatic *this-class*
+                           (declare-local-function local-function)
+                           +lisp-object+))
+          (t
+           (with-open-stream (stream (sys::%make-byte-array-output-stream))
+             (compile-and-write-to-stream compiland stream)
+             (let ((bytes (sys::%get-output-stream-bytes stream)))
+               (sys::put-memory-function *memory-class-loader*
+                                         (class-name-internal
+                                          (abcl-class-file-class-name
+                                           (compiland-class-file compiland)))
+                                         bytes)
+               (emit-getstatic *this-class*
+                               (declare-local-function local-function)
+                               +lisp-object+)))))
+    (cond ((null *closure-variables*))  ; Nothing to do.
+          ((compiland-closure-register *current-compiland*)
+           (duplicate-closure-array *current-compiland*)
+           (emit-invokestatic +lisp+ "makeCompiledClosure"
+                              (list +lisp-object+ +closure-binding-array+)
+                              +lisp-object+))
                                         ; Stack: compiled-closure
-        (t
-         (aver nil))) ;; Shouldn't happen.
+          (t
+           (aver nil)))) ;; Shouldn't happen.
 
   (emit-move-from-stack target))
 
@@ -4250,7 +4248,7 @@ either to stream or the pathname of the class file if `stream' is NIL."
                               "getSymbolSetfFunctionOrDie"
                               nil +lisp-object+)
           (emit-move-from-stack target))))
-      ((compiland-p name)
+      ((local-function-p name)
        (dformat t "p2-function case 3~%")
        (p2-lambda name target))
       (t

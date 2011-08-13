@@ -884,7 +884,7 @@ where each of the vars returned is a list with these elements:
          (lambda-list (cadr definition))
          (compiland (make-compiland :name name :parent *current-compiland*))
          (local-function (make-local-function :name name :compiland compiland)))
-    (push compiland (compiland-children *current-compiland*))
+    (push local-function (compiland-children *current-compiland*))
     (when variable-name
       (setf (local-function-variable local-function)
             (make-variable :name variable-name)))
@@ -1003,8 +1003,9 @@ where each of the vars returned is a list with these elements:
                   (compiland (make-compiland :name (if named-lambda-p
                                                        name (gensym "ANONYMOUS-LAMBDA-"))
                                              :lambda-expression lambda-form
-                                             :parent *current-compiland*)))
-             (push compiland (compiland-children *current-compiland*))
+                                             :parent *current-compiland*))
+                  (local-function (make-local-function :compiland compiland)))
+             (push local-function (compiland-children *current-compiland*))
              (multiple-value-bind (body decls)
                  (parse-body body)
                (setf (compiland-lambda-expression compiland)
@@ -1014,7 +1015,7 @@ where each of the vars returned is a list with these elements:
                (let ((*visible-variables* *visible-variables*)
                      (*current-compiland* compiland))
                  (p1-compiland compiland)))
-             (list 'FUNCTION compiland)))
+             (list 'FUNCTION local-function)))
           ((setf local-function (find-local-function (cadr form)))
            (dformat "p1-function local function ~S~%" (cadr form))
            ;;we found out that the function needs a reference
