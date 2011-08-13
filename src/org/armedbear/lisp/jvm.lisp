@@ -375,6 +375,7 @@ of the compilands being processed (p1: so far; p2: in total).")
   name
   definition
   compiland
+  field
   inline-expansion
   variable    ;; the variable which contains the loaded compiled function
               ;; or compiled closure

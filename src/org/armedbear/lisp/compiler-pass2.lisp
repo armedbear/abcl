@@ -4032,10 +4032,8 @@ given a specific common representation.")
 (defun compile-and-write-to-stream (compiland &optional stream)
   "Creates a class file associated with `compiland`, writing it
 either to stream or the pathname of the class file if `stream' is NIL."
-  (let* ((pathname (funcall *pathnames-generator*))
-         (class-file (make-abcl-class-file
-                      :pathname pathname)))
-    (setf (compiland-class-file compiland) class-file)
+  (let* ((class-file (compiland-class-file compiland))
+         (pathname (abcl-class-file-pathname class-file)))
     (with-open-stream (f (or stream
                              (open pathname :direction :output
                                    :element-type '(unsigned-byte 8)
@@ -4044,7 +4042,6 @@ either to stream or the pathname of the class file if `stream' is NIL."
         (let ((*current-compiland* compiland))
           (with-saved-compiler-policy
               (p2-compiland compiland)
-            ;;        (finalize-class-file (compiland-class-file compiland))
             (finish-class (compiland-class-file compiland) f)))))))
 
 (defknown p2-flet-process-compiland (t) t)
@@ -4138,7 +4135,7 @@ either to stream or the pathname of the class file if `stream' is NIL."
 
 (defun p2-lambda (local-function target)
   (let ((compiland (local-function-compiland local-function)))
-    (aver (null (compiland-class-file compiland)))
+    (aver (not (null (compiland-class-file compiland))))
     (cond (*file-compilation*
            (compile-and-write-to-stream compiland)
            (emit-getstatic *this-class*
@@ -7093,6 +7090,15 @@ We need more thought here.
         (emit-move-to-variable variable))))
   t)
 
+
+(defun assign-field-and-class-name (local-function)
+  (let* ((pathname (funcall *pathnames-generator*))
+         (class-file (make-abcl-class-file :pathname pathname))
+         (compiland (local-function-compiland local-function)))
+    (setf (compiland-class-file compiland) class-file))
+  (setf (local-function-field local-function)
+        (declare-local-function local-function)))
+
 (defknown p2-compiland (t) t)
 (defun p2-compiland (compiland)
   (let* ((p1-result (compiland-p1-result compiland))
@@ -7143,6 +7149,9 @@ We need more thought here.
         (let ((table (make-line-numbers-attribute)))
           (code-add-attribute *current-code-attribute* table)
           (line-numbers-add-line table 0 *source-line-number*)))
+
+      (dolist (local-function (compiland-children compiland))
+        (assign-field-and-class-name local-function))
 
       (dolist (var (compiland-arg-vars compiland))
         (push var *visible-variables*))
