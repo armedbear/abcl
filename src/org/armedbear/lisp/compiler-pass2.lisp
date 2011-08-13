@@ -4027,11 +4027,13 @@ given a specific common representation.")
     (emit-push-nil)
     (emit-move-from-stack target)))
 
-(defun compile-and-write-to-stream (compiland &optional stream)
-  "Creates a class file associated with `compiland`, writing it
-either to stream or the pathname of the class file if `stream' is NIL."
-  (let* ((pathname (funcall *pathnames-generator*))
-         (class-file (make-abcl-class-file :pathname pathname)))
+
+(defun compile-local-function (local-function)
+  (let* ((compiland (local-function-compiland local-function))
+         (pathname (funcall *pathnames-generator*))
+         (class-file (make-abcl-class-file :pathname pathname))
+         (stream (unless *file-compilation*
+                   (sys::%make-byte-array-output-stream))))
     (setf (compiland-class-file compiland) class-file)
     (with-open-stream (f (or stream
                              (open pathname :direction :output
@@ -4041,38 +4043,14 @@ either to stream or the pathname of the class file if `stream' is NIL."
         (let ((*current-compiland* compiland))
           (with-saved-compiler-policy
               (p2-compiland compiland)
-            (finish-class (compiland-class-file compiland) f)))))))
-
-(defknown p2-flet-process-compiland (t) t)
-(defun p2-flet-process-compiland (local-function)
-  (let* ((compiland (local-function-compiland local-function)))
-    (cond (*file-compilation*
-           (compile-and-write-to-stream compiland))
-          (t
-           (with-open-stream (stream (sys::%make-byte-array-output-stream))
-             (compile-and-write-to-stream compiland stream)
-             (let ((bytes (sys::%get-output-stream-bytes stream)))
-               (sys::put-memory-function *memory-class-loader*
-                                         (class-name-internal
-                                          (abcl-class-file-class-name
-                                           (compiland-class-file compiland)))
-                   bytes)))))))
-
-(defknown p2-labels-process-compiland (t) t)
-(defun p2-labels-process-compiland (local-function)
-  (let* ((compiland (local-function-compiland local-function)))
-    (cond
-      (*file-compilation*
-       (compile-and-write-to-stream compiland))
-      (t
-       (with-open-stream (stream (sys::%make-byte-array-output-stream))
-         (compile-and-write-to-stream compiland stream)
-         (let* ((bytes (sys::%get-output-stream-bytes stream)))
-           (sys::put-memory-function *memory-class-loader*
-                                     (class-name-internal
-                                      (abcl-class-file-class-name
-                                       (compiland-class-file compiland)))
-                                     bytes)))))))
+            (finish-class (compiland-class-file compiland) f)))))
+    (when stream
+      (let ((bytes (sys::%get-output-stream-bytes stream)))
+        (sys::put-memory-function *memory-class-loader*
+                                  (class-name-internal
+                                   (abcl-class-file-class-name
+                                    (compiland-class-file compiland)))
+                                  bytes)))))
 
 (defknown p2-flet-node (t t t) t)
 (defun p2-flet-node (block target representation)
@@ -4082,7 +4060,7 @@ either to stream or the pathname of the class file if `stream' is NIL."
          (local-functions (cadr form))
          (body (cddr form)))
     (dolist (local-function local-functions)
-      (p2-flet-process-compiland local-function))
+      (compile-local-function local-function))
     (dolist (local-function local-functions)
       (push local-function *local-functions*))
     (dolist (special (flet-free-specials block))
@@ -4100,43 +4078,23 @@ either to stream or the pathname of the class file if `stream' is NIL."
     (dolist (local-function local-functions)
       (push local-function *local-functions*))
     (dolist (local-function local-functions)
-      (p2-labels-process-compiland local-function))
+      (compile-local-function local-function))
     (dolist (special (labels-free-specials block))
       (push special *visible-variables*))
     (let ((*blocks* (cons block *blocks*)))
       (compile-progn-body body target representation))))
 
 (defun p2-lambda (local-function target)
-  (let ((compiland (local-function-compiland local-function)))
-    (cond (*file-compilation*
-           (compile-and-write-to-stream compiland)
-           (multiple-value-bind
-                 (class field)
-               (local-function-class-and-field local-function)
-             (emit-getstatic class field +lisp-object+)))
-          (t
-           (with-open-stream (stream (sys::%make-byte-array-output-stream))
-             (compile-and-write-to-stream compiland stream)
-             (let ((bytes (sys::%get-output-stream-bytes stream)))
-               (sys::put-memory-function *memory-class-loader*
-                                         (class-name-internal
-                                          (abcl-class-file-class-name
-                                           (compiland-class-file compiland)))
-                                         bytes)
-               (multiple-value-bind
-                     (class field)
-                   (local-function-class-and-field local-function)
-                 (emit-getstatic class field +lisp-object+))))))
-    (cond ((null *closure-variables*))  ; Nothing to do.
-          ((compiland-closure-register *current-compiland*)
-           (duplicate-closure-array *current-compiland*)
-           (emit-invokestatic +lisp+ "makeCompiledClosure"
-                              (list +lisp-object+ +closure-binding-array+)
-                              +lisp-object+))
-                                        ; Stack: compiled-closure
-          (t
-           (aver nil)))) ;; Shouldn't happen.
-
+  (compile-local-function local-function)
+  (multiple-value-bind
+        (class field)
+      (local-function-class-and-field local-function)
+    (emit-getstatic class field +lisp-object+))
+  (when (compiland-closure-register *current-compiland*)
+    (duplicate-closure-array *current-compiland*)
+    (emit-invokestatic +lisp+ "makeCompiledClosure"
+                       (list +lisp-object+ +closure-binding-array+)
+                       +lisp-object+))
   (emit-move-from-stack target))
 
 (defknown p2-function (t t t) t)
