@@ -467,6 +467,7 @@ Special variables are not considered local."
   (or (variable-register variable) ;; either register or index
       (variable-index variable)))  ;; is non-nil for local variables
 
+
 (defun emit-load-local-variable (variable)
   "Loads a local variable in the top stack position."
   (aver (variable-local-p variable))
@@ -2179,6 +2180,22 @@ is registered (or not)."
     (aload register))) ;; reload dest value
 
 
+(defun emit-load-local-function (local-function)
+  (when (eq *current-compiland* (local-function-compiland local-function))
+    (aload 0)
+    (return-from emit-load-local-function))
+  (multiple-value-bind
+        (class field)
+      (local-function-class-and-field local-function)
+    (emit-getstatic class field +lisp-object+))
+  (when *closure-variables*
+    (emit-checkcast +lisp-compiled-closure+)
+    (duplicate-closure-array *current-compiland*)
+    (emit-invokestatic +lisp+ "makeCompiledClosure"
+                       (list +lisp-object+ +closure-binding-array+)
+                       +lisp-object+)))
+
+
 
 (defknown compile-local-function-call (t t t) t)
 (defun compile-local-function-call (form target representation)
@@ -2186,8 +2203,7 @@ is registered (or not)."
 
 Functions this applies to can be FLET, LABELS, LAMBDA or NAMED-LAMBDA.
 Note: DEFUN implies a named lambda."
-  (let* ((compiland *current-compiland*)
-         (op (car form))
+  (let* ((op (car form))
          (args (cdr form))
          (local-function (find-local-function op))
          (*register* *register*))
@@ -2204,16 +2220,7 @@ Note: DEFUN implies a named lambda."
                                +lisp-object+))
           (t
            (dformat t "compile-local-function-call default case~%")
-           (multiple-value-bind
-                 (class field)
-               (local-function-class-and-field local-function)
-             (emit-getstatic class field +lisp-object+))
-           (when *closure-variables*
-             (emit-checkcast +lisp-compiled-closure+)
-             (duplicate-closure-array compiland)
-             (emit-invokestatic +lisp+ "makeCompiledClosure"
-                                (list +lisp-object+ +closure-binding-array+)
-                                +lisp-object+))))
+           (emit-load-local-function local-function)))
     (process-args args '(nil))
     (emit-call-execute (length args))
     (fix-boxing representation nil)
@@ -4086,15 +4093,7 @@ given a specific common representation.")
 
 (defun p2-lambda (local-function target)
   (compile-local-function local-function)
-  (multiple-value-bind
-        (class field)
-      (local-function-class-and-field local-function)
-    (emit-getstatic class field +lisp-object+))
-  (when (compiland-closure-register *current-compiland*)
-    (duplicate-closure-array *current-compiland*)
-    (emit-invokestatic +lisp+ "makeCompiledClosure"
-                       (list +lisp-object+ +closure-binding-array+)
-                       +lisp-object+))
+  (emit-load-local-function local-function)
   (emit-move-from-stack target))
 
 (defknown p2-function (t t t) t)
@@ -4109,16 +4108,7 @@ given a specific common representation.")
        (cond
          ((setf local-function (find-local-function name))
           (dformat t "p2-function 1~%")
-          (multiple-value-bind
-                (class field)
-              (local-function-class-and-field local-function)
-            (emit-getstatic class field +lisp-object+))
-          (when (compiland-closure-register *current-compiland*)
-            (emit-checkcast +lisp-compiled-closure+)
-            (duplicate-closure-array *current-compiland*)
-            (emit-invokestatic +lisp+ "makeCompiledClosure"
-                               (list +lisp-object+ +closure-binding-array+)
-                               +lisp-object+))
+          (emit-load-local-function local-function)
           (emit-move-from-stack target))
          ((inline-ok name)
           (emit-getstatic *this-class*
@@ -4135,16 +4125,7 @@ given a specific common representation.")
        (cond
          ((setf local-function (find-local-function name))
           (dformat t "p2-function 1~%")
-          (when (eq (local-function-compiland local-function)
-                    *current-compiland*)
-            (aload 0) ; this
-            (emit-move-from-stack target)
-            (return-from p2-function))
-          (multiple-value-bind
-                (class field)
-              (local-function-class-and-field local-function)
-                                        ; Stack: template-function
-            (emit-getstatic class field +lisp-object+)))
+          (emit-load-local-function local-function))
          ((and (member name *functions-defined-in-current-file* :test #'equal)
                (not (notinline-p name)))
           (emit-getstatic *this-class*
