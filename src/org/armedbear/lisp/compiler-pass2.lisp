@@ -1075,8 +1075,7 @@ extend the class any further."
 
 (defknown declare-field (t t t) t)
 (defun declare-field (name descriptor)
-  (let ((field (make-field name descriptor
-                           :flags '(:final :static :private))))
+  (let ((field (make-field name descriptor :flags '(:final :static))))
     (class-add-field *class-file* field)))
 
 (defknown sanitize (symbol) string)
@@ -1348,21 +1347,18 @@ the constructor if `*declare-inline*' is non-nil.
 
 (defknown declare-local-function (local-function) string)
 (defun declare-local-function (local-function)
-  (declare-with-hashtable
-   local-function *declared-functions* ht g
-   (setf g (symbol-name (gensym "LFUN")))
-   (let ((class-name (abcl-class-file-class-name
-                      (compiland-class-file
-                       (local-function-compiland local-function)))))
-     (with-code-to-method
-         (*class-file* (abcl-class-file-constructor *class-file*))
-       ;; fixme *declare-inline*
-       (declare-field g +lisp-object+)
-       (emit-new class-name)
-       (emit 'dup)
-       (emit-invokespecial-init class-name '())
-       (emit-putstatic *this-class* g +lisp-object+)
-       (setf (gethash local-function ht) g)))))
+  (let ((class-name (abcl-class-file-class-name
+                     (compiland-class-file
+                      (local-function-compiland local-function))))
+        (field-name (local-function-field local-function)))
+    (with-code-to-method
+        (*class-file* (abcl-class-file-constructor *class-file*))
+      ;; fixme *declare-inline*
+      (declare-field field-name +lisp-object+)
+      (emit-new class-name)
+      (emit 'dup)
+      (emit-invokespecial-init class-name '())
+      (emit-putstatic *this-class* field-name +lisp-object+))))
 
 
 (defknown declare-object-as-string (t) string)
@@ -2195,13 +2191,7 @@ Note: DEFUN implies a named lambda."
          (args (cdr form))
          (local-function (find-local-function op))
          (*register* *register*))
-    (cond ((local-function-variable local-function)
-           ;; LABELS
-           (dformat t "compile-local-function-call LABELS case variable = ~S~%"
-                   (variable-name (local-function-variable local-function)))
-           (compile-var-ref (make-var-ref
-                             (local-function-variable local-function))
-                            'stack nil))
+    (cond
           ((local-function-environment local-function)
            (assert (local-function-references-allowed-p local-function))
            (assert (not *file-compilation*))
@@ -4040,8 +4030,9 @@ given a specific common representation.")
 (defun compile-and-write-to-stream (compiland &optional stream)
   "Creates a class file associated with `compiland`, writing it
 either to stream or the pathname of the class file if `stream' is NIL."
-  (let* ((class-file (compiland-class-file compiland))
-         (pathname (abcl-class-file-pathname class-file)))
+  (let* ((pathname (funcall *pathnames-generator*))
+         (class-file (make-abcl-class-file :pathname pathname)))
+    (setf (compiland-class-file compiland) class-file)
     (with-open-stream (f (or stream
                              (open pathname :direction :output
                                    :element-type '(unsigned-byte 8)
@@ -4067,29 +4058,12 @@ either to stream or the pathname of the class file if `stream' is NIL."
                                            (compiland-class-file compiland)))
                    bytes)))))))
 
-(defun emit-make-compiled-closure-for-labels (local-function)
-  (let ((parent (compiland-parent (local-function-compiland local-function))))
-    (multiple-value-bind
-          (class field)
-        (local-function-class-and-field local-function)
-      (emit-getstatic class field +lisp-object+))
-    (when (compiland-closure-register parent)
-      (dformat t "(compiland-closure-register parent) = ~S~%"
-               (compiland-closure-register parent))
-      (emit-checkcast +lisp-compiled-closure+)
-      (duplicate-closure-array parent)
-      (emit-invokestatic +lisp+ "makeCompiledClosure"
-                         (list +lisp-object+ +closure-binding-array+)
-                         +lisp-object+)))
-  (emit-move-to-variable (local-function-variable local-function)))
-
 (defknown p2-labels-process-compiland (t) t)
 (defun p2-labels-process-compiland (local-function)
   (let* ((compiland (local-function-compiland local-function)))
     (cond
       (*file-compilation*
-       (compile-and-write-to-stream compiland)
-       (emit-make-compiled-closure-for-labels local-function))
+       (compile-and-write-to-stream compiland))
       (t
        (with-open-stream (stream (sys::%make-byte-array-output-stream))
          (compile-and-write-to-stream compiland stream)
@@ -4098,8 +4072,7 @@ either to stream or the pathname of the class file if `stream' is NIL."
                                      (class-name-internal
                                       (abcl-class-file-class-name
                                        (compiland-class-file compiland)))
-                                     bytes)
-           (emit-make-compiled-closure-for-labels local-function)))))))
+                                     bytes)))))))
 
 (defknown p2-flet-node (t t t) t)
 (defun p2-flet-node (block target representation)
@@ -4125,13 +4098,7 @@ either to stream or the pathname of the class file if `stream' is NIL."
          (local-functions (cadr form))
          (body (cddr form)))
     (dolist (local-function local-functions)
-      (push local-function *local-functions*)
-      (push (local-function-variable local-function) *visible-variables*))
-    (dolist (local-function local-functions)
-      (let ((variable (local-function-variable local-function)))
-        (aver (null (variable-register variable)))
-        (unless (variable-closure-index variable)
-          (setf (variable-register variable) (allocate-register nil)))))
+      (push local-function *local-functions*))
     (dolist (local-function local-functions)
       (p2-labels-process-compiland local-function))
     (dolist (special (labels-free-specials block))
@@ -4141,7 +4108,6 @@ either to stream or the pathname of the class file if `stream' is NIL."
 
 (defun p2-lambda (local-function target)
   (let ((compiland (local-function-compiland local-function)))
-    (aver (not (null (compiland-class-file compiland))))
     (cond (*file-compilation*
            (compile-and-write-to-stream compiland)
            (multiple-value-bind
@@ -4185,23 +4151,16 @@ either to stream or the pathname of the class file if `stream' is NIL."
        (cond
          ((setf local-function (find-local-function name))
           (dformat t "p2-function 1~%")
-          (cond
-            ((local-function-variable local-function)
-             (dformat t "p2-function 2 emitting var-ref~%")
-             (compile-var-ref (make-var-ref
-                               (local-function-variable local-function))
-                              'stack nil))
-            (t
-             (multiple-value-bind
-                   (class field)
-                 (local-function-class-and-field local-function)
-               (emit-getstatic class field +lisp-object+))
-             (when (compiland-closure-register *current-compiland*)
-               (emit-checkcast +lisp-compiled-closure+)
-               (duplicate-closure-array *current-compiland*)
-               (emit-invokestatic +lisp+ "makeCompiledClosure"
-                                  (list +lisp-object+ +closure-binding-array+)
-                                  +lisp-object+))))
+          (multiple-value-bind
+                (class field)
+              (local-function-class-and-field local-function)
+            (emit-getstatic class field +lisp-object+))
+          (when (compiland-closure-register *current-compiland*)
+            (emit-checkcast +lisp-compiled-closure+)
+            (duplicate-closure-array *current-compiland*)
+            (emit-invokestatic +lisp+ "makeCompiledClosure"
+                               (list +lisp-object+ +closure-binding-array+)
+                               +lisp-object+))
           (emit-move-from-stack target))
          ((inline-ok name)
           (emit-getstatic *this-class*
@@ -4223,18 +4182,11 @@ either to stream or the pathname of the class file if `stream' is NIL."
             (aload 0) ; this
             (emit-move-from-stack target)
             (return-from p2-function))
-          (cond
-            ((local-function-variable local-function)
-             (dformat t "p2-function 2~%")
-             (compile-var-ref (make-var-ref
-                               (local-function-variable local-function))
-                              'stack nil))
-            (t
-             (multiple-value-bind
-                   (class field)
-                 (local-function-class-and-field)
-                ; Stack: template-function
-               (emit-getstatic class field +lisp-object+)))))
+          (multiple-value-bind
+                (class field)
+              (local-function-class-and-field local-function)
+                                        ; Stack: template-function
+            (emit-getstatic class field +lisp-object+)))
          ((and (member name *functions-defined-in-current-file* :test #'equal)
                (not (notinline-p name)))
           (emit-getstatic *this-class*
@@ -7101,13 +7053,9 @@ We need more thought here.
   t)
 
 
-(defun assign-field-and-class-name (local-function)
-  (let* ((pathname (funcall *pathnames-generator*))
-         (class-file (make-abcl-class-file :pathname pathname))
-         (compiland (local-function-compiland local-function)))
-    (setf (compiland-class-file compiland) class-file))
+(defun assign-field-name (local-function)
   (setf (local-function-field local-function)
-        (declare-local-function local-function)))
+        (symbol-name (gensym "LFUN"))))
 
 (defknown p2-compiland (t) t)
 (defun p2-compiland (compiland)
@@ -7161,7 +7109,7 @@ We need more thought here.
           (line-numbers-add-line table 0 *source-line-number*)))
 
       (dolist (local-function (compiland-children compiland))
-        (assign-field-and-class-name local-function))
+        (assign-field-name local-function))
 
       (dolist (var (compiland-arg-vars compiland))
         (push var *visible-variables*))
@@ -7307,6 +7255,10 @@ We need more thought here.
 
       ;; Warn if any unused args. (Is this the right place?)
       (check-for-unused-variables (compiland-arg-vars compiland))
+
+      (dolist (local-function (compiland-children compiland))
+        (when (compiland-class-file (local-function-compiland local-function))
+          (declare-local-function local-function)))
 
       ;; Go back and fill in prologue.
       (let ((code *code*))

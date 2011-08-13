@@ -878,16 +878,13 @@ where each of the vars returned is a list with these elements:
     (compiler-error "~S is not a valid function name." name))
   name)
 
-(defun construct-flet/labels-function (definition variable-name)
+(defun construct-flet/labels-function (definition)
   (let* ((name (car definition))
          (block-name (fdefinition-block-name (validate-function-name name)))
          (lambda-list (cadr definition))
          (compiland (make-compiland :name name :parent *current-compiland*))
          (local-function (make-local-function :name name :compiland compiland)))
     (push local-function (compiland-children *current-compiland*))
-    (when variable-name
-      (setf (local-function-variable local-function)
-            (make-variable :name variable-name)))
     (multiple-value-bind
           (body decls)
         (parse-body (cddr definition))
@@ -903,7 +900,7 @@ where each of the vars returned is a list with these elements:
 (defun p1-flet (form)
   (let* ((local-functions
           (mapcar #'(lambda (definition)
-                      (construct-flet/labels-function definition nil))
+                      (construct-flet/labels-function definition))
                   (cadr form)))
          (*local-functions* *local-functions*))
     (dolist (local-function local-functions)
@@ -935,15 +932,12 @@ where each of the vars returned is a list with these elements:
 (defun p1-labels (form)
   (let* ((local-functions
           (mapcar #'(lambda (definition)
-                      (construct-flet/labels-function definition (gensym)))
+                      (construct-flet/labels-function definition))
                   (cadr form)))
          (*local-functions* *local-functions*)
          (*visible-variables* *visible-variables*))
     (dolist (local-function local-functions)
-      (push local-function *local-functions*)
-      (let ((variable (local-function-variable local-function)))
-        (push variable *all-variables*)
-        (push variable *visible-variables*)))
+      (push local-function *local-functions*))
     (dolist (local-function local-functions)
       (p1-compiland (local-function-compiland local-function)))
     (let* ((block (make-labels-node))
@@ -1020,11 +1014,6 @@ where each of the vars returned is a list with these elements:
            (dformat "p1-function local function ~S~%" (cadr form))
            ;;we found out that the function needs a reference
            (setf (local-function-references-needed-p local-function) t)
-           (let ((variable (local-function-variable local-function)))
-             (when variable
-                 (dformat t "p1-function ~S used non-locally~%"
-                          (variable-name variable))
-                 (setf (variable-used-non-locally-p variable) t)))
            form)
           (t
            form))))
@@ -1177,12 +1166,7 @@ where each of the vars returned is a list with these elements:
             (return-from p1-function-call
                          (let ((*inline-declarations*
                                 (remove op *inline-declarations* :key #'car :test #'equal)))
-                           (p1 expansion))))))
-
-      (let ((variable (local-function-variable local-function)))
-        (when variable
-          (dformat t "p1 ~S used non-locally~%" (variable-name variable))
-          (setf (variable-used-non-locally-p variable) t)))))
+                           (p1 expansion))))))))
   (p1-default form))
 
 (defun %funcall (fn &rest args)
