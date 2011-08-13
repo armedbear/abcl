@@ -130,8 +130,6 @@ in order to generate 'compilation events'.")
                             (:constructor %make-abcl-class-file))
   pathname ; pathname of output file
   class-name
-  lambda-name
-  lambda-list ; as advertised
   static-initializer
   constructor
   objects ;; an alist of externalized objects and their field names
@@ -160,7 +158,7 @@ in order to generate 'compilation events'.")
                                         (java:jstatic "randomUUID"
                                                       "java.util.UUID"))))))
 
-(defun make-abcl-class-file (&key pathname lambda-name lambda-list)
+(defun make-abcl-class-file (&key pathname)
   "Creates a `class-file' structure. If `pathname' is non-NIL, it's
 used to derive a class name. If it is NIL, a random one created
 using `make-unique-class-name'."
@@ -170,8 +168,6 @@ using `make-unique-class-name'."
          (class-file (%make-abcl-class-file :pathname pathname
                                             :class class-name ; to be finalized
                                             :class-name class-name
-                                            :lambda-name lambda-name
-                                            :lambda-list lambda-list
                                             :access-flags '(:public :final))))
     (when *file-compilation*
       (let ((source-attribute

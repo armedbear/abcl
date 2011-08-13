@@ -937,14 +937,12 @@ representation, based on the derived type of the LispObject."
 (defun emit-read-from-string (object)
   (emit-constructor-lambda-list object))
 
-(defun make-constructor (class)
+(defun make-constructor (class lambda-name args)
   (let* ((*compiler-debug* nil)
          (method (make-jvm-method :constructor :void nil
 				  :flags '(:public)))
          ;; We don't normally need to see debugging output for constructors.
          (super (class-file-superclass class))
-         (lambda-name (abcl-class-file-lambda-name class))
-         (args (abcl-class-file-lambda-list class))
          req-params-register
          opt-params-register
          key-params-register
@@ -4036,9 +4034,7 @@ given a specific common representation.")
 either to stream or the pathname of the class file if `stream' is NIL."
   (let* ((pathname (funcall *pathnames-generator*))
          (class-file (make-abcl-class-file
-                      :pathname pathname
-                      :lambda-list
-                      (cadr (compiland-lambda-expression compiland)))))
+                      :pathname pathname)))
     (setf (compiland-class-file compiland) class-file)
     (with-open-stream (f (or stream
                              (open pathname :direction :output
@@ -7124,14 +7120,14 @@ We need more thought here.
 
     (class-add-method class-file method)
 
-    (setf (abcl-class-file-lambda-list class-file) args)
     (setf (abcl-class-file-superclass class-file)
           (if (or *hairy-arglist-p*
                   (and *child-p* *closure-variables*))
               +lisp-compiled-closure+
               +lisp-compiled-primitive+))
 
-    (let ((constructor (make-constructor class-file)))
+    (let ((constructor
+           (make-constructor class-file (compiland-name compiland) args)))
       (setf (abcl-class-file-constructor class-file) constructor)
       (class-add-method class-file constructor))
     #+enable-when-generating-clinit
@@ -7386,18 +7382,14 @@ Returns the a abcl-class-file structure containing the description of the
 generated class."
   (aver (eq (car form) 'LAMBDA))
   (catch 'compile-defun-abort
-    (let* ((class-file (make-abcl-class-file :pathname filespec
-                                             :lambda-name name
-                                             :lambda-list (cadr form)))
+    (let* ((class-file (make-abcl-class-file :pathname filespec))
            (*compiler-error-bailout*
             `(lambda ()
                (compile-1
                 (make-compiland :name ',name
                                 :lambda-expression (make-compiler-error-form ',form)
                                 :class-file
-                                (make-abcl-class-file :pathname ,filespec
-                                                      :lambda-name ',name
-                                                      :lambda-list (cadr ',form)))
+                                (make-abcl-class-file :pathname ,filespec))
                 ,stream)))
            (*compile-file-environment* environment))
       (compile-1 (make-compiland :name name
