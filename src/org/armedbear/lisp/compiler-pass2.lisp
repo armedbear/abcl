@@ -1339,6 +1339,13 @@ the constructor if `*declare-inline*' is non-nil.
   (declare-function (cadr name) t))
 
 
+(defun local-function-class-and-field (local-function)
+  (let ((local-function-parent-compiland
+         (compiland-parent (local-function-compiland local-function))))
+    (values (abcl-class-file-class-name
+             (compiland-class-file local-function-parent-compiland))
+            (local-function-field local-function))))
+
 (defknown declare-local-function (local-function) string)
 (defun declare-local-function (local-function)
   (declare-with-hashtable
@@ -2207,15 +2214,16 @@ Note: DEFUN implies a named lambda."
                                +lisp-object+))
           (t
            (dformat t "compile-local-function-call default case~%")
-           (let* ((g (declare-local-function local-function)))
-             (emit-getstatic *this-class* g +lisp-object+)
-                                        ; Stack: template-function
-             (when *closure-variables*
-               (emit-checkcast +lisp-compiled-closure+)
-               (duplicate-closure-array compiland)
-               (emit-invokestatic +lisp+ "makeCompiledClosure"
-                                  (list +lisp-object+ +closure-binding-array+)
-                                  +lisp-object+)))))
+           (multiple-value-bind
+                 (class field)
+               (local-function-class-and-field local-function)
+             (emit-getstatic class field +lisp-object+))
+           (when *closure-variables*
+             (emit-checkcast +lisp-compiled-closure+)
+             (duplicate-closure-array compiland)
+             (emit-invokestatic +lisp+ "makeCompiledClosure"
+                                (list +lisp-object+ +closure-binding-array+)
+                                +lisp-object+))))
     (process-args args '(nil))
     (emit-call-execute (length args))
     (fix-boxing representation nil)
@@ -4059,10 +4067,12 @@ either to stream or the pathname of the class file if `stream' is NIL."
                                            (compiland-class-file compiland)))
                    bytes)))))))
 
-(defun emit-make-compiled-closure-for-labels
-    (local-function compiland declaration)
-  (emit-getstatic *this-class* declaration +lisp-object+)
-  (let ((parent (compiland-parent compiland)))
+(defun emit-make-compiled-closure-for-labels (local-function)
+  (let ((parent (compiland-parent (local-function-compiland local-function))))
+    (multiple-value-bind
+          (class field)
+        (local-function-class-and-field local-function)
+      (emit-getstatic class field +lisp-object+))
     (when (compiland-closure-register parent)
       (dformat t "(compiland-closure-register parent) = ~S~%"
                (compiland-closure-register parent))
@@ -4076,24 +4086,20 @@ either to stream or the pathname of the class file if `stream' is NIL."
 (defknown p2-labels-process-compiland (t) t)
 (defun p2-labels-process-compiland (local-function)
   (let* ((compiland (local-function-compiland local-function)))
-    (cond (*file-compilation*
-           (compile-and-write-to-stream compiland)
-           (let ((g (declare-local-function local-function)))
-             (emit-make-compiled-closure-for-labels
-              local-function compiland g)))
-          (t
-           (with-open-stream (stream (sys::%make-byte-array-output-stream))
-             (compile-and-write-to-stream compiland stream)
-             (let* ((bytes (sys::%get-output-stream-bytes stream))
-                    (g (declare-local-function local-function)))
-               (sys::put-memory-function *memory-class-loader*
-                                         (class-name-internal
-                                          (abcl-class-file-class-name
-                                           (compiland-class-file compiland)))
-                  bytes)
-               (emit-make-compiled-closure-for-labels
-                local-function compiland g)
-               ))))))
+    (cond
+      (*file-compilation*
+       (compile-and-write-to-stream compiland)
+       (emit-make-compiled-closure-for-labels local-function))
+      (t
+       (with-open-stream (stream (sys::%make-byte-array-output-stream))
+         (compile-and-write-to-stream compiland stream)
+         (let* ((bytes (sys::%get-output-stream-bytes stream)))
+           (sys::put-memory-function *memory-class-loader*
+                                     (class-name-internal
+                                      (abcl-class-file-class-name
+                                       (compiland-class-file compiland)))
+                                     bytes)
+           (emit-make-compiled-closure-for-labels local-function)))))))
 
 (defknown p2-flet-node (t t t) t)
 (defun p2-flet-node (block target representation)
@@ -4138,9 +4144,10 @@ either to stream or the pathname of the class file if `stream' is NIL."
     (aver (not (null (compiland-class-file compiland))))
     (cond (*file-compilation*
            (compile-and-write-to-stream compiland)
-           (emit-getstatic *this-class*
-                           (declare-local-function local-function)
-                           +lisp-object+))
+           (multiple-value-bind
+                 (class field)
+               (local-function-class-and-field local-function)
+             (emit-getstatic class field +lisp-object+)))
           (t
            (with-open-stream (stream (sys::%make-byte-array-output-stream))
              (compile-and-write-to-stream compiland stream)
@@ -4150,9 +4157,10 @@ either to stream or the pathname of the class file if `stream' is NIL."
                                           (abcl-class-file-class-name
                                            (compiland-class-file compiland)))
                                          bytes)
-               (emit-getstatic *this-class*
-                               (declare-local-function local-function)
-                               +lisp-object+)))))
+               (multiple-value-bind
+                     (class field)
+                   (local-function-class-and-field local-function)
+                 (emit-getstatic class field +lisp-object+))))))
     (cond ((null *closure-variables*))  ; Nothing to do.
           ((compiland-closure-register *current-compiland*)
            (duplicate-closure-array *current-compiland*)
@@ -4184,16 +4192,16 @@ either to stream or the pathname of the class file if `stream' is NIL."
                                (local-function-variable local-function))
                               'stack nil))
             (t
-             (let ((g (declare-local-function local-function)))
-               (emit-getstatic *this-class* g +lisp-object+)
-                                        ; Stack: template-function
-
-               (when (compiland-closure-register *current-compiland*)
-                 (emit-checkcast +lisp-compiled-closure+)
-                 (duplicate-closure-array *current-compiland*)
-                 (emit-invokestatic +lisp+ "makeCompiledClosure"
-                                    (list +lisp-object+ +closure-binding-array+)
-                                    +lisp-object+)))))
+             (multiple-value-bind
+                   (class field)
+                 (local-function-class-and-field local-function)
+               (emit-getstatic class field +lisp-object+))
+             (when (compiland-closure-register *current-compiland*)
+               (emit-checkcast +lisp-compiled-closure+)
+               (duplicate-closure-array *current-compiland*)
+               (emit-invokestatic +lisp+ "makeCompiledClosure"
+                                  (list +lisp-object+ +closure-binding-array+)
+                                  +lisp-object+))))
           (emit-move-from-stack target))
          ((inline-ok name)
           (emit-getstatic *this-class*
@@ -4222,9 +4230,11 @@ either to stream or the pathname of the class file if `stream' is NIL."
                                (local-function-variable local-function))
                               'stack nil))
             (t
-             (let ((g (declare-local-function local-function)))
-               (emit-getstatic *this-class*
-                     g +lisp-object+))))) ; Stack: template-function
+             (multiple-value-bind
+                   (class field)
+                 (local-function-class-and-field)
+                ; Stack: template-function
+               (emit-getstatic class field +lisp-object+)))))
          ((and (member name *functions-defined-in-current-file* :test #'equal)
                (not (notinline-p name)))
           (emit-getstatic *this-class*
