@@ -106,7 +106,7 @@
     (terpri)))
 
 
-(declaim (ftype (function (t t t) t) process-toplevel-quote))
+(declaim (ftype (function (t t t) t) process-toplevel-form))
 (defun precompile-toplevel-form (form stream compile-time-too)
   (declare (ignore stream))
   (let ((form (precompiler:precompile-form form nil
@@ -372,7 +372,7 @@
                 (DEFVAR process-toplevel-defvar/defparameter)
                 (EVAL-WHEN process-toplevel-eval-when)
                 (EXPORT precompile-toplevel-form)
-;;                (IMPORT precompile-toplevel-form)
+                (IMPORT process-toplevel-import)
                 (IN-PACKAGE process-toplevel-defpackage/in-package)
                 (LOCALLY process-toplevel-locally)
                 (MACROLET process-toplevel-macrolet)
@@ -384,8 +384,7 @@
                 (REQUIRE precompile-toplevel-form)
                 (SHADOW precompile-toplevel-form)
                 (%SET-FDEFINITION precompile-toplevel-form)
-                (MOP::ENSURE-METHOD process-toplevel-mop.ensure-method)
-))
+                (MOP::ENSURE-METHOD process-toplevel-mop.ensure-method)))
   (install-toplevel-handler (car pair) (cadr pair)))
 
 (declaim (ftype (function (t stream t) t) process-toplevel-form))
