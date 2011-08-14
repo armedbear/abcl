@@ -123,6 +123,55 @@
     (%stream-terpri *fasl-stream*)))
 
 
+(declaim (ftype (function (t) t) simple-toplevel-form-p))
+(defun simple-toplevel-form-p (form)
+  "Returns NIL if the form is too complex to become an
+interpreted toplevel form, non-NIL if it is 'simple enough'."
+  (and (consp form)
+       (every #'(lambda (arg)
+                  (or (and (atom arg)
+                           (not (and (symbolp arg)
+                                     (symbol-macro-p arg))))
+                      (and (consp arg)
+                           (eq 'QUOTE (car arg)))))
+              (cdr form))))
+
+(declaim (ftype (function (t t) t) convert-toplevel-form))
+(defun convert-toplevel-form (form declare-inline)
+  (when (or (simple-toplevel-form-p form)
+            (and (eq (car form) 'SETQ)
+                 ;; for SETQ, look at the evaluated part
+                 (simple-toplevel-form-p (third form))))
+    ;; single form with simple or constant arguments
+    ;; Without this exception, toplevel function calls
+    ;; will be compiled into lambdas which get compiled to
+    ;; compiled-functions. Those need to be loaded.
+    ;; Conclusion: Top level interpreting the function call
+    ;;  and its arguments may be (and should be) more efficient.
+    (return-from convert-toplevel-form
+      (precompiler:precompile-form form nil *compile-file-environment*)))
+  (let* ((expr `(lambda () ,form))
+         (saved-class-number *class-number*)
+         (classfile (next-classfile-name))
+         (result
+          (with-open-file
+              (f classfile
+                 :direction :output
+                 :element-type '(unsigned-byte 8)
+                 :if-exists :supersede)
+            (report-error (jvm:compile-defun nil
+                                             expr *compile-file-environment*
+                                             classfile f declare-inline))))
+         (compiled-function (verify-load classfile)))
+    (declare (ignore result))
+    (setf form
+          (if compiled-function
+              `(funcall (sys::get-fasl-function *fasl-loader*
+                                                ,saved-class-number))
+              (precompiler:precompile-form form nil
+                                           *compile-file-environment*)))))
+
+
 
 
 (declaim (ftype (function (t stream t) t) process-progn))
@@ -353,10 +402,12 @@
       (if (special-operator-p name)
           `(put ',name 'macroexpand-macro
                 (make-macro ',name
-                            (sys::get-fasl-function *fasl-loader* ,saved-class-number)))
+                            (sys::get-fasl-function *fasl-loader*
+                                                    ,saved-class-number)))
           `(fset ',name
                  (make-macro ',name
-                             (sys::get-fasl-function *fasl-loader* ,saved-class-number))
+                             (sys::get-fasl-function *fasl-loader*
+                                                     ,saved-class-number))
                  ,*source-position*
                  ',(third form))))))
 
@@ -519,51 +570,6 @@
                           nil)))
       (eval form))))
 
-
-(declaim (ftype (function (t) t) simple-toplevel-form-p))
-(defun simple-toplevel-form-p (form)
-  "Returns NIL if the form is too complex to become an
-interpreted toplevel form, non-NIL if it is 'simple enough'."
-  (and (consp form)
-       (every #'(lambda (arg)
-                  (or (and (atom arg)
-                           (not (and (symbolp arg)
-                                     (symbol-macro-p arg))))
-                      (and (consp arg)
-                           (eq 'QUOTE (car arg)))))
-              (cdr form))))
-
-(declaim (ftype (function (t t) t) convert-toplevel-form))
-(defun convert-toplevel-form (form declare-inline)
-  (when (or (simple-toplevel-form-p form)
-            (and (eq (car form) 'SETQ)
-                 ;; for SETQ, look at the evaluated part
-                 (simple-toplevel-form-p (third form))))
-    ;; single form with simple or constant arguments
-    ;; Without this exception, toplevel function calls
-    ;; will be compiled into lambdas which get compiled to
-    ;; compiled-functions. Those need to be loaded.
-    ;; Conclusion: Top level interpreting the function call
-    ;;  and its arguments may be (and should be) more efficient.
-    (return-from convert-toplevel-form
-      (precompiler:precompile-form form nil *compile-file-environment*)))
-  (let* ((expr `(lambda () ,form))
-	 (saved-class-number *class-number*)
-         (classfile (next-classfile-name))
-         (result
-	  (with-open-file
-	      (f classfile
-		 :direction :output
-		 :element-type '(unsigned-byte 8)
-		 :if-exists :supersede)
-	    (report-error (jvm:compile-defun nil expr *compile-file-environment*
-                                             classfile f declare-inline))))
-         (compiled-function (verify-load classfile)))
-    (declare (ignore result))
-    (setf form
-          (if compiled-function
-              `(funcall (sys::get-fasl-function *fasl-loader* ,saved-class-number))
-              (precompiler:precompile-form form nil *compile-file-environment*)))))
 
 
 (defvar *binary-fasls* nil)
