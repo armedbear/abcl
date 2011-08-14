@@ -390,39 +390,36 @@
 
 (declaim (ftype (function (t stream t) t) process-toplevel-form))
 (defun process-toplevel-form (form stream compile-time-too)
-  (if (atom form)
-      (when compile-time-too
-        (eval form))
-    (progn
-      (let* ((operator (%car form))
-             (handler (get operator 'toplevel-handler)))
-        (when handler
-          (let ((out-form (funcall handler form stream compile-time-too)))
-            (when out-form
-              (output-form out-form)))
-          (return-from process-toplevel-form))
-        (when (and (symbolp operator)
-                   (macro-function operator *compile-file-environment*))
-          (note-toplevel-form form)
-          ;; Note that we want MACROEXPAND-1 and not MACROEXPAND here, in
-          ;; case the form being expanded expands into something that needs
-          ;; special handling by PROCESS-TOPLEVEL-FORM (e.g. DEFMACRO).
-          (let ((*compile-print* nil))
-            (process-toplevel-form (macroexpand-1 form *compile-file-environment*)
-                                   stream compile-time-too))
-          (return-from process-toplevel-form))
+  (unless (atom form)
+    (let* ((operator (%car form))
+           (handler (get operator 'toplevel-handler)))
+      (when handler
+        (let ((out-form (funcall handler form stream compile-time-too)))
+          (when out-form
+            (output-form out-form)))
+        (return-from process-toplevel-form))
+      (when (and (symbolp operator)
+                 (macro-function operator *compile-file-environment*))
+        (note-toplevel-form form)
+        ;; Note that we want MACROEXPAND-1 and not MACROEXPAND here, in
+        ;; case the form being expanded expands into something that needs
+        ;; special handling by PROCESS-TOPLEVEL-FORM (e.g. DEFMACRO).
+        (let ((*compile-print* nil))
+          (process-toplevel-form (macroexpand-1 form *compile-file-environment*)
+                                 stream compile-time-too))
+        (return-from process-toplevel-form))
 
-        (cond
-          ((and (symbolp operator)
-                (not (special-operator-p operator))
-                (null (cdr form)))
-           (setf form (precompiler:precompile-form form nil
-                                                   *compile-file-environment*)))
-          (t
-           (note-toplevel-form form)
-           (setf form (convert-toplevel-form form nil)))))))
-  (when (consp form)
-    (output-form form))
+      (cond
+        ((and (symbolp operator)
+              (not (special-operator-p operator))
+              (null (cdr form)))
+         (setf form (precompiler:precompile-form form nil
+                                                 *compile-file-environment*)))
+        (t
+         (note-toplevel-form form)
+         (setf form (convert-toplevel-form form nil)))))
+    (when (consp form)
+      (output-form form)))
   ;; Make sure the compiled-function loader knows where
   ;; to load the compiled functions. Note that this trickery
   ;; was already used in verify-load before I used it,
