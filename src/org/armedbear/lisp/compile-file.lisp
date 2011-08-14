@@ -105,6 +105,32 @@
       (prin1 form))
     (terpri)))
 
+(defun output-form (form)
+  (if *binary-fasls*
+      (push form *forms-for-output*)
+      (progn
+        (dump-form form *fasl-stream*)
+        (%stream-terpri *fasl-stream*))))
+
+(defun finalize-fasl-output ()
+  (when *binary-fasls*
+    (let ((*package* (find-package :keyword))
+          (*double-colon-package-separators* T))
+      (dump-form (convert-toplevel-form (list* 'PROGN
+                                               (nreverse *forms-for-output*))
+                                        t)
+                 *fasl-stream*))
+    (%stream-terpri *fasl-stream*)))
+
+
+
+
+(declaim (ftype (function (t stream t) t) process-progn))
+(defun process-progn (forms stream compile-time-too)
+  (dolist (form forms)
+    (process-toplevel-form form stream compile-time-too))
+  nil)
+
 
 (declaim (ftype (function (t t t) t) process-toplevel-form))
 (defun precompile-toplevel-form (form stream compile-time-too)
@@ -117,7 +143,17 @@
 
 
 
-
+(defun process-toplevel-macrolet (form stream compile-time-too)
+  (let ((*compile-file-environment*
+         (make-environment *compile-file-environment*)))
+    (dolist (definition (cadr form))
+      (environment-add-macro-definition *compile-file-environment*
+                                        (car definition)
+                                        (make-macro (car definition)
+                                                    (make-expander-for-macrolet definition))))
+    (dolist (body-form (cddr form))
+      (process-toplevel-form body-form stream compile-time-too)))
+  nil)
 
 (declaim (ftype (function (t t t) t) process-toplevel-defconstant))
 (defun process-toplevel-defconstant (form stream compile-time-too)
@@ -155,7 +191,41 @@
 (declaim (ftype (function (t t t) t) process-toplevel-mop.ensure-method))
 (defun process-toplevel-mop.ensure-method (form stream compile-time-too)
   (declare (ignore stream))
-  (let ((form (convert-ensure-method form)))
+  (flet ((convert-ensure-method (form key)
+           (let* ((tail (cddr form))
+                  (function-form (getf tail key)))
+             (when (and function-form (consp function-form)
+               (eq (%car function-form) 'FUNCTION))
+               (let ((lambda-expression (cadr function-form)))
+                 (jvm::with-saved-compiler-policy
+                     (let* ((saved-class-number *class-number*)
+                            (classfile (next-classfile-name))
+                            (result
+                             (with-open-file
+                                 (f classfile
+                                    :direction :output
+                                    :element-type '(unsigned-byte 8)
+                                    :if-exists :supersede)
+                               (report-error
+                                (jvm:compile-defun nil lambda-expression
+                                                   *compile-file-environment*
+                                                   classfile f nil))))
+                            (compiled-function (verify-load classfile)))
+                       (declare (ignore result))
+                       (cond
+                         (compiled-function
+                          (setf (getf tail key)
+                                `(sys::get-fasl-function *fasl-loader*
+                                                         ,saved-class-number)))
+                         (t
+                          ;; FIXME This should be a warning or error of some sort...
+                          (format *error-output* "; Unable to compile method~%"))))))))))
+
+
+    (convert-ensure-method form :function)
+    (convert-ensure-method form :fast-function))
+  (let ((form (precompiler:precompile-form form nil
+                                           *compile-file-environment*)))
     (when compile-time-too
       (eval form))
     form))
@@ -207,14 +277,31 @@
 
 (declaim (ftype (function (t t t) t) process-toplevel-eval-when))
 (defun process-toplevel-eval-when (form stream compile-time-too)
-  (multiple-value-bind (ct lt e)
-      (parse-eval-when-situations (cadr form))
-    (let ((new-compile-time-too (or ct (and compile-time-too e)))
-          (body (cddr form)))
-      (if lt
-          (process-progn body stream new-compile-time-too)
-          (when new-compile-time-too
-            (eval `(progn ,@body))))))
+  (flet ((parse-eval-when-situations (situations)
+           "Parse an EVAL-WHEN situations list, returning three flags,
+            (VALUES COMPILE-TOPLEVEL LOAD-TOPLEVEL EXECUTE), indicating
+            the types of situations present in the list."
+            ; Adapted from SBCL.
+           (when (or (not (listp situations))
+                     (set-difference situations
+                                     '(:compile-toplevel
+                                       compile
+                                       :load-toplevel
+                                       load
+                                       :execute
+                                       eval)))
+             (error "Bad EVAL-WHEN situation list: ~S." situations))
+           (values (intersection '(:compile-toplevel compile) situations)
+                   (intersection '(:load-toplevel load) situations)
+                   (intersection '(:execute eval) situations))))
+    (multiple-value-bind (ct lt e)
+        (parse-eval-when-situations (cadr form))
+      (let ((new-compile-time-too (or ct (and compile-time-too e)))
+            (body (cddr form)))
+        (if lt
+            (process-progn body stream new-compile-time-too)
+            (when new-compile-time-too
+              (eval `(progn ,@body)))))))
   nil)
 
 
@@ -432,40 +519,6 @@
                           nil)))
       (eval form))))
 
-(declaim (ftype (function (t) t) convert-ensure-method))
-(defun convert-ensure-method (form)
-  (c-e-m-1 form :function)
-  (c-e-m-1 form :fast-function)
-  (precompiler:precompile-form form nil *compile-file-environment*))
-
-(declaim (ftype (function (t t) t) c-e-m-1))
-(defun c-e-m-1 (form key)
-  (let* ((tail (cddr form))
-         (function-form (getf tail key)))
-    (when (and function-form (consp function-form)
-               (eq (%car function-form) 'FUNCTION))
-      (let ((lambda-expression (cadr function-form)))
-        (jvm::with-saved-compiler-policy
-          (let* ((saved-class-number *class-number*)
-		 (classfile (next-classfile-name))
-                 (result
-		  (with-open-file
-		      (f classfile
-			 :direction :output
-			 :element-type '(unsigned-byte 8)
-			 :if-exists :supersede)
-		    (report-error
-		     (jvm:compile-defun nil lambda-expression
-                                        *compile-file-environment*
-                                        classfile f nil))))
-                 (compiled-function (verify-load classfile)))
-	    (declare (ignore result))
-            (cond (compiled-function
-                   (setf (getf tail key)
-			 `(sys::get-fasl-function *fasl-loader* ,saved-class-number)))
-                  (t
-                   ;; FIXME This should be a warning or error of some sort...
-                   (format *error-output* "; Unable to compile method~%")))))))))
 
 (declaim (ftype (function (t) t) simple-toplevel-form-p))
 (defun simple-toplevel-form-p (form)
@@ -513,62 +566,9 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
               (precompiler:precompile-form form nil *compile-file-environment*)))))
 
 
-(defun process-toplevel-macrolet (form stream compile-time-too)
-  (let ((*compile-file-environment* (make-environment *compile-file-environment*)))
-    (dolist (definition (cadr form))
-      (environment-add-macro-definition *compile-file-environment*
-                                        (car definition)
-                                        (make-macro (car definition)
-                                                    (make-expander-for-macrolet definition))))
-    (dolist (body-form (cddr form))
-      (process-toplevel-form body-form stream compile-time-too)))
-  nil) ;; nothing to be sent to output
-
-(declaim (ftype (function (t stream t) t) process-progn))
-(defun process-progn (forms stream compile-time-too)
-  (dolist (form forms)
-    (process-toplevel-form form stream compile-time-too))
-  nil)
-
-;;; Adapted from SBCL.
-;;; Parse an EVAL-WHEN situations list, returning three flags,
-;;; (VALUES COMPILE-TOPLEVEL LOAD-TOPLEVEL EXECUTE), indicating
-;;; the types of situations present in the list.
-(defun parse-eval-when-situations (situations)
-  (when (or (not (listp situations))
-	    (set-difference situations
-			    '(:compile-toplevel
-			      compile
-			      :load-toplevel
-			      load
-			      :execute
-			      eval)))
-    (error "Bad EVAL-WHEN situation list: ~S." situations))
-  (values (intersection '(:compile-toplevel compile) situations)
-	  (intersection '(:load-toplevel load) situations)
-	  (intersection '(:execute eval) situations)))
-
-
 (defvar *binary-fasls* nil)
 (defvar *forms-for-output* nil)
 (defvar *fasl-stream* nil)
-
-(defun output-form (form)
-  (if *binary-fasls*
-      (push form *forms-for-output*)
-      (progn
-        (dump-form form *fasl-stream*)
-        (%stream-terpri *fasl-stream*))))
-
-(defun finalize-fasl-output ()
-  (when *binary-fasls*
-    (let ((*package* (find-package :keyword))
-          (*double-colon-package-separators* T))
-      (dump-form (convert-toplevel-form (list* 'PROGN
-                                               (nreverse *forms-for-output*))
-                                        t)
-                 *fasl-stream*))
-    (%stream-terpri *fasl-stream*)))
 
 (defun compile-file (input-file
                      &key
