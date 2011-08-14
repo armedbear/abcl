@@ -106,6 +106,19 @@
     (terpri)))
 
 
+(declaim (ftype (function (t t t) t) process-toplevel-quote))
+(defun precompile-toplevel-form (form stream compile-time-too)
+  (declare (ignore stream))
+  (let ((form (precompiler:precompile-form form nil
+                                           *compile-file-environment*)))
+    (when compile-time-too
+      (eval form))
+    form))
+
+
+
+
+
 (declaim (ftype (function (t t t) t) process-toplevel-defconstant))
 (defun process-toplevel-defconstant (form stream compile-time-too)
   (declare (ignore stream compile-time-too))
@@ -119,6 +132,33 @@
   (note-toplevel-form form)
   (eval form)
   form)
+
+(declaim (ftype (function (t t t) t) process-toplevel-quote))
+(defun process-toplevel-quote (form stream compile-time-too)
+  (declare (ignore stream))
+  (when compile-time-too
+    (eval form))
+  nil)
+
+
+(declaim (ftype (function (t t t) t) process-toplevel-import))
+(defun process-toplevel-import (form stream compile-time-too)
+  (declare (ignore stream))
+  (let ((form (precompiler:precompile-form form nil
+                                           *compile-file-environment*)))
+    (let ((*package* +keyword-package+))
+      (output-form form))
+    (when compile-time-too
+      (eval form)))
+  nil)
+
+(declaim (ftype (function (t t t) t) process-toplevel-mop.ensure-method))
+(defun process-toplevel-mop.ensure-method (form stream compile-time-too)
+  (declare (ignore stream))
+  (let ((form (convert-ensure-method form)))
+    (when compile-time-too
+      (eval form))
+    form))
 
 (declaim (ftype (function (t t t) t) process-toplevel-defvar/defparameter))
 (defun process-toplevel-defvar/defparameter (form stream compile-time-too)
@@ -319,7 +359,7 @@
 (defun install-toplevel-handler (symbol handler)
   (setf (get symbol 'toplevel-handler) handler))
 
-(dolist (pair '(
+(dolist (pair '((COMPILER-DEFSTRUCT precompile-toplevel-form)
                 (DECLARE process-toplevel-declare)
                 (DEFCONSTANT process-toplevel-defconstant)
                 (DEFGENERIC process-toplevel-defmethod/defgeneric)
@@ -331,10 +371,20 @@
                 (DEFUN process-toplevel-defun)
                 (DEFVAR process-toplevel-defvar/defparameter)
                 (EVAL-WHEN process-toplevel-eval-when)
+                (EXPORT precompile-toplevel-form)
+;;                (IMPORT precompile-toplevel-form)
                 (IN-PACKAGE process-toplevel-defpackage/in-package)
                 (LOCALLY process-toplevel-locally)
                 (MACROLET process-toplevel-macrolet)
+                (PROCLAIM precompile-toplevel-form)
                 (PROGN process-toplevel-progn)
+                (PROVIDE precompile-toplevel-form)
+                (PUT precompile-toplevel-form)
+                (QUOTE process-toplevel-quote)
+                (REQUIRE precompile-toplevel-form)
+                (SHADOW precompile-toplevel-form)
+                (%SET-FDEFINITION precompile-toplevel-form)
+                (MOP::ENSURE-METHOD process-toplevel-mop.ensure-method)
 ))
   (install-toplevel-handler (car pair) (cadr pair)))
 
@@ -363,43 +413,6 @@
           (return-from process-toplevel-form))
 
         (cond
-          ((eq operator 'QUOTE)
-           (when compile-time-too
-             (eval form))
-           (return-from process-toplevel-form))
-          ((eq operator 'PUT)
-           (setf form (precompiler:precompile-form form nil
-                                                   *compile-file-environment*)))
-          ((eq operator 'COMPILER-DEFSTRUCT)
-           (setf form (precompiler:precompile-form form nil
-                                                   *compile-file-environment*)))
-          ((eq operator 'PROCLAIM)
-           (setf form (precompiler:precompile-form form nil
-                                                   *compile-file-environment*)))
-          ((and (memq operator '(EXPORT REQUIRE PROVIDE SHADOW))
-                (or (keywordp (second form))
-                    (and (listp (second form))
-                         (eq (first (second form)) 'QUOTE))))
-           (setf form (precompiler:precompile-form form nil
-                                                   *compile-file-environment*)))
-          ((eq operator 'IMPORT)
-           (setf form (precompiler:precompile-form form nil
-                                                   *compile-file-environment*))
-           ;; Make sure package prefix is printed when symbols are imported.
-           (let ((*package* +keyword-package+))
-             (output-form form))
-           (when compile-time-too
-             (eval form))
-           (return-from process-toplevel-form))
-          ((and (eq operator '%SET-FDEFINITION)
-                (eq (car (second form)) 'QUOTE)
-                (consp (third form))
-                (eq (%car (third form)) 'FUNCTION)
-                (symbolp (cadr (third form))))
-           (setf form (precompiler:precompile-form form nil
-                                                   *compile-file-environment*)))
-          ((eq operator 'mop::ensure-method)
-           (setf form (convert-ensure-method form)))
           ((and (symbolp operator)
                 (not (special-operator-p operator))
                 (null (cdr form)))
@@ -463,12 +476,12 @@
   "Returns NIL if the form is too complex to become an
 interpreted toplevel form, non-NIL if it is 'simple enough'."
   (and (consp form)
-             (every #'(lambda (arg)
-                        (or (and (atom arg)
-                                 (not (and (symbolp arg)
-                                           (symbol-macro-p arg))))
-                            (and (consp arg)
-                                 (eq 'QUOTE (car arg)))))
+       (every #'(lambda (arg)
+                  (or (and (atom arg)
+                           (not (and (symbolp arg)
+                                     (symbol-macro-p arg))))
+                      (and (consp arg)
+                           (eq 'QUOTE (car arg)))))
               (cdr form))))
 
 (declaim (ftype (function (t t) t) convert-toplevel-form))
