@@ -1,6 +1,30 @@
+Version 0.26.2
+==============
+svn://common-lisp.net/project/armedbear/svn/tags/0.26.2/abcl
+(14 August 2011)
+
+Features
+--------
+  * Enable compilation with Java 7
+
+Fixes
+-----
+  * Fix loading from fasls under Windows with whitespace in pathname.
+  
+  * Fix #131: Don't include ':' in the version string.
+
+  * Fix #141: SETF of APPLY not working with arbitrary function.
+  
+  * Include filename in the error string being reported.
+
+  * Include the test source in the release.
+  
+  * Include ASDF definition in source release.
+
 Version 0.26.1
 ==============
 svn://common-lisp.net/project/armedbear/svn/tags/0.26.1/abcl
+(27 July 2011)
 
 Features
 --------
