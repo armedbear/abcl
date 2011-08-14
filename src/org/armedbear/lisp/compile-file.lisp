@@ -364,24 +364,27 @@
 
         (cond
           ((eq operator 'QUOTE)
-;;;                      (setf form (precompiler:precompile-form form nil
-;;;                                                  *compile-file-environment*))
            (when compile-time-too
              (eval form))
            (return-from process-toplevel-form))
           ((eq operator 'PUT)
-           (setf form (precompiler:precompile-form form nil *compile-file-environment*)))
+           (setf form (precompiler:precompile-form form nil
+                                                   *compile-file-environment*)))
           ((eq operator 'COMPILER-DEFSTRUCT)
-           (setf form (precompiler:precompile-form form nil *compile-file-environment*)))
+           (setf form (precompiler:precompile-form form nil
+                                                   *compile-file-environment*)))
           ((eq operator 'PROCLAIM)
-           (setf form (precompiler:precompile-form form nil *compile-file-environment*)))
+           (setf form (precompiler:precompile-form form nil
+                                                   *compile-file-environment*)))
           ((and (memq operator '(EXPORT REQUIRE PROVIDE SHADOW))
                 (or (keywordp (second form))
                     (and (listp (second form))
                          (eq (first (second form)) 'QUOTE))))
-           (setf form (precompiler:precompile-form form nil *compile-file-environment*)))
+           (setf form (precompiler:precompile-form form nil
+                                                   *compile-file-environment*)))
           ((eq operator 'IMPORT)
-           (setf form (precompiler:precompile-form form nil *compile-file-environment*))
+           (setf form (precompiler:precompile-form form nil
+                                                   *compile-file-environment*))
            ;; Make sure package prefix is printed when symbols are imported.
            (let ((*package* +keyword-package+))
              (output-form form))
@@ -393,22 +396,16 @@
                 (consp (third form))
                 (eq (%car (third form)) 'FUNCTION)
                 (symbolp (cadr (third form))))
-           (setf form (precompiler:precompile-form form nil *compile-file-environment*)))
-;;;                     ((memq operator '(LET LET*))
-;;;                      (let ((body (cddr form)))
-;;;                        (if (dolist (subform body nil)
-;;;                              (when (and (consp subform) (eq (%car subform) 'DEFUN))
-;;;                                (return t)))
-;;;                            (setf form (convert-toplevel-form form))
-;;;                            (setf form (precompiler:precompile-form form nil)))))
+           (setf form (precompiler:precompile-form form nil
+                                                   *compile-file-environment*)))
           ((eq operator 'mop::ensure-method)
            (setf form (convert-ensure-method form)))
           ((and (symbolp operator)
                 (not (special-operator-p operator))
                 (null (cdr form)))
-           (setf form (precompiler:precompile-form form nil *compile-file-environment*)))
+           (setf form (precompiler:precompile-form form nil
+                                                   *compile-file-environment*)))
           (t
-;;;                      (setf form (precompiler:precompile-form form nil))
            (note-toplevel-form form)
            (setf form (convert-toplevel-form form nil)))))))
   (when (consp form)
@@ -421,7 +418,8 @@
     (let ((*load-truename* *output-file-pathname*)
           (*fasl-loader* (make-fasl-class-loader
                           nil
-                          (concatenate 'string "org.armedbear.lisp." (base-classname))
+                          (concatenate 'string
+                                       "org.armedbear.lisp." (base-classname))
                           nil)))
       (eval form))))
 
