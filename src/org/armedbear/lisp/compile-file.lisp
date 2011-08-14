@@ -570,6 +570,60 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                           nil)))
       (eval form))))
 
+(defun populate-zip-fasl (output-file)
+  (let* ((type ;; Don't use ".zip", it'll result in an extension
+          ;;  with a dot, which is rejected by NAMESTRING
+          (%format nil "~A~A" (pathname-type output-file) "-zip"))
+         (zipfile (namestring
+                   (merge-pathnames (make-pathname :type type)
+                                    output-file)))
+         (pathnames nil)
+         (fasl-loader (namestring (merge-pathnames
+                                   (make-pathname :name (fasl-loader-classname)
+                                                  :type "cls")
+                                   output-file))))
+    (when (probe-file fasl-loader)
+      (push fasl-loader pathnames))
+    (dotimes (i *class-number*)
+      (push (probe-file (compute-classfile-name (1+ i))) pathnames))
+    (setf pathnames (nreverse (remove nil pathnames)))
+    (let ((load-file (merge-pathnames (make-pathname :type "_")
+                                      output-file)))
+      (rename-file output-file load-file)
+      (push load-file pathnames))
+    (zip zipfile pathnames)
+    (dolist (pathname pathnames)
+      (ignore-errors (delete-file pathname)))
+    (rename-file zipfile output-file)))
+
+(defun write-fasl-prologue (stream)
+  (let ((out stream))
+    ;; write header
+    (write "; -*- Mode: Lisp -*-" :escape nil :stream out)
+    (%stream-terpri out)
+    (write (list 'init-fasl :version *fasl-version*) :stream out)
+    (%stream-terpri out)
+    (write (list 'setq '*source* *compile-file-truename*) :stream out)
+    (%stream-terpri out)
+
+    ;; Note: Beyond this point, you can't use DUMP-FORM,
+    ;; because the list of uninterned symbols has been fixed now.
+    (when *fasl-uninterned-symbols*
+      (write (list 'setq '*fasl-uninterned-symbols*
+                   (coerce (mapcar #'car (nreverse *fasl-uninterned-symbols*))
+                           'vector))
+             :stream out :length nil))
+    (%stream-terpri out)
+
+    (when (> *class-number* 0)
+      (write (list 'setq '*fasl-loader*
+                   `(sys::make-fasl-class-loader
+                     nil
+                     ,(concatenate 'string "org.armedbear.lisp." (base-classname))
+                     nil))
+             :stream out))
+    (%stream-terpri out)))
+
 
 
 (defvar *binary-fasls* nil)
@@ -611,7 +665,6 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
              (*class-number* 0)
              (namestring (namestring *compile-file-truename*))
              (start (get-internal-real-time))
-             elapsed
              *fasl-uninterned-symbols*)
         (when *compile-verbose*
           (format t "; Compiling ~A ...~%" namestring))
@@ -629,21 +682,21 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                   *forms-for-output*)
               (jvm::with-saved-compiler-policy
                 (jvm::with-file-compilation
-                    (handler-bind ((style-warning 
-                                    #'(lambda (c)
-                                        (setf warnings-p t)
-                                        ;; let outer handlers do their thing
-                                        (signal c)
-                                        ;; prevent the next handler
-                                        ;; from running: we're a
-                                        ;; WARNING subclass
-                                        (continue)))
-                                   ((or warning 
-                                        compiler-error)
-                                    #'(lambda (c)
-                                        (declare (ignore c))
-                                        (setf warnings-p t
-                                              failure-p t))))
+                    (handler-bind
+                        ((style-warning 
+                          #'(lambda (c)
+                              (setf warnings-p t)
+                              ;; let outer handlers do their thing
+                              (signal c)
+                              ;; prevent the next handler
+                              ;; from running: we're a
+                              ;; WARNING subclass
+                              (continue)))
+                         ((or warning compiler-error)
+                          #'(lambda (c)
+                              (declare (ignore c))
+                              (setf warnings-p t
+                                    failure-p t))))
                       (loop
                          (let* ((*source-position* (file-position in))
                                 (jvm::*source-line-number* (stream-line-number in))
@@ -659,9 +712,6 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
           (with-open-file (out temp-file2 :direction :output
                                :if-does-not-exist :create
                                :if-exists :supersede)
-            ;; write header
-            (write "; -*- Mode: Lisp -*-" :escape nil :stream out)
-            (%stream-terpri out)
             (let ((*package* (find-package '#:cl))
                   (*print-fasl* t)
                   (*print-array* t)
@@ -695,72 +745,22 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
               ;;        (*read-default-float-format* 'single-float)
               ;;        (*readtable* (copy-readtable nil))
 
-              (write (list 'init-fasl :version *fasl-version*)
-                     :stream out)
-              (%stream-terpri out)
-              (write (list 'setq '*source* *compile-file-truename*)
-                     :stream out)
-              (%stream-terpri out)
-              ;; Note: Beyond this point, you can't use DUMP-FORM,
-              ;; because the list of uninterned symbols has been fixed now.
-              (when *fasl-uninterned-symbols*
-                (write (list 'setq '*fasl-uninterned-symbols*
-                             (coerce (mapcar #'car
-                                             (nreverse *fasl-uninterned-symbols*))
-                                     'vector))
-                       :stream out
-                       :length nil))
-              (%stream-terpri out)
-
-              (when (> *class-number* 0)
-                (write (list 'setq '*fasl-loader*
-                             `(sys::make-fasl-class-loader
-                               nil
-                               ,(concatenate 'string "org.armedbear.lisp." (base-classname))
-                               nil)) :stream out))
-              (%stream-terpri out))
-
-
-            ;; copy remaining content
-            (loop for line = (read-line in nil :eof)
-               while (not (eq line :eof))
-               do (write-line line out))))
+              (write-fasl-prologue out)
+              ;; copy remaining content
+              (loop for line = (read-line in nil :eof)
+                 while (not (eq line :eof))
+                 do (write-line line out)))))
         (delete-file temp-file)
         (remove-zip-cache-entry output-file) ;; Necessary under windows
         (rename-file temp-file2 output-file)
 
         (when *compile-file-zip*
-          (let* ((type ;; Don't use ".zip", it'll result in an extension
-                  ;;  with a dot, which is rejected by NAMESTRING
-                  (%format nil "~A~A" (pathname-type output-file) "-zip"))
-                 (zipfile (namestring
-                           (merge-pathnames (make-pathname :type type)
-                                            output-file)))
-                 (pathnames nil)
-		 (fasl-loader (namestring (merge-pathnames (make-pathname :name (fasl-loader-classname) :type "cls")
-							   output-file))))
-	    (when (probe-file fasl-loader)
-	      (push fasl-loader pathnames))
-            (dotimes (i *class-number*)
-              (let* ((pathname (compute-classfile-name (1+ i))))
-                (when (probe-file pathname)
-                  (push pathname pathnames))))
-            (setf pathnames (nreverse pathnames))
-            (let ((load-file (merge-pathnames (make-pathname :type "_")
-                                              output-file)))
-              (rename-file output-file load-file)
-              (push load-file pathnames))
-            (zip zipfile pathnames)
-            (dolist (pathname pathnames)
-              (let ((truename (probe-file pathname)))
-                (when truename
-                  (delete-file truename))))
-            (rename-file zipfile output-file)))
+          (populate-zip-fasl output-file))
 
-        (setf elapsed (/ (- (get-internal-real-time) start) 1000.0))
         (when *compile-verbose*
           (format t "~&; Wrote ~A (~A seconds)~%"
-                  (namestring output-file) elapsed))))
+                  (namestring output-file)
+                  (/ (- (get-internal-real-time) start) 1000.0)))))
     (values (truename output-file) warnings-p failure-p)))
 
 (defun compile-file-if-needed (input-file &rest allargs &key force-compile
