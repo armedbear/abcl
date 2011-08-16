@@ -52,8 +52,8 @@ public final class WrongNumberOfArgumentsException extends ProgramError
         // own Java class as a convenience for the implementation.
         super(StandardClass.PROGRAM_ERROR);
         this.operator = operator;
-	this.expectedMinArgs = expectedMinArgs;
-	this.expectedMaxArgs = expectedMaxArgs;
+	this.expectedMinArgs = expectedMin;
+	this.expectedMaxArgs = expectedMax;
         setFormatControl(getMessage());
         setFormatArguments(NIL);
     }
