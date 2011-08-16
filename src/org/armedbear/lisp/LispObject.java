@@ -751,7 +751,7 @@ public class LispObject //extends Lisp
   
   public String printObject()
   {
-    return toString();
+      return unreadableString(toString(), false);
   }
 
   /** Calls unreadableString(String s, boolean identity) with a default
