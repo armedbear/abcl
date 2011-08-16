@@ -71,4 +71,15 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
   stream)
                 
                     
-                    
+
+(deftest bugs.readtable-case.1 
+  (let (original-case result)
+    (setf original-case (readtable-case *readtable*)
+          (readtable-case *readtable*) :invert
+          result (list (string (read-from-string "lower"))
+                       (string (read-from-string "UPPER"))
+                       (string (read-from-string "#:lower"))
+                       (string (read-from-string "#:UPPER")))
+          (readtable-case *readtable*) original-case)
+    (values-list result))
+  "LOWER" "upper" "LOWER" "upper")

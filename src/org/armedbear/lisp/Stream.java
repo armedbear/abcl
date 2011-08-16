@@ -545,15 +545,15 @@ public class Stream extends StructureObject {
     public LispObject readSymbol() {
         final Readtable rt =
             (Readtable) Symbol.CURRENT_READTABLE.symbolValue(LispThread.currentThread());
-        StringBuilder sb = new StringBuilder();
-        _readToken(sb, rt);
-        return new Symbol(sb.toString());
+        return readSymbol(rt);
     }
 
     public LispObject readSymbol(Readtable rt) {
-        StringBuilder sb = new StringBuilder();
-        _readToken(sb, rt);
-        return new Symbol(sb.toString());
+        final StringBuilder sb = new StringBuilder();
+        final BitSet flags = _readToken(sb, rt);
+        return new Symbol(rt.getReadtableCase() == Keyword.INVERT
+                          ? invert(sb.toString(), flags)
+                          : sb.toString());
     }
 
     public LispObject readStructure(ReadtableAccessor rta) {
