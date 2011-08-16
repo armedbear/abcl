@@ -748,6 +748,11 @@ public class LispObject //extends Lisp
           thread.resetSpecialBindings(mark);
       }
   }
+
+  public String toString()
+  {
+      return princToString();
+  }
   
   public String printObject()
   {
