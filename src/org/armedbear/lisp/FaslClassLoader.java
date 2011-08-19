@@ -33,9 +33,9 @@
 
 package org.armedbear.lisp;
 
+import java.io.InputStream;
 import static org.armedbear.lisp.Lisp.*;
 
-import java.util.*;
 
 public class FaslClassLoader extends JavaClassLoader {
 
@@ -87,6 +87,27 @@ public class FaslClassLoader extends JavaClassLoader {
             if(e instanceof ControlTransfer) { throw (ControlTransfer) e; }
             throw new ClassNotFoundException("Function class not found: " + name, e);
         }
+    }
+
+    @Override
+    public InputStream getResourceAsStream(String resourceName) {
+      final LispThread thread = LispThread.currentThread();
+
+      Pathname name = new Pathname(resourceName.substring("org/armedbear/lisp/".length()));
+      LispObject truenameFasl = Symbol.LOAD_TRUENAME_FASL.symbolValue(thread);
+      LispObject truename = Symbol.LOAD_TRUENAME.symbolValue(thread);
+      
+      if (truenameFasl instanceof Pathname) {
+          return Pathname.mergePathnames(name, (Pathname)truenameFasl, Keyword.NEWEST)
+                    .getInputStream();
+      } else if (truename instanceof Pathname) {
+          return Pathname.mergePathnames(name, (Pathname) truename, Keyword.NEWEST)
+                  .getInputStream();
+      } else if (!Pathname.truename(name).equals(NIL)) {
+              return name.getInputStream();
+      }
+
+      return null;
     }
 
     public byte[] getFunctionClassBytes(String name) {

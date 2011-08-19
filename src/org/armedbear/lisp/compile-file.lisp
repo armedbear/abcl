@@ -585,7 +585,15 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (when (probe-file fasl-loader)
       (push fasl-loader pathnames))
     (dotimes (i *class-number*)
-      (push (probe-file (compute-classfile-name (1+ i))) pathnames))
+      (let ((truename (probe-file (compute-classfile-name (1+ i)))))
+        (when truename
+          (push truename pathnames)
+          (dolist (resource (directory
+                             (make-pathname :name (format nil "~A_*"
+                                                           (pathname-name truename))
+                                            :type "clc"
+                                            :defaults truename)))
+            (push resource pathnames)))))
     (setf pathnames (nreverse (remove nil pathnames)))
     (let ((load-file (merge-pathnames (make-pathname :type "_")
                                       output-file)))

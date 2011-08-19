@@ -198,6 +198,7 @@ using `make-unique-class-name'."
   children          ; List of local functions
                     ; defined with FLET, LABELS or LAMBDA
   blocks            ; TAGBODY, PROGV, BLOCK, etc. blocks
+  (next-resource 0)
   argument-register
   closure-register
   environment-register

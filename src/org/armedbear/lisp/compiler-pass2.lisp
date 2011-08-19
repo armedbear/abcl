@@ -1181,11 +1181,14 @@ extend the class any further."
   (emit-invokestatic +lisp+ "readObjectFromString"
                      (list +java-string+) +lisp-object+))
 
-(defun external-constant-resource-name (class)
-  (declare (ignore class))
-  ;; dummy implementation to suppress compiler warnings
-  ;; which break abcl compilation
-  )
+(defun compiland-external-constant-resource-name (compiland)
+  (let ((resource-number (compiland-next-resource compiland))
+        (pathname (abcl-class-file-pathname (compiland-class-file compiland))))
+    (incf (compiland-next-resource compiland))
+    (make-pathname :name (format nil "~A_~D"
+                                 (pathname-name pathname) resource-number)
+                   :type "clc"
+                   :defaults pathname)))
 
 (defun serialize-object (object)
   "Generate code to restore a serialized object which is not of any
@@ -1198,10 +1201,19 @@ of the other types."
        (emit-invokestatic +lisp+ "readObjectFromString"
                           (list +java-string+) +lisp-object+))
       (t
-       (assert (not "Serialized representation too long to be stored in a string"))
        (aload 0) ;; this
        (emit-invokevirtual +java-object+ "getClass" '() +java-class+)
-       (emit 'ldc (pool-string (external-constant-resource-name *this-class*)))
+       (let ((pathname
+              (compiland-external-constant-resource-name *current-compiland*)))
+         (with-open-file (f pathname
+                            :direction :output
+                            :if-exists :supersede
+                            :if-does-not-exist :create)
+           (write-string s f))
+         (emit 'ldc (pool-string
+                     (namestring (make-pathname :name (pathname-name pathname)
+                                                :type (pathname-type pathname)
+                                                :version nil)))))
        (emit-invokevirtual +java-class+ "getResourceAsStream"
                            (list +java-string+)
                            +java-io-input-stream+)
