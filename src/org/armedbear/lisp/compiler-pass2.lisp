@@ -1169,10 +1169,14 @@ extend the class any further."
 
 (defun serialize-string (string)
   "Generate code to restore a serialized string."
-  (emit-new +lisp-simple-string+)
-  (emit 'dup)
-  (emit 'ldc (pool-string string))
-  (emit-invokespecial-init +lisp-simple-string+ (list +java-string+)))
+  (cond
+    ((< (length string) #xFFFF)
+     (emit-new +lisp-simple-string+)
+     (emit 'dup)
+     (emit 'ldc (pool-string string))
+     (emit-invokespecial-init +lisp-simple-string+ (list +java-string+)))
+    (t
+     (serialize-object string))))
 
 (defun serialize-package (pkg)
   "Generate code to restore a serialized package."
