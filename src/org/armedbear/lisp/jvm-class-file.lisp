@@ -130,9 +130,11 @@ initialized from the `java-dotted-name'."
   `(defconstant ,symbol (make-jvm-class-name ,java-dotted-name)
      ,documentation))
 
+(define-class-name +java-class+ "java.lang.Class")
 (define-class-name +java-object+ "java.lang.Object")
 (define-class-name +java-string+ "java.lang.String")
 (define-class-name +java-system+ "java.lang.System")
+(define-class-name +java-io-input-stream+ "java.io.InputStream")
 (define-class-name +lisp-object+ "org.armedbear.lisp.LispObject")
 (defconstant +lisp-object-array+ (class-array +lisp-object+))
 (define-class-name +lisp-simple-string+ "org.armedbear.lisp.SimpleString")

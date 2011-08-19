@@ -51,6 +51,10 @@
 
 (declaim (special *memory-class-loader*))
 
+
+(declaim (inline pool-name pool-name-and-type pool-string
+                 pool-field pool-method pool-int pool-float pool-long
+                 pool-double add-exception-handler))
 (defun pool-name (name)
   (pool-add-utf8 *pool* name))
 
@@ -1177,14 +1181,33 @@ extend the class any further."
   (emit-invokestatic +lisp+ "readObjectFromString"
                      (list +java-string+) +lisp-object+))
 
+(defun external-constant-resource-name (class)
+  (declare (ignore class))
+  ;; dummy implementation to suppress compiler warnings
+  ;; which break abcl compilation
+  )
+
 (defun serialize-object (object)
   "Generate code to restore a serialized object which is not of any
 of the other types."
   (let ((s (with-output-to-string (stream)
              (dump-form object stream))))
-    (emit 'ldc (pool-string s))
-    (emit-invokestatic +lisp+ "readObjectFromString"
-                       (list +java-string+) +lisp-object+)))
+    (cond
+      ((< (length s) #xFFFF)  ;; maximum string size in class file
+       (emit 'ldc (pool-string s))
+       (emit-invokestatic +lisp+ "readObjectFromString"
+                          (list +java-string+) +lisp-object+))
+      (t
+       (assert (not "Serialized representation too long to be stored in a string"))
+       (aload 0) ;; this
+       (emit-invokevirtual +java-object+ "getClass" '() +java-class+)
+       (emit 'ldc (pool-string (external-constant-resource-name *this-class*)))
+       (emit-invokevirtual +java-class+ "getResourceAsStream"
+                           (list +java-string+)
+                           +java-io-input-stream+)
+       (emit-invokestatic +lisp+ "readObjectFromStream"
+                          (list +java-io-input-stream+)
+                          +lisp-object+)))))
 
 (defun serialize-symbol (symbol)
   "Generate code to restore a serialized symbol."
