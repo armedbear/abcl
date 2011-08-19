@@ -1284,12 +1284,11 @@ public final class Lisp
       return null;
   }
 
-  public static final byte[] readFunctionBytes(final Pathname name) {
+  public static byte[] readFunctionBytes(final Pathname name) {
       final LispThread thread = LispThread.currentThread();
       Pathname load = null;
       LispObject truenameFasl = Symbol.LOAD_TRUENAME_FASL.symbolValue(thread);
       LispObject truename = Symbol.LOAD_TRUENAME.symbolValue(thread);
-      Pathname fasl = null;
       if (truenameFasl instanceof Pathname) {
           load = Pathname.mergePathnames(name, (Pathname)truenameFasl, Keyword.NEWEST);
       } else if (truename instanceof Pathname) {
