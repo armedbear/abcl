@@ -34,14 +34,14 @@
 package org.armedbear.lisp;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
 import java.math.BigInteger;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.Hashtable;
 
 public final class Lisp
@@ -1239,7 +1239,18 @@ public final class Lisp
   }
 
   // Used by the compiler.
-  public static final LispObject readObjectFromString(String s)
+  public static LispObject readObjectFromString(String s)
+  {
+      return readObjectFromReader(new StringReader(s));
+  }
+  
+  final static Charset UTF8CHARSET = Charset.forName("UTF-8");
+  public static LispObject readObjectFromStream(InputStream s)
+  {
+      return readObjectFromReader(new InputStreamReader(s));
+  }
+  
+  public static LispObject readObjectFromReader(Reader r)
   {
     LispThread thread = LispThread.currentThread();
     SpecialBindingsMark mark = thread.markSpecialBindings();
@@ -1253,7 +1264,7 @@ public final class Lisp
 
         // No need to bind the default read table, because the default fasl
         // read table is used below
-        return new StringInputStream(s).read(true, NIL, false,
+        return new Stream(Symbol.SYSTEM_STREAM, r).read(true, NIL, false,
                                              LispThread.currentThread(),
                                              Stream.faslReadtable);
     }
@@ -1261,8 +1272,8 @@ public final class Lisp
         thread.resetSpecialBindings(mark);
     }
   }
-
-    @Deprecated
+  
+  @Deprecated
   public static final LispObject loadCompiledFunction(final String namestring)
   {
       Pathname name = new Pathname(namestring);
