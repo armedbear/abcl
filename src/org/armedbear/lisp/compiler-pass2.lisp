@@ -1060,8 +1060,6 @@ representation, based on the derived type of the LispObject."
 				 :void nil :flags '(:public :static))))
     ;; We don't normally need to see debugging output for <clinit>.
     (with-code-to-method (class method)
-      (setf (code-max-locals *current-code-attribute*) 0)
-      (emit 'return)
       method)))
 
 (defvar *source-line-number* nil)
@@ -1073,6 +1071,8 @@ representation, based on the derived type of the LispObject."
 The compiler calls this function to indicate it doesn't want to
 extend the class any further."
   (with-code-to-method (class (abcl-class-file-constructor class))
+    (emit 'return))
+  (with-code-to-method (class (abcl-class-file-static-initializer class))
     (emit 'return))
   (finalize-class-file class)
   (write-class-file class stream))
@@ -1307,7 +1307,7 @@ the constructor if `*declare-inline*' is non-nil.
       (cond
         ((not *file-compilation*)
          (with-code-to-method
-             (*class-file* (abcl-class-file-constructor *class-file*))
+             (*class-file* (abcl-class-file-static-initializer *class-file*))
            (remember field-name object)
            (emit 'ldc (pool-string field-name))
            (emit-invokestatic +lisp+ "recall"
@@ -1320,7 +1320,7 @@ the constructor if `*declare-inline*' is non-nil.
          (emit-putstatic *this-class* field-name field-type))
         (t
          (with-code-to-method
-             (*class-file* (abcl-class-file-constructor *class-file*))
+             (*class-file* (abcl-class-file-static-initializer *class-file*))
            (funcall dispatch-fn object)
            (emit-putstatic *this-class* field-name field-type))))
 
@@ -7076,7 +7076,6 @@ We need more thought here.
            (make-constructor class-file (compiland-name compiland) args)))
       (setf (abcl-class-file-constructor class-file) constructor)
       (class-add-method class-file constructor))
-    #+enable-when-generating-clinit
     (let ((clinit (make-static-initializer class-file)))
       (setf (abcl-class-file-static-initializer class-file) clinit)
       (class-add-method class-file clinit))
