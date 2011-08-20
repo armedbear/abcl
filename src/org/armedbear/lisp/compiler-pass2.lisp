@@ -6383,6 +6383,10 @@ We need more thought here.
                                      (list +lisp-symbol+ +lisp-object+)
                                      +lisp-object+)))
             (t
+             (unless (symbolp name)
+               (error 'program-error
+                      "First argument to SETQ is not a symbol in ~S"
+                      form))
              (with-operand-accumulation
                  ((emit-thread-operand)
                   (emit-load-externalized-object-operand name)
