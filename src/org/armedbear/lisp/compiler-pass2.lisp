@@ -3005,6 +3005,14 @@ given a specific common representation.")
     (emit-push-current-thread)
     (emit-getfield +lisp-thread+ "_values" +lisp-object-array+)
     (astore values-register)
+
+    ;; we need to clear the values again:
+    ;;  some parts will consider a non-null _values array
+    ;;  by itself a legitimate return value (multiple values)
+    ;;  however, if we have a non-local return after the previous form
+    ;;  set the values array, other code may pick up the values instead
+    ;;  of the actual return code. (Fixes MULTIPLE-VALUE-PROG1.10)
+    (emit-clear-values)
     (compile-progn-body subforms nil nil)
     ;; Restore multiple values returned by first subform.
     (emit-push-current-thread)
