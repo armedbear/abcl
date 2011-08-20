@@ -43,6 +43,7 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class Lisp
 {
@@ -2113,15 +2114,15 @@ public final class Lisp
   }
 
   // The compiler's object table.
-  static final Hashtable<String,LispObject> objectTable =
-          new Hashtable<String,LispObject>();
+  static final ConcurrentHashMap<String,LispObject> objectTable =
+          new ConcurrentHashMap<String,LispObject>();
 
-  public static final LispObject recall(String key)
+  public static LispObject recall(String key)
   {
     return objectTable.remove(key);
   }
 
-  public static final LispObject recall(SimpleString key)
+  public static LispObject recall(SimpleString key)
   {
     return objectTable.remove(key.getStringValue());
   }
