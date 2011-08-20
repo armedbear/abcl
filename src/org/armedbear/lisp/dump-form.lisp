@@ -120,6 +120,12 @@
         (t
          (%stream-output-object object stream))))
 
+(defvar *the-fasl-printer-readtable*
+  (copy-readtable (get-fasl-readtable))
+  "This variable holds a copy of the FASL readtable which we need to bind
+below, in order to prevent the current readtable from influencing the content
+being written to the FASL: the READTABLE-CASE setting influences symbol printing.")
+
 (declaim (ftype (function (t stream) t) dump-form))
 (defun dump-form (form stream)
   (let ((*print-fasl* t)
@@ -142,6 +148,7 @@
         (*print-readably* t)
         (*print-right-margin* nil)
         (*print-structure* t)
+        (*readtable* *the-fasl-printer-readtable*)
 
         ;; make sure to write all floats with their exponent marker:
         ;; the dump-time default may not be the same at load-time

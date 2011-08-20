@@ -5847,4 +5847,17 @@ public final class Primitives {
         }
     };
 
+    private static final Primitive GET_FASL_READTABLE
+            = new pf_get_fasl_readtable();
+    private static class pf_get_fasl_readtable extends Primitive {
+        pf_get_fasl_readtable() {
+            super("get-fasl-readtable", PACKAGE_SYS, false);
+        }
+        
+        @Override
+        public LispObject execute() {
+            return FaslReadtable.getInstance();
+        }
+    }
+    
 }
