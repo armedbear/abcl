@@ -749,11 +749,6 @@ public class LispObject //extends Lisp
       }
   }
 
-  public String toString()
-  {
-      return princToString();
-  }
-  
   public String printObject()
   {
       return unreadableString(toString(), false);
