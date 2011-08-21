@@ -1173,6 +1173,35 @@ where each of the vars returned is a list with these elements:
   "Dummy FUNCALL wrapper to force p1 not to optimize the call."
   (apply fn args))
 
+(defun p1-variable-reference (var)
+  (let ((variable (find-visible-variable var)))
+    (when (null variable)
+      (unless (or (special-variable-p var)
+                  (memq var *undefined-variables*))
+        (compiler-style-warn
+         "Undefined variable ~S assumed special" var)
+        (push var *undefined-variables*))
+      (setf variable (make-variable :name var :special-p t))
+      (push variable *visible-variables*))
+    (let ((ref (make-var-ref variable)))
+      (unless (variable-special-p variable)
+        (when (variable-ignore-p variable)
+          (compiler-style-warn
+           "Variable ~S is read even though it was declared to be ignored."
+           (variable-name variable)))
+        (push ref (variable-references variable))
+        (incf (variable-reads variable))
+        (cond
+          ((eq (variable-compiland variable) *current-compiland*)
+           (dformat t "p1: read ~S~%" var))
+          (t
+           (dformat t "p1: non-local read ~S variable-compiland = ~S current compiland = ~S~%"
+                    var
+                    (compiland-name (variable-compiland variable))
+                    (compiland-name *current-compiland*))
+           (setf (variable-used-non-locally-p variable) t))))
+      ref)))
+
 (defknown p1 (t) t)
 (defun p1 (form)
   (cond
@@ -1193,34 +1222,7 @@ where each of the vars returned is a list with these elements:
                      (pathnamep value))))
           (setf form value))
          (t
-          (let ((variable (find-visible-variable form)))
-            (when (null variable)
-              (unless (or (special-variable-p form)
-                          (memq form *undefined-variables*))
-                (compiler-style-warn
-                 "Undefined variable ~S assumed special" form)
-                (push form *undefined-variables*))
-              (setf variable (make-variable :name form :special-p t))
-              (push variable *visible-variables*))
-            (let ((ref (make-var-ref variable)))
-              (unless (variable-special-p variable)
-                (when (variable-ignore-p variable)
-                  (compiler-style-warn
-                   "Variable ~S is read even though it was declared to be ignored."
-                   (variable-name variable)))
-                (push ref (variable-references variable))
-                (incf (variable-reads variable))
-                (cond
-                  ((eq (variable-compiland variable) *current-compiland*)
-                   (dformat t "p1: read ~S~%" form))
-                  (t
-                   (dformat t "p1: non-local read ~S variable-compiland = ~S current compiland = ~S~%"
-                            form
-                            (compiland-name (variable-compiland variable))
-                            (compiland-name *current-compiland*))
-                   (setf (variable-used-non-locally-p variable) t))))
-              (setf form ref)))
-          form))))
+          (p1-variable-reference form)))))
     ((atom form)
      form)
     (t
