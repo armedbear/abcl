@@ -1228,6 +1228,11 @@ where each of the vars returned is a list with these elements:
            handler)
        (cond
          ((symbolp op)
+          (when (find-local-function op)
+            ;; local functions shadow macros and functions in
+            ;; the global environment as well as compiler macros
+            (return-from p1
+              (p1-function-call form)))
           (when (compiler-macro-function op)
             (unless (notinline-p op)
               (multiple-value-bind (expansion expanded-p)
