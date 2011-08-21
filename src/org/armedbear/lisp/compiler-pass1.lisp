@@ -1177,75 +1177,79 @@ where each of the vars returned is a list with these elements:
 (defun p1 (form)
   (cond ((symbolp form)
          (let (value)
-           (cond ((null form)
-                  form)
-                 ((eq form t)
-                  form)
-                 ((keywordp form)
-                  form)
-                 ((and (constantp form)
-                       (progn
-                         (setf value (symbol-value form))
-                         (or (numberp value)
-                             (stringp value)
-                             (pathnamep value))))
-                  (setf form value))
-                 (t
-                  (let ((variable (find-visible-variable form)))
-                    (when (null variable)
-		      (unless (or (special-variable-p form)
-                                  (memq form *undefined-variables*))
-			(compiler-style-warn
-                         "Undefined variable ~S assumed special" form)
-			(push form *undefined-variables*))
-                      (setf variable (make-variable :name form :special-p t))
-                      (push variable *visible-variables*))
-                    (let ((ref (make-var-ref variable)))
-                      (unless (variable-special-p variable)
-                        (when (variable-ignore-p variable)
-                          (compiler-style-warn
-                           "Variable ~S is read even though it was declared to be ignored."
-                           (variable-name variable)))
-                        (push ref (variable-references variable))
-                        (incf (variable-reads variable))
-                        (cond ((eq (variable-compiland variable) *current-compiland*)
-                               (dformat t "p1: read ~S~%" form))
-                              (t
-                               (dformat t "p1: non-local read ~S variable-compiland = ~S current compiland = ~S~%"
-                                        form
-                                        (compiland-name (variable-compiland variable))
-                                        (compiland-name *current-compiland*))
-                               (setf (variable-used-non-locally-p variable) t))))
-                      (setf form ref)))
-                  form))))
+           (cond
+             ((null form)
+              form)
+             ((eq form t)
+              form)
+             ((keywordp form)
+              form)
+             ((and (constantp form)
+                   (progn
+                     (setf value (symbol-value form))
+                     (or (numberp value)
+                         (stringp value)
+                         (pathnamep value))))
+              (setf form value))
+             (t
+              (let ((variable (find-visible-variable form)))
+                (when (null variable)
+                  (unless (or (special-variable-p form)
+                              (memq form *undefined-variables*))
+                    (compiler-style-warn
+                     "Undefined variable ~S assumed special" form)
+                    (push form *undefined-variables*))
+                  (setf variable (make-variable :name form :special-p t))
+                  (push variable *visible-variables*))
+                (let ((ref (make-var-ref variable)))
+                  (unless (variable-special-p variable)
+                    (when (variable-ignore-p variable)
+                      (compiler-style-warn
+                       "Variable ~S is read even though it was declared to be ignored."
+                       (variable-name variable)))
+                    (push ref (variable-references variable))
+                    (incf (variable-reads variable))
+                    (cond
+                      ((eq (variable-compiland variable) *current-compiland*)
+                       (dformat t "p1: read ~S~%" form))
+                      (t
+                       (dformat t "p1: non-local read ~S variable-compiland = ~S current compiland = ~S~%"
+                                form
+                                (compiland-name (variable-compiland variable))
+                                (compiland-name *current-compiland*))
+                       (setf (variable-used-non-locally-p variable) t))))
+                  (setf form ref)))
+              form))))
         ((atom form)
          form)
         (t
          (let ((op (%car form))
                handler)
-           (cond ((symbolp op)
-                  (when (compiler-macro-function op)
-                    (unless (notinline-p op)
-                      (multiple-value-bind (expansion expanded-p)
-                          (compiler-macroexpand form)
-                        ;; Fall through if no change...
-                        (when expanded-p
-                          (return-from p1 (p1 expansion))))))
-                  (cond ((setf handler (get op 'p1-handler))
-                         (funcall handler form))
-                        ((macro-function op *compile-file-environment*)
-                         (p1 (macroexpand form *compile-file-environment*)))
-                        ((special-operator-p op)
-                         (compiler-unsupported "P1: unsupported special operator ~S" op))
-                        (t
-                         (p1-function-call form))))
-                 ((and (consp op) (eq (%car op) 'LAMBDA))
-		  (let ((maybe-optimized-call (rewrite-function-call form)))
-		    (if (eq maybe-optimized-call form)
-			(p1 `(%funcall (function ,op) ,@(cdr form)))
-			(p1 maybe-optimized-call))))
-                 (t
-                  form))))))
+           (cond
+             ((symbolp op)
+              (when (compiler-macro-function op)
+                (unless (notinline-p op)
+                  (multiple-value-bind (expansion expanded-p)
+                      (compiler-macroexpand form)
+                    ;; Fall through if no change...
+                    (when expanded-p
+                      (return-from p1 (p1 expansion))))))
+              (cond
+                ((setf handler (get op 'p1-handler))
+                 (funcall handler form))
+                ((macro-function op *compile-file-environment*)
+                 (p1 (macroexpand form *compile-file-environment*)))
+                ((special-operator-p op)
+                 (compiler-unsupported "P1: unsupported special operator ~S" op))
+                (t
+                 (p1-function-call form))))
+             ((and (consp op) (eq (%car op) 'LAMBDA))
+              (let ((maybe-optimized-call (rewrite-function-call form)))
+                (if (eq maybe-optimized-call form)
+                    (p1 `(%funcall (function ,op) ,@(cdr form)))
+                    (p1 maybe-optimized-call))))
+             (t
+              form))))))
 
 (defun install-p1-handler (symbol handler)
   (setf (get symbol 'p1-handler) handler))
