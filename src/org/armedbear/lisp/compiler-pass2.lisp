@@ -3124,23 +3124,23 @@ given a specific common representation.")
            (emit-push-nil)
            (emit-move-from-stack target)))
         (t
-         (let ((clear-values nil)
-               (tail body))
-           (loop
-             (let ((form (car tail)))
-               (cond ((null (cdr tail))
-                      ;; Last form.
-                      (when clear-values
-                        (emit-clear-values))
-                      (compile-form form target representation)
-                      (return))
-                     (t
-                      ;; Not the last form.
-                      (compile-form form nil nil)
-                      (unless clear-values
-                        (unless (single-valued-p form)
-                          (setq clear-values t)))))
-               (setq tail (cdr tail)))))))
+         (loop
+            with clear-values = nil
+            for tail on body
+            for form = (car tail)
+            do (cond
+                 ((null (cdr tail))
+                  ;; Last form.
+                  (when clear-values
+                    (emit-clear-values))
+                  (compile-form form target representation)
+                  (return))
+                 (t
+                  ;; Not the last form.
+                  (compile-form form nil nil)
+                  (unless clear-values
+                    (unless (single-valued-p form)
+                      (setq clear-values t))))))))
   t)
 
 (defun restore-dynamic-environment (register)
