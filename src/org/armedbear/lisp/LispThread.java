@@ -41,6 +41,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import java.text.MessageFormat;
+
 public final class LispThread extends LispObject
 {
     static boolean use_fast_calls = false;
@@ -98,10 +100,17 @@ public final class LispThread extends LispObject
                 catch (ThreadDestroyed ignored) {
                       // Might happen.
                 }
+                catch (ProcessingTerminated e) {
+                    System.exit(e.getStatus());
+                }
                 catch (Throwable t) { // any error: process thread interrupts
                     if (isInterrupted()) {
                         processThreadInterrupts();
                     }
+                    String msg 
+                        = MessageFormat.format("Ignoring uncaught exception {0}.",
+                                               t.toString());
+                    Debug.warn(msg);
                 }
                 finally {
                     // make sure the thread is *always* removed from the hash again
