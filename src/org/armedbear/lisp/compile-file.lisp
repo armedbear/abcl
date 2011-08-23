@@ -595,9 +595,11 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
           ;;; XXX it would be better to just use the recorded number
           ;;; of class constants, but probing for the first at least
           ;;; makes this subjectively bearable.
-          (when (probe-file (make-pathname :name (format nil "~A_1" (pathname-name truename))
-                                           :type "clc"
-                                           :defaults truename))
+          (when (probe-file
+                 (make-pathname :name (format nil "~A_0"
+                                              (pathname-name truename))
+                                :type "clc"
+                                :defaults truename))
             (dolist (resource (directory
                                (make-pathname :name (format nil "~A_*"
                                                             (pathname-name truename))
