@@ -271,13 +271,17 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                           (format *error-output* "; Unable to compile method~%"))))))))))
 
 
+    (when compile-time-too
+      (let* ((copy-form (copy-tree form))
+             ;; ### Ideally, the precompiler would leave the forms alone
+             ;;  and copy them where required, instead of forcing us to
+             ;;  do a deep copy in advance
+             (precompiled-form (precompiler:precompile-form copy-form nil
+                                                            *compile-file-environment*)))
+        (eval precompiled-form)))
     (convert-ensure-method form :function)
     (convert-ensure-method form :fast-function))
-  (let ((form (precompiler:precompile-form form nil
-                                           *compile-file-environment*)))
-    (when compile-time-too
-      (eval form))
-    form))
+  (precompiler:precompile-form form nil *compile-file-environment*))
 
 (declaim (ftype (function (t t t) t) process-toplevel-defvar/defparameter))
 (defun process-toplevel-defvar/defparameter (form stream compile-time-too)
