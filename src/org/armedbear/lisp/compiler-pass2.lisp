@@ -1392,7 +1392,7 @@ the constructor if `*declare-inline*' is non-nil.
                       (local-function-compiland local-function))))
         (field-name (local-function-field local-function)))
     (with-code-to-method
-        (*class-file* (abcl-class-file-constructor *class-file*))
+        (*class-file* (abcl-class-file-static-initializer *class-file*))
       ;; fixme *declare-inline*
       (declare-field field-name +lisp-object+)
       (emit-new class-name)
@@ -1416,7 +1416,7 @@ the constructor if `*declare-inline*' is non-nil.
     (with-code-to-method
         (*class-file*
          (if *declare-inline* *method*
-             (abcl-class-file-constructor *class-file*)))
+             (abcl-class-file-static-initializer *class-file*)))
       ;; strings may contain evaluated bits which may depend on
       ;; previous statements
       (declare-field g +lisp-object+)
@@ -1432,7 +1432,7 @@ the constructor if `*declare-inline*' is non-nil.
      (with-code-to-method
          (*class-file*
           (if *declare-inline* *method*
-              (abcl-class-file-constructor *class-file*)))
+              (abcl-class-file-static-initializer *class-file*)))
        ;; The readObjectFromString call may require evaluation of
        ;; lisp code in the string (think #.() syntax), of which the outcome
        ;; may depend on something which was declared inline
@@ -1455,7 +1455,7 @@ The field type of the object is specified by OBJ-REF."
     ;; fixme *declare-inline*?
     (remember g obj)
     (with-code-to-method
-        (*class-file* (abcl-class-file-constructor *class-file*))
+        (*class-file* (abcl-class-file-static-initializer *class-file*))
       (declare-field g +lisp-object+)
       (emit 'ldc (pool-string g))
       (emit-invokestatic +lisp+ "recall"
@@ -4149,6 +4149,11 @@ given a specific common representation.")
           (emit-load-local-function local-function)
           (emit-move-from-stack target))
          ((inline-ok name)
+          ;; ### FASLATONCE: when compiling fasl functions after the
+          ;; full fasl has been processed, forward referenced functions
+          ;; may not be available during the load process
+          ;; This case is particularly triggered with circular referencing
+          ;; functions, both marked as 'notinline'
           (emit-getstatic *this-class*
                 (declare-function name) +lisp-object+)
           (emit-move-from-stack target))
@@ -4166,6 +4171,11 @@ given a specific common representation.")
           (emit-load-local-function local-function))
          ((and (member name *functions-defined-in-current-file* :test #'equal)
                (not (notinline-p name)))
+          ;; ### FASLATONCE: when compiling fasl functions after the
+          ;; full fasl has been processed, forward referenced functions
+          ;; may not be available during the load process
+          ;; This case is particularly triggered with circular referencing
+          ;; functions, both marked as 'notinline'
           (emit-getstatic *this-class*
                 (declare-setf-function name) +lisp-object+)
           (emit-move-from-stack target))
