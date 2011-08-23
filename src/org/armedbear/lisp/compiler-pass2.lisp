@@ -1057,7 +1057,7 @@ representation, based on the derived type of the LispObject."
 (defun make-static-initializer (class)
   (let ((*compiler-debug* nil)
         (method (make-jvm-method :static-initializer
-				 :void nil :flags '(:public :static))))
+                                 :void nil :flags '(:public :static))))
     ;; We don't normally need to see debugging output for <clinit>.
     (with-code-to-method (class method)
       method)))
@@ -1205,8 +1205,8 @@ of the other types."
        (emit-invokestatic +lisp+ "readObjectFromString"
                           (list +java-string+) +lisp-object+))
       (t
-       (aload 0) ;; this
-       (emit-invokevirtual +java-object+ "getClass" '() +java-class+)
+        ;; get a 'class literal' for this class
+       (emit 'ldc_w (pool-class *this-class*))
        (let ((pathname
               (compiland-external-constant-resource-name *current-compiland*)))
          (with-open-file (f pathname

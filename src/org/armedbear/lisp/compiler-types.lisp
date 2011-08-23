@@ -226,7 +226,7 @@
          (values (subtypep compiler-type typespec)))))
 
 (declaim (type hash-table *function-result-types*))
-(defconst *function-result-types* (make-hash-table :test 'equal))
+(defvar *function-result-types* (make-hash-table :test 'equal))
 
 (declaim (ftype (function (t) t) function-result-type))
 (defun function-result-type (name)

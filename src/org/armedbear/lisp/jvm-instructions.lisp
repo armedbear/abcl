@@ -660,6 +660,13 @@
         (inst 19 (u2 (car args))) ; LDC_W
         (inst 18 args))))
 
+;; ldc_w
+(define-resolver 19 (instruction)
+  (let* ((args (instruction-args instruction)))
+    (unless (= (length args) 1)
+      (error "Wrong number of args for LDC_W."))
+    (inst 19 (u2 (car args)))))
+
 ;; ldc2_w
 (define-resolver 20 (instruction)
   (let* ((args (instruction-args instruction)))

@@ -698,8 +698,11 @@ The class can't be modified after finalization."
 
   ;; header
   (write-u4 #xCAFEBABE stream)
-  (write-u2 3 stream)
-  (write-u2 45 stream)
+  (write-u2 0 stream)
+  (write-u2 49 stream)  ;; our <clinit> methods use class literals
+  ;; which require a high enough class file format
+  ;; we used to have 45, but the LDC instruction doesn't support
+  ;; class literals in that version... (49 == Java 1.5)
 
    ;; constants pool
   (write-constants (class-file-constants class) stream)
@@ -714,7 +717,7 @@ The class can't be modified after finalization."
 
   ;; interfaces
   (if (class-file-interfaces class)
-      (progn 
+      (progn
         (write-u2 (length (class-file-interfaces class)) stream)
         (dolist (interface-ref (class-file-interfaces class))
           (write-u2 interface-ref stream)))
