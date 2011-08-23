@@ -31,37 +31,35 @@
 
 (in-package "JVM")
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "LOOP")
-  (require "FORMAT")
-  (require "CLOS")
-  (require "PRINT-OBJECT")
-  (require "COMPILER-TYPES")
-  (require "KNOWN-FUNCTIONS")
-  (require "KNOWN-SYMBOLS")
-  (require "DUMP-FORM")
-  (require "OPCODES")
-  (require "JAVA"))
+(require "LOOP")
+(require "FORMAT")
+(require "CLOS")
+(require "PRINT-OBJECT")
+(require "COMPILER-TYPES")
+(require "KNOWN-FUNCTIONS")
+(require "KNOWN-SYMBOLS")
+(require "DUMP-FORM")
+(require "OPCODES")
+(require "JAVA")
 
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun generate-inline-expansion (name lambda-list body
-				    &optional (args nil args-p))
-    "Generates code that can be used to expand a named local function inline. It can work either per-function (no args provided) or per-call."
-    (if args-p
-	(expand-function-call-inline
-	 nil lambda-list
-	 (copy-tree `((block ,name ,@body)))
-	 args)
-	(cond ((intersection lambda-list
-			     '(&optional &rest &key &allow-other-keys &aux)
-			     :test #'eq)
-	       nil)
-	      (t
-	       (setf body (copy-tree body))
-	       (list 'LAMBDA lambda-list
-		     (list* 'BLOCK name body))))))
-    ) ; EVAL-WHEN
+(defun generate-inline-expansion (name lambda-list body
+                                  &optional (args nil args-p))
+  "Generates code that can be used to expand a named local function inline.
+It can work either per-function (no args provided) or per-call."
+  (if args-p
+      (expand-function-call-inline nil lambda-list
+                                   (copy-tree `((block ,name ,@body)))
+                                   args)
+      (cond ((intersection lambda-list
+                           '(&optional &rest &key &allow-other-keys &aux)
+                           :test #'eq)
+             nil)
+            (t
+             (setf body (copy-tree body))
+             (list 'LAMBDA lambda-list
+                   (list* 'BLOCK name body))))))
+
 
 ;;; Pass 1.
 
