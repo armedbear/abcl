@@ -3647,7 +3647,7 @@ given a specific common representation.")
              (compile-form subform nil nil)
              (unless must-clear-values
                (setf must-clear-values
-                     (single-valued-p subform))))))
+                     (not (single-valued-p subform)))))))
     (label END-BLOCK)
     (emit 'goto EXIT)
     (when (tagbody-non-local-go-p block)
