@@ -444,6 +444,7 @@
   :results #.most-positive-java-long)
 
 ;;; ticket #147
+#+abcl
 (deftest compiler.1 
     (let ((tmpfile (ext::make-temp-file))
           (forms `((in-package :cl-user)
@@ -459,6 +460,7 @@
   t)
 
 ;;; ticket #156
+#+abcl
 (deftest compiler.2
     (let ((tmpfile (ext::make-temp-file))
           (line "(defconstant a #.(make-array '(8 256) 
