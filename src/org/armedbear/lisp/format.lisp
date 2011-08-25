@@ -1073,7 +1073,9 @@
 	   (after (nthcdr (1+ posn) directives)))
       (values
        (expand-bind-defaults () params
-                             `(let ((stream (sys::make-case-frob-stream stream
+                             `(let ((stream (sys::make-case-frob-stream (if (typep stream 'xp::xp-structure)
+                                                                             (xp::base-stream stream)
+                                                                             stream)
                                                                         ,(if colonp
                                                                              (if atsignp
                                                                                  :upcase
@@ -2578,14 +2580,17 @@
                              (let* ((posn (position close directives))
                                     (before (subseq directives 0 posn))
                                     (after (nthcdr (1+ posn) directives))
-                                    (stream (sys::make-case-frob-stream stream
-                                                                        (if colonp
-                                                                            (if atsignp
-                                                                                :upcase
-                                                                                :capitalize)
-                                                                            (if atsignp
-                                                                                :capitalize-first
-                                                                                :downcase)))))
+                                    (stream (sys::make-case-frob-stream 
+                                             (if (typep stream 'xp::xp-structure)
+                                                 (xp::base-stream stream)
+                                                 stream)
+                                             (if colonp
+                                                 (if atsignp
+                                                     :upcase
+                                                     :capitalize)
+                                                 (if atsignp
+                                                     :capitalize-first
+                                                     :downcase)))))
                                (setf args (interpret-directive-list stream before orig-args args))
                                after))))
 

@@ -83,3 +83,12 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
           (readtable-case *readtable*) original-case)
     (values-list result))
   "LOWER" "upper" "LOWER" "upper")
+
+;;; http://trac.common-lisp.net/armedbear/ticket/165
+(deftest bugs.pprint.1
+    (let ((result (make-array '(0) :element-type 'base-char :fill-pointer t)))
+      (with-output-to-string (s result)
+        (pprint-logical-block (s nil :per-line-prefix "---") 
+          (format s "~(~A~)" '(1 2 3 4))))
+      result)
+  "---(1 2 3 4)")
