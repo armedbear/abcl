@@ -1249,7 +1249,7 @@ public final class LispThread extends LispObject
                 currentThread().processThreadInterrupts();
             }
             catch (IllegalMonitorStateException e) {
-                return error(new IllegalMonitorState());
+                return error(new IllegalMonitorState(e.getMessage()));
             }
             return NIL;
         }
@@ -1265,7 +1265,7 @@ public final class LispThread extends LispObject
                 currentThread().processThreadInterrupts();
             }
             catch (IllegalMonitorStateException e) {
-                return error(new IllegalMonitorState());
+                return error(new IllegalMonitorState(e.getMessage()));
             }
             return NIL;
         }
@@ -1284,7 +1284,7 @@ public final class LispThread extends LispObject
                 object.lockableInstance().notify();
             }
             catch (IllegalMonitorStateException e) {
-                return error(new IllegalMonitorState());
+                return error(new IllegalMonitorState(e.getMessage()));
             }
             return NIL;
         }
@@ -1302,7 +1302,7 @@ public final class LispThread extends LispObject
                 object.lockableInstance().notifyAll();
             }
             catch (IllegalMonitorStateException e) {
-                return error(new IllegalMonitorState());
+                return error(new IllegalMonitorState(e.getMessage()));
             }
             return NIL;
         }
