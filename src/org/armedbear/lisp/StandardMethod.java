@@ -63,81 +63,114 @@ public class StandardMethod extends StandardObject
     slots[StandardMethodClass.SLOT_INDEX_DOCUMENTATION] = NIL;
   }
 
-  // ### method-lambda-list
-  // generic function
-  private static final Primitive METHOD_LAMBDA_LIST =
-    new Primitive("method-lambda-list", PACKAGE_SYS, true, "method")
+  private static final Primitive METHOD_LAMBDA_LIST 
+    = new pf_method_lambda_list(); 
+  @DocString(name="method-lambda-list",
+             args="generic-method")
+  private static final class pf_method_lambda_list extends Primitive
+  {
+    pf_method_lambda_list()
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_LAMBDA_LIST];
-      }
-    };
-
-  // ### set-method-lambda-list
-  private static final Primitive SET_METHOD_LAMBDA_LIST =
-    new Primitive("set-method-lambda-list", PACKAGE_SYS, true,
-                  "method lambda-list")
+      super("method-lambda-list", PACKAGE_SYS, true, "generic-method");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_LAMBDA_LIST];
+    }
+  };
 
-      {
-          checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_LAMBDA_LIST] = second;
-          return second;
-      }
-    };
-
-  // ### method-qualifiers
-  private static final Primitive _METHOD_QUALIFIERS =
-    new Primitive("%method-qualifiers", PACKAGE_SYS, true, "method")
+  private static final Primitive SET_METHOD_LAMBDA_LIST
+    = new pf_set_method_lambda_list();
+  @DocString(name="set-method-lambda-list",
+             args="method lambda-list")
+  private static final class pf_set_method_lambda_list extends Primitive
+  {
+    pf_set_method_lambda_list()
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_QUALIFIERS];
-      }
-    };
-
-  // ### set-method-qualifiers
-  private static final Primitive SET_METHOD_QUALIFIERS =
-    new Primitive("set-method-qualifiers", PACKAGE_SYS, true,
-                  "method qualifiers")
+      super("set-method-lambda-list", PACKAGE_SYS, true,
+            "method lambda-list");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_LAMBDA_LIST] = second;
+      return second;
+    }
+  };
 
-      {          
-          checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_QUALIFIERS] = second;
-          return second;
-      }
-    };
 
-  // ### method-documentation
-  private static final Primitive METHOD_DOCUMENTATION =
-    new Primitive("method-documentation", PACKAGE_SYS, true, "method")
+  private static final Primitive _METHOD_QUALIFIERS 
+    = new gf__method_qualifiers();
+  @DocString(name="%method-qualifiers",
+             args="method")
+  private static final class gf__method_qualifiers extends Primitive
+  {
+    gf__method_qualifiers()
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_DOCUMENTATION];
-      }
-    };
-
-  // ### set-method-documentation
-  private static final Primitive SET_METHOD_DOCUMENTATION =
-    new Primitive("set-method-documentation", PACKAGE_SYS, true,
-                  "method documentation")
+      super("%method-qualifiers", PACKAGE_SYS, true, "method");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_QUALIFIERS];
+    }
+  };
 
-      {
-          checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_DOCUMENTATION] = second;
-          return second;
-      }
-    };
+  private static final Primitive SET_METHOD_QUALIFIERS 
+    = new pf_set_method_qualifiers();
+  @DocString(name="set-method-qualifiers",
+             args="method qualifiers")
+  private static final class pf_set_method_qualifiers extends Primitive
+  {
+    pf_set_method_qualifiers()
+    {
+      super("set-method-qualifiers", PACKAGE_SYS, true,
+            "method qualifiers");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {          
+      checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_QUALIFIERS] = second;
+      return second;
+    }
+  };
+
+  private static final Primitive METHOD_DOCUMENTATION 
+    = new pf_method_documentation(); 
+  @DocString(name="method-documentation",
+             args="method")
+  private static final class pf_method_documentation extends Primitive
+  {
+    pf_method_documentation()
+    {
+      super("method-documentation", PACKAGE_SYS, true, "method");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_DOCUMENTATION];
+    }
+  };
+
+  private static final Primitive SET_METHOD_DOCUMENTATION 
+    = new pf_set_method_documentation();
+  @DocString(name="set-method-documentation",
+             args="method documentation")
+  private static final class pf_set_method_documentation extends Primitive
+  {
+    pf_set_method_documentation()
+    {
+      super("set-method-documentation", PACKAGE_SYS, true,
+            "method documentation");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_DOCUMENTATION] = second;
+      return second;
+    }
+  };
 
   public LispObject getFunction()
   {
@@ -190,104 +223,144 @@ public class StandardMethod extends StandardObject
     return super.printObject();
   }
 
-  // ### %method-generic-function
-  private static final Primitive _METHOD_GENERIC_FUNCTION =
-    new Primitive("%method-generic-function", PACKAGE_SYS, true)
+  private static final Primitive _METHOD_GENERIC_FUNCTION 
+    = new pf__method_generic_function();
+  @DocString(name="%method-generic-function")
+  private static final class pf__method_generic_function extends Primitive
+  {
+    pf__method_generic_function()
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_GENERIC_FUNCTION];
-      }
-    };
-
-  // ### %set-method-generic-function
-  private static final Primitive _SET_METHOD_GENERICFUNCTION =
-    new Primitive("%set-method-generic-function", PACKAGE_SYS, true)
+      super("%method-generic-function", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_GENERIC_FUNCTION];
+    }
+  };
 
-      {
-          checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_GENERIC_FUNCTION] = second;
-          return second;
-      }
-    };
-
-  // ### %method-function
-  private static final Primitive _METHOD_FUNCTION =
-    new Primitive("%method-function", PACKAGE_SYS, true, "method")
+  private static final Primitive _SET_METHOD_GENERICFUNCTION 
+    = new pf__set_method_genericfunction();
+  @DocString(name="%set-method-generic-function")
+  private static final class pf__set_method_genericfunction extends Primitive
+  {
+    pf__set_method_genericfunction()
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
+      super("%set-method-generic-function", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_GENERIC_FUNCTION] = second;
+      return second;
+    }
+  };
+
+  private static final Primitive _METHOD_FUNCTION 
+    = new pf__method_function(); 
+  @DocString(name="%method-function")
+  private static final class pf__method_function extends Primitive
+  {
+    pf__method_function()
+    {
+      super("%method-function", PACKAGE_SYS, true, "method");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
           return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_FUNCTION];
-      }
-    };
+    }
+  };
 
-  // ### %set-method-function
-  private static final Primitive _SET_METHOD_FUNCTION =
-    new Primitive("%set-method-function", PACKAGE_SYS, true,
-                  "method function")
+  private static final Primitive _SET_METHOD_FUNCTION
+    = new pf__set_method_function();
+  @DocString(name="%set-method-function",
+             args="method function")
+  private static final class pf__set_method_function extends Primitive
+  {
+    pf__set_method_function()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-          checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_FUNCTION] = second;
-          return second;
-      }
-    };
-
-  // ### %method-fast-function
-  private static final Primitive _METHOD_FAST_FUNCTION =
-    new Primitive("%method-fast-function", PACKAGE_SYS, true, "method")
+      super("%set-method-function", PACKAGE_SYS, true,
+            "method function");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_FAST_FUNCTION];
-      }
-    };
+      checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_FUNCTION] = second;
+      return second;
+    }
+  };
 
-  // ### %set-method-fast-function
-  private static final Primitive _SET_METHOD_FAST_FUNCTION =
-    new Primitive("%set-method-fast-function", PACKAGE_SYS, true,
-                  "method fast-function")
+  private static final Primitive _METHOD_FAST_FUNCTION
+    = new pf__method_fast_function();
+  @DocString(name="%method-fast-function",
+             args="method")
+  private static final class pf__method_fast_function extends Primitive
+  {
+    pf__method_fast_function()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-          checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_FAST_FUNCTION] = second;
-          return second;
-      }
-    };
-
-  // ### %method-specializers
-  private static final Primitive _METHOD_SPECIALIZERS =
-    new Primitive("%method-specializers", PACKAGE_SYS, true, "method")
+      super("%method-fast-function", PACKAGE_SYS, true, "method");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_SPECIALIZERS];
-      }
-    };
+      return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_FAST_FUNCTION];
+    }
+  };
 
-  // ### %set-method-specializers
-  private static final Primitive _SET_METHOD_SPECIALIZERS =
-    new Primitive("%set-method-specializers", PACKAGE_SYS, true,
-                  "method specializers")
+  private static final Primitive _SET_METHOD_FAST_FUNCTION
+    = new pf__set_method_fast_function();
+  @DocString(name="%set-method-fast-function",
+             args="method fast-function")
+  private static final class pf__set_method_fast_function extends Primitive
+  {
+    pf__set_method_fast_function()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      super("%set-method-fast-function", PACKAGE_SYS, true,
+            "method fast-function");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_FAST_FUNCTION] = second;
+      return second;
+    }
+  };
 
-      {
-          checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_SPECIALIZERS] = second;
-          return second;
-      }
-    };
+  private static final Primitive _METHOD_SPECIALIZERS
+    = new pf__method_specializers();
+  @DocString(name="%method-specializers")
+  private static final class pf__method_specializers extends Primitive
+  {
+    pf__method_specializers()
+    {
+      super("%method-specializers", PACKAGE_SYS, true, "method");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      return checkStandardMethod(arg).slots[StandardMethodClass.SLOT_INDEX_SPECIALIZERS];
+    }
+  };
+
+  private static final Primitive _SET_METHOD_SPECIALIZERS
+    = new pf__set_method_specializers();
+  @DocString(name="%set-method-specializers",
+             args="method specializers")
+  private static final class pf__set_method_specializers extends Primitive
+  {
+    pf__set_method_specializers()
+    {
+      super("%set-method-specializers", PACKAGE_SYS, true,
+            "method specializers");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_SPECIALIZERS] = second;
+      return second;
+    }
+  };
 
   private static final StandardGenericFunction METHOD_SPECIALIZERS =
     new StandardGenericFunction("method-specializers",
@@ -305,11 +378,10 @@ public class StandardMethod extends StandardObject
                                 list(Symbol.METHOD),
                                 list(StandardClass.STANDARD_METHOD));
 
-        final public static StandardMethod checkStandardMethod(LispObject first)
-        {
-                if (first instanceof StandardMethod)
-                        return (StandardMethod) first;
-                return (StandardMethod) type_error(first, Symbol.METHOD);
-        }
-
+  final public static StandardMethod checkStandardMethod(LispObject first)
+  {
+    if (first instanceof StandardMethod)
+      return (StandardMethod) first;
+    return (StandardMethod) type_error(first, Symbol.METHOD);
+  }
 }

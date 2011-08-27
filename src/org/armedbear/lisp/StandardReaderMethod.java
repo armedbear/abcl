@@ -43,10 +43,16 @@ public final class StandardReaderMethod extends StandardMethod
           StandardClass.STANDARD_READER_METHOD.getClassLayout().getLength());
   }
 
-  // ### reader-method-slot-name
-  private static final Primitive READER_METHOD_SLOT_NAME =
-      new Primitive("reader-method-slot-name", PACKAGE_MOP, false, "reader-method")
+  private static final Primitive READER_METHOD_SLOT_NAME 
+      = new pf_reader_method_slot_name();
+  @DocString(name="reader-method-slot-name",
+             args="reader-method")
+  private static final class pf_reader_method_slot_name extends Primitive
   {
+      pf_reader_method_slot_name()
+      {
+          super("reader-method-slot-name", PACKAGE_MOP, false, "reader-method");
+      }
       @Override
       public LispObject execute(LispObject arg)
       {
@@ -56,11 +62,17 @@ public final class StandardReaderMethod extends StandardMethod
       }
   };
 
-  // ### set-reader-method-slot-name
-  private static final Primitive SET_READER_METHOD_SLOT_NAME =
-      new Primitive("set-reader-method-slot-name", PACKAGE_MOP, false,
-                    "reader-method slot-name")
+  private static final Primitive SET_READER_METHOD_SLOT_NAME
+      = new pf_set_reader_method_slot_name(); 
+    @DocString(name="set-reader-method-slot-name",
+               args="reader-method slot-name")
+  private static final class pf_set_reader_method_slot_name extends Primitive
   {
+      pf_set_reader_method_slot_name()
+      {
+          super("set-reader-method-slot-name", PACKAGE_MOP, false,
+                "reader-method slot-name");
+      }
       @Override
       public LispObject execute(LispObject first, LispObject second)
 

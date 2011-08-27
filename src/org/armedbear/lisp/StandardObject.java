@@ -320,171 +320,207 @@ public class StandardObject extends LispObject
       }
     Debug.assertTrue(layout != null);
     int index = layout.getSlotIndex(slotName);
-    //### FIXME: should call SLOT-MISSING (clhs)
+    // FIXME: should call SLOT-MISSING (clhs)
     if (index < 0)
       error(new LispError("Missing slot " + slotName.princToString()));
     slots[index] = newValue;
   }
-
-        final public static StandardObject checkStandardObject(LispObject first)
-        {
-                if (first instanceof StandardObject)
-                        return (StandardObject) first;
-                return (StandardObject) type_error(first, Symbol.STANDARD_OBJECT);
-        }
+  
+  final public static StandardObject checkStandardObject(LispObject first)
+  {
+    if (first instanceof StandardObject)
+      return (StandardObject) first;
+    return (StandardObject) type_error(first, Symbol.STANDARD_OBJECT);
+  }
         
-  // ### swap-slots instance-1 instance-2 => nil
-  private static final Primitive SWAP_SLOTS =
-    new Primitive("swap-slots", PACKAGE_SYS, true, "instance-1 instance-2")
+  private static final Primitive SWAP_SLOTS 
+    = new pf_swap_slots(); 
+  @DocString(name="swap-slots",
+             args="instance-1 instance-2",
+             returns="nil")
+  private static final class pf_swap_slots extends Primitive 
+  {
+    pf_swap_slots()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-        final StandardObject obj1 = checkStandardObject(first);
-        final StandardObject obj2 = checkStandardObject(second);
-        LispObject[] temp = obj1.slots;
-        obj1.slots = obj2.slots;
-        obj2.slots = temp;
-        return NIL;
-      }
-    };
-
-  // ### std-instance-layout
-  private static final Primitive STD_INSTANCE_LAYOUT =
-    new Primitive("std-instance-layout", PACKAGE_SYS, true)
+      super("swap-slots", PACKAGE_SYS, true, "instance-1 instance-2");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-        final StandardObject instance = checkStandardObject(arg);
-        Layout layout = instance.layout;
-        if (layout.isInvalid())
-          {
-            // Update instance.
-            layout = instance.updateLayout();
-          }
-        return layout;
-      }
-    };
+      final StandardObject obj1 = checkStandardObject(first);
+      final StandardObject obj2 = checkStandardObject(second);
+      LispObject[] temp = obj1.slots;
+      obj1.slots = obj2.slots;
+      obj2.slots = temp;
+      return NIL;
+    }
+  };
 
-  // ### %set-std-instance-layout
-  private static final Primitive _SET_STD_INSTANCE_LAYOUT =
-    new Primitive("%set-std-instance-layout", PACKAGE_SYS, true)
+  private static final Primitive STD_INSTANCE_LAYOUT
+    = new pf_std_instance_layout();
+  @DocString(name="std-instance-layout")
+  private static final class pf_std_instance_layout extends Primitive
+  {
+    pf_std_instance_layout() 
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-          checkStandardObject(first).layout = checkLayout(second);          
-          return second;
-      }
-    };
-
-  // ### std-instance-class
-  private static final Primitive STD_INSTANCE_CLASS =
-    new Primitive("std-instance-class", PACKAGE_SYS, true)
+      super("std-instance-layout", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardObject(arg).layout.getLispClass();
-      }
-    };
+      final StandardObject instance = checkStandardObject(arg);
+      Layout layout = instance.layout;
+      if (layout.isInvalid())
+        {
+          // Update instance.
+          layout = instance.updateLayout();
+        }
+      return layout;
+    }
+  };
 
-  // ### standard-instance-access instance location => value
-  private static final Primitive STANDARD_INSTANCE_ACCESS =
-    new Primitive("standard-instance-access", PACKAGE_SYS, true,
-                  "instance location")
+  private static final Primitive _SET_STD_INSTANCE_LAYOUT
+    = new pf__set_std_instance_layout();
+  @DocString(name="%set-std-instance-layout")
+  private static final class pf__set_std_instance_layout extends Primitive
+  {
+    pf__set_std_instance_layout()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-        final StandardObject instance = checkStandardObject(first);
-        final int index;
-        if (second instanceof Fixnum)
-          {
-            index = ((Fixnum)second).value;
-          }
-        else
-          {
-            return type_error(second,
-                                   list(Symbol.INTEGER, Fixnum.ZERO,
-                                         Fixnum.getInstance(instance.slots.length)));
-          }
-        LispObject value;
-        try
-          {
-            value = instance.slots[index];
-          }
-        catch (ArrayIndexOutOfBoundsException e)
-          {
-            return type_error(second,
-                                   list(Symbol.INTEGER, Fixnum.ZERO,
-                                         Fixnum.getInstance(instance.slots.length)));
-          }
-        if (value == UNBOUND_VALUE)
-          {
-            LispObject slotName = instance.layout.getSlotNames()[index];
-            value = Symbol.SLOT_UNBOUND.execute(instance.getLispClass(),
-                                                instance, slotName);
-            LispThread.currentThread()._values = null;
-          }
-        return value;
-      }
-    };
-
-  // ### %set-standard-instance-access instance location new-value => new-value
-  private static final Primitive _SET_STANDARD_INSTANCE_ACCESS =
-    new Primitive("%set-standard-instance-access", PACKAGE_SYS, true)
+      super("%set-std-instance-layout", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second,
-                                LispObject third)
+      checkStandardObject(first).layout = checkLayout(second);          
+      return second;
+    }
+  };
 
-      {
-          checkStandardObject(first).slots[Fixnum.getValue(second)] = third; // FIXME
-          return third;
-      }
-    };
-
-  // ### std-slot-boundp
-  private static final Primitive STD_SLOT_BOUNDP =
-    new Primitive(Symbol.STD_SLOT_BOUNDP, "instance slot-name")
+  private static final Primitive STD_INSTANCE_CLASS 
+    = new pf_std_instance_class(); 
+  @DocString(name="std-instance-class")
+  private static final class pf_std_instance_class extends Primitive
+  {
+    pf_std_instance_class()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      super("std-instance-class", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      return checkStandardObject(arg).layout.getLispClass();
+    }
+  };
 
-      {
-        final StandardObject instance = checkStandardObject(first);
-        Layout layout = instance.layout;
-        if (layout.isInvalid())
-          {
-            // Update instance.
-            layout = instance.updateLayout();
-          }
-        final LispObject index = layout.slotTable.get(second);
-        if (index != null)
-          {
-            // Found instance slot.
-            return instance.slots[((Fixnum)index).value] != UNBOUND_VALUE ? T : NIL;
-          }
-        // Check for shared slot.
-        final LispObject location = layout.getSharedSlotLocation(second);
-        if (location != null)
-          return location.cdr() != UNBOUND_VALUE ? T : NIL;
-        // Not found.
-        final LispThread thread = LispThread.currentThread();
-        LispObject value =
-          thread.execute(Symbol.SLOT_MISSING, instance.getLispClass(),
-                         instance, second, Symbol.SLOT_BOUNDP);
-        // "If SLOT-MISSING is invoked and returns a value, a boolean
-        // equivalent to its primary value is returned by SLOT-BOUNDP."
-        thread._values = null;
-        return value != NIL ? T : NIL;
-      }
-    };
+  private static final Primitive STANDARD_INSTANCE_ACCESS
+    = new pf_standard_instance_access();
+  @DocString(name="standard-instance-access",
+             args="instance location",
+             returns="value")
+  private static final class pf_standard_instance_access extends Primitive
+  {
+    pf_standard_instance_access()
+    {
+      super("standard-instance-access", PACKAGE_SYS, true,
+            "instance location");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      final StandardObject instance = checkStandardObject(first);
+      final int index;
+      if (second instanceof Fixnum)
+        {
+          index = ((Fixnum)second).value;
+        }
+      else
+        {
+          return type_error(second,
+                            list(Symbol.INTEGER, Fixnum.ZERO,
+                                 Fixnum.getInstance(instance.slots.length)));
+        }
+      LispObject value;
+      try
+        {
+          value = instance.slots[index];
+        }
+      catch (ArrayIndexOutOfBoundsException e)
+        {
+          return type_error(second,
+                            list(Symbol.INTEGER, Fixnum.ZERO,
+                                 Fixnum.getInstance(instance.slots.length)));
+        }
+      if (value == UNBOUND_VALUE)
+        {
+          LispObject slotName = instance.layout.getSlotNames()[index];
+          value = Symbol.SLOT_UNBOUND.execute(instance.getLispClass(),
+                                              instance, slotName);
+          LispThread.currentThread()._values = null;
+        }
+      return value;
+    }
+  };
+
+  private static final Primitive _SET_STANDARD_INSTANCE_ACCESS
+    = new pf__set_standard_instance_access();
+  @DocString(name="%set-standard-instance-access",
+             args="instance location new-value",
+             returns="new-value")
+  private static final class pf__set_standard_instance_access extends Primitive
+  {
+    pf__set_standard_instance_access()
+    {
+      super("%set-standard-instance-access", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second,
+                              LispObject third)
+    {
+      checkStandardObject(first).slots[Fixnum.getValue(second)] = third; // FIXME
+      return third;
+    }
+  };
+
+  private static final Primitive STD_SLOT_BOUNDP 
+    = new pf_std_slot_boundp();
+  @DocString(name="std-slot-boundp")
+  private static final class pf_std_slot_boundp extends Primitive
+  {
+    pf_std_slot_boundp()
+    {
+      super(Symbol.STD_SLOT_BOUNDP, "instance slot-name");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      final StandardObject instance = checkStandardObject(first);
+      Layout layout = instance.layout;
+      if (layout.isInvalid())
+        {
+          // Update instance.
+          layout = instance.updateLayout();
+        }
+      final LispObject index = layout.slotTable.get(second);
+      if (index != null)
+        {
+          // Found instance slot.
+          return instance.slots[((Fixnum)index).value] != UNBOUND_VALUE ? T : NIL;
+        }
+      // Check for shared slot.
+      final LispObject location = layout.getSharedSlotLocation(second);
+      if (location != null)
+        return location.cdr() != UNBOUND_VALUE ? T : NIL;
+      // Not found.
+      final LispThread thread = LispThread.currentThread();
+      LispObject value =
+        thread.execute(Symbol.SLOT_MISSING, instance.getLispClass(),
+                       instance, second, Symbol.SLOT_BOUNDP);
+      // "If SLOT-MISSING is invoked and returns a value, a boolean
+      // equivalent to its primary value is returned by SLOT-BOUNDP."
+      thread._values = null;
+      return value != NIL ? T : NIL;
+    }
+  };
 
   @Override
   public LispObject SLOT_VALUE(LispObject slotName)
@@ -518,21 +554,24 @@ public class StandardObject extends LispObject
     return value;
   }
 
-  // ### std-slot-value
-  private static final Primitive STD_SLOT_VALUE =
-    new Primitive(Symbol.STD_SLOT_VALUE, "instance slot-name")
+  private static final Primitive STD_SLOT_VALUE
+    = new pf_std_slot_value();
+  @DocString(name="std-slot-value")
+  private static final class pf_std_slot_value extends Primitive
+  {
+    pf_std_slot_value()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-        return first.SLOT_VALUE(second);
-      }
-    };
+      super(Symbol.STD_SLOT_VALUE, "instance slot-name");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      return first.SLOT_VALUE(second);
+    }
+  };
 
   @Override
   public void setSlotValue(LispObject slotName, LispObject newValue)
-
   {
     if (layout.isInvalid())
       {
@@ -562,17 +601,21 @@ public class StandardObject extends LispObject
     Symbol.SLOT_MISSING.execute(args);
   }
 
-  // ### set-std-slot-value
-  private static final Primitive SET_STD_SLOT_VALUE =
-    new Primitive(Symbol.SET_STD_SLOT_VALUE, "instance slot-name new-value")
+  private static final Primitive SET_STD_SLOT_VALUE
+    = new pf_set_std_slot_value();
+  @DocString(name="set-std-slot-value")
+  private static final class pf_set_std_slot_value extends Primitive
+  {
+    pf_set_std_slot_value()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second,
-                                LispObject third)
-
-      {
-        first.setSlotValue(second, third);
-        return third;
-      }
-    };
+      super(Symbol.SET_STD_SLOT_VALUE, "instance slot-name new-value");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second,
+                              LispObject third)
+    {
+      first.setSlotValue(second, third);
+      return third;
+    }
+  };
 }

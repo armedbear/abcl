@@ -23,6 +23,8 @@
   "This generic function is called to determine whether the class
   superclass is suitable for use as a superclass of class."))
 
+;;; TODO Hook VALIDATE-SUPERCLASS into during class metaobject
+;;; initialization and reinitialization. (AMOP p.240-1)
 (defmethod validate-superclass ((class class) (superclass class))
   (or (eql (class-name superclass) t)
       (eql (class-name class) (class-name superclass))

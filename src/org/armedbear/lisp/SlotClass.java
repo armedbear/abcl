@@ -176,10 +176,15 @@ public class SlotClass extends LispClass
         setFinalized(true);
     }
 
-    // ### class-direct-slots
-    private static final Primitive CLASS_DIRECT_SLOTS =
-        new Primitive("%class-direct-slots", PACKAGE_SYS, true)
+    @DocString(name="%class-direct-slots")
+    private static final Primitive CLASS_DIRECT_SLOTS 
+        = new pf__class_direct_slots();
+    private static final class pf__class_direct_slots extends Primitive
     {
+        pf__class_direct_slots() 
+        {
+            super("%class-direct-slots", PACKAGE_SYS, true);
+        }
         @Override
         public LispObject execute(LispObject arg)
 
@@ -192,31 +197,41 @@ public class SlotClass extends LispClass
         }
     };
 
-    // ### %set-class-direct-slots
-    private static final Primitive _SET_CLASS_DIRECT_SLOTS =
-        new Primitive("%set-class-direct-slots", PACKAGE_SYS, true)
+    @DocString(name="%set-class-direct-slots")
+    private static final Primitive _SET_CLASS_DIRECT_SLOT
+        = new pf__set_class_direct_slots();
+    private static final class pf__set_class_direct_slots extends Primitive
     {
+        pf__set_class_direct_slots() 
+        {
+            super("%set-class-direct-slots", PACKAGE_SYS, true);
+        }
+
         @Override
         public LispObject execute(LispObject first, LispObject second)
-
         {
-                if (second instanceof SlotClass) {
+            if (second instanceof SlotClass) {
                   ((SlotClass)second).setDirectSlotDefinitions(first);
                 return first;
-            }
-                else {
+            } else {
                 return type_error(second, Symbol.STANDARD_CLASS);
             }
         }
     };
 
-    // ### %class-slots
-    private static final Primitive _CLASS_SLOTS =
-        new Primitive(Symbol._CLASS_SLOTS, "class")
+    @DocString(name="%class-slots",
+               args="class")
+    private static final Primitive _CLASS_SLOTS 
+        = new pf__class_slots();
+    private static final class pf__class_slots extends Primitive
     {
+        pf__class_slots() 
+        {
+            super(Symbol._CLASS_SLOTS, "class");
+        }
+
         @Override
         public LispObject execute(LispObject arg)
-
         {
             if (arg instanceof SlotClass)
                 return ((SlotClass)arg).getSlotDefinitions();
@@ -226,31 +241,39 @@ public class SlotClass extends LispClass
         }
     };
 
-    // ### set-class-slots
-    private static final Primitive _SET_CLASS_SLOTS =
-        new Primitive(Symbol._SET_CLASS_SLOTS, "class slot-definitions")
+    @DocString(name="%set-class-slots",
+               args="class slot-definitions")
+    private static final Primitive _SET_CLASS_SLOTS 
+        = new pf__set_class_slots();
+    private static final class pf__set_class_slots extends Primitive
     {
+        pf__set_class_slots()
+        {
+            super(Symbol._SET_CLASS_SLOTS, "class slot-definitions");
+        }
         @Override
         public LispObject execute(LispObject first, LispObject second)
-
         {
             if (second instanceof SlotClass) {
               ((SlotClass)second).setSlotDefinitions(first);
               return first;
-            }
-            else {
+            } else {
               return type_error(second, Symbol.STANDARD_CLASS);
             }
         }
     };
 
-    // ### class-direct-default-initargs
-    private static final Primitive CLASS_DIRECT_DEFAULT_INITARGS =
-        new Primitive("%class-direct-default-initargs", PACKAGE_SYS, true)
+    @DocString(name="%class-direct-default-initargs")
+    private static final Primitive CLASS_DIRECT_DEFAULT_INITARGS 
+        = new pf__class_direct_default_initargs();
+    private static final class pf__class_direct_default_initargs extends Primitive
     {
+        pf__class_direct_default_initargs() 
+        {
+            super("%class-direct-default-initargs", PACKAGE_SYS, true);
+        }
         @Override
         public LispObject execute(LispObject arg)
-
         {
             if (arg instanceof SlotClass)
                 return ((SlotClass)arg).getDirectDefaultInitargs();
@@ -260,29 +283,37 @@ public class SlotClass extends LispClass
         }
     };
 
-    // ### %set-class-direct-default-initargs
-    private static final Primitive _SET_CLASS_DIRECT_DEFAULT_INITARGS =
-        new Primitive("%set-class-direct-default-initargs", PACKAGE_SYS, true)
+    @DocString(name="%set-class-direct-default-initargs")
+    private static final Primitive _SET_CLASS_DIRECT_DEFAULT_INITARGS 
+        = new pf__set_class_direct_default_initargs();
+    private static final class pf__set_class_direct_default_initargs extends Primitive
     {
+        pf__set_class_direct_default_initargs()
+        {
+            super("%set-class-direct-default-initargs", PACKAGE_SYS, true);
+        }
         @Override
         public LispObject execute(LispObject first, LispObject second)
-
         {
             if (second instanceof SlotClass) {
-              ((SlotClass)second).setDirectDefaultInitargs(first);
-              return first;
+                ((SlotClass)second).setDirectDefaultInitargs(first);
+                return first;
             }
             return type_error(second, Symbol.STANDARD_CLASS);
         }
     };
 
-    // ### class-default-initargs
-    private static final Primitive CLASS_DEFAULT_INITARGS =
-        new Primitive("%class-default-initargs", PACKAGE_SYS, true)
+    @DocString(name="%class-default-initargs")
+    private static final Primitive CLASS_DEFAULT_INITARGS 
+        = new pf__class_default_initargs();
+    private static final class pf__class_default_initargs extends Primitive 
     {
+        pf__class_default_initargs() 
+        {
+            super("%class-default-initargs", PACKAGE_SYS, true);
+        }
         @Override
         public LispObject execute(LispObject arg)
-
         {
             if (arg instanceof SlotClass)
                 return ((SlotClass)arg).getDefaultInitargs();
@@ -292,13 +323,18 @@ public class SlotClass extends LispClass
         }
     };
 
-    // ### %set-class-default-initargs
-    private static final Primitive _SET_CLASS_DEFAULT_INITARGS =
-        new Primitive("%set-class-default-initargs", PACKAGE_SYS, true)
+    @DocString(name="%set-class-default-initargs")
+    private static final Primitive _SET_CLASS_DEFAULT_INITARGS 
+        = new pf__set_class_default_initargs();
+
+    private static final class pf__set_class_default_initargs extends Primitive
     {
+        pf__set_class_default_initargs()
+        {
+            super("%set-class-default-initargs", PACKAGE_SYS, true);
+        }
         @Override
         public LispObject execute(LispObject first, LispObject second)
-
         {
             if (second instanceof SlotClass) {
                 ((SlotClass)second).setDefaultInitargs(first);
@@ -307,5 +343,4 @@ public class SlotClass extends LispClass
             return type_error(second, Symbol.STANDARD_CLASS);
         }
     };
-
 }

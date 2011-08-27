@@ -129,248 +129,349 @@ public final class SlotDefinition extends StandardObject
     return unreadableString(sb.toString());
   }
 
-  // ### make-slot-definition &optional class
-  private static final Primitive MAKE_SLOT_DEFINITION =
-    new Primitive("make-slot-definition", PACKAGE_SYS, true, "&optional class")
+  private static final Primitive MAKE_SLOT_DEFINITION 
+    = new pf_make_slot_definition();
+  @DocString(name="make-slot-definition",
+             args="&optional class")
+  private static final class pf_make_slot_definition extends Primitive
+  {
+    pf_make_slot_definition()
     {
-      @Override
-      public LispObject execute()
-      {
-        return new SlotDefinition();
-      }
-      @Override
-      public LispObject execute(LispObject slotDefinitionClass)
-      {
-          return new SlotDefinition((StandardClass) slotDefinitionClass);
-      }
-    };
-
-  // ### %slot-definition-name
-  private static final Primitive _SLOT_DEFINITION_NAME =
-    new Primitive(Symbol._SLOT_DEFINITION_NAME, "slot-definition")
+      super("make-slot-definition", PACKAGE_SYS, true, "&optional class");
+    }
+    @Override
+    public LispObject execute()
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_NAME];
-      }
-    };
-
-  // ### set-slot-definition-name
-  private static final Primitive SET_SLOT_DEFINITION_NAME =
-    new Primitive("set-slot-definition-name", PACKAGE_SYS, true,
-                  "slot-definition name")
+      return new SlotDefinition();
+    }
+    @Override
+    public LispObject execute(LispObject slotDefinitionClass)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      return new SlotDefinition((StandardClass) slotDefinitionClass);
+    }
+  };
 
-      {
-          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_NAME] = second;
-          return second;
-      }
-    };
-
-  // ### %slot-definition-initfunction
-  private static final Primitive _SLOT_DEFINITION_INITFUNCTION =
-    new Primitive(Symbol._SLOT_DEFINITION_INITFUNCTION, "slot-definition")
+  private static final Primitive _SLOT_DEFINITION_NAME 
+    = new pf__slot_definition_name(); 
+  @DocString(name="%slot-definition-name")
+  private static final class pf__slot_definition_name extends Primitive
+  {
+    pf__slot_definition_name()
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION];
-      }
-    };
-
-  // ### set-slot-definition-initfunction
-  static final Primitive SET_SLOT_DEFINITION_INITFUNCTION =
-    new Primitive("set-slot-definition-initfunction", PACKAGE_SYS, true,
-                  "slot-definition initfunction")
+      super(Symbol._SLOT_DEFINITION_NAME, "slot-definition");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_NAME];
+    }
+  };
 
-      {
-          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = second;
-          return second;
-      }
-    };
-
-  // ### %slot-definition-initform
-  private static final Primitive _SLOT_DEFINITION_INITFORM =
-    new Primitive("%slot-definition-initform", PACKAGE_SYS, true,
-                  "slot-definition")
+  private static final Primitive SET_SLOT_DEFINITION_NAME 
+    = new pf_set_slot_definition_name(); 
+  @DocString(name="set-slot-definition-name",
+             args="slot-definition name")
+  private static final class pf_set_slot_definition_name extends Primitive
+  {
+    pf_set_slot_definition_name()
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_INITFORM];
-      }
-    };
-
-  // ### set-slot-definition-initform
-  static final Primitive SET_SLOT_DEFINITION_INITFORM =
-    new Primitive("set-slot-definition-initform", PACKAGE_SYS, true,
-                  "slot-definition initform")
+      super("set-slot-definition-name", PACKAGE_SYS, true,
+            "slot-definition name");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_NAME] = second;
+      return second;
+    }
+  };
 
-      {
-          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_INITFORM] = second;
-          return second;
-      }
-    };
-
-  // ### %slot-definition-initargs
-  private static final Primitive _SLOT_DEFINITION_INITARGS =
-    new Primitive(Symbol._SLOT_DEFINITION_INITARGS, "slot-definition")
+  private static final Primitive _SLOT_DEFINITION_INITFUNCTION 
+    = new pf__slot_definition_initfunction(); 
+  @DocString(name="%slot-definition-initfunction")
+  private static final class pf__slot_definition_initfunction extends Primitive
+  {
+    pf__slot_definition_initfunction()
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_INITARGS];
-      }
-    };
-
-  // ### set-slot-definition-initargs
-  private static final Primitive SET_SLOT_DEFINITION_INITARGS =
-    new Primitive("set-slot-definition-initargs", PACKAGE_SYS, true,
-                  "slot-definition initargs")
+      super(Symbol._SLOT_DEFINITION_INITFUNCTION, "slot-definition");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION];
+    }
+  };
 
-      {
-          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] = second;
-          return second;
-      }
-    };
-
-  // ### %slot-definition-readers
-  private static final Primitive _SLOT_DEFINITION_READERS =
-    new Primitive("%slot-definition-readers", PACKAGE_SYS, true,
-                  "slot-definition")
+  static final Primitive SET_SLOT_DEFINITION_INITFUNCTION 
+    = new pf_set_slot_definition_initfunction();
+  @DocString(name="set-slot-definition-initfunction",
+             args="slot-definition initfunction")
+  static final class pf_set_slot_definition_initfunction extends Primitive
+  {
+    pf_set_slot_definition_initfunction()
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_READERS];
-      }
-    };
-
-  // ### set-slot-definition-readers
-  private static final Primitive SET_SLOT_DEFINITION_READERS =
-    new Primitive("set-slot-definition-readers", PACKAGE_SYS, true,
-                  "slot-definition readers")
+      super("set-slot-definition-initfunction", PACKAGE_SYS, true,
+            "slot-definition initfunction");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = second;
+      return second;
+    }
+  };
 
-      {
-          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_READERS] = second;
-          return second;
-      }
-    };
-
-  // ### %slot-definition-writers
-  private static final Primitive _SLOT_DEFINITION_WRITERS =
-    new Primitive("%slot-definition-writers", PACKAGE_SYS, true,
-                  "slot-definition")
+  private static final Primitive _SLOT_DEFINITION_INITFORM
+    = new pf__slot_definition_initform();
+  @DocString(name="%slot-definition-initform",
+             args="slot-definition")
+  private static final class pf__slot_definition_initform extends Primitive
+  {
+    pf__slot_definition_initform()
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_WRITERS];
-      }
-    };
-
-  // ### set-slot-definition-writers
-  private static final Primitive SET_SLOT_DEFINITION_WRITERS =
-    new Primitive("set-slot-definition-writers", PACKAGE_SYS, true,
-                  "slot-definition writers")
+      super("%slot-definition-initform", PACKAGE_SYS, true,
+            "slot-definition");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_INITFORM];
+    }
+  };
 
-      {
-          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_WRITERS] = second;
-          return second;
-      }
-    };
-
-  // ### %slot-definition-allocation
-  private static final Primitive _SLOT_DEFINITION_ALLOCATION =
-    new Primitive("%slot-definition-allocation", PACKAGE_SYS, true,
-                  "slot-definition")
+  static final Primitive SET_SLOT_DEFINITION_INITFORM
+    = new pf_set_slot_definition_initform();
+  @DocString(name="set-slot-definition-initform",
+             args="slot-definition initform")
+  static final class pf_set_slot_definition_initform extends Primitive
+  {
+    pf_set_slot_definition_initform() 
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION];
-      }
-    };
-
-  // ### set-slot-definition-allocation
-  private static final Primitive SET_SLOT_DEFINITION_ALLOCATION =
-    new Primitive("set-slot-definition-allocation", PACKAGE_SYS, true,
-                  "slot-definition allocation")
+      super("set-slot-definition-initform", PACKAGE_SYS, true,
+            "slot-definition initform");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_INITFORM] = second;
+      return second;
+    }
+  };
 
-      {
-          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = second;
-          return second;
-      }
-    };
-
-  // ### %slot-definition-allocation-class
-  private static final Primitive _SLOT_DEFINITION_ALLOCATION_CLASS =
-    new Primitive("%slot-definition-allocation-class", PACKAGE_SYS, true,
-                  "slot-definition")
+  private static final Primitive _SLOT_DEFINITION_INITARGS
+    = new pf__slot_definition_initargs();
+  @DocString(name="%slot-definition-initargs")
+  private static final class pf__slot_definition_initargs extends Primitive
+  {
+    pf__slot_definition_initargs()
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION_CLASS];
-      }
-    };
-
-  // ### set-slot-definition-allocation-class
-  private static final Primitive SET_SLOT_DEFINITION_ALLOCATION_CLASS =
-    new Primitive("set-slot-definition-allocation-class", PACKAGE_SYS, true,
-                  "slot-definition allocation-class")
+      super(Symbol._SLOT_DEFINITION_INITARGS, "slot-definition");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_INITARGS];
+    }
+  };
 
-      {
-          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION_CLASS] = second;
-          return second;
-      }
-    };
-
-  // ### %slot-definition-location
-  private static final Primitive _SLOT_DEFINITION_LOCATION =
-    new Primitive("%slot-definition-location", PACKAGE_SYS, true, "slot-definition")
+  private static final Primitive SET_SLOT_DEFINITION_INITARGS
+    = new pf_set_slot_definition_initargs();
+  @DocString(name="set-slot-definition-initargs",
+             args="slot-definition initargs")
+  private static final class pf_set_slot_definition_initargs extends Primitive
+  {
+    pf_set_slot_definition_initargs()
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_LOCATION];
-      }
-    };
-
-  // ### set-slot-definition-location
-  private static final Primitive SET_SLOT_DEFINITION_LOCATION =
-    new Primitive("set-slot-definition-location", PACKAGE_SYS, true, "slot-definition location")
+      super("set-slot-definition-initargs", PACKAGE_SYS, true,
+            "slot-definition initargs");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] = second;
+      return second;
+    }
+  };
 
-      {
-          checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = second;
-          return second;
-      }
-    };
+  private static final Primitive _SLOT_DEFINITION_READERS
+    = new pf__slot_definition_readers();
+  @DocString(name="%slot-definition-readers",
+             args="slot-definition")
+  private static final class pf__slot_definition_readers extends Primitive {
+    pf__slot_definition_readers()
+    {
+      super("%slot-definition-readers", PACKAGE_SYS, true,
+            "slot-definition");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_READERS];
+    }
+  };
+
+  private static final Primitive SET_SLOT_DEFINITION_READERS
+    = new pf_set_slot_definition_readers();
+  @DocString(name="set-slot-definition-readers",
+             args="slot-definition readers")
+  private static final class pf_set_slot_definition_readers extends Primitive
+  {
+    pf_set_slot_definition_readers()
+    {
+      super("set-slot-definition-readers", PACKAGE_SYS, true,
+            "slot-definition readers");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_READERS] = second;
+      return second;
+    }
+  };
+
+  private static final Primitive _SLOT_DEFINITION_WRITERS
+    = new pf__slot_definition_writers();
+  @DocString(name="%slot-definition-writers",
+             args="slot-definition")
+  private static final class pf__slot_definition_writers extends Primitive
+  {
+    pf__slot_definition_writers()
+    {
+      super("%slot-definition-writers", PACKAGE_SYS, true,
+            "slot-definition");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_WRITERS];
+    }
+  };
+
+  private static final Primitive SET_SLOT_DEFINITION_WRITERS
+    = new pf_set_slot_definition_writers();
+  @DocString(name="set-slot-definition-writers",
+             args="slot-definition writers")
+  private static final class pf_set_slot_definition_writers extends Primitive
+  {
+    pf_set_slot_definition_writers()
+    {
+      super("set-slot-definition-writers", PACKAGE_SYS, true,
+            "slot-definition writers");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_WRITERS] = second;
+      return second;
+    }
+  };
+
+  private static final Primitive _SLOT_DEFINITION_ALLOCATION
+    = new pf__slot_definition_allocation();
+  @DocString(name="%slot-definition-allocation",
+             args="slot-definition")
+  private static final class pf__slot_definition_allocation extends Primitive 
+  {
+    pf__slot_definition_allocation()
+    {
+      super("%slot-definition-allocation", PACKAGE_SYS, true,
+            "slot-definition");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION];
+    }
+  };
+
+  private static final Primitive SET_SLOT_DEFINITION_ALLOCATION
+    = new pf_set_slot_definition_allocation();
+  @DocString(name="set-slot-definition-allocation",
+             args="slot-definition allocation")
+  private static final class pf_set_slot_definition_allocation extends Primitive
+  {
+    pf_set_slot_definition_allocation()
+    {
+      super("set-slot-definition-allocation", PACKAGE_SYS, true,
+            "slot-definition allocation");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = second;
+      return second;
+    }
+  };
+
+  private static final Primitive _SLOT_DEFINITION_ALLOCATION_CLASS 
+    = new pf__slot_definition_allocation_class(); 
+  @DocString(name="%slot-definition-allocation-class",
+             args="slot-definition")
+  private static final class pf__slot_definition_allocation_class extends Primitive
+  {
+    pf__slot_definition_allocation_class()
+    {
+      super("%slot-definition-allocation-class", PACKAGE_SYS, true,
+            "slot-definition");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION_CLASS];
+    }
+  };
+
+  private static final Primitive SET_SLOT_DEFINITION_ALLOCATION_CLASS
+    = new pf_set_slot_definition_allocation_class();
+  @DocString(name="set-slot-definition-allocation-class",
+             args="slot-definition allocation-class")
+  private static final class pf_set_slot_definition_allocation_class extends Primitive
+  {
+    pf_set_slot_definition_allocation_class()
+    {
+      super("set-slot-definition-allocation-class", PACKAGE_SYS, true,
+            "slot-definition allocation-class");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION_CLASS] = second;
+      return second;
+    }
+  };
+
+  private static final Primitive _SLOT_DEFINITION_LOCATION
+    = new pf__slot_definition_location();
+  @DocString(name="%slot-definition-location")
+  private static final class pf__slot_definition_location extends Primitive
+  {
+    pf__slot_definition_location()
+    {
+      super("%slot-definition-location", PACKAGE_SYS, true, "slot-definition");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      return checkSlotDefinition(arg).slots[SlotDefinitionClass.SLOT_INDEX_LOCATION];
+    }
+  };
+
+  private static final Primitive SET_SLOT_DEFINITION_LOCATION
+    = new pf_set_slot_definition_location();
+  @DocString(name="set-slot-definition-location",
+             args="slot-definition location")
+  private static final class pf_set_slot_definition_location extends Primitive
+  {
+    pf_set_slot_definition_location()
+    {
+      super("set-slot-definition-location", PACKAGE_SYS, true, 
+            "slot-definition location");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      checkSlotDefinition(first).slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = second;
+      return second;
+    }
+  };
 }

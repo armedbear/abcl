@@ -246,25 +246,25 @@ public final class StandardGenericFunction extends StandardObject
     ++callCount;
   }
 
-    @Override
-    public final int getHotCount()
-    {
-        return hotCount;
-    }
+  @Override
+  public final int getHotCount()
+  {
+    return hotCount;
+  }
 
-    @Override
-    public void setHotCount(int n)
-    {
-        hotCount = n;
-    }
+  @Override
+  public void setHotCount(int n)
+  {
+    hotCount = n;
+  }
 
-    @Override
-    public final void incrementHotCount()
-    {
-        ++hotCount;
-    }
+  @Override
+  public final void incrementHotCount()
+  {
+    ++hotCount;
+  }
 
-    // AMOP (p. 216) specifies the following readers as generic functions:
+  // AMOP (p. 216) specifies the following readers as generic functions:
   //   generic-function-argument-precedence-order
   //   generic-function-declarations
   //   generic-function-lambda-list
@@ -273,346 +273,462 @@ public final class StandardGenericFunction extends StandardObject
   //   generic-function-methods
   //   generic-function-name
 
-  // ### %generic-function-name
-  private static final Primitive _GENERIC_FUNCTION_NAME =
-    new Primitive("%generic-function-name", PACKAGE_SYS, true)
+  private static final Primitive _GENERIC_FUNCTION_NAME 
+    = new pf__generic_function_name();
+  @DocString(name="%generic-function-name")
+  private static final class pf__generic_function_name extends Primitive
+  {
+    pf__generic_function_name() 
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_NAME];
-      }
-    };
-
-  // ### %set-generic-function-name
-  private static final Primitive _SET_GENERIC_FUNCTION_NAME =
-    new Primitive("%set-generic-function-name", PACKAGE_SYS, true)
+      super("%generic-function-name", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_NAME];
+    }
+  };
 
-      {
-          checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_NAME] = second;
-          return second;
-      }
-    };
-
-  // ### %generic-function-lambda-list
-  private static final Primitive _GENERIC_FUNCTION_LAMBDA_LIST =
-    new Primitive("%generic-function-lambda-list", PACKAGE_SYS, true)
+  private static final Primitive _SET_GENERIC_FUNCTION_NAME 
+    = new pf__set_generic_function_name();
+  @DocString(name="%set-generic-function-name")
+  private static final class pf__set_generic_function_name extends Primitive
+  { 
+    pf__set_generic_function_name() 
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_LAMBDA_LIST];
-      }
-    };
-
-  // ### %set-generic-function-lambdaList
-  private static final Primitive _SET_GENERIC_FUNCTION_LAMBDA_LIST =
-    new Primitive("%set-generic-function-lambda-list", PACKAGE_SYS, true)
+      super ("%set-generic-function-name", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_NAME] = second;
+      return second;
+    }
+  };
 
-      {
-          checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_LAMBDA_LIST] = second;
-          return second;
-      }
-    };
-
-  // ### funcallable-instance-function funcallable-instance => function
-  private static final Primitive FUNCALLABLE_INSTANCE_FUNCTION =
-    new Primitive("funcallable-instance-function", PACKAGE_MOP, false,
-                  "funcallable-instance")
+  private static final Primitive _GENERIC_FUNCTION_LAMBDA_LIST 
+    = new pf__generic_function_lambda_list();
+  @DocString(name ="%generic-function-lambda-list")
+  private static final class pf__generic_function_lambda_list extends Primitive {
+    pf__generic_function_lambda_list() 
     {
-      @Override
-      public LispObject execute(LispObject arg)
+      super("%generic-function-lambda-list", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_LAMBDA_LIST];
+    }
+  };
 
-      {
-          return checkStandardGenericFunction(arg).function;
-      }
-    };
+  private static final Primitive _SET_GENERIC_FUNCTION_LAMBDA_LIST 
+    = new pf__set_generic_function_lambda_list();
+  @DocString(name="%set-generic-function-lambdalist")
+  private static final class pf__set_generic_function_lambda_list extends Primitive
+  {
+    pf__set_generic_function_lambda_list()
+    {
+      super("%set-generic-function-lambda-list", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_LAMBDA_LIST] = second;
+      return second;
+    }
+  };
 
-  // ### set-funcallable-instance-function funcallable-instance function => unspecified
+  private static final Primitive FUNCALLABLE_INSTANCE_FUNCTION 
+    = new pf_funcallable_instance_function();
+  @DocString(name="funcallable-instance-function",
+             args="funcallable-instance",
+             returns="function")
+  private static final class pf_funcallable_instance_function extends Primitive 
+  {
+    pf_funcallable_instance_function()
+    {
+      super("funcallable-instance-function", PACKAGE_MOP, false,
+            "funcallable-instance");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      return checkStandardGenericFunction(arg).function;
+    }
+  };
+
   // AMOP p. 230
-  private static final Primitive SET_FUNCALLABLE_INSTANCE_FUNCTION =
-    new Primitive("set-funcallable-instance-function", PACKAGE_MOP, true,
-                  "funcallable-instance function")
+  private static final Primitive SET_FUNCALLABLE_INSTANCE_FUNCTION 
+    = new pf_set_funcallable_instance_function();
+  @DocString(name="set-funcallable-instance-function",
+             args="funcallable-instance function",
+             returns="unspecified")
+  private static final class pf_set_funcallable_instance_function extends Primitive 
+  {
+    pf_set_funcallable_instance_function()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-          checkStandardGenericFunction(first).function = second;
-          return second;
-      }
-    };
-
-  // ### gf-required-args
-  private static final Primitive GF_REQUIRED_ARGS =
-    new Primitive("gf-required-args", PACKAGE_SYS, true)
+      super("set-funcallable-instance-function", PACKAGE_MOP, true,
+            "funcallable-instance function");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS];
-      }
-    };
+      checkStandardGenericFunction(first).function = second;
+      return second;
+    }
+  };
 
-  // ### %set-gf-required-args
-  private static final Primitive _SET_GF_REQUIRED_ARGS =
-    new Primitive("%set-gf-required-args", PACKAGE_SYS, true)
+  private static final Primitive GF_REQUIRED_ARGS 
+    = new pf_gf_required_args();
+  @DocString(name="gf-required-args")
+  private static final class pf_gf_required_args extends Primitive 
+  {
+    pf_gf_required_args()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-        final StandardGenericFunction gf = checkStandardGenericFunction(first);
-        gf.slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS] = second;
-        gf.numberOfRequiredArgs = second.length();
-        return second;
-      }
-    };
-
-  // ### generic-function-initial-methods
-  private static final Primitive GENERIC_FUNCTION_INITIAL_METHODS =
-    new Primitive("generic-function-initial-methods", PACKAGE_SYS, true)
+      super("gf-required-args", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_INITIAL_METHODS];
-      }
-    };
+      return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS];
+    }
+  };
 
-  // ### set-generic-function-initial-methods
-  private static final Primitive SET_GENERIC_FUNCTION_INITIAL_METHODS =
-    new Primitive("set-generic-function-initial-methods", PACKAGE_SYS, true)
+  private static final Primitive _SET_GF_REQUIRED_ARGS
+    = new pf__set_gf_required_args();
+  @DocString(name="%set-gf-required-args")
+  private static final class pf__set_gf_required_args extends Primitive
+  {
+    pf__set_gf_required_args()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-          checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_INITIAL_METHODS] = second;
-          return second;
-      }
-    };
-
-  // ### generic-function-methods
-  private static final Primitive GENERIC_FUNCTION_METHODS =
-    new Primitive("generic-function-methods", PACKAGE_SYS, true)
+      super("%set-gf-required-args", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_METHODS];
-      }
-    };
+      final StandardGenericFunction gf = checkStandardGenericFunction(first);
+      gf.slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS] = second;
+      gf.numberOfRequiredArgs = second.length();
+      return second;
+    }
+  };
 
-  // ### set-generic-function-methods
-  private static final Primitive SET_GENERIC_FUNCTION_METHODS =
-    new Primitive("set-generic-function-methods", PACKAGE_SYS, true)
+  private static final Primitive GENERIC_FUNCTION_INITIAL_METHODS 
+    = new pf_generic_function_initial_methods();
+  @DocString(name="generic-function-initial-methods")
+  private static final class pf_generic_function_initial_methods extends Primitive
+  {
+    pf_generic_function_initial_methods() 
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-          checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_METHODS] = second;
-          return second;
-      }
-    };
-
-  // ### generic-function-method-class
-  private static final Primitive GENERIC_FUNCTION_METHOD_CLASS =
-    new Primitive("generic-function-method-class", PACKAGE_SYS, true)
+      super("generic-function-initial-methods", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS];
-      }
-    };
+      return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_INITIAL_METHODS];
+    }
+  };
 
-  // ### set-generic-function-method-class
-  private static final Primitive SET_GENERIC_FUNCTION_METHOD_CLASS =
-    new Primitive("set-generic-function-method-class", PACKAGE_SYS, true)
+  private static final Primitive SET_GENERIC_FUNCTION_INITIAL_METHODS 
+    = new pf_set_generic_function_initial_methods();
+  @DocString(name="set-generic-function-initial-methods")
+  private static final class pf_set_generic_function_initial_methods extends Primitive
+  {
+    pf_set_generic_function_initial_methods()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-          checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS] = second;
-          return second;
-      }
-    };
-
-  // ### generic-function-method-combination
-  private static final Primitive GENERIC_FUNCTION_METHOD_COMBINATION =
-    new Primitive("generic-function-method-combination", PACKAGE_SYS, true)
+      super("set-generic-function-initial-methods", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION];
-      }
-    };
+      checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_INITIAL_METHODS] = second;
+      return second;
+    }
+  };
 
-  // ### set-generic-function-method-combination
-  private static final Primitive SET_GENERIC_FUNCTION_METHOD_COMBINATION =
-    new Primitive("set-generic-function-method-combination", PACKAGE_SYS, true)
+  private static final Primitive GENERIC_FUNCTION_METHODS 
+    = new pf_generic_function_methods();
+  @DocString(name="generic-function-methods")
+  private static final class pf_generic_function_methods extends Primitive
+  {
+    pf_generic_function_methods()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-          checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION] 
-	    = second;
-          return second;
-      }
-    };
-
-  // ### generic-function-argument-precedence-order
-  private static final Primitive GENERIC_FUNCTION_ARGUMENT_PRECEDENCE_ORDER =
-    new Primitive("generic-function-argument-precedence-order", PACKAGE_SYS, true)
+      super("generic-function-methods", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass
-							 .SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER];
-      }
-    };
+      return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_METHODS];
+    }
+  };
 
-  // ### set-generic-function-argument-precedence-order
-  private static final Primitive SET_GENERIC_FUNCTION_ARGUMENT_PRECEDENCE_ORDER =
-    new Primitive("set-generic-function-argument-precedence-order", PACKAGE_SYS, true)
+  private static final Primitive SET_GENERIC_FUNCTION_METHODS 
+    = new pf_set_generic_function_methods();
+  @DocString(name="set-generic-function-methods")
+  private static final class pf_set_generic_function_methods extends Primitive
+  {
+    pf_set_generic_function_methods()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-          checkStandardGenericFunction(first)
-	    .slots[StandardGenericFunctionClass.SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER] = second;
-          return second;
-      }
-    };
-
-  // ### generic-function-classes-to-emf-table
-  private static final Primitive GENERIC_FUNCTION_CLASSES_TO_EMF_TABLE =
-    new Primitive("generic-function-classes-to-emf-table", PACKAGE_SYS, true)
+      super("set-generic-function-methods", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardGenericFunction(arg)
-	    .slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE];
-      }
-    };
+      checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_METHODS] = second;
+      return second;
+    }
+  };
 
-  // ### set-generic-function-classes-to-emf-table
-  private static final Primitive SET_GENERIC_FUNCTION_CLASSES_TO_EMF_TABLE =
-    new Primitive("set-generic-function-classes-to-emf-table", PACKAGE_SYS, true)
+  private static final Primitive GENERIC_FUNCTION_METHOD_CLASS 
+    = new pf_generic_function_method_class();
+  @DocString(name="generic-function-method-class")
+  private static final class pf_generic_function_method_class extends Primitive
+  {
+    pf_generic_function_method_class()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-          checkStandardGenericFunction(first)
-	    .slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE] = second;
-          return second;
-      }
-    };
-
-  // ### generic-function-documentation
-  private static final Primitive GENERIC_FUNCTION_DOCUMENTATION =
-    new Primitive("generic-function-documentation", PACKAGE_SYS, true)
+      super("generic-function-method-class", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION];
-      }
-    };
+      return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS];
+    }
+  };
 
-  // ### set-generic-function-documentation
-  private static final Primitive SET_GENERIC_FUNCTION_DOCUMENTATION =
-    new Primitive("set-generic-function-documentation", PACKAGE_SYS, true)
+  private static final Primitive SET_GENERIC_FUNCTION_METHOD_CLASS 
+    = new pf_set_generic_function_method_class();
+  @DocString(name="set-generic-function-method-class")
+  private static final class pf_set_generic_function_method_class extends Primitive
+  {
+    pf_set_generic_function_method_class()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-          checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION] 
-	    = second;
-          return second;
-      }
-    };
-
-  // ### %finalize-generic-function
-  private static final Primitive _FINALIZE_GENERIC_FUNCTION =
-    new Primitive("%finalize-generic-function", PACKAGE_SYS, true,
-                  "generic-function")
+      super("set-generic-function-method-class", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
     {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-          final StandardGenericFunction gf = checkStandardGenericFunction(arg);
-          gf.finalizeInternal();        
-          return T;
-      }
-    };
+      checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS] = second;
+      return second;
+    }
+  };
 
-  // ### cache-emf
-  private static final Primitive CACHE_EMF =
-    new Primitive("cache-emf", PACKAGE_SYS, true, "generic-function args emf")
+  private static final Primitive GENERIC_FUNCTION_METHOD_COMBINATION 
+    = new pf_generic_function_method_combination(); 
+  @DocString(name="generic-function-method-combination")
+  private static final class pf_generic_function_method_combination extends Primitive 
+  {
+    pf_generic_function_method_combination()
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second,
-                                LispObject third)
-
-      {
-        final StandardGenericFunction gf = checkStandardGenericFunction(first);
-        LispObject args = second;
-        LispObject[] array = new LispObject[gf.numberOfRequiredArgs];
-        for (int i = gf.numberOfRequiredArgs; i-- > 0;)
-          {
-            array[i] = gf.getArgSpecialization(args.car());
-            args = args.cdr();
-          }
-        CacheEntry specializations = new CacheEntry(array);
-        ConcurrentHashMap<CacheEntry,LispObject> ht = gf.cache;
-        if (ht == null)
-            ht = gf.cache = new ConcurrentHashMap<CacheEntry,LispObject>();
-        ht.put(specializations, third);
-        return third;
-      }
-    };
-
-  // ### get-cached-emf
-  private static final Primitive GET_CACHED_EMF =
-    new Primitive("get-cached-emf", PACKAGE_SYS, true, "generic-function args")
+      super("generic-function-method-combination", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION];
+    }
+  };
 
-      {
-        final StandardGenericFunction gf = checkStandardGenericFunction(first);
-        LispObject args = second;
-        LispObject[] array = new LispObject[gf.numberOfRequiredArgs];
-        for (int i = gf.numberOfRequiredArgs; i-- > 0;)
-          {
-            array[i] = gf.getArgSpecialization(args.car());
-            args = args.cdr();
-          }
-        CacheEntry specializations = new CacheEntry(array);
-        ConcurrentHashMap<CacheEntry,LispObject> ht = gf.cache;
-        if (ht == null)
-          return NIL;
-        LispObject emf = (LispObject) ht.get(specializations);
-        return emf != null ? emf : NIL;
-      }
-    };
+  private static final Primitive SET_GENERIC_FUNCTION_METHOD_COMBINATION 
+    = new pf_set_generic_function_method_combination(); 
+  @DocString(name="set-generic-function-method-combination")
+  private static final class pf_set_generic_function_method_combination extends Primitive 
+  {
+    pf_set_generic_function_method_combination()
+    {
+      super("set-generic-function-method-combination", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION] 
+        = second;
+      return second;
+    }
+  };
+
+  private static final Primitive GENERIC_FUNCTION_ARGUMENT_PRECEDENCE_ORDER
+    = new pf_generic_function_argument_precedence_order();
+  @DocString(name="generic-function-argument-precedence-order")
+  private static final class pf_generic_function_argument_precedence_order extends Primitive
+  {
+    pf_generic_function_argument_precedence_order()
+    { 
+      super("generic-function-argument-precedence-order", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass
+                                                     .SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER];
+    }
+  };
+
+  private static final Primitive SET_GENERIC_FUNCTION_ARGUMENT_PRECEDENCE_ORDER
+    = new pf_set_generic_function_argument_precedence_order();
+  @DocString(name="set-generic-function-argument-precedence-order")
+  private static final class pf_set_generic_function_argument_precedence_order extends Primitive
+  {
+    pf_set_generic_function_argument_precedence_order()
+    {
+      super("set-generic-function-argument-precedence-order", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      checkStandardGenericFunction(first)
+        .slots[StandardGenericFunctionClass.SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER] = second;
+      return second;
+    }
+  };
+
+  private static final Primitive GENERIC_FUNCTION_CLASSES_TO_EMF_TABLE
+    = new pf_generic_function_classes_to_emf_table();
+  @DocString(name="generic-function-classes-to-emf-table")
+  private static final class pf_generic_function_classes_to_emf_table extends Primitive 
+  {
+    pf_generic_function_classes_to_emf_table() 
+    {
+      super("generic-function-classes-to-emf-table", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      return checkStandardGenericFunction(arg)
+        .slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE];
+    }
+  };
+
+  private static final Primitive SET_GENERIC_FUNCTION_CLASSES_TO_EMF_TABLE 
+    = new pf_set_generic_function_classes_to_emf_table();
+  @DocString(name="set-generic-function-classes-to-emf-table")
+  private static final class pf_set_generic_function_classes_to_emf_table extends Primitive
+  {
+    pf_set_generic_function_classes_to_emf_table()
+    {
+      super("set-generic-function-classes-to-emf-table", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      checkStandardGenericFunction(first)
+        .slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE] = second;
+      return second;
+    }
+  };
+
+  private static final Primitive GENERIC_FUNCTION_DOCUMENTATION
+    = new pf_generic_function_documentation();
+  @DocString(name="generic-function-documentation")
+  private static final class pf_generic_function_documentation extends Primitive
+  {
+    pf_generic_function_documentation() 
+    {
+      super("generic-function-documentation", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION];
+    }
+  };
+
+  private static final Primitive SET_GENERIC_FUNCTION_DOCUMENTATION 
+    = new pf_set_generic_function_documentation();
+  @DocString(name="set-generic-function-documentation")
+  private static final class pf_set_generic_function_documentation extends Primitive 
+  {
+    pf_set_generic_function_documentation()
+    {
+      super("set-generic-function-documentation", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION] 
+        = second;
+      return second;
+    }
+  };
+
+  private static final Primitive _FINALIZE_GENERIC_FUNCTION 
+    = new pf__finalize_generic_function();
+  @DocString(name="%finalize-generic-function",
+             args="generic-function")
+  private static final class  pf__finalize_generic_function extends Primitive
+  {
+    pf__finalize_generic_function()
+    {
+      super("%finalize-generic-function", PACKAGE_SYS, true,
+            "generic-function");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      final StandardGenericFunction gf = checkStandardGenericFunction(arg);
+      gf.finalizeInternal();        
+      return T;
+    }
+  };
+
+  private static final Primitive CACHE_EMF 
+    = new pf_cache_emf();
+  @DocString(name="cache-emf",
+             args="generic-function args emf")
+  private static final class pf_cache_emf extends Primitive 
+  {
+    pf_cache_emf()
+    {
+      super("cache-emf", PACKAGE_SYS, true, "generic-function args emf");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second,
+                              LispObject third)
+    {
+      final StandardGenericFunction gf = checkStandardGenericFunction(first);
+      LispObject args = second;
+      LispObject[] array = new LispObject[gf.numberOfRequiredArgs];
+      for (int i = gf.numberOfRequiredArgs; i-- > 0;)
+        {
+          array[i] = gf.getArgSpecialization(args.car());
+          args = args.cdr();
+        }
+      CacheEntry specializations = new CacheEntry(array);
+      ConcurrentHashMap<CacheEntry,LispObject> ht = gf.cache;
+      if (ht == null)
+        ht = gf.cache = new ConcurrentHashMap<CacheEntry,LispObject>();
+      ht.put(specializations, third);
+      return third;
+    }
+  };
+
+  private static final Primitive GET_CACHED_EMF
+    = new pf_get_cached_emf();
+  @DocString(name="get-cached-emf",
+             args="generic-function args")
+  private static final class pf_get_cached_emf extends Primitive 
+  {
+    pf_get_cached_emf() {
+      super("get-cached-emf", PACKAGE_SYS, true, "generic-function args");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      final StandardGenericFunction gf = checkStandardGenericFunction(first);
+      LispObject args = second;
+      LispObject[] array = new LispObject[gf.numberOfRequiredArgs];
+      for (int i = gf.numberOfRequiredArgs; i-- > 0;)
+        {
+          array[i] = gf.getArgSpecialization(args.car());
+          args = args.cdr();
+        }
+      CacheEntry specializations = new CacheEntry(array);
+      ConcurrentHashMap<CacheEntry,LispObject> ht = gf.cache;
+      if (ht == null)
+        return NIL;
+      LispObject emf = (LispObject) ht.get(specializations);
+      return emf != null ? emf : NIL;
+    }
+  };
 
   /**
    * Returns an object representing generic function 
@@ -680,56 +796,70 @@ public final class StandardGenericFunction extends StandardObject
     return arg.classOf();
   }
 
-  // ### %get-arg-specialization
-  private static final Primitive _GET_ARG_SPECIALIZATION =
-    new Primitive("%get-arg-specialization", PACKAGE_SYS, true, "generic-function arg")
+  private static final Primitive _GET_ARG_SPECIALIZATION 
+    = new pf__get_arg_specialization();
+  @DocString(name="%get-arg-specialization",
+             args="generic-function arg")
+  private static final class pf__get_arg_specialization extends Primitive
+  {
+    pf__get_arg_specialization() 
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
-
-      {
-        final StandardGenericFunction gf = checkStandardGenericFunction(first);
-        return gf.getArgSpecialization(second);
-      }
-    };
-
-  // ### cache-slot-location
-  private static final Primitive CACHE_SLOT_LOCATION =
-    new Primitive("cache-slot-location", PACKAGE_SYS, true, "generic-function layout location")
+      super("%get-arg-specialization", PACKAGE_SYS, true, "generic-function arg");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second,
+      final StandardGenericFunction gf = checkStandardGenericFunction(first);
+      return gf.getArgSpecialization(second);
+    }
+  };
+
+  private static final Primitive CACHE_SLOT_LOCATION 
+    = new pf_cache_slot_location(); 
+  @DocString(name="cache-slot-location",
+           args="generic-function layout location")
+  private static final class pf_cache_slot_location extends Primitive
+  {
+    pf_cache_slot_location()
+    {
+      super("cache-slot-location", PACKAGE_SYS, true, "generic-function layout location");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second,
                                 LispObject third)
-
-      {
-        final StandardGenericFunction gf = checkStandardGenericFunction(first);
-        LispObject layout = second;
-        LispObject location = third;
-        ConcurrentHashMap<LispObject,LispObject> ht = gf.slotCache;
-        if (ht == null)
-          ht = gf.slotCache = new ConcurrentHashMap<LispObject,LispObject>();
-        ht.put(layout, location);
-        return third;
-      }
-    };
-
-  // ### get-cached-slot-location
-  private static final Primitive GET_CACHED_SLOT_LOCATION =
-    new Primitive("get-cached-slot-location", PACKAGE_SYS, true, "generic-function layout")
     {
-      @Override
-      public LispObject execute(LispObject first, LispObject second)
+      final StandardGenericFunction gf = checkStandardGenericFunction(first);
+      LispObject layout = second;
+      LispObject location = third;
+      ConcurrentHashMap<LispObject,LispObject> ht = gf.slotCache;
+      if (ht == null)
+        ht = gf.slotCache = new ConcurrentHashMap<LispObject,LispObject>();
+      ht.put(layout, location);
+      return third;
+    }
+  };
 
-      {
-        final StandardGenericFunction gf = checkStandardGenericFunction(first);
-        LispObject layout = second;
-        ConcurrentHashMap<LispObject,LispObject> ht = gf.slotCache;
-        if (ht == null)
-          return NIL;
-        LispObject location = (LispObject) ht.get(layout);
-        return location != null ? location : NIL;
-      }
-    };
+  private static final Primitive GET_CACHED_SLOT_LOCATION 
+    = new pf_get_cached_slot_location();
+  @DocString(name="get-cached-slot-location")
+  private static final class pf_get_cached_slot_location extends Primitive
+  {
+    pf_get_cached_slot_location()
+    {
+      super("get-cached-slot-location", PACKAGE_SYS, true, "generic-function layout");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      final StandardGenericFunction gf = checkStandardGenericFunction(first);
+      LispObject layout = second;
+      ConcurrentHashMap<LispObject,LispObject> ht = gf.slotCache;
+      if (ht == null)
+        return NIL;
+      LispObject location = (LispObject) ht.get(layout);
+      return location != null ? location : NIL;
+    }
+  };
 
   private static final StandardGenericFunction GENERIC_FUNCTION_NAME =
     new StandardGenericFunction("generic-function-name",
@@ -775,25 +905,30 @@ public final class StandardGenericFunction extends StandardObject
 
   EqlSpecialization eqlSpecializations[] = new EqlSpecialization[0];
 
-    // ### %init-eql-specializations
-    private static final Primitive _INIT_EQL_SPECIALIZATIONS 
-      = new Primitive("%init-eql-specializations", PACKAGE_SYS, true, 
-		    "generic-function eql-specilizer-objects-list")
-      {
-        @Override
-        public LispObject execute(LispObject first, LispObject second)
-
-        {
-          final StandardGenericFunction gf = checkStandardGenericFunction(first);
-          LispObject eqlSpecializerObjects = second;
-          gf.eqlSpecializations = new EqlSpecialization[eqlSpecializerObjects.length()];
-          for (int i = 0; i < gf.eqlSpecializations.length; i++) {
-	    gf.eqlSpecializations[i] = new EqlSpecialization(eqlSpecializerObjects.car());
-	    eqlSpecializerObjects = eqlSpecializerObjects.cdr();
-          }
-          return NIL;
-        }
-      };
+  private static final Primitive _INIT_EQL_SPECIALIZATIONS  
+    = new pf__init_eql_specializations();
+  @DocString(name="%init-eql-specializations",
+             args="generic-function eql-specilizer-objects-list")
+  private static final class pf__init_eql_specializations extends Primitive
+  {
+    pf__init_eql_specializations()
+    {
+      super("%init-eql-specializations", PACKAGE_SYS, true, 
+            "generic-function eql-specilizer-objects-list");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      final StandardGenericFunction gf = checkStandardGenericFunction(first);
+      LispObject eqlSpecializerObjects = second;
+      gf.eqlSpecializations = new EqlSpecialization[eqlSpecializerObjects.length()];
+      for (int i = 0; i < gf.eqlSpecializations.length; i++) {
+        gf.eqlSpecializations[i] = new EqlSpecialization(eqlSpecializerObjects.car());
+        eqlSpecializerObjects = eqlSpecializerObjects.cdr();
+      }
+      return NIL;
+    }
+  };
 
   private static class EqlSpecialization extends LispObject
   {
@@ -806,7 +941,6 @@ public final class StandardGenericFunction extends StandardObject
   }
   
   public static final StandardGenericFunction checkStandardGenericFunction(LispObject obj)
-
   {
     if (obj instanceof StandardGenericFunction)
       return (StandardGenericFunction) obj;
