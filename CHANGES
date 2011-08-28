@@ -14,6 +14,13 @@ Features
 Changes
 -------
 
+ * Renamed LispObject.writeToString() method to (more lispy) printObject()
+
+ * New LispObject.princToString() for user readable output
+
+ * Changed behaviour of LispObject.unreadableString() to signal
+   errors when *PRINT-READABLY* is non-NIL
+
  * Static initializers moved to <clinit>() (java: static { }) to
    prevent repeated execution when invoking the constructor multiple times
 
@@ -23,6 +30,11 @@ Changes
    to *always* create a closure
 
  * File compiler (COMPILE-FILE) clean-ups
+
+ * When calling a function with the wrong number of arguments,
+   report the expected (range) of arguments
+
+ * Upgraded ASDF to 2.017
 
 Fixes
 -----
@@ -38,6 +50,15 @@ Fixes
 
  * [ticket #163] Local functions shadow global macro and function bindings
    (fixes PARENSCRIPT support)
+
+ * [ticket 158] Readable printing of the string "#<abc>" does not signal
+   a PRINT-NOT-READABLE error anymore
+
+ * Fixed SYNTAX.SHARP-BACKSLASH.6 and SYNTAX.SHARP-BACKSLASH.7
+
+ * Fixed many PPRINT.* test suite failures
+
+ * [ticket #151] LOAD fails for whitespace in JAR-PATHNAME
 
 
 Version 0.26.2
