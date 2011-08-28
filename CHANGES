@@ -1,3 +1,45 @@
+Version 0.27.0
+==============
+(untagged)
+
+
+Features
+--------
+
+ * ABCL works as an SBCL build host
+
+ * Huge (> 64k) literal object support (fixes CL-UNICODE support)
+
+
+Changes
+-------
+
+ * Static initializers moved to <clinit>() (java: static { }) to
+   prevent repeated execution when invoking the constructor multiple times
+
+ * Compiler clean-ups
+
+ * Changed implementation of LABELS to eliminate the need
+   to *always* create a closure
+
+ * File compiler (COMPILE-FILE) clean-ups
+
+Fixes
+-----
+
+ * MULTIPLE-VALUE-PROG1.10 (ansi test) fixed
+
+ * [ticket #148] READTABLE-CASE :INVERT doesn't work for uninterned symbols
+
+ * [ticket #161] READTABLE-CASE of current readtable affects FASL content
+
+ * [ticket #162] Non-symbol in variable position of SETQ form causes
+   class verification failure
+
+ * [ticket #163] Local functions shadow global macro and function bindings
+   (fixes PARENSCRIPT support)
+
+
 Version 0.26.2
 ==============
 svn://common-lisp.net/project/armedbear/svn/tags/0.26.2/abcl
@@ -10,15 +52,15 @@ Features
 Fixes
 -----
   * Fix loading from fasls under Windows with whitespace in pathname.
-  
+
   * Fix #131: Don't include ':' in the version string.
 
   * Fix #141: SETF of APPLY not working with arbitrary function.
-  
+
   * Include filename in the error string being reported.
 
   * Include the test source in the release.
-  
+
   * Include ASDF definition in source release.
 
 Version 0.26.1
