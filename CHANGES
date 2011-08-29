@@ -14,7 +14,7 @@ Features
 Changes
 -------
 
- * Renamed LispObject.writeToString() method to (more lispy) printObject()
+ * Renamed LispObject.writeToString() method to (more Lispy) printObject()
 
  * New LispObject.princToString() for user readable output
 
@@ -35,6 +35,19 @@ Changes
    report the expected (range) of arguments
 
  * Upgraded ASDF to 2.017
+
+ * JSS:JLIST-TO-LIST now converts any java.list.List to a Lisp list.
+
+ * The ASDF extensions from JSS for the "jar-directory", "jar-file",
+   and "class-file-directory" types have been refactored into the
+   ABCL-ASDF contrib as well as the *ADDED-TO-CLASSPATH* variable
+   which records dynamically added dependencies.  Use the
+   JSS:ENSURE-COMPATIBILITY function to have JSS include these
+   dependencies.  
+
+ * Threads spawned by THREADS:MAKE-THREAD can terminate the Lisp image
+   via the EXT:QUIT and EXT:EXIT functions.
+
 
 Fixes
 -----
@@ -83,6 +96,7 @@ Fixes
   * Include the test source in the release.
 
   * Include ASDF definition in source release.
+  
 
 Version 0.26.1
 ==============
