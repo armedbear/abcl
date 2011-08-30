@@ -1,0 +1,1157 @@
+-----
+real 59.80
+user 78.63
+sys 12.92
+changeset: 1:dffaddf964c374ef02be2eb85ecd45c6b3a7031d
+date: 2008-12-20 19:44 +0000
+svn: r11459
+description: Remove (most of) J from ABCL.
+abcl.jar-size: 5675929
+-----
+real 62.12
+user 80.47
+sys 13.51
+changeset: 11:608630b7d8b404d38910f40520acbefaf8c9d71e
+date: 2008-12-22 13:50 +0000
+svn: r11470
+description: Remove unnecessary backquote-comma from emit-ifne-for-eql.
+abcl.jar-size: 5758285
+-----
+real 63.63
+user 82.15
+sys 14.00
+changeset: 21:21f7426e1f1b7d1dc2ee6d87987076655dc9a618
+date: 2008-12-26 13:53 +0000
+svn: r11481
+description: Change FASL version number because of changes to the object structure (_execute() instead of execute()).
+abcl.jar-size: 5758394
+-----
+real 63.95
+user 82.55
+sys 13.96
+changeset: 31:ced3881bbfdc8ed6c66f2f2229c56a868eb63efa
+date: 2008-12-27 15:28 +0000
+svn: r11491
+description: Cleanup: Add a way to add and initialize a special all at once.
+abcl.jar-size: 5758450
+-----
+real 62.78
+user 81.81
+sys 14.02
+changeset: 41:6106ae3483622d35a937833cd629e62b04206f95
+date: 2008-12-28 22:36 +0000
+svn: r11501
+description: Efficiency/correctness of generated code: choose opcodes based on operand value,
+abcl.jar-size: 5760471
+-----
+real 63.81
+user 82.54
+sys 13.94
+changeset: 51:6cde781e3f5bcf226fae162b952ddd6d7985ef23
+date: 2008-12-30 12:15 +0000
+svn: r11511
+description: Use replacement characters for unmappable and malformed
+abcl.jar-size: 5762217
+-----
+real 71.48
+user 91.62
+sys 15.81
+changeset: 61:71750c7d903491d86ad9adf0a34acdab3e85ef1b
+date: 2009-01-02 15:23 +0000
+svn: r11521
+description: Helper macro for derive-compiler type, when checking
+abcl.jar-size: 5763052
+-----
+BUILD FAILED
+/export/home/evenson/work/abcl.jar-size/build.xml:468: Duplicate target 'abcl.test.ansi.interpreted'
+
+Total time: 0 seconds
+
+real 0.46
+user 0.50
+sys 0.08
+changeset 71 failed to build.
+-----
+real 71.04
+user 92.16
+sys 15.19
+changeset: 81:14fb6458112e4569bbcd86bd86e933533ad9388d
+date: 2009-01-04 17:29 +0000
+svn: r11541
+description: Look, I can do conditionals in the middle of a
+abcl.jar-size: 5767140
+-----
+real 81.29
+user 102.22
+sys 15.37
+changeset: 91:e6bcf9828c18722435685a1bc22eae30fe9efd70
+date: 2009-01-08 20:24 +0000
+svn: r11551
+description: Change the return value of Environment.isDeclaredSpecial() to include the
+abcl.jar-size: 5784174
+-----
+real 77.82
+user 103.95
+sys 15.56
+changeset: 101:06d8209461c5dffbf0645033783465fdbefd0bf4
+date: 2009-01-18 18:34 +0000
+svn: r11564
+description: Fix compiler issue found by compiling AP5: Instead of calculating the true upper bound
+abcl.jar-size: 5709163
+-----
+real 69.04
+user 92.03
+sys 14.10
+changeset: 111:b3d8f28e6d1398aa5e420bab052095ea0b9bb3fe
+date: 2009-01-21 22:35 +0000
+svn: r11574
+description: Introduce LispInteger super-type to Bignum and Fixnum:
+abcl.jar-size: 5730633
+-----
+real 69.04
+user 93.39
+sys 13.78
+changeset: 121:91c3660fc2f328328f42e4861bd30e34f10d6d87
+date: 2009-01-24 18:33 +0000
+svn: r11584
+description: Handle both 'long' as well as 'double' argument and return types as types of size 2
+abcl.jar-size: 5748957
+-----
+real 69.79
+user 94.72
+sys 14.10
+changeset: 131:aed68fd76940b9cdc3a557b646e82b122485aa31
+date: 2009-01-26 21:54 +0000
+svn: r11594
+description: Make DERIVE-TYPE support SINGLE-FLOAT and DOUBLE-FLOAT.
+abcl.jar-size: 5788173
+-----
+real 69.84
+user 95.51
+sys 13.99
+changeset: 141:e8e6e10042450de77939d8998d6cd26fd89080c4
+date: 2009-01-30 06:16 +0000
+svn: r11604
+description: Smarter type derivation: start *using* the float and double storage types
+abcl.jar-size: 5797070
+-----
+real 68.48
+user 94.05
+sys 13.58
+changeset: 151:8877c4247489dd98ed97991fcbaaa8302c0560f6
+date: 2009-01-31 22:43 +0000
+svn: r11614
+description: Inline all compiled subtractions instead of only the 2 and 3 argument cases.
+abcl.jar-size: 5794954
+-----
+real 72.25
+user 99.81
+sys 14.00
+changeset: 161:8dfcb9f5d7ba243e1088e56ff1bf83e2c178eec2
+date: 2009-02-04 22:22 +0000
+svn: r11624
+description: Wider use of CONVERT-REPRESENTATION shows an issue: LispInteger.getInstance() returns a LispInteger.
+abcl.jar-size: 5808991
+-----
+real 72.42
+user 100.62
+sys 14.13
+changeset: 171:1198e18431d636ad3484ad90ac1005814b8f1921
+date: 2009-02-06 21:00 +0000
+svn: r11634
+description: Better in-lining compilation of MIN and MAX.
+abcl.jar-size: 5807475
+-----
+real 72.98
+user 102.47
+sys 14.10
+changeset: 181:e6d7112485ef04e871f714cc25cded4774382c5c
+date: 2009-02-08 14:00 +0000
+svn: r11644
+description: Further cleanup for p1-flet/labels.
+abcl.jar-size: 5813728
+-----
+real 72.80
+user 102.65
+sys 14.24
+changeset: 191:133c76a526a0ea177039364ca15ed551e5aa46be
+date: 2009-02-10 15:47 +0000
+svn: r11654
+description: Add a stock copy of the GPLv2 that ABCL licensing is based.
+abcl.jar-size: 5847162
+-----
+real 72.76
+user 102.64
+sys 14.24
+changeset: 201:a664349b15f083b406e0f3115e76e3a8c96ed7ce
+date: 2009-02-20 20:17 +0000
+svn: r11674
+description: More lispy MAKE-CLASSES.
+abcl.jar-size: 5846923
+-----
+real 72.62
+user 101.90
+sys 14.11
+changeset: 211:02f980133461d06b9018d148666e9f181f956b83
+date: 2009-02-22 23:17 +0000
+svn: r11684
+description: Since 0.13 was branched, trunk/ now is 0.14...
+abcl.jar-size: 5848243
+-----
+real 72.20
+user 100.08
+sys 14.09
+changeset: 221:3dae0988bd0374aeceb63064b0e3f74ede260713
+date: 2009-03-05 23:20 +0000
+svn: r11698
+description: reverted wrong commit.
+abcl.jar-size: 5845637
+-----
+real 72.81
+user 99.91
+sys 14.11
+changeset: 231:d01ab5844fa5d0da49632bd38c5046d8668a4d87
+date: 2009-03-15 15:08 +0000
+svn: r11710
+description: Implement a generic 'list()' function instead of 9 ones.
+abcl.jar-size: 5855641
+-----
+real 74.19
+user 100.90
+sys 14.28
+changeset: 241:ae75f230e46103adfcfc6c6bc07718ab199bd5fd
+date: 2009-03-29 09:52 +0000
+svn: r11720
+description: Fix unbound variable error.
+abcl.jar-size: 5859754
+-----
+real 73.92
+user 100.30
+sys 14.38
+changeset: 251:acb8a04a32f2152a6fe84970ca8388b5a3afc50d
+date: 2009-04-04 22:16 +0000
+svn: r11730
+description: No longer work around absense of Math.{sinh(),cosh(),tanh()};
+abcl.jar-size: 5858963
+-----
+real 72.54
+user 99.80
+sys 13.90
+changeset: 261:2fa39c3401c16db2ea83bb62c073185d15df87bd
+date: 2009-04-08 06:04 +0000
+svn: r11748
+description: Revert r11746. It turns out to break the ANSI test suite and I don't know why.
+abcl.jar-size: 5858380
+-----
+real 73.99
+user 102.13
+sys 14.17
+changeset: 271:f6ee87cb6154c75efede03f535a80ad407501a1f
+date: 2009-04-18 19:08 +0000
+svn: r11763
+description: Fix COMPILE and COMPILE-FILE secondary and tertiary return values
+abcl.jar-size: 5843436
+-----
+real 73.28
+user 102.65
+sys 14.35
+changeset: 281:318ebfdf27c97e69d5a23e108ed626c13c1b04f6
+date: 2009-04-21 17:26 +0000
+svn: r11773
+description: Fix MULTIPLE-VALUE-SETQ and (SETF (VALUES ...) ...) when
+abcl.jar-size: 5843369
+-----
+real 72.37
+user 100.27
+sys 14.39
+changeset: 291:a684a800b37dce3f836e06ab44b8d348771edeb6
+date: 2009-04-25 14:19 +0000
+svn: r11783
+description: Fix fasl reader special bindings leak.
+abcl.jar-size: 5831615
+-----
+BUILD FAILED
+/export/home/evenson/work/abcl.jar-size/build.xml:209: Java returned: 255
+
+Total time: 1 minute 3 seconds
+
+real 64.53
+user 88.23
+sys 10.70
+changeset 301 failed to build.
+-----
+real 74.73
+user 104.55
+sys 14.58
+changeset: 311:e239ff54d3f16bd78523c4f34fc29f3366aa3810
+date: 2009-04-29 21:57 +0000
+svn: r11803
+description: Always rewrite &aux vars, even if there are no
+abcl.jar-size: 5846363
+-----
+real 73.12
+user 100.97
+sys 14.25
+changeset: 321:2138011d88fc85e76657468128d59d80d90bea19
+date: 2009-05-02 19:36 +0000
+svn: r11813
+description: Fix building in a path with spaces.
+abcl.jar-size: 5846149
+-----
+real 75.14
+user 103.40
+sys 14.69
+changeset: 331:facdd7a670d4329e9db772c342f382a79274f001
+date: 2009-05-03 19:01 +0000
+svn: r11823
+description: Revert r11814 (fix for stack inconsistencies),
+abcl.jar-size: 5856090
+-----
+real 82.18
+user 103.10
+sys 14.86
+changeset: 341:49feb338de4fe5be78c7255985c64f6b72f55060
+date: 2009-05-05 21:42 +0000
+svn: r11833
+description: Special bindings fixes:
+abcl.jar-size: 5870038
+-----
+real 79.68
+user 102.17
+sys 15.23
+changeset: 351:6d096621144fc778ce53bb9352c8261419d9d8c2
+date: 2009-05-08 21:09 +0000
+svn: r11843
+description: Reflow PROCESS-TOPLEVEL-FORM in order to make
+abcl.jar-size: 5869102
+-----
+real 78.74
+user 102.89
+sys 14.66
+changeset: 361:99cd5390c621432571aa31286d2d57c88ada46b5
+date: 2009-05-10 21:21 +0000
+svn: r11853
+description: Restore closure variables from their saved values,
+abcl.jar-size: 5867734
+-----
+real 82.69
+user 105.41
+sys 15.43
+changeset: 371:575eff937b363adb121d3386723944dc6e49e44d
+date: 2009-05-15 17:19 +0000
+svn: r11870
+description: Remove the TEMP-REGISTER slot from the
+abcl.jar-size: 5891748
+-----
+real 81.78
+user 101.95
+sys 15.06
+changeset: 381:b9520e20686e0fdbddc1634d3ddad59777f657f0
+date: 2009-05-16 09:02 +0000
+svn: r11880
+description: Remove the KIND slot from the COMPILAND structure:
+abcl.jar-size: 5886008
+-----
+real 80.93
+user 101.44
+sys 15.04
+changeset: 391:7ffc1656b1ea78a09360ab82e84120e8c7ab1997
+date: 2009-05-17 13:17 +0000
+svn: r11891
+description: Add docstring and reindent DECLARE-OBJECT.
+abcl.jar-size: 5859453
+-----
+BUILD FAILED
+/export/home/evenson/work/abcl.jar-size/build.xml:209: Java returned: 1
+
+Total time: 9 seconds
+
+real 11.92
+user 20.40
+sys 2.25
+changeset 401 failed to build.
+-----
+real 75.95
+user 99.00
+sys 13.96
+changeset: 411:c7adfdebead8e2b44c1b023506eaeff06ebc2796
+date: 2009-05-21 14:05 +0000
+svn: r11914
+description: Remove trailing spaces.
+abcl.jar-size: 5834530
+-----
+real 76.34
+user 100.51
+sys 14.62
+changeset: 421:d7f05f09ba0b44bebab3f1a2c8b126cd177724d9
+date: 2009-05-22 08:37 +0000
+svn: r11924
+description: Implement compilation of closures with non-empty
+abcl.jar-size: 5845501
+-----
+real 77.63
+user 102.41
+sys 14.61
+changeset: 431:b448fd84e25f237bda83d51f296796c1c0d218c6
+date: 2009-05-27 06:12 +0000
+svn: r11958
+description: Redoing my math homework:
+abcl.jar-size: 5856917
+-----
+real 68.14
+user 95.13
+sys 10.97
+changeset: 441:ef24ee7f7da0b69a76354d435f5aae9b6aeaea43
+date: 2009-05-31 22:12 +0000
+svn: r11972
+description: Factor out bbuf-updating from read(byte[]) and read(char[])
+abcl.jar-size: 5857111
+-----
+real 66.06
+user 95.39
+sys 10.21
+changeset: 451:af728c14f09b9f2f5bc283c2731e796cf74cc2bb
+date: 2009-06-01 19:18 +0000
+svn: r11982
+description: Don't use exceptions to find out the reader is null;
+abcl.jar-size: 5856862
+-----
+real 64.98
+user 96.35
+sys 10.21
+changeset: 461:526c4e8d4a99f00843d22f26b3e1d90a68c0ed7d
+date: 2009-06-06 08:58 +0000
+svn: r11992
+description: Exported MOP functions class-slots and slot-definition-name.
+abcl.jar-size: 5859093
+-----
+real 61.31
+user 93.27
+sys 9.56
+changeset: 471:380fa2b9b2dd52fc5c97e7ea581b92158f86b7a8
+date: 2009-06-14 15:32 +0000
+svn: r12017
+description: Performance improvement for non-recursive #= and ##:
+abcl.jar-size: 5864231
+-----
+real 60.39
+user 90.21
+sys 9.54
+changeset: 481:930b5756ff295e760ce82495ac448a6ff1485480
+date: 2009-07-02 13:56 +0000
+svn: r12027
+description: Set the name of associated the java.lang.Thread if specified.
+abcl.jar-size: 5884369
+-----
+real 60.64
+user 93.25
+sys 9.60
+changeset: 491:b98a4abb5ad903471972f38392962fb924ba6442
+date: 2009-07-11 20:53 +0000
+svn: r12038
+description: Enable monitorenter and monitorexit opcodes.
+abcl.jar-size: 5889859
+-----
+real 60.80
+user 92.78
+sys 9.77
+changeset: 501:e781e186be6fa14f51421076175197806908787c
+date: 2009-07-15 14:28 +0000
+svn: r12048
+description: Remove obsolete build artifacts.  Are these getting added by merges or something somehow?
+abcl.jar-size: 5900204
+-----
+real 61.49
+user 93.95
+sys 9.75
+changeset: 511:96f1ebf851ea17c70426d2afaa00a58700ee6469
+date: 2009-07-24 21:39 +0000
+svn: r12058
+description: Make pushStackFrame final.
+abcl.jar-size: 5891741
+-----
+real 61.45
+user 94.31
+sys 9.93
+changeset: 521:8e52b407c11b44a24a23c334c356148b2ef717b5
+date: 2009-07-27 20:11 +0000
+svn: r12068
+description: Record the latest changes to clos and StackFrame.
+abcl.jar-size: 5898083
+-----
+real 61.14
+user 94.14
+sys 9.84
+changeset: 531:f8384d632ba6d0eec8f3acedfa54fe6ba506fc76
+date: 2009-07-30 22:49 +0000
+svn: r12078
+description: Greatly increase performance with VECTOR structures by
+abcl.jar-size: 5898032
+-----
+real 59.83
+user 89.09
+sys 9.62
+changeset: 541:3e24e2040eeb188e9eac5744609cb16e79283d16
+date: 2009-08-08 19:18 +0000
+svn: r12088
+description: Register blocks with their compiland;
+abcl.jar-size: 5914620
+-----
+real 63.56
+user 94.44
+sys 10.40
+changeset: 551:7e93228f7568d76c7305af9f6a3ee7bddd53143c
+date: 2009-08-13 13:14 +0000
+svn: r12098
+description: Structure access referential integrity checks.
+abcl.jar-size: 6244475
+-----
+real 86.10
+user 116.66
+sys 10.25
+changeset: 561:beba24988f5d4d999ad4b42bf90ea42ccd655486
+date: 2009-08-19 22:09 +0000
+svn: r12108
+description: r12104 followup: forgotten M-V-B-NODE accessor.
+abcl.jar-size: 6214409
+-----
+real 87.08
+user 117.09
+sys 10.19
+changeset: 571:a666438121b2c31627b02e75892ba3f6619e3abc
+date: 2009-08-26 21:26 +0000
+svn: r12118
+description: Adjust BLOCK-NODE dispatch routine.
+abcl.jar-size: 6303287
+-----
+real 85.51
+user 116.54
+sys 10.23
+changeset: 581:713101a79e098ae007c1dd54719766e6b2a6cd79
+date: 2009-09-01 09:53 +0000
+svn: r12128
+description: Fix typo from last commit.
+abcl.jar-size: 6287438
+-----
+real 87.96
+user 117.76
+sys 10.50
+changeset: 591:2e0cdfbc7a2e28f904caed18eec8105c89617846
+date: 2009-09-14 15:26 +0000
+svn: r12145
+description: Don't traverse the lambda list twice when checking
+abcl.jar-size: 6298706
+-----
+real 90.12
+user 123.03
+sys 10.36
+changeset: 601:7f84a58d069b558dc72999e8201213aa86976450
+date: 2009-09-20 08:57 +0000
+svn: r12157
+description: *INVOKE-DEBUGGER-HOOK* now called before *DEBUGGER-HOOK* (Tobias Rittweiler)
+abcl.jar-size: 6307000
+-----
+real 89.97
+user 122.87
+sys 10.54
+changeset: 611:113dbc49329d139229e8c5bf24177c93b414e433
+date: 2009-09-29 21:18 +0000
+svn: r12167
+description: Reorder statements to make sure the implicit block includes the evaluation
+abcl.jar-size: 6311657
+-----
+real 91.65
+user 126.84
+sys 10.53
+changeset: 621:9c100afb1db481df75a82cbd80adb9b8ced5f5f2
+date: 2009-10-06 08:56 +0000
+svn: r12177
+description: Revert r12153 behavior to rethrow org.armedbear.lisp.Go out of INTERACTIVE-EVAL.
+abcl.jar-size: 6324388
+-----
+real 91.51
+user 123.43
+sys 10.96
+changeset: 631:eaf277bef295f49a2ff8eaf783b1e5fdd079d3ca
+date: 2009-10-10 14:02 +0000
+svn: r12187
+description: Reinstate two-way-stream functionality with Gray streams.
+abcl.jar-size: 6324908
+-----
+real 90.81
+user 120.53
+sys 10.26
+changeset: 641:2ee4090a19ec4844820cc6c3a6cf57861294287d
+date: 2009-10-17 19:35 +0000
+svn: r12202
+description: Fix ABCL as a build-host for SBCL:
+abcl.jar-size: 6325293
+-----
+real 86.66
+user 115.42
+sys 9.69
+changeset: 651:85a4fb4e4284b7848a133b902665849c1f31a8c3
+date: 2009-10-23 21:33 +0000
+svn: r12216
+description: Make sure the #n= and #n# reader functionality gets compiled.
+abcl.jar-size: 5816825
+-----
+BUILD FAILED
+/export/home/evenson/work/abcl.jar-size/build.xml:211: Java returned: 2
+
+Total time: 14 seconds
+
+real 15.38
+user 29.12
+sys 3.06
+changeset 661 failed to build.
+-----
+real 93.09
+user 125.46
+sys 9.33
+changeset: 671:c119e8710f36e383a1e711380ae2b009270cac2d
+date: 2009-10-31 10:51 +0000
+svn: r12236
+description: Update CHANGES.
+abcl.jar-size: 5816901
+-----
+real 92.61
+user 123.14
+sys 9.64
+changeset: 681:72f3b925addf55db0bbaeed4ec150e5677c7fbc0
+date: 2009-11-05 22:45 +0000
+svn: r12253
+description: Make ConditionThrowable abstract: it's the parent of
+abcl.jar-size: 5817625
+-----
+real 93.12
+user 123.81
+sys 9.45
+changeset: 691:5645e0cb067dda7c27e8def951303b11b3cc7b72
+date: 2009-11-10 19:34 +0000
+svn: r12274
+description: Convert some uses of LispObject to Symbol.
+abcl.jar-size: 5790578
+-----
+real 91.26
+user 124.62
+sys 9.74
+changeset: 701:bc35fc7967805954e0550587253046f17e1b2ef6
+date: 2009-11-26 15:10 +0000
+svn: r12284
+description: Delete unused function (split-directory-components).
+abcl.jar-size: 5791996
+-----
+real 95.03
+user 131.99
+sys 10.53
+changeset: 711:8b2bf9ebd3af0d18ebc0955fc94d4a2e0aab4ad6
+date: 2009-12-07 11:56 +0000
+svn: r12294
+description: Fix abcl.compile.lisp under Windows.
+abcl.jar-size: 5796377
+-----
+real 95.10
+user 131.25
+sys 10.18
+changeset: 721:909d43397afa5fb367c76c5be1322da3e7e9a12b
+date: 2009-12-25 21:54 +0000
+svn: r12307
+description: Complete "catch (Throwable" review by reviewing ../examples.
+abcl.jar-size: 5835506
+-----
+real 96.25
+user 131.64
+sys 10.19
+changeset: 731:662c3323f0348bed7a4069131c61017261519575
+date: 2010-01-01 10:42 +0000
+svn: r12318
+description: Remove trailing spaces/tabs which light my editing buffers red.
+abcl.jar-size: 5868984
+-----
+real 96.39
+user 132.50
+sys 10.26
+changeset: 741:a31fa6554ade90233805cabd34606a465dabe64a
+date: 2010-01-02 23:22 +0000
+svn: r12328
+description: Note a few codepoint to char conversions which are potential bugs.
+abcl.jar-size: 6152422
+-----
+real 97.43
+user 134.78
+sys 10.18
+changeset: 751:92c258aa5654875862a2d17bda46f46eb5056e47
+date: 2010-01-06 15:52 +0000
+svn: r12338
+description: Reworked test infrastructure.
+abcl.jar-size: 6155301
+-----
+real 96.66
+user 133.70
+sys 10.29
+changeset: 761:7d33c53e40b59ca6c06b639bc2205be8ee96d40e
+date: 2010-01-08 21:32 +0000
+svn: r12352
+description: Have JavaObject.javaInstance(c) complain if the wrapped object is null and c is a primitive type.
+abcl.jar-size: 6160005
+-----
+real 96.74
+user 134.07
+sys 10.21
+changeset: 771:843b4ff790a48ac3e01cdddb0cfaf57a1be64ff3
+date: 2010-01-11 20:03 +0000
+svn: r12362
+description: Make Stream extend StructureObject, modify Stream derivatives
+abcl.jar-size: 6160836
+-----
+real 96.94
+user 134.04
+sys 10.45
+changeset: 781:2c61205a821037f778be30318b59dd7d7103bef4
+date: 2010-01-17 21:04 +0000
+svn: r12383
+description: Changelogs for the newest releases.
+abcl.jar-size: 6145770
+-----
+real 107.86
+user 136.14
+sys 10.51
+changeset: 791:35a1807274fdb5bfe5025c402c046c83e1eae385
+date: 2010-01-24 22:26 +0000
+svn: r12399
+description: Remove debugging cruft.
+abcl.jar-size: 6244825
+-----
+real 102.13
+user 131.39
+sys 10.40
+changeset: 801:54b94d82a0987785576f82bd0ba07b73117a99db
+date: 2010-01-30 23:08 +0000
+svn: r12409
+description: Rewriting of function calls with (lambda ...) as the operator to let* forms.
+abcl.jar-size: 6266032
+-----
+real 101.36
+user 127.65
+sys 9.75
+changeset: 811:de0e5f4a36124220cf28750e3e4c57aa904e5199
+date: 2010-02-05 15:52 +0000
+svn: r12419
+description: 'abcl.release' target now drives the release process.
+abcl.jar-size: 6278274
+-----
+real 102.46
+user 127.48
+sys 10.03
+changeset: 821:cae97e51f20054a335c1b5522faf08a3f25678cd
+date: 2010-02-08 07:43 +0000
+svn: r12429
+description: Correct svn:eol-style and svn:keywords.
+abcl.jar-size: 6295385
+-----
+real 107.19
+user 131.79
+sys 10.59
+changeset: 831:a241b1f7bc65fb18ff366bc4cac9c21606d0cee4
+date: 2010-02-10 16:13 +0000
+svn: r12439
+description: Remove duplication of java options.
+abcl.jar-size: 6295349
+-----
+real 103.30
+user 130.31
+sys 10.65
+changeset: 841:d989f8e8c1936f90146d448ab26624c60fa7acc0
+date: 2010-02-12 11:08 +0000
+svn: r12451
+description: Fix for ZipException under interpreted ANSI tests.
+abcl.jar-size: 6312015
+-----
+real 99.37
+user 131.24
+sys 10.48
+changeset: 851:c24162c3e18738010d2fc2df1af78aa01674c679
+date: 2010-02-14 13:18 +0000
+svn: r12471
+description: Stack friendliness.
+abcl.jar-size: 6319550
+-----
+real 100.83
+user 129.80
+sys 10.33
+changeset: 861:a4c063f71bdea94fd2b1c8f1fdf44f3d4f20b44c
+date: 2010-02-20 17:28 +0000
+svn: r12488
+description: 1) remove copy-paste code, consolidate index and char array extraction
+abcl.jar-size: 6323021
+-----
+real 96.80
+user 130.44
+sys 10.00
+changeset: 871:af94163220bc230e3cad932e68c1cf28c570a98d
+date: 2010-02-22 07:16 +0000
+svn: r12498
+description: Start noting changes for upcoming release.
+abcl.jar-size: 6320542
+-----
+real 97.73
+user 131.92
+sys 10.21
+changeset: 881:fd172545f76de2ca38d536c6b14fb437d207419b
+date: 2010-02-27 06:59 +0000
+svn: r12508
+description: Code for parsing ANSI errors database.
+abcl.jar-size: 6327015
+-----
+real 101.25
+user 136.81
+sys 10.26
+changeset: 891:b1a937425c54633df31576805970ff4966e5497b
+date: 2010-03-04 14:52 +0000
+svn: r12518
+description: *DISASSEMBLER* may now contain a function to return the disassembler command.
+abcl.jar-size: 6619955
+-----
+real 102.34
+user 138.61
+sys 10.39
+changeset: 901:1bde39e6a410ef36106a5f15f739ff48f82d12b4
+date: 2010-03-14 19:17 +0000
+svn: r12535
+description: Fix returned values from SingleFloat.getInstance() and
+abcl.jar-size: 6620618
+-----
+real 101.95
+user 137.87
+sys 10.57
+changeset: 911:6cbc0a916cd2281a75feae699202633d94815958
+date: 2010-03-16 15:20 +0000
+svn: r12550
+description: Fix loading of packed FASLs which have been renamed.
+abcl.jar-size: 6620840
+-----
+real 101.80
+user 137.29
+sys 10.28
+changeset: 921:b1563df70d4cd5b11c58ace5a652fd500d2d116f
+date: 2010-03-20 19:34 +0000
+svn: r12563
+description: Update README for release 0.19.1.
+abcl.jar-size: 6610611
+-----
+real 104.21
+user 139.09
+sys 10.41
+changeset: 931:8b97f6a62862a51c42f3c741af14abc115655acd
+date: 2010-04-08 19:38 +0000
+svn: r12582
+description: Re #38: Make Cells compile with our metaclass support by
+abcl.jar-size: 6764168
+-----
+real 105.75
+user 140.53
+sys 10.52
+changeset: 941:adbbd83ee1efa981e37e81a336ad68e74353ca31
+date: 2010-04-10 19:55 +0000
+svn: r12592
+description: Consolidate the functionality of faslReadStructure and readStructure
+abcl.jar-size: 6767289
+-----
+real 104.96
+user 141.22
+sys 10.46
+changeset: 951:75202da6397ff9a9aef14ac02715a130eba48ab5
+date: 2010-04-10 21:36 +0000
+svn: r12602
+description: Un-duplicate string reading between FaslReader and LispReader.
+abcl.jar-size: 6767443
+-----
+real 108.82
+user 143.87
+sys 10.66
+changeset: 961:798a2725e441e85466a0b406f40bdfabac36db62
+date: 2010-04-15 14:50 +0000
+svn: r12612
+description: Incremental checkpoint on making JAR pathnames use the new URL pathname.
+abcl.jar-size: 6774409
+-----
+real 114.89
+user 150.48
+sys 10.88
+changeset: 971:85b341f3bf976945a5134773a616a133e0cf2031
+date: 2010-04-18 09:26 +0000
+svn: r12622
+description: Restore buildable trunk arising from ASDF2 compilation.
+abcl.jar-size: 7049819
+-----
+real 116.47
+user 151.19
+sys 10.88
+changeset: 981:4d4a48f067bb3bea530a6465d79a766dc74c7214
+date: 2010-04-27 20:30 +0000
+svn: r12637
+description: Make unreadableString() variants in LispObject final.
+abcl.jar-size: 7050804
+-----
+real 114.74
+user 149.16
+sys 10.79
+changeset: 991:d4c554443176990cc763e3d8f485b8a128444c0b
+date: 2010-05-02 18:30 +0000
+svn: r12648
+description: Add (and use) more wrappers for the lisp ERROR function, using
+abcl.jar-size: 7053689
+-----
+real 115.28
+user 150.75
+sys 10.78
+changeset: 1001:424ef7735074dd4e94cb80b5da0468d607e4f8a8
+date: 2010-05-07 21:08 +0000
+svn: r12658
+description: Close #38: Add some metaclass tests - to be expanded
+abcl.jar-size: 7077270
+-----
+real 114.57
+user 149.27
+sys 10.73
+changeset: 1011:7412dbb81387f47e66442f9bd2f3b786dc7bca3b
+date: 2010-05-11 18:17 +0000
+svn: r12668
+description: Updated CHANGES for the 0.20 release
+abcl.jar-size: 7084459
+-----
+real 116.07
+user 151.21
+sys 10.88
+changeset: 1021:13c0de379d9a5376ded3ca551e17c2a7d4d2e604
+date: 2010-05-15 10:20 +0000
+svn: r12682
+description: Add APIs to access data gathered in the profiler
+abcl.jar-size: 7131003
+-----
+real 116.53
+user 152.07
+sys 10.81
+changeset: 1031:e69dc63605163908806fbd9236ebaf1fdc3cfef6
+date: 2010-05-17 20:33 +0000
+svn: r12699
+description: Refactor EXTERNALIZE-OBJECT into EMIT-LOAD-EXTERNALIZED-OBJECT.
+abcl.jar-size: 7007573
+-----
+real 119.23
+user 156.24
+sys 10.97
+changeset: 1041:bad35afcb02438a62d78e63d79b91a41bd8970b2
+date: 2010-05-19 22:29 +0000
+svn: r12711
+description: No longer use the reader to load "stand alone" uninterned symbols,
+abcl.jar-size: 7194703
+-----
+real 120.14
+user 155.69
+sys 11.18
+changeset: 1051:8c0f3b6383fee2cfb5bd43f29e3993fd703eb673
+date: 2010-05-23 06:06 +0000
+svn: r12721
+description: Examples reorganization: move snippets to misc, adjust local READMEs.
+abcl.jar-size: 7200304
+-----
+real 120.58
+user 157.02
+sys 11.03
+changeset: 1061:7d01da825fa17056ebb77e63d779ad56b127e4c4
+date: 2010-05-25 13:03 +0000
+svn: r12733
+description: Mention gui subdirectory in README.
+abcl.jar-size: 7187378
+-----
+real 134.35
+user 172.23
+sys 10.39
+changeset: 1071:d6362675448798decdb5499bb692edb998ce25e3
+date: 2010-06-13 21:33 +0000
+svn: r12752
+description: Progress towards custom slot definition support: use of generic slot-definition-*
+abcl.jar-size: 7382845
+-----
+real 136.86
+user 175.39
+sys 10.60
+changeset: 1081:2b8058d2015208393f0ef9a07f94983bf4bea2e6
+date: 2010-06-25 10:46 +0000
+svn: r12765
+description: Update to ASDF-2.003 with local patches.
+abcl.jar-size: 7449371
+-----
+real 137.02
+user 175.53
+sys 10.65
+changeset: 1091:d1ef3b36f880086baaec8d9612413f5539bf2d97
+date: 2010-07-10 20:37 +0000
+svn: r12799
+description: Backout partial bad merge.
+abcl.jar-size: 7453556
+-----
+real 137.41
+user 176.18
+sys 10.73
+changeset: 1101:60a37240f5b04eb159efa7325e94e51632b0c0e2
+date: 2010-07-17 12:03 +0000
+svn: r12811
+description: Re-implement clean for ANSI tests in Lisp to work under Windows.
+abcl.jar-size: 7454306
+-----
+real 145.60
+user 175.71
+sys 11.22
+changeset: 1111:ff20f1bc2337755269887f5cb38ee2a6d79feac3
+date: 2010-07-26 22:26 +0000
+svn: r12828
+description: Updated changelog for new release.
+abcl.jar-size: 7458606
+-----
+real 142.65
+user 176.32
+sys 10.91
+changeset: 1121:44ab21bdeb95ccf8cb95bec2099d106ac341f00e
+date: 2010-08-12 08:50 +0000
+svn: r12888
+description: Fix typo.
+abcl.jar-size: 7538151
+-----
+real 147.91
+user 177.00
+sys 11.23
+changeset: 1131:d7b3ef7e68cb3b4a521935786b86fa249fa74689
+date: 2010-09-24 07:15 +0000
+svn: r12912
+description: Update CHANGES for the upcoming release.
+abcl.jar-size: 7538165
+-----
+real 230.61
+user 262.18
+sys 12.80
+changeset: 1141:9e4b5b9417d63f8c3d689e3e470bea75ab8169e2
+date: 2010-09-30 19:37 +0000
+svn: r12931
+description: Add fixes on trunk to be released with 0.23.
+abcl.jar-size: 8105012
+-----
+real 226.45
+user 261.87
+sys 12.40
+changeset: 1151:5c68031a144ef501d7d36a85c7322231cf4896d4
+date: 2010-10-03 08:47 +0000
+svn: r12941
+description: Add ANALYZE-LOCALS, which should have been on the
+abcl.jar-size: 8147622
+-----
+real 223.90
+user 261.22
+sys 12.22
+changeset: 1161:456b1f8c52988a5b879dc56eb7f5d4352211fb06
+date: 2010-10-04 14:31 +0000
+svn: r12952
+description: Maxima disables underflow signals itself now. We default back
+abcl.jar-size: 8149414
+-----
+real 222.71
+user 260.59
+sys 12.16
+changeset: 1171:2eb1777d7f8ef1f657b6bbb962b27748b48c0130
+date: 2010-10-09 19:28 +0000
+svn: r12963
+description: Remove unused constructors.
+abcl.jar-size: 8160741
+-----
+real 223.07
+user 261.78
+sys 12.16
+changeset: 1181:e36dec1ba1e4c2729594a709a3389f9d19bbfea5
+date: 2010-10-14 11:47 +0000
+svn: r12973
+description: Fix an issue with running ABCL on Oracle JRockit JVM!
+abcl.jar-size: 8151120
+-----
+real 226.12
+user 265.71
+sys 12.32
+changeset: 1191:d1614b2f0757fe770044c216ffb8de7db0ff2f4e
+date: 2010-10-31 08:48 +0000
+svn: r12987
+description: Use a lexical variable rather than SETQ for backtrace
+abcl.jar-size: 8278780
+-----
+real 229.07
+user 269.44
+sys 12.61
+changeset: 1201:9978c4558ffe6d166c38f958dba7c9d9823bc060
+date: 2010-11-04 19:35 +0000
+svn: r12998
+description: Update CHANGES.
+abcl.jar-size: 8284571
+-----
+real 226.01
+user 264.55
+sys 12.44
+changeset: 1211:294e145e3595fb7c0071f0c465e3ba83c20d6f99
+date: 2010-11-07 12:10 +0000
+svn: r13011
+description: Test that MAKE-PATHNAME checks its arguments
+abcl.jar-size: 8284885
+-----
+real 217.87
+user 256.70
+sys 12.19
+changeset: 1221:2784ee7f28fc25da2cd2c260f6a65b9f7edff130
+date: 2010-11-15 15:05 +0000
+svn: r13024
+description: Fix loading from pathnames with '+' in directory pathname re #110.
+abcl.jar-size: 8279701
+-----
+real 220.03
+user 258.58
+sys 12.58
+changeset: 1231:9bbdc7765393fb34f1214577898503e57b7b195f
+date: 2010-11-20 16:38 +0000
+svn: r13039
+description: Fix Lisp-based build (reported by Pascal J. Bourguignon).
+abcl.jar-size: 8281919
+-----
+real 223.13
+user 262.19
+sys 12.63
+changeset: 1241:f9fde9bffad86aa58abfafa1d358b8b6f01a9dc8
+date: 2010-11-27 11:04 +0000
+svn: r13058
+description: Documentation for the URI encoding changes.
+abcl.jar-size: 8277895
+-----
+real 226.04
+user 265.34
+sys 12.90
+changeset: 1251:592e83a09637f58aa8a1ae7bc685cc7ae9e5219d
+date: 2010-12-01 22:44 +0000
+svn: r13078
+description: The classfile writer now handles the creation of interfaces.
+abcl.jar-size: 8292504
+-----
+real 222.28
+user 262.58
+sys 12.45
+changeset: 1261:27f1abc5234364edc72f7109a7187ac3ef9f9798
+date: 2010-12-15 21:43 +0000
+svn: r13095
+description: Remove unused packages.
+abcl.jar-size: 8295975
+-----
+real 224.77
+user 264.16
+sys 12.46
+changeset: 1271:31a28c7a6a627399b1be459cac8389f2f3aaa69e
+date: 2010-12-27 22:06 +0000
+svn: r13105
+description: Fix Pathname.java failing to find boot.lisp in an "unpacked JAR" situation
+abcl.jar-size: 8300202
+-----
