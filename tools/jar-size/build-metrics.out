@@ -1155,3 +1155,274 @@ svn: r13105
 description: Fix Pathname.java failing to find boot.lisp in an "unpacked JAR" situation
 abcl.jar-size: 8300202
 -----
+real 236.10
+user 269.68
+sys 12.62
+changeset: 1281:8deeda16ab780c2c44b866e0a79efe121564be28
+date: 2011-01-01 12:07 +0000
+svn: r13115
+description: Add SOME-NESTED-BLOCK function to work with hierarchical block structures.
+abcl.jar-size: 8384671
+-----
+real 240.94
+user 269.77
+sys 12.80
+changeset: 1291:db2b516f427af273e0d68fe5ec4463862a77d47d
+date: 2011-01-10 21:26 +0000
+svn: r13132
+description: Fix: When deleting a package it remains on the usedByList of
+abcl.jar-size: 8414233
+-----
+real 213.95
+user 254.40
+sys 12.14
+changeset: 1301:e5d9ee75d0bc822717e1d46085b2fb55a6748006
+date: 2011-01-13 22:49 +0000
+svn: r13143
+description: Add IntegrityError and ProcessingTerminated error classes
+abcl.jar-size: 8180273
+-----
+real 210.15
+user 254.40
+sys 12.28
+changeset: 1311:ead57eb200c46b825fbdf29f56759e3c4cf33d44
+date: 2011-01-21 14:13 +0000
+svn: r13166
+description: Smooth over more nits in the README.
+abcl.jar-size: 8179908
+-----
+real 207.93
+user 249.24
+sys 12.59
+changeset: 1321:bb54951c4b6780e23101c9b7a93ab05b9a6dc22d
+date: 2011-01-26 08:39 +0000
+svn: r13185
+description: Fix #119: Incorrect dynamic environment for evaluation of :CLASS
+abcl.jar-size: 8180818
+-----
+real 206.48
+user 254.51
+sys 12.16
+changeset: 1331:626fdbed0544bfbfeafb4f9f6faae06ff6ba3b04
+date: 2011-01-30 20:52 +0000
+svn: r13195
+description: Finalize CLASS and STANDARD-OBJECT, just like most (all?) others
+abcl.jar-size: 8181117
+-----
+real 209.55
+user 255.94
+sys 12.31
+changeset: 1341:966522088cbbd7690d5382e02d4c773b9fc22c64
+date: 2011-02-06 16:26 +0000
+svn: r13205
+description: Upon defining a forward referenced class, assign the CLASS-DIRECT-SUBCLASSES
+abcl.jar-size: 8247327
+-----
+real 212.00
+user 258.26
+sys 12.26
+changeset: 1351:601637006b1e2511ae2dc6481ee19605a25a7460
+date: 2011-02-12 18:36 +0000
+svn: r13215
+description: Untabify.
+abcl.jar-size: 8250104
+-----
+real 210.43
+user 257.65
+sys 12.17
+changeset: 1361:681cc6e0e224748807435ee2fab976dfeb3a5573
+date: 2011-02-20 20:02 +0000
+svn: r13226
+description: Fix ticket #128. This patch enables the use of -- as a parameter,
+abcl.jar-size: 8305847
+-----
+real 209.69
+user 255.63
+sys 12.66
+changeset: 1371:4c86e50b8cf81674ab7d8fc05f6d0f839263bb74
+date: 2011-03-10 20:30 +0000
+svn: r13241
+description: Reduce the amount of code in our compiler by changing the way
+abcl.jar-size: 8296393
+-----
+real 205.11
+user 252.94
+sys 12.52
+changeset: 1381:5bd4f7987e0e9da2541559f01fd3d016470ca40d
+date: 2011-03-16 18:36 +0000
+svn: r13252
+description: Revert the fix attempt for files with names like File::Foo::Bar.
+abcl.jar-size: 8304436
+-----
+real 207.24
+user 255.71
+sys 12.63
+changeset: 1391:7a6a723d8ca89fcb48e6395afa2bac1066cfe22a
+date: 2011-04-04 12:30 +0000
+svn: r13262
+description: Fix UNUSED.2 for ABCL.
+abcl.jar-size: 8262019
+-----
+real 209.48
+user 257.70
+sys 12.54
+changeset: 1401:dd3acec71fbde8b55b85a754b2b5e84898b31db7
+date: 2011-04-27 20:30 +0000
+svn: r13272
+description: Fix pprint routines using SYS:OUTPUT-OBJECT to a GRAY-STREAM.
+abcl.jar-size: 8307606
+-----
+real 205.64
+user 251.55
+sys 12.70
+changeset: 1411:56072f909988ffd6e8c9b162e22bcba12fb2f405
+date: 2011-05-21 12:40 +0000
+svn: r13282
+description: Make JAVA:JRESOLVE-METHOD try harder to resolve a JAVA-OBJECT instance.
+abcl.jar-size: 8306789
+-----
+real 207.98
+user 256.02
+sys 12.32
+changeset: 1421:ba42c165b3d84d6ffd03d0ff7ef227867ce078b0
+date: 2011-05-24 12:25 +0000
+svn: r13292
+description: Untabify.
+abcl.jar-size: 8307056
+-----
+real 206.80
+user 255.30
+sys 12.39
+changeset: 1431:011be6c7179b144a330e1f141bc511e8028149bb
+date: 2011-05-27 13:06 +0000
+svn: r13302
+description: Include the version in the internal PATHNAME copy contructor.
+abcl.jar-size: 8307269
+-----
+real 208.28
+user 255.14
+sys 12.64
+changeset: 1441:de1b02d56a295c7dee20443316f85c3e279dcb04
+date: 2011-06-08 15:28 +0000
+svn: r13312
+description: Renam RUN-MATCHING to DO-MATCHING improving output.
+abcl.jar-size: 8357651
+-----
+real 215.35
+user 255.16
+sys 12.49
+changeset: 1451:011466ba4d9c3c76816eef446374365e5a1f98ee
+date: 2011-06-10 10:15 +0000
+svn: r13322
+description: Make asdf-install version compatible with ASDF2 requirements.
+abcl.jar-size: 8360405
+-----
+real 223.44
+user 257.21
+sys 13.31
+changeset: 1461:ecc013bfb2a2f2cdf5a6c1b947d5ca98087e661d
+date: 2011-06-16 05:25 +0000
+svn: r13332
+description: Expand the Java docstring annotation to include a separate field for return values.
+abcl.jar-size: 8362496
+-----
+real 217.78
+user 253.51
+sys 13.04
+changeset: 1471:4e3b842dd9bef8331fc0a3087b64ff1cd83188e8
+date: 2011-06-17 10:11 +0000
+svn: r13342
+description: Implementation strategy:  use the Maven Ant tasks to drive via build.xml.
+abcl.jar-size: 8366111
+-----
+BUILD FAILED
+/export/home/evenson/work/abcl.jar-size/build.xml:360: /export/home/evenson/work/abcl.jar-size/build/classes/org/armedbear/lisp/version doesn't exist
+
+Total time: 3 minutes 21 seconds
+
+real 202.08
+user 250.45
+sys 8.64
+changeset 1481 failed to build.
+-----
+real 209.36
+user 257.04
+sys 12.79
+changeset: 1491:60387ebcac26a0e821f71b576a917119c17a3070
+date: 2011-06-22 14:33 +0000
+svn: r13362
+description: Dynamically find location of mvn libraries based on 'mvn' in PATH.
+abcl.jar-size: 8369879
+-----
+real 207.53
+user 255.90
+sys 12.46
+changeset: 1501:8ff114576c16975ba4290fd3be7dd624cedd2149
+date: 2011-07-04 09:02 +0000
+svn: r13372
+description: Document the extension to CLOS specialization for Java objects.
+abcl.jar-size: 8374815
+-----
+real 207.79
+user 255.88
+sys 12.36
+changeset: 1511:b023035086e9029afe5ef197e33e3ca007f6940a
+date: 2011-07-09 22:57 +0000
+svn: r13383
+description: Increase trunk version number.
+abcl.jar-size: 8381822
+-----
+real 210.11
+user 258.38
+sys 12.62
+changeset: 1521:4946da84d4a8f1f168ab9661e8455a22ed56fb01
+date: 2011-07-14 14:10 +0000
+svn: r13401
+description: ANSI-TESTS:FULL-REPORT provides a clearer reports of test failures.
+abcl.jar-size: 8382748
+-----
+real 209.70
+user 259.09
+sys 12.77
+changeset: 1531:92f2082e09d4f1cf4f056ec60e122f3c3634a5cb
+date: 2011-07-26 18:50 +0000
+svn: r13415
+description: Don't print the #\Uxxxx representation for character codes greater than 0xff.
+abcl.jar-size: 8384053
+-----
+real 205.30
+user 251.51
+sys 12.71
+changeset: 1541:e51d4e4d8db14e024e502015d4f21d8ac523024f
+date: 2011-08-02 20:57 +0000
+svn: r13434
+description: Correct stream being modified to be *DEBUG-IO* bound streams.
+abcl.jar-size: 8383152
+-----
+real 209.54
+user 257.85
+sys 12.58
+changeset: 1551:000ed07ff41f6451b157d97d2aa21d008660587e
+date: 2011-08-06 13:51 +0000
+svn: r13444
+description: Reduce the number of required unreadableString() methods by removing
+abcl.jar-size: 8389139
+-----
+real 197.17
+user 245.62
+sys 12.13
+changeset: 1561:a33c4807329f59e98616fef16599c49e1ef7cffe
+date: 2011-08-11 09:45 +0000
+svn: r13454
+description: Tweak appearance and contents of help message.
+abcl.jar-size: 8154597
+-----
+real 197.19
+user 243.52
+sys 12.26
+changeset: 1571:9e340ac12149b1cb26fb36b06da8fc0dfb279db3
+date: 2011-08-11 19:44 +0000
+svn: r13464
+description: On second thought: revert r13463, it's not about value assignment,
+abcl.jar-size: 8155389
+-----
