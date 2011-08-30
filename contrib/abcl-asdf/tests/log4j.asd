@@ -3,8 +3,10 @@
 
 (defsystem :log4j
   :components 
-  ((:mvn "log4j/log4j" :version "1.4.9")
-   (:module src :pathname "")
-   ((:file "example"))))
+  ((:module log4j.jar :components 
+            ((:mvn "log4j/log4j" :version "1.2.15")))
+   (:module source :pathname "" :components
+            ((:file "example"))
+            :depends-on (log4j.jar))))
 
   

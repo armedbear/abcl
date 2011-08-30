@@ -1,5 +1,5 @@
 (require :jss)
 
-(let ((logger (#"getLogger" 'Logger (symbol-name (gensym)))))
-  (#"log" logger "Kilroy wuz here."))
+(let ((logger (#"getLogger" 'log4j.Logger (symbol-name (gensym)))))
+  (#"trace" logger "Kilroy wuz here."))
 
