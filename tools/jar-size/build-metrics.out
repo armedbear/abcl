@@ -1426,3 +1426,58 @@ svn: r13464
 description: On second thought: revert r13463, it's not about value assignment,
 abcl.jar-size: 8155389
 -----
+real 194.98
+user 241.97
+sys 12.17
+changeset: 1581:4558d3d2ca0a0a6da5b0b089584cc58523d52064
+date: 2011-08-13 08:29 +0000
+svn: r13484
+description: Store local functions in the parent compiland, since you can't
+abcl.jar-size: 8150267
+-----
+real 194.44
+user 242.04
+sys 12.30
+changeset: 1591:271ac61fe93c86006b53a85571343c6e11e19c6d
+date: 2011-08-14 13:19 +0000
+svn: r13494
+description: Only evaluate atoms in the input stream once.
+abcl.jar-size: 8151646
+-----
+real 193.62
+user 241.24
+sys 12.22
+changeset: 1601:88c8e659e06749750608326495d0058c9a95afec
+date: 2011-08-19 15:42 +0000
+svn: r13511
+description: Re #116: while working to fix the issue, at least tell the user we're
+abcl.jar-size: 8158078
+-----
+real 197.90
+user 246.42
+sys 11.97
+changeset: 1611:ae2c27358aca112fd48b22cba92f350760bb58cf
+date: 2011-08-20 22:18 +0000
+svn: r13521
+description: Revert r13509 because it breaks cl-ppcre compilation and the ANSI tests.
+abcl.jar-size: 8282056
+-----
+real 207.14
+user 248.02
+sys 12.38
+changeset: 1621:77e29e2bfe758fd287ab68755cb0ee1c16569f47
+date: 2011-08-22 14:48 +0000
+svn: r13531
+description: Optimize the compilation of files with a large number of compilands.
+abcl.jar-size: 8291943
+-----
+real 206.05
+user 246.17
+sys 12.26
+changeset: 1631:9a3a6bc22b61557de5cfaf2029ec466aa33c5182
+date: 2011-08-27 23:23 +0000
+svn: r13541
+description: Convert docstrings and primitives to standard conventions.
+abcl.jar-size: 8305574
+
+
