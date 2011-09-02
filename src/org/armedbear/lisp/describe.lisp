@@ -112,7 +112,7 @@
 
 (defmethod describe-object ((object standard-object) stream)
   (let* ((class (class-of object))
-         (slotds (%class-slots class))
+         (slotds (mop:class-slots class))
          (max-slot-name-length 0)
          (instance-slotds ())
          (class-slotds ()))
