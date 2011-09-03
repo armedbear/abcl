@@ -1941,6 +1941,22 @@ Initialized with the true value near the end of the file.")
 (defun around-method-p (method)
   (equal '(:around) (method-qualifiers method)))
 
+(defun process-next-method-list (gf next-method-list)
+  (mapcar #'(lambda (next-method-form)
+              (cond
+                ((listp next-method-form)
+                 (assert (eq (first next-method-form) 'make-method))
+                 (let* ((rest-sym (gensym)))
+                   (make-instance-standard-method
+                    nil ;; ignored
+                    :lambda-list (list '&rest rest-sym)
+                    :function (compute-method-function `(lambda (&rest ,rest-sym)
+                                                          ,(second next-method-form))))))
+                (t
+                 (assert (typep next-method-form 'method))
+                 next-method-form)))
+          next-method-list))
+
 (defun std-compute-effective-method-function (gf methods)
   (let* ((mc (generic-function-method-combination gf))
          (mc-name (if (atom mc) mc (%car mc)))
@@ -1950,7 +1966,7 @@ Initialized with the true value near the end of the file.")
          (arounds '())
          around
          emf-form
-         (long-method-combination-p 
+         (long-method-combination-p
           (typep (get mc-name 'method-combination-object) 'long-method-combination)))
     (unless long-method-combination-p
       (dolist (m methods)
@@ -2021,14 +2037,34 @@ Initialized with the true value near the end of the file.")
               (arguments (rest (slot-value gf 'method-combination))))
          (assert (typep mc-obj 'long-method-combination))
          (assert function)
-         (setf emf-form 
+         (setf emf-form
                (let ((result (if arguments
                                  (apply function gf methods arguments)
                                  (funcall function gf methods))))
                  `(lambda (args)
                     (let ((gf-args-var args))
                       (macrolet ((call-method (method &optional next-method-list)
-                                   `(funcall ,(%method-function method) args nil)))
+                                   `(funcall
+                                     ,(cond
+                                       ((listp method)
+                                        (assert (eq (first method) 'make-method))
+                                        ;; by generating an inline expansion we prevent allocation
+                                        ;; of a method instance which will be discarded immediately
+                                        ;; after reading the METHOD-FUNCTION slot
+                                        (compute-method-function `(lambda (&rest ,(gensym))
+                                                   ;;### FIXME
+                                                   ;; the MAKE-METHOD body form gets evaluated in
+                                                   ;; the null lexical environment augmented
+                                                   ;; with a binding for CALL-METHOD
+                                                   ;; ... it's the latter we're not doing here...
+                                                                    ,(second method))))
+                                       (t (%method-function method)))
+                                     args
+                                     ,(unless (null next-method-list)
+                                        ;; by not generating an emf when there are no next methods,
+                                        ;; we ensure next-method-p returns NIL
+                                        (compute-effective-method-function ,gf
+                                           (process-next-method-list ,gf next-method-list))))))
                         ,result)))))))
       (t
        (let ((mc-obj (get mc-name 'method-combination-object)))

@@ -360,6 +360,58 @@
   1)
 
 
+;; Completely DIY -- also taken from SBCL:
+(define-method-combination dmc-test-mc.2 ()
+  ((all-methods *))
+  (do ((methods all-methods (rest methods))
+       (primary nil)
+       (around nil))
+      ((null methods)
+       (let ((primary (nreverse primary))
+             (around (nreverse around)))
+         (if primary
+              (let ((form (if (rest primary)
+                             `(call-method ,(first primary) ,(rest primary))
+                             `(call-method ,(first primary)))))
+                (if around
+                    `(call-method ,(first around) (,@(rest around)
+                                                   (make-method ,form)))
+                    form))
+              `(make-method (error "No primary methods")))))
+    (let* ((method (first methods))
+           (qualifier (first (method-qualifiers method))))
+      (cond
+        ((equal :around qualifier)
+         (push method around))
+        ((null qualifier)
+         (push method primary))))))
+
+(defgeneric dmc-test-mc.2a (val)
+  (:method-combination dmc-test-mc.2))
+
+(defmethod dmc-test-mc.2a ((val number))
+  (+ val (if (next-method-p) (call-next-method) 0)))
+
+(deftest dmc-test-mc.2a
+    (= (dmc-test-mc.2a 13) 13)
+  T)
+
+(defgeneric dmc-test-mc.2b (val)
+  (:method-combination dmc-test-mc.2))
+
+(defmethod dmc-test-mc.2b ((val number))
+  (+ val (if (next-method-p) (call-next-method) 0)))
+
+(defmethod dmc-test-mc.2b :around ((val number))
+  (+ val (if (next-method-p) (call-next-method) 0)))
+
+(deftest dmc-test-mc.2b
+    (= 26 (dmc-test-mc.2b 13))
+  T)
+
+
+
+
 (defclass foo-class (standard-class))
 (defmethod mop:validate-superclass ((class foo-class) (superclass standard-object))
   t)
