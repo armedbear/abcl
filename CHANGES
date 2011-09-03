@@ -10,6 +10,11 @@ Features
 
  * Huge (> 64k) literal object support (fixes CL-UNICODE support)
 
+ * The ABCL-ASDF contrib allows the specification of JAR-FILE or
+   JAR-DIRECTORY components that can be resolved via a PATHNAME.  The
+   MVN component bootstraps a Maven3 Aether connector to locally
+   replicate a versioned jar artifact for dynamic inclusion in the
+   CLASSPATH.
 
 Changes
 -------
@@ -44,6 +49,10 @@ Changes
    which records dynamically added dependencies.  Use the
    JSS:ENSURE-COMPATIBILITY function to have JSS include these
    dependencies.  
+
+*  As long as ABCL-ASDF:ENSURE-MVN-VERSION can dynamically introspect
+   and then load Maven 3 libraries at runtime, ASDF components of type
+   MVN can now be used to specify versioned JVM artifacts.
 
  * Threads spawned by THREADS:MAKE-THREAD can terminate the Lisp image
    via the EXT:QUIT and EXT:EXIT functions.
