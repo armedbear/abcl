@@ -1941,7 +1941,7 @@ Initialized with the true value near the end of the file.")
 (defun around-method-p (method)
   (equal '(:around) (method-qualifiers method)))
 
-(defun process-next-method-list (gf next-method-list)
+(defun process-next-method-list (next-method-list)
   (mapcar #'(lambda (next-method-form)
               (cond
                 ((listp next-method-form)
@@ -2064,7 +2064,7 @@ Initialized with the true value near the end of the file.")
                                         ;; by not generating an emf when there are no next methods,
                                         ;; we ensure next-method-p returns NIL
                                         (compute-effective-method-function ,gf
-                                           (process-next-method-list ,gf next-method-list))))))
+                                           (process-next-method-list next-method-list))))))
                         ,result)))))))
       (t
        (let ((mc-obj (get mc-name 'method-combination-object)))
