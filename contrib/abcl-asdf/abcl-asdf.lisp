@@ -23,7 +23,7 @@
   (maybe-parse-mvn c)
   (java:add-to-classpath 
    (abcl-asdf:as-classpath 
-    (abcl-asdf:satisfy c)))))
+    (abcl-asdf:satisfy c))))
 
 ;;; A Maven URI has the form "mvn:group-id/artifact-id/version"
 ;;;
