@@ -936,7 +936,8 @@
                           thereis (method-group-p item qualifiers)))
            :description ',description
            :order ',order
-           :required ',required-p)))
+           :required ',required-p
+           :*-selecter ,(equal selecters '(*)))))
 
 (defun extract-required-part (lambda-list)
   (flet ((skip (key lambda-list)
@@ -1027,27 +1028,38 @@
                   collect `(,var ,init-form)))
          ,@forms))))
 
+(defun assert-unambiguous-method-sorting (group-name methods)
+  (let ((specializers (make-hash-table :test 'equal)))
+    (dolist (method methods)
+      (push method (gethash (method-specializers method) specializers)))
+    (loop for specializer-methods being each hash-value of specializers
+       using (hash-key method-specializers)
+       unless (= 1 (length specializer-methods))
+       do (error "Ambiguous method sorting in method group ~A due to multiple ~
+                  methods with specializers ~S: ~S"
+                 group-name method-specializers specializer-methods))))
+
 (defmacro with-method-groups (method-group-specs methods-form &body forms)
   (flet ((grouping-form (spec methods-var)
-                        (let ((predicate (coerce-to-function (getf spec :predicate)))
-                              (group (gensym))
-                              (leftovers (gensym))
-                              (method (gensym)))
-                          `(let ((,group '())
-                                 (,leftovers '()))
-                             (dolist (,method ,methods-var)
-                               (if (funcall ,predicate (method-qualifiers ,method))
-                                   (push ,method ,group)
-                                   (push ,method ,leftovers)))
-                             (ecase ,(getf spec :order)
-                               (:most-specific-last )
-                               (:most-specific-first (setq ,group (nreverse ,group))))
-                             ,@(when (getf spec :required)
-                                 `((when (null ,group)
-                                     (error "Method group ~S must not be empty."
-                                            ',(getf spec :name)))))
-                             (setq ,methods-var (nreverse ,leftovers))
-                             ,group))))
+           (let ((predicate (coerce-to-function (getf spec :predicate)))
+                 (group (gensym))
+                 (leftovers (gensym))
+                 (method (gensym)))
+             `(let ((,group '())
+                    (,leftovers '()))
+                (dolist (,method ,methods-var)
+                  (if (funcall ,predicate (method-qualifiers ,method))
+                      (push ,method ,group)
+                      (push ,method ,leftovers)))
+                (ecase ,(getf spec :order)
+                  (:most-specific-last )
+                  (:most-specific-first (setq ,group (nreverse ,group))))
+                ,@(when (getf spec :required)
+                        `((when (null ,group)
+                            (error "Method group ~S must not be empty."
+                                   ',(getf spec :name)))))
+                (setq ,methods-var (nreverse ,leftovers))
+                ,group))))
     (let ((rest (gensym))
           (method (gensym)))
       `(let* ((,rest ,methods-form)
@@ -1058,6 +1070,11 @@
            (invalid-method-error ,method
                                  "Method ~S with qualifiers ~S does not belong to any method group."
                                  ,method (method-qualifiers ,method)))
+         ,@(unless (and (= 1 (length method-group-specs))
+                        (getf (car method-group-specs) :*-selecter))
+             (mapcar #'(lambda (spec)
+                         `(assert-unambiguous-method-sorting ',(getf spec :name) ,(getf spec :name)))
+                     method-group-specs))
          ,@forms))))
 
 (defun method-combination-type-lambda

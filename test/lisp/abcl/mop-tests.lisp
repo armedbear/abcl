@@ -410,7 +410,38 @@
   T)
 
 
+;;; Taken from SBCL: error when method sorting is ambiguous
 
+(define-method-combination dmc-test-mc.3a ()
+  ((around (:around))
+   (primary * :required t))
+  (let ((form (if (rest primary)
+                  `(call-method ,(first primary) ,(rest primary))
+                  `(call-method ,(first primary)))))
+    (if around
+        `(call-method ,(first around) (,@(rest around)
+                                       (make-method ,form)))
+        form)))
+
+(defgeneric dmc-test-mc.3a (val)
+  (:method-combination dmc-test-mc.3a))
+
+(defmethod dmc-test-mc.3a ((val number))
+  (+ val (if (next-method-p) (call-next-method) 0)))
+
+(defmethod dmc-test-mc.3a :around ((val number))
+  (+ val (if (next-method-p) (call-next-method) 0)))
+
+(defmethod dmc-test-mc.3a :somethingelse ((val number))
+  (+ val (if (next-method-p) (call-next-method) 0)))
+
+(deftest dmc-test-mc.3a
+    (multiple-value-bind
+          (value error)
+        (ignore-errors (wam-test-mc-b 13))
+      (declare (ignore value))
+      (typep error 'error))
+  T)
 
 (defclass foo-class (standard-class))
 (defmethod mop:validate-superclass ((class foo-class) (superclass standard-object))
