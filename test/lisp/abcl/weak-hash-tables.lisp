@@ -13,7 +13,7 @@
 |#
 
 (defun random-object ()
-  "A randomly constructed object that is elgible for garbage collection."
+  "A randomly constructed object that is eligible for garbage collection."
   (coerce (/ (random 10000) (1+ (random 10000)))
           'single-float))
 
