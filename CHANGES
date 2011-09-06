@@ -1,6 +1,11 @@
-Version 0.27.0
+Version 0.28.0
 ==============
 (untagged)
+
+
+Version 0.27.0
+==============
+svn.uri="http://svn.common-lisp.net/armedbear/tags/0.27.0/"
 
 
 Features
