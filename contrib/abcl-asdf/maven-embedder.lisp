@@ -132,7 +132,18 @@ Test:
      session
      (#"newLocalRepositoryManager" repository-system local-repository))))
 
-(defun resolve-artifact (group-id artifact-id version)
+(defun resolve-artifact (group-id artifact-id &optional (version "LATEST" versionp))
+  "Dynamically resolve Maven dependencies for item with GROUP-ID and ARTIFACT-ID at VERSION.
+
+Declared dependencies are not attempted to be located.
+
+If unspecified, the string \"LATEST\" will be used for the VERSION.
+
+Returns a string containing the necessary jvm classpath entries packed
+in Java CLASSPATH representation."
+
+  (unless versionp
+    (warn "Using LATEST for unspecified version."))
   (let* ((system 
           (repository-system))
          (session 
@@ -150,8 +161,18 @@ Test:
     (#"addRepository" artifact-request repository)
     (#"resolveArtifact" system session artifact-request)))
 
-(defun resolve-dependencies (group-id artifact-id version)
+(defun resolve-dependencies (group-id artifact-id &optional (version "LATEST" versionp))
+  "Dynamically resolve Maven dependencies for item with GROUP-ID and ARTIFACT-ID at VERSION.
+
+All recursive dependencies will be visited before resolution is successful.
+
+If unspecified, the string \"LATEST\" will be used for the VERSION.
+
+Returns a string containing the necessary jvm classpath entries packed
+in Java CLASSPATH representation."
   (unless *init* (init))
+  (unless versionp
+    (warn "Using LATEST for unspecified version."))
   (let* ((system 
           (repository-system))
          (session 

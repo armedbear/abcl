@@ -1,11 +1,14 @@
 (defpackage #:abcl-asdf
   (:use :cl)
   (:export 
+;;; Public API
+   #:resolve-dependencies
+
+;;; "Internal" API
    #:satisfy
    #:as-classpath
 
    #:resolve-artifact
-   #:resolve-dependencies
 
    #:add-directory-jars-to-class-path
    #:need-to-add-directory-jar?

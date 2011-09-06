@@ -52,12 +52,16 @@
 (in-package #:abcl-asdf)
 
 (defun satisfy (mvn-component)
+  "Resolve all runtime dependencies of MVN-COMPONENT.
+
+Returns a string in JVM CLASSPATH format as entries delimited by classpath separator string."
+  
   (with-slots (asdf::group-id asdf::artifact-id asdf::version) mvn-component
     (resolve-dependencies asdf::group-id asdf::artifact-id asdf::version)))
 
 (defun as-classpath (classpath)
-  "For a given MVN entry, return a list of loadable archives 
- suitable for addition to the classpath."
+  "Break apart the JVM CLASSPATH string into a list of its consituents."
+  ;;; XXX Maybe doesn't work under Windows?
   (split-string classpath ":"))
 
 (defun split-string (string split-char)
