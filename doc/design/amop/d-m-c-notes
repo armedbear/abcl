@@ -1,0 +1,83 @@
+
+Below is a DRAFT e-mail that I intend to send to the mailing list,
+however, having it in the repository (probably rephrased) is better
+long-term documentation.
+
+
+
+Over the past days, I've been working on porting SBCL's D-M-C tests to ABCL's
+test suite and testing+fixing our implementation. A number of use-cases have
+been fixed, however, I'm now down to the more complex cases, in particular
+the case for the (:arguments . lambda-list).
+
+
+Context
+-----------
+
+When handling EMF computation, there are two sets of arguments (lambda lists):
+
+1. the arguments passed to the METHOD-COMBINATION through the
+   (:method-combination ...) form in the generic function definition
+2. the arguments passed to the generic function when it is being called
+
+This distinction is very important, yet not particularly clear from our
+sources. The former set of arguments is available from the instantiation of
+the generic function (DEFGENERIC evaluation) and constant throughout the life
+of the GF. The latter is set of arguments is not available until the function
+is being called and will presumably be different for each invocation of the GF.
+
+The former set is passed to the D-M-C form in the second position:
+ (D-M-C <name> <arguments> ....). The latter set is made accessible by
+providing the (:arguments ...) form to the D-M-C form -- binding of the
+variables happens at "EMF-calculation-time".
+
+Current implementation
+---------------------------------
+
+Our existing implementation does not work at all with the (:arguments ...)
+option in the D-M-C definition. [SBCL didn't either, btw,
+until 0.7.<something>]
+What happens in our implementation is that the function
+STD-COMPUTE-EFFECTIVE-METHOD-FUNCTION calls a function created by the D-M-C.
+That function returns forms to be used as the EMF. S-C-E-M-F wraps the returned
+forms in a function and returns it as the EMF.
+
+This works as long as the EMF does not depend on the arguments supplied
+to the GF (generic function) call.
+
+
+The problem
+------------------
+
+Our implementation tries to access the function call parameters (resulting
+in "unbound variable errors") from the EMF-generating function. However,
+that function won't (ever) be passed the call arguments.
+
+
+The solution
+-----------------
+
+Writing down the above and taking into account that we want to cache as much
+of our EMF as possible for performance reasons as well as considering that
+the EMF depending on the function call arguments can't be cached, I think
+this is the solution:
+
+The forms being returned (and later wrapped in a lambda) should include code
+which does another code-generation step --with access to the call parameters--
+and include a call to the forms having been generated.
+
+Examples
+--------------
+
+A call to the EMF-generating function which does not depend on the call
+arguments would return something like:
+
+ '(CALL-METHOD (MAKE-METHOD (error "ABC 123")))
+
+This form will be wrapped in a lambda roughly like this:
+  (lambda (args) (macrolet ((call-method ...)) <forms>))
+
+
+A call to the EMF-generating function which *does* depend on the arguments
+would return something like:
+
