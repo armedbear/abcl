@@ -1000,6 +1000,33 @@
 
 (defconstant +gf-args-var+ (make-symbol "GF-ARGS-VAR"))
 
+(defun wrap-with-call-method-macro (gf forms)
+  `(macrolet
+       ((call-method (method &optional next-method-list)
+          `(funcall
+            ,(cond
+              ((listp method)
+               (assert (eq (first method) 'make-method))
+               ;; by generating an inline expansion we prevent allocation
+               ;; of a method instance which will be discarded immediately
+               ;; after reading the METHOD-FUNCTION slot
+               (compute-method-function
+                    `(lambda (&rest ,(gensym))
+                       ;;### FIXME
+                       ;; the MAKE-METHOD body form gets evaluated in
+                       ;; the null lexical environment augmented
+                       ;; with a binding for CALL-METHOD
+                       ;; ... it's the latter we're not doing here...
+                       ,(second method))))
+              (t (%method-function method)))
+            args
+            ,(unless (null next-method-list)
+                     ;; by not generating an emf when there are no next methods,
+                     ;; we ensure next-method-p returns NIL
+                     (compute-effective-method-function
+                        ,gf (process-next-method-list next-method-list))))))
+     ,@forms))
+
 (defmacro with-args-lambda-list (args-lambda-list generic-function-symbol
                                                   &body forms)
   (let ((gf-lambda-list (gensym))
@@ -2060,29 +2087,7 @@ Initialized with the true value near the end of the file.")
                                  (funcall function gf methods))))
                  `(lambda (args)
                     (let ((gf-args-var args))
-                      (macrolet ((call-method (method &optional next-method-list)
-                                   `(funcall
-                                     ,(cond
-                                       ((listp method)
-                                        (assert (eq (first method) 'make-method))
-                                        ;; by generating an inline expansion we prevent allocation
-                                        ;; of a method instance which will be discarded immediately
-                                        ;; after reading the METHOD-FUNCTION slot
-                                        (compute-method-function `(lambda (&rest ,(gensym))
-                                                   ;;### FIXME
-                                                   ;; the MAKE-METHOD body form gets evaluated in
-                                                   ;; the null lexical environment augmented
-                                                   ;; with a binding for CALL-METHOD
-                                                   ;; ... it's the latter we're not doing here...
-                                                                    ,(second method))))
-                                       (t (%method-function method)))
-                                     args
-                                     ,(unless (null next-method-list)
-                                        ;; by not generating an emf when there are no next methods,
-                                        ;; we ensure next-method-p returns NIL
-                                        (compute-effective-method-function ,gf
-                                           (process-next-method-list next-method-list))))))
-                        ,result)))))))
+                      ,(wrap-with-call-method-macro gf (list result))))))))
       (t
        (let ((mc-obj (get mc-name 'method-combination-object)))
          (unless (typep mc-obj 'short-method-combination)
