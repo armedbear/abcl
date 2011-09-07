@@ -411,6 +411,7 @@
 
 
 ;;; Taken from SBCL: error when method sorting is ambiguous
+;;;  with multiple method groups
 
 (define-method-combination dmc-test-mc.3a ()
   ((around (:around))
@@ -438,10 +439,68 @@
 (deftest dmc-test-mc.3a
     (multiple-value-bind
           (value error)
-        (ignore-errors (wam-test-mc-b 13))
+        (ignore-errors (wam-test-mc.3a 13))
       (declare (ignore value))
       (typep error 'error))
   T)
+
+;;; Taken from SBCL: error when method sorting is ambiguous
+;;;  with a single (non *) method group
+
+
+(define-method-combination dmc-test-mc.3b ()
+  ((methods listp :required t))
+  (if (rest methods)
+      `(call-method ,(first methods) ,(rest methods))
+      `(call-method ,(first methods))))
+
+(defgeneric dmc-test-mc.3b (val)
+  (:method-combination dmc-test-mc.3b))
+
+(defmethod dmc-test-mc.3b :foo ((val number))
+  (+ val (if (next-method-p) (call-next-method) 0)))
+
+(defmethod dmc-test-mc.3b :bar ((val number))
+  (+ val (if (next-method-p) (call-next-method) 0)))
+
+(deftest dmc-test-mc.3b
+    (multiple-value-bind
+          (value error)
+        (ignore-errors (dmc-test-mc.3b 13))
+      (declare (ignore value))
+      (typep error 'error))
+  T)
+
+#|
+
+(progn (defvar *d-m-c-args-test* nil)
+(define-method-combination progn-with-lock ()
+  ((methods ()))
+  (:arguments object)
+  `(unwind-protect
+    (progn (lock (object-lock ,object))
+           ,@(mapcar #'(lambda (method)
+                         `(call-method ,method))
+                     methods))
+    (unlock (object-lock ,object))))
+(defun object-lock (obj)
+  (push "object-lock" *d-m-c-args-test*)
+  obj)
+(defun unlock (obj)
+  (push "unlock" *d-m-c-args-test*)
+  obj)
+(defun lock (obj)
+  (push "lock" *d-m-c-args-test*)
+  obj)
+(defgeneric d-m-c-args-test (x)
+  (:method-combination progn-with-lock))
+(defmethod d-m-c-args-test ((x symbol))
+  (push "primary" *d-m-c-args-test*))
+(defmethod d-m-c-args-test ((x number))
+  (error "foo")))
+
+|#
+
 
 (defclass foo-class (standard-class))
 (defmethod mop:validate-superclass ((class foo-class) (superclass standard-object))
