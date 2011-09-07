@@ -139,7 +139,8 @@ Lisp.
 \section{Lisp from Java}
 
 Manipulation of the Lisp API is currently lacking a stable interface,
-so what is documented here is subject to change.  
+so the following documented interfaces are subject to change with
+notice:
 
 \begin{itemize}
 \item All Lisp values are descendants of LispObject.java
@@ -310,6 +311,9 @@ functions for manipulating network sockets, running external programs,
 registering object finalizers, constructing reference weakly held by
 the garbage collector and others.
 
+See \ref{Extensible Sequences} for a generic function interface to
+the native JVM contract for \code{java.util.List}.
+
 \include{extensions}
 
 \chapter{Beyond ANSI}
@@ -318,6 +322,16 @@ Naturally, in striving to be a useful contemporary Common Lisp
 implementation, ABCL endeavors to include extensions beyond the ANSI
 specification which are either widely adopted or are especially useful
 in working with the hosting JVM.
+
+\section{Extensible Sequences}
+
+Chritopher Rhodes proposal for extensible sequences is implemented in
+the SEQUENCE package.  These user extensible sequences are used
+directly in \code{java-collections.lisp} provide these CLOS
+abstractions on the standard Java collection classes as defined by the
+\code{java.util.List} contract
+
+
 
 \section{Extensions to CLOS}
 
