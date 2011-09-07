@@ -31,13 +31,13 @@ control of a suitable JVM as follows
   cmd\$ java -jar abcl.jar
 \end{listing-shell}
 
-For this command to work, the ``java'' exectuable needs to be in your
+For this command to work, the ``java'' executable needs to be in your
 path.
 
-To make it easier to faciliate the use of ABCL in tool chains (such as
+To make it easier to facilitate the use of ABCL in tool chains (such as
 SLIME) the invocation is wrapped in a Bourne shell script under UNIX
 or a DOS command script under Windows so that ABCL may be executed
-simplly as:
+simply as:
 
 \begin{listing-shell}
   cmd\$ abcl
@@ -70,7 +70,7 @@ The occurance of '--' copies the remaining arguments, unprocessed, into
 the variable EXTENSIONS:*COMMAND-LINE-ARGUMENT-LIST*.
 \end{verbatim}
 
-All of the command line arguments which follow the occurance of ``--''
+All of the command line arguments which follow the occurrence of ``--''
 are passed into a list bound to the EXT:*COMMAND-LINE-ARGUMENT-LIST*
 variable.
 
@@ -248,7 +248,7 @@ tell if a `LispObject` contains a reference to a symbol.
 
 We present various patterns for introspecting an an arbitrary
 `LispObject` which can represent the result of every Lisp evaluation
-into semantics that Java can meaniningfully deal with.
+into semantics that Java can meaningfully deal with.
 
 \subsubsection{LispObject as \code{boolean}}
 
@@ -305,7 +305,7 @@ function just as like one would traverse a list in Lisp:;
 
 \section{Extensions}
 
-The symbols in the EXTENSIONS package consititutes extensions to the
+The symbols in the EXTENSIONS package constitutes extensions to the
 ANSI standard that are potentially useful to the user.  They include
 functions for manipulating network sockets, running external programs,
 registering object finalizers, constructing reference weakly held by
@@ -325,12 +325,14 @@ in working with the hosting JVM.
 
 \section{Extensible Sequences}
 
-Chritopher Rhodes proposal for extensible sequences is implemented in
-the SEQUENCE package.  These user extensible sequences are used
+
+\ref{RHODES2007}
+
+The SEQUENCE pacakge fully implements Christopher Rhodes' proposal for
+extensible sequences.  These user extensible sequences are used
 directly in \code{java-collections.lisp} provide these CLOS
 abstractions on the standard Java collection classes as defined by the
-\code{java.util.List} contract
-
+\code{java.util.List} contract.
 
 
 \section{Extensions to CLOS}
