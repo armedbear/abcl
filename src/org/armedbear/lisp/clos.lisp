@@ -1116,11 +1116,11 @@
            ,methods
          ,(if (null args-lambda-list)
               `(lambda (,args-var)
-                 (let ((gf-args-var ,args-var))
+                 (let ((,+gf-args-var+ ,args-var))
                    ,(wrap-with-call-method-macro generic-function-symbol
                                                  args-var forms)))
               `(lambda (,args-var)
-                 (let ((gf-args-var ,args-var))
+                 (let ((,+gf-args-var+ ,args-var))
                    ,(wrap-with-call-method-macro generic-function-symbol
                                                  args-var
                        `(with-args-lambda-list ,args-lambda-list
