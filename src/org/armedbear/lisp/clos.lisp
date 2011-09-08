@@ -1108,14 +1108,13 @@
   (let ((methods (gensym)))
     `(lambda (,generic-function-symbol ,methods ,@lambda-list)
        ,@declarations
-       (let ((*message-prefix* ,(format nil "METHOD COMBINATION TYPE ~S: " name)))
-         (with-method-groups ,method-group-specs
+       (with-method-groups ,method-group-specs
            ,methods
-           ,@(if (null args-lambda-list)
-                 forms
-                 `((with-args-lambda-list ,args-lambda-list
+         ,@(if (null args-lambda-list)
+               forms
+               `((with-args-lambda-list ,args-lambda-list
                      ,generic-function-symbol
-                     ,@forms))))))))
+                   ,@forms)))))))
 
 (defun declarationp (expr)
   (and (consp expr) (eq (car expr) 'DECLARE)))
