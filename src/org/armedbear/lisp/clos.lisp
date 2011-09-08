@@ -1012,12 +1012,10 @@
                ;; after reading the METHOD-FUNCTION slot
                (compute-method-function
                     `(lambda (&rest ,(gensym))
-                       ;;### FIXME
                        ;; the MAKE-METHOD body form gets evaluated in
                        ;; the null lexical environment augmented
                        ;; with a binding for CALL-METHOD
-                       ;; ... it's the latter we're not doing here...
-                       ,(second method))))
+                       ,(wrap-with-call-method-macro ,gf (second method)))))
               (t (%method-function method)))
             args
             ,(unless (null next-method-list)
