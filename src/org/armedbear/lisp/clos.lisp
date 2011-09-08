@@ -1108,16 +1108,24 @@
   (&key name lambda-list args-lambda-list generic-function-symbol
         method-group-specs declarations forms &allow-other-keys)
   (declare (ignore name))
-  (let ((methods (gensym)))
+  (let ((methods (gensym))
+        (args-var (gensym)))
     `(lambda (,generic-function-symbol ,methods ,@lambda-list)
        ,@declarations
        (with-method-groups ,method-group-specs
            ,methods
-         ,@(if (null args-lambda-list)
-               forms
-               `((with-args-lambda-list ,args-lambda-list
-                     ,generic-function-symbol
-                   ,@forms)))))))
+         ,(if (null args-lambda-list)
+              `(lambda (,args-var)
+                 (let ((gf-args-var ,args-var))
+                   ,(wrap-with-call-method-macro generic-function-symbol
+                                                 args-var forms)))
+              `(lambda (,args-var)
+                 (let ((gf-args-var ,args-var))
+                   ,(wrap-with-call-method-macro generic-function-symbol
+                                                 args-var
+                       `(with-args-lambda-list ,args-lambda-list
+                            ,generic-function-symbol
+                          ,@forms)))))))))
 
 (defun declarationp (expr)
   (and (consp expr) (eq (car expr) 'DECLARE)))
@@ -2082,14 +2090,9 @@ Initialized with the true value near the end of the file.")
          (assert (typep mc-obj 'long-method-combination))
          (assert function)
          (setf emf-form
-               (let ((result (if arguments
-                                 (apply function gf methods arguments)
-                                 (funcall function gf methods)))
-                     (args-var (gensym)))
-                 `(lambda (,args-var)
-                    (let ((gf-args-var ,args-var))
-                      ,(wrap-with-call-method-macro gf args-var
-                                                    (list result))))))))
+               (if arguments
+                   (apply function gf methods arguments)
+                   (funcall function gf methods)))))
       (t
        (let ((mc-obj (get mc-name 'method-combination-object)))
          (unless (typep mc-obj 'short-method-combination)
