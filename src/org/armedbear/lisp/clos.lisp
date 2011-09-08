@@ -998,8 +998,6 @@
     `(let ((,value (getf ,plist ,key ,not-exist)))
        (if (eq ,not-exist ,value) ,init-form ,value))))
 
-(defconstant +gf-args-var+ (make-symbol "GF-ARGS-VAR"))
-
 (defun wrap-with-call-method-macro (gf args-var forms)
   `(macrolet
        ((call-method (method &optional next-method-list)
@@ -1016,10 +1014,10 @@
                        ;; the null lexical environment augmented
                        ;; with a binding for CALL-METHOD
                        ,(wrap-with-call-method-macro ,gf
-                                                     ,args-var
+                                                     ',args-var
                                                      (second method)))))
               (t (%method-function method)))
-            ,args-var
+            ,',args-var
             ,(unless (null next-method-list)
                      ;; by not generating an emf when there are no next methods,
                      ;; we ensure next-method-p returns NIL
@@ -1027,26 +1025,28 @@
                         ,gf (process-next-method-list next-method-list))))))
      ,@forms))
 
-(defmacro with-args-lambda-list (args-lambda-list generic-function-symbol
-                                                  &body forms)
+(defmacro with-args-lambda-list (args-lambda-list
+                                 generic-function-symbol
+                                 gf-args-symbol
+                                 &body forms)
   (let ((gf-lambda-list (gensym))
         (nrequired (gensym))
         (noptional (gensym))
         (rest-args (gensym)))
     (multiple-value-bind (whole required optional rest keys aux)
         (parse-define-method-combination-arguments-lambda-list args-lambda-list)
-      `(let* ((,gf-lambda-list (slot-value ,generic-function-symbol 'lambda-list))
+      `(let* ((,gf-lambda-list (slot-value ,generic-function-symbol 'sys::lambda-list))
               (,nrequired (length (extract-required-part ,gf-lambda-list)))
               (,noptional (length (extract-optional-part ,gf-lambda-list)))
-              (,rest-args (subseq ,+gf-args-var+ (+ ,nrequired ,noptional)))
-              ,@(when whole `((,whole ,+gf-args-var+)))
+              (,rest-args (subseq ,gf-args-symbol (+ ,nrequired ,noptional)))
+              ,@(when whole `((,whole ,gf-args-symbol)))
               ,@(loop for var in required and i upfrom 0
                   collect `(,var (when (< ,i ,nrequired)
-                                   (nth ,i ,+gf-args-var+))))
+                                   (nth ,i ,gf-args-symbol))))
               ,@(loop for (var init-form) in optional and i upfrom 0
                   collect
                   `(,var (if (< ,i ,noptional)
-                             (nth (+ ,nrequired ,i) ,+gf-args-var+)
+                             (nth (+ ,nrequired ,i) ,gf-args-symbol)
                              ,init-form)))
               ,@(when rest `((,rest ,rest-args)))
               ,@(loop for ((key var) init-form) in keys and i upfrom 0
@@ -1116,16 +1116,20 @@
            ,methods
          ,(if (null args-lambda-list)
               `(lambda (,args-var)
-                 (let ((,+gf-args-var+ ,args-var))
-                   ,(wrap-with-call-method-macro generic-function-symbol
-                                                 args-var forms)))
+                 ,(wrap-with-call-method-macro generic-function-symbol
+                                               args-var forms))
               `(lambda (,args-var)
-                 (let ((,+gf-args-var+ ,args-var))
-                   ,(wrap-with-call-method-macro generic-function-symbol
-                                                 args-var
-                       `(with-args-lambda-list ,args-lambda-list
-                            ,generic-function-symbol
-                          ,@forms)))))))))
+                 (let* ((result
+                         (with-args-lambda-list ,args-lambda-list
+                             ,generic-function-symbol ,args-var
+                           ,@forms))
+                        (function
+                         `(lambda (,',args-var) ;; ugly: we're reusing it
+                          ;; to prevent calling gensym on every EMF invocation
+                          ,(wrap-with-call-method-macro ,generic-function-symbol
+                                                        ',args-var
+                                                        (list result)))))
+                   (funcall function ,args-var))))))))
 
 (defun declarationp (expr)
   (and (consp expr) (eq (car expr) 'DECLARE)))

@@ -471,44 +471,61 @@
       (typep error 'error))
   T)
 
-#|
 
-(progn (defvar *d-m-c-args-test* nil)
-(define-method-combination progn-with-lock ()
+;; Taken from SBCL: test that GF invocation arguments
+;;   are correctly bound using the (:arguments ...) form
+
+(defparameter *dmc-test-4* nil)
+
+(defun object-lock (obj)
+  (push "object-lock" *dmc-test-4*)
+  obj)
+(defun unlock (obj)
+  (push "unlock" *dmc-test-4*)
+  obj)
+(defun lock (obj)
+  (push "lock" *dmc-test-4*)
+  obj)
+
+
+(define-method-combination dmc-test-mc.4 ()
   ((methods ()))
   (:arguments object)
   `(unwind-protect
-    (progn (lock (object-lock ,object))
-           ,@(mapcar #'(lambda (method)
-                         `(call-method ,method))
-                     methods))
-    (unlock (object-lock ,object))))
-(defun object-lock (obj)
-  (push "object-lock" *d-m-c-args-test*)
-  obj)
-(defun unlock (obj)
-  (push "unlock" *d-m-c-args-test*)
-  obj)
-(defun lock (obj)
-  (push "lock" *d-m-c-args-test*)
-  obj)
-(defgeneric d-m-c-args-test (x)
+        (progn (lock (object-lock ,object))
+               ,@(mapcar #'(lambda (method)
+                             `(call-method ,method))
+                         methods))
+     (unlock (object-lock ,object))))
+
+(defgeneric dmc-test.4 (x)
   (:method-combination progn-with-lock))
-(defmethod d-m-c-args-test ((x symbol))
-  (push "primary" *d-m-c-args-test*))
-(defmethod d-m-c-args-test ((x number))
-  (error "foo")))
+(defmethod dmc-test.4 ((x symbol))
+  (push "primary" *dmc-test-4*))
+(defmethod dmc-test.4 ((x number))
+  (error "foo"))
 
-|#
+(deftest dmc-test.4a
+    (progn
+      (setq *dmc-test-4* nil)
+      (values (equal (dmc-test.4 t) '("primary" "lock" "object-lock"))
+              (equal *dmc-test-4* '("unlock" "object-lock"
+                                    "primary" "lock" "object-lock"))))
+  T T)
 
+(deftest dmc-test.4b
+    (progn
+      (setq *dmc-test-4* nil)
+      (equal (dmc-test.4 1) '("unlock" "object-lock" "lock" "object-lock")))
+  T)
 
 (defclass foo-class (standard-class))
 (defmethod mop:validate-superclass ((class foo-class) (superclass standard-object))
   t)
 
-(deftest validate-superclass.1 
-    (mop:validate-superclass 
-     (make-instance 'foo-class) 
+(deftest validate-superclass.1
+    (mop:validate-superclass
+     (make-instance 'foo-class)
      (make-instance 'standard-object))
   t)
 
