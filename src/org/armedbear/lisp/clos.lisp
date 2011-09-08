@@ -1000,7 +1000,7 @@
 
 (defconstant +gf-args-var+ (make-symbol "GF-ARGS-VAR"))
 
-(defun wrap-with-call-method-macro (gf forms)
+(defun wrap-with-call-method-macro (gf args-var forms)
   `(macrolet
        ((call-method (method &optional next-method-list)
           `(funcall
@@ -1015,9 +1015,11 @@
                        ;; the MAKE-METHOD body form gets evaluated in
                        ;; the null lexical environment augmented
                        ;; with a binding for CALL-METHOD
-                       ,(wrap-with-call-method-macro ,gf (second method)))))
+                       ,(wrap-with-call-method-macro ,gf
+                                                     ,args-var
+                                                     (second method)))))
               (t (%method-function method)))
-            args
+            ,args-var
             ,(unless (null next-method-list)
                      ;; by not generating an emf when there are no next methods,
                      ;; we ensure next-method-p returns NIL
@@ -1105,6 +1107,7 @@
 (defun method-combination-type-lambda
   (&key name lambda-list args-lambda-list generic-function-symbol
         method-group-specs declarations forms &allow-other-keys)
+  (declare (ignore name))
   (let ((methods (gensym)))
     `(lambda (,generic-function-symbol ,methods ,@lambda-list)
        ,@declarations
@@ -2081,10 +2084,12 @@ Initialized with the true value near the end of the file.")
          (setf emf-form
                (let ((result (if arguments
                                  (apply function gf methods arguments)
-                                 (funcall function gf methods))))
-                 `(lambda (args)
-                    (let ((gf-args-var args))
-                      ,(wrap-with-call-method-macro gf (list result))))))))
+                                 (funcall function gf methods)))
+                     (args-var (gensym)))
+                 `(lambda (,args-var)
+                    (let ((gf-args-var ,args-var))
+                      ,(wrap-with-call-method-macro gf args-var
+                                                    (list result))))))))
       (t
        (let ((mc-obj (get mc-name 'method-combination-object)))
          (unless (typep mc-obj 'short-method-combination)
