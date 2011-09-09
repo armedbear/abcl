@@ -516,7 +516,8 @@
 (deftest dmc-test.4b
     (progn
       (setq *dmc-test-4* nil)
-      (equal (dmc-test.4 1) '("unlock" "object-lock" "lock" "object-lock")))
+      (ignore-errors (dmc-test.4 1))
+      (equal *dmc-test-4* '("unlock" "object-lock" "lock" "object-lock")))
   T)
 
 (defclass foo-class (standard-class))
