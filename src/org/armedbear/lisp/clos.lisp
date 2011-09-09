@@ -1115,9 +1115,10 @@
        (with-method-groups ,method-group-specs
            ,methods
          ,(if (null args-lambda-list)
-              `(lambda (,args-var)
-                 ,(wrap-with-call-method-macro generic-function-symbol
-                                               args-var forms))
+              `(let ((result (progn ,@forms)))
+                 `(lambda (,',args-var)
+                    ,(wrap-with-call-method-macro ,generic-function-symbol
+                                                  ',args-var (list result))))
               `(lambda (,args-var)
                  (let* ((result
                          (with-args-lambda-list ,args-lambda-list
