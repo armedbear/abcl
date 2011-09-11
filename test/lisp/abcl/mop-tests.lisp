@@ -499,7 +499,7 @@
      (unlock (object-lock ,object))))
 
 (defgeneric dmc-test.4 (x)
-  (:method-combination progn-with-lock))
+  (:method-combination dmc-test-mc.4))
 (defmethod dmc-test.4 ((x symbol))
   (push "primary" *dmc-test-4*))
 (defmethod dmc-test.4 ((x number))
@@ -534,7 +534,7 @@
     (vector-push-extend (list 'number p1 p2) s))
   (:method ((p1 string) (p2 t) s)
     (vector-push-extend (list 'string p1 p2) s))
-  (:method ((p1 t) (p2 t) s) (vector-push-extend (list t p1 p2))))
+  (:method ((p1 t) (p2 t) s) (vector-push-extend (list t p1 p2) s)))
 
 (deftest dmc-test.5a
     (let ((v (make-array 0 :adjustable t :fill-pointer t)))
@@ -560,7 +560,7 @@
           (value error)
         (ignore-errors (dmc-test-mc.6 7))
       (values (null value)
-              (typep error 'invalid-method-error)))
+              (typep error 'error)))
   T T)
 
 
