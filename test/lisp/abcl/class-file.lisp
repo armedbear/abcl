@@ -159,25 +159,25 @@
   T)
 
 (deftest make-class-file.1
-    (let* ((class (jvm::make-class-name "org/armedbear/lisp/mcf_1"))
+    (let* ((class (jvm::make-jvm-class-name "org/armedbear/lisp/mcf_1"))
            (file (jvm::make-class-file class jvm::+lisp-object+ '(:public))))
       (jvm::class-add-field file (jvm::make-field "ABC" :int))
       (jvm::class-add-field file (jvm::make-field "ABD" jvm::+lisp-object+))
-      (jvm::class-add-method file (jvm::make-method "MBC" nil :int))
-      (jvm::class-add-method file (jvm::make-method "MBD" nil jvm::+lisp-object+))
-      (jvm::class-add-method file (jvm::make-method :constructor :void nil))
-      (jvm::class-add-method file (jvm::make-method :static-initializer :void nil))
+      (jvm::class-add-method file (jvm::make-jvm-method "MBC" nil :int))
+      (jvm::class-add-method file (jvm::make-jvm-method "MBD" nil jvm::+lisp-object+))
+      (jvm::class-add-method file (jvm::make-jvm-method :constructor :void nil))
+      (jvm::class-add-method file (jvm::make-jvm-method :static-initializer :void nil))
       T)
   T)
 
 (deftest finalize-class-file.1
-    (let* ((class (jvm::make-class-name "org/armedbear/lisp/fcf_1"))
+    (let* ((class (jvm::make-jvm-class-name "org/armedbear/lisp/fcf_1"))
            (file (jvm::make-class-file class jvm::+lisp-object+ '(:public))))
       (jvm::class-add-field file (jvm::make-field "ABC" :int))
       (jvm::class-add-field file (jvm::make-field "ABD" jvm::+lisp-object+))
-      (jvm::class-add-method file (jvm::make-method "MBC" nil '(:int)))
+      (jvm::class-add-method file (jvm::make-jvm-method "MBC" nil '(:int)))
       (jvm::class-add-method file
-                             (jvm::make-method "MBD" nil
+                             (jvm::make-jvm-method "MBD" nil
                                                 (list jvm::+lisp-object+)))
       (jvm::finalize-class-file file)
       file
@@ -185,9 +185,9 @@
   T)
 
 (deftest generate-method.1
-    (let* ((class (jvm::make-class-name "org/armedbear/lisp/gm_1"))
+    (let* ((class (jvm::make-jvm-class-name "org/armedbear/lisp/gm_1"))
            (file (jvm::make-class-file class jvm::+lisp-object+ '(:public)))
-           (method (jvm::make-method :static-initializer :void nil
+           (method (jvm::make-jvm-method :static-initializer :void nil
                                       :flags '(:static))))
       (jvm::class-add-method file method)
       (jvm::with-code-to-method (file method)
@@ -200,9 +200,9 @@
   T)
 
 (deftest generate-method.2
-    (let* ((class (jvm::make-class-name "org/armedbear/lisp/gm_2"))
+    (let* ((class (jvm::make-jvm-class-name "org/armedbear/lisp/gm_2"))
            (file (jvm::make-class-file class jvm::+lisp-object+ '(:public)))
-           (method (jvm::make-method "doNothing" :void nil)))
+           (method (jvm::make-jvm-method "doNothing" :void nil)))
       (jvm::class-add-method file method)
       (jvm::with-code-to-method (file method)
         (let ((label1 (gensym))
@@ -225,10 +225,10 @@
 
 ;; generation of an ABCL-like function class
 (deftest generate-method.3
-    (let* ((class (jvm::make-class-name "org.armedbear.lisp.gm_3"))
+    (let* ((class (jvm::make-jvm-class-name "org.armedbear.lisp.gm_3"))
            (file (jvm::make-class-file class jvm::+lisp-primitive+ '(:public)))
            )
-      (let ((method (jvm::make-method :constructor :void nil)))
+      (let ((method (jvm::make-jvm-method :constructor :void nil)))
         (jvm::class-add-method file method)
         (jvm::with-code-to-method (file method)
           (jvm::emit 'aload 0)
@@ -238,7 +238,7 @@
                                         (list jvm::+lisp-object+
                                               jvm::+lisp-object+))
           (jvm::emit 'return)))
-      (let ((method (jvm::make-method "execute" jvm::+lisp-object+ nil)))
+      (let ((method (jvm::make-jvm-method "execute" jvm::+lisp-object+ nil)))
         (jvm::class-add-method file method)
         (jvm::with-code-to-method (file method)
           (jvm::emit-getstatic jvm::+lisp+ "NIL" jvm::+lisp-object+)
@@ -252,18 +252,18 @@
 ;; generation of an ABCL-like function class with static init function and
 ;; static field
 (deftest generate-method.4
-    (let* ((class (jvm::make-class-name "org.armedbear.lisp.gm_4"))
+    (let* ((class (jvm::make-jvm-class-name "org.armedbear.lisp.gm_4"))
            (file (jvm::make-class-file class jvm::+lisp-primitive+ '(:public)))
            )
       (jvm::class-add-field file (jvm::make-field "N1" jvm::+lisp-object+
                                                   :flags '(:static :private)))
-      (let ((method (jvm::make-method :static-initializer :void nil :flags '(:static))))
+      (let ((method (jvm::make-jvm-method :static-initializer :void nil :flags '(:static))))
         (jvm::class-add-method file method)
         (jvm::with-code-to-method (file method)
           (jvm::emit-getstatic jvm::+lisp+ "NIL" jvm::+lisp-object+)
           (jvm::emit-putstatic class "N1" jvm::+lisp-object+)
           (jvm::emit 'return)))
-      (let ((method (jvm::make-method :constructor :void nil)))
+      (let ((method (jvm::make-jvm-method :constructor :void nil)))
         (jvm::class-add-method file method)
         (jvm::with-code-to-method (file method)
           (jvm::emit 'aload 0)
@@ -273,7 +273,7 @@
                                         (list jvm::+lisp-object+
                                               jvm::+lisp-object+))
           (jvm::emit 'return)))
-      (let ((method (jvm::make-method "execute" jvm::+lisp-object+ nil)))
+      (let ((method (jvm::make-jvm-method "execute" jvm::+lisp-object+ nil)))
         (jvm::class-add-method file method)
         (jvm::with-code-to-method (file method)
           (jvm::emit-getstatic class "N1" jvm::+lisp-object+)
@@ -287,10 +287,10 @@
 
 ;; generation of ABCL-like function class with multiple 'execute' methods
 (deftest generate-method.5
-    (let* ((class (jvm::make-class-name "org.armedbear.lisp.gm_5"))
+    (let* ((class (jvm::make-jvm-class-name "org.armedbear.lisp.gm_5"))
            (file (jvm::make-class-file class jvm::+lisp-primitive+ '(:public)))
            )
-      (let ((method (jvm::make-method :constructor :void nil)))
+      (let ((method (jvm::make-jvm-method :constructor :void nil)))
         (jvm::class-add-method file method)
         (jvm::with-code-to-method (file method)
           (jvm::emit 'aload 0)
@@ -300,12 +300,12 @@
                                         (list jvm::+lisp-object+
                                               jvm::+lisp-object+))
           (jvm::emit 'return)))
-      (let ((method (jvm::make-method "execute" jvm::+lisp-object+ nil)))
+      (let ((method (jvm::make-jvm-method "execute" jvm::+lisp-object+ nil)))
         (jvm::class-add-method file method)
         (jvm::with-code-to-method (file method)
           (jvm::emit-getstatic jvm::+lisp+ "NIL" jvm::+lisp-object+)
           (jvm::emit 'jvm::areturn)))
-      (let ((method (jvm::make-method "execute" jvm::+lisp-object+
+      (let ((method (jvm::make-jvm-method "execute" jvm::+lisp-object+
                                        (list jvm::+lisp-object+))))
         (jvm::class-add-method file method)
         (jvm::with-code-to-method (file method)
@@ -321,50 +321,50 @@
 
 ;;Nested with-code-to-method
 (deftest with-code-to-method.1
-    (let* ((class (jvm::make-class-name "org/armedbear/lisp/gm_6"))
+    (let* ((class (jvm::make-jvm-class-name "org/armedbear/lisp/gm_6"))
            (file (jvm::make-class-file class jvm::+lisp-object+ '(:public)))
-           (method (jvm::make-method :static-initializer :void nil
+           (method (jvm::make-jvm-method :static-initializer :void nil
 				      :flags '(:static)))
 	   (registers nil))
       (jvm::class-add-method file method)
       (jvm::with-code-to-method (file method)
-	(jvm::allocate-register)
+	(jvm::allocate-register :int)
 	(push jvm::*register* registers)
 	(jvm::with-code-to-method (file method)
-	  (jvm::allocate-register)
+	  (jvm::allocate-register :int)
 	  (push jvm::*register* registers)
 	  (jvm::with-code-to-method (file method)
-	    (jvm::allocate-register)
+	    (jvm::allocate-register :int)
 	    (push jvm::*register* registers))
-	  (jvm::allocate-register)
+	  (jvm::allocate-register :int)
 	  (push jvm::*register* registers))
-	(jvm::allocate-register)
+	(jvm::allocate-register :int)
 	(push jvm::*register* registers))
       (jvm::finalize-class-file file)
       (nreverse registers))
   (1 2 3 4 5))
 
 (deftest with-code-to-method.2
-    (let* ((class (jvm::make-class-name "org/armedbear/lisp/gm_7"))
+    (let* ((class (jvm::make-jvm-class-name "org/armedbear/lisp/gm_7"))
            (file (jvm::make-class-file class jvm::+lisp-object+ '(:public)))
-           (method1 (jvm::make-method :static-initializer :void nil
+           (method1 (jvm::make-jvm-method :static-initializer :void nil
 				       :flags '(:static)))
-	   (method2 (jvm::make-method "method2" :void nil))
+	   (method2 (jvm::make-jvm-method "method2" :void nil))
 	   (registers nil))
       (jvm::class-add-method file method1)
       (jvm::class-add-method file method2)
       (jvm::with-code-to-method (file method1)
-	(jvm::allocate-register)
+	(jvm::allocate-register :int)
 	(push jvm::*register* registers)
 	(jvm::with-code-to-method (file method2)
-	  (jvm::allocate-register)
+	  (jvm::allocate-register :int)
 	  (push jvm::*register* registers)
 	  (jvm::with-code-to-method (file method1)
-	    (jvm::allocate-register)
+	    (jvm::allocate-register :int)
 	    (push jvm::*register* registers))
-	  (jvm::allocate-register)
+	  (jvm::allocate-register :int)
 	  (push jvm::*register* registers))
-	(jvm::allocate-register)
+	(jvm::allocate-register :int)
 	(push jvm::*register* registers))
       (jvm::finalize-class-file file)
       (nreverse registers))
@@ -373,7 +373,7 @@
 ;; ;;  generation of an ABCL-like function, with mixed output to constructor,
 ;; ;;  static initializer and function method(s)
 ;; (deftest generate-method.6
-;;     (let* ((class (jvm::make-class-name "org.armedbear.lisp.gm_6"))
+;;     (let* ((class (jvm::make-jvm-class-name "org.armedbear.lisp.gm_6"))
 ;;            (file (jvm::make-class-file class jvm::+lisp-primitive+ '(:public)))
 ;;            )
 ;;       (let ((method (jvm::make-method :constructor :void nil)))
