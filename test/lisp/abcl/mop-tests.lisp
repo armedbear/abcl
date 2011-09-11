@@ -308,11 +308,11 @@
 
 (deftest dmc-return.1
     (define-method-combination dmc-test-return-foo)
-  'dmc-test-return-foo)
+  dmc-test-return-foo)
 
 (deftest dmc-return.2
     (define-method-combination dmc-test-return-bar :operator and)
-  'dmc-test-return-bar)
+  dmc-test-return-bar)
 
 (deftest dmc-return.3
     (define-method-combination dmc-test-return
@@ -329,7 +329,7 @@
                           (,@(rest around)
                              (make-method ,form)))
             form)))
-  'dmc-test-return)
+  dmc-test-return)
 
 ;; A method combination which originally failed;
 ;;   for different reasons in SBCL than in ABCL (hence leaving out
@@ -489,7 +489,7 @@
 
 
 (define-method-combination dmc-test-mc.4 ()
-  ((methods ()))
+  ((methods *))
   (:arguments object)
   `(unwind-protect
         (progn (lock (object-lock ,object))
@@ -526,8 +526,6 @@
 (define-method-combination dmc-test.5 ()
   ((method-list *))
   (:arguments arg1 arg2 &aux (extra :extra))
-  (print (type-of method-list))
-  (print method-list)
   `(progn ,@(mapcar (lambda (method) `(call-method ,method)) method-list)))
 
 (defgeneric dmc-test-mc.5 (p1 p2 s)
@@ -584,7 +582,8 @@
 
 (deftest dmc-test-mc.7a
     (equal (apply #'dmc-test-mc.7 :foo (list 1 2 3 4 5 6 7 8))
-           '(:foo 8)))
+           '(:foo 8))
+  T)
 
 
 (defclass foo-class (standard-class))
