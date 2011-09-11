@@ -520,6 +520,73 @@
       (equal *dmc-test-4* '("unlock" "object-lock" "lock" "object-lock")))
   T)
 
+
+;; From SBCL: method combination (long form) with arguments
+
+(define-method-combination dmc-test.5 ()
+  ((method-list *))
+  (:arguments arg1 arg2 &aux (extra :extra))
+  (print (type-of method-list))
+  (print method-list)
+  `(progn ,@(mapcar (lambda (method) `(call-method ,method)) method-list)))
+
+(defgeneric dmc-test-mc.5 (p1 p2 s)
+  (:method-combination dmc-test.5)
+  (:method ((p1 number) (p2 t) s)
+    (vector-push-extend (list 'number p1 p2) s))
+  (:method ((p1 string) (p2 t) s)
+    (vector-push-extend (list 'string p1 p2) s))
+  (:method ((p1 t) (p2 t) s) (vector-push-extend (list t p1 p2))))
+
+(deftest dmc-test.5a
+    (let ((v (make-array 0 :adjustable t :fill-pointer t)))
+      (values (dmc-test-mc.5 1 2 v)
+              (equal (aref v 0) '(number 1 2))
+              (equal (aref v 1) '(t 1 2))))
+  1 T T)
+
+
+
+(define-method-combination dmc-test.6 ()
+  ((normal ())
+   (ignored (:ignore :unused)))
+  `(list 'result
+    ,@(mapcar #'(lambda (method) `(call-method ,method)) normal)))
+
+(defgeneric dmc-test-mc.6 (x)
+  (:method-combination dmc-test.6)
+  (:method :ignore ((x number)) (/ 0)))
+
+(deftest dmc-test-mc.6a
+    (multiple-value-bind
+          (value error)
+        (ignore-errors (dmc-test-mc.6 7))
+      (values (null value)
+              (typep error 'invalid-method-error)))
+  T T)
+
+
+(define-method-combination dmc-test.7 ()
+  ((methods *))
+  (:arguments x &rest others)
+  `(progn
+     ,@(mapcar (lambda (method)
+                 `(call-method ,method))
+               methods)
+     (list ,x (length ',others))))
+
+(defgeneric dmc-test-mc.7 (x &rest others)
+  (:method-combination dmc-test.7))
+
+(defmethod dmc-test-mc.7 (x &rest others)
+  (declare (ignore others))
+  nil)
+
+(deftest dmc-test-mc.7a
+    (equal (apply #'dmc-test-mc.7 :foo (list 1 2 3 4 5 6 7 8))
+           '(:foo 8)))
+
+
 (defclass foo-class (standard-class))
 (defmethod mop:validate-superclass ((class foo-class) (superclass standard-object))
   t)
