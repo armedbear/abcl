@@ -44,12 +44,19 @@
 (defmacro define-source-transform (name lambda-list &rest body)
   (let* ((form (gensym))
          (env (gensym))
+         (block-name (if (symbolp name) name (cadr name)))
          (body (parse-defmacro lambda-list form body name 'defmacro
-                               :environment env))
+                               :environment env
+                               ;; when we encounter an error
+                               ;; parsing the arguments in the call
+                               ;; (not in the difinition!), return
+                               ;; the arguments unmodified -- ie skip the
+                               ;; transform (see also compiler-macro.lisp)
+                               :error-fun `(lambda (&rest ignored)
+                                             (declare (ignore ignored))
+                                             (return-from ,block-name ,form))))
          (expander
-          (if (symbolp name)
-              `(lambda (,form) (block ,name ,body))
-              `(lambda (,form) (block ,(cadr name) ,body)))))
+           `(lambda (,form) (block ,block-name ,body))))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (setf (source-transform ',name) ,expander)
        ',name)))
