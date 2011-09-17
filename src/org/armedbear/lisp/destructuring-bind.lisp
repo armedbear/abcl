@@ -299,20 +299,20 @@
                       ,@(unless restp `(:maximum ,maximum)))))
             *arg-tests*))
     (if keys
-	(let ((problem (gensym "KEY-PROBLEM-"))
-	      (info (gensym "INFO-")))
-	  (push `(multiple-value-bind (,problem ,info)
-		     (verify-keywords ,rest-name ',keys ',allow-other-keys-p)
-		   (when ,problem
-;; 		     (,error-fun
-;; 		      'defmacro-lambda-list-broken-key-list-error
-;; 		      :kind ',error-kind
-;; 		      ,@(when name `(:name ',name))
-;; 		      :problem ,problem
-;; 		      :info ,info)
+        (let ((problem (gensym "KEY-PROBLEM-"))
+              (info (gensym "INFO-")))
+          (push `(multiple-value-bind (,problem ,info)
+                     (verify-keywords ,rest-name ',keys ',allow-other-keys-p)
+                   (when ,problem
+;;                   (,error-fun
+;;                    'defmacro-lambda-list-broken-key-list-error
+;;                    :kind ',error-kind
+;;                    ,@(when name `(:name ',name))
+;;                    :problem ,problem
+;;                    :info ,info)
                      (error 'program-error "Unrecognized keyword argument ~S" (car ,info)))
                      )
-		*arg-tests*)))
+                *arg-tests*)))
     (values env-arg-used minimum (if (null restp) maximum nil))))
 
 
