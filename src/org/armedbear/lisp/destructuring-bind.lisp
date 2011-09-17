@@ -304,14 +304,16 @@
           (push `(multiple-value-bind (,problem ,info)
                      (verify-keywords ,rest-name ',keys ',allow-other-keys-p)
                    (when ,problem
-;;                   (,error-fun
-;;                    'defmacro-lambda-list-broken-key-list-error
-;;                    :kind ',error-kind
-;;                    ,@(when name `(:name ',name))
-;;                    :problem ,problem
-;;                    :info ,info)
-                     (error 'program-error "Unrecognized keyword argument ~S" (car ,info)))
-                     )
+                     ,(if (eq error-fun 'error)
+                          `(error 'program-error
+                                  "Unrecognized keyword argument ~S"
+                                  (car ,info))
+                          `(,error-fun
+                           'defmacro-lambda-list-broken-key-list-error
+                           :kind ',error-kind
+                           ,@(when name `(:name ',name))
+                           :problem ,problem
+                           :info ,info))))
                 *arg-tests*)))
     (values env-arg-used minimum (if (null restp) maximum nil))))
 
