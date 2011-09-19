@@ -608,7 +608,9 @@ public final class Load
 
             in.setExternalFormat(_FASL_EXTERNAL_FORMAT_.symbolValue(thread));
             while (true) {
-                LispObject obj = in.read(false, EOF, true, thread, Stream.faslReadtable);
+                LispObject obj = in.read(false, EOF, false,  // should be 'true' once we
+                                                             // have a FASL wide object table
+                                         thread, Stream.faslReadtable);
                 if (obj == EOF)
                     break;
                 result = eval(obj, env, thread);
