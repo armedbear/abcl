@@ -124,8 +124,7 @@
 
 (defvar *sharp-sharp-alist* ())
 
-(defun sharp-equal (stream ignore label)
-  (declare (ignore ignore))
+(defun sharp-equal (stream label readtable)
   (when *read-suppress* (return-from sharp-equal (values)))
   (unless label
     (error 'reader-error
@@ -139,7 +138,8 @@
            :format-arguments (list label)))
   (let* ((tag (gensym))
          (*sharp-sharp-alist* (cons (list label tag nil) *sharp-sharp-alist*))
-         (obj (read stream t nil t)))
+         (obj (let ((*readtable* readtable))
+                (read stream t nil t))))
     (when (eq obj tag)
       (error 'reader-error
              :stream stream
@@ -150,6 +150,8 @@
       (let ((*sharp-equal-circle-table* (make-hash-table :test 'eq :size 20)))
         (circle-subst *sharp-equal-alist* obj)))
     obj))
+
+()
 
 (defun sharp-sharp (stream ignore label)
   (declare (ignore ignore))
@@ -168,6 +170,17 @@
           (setf (third pair) t)
           (second pair)))))
 
-(set-dispatch-macro-character #\# #\= #'sharp-equal +standard-readtable+)
+(set-dispatch-macro-character #\# #\= #'(lambda (stream ignore label)
+                                          (declare (ignore ignore))
+                                          (sharp-equal stream label
+                                                       *readtable*))
+                              +standard-readtable+)
 (set-dispatch-macro-character #\# #\# #'sharp-sharp +standard-readtable+)
+
+(set-dispatch-macro-character #\# #\= #'(lambda (stream ignore label)
+                                          (declare (ignore ignore))
+                                          (sharp-equal stream label
+                                                       (get-fasl-readtable)))
+                              (get-fasl-readtable))
+(set-dispatch-macro-character #\# #\# #'sharp-sharp (get-fasl-readtable))
 

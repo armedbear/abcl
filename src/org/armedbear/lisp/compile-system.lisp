@@ -81,7 +81,8 @@
 
 (defun %compile-system (&key output-path)
   (let ((*default-pathname-defaults* (pathname *lisp-home*))
-        (*warn-on-redefinition* nil))
+        (*warn-on-redefinition* nil)
+        (*prevent-fasl-circle-detection* t))
     (unless output-path
       (setf output-path *default-pathname-defaults*))
     (flet ((do-compile (file)
