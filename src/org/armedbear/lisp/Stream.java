@@ -454,6 +454,8 @@ public class Stream extends StructureObject {
     // internal symbol
     private static final Symbol _SHARP_EQUAL_ALIST_ =
         internSpecial("*SHARP-EQUAL-ALIST*", PACKAGE_SYS, NIL);
+    private static final Symbol _SHARP_SHARP_ALIST_ =
+        internSpecial("*SHARP-SHARP-ALIST*", PACKAGE_SYS, NIL);
 
     public LispObject readPreservingWhitespace(boolean eofError,
                                                LispObject eofValue,
@@ -488,6 +490,7 @@ public class Stream extends StructureObject {
         } else {
             final SpecialBindingsMark mark = thread.markSpecialBindings();
             thread.bindSpecial(_SHARP_EQUAL_ALIST_, NIL);
+            thread.bindSpecial(_SHARP_SHARP_ALIST_, NIL);
             try {
                 return readPreservingWhitespace(eofError, eofValue, true,
                                                 thread, rta);
