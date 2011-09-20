@@ -568,10 +568,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
   (when compile-time-too
     (let ((*load-truename* *output-file-pathname*)
           (*fasl-loader* (make-fasl-class-loader
-                          nil
                           (concatenate 'string
-                                       "org.armedbear.lisp." (base-classname))
-                          nil)))
+                                       "org.armedbear.lisp." (base-classname)))))
       (eval form))))
 
 (defun populate-zip-fasl (output-file)
@@ -638,9 +636,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (when (> *class-number* 0)
       (write (list 'setq '*fasl-loader*
                    `(sys::make-fasl-class-loader
-                     nil
-                     ,(concatenate 'string "org.armedbear.lisp." (base-classname))
-                     nil))
+                     ,(concatenate 'string "org.armedbear.lisp."
+                                   (base-classname))))
              :stream out))
     (%stream-terpri out)))
 

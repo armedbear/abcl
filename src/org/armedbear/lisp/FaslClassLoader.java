@@ -150,12 +150,6 @@ public class FaslClassLoader extends JavaClassLoader {
             return new FaslClassLoader(baseName.getStringValue()).boxedThis;
         }
 
-        @Override
-        //TODO delete this next time the fasl version is bumbed
-        public LispObject execute(LispObject unused1, LispObject baseName, LispObject unused2) {
-            return execute(baseName);
-        }
-
     };
 
     private static final Primitive GET_FASL_FUNCTION = new pf_get_fasl_function();
