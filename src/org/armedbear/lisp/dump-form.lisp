@@ -120,7 +120,8 @@
        (return-from df-handle-circularity t))
       (t
        (unless *prevent-fasl-circle-detection*
-         (assert (eq index t)))))))
+         (assert (or (eq index t)
+                     (fixnump object))))))))
 
 (declaim (ftype (function (cons stream) t) dump-cons))
 (defun dump-cons (object stream)
