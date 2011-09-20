@@ -163,7 +163,7 @@
 (declaim (ftype (function (t stream) t) dump-instance))
 (defun dump-instance (object stream)
   (write-string "#." stream)
-  (dump-object (get-instance-form object)))
+  (dump-object (get-instance-form object) stream))
 
 (declaim (ftype (function (symbol) integer) dump-uninterned-symbol-index))
 (defun dump-uninterned-symbol-index (symbol)
