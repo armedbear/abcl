@@ -28,7 +28,7 @@
   <scm>
     <connection>scm:svn:svn://common-lisp.net/project/armedbear/svn/trunk/</connection>
     <developerConnection>scm:svn:svn+ssh://common-lisp.net/project/armedbear/svn/trunk/</developerConnection>
-    <url>http://common-lisp.net/websvn/listing.php?repname=armedbear</url>
+    <url>http://trac.common-lisp.net/armedbear/browser/trunk/abcl</url>
   </scm>
   <developers>
     <developer>
