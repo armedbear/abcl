@@ -93,4 +93,16 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
       result)
   "---(1 2 3 4)")
 
+(deftest bugs.defgeneric.1
+    (let ((symbol (gensym))
+          (docstring "Ipso est genericus")
+          result)
+      (eval `(defgeneric ,symbol nil
+                 (:documentation ,docstring)))
+      (setf result (documentation symbol 'function))
+      (fmakunbound symbol)
+      (string= result docstring))
+  t)
+
+
       
