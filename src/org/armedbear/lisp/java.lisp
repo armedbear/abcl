@@ -43,7 +43,11 @@
   (dolist (url urls)
     (add-url-to-classpath url)))
 
-(defgeneric add-to-classpath (jar-or-jars &optional classloader))
+(defgeneric add-to-classpath (jar-or-jars &optional classloader)
+  (:documentation "Add JAR-OR-JARS to the JVM classpath optionally specifying the CLASSLOADER to add.
+
+JAR-OR-JARS is either a pathname designating a jar archive or the root
+directory to search for classes or a list of such values."))
 
 (defmethod add-to-classpath (jar-or-jars &optional (classloader (get-current-classloader)))
   (%add-to-classpath jar-or-jars classloader))

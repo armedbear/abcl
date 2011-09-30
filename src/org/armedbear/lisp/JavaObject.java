@@ -659,10 +659,26 @@ public final class JavaObject extends LispObject {
             
         };
 
+    // ### +null+
     public final static Symbol NULL 
         = Lisp.exportConstant("+NULL+", PACKAGE_JAVA, new JavaObject(null));
+    static {
+        String doc = "The JVM null object reference.";
+        NULL.setDocumentation(Symbol.VARIABLE, new SimpleString(doc));
+    }
+    // ### +true+
     public final static Symbol TRUE
         = Lisp.exportConstant("+TRUE+", PACKAGE_JAVA, new JavaObject(true));
+    static {
+        String doc = "The JVM primitive value for boolean true.";
+        TRUE.setDocumentation(Symbol.VARIABLE, new SimpleString(doc));
+    }
+    // ### +false+
     public final static Symbol FALSE
         = Lisp.exportConstant("+FALSE+", PACKAGE_JAVA, new JavaObject(false));
+    static {
+        String doc = "The JVM primitive value for boolean false.";
+        FALSE.setDocumentation(Symbol.VARIABLE, new SimpleString(doc));
+    }
+
 }
