@@ -58,6 +58,7 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
                                :DEFAULTS "/**/"))
   "**/")
 
+#+abcl
 (deftest bugs.java.1
     (let* ((a (java:jnew-array "byte" 1))
            (b (let ((array-list (java:jnew (java:jconstructor
@@ -70,7 +71,6 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
       (type-of (sys::%make-byte-array-input-stream b)))
   stream)
                 
-                    
 
 (deftest bugs.readtable-case.1 
   (let (original-case result)
@@ -92,3 +92,5 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
           (format s "~(~A~)" '(1 2 3 4))))
       result)
   "---(1 2 3 4)")
+
+      

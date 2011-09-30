@@ -21,9 +21,6 @@
 
 (in-package #:abcl.test.lisp)
 
-(export '(pathnames-equal-p run-shell-command copy-file make-symbolic-link
-          touch make-temporary-directory delete-directory-and-files))
-
 (defparameter *this-file*
   (merge-pathnames (make-pathname :type "lisp")
                    (if (find :asdf2 *features*)

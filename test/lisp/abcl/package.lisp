@@ -1,11 +1,15 @@
-(defpackage #:abcl.test.lisp 
+(defpackage #:abcl.test.lisp
   (:use #:cl #:abcl-rt)
   (:nicknames "ABCL-TEST-LISP" "ABCL-TEST")
   (:export 
    #:run 
    #:do-matching #:run-matching
    #:do-test 
-   #:do-tests))
+   #:do-tests
+   ;; previously in file-system-tests.lisp
+   #:pathnames-equal-p #:run-shell-command #:copy-file #:make-symbolic-link
+   #:touch #:make-temporary-directory #:delete-directory-and-files
+   ))
 (in-package #:abcl.test.lisp)
 
 (defparameter *abcl-test-directory* 
