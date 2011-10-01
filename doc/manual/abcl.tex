@@ -17,18 +17,17 @@ Lisp standard.  This manual documents the Armed Bear Common Lisp
 implementation for users of the system.
 
 \subsection{Version}
-This manual corresponds to abcl-0.27.0, as yet unreleased.
-
+This manual corresponds to abcl-0.28.0, as yet unreleased.
 
 \chapter{Running}
 
 ABCL is packaged as a single jar file (usually named either
-``abcl.jar'' or something like``abcl-0.27.1.jar'' if you are using a
+``abcl.jar'' or something like``abcl-0.28.0.jar'' if you are using a
 versioned package) that can be executed under the
 control of a suitable JVM as follows
 
 \begin{listing-shell}
-  cmd\$ java -jar abcl.jar
+  cmd$ java -jar abcl.jar
 \end{listing-shell}
 
 For this command to work, the ``java'' executable needs to be in your
@@ -40,7 +39,7 @@ or a DOS command script under Windows so that ABCL may be executed
 simply as:
 
 \begin{listing-shell}
-  cmd\$ abcl
+  cmd$ abcl
 \end{listing-shell}
 
 \section{Options}
@@ -90,8 +89,9 @@ ABCL is currently a non-conforming ANSI Common Lisp implementation due
 to the following (known) issues:
 
 \begin{itemize}
-  \item Lack of long form of DEFINE-METHOD-COMBINATION
   \item Missing statement of conformance in accompanying documentation
+  \item The generic function sigatures of the DOCUMENTATION symbol do
+    not match the CLHS.
 \end{itemize}
 
 ABCL aims to be be a fully conforming ANSI Common Lisp
@@ -101,13 +101,15 @@ implementation.  Any other behavior should be reported as a bug.
 In addition to ANSI conformance, ABCL strives to implement features
 expected of a contemporary Common Lisp.
 \begin{itemize}
-  \item Incomplete MOP 
+  \item Incomplete (A)MOP 
     % N.B. 
     % TODO go through AMOP with symbols, starting by looking for
     % matching function signature.
     % XXX is this really blocking ANSI conformance?  Answer: we have
     % to start with such a ``census'' to determine what we have.
-  \item Incomplete Gray Streams
+  \item Incomplete Streams:  need suitable abstraction between ANSI
+    and Gray streams.
+    
 \end{itemize}
 
 \chapter{Interaction with host JVM}
@@ -189,12 +191,13 @@ Java process it will return null, so if you are writing Java whose
 life-cycle is a bit out of your control (like in a Java servlet), a
 safer invocation pattern might be:
 
-\begin{code}[java]
+\begin{listing-java}
   Interpreter interpreter = Interpreter.getInstance();
   if (interpreter == null) {
     interpreter = Interpreter.createInstance();
   }
-\end{code}
+\end{listing-java}
+
 
 The Lisp \code{eval} primitive may be simply passed strings for evaluation,
 as follows
@@ -323,8 +326,31 @@ implementation, ABCL endeavors to include extensions beyond the ANSI
 specification which are either widely adopted or are especially useful
 in working with the hosting JVM.
 
-\section{Extensible Sequences}
+\section{Implementation Dependent}
+\begin{enumerate}
+  \item Compiler to JVM 5 bytecode
+  \item Pathname extensionsn
+\end{enumerate}
 
+\section{Pathname}
+
+ABCL has created three specializations of the ANSI Pathname construct
+to enable to use of URIs to address dynamically loaded resources for
+the JVM.
+
+PATHNAME : URL-PATHNAME : JAR-PATHNAME
+   : LOGICAL-PATHNAME
+
+Among other neat befits, this allows the ABCL user to laod dynamically
+code from URIs like Quicklisp.
+
+\begin{listing-lisp}
+  CL-USER> (load ''http://beta.quicklisp.org/quicklisp.lisp'')
+\end{listing-lisp}
+
+
+         
+\section{Extensible Sequences}
 
 \ref{RHODES2007}
 
@@ -392,6 +418,9 @@ Common Lisp implementation.
 In 2006, the implementation was transferred to the current
 maintainers, who have strived to improve its usability as a
 contemporary Common Lisp implementation.
+
+In 201x, with the publication of this Manual stating its confformance
+to ANSI, we released abcl-1.0.
 
 
 \end{document}
