@@ -5,7 +5,7 @@
 
 \begin{document}
 \title{A Manual for Armed Bear Common Lisp}
-\date{August 4, 2011}
+\date{October 2, 2011}
 \author{Mark~Evenson, Erik~Huelsmann, Alessio~Stallo, Ville~Voutilainen}
 
 \maketitle
@@ -21,16 +21,18 @@ This manual corresponds to abcl-0.28.0, as yet unreleased.
 
 \chapter{Running}
 
-ABCL is packaged as a single jar file (usually named either
+ABCL is packaged as a single jar file usually named either
 ``abcl.jar'' or something like``abcl-0.28.0.jar'' if you are using a
-versioned package) that can be executed under the
-control of a suitable JVM as follows
+versioned package from your system vendor.  This byte archive can be
+executed under the control of a suitable JVM by using the ``-jar''
+option to parse the manifest, and select the named class
+(org.armedbear.lisp.Main) for excution:
 
 \begin{listing-shell}
   cmd$ java -jar abcl.jar
 \end{listing-shell}
 
-For this command to work, the ``java'' executable needs to be in your
+N.b. for this command to work, the ``java'' executable needs to be in your
 path.
 
 To make it easier to facilitate the use of ABCL in tool chains (such as
@@ -232,14 +234,18 @@ desired parameters.
 \end{listing-java}
 
 If one is calling an primitive function in the CL package the syntax
-becomes considerably simpler if we can locate the instance of
-definition in the ABCL source, we can invoke the symbol directly.  To
-tell if a `LispObject` contains a reference to a symbol.
+becomes considerably simpler.  If we can locate the instance of
+definition in the ABCL Java source, we can invoke the symbol directly.
+For instnace, to tell if a `LispObject` contains a reference to a symbol.
 
 \begin{listing-java}
     boolean nullp(LispObject object) {
       LispObject result = Primitives.NULL.execute(object);
-      if (result == NIL) {
+      if (result == NIL) { // the symbol 'NIL' is explicity named in the Java
+                           // namespace at ``Symbol.NIL''
+                           // but is always present in the
+                           // localnamespace in its unadorned form for
+                           // the convenience of the User.
         return false;
       }
       return true;
@@ -263,8 +269,10 @@ If the LispObject a generalized boolean values, one can use
      boolean javaValue = object.getBooleanValue();
 \end{listing-java}
 
-Although since in Lisp, any value other than NIL means "true", the
-use of Java equality it quite a bit easier and more optimal:
+Although since in Lisp, any value other than NIL means "true"
+(so-called generalized Boolean), the use of Java equality it quite a
+bit easier to type and more optimal in terms of information it conveys
+to the compiler would be:
 
 \begin{listing-java}
     boolean javaValue = (object != Symbol.NIL);
@@ -333,6 +341,13 @@ in working with the hosting JVM.
 \end{enumerate}
 
 \section{Pathname}
+
+We implment an extension to the Pathname that allows for the
+description and retrieval of resources named in a URI scheme that the
+JVM ``understands''.  Support is built-in to the ``http'' and
+``https'' implementations but additional protocol handlers may be
+installed at runtime by having JVM symbols present in the
+sun.net.protocol.dynmamic pacakge. See [JAVA2006] for more details.
 
 ABCL has created three specializations of the ANSI Pathname construct
 to enable to use of URIs to address dynamically loaded resources for
@@ -419,8 +434,12 @@ In 2006, the implementation was transferred to the current
 maintainers, who have strived to improve its usability as a
 contemporary Common Lisp implementation.
 
-In 201x, with the publication of this Manual stating its confformance
-to ANSI, we released abcl-1.0.
+In 201x, with the publication of this Manual explicitly stating the
+conformance of Armed Bear Common Lisp to ANSI, we release abcl-1.0.
+
+\section{References}
+
+[Java2000]:  A New Era for Java Protocol Handlers.  \url{http://java.sun.com/developer/onlineTraining/protocolhandlers}
 
 
 \end{document}
