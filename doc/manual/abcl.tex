@@ -32,8 +32,8 @@ option to parse the manifest, and select the named class
   cmd$ java -jar abcl.jar
 \end{listing-shell}
 
-N.b. for this command to work, the ``java'' executable needs to be in your
-path.
+N.b. for the proceeding command to work, the ``java'' executable needs
+to be in your path.
 
 To make it easier to facilitate the use of ABCL in tool chains (such as
 SLIME) the invocation is wrapped in a Bourne shell script under UNIX
@@ -88,7 +88,7 @@ property ``user.home''.
 
 \section{ANSI Common Lisp}
 ABCL is currently a non-conforming ANSI Common Lisp implementation due
-to the following (known) issues:
+to the following issues:
 
 \begin{itemize}
   \item Missing statement of conformance in accompanying documentation
@@ -303,27 +303,51 @@ function just as like one would traverse a list in Lisp:;
     }
 \end{listing-java}
 
+\chapter{Implementation Dependent Extensions}
 
-\section{Java}
+As outlined by the CLHS ANSI conformance guidelines, we document the
+extensions to the Armed Bear Lisp implementation made accessible to
+the user by virtue of being an exported symbol in the JAVA, THREADS,
+or EXTENSIONS packages.
+
+\section{JAVA}
+
+\subsection{Modifying the JVM CLASSPATH}
+
+The JAVA:ADD-TO-CLASSPATH generic functions allows one to add the
+specified pathname or list of pathnames to the current JVM classpath
+allowing the dynamic loading of JVM objects:
+
+\begin{listing-lisp}
+CL-USER> (add-to-classpath "/path/to/some.jar")
+\end{listing-lisp}p
+
+\subsection{API}
 
 % include autogen docs for the JAVA package.
 \include{java}
 
-\section{Multithreading}
+\section{THREADS}
+
+Multithreading
+
+\subsection{API}
 
 % TODO document the THREADS package.
 \include{threads}
 
-\section{Extensions}
+\section{EXTENSIONS}
 
-The symbols in the EXTENSIONS package constitutes extensions to the
-ANSI standard that are potentially useful to the user.  They include
-functions for manipulating network sockets, running external programs,
-registering object finalizers, constructing reference weakly held by
-the garbage collector and others.
+The symbols in the EXTENSIONS package (nicknamed ``EXT'') constitutes
+extensions to the ANSI standard that are potentially useful to the
+user.  They include functions for manipulating network sockets,
+running external programs, registering object finalizers, constructing
+reference weakly held by the garbage collector and others.
 
 See \ref{Extensible Sequences} for a generic function interface to
 the native JVM contract for \code{java.util.List}.
+
+\subsection{API}
 
 \include{extensions}
 
@@ -349,21 +373,35 @@ JVM ``understands''.  Support is built-in to the ``http'' and
 installed at runtime by having JVM symbols present in the
 sun.net.protocol.dynmamic pacakge. See [JAVA2006] for more details.
 
-ABCL has created three specializations of the ANSI Pathname construct
-to enable to use of URIs to address dynamically loaded resources for
-the JVM.
+ABCL has created specializations of the ANSI Pathname object to
+enable to use of URIs to address dynamically loaded resources for the
+JVM.  A URL-PATHNAME has a corresponding URL whose cannoical
+representation is defined to be the NAMESTRING of the Pathname.
 
 PATHNAME : URL-PATHNAME : JAR-PATHNAME
-   : LOGICAL-PATHNAME
 
-Among other neat befits, this allows the ABCL user to laod dynamically
-code from URIs like Quicklisp.
+Both URL-PATHNAME and JAR-PATHNAME may be used anu where will a
+PATHNAME is accepted witht the following caveats
+
+A stream obtained via OPEN on a URL-PATHNAME cannot be the target of
+write operations.
+
+No canonicalization is performed on the underlying URI (i.e. the
+implementation does not attempt to compute the current name of the
+representing resource unless it is requested to be resolved.)  Upon
+resolution, any cannoicalization procedures followed in resolving the
+resource (e.g. following redirects) are discarded.  
+
+The implementation of URL-PATHNAME allows the ABCL user to laod dynamically
+code from the network.  For example, for Quicklisp.
 
 \begin{listing-lisp}
-  CL-USER> (load ''http://beta.quicklisp.org/quicklisp.lisp'')
+  CL-USER> (load "http://beta.quicklisp.org/quicklisp.lisp")
 \end{listing-lisp}
 
+will load and execute the Quicklisp setup code.
 
+\ref{XACH2011}
          
 \section{Extensible Sequences}
 
@@ -439,7 +477,11 @@ conformance of Armed Bear Common Lisp to ANSI, we release abcl-1.0.
 
 \section{References}
 
-[Java2000]:  A New Era for Java Protocol Handlers.  \url{http://java.sun.com/developer/onlineTraining/protocolhandlers}
+[Java2000]:  A New Era for Java Protocol Handlers.
+\url{http://java.sun.com/developer/onlineTraining/protocolhandlers/}
+
+[Xach2011]:  Quicklisp:  A system for quickly constructing Common Lisp
+libraries.  \url{http://www.quicklisp.org/}
 
 
 \end{document}
