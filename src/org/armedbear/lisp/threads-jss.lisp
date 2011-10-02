@@ -9,7 +9,8 @@
 (defparameter *server-running-p* nil)
 
 ;;; XXX possibly need multiple thread pools
-(defparameter *thread-pool* nil)
+(defparameter *thread-pool* nil
+  "The current JVM class implementing the ScheduledThreadPool abstraction.")
 (defparameter *scheduled-futures* nil)
 (defparameter *incoming-scheduled-future* nil)
 (defparameter *watch-queue-future* nil)
@@ -23,11 +24,16 @@
 (defparameter *incoming* (merge-pathnames "incoming/" *root*))
 (defparameter *dirs* (list *incoming*))
 
+(defparameter *queue* (merge-pathnames "queue/" *root*))
+
+(defparameter *processed* (merge-pathnames "processed/" *root*))
+
+
 ;;;; A simple logging abstraction.
 
 (defconstant +month-names+ '("Jan" "Feb" "Mar" "Apr" "May" "Jun" 
                              "Jul" "Aug" "Sep" "Oct" "Nov" "Dec"))
-
+(defconstant +seconds+ (java:jfield "java.util.concurrent.TimeUnit" "SECONDS"))
 (defparameter *log* *standard-output*)
 
 (defun format-time (universal-time)
@@ -89,4 +95,39 @@
         (#"scheduleWithFixedDelay" 
          *thread-pool*
          (make-process-incoming) 1 1 +seconds+)))
+
+(defun make-process-incoming ()
+  (java:jinterface-implementation "java.lang.Runnable" "run" #'process-incoming))
+
+(defun process-incoming ()
+  (flet ((reject-input (file invalid) 
+           (warn (format nil "~A is ~A" file invalid))))
+  (let ((incoming (directory (merge-pathnames *incoming* "*"))))
+    (unless incoming
+      (return-from process-incoming))
+    (log "Processing ~A incoming items." (length incoming))
+    (let (table error)
+      (dolist (file incoming)
+        (setf error nil)
+        (log "Analyzing ~A." file)
+        (setf table
+              (handler-case 
+                  (load-table file)
+                (t (e) 
+                  (log "Failed to process ~A because ~A" file e)
+                  (setf error e))))
+        (if error 
+            (reject-input file (if (listp error) error (list error)))
+            (multiple-value-bind (valid invalid)
+                (validate table)
+              (if invalid 
+                  (progn 
+                    (log "Rejecting ~A because of invalid rows." file)
+                    (reject-input file invalid))
+                  (let ((incoming 
+                         (make-pathname :defaults *queue* 
+                                        :name (pathname-name file)
+                                        :type (pathname-type file))))
+                    (log "Inserting ~A." incoming)
+                    (rename-file file incoming))))))))))
 
