@@ -320,7 +320,7 @@ allowing the dynamic loading of JVM objects:
 
 \begin{listing-lisp}
 CL-USER> (add-to-classpath "/path/to/some.jar")
-\end{listing-lisp}p
+\end{listing-lisp}
 
 \subsection{API}
 
@@ -333,7 +333,7 @@ Multithreading
 
 \subsection{API}
 
-% TODO document the THREADS package.
+% include autogen docs for the THREADS package.
 \include{threads}
 
 \section{EXTENSIONS}
@@ -349,6 +349,7 @@ the native JVM contract for \code{java.util.List}.
 
 \subsection{API}
 
+% include autogen docs for the EXTENSIONS package.
 \include{extensions}
 
 \chapter{Beyond ANSI}
@@ -361,7 +362,7 @@ in working with the hosting JVM.
 \section{Implementation Dependent}
 \begin{enumerate}
   \item Compiler to JVM 5 bytecode
-  \item Pathname extensionsn
+  \item Pathname extensions
 \end{enumerate}
 
 \section{Pathname}
@@ -407,7 +408,7 @@ will load and execute the Quicklisp setup code.
 
 \ref{RHODES2007}
 
-The SEQUENCE pacakge fully implements Christopher Rhodes' proposal for
+The SEQUENCE package fully implements Christopher Rhodes' proposal for
 extensible sequences.  These user extensible sequences are used
 directly in \code{java-collections.lisp} provide these CLOS
 abstractions on the standard Java collection classes as defined by the
@@ -460,6 +461,42 @@ Note that this sequence is never output by the implementation.  Instead,
 the corresponding Unicode character is output for characters whose
 code is greater than 0x00ff.
 
+\section{ASDF}
+
+asdf-2.017 is packaged as core component of ABCL.  By default, ASDF is
+not loaded, as it relies on the CLOS subsystem which can take a bit of
+time to initialize.
+
+\begin{listing-lisp}
+CL-USER> (require 'asdf)
+\end{listing-lisp}
+
+\chapter{Contrib}
+
+\section{abcl-asdf} 
+
+Allow ASDF system definition which dynamically loads JVM artifacts
+such as jar archives via a Maven encapsulation.
+
+ASDF components added:  JAR-FILE, JAR-DIRECTORY, CLASS-FILE-DIRECTORY
+and MVN.
+
+\section{asdf-install}
+
+An implementation of ASDF-INSTALL.  Superceded by Quicklisp (qv.)
+
+\section{asdf-jar}
+
+ASDF-JAR provides a system for packaging ASDF systems into jar
+archives for ABCL.  Given a running ABCL image with loadable ASDF
+systems the code in this package will recursively package all the
+required source and fasls in a jar archive.
+
+\section{jss}
+
+Java Syntax sucks, so we introduce this #" macro 
+
+
 \chapter{History}
 
 ABCL was originally the extension language for the J editor, which was
@@ -474,6 +511,9 @@ contemporary Common Lisp implementation.
 
 In 201x, with the publication of this Manual explicitly stating the
 conformance of Armed Bear Common Lisp to ANSI, we release abcl-1.0.
+
+
+
 
 \section{References}
 
