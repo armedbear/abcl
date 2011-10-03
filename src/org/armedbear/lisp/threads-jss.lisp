@@ -101,7 +101,10 @@
 
 (defun process-incoming ()
   (flet ((reject-input (file invalid) 
-           (warn (format nil "~A is ~A" file invalid))))
+           (warn (format nil "~A is ~A" file invalid)))
+         (process (file)
+           nil))
+
   (let ((incoming (directory (merge-pathnames *incoming* "*"))))
     (unless incoming
       (return-from process-incoming))
@@ -112,7 +115,7 @@
         (log "Analyzing ~A." file)
         (setf table
               (handler-case 
-                  (load-table file)
+                  (process file)
                 (t (e) 
                   (log "Failed to process ~A because ~A" file e)
                   (setf error e))))
