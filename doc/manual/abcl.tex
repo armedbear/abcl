@@ -414,6 +414,12 @@ directly in \code{java-collections.lisp} provide these CLOS
 abstractions on the standard Java collection classes as defined by the
 \code{java.util.List} contract.
 
+This extension is not automatically loaded by the implementation.   It
+may be loaded via:
+
+\begin{listing-lisp}
+CL-USER> (require 'extensible-sequences)
+\end{listing-lisp}
 
 \section{Extensions to CLOS}
 
