@@ -123,31 +123,95 @@ expected of a contemporary Common Lisp.
 
 \section{Lisp to Java}
 
-ABCL offers a number of mechanisms to manipulate Java libraries from
-Lisp.
+ABCL offers a number of mechanisms to interact with Java from
+its lisp environment. It allows calling methods (and static methods) of
+Java objects, manipulation of fields and static fields and construction
+of new Java objects.
+
+When calling Java routines, some values will automatically be converted
+by the FFI from Lisp values to Java values. These conversions typically
+apply to strings, integers and floats. Other values need to be converted
+to their Java equivalents by the programmer before calling the Java
+object method.
+
+\subsection{Lowlevel Java API}
+
+There's a higher level Java API defined in the
+\ref{topic:Higher level Java API: JSS}(JSS package) which is available
+in the contrib/ directory. This package is described later in this
+document.  This section covers the lower level API directly available
+after evaluating \code{(require 'JAVA)}.
+
+\subsubsection{Calling Java object methods}
+
+There are two ways to call a Java object method in the basic API:
 
 \begin{itemize}
-\item Java values are accessible as objects of type JAVA:JAVA-OBJECT.
-\item The Java FFI presents a Lisp package (JAVA) with many useful
-  symbols for manipulating the artifacts of expectation on the JVM,
-  including creation of new objects \ref{JAVA:JNEW}, \ref{JAVA:JMETHOD}), the
-  introspection of values \ref{JAVA:JFIELD}, the execution of methods
-  (\ref{JAVA:JCALL}, \ref{JAVA:JCALL-RAW}, \ref{JAVA:JSTATIC})
-\item The JSS package (\ref{JSS}) in contrib introduces a convenient macro
-  syntax \ref{JSS:SHARPSIGN_DOUBLEQUOTE_MACRO} for accessing Java
-  methods, and additional convenience functions.
-\item Java classes and libraries may be dynamically added to the
-  classpath at runtime (JAVA:ADD-TO-CLASSPATH).
+\item Call a specific method reference (pre-acquired)
+\item Dynamic dispatch using the method name and
+  the call-specific arguments provided by finding the
+  \ref{section:Parameter matching for FFI dynamic dispatch}{best match}.
 \end{itemize}
+
+The dynamic dispatch variant is discussed in the next section.
+
+\code{JAVA:JMETHOD} is used to acquire a specific method reference.
+The function takes at two or more arguments. The first is Java class designator
+(a \code{JAVA:JAVA-CLASS} object returned by \code{JAVA:JCLASS} or a string naming
+a Java class). The second is a string naming the method.
+
+Any arguments beyond the first two should be strings naming Java classes with
+one exception as listed in the next paragraph. These
+classes specify the types of the arguments for the method to be returned.
+
+There's additional calling convention to the \code{JAVA:JMETHOD} function:
+When the method is called with three parameters and the last parameter is an
+integer, the first method by that name and matching number of parameters is
+returned.
+
+Once you have a reference to the method, you can call it using \code{JAVA:JCALL},
+which takes the method as the first argument. The second argument is the
+object instance to call the method on. Any remaining parameters are used
+as the remaining arguments for the call.
+
+\subsubsection{Calling Java object methods: dynamic dispatch}
+
+The second way of calling Java object methods is by using dynamic dispatch.
+In this case \code{JAVA:JCALL} is used directly without acquiring a method
+reference first. In this case, the first argument provided to \code{JAVA:JCALL}
+is a string naming the method to be called. The second argument is the instance
+on which the method should be called and any further arguments are used to
+select the best matching method and dispatch the call.
+
+% ###TODO document ``intended class''
+
+% \begin{itemize}
+% \item Java values are accessible as objects of type JAVA:JAVA-OBJECT.
+% \item The Java FFI presents a Lisp package (JAVA) with many useful
+%   symbols for manipulating the artifacts of expectation on the JVM,
+%   including creation of new objects \ref{JAVA:JNEW}, \ref{JAVA:JMETHOD}), the
+%   introspection of values \ref{JAVA:JFIELD}, the execution of methods
+%   (\ref{JAVA:JCALL}, \ref{JAVA:JCALL-RAW}, \ref{JAVA:JSTATIC})
+% \item The JSS package (\ref{JSS}) in contrib introduces a convenient macro
+%   syntax \ref{JSS:SHARPSIGN_DOUBLEQUOTE_MACRO} for accessing Java
+%   methods, and additional convenience functions.
+% \item Java classes and libraries may be dynamically added to the
+%   classpath at runtime (JAVA:ADD-TO-CLASSPATH).
+% \end{itemize}
+
+\subsubsection{Parameter matching for FFI dynamic dispatch}
+
+
+...
 
 \section{Lisp from Java}
 
-Manipulation of the Lisp API is currently lacking a stable interface,
-so the following documented interfaces are subject to change with
-notice:
+In order to access the Lisp world from Java, one needs to be aware
+of a few things. The most important ones are listed below.
 
 \begin{itemize}
 \item All Lisp values are descendants of LispObject.java
+\item In order to 
 \item Lisp symbols are accessible via either directly referencing the
   Symbol.java instance or by dynamically introspecting the
   corresponding Package.java instance.
