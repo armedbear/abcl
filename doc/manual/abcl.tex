@@ -6,7 +6,7 @@
 \begin{document}
 \title{A Manual for Armed Bear Common Lisp}
 \date{October 2, 2011}
-\author{Mark~Evenson, Erik~Huelsmann, Alessio~Stallo, Ville~Voutilainen}
+\author{Mark~Evenson, Erik~Huelsmann, Alessio~Stalla, Ville~Voutilainen}
 
 \maketitle
 
@@ -92,7 +92,7 @@ to the following issues:
 
 \begin{itemize}
   \item Missing statement of conformance in accompanying documentation
-  \item The generic function sigatures of the DOCUMENTATION symbol do
+  \item The generic function signatures of the DOCUMENTATION symbol do
     not match the CLHS.
 \end{itemize}
 
@@ -132,7 +132,11 @@ When calling Java routines, some values will automatically be converted
 by the FFI from Lisp values to Java values. These conversions typically
 apply to strings, integers and floats. Other values need to be converted
 to their Java equivalents by the programmer before calling the Java
-object method.
+object method. Java values returned to Lisp are also generally converted
+back to their Lisp counterparts. Some operators make an exception to this
+rule and do not perform any conversion; those are the ``raw'' counterparts
+of certain FFI functions and are recognizable by their name ending with
+\code{-RAW}.
 
 \subsection{Lowlevel Java API}
 
@@ -171,8 +175,8 @@ returned.
 
 Once you have a reference to the method, you can call it using \code{JAVA:JCALL},
 which takes the method as the first argument. The second argument is the
-object instance to call the method on. Any remaining parameters are used
-as the remaining arguments for the call.
+object instance to call the method on, or \code{NIL} in case of a static method.
+Any remaining parameters are used as the remaining arguments for the call.
 
 \subsubsection{Calling Java object methods: dynamic dispatch}
 
@@ -183,7 +187,63 @@ is a string naming the method to be called. The second argument is the instance
 on which the method should be called and any further arguments are used to
 select the best matching method and dispatch the call.
 
-% ###TODO document ``intended class''
+\subsubsection{Dynamic dispatch: caveats}
+
+Dynamic dispatch is performed by using the Java reflection API. Generally
+it works fine, but there are corner cases where the API does not correctly
+reflect all the details involved in calling a Java method. An example is
+the following Java code:
+
+\begin{listing-java}
+ZipFile jar = new ZipFile("/path/to/some.jar");
+Object els = jar.entries();
+Method method = els.getClass().getMethod("hasMoreElements");
+method.invoke(els);
+\end{listing-java}
+
+even though the method \code{hasMoreElements} is public in \code{Enumeration},
+the above code fails with
+
+\begin{listing-java}
+java.lang.IllegalAccessException: Class ... can
+not access a member of class java.util.zip.ZipFile$2 with modifiers
+"public"
+       at sun.reflect.Reflection.ensureMemberAccess(Reflection.java:65)
+       at java.lang.reflect.Method.invoke(Method.java:583)
+       at ...
+\end{listing-java}
+
+because the method has been overridden by a non-public class and the
+reflection API, unlike javac, is not able to handle such a case.
+
+While code like that is uncommon in Java, it is typical of ABCL's FFI
+calls. The code above corresponds to the following Lisp code:
+
+\begin{listing-lisp}
+(let ((jar (jnew "java.util.zip.ZipFile" "/path/to/some.jar")))
+  (let ((els (jcall "entries" jar)))
+    (jcall "hasMoreElements" els)))
+\end{listing-lisp}
+
+except that the dynamic dispatch part is not shown.
+
+To avoid such pitfalls, all Java objects in ABCL carry an extra
+field representing the ``intended class'' of the object. That is the class
+that is used first by \code{JAVA:JCALL} and similar to resolve methods;
+the actual class of the object is only tried if the method is not found
+in the intended class. Of course, the intended class is always a superclass
+of the actual class - in the worst case, they coincide. The intended class
+is deduced by the return type of the method that originally returned
+the Java object; in the case above, the intended class of \code{ELS}
+is \code{java.util.Enumeration} because that's the return type of
+the \code{entries} method.
+
+While this strategy is generally effective, there are cases where the
+intended class becomes too broad to be useful. The typical example
+is the extraction of an element from a collection, since methods in
+the collection API erase all types to \code{Object}. The user can
+always force a more specific intended class by using the \code{JAVA:JCOERCE}
+operator.
 
 % \begin{itemize}
 % \item Java values are accessible as objects of type JAVA:JAVA-OBJECT.
@@ -201,8 +261,11 @@ select the best matching method and dispatch the call.
 
 \subsubsection{Parameter matching for FFI dynamic dispatch}
 
+The algorithm used to resolve the best matching method given the name
+and the arguments' types is the same as described in the Java Language
+Specification. Any deviance should be reported as a bug.
 
-...
+% ###TODO reference to correct JLS section
 
 \section{Lisp from Java}
 
