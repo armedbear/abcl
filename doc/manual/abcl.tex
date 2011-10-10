@@ -259,13 +259,38 @@ operator.
 %   classpath at runtime (JAVA:ADD-TO-CLASSPATH).
 % \end{itemize}
 
+\subsubsection{Calling Java class static methods}
+
+Like with non-static methods, references to static methods can be acquired
+by using the \code{JAVA:JMETHOD} primitive. In order to call this method,
+it's not possible to use the \code{JAVA:JCALL} primitive however: there's a 
+separate API to retrieve a reference to static methods. This
+primitive is called \code{JAVA:JSTATIC}. 
+
+Like \code{JAVA:JCALL}, \code{JAVA:JSTATIC} supports dynamic dispatch by
+passing the name of the method as a string instead of passing a method reference.
+The parameter values should be values to pass in the function call instead of
+a specification of classes for each parameter.
+
 \subsubsection{Parameter matching for FFI dynamic dispatch}
 
 The algorithm used to resolve the best matching method given the name
 and the arguments' types is the same as described in the Java Language
-Specification. Any deviance should be reported as a bug.
+Specification. Any deviation should be reported as a bug.
 
 % ###TODO reference to correct JLS section
+
+\subsubsection{Instantiating Java objects}
+
+Java objects can be instantiated (created) from Lisp by calling
+a constructor from the class of the object to be created. The same way
+\code{JAVA:JMETHOD} is used to acquire a method reference, the
+\code{JAVA:JCONSTRUCTOR} primitive can be used to acquire a constructor
+reference. It's arguments specify the types of arguments of the constructor
+method the same way as with \code{JAVA:JMETHOD}.
+
+The constructor can't be passed to \code{JAVA:JCALL}, but instead should
+be passed as an argument to \code{JAVA:JNEW}.
 
 \section{Lisp from Java}
 
