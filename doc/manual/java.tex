@@ -4,7 +4,9 @@
 %JSET-PROPERTY-VALUE
   Function: Sets a JavaBean property on JAVA-OBJECT.
 *JAVA-OBJECT-TO-STRING-LENGTH*
-  Variable: Length to truncate toString() PRINT-OBJECT output for an otherwise unspecialized JAVA-OBJECT.  Can be set to NIL to indicate no limit.
+  Variable: Length to truncate toString() PRINT-OBJECT output for an
+ otherwise unspecialized JAVA-OBJECT.  Can be set to NIL to indicate
+ no limit.
 +FALSE+
   Variable: The JVM primitive value for boolean false.
 +NULL+
@@ -32,9 +34,11 @@ JARRAY-COMPONENT-TYPE
 JARRAY-LENGTH
   Function: (not documented)
 JARRAY-REF
-  Function: Dereferences the Java array JAVA-ARRAY using the given INDICIES, coercing the result into a Lisp object, if possible.
+  Function: Dereferences the Java array JAVA-ARRAY using the given
+ INDICIES, coercing the result into a Lisp object, if possible.
 JARRAY-REF-RAW
-  Function: Dereference the Java array JAVA-ARRAY using the given INDICIES. Does not attempt to coerce the result into a Lisp object.
+  Function: Dereference the Java array JAVA-ARRAY using the given
+ INDICIES. Does not attempt to coerce the result into a Lisp object.
 JARRAY-SET
   Function: Stores NEW-VALUE at the given index in JAVA-ARRAY.
 JAVA-CLASS
@@ -48,11 +52,16 @@ JAVA-OBJECT
 JAVA-OBJECT-P
   Function: Returns T if OBJECT is a JAVA-OBJECT.
 JCALL
-  Function: Invokes the Java method METHOD-REF on INSTANCE with arguments ARGS, coercing the result into a Lisp object, if possible.
+  Function: Invokes the Java method METHOD-REF on INSTANCE with
+ arguments ARGS, coercing the result into a Lisp object, if possible.
 JCALL-RAW
-  Function: Invokes the Java method METHOD-REF on INSTANCE with arguments ARGS. Does not attempt to coerce the result into a Lisp object.
+  Function: Invokes the Java method METHOD-REF on INSTANCE with
+ arguments ARGS. Does not attempt to coerce the result into a Lisp
+ object.
 JCLASS
-  Function: Returns a reference to the Java class designated by NAME-OR-CLASS-REF. If the CLASS-LOADER parameter is passed, the class is resolved with respect to the given ClassLoader.
+  Function: Returns a reference to the Java class designated by
+ NAME-OR-CLASS-REF. If the CLASS-LOADER parameter is passed, the class
+ is resolved with respect to the given ClassLoader.
 JCLASS-ARRAY-P
   Function: Returns T if CLASS is an array class
 JCLASS-CONSTRUCTORS
@@ -60,13 +69,15 @@ JCLASS-CONSTRUCTORS
 JCLASS-FIELD
   Function: Returns the field named FIELD-NAME of CLASS
 JCLASS-FIELDS
-  Function: Returns a vector of all (or just the declared/public, if DECLARED/PUBLIC is true) fields of CLASS
+  Function: Returns a vector of all (or just the declared/public, if
+ DECLARED/PUBLIC is true) fields of CLASS
 JCLASS-INTERFACE-P
   Function: Returns T if CLASS is an interface
 JCLASS-INTERFACES
   Function: Returns the vector of interfaces of CLASS
 JCLASS-METHODS
-  Function: Return a vector of all (or just the declared/public, if DECLARED/PUBLIC is true) methods of CLASS
+  Function: Return a vector of all (or just the declared/public, if
+ DECLARED/PUBLIC is true) methods of CLASS
 JCLASS-NAME
   Function: (not documented)
 JCLASS-OF
@@ -76,9 +87,11 @@ JCLASS-SUPERCLASS
 JCLASS-SUPERCLASS-P
   Function: Returns T if CLASS-1 is a superclass or interface of CLASS-2
 JCOERCE
-  Function: Attempts to coerce OBJECT into a JavaObject of class INTENDED-CLASS.  Raises a TYPE-ERROR if no conversion is possible.
+  Function: Attempts to coerce OBJECT into a JavaObject of class
+ INTENDED-CLASS.  Raises a TYPE-ERROR if no conversion is possible.
 JCONSTRUCTOR
-  Function: Returns a reference to the Java constructor of CLASS-REF with the given PARAMETER-CLASS-REFS.
+  Function: Returns a reference to the Java constructor of CLASS-REF
+ with the given PARAMETER-CLASS-REFS.
 JCONSTRUCTOR-PARAMS
   Function: Returns a vector of parameter types (Java classes) for CONSTRUCTOR
 JEQUAL
@@ -106,7 +119,8 @@ JMEMBER-PUBLIC-P
 JMEMBER-STATIC-P
   Function: MEMBER is a static member of its declaring class
 JMETHOD
-  Function: Returns a reference to the Java method METHOD-NAME of CLASS-REF with the given PARAMETER-CLASS-REFS.
+  Function: Returns a reference to the Java method METHOD-NAME of
+ CLASS-REF with the given PARAMETER-CLASS-REFS.
 JMETHOD-LET
   Macro: (not documented)
 JMETHOD-NAME
@@ -138,22 +152,31 @@ JREDEFINE-METHOD
 JREGISTER-HANDLER
   Function: (not documented)
 JRESOLVE-METHOD
-  Function: Finds the most specific Java method METHOD-NAME on INSTANCE applicable to arguments ARGS. Returns NIL if no suitable method is found. The algorithm used for resolution is the same used by JCALL when it is called with a string as the first parameter (METHOD-REF).
+  Function: Finds the most specific Java method METHOD-NAME on
+ INSTANCE applicable to arguments ARGS. Returns NIL if no suitable
+ method is found. The algorithm used for resolution is the same used
+ by JCALL when it is called with a string as the first parameter
+ (METHOD-REF).
 JRUN-EXCEPTION-PROTECTED
-  Function: Invokes the function CLOSURE and returns the result.  Signals an error if stack or heap exhaustion occurs.
+  Function: Invokes the function CLOSURE and returns the result.
+  Signals an error if stack or heap exhaustion occurs.
 JRUNTIME-CLASS-EXISTS-P
   Function: (not documented)
 JSTATIC
   Function: Invokes the static method METHOD on class CLASS with ARGS.
 JSTATIC-RAW
-  Function: Invokes the static method METHOD on class CLASS with ARGS. Does not attempt to coerce the arguments or result into a Lisp object.
+  Function: Invokes the static method METHOD on class CLASS with
+ ARGS. Does not attempt to coerce the arguments or result into a Lisp
+ object.
 MAKE-CLASSLOADER
   Function: (not documented)
 MAKE-IMMEDIATE-OBJECT
   Function: Attempts to coerce a given Lisp object into a java-object of the
 REGISTER-JAVA-EXCEPTION
-  Function: Registers the Java Throwable named by the symbol EXCEPTION-NAME as the condition designated by CONDITION-SYMBOL.  Returns T if successful, NIL if not.
+  Function: Registers the Java Throwable named by the symbol
+ EXCEPTION-NAME as the condition designated by CONDITION-SYMBOL.
+  Returns T if successful, NIL if not.
 UNREGISTER-JAVA-EXCEPTION
-  Function: Unregisters the Java Throwable EXCEPTION-NAME previously registered by REGISTER-JAVA-EXCEPTION.
-
+  Function: Unregisters the Java Throwable EXCEPTION-NAME previously
+ registered by REGISTER-JAVA-EXCEPTION.
 \end{verbatim}
