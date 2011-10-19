@@ -172,12 +172,23 @@ effect as loading the ASDF definition.
 BUGS
 ====
 
-A lot of (renewed) energy has been spent to make ABCL a compliant
-and practically useable Common Lisp implementation.  Because of this,
-ABCL 0.25.0 now fails only 28 out of 21702 tests in the ANSI CL test
-suite.  In addition, Maxima's test suite runs without failures now
-and ABCL's CLOS complete, with the exception of the long form of
+ABCL is a conforming ANSI Common Lisp implementation.  Any other
+behavior should be reported as a bug.
+
+ABCL now has a manual stating its confomance to the ANSI standard,
+providing a compliant and practicalCommon Lisp implementation.
+Because of this, 
+
+
+### Tests 
+
+ABCL 0.28.0 now fails only 28 out of 21702 tests in the ANSI
+CL test suite (dervied from GCL).  
+
+Maxima's test suite runs without failures.
 DEFINE-METHOD-COMBINATION - which is an ongoing effort.
+
+### Deficencies 
 
 The MOP implementation is incomplete.
 
@@ -192,4 +203,7 @@ Have fun!
 
 On behalf of all ABCL development team and contributors,
 Erik Huelsmann
-January 20, 2011
+Mark Evenson
+
+October 2011
+
