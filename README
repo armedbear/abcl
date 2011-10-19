@@ -186,7 +186,6 @@ ABCL 0.28.0 now fails only 28 out of 21702 tests in the ANSI
 CL test suite (dervied from GCL).  
 
 Maxima's test suite runs without failures.
-DEFINE-METHOD-COMBINATION - which is an ongoing effort.
 
 ### Deficencies 
 
