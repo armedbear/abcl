@@ -13,7 +13,70 @@
 \section{Abstract}
 
 We implement the semantics for distributed resource description and
-retrieval by URL/URI/IRI Pathname in the Armeedbear Common Lisp implementation.
+retrieval by URL/URI/IRI Pathname in the Armed Bear Common Lisp
+implementation.
+
+\section{Plan of Attach}
+\subsection{Goals}
+
+\begin{enumerate]
+\item Use Common Lisp pathnames to refer to representations referenced
+  by a URL.
+
+\item The URL schemes supported shall include at least "http", and
+  those enabled by the URLStreamHandler extension mechanism.
+
+\item  Use URL schemes that are understood by the java.net.URL object.
+
+
+\item  MERGE-PATHNAMES 
+
+        (merge-pathnames "url.asd"
+            "http://example/org/armedbear/systems/pgp.asd")
+        ==> "http://example/org/armedbear/systems/url.asd"
+
+\item  PROBE-FILE returning the state of URL accesibility.
+
+\item  TRUENAME "aliased" to PROBE-FILE signalling an error if the URL is
+not accessible (see "Non-goal 1").
+
+\item  DIRECTORY works for non-wildcards.
+
+\item  URL pathname work as a valid argument for OPEN with :DIRECTION :INPUT.
+
+\item  Enable the loading of ASDF2 systems referenced by a URL pathname.
+
+\item  Pathnames constructed with the "file" scheme
+(i.e. #p"file:/this/file") need to be properly URI encoded according
+to RFC3986 or otherwise will signal FILE-ERROR.  
+
+\item.  The "file" scheme will continue to be represented by an
+"ordinary" Pathname.  Thus, after construction of a URL Pathname with
+the "file" scheme, the namestring of the resulting PATHNAME will no
+longer contain the "file:" prefix.
+
+\item.  The "jar" scheme will continue to be represented by a jar
+Pathname.
+\end{enumerate}
+
+\subsection{Non-goals}
+
+\begin{enumerate}
+
+\item We will not implement canonicalization of URL schemas (such as
+  following "http" redirects).
+
+\item \textsc{DIRECTORY} will not work for URL pathnames containing
+  wildcards.
+
+\end{enumerate}
+
+\subsubsection{Example}
+    Example of a Pathname specified by URL:
+    
+        #p"http://example.org/org/armedbear/systems/pgp.asd"
+    
+
 
 \section{Notes}
 \include{notes}

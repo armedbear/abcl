@@ -12,10 +12,11 @@ ABCL, but there is nothing ABCL specific in the instructions
 
 ## Obtaining SLIME
 
-SLIME does not follow a release process in the standard, so you are
-best off with obtaining the [latest version from CVS][1]. [Daily
-snapshots as gzipped tarballs are also available][2].  Your local OS
-packaging system (i.e. MacPorts on OSX) may have a version as well.
+SLIME does not follow a release process in the standard sense with
+centrally versioned releases, so you are best off with obtaining the
+[latest version from CVS][1]. [Daily snapshots as gzipped tarballs are also available][2].
+Your local OS packaging system (i.e. MacPorts on OSX) may have a
+version as well.
 
 [1]: http://common-lisp.net/project/slime/#downloading
 [2]: http://common-lisp.net/project/slime/snapshots/slime-current.tgz
@@ -85,4 +86,9 @@ which the server starts will be written to `'/tmp/swank.port'` and also
 returned as the result of evaluating `SWANK:START-SERVER`.  One may
 connect to this port via issuing `M-x slime-connect` in Emacs.
 
+
+### Historivia
+
+Luke Gorrie inherited a server implementation known as "Skank" which
+he rejected on the grounds of pure taste.
 

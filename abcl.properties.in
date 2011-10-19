@@ -5,14 +5,15 @@
 # Attempt to perform incremental compilation? 
 #abcl.build.incremental=true
 
-# skips the compilation of Lisp sources in Netbeans (for debugging)
+# skips the compilation of Lisp sources in Netbeans 
+# (for debugging compiler-pass1.lisp and subsequent passes)
 #abcl.compile.lisp.skip=true
 
 # java.options sets the Java options in the abcl wrapper scripts
 
-# Examples
+# Examples:
 
-# set the JVM to use a maximum of 1GB of RAM (only works for 64bit JVMs)
+# Set the JVM to use a maximum of 1GB of RAM (only works for 64bit JVMs)
 #java.options=-d64 -Xmx1g
 
 # The unloading of class definitions is a per jvm policy.  For those
@@ -20,5 +21,5 @@
 # help things out.
 #java.options=-d64 -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g
 
-# Additional site specific startup code to be merged in 'system.lisp'
+# Additional site specific startup code to be merged in 'system.lisp' at build time
 #abcl.startup.file=${basedir}/startup.lisp
