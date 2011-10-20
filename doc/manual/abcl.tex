@@ -22,7 +22,7 @@ This manual corresponds to abcl-0.28.0, as yet unreleased.
 \chapter{Running}
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-``abcl.jar'' or something like``abcl-0.28.0.jar'' if you are using a
+``abcl.jar'' or possibly``abcl-0.28.0.jar'' if you are using a
 versioned package from your system vendor.  This byte archive can be
 executed under the control of a suitable JVM by using the ``-jar''
 option to parse the manifest, and select the named class
@@ -93,6 +93,7 @@ to the following issues:
 \begin{itemize}
   \item The generic function signatures of the DOCUMENTATION symbol do
     not match the CLHS.
+  \item The TIME form does not return a proper VALUES to its caller.
 \end{itemize}
 
 ABCL aims to be be a fully conforming ANSI Common Lisp
@@ -755,7 +756,7 @@ will load and execute the Quicklisp setup code.
          
 \section{Extensible Sequences}
 
-\ref{RHODES2007}
+See \ref{RHODES2007} RHODES2007 for the design.
 
 The SEQUENCE package fully implements Christopher Rhodes' proposal for
 extensible sequences.  These user extensible sequences are used
@@ -830,6 +831,11 @@ Note that this sequence is never output by the implementation.  Instead,
 the corresponding Unicode character is output for characters whose
 code is greater than 0x00ff.
 
+\subsection{JSS optionally extends the Reader}
+
+The JSS contrib consitutes an additional, optional extension to the
+reader in the definition of the #\" reader macro.
+
 \section{ASDF}
 
 asdf-2.017 is packaged as core component of ABCL, but not intialized
@@ -852,16 +858,59 @@ via a Maven encapsulation.
 The following ASDF components are added:  JAR-FILE, JAR-DIRECTORY, CLASS-FILE-DIRECTORY
 and MVN.
 
-\section{asdf-install}
-
-An implementation of ASDF-INSTALL.  Superceded by Quicklisp (qv.)
-
 \section{asdf-jar}
 
 ASDF-JAR provides a system for packaging ASDF systems into jar
 archives for ABCL.  Given a running ABCL image with loadable ASDF
 systems the code in this package will recursively package all the
 required source and fasls in a jar archive.
+
+\section{abcl-asdf}
+
+ABCL specific contributions to ASDF system definition mainly concerned
+with finding JVM artifacts such as jar archives to be dynamically loaded.
+
+\subsection{ABCL-ASDF Examples}
+
+\begin{listing-lisp}
+    ;;;; -*- Mode: LISP -*-
+    (in-package :asdf)
+
+    (defsystem :log4j
+      :components ((:mvn "log4j/log4j" 
+                    :version "1.4.9")))
+\end{listing-lisp}
+
+\subsection{abcl-asdf API}
+
+We define an API as consisting of the following ASDF classes:
+
+\textsc[JAR-DIRECTORY}, \textsc{JAR-FILE}, and
+\textsc{CLASS-FILE-DIRECTORY} for JVM artifacts that have a currently
+valid pathname representation
+
+And the MVN and IRI classes descend from ASDF-COMPONENT, but do not
+directly have a filesystem location.
+
+For use outside of ASDF, we currently define one method,
+\textsc{RESOLVE-DEPENDENCIES} which locates, downloads, caches, and then loads
+into the currently executing JVM process all recursive dependencies
+annotated in the Maven pom.xml graph.
+
+\subsection{ABCL-ASDF Example 2}
+
+Bypassing ASDF, one can directly issue requests for the Maven
+artifacts to be downloaded
+
+\begin{listing-lisp}
+    CL-USER> (abcl-asdf:resolve-dependencies "com.google.gwt" "gwt-user")
+    WARNING: Using LATEST for unspecified version.
+    "/Users/evenson/.m2/repository/com/google/gwt/gwt-user/2.4.0-rc1/gwt-user-2.4.0-rc1.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA-sources.jar"
+\end{listing-lisp}
+
+Notice that all recursive dependencies have been located and installed
+as well.
+
 
 \section{jss}
 
@@ -879,6 +928,10 @@ Example:
 
   CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 \end{listing-lisp}
+
+\section{asdf-install}
+
+An implementation of ASDF-INSTALL.  Superseded by Quicklisp (qv.)
 
 \chapter{History}
 
