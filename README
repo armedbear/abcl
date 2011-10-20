@@ -182,8 +182,8 @@ Because of this,
 
 ### Tests 
 
-ABCL 0.28.0 now fails only 28 out of 21702 tests in the ANSI
-CL test suite (dervied from GCL).  
+ABCL 0.28.0 now fails only 18 out of 21708 total tests in the ANSI CL
+test suite (derived from the tests orginally written for GCL).
 
 Maxima's test suite runs without failures.
 
@@ -196,13 +196,15 @@ be gladly accepted.
 
 Please report problems to the development mailing list:
 
-    armedbear-devel@common-lisp.net
+    <armedbear-devel@common-lisp.net>
 
 Have fun!
 
 On behalf of all ABCL development team and contributors,
 Erik Huelsmann
 Mark Evenson
+Alessio Stalla
+Ville Voutilaninen
 
 October 2011
 

@@ -2545,6 +2545,9 @@ in place, while we still need them to "
 (defmethod (setf documentation) (new-value (x package) (doc-type (eql 't)))
   (%set-documentation x doc-type new-value))
 
+(defmethod documentation ((x symbol) (doc-type (eql 'function)))
+  (%documentation x doc-type))
+
 ;;; Applicable methods
 
 (defgeneric compute-applicable-methods (gf args)
