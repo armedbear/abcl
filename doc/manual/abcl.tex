@@ -5,7 +5,7 @@
 
 \begin{document}
 \title{A Manual for Armed Bear Common Lisp}
-\date{October 13, 2011}
+\date{October 20, 2011}
 \author{Mark~Evenson, Erik~Huelsmann, Alessio~Stalla, Ville~Voutilainen}
 
 \maketitle
@@ -26,7 +26,7 @@ This manual corresponds to abcl-0.28.0, as yet unreleased.
 versioned package from your system vendor.  This byte archive can be
 executed under the control of a suitable JVM by using the ``-jar''
 option to parse the manifest, and select the named class
-(\code{org.armedbear.lisp.Main}) for excution:
+(\code{org.armedbear.lisp.Main}) for execution:
 
 \begin{listing-shell}
   cmd$ java -jar abcl.jar
@@ -140,7 +140,7 @@ exception to this rule and do not perform any conversion; those are
 the ``raw'' counterparts of certain FFI functions and are recognizable
 by their name ending with \code{-RAW}.
 
-\subsection{Lowlevel Java API}
+\subsection{Low-level Java API}
 
 There's a higher level Java API defined in the
 \ref{topic:Higher level Java API: JSS}(JSS package) which is available
@@ -153,7 +153,7 @@ after evaluating \code{(require 'JAVA)}.
 There are two ways to call a Java object method in the basic API:
 
 \begin{itemize}
-\item Call a specific method reference (pre-acquired)
+\item Call a specific method reference (which was previously acquired)
 \item Dynamic dispatch using the method name and
   the call-specific arguments provided by finding the
   \ref{section:Parameter matching for FFI dynamic dispatch}{best match}.
@@ -235,7 +235,7 @@ To avoid such pitfalls, all Java objects in \textsc{ABCL} carry an extra
 field representing the ``intended class'' of the object. That is the class
 that is used first by \code{JAVA:JCALL} and similar to resolve methods;
 the actual class of the object is only tried if the method is not found
-in the intended class. Of course, the intended class is always a superclass
+in the intended class. Of course, the intended class is always a super-class
 of the actual class - in the worst case, they coincide. The intended class
 is deduced by the return type of the method that originally returned
 the Java object; in the case above, the intended class of \code{ELS}
@@ -392,15 +392,15 @@ desired parameters.
 If one is calling an primitive function in the CL package the syntax
 becomes considerably simpler.  If we can locate the instance of
 definition in the ABCL Java source, we can invoke the symbol directly.
-For instnace, to tell if a `LispObject` contains a reference to a symbol.
+For instance, to tell if a `LispObject` contains a reference to a symbol.
 
 \begin{listing-java}
     boolean nullp(LispObject object) {
       LispObject result = Primitives.NULL.execute(object);
-      if (result == NIL) { // the symbol 'NIL' is explicity named in the Java
+      if (result == NIL) { // the symbol 'NIL' is explicitly named in the Java
                            // namespace at ``Symbol.NIL''
                            // but is always present in the
-                           // localnamespace in its unadorned form for
+                           // local namespace in its unadorned form for
                            // the convenience of the User.
         return false;
       }
@@ -461,86 +461,192 @@ function just as like one would traverse a list in Lisp:;
 
 \subsection{Java Scripting API (JSR-223)}
 
-ABCL can be built with support for JSR-223, which offers a language-agnostic
-API to invoke other languages from Java. The binary distribution downloadable
-from ABCL's common-lisp.net home is built with JSR-223 support. If you're building
-ABCL from source on a pre-1.6 JVM, you need to have a JSR-223 implementation in your
-CLASSPATH (such as Apache Commons BSF 3.x or greater) in order to build ABCL
-with JSR-223 support; otherwise, this feature will not be built.
+ABCL can be built with support for JSR-223, which offers a
+language-agnostic API to invoke other languages from Java. The binary
+distribution downloadable from ABCL's common-lisp.net home is built
+with JSR-223 support. If you're building ABCL from source on a pre-1.6
+JVM, you need to have a JSR-223 implementation in your CLASSPATH (such
+as Apache Commons BSF 3.x or greater) in order to build ABCL with
+JSR-223 support; otherwise, this feature will not be built.
 
-This section describes the design decisions behind the ABCL JSR-223 support. It is not a description of what JSR-223 is or a tutorial on how to use it. See http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/jsr-223 for example usage.
+This section describes the design decisions behind the ABCL JSR-223
+support. It is not a description of what JSR-223 is or a tutorial on
+how to use it. See
+http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/jsr-223
+for example usage.
 
 \subsubsection{Conversions}
 
-In general, ABCL's implementation of the JSR-223 API performs implicit conversion from Java objects to Lisp objects when invoking Lisp from Java, and the opposite when returning values from Java to Lisp. This potentially reduces coupling between user code and ABCL. To avoid such conversions, wrap the relevant objects in \code{JavaObject} instances.
+In general, ABCL's implementation of the JSR-223 API performs implicit
+conversion from Java objects to Lisp objects when invoking Lisp from
+Java, and the opposite when returning values from Java to Lisp. This
+potentially reduces coupling between user code and ABCL. To avoid such
+conversions, wrap the relevant objects in \code{JavaObject} instances.
 
 \subsubsection{Implemented JSR-223 interfaces}
 
-JSR-223 defines three main interfaces, of which two (Invocable and Compilable) are optional. ABCL implements all the three interfaces - ScriptEngine and the two optional ones - almost completely. While the JSR-223 API is not specific to a single scripting language, it was designed with languages with a more or less Java-like object model in mind: languages such as Javascript, Python, Ruby, which have a concept of "class" or "object" with "fields" and "methods". Lisp is a bit different, so certain adaptations were made, and in one case a method has been left unimplemented since it does not map at all to Lisp.
+JSR-223 defines three main interfaces, of which two (Invocable and
+Compilable) are optional. ABCL implements all the three interfaces -
+ScriptEngine and the two optional ones - almost completely. While the
+JSR-223 API is not specific to a single scripting language, it was
+designed with languages with a more or less Java-like object model in
+mind: languages such as Javascript, Python, Ruby, which have a concept
+of "class" or "object" with "fields" and "methods". Lisp is a bit
+different, so certain adaptations were made, and in one case a method
+has been left unimplemented since it does not map at all to Lisp.
 
 \subsubsection{The ScriptEngine}
 
-The main interface defined by JSR-223, javax.script.ScriptEngine, is implemented by the class \code{org.armedbear.lisp.scripting.AbclScriptEngine}. AbclScriptEngine is a singleton, reflecting the fact that ABCL is a singleton as well. You can obtain an instance of AbclScriptEngine using the  AbclScriptEngineFactory or by using the service provider mechanism through ScriptEngineManager (refer to the javax.script documentation).
+The main interface defined by JSR-223, javax.script.ScriptEngine, is
+implemented by the class
+\code{org.armedbear.lisp.scripting.AbclScriptEngine}. AbclScriptEngine
+is a singleton, reflecting the fact that ABCL is a singleton as
+well. You can obtain an instance of AbclScriptEngine using the
+AbclScriptEngineFactory or by using the service provider mechanism
+through ScriptEngineManager (refer to the javax.script documentation).
 
 \subsubsection{Startup and configuration file}
 
-At startup (i.e. when its constructor is invoked, as part of the static initialization phase of AbclScriptEngineFactory) the ABCL script engine attempts to load an "init file" from the classpath (/abcl-script-config.lisp). If present, this file can be used to customize the behaviour of the engine, by setting a number of variables in the ABCL-SCRIPT package. Here is a list of the available variables:
+At startup (i.e. when its constructor is invoked, as part of the
+static initialization phase of AbclScriptEngineFactory) the ABCL
+script engine attempts to load an "init file" from the classpath
+(/abcl-script-config.lisp). If present, this file can be used to
+customize the behaviour of the engine, by setting a number of
+variables in the ABCL-SCRIPT package. Here is a list of the available
+variables:
 
 \begin{itemize}
-\item *use-throwing-debugger* Controls whether ABCL uses a non-standard debugging hook function to throw a Java exception instead of dropping into the debugger in case of unhandled error conditions.
+\item *use-throwing-debugger* Controls whether ABCL uses a
+  non-standard debugging hook function to throw a Java exception
+  instead of dropping into the debugger in case of unhandled error
+  conditions.
   \begin{itemize}
   \item Default value: T
-  \item Rationale: it is more convenient for Java programmers using Lisp as a scripting language to have it return exceptions to Java instead of handling them in the Lisp world.
-  \item Known Issues: the non-standard debugger hook has been reported to misbehave in certain circumstances, so consider disabling it if it doesn't work for you.
+  \item Rationale: it is more convenient for Java programmers using
+    Lisp as a scripting language to have it return exceptions to Java
+    instead of handling them in the Lisp world.
+  \item Known Issues: the non-standard debugger hook has been reported
+    to misbehave in certain circumstances, so consider disabling it if
+    it doesn't work for you.
   \end{itemize}
-\item *launch-swank-at-startup* If true, Swank will be launched at startup. See *swank-dir* and *swank-port*.
+\item *launch-swank-at-startup* If true, Swank will be launched at
+  startup. See *swank-dir* and *swank-port*.
   \begin{itemize}
   \item Default value: NIL
   \end{itemize}
-\item *swank-dir* The directory where Swank is installed. Must be set if *launch-swank-at-startup* is true.
-\item *swank-port* The port where Swank will listen for connections. Must be set if *launch-swank-at-startup* is true.
+\item *swank-dir* The directory where Swank is installed. Must be set
+  if *launch-swank-at-startup* is true.
+\item *swank-port* The port where Swank will listen for
+  connections. Must be set if *launch-swank-at-startup* is true.
   \begin{itemize}
   \item Default value: 4005
   \end{itemize}
 \end{itemize}
 
-Additionally, at startup the AbclScriptEngine will \code{(require 'asdf)} - in fact, it uses asdf to load Swank.
+Additionally, at startup the AbclScriptEngine will \code{(require
+  'asdf)} - in fact, it uses asdf to load Swank.
 
 \subsubsection{Evaluation}
 
-Code is read and evaluated in the package ABCL-SCRIPT-USER. This packages USEs the COMMON-LISP, JAVA and ABCL-SCRIPT packages. Future versions of the script engine might make this default package configurable. The \code{CL:LOAD} function is used under the hood for evaluating code, and thus the same behavior of LOAD is guaranteed. This allows, among other things, \code{IN-PACKAGE} forms to change the package in which the loaded code is read.
+Code is read and evaluated in the package ABCL-SCRIPT-USER. This
+packages USEs the COMMON-LISP, JAVA and ABCL-SCRIPT packages. Future
+versions of the script engine might make this default package
+configurable. The \code{CL:LOAD} function is used under the hood for
+evaluating code, and thus the same behavior of LOAD is
+guaranteed. This allows, among other things, \code{IN-PACKAGE} forms
+to change the package in which the loaded code is read.
 
-It is possible to evaluate code in what JSR-223 calls a "ScriptContext" (basically a flat environment of name->value pairs). This context is used to establish special bindings for all the variables defined in it; since variable names are strings from Java's point of view, they are first interned using READ-FROM-STRING with, as usual, ABCL-SCRIPT-USER as the default package. Variables are declared special because CL's \code{LOAD}, \code{EVAL} and \code{COMPILE} functions work in a null lexical environment and would ignore non-special bindings.
+It is possible to evaluate code in what JSR-223 calls a
+"ScriptContext" (basically a flat environment of name->value
+pairs). This context is used to establish special bindings for all the
+variables defined in it; since variable names are strings from Java's
+point of view, they are first interned using READ-FROM-STRING with, as
+usual, ABCL-SCRIPT-USER as the default package. Variables are declared
+special because CL's \code{LOAD}, \code{EVAL} and \code{COMPILE}
+functions work in a null lexical environment and would ignore
+non-special bindings.
 
-Contrary to what the function \code{LOAD} does, evaluation of a series of forms returns the value of the last form instead of T, so the evaluation of short scripts does the Right Thing.
+Contrary to what the function \code{LOAD} does, evaluation of a series
+of forms returns the value of the last form instead of T, so the
+evaluation of short scripts does the Right Thing.
 
 \subsubsection{Compilation}
 
-AbclScriptEngine implements the javax.script.Compilable interface. Currently it only supports compilation using temporary files. Compiled code, returned as an instance of javax.script.CompiledScript, is read, compiled and executed by default in the ABCL-SCRIPT-USER package, just like evaluated code. Differently from evaluated code, though, due to the way the ABCL compiler works, compiled code contains no reference to top-level self-evaluating objects (like numbers or strings). Thus, when evaluated, a piece of compiled code will return the value of the last non-self-evaluating form: for example the code "(do-something) 42" will return 42 when interpreted, but will return the result of (do-something) when compiled and later evaluated. To ensure consistency of behavior between interpreted and compiled code, make sure the last form is always a compound form - at least (identity some-literal-object). Note that this issue should not matter in real code, where it is unlikely a top-level self-evaluating form will appear as the last form in a file (in fact, the Common Lisp load function always returns T upon success; with JSR-223 this policy has been changed to make evaluation of small code snippets work as intended).
+AbclScriptEngine implements the javax.script.Compilable
+interface. Currently it only supports compilation using temporary
+files. Compiled code, returned as an instance of
+javax.script.CompiledScript, is read, compiled and executed by default
+in the ABCL-SCRIPT-USER package, just like evaluated code. Differently
+from evaluated code, though, due to the way the ABCL compiler works,
+compiled code contains no reference to top-level self-evaluating
+objects (like numbers or strings). Thus, when evaluated, a piece of
+compiled code will return the value of the last non-self-evaluating
+form: for example the code "(do-something) 42" will return 42 when
+interpreted, but will return the result of (do-something) when
+compiled and later evaluated. To ensure consistency of behavior
+between interpreted and compiled code, make sure the last form is
+always a compound form - at least (identity some-literal-object). Note
+that this issue should not matter in real code, where it is unlikely a
+top-level self-evaluating form will appear as the last form in a file
+(in fact, the Common Lisp load function always returns T upon success;
+with JSR-223 this policy has been changed to make evaluation of small
+code snippets work as intended).
 
 \subsubsection{Invocation of functions and methods}
 
-AbclScriptEngine implements the \code{javax.script.Invocable} interface, which allows to directly call Lisp functions and methods, and to obtain Lisp implementations of Java interfaces. This is only partially possible with Lisp since it has functions, but not methods - not in the traditional OO sense, at least, since Lisp methods are not attached to objects but belong to generic functions. Thus, the method \code{invokeMethod()} is not implemented and throws an UnsupportedOperationException when called. The \code{invokeFunction()} method should be used to call both regular and generic functions.
+AbclScriptEngine implements the \code{javax.script.Invocable}
+interface, which allows to directly call Lisp functions and methods,
+and to obtain Lisp implementations of Java interfaces. This is only
+partially possible with Lisp since it has functions, but not methods -
+not in the traditional OO sense, at least, since Lisp methods are not
+attached to objects but belong to generic functions. Thus, the method
+\code{invokeMethod()} is not implemented and throws an
+UnsupportedOperationException when called. The \code{invokeFunction()}
+method should be used to call both regular and generic functions.
 
 \subsubsection{Implementation of Java interfaces in Lisp}
 
-ABCL can use the Java reflection-based proxy feature to implement Java interfaces in Lisp. It has several built-in ways to implement an interface, and supports definition of new ones. The \code{JAVA:JMAKE-PROXY} generic function is used to make such proxies. It has the following signature:
+ABCL can use the Java reflection-based proxy feature to implement Java
+interfaces in Lisp. It has several built-in ways to implement an
+interface, and supports definition of new ones. The
+\code{JAVA:JMAKE-PROXY} generic function is used to make such
+proxies. It has the following signature:
 
 \code{jmake-proxy interface implementation \&optional lisp-this ==> proxy}
 
-\code{interface} is a Java interface metaobject (e.g. obtained by invoking \code{jclass}) or a string naming a Java interface. \code{implementation} is the object used to implement the interface - several built-in methods of jmake-proxy exist for various types of implementations. \code{lisp-this} is an object passed to the closures implementing the Lisp "methods" of the interface, and defaults to \code{NIL}.
+\code{interface} is a Java interface metaobject (e.g. obtained by
+invoking \code{jclass}) or a string naming a Java
+interface. \code{implementation} is the object used to implement the
+interface - several built-in methods of jmake-proxy exist for various
+types of implementations. \code{lisp-this} is an object passed to the
+closures implementing the Lisp "methods" of the interface, and
+defaults to \code{NIL}.
 
-The returned proxy is an instance of the interface, with methods implemented with Lisp functions.
+The returned proxy is an instance of the interface, with methods
+implemented with Lisp functions.
 
 Built-in interface-implementation types include:
 
 \begin{itemize}
-\item a single Lisp function which upon invocation of any method in the interface will be passed the method name, the Lisp-this object, and all the parameters. Useful for interfaces with a single method, or to implement custom interface-implementation strategies.
-\item a hash-map of method-name -> Lisp function mappings. Function signature is \code{(lisp-this \&rest args)}.
-\item a Lisp package. The name of the Java method to invoke is first transformed in an idiomatic Lisp name (\code{javaMethodName} becomes \code{JAVA-METHOD-NAME}) and a symbol with that name is searched in the package. If it exists and is fbound, the corresponding function will be called. Function signature is as the hash-table case.
+\item a single Lisp function which upon invocation of any method in
+  the interface will be passed the method name, the Lisp-this object,
+  and all the parameters. Useful for interfaces with a single method,
+  or to implement custom interface-implementation strategies.
+\item a hash-map of method-name -> Lisp function mappings. Function
+  signature is \code{(lisp-this \&rest args)}.
+\item a Lisp package. The name of the Java method to invoke is first
+  transformed in an idiomatic Lisp name (\code{javaMethodName} becomes
+  \code{JAVA-METHOD-NAME}) and a symbol with that name is searched in
+  the package. If it exists and is fbound, the corresponding function
+  will be called. Function signature is as the hash-table case.
 \end{itemize}
 
-This functionality is exposed by the AbclScriptEngine with the two methods getInterface(Class) and getInterface(Object, Class). The former returns an interface implemented with the current Lisp package, the latter allows the programmer to pass an interface-implementation object which will in turn be passed to the jmake-proxy generic function.
+This functionality is exposed by the AbclScriptEngine with the two
+methods getInterface(Class) and getInterface(Object, Class). The
+former returns an interface implemented with the current Lisp package,
+the latter allows the programmer to pass an interface-implementation
+object which will in turn be passed to the jmake-proxy generic
+function.
 
 \chapter{Implementation Dependent Extensions}
 
@@ -726,9 +832,10 @@ code is greater than 0x00ff.
 
 \section{ASDF}
 
-asdf-2.017 is packaged as core component of ABCL.  By default, ASDF is
-not loaded, as it relies on the CLOS subsystem which can take a bit of
-time to initialize.
+asdf-2.017 is packaged as core component of ABCL, but not intialized
+by default, as it relies on the CLOS subsystem which can take a bit of
+time to initialize.  It may be initialized by the ANSI
+\textsc{REQUIRE} mechanism as follows:
 
 \begin{listing-lisp}
 CL-USER> (require 'asdf)
@@ -738,10 +845,11 @@ CL-USER> (require 'asdf)
 
 \section{abcl-asdf}
 
-Allow ASDF system definition which dynamically loads JVM artifacts
-such as jar archives via a Maven encapsulation.
+This contrib to ABCL enables an additional syntax for ASDF system
+definition which dynamically loads JVM artifacts such as jar archives
+via a Maven encapsulation.
 
-ASDF components added:  JAR-FILE, JAR-DIRECTORY, CLASS-FILE-DIRECTORY
+The following ASDF components are added:  JAR-FILE, JAR-DIRECTORY, CLASS-FILE-DIRECTORY
 and MVN.
 
 \section{asdf-install}
@@ -757,8 +865,20 @@ required source and fasls in a jar archive.
 
 \section{jss}
 
-Java Syntax sucks, so we introduce the \#" macro.
+To one used to a syntax that can construct macros, the Java syntax
+sucks, so we introduce the \#" macro.
 
+\subsection{JSS usage}
+
+Example:
+
+\begin{listing-lisp}
+  CL-USER> (require 'jss)
+
+  CL-USER) (#"getProperties" 'java.lang.System)
+
+  CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
+\end{listing-lisp}
 
 \chapter{History}
 
