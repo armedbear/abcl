@@ -445,7 +445,7 @@ from ${abcl.home.dir}
     <target name="abcl.wrapper" 
             depends="abcl.jar,abcl.contrib,abcl.wrapper.unix,abcl.wrapper.windows">
       <description>
-        Creates in-place exectuable shell wrapper in '${abcl.wrapper.file}'
+        Creates in-place executable shell wrapper in '${abcl.wrapper.file}'
       </description>
       <!-- Set from commandline or in 'build.properties' -->
       <property name="additional.jars" value=""/>
