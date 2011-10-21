@@ -517,7 +517,7 @@ control what directories are added to the ASDF search path.
 
 
 @section Configuring where ASDF stores object files
-@findex clear-output-locations
+@findex clear-output-translations
 
 ASDF lets you configure where object files will be stored.
 Sensible defaults are provided and
@@ -595,6 +595,33 @@ to just delegate this functionality to ASDF.
 
 @node Using ASDF, Defining systems with defsystem, Configuring ASDF, Top
 @comment  node-name,  next,  previous,  up
+
+
+@section Resetting Configuration
+
+When you dump and restore an image, or when you tweak your configuration,
+you may want to reset the ASDF configuration.
+For that you may use the following function:
+
+@defun clear-configuration
+   undoes any ASDF configuration,
+   regarding source-registry or output-translations.
+@end defun
+
+If you use SBCL, CMUCL or SCL, you may use this snippet
+so that the ASDF configuration be cleared automatically as you dump an image:
+
+@example
+#+(or cmu sbcl scl)
+(pushnew 'clear-configuration
+         #+(or cmu scl) ext:*before-save-initializations*
+         #+sbcl sb-ext:*save-hooks*)
+@end example
+
+For compatibility with all Lisp implementations, however,
+you might want instead your build script to explicitly call
+@code{(asdf:clear-configuration)} at an appropriate moment before dumping.
+
 
 @chapter Using ASDF
 
@@ -1210,6 +1237,7 @@ and @emph{operations}, the actions that can be performed on a system.
 @menu
 * Operations::
 * Components::
+* Functions::
 @end menu
 
 @node  Operations, Components, The object model of ASDF, The object model of ASDF
@@ -1410,7 +1438,7 @@ if you don't like the default one
 Operations that print output should send that output to the standard
 CL stream @code{*standard-output*}, as the Lisp compiler and loader do.
 
-@node Components,  , Operations, The object model of ASDF
+@node Components, Functions, Operations, The object model of ASDF
 @comment  node-name,  next,  previous,  up
 @section Components
 @cindex component
@@ -1573,11 +1601,14 @@ The syntax is approximately
 @verbatim
 (this-op {(other-op required-components)}+)
 
-required-components := component-name
+simple-component-name := string
+                      |  symbol
+
+required-components := simple-component-name
                      | (required-components required-components)
 
-component-name := string
-                | (:version string minimum-version-object)
+component-name := simple-component-name
+                | (:version simple-component-name minimum-version-object)
 @end verbatim
 
 Side note:
@@ -1787,6 +1818,25 @@ The new component type is used in a @code{defsystem} form in this way:
      ...
     )
 @end lisp
+
+@node Functions,  , Components, The object model of ASDF
+@comment  node-name,  next,  previous,  up
+@section Functions
+@findex version-satisfies
+
+@deffn version-satisfies @var{version} @var{version-spec}
+Does @var{version} satisfy the @var{version-spec}.  A generic function.
+ASDF provides built-in methods for @var{version} being a
+@code{component} or @code{string}.  @var{version-spec} should be a
+string.
+
+In the wild, we typically see version numbering only on components of
+type @code{system}.
+
+For more information about how @code{version-satisfies} interprets
+version strings and specifications, @pxref{The defsystem grammar} and
+@ref{Common attributes of components}.
+@end deffn
 
 @node Controlling where ASDF searches for systems, Controlling where ASDF saves compiled files, The object model of ASDF, Top
 @comment  node-name,  next,  previous,  up
@@ -2774,10 +2824,37 @@ The valid values for these variables are
 @comment  node-name,  next,  previous,  up
 @chapter Miscellaneous additional functionality
 
-@emph{FIXME:  Add discussion of @code{run-shell-command}?  Others?}
-
 ASDF includes several additional features that are generally
-useful for system definition and development. These include:
+useful for system definition and development.
+
+@section Controlling file compilation
+
+When declaring a component (system, module, file),
+you can specify a keyword argument @code{:around-compile some-symbol}.
+If left unspecified, the value will be inherited from the parent component if any,
+or with a default of @code{nil} if no value is specified in any transitive parent.
+
+The argument must be a either fbound symbol or @code{nil}.
+@code{nil} means the normal compile-file function will be called.
+A symbol means the function fbound to it will be called with a single argument,
+a thunk that calls the compile-file function;
+the function you specify must then funcall that thunk
+inside whatever wrapping you want.
+
+Using this hook, you may achieve such effects as:
+locally renaming packages,
+binding @var{*readtables*} and other syntax-controlling variables,
+handling warnings and other conditions,
+proclaiming consistent optimization settings,
+saving code coverage information,
+maintaining meta-data about compilation timings,
+setting gensym counters and PRNG seeds and other sources of non-determinism,
+overriding the source-location and/or timestamping systems,
+checking that some compile-time side-effects were properly balanced,
+etc.
+
+
+@section Miscellaneous Exported Functions
 
 @defun coerce-pathname name @&key type defaults
 
@@ -2871,6 +2948,33 @@ ASDF itself goes through notable pains to make such a hot upgrade possible
 with respect to its own code, and what it does is ridiculously complex;
 look at the beginning of @file{asdf.lisp} to see what it does.
 @end defun
+
+@defun run-shell-command
+
+This function is obsolete and present only for the sake of backwards-compatibility:
+``If it's not backwards, it's not compatible''. We strongly discourage its use.
+Its current behavior is only well-defined on Unix platforms
+(which includes MacOS X and cygwin). On Windows, anything goes.
+
+Instead we recommend the use of such a function as
+@code{xcvb-driver:run-program/process-output-stream}
+from the @code{xcvb-driver} system that is distributed with XCVB:
+@url{http://common-lisp.net/project/xcvb}.
+It's only alternative that supports
+as many implementations and operating systems as ASDF does,
+and provides well-defined behavior outside Unix (i.e. on Windows).
+(The only unsupported exception is Genera, since on it
+@code{run-shell-command} doesn't make sense anyway on that platform).
+
+This function takes as arguments a @code{format} control-string
+and arguments to be passed to @code{format} after this control-string
+to produce a string.
+This string is a command that will be evaluated with a POSIX shell if possible;
+yet, on Windows, some implementations will use CMD.EXE,
+while others (like SBCL) will make an attempt at invoking a POSIX shell
+(and fail if it is not present).
+@end defun
+
 
 @node Getting the latest version, FAQ, Miscellaneous additional functionality, Top
 @comment  node-name,  next,  previous,  up
