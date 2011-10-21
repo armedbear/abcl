@@ -297,6 +297,28 @@ method the same way as with \code{JAVA:JMETHOD}.
 The constructor can't be passed to \code{JAVA:JCALL}, but instead should
 be passed as an argument to \code{JAVA:JNEW}.
 
+\subsubsection{Accessing Java object fields}
+
+Fields in Java objects can be accessed using the getter and setter functions
+\code{JAVA:GETFIELD} and \code{JAVA:PUTFIELD}. This applies to values stored in object
+instances. If you want to access static fields: see the next section.
+
+Like \code{JAVA:JCALL} and friends, values returned from these accessors carry
+an intended class around and values which can be converted to Lisp values will
+be converted.
+
+\subsubsection{Accessing Java static fields}
+
+Static fields in Java objects (class fields) can be accessed using the getter
+and setter functions \code{JAVA:GETSTATIC} and \code{JAVA:PUTSTATIC}. Values
+stored in object instance fields can be accessed as described in the previous
+section.
+
+Like \code{JAVA:JCALL} and friends, values returned from these accessors carry
+an intended class around and values which can be converted to Lisp values will
+be converted.
+
+
 \section{Lisp from Java}
 
 In order to access the Lisp world from Java, one needs to be aware
@@ -941,7 +963,7 @@ lot of code that had previously not been released publically was
 suddenly committed that enabled ABCL to be plausibly termed an ANSI
 Common Lisp implementation.
 
-In 2006, the implementation was transferred to the current
+In 2008, the implementation was transferred to the current
 maintainers, who have strived to improve its usability as a
 contemporary Common Lisp implementation.
 
