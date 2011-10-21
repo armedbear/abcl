@@ -13,6 +13,9 @@
 
 # Examples:
 
+# Java7 on 64bit optimizations
+#java.options=-d64 -Xmx16g -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=2g
+
 # Set the JVM to use a maximum of 1GB of RAM (only works for 64bit JVMs)
 #java.options=-d64 -Xmx1g
 
