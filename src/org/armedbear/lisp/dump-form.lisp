@@ -121,7 +121,7 @@
       (t
        (unless *prevent-fasl-circle-detection*
          (assert (or (eq index t)
-                     (fixnump object))))))))
+                     (integerp object)))))))) ;; strictly this should be 'long'
 
 (declaim (ftype (function (cons stream) t) dump-cons))
 (defun dump-cons (object stream)
