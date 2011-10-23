@@ -1,6 +1,26 @@
-Version 0.28.0
+Version 1.0.0
 ==============
-(untagged)
+svn://common-lisp.net/project/armedbear/svn/tags/1.0.0/abcl
+(22 October 2011)
+
+
+Features
+--------
+
+ * (Draft) manual
+
+Changes
+-------
+
+ * Updated ASDF to 2.017.22
+
+Fixes
+-----
+
+ * CLOSURE-HTML compilation
+
+ * DEFINE-METHOD-COMBINATION (long form) - short form didn't
+     need fixing
 
 
 Version 0.27.0
