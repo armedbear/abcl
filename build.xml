@@ -145,7 +145,10 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <condition property="abcl.java.version.p">
         <or>
           <matches string="${java.version}" pattern="1\.5"/>
+          <!-- Don't use 1.6.0_09 or earlier. -->
           <matches string="${java.version}" pattern="1\.6\.0_[12][0-9]"/>
+          <!-- 1.7.0_01 seems to rock. -->
+          <matches string="${java.version}" pattern="1\.7\.0_[0-9]"/>
         </or>  
       </condition>
 
