@@ -1,6 +1,12 @@
+Version 1.1.0
+=============
+svn.uri=:"http//common-lisp.net/project/armedbear/svn/trunk/abcl/"
+(unreleased)
+
 Version 1.0.0
 ==============
-svn://common-lisp.net/project/armedbear/svn/tags/1.0.0/abcl
+svn.uri=:"http//common-lisp.net/project/armedbear/svn/tags/1.0.0/abcl/"
+released at the European Common Lisp Meeting Amsterdam 2011
 (22 October 2011)
 
 
@@ -8,6 +14,9 @@ Features
 --------
 
  * (Draft) manual
+
+ * Much better Quicklisp system capabilities (trivial-garbage,
+ bordeaux-threads, parenscript, cxml, et. al.)
 
 Changes
 -------
@@ -17,10 +26,9 @@ Changes
 Fixes
 -----
 
- * CLOSURE-HTML compilation
+ * CLOSURE-HTML now compiles
 
- * DEFINE-METHOD-COMBINATION (long form) - short form didn't
-     need fixing
+ * DEFINE-METHOD-COMBINATION long form implemented
 
 
 Version 0.27.0
