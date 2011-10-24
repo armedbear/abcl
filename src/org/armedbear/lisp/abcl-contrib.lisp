@@ -8,7 +8,11 @@
 (defun find-system-jar () 
   (dolist (loader (java:dump-classpath))
     (let ((abcl-jar
-	   (find-if (lambda (p) (and (equal (pathname-name p) "abcl")
+	   (find-if (lambda (p) (and 
+                                 (or (equal (pathname-name p) "abcl")
+                                     (equal (pathname-name p) 
+                                            (format nil "abcl-~A" 
+                                                    (lisp-implementation-version))))
 				     (equal (pathname-type p) "jar")))
 		    (rest loader))))
       (when abcl-jar
