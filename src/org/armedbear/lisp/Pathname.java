@@ -1623,7 +1623,11 @@ public class Pathname extends LispObject {
                             File file = files[i];
                             Pathname p;
                             if (file.isDirectory()) {
-                                p = Utilities.getDirectoryPathname(file);
+                                if (arg2 != NIL) {
+                                    p = Utilities.getDirectoryPathname(file);
+                                } else {
+                                    p = new Pathname(file.getAbsolutePath()); 
+                                }
                             } else {
                                 if (arg2 != NIL) {
                                     p = new Pathname(file.getCanonicalPath());
