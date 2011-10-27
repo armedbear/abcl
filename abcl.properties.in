@@ -25,6 +25,9 @@
 # Use a separate concurrent GC thread (java-1.6_14 or later)
 #java.options=-d64 -Xmx8g -XX:+UseConcMarkSweepGC
 
+# Java 5 era (???) flag to GC class definitions
+#java.options=-XX:+CMSPermGenSweepingEnabled
+
 # The unloading of class definitions is a per jvm policy.  For those
 # implementations which run out of permgen space, the following should
 # help things out.
