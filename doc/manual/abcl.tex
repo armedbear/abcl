@@ -5,7 +5,7 @@
 
 \begin{document}
 \title{A Manual for Armed Bear Common Lisp}
-\date{October 22, 2011}
+\date{October 27, 2011}
 \author{Mark~Evenson, Erik~Huelsmann, Alessio~Stalla, Ville~Voutilainen}
 
 \maketitle
@@ -19,7 +19,7 @@ Lisp standard.  This manual documents the Armed Bear Common Lisp
 implementation for users of the system.
 
 \subsection{Version}
-This manual corresponds to abcl-1.0.0-dev, released on October 22, 2011.
+This manual corresponds to abcl-1.0.0,  released on October 22, 2011.
 
 \subsection{License}
 
@@ -52,21 +52,22 @@ Peter Graves
 \textsc{ABCL} is packaged as a single jar file usually named either
 ``abcl.jar'' or possibly``abcl-1.0.0.jar'' if one is using a versioned
 package from your system vendor.  This byte archive can be executed
-under the control of a suitable JVM by using the ``-jar'' option to
-parse the manifest, and select the named class
-(\code{org.armedbear.lisp.Main}) for execution, viz:
+under the control of a suitable JVM \footnote {Java Virtual Machine}
+by using the ``-jar'' option to parse the manifest, and select the
+class named therein ``\code{org.armedbear.lisp.Main}'' for execution,
+viz:
 
 \begin{listing-shell}
   cmd$ java -jar abcl.jar
 \end{listing-shell}
 
-N.b. for the proceeding command to work, the ``java'' executable needs
+\emph{N.b.} for the proceeding command to work, the ``java'' executable needs
 to be in your path.
 
 To make it easier to facilitate the use of ABCL in tool chains (such
 as SLIME \footnote{SLIME is the Superior Lisp Mode for Interaction
   under Emacs}) the invocation is wrapped in a Bourne shell script
-under UNIX or a DOS command script under Windows so that ABCL may be
+under \textsc{UNIX} or a \textsc{DOS} command script under Windows so that ABCL may be
 executed simply as:
 
 \begin{listing-shell}
@@ -106,7 +107,7 @@ variable.
 
 \section{Initialization}
 
-If the ABCL process is started without the ``--noinit'' flag, it
+If the \textsc{ABCL} process is started without the ``--noinit'' flag, it
 attempts to load a file named ``.abclrc'' located in the user's home
 directory and then interpret its contents.  
 
