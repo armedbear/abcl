@@ -14,12 +14,14 @@
 
 \chapter{Introduction}
 
-Armed Bear is a (mostly) conforming implementation of the ANSI Common
-Lisp standard.  This manual documents the Armed Bear Common Lisp
+Armed Bear is a conforming implementation of the ANSI Common Lisp
+standard (see \ref{chapter:conformance} on page
+\pageref{chapter:conformance} which states the details of the
+conformance level.  This manual documents the Armed Bear Common Lisp
 implementation for users of the system.
 
 \subsection{Version}
-This manual corresponds to abcl-1.0.0,  released on October 22, 2011.
+This manual corresponds to abcl-1.0.0, released on October 22, 2011.
 
 \subsection{License}
 
@@ -117,6 +119,7 @@ value of the HOME system environment variable at the discretion of the
 JVM implementation that \textsc{ABCL} finds itself hosted upon.
 
 \chapter{Conformance}
+\label{chapter:conformance}
 
 \section{ANSI Common Lisp}
 \textsc{ABCL} is currently a (non)-conforming ANSI Common Lisp
@@ -202,8 +205,9 @@ by their name ending with \code{-RAW}.
 \subsection{Low-level Java API}
 
 We define a higher level Java API in the \ref{topic:Higher level Java
-  API: JSS}(JSS package) which is available in the \code{contrib/} \ref{topic:contrib}
-directory. This package is described later in this document.  This
+  API: JSS}(JSS package) which is available in the \code{contrib/}
+\ref{topic:contrib} directory . This package is described later in
+this document, see \ref{sec:jss} on page \pageref{sec:jss}.  This
 section covers the lower level API directly available after evaluating
 \code{(require 'JAVA)}.
 
@@ -1020,6 +1024,7 @@ systems the code in this package will recursively package all the
 required source and fasls in a jar archive.
 
 \section{jss}
+\label{sec:jss}
 
 To one used to a syntax that can construct macros, the Java syntax
 sucks, so we introduce the \#" macro.
