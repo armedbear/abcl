@@ -5,7 +5,7 @@
 
 \begin{document}
 \title{A Manual for Armed Bear Common Lisp}
-\date{October 27, 2011}
+\date{October 28, 2011}
 \author{Mark~Evenson, Erik~Huelsmann, Alessio~Stalla, Ville~Voutilainen}
 
 \maketitle
@@ -150,8 +150,16 @@ expected of a contemporary Common Lisp \footnote{i.e. a Lisp of the
 The following known problems detract from \textsc{ABCL} being a proper
 contemporary Comon Lisp.
 \begin{itemize}
+
+  \item An incomplete implementation of interactive debugging
+    mechanisms namely a no-op version of
+    \code{STEP} \footnote{Somewhat surprisingly allowed by
+      \textsc{ANSI}}, the inability to inspect local variables in a
+    given call frame, and the inability to resume a halted computation
+    at an arbitrarily selected call frame.
+
   \item An incomplete implementation of a properly named metaobject
-    protocol (viz. (A)MOP \footnote{Another Metaobject Protocol} )
+    protocol (viz. (A)MOP \footnote{The Art of the  Metaobject Protocol} )
 
     % N.b. 
     % TODO go through AMOP with symbols, starting by looking for
@@ -165,7 +173,7 @@ contemporary Comon Lisp.
     byte-level manipulations.
     
   \item Incomplete documentation (missing docstrings from exported
-      symbols.
+    symbols and the draft status of the User Manual).
 
 \end{itemize}
 
@@ -204,12 +212,12 @@ by their name ending with \code{-RAW}.
 
 \subsection{Low-level Java API}
 
-We define a higher level Java API in the \ref{topic:Higher level Java
-  API: JSS}(JSS package) which is available in the \code{contrib/}
-\ref{topic:contrib} directory . This package is described later in
-this document, see \ref{sec:jss} on page \pageref{sec:jss}.  This
-section covers the lower level API directly available after evaluating
-\code{(require 'JAVA)}.
+We define a higher level Java API in the topic:Higher level Java JSS
+package developed by Alan Ruttenberg which is available in the
+\code{contrib/} directory, see the  . This package is
+described later in this document, see \ref{section:jss} on page
+\pageref{section:jss}.  This section covers the lower level API
+directly available after evaluating \code{(require 'JAVA)}.
 
 \subsubsection{Calling Java Object Methods}
 
@@ -936,14 +944,18 @@ code is greater than 0x00ff.
 \subsection{JSS optionally extends the Reader}
 
 The JSS contrib consitutes an additional, optional extension to the
-reader in the definition of the \#\" reader macro.
+reader in the definition of the \#\" reader macro.  See
+\ref{section:jss} on page \pageref{section:jss} for more information.
 
 \section{ASDF}
 
 asdf-2.017.22 is packaged as core component of ABCL, but not
-intialized by default, as it relies on the CLOS subsystem which can
-take a bit of time to initialize.  It may be initialized by the ANSI
-\textsc{REQUIRE} mechanism as follows:
+initialized by default, as it relies on the CLOS subsystem which can
+take a bit of time to start \footnote{While this time is ``merely'' on
+  the order of seconds for contemporary 2011 machines, for
+  applications that need to initialize quickly, for example a web
+  server, this time might be unnecessarily long}.  ASDF may be loaded
+by the \textsc{ANSI} \code{REQUIRE} mechanism as follows:
 
 \begin{listing-lisp}
 CL-USER> (require 'asdf)
@@ -951,23 +963,39 @@ CL-USER> (require 'asdf)
 
 \chapter{Contrib}
 
+The ABCL contrib is packaged as a separate jar archive usually named
+\code{abcl-contrib.jar} or possibly something like
+\code{abcl-contrib-1.0.0.jar}.  The contrib jar is not loaded by the
+implementation by default, and must be first intialized by the
+\code{REQUIRE} mechanism before using any specific contrib:
+
+\begin{listing-lisp}
+CL-USER> (require 'abcl-contrib)
+\end{listing-lisp}
+
 \section{abcl-asdf}
 
-This contrib to ABCL enables an additional syntax for ASDF system
-definition which dynamically loads JVM artifacts such as jar archives
-via a Maven encapsulation.  The Maven Aether can also be directly
-manipulated by the function associated with the RESOLVE-DEPENDENCIES symbol.
+This contrib enables an additional syntax for \textsc{ASDF} system
+definition which dynamically loads \textsc{JVM} artifacts such as jar
+archives via encapsulation of the Maven build tool.  The Maven Aether
+component can also be directly manipulated by the function associated
+with the \code{ABCL-ASDF:RESOLVE-DEPENDENCIES} symbol.
 
-%ABCL specific contributions to ASDF system definition mainly concerned
-%with finding JVM artifacts such as jar archives to be dynamically loaded.
-
-
-The following ASDF components are added: \textsc{JAR-FILE}, \textsc{JAR-DIRECTORY},
-\textsc{CLASS-FILE-DIRECTORY} and \textsc{MVN}.
+%ABCL specific contributions to ASDF system definition mainly
+%concerned with finding JVM artifacts such as jar archives to be
+%dynamically loaded.
 
 
+The following \textsc{ASDF} components are added: \code{JAR-FILE},
+\code{JAR-DIRECTORY}, \code{CLASS-FILE-DIRECTORY} and \code{MVN}.
 
-\subsection{ABCL-ASDF Examples}
+
+\subsection{Referencing Maven Artifacts via ASDF}
+
+Maven artifacts may be referenced within \textsc{ASDF} system
+definitions, as the following example references the
+\code{log4j-1.4.9.jar} JVM artifact which provides a widely-used
+abstraction for handling logging systems:
 
 \begin{listing-lisp}
     ;;;; -*- Mode: LISP -*-
@@ -978,76 +1006,78 @@ The following ASDF components are added: \textsc{JAR-FILE}, \textsc{JAR-DIRECTOR
                     :version "1.4.9")))
 \end{listing-lisp}
 
-\subsection{abcl-asdf API}
+\subsection{API}
 
-We define an API as consisting of the following ASDF classes:
+We define an API for \textsc{ABCL-ASDF} as consisting of the following
+ASDF classes:
 
 \textsc{JAR-DIRECTORY}, \textsc{JAR-FILE}, and
 \textsc{CLASS-FILE-DIRECTORY} for JVM artifacts that have a currently
-valid pathname representation
+valid pathname representation.
 
-And the MVN and IRI classes descend from ASDF-COMPONENT, but do not
+Both the MVN and IRI classes descend from ASDF-COMPONENT, but do not
 directly have a filesystem location.
 
-For use outside of ASDF, we currently define one method,
-\textsc{RESOLVE-DEPENDENCIES} which locates, downloads, caches, and then loads
-into the currently executing JVM process all recursive dependencies
-annotated in the Maven pom.xml graph.
+For use outside of ASDF system definitions, we currently define one
+method, \textsc{ABCL-ASDF:RESOLVE-DEPENDENCIES} which locates,
+downloads, caches, and then loads into the currently executing JVM
+process all recursive dependencies annotated in the Maven pom.xml
+graph.
 
-\subsection{ABCL-ASDF Example 2}
+\subsection{Directly Instructing Maven to Download JVM Artifacts}
 
-Bypassing ASDF, one can directly issue requests for the Maven
+Bypassing \textsc{ASDF}, one can directly issue requests for the Maven
 artifacts to be downloaded
 
 \begin{listing-lisp}
-    CL-USER> (abcl-asdf:resolve-dependencies "com.google.gwt" "gwt-user")
-    WARNING: Using LATEST for unspecified version.
-    "/Users/evenson/.m2/repository/com/google/gwt/gwt-user/2.4.0-rc1/gwt-user-2.4.0-rc1.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA-sources.jar"
+CL-USER> (abcl-asdf:resolve-dependencies "com.google.gwt" "gwt-user")
+WARNING: Using LATEST for unspecified version.
+"/Users/evenson/.m2/repository/com/google/gwt/gwt-user/2.4.0-rc1/gwt-user-2.4.0-rc1.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA-sources.jar"
 \end{listing-lisp}
 
-To actually load the dependency, use the JAVA:ADD-TO-CLASSPATH generic
+To actually load the dependency, use the \code{JAVA:ADD-TO-CLASSPATH} generic
 function:
 
 \begin{listing-lisp}
-    CL-USER> (java:add-to-classpath (abcl-asdf:resolve-dependencies "com.google.gwt" "gwt-user"))
+CL-USER> (java:add-to-classpath (abcl-asdf:resolve-dependencies "com.google.gwt" "gwt-user"))
 \end{listing-lisp}
 
 Notice that all recursive dependencies have been located and installed
 locally from the network as well.
 
-
 \section{asdf-jar}
 
-ASDF-JAR provides a system for packaging ASDF systems into jar
-archives for ABCL.  Given a running ABCL image with loadable ASDF
+The asdf-jar contrib provides a system for packaging ASDF systems into
+jar archives for ABCL.  Given a running ABCL image with loadable ASDF
 systems the code in this package will recursively package all the
 required source and fasls in a jar archive.
 
 \section{jss}
-\label{sec:jss}
+\label{section:jss}
 
-To one used to a syntax that can construct macros, the Java syntax
-sucks, so we introduce the \#" macro.
+To one used to a syntax that can construct macros the Java syntax
+may be said to suck, so we introduce the \#" macro.
 
 \subsection{JSS usage}
 
 Example:
 
 \begin{listing-lisp}
-  CL-USER> (require 'jss)
+CL-USER> (require 'jss)
 
-  CL-USER) (#"getProperties" 'java.lang.System)
+CL-USER) (#"getProperties" 'java.lang.System)
 
-  CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
+CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 \end{listing-lisp}
 
 \section{asdf-install}
 
-An implementation of ASDF-INSTALL.  Superseded by Quicklisp (qv.)
+The asdf-install contrib provides an implementation of ASDF-INSTALL.
+Superseded by Quicklisp (qv.)
 
 \chapter{History}
 
-ABCL was originally the extension language for the J editor, which was
+\textsc{ABCL} was originally the extension language for the J editor, which was
 started in 1998 by Peter Graves.  Sometime in 2003, a whole lot of
 code that had previously not been released publically was suddenly
 committed that enabled ABCL to be plausibly termed an emergent ANSI
@@ -1062,10 +1092,8 @@ maintainers, who have strived to improve its usability as a
 contemporary Common Lisp implementation.
 
 On October 22, 2011, with the publication of this Manual explicitly
-stating the conformance of Armed Bear Common Lisp to ANSI, we released
+stating the conformance of Armed Bear Common Lisp to \textsc{ANSI}, we released
 abcl-1.0.0.
-
-
 
 
 \section{References}
