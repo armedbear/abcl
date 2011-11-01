@@ -858,8 +858,8 @@ will load and execute the Quicklisp setup code.
 
 \subsubsection{Implementation}
 
-\textsc{DEVICE} either a string denoting a drive letter under DOS or a cons
-specifying a \textsc{URL-PATHNAME}.
+\code{DEVICE} either a string denoting a drive letter under DOS or a cons
+specifying a \code{URL-PATHNAME}.
          
 \section{Extensible Sequences}
 
@@ -1012,15 +1012,15 @@ abstraction for handling logging systems:
 We define an API for \textsc{ABCL-ASDF} as consisting of the following
 ASDF classes:
 
-\textsc{JAR-DIRECTORY}, \textsc{JAR-FILE}, and
-\textsc{CLASS-FILE-DIRECTORY} for JVM artifacts that have a currently
+\code{JAR-DIRECTORY}, \code{JAR-FILE}, and
+\code{CLASS-FILE-DIRECTORY} for JVM artifacts that have a currently
 valid pathname representation.
 
 Both the MVN and IRI classes descend from ASDF-COMPONENT, but do not
 directly have a filesystem location.
 
 For use outside of ASDF system definitions, we currently define one
-method, \textsc{ABCL-ASDF:RESOLVE-DEPENDENCIES} which locates,
+method, \code{ABCL-ASDF:RESOLVE-DEPENDENCIES} which locates,
 downloads, caches, and then loads into the currently executing JVM
 process all recursive dependencies annotated in the Maven pom.xml
 graph.
