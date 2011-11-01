@@ -5,8 +5,8 @@
 
 \begin{document}
 \title{A Manual for Armed Bear Common Lisp}
-\date{October 28, 2011}
-\author{Mark~Evenson, Erik~Huelsmann, Alessio~Stalla, Ville~Voutilainen}
+\date{November 1, 2011}
+\author{Mark~Evenson, Erik~H\"{u}lsmann, Alessio~Stalla, Ville~Voutilainen}
 
 \maketitle
 
@@ -817,7 +817,8 @@ description and retrieval of resources named in a URI scheme that the
 JVM ``understands''.  Support is built-in to the ``http'' and
 ``https'' implementations but additional protocol handlers may be
 installed at runtime by having JVM symbols present in the
-sun.net.protocol.dynmamic pacakge. See [JAVA2006] for more details.
+sun.net.protocol.dynmamic pacakge. See Java2007 \cite{Java2007} for more
+details.
 
 ABCL has created specializations of the ANSI Pathname object to
 enable to use of URIs to address dynamically loaded resources for the
@@ -845,7 +846,7 @@ resource (e.g. following redirects) are discarded.
 \end{itemize}
 
 The implementation of URL-PATHNAME allows the ABCL user to laod dynamically
-code from the network.  For example, for Quicklisp.
+code from the network.  For example, for Quicklisp (\cite{Xach2011}):
 
 \begin{listing-lisp}
   CL-USER> (load "http://beta.quicklisp.org/quicklisp.lisp")
@@ -862,7 +863,7 @@ specifying a \textsc{URL-PATHNAME}.
          
 \section{Extensible Sequences}
 
-See \ref{RHODES2007} RHODES2007 for the design.
+See Rhodes2007 \cite{RHODES2007} for the design.
 
 The SEQUENCE package fully implements Christopher Rhodes' proposal for
 extensible sequences.  These user extensible sequences are used
@@ -1073,7 +1074,7 @@ CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 \section{asdf-install}
 
 The asdf-install contrib provides an implementation of ASDF-INSTALL.
-Superseded by Quicklisp (qv.)
+Superseded by Quicklisp (see Xach2011 \cite{Xach2011}).
 
 \chapter{History}
 
@@ -1085,7 +1086,7 @@ Common Lisp implementation canidate.
 
 From 2006 to 2008, Peter manned the development lists, incorporating
 patches as made sense.  After a suitable search, Peter nominated Erik
-Huelsmann to take over the project.
+H\"{u}lsmann to take over the project.
 
 In 2008, the implementation was transferred to the current
 maintainers, who have strived to improve its usability as a
@@ -1096,16 +1097,26 @@ stating the conformance of Armed Bear Common Lisp to \textsc{ANSI}, we released
 abcl-1.0.0.
 
 
-\section{References}
 
-[Java2000]:  A New Era for Java Protocol Handlers.
-\url{http://java.sun.com/developer/onlineTraining/protocolhandlers/}
+\begin{thebibliography}{9}
 
-[Xach2011]:  Quicklisp:  A system for quickly constructing Common Lisp
-libraries.  \url{http://www.quicklisp.org/}
+\bibitem{Java2000}
+  ``A New Era for Java Protocol Handlers.''
+  \url{http://java.sun.com/developer/onlineTraining/protocolhandlers/}
 
-[RHODES2007]:  Christopher Rhodes
+\bibitem{Xach2011}
+  Zach Beenep
+  ``Quicklisp:  A system for quickly constructing Common Lisp''
+  \url{http://www.quicklisp.org/}
 
+\bibitem{Rhodes2007}
+Christopher Rhodes
+``User-extensible Sequences in Common Lisp''
+ILC '07 Proceedings of the 2007 International Lisp Conference
+% An early draft.  XXX where is the real one?
+\url{http://jcsu.jesus.cam.ac.uk/~csr21/spec.pdf}
+
+\end{thebibliography}
 
 \end{document}
 
