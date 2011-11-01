@@ -1100,8 +1100,8 @@ public final class Java
       + "\n"
       + "Deprecated.  Please use JAVA:+NULL+, JAVA:+TRUE+, and JAVA:+FALSE+ for\n"
       + "constructing wrapped primitive types, JAVA:JOBJECT-LISP-VALUE for converting a\n"
-      + "JAVA:JAVA-OBJECT to a Lisp value, or JAVA:JNULL_REF_P to distinguish a wrapped\n"
-      + "null JAVA_OBJECT from nil.")
+      + "JAVA:JAVA-OBJECT to a Lisp value, or JAVA:JNULL-REF-P to distinguish a wrapped\n"
+      + "null JAVA-OBJECT from NIL.")
     private static final class pf_make_immediate_object extends Primitive
     {
         pf_make_immediate_object()
