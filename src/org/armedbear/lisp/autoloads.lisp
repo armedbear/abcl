@@ -305,8 +305,7 @@
 (autoload 'run-shell-command)
 (export 'run-program)
 (autoload 'run-program)
-(export 'process)
-(autoload 'process "run-program")
+(export 'process) ;; Not a function, but a DEFSTRUCT
 (export 'process-p)
 (autoload 'process-p "run-program")
 (export 'process-input)
