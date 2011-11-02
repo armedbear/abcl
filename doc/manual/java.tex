@@ -1,182 +1,768 @@
-\begin{verbatim}
-%JGET-PROPERTY-VALUE
-  Function: Gets a JavaBeans property on JAVA-OBJECT.
-%JSET-PROPERTY-VALUE
-  Function: Sets a JavaBean property on JAVA-OBJECT.
-*JAVA-OBJECT-TO-STRING-LENGTH*
-  Variable: Length to truncate toString() PRINT-OBJECT output for an
- otherwise unspecialized JAVA-OBJECT.  Can be set to NIL to indicate
- no limit.
-+FALSE+
-  Variable: The JVM primitive value for boolean false.
-+NULL+
-  Variable: The JVM null object reference.
-+TRUE+
-  Variable: The JVM primitive value for boolean true.
-ADD-TO-CLASSPATH
-  Generic Function: (not documented)
-CHAIN
-  Macro: (not documented)
-DESCRIBE-JAVA-OBJECT
-  Function: (not documented)
-DUMP-CLASSPATH
-  Function: (not documented)
-ENSURE-JAVA-CLASS
-  Function: (not documented)
-ENSURE-JAVA-OBJECT
-  Function: Ensures OBJ is wrapped in a JAVA-OBJECT, wrapping it if necessary.
-GET-CURRENT-CLASSLOADER
-  Function: (not documented)
-GET-DEFAULT-CLASSLOADER
-  Function: (not documented)
-JARRAY-COMPONENT-TYPE
-  Function: Returns the component type of the array type ATYPE
-JARRAY-LENGTH
-  Function: (not documented)
-JARRAY-REF
-  Function: Dereferences the Java array JAVA-ARRAY using the given
- INDICIES, coercing the result into a Lisp object, if possible.
-JARRAY-REF-RAW
-  Function: Dereference the Java array JAVA-ARRAY using the given
- INDICIES. Does not attempt to coerce the result into a Lisp object.
-JARRAY-SET
-  Function: Stores NEW-VALUE at the given index in JAVA-ARRAY.
-JAVA-CLASS
-  Class: (not documented)
-JAVA-EXCEPTION
-  Class: (not documented)
-JAVA-EXCEPTION-CAUSE
-  Function: (not documented)
-JAVA-OBJECT
-  Class: (not documented)
-JAVA-OBJECT-P
-  Function: Returns T if OBJECT is a JAVA-OBJECT.
-JCALL
-  Function: Invokes the Java method METHOD-REF on INSTANCE with
- arguments ARGS, coercing the result into a Lisp object, if possible.
-JCALL-RAW
-  Function: Invokes the Java method METHOD-REF on INSTANCE with
- arguments ARGS. Does not attempt to coerce the result into a Lisp
- object.
-JCLASS
-  Function: Returns a reference to the Java class designated by
- NAME-OR-CLASS-REF. If the CLASS-LOADER parameter is passed, the class
- is resolved with respect to the given ClassLoader.
-JCLASS-ARRAY-P
-  Function: Returns T if CLASS is an array class
-JCLASS-CONSTRUCTORS
-  Function: Returns a vector of constructors for CLASS
-JCLASS-FIELD
-  Function: Returns the field named FIELD-NAME of CLASS
-JCLASS-FIELDS
-  Function: Returns a vector of all (or just the declared/public, if
- DECLARED/PUBLIC is true) fields of CLASS
-JCLASS-INTERFACE-P
-  Function: Returns T if CLASS is an interface
-JCLASS-INTERFACES
-  Function: Returns the vector of interfaces of CLASS
-JCLASS-METHODS
-  Function: Return a vector of all (or just the declared/public, if
- DECLARED/PUBLIC is true) methods of CLASS
-JCLASS-NAME
-  Function: (not documented)
-JCLASS-OF
-  Function: (not documented)
-JCLASS-SUPERCLASS
-  Function: Returns the superclass of CLASS, or NIL if it hasn't got one
-JCLASS-SUPERCLASS-P
-  Function: Returns T if CLASS-1 is a superclass or interface of CLASS-2
-JCOERCE
-  Function: Attempts to coerce OBJECT into a JavaObject of class
- INTENDED-CLASS.  Raises a TYPE-ERROR if no conversion is possible.
-JCONSTRUCTOR
-  Function: Returns a reference to the Java constructor of CLASS-REF
- with the given PARAMETER-CLASS-REFS.
-JCONSTRUCTOR-PARAMS
-  Function: Returns a vector of parameter types (Java classes) for CONSTRUCTOR
-JEQUAL
-  Function: Compares obj1 with obj2 using java.lang.Object.equals()
-JFIELD
-  Function: Retrieves or modifies a field in a Java class or instance.
-JFIELD-NAME
-  Function: Returns the name of FIELD as a Lisp string
-JFIELD-RAW
-  Function: Retrieves or modifies a field in a Java class or instance. Does not
-JFIELD-TYPE
-  Function: Returns the type (Java class) of FIELD
-JINSTANCE-OF-P
-  Function: OBJ is an instance of CLASS (or one of its subclasses)
-JINTERFACE-IMPLEMENTATION
-  Function: Creates and returns an implementation of a Java interface with
-JMAKE-INVOCATION-HANDLER
-  Function: (not documented)
-JMAKE-PROXY
-  Generic Function: (not documented)
-JMEMBER-PROTECTED-P
-  Function: MEMBER is a protected member of its declaring class
-JMEMBER-PUBLIC-P
-  Function: MEMBER is a public member of its declaring class
-JMEMBER-STATIC-P
-  Function: MEMBER is a static member of its declaring class
-JMETHOD
-  Function: Returns a reference to the Java method METHOD-NAME of
- CLASS-REF with the given PARAMETER-CLASS-REFS.
-JMETHOD-LET
-  Macro: (not documented)
-JMETHOD-NAME
-  Function: Returns the name of METHOD as a Lisp string
-JMETHOD-PARAMS
-  Function: Returns a vector of parameter types (Java classes) for METHOD
-JMETHOD-RETURN-TYPE
-  Function: Returns the result type (Java class) of the METHOD
-JNEW
-  Function: Invokes the Java constructor CONSTRUCTOR with the arguments ARGS.
-JNEW-ARRAY
-  Function: Creates a new Java array of type ELEMENT-TYPE, with the given DIMENSIONS.
-JNEW-ARRAY-FROM-ARRAY
-  Function: Returns a new Java array with base type ELEMENT-TYPE (a string or a class-ref)
-JNEW-ARRAY-FROM-LIST
-  Function: (not documented)
-JNEW-RUNTIME-CLASS
-  Function: (not documented)
-JNULL-REF-P
-  Function: Returns a non-NIL value when the JAVA-OBJECT `object` is `null`,
-JOBJECT-CLASS
-  Function: Returns the Java class that OBJ belongs to
-JOBJECT-LISP-VALUE
-  Function: Attempts to coerce JAVA-OBJECT into a Lisp object.
-JPROPERTY-VALUE
-  Function: (not documented)
-JREDEFINE-METHOD
-  Function: (not documented)
-JREGISTER-HANDLER
-  Function: (not documented)
-JRESOLVE-METHOD
-  Function: Finds the most specific Java method METHOD-NAME on
- INSTANCE applicable to arguments ARGS. Returns NIL if no suitable
- method is found. The algorithm used for resolution is the same used
- by JCALL when it is called with a string as the first parameter
- (METHOD-REF).
-JRUN-EXCEPTION-PROTECTED
-  Function: Invokes the function CLOSURE and returns the result.
-  Signals an error if stack or heap exhaustion occurs.
-JRUNTIME-CLASS-EXISTS-P
-  Function: (not documented)
-JSTATIC
-  Function: Invokes the static method METHOD on class CLASS with ARGS.
-JSTATIC-RAW
-  Function: Invokes the static method METHOD on class CLASS with
- ARGS. Does not attempt to coerce the arguments or result into a Lisp
- object.
-MAKE-CLASSLOADER
-  Function: (not documented)
-MAKE-IMMEDIATE-OBJECT
-  Function: Attempts to coerce a given Lisp object into a java-object of the
-REGISTER-JAVA-EXCEPTION
-  Function: Registers the Java Throwable named by the symbol
- EXCEPTION-NAME as the condition designated by CONDITION-SYMBOL.
-  Returns T if successful, NIL if not.
-UNREGISTER-JAVA-EXCEPTION
-  Function: Unregisters the Java Throwable EXCEPTION-NAME previously
- registered by REGISTER-JAVA-EXCEPTION.
-\end{verbatim}
+\subsection{Exported Symbols from the JAVA package}
+\paragraph{}
+\label{JAVA:JAVA-EXCEPTION-CAUSE}
+\index{JAVA-EXCEPTION-CAUSE}
+--- Function: \textbf{java-exception-cause} [\textbf{java}] \textit{java-exception}
+
+\begin{adjustwidth}{5em}{5em}
+Returns the cause of JAVA-EXCEPTION. (The cause is the Java Throwable
+  object that caused JAVA-EXCEPTION to be signalled.)
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCLASS-SUPERCLASS-P}
+\index{JCLASS-SUPERCLASS-P}
+--- Function: \textbf{jclass-superclass-p} [\textbf{java}] \textit{class-1 class-2}
+
+\begin{adjustwidth}{5em}{5em}
+Returns T if CLASS-1 is a superclass or interface of CLASS-2
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JINTERFACE-IMPLEMENTATION}
+\index{JINTERFACE-IMPLEMENTATION}
+--- Function: \textbf{jinterface-implementation} [\textbf{java}] \textit{interface \&rest method-names-and-defs}
+
+\begin{adjustwidth}{5em}{5em}
+Creates and returns an implementation of a Java interface with
+   methods calling Lisp closures as given in METHOD-NAMES-AND-DEFS.
+
+   INTERFACE is either a Java interface or a string naming one.
+
+   METHOD-NAMES-AND-DEFS is an alternating list of method names
+   (strings) and method definitions (closures).
+
+   For missing methods, a dummy implementation is provided that
+   returns nothing or null depending on whether the return type is
+   void or not. This is for convenience only, and a warning is issued
+   for each undefined method.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:DUMP-CLASSPATH}
+\index{DUMP-CLASSPATH}
+--- Function: \textbf{dump-classpath} [\textbf{java}] \textit{\&optional classloader}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:ENSURE-JAVA-OBJECT}
+\index{ENSURE-JAVA-OBJECT}
+--- Function: \textbf{ensure-java-object} [\textbf{java}] \textit{obj}
+
+\begin{adjustwidth}{5em}{5em}
+Ensures OBJ is wrapped in a JAVA-OBJECT, wrapping it if necessary.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JMETHOD-RETURN-TYPE}
+\index{JMETHOD-RETURN-TYPE}
+--- Function: \textbf{jmethod-return-type} [\textbf{java}] \textit{method}
+
+\begin{adjustwidth}{5em}{5em}
+Returns the result type (Java class) of the METHOD
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JFIELD-NAME}
+\index{JFIELD-NAME}
+--- Function: \textbf{jfield-name} [\textbf{java}] \textit{field}
+
+\begin{adjustwidth}{5em}{5em}
+Returns the name of FIELD as a Lisp string
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:*JAVA-OBJECT-TO-STRING-LENGTH*}
+\index{*JAVA-OBJECT-TO-STRING-LENGTH*}
+--- Variable: \textbf{*java-object-to-string-length*} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Length to truncate toString() PRINT-OBJECT output for an otherwise unspecialized JAVA-OBJECT.  Can be set to NIL to indicate no limit.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JRUN-EXCEPTION-PROTECTED}
+\index{JRUN-EXCEPTION-PROTECTED}
+--- Function: \textbf{jrun-exception-protected} [\textbf{java}] \textit{closure}
+
+\begin{adjustwidth}{5em}{5em}
+Invokes the function CLOSURE and returns the result.  Signals an error if stack or heap exhaustion occurs.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JINSTANCE-OF-P}
+\index{JINSTANCE-OF-P}
+--- Function: \textbf{jinstance-of-p} [\textbf{java}] \textit{obj class}
+
+\begin{adjustwidth}{5em}{5em}
+OBJ is an instance of CLASS (or one of its subclasses)
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JMETHOD-NAME}
+\index{JMETHOD-NAME}
+--- Function: \textbf{jmethod-name} [\textbf{java}] \textit{method}
+
+\begin{adjustwidth}{5em}{5em}
+Returns the name of METHOD as a Lisp string
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JSTATIC-RAW}
+\index{JSTATIC-RAW}
+--- Function: \textbf{jstatic-raw} [\textbf{java}] \textit{method class \&rest args}
+
+\begin{adjustwidth}{5em}{5em}
+Invokes the static method METHOD on class CLASS with ARGS. Does not attempt to coerce the arguments or result into a Lisp object.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCLASS-OF}
+\index{JCLASS-OF}
+--- Function: \textbf{jclass-of} [\textbf{java}] \textit{object \&optional name}
+
+\begin{adjustwidth}{5em}{5em}
+Returns the name of the Java class of OBJECT. If the NAME argument is
+  supplied, verifies that OBJECT is an instance of the named class. The name
+  of the class or nil is always returned as a second value.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:GET-CURRENT-CLASSLOADER}
+\index{GET-CURRENT-CLASSLOADER}
+--- Function: \textbf{get-current-classloader} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+
+\paragraph{}
+\label{JAVA:JNEW-ARRAY-FROM-LIST}
+\index{JNEW-ARRAY-FROM-LIST}
+--- Function: \textbf{jnew-array-from-list} [\textbf{java}] \textit{element-type list}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JMETHOD}
+\index{JMETHOD}
+--- Function: \textbf{jmethod} [\textbf{java}] \textit{class-ref method-name \&rest parameter-class-refs}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a reference to the Java method METHOD-NAME of CLASS-REF with the given PARAMETER-CLASS-REFS.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:GET-DEFAULT-CLASSLOADER}
+\index{GET-DEFAULT-CLASSLOADER}
+--- Function: \textbf{get-default-classloader} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCLASS-METHODS}
+\index{JCLASS-METHODS}
+--- Function: \textbf{jclass-methods} [\textbf{java}] \textit{class \&key declared public}
+
+\begin{adjustwidth}{5em}{5em}
+Return a vector of all (or just the declared/public, if DECLARED/PUBLIC is true) methods of CLASS
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:REGISTER-JAVA-EXCEPTION}
+\index{REGISTER-JAVA-EXCEPTION}
+--- Function: \textbf{register-java-exception} [\textbf{java}] \textit{exception-name condition-symbol}
+
+\begin{adjustwidth}{5em}{5em}
+Registers the Java Throwable named by the symbol EXCEPTION-NAME as the condition designated by CONDITION-SYMBOL.  Returns T if successful, NIL if not.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCLASS}
+\index{JCLASS}
+--- Function: \textbf{jclass} [\textbf{java}] \textit{name-or-class-ref \&optional class-loader}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a reference to the Java class designated by NAME-OR-CLASS-REF. If the CLASS-LOADER parameter is passed, the class is resolved with respect to the given ClassLoader.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JPROPERTY-VALUE}
+\index{JPROPERTY-VALUE}
+--- Function: \textbf{jproperty-value} [\textbf{java}] \textit{obj prop}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JFIELD-TYPE}
+\index{JFIELD-TYPE}
+--- Function: \textbf{jfield-type} [\textbf{java}] \textit{field}
+
+\begin{adjustwidth}{5em}{5em}
+Returns the type (Java class) of FIELD
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JNEW-RUNTIME-CLASS}
+\index{JNEW-RUNTIME-CLASS}
+--- Function: \textbf{jnew-runtime-class} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCLASS-CONSTRUCTORS}
+\index{JCLASS-CONSTRUCTORS}
+--- Function: \textbf{jclass-constructors} [\textbf{java}] \textit{class}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a vector of constructors for CLASS
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JSTATIC}
+\index{JSTATIC}
+--- Function: \textbf{jstatic} [\textbf{java}] \textit{method class \&rest args}
+
+\begin{adjustwidth}{5em}{5em}
+Invokes the static method METHOD on class CLASS with ARGS.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JMETHOD-PARAMS}
+\index{JMETHOD-PARAMS}
+--- Function: \textbf{jmethod-params} [\textbf{java}] \textit{method}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a vector of parameter types (Java classes) for METHOD
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JREGISTER-HANDLER}
+\index{JREGISTER-HANDLER}
+--- Function: \textbf{jregister-handler} [\textbf{java}] \textit{object event handler \&key data count}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCLASS-SUPERCLASS}
+\index{JCLASS-SUPERCLASS}
+--- Function: \textbf{jclass-superclass} [\textbf{java}] \textit{class}
+
+\begin{adjustwidth}{5em}{5em}
+Returns the superclass of CLASS, or NIL if it hasn't got one
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JAVA-OBJECT-P}
+\index{JAVA-OBJECT-P}
+--- Function: \textbf{java-object-p} [\textbf{java}] \textit{object}
+
+\begin{adjustwidth}{5em}{5em}
+Returns T if OBJECT is a JAVA-OBJECT.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:UNREGISTER-JAVA-EXCEPTION}
+\index{UNREGISTER-JAVA-EXCEPTION}
+--- Function: \textbf{unregister-java-exception} [\textbf{java}] \textit{exception-name}
+
+\begin{adjustwidth}{5em}{5em}
+Unregisters the Java Throwable EXCEPTION-NAME previously registered by REGISTER-JAVA-EXCEPTION.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JNEW}
+\index{JNEW}
+--- Function: \textbf{jnew} [\textbf{java}] \textit{constructor \&rest args}
+
+\begin{adjustwidth}{5em}{5em}
+Invokes the Java constructor CONSTRUCTOR with the arguments ARGS.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JRUNTIME-CLASS-EXISTS-P}
+\index{JRUNTIME-CLASS-EXISTS-P}
+--- Function: \textbf{jruntime-class-exists-p} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JARRAY-COMPONENT-TYPE}
+\index{JARRAY-COMPONENT-TYPE}
+--- Function: \textbf{jarray-component-type} [\textbf{java}] \textit{atype}
+
+\begin{adjustwidth}{5em}{5em}
+Returns the component type of the array type ATYPE
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:ADD-TO-CLASSPATH}
+\index{ADD-TO-CLASSPATH}
+--- Generic Function: \textbf{add-to-classpath} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JOBJECT-LISP-VALUE}
+\index{JOBJECT-LISP-VALUE}
+--- Function: \textbf{jobject-lisp-value} [\textbf{java}] \textit{java-object}
+
+\begin{adjustwidth}{5em}{5em}
+Attempts to coerce JAVA-OBJECT into a Lisp object.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCLASS-NAME}
+\index{JCLASS-NAME}
+--- Function: \textbf{jclass-name} [\textbf{java}] \textit{class-ref \&optional name}
+
+\begin{adjustwidth}{5em}{5em}
+When called with one argument, returns the name of the Java class
+  designated by CLASS-REF. When called with two arguments, tests
+  whether CLASS-REF matches NAME.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JMEMBER-PUBLIC-P}
+\index{JMEMBER-PUBLIC-P}
+--- Function: \textbf{jmember-public-p} [\textbf{java}] \textit{member}
+
+\begin{adjustwidth}{5em}{5em}
+MEMBER is a public member of its declaring class
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:+NULL+}
+\index{+NULL+}
+--- Variable: \textbf{+null+} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+The JVM null object reference.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:ENSURE-JAVA-CLASS}
+\index{ENSURE-JAVA-CLASS}
+--- Function: \textbf{ensure-java-class} [\textbf{java}] \textit{jclass}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JAVA-CLASS}
+\index{JAVA-CLASS}
+--- Class: \textbf{java-class} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JMETHOD-LET}
+\index{JMETHOD-LET}
+--- Macro: \textbf{jmethod-let} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCLASS-ARRAY-P}
+\index{JCLASS-ARRAY-P}
+--- Function: \textbf{jclass-array-p} [\textbf{java}] \textit{class}
+
+\begin{adjustwidth}{5em}{5em}
+Returns T if CLASS is an array class
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCALL}
+\index{JCALL}
+--- Function: \textbf{jcall} [\textbf{java}] \textit{method-ref instance \&rest args}
+
+\begin{adjustwidth}{5em}{5em}
+Invokes the Java method METHOD-REF on INSTANCE with arguments ARGS, coercing the result into a Lisp object, if possible.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JARRAY-REF-RAW}
+\index{JARRAY-REF-RAW}
+--- Function: \textbf{jarray-ref-raw} [\textbf{java}] \textit{java-array \&rest indices}
+
+\begin{adjustwidth}{5em}{5em}
+Dereference the Java array JAVA-ARRAY using the given INDICIES. Does not attempt to coerce the result into a Lisp object.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JEQUAL}
+\index{JEQUAL}
+--- Function: \textbf{jequal} [\textbf{java}] \textit{obj1 obj2}
+
+\begin{adjustwidth}{5em}{5em}
+Compares obj1 with obj2 using java.lang.Object.equals()
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JNULL-REF-P}
+\index{JNULL-REF-P}
+--- Function: \textbf{jnull-ref-p} [\textbf{java}] \textit{object}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a non-NIL value when the JAVA-OBJECT `object` is `null`,
+or signals a TYPE-ERROR condition if the object isn't of
+the right type.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JNEW-ARRAY}
+\index{JNEW-ARRAY}
+--- Function: \textbf{jnew-array} [\textbf{java}] \textit{element-type \&rest dimensions}
+
+\begin{adjustwidth}{5em}{5em}
+Creates a new Java array of type ELEMENT-TYPE, with the given DIMENSIONS.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:CHAIN}
+\index{CHAIN}
+--- Macro: \textbf{chain} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JFIELD}
+\index{JFIELD}
+--- Function: \textbf{jfield} [\textbf{java}] \textit{class-ref-or-field field-or-instance \&optional instance value}
+
+\begin{adjustwidth}{5em}{5em}
+Retrieves or modifies a field in a Java class or instance.
+
+Supported argument patterns:
+
+   Case 1: class-ref  field-name:
+      Retrieves the value of a static field.
+
+   Case 2: class-ref  field-name  instance-ref:
+      Retrieves the value of a class field of the instance.
+
+   Case 3: class-ref  field-name  primitive-value:
+      Stores a primitive-value in a static field.
+
+   Case 4: class-ref  field-name  instance-ref  value:
+      Stores value in a class field of the instance.
+
+   Case 5: class-ref  field-name  nil  value:
+      Stores value in a static field (when value may be
+      confused with an instance-ref).
+
+   Case 6: field-name  instance:
+      Retrieves the value of a field of the instance. The
+      class is derived from the instance.
+
+   Case 7: field-name  instance  value:
+      Stores value in a field of the instance. The class is
+      derived from the instance.
+
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JAVA-OBJECT}
+\index{JAVA-OBJECT}
+--- Class: \textbf{java-object} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCLASS-INTERFACES}
+\index{JCLASS-INTERFACES}
+--- Function: \textbf{jclass-interfaces} [\textbf{java}] \textit{class}
+
+\begin{adjustwidth}{5em}{5em}
+Returns the vector of interfaces of CLASS
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:+TRUE+}
+\index{+TRUE+}
+--- Variable: \textbf{+true+} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+The JVM primitive value for boolean true.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JMAKE-INVOCATION-HANDLER}
+\index{JMAKE-INVOCATION-HANDLER}
+--- Function: \textbf{jmake-invocation-handler} [\textbf{java}] \textit{function}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JRESOLVE-METHOD}
+\index{JRESOLVE-METHOD}
+--- Function: \textbf{jresolve-method} [\textbf{java}] \textit{method-name instance \&rest args}
+
+\begin{adjustwidth}{5em}{5em}
+Finds the most specific Java method METHOD-NAME on INSTANCE applicable to arguments ARGS. Returns NIL if no suitable method is found. The algorithm used for resolution is the same used by JCALL when it is called with a string as the first parameter (METHOD-REF).
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:MAKE-CLASSLOADER}
+\index{MAKE-CLASSLOADER}
+--- Function: \textbf{make-classloader} [\textbf{java}] \textit{\&optional parent}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JMEMBER-PROTECTED-P}
+\index{JMEMBER-PROTECTED-P}
+--- Function: \textbf{jmember-protected-p} [\textbf{java}] \textit{member}
+
+\begin{adjustwidth}{5em}{5em}
+MEMBER is a protected member of its declaring class
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:MAKE-IMMEDIATE-OBJECT}
+\index{MAKE-IMMEDIATE-OBJECT}
+--- Function: \textbf{make-immediate-object} [\textbf{java}] \textit{object \&optional type}
+
+\begin{adjustwidth}{5em}{5em}
+Attempts to coerce a given Lisp object into a java-object of the
+given type.  If type is not provided, works as jobject-lisp-value.
+Currently, type may be :BOOLEAN, treating the object as a truth value,
+or :REF, which returns Java null if NIL is provided.
+
+Deprecated.  Please use JAVA:+NULL+, JAVA:+TRUE+, and JAVA:+FALSE+ for
+constructing wrapped primitive types, JAVA:JOBJECT-LISP-VALUE for converting a
+JAVA:JAVA-OBJECT to a Lisp value, or JAVA:JNULL-REF-P to distinguish a wrapped
+null JAVA-OBJECT from NIL.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JNEW-ARRAY-FROM-ARRAY}
+\index{JNEW-ARRAY-FROM-ARRAY}
+--- Function: \textbf{jnew-array-from-array} [\textbf{java}] \textit{element-type array}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a new Java array with base type ELEMENT-TYPE (a string or a class-ref)
+   initialized from ARRAY
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JOBJECT-CLASS}
+\index{JOBJECT-CLASS}
+--- Function: \textbf{jobject-class} [\textbf{java}] \textit{obj}
+
+\begin{adjustwidth}{5em}{5em}
+Returns the Java class that OBJ belongs to
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JREDEFINE-METHOD}
+\index{JREDEFINE-METHOD}
+--- Function: \textbf{jredefine-method} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCLASS-FIELDS}
+\index{JCLASS-FIELDS}
+--- Function: \textbf{jclass-fields} [\textbf{java}] \textit{class \&key declared public}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a vector of all (or just the declared/public, if DECLARED/PUBLIC is true) fields of CLASS
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JAVA-EXCEPTION}
+\index{JAVA-EXCEPTION}
+--- Class: \textbf{java-exception} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:DESCRIBE-JAVA-OBJECT}
+\index{DESCRIBE-JAVA-OBJECT}
+--- Function: \textbf{describe-java-object} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JFIELD-RAW}
+\index{JFIELD-RAW}
+--- Function: \textbf{jfield-raw} [\textbf{java}] \textit{class-ref-or-field field-or-instance \&optional instance value}
+
+\begin{adjustwidth}{5em}{5em}
+Retrieves or modifies a field in a Java class or instance. Does not
+attempt to coerce its value or the result into a Lisp object.
+
+Supported argument patterns:
+
+   Case 1: class-ref  field-name:
+      Retrieves the value of a static field.
+
+   Case 2: class-ref  field-name  instance-ref:
+      Retrieves the value of a class field of the instance.
+
+   Case 3: class-ref  field-name  primitive-value:
+      Stores a primitive-value in a static field.
+
+   Case 4: class-ref  field-name  instance-ref  value:
+      Stores value in a class field of the instance.
+
+   Case 5: class-ref  field-name  nil  value:
+      Stores value in a static field (when value may be
+      confused with an instance-ref).
+
+   Case 6: field-name  instance:
+      Retrieves the value of a field of the instance. The
+      class is derived from the instance.
+
+   Case 7: field-name  instance  value:
+      Stores value in a field of the instance. The class is
+      derived from the instance.
+
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCONSTRUCTOR-PARAMS}
+\index{JCONSTRUCTOR-PARAMS}
+--- Function: \textbf{jconstructor-params} [\textbf{java}] \textit{constructor}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a vector of parameter types (Java classes) for CONSTRUCTOR
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JMEMBER-STATIC-P}
+\index{JMEMBER-STATIC-P}
+--- Function: \textbf{jmember-static-p} [\textbf{java}] \textit{member}
+
+\begin{adjustwidth}{5em}{5em}
+MEMBER is a static member of its declaring class
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCOERCE}
+\index{JCOERCE}
+--- Function: \textbf{jcoerce} [\textbf{java}] \textit{object intended-class}
+
+\begin{adjustwidth}{5em}{5em}
+Attempts to coerce OBJECT into a JavaObject of class INTENDED-CLASS.  Raises a TYPE-ERROR if no conversion is possible.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCONSTRUCTOR}
+\index{JCONSTRUCTOR}
+--- Function: \textbf{jconstructor} [\textbf{java}] \textit{class-ref \&rest parameter-class-refs}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a reference to the Java constructor of CLASS-REF with the given PARAMETER-CLASS-REFS.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JARRAY-SET}
+\index{JARRAY-SET}
+--- Function: \textbf{jarray-set} [\textbf{java}] \textit{java-array new-value \&rest indices}
+
+\begin{adjustwidth}{5em}{5em}
+Stores NEW-VALUE at the given index in JAVA-ARRAY.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JARRAY-LENGTH}
+\index{JARRAY-LENGTH}
+--- Function: \textbf{jarray-length} [\textbf{java}] \textit{java-array}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JARRAY-REF}
+\index{JARRAY-REF}
+--- Function: \textbf{jarray-ref} [\textbf{java}] \textit{java-array \&rest indices}
+
+\begin{adjustwidth}{5em}{5em}
+Dereferences the Java array JAVA-ARRAY using the given INDICIES, coercing the result into a Lisp object, if possible.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCLASS-FIELD}
+\index{JCLASS-FIELD}
+--- Function: \textbf{jclass-field} [\textbf{java}] \textit{class field-name}
+
+\begin{adjustwidth}{5em}{5em}
+Returns the field named FIELD-NAME of CLASS
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JMAKE-PROXY}
+\index{JMAKE-PROXY}
+--- Generic Function: \textbf{jmake-proxy} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+NOT-DOCUMENTED
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCALL-RAW}
+\index{JCALL-RAW}
+--- Function: \textbf{jcall-raw} [\textbf{java}] \textit{method-ref instance \&rest args}
+
+\begin{adjustwidth}{5em}{5em}
+Invokes the Java method METHOD-REF on INSTANCE with arguments ARGS. Does not attempt to coerce the result into a Lisp object.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:+FALSE+}
+\index{+FALSE+}
+--- Variable: \textbf{+false+} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+The JVM primitive value for boolean false.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCLASS-INTERFACE-P}
+\index{JCLASS-INTERFACE-P}
+--- Function: \textbf{jclass-interface-p} [\textbf{java}] \textit{class}
+
+\begin{adjustwidth}{5em}{5em}
+Returns T if CLASS is an interface
+\end{adjustwidth}
+

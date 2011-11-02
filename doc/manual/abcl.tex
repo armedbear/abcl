@@ -760,11 +760,9 @@ used by ABCL, allowing the dynamic loading of JVM objects:
 CL-USER> (add-to-classpath "/path/to/some.jar")
 \end{listing-lisp}
 
-N.b \code{add-to-classpath} only affects the classloader used by ABCL
+N.b \code{ADD-TO-CLASSPATH} only affects the classloader used by ABCL
 (the value of the special variable \code{JAVA:*CLASSLOADER*}. It has
 no effect on Java code outside ABCL.
-
-\subsection{API}
 
 % include autogen docs for the JAVA package.
 \include{java}
@@ -775,8 +773,6 @@ The extensions for handling multithreaded execution are collected in
 the \code{THREADS} package.  Most of the abstractions in Doug Lea's
 excellent \code{java.util.concurrent} packages may be manipulated
 directly via the JSS contrib to great effect.
-
-\subsection{API}
 
 % include autogen docs for the THREADS package.
 \include{threads}
@@ -789,10 +785,8 @@ user.  They include functions for manipulating network sockets,
 running external programs, registering object finalizers, constructing
 reference weakly held by the garbage collector and others.
 
-See \ref{Extensible Sequences} for a generic function interface to
-the native JVM contract for \code{java.util.List}.
-
-\subsection{API}
+See \ref{Rhodes2007} for a generic function interface to the native
+JVM contract for \code{java.util.List}.
 
 % include autogen docs for the EXTENSIONS package.
 \include{extensions}
@@ -1105,7 +1099,7 @@ abcl-1.0.0.
   \url{http://java.sun.com/developer/onlineTraining/protocolhandlers/}
 
 \bibitem{Xach2011}
-  Zach Beenep
+  Zach Beene
   ``Quicklisp:  A system for quickly constructing Common Lisp''
   \url{http://www.quicklisp.org/}
 
@@ -1117,6 +1111,8 @@ ILC '07 Proceedings of the 2007 International Lisp Conference
 \url{http://jcsu.jesus.cam.ac.uk/~csr21/spec.pdf}
 
 \end{thebibliography}
+
+\printindex
 
 \end{document}
 
