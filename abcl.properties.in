@@ -1,6 +1,9 @@
 # $Id$
 
+# XXX should be called 'build.properties' but this collides with its usage by the Eclipe IDE
+
 # Template for settings the Ant based build process.
+
 
 # Attempt to perform incremental compilation? 
 #abcl.build.incremental=true
@@ -32,6 +35,9 @@
 # implementations which run out of permgen space, the following should
 # help things out.
 #java.options=-d64 -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g
+
+# Enable assertions specified via the JVM contract
+#java.options=-ea
 
 # Additional site specific startup code to be merged in 'system.lisp' at build time
 #abcl.startup.file=${basedir}/startup.lisp
