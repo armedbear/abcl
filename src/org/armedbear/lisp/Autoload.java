@@ -578,6 +578,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%set-method-function", "StandardMethod", true);
         autoload(PACKAGE_SYS, "%set-method-generic-function", "StandardMethod", true);
         autoload(PACKAGE_SYS, "%set-method-specializers", "StandardMethod", true);
+        autoload(PACKAGE_SYS, "%set-symbol-macro", "Primitives");
         autoload(PACKAGE_SYS, "%simple-bit-vector-bit-and", "SimpleBitVector");
         autoload(PACKAGE_SYS, "%simple-bit-vector-bit-andc1", "SimpleBitVector");
         autoload(PACKAGE_SYS, "%simple-bit-vector-bit-andc2", "SimpleBitVector");
@@ -661,7 +662,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "make-single-float", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "make-slot-definition", "SlotDefinition", true);
         autoload(PACKAGE_SYS, "make-structure-class", "StructureClass");
-        autoload(PACKAGE_SYS, "make-symbol-macro", "SymbolMacro");
+        autoload(PACKAGE_SYS, "make-symbol-macro", "Primitives");
         autoload(PACKAGE_SYS, "method-documentation", "StandardMethod", true);
         autoload(PACKAGE_SYS, "method-lambda-list", "StandardMethod", true);
         autoload(PACKAGE_SYS, "psxhash", "HashTableFunctions");

@@ -204,7 +204,7 @@ for (Cons x : nonSequentialVars)
                                              symbol.princToString() +
                                              " with SYMBOL-MACROLET."));
                         }
-                        bindArg(null, symbol, new SymbolMacro(obj.cadr()), ext, thread);
+                        ext.bind(symbol, new SymbolMacro(obj.cadr()));
                     } else {
                         return error(new ProgramError(
                                          "Malformed symbol-expansion pair in SYMBOL-MACROLET: " +
@@ -525,26 +525,11 @@ for (Cons x : nonSequentialVars)
                 args = args.cdr();
                 if (symbol.isSpecialVariable() || env.isDeclaredSpecial(symbol)) {
                     SpecialBinding binding = thread.getSpecialBinding(symbol);
+                    value = eval(args.car(), env, thread);
                     if (binding != null) {
-                        if (binding.value instanceof SymbolMacro) {
-                            LispObject expansion =
-                                ((SymbolMacro)binding.value).getExpansion();
-                            LispObject form = list(Symbol.SETF, expansion, args.car());
-                            value = eval(form, env, thread);
-                        } else {
-                            value = eval(args.car(), env, thread);
-                            binding.value = value;
-                        }
+                        binding.value = value;
                     } else {
-                        if (symbol.getSymbolValue() instanceof SymbolMacro) {
-                            LispObject expansion =
-                                ((SymbolMacro)symbol.getSymbolValue()).getExpansion();
-                            LispObject form = list(Symbol.SETF, expansion, args.car());
-                            value = eval(form, env, thread);
-                        } else {
-                            value = eval(args.car(), env, thread);
-                            symbol.setSymbolValue(value);
-                        }
+                        symbol.setSymbolValue(value);
                     }
                 } else {
                     // Not special.
@@ -560,9 +545,9 @@ for (Cons x : nonSequentialVars)
                             binding.value = value;
                         }
                     } else {
-                        if (symbol.getSymbolValue() instanceof SymbolMacro) {
+                        if (symbol.getSymbolMacro() != null) {
                             LispObject expansion =
-                                ((SymbolMacro)symbol.getSymbolValue()).getExpansion();
+                                symbol.getSymbolMacro().getExpansion();
                             LispObject form = list(Symbol.SETF, expansion, args.car());
                             value = eval(form, env, thread);
                         } else {

@@ -32,11 +32,11 @@
 (in-package "SYSTEM")
 
 (defun %define-symbol-macro (symbol expansion)
-  (setf (symbol-value symbol) (make-symbol-macro expansion))
+  (%set-symbol-macro symbol (make-symbol-macro expansion))
   symbol)
 
 (defmacro define-symbol-macro (symbol expansion)
-  (when (special-variable-p symbol)
+  (when (special-variable-p symbol) ;;TODO astalla also check local declarations?
     (error 'program-error "~S has already been defined as a global variable." symbol))
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (%define-symbol-macro ',symbol ',expansion)))

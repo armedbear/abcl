@@ -248,15 +248,13 @@ public final class Lisp
     else if (form instanceof Symbol)
       {
         Symbol symbol = (Symbol) form;
-        LispObject obj = null;
-        if (symbol.isSpecialVariable())
-          obj = thread.lookupSpecial(symbol);
-        else
-          obj = env.lookup(symbol);
-        if (obj == null)
-          obj = symbol.getSymbolValue();
-        if (obj instanceof SymbolMacro)
+        LispObject obj = env.lookup(symbol);
+        if (obj == null) {
+          obj = symbol.getSymbolMacro();
+        }
+        if (obj instanceof SymbolMacro) {
           return thread.setValues(((SymbolMacro)obj).getExpansion(), T);
+        }
       }
     // Not a macro.
     return thread.setValues(form, NIL);
@@ -473,9 +471,13 @@ public final class Lisp
           result = env.lookup(symbol);
         if (result == null)
           {
-            result = symbol.getSymbolValue();
-            if (result == null)
+            result = symbol.getSymbolMacro();
+            if (result == null) {
+                result = symbol.getSymbolValue();
+            }
+            if(result == null) {
               return error(new UnboundVariable(obj));
+            }
           }
         if (result instanceof SymbolMacro)
           return eval(((SymbolMacro)result).getExpansion(), env, thread);
@@ -1633,9 +1635,9 @@ public final class Lisp
   public static final Stream checkStream(LispObject obj)
 
   {
-          if (obj instanceof Stream)      
-                  return (Stream) obj;         
-          return (Stream) // Not reached.       
+      if (obj instanceof Stream)
+                  return (Stream) obj;
+          return (Stream) // Not reached.
         type_error(obj, Symbol.STREAM);
   }
 
@@ -2622,7 +2624,7 @@ public final class Lisp
   static
   {
     // ### multiple-values-limit
-    Symbol.MULTIPLE_VALUES_LIMIT.initializeConstant(Fixnum.constants[20]);
+    Symbol.MULTIPLE_VALUES_LIMIT.initializeConstant(Fixnum.constants[32]);
   }
 
   static

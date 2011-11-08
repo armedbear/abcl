@@ -676,9 +676,6 @@ public final class Primitives {
         public LispObject execute(LispObject arg) {
             final LispObject value;
             value = checkSymbol(arg).symbolValue();
-            if (value instanceof SymbolMacro)
-                return error(new LispError(arg.princToString() +
-                                           " has no dynamic value."));
             return value;
         }
     };
@@ -1948,6 +1945,20 @@ public final class Primitives {
         @Override
         public LispObject execute(LispObject arg) {
             return new SymbolMacro(arg);
+        }
+    };
+
+    // ### %set-symbol-macro
+    private static final Primitive SET_SYMBOL_MACRO = new pf_set_symbol_macro();
+    private static final class pf_set_symbol_macro extends Primitive {
+        pf_set_symbol_macro() {
+            super("%set-symbol-macro", PACKAGE_SYS, false, "symbol symbol-macro");
+        }
+
+        @Override
+        public LispObject execute(LispObject sym, LispObject symbolMacro) {
+            checkSymbol(sym).setSymbolMacro((SymbolMacro) symbolMacro);
+            return symbolMacro;
         }
     };
 

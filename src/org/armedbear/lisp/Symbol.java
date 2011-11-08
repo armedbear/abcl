@@ -299,6 +299,23 @@ public class Symbol extends LispObject implements java.io.Serializable
     this.value = value;
   }
 
+    public SymbolMacro getSymbolMacro() {
+        LispObject symbolMacro = get(this, SYMBOL_MACRO, null);
+        if(symbolMacro instanceof SymbolMacro) {
+            return (SymbolMacro) symbolMacro;
+        } else if(symbolMacro != null) {
+            error(new TypeError("The object " + symbolMacro + " is not a symbol macro"));
+        }
+        return null;
+    }
+
+    public void setSymbolMacro(SymbolMacro symbolMacro) {
+        if(isSpecialVariable()) {
+            error(new ProgramError("Symbol " + princToString() + " names a special variable; can't install symbol macro."));
+        }
+        put(this, SYMBOL_MACRO, symbolMacro);
+    }
+
   /** Returns the value associated with this symbol in the current
    * thread context when it is treated as a special variable.
    *
@@ -3036,6 +3053,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("STD-SLOT-VALUE");
   public static final Symbol SET_STD_SLOT_VALUE =
     PACKAGE_SYS.addExternalSymbol("SET-STD-SLOT-VALUE");
+  public static final Symbol SYMBOL_MACRO =
+    PACKAGE_SYS.addExternalSymbol("SYMBOL-MACRO");
   public static final Symbol SUBCLASSP =
     PACKAGE_SYS.addExternalSymbol("SUBCLASSP");
   public static final Symbol GETHASH1 =

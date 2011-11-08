@@ -40,7 +40,7 @@ package org.armedbear.lisp;
 // Package accessibility.
 final class Binding
 {
-    /** The symbol in case of a variable, block or
+    /** The symbol in case of a variable, block, symbol-macro or
      * non-SETF function binding, the tag (symbol or
      * integer) in case of a tag binding or the cons
      * in case of a SETF function binding
@@ -65,6 +65,9 @@ final class Binding
      *
      * In case of a variable binding, it holds the value associated with the
      * variable, unless specialp is true.
+     *
+     * In case of a symbol macro binding, holds the SymbolMacro instance
+     * holding the macro's expansion.
      */
     LispObject value;
 

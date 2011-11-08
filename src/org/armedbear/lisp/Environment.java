@@ -110,27 +110,30 @@ public final class Environment extends LispObject
     binding.value = value;
   }
 
+    public LispObject lookup(LispObject symbol, Binding binding) {
+        while (binding != null) {
+            if (binding.symbol == symbol)
+                return binding.value;
+            binding = binding.next;
+        }
+        return null;
+    }
+
   public LispObject lookup(LispObject symbol)
   {
-    Binding binding = vars;
-    while (binding != null)
-      {
-        if (binding.symbol == symbol)
-          return binding.value;
-        binding = binding.next;
-      }
-    return null;
+      return lookup(symbol, vars);
   }
 
-  public Binding getBinding(LispObject symbol)
-  {
-    Binding binding = vars;
-    while (binding != null)
-      {
-        if (binding.symbol == symbol)
-          return binding;
-        binding = binding.next;
-      }
+  public Binding getBinding(LispObject symbol) {
+    return getBinding(symbol, vars);
+  }
+
+  public Binding getBinding(LispObject symbol, Binding binding) {
+    while (binding != null) {
+      if (binding.symbol == symbol)
+        return binding;
+      binding = binding.next;
+    }
     return null;
   }
 
