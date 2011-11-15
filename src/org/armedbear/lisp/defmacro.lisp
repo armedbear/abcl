@@ -37,7 +37,7 @@
 (defmacro defmacro (name lambda-list &rest body)
   (let* ((whole (gensym "WHOLE-"))
          (env   (gensym "ENVIRONMENT-")))
-    (multiple-value-bind (body decls)
+    (multiple-value-bind (body decls documentation)
         (parse-defmacro lambda-list whole body name 'defmacro :environment env)
       (let ((expander `(lambda (,whole ,env) ,@decls ,body)))
         `(progn
@@ -47,4 +47,6 @@
                    `((put ',name 'macroexpand-macro macro))
                    `((fset ',name macro)))
              (%set-arglist macro ',lambda-list)
+             ,@(when documentation
+                     `((%set-documentation ',name 'cl:function ,documentation)))
              ',name))))))
