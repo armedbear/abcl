@@ -5,7 +5,7 @@
 
 \begin{document}
 \title{A Manual for Armed Bear Common Lisp}
-\date{November 1, 2011}
+\date{November 24, 2011}
 \author{Mark~Evenson, Erik~H\"{u}lsmann, Alessio~Stalla, Ville~Voutilainen}
 
 \maketitle
@@ -1069,6 +1069,13 @@ CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 
 The asdf-install contrib provides an implementation of ASDF-INSTALL.
 Superseded by Quicklisp (see Xach2011 \cite{Xach2011}).
+
+The \code{require} of the \code{asdf-install} symbol has the side
+effect of pushing the directory ``~/.asdf-install-dir/systems/'' into
+the value of the \textsc{ASDF} central registry in
+\code{asdf:*central-registry*}, providing a convenient mechanism for
+stashing \textsc{ABCL} specific system definitions for convenient
+access.
 
 \chapter{History}
 
