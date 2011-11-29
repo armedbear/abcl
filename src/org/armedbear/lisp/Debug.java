@@ -34,6 +34,8 @@
 package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public final class Debug
 {
@@ -44,9 +46,33 @@ public final class Debug
             String msg = "ABCL Debug.assertTrue() assertion failed!";
             System.err.println(msg);
             Error e = new Error(msg);
-            e.printStackTrace();
-            throw e;
+            e.printStackTrace(System.err);
+	    
+	    StringBuffer buffer = new StringBuffer();
+	    final String CR = "\n";
+	    buffer.append(msg).append(CR);
+	    StackTraceElement[] stack = e.getStackTrace();
+	    for (int i = 0; i < stack.length; i++) {
+		buffer.append(stack[i].toString()).append(CR);
+	    }
+            throw new Error(buffer.toString());
         }
+    }
+    public static final void assertViolation(String msg) {
+	final String m = "Assert violation: " + msg;
+	Error e = new Error(m);
+
+	System.err.println(m);
+	e.printStackTrace(System.err);
+
+	StringBuffer buffer = new StringBuffer();
+	final String CR = "\n";
+	buffer.append(msg).append(CR);
+	StackTraceElement[] stack = e.getStackTrace();
+	for (int i = 0; i < stack.length; i++) {
+	    buffer.append(stack[i].toString()).append(CR);
+	}
+	throw new Error(buffer.toString());
     }
 
     // Does not throw an exception.

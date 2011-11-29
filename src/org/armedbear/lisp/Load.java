@@ -157,6 +157,9 @@ public final class Load
             if (n.startsWith("jar:")) {
                 n = "jar:" + n + "!/" + name + "."
                     + COMPILE_FILE_INIT_FASL_TYPE;
+	    } else if (n.startsWith("zip:")) {
+                n = "zip:" + n + "!/" + name + "."
+                    + COMPILE_FILE_INIT_FASL_TYPE;
             } else {
                 n = "jar:file:" + Pathname.uriEncode(n) + "!/" + name + "."
                     + COMPILE_FILE_INIT_FASL_TYPE;
@@ -177,9 +180,9 @@ public final class Load
                 } else {
                   String errorMessage
                       = "Loadable FASL not found for "
-                      + "'" + pathname + "'"
+                      + "'" + pathname.printObject() + "'"
                       + " in "
-                      + "'" + mergedPathname + "'";
+                      + "'" + mergedPathname.printObject() + "'";
                   if (ifDoesNotExist) {
                       return error(new FileError(errorMessage, mergedPathname));
                   } else {

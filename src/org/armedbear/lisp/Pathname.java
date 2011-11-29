@@ -43,6 +43,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
@@ -401,13 +402,22 @@ public class Pathname extends LispObject {
                                     + " because: " + e));
             }
             String authority = uri.getAuthority();
-            Debug.assertTrue(authority != null);
+	    if (authority == null) {
+		authority = url.getAuthority();
+		if (authority == null) {
+		    Debug.trace(MessageFormat.format("{0} has a null authority.",
+						     url));
+		}
+	    }
 
             host = NIL;
             host = host.push(SCHEME);
             host = host.push(new SimpleString(scheme));
-            host = host.push(AUTHORITY);
-            host = host.push(new SimpleString(authority));
+
+	    if (authority != null) {
+		host = host.push(AUTHORITY);
+		host = host.push(new SimpleString(authority));
+	    }
 
             device = NIL;
             
