@@ -62,6 +62,7 @@
 
           eql-specializer-object
           extract-lambda-list
+          extract-specializer-names
 
           intern-eql-specializer))
 

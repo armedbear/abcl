@@ -41,6 +41,9 @@
         (setf asdf::group-id (subseq asdf::name 0 slash)
               asdf::artifact-id (subseq asdf::name (1+ slash))
               asdf::schema "mvn"
+              asdf::version (if (eq asdf::version :latest)
+                                "LATEST"
+                                asdf::version)
               asdf::path (format nil "~A/~A" asdf::name asdf::version))))))
 
 (defmethod source-file-type ((component iri) (system system))

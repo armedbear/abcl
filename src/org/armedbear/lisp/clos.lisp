@@ -1483,7 +1483,7 @@
       (values function-name
               qualifiers
               (extract-lambda-list specialized-lambda-list)
-              (extract-specializers specialized-lambda-list)
+              (extract-specializer-names specialized-lambda-list)
               documentation
               declarations
               (list* 'block
@@ -1514,7 +1514,7 @@
       ,@(if opts `(&optional ,@opts) ())
       ,@(if auxs `(&aux ,@auxs) ()))))
 
-(defun extract-specializers (specialized-lambda-list)
+(defun extract-specializer-names (specialized-lambda-list)
   (let ((plist (analyze-lambda-list specialized-lambda-list)))
     (getf plist ':specializers)))
 
