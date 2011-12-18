@@ -484,11 +484,15 @@
 ;;; ticket #181
 ;;; TODO Make reasons for failure more clear
 (deftest jar-pathname.truename.1
-    (let* ((abcl (slot-value (asdf:find-system 'abcl) 'asdf::absolute-pathname))
-           (jar (pathname (format nil "jar:file:~A/dist/abcl-contrib.jar!/jss/jss.asd" (namestring abcl))))
-           (jar-dir (make-pathname :defaults jar :name nil :type nil))
-           (defaults *default-pathname-defaults*))
-      (let ((*default-pathname-defaults* jar-dir))
-        (not (probe-file (merge-pathnames jar)))))
+    (let* ((abcl 
+            (slot-value (asdf:find-system 'abcl) 'asdf::absolute-pathname))
+           (jar-entry 
+            (pathname (format nil "jar:file:~A/dist/abcl-contrib.jar!/jss/jss.asd" (namestring abcl))))
+           (jar-entry-dir 
+            (make-pathname :defaults jar-entry :name nil :type nil))
+           (defaults 
+            *default-pathname-defaults*))
+      (let ((*default-pathname-defaults* jar-entry-dir))
+        (not (probe-file (merge-pathnames jar-entry)))))
   nil)
   

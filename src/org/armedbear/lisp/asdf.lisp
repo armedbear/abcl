@@ -1650,11 +1650,6 @@ Going forward, we recommend new users should be using the source-registry.
              (let ((*package* package)
                    (*default-pathname-defaults*
                     (pathname-directory-pathname pathname)))
-               ;;; XXX Kludge for ABCL ticket #181 
-               #+abcl
-               (when (ext:pathname-jar-p pathname) 
-                 (setf *default-pathname-defaults* 
-                       (make-pathname :device nil :defaults *default-pathname-defaults*)))
                (asdf-message (compatfmt "~&~@<; ~@;Loading system definition from ~A into ~A~@:>~%")
                              pathname package)
                (load pathname)))

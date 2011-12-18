@@ -2179,9 +2179,18 @@ public class Pathname extends LispObject {
             // Possibly canonicalize jar file directory
             Cons jars = (Cons) pathname.device;
             LispObject o = jars.car();
-            if (o instanceof Pathname && ! (((Pathname)o).isURL())) {
+            if (o instanceof Pathname 
+                && !(((Pathname)o).isURL())
+                // XXX Silently fail to call truename() if the default
+                // pathname defaults exist within a jar, as that will
+                // (probably) not succeed.  The better solution would
+                // probably be to parametize the value of
+                // *DEFAULT-PATHNAME-DEFAULTS* on invocations of
+                // truename().
+                && !coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue()).isJar()) 
+                {
                 LispObject truename = Pathname.truename((Pathname)o, errorIfDoesNotExist);
-                if (truename != null
+                if (truename != null && truename != NIL
                     && truename instanceof Pathname) {
                     Pathname truePathname = (Pathname)truename;
                     // A jar that is a directory makes no sense, so exit
