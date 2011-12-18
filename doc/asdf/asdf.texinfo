@@ -895,7 +895,8 @@ For more details on what these methods do, @pxref{Operations} in
 @example
 system-definition := ( defsystem system-designator @var{system-option}* )
 
-system-option := :defsystem-depends-on system-list
+system-option := :defsystem-depends-on system-list 
+                 | :class class-name (see discussion below)
                  | module-option
                  | option
 
@@ -958,6 +959,25 @@ by name in the current package and in the asdf package, if not found in
 the current package.  So a component type @code{my-component-type}, in
 the current package @code{my-system-asd} can be specified as
 @code{:my-component-type}, or @code{my-component-type}.
+
+@subsection System class names
+
+A system class name will be looked up in the same way as a Component
+type (see above).  Typically, one will not need to specify a system
+class name, unless using a non-standard system class defined in some
+ASDF extension, typically loaded through @code{DEFSYSTEM-DEPENDS-ON},
+see below.  For such class names in the ASDF package, we recommend that
+the @code{:class} option be specified using a keyword symbol, such as
+
+@example
+:class :MY-NEW-SYSTEM-SUBCLASS
+@end example
+
+This practice will ensure that package name conflicts are avoided.
+Otherwise, the symbol @code{MY-NEW-SYSTEM-SUBCLASS} will be read into
+the current package @emph{before} it has been exported from the ASDF
+extension loaded by @code{:defsystem-depends-on}, causing a name
+conflict in the current package.
 
 @subsection Defsystem depends on
 
@@ -2830,16 +2850,29 @@ useful for system definition and development.
 @section Controlling file compilation
 
 When declaring a component (system, module, file),
-you can specify a keyword argument @code{:around-compile some-symbol}.
-If left unspecified, the value will be inherited from the parent component if any,
-or with a default of @code{nil} if no value is specified in any transitive parent.
+you can specify a keyword argument @code{:around-compile function}.
+If left unspecified,
+the value will be inherited from the parent component if any,
+or with a default of @code{nil}
+if no value is specified in any transitive parent.
 
-The argument must be a either fbound symbol or @code{nil}.
+The argument must be a either @code{nil}, a fbound symbol,
+a lambda-expression (e.g. @code{(lambda (thunk) ...(funcall thunk) ...)})
+a function object (e.g. using @code{#.#'} but that's discouraged
+because it prevents the introspection done by e.g. asdf-dependency-grovel),
+or a string that when read yields a symbol or a lambda-expression.
 @code{nil} means the normal compile-file function will be called.
-A symbol means the function fbound to it will be called with a single argument,
-a thunk that calls the compile-file function;
-the function you specify must then funcall that thunk
-inside whatever wrapping you want.
+A non-nil value designates a function of one argument
+that will be called with a thunk for calling
+the compile-file function with proper arguments.
+
+Note that by using a string, you may reference
+a function, symbol and/or package
+that will only be created later during the build, but
+isn't yet present at the time the defsystem form is evaluated.
+However, if your entire system is using such a hook, you may have to
+explicitly override the hook with @code{nil} for all the modules and files
+that are compiled before the hook is defined.
 
 Using this hook, you may achieve such effects as:
 locally renaming packages,
@@ -3648,6 +3681,8 @@ you also define the following method:
   (declare (ignorable f m))
   "lis")
 @end lisp
+
+@comment FIXME: Add a FAQ about how to use a new system class...
 
 
 @node  TODO list, Inspiration, FAQ, Top
