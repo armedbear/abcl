@@ -290,10 +290,11 @@ public final class BasicVector_UnsignedByte8 extends AbstractVector
         byte[] newElements = new byte[newCapacity];
         System.arraycopy(elements, 0, newElements, 0,
                          Math.min(capacity, newCapacity));
-        byte initValue = (byte)(initialElement.intValue() & 0xFF);
-        if (initialElement != null)
+        if (initialElement != null) {
+            byte initValue = (byte)(initialElement.intValue() & 0xFF);
             for (int i = capacity; i < newCapacity; i++)
                 newElements[i] = initValue;
+        }
         return new BasicVector_UnsignedByte8(newElements);
       }
     // No change.
