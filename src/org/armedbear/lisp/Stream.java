@@ -1030,11 +1030,8 @@ public class Stream extends StructureObject {
         if (Symbol.READ_SUPPRESS.symbolValue(thread) != NIL)
             return NIL;
         final LispObject readtableCase = rt.getReadtableCase();
-        final String token;
-        if (readtableCase == Keyword.INVERT)
-            token = invert(sb.toString(), flags);
-        else
-            token = sb.toString();
+        final String token =  sb.toString();
+        final boolean invert = readtableCase == Keyword.INVERT;
         final int length = token.length();
         if (length > 0) {
             final char firstChar = token.charAt(0);
@@ -1073,33 +1070,62 @@ public class Stream extends StructureObject {
                         return number;
                 }
             }
-            if (firstChar == ':')
-                if (flags == null || !flags.get(0))
-                    return PACKAGE_KEYWORD.intern(token.substring(1));
-            int index = findUnescapedDoubleColon(token, flags);
-            if (index > 0) {
-                String packageName = token.substring(0, index);
-                String symbolName = token.substring(index + 2);
-                Package pkg = Packages.findPackage(packageName);
-                if (pkg == null)
-                    return error(new LispError("Package \"" + packageName +
-                                               "\" not found."));
-                return pkg.intern(symbolName);
+            
+            String symbolName;
+            String packageName = null;
+            BitSet symbolFlags;
+            BitSet packageFlags = null;
+            Package pkg = null;
+            boolean internSymbol = true;
+            if (firstChar == ':' && (flags == null || !flags.get(0))) {
+                    symbolName = token.substring(1);
+                    pkg = PACKAGE_KEYWORD;
+                    if (flags != null)
+                        symbolFlags = flags.get(1, flags.size());
+                    else
+                        symbolFlags = null;
+            } else {
+                int index = findUnescapedDoubleColon(token, flags);
+                if (index > 0) {
+                    packageName = token.substring(0, index);
+                    packageFlags = (flags != null) ? flags.get(0, index) :  null;
+                    symbolName = token.substring(index + 2);
+                    symbolFlags = (flags != null) ? flags.get(index+2, flags.size()) : null;
+                } else {
+                    index = findUnescapedSingleColon(token, flags);
+                    if (index > 0) {
+                        packageName = token.substring(0, index);
+                        packageFlags = (flags != null) ? flags.get(0, index) : null;
+                        symbolName = token.substring(index + 1);
+                        symbolFlags = (flags != null) ? flags.get(index+2, flags.size()) : null;
+                        internSymbol = false;
+                    } else {
+                        pkg = (Package)Symbol._PACKAGE_.symbolValue(thread);
+                        symbolName = token;
+                        symbolFlags = flags;
+                    }
+                }
             }
-            index = findUnescapedSingleColon(token, flags);
-            if (index > 0) {
-                final String packageName = token.substring(0, index);
-                Package pkg = Packages.findPackage(packageName);
+            if (pkg == null) {
+                if (invert)
+                    packageName = invert(packageName, packageFlags);
+
+                pkg = Packages.findPackage(packageName);
                 if (pkg == null)
-                    return error(new PackageError("Package \"" + packageName +
-                                                  "\" not found."));
-                final String symbolName = token.substring(index + 1);
-                final SimpleString s = new SimpleString(symbolName);
-                Symbol symbol = pkg.findExternalSymbol(s);
+                    return error(new ReaderError("The package \"" + packageName + "\" can't be found.", this));
+            }
+            if (invert)
+                symbolName = invert(symbolName, symbolFlags);
+            
+            if (internSymbol) {
+                return pkg.intern(symbolName);
+            } else {
+                Symbol symbol = pkg.findExternalSymbol(symbolName);
                 if (symbol != null)
                     return symbol;
+
                 // Error!
-                if (pkg.findInternalSymbol(s) != null)
+                if (pkg.findInternalSymbol(symbolName) != null)
                     return error(new ReaderError("The symbol \"" + symbolName +
                                                  "\" is not external in package " +
                                                  packageName + '.',
@@ -1111,8 +1137,7 @@ public class Stream extends StructureObject {
                                                  this));
             }
         }
-        // Intern token in current package.
-        return ((Package)Symbol._PACKAGE_.symbolValue(thread)).intern(new SimpleString(token));
+        return error(new ReaderError("Can't intern zero-length symbol.", this));
     }
 
     private final BitSet _readToken(StringBuilder sb, Readtable rt)
