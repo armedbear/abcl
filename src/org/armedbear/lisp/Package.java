@@ -209,9 +209,19 @@ public final class Package extends LispObject implements java.io.Serializable
         return internalSymbols.get(name.toString());
     }
 
+    public Symbol findInternalSymbol(String name)
+    {
+        return internalSymbols.get(name);
+    }
+
     public Symbol findExternalSymbol(SimpleString name)
     {
         return externalSymbols.get(name.toString());
+    }
+
+    public Symbol findExternalSymbol(String name)
+    {
+        return externalSymbols.get(name);
     }
 
     public Symbol findExternalSymbol(SimpleString name, int hash)
