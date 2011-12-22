@@ -64,7 +64,7 @@ preferred (and most tested way) is to being to use the Ant build tool:
 
 * Use the Ant build tool for Java environments.
 
-* Use the Netbeans 6.x IDE to open ABCL as a project.
+* Use the NetBeans 6.x IDE to open ABCL as a project.
 
 * Bootstrap ABCL using a Common Lisp implementation. Supported
   implementations for this process: SBCL, CMUCL, OpenMCL, Allegro
@@ -104,7 +104,7 @@ this wrapper to start ABCL.
 Using NetBeans
 --------------
 
-Obtain and install the [Netbeans IDE][2]. One should be able to open
+Obtain and install the [NetBeans IDE][2]. One should be able to open
 the ABCL directory as a project in the Netbeans 6.x application,
 whereupon the usual build, run, and debug targets as invoked in the
 GUI are available.
@@ -126,7 +126,7 @@ in the directory containing this README file, editing to suit your
 situation, paying attention to the comments in the file.  The critical
 step is to have Lisp special variable '*JDK*' point to the root of the
 Java Development Kit.  Underneath the directory referenced by the
-value of '*JDK*' there should be an exectuable Java compiler in
+value of '*JDK*' there should be an executable Java compiler in
 'bin/javac' ('bin/java.exe' under Windows).
 
 Then, one may either use the 'build-from-lisp.sh' shell script or load
@@ -175,19 +175,19 @@ BUGS
 ABCL is a conforming ANSI Common Lisp implementation.  Any other
 behavior should be reported as a bug.
 
-ABCL now has a manual stating its confomance to the ANSI standard,
-providing a compliant and practicalCommon Lisp implementation.
+ABCL now has a manual stating its conformance to the ANSI standard,
+providing a compliant and practical Common Lisp implementation.
 Because of this, 
 
 
 ### Tests 
 
-ABCL 0.28.0 now fails only 18 out of 21708 total tests in the ANSI CL
-test suite (derived from the tests orginally written for GCL).
+ABCL 1.0.0 now fails only 18 out of 21708 total tests in the ANSI CL
+test suite (derived from the tests originally written for GCL).
 
 Maxima's test suite runs without failures.
 
-### Deficencies 
+### Deficiencies 
 
 The MOP implementation is incomplete.
 
