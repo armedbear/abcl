@@ -233,6 +233,7 @@
 (define-opcode lreturn 173 1 nil nil)
 (define-opcode freturn 174 1 nil nil)
 (define-opcode dreturn 175 1 nil nil)
+(define-opcode ireturn 172 1 -1 nil)
 (define-opcode areturn 176 1 -1 nil)
 (define-opcode return 177 1 0 nil)
 (define-opcode getstatic 178 3 1 nil)
@@ -568,6 +569,7 @@
                  165 ; if_acmpeq
                  166 ; if_acmpne
                  167 ; goto
+                 172 ; ireturn
                  176 ; areturn
                  177 ; return
                  178 ; getstatic
@@ -721,7 +723,9 @@
           (internal-compiler-error "Stack inconsistency detected ~
                                     in ~A at index ~D: ~
                                     found ~S, expected ~S."
-                                   (compiland-name *current-compiland*)
+                                   (if *current-compiland*
+                                       (compiland-name *current-compiland*)
+                                       "<unknown>")
                                    i instruction-depth
                                    (+ depth instruction-stack)))
         (return-from analyze-stack-path))
@@ -732,7 +736,9 @@
           (internal-compiler-error "Stack inconsistency detected ~
                                     in ~A at index ~D: ~
                                     negative depth ~S."
-                                   (compiland-name *current-compiland*)
+                                   (if *current-compiland*
+                                       (compiland-name *current-compiland*)
+                                       "<unknown>")
                                    i depth))
         (when (branch-p opcode)
           (let ((label (car (instruction-args instruction))))

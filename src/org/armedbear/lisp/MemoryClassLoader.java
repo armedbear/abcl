@@ -42,8 +42,14 @@ public class MemoryClassLoader extends JavaClassLoader {
 
     private final HashMap<String, JavaObject> hashtable = new HashMap<String, JavaObject>();
     private final JavaObject boxedThis = new JavaObject(this);
+    private final String internalNamePrefix;
 
     public MemoryClassLoader() {
+        this("org/armedbear/lisp/");
+    }
+
+    public MemoryClassLoader(String internalNamePrefix) {
+        this.internalNamePrefix = internalNamePrefix;
     }
 
     @Override
@@ -59,7 +65,7 @@ public class MemoryClassLoader extends JavaClassLoader {
          * which - in ABCL - is pretty deep, most of the time.
          */
         if (hashtable.containsKey(name)) {
-            String internalName = "org/armedbear/lisp/" + name;
+            String internalName = internalNamePrefix + name;
             Class<?> c = this.findLoadedClass(internalName);
 
             if (c == null) {

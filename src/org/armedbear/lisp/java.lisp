@@ -288,7 +288,7 @@ calls on the java.util.Enumeration `jenumeration`."
   (declare (ignore unused-value))
   (if instance-supplied-p
       (jfield class-ref-or-field field-or-instance instance newvalue)
-      (jfield class-ref-or-field field-or-instance newvalue)))
+      (jfield class-ref-or-field field-or-instance nil newvalue)))
 
 (defun jclass-methods (class &key declared public)
   "Return a vector of all (or just the declared/public, if DECLARED/PUBLIC is true) methods of CLASS"

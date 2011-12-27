@@ -243,7 +243,7 @@
                            ;;"run-benchmarks.lisp"
                            "run-program.lisp"
                            "run-shell-command.lisp"
-                           ;;"runtime-class.lisp"
+                           "runtime-class.lisp"
                            "search.lisp"
                            "sequences.lisp"
                            "sets.lisp"
