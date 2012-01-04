@@ -385,9 +385,11 @@ public class StandardClass extends SlotClass
     addStandardClass(Symbol.STANDARD_CLASS, list(BuiltInClass.CLASS_T));
   public static final StandardClass STANDARD_OBJECT =
     addStandardClass(Symbol.STANDARD_OBJECT, list(BuiltInClass.CLASS_T));
+  public static final StandardClass METAOBJECT =
+    addStandardClass(Symbol.METAOBJECT, list(STANDARD_OBJECT));
 
     public static final StandardClass SLOT_DEFINITION =
-        addStandardClass(Symbol.SLOT_DEFINITION, list(STANDARD_OBJECT));
+        addStandardClass(Symbol.SLOT_DEFINITION, list(METAOBJECT));
     public static final StandardClass STANDARD_SLOT_DEFINITION =
         addClass(Symbol.STANDARD_SLOT_DEFINITION, new SlotDefinitionClass(Symbol.STANDARD_SLOT_DEFINITION, list(SLOT_DEFINITION)));
 
@@ -416,8 +418,8 @@ public class StandardClass extends SlotClass
 
   // BuiltInClass.FUNCTION is also null here (see previous comment).
   public static final StandardClass GENERIC_FUNCTION =
-    addStandardClass(Symbol.GENERIC_FUNCTION, list(BuiltInClass.FUNCTION,
-                                                    STANDARD_OBJECT));
+    addStandardClass(Symbol.GENERIC_FUNCTION, list(METAOBJECT,
+                                                   BuiltInClass.FUNCTION));
 
   public static final StandardClass CLASS =
     addStandardClass(Symbol.CLASS, list(STANDARD_OBJECT));
@@ -536,7 +538,7 @@ public class StandardClass extends SlotClass
     addStandardClass(Symbol.JAVA_EXCEPTION, list(ERROR));
 
   public static final StandardClass METHOD =
-    addStandardClass(Symbol.METHOD, list(STANDARD_OBJECT));
+    addStandardClass(Symbol.METHOD, list(METAOBJECT));
 
   public static final StandardClass STANDARD_METHOD =
     new StandardMethodClass();
@@ -566,8 +568,8 @@ public class StandardClass extends SlotClass
     // STANDARD_OBJECT).
     STANDARD_CLASS.setDirectSuperclass(CLASS);
     STANDARD_OBJECT.setDirectSuperclass(BuiltInClass.CLASS_T);
-    GENERIC_FUNCTION.setDirectSuperclasses(list(BuiltInClass.FUNCTION,
-                                                 STANDARD_OBJECT));
+    GENERIC_FUNCTION.setDirectSuperclasses(list(METAOBJECT,
+                                                BuiltInClass.FUNCTION));
 
     ARITHMETIC_ERROR.setCPL(ARITHMETIC_ERROR, ERROR, SERIOUS_CONDITION,
                             CONDITION, STANDARD_OBJECT, BuiltInClass.CLASS_T);
@@ -631,14 +633,15 @@ public class StandardClass extends SlotClass
                                     STANDARD_OBJECT, BuiltInClass.CLASS_T);
     FORWARD_REFERENCED_CLASS.setCPL(FORWARD_REFERENCED_CLASS, CLASS,
                                     BuiltInClass.CLASS_T);
-    GENERIC_FUNCTION.setCPL(GENERIC_FUNCTION, STANDARD_OBJECT,
+    GENERIC_FUNCTION.setCPL(GENERIC_FUNCTION, METAOBJECT, STANDARD_OBJECT,
                             BuiltInClass.FUNCTION,
                             BuiltInClass.CLASS_T);
     JAVA_EXCEPTION.setCPL(JAVA_EXCEPTION, ERROR, SERIOUS_CONDITION, CONDITION,
                           STANDARD_OBJECT, BuiltInClass.CLASS_T);
     JAVA_EXCEPTION.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.CAUSE, list(Symbol.JAVA_EXCEPTION_CAUSE))));
-    METHOD.setCPL(METHOD, STANDARD_OBJECT, BuiltInClass.CLASS_T);
+    METAOBJECT.setCPL(METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
+    METHOD.setCPL(METHOD, METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     PACKAGE_ERROR.setCPL(PACKAGE_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
                          STANDARD_OBJECT, BuiltInClass.CLASS_T);
     PACKAGE_ERROR.setDirectSlotDefinitions(
@@ -725,6 +728,7 @@ public class StandardClass extends SlotClass
     FLOATING_POINT_OVERFLOW.finalizeClass();
     FLOATING_POINT_UNDERFLOW.finalizeClass();
     JAVA_EXCEPTION.finalizeClass();
+    METAOBJECT.finalizeClass();
     PACKAGE_ERROR.finalizeClass();
     PARSE_ERROR.finalizeClass();
     PRINT_NOT_READABLE.finalizeClass();
@@ -747,33 +751,33 @@ public class StandardClass extends SlotClass
     // SYS:SLOT-DEFINITION is constructed and finalized in
     // SlotDefinitionClass.java, but we need to fill in a few things here.
     Debug.assertTrue(SLOT_DEFINITION.isFinalized());
-    SLOT_DEFINITION.setCPL(SLOT_DEFINITION, STANDARD_OBJECT,
+    SLOT_DEFINITION.setCPL(SLOT_DEFINITION, METAOBJECT, STANDARD_OBJECT,
                            BuiltInClass.CLASS_T);
     SLOT_DEFINITION.setDirectSlotDefinitions(SLOT_DEFINITION.getClassLayout().generateSlotDefinitions());
     // There are no inherited slots.
     SLOT_DEFINITION.setSlotDefinitions(SLOT_DEFINITION.getDirectSlotDefinitions());
 
     DIRECT_SLOT_DEFINITION.setCPL(DIRECT_SLOT_DEFINITION, SLOT_DEFINITION,
-                                  STANDARD_OBJECT, BuiltInClass.CLASS_T);
+                                  METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     DIRECT_SLOT_DEFINITION.finalizeClass();
     EFFECTIVE_SLOT_DEFINITION.setCPL(EFFECTIVE_SLOT_DEFINITION, SLOT_DEFINITION,
-                                     STANDARD_OBJECT, BuiltInClass.CLASS_T);
+                                     METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     EFFECTIVE_SLOT_DEFINITION.finalizeClass();
     STANDARD_SLOT_DEFINITION.setCPL(STANDARD_SLOT_DEFINITION, SLOT_DEFINITION,
-                                    STANDARD_OBJECT, BuiltInClass.CLASS_T);
+                                    METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     STANDARD_SLOT_DEFINITION.finalizeClass();
     STANDARD_DIRECT_SLOT_DEFINITION.setCPL(STANDARD_DIRECT_SLOT_DEFINITION, STANDARD_SLOT_DEFINITION,
-                                           DIRECT_SLOT_DEFINITION, SLOT_DEFINITION, STANDARD_OBJECT,
+                                           DIRECT_SLOT_DEFINITION, SLOT_DEFINITION, METAOBJECT, STANDARD_OBJECT,
                                            BuiltInClass.CLASS_T);
     STANDARD_DIRECT_SLOT_DEFINITION.finalizeClass();
     STANDARD_EFFECTIVE_SLOT_DEFINITION.setCPL(STANDARD_EFFECTIVE_SLOT_DEFINITION, STANDARD_SLOT_DEFINITION,
-                                              EFFECTIVE_SLOT_DEFINITION, SLOT_DEFINITION, STANDARD_OBJECT,
+                                              EFFECTIVE_SLOT_DEFINITION, SLOT_DEFINITION, METAOBJECT, STANDARD_OBJECT,
                                               BuiltInClass.CLASS_T);
     STANDARD_EFFECTIVE_SLOT_DEFINITION.finalizeClass();
 
     // STANDARD-METHOD
     Debug.assertTrue(STANDARD_METHOD.isFinalized());
-    STANDARD_METHOD.setCPL(STANDARD_METHOD, METHOD, STANDARD_OBJECT,
+    STANDARD_METHOD.setCPL(STANDARD_METHOD, METHOD, METAOBJECT, STANDARD_OBJECT,
                            BuiltInClass.CLASS_T);
     STANDARD_METHOD.setDirectSlotDefinitions(STANDARD_METHOD.getClassLayout().generateSlotDefinitions());
     // There are no inherited slots.
@@ -782,7 +786,8 @@ public class StandardClass extends SlotClass
     // STANDARD-READER-METHOD
     Debug.assertTrue(STANDARD_READER_METHOD.isFinalized());
     STANDARD_READER_METHOD.setCPL(STANDARD_READER_METHOD, STANDARD_METHOD,
-                                  METHOD, STANDARD_OBJECT, BuiltInClass.CLASS_T);
+                                  METHOD, METAOBJECT, STANDARD_OBJECT,
+                                  BuiltInClass.CLASS_T);
     STANDARD_READER_METHOD.setSlotDefinitions(STANDARD_READER_METHOD.getClassLayout().generateSlotDefinitions());
     // All but the last slot are inherited.
     STANDARD_READER_METHOD.setDirectSlotDefinitions(list(STANDARD_READER_METHOD.getSlotDefinitions().reverse().car()));
@@ -790,7 +795,8 @@ public class StandardClass extends SlotClass
     // STANDARD-GENERIC-FUNCTION
     Debug.assertTrue(STANDARD_GENERIC_FUNCTION.isFinalized());
     STANDARD_GENERIC_FUNCTION.setCPL(STANDARD_GENERIC_FUNCTION,
-                                     GENERIC_FUNCTION, STANDARD_OBJECT,
+                                     GENERIC_FUNCTION, METAOBJECT,
+                                     STANDARD_OBJECT,
                                      BuiltInClass.FUNCTION,
                                      BuiltInClass.CLASS_T);
     STANDARD_GENERIC_FUNCTION.setDirectSlotDefinitions(STANDARD_GENERIC_FUNCTION.getClassLayout().generateSlotDefinitions());

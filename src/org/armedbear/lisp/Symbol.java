@@ -2967,6 +2967,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_MOP.addInternalSymbol("CLASS-LAYOUT");
   public static final Symbol CLASS_PRECEDENCE_LIST =
     PACKAGE_MOP.addInternalSymbol("CLASS-PRECEDENCE-LIST");
+  public static final Symbol METAOBJECT =
+    PACKAGE_MOP.addExternalSymbol("METAOBJECT");
   public static final Symbol STANDARD_READER_METHOD =
     PACKAGE_MOP.addExternalSymbol("STANDARD-READER-METHOD");
   public static final Symbol DIRECT_SLOT_DEFINITION =

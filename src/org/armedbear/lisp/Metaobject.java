@@ -1,7 +1,7 @@
 /*
- * GenericFunction.java
+ * Metaobject.java
  *
- * Copyright (C) 2003-2005 Peter Graves
+ * Copyright (C) 2003-2005 Peter Graves, 2012 Rudolf Schlatte
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -35,24 +35,18 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public abstract class GenericFunction extends Metaobject
+public abstract class Metaobject extends StandardObject
 {
-    protected GenericFunction(LispClass cls, int length)
-    {
-        super(cls, length);
-    }
+  protected Metaobject(LispClass cls, int length)
+  {
+    super(cls, length);
+  }
 
-    @Override
-    public LispObject typep(LispObject type)
-    {
-        if (type == Symbol.GENERIC_FUNCTION)
-            return T;
-        if (type == StandardClass.GENERIC_FUNCTION)
-            return T;
-        if (type == Symbol.FUNCTION)
-            return T;
-        if (type == BuiltInClass.FUNCTION)
-            return T;
-        return super.typep(type);
-    }
+  @Override
+  public LispObject typep(LispObject type)
+  {
+    if (type == Symbol.METAOBJECT)
+      return T;
+    return super.typep(type);
+  }
 }
