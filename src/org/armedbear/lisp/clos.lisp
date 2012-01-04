@@ -1178,15 +1178,16 @@
              :function ,(coerce-to-function lambda-expression)))
     name))
 
-(defstruct eql-specializer
-  object)
-
 (defparameter *eql-specializer-table* (make-hash-table :test 'eql))
 
 (defun intern-eql-specializer (object)
   (or (gethash object *eql-specializer-table*)
       (setf (gethash object *eql-specializer-table*)
-            (make-eql-specializer :object object))))
+            ;; we will be called during generic function invocation
+            ;; setup, so have to rely on plain functions here.
+            (let ((instance (std-allocate-instance (find-class 'eql-specializer))))
+              (setf (std-slot-value instance 'sys::object) object)
+              instance))))
 
 ;; MOP (p. 216) specifies the following reader generic functions:
 ;;   generic-function-argument-precedence-order
@@ -1443,7 +1444,7 @@
 (defun canonicalize-specializer (specializer)
   (cond ((classp specializer)
          specializer)
-        ((eql-specializer-p specializer)
+        ((typep specializer 'eql-specializer)
          specializer)
         ((symbolp specializer)
          (find-class specializer))
@@ -1809,7 +1810,7 @@ Initialized with the true value near the end of the file.")
                                (specializer (car (%method-specializers method)))
                                (function (or (%method-fast-function method)
                                              (%method-function method))))
-                          (if (eql-specializer-p specializer)
+                          (if (typep specializer 'eql-specializer)
                               (let ((specializer-object (eql-specializer-object specializer)))
                                 #'(lambda (arg)
                                     (declare (optimize speed))
@@ -1965,9 +1966,9 @@ Initialized with the true value near the end of the file.")
           (let ((spec1 (nth index specializers-1))
                 (spec2 (nth index specializers-2)))
             (unless (eq spec1 spec2)
-              (cond ((eql-specializer-p spec1)
+              (cond ((typep spec1 'eql-specializer)
                      (return t))
-                    ((eql-specializer-p spec2)
+                    ((typep spec2 'eql-specializer)
                      (return nil))
                     (t
                      (return (sub-specializer-p spec1 spec2
@@ -1979,9 +1980,9 @@ Initialized with the true value near the end of the file.")
         (let ((spec1 (car specializers-1))
               (spec2 (car specializers-2)))
           (unless (eq spec1 spec2)
-            (cond ((eql-specializer-p spec1)
+            (cond ((typep spec1 'eql-specializer)
                    (return t))
-                  ((eql-specializer-p spec2)
+                  ((typep spec2 'eql-specializer)
                    (return nil))
                   (t
                    (return (sub-specializer-p spec1 spec2 (car classes))))))))))

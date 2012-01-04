@@ -389,6 +389,8 @@ public class StandardClass extends SlotClass
     addStandardClass(Symbol.METAOBJECT, list(STANDARD_OBJECT));
   public static final StandardClass SPECIALIZER =
     addStandardClass(Symbol.SPECIALIZER, list(METAOBJECT));
+  public static final StandardClass EQL_SPECIALIZER =
+    addStandardClass(Symbol.EQL_SPECIALIZER, list(SPECIALIZER));
 
     public static final StandardClass SLOT_DEFINITION =
         addStandardClass(Symbol.SLOT_DEFINITION, list(METAOBJECT));
@@ -644,6 +646,10 @@ public class StandardClass extends SlotClass
       list(new SlotDefinition(Symbol.CAUSE, list(Symbol.JAVA_EXCEPTION_CAUSE))));
     METAOBJECT.setCPL(METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     SPECIALIZER.setCPL(SPECIALIZER, METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
+    EQL_SPECIALIZER.setCPL(EQL_SPECIALIZER, SPECIALIZER, METAOBJECT,
+                           STANDARD_OBJECT, BuiltInClass.CLASS_T);
+    EQL_SPECIALIZER.setDirectSlotDefinitions(
+      list(new SlotDefinition(Symbol.OBJECT, list(PACKAGE_MOP.intern("EQL-SPECIALIZER-OBJECT")))));
     METHOD.setCPL(METHOD, METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     PACKAGE_ERROR.setCPL(PACKAGE_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
                          STANDARD_OBJECT, BuiltInClass.CLASS_T);
@@ -733,6 +739,7 @@ public class StandardClass extends SlotClass
     JAVA_EXCEPTION.finalizeClass();
     METAOBJECT.finalizeClass();
     SPECIALIZER.finalizeClass();
+    EQL_SPECIALIZER.finalizeClass();
     PACKAGE_ERROR.finalizeClass();
     PARSE_ERROR.finalizeClass();
     PRINT_NOT_READABLE.finalizeClass();

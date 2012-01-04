@@ -1,7 +1,9 @@
 /*
- * Specializer.java
+ * Java-side object stub of the CLOS equals specializer.
  *
- * Copyright (C) 2003-2005 Peter Graves, 2012 Rudolf Schlatte
+ * To be stubbed out into the Lisp-side once we get CLOS booted.
+ *
+ * Copyright (C) 2012 Rudolf Schlatte
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -35,18 +37,29 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public abstract class Specializer extends Metaobject
+/** TODO use @DocString annotations correctly in this situation... */
+// ### eql-specializer-object
+public final class EqualSpecializerObject extends Primitive
 {
-  protected Specializer(LispClass cls, int length)
+  public EqualSpecializerObject()
   {
-    super(cls, length);
+    super(Symbol.EQL_SPECIALIZER_OBJECT, "eql-specializer");
   }
 
   @Override
-  public LispObject typep(LispObject type)
+  public LispObject execute(LispObject arg)
   {
-    if (type == Symbol.SPECIALIZER)
-      return T;
-    return super.typep(type);
+    if (arg instanceof StandardObject
+        && arg.typep(StandardClass.EQL_SPECIALIZER) == T) 
+      {
+        return ((StandardObject)arg).getInstanceSlotValue(Symbol.OBJECT);
+      }
+    return error(new TypeError(arg, Symbol.EQL_SPECIALIZER));
   }
+  
+  private static final EqualSpecializerObject EQL_SPECIALIZER_OBJECT
+    = new EqualSpecializerObject();
 }
+
+
+

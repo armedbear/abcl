@@ -533,6 +533,7 @@ public class Autoload extends Function
         autoload(PACKAGE_JAVA, "make-classloader", "JavaClassLoader");
         autoload(PACKAGE_JAVA, "%add-to-classpath", "JavaClassLoader");
         autoload(PACKAGE_JAVA, "dump-classpath", "JavaClassLoader");
+        autoload(PACKAGE_MOP, "eql-specializer-object", "EqualSpecializerObject", true);
         autoload(PACKAGE_MOP, "funcallable-instance-function", "StandardGenericFunction", false);
         autoload(PACKAGE_MOP, "generic-function-name", "StandardGenericFunction", true);
         autoload(PACKAGE_MOP, "method-qualifiers", "StandardMethod", true);

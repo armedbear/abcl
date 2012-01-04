@@ -2967,6 +2967,10 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_MOP.addInternalSymbol("CLASS-LAYOUT");
   public static final Symbol CLASS_PRECEDENCE_LIST =
     PACKAGE_MOP.addInternalSymbol("CLASS-PRECEDENCE-LIST");
+  public static final Symbol EQL_SPECIALIZER =
+    PACKAGE_MOP.addExternalSymbol("EQL-SPECIALIZER");
+  public static final Symbol EQL_SPECIALIZER_OBJECT =
+    PACKAGE_MOP.addExternalSymbol("EQL-SPECIALIZER-OBJECT");
   public static final Symbol METAOBJECT =
     PACKAGE_MOP.addExternalSymbol("METAOBJECT");
   public static final Symbol SPECIALIZER =
