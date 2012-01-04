@@ -387,6 +387,8 @@ public class StandardClass extends SlotClass
     addStandardClass(Symbol.STANDARD_OBJECT, list(BuiltInClass.CLASS_T));
   public static final StandardClass METAOBJECT =
     addStandardClass(Symbol.METAOBJECT, list(STANDARD_OBJECT));
+  public static final StandardClass SPECIALIZER =
+    addStandardClass(Symbol.SPECIALIZER, list(METAOBJECT));
 
     public static final StandardClass SLOT_DEFINITION =
         addStandardClass(Symbol.SLOT_DEFINITION, list(METAOBJECT));
@@ -422,7 +424,7 @@ public class StandardClass extends SlotClass
                                                    BuiltInClass.FUNCTION));
 
   public static final StandardClass CLASS =
-    addStandardClass(Symbol.CLASS, list(STANDARD_OBJECT));
+    addStandardClass(Symbol.CLASS, list(SPECIALIZER));
 
   public static final StandardClass BUILT_IN_CLASS =
     addStandardClass(Symbol.BUILT_IN_CLASS, list(CLASS));
@@ -578,14 +580,14 @@ public class StandardClass extends SlotClass
                                list(PACKAGE_CL.intern("ARITHMETIC-ERROR-OPERATION"))),
             new SlotDefinition(Symbol.OPERANDS,
                                list(PACKAGE_CL.intern("ARITHMETIC-ERROR-OPERANDS")))));
-    BUILT_IN_CLASS.setCPL(BUILT_IN_CLASS, CLASS, STANDARD_OBJECT,
+    BUILT_IN_CLASS.setCPL(BUILT_IN_CLASS, CLASS, SPECIALIZER, METAOBJECT, STANDARD_OBJECT,
                           BuiltInClass.CLASS_T);
     CELL_ERROR.setCPL(CELL_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
                       STANDARD_OBJECT, BuiltInClass.CLASS_T);
     CELL_ERROR.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.NAME,
                                list(Symbol.CELL_ERROR_NAME))));
-    CLASS.setCPL(CLASS, STANDARD_OBJECT, BuiltInClass.CLASS_T);
+    CLASS.setCPL(CLASS, SPECIALIZER, METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     COMPILER_ERROR.setCPL(COMPILER_ERROR, CONDITION, STANDARD_OBJECT,
                           BuiltInClass.CLASS_T);
     INTERNAL_COMPILER_ERROR.setCPL(INTERNAL_COMPILER_ERROR, CONDITION, STANDARD_OBJECT,
@@ -632,7 +634,7 @@ public class StandardClass extends SlotClass
                                     ERROR, SERIOUS_CONDITION, CONDITION,
                                     STANDARD_OBJECT, BuiltInClass.CLASS_T);
     FORWARD_REFERENCED_CLASS.setCPL(FORWARD_REFERENCED_CLASS, CLASS,
-                                    BuiltInClass.CLASS_T);
+                                    SPECIALIZER, METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     GENERIC_FUNCTION.setCPL(GENERIC_FUNCTION, METAOBJECT, STANDARD_OBJECT,
                             BuiltInClass.FUNCTION,
                             BuiltInClass.CLASS_T);
@@ -641,6 +643,7 @@ public class StandardClass extends SlotClass
     JAVA_EXCEPTION.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.CAUSE, list(Symbol.JAVA_EXCEPTION_CAUSE))));
     METAOBJECT.setCPL(METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
+    SPECIALIZER.setCPL(SPECIALIZER, METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     METHOD.setCPL(METHOD, METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     PACKAGE_ERROR.setCPL(PACKAGE_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
                          STANDARD_OBJECT, BuiltInClass.CLASS_T);
@@ -674,7 +677,7 @@ public class StandardClass extends SlotClass
     SIMPLE_WARNING.setDirectSuperclasses(list(SIMPLE_CONDITION, WARNING));
     SIMPLE_WARNING.setCPL(SIMPLE_WARNING, SIMPLE_CONDITION, WARNING,
                           CONDITION, STANDARD_OBJECT, BuiltInClass.CLASS_T);
-    STANDARD_CLASS.setCPL(STANDARD_CLASS, CLASS,
+    STANDARD_CLASS.setCPL(STANDARD_CLASS, CLASS, SPECIALIZER, METAOBJECT,
                           STANDARD_OBJECT, BuiltInClass.CLASS_T);
     STANDARD_OBJECT.setCPL(STANDARD_OBJECT, BuiltInClass.CLASS_T);
     STORAGE_CONDITION.setCPL(STORAGE_CONDITION, SERIOUS_CONDITION, CONDITION,
@@ -684,8 +687,8 @@ public class StandardClass extends SlotClass
     STREAM_ERROR.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.STREAM,
                                list(PACKAGE_CL.intern("STREAM-ERROR-STREAM")))));
-    STRUCTURE_CLASS.setCPL(STRUCTURE_CLASS, CLASS, STANDARD_OBJECT,
-                           BuiltInClass.CLASS_T);
+    STRUCTURE_CLASS.setCPL(STRUCTURE_CLASS, CLASS, SPECIALIZER, METAOBJECT,
+                           STANDARD_OBJECT, BuiltInClass.CLASS_T);
     STYLE_WARNING.setCPL(STYLE_WARNING, WARNING, CONDITION, STANDARD_OBJECT,
                          BuiltInClass.CLASS_T);
     TYPE_ERROR.setCPL(TYPE_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
@@ -729,6 +732,7 @@ public class StandardClass extends SlotClass
     FLOATING_POINT_UNDERFLOW.finalizeClass();
     JAVA_EXCEPTION.finalizeClass();
     METAOBJECT.finalizeClass();
+    SPECIALIZER.finalizeClass();
     PACKAGE_ERROR.finalizeClass();
     PARSE_ERROR.finalizeClass();
     PRINT_NOT_READABLE.finalizeClass();
