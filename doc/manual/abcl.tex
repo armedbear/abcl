@@ -5,7 +5,7 @@
 
 \begin{document}
 \title{A Manual for Armed Bear Common Lisp}
-\date{November 24, 2011}
+\date{January 5, 2012}
 \author{Mark~Evenson, Erik~H\"{u}lsmann, Alessio~Stalla, Ville~Voutilainen}
 
 \maketitle
@@ -21,7 +21,7 @@ conformance level.  This manual documents the Armed Bear Common Lisp
 implementation for users of the system.
 
 \subsection{Version}
-This manual corresponds to abcl-1.0.0, released on October 22, 2011.
+This manual corresponds to abcl-1.0.1.
 
 \subsection{License}
 
@@ -133,7 +133,7 @@ implementation due to the following known issues:
 \end{itemize}
 
 Somewhat confusingly, this statement of non-conformance in the
-accompanying user documentation fullfills the requirements that
+accompanying user documentation fulfills the requirements that
 \textsc{ABCL} is a conforming ANSI Common Lisp implementation
 according to the CLHS \footnote{Common Lisp Hyperspec language
   reference document.}.  Clarifications to this point are solicited.
@@ -148,7 +148,7 @@ expected of a contemporary Common Lisp \footnote{i.e. a Lisp of the
 
 \subsection{Deficiencies}
 The following known problems detract from \textsc{ABCL} being a proper
-contemporary Comon Lisp.
+contemporary Common Lisp.
 \begin{itemize}
 
   \item An incomplete implementation of interactive debugging
@@ -816,11 +816,18 @@ details.
 
 ABCL has created specializations of the ANSI Pathname object to
 enable to use of URIs to address dynamically loaded resources for the
-JVM.  A URL-PATHNAME has a corresponding URL whose cannoical
+JVM.  A URL-PATHNAME has a corresponding URL whose canonical
 representation is defined to be the NAMESTRING of the Pathname.
 
+%
 \begin{verbatim}
-  JAR-PATHNAME isa URL-PATHNAME isa PATHNAME
+
+# RDF description of type hierarchy 
+% TODO Render via some LaTeX mode for graphviz?
+
+  <jar-pathname> a <url-pathname>.
+  <url-pathname> a <pathname>.
+  <logical-pathname> a <pathname> .
 \end{verbatim}
 
 Both URL-PATHNAME and JAR-PATHNAME may be used anywhere a PATHNAME is
@@ -848,7 +855,7 @@ code from the network.  For example, for Quicklisp (\cite{Xach2011}):
 
 will load and execute the Quicklisp setup code.
 
-\ref{XACH2011}
+See \ref{_:XACH2011} on page \pageref{_:XACH2011}.
 
 \subsubsection{Implementation}
 
@@ -1051,7 +1058,7 @@ required source and fasls in a jar archive.
 \label{section:jss}
 
 To one used to a syntax that can construct macros the Java syntax
-may be said to suck, so we introduce the \#" macro.
+may be said to suck, so we introduce the \code{SHARPSIGN-DOUBLE-QUOTE} \#" macro.
 
 \subsection{JSS usage}
 
@@ -1101,10 +1108,12 @@ abcl-1.0.0.
 
 \begin{thebibliography}{9}
 
+\label{_:1}
 \bibitem{Java2000}
   ``A New Era for Java Protocol Handlers.''
   \url{http://java.sun.com/developer/onlineTraining/protocolhandlers/}
 
+\label{_:XACH2011}
 \bibitem{Xach2011}
   Zach Beene
   ``Quicklisp:  A system for quickly constructing Common Lisp''
