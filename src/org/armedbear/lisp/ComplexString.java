@@ -517,7 +517,7 @@ public final class ComplexString extends AbstractString
   @Override
   public int sxhash()
   {
-    int hashCode = 0;
+    int hashCode = randomStringHashBase;
     final int limit = length();
     for (int i = 0; i < limit; i++)
       {
@@ -535,7 +535,7 @@ public final class ComplexString extends AbstractString
   @Override
   public int psxhash()
   {
-    int hashCode = 0;
+    int hashCode = randomStringHashBase;
     final int limit = length();
     for (int i = 0; i < limit; i++)
       {

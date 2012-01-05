@@ -141,6 +141,13 @@ public final class Lisp
   // End-of-file marker.
   public static final LispObject EOF = new LispObject();
 
+  // String hash randomization base
+  // Sets a base offset hashing value per JVM session, as an antidote to
+  // http://www.nruns.com/_downloads/advisory28122011.pdf
+  //    (Denial of Service through hash table multi-collisions)
+  public static final int randomStringHashBase =
+          (int)(new java.util.Date().getTime());
+  
   public static boolean profiling;
 
   public static boolean sampling;

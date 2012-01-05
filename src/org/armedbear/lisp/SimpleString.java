@@ -416,7 +416,7 @@ public final class SimpleString extends AbstractString
     @Override
     public int sxhash()
     {
-        int hashCode = 0;
+        int hashCode = randomStringHashBase;
         for (int i = 0; i < capacity; i++) {
             hashCode += chars[i];
             hashCode += (hashCode << 10);
@@ -426,13 +426,13 @@ public final class SimpleString extends AbstractString
         hashCode ^= (hashCode >> 11);
         hashCode += (hashCode << 15);
         return (hashCode & 0x7fffffff);
-    }
+        }
 
     // For EQUALP hash tables.
     @Override
     public int psxhash()
     {
-        int hashCode = 0;
+        int hashCode = randomStringHashBase;
         for (int i = 0; i < capacity; i++) {
             hashCode += Character.toUpperCase(chars[i]);
             hashCode += (hashCode << 10);
