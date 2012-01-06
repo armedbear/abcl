@@ -826,26 +826,6 @@
                  ,(canonicalize-direct-slots direct-slots)
                  ,@(canonicalize-defclass-options options)))
 
-(defstruct method-combination
-  name
-  documentation)
-
-(defstruct (short-method-combination 
-             (:include method-combination))
-  operator
-  identity-with-one-argument)
-
-(defstruct (long-method-combination
-             (:include method-combination))
-  lambda-list
-  method-group-specs
-  args-lambda-list
-  generic-function-symbol
-  function
-  arguments
-  declarations
-  forms)
-
 (defun expand-long-defcombin (name args)
   (destructuring-bind (lambda-list method-groups &rest body) args
     `(apply #'define-long-form-method-combination
@@ -853,6 +833,96 @@
             ',lambda-list
             (list ,@(mapcar #'canonicalize-method-group-spec method-groups))
             ',body)))
+
+;;; The class method-combination and its subclasses are defined in
+;;; StandardClass.java, but we cannot use make-instance and slot-value
+;;; yet.
+(defun make-short-method-combination (&key name documentation operator identity-with-one-argument)
+  (let ((instance (std-allocate-instance (find-class 'short-method-combination))))
+    (when name (setf (std-slot-value instance 'sys::name) name))
+    (when documentation
+      (setf (std-slot-value instance 'documentation) documentation))
+    (when operator (setf (std-slot-value instance 'operator) operator))
+    (when identity-with-one-argument
+      (setf (std-slot-value instance 'identity-with-one-argument)
+            identity-with-one-argument))
+    instance))
+
+(defun make-long-method-combination (&key name documentation lambda-list
+                                       method-group-specs args-lambda-list
+                                       generic-function-symbol function
+                                       arguments declarations forms)
+  (let ((instance (std-allocate-instance (find-class 'long-method-combination))))
+    (when name (setf (std-slot-value instance 'sys::name) name))
+    (when documentation
+      (setf (std-slot-value instance 'documentation) documentation))
+    (when lambda-list
+        (setf (std-slot-value instance 'sys::lambda-list) lambda-list))
+    (when method-group-specs
+        (setf (std-slot-value instance 'method-group-specs) method-group-specs))
+    (when args-lambda-list
+        (setf (std-slot-value instance 'args-lambda-list) args-lambda-list))
+    (when generic-function-symbol
+        (setf (std-slot-value instance 'generic-function-symbol)
+              generic-function-symbol))
+    (when function
+        (setf (std-slot-value instance 'function) function))
+    (when arguments
+        (setf (std-slot-value instance 'arguments) arguments))
+    (when declarations
+        (setf (std-slot-value instance 'declarations) declarations))
+    (when forms
+        (setf (std-slot-value instance 'forms) forms))
+    instance))
+
+(defun method-combination-name (method-combination)
+  (check-type method-combination method-combination)
+  (std-slot-value method-combination 'sys::name))
+
+(defun method-combination-documentation (method-combination)
+  (check-type method-combination method-combination)
+  (std-slot-value method-combination 'documentation))
+
+(defun short-method-combination-operator (method-combination)
+  (check-type method-combination short-method-combination)
+  (std-slot-value method-combination 'operator))
+
+(defun short-method-combination-identity-with-one-argument (method-combination)
+  (check-type method-combination short-method-combination)
+  (std-slot-value method-combination 'identity-with-one-argument))
+
+(defun long-method-combination-lambda-list (method-combination)
+  (check-type method-combination long-method-combination)
+  (std-slot-value method-combination 'sys::lambda-list))
+
+(defun long-method-combination-method-group-specs (method-combination)
+  (check-type method-combination long-method-combination)
+  (std-slot-value method-combination 'method-group-specs))
+
+(defun long-method-combination-args-lambda-list (method-combination)
+  (check-type method-combination long-method-combination)
+  (std-slot-value method-combination 'args-lambda-list))
+
+(defun long-method-combination-generic-function-symbol (method-combination)
+  (check-type method-combination long-method-combination)
+  (std-slot-value method-combination 'generic-function-symbol))
+
+(defun long-method-combination-function (method-combination)
+  (check-type method-combination long-method-combination)
+  (std-slot-value method-combination 'function))
+
+(defun long-method-combination-arguments (method-combination)
+  (check-type method-combination long-method-combination)
+  (std-slot-value method-combination 'arguments))
+
+(defun long-method-combination-declarations (method-combination)
+  (check-type method-combination long-method-combination)
+  (std-slot-value method-combination 'declarations))
+
+(defun long-method-combination-forms (method-combination)
+  (check-type method-combination long-method-combination)
+  (std-slot-value method-combination 'forms))
+
 
 (defun expand-short-defcombin (whole)
   (let* ((name (cadr whole))

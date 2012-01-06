@@ -2971,6 +2971,10 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_MOP.addExternalSymbol("EQL-SPECIALIZER");
   public static final Symbol EQL_SPECIALIZER_OBJECT =
     PACKAGE_MOP.addExternalSymbol("EQL-SPECIALIZER-OBJECT");
+  public static final Symbol SHORT_METHOD_COMBINATION =
+    PACKAGE_MOP.addInternalSymbol("SHORT-METHOD-COMBINATION");
+  public static final Symbol LONG_METHOD_COMBINATION =
+    PACKAGE_MOP.addInternalSymbol("LONG-METHOD-COMBINATION");
   public static final Symbol METAOBJECT =
     PACKAGE_MOP.addExternalSymbol("METAOBJECT");
   public static final Symbol SPECIALIZER =
@@ -2987,6 +2991,48 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_MOP.addExternalSymbol("STANDARD-DIRECT-SLOT-DEFINITION");
   public static final Symbol STANDARD_EFFECTIVE_SLOT_DEFINITION =
     PACKAGE_MOP.addExternalSymbol("STANDARD-EFFECTIVE-SLOT-DEFINITION");
+  // MOP method combination readers.
+  public static final Symbol METHOD_COMBINATION_NAME =
+    PACKAGE_MOP.addInternalSymbol("METHOD-COMBINATION-NAME");
+  public static final Symbol METHOD_COMBINATION_DOCUMENTATION =
+    PACKAGE_MOP.addInternalSymbol("METHOD-COMBINATION-DOCUMENTATION");
+  public static final Symbol SHORT_METHOD_COMBINATION_OPERATOR =
+    PACKAGE_MOP.addInternalSymbol("SHORT-METHOD-COMBINATION-OPERATOR");
+  public static final Symbol SHORT_METHOD_COMBINATION_IDENTITY_WITH_ONE_ARGUMENT =
+    PACKAGE_MOP.addInternalSymbol("SHORT-METHOD-COMBINATION-IDENTITY-WITH-ONE-ARGUMENT");
+  public static final Symbol LONG_METHOD_COMBINATION_LAMBDA_LIST =
+    PACKAGE_MOP.addInternalSymbol("LONG-METHOD-COMBINATION-LAMBDA-LIST");
+  public static final Symbol LONG_METHOD_COMBINATION_METHOD_GROUP_SPECS =
+    PACKAGE_MOP.addInternalSymbol("LONG-METHOD-COMBINATION-METHOD-GROUP-SPECS");
+  public static final Symbol LONG_METHOD_COMBINATION_ARGS_LAMBDA_LIST =
+    PACKAGE_MOP.addInternalSymbol("LONG-METHOD-COMBINATION-ARGS-LAMBDA-LIST");
+  public static final Symbol LONG_METHOD_COMBINATION_GENERIC_FUNCTION_SYMBOL =
+    PACKAGE_MOP.addInternalSymbol("LONG-METHOD-COMBINATION-GENERIC-FUNCTION-SYMBOL");
+  public static final Symbol LONG_METHOD_COMBINATION_FUNCTION =
+    PACKAGE_MOP.addInternalSymbol("LONG-METHOD-COMBINATION-FUNCTION");
+  public static final Symbol LONG_METHOD_COMBINATION_ARGUMENTS =
+    PACKAGE_MOP.addInternalSymbol("LONG-METHOD-COMBINATION-ARGUMENTS");
+  public static final Symbol LONG_METHOD_COMBINATION_DECLARATIONS =
+    PACKAGE_MOP.addInternalSymbol("LONG-METHOD-COMBINATION-DECLARATIONS");
+  public static final Symbol LONG_METHOD_COMBINATION_FORMS =
+    PACKAGE_MOP.addInternalSymbol("LONG-METHOD-COMBINATION-FORMS");
+  public static final Symbol OPERATOR =
+    PACKAGE_MOP.addInternalSymbol("OPERATOR");
+  public static final Symbol IDENTITY_WITH_ONE_ARGUMENT =
+    PACKAGE_MOP.addInternalSymbol("IDENTITY-WITH-ONE-ARGUMENT");
+  public static final Symbol METHOD_GROUP_SPECS =
+    PACKAGE_MOP.addInternalSymbol("METHOD-GROUP-SPECS");
+  public static final Symbol ARGS_LAMBDA_LIST =
+    PACKAGE_MOP.addInternalSymbol("ARGS-LAMBDA-LIST");
+  public static final Symbol GENERIC_FUNCTION_SYMBOL =
+    PACKAGE_MOP.addInternalSymbol("GENERIC-FUNCTION-SYMBOL");
+  public static final Symbol ARGUMENTS =
+    PACKAGE_MOP.addInternalSymbol("ARGUMENTS");
+  public static final Symbol DECLARATIONS =
+    PACKAGE_MOP.addInternalSymbol("DECLARATIONS");
+  public static final Symbol FORMS =
+    PACKAGE_MOP.addInternalSymbol("FORMS");
+
 
   // Java interface.
   public static final Symbol JAVA_EXCEPTION =
@@ -3138,6 +3184,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addInternalSymbol("LISP-STACK-FRAME");
   public static final Symbol JAVA_STACK_FRAME =
     PACKAGE_SYS.addInternalSymbol("JAVA-STACK-FRAME");
+  public static final Symbol LAMBDA_LIST =
+    PACKAGE_SYS.addInternalSymbol("LAMBDA-LIST");
 
   // CDR6
   public static final Symbol _INSPECTOR_HOOK_ =

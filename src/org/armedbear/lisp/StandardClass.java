@@ -425,6 +425,15 @@ public class StandardClass extends SlotClass
     addStandardClass(Symbol.GENERIC_FUNCTION, list(METAOBJECT,
                                                    BuiltInClass.FUNCTION));
 
+  public static final StandardClass METHOD_COMBINATION =
+    addStandardClass(Symbol.METHOD_COMBINATION, list(METAOBJECT));
+
+  public static final StandardClass SHORT_METHOD_COMBINATION =
+    addStandardClass(Symbol.SHORT_METHOD_COMBINATION, list(METHOD_COMBINATION));
+
+  public static final StandardClass LONG_METHOD_COMBINATION =
+    addStandardClass(Symbol.LONG_METHOD_COMBINATION, list(METHOD_COMBINATION));
+
   public static final StandardClass CLASS =
     addStandardClass(Symbol.CLASS, list(SPECIALIZER));
 
@@ -651,6 +660,42 @@ public class StandardClass extends SlotClass
     EQL_SPECIALIZER.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.OBJECT, list(PACKAGE_MOP.intern("EQL-SPECIALIZER-OBJECT")))));
     METHOD.setCPL(METHOD, METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
+    METHOD_COMBINATION.setCPL(METHOD_COMBINATION, METAOBJECT, STANDARD_OBJECT,
+                              BuiltInClass.CLASS_T);
+    METHOD_COMBINATION.setDirectSlotDefinitions(
+      list(new SlotDefinition(Symbol.NAME,
+                              list(Symbol.METHOD_COMBINATION_NAME)),
+           new SlotDefinition(Symbol.DOCUMENTATION,
+                              list(Symbol.METHOD_COMBINATION_DOCUMENTATION))));
+    SHORT_METHOD_COMBINATION.setCPL(SHORT_METHOD_COMBINATION,
+                                    METHOD_COMBINATION, METAOBJECT,
+                                    STANDARD_OBJECT, BuiltInClass.CLASS_T);
+    SHORT_METHOD_COMBINATION.setDirectSlotDefinitions(
+      list(new SlotDefinition(Symbol.OPERATOR,
+                              list(Symbol.SHORT_METHOD_COMBINATION_OPERATOR)),
+           new SlotDefinition(Symbol.IDENTITY_WITH_ONE_ARGUMENT,
+                              list(Symbol.SHORT_METHOD_COMBINATION_IDENTITY_WITH_ONE_ARGUMENT))));
+    LONG_METHOD_COMBINATION.setCPL(LONG_METHOD_COMBINATION,
+                                   METHOD_COMBINATION, METAOBJECT,
+                                   STANDARD_OBJECT, BuiltInClass.CLASS_T);
+    LONG_METHOD_COMBINATION.setDirectSlotDefinitions(
+      list(new SlotDefinition(Symbol.LAMBDA_LIST,
+                              list(Symbol.LONG_METHOD_COMBINATION_LAMBDA_LIST)),
+           new SlotDefinition(Symbol.METHOD_GROUP_SPECS,
+                              list(Symbol.LONG_METHOD_COMBINATION_METHOD_GROUP_SPECS)),
+           new SlotDefinition(Symbol.ARGS_LAMBDA_LIST,
+                              list(Symbol.LONG_METHOD_COMBINATION_ARGS_LAMBDA_LIST)),
+           new SlotDefinition(Symbol.GENERIC_FUNCTION_SYMBOL,
+                              list(Symbol.LONG_METHOD_COMBINATION_GENERIC_FUNCTION_SYMBOL)),
+           new SlotDefinition(Symbol.FUNCTION,
+                              list(Symbol.LONG_METHOD_COMBINATION_FUNCTION)),
+           new SlotDefinition(Symbol.ARGUMENTS,
+                              list(Symbol.LONG_METHOD_COMBINATION_ARGUMENTS)),
+           new SlotDefinition(Symbol.DECLARATIONS,
+                              list(Symbol.LONG_METHOD_COMBINATION_DECLARATIONS)),
+           new SlotDefinition(Symbol.FORMS,
+                              list(Symbol.LONG_METHOD_COMBINATION_FORMS))));
+
     PACKAGE_ERROR.setCPL(PACKAGE_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
                          STANDARD_OBJECT, BuiltInClass.CLASS_T);
     PACKAGE_ERROR.setDirectSlotDefinitions(
@@ -740,6 +785,9 @@ public class StandardClass extends SlotClass
     METAOBJECT.finalizeClass();
     SPECIALIZER.finalizeClass();
     EQL_SPECIALIZER.finalizeClass();
+    METHOD_COMBINATION.finalizeClass();
+    SHORT_METHOD_COMBINATION.finalizeClass();
+    LONG_METHOD_COMBINATION.finalizeClass();
     PACKAGE_ERROR.finalizeClass();
     PARSE_ERROR.finalizeClass();
     PRINT_NOT_READABLE.finalizeClass();
