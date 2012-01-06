@@ -1189,6 +1189,10 @@
               (setf (std-slot-value instance 'sys::object) object)
               instance))))
 
+(defun eql-specializer-object (eql-specializer)
+  (check-type eql-specializer eql-specializer)
+  (std-slot-value eql-specializer 'sys::object))
+
 ;; MOP (p. 216) specifies the following reader generic functions:
 ;;   generic-function-argument-precedence-order
 ;;   generic-function-declarations
