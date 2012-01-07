@@ -1321,6 +1321,92 @@ names, their type and their scope of validity."
     (write-u2 (local-descriptor local-variable) stream)
     (write-u2 (local-index local-variable) stream)))
 
+;;Annotations
+
+(defstruct (annotations-attribute
+             (:conc-name annotations-)
+             (:include attribute
+                       ;;Name is to be provided by subtypes
+                       (finalizer #'finalize-annotations)
+                       (writer #'write-annotations)))
+  "An attribute of a class, method or field, containing a list of annotations.
+This structure serves as the abstract supertype of concrete annotations types."
+  list ;; a list of annotation structures, in reverse order
+  )
+
+(defstruct annotation
+  "Each value of the annotations table represents a single runtime-visible annotation on a program element.
+   The annotation structure has the following format:
+     annotation {
+       u2 type_index;
+       u2 num_element_value_pairs;
+       {
+         u2 element_name_index;
+         element_value value;
+       } element_value_pairs[num_element_value_pairs]
+     }"
+  type
+  elements)
+
+(defstruct annotation-element name value)
+
+(defstruct annotation-element-value tag finalizer writer)
+
+(defstruct (primitive-or-string-annotation-element-value
+             (:conc-name primitive-or-string-annotation-element-)
+             (:include annotation-element-value
+                       (finalizer (lambda (self class)
+                                    (let ((value (primitive-or-string-annotation-element-value self)))
+                                      (etypecase value
+                                        (boolean
+                                         (setf (annotation-element-value-tag self)
+                                               (char-code #\B)
+                                               (primitive-or-string-annotation-element-value self)
+                                               (pool-add-int (class-file-constants class) (if value 1 0))))))))
+                       (writer (lambda (self stream)
+                                 (write-u1 (annotation-element-value-tag self) stream)
+                                 (write-u2 (primitive-or-string-annotation-element-value self) stream)))))
+  value)
+
+(defstruct (runtime-visible-annotations-attribute
+             (:include annotations-attribute
+                       (name "RuntimeVisibleAnnotations")
+                       (finalizer #'finalize-annotations)
+                       (writer #'write-annotations)))
+  "4.8.15 The RuntimeVisibleAnnotations attribute
+The RuntimeVisibleAnnotations attribute is a variable length attribute in the
+attributes table of the ClassFile, field_info, and method_info structures. The
+RuntimeVisibleAnnotations attribute records runtime-visible Java program-
+ming language annotations on the corresponding class, method, or field. Each
+ClassFile, field_info, and method_info structure may contain at most one
+RuntimeVisibleAnnotations attribute, which records all the runtime-visible
+Java programming language annotations on the corresponding program element.
+The JVM must make these annotations available so they can be returned by the
+appropriate reflective APIs.")
+
+(defun finalize-annotations (annotations code class)
+  (declare (ignore code))
+  (dolist (ann (annotations-list annotations))
+    (setf (annotation-type ann)
+          (pool-add-class (class-file-constants class)
+                          (if (jvm-class-name-p (annotation-type ann))
+                              (annotation-type ann)
+                              (make-jvm-class-name (annotation-type ann)))))
+    (dolist (elem (annotation-elements ann))
+      (setf (annotation-element-name elem)
+            (pool-add-utf8 (class-file-constants class)
+                           (annotation-element-name elem)))
+      (funcall (annotation-element-value-finalizer (annotation-element-value elem))
+               (annotation-element-value elem) class))))
+
+(defun write-annotations (annotations stream)
+  (write-u2 (length (annotations-list annotations)) stream)
+  (dolist (annotation (reverse (annotations-list annotations)))
+    (write-u2 (annotation-type annotation) stream)
+    (write-u2 (length (annotation-elements annotation)) stream)
+    (dolist (elem (reverse (annotation-elements annotation)))
+      (funcall (annotation-element-value-writer elem) elem stream))))
+
 #|
 
 ;; this is the minimal sequence we need to support:

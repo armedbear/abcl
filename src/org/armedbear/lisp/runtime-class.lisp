@@ -1,4 +1,5 @@
 (require "COMPILER-PASS2")
+(require "JVM-CLASS-FILE")
 
 (in-package :jvm)
 
@@ -25,10 +26,10 @@
    be called with the second and first arguments.
 
    Method definitions are lists of the form
-   (method-name return-type argument-types function modifier*)
+   (method-name return-type argument-types function &key modifiers annotations)
    where method-name is a string, return-type and argument-types are strings or keywords for
    primitive types (:void, :int, etc.), and function is a Lisp function of minimum arity
-   (1+ (length argument-types)); the instance (`this') is passed in as the last argument.
+   (1+ (length argument-types)); the instance (`this') is passed in as the first argument.
 
    Field definitions are lists of the form
    (field-name type modifier*)
@@ -44,66 +45,69 @@
     (setf (class-file-interfaces class-file)
           (mapcar #'make-jvm-class-name interfaces))
     (dolist (m methods)
-      (destructuring-bind (name return-type argument-types function &rest flags) m
-          (let* ((argument-types (mapcar #'make-jvm-class-name argument-types))
-                 (argc (length argument-types))
-                 (return-type (if (keywordp return-type)
-                                  return-type
-                                  (make-jvm-class-name return-type)))
-                 (jmethod (make-jvm-method name return-type argument-types :flags (or flags '(:public))))
-                 (field-name (string (gensym name))))
-            (class-add-method class-file jmethod)
-            (let ((field (make-field field-name +lisp-object+ :flags '(:public :static))))
-              (class-add-field class-file field)
-              (push (cons field-name function) method-implementation-fields))
-            (with-code-to-method (class-file jmethod)
-              ;;Allocate registers (2 * argc to load and store arguments + 2 to box "this")
-              (dotimes (i (* 2 (1+ argc)))
-                (allocate-register nil))
-              ;;Box "this" (to be passed as the first argument to the Lisp function)
-              (aload 0)
-              (emit 'iconst_1) ;;true
-              (emit-invokestatic +abcl-java-object+ "getInstance"
-                                             (list +java-object+ :boolean) +lisp-object+)
-              (astore (1+ argc))
-              ;;Box each argument
-              (loop
-                 :for arg-type :in argument-types
-                 :for i :from 1
-                 :do (progn
-                       (cond
-                         ((keywordp arg-type)
-                          (error "Unsupported arg-type: ~A" arg-type))
-                         ((eq arg-type :int) :todo)
-                         (t (aload i)
-                            (emit 'iconst_1) ;;true
-                            (emit-invokestatic +abcl-java-object+ "getInstance"
-                                               (list +java-object+ :boolean) +lisp-object+)))
-                       (astore (+ i (1+ argc)))))
-              ;;Load the Lisp function from its static field
-              (emit-getstatic jvm-class-name field-name +lisp-object+)
-              (if (<= (1+ argc) call-registers-limit)
-                  (progn
-                    ;;Load the boxed this
-                    (aload (1+ argc))
-                    ;;Load each boxed argument
-                    (dotimes (i argc)
-                      (aload (+ argc 2 i))))
-                  (error "execute(LispObject[]) is currently not supported"))
-              (emit-call-execute (1+ (length argument-types)))
-              (cond
-                ((eq return-type :void)
-                 (emit 'pop)
-                 (emit 'return))
-                ((eq return-type :int)
-                 (emit-invokevirtual +lisp-object+ "intValue" nil :int)
-                 (emit 'ireturn))
-                ((keywordp return-type)
-                 (error "Unsupported return type: ~A" return-type))
-                (t
-                 (emit-invokevirtual +lisp-object+ "javaInstance" nil +java-object+)
-                 (emit-checkcast return-type)
-                 (emit 'areturn)))))))
+      (destructuring-bind (name return-type argument-types function &key (modifiers '(:public)) annotations) m
+        (let* ((argument-types (mapcar #'make-jvm-class-name argument-types))
+               (argc (length argument-types))
+               (return-type (if (keywordp return-type)
+                                return-type
+                                (make-jvm-class-name return-type)))
+               (jmethod (make-jvm-method name return-type argument-types :flags modifiers))
+               (field-name (string (gensym name))))
+          (class-add-method class-file jmethod)
+          (let ((field (make-field field-name +lisp-object+ :flags '(:public :static))))
+            (class-add-field class-file field)
+            (push (cons field-name function) method-implementation-fields))
+          (when annotations
+            (method-add-attribute jmethod (make-runtime-visible-annotations-attribute
+                                           :list (mapcar #'parse-annotation annotations))))
+          (with-code-to-method (class-file jmethod)
+            ;;Allocate registers (2 * argc to load and store arguments + 2 to box "this")
+            (dotimes (i (* 2 (1+ argc)))
+              (allocate-register nil))
+            ;;Box "this" (to be passed as the first argument to the Lisp function)
+            (aload 0)
+            (emit 'iconst_1) ;;true
+            (emit-invokestatic +abcl-java-object+ "getInstance"
+                               (list +java-object+ :boolean) +lisp-object+)
+            (astore (1+ argc))
+            ;;Box each argument
+            (loop
+               :for arg-type :in argument-types
+               :for i :from 1
+               :do (progn
+                     (cond
+                       ((keywordp arg-type)
+                        (error "Unsupported arg-type: ~A" arg-type))
+                       ((eq arg-type :int) :todo)
+                       (t (aload i)
+                          (emit 'iconst_1) ;;true
+                          (emit-invokestatic +abcl-java-object+ "getInstance"
+                                             (list +java-object+ :boolean) +lisp-object+)))
+                     (astore (+ i (1+ argc)))))
+            ;;Load the Lisp function from its static field
+            (emit-getstatic jvm-class-name field-name +lisp-object+)
+            (if (<= (1+ argc) call-registers-limit)
+                (progn
+                  ;;Load the boxed this
+                  (aload (1+ argc))
+                  ;;Load each boxed argument
+                  (dotimes (i argc)
+                    (aload (+ argc 2 i))))
+                (error "execute(LispObject[]) is currently not supported"))
+            (emit-call-execute (1+ (length argument-types)))
+            (cond
+              ((eq return-type :void)
+               (emit 'pop)
+               (emit 'return))
+              ((eq return-type :int)
+               (emit-invokevirtual +lisp-object+ "intValue" nil :int)
+               (emit 'ireturn))
+              ((jvm-class-name-p return-type)
+               (emit-invokevirtual +lisp-object+ "javaInstance" nil +java-object+)
+               (emit-checkcast return-type)
+               (emit 'areturn))
+              (t
+               (error "Unsupported return type: ~A" return-type)))))))
     (when (null constructors)
       (let ((ctor (make-jvm-method :constructor :void nil :flags '(:public))))
         (class-add-method class-file ctor)
@@ -124,13 +128,17 @@
         (setf (java:jfield jclass (car method)) (cdr method)))
       jclass)))
 
+(defun parse-annotation (annotation)
+  annotation) ;;TODO
+
 #+example
 (java:jnew-runtime-class
  "Foo"
  :interfaces (list "java.lang.Comparable")
  :methods (list
            (list "foo" :void '("java.lang.Object")
-                 (lambda (this that) (print (list this that))))
+                 (lambda (this that) (print (list this that)))
+                 :annotations (list (make-annotation :type "java.lang.Deprecated")))
            (list "bar" :int '("java.lang.Object")
                  (lambda (this that) (print (list this that)) 23))))
 
