@@ -81,7 +81,7 @@ representation to use.
 |#
 
 (defstruct (jvm-class-name (:conc-name class-)
-			   (:constructor %make-jvm-class-name))
+                           (:constructor %make-jvm-class-name))
   "Used for class identification.
 
 The caller should instantiate only one `class-name' per class, as they are
@@ -373,15 +373,19 @@ and string contents."
 (defun pool-add-class (pool class)
   "Returns the index of the constant-pool class item for `class'.
 
-`class' must be an instance of `class-name'."
-  (let ((entry (gethash class (pool-entries pool))))
-    (unless entry
-      (let ((utf8 (pool-add-utf8 pool (class-name-internal class))))
-        (setf entry
-              (make-constant-class (incf (pool-index pool)) utf8)
-              (gethash class (pool-entries pool)) entry))
-      (push entry (pool-entries-list pool)))
-    (constant-index entry)))
+`class' must be an instance of `class-name' or a string (which will be converted
+to a `class-name')."
+  (let ((class (if (jvm-class-name-p class)
+                   class
+                   (make-jvm-class-name class))))
+    (let ((entry (gethash class (pool-entries pool))))
+      (unless entry
+        (let ((utf8 (pool-add-utf8 pool (class-name-internal class))))
+          (setf entry
+                (make-constant-class (incf (pool-index pool)) utf8)
+                (gethash class (pool-entries pool)) entry))
+        (push entry (pool-entries-list pool)))
+      (constant-index entry))))
 
 (defun pool-add-field-ref (pool class name type)
   "Returns the index of the constant-pool item which denotes a reference
@@ -1348,7 +1352,7 @@ This structure serves as the abstract supertype of concrete annotations types."
   type
   elements)
 
-(defstruct annotation-element name value)
+(defstruct annotation-element (name "value") value)
 
 (defstruct annotation-element-value tag finalizer writer)
 
@@ -1360,19 +1364,46 @@ This structure serves as the abstract supertype of concrete annotations types."
                                       (etypecase value
                                         (boolean
                                          (setf (annotation-element-value-tag self)
-                                               (char-code #\B)
+                                               (char-code #\Z)
                                                (primitive-or-string-annotation-element-value self)
-                                               (pool-add-int (class-file-constants class) (if value 1 0))))))))
+                                               (pool-add-int (class-file-constants class) (if value 1 0))))
+                                        (fixnum
+                                         (setf (annotation-element-value-tag self)
+                                               (char-code #\I)
+                                               (primitive-or-string-annotation-element-value self)
+                                               (pool-add-int (class-file-constants class) value)))
+                                        (string
+                                         (setf (annotation-element-value-tag self)
+                                               (char-code #\s)
+                                               (primitive-or-string-annotation-element-value self)
+                                               (pool-add-utf8 (class-file-constants class) value)))))))
                        (writer (lambda (self stream)
                                  (write-u1 (annotation-element-value-tag self) stream)
                                  (write-u2 (primitive-or-string-annotation-element-value self) stream)))))
   value)
 
+(defstruct (enum-value-annotation-element-value
+             (:conc-name enum-value-annotation-element-)
+             (:include annotation-element-value
+                       (finalizer (lambda (self class)
+                                    (setf (annotation-element-value-tag self)
+                                          (char-code #\e)
+                                          (enum-value-annotation-element-type self)
+                                          (pool-add-utf8 (class-file-constants class)
+                                                         (enum-value-annotation-element-type self)) ;;Binary name as string
+                                          (enum-value-annotation-element-name self)
+                                          (pool-add-utf8 (class-file-constants class)
+                                                         (enum-value-annotation-element-name self)))))
+                       (writer (lambda (self stream)
+                                 (write-u1 (annotation-element-value-tag self) stream)
+                                 (write-u2 (enum-value-annotation-element-type self) stream)
+                                 (write-u2 (enum-value-annotation-element-name self) stream)))))
+  type
+  name)
+
 (defstruct (runtime-visible-annotations-attribute
              (:include annotations-attribute
-                       (name "RuntimeVisibleAnnotations")
-                       (finalizer #'finalize-annotations)
-                       (writer #'write-annotations)))
+                       (name "RuntimeVisibleAnnotations")))
   "4.8.15 The RuntimeVisibleAnnotations attribute
 The RuntimeVisibleAnnotations attribute is a variable length attribute in the
 attributes table of the ClassFile, field_info, and method_info structures. The
@@ -1388,10 +1419,7 @@ appropriate reflective APIs.")
   (declare (ignore code))
   (dolist (ann (annotations-list annotations))
     (setf (annotation-type ann)
-          (pool-add-class (class-file-constants class)
-                          (if (jvm-class-name-p (annotation-type ann))
-                              (annotation-type ann)
-                              (make-jvm-class-name (annotation-type ann)))))
+          (pool-add-class (class-file-constants class) (annotation-type ann)))
     (dolist (elem (annotation-elements ann))
       (setf (annotation-element-name elem)
             (pool-add-utf8 (class-file-constants class)
@@ -1405,7 +1433,9 @@ appropriate reflective APIs.")
     (write-u2 (annotation-type annotation) stream)
     (write-u2 (length (annotation-elements annotation)) stream)
     (dolist (elem (reverse (annotation-elements annotation)))
-      (funcall (annotation-element-value-writer elem) elem stream))))
+      (write-u2 (annotation-element-name elem) stream)
+      (funcall (annotation-element-value-writer (annotation-element-value elem))
+               (annotation-element-value elem) stream))))
 
 #|
 

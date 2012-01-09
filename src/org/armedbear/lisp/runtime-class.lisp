@@ -1,6 +1,9 @@
 (require "COMPILER-PASS2")
 (require "JVM-CLASS-FILE")
 
+;;The package is set to :jvm for convenience, since most of the symbols used
+;;here come from that package. However, the functions we're definining belong
+;;to the :java package.
 (in-package :jvm)
 
 (defconstant +abcl-java-object+ (make-jvm-class-name "org.armedbear.lisp.JavaObject"))
@@ -138,7 +141,16 @@
  :methods (list
            (list "foo" :void '("java.lang.Object")
                  (lambda (this that) (print (list this that)))
-                 :annotations (list (make-annotation :type "java.lang.Deprecated")))
+                 :annotations (list (make-annotation :type "java.lang.Deprecated")
+                                    (make-annotation :type "java.lang.annotation.Retention"
+                                                     :elements (list (make-annotation-element
+                                                                      :value (make-enum-value-annotation-element-value
+                                                                              :type "java.lang.annotation.RetentionPolicy"
+                                                                              :name "RUNTIME"))))
+                                    (make-annotation :type "javax.xml.bind.annotation.XmlAttribute"
+                                                     :elements (list (make-annotation-element
+                                                                      :name "required"
+                                                                      :value (make-primitive-or-string-annotation-element-value :value t))))))
            (list "bar" :int '("java.lang.Object")
                  (lambda (this that) (print (list this that)) 23))))
 
