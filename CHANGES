@@ -3,6 +3,58 @@ Version 1.1.0
 svn.uri=:"http//common-lisp.net/project/armedbear/svn/trunk/abcl/"
 (unreleased)
 
+Changes
+-------
+
+  * [r13695] Reimplementation of global symbol macros to avoid using
+    the symbol's value slot.
+
+  * [r13696] DEFMACRO now supports documentation strings as per the
+    ANSI specification.
+
+  * [r13700] ABCL loads under the Weblogic 10.3 application server.
+
+
+Version 1.0.1
+==============
+svn.uri=:"http//common-lisp.net/project/armedbear/svn/tags/1.0.1/abcl/"
+(09 January 2012)
+
+Changes
+-------
+
+  * Updated ASDF to 2.019
+
+  * User Manual now contains more polished formating from docstring
+    groveling, an index of symbols, and additional enhancements.
+
+  * 'abcl.properties.in' now contains examples of optimizing the ABCL
+    wrapper script for 64bit instances for Java7 and for Java6.  
+
+  * [r13720] Randomize string hash computation to guard against
+    exploits.
+
+  * [r13723] New internal API in Package.java for looking up internal
+    vs. external symbols.
+
+Fixes
+-----
+
+  * [#181][r13718] The implementation now correctly loads ASDF definitions
+    from jar archives.  This had prevented the ABCL-CONTRIB loading
+    mechanism from working.
+
+  * [#177] Made the mechanism for locating the abcl-contrib archive
+    more robust
+
+  * [#177] LIST-DIRECTORY no longer ignores :RESOLVE-SYMLINKS
+
+  * [r13706] Fix Streadm.readToken() bug reported by Blake McBride.
+
+  * [#183][r13703] Move threads-jss.lisp out of system source to
+    restore conditional recompilation logic.
+
+
 Version 1.0.0
 ==============
 svn.uri=:"http//common-lisp.net/project/armedbear/svn/tags/1.0.0/abcl/"
