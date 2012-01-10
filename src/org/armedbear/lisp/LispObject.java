@@ -658,7 +658,7 @@ public class LispObject //extends Lisp
           return ((Cons)entry).cdr;
       }
     if(docType == Symbol.FUNCTION && this instanceof Symbol) {
-        Object fn = ((Symbol)this).getSymbolFunction();
+        LispObject fn = ((Symbol)this).getSymbolFunction();
         if(fn instanceof Function) {
             DocString ds = fn.getClass().getAnnotation(DocString.class);
             if(ds != null) {
@@ -670,6 +670,10 @@ public class LispObject //extends Lisp
                     SimpleString doc = new SimpleString(docstring);
                     ((Symbol)this).setDocumentation(Symbol.FUNCTION, doc);
                     return doc;
+                } else if (fn instanceof StandardGenericFunction) {
+                    return 
+                        StandardGenericFunction.checkStandardGenericFunction(fn)
+                        .slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION];
                 }
             }
         }
