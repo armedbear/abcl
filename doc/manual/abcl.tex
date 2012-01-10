@@ -5,7 +5,7 @@
 
 \begin{document}
 \title{A Manual for Armed Bear Common Lisp}
-\date{January 5, 2012}
+\date{January 10, 2012}
 \author{Mark~Evenson, Erik~H\"{u}lsmann, Alessio~Stalla, Ville~Voutilainen}
 
 \maketitle
@@ -21,7 +21,7 @@ conformance level.  This manual documents the Armed Bear Common Lisp
 implementation for users of the system.
 
 \subsection{Version}
-This manual corresponds to abcl-1.0.1.
+This manual corresponds to abcl-1.0.1 released on January 10, 2012.
 
 \subsection{License}
 
@@ -36,28 +36,32 @@ to be merged with the public trunk.
 
 % TODO format this better, optionally link to URI
 
-% Thanks for the markup
-Philipp Marek
+\begin{itemize}
+\item Philipp Marek
+\texttt{Thanks for the markup}
+\item Douglas Miles
+\texttt{Thanks for the whacky IKVM stuff and keeping the flame alive
+  in the dark years.}
 
-% Thanks for the whacky IKVM stuff and keeping the flame alive
-Douglas Miles
 
-% Thanks for JSS
-Alan Ruttenberg
+\item Alan Ruttenberg
+\texttt{Thanks for JSS.}
 
-and of course
 
-Peter Graves
+\item and of course
+\emph{Peter Graves}
+\end{itemize}
+
 
 \chapter{Running}
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-``abcl.jar'' or possibly``abcl-1.0.0.jar'' if one is using a versioned
-package from your system vendor.  This byte archive can be executed
-under the control of a suitable JVM \footnote {Java Virtual Machine}
-by using the ``-jar'' option to parse the manifest, and select the
-class named therein ``\code{org.armedbear.lisp.Main}'' for execution,
-viz:
+``abcl.jar'' or possibly``abcl-1.0.1.jar'' if one is using a versioned
+package on the local filesytem from your system vendor.  This byte
+archive can be executed under the control of a suitable JVM \footnote
+{Java Virtual Machine} by using the ``-jar'' option to parse the
+manifest, and select the class named therein
+``\code{org.armedbear.lisp.Main}'' for execution, viz:
 
 \begin{listing-shell}
   cmd$ java -jar abcl.jar
@@ -1054,6 +1058,9 @@ jar archives for ABCL.  Given a running ABCL image with loadable ASDF
 systems the code in this package will recursively package all the
 required source and fasls in a jar archive.
 
+\url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/asdf-jar/README.markdown}
+
+
 \section{jss}
 \label{section:jss}
 
@@ -1065,12 +1072,16 @@ may be said to suck, so we introduce the \code{SHARPSIGN-DOUBLE-QUOTE} \#" macro
 Example:
 
 \begin{listing-lisp}
+
 CL-USER> (require 'jss)
 
 CL-USER) (#"getProperties" 'java.lang.System)
 
 CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
+
 \end{listing-lisp}
+
+\url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/jss/README.markdown}
 
 \section{asdf-install}
 
@@ -1101,8 +1112,8 @@ maintainers, who have strived to improve its usability as a
 contemporary Common Lisp implementation.
 
 On October 22, 2011, with the publication of this Manual explicitly
-stating the conformance of Armed Bear Common Lisp to \textsc{ANSI}, we released
-abcl-1.0.0.
+stating the conformance of Armed Bear Common Lisp to \textsc{ANSI}, we
+released abcl-1.0.0.
 
 
 
