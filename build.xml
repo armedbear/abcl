@@ -491,6 +491,10 @@ from ${abcl.home.dir}
           <include name="**/README.markdown"/>
     </patternset>
 
+    <patternset id="abcl.contrib.docs">
+          <include name="**/README.markdown"/>
+    </patternset>
+
     <property name="abcl-contrib.jar"
               value="${dist.dir}/abcl-contrib.jar"/>
     <condition property="abcl.contrib.uptodate.p">
@@ -521,6 +525,20 @@ To load a contrib, something like
 
 will compile (if necessary) and load JSS.
 </echo>
+    </target>
+
+    <target name="abcl.contrib.javadoc.jar">
+      <mkdir dir="${dist.dir}"/>
+      <jar destfile="${dist.dir}/abcl-contrib-javadoc.jar" basedir="contrib">
+        <patternset refid="abcl.contrib.docs" />
+      </jar>
+    </target>
+
+    <target name="abcl.contrib.source.jar">
+      <mkdir dir="${dist.dir}"/>
+      <jar destfile="${dist.dir}/abcl-contrib-sources.jar" basedir="contrib">
+        <patternset refid="abcl.contrib.source" />
+      </jar>
     </target>
 
     <target name="abcl.debug.jpda" depends="abcl.jar">

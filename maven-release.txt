@@ -29,7 +29,10 @@ mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-contrib-${abcl.version}-jar -DpomF
 mvn gpg:sign-and-deploy-file -Dfile=dist/abcl.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging
 mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-${abcl.version}-sources.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=sources
 mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-${abcl.version}-javadoc.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=javadoc
-mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-contrib-${abcl.version}.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging 
 
+# Contrib releases
+mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-contrib.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging 
+mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-contrib-sources.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=sources
+mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-contrib-javadoc.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=javadoc
 
 
