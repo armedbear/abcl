@@ -1352,54 +1352,72 @@ This structure serves as the abstract supertype of concrete annotations types."
   type
   elements)
 
-(defstruct annotation-element (name "value") value)
+(defstruct annotation-element (name "value") tag finalizer writer)
 
-(defstruct annotation-element-value tag finalizer writer)
-
-(defstruct (primitive-or-string-annotation-element-value
-             (:conc-name primitive-or-string-annotation-element-)
-             (:include annotation-element-value
+(defstruct (primitive-or-string-annotation-element
+             (:include annotation-element
                        (finalizer (lambda (self class)
                                     (let ((value (primitive-or-string-annotation-element-value self)))
                                       (etypecase value
                                         (boolean
-                                         (setf (annotation-element-value-tag self)
+                                         (setf (annotation-element-tag self)
                                                (char-code #\Z)
                                                (primitive-or-string-annotation-element-value self)
                                                (pool-add-int (class-file-constants class) (if value 1 0))))
                                         (fixnum
-                                         (setf (annotation-element-value-tag self)
+                                         (setf (annotation-element-tag self)
                                                (char-code #\I)
                                                (primitive-or-string-annotation-element-value self)
                                                (pool-add-int (class-file-constants class) value)))
                                         (string
-                                         (setf (annotation-element-value-tag self)
+                                         (setf (annotation-element-tag self)
                                                (char-code #\s)
                                                (primitive-or-string-annotation-element-value self)
                                                (pool-add-utf8 (class-file-constants class) value)))))))
                        (writer (lambda (self stream)
-                                 (write-u1 (annotation-element-value-tag self) stream)
+                                 (write-u1 (annotation-element-tag self) stream)
                                  (write-u2 (primitive-or-string-annotation-element-value self) stream)))))
   value)
 
-(defstruct (enum-value-annotation-element-value
-             (:conc-name enum-value-annotation-element-)
-             (:include annotation-element-value
+(defstruct (enum-value-annotation-element
+             (:include annotation-element
+                       (tag (char-code #\e))
                        (finalizer (lambda (self class)
-                                    (setf (annotation-element-value-tag self)
-                                          (char-code #\e)
-                                          (enum-value-annotation-element-type self)
+                                    (setf (enum-value-annotation-element-type self)
                                           (pool-add-utf8 (class-file-constants class)
                                                          (enum-value-annotation-element-type self)) ;;Binary name as string
-                                          (enum-value-annotation-element-name self)
+                                          (enum-value-annotation-element-value self)
                                           (pool-add-utf8 (class-file-constants class)
-                                                         (enum-value-annotation-element-name self)))))
+                                                         (enum-value-annotation-element-value self)))))
                        (writer (lambda (self stream)
-                                 (write-u1 (annotation-element-value-tag self) stream)
+                                 (write-u1 (annotation-element-tag self) stream)
                                  (write-u2 (enum-value-annotation-element-type self) stream)
-                                 (write-u2 (enum-value-annotation-element-name self) stream)))))
+                                 (write-u2 (enum-value-annotation-element-value self) stream)))))
   type
-  name)
+  value)
+
+(defstruct (annotation-value-annotation-element
+             (:include annotation-element
+                       (tag (char-code #\@))
+                       (finalizer (lambda (self class)
+                                    (finalize-annotation (annotation-value-annotation-element-value self) class)))
+                       (writer (lambda (self stream)
+                                 (write-u1 (annotation-element-tag self) stream)
+                                 (write-annotation (annotation-value-annotation-element-value self) stream)))))
+  value)
+
+(defstruct (array-annotation-element
+             (:include annotation-element
+                       (tag (char-code #\[))
+                       (finalizer (lambda (self class)
+                                    (dolist (elem (array-annotation-element-values self))
+                                      (finalize-annotation-element elem class))))
+                       (writer (lambda (self stream)
+                                 (write-u1 (annotation-element-tag self) stream)
+                                 (write-u2 (length (array-annotation-element-values self)) stream)
+                                 (dolist (elem (array-annotation-element-values self))
+                                   (write-annotation-element elem stream))))))
+  values) ;;In proper order
 
 (defstruct (runtime-visible-annotations-attribute
              (:include annotations-attribute
@@ -1418,24 +1436,38 @@ appropriate reflective APIs.")
 (defun finalize-annotations (annotations code class)
   (declare (ignore code))
   (dolist (ann (annotations-list annotations))
-    (setf (annotation-type ann)
-          (pool-add-class (class-file-constants class) (annotation-type ann)))
-    (dolist (elem (annotation-elements ann))
-      (setf (annotation-element-name elem)
-            (pool-add-utf8 (class-file-constants class)
-                           (annotation-element-name elem)))
-      (funcall (annotation-element-value-finalizer (annotation-element-value elem))
-               (annotation-element-value elem) class))))
+    (finalize-annotation ann class)))
+
+(defun finalize-annotation (ann class)
+  (setf (annotation-type ann)
+        (pool-add-class (class-file-constants class) (annotation-type ann)))
+  (dolist (elem (annotation-elements ann))
+    (finalize-annotation-element elem class)))
+
+(defun finalize-annotation-element (elem class)
+  (when (annotation-element-name elem)
+    (setf (annotation-element-name elem)
+          (pool-add-utf8 (class-file-constants class)
+                         (annotation-element-name elem))))
+  (funcall (annotation-element-finalizer elem)
+           elem class))
 
 (defun write-annotations (annotations stream)
   (write-u2 (length (annotations-list annotations)) stream)
   (dolist (annotation (reverse (annotations-list annotations)))
-    (write-u2 (annotation-type annotation) stream)
-    (write-u2 (length (annotation-elements annotation)) stream)
-    (dolist (elem (reverse (annotation-elements annotation)))
-      (write-u2 (annotation-element-name elem) stream)
-      (funcall (annotation-element-value-writer (annotation-element-value elem))
-               (annotation-element-value elem) stream))))
+    (write-annotation annotation stream)))
+
+(defun write-annotation (annotation stream)
+  (write-u2 (annotation-type annotation) stream)
+  (write-u2 (length (annotation-elements annotation)) stream)
+  (dolist (elem (reverse (annotation-elements annotation)))
+    (write-annotation-element elem stream)))
+
+(defun write-annotation-element (elem stream)
+  (when (annotation-element-name elem)
+    (write-u2 (annotation-element-name elem) stream))
+  (funcall (annotation-element-writer elem)
+           elem stream))
 
 #|
 

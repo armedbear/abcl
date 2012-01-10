@@ -143,14 +143,13 @@
                  (lambda (this that) (print (list this that)))
                  :annotations (list (make-annotation :type "java.lang.Deprecated")
                                     (make-annotation :type "java.lang.annotation.Retention"
-                                                     :elements (list (make-annotation-element
-                                                                      :value (make-enum-value-annotation-element-value
-                                                                              :type "java.lang.annotation.RetentionPolicy"
-                                                                              :name "RUNTIME"))))
+                                                     :elements (list (make-enum-value-annotation-element
+                                                                      :type "java.lang.annotation.RetentionPolicy"
+                                                                      :value "RUNTIME")))
                                     (make-annotation :type "javax.xml.bind.annotation.XmlAttribute"
-                                                     :elements (list (make-annotation-element
+                                                     :elements (list (make-primitive-or-string-annotation-element
                                                                       :name "required"
-                                                                      :value (make-primitive-or-string-annotation-element-value :value t))))))
+                                                                      :value t)))))
            (list "bar" :int '("java.lang.Object")
                  (lambda (this that) (print (list this that)) 23))))
 
