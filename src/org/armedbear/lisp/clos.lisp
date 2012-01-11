@@ -696,7 +696,7 @@
     (check-initargs (list #'allocate-instance #'initialize-instance)
                     (list* class initargs)
                     class t initargs
-                    *make-instance-initargs-cache*)
+                    *make-instance-initargs-cache* 'make-instance)
     (%set-class-name name class)
     (%set-class-layout nil class)
     (%set-class-direct-subclasses ()  class)
@@ -2764,7 +2764,7 @@ in place, while we still need them to "
 
 (defun check-initargs (gf-list args instance
                        shared-initialize-param initargs
-                       cache)
+                       cache call-site)
   "Checks the validity of `initargs' for the generic functions in `gf-list'
 when called with `args' by calculating the applicable methods for each gf.
 The applicable methods for SHARED-INITIALIZE based on `instance',
@@ -2790,8 +2790,9 @@ applicable methods."
               ((null tail))
               (unless (memq initarg allowable-initargs)
                 (error 'program-error
-                       :format-control "Invalid initarg ~S."
-                       :format-arguments (list initarg))))))))
+                       :format-control "Invalid initarg ~S in call to ~S ~
+with arglist ~S."
+                       :format-arguments (list initarg call-site args))))))))
 
 (defun merge-initargs-sets (list1 list2)
   (cond
@@ -2837,7 +2838,7 @@ or T when any keyword is acceptable due to presence of
     (check-initargs (list #'allocate-instance #'initialize-instance)
                     (list* instance initargs)
                     instance t initargs
-                    *make-instance-initargs-cache*)
+                    *make-instance-initargs-cache* 'make-instance)
     (apply #'initialize-instance instance initargs)
     instance))
 
@@ -2860,7 +2861,7 @@ or T when any keyword is acceptable due to presence of
 (defmethod reinitialize-instance ((instance standard-object) &rest initargs)
   (check-initargs (list #'reinitialize-instance) (list* instance initargs)
                   instance () initargs
-                  *reinitialize-instance-initargs-cache*)
+                  *reinitialize-instance-initargs-cache* 'reinitialize-instance)
   (apply #'shared-initialize instance () initargs))
 
 (defun std-shared-initialize (instance slot-names all-keys)
@@ -2874,7 +2875,7 @@ or T when any keyword is acceptable due to presence of
       ((null tail))
     (unless (symbolp initarg)
       (error 'program-error
-             :format-control "Invalid initarg ~S."
+             :format-control "Initarg ~S not a symbol."
              :format-arguments (list initarg))))
   (dolist (slot (class-slots (class-of instance)))
     (let ((slot-name (slot-definition-name slot)))
@@ -2952,7 +2953,7 @@ or T when any keyword is acceptable due to presence of
     (check-initargs (list #'update-instance-for-different-class)
                     (list old new initargs)
                     new added-slots initargs
-                    nil)
+                    nil 'update-instance-for-different-class)
     (apply #'shared-initialize new added-slots initargs)))
 
 ;;; make-instances-obsolete
@@ -2985,7 +2986,7 @@ or T when any keyword is acceptable due to presence of
                   (list* instance added-slots discarded-slots
                          property-list initargs)
                   instance added-slots initargs
-                  nil)
+                  nil 'update-instance-for-redefined-class)
   (apply #'shared-initialize instance added-slots initargs))
 
 ;;;  Methods having to do with class metaobjects.
@@ -3002,7 +3003,7 @@ or T when any keyword is acceptable due to presence of
                         #'initialize-instance)
                   (list* class all-keys)
                   class t all-keys
-                  nil)
+                  nil 'reinitialize-instance)
   (apply #'std-after-initialization-for-classes class all-keys))
 
 ;;; Finalize inheritance
