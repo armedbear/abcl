@@ -563,6 +563,8 @@ public final class LispCharacter extends LispObject
 
     if (lower.equals("null"))
       return 0;
+    if (lower.equals("nul"))
+      return 0;
     if (lower.equals("bell"))
       return 7;
     if (lower.equals("backspace"))
