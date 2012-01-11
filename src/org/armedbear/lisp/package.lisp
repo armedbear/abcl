@@ -57,7 +57,7 @@
                                       (mapcar #'(lambda (sym)
                                                   (restart-case
                                                       (progn
-                                                        (unless (find-symbol sym package)
+                                                        (unless (nth-value 1 (find-symbol sym package))
                                                           (error 'package-error
                                                                  "The symbol ~A is not present in package ~A." sym (package-name package)))
                                                         sym)
