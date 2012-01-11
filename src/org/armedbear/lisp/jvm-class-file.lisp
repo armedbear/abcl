@@ -1364,11 +1364,31 @@ This structure serves as the abstract supertype of concrete annotations types."
                                                (char-code #\Z)
                                                (primitive-or-string-annotation-element-value self)
                                                (pool-add-int (class-file-constants class) (if value 1 0))))
+                                        (character
+                                         (setf (annotation-element-tag self)
+                                               (char-code #\C)
+                                               (primitive-or-string-annotation-element-value self)
+                                               (pool-add-int (class-file-constants class) (char-code value))))
                                         (fixnum
                                          (setf (annotation-element-tag self)
                                                (char-code #\I)
                                                (primitive-or-string-annotation-element-value self)
                                                (pool-add-int (class-file-constants class) value)))
+                                        (integer
+                                         (setf (annotation-element-tag self)
+                                               (char-code #\J)
+                                               (primitive-or-string-annotation-element-value self)
+                                               (pool-add-long (class-file-constants class) value)))
+                                        (double-float
+                                         (setf (annotation-element-tag self)
+                                               (char-code #\D)
+                                               (primitive-or-string-annotation-element-value self)
+                                               (pool-add-double (class-file-constants class) value)))
+                                        (single-float
+                                         (setf (annotation-element-tag self)
+                                               (char-code #\F)
+                                               (primitive-or-string-annotation-element-value self)
+                                               (pool-add-float (class-file-constants class) value)))
                                         (string
                                          (setf (annotation-element-tag self)
                                                (char-code #\s)

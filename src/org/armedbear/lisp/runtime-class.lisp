@@ -132,7 +132,28 @@
       jclass)))
 
 (defun parse-annotation (annotation)
-  annotation) ;;TODO
+  (when (annotation-p annotation)
+    (return-from parse-annotation annotation))
+  (destructuring-bind (class &rest elements) (if (listp annotation) annotation (list annotation))
+    (let (actual-elements)
+      (dolist (elem elements)
+        (push (parse-annotation-element elem) actual-elements))
+      (make-annotation :type class :elements (nreverse actual-elements)))))
+
+(defun parse-annotation-element (elem)
+  (cond
+    ((annotation-element-p elem) elem)
+    ((atom elem) (make-primitive-or-string-annotation-element :name nil :value elem))
+    ((keywordp (car elem)) (parse-annotation-element `("value" ,@elem)))
+    (t
+     (destructuring-bind (name &key value enum annotation) elem
+       (cond
+         (enum (make-enum-value-annotation-element :name name :type enum :value value))
+         (annotation
+          (make-annotation-value-annotation-element :name name :value (parse-annotation annotation)))
+         ((listp value)
+          (make-array-annotation-element :name name :values (mapcar #'parse-annotation-element value)))
+         (t (make-primitive-or-string-annotation-element :name name :value value)))))))
 
 #+example
 (java:jnew-runtime-class
@@ -141,15 +162,15 @@
  :methods (list
            (list "foo" :void '("java.lang.Object")
                  (lambda (this that) (print (list this that)))
-                 :annotations (list (make-annotation :type "java.lang.Deprecated")
-                                    (make-annotation :type "java.lang.annotation.Retention"
-                                                     :elements (list (make-enum-value-annotation-element
-                                                                      :type "java.lang.annotation.RetentionPolicy"
-                                                                      :value "RUNTIME")))
-                                    (make-annotation :type "javax.xml.bind.annotation.XmlAttribute"
-                                                     :elements (list (make-primitive-or-string-annotation-element
-                                                                      :name "required"
-                                                                      :value t)))))
+                 :annotations (list "java.lang.Deprecated"
+                                    '("java.lang.annotation.Retention"
+                                      (:enum "java.lang.annotation.RetentionPolicy" :value "RUNTIME"))
+                                    '("javax.xml.bind.annotation.XmlAttribute" ("required" :value t))
+                                    '("com.manydesigns.portofino.system.model.users.annotations.RequiresPermissions"
+                                      ("level"
+                                       :enum "com.manydesigns.portofino.model.pages.AccessLevel"
+                                       :value "EDIT")
+                                      ("permissions" :value ("foo" "bar")))))
            (list "bar" :int '("java.lang.Object")
                  (lambda (this that) (print (list this that)) 23))))
 
