@@ -837,16 +837,6 @@
 ;;; The class method-combination and its subclasses are defined in
 ;;; StandardClass.java, but we cannot use make-instance and slot-value
 ;;; yet.
-(defun make-short-method-combination (&key name documentation operator identity-with-one-argument)
-  (let ((instance (std-allocate-instance (find-class 'short-method-combination))))
-    (when name (setf (std-slot-value instance 'sys::name) name))
-    (when documentation
-      (setf (std-slot-value instance 'documentation) documentation))
-    (when operator (setf (std-slot-value instance 'operator) operator))
-    (when identity-with-one-argument
-      (setf (std-slot-value instance 'identity-with-one-argument)
-            identity-with-one-argument))
-    instance))
 
 (defun make-long-method-combination (&key name documentation lambda-list
                                        method-group-specs args-lambda-list
@@ -933,13 +923,16 @@
          (operator
           (getf (cddr whole) :operator name)))
     `(progn
-       (setf (get ',name 'method-combination-object)
-             (make-short-method-combination
-              :name ',name
-              :operator ',operator
-              :identity-with-one-argument ',identity-with-one-arg
-              :documentation ',documentation))
-       ',name)))
+       ;; Class short-method-combination is defined in StandardClass.java.
+       (let ((instance (std-allocate-instance
+                        (find-class 'short-method-combination))))
+         (setf (std-slot-value instance 'sys::name) ',name)
+         (setf (std-slot-value instance 'documentation) ',documentation)
+         (setf (std-slot-value instance 'operator) ',operator)
+         (setf (std-slot-value instance 'identity-with-one-argument)
+               ',identity-with-one-arg)
+         (setf (get ',name 'method-combination-object) instance)
+         ',name))))
 
 (defmacro define-method-combination (&whole form name &rest args)
   (if (and (cddr form)
