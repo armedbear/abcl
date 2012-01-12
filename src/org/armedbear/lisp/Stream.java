@@ -1136,8 +1136,10 @@ public class Stream extends StructureObject {
                                                  packageName + '.',
                                                  this));
             }
+        } else {                // token.length == 0
+            Package pkg = (Package)Symbol._PACKAGE_.symbolValue(thread);
+            return pkg.intern("");
         }
-        return error(new ReaderError("Can't intern zero-length symbol.", this));
     }
 
     private final BitSet _readToken(StringBuilder sb, Readtable rt)
