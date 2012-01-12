@@ -109,7 +109,6 @@ public class BuiltInClass extends LispClass
   public static final BuiltInClass LIST                 = addClass(Symbol.LIST);
   public static final BuiltInClass LOGICAL_PATHNAME     = addClass(Symbol.LOGICAL_PATHNAME);
   public static final BuiltInClass MAILBOX              = addClass(Symbol.MAILBOX);
-  public static final BuiltInClass METHOD_COMBINATION   = addClass(Symbol.METHOD_COMBINATION);
   public static final BuiltInClass MUTEX                = addClass(Symbol.MUTEX);
   public static final BuiltInClass NIL_VECTOR           = addClass(Symbol.NIL_VECTOR);
   public static final BuiltInClass NULL                 = addClass(Symbol.NULL);
@@ -262,8 +261,6 @@ public class BuiltInClass extends LispClass
     LOGICAL_PATHNAME.setCPL(LOGICAL_PATHNAME, PATHNAME, CLASS_T);
     MAILBOX.setDirectSuperclass(CLASS_T);
     MAILBOX.setCPL(MAILBOX, CLASS_T);
-    METHOD_COMBINATION.setDirectSuperclass(CLASS_T);
-    METHOD_COMBINATION.setCPL(METHOD_COMBINATION, CLASS_T);
     MUTEX.setDirectSuperclass(CLASS_T);
     MUTEX.setCPL(MUTEX, CLASS_T);
     NIL_VECTOR.setDirectSuperclass(STRING);
