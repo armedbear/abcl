@@ -2971,6 +2971,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_MOP.addExternalSymbol("EQL-SPECIALIZER");
   public static final Symbol EQL_SPECIALIZER_OBJECT =
     PACKAGE_MOP.addExternalSymbol("EQL-SPECIALIZER-OBJECT");
+  public static final Symbol FUNCALLABLE_STANDARD_OBJECT =
+    PACKAGE_MOP.addExternalSymbol("FUNCALLABLE-STANDARD-OBJECT");
   public static final Symbol SHORT_METHOD_COMBINATION =
     PACKAGE_MOP.addInternalSymbol("SHORT-METHOD-COMBINATION");
   public static final Symbol LONG_METHOD_COMBINATION =
@@ -3016,6 +3018,7 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_MOP.addInternalSymbol("LONG-METHOD-COMBINATION-DECLARATIONS");
   public static final Symbol LONG_METHOD_COMBINATION_FORMS =
     PACKAGE_MOP.addInternalSymbol("LONG-METHOD-COMBINATION-FORMS");
+  // slot names of (long-|short-)method-combination classes
   public static final Symbol OPERATOR =
     PACKAGE_MOP.addInternalSymbol("OPERATOR");
   public static final Symbol IDENTITY_WITH_ONE_ARGUMENT =

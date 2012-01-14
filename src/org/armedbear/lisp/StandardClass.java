@@ -421,9 +421,13 @@ public class StandardClass extends SlotClass
 
 
   // BuiltInClass.FUNCTION is also null here (see previous comment).
+  public static final StandardClass FUNCALLABLE_STANDARD_OBJECT =
+      addStandardClass(Symbol.FUNCALLABLE_STANDARD_OBJECT,
+                       list(STANDARD_OBJECT, BuiltInClass.FUNCTION));
+
   public static final StandardClass GENERIC_FUNCTION =
-    addStandardClass(Symbol.GENERIC_FUNCTION, list(METAOBJECT,
-                                                   BuiltInClass.FUNCTION));
+    addStandardClass(Symbol.GENERIC_FUNCTION,
+                     list(METAOBJECT, FUNCALLABLE_STANDARD_OBJECT));
 
   public static final StandardClass METHOD_COMBINATION =
     addStandardClass(Symbol.METHOD_COMBINATION, list(METAOBJECT));
@@ -581,8 +585,9 @@ public class StandardClass extends SlotClass
     // STANDARD_OBJECT).
     STANDARD_CLASS.setDirectSuperclass(CLASS);
     STANDARD_OBJECT.setDirectSuperclass(BuiltInClass.CLASS_T);
+    FUNCALLABLE_STANDARD_OBJECT.setDirectSuperclasses(list(STANDARD_OBJECT, BuiltInClass.FUNCTION));
     GENERIC_FUNCTION.setDirectSuperclasses(list(METAOBJECT,
-                                                BuiltInClass.FUNCTION));
+                                                FUNCALLABLE_STANDARD_OBJECT));
 
     ARITHMETIC_ERROR.setCPL(ARITHMETIC_ERROR, ERROR, SERIOUS_CONDITION,
                             CONDITION, STANDARD_OBJECT, BuiltInClass.CLASS_T);
@@ -646,7 +651,9 @@ public class StandardClass extends SlotClass
                                     STANDARD_OBJECT, BuiltInClass.CLASS_T);
     FORWARD_REFERENCED_CLASS.setCPL(FORWARD_REFERENCED_CLASS, CLASS,
                                     SPECIALIZER, METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
-    GENERIC_FUNCTION.setCPL(GENERIC_FUNCTION, METAOBJECT, STANDARD_OBJECT,
+    FUNCALLABLE_STANDARD_OBJECT.setCPL(FUNCALLABLE_STANDARD_OBJECT, STANDARD_OBJECT, BuiltInClass.FUNCTION, BuiltInClass.CLASS_T);
+    GENERIC_FUNCTION.setCPL(GENERIC_FUNCTION, METAOBJECT,
+                            FUNCALLABLE_STANDARD_OBJECT, STANDARD_OBJECT,
                             BuiltInClass.FUNCTION,
                             BuiltInClass.CLASS_T);
     JAVA_EXCEPTION.setCPL(JAVA_EXCEPTION, ERROR, SERIOUS_CONDITION, CONDITION,
@@ -765,7 +772,9 @@ public class StandardClass extends SlotClass
     // Condition classes.
     STANDARD_CLASS.finalizeClass();
     STANDARD_OBJECT.finalizeClass();
+    FUNCALLABLE_STANDARD_OBJECT.finalizeClass();
     CLASS.finalizeClass();
+    GENERIC_FUNCTION.finalizeClass();
     ARITHMETIC_ERROR.finalizeClass();
     CELL_ERROR.finalizeClass();
     COMPILER_ERROR.finalizeClass();
@@ -855,6 +864,7 @@ public class StandardClass extends SlotClass
     Debug.assertTrue(STANDARD_GENERIC_FUNCTION.isFinalized());
     STANDARD_GENERIC_FUNCTION.setCPL(STANDARD_GENERIC_FUNCTION,
                                      GENERIC_FUNCTION, METAOBJECT,
+                                     FUNCALLABLE_STANDARD_OBJECT,
                                      STANDARD_OBJECT,
                                      BuiltInClass.FUNCTION,
                                      BuiltInClass.CLASS_T);
