@@ -452,13 +452,6 @@ public class StandardClass extends SlotClass
 
   public static final StandardClass FUNCALLABLE_STANDARD_CLASS =
     addStandardClass(Symbol.FUNCALLABLE_STANDARD_CLASS, list(CLASS));
-  static
-  {
-    // funcallable-standard-class has more or less the same interface as
-    // standard-class.
-    FUNCALLABLE_STANDARD_CLASS.setClassLayout(layoutStandardClass);
-    FUNCALLABLE_STANDARD_CLASS.setDirectSlotDefinitions(standardClassSlotDefinitions());
-  }
 
   public static final StandardClass CONDITION =
     addStandardClass(Symbol.CONDITION, list(STANDARD_OBJECT));
@@ -581,8 +574,6 @@ public class StandardClass extends SlotClass
     addClass(Symbol.STANDARD_READER_METHOD, STANDARD_READER_METHOD);
   }
 
-  // ### TODO move functionality upwards into funcallable-stanard-object
-  // and use addStandardClass() here
   public static final StandardClass STANDARD_GENERIC_FUNCTION =
     new StandardGenericFunctionClass();
   static
@@ -749,6 +740,13 @@ public class StandardClass extends SlotClass
                           CONDITION, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     STANDARD_CLASS.setCPL(STANDARD_CLASS, CLASS, SPECIALIZER, METAOBJECT,
                           STANDARD_OBJECT, BuiltInClass.CLASS_T);
+    FUNCALLABLE_STANDARD_CLASS.setCPL(FUNCALLABLE_STANDARD_CLASS, CLASS,
+                                      SPECIALIZER, METAOBJECT, STANDARD_OBJECT,
+                                      BuiltInClass.CLASS_T);
+    // funcallable-standard-class has the same interface as
+    // standard-class.
+    FUNCALLABLE_STANDARD_CLASS.setClassLayout(layoutStandardClass);
+    FUNCALLABLE_STANDARD_CLASS.setDirectSlotDefinitions(standardClassSlotDefinitions());
     STANDARD_OBJECT.setCPL(STANDARD_OBJECT, BuiltInClass.CLASS_T);
     STORAGE_CONDITION.setCPL(STORAGE_CONDITION, SERIOUS_CONDITION, CONDITION,
                              STANDARD_OBJECT, BuiltInClass.CLASS_T);
@@ -786,6 +784,7 @@ public class StandardClass extends SlotClass
     STANDARD_OBJECT.finalizeClass();
     FUNCALLABLE_STANDARD_OBJECT.finalizeClass();
     CLASS.finalizeClass();
+    FUNCALLABLE_STANDARD_CLASS.finalizeClass();
     GENERIC_FUNCTION.finalizeClass();
     ARITHMETIC_ERROR.finalizeClass();
     CELL_ERROR.finalizeClass();

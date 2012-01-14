@@ -37,11 +37,8 @@ import static org.armedbear.lisp.Lisp.*;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class StandardGenericFunction extends StandardObject
+public final class StandardGenericFunction extends FuncallableStandardObject
 {
-  LispObject function;
-
-  int numberOfRequiredArgs;
 
   ConcurrentHashMap<CacheEntry,LispObject> cache;
   ConcurrentHashMap<LispObject,LispObject> slotCache;
@@ -120,89 +117,6 @@ public final class StandardGenericFunction extends StandardObject
   }
 
   @Override
-  public LispObject execute()
-  {
-    return function.execute();
-  }
-
-  @Override
-  public LispObject execute(LispObject arg)
-  {
-    return function.execute(arg);
-  }
-
-  @Override
-  public LispObject execute(LispObject first, LispObject second)
-
-  {
-    return function.execute(first, second);
-  }
-
-  @Override
-  public LispObject execute(LispObject first, LispObject second,
-                            LispObject third)
-
-  {
-    return function.execute(first, second, third);
-  }
-
-  @Override
-  public LispObject execute(LispObject first, LispObject second,
-                            LispObject third, LispObject fourth)
-
-  {
-    return function.execute(first, second, third, fourth);
-  }
-
-  @Override
-  public LispObject execute(LispObject first, LispObject second,
-                            LispObject third, LispObject fourth,
-                            LispObject fifth)
-
-  {
-    return function.execute(first, second, third, fourth,
-                            fifth);
-  }
-
-  @Override
-  public LispObject execute(LispObject first, LispObject second,
-                            LispObject third, LispObject fourth,
-                            LispObject fifth, LispObject sixth)
-
-  {
-    return function.execute(first, second, third, fourth,
-                            fifth, sixth);
-  }
-
-  @Override
-  public LispObject execute(LispObject first, LispObject second,
-                            LispObject third, LispObject fourth,
-                            LispObject fifth, LispObject sixth,
-                            LispObject seventh)
-
-  {
-    return function.execute(first, second, third, fourth,
-                            fifth, sixth, seventh);
-  }
-
-  @Override
-  public LispObject execute(LispObject first, LispObject second,
-                            LispObject third, LispObject fourth,
-                            LispObject fifth, LispObject sixth,
-                            LispObject seventh, LispObject eighth)
-
-  {
-    return function.execute(first, second, third, fourth,
-                            fifth, sixth, seventh, eighth);
-  }
-
-  @Override
-  public LispObject execute(LispObject[] args)
-  {
-    return function.execute(args);
-  }
-
-  @Override
   public String printObject()
   {
     LispObject name = getGenericFunctionName();
@@ -222,46 +136,6 @@ public final class StandardGenericFunction extends StandardObject
         return unreadableString(sb.toString());
       }
     return super.printObject();
-  }
-
-  // Profiling.
-  private int callCount;
-  private int hotCount;
-
-  @Override
-  public final int getCallCount()
-  {
-    return callCount;
-  }
-
-  @Override
-  public void setCallCount(int n)
-  {
-    callCount = n;
-  }
-
-  @Override
-  public final void incrementCallCount()
-  {
-    ++callCount;
-  }
-
-  @Override
-  public final int getHotCount()
-  {
-    return hotCount;
-  }
-
-  @Override
-  public void setHotCount(int n)
-  {
-    hotCount = n;
-  }
-
-  @Override
-  public final void incrementHotCount()
-  {
-    ++hotCount;
   }
 
   // AMOP (p. 216) specifies the following readers as generic functions:
@@ -334,46 +208,6 @@ public final class StandardGenericFunction extends StandardObject
     public LispObject execute(LispObject first, LispObject second)
     {
       checkStandardGenericFunction(first).slots[StandardGenericFunctionClass.SLOT_INDEX_LAMBDA_LIST] = second;
-      return second;
-    }
-  };
-
-  private static final Primitive FUNCALLABLE_INSTANCE_FUNCTION 
-    = new pf_funcallable_instance_function();
-  @DocString(name="funcallable-instance-function",
-             args="funcallable-instance",
-             returns="function")
-  private static final class pf_funcallable_instance_function extends Primitive 
-  {
-    pf_funcallable_instance_function()
-    {
-      super("funcallable-instance-function", PACKAGE_MOP, false,
-            "funcallable-instance");
-    }
-    @Override
-    public LispObject execute(LispObject arg)
-    {
-      return checkStandardGenericFunction(arg).function;
-    }
-  };
-
-  // AMOP p. 230
-  private static final Primitive SET_FUNCALLABLE_INSTANCE_FUNCTION 
-    = new pf_set_funcallable_instance_function();
-  @DocString(name="set-funcallable-instance-function",
-             args="funcallable-instance function",
-             returns="unspecified")
-  private static final class pf_set_funcallable_instance_function extends Primitive 
-  {
-    pf_set_funcallable_instance_function()
-    {
-      super("set-funcallable-instance-function", PACKAGE_MOP, true,
-            "funcallable-instance function");
-    }
-    @Override
-    public LispObject execute(LispObject first, LispObject second)
-    {
-      checkStandardGenericFunction(first).function = second;
       return second;
     }
   };

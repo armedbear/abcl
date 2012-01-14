@@ -686,6 +686,11 @@
     (std-finalize-inheritance class))
   (sys::%std-allocate-instance class))
 
+(defun allocate-funcallable-instance (class)
+  (unless (class-finalized-p class)
+    (std-finalize-inheritance class))
+  (sys::%allocate-funcallable-instance class))
+
 (defun make-instance-standard-class (metaclass
 				     &rest initargs
                                      &key name direct-superclasses direct-slots
@@ -2650,7 +2655,9 @@ in place, while we still need them to "
 
 (defmethod slot-value-using-class ((class standard-class) instance slot-name)
   (std-slot-value instance slot-name))
-
+(defmethod slot-value-using-class ((class funcallable-standard-class)
+                                   instance slot-name)
+  (std-slot-value instance slot-name))
 (defmethod slot-value-using-class ((class structure-class) instance slot-name)
   (std-slot-value instance slot-name))
 
@@ -2658,6 +2665,12 @@ in place, while we still need them to "
 
 (defmethod (setf slot-value-using-class) (new-value
                                           (class standard-class)
+                                          instance
+                                          slot-name)
+  (setf (std-slot-value instance slot-name) new-value))
+
+(defmethod (setf slot-value-using-class) (new-value
+                                          (class funcallable-standard-class)
                                           instance
                                           slot-name)
   (setf (std-slot-value instance slot-name) new-value))
@@ -2675,6 +2688,8 @@ in place, while we still need them to "
 
 (defmethod slot-exists-p-using-class ((class standard-class) instance slot-name)
   (std-slot-exists-p instance slot-name))
+(defmethod slot-exists-p-using-class ((class funcallable-standard-class) instance slot-name)
+  (std-slot-exists-p instance slot-name))
 
 (defmethod slot-exists-p-using-class ((class structure-class) instance slot-name)
   (dolist (dsd (class-slots class))
@@ -2685,6 +2700,8 @@ in place, while we still need them to "
 (defgeneric slot-boundp-using-class (class instance slot-name))
 (defmethod slot-boundp-using-class ((class standard-class) instance slot-name)
   (std-slot-boundp instance slot-name))
+(defmethod slot-boundp-using-class ((class funcallable-standard-class) instance slot-name)
+  (std-slot-boundp instance slot-name))
 (defmethod slot-boundp-using-class ((class structure-class) instance slot-name)
   "Structure slots can't be unbound, so this method always returns T."
   (declare (ignore class instance slot-name))
@@ -2692,6 +2709,10 @@ in place, while we still need them to "
 
 (defgeneric slot-makunbound-using-class (class instance slot-name))
 (defmethod slot-makunbound-using-class ((class standard-class)
+                                        instance
+                                        slot-name)
+  (std-slot-makunbound instance slot-name))
+(defmethod slot-makunbound-using-class ((class funcallable-standard-class)
                                         instance
                                         slot-name)
   (std-slot-makunbound instance slot-name))
@@ -2719,6 +2740,10 @@ in place, while we still need them to "
 (defmethod allocate-instance ((class standard-class) &rest initargs)
   (declare (ignore initargs))
   (std-allocate-instance class))
+
+(defmethod allocate-instance ((class funcallable-standard-class) &rest initargs)
+  (declare (ignore initargs))
+  (allocate-funcallable-instance class))
 
 (defmethod allocate-instance ((class structure-class) &rest initargs)
   (declare (ignore initargs))
@@ -2811,7 +2836,7 @@ or T when any keyword is acceptable due to presence of
 
 (defgeneric make-instance (class &rest initargs &key &allow-other-keys))
 
-(defmethod make-instance ((class standard-class) &rest initargs)
+(defmethod make-instance ((class class) &rest initargs)
   (when (oddp (length initargs))
     (error 'program-error :format-control "Odd number of keyword arguments."))
   (unless (class-finalized-p class)
@@ -2827,7 +2852,7 @@ or T when any keyword is acceptable due to presence of
             (setf default-initargs (append default-initargs (list key (funcall fn))))))
         (setf initargs (append initargs default-initargs)))))
 
-  (let ((instance (std-allocate-instance class)))
+  (let ((instance (allocate-instance class)))
     (check-initargs (list #'allocate-instance #'initialize-instance)
                     (list* instance initargs)
                     instance t initargs
@@ -2955,7 +2980,8 @@ or T when any keyword is acceptable due to presence of
 
 (defmethod make-instances-obsolete ((class standard-class))
   (%make-instances-obsolete class))
-
+(defmethod make-instances-obsolete ((class funcallable-standard-class))
+  (%make-instances-obsolete class))
 (defmethod make-instances-obsolete ((class symbol))
   (make-instances-obsolete (find-class class))
   class)
@@ -2987,6 +3013,10 @@ or T when any keyword is acceptable due to presence of
 (defmethod initialize-instance :after ((class standard-class) &rest args)
   (apply #'std-after-initialization-for-classes class args))
 
+(defmethod initialize-instance :after ((class funcallable-standard-class)
+                                       &rest args)
+  (apply #'std-after-initialization-for-classes class args))
+
 (defmethod reinitialize-instance :after ((class standard-class) &rest all-keys)
   (remhash class *make-instance-initargs-cache*)
   (remhash class *reinitialize-instance-initargs-cache*)
@@ -3012,6 +3042,8 @@ or T when any keyword is acceptable due to presence of
 (defgeneric compute-class-precedence-list (class))
 (defmethod compute-class-precedence-list ((class standard-class))
   (std-compute-class-precedence-list class))
+(defmethod compute-class-precedence-list ((class funcallable-standard-class))
+  (std-compute-class-precedence-list class))
 
 ;;; Slot inheritance
 
@@ -3025,7 +3057,9 @@ or T when any keyword is acceptable due to presence of
 (defmethod compute-effective-slot-definition
   ((class standard-class) name direct-slots)
   (std-compute-effective-slot-definition class name direct-slots))
-
+(defmethod compute-effective-slot-definition
+  ((class funcallable-standard-class) name direct-slots)
+  (std-compute-effective-slot-definition class name direct-slots))
 ;;; Methods having to do with generic function metaobjects.
 
 (defmethod initialize-instance :after ((gf standard-generic-function) &key)
@@ -3311,6 +3345,9 @@ or T when any keyword is acceptable due to presence of
     (error "~@<~S is not finalized.~:@>" class)))
 
 (defmethod class-prototype ((class standard-class))
+  (allocate-instance class))
+
+(defmethod class-prototype ((class funcallable-standard-class))
   (allocate-instance class))
 
 (defmethod class-prototype ((class structure-class))

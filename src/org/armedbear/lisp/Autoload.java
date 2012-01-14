@@ -534,11 +534,11 @@ public class Autoload extends Function
         autoload(PACKAGE_JAVA, "%add-to-classpath", "JavaClassLoader");
         autoload(PACKAGE_JAVA, "dump-classpath", "JavaClassLoader");
         autoload(PACKAGE_MOP, "eql-specializer-object", "EqualSpecializerObject", true);
-        autoload(PACKAGE_MOP, "funcallable-instance-function", "StandardGenericFunction", false);
+        autoload(PACKAGE_MOP, "funcallable-instance-function", "FuncallableStandardObject", false);
         autoload(PACKAGE_MOP, "generic-function-name", "StandardGenericFunction", true);
         autoload(PACKAGE_MOP, "method-qualifiers", "StandardMethod", true);
         autoload(PACKAGE_MOP, "method-specializers", "StandardMethod", true);
-        autoload(PACKAGE_MOP, "set-funcallable-instance-function", "StandardGenericFunction", true);
+        autoload(PACKAGE_MOP, "set-funcallable-instance-function", "FuncallableStandardObject", true);
         autoload(PACKAGE_PROF, "%start-profiler", "Profiler", true);
         autoload(PACKAGE_PROF, "stop-profiler", "Profiler", true);
         autoload(PACKAGE_SYS, "%%string=", "StringFunctions");
@@ -693,6 +693,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "simple-list-remove-duplicates", "simple_list_remove_duplicates");
         autoload(PACKAGE_SYS, "single-float-bits", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "%std-allocate-instance", "StandardObjectFunctions", true);
+        autoload(PACKAGE_SYS, "%allocate-funcallable-instance", "FuncallableStandardObject", true);
         autoload(PACKAGE_SYS, "unzip", "unzip", true);
         autoload(PACKAGE_SYS, "zip", "zip", true);
 
