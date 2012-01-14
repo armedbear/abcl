@@ -2973,6 +2973,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_MOP.addExternalSymbol("EQL-SPECIALIZER-OBJECT");
   public static final Symbol FUNCALLABLE_STANDARD_OBJECT =
     PACKAGE_MOP.addExternalSymbol("FUNCALLABLE-STANDARD-OBJECT");
+  public static final Symbol FUNCALLABLE_STANDARD_CLASS =
+    PACKAGE_CL.addExternalSymbol("FUNCALLABLE-STANDARD-CLASS");
   public static final Symbol SHORT_METHOD_COMBINATION =
     PACKAGE_MOP.addInternalSymbol("SHORT-METHOD-COMBINATION");
   public static final Symbol LONG_METHOD_COMBINATION =

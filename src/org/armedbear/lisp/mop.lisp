@@ -2,11 +2,6 @@
 
 (in-package #:mop)
 
-(defclass funcallable-standard-class (class))
-
-(defmethod class-name ((class funcallable-standard-class))
-  'funcallable-standard-class)
-
 ;;; StandardGenericFunction.java defines FUNCALLABLE-INSTANCE-FUNCTION and
 ;;; SET-FUNCALLABLE-INSTANCE-FUNCTION.
 ;;;

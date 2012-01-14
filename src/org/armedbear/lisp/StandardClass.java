@@ -450,6 +450,16 @@ public class StandardClass extends SlotClass
   public static final StandardClass STRUCTURE_CLASS =
     addStandardClass(Symbol.STRUCTURE_CLASS, list(CLASS));
 
+  public static final StandardClass FUNCALLABLE_STANDARD_CLASS =
+    addStandardClass(Symbol.FUNCALLABLE_STANDARD_CLASS, list(CLASS));
+  static
+  {
+    // funcallable-standard-class has more or less the same interface as
+    // standard-class.
+    FUNCALLABLE_STANDARD_CLASS.setClassLayout(layoutStandardClass);
+    FUNCALLABLE_STANDARD_CLASS.setDirectSlotDefinitions(standardClassSlotDefinitions());
+  }
+
   public static final StandardClass CONDITION =
     addStandardClass(Symbol.CONDITION, list(STANDARD_OBJECT));
 
@@ -571,6 +581,8 @@ public class StandardClass extends SlotClass
     addClass(Symbol.STANDARD_READER_METHOD, STANDARD_READER_METHOD);
   }
 
+  // ### TODO move functionality upwards into funcallable-stanard-object
+  // and use addStandardClass() here
   public static final StandardClass STANDARD_GENERIC_FUNCTION =
     new StandardGenericFunctionClass();
   static

@@ -2472,18 +2472,18 @@ in place, while we still need them to "
          ,@(mapcar (if (consp name)
                        #'(lambda (class-name)
                            `(:method (new-value (class ,class-name))
-                                     (,%name new-value class)))
-                     #'(lambda (class-name)
-                         `(:method ((class ,class-name))
-                                   (,%name class))))
-                   '(built-in-class
-                     forward-referenced-class
-                     structure-class))
-         (:method (,@(when (consp name) (list 'new-value))
-                   (class standard-class))
-             ,(if (consp name)
-                  `(setf (slot-value class ',slot) new-value)
-                `(slot-value class ',slot))))))
+                              (,%name new-value class)))
+                       #'(lambda (class-name)
+                           `(:method ((class ,class-name))
+                              (,%name class))))
+                   '(built-in-class forward-referenced-class structure-class))
+         ,@(mapcar #'(lambda (class-name)
+                       `(:method (,@(when (consp name) (list 'new-value))
+                                  (class ,class-name))
+                          ,(if (consp name)
+                               `(setf (slot-value class ',slot) new-value)
+                               `(slot-value class ',slot))))
+                   '(standard-class funcallable-standard-class)))))
 
 
 (redefine-class-forwarder class-name name)
@@ -2565,16 +2565,16 @@ in place, while we still need them to "
                  (push (cons doc-type new-value) alist)))))
   new-value)
 
-(defmethod documentation ((x standard-class) (doc-type (eql 't)))
+(defmethod documentation ((x class) (doc-type (eql 't)))
   (class-documentation x))
 
-(defmethod documentation ((x standard-class) (doc-type (eql 'type)))
+(defmethod documentation ((x class) (doc-type (eql 'type)))
   (class-documentation x))
 
-(defmethod (setf documentation) (new-value (x standard-class) (doc-type (eql 't)))
+(defmethod (setf documentation) (new-value (x class) (doc-type (eql 't)))
   (%set-class-documentation x new-value))
 
-(defmethod (setf documentation) (new-value (x standard-class) (doc-type (eql 'type)))
+(defmethod (setf documentation) (new-value (x class) (doc-type (eql 'type)))
   (%set-class-documentation x new-value))
 
 (defmethod documentation ((x structure-class) (doc-type (eql 't)))
@@ -3003,6 +3003,8 @@ or T when any keyword is acceptable due to presence of
 
 (atomic-defgeneric finalize-inheritance (class)
     (:method ((class standard-class))
+       (std-finalize-inheritance class))
+    (:method ((class funcallable-standard-class))
        (std-finalize-inheritance class)))
 
 ;;; Class precedence lists
@@ -3015,6 +3017,8 @@ or T when any keyword is acceptable due to presence of
 
 (defgeneric compute-slots (class))
 (defmethod compute-slots ((class standard-class))
+  (std-compute-slots class))
+(defmethod compute-slots ((class funcallable-standard-class))
   (std-compute-slots class))
 
 (defgeneric compute-effective-slot-definition (class name direct-slots))
