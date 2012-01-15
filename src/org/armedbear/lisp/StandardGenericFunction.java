@@ -66,6 +66,8 @@ public final class StandardGenericFunction extends FuncallableStandardObject
       lambdaList;
     slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS] =
       lambdaList;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_OPTIONAL_ARGS] =
+      NIL;
     numberOfRequiredArgs = lambdaList.length();
     slots[StandardGenericFunctionClass.SLOT_INDEX_INITIAL_METHODS] =
       NIL;
@@ -243,6 +245,40 @@ public final class StandardGenericFunction extends FuncallableStandardObject
       final StandardGenericFunction gf = checkStandardGenericFunction(first);
       gf.slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS] = second;
       gf.numberOfRequiredArgs = second.length();
+      return second;
+    }
+  };
+
+  private static final Primitive GF_OPTIONAL_ARGS 
+    = new pf_gf_optional_args();
+  @DocString(name="gf-optional-args")
+  private static final class pf_gf_optional_args extends Primitive 
+  {
+    pf_gf_optional_args()
+    {
+      super("gf-optional-args", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      return checkStandardGenericFunction(arg).slots[StandardGenericFunctionClass.SLOT_INDEX_OPTIONAL_ARGS];
+    }
+  };
+
+  private static final Primitive _SET_GF_OPTIONAL_ARGS
+    = new pf__set_gf_optional_args();
+  @DocString(name="%set-gf-optional-args")
+  private static final class pf__set_gf_optional_args extends Primitive
+  {
+    pf__set_gf_optional_args()
+    {
+      super("%set-gf-optional-args", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      final StandardGenericFunction gf = checkStandardGenericFunction(first);
+      gf.slots[StandardGenericFunctionClass.SLOT_INDEX_OPTIONAL_ARGS] = second;
       return second;
     }
   };
