@@ -843,31 +843,22 @@
 ;;; StandardClass.java, but we cannot use make-instance and slot-value
 ;;; yet.
 
-(defun make-long-method-combination (&key name documentation lambda-list
+(defun %make-long-method-combination (&key name documentation lambda-list
                                        method-group-specs args-lambda-list
                                        generic-function-symbol function
                                        arguments declarations forms)
   (let ((instance (std-allocate-instance (find-class 'long-method-combination))))
-    (when name (setf (std-slot-value instance 'sys::name) name))
-    (when documentation
-      (setf (std-slot-value instance 'documentation) documentation))
-    (when lambda-list
-        (setf (std-slot-value instance 'sys::lambda-list) lambda-list))
-    (when method-group-specs
-        (setf (std-slot-value instance 'method-group-specs) method-group-specs))
-    (when args-lambda-list
-        (setf (std-slot-value instance 'args-lambda-list) args-lambda-list))
-    (when generic-function-symbol
-        (setf (std-slot-value instance 'generic-function-symbol)
-              generic-function-symbol))
-    (when function
-        (setf (std-slot-value instance 'function) function))
-    (when arguments
-        (setf (std-slot-value instance 'arguments) arguments))
-    (when declarations
-        (setf (std-slot-value instance 'declarations) declarations))
-    (when forms
-        (setf (std-slot-value instance 'forms) forms))
+    (setf (std-slot-value instance 'sys::name) name)
+    (setf (std-slot-value instance 'documentation) documentation)
+    (setf (std-slot-value instance 'sys::lambda-list) lambda-list)
+    (setf (std-slot-value instance 'method-group-specs) method-group-specs)
+    (setf (std-slot-value instance 'args-lambda-list) args-lambda-list)
+    (setf (std-slot-value instance 'generic-function-symbol)
+          generic-function-symbol)
+    (setf (std-slot-value instance 'function) function)
+    (setf (std-slot-value instance 'arguments) arguments)
+    (setf (std-slot-value instance 'declarations) declarations)
+    (setf (std-slot-value instance 'forms) forms)
     instance))
 
 (defun method-combination-name (method-combination)
@@ -960,7 +951,7 @@
 ;;;
 (defun define-method-combination-type (name &rest initargs)
     (setf (get name 'method-combination-object)
-          (apply 'make-long-method-combination initargs)))
+          (apply '%make-long-method-combination initargs)))
 
 (defun method-group-p (selecter qualifiers)
   ;; selecter::= qualifier-pattern | predicate
