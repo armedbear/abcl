@@ -1840,116 +1840,113 @@ Initialized with the true value near the end of the file.")
     location))
 
 (defun std-compute-discriminating-function (gf)
-  (let ((code
-         (cond
-           ((and (= (length (generic-function-methods gf)) 1)
-                 (typep (car (generic-function-methods gf)) 'standard-reader-method))
-            ;;                 (sys::%format t "standard reader function ~S~%" (generic-function-name gf))
+  (cond
+    ((and (= (length (generic-function-methods gf)) 1)
+          (typep (car (generic-function-methods gf)) 'standard-reader-method))
+     ;;                 (sys::%format t "standard reader function ~S~%" (generic-function-name gf))
 
-            (let* ((method (%car (generic-function-methods gf)))
-                   (class (car (%method-specializers method)))
-                   (slot-name (reader-method-slot-name method)))
-              #'(lambda (arg)
+     (let* ((method (%car (generic-function-methods gf)))
+            (class (car (%method-specializers method)))
+            (slot-name (reader-method-slot-name method)))
+       #'(lambda (arg)
+           (declare (optimize speed))
+           (let* ((layout (std-instance-layout arg))
+                  (location (get-cached-slot-location gf layout)))
+             (unless location
+               (unless (simple-typep arg class)
+                 ;; FIXME no applicable method
+                 (error 'simple-type-error
+                        :datum arg
+                        :expected-type class))
+               (setf location (slow-reader-lookup gf layout slot-name)))
+             (if (consp location)
+                 ;; Shared slot.
+                 (cdr location)
+                 (standard-instance-access arg location))))))
+
+    (t
+     (let* ((emf-table (classes-to-emf-table gf))
+            (number-required (length (gf-required-args gf)))
+            (lambda-list (%generic-function-lambda-list gf))
+            (exact (null (intersection lambda-list
+                                       '(&rest &optional &key
+                                         &allow-other-keys &aux)))))
+       (if exact
+           (cond
+             ((= number-required 1)
+              (cond
+                ((and (eq (generic-function-method-combination gf) 'standard)
+                      (= (length (generic-function-methods gf)) 1))
+                 (let* ((method (%car (generic-function-methods gf)))
+                        (specializer (car (%method-specializers method)))
+                        (function (or (%method-fast-function method)
+                                      (%method-function method))))
+                   (if (typep specializer 'eql-specializer)
+                       (let ((specializer-object (eql-specializer-object specializer)))
+                         #'(lambda (arg)
+                             (declare (optimize speed))
+                             (if (eql arg specializer-object)
+                                 (funcall function arg)
+                                 (no-applicable-method gf (list arg)))))
+                       #'(lambda (arg)
+                           (declare (optimize speed))
+                           (unless (simple-typep arg specializer)
+                             ;; FIXME no applicable method
+                             (error 'simple-type-error
+                                    :datum arg
+                                    :expected-type specializer))
+                           (funcall function arg)))))
+                (t
+                 #'(lambda (arg)
+                     (declare (optimize speed))
+                     (let* ((specialization
+                             (%get-arg-specialization gf arg))
+                            (emfun (or (gethash1 specialization
+                                                 emf-table)
+                                       (slow-method-lookup-1
+                                        gf arg specialization))))
+                       (if emfun
+                           (funcall emfun (list arg))
+                           (apply #'no-applicable-method gf (list arg))))))))
+             ((= number-required 2)
+              #'(lambda (arg1 arg2)
                   (declare (optimize speed))
-                  (let* ((layout (std-instance-layout arg))
-                         (location (get-cached-slot-location gf layout)))
-                    (unless location
-                      (unless (simple-typep arg class)
-                        ;; FIXME no applicable method
-                        (error 'simple-type-error
-                               :datum arg
-                               :expected-type class))
-                      (setf location (slow-reader-lookup gf layout slot-name)))
-                    (if (consp location)
-                        ;; Shared slot.
-                        (cdr location)
-                        (standard-instance-access arg location))))))
-
-           (t
-            (let* ((emf-table (classes-to-emf-table gf))
-                   (number-required (length (gf-required-args gf)))
-                   (lambda-list (%generic-function-lambda-list gf))
-                   (exact (null (intersection lambda-list
-                                              '(&rest &optional &key
-                                                &allow-other-keys &aux)))))
-              (if exact
-                  (cond
-                    ((= number-required 1)
-                     (cond
-                       ((and (eq (generic-function-method-combination gf) 'standard)
-                             (= (length (generic-function-methods gf)) 1))
-                        (let* ((method (%car (generic-function-methods gf)))
-                               (specializer (car (%method-specializers method)))
-                               (function (or (%method-fast-function method)
-                                             (%method-function method))))
-                          (if (typep specializer 'eql-specializer)
-                              (let ((specializer-object (eql-specializer-object specializer)))
-                                #'(lambda (arg)
-                                    (declare (optimize speed))
-                                    (if (eql arg specializer-object)
-                                        (funcall function arg)
-                                        (no-applicable-method gf (list arg)))))
-                              #'(lambda (arg)
-                                  (declare (optimize speed))
-                                  (unless (simple-typep arg specializer)
-                                    ;; FIXME no applicable method
-                                    (error 'simple-type-error
-                                           :datum arg
-                                           :expected-type specializer))
-                                  (funcall function arg)))))
-                       (t
-                        #'(lambda (arg)
-                            (declare (optimize speed))
-                            (let* ((specialization
-                                    (%get-arg-specialization gf arg))
-                                   (emfun (or (gethash1 specialization
-                                                        emf-table)
-                                              (slow-method-lookup-1
-                                               gf arg specialization))))
-                              (if emfun
-                                  (funcall emfun (list arg))
-                                  (apply #'no-applicable-method gf (list arg))))))))
-                    ((= number-required 2)
-                     #'(lambda (arg1 arg2)
-                         (declare (optimize speed))
-                         (let* ((args (list arg1 arg2))
-                                (emfun (get-cached-emf gf args)))
-                           (if emfun
-                               (funcall emfun args)
-                               (slow-method-lookup gf args)))))
-                    ((= number-required 3)
-                     #'(lambda (arg1 arg2 arg3)
-                         (declare (optimize speed))
-                         (let* ((args (list arg1 arg2 arg3))
-                                (emfun (get-cached-emf gf args)))
-                           (if emfun
-                               (funcall emfun args)
-                               (slow-method-lookup gf args)))))
-                    (t
-                     #'(lambda (&rest args)
-                         (declare (optimize speed))
-                         (let ((len (length args)))
-                           (unless (= len number-required)
-                             (error 'program-error
-                                    :format-control "Not enough arguments for generic function ~S."
-                                    :format-arguments (list (%generic-function-name gf)))))
-                         (let ((emfun (get-cached-emf gf args)))
-                           (if emfun
-                               (funcall emfun args)
-                               (slow-method-lookup gf args))))))
-                  #'(lambda (&rest args)
-                      (declare (optimize speed))
-                      (let ((len (length args)))
-                        (unless (>= len number-required)
-                          (error 'program-error
-                                 :format-control "Not enough arguments for generic function ~S."
-                                 :format-arguments (list (%generic-function-name gf)))))
-                      (let ((emfun (get-cached-emf gf args)))
-                        (if emfun
-                            (funcall emfun args)
-                            (slow-method-lookup gf args))))))))))
-
-    code))
+                  (let* ((args (list arg1 arg2))
+                         (emfun (get-cached-emf gf args)))
+                    (if emfun
+                        (funcall emfun args)
+                        (slow-method-lookup gf args)))))
+             ((= number-required 3)
+              #'(lambda (arg1 arg2 arg3)
+                  (declare (optimize speed))
+                  (let* ((args (list arg1 arg2 arg3))
+                         (emfun (get-cached-emf gf args)))
+                    (if emfun
+                        (funcall emfun args)
+                        (slow-method-lookup gf args)))))
+             (t
+              #'(lambda (&rest args)
+                  (declare (optimize speed))
+                  (let ((len (length args)))
+                    (unless (= len number-required)
+                      (error 'program-error
+                             :format-control "Not enough arguments for generic function ~S."
+                             :format-arguments (list (%generic-function-name gf)))))
+                  (let ((emfun (get-cached-emf gf args)))
+                    (if emfun
+                        (funcall emfun args)
+                        (slow-method-lookup gf args))))))
+           #'(lambda (&rest args)
+               (declare (optimize speed))
+               (let ((len (length args)))
+                 (unless (>= len number-required)
+                   (error 'program-error
+                          :format-control "Not enough arguments for generic function ~S."
+                          :format-arguments (list (%generic-function-name gf)))))
+               (let ((emfun (get-cached-emf gf args)))
+                 (if emfun
+                     (funcall emfun args)
+                     (slow-method-lookup gf args)))))))))
 
 (defun sort-methods (methods gf required-classes)
   (if (or (null methods) (null (%cdr methods)))
