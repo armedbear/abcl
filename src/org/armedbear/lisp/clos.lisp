@@ -2833,23 +2833,35 @@ or T when any keyword is acceptable due to presence of
 
 (defgeneric make-instance (class &rest initargs &key &allow-other-keys))
 
-(defmethod make-instance ((class class) &rest initargs)
+(defmethod make-instance :before ((class class) &rest initargs)
   (when (oddp (length initargs))
     (error 'program-error :format-control "Odd number of keyword arguments."))
   (unless (class-finalized-p class)
-    (std-finalize-inheritance class))
-  (let ((class-default-initargs (class-default-initargs class)))
-    (when class-default-initargs
-      (let ((default-initargs '()))
-        (do* ((list class-default-initargs (cddr list))
-              (key (car list) (car list))
-              (fn (cadr list) (cadr list)))
-             ((null list))
-          (when (eq (getf initargs key 'not-found) 'not-found)
-            (setf default-initargs (append default-initargs (list key (funcall fn))))))
-        (setf initargs (append initargs default-initargs)))))
+    (finalize-inheritance class)))
 
-  (let ((instance (allocate-instance class)))
+(defun augment-initargs-with-defaults (class initargs)
+  (let ((default-initargs '()))
+    (do* ((list (class-default-initargs class) (cddr list))
+          (key (car list) (car list))
+          (fn (cadr list) (cadr list)))
+         ((null list))
+      (when (eq (getf initargs key 'not-found) 'not-found)
+        (setf default-initargs (append default-initargs (list key (funcall fn))))))
+    (append initargs default-initargs)))
+
+(defmethod make-instance ((class standard-class) &rest initargs)
+  (setf initargs (augment-initargs-with-defaults class initargs))
+  (let ((instance (std-allocate-instance class)))
+    (check-initargs (list #'allocate-instance #'initialize-instance)
+                    (list* instance initargs)
+                    instance t initargs
+                    *make-instance-initargs-cache* 'make-instance)
+    (apply #'initialize-instance instance initargs)
+    instance))
+
+(defmethod make-instance ((class funcallable-standard-class) &rest initargs)
+  (setf initargs (augment-initargs-with-defaults class initargs))
+  (let ((instance (allocate-funcallable-instance class)))
     (check-initargs (list #'allocate-instance #'initialize-instance)
                     (list* instance initargs)
                     instance t initargs
