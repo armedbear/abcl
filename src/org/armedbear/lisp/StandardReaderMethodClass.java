@@ -40,14 +40,17 @@ public final class StandardReaderMethodClass extends StandardClass
   // From StandardMethodClass.java:
   public static final int SLOT_INDEX_GENERIC_FUNCTION = 0;
   public static final int SLOT_INDEX_LAMBDA_LIST      = 1;
-  public static final int SLOT_INDEX_SPECIALIZERS     = 2;
-  public static final int SLOT_INDEX_QUALIFIERS       = 3;
-  public static final int SLOT_INDEX_FUNCTION         = 4;
-  public static final int SLOT_INDEX_FAST_FUNCTION    = 5;
-  public static final int SLOT_INDEX_DOCUMENTATION    = 6;
+  public static final int SLOT_INDEX_KEYWORDS         = 2;
+  public static final int SLOT_INDEX_OTHER_KEYWORDS_P = 3;
+  public static final int SLOT_INDEX_SPECIALIZERS     = 4;
+  public static final int SLOT_INDEX_QUALIFIERS       = 5;
+  public static final int SLOT_INDEX_FUNCTION         = 6;
+  public static final int SLOT_INDEX_FAST_FUNCTION    = 7;
+  public static final int SLOT_INDEX_DOCUMENTATION    = 8;
+
 
   // Added:
-  public static final int SLOT_INDEX_SLOT_NAME        = 7;
+  public static final int SLOT_INDEX_SLOT_NAME        = 9;
 
   public StandardReaderMethodClass()
   {
@@ -58,6 +61,8 @@ public final class StandardReaderMethodClass extends StandardClass
       {
         Symbol.GENERIC_FUNCTION,
         pkg.intern("LAMBDA-LIST"),
+        pkg.intern("KEYWORDS"),
+        pkg.intern("OTHER_KEYWORDS_P"),
         pkg.intern("SPECIALIZERS"),
         pkg.intern("QUALIFIERS"),
         Symbol.FUNCTION,

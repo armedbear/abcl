@@ -128,6 +128,10 @@
        (defun ,name (&rest args)
          (apply #',%name args)))))
 
+;;
+;;  DEFINE PLACE HOLDER FUNCTIONS
+;;
+
 (define-class->%class-forwarder class-name)
 (define-class->%class-forwarder (setf class-name))
 (define-class->%class-forwarder class-slots)
@@ -155,6 +159,9 @@
   (error "There is no applicable method for the generic function ~S when called with arguments ~S."
          generic-function
          args))
+
+(defun function-keywords (method)
+  (%function-keywords method))
 
 
 
@@ -1419,6 +1426,7 @@
           (let* ((plist (analyze-lambda-list lambda-list))
                  (required-args (getf plist ':required-args)))
             (%set-gf-required-args gf required-args)
+            (%set-gf-optional-args gf (getf plist :optional-args))
             (when apo-p
               (setf (generic-function-argument-precedence-order gf)
                     (if argument-precedence-order
@@ -1757,7 +1765,9 @@ Initialized with the true value near the end of the file.")
                                       function
                                       fast-function)
   (declare (ignore gf))
-  (let ((method (std-allocate-instance +the-standard-method-class+)))
+  (let ((method (std-allocate-instance +the-standard-method-class+))
+        (analyzed-args (analyze-lambda-list lambda-list))
+        )
     (setf (method-lambda-list method) lambda-list)
     (setf (method-qualifiers method) qualifiers)
     (%set-method-specializers method (canonicalize-specializers specializers))
@@ -1765,6 +1775,9 @@ Initialized with the true value near the end of the file.")
     (%set-method-generic-function method nil)
     (%set-method-function method function)
     (%set-method-fast-function method fast-function)
+    (%set-function-keywords method
+                            (getf analyzed-args :keywords)
+                            (getf analyzed-args :allow-other-keys))
     method))
 
 (defun %add-method (gf method)
@@ -1927,6 +1940,8 @@ Initialized with the true value near the end of the file.")
                     (if emfun
                         (funcall emfun args)
                         (slow-method-lookup gf args))))))
+;;           (let ((non-key-args (+ number-required
+;;                                  (length (gf-optional-args gf))))))
            #'(lambda (&rest args)
                (declare (optimize speed))
                (let ((len (length args)))
@@ -3328,8 +3343,9 @@ or T when any keyword is acceptable due to presence of
 ;; FIXME
 (defgeneric no-next-method (generic-function method &rest args))
 
-;; FIXME
-(defgeneric function-keywords (method))
+(atomic-defgeneric function-keywords (method)
+  (:method ((method standard-method))
+    (%function-keywords method)))
 
 
 (setf *gf-initialize-instance* (symbol-function 'initialize-instance))

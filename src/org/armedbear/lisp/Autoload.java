@@ -577,6 +577,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%set-gf-required-args", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%set-method-fast-function", "StandardMethod", true);
         autoload(PACKAGE_SYS, "%set-method-function", "StandardMethod", true);
+        autoload(PACKAGE_SYS, "%set-function-keywords", "StandardMethod", true);
         autoload(PACKAGE_SYS, "%set-method-generic-function", "StandardMethod", true);
         autoload(PACKAGE_SYS, "%set-method-specializers", "StandardMethod", true);
         autoload(PACKAGE_SYS, "%set-symbol-macro", "Primitives");
@@ -637,6 +638,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "float-nan-p", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "float-string", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "function-info", "function_info");
+        autoload(PACKAGE_SYS, "%function-keywords", "StandardMethod", true);
         autoload(PACKAGE_SYS, "generic-function-argument-precedence-order","StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "generic-function-classes-to-emf-table","StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "generic-function-documentation","StandardGenericFunction", true);
@@ -648,6 +650,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "get-cached-slot-location", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "get-function-info-value", "function_info");
         autoload(PACKAGE_SYS, "gf-required-args", "StandardGenericFunction", true);
+        autoload(PACKAGE_SYS, "gf-optional-args", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "hash-table-entries", "HashTableFunctions");
         autoload(PACKAGE_SYS, "hash-table-entries", "HashTableFunctions");
         autoload(PACKAGE_SYS, "layout-class", "Layout", true);

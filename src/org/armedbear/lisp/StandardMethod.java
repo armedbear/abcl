@@ -56,6 +56,8 @@ public class StandardMethod extends StandardObject
     this();
     slots[StandardMethodClass.SLOT_INDEX_GENERIC_FUNCTION] = gf;
     slots[StandardMethodClass.SLOT_INDEX_LAMBDA_LIST] = lambdaList;
+    slots[StandardMethodClass.SLOT_INDEX_KEYWORDS] = NIL;
+    slots[StandardMethodClass.SLOT_INDEX_OTHER_KEYWORDS_P] = NIL;
     slots[StandardMethodClass.SLOT_INDEX_SPECIALIZERS] = specializers;
     slots[StandardMethodClass.SLOT_INDEX_QUALIFIERS] = NIL;
     slots[StandardMethodClass.SLOT_INDEX_FUNCTION] = NIL;
@@ -63,8 +65,8 @@ public class StandardMethod extends StandardObject
     slots[StandardMethodClass.SLOT_INDEX_DOCUMENTATION] = NIL;
   }
 
-  private static final Primitive METHOD_LAMBDA_LIST 
-    = new pf_method_lambda_list(); 
+  private static final Primitive METHOD_LAMBDA_LIST
+    = new pf_method_lambda_list();
   @DocString(name="method-lambda-list",
              args="generic-method")
   private static final class pf_method_lambda_list extends Primitive
@@ -95,6 +97,50 @@ public class StandardMethod extends StandardObject
     public LispObject execute(LispObject first, LispObject second)
     {
       checkStandardMethod(first).slots[StandardMethodClass.SLOT_INDEX_LAMBDA_LIST] = second;
+      return second;
+    }
+  };
+
+  private static final Primitive _FUNCTION_KEYWORDS
+    = new pf__function_keywords();
+  @DocString(name="%function-keywords",
+             args="standard-method")
+  private static final class pf__function_keywords extends Primitive
+  {
+    pf__function_keywords()
+    {
+      super("%function-keywords", PACKAGE_SYS, true, "method");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      StandardMethod method = checkStandardMethod(arg);
+      LispThread thread = LispThread.currentThread();
+
+      return thread
+          .setValues(method.slots[StandardMethodClass.SLOT_INDEX_KEYWORDS],
+                     method.slots[StandardMethodClass.SLOT_INDEX_OTHER_KEYWORDS_P]);
+    }
+  };
+
+  private static final Primitive _SET_FUNCTION_KEYWORDS
+    = new pf__set_function_keywords();
+  @DocString(name="%set-function-keywords",
+             args="standard-method keywords other-keywords-p")
+  private static final class pf__set_function_keywords extends Primitive
+  {
+    pf__set_function_keywords()
+    {
+      super("%set-function-keywords", PACKAGE_SYS, true,
+            "method keywords");
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second,
+                              LispObject third)
+    {
+      StandardMethod method = checkStandardMethod(first);
+      method.slots[StandardMethodClass.SLOT_INDEX_KEYWORDS] = second;
+      method.slots[StandardMethodClass.SLOT_INDEX_OTHER_KEYWORDS_P] = third;
       return second;
     }
   };
