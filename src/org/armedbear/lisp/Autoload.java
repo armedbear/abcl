@@ -535,7 +535,6 @@ public class Autoload extends Function
         autoload(PACKAGE_JAVA, "dump-classpath", "JavaClassLoader");
         autoload(PACKAGE_MOP, "eql-specializer-object", "EqualSpecializerObject", true);
         autoload(PACKAGE_MOP, "funcallable-instance-function", "FuncallableStandardObject", false);
-        autoload(PACKAGE_MOP, "generic-function-name", "StandardGenericFunction", true);
         autoload(PACKAGE_MOP, "method-qualifiers", "StandardMethod", true);
         autoload(PACKAGE_MOP, "method-specializers", "StandardMethod", true);
         autoload(PACKAGE_MOP, "set-funcallable-instance-function", "FuncallableStandardObject", true);
@@ -639,13 +638,13 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "float-string", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "function-info", "function_info");
         autoload(PACKAGE_SYS, "%function-keywords", "StandardMethod", true);
-        autoload(PACKAGE_SYS, "generic-function-argument-precedence-order","StandardGenericFunction", true);
+        autoload(PACKAGE_SYS, "%generic-function-argument-precedence-order","StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "generic-function-classes-to-emf-table","StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "generic-function-documentation","StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "generic-function-initial-methods","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "generic-function-method-class","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "generic-function-method-combination","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "generic-function-methods","StandardGenericFunction", true);
+        autoload(PACKAGE_SYS, "%generic-function-method-class","StandardGenericFunction", true);
+        autoload(PACKAGE_SYS, "%generic-function-method-combination","StandardGenericFunction", true);
+        autoload(PACKAGE_SYS, "%generic-function-methods","StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "get-cached-emf", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "get-cached-slot-location", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "get-function-info-value", "function_info");

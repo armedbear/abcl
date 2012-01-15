@@ -318,12 +318,12 @@ public final class StandardGenericFunction extends FuncallableStandardObject
 
   private static final Primitive GENERIC_FUNCTION_METHODS 
     = new pf_generic_function_methods();
-  @DocString(name="generic-function-methods")
+  @DocString(name="%generic-function-methods")
   private static final class pf_generic_function_methods extends Primitive
   {
     pf_generic_function_methods()
     {
-      super("generic-function-methods", PACKAGE_SYS, true);
+      super("%generic-function-methods", PACKAGE_SYS, true);
     }
     @Override
     public LispObject execute(LispObject arg)
@@ -351,12 +351,12 @@ public final class StandardGenericFunction extends FuncallableStandardObject
 
   private static final Primitive GENERIC_FUNCTION_METHOD_CLASS 
     = new pf_generic_function_method_class();
-  @DocString(name="generic-function-method-class")
+  @DocString(name="%generic-function-method-class")
   private static final class pf_generic_function_method_class extends Primitive
   {
     pf_generic_function_method_class()
     {
-      super("generic-function-method-class", PACKAGE_SYS, true);
+      super("%generic-function-method-class", PACKAGE_SYS, true);
     }
     @Override
     public LispObject execute(LispObject arg)
@@ -384,12 +384,12 @@ public final class StandardGenericFunction extends FuncallableStandardObject
 
   private static final Primitive GENERIC_FUNCTION_METHOD_COMBINATION 
     = new pf_generic_function_method_combination(); 
-  @DocString(name="generic-function-method-combination")
+  @DocString(name="%generic-function-method-combination")
   private static final class pf_generic_function_method_combination extends Primitive 
   {
     pf_generic_function_method_combination()
     {
-      super("generic-function-method-combination", PACKAGE_SYS, true);
+      super("%generic-function-method-combination", PACKAGE_SYS, true);
     }
     @Override
     public LispObject execute(LispObject arg)
@@ -418,12 +418,12 @@ public final class StandardGenericFunction extends FuncallableStandardObject
 
   private static final Primitive GENERIC_FUNCTION_ARGUMENT_PRECEDENCE_ORDER
     = new pf_generic_function_argument_precedence_order();
-  @DocString(name="generic-function-argument-precedence-order")
+  @DocString(name="%generic-function-argument-precedence-order")
   private static final class pf_generic_function_argument_precedence_order extends Primitive
   {
     pf_generic_function_argument_precedence_order()
     { 
-      super("generic-function-argument-precedence-order", PACKAGE_SYS, true);
+      super("%generic-function-argument-precedence-order", PACKAGE_SYS, true);
     }
     @Override
     public LispObject execute(LispObject arg)

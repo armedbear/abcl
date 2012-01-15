@@ -1268,6 +1268,9 @@
 ;;   generic-function-methods
 ;;   generic-function-name
 
+;;; These are defined with % in package SYS, defined as functions here
+;;; and redefined as generic functions once we're all set up.
+
 (defun generic-function-lambda-list (gf)
   (%generic-function-lambda-list gf))
 (defsetf generic-function-lambda-list %set-generic-function-lambda-list)
@@ -1278,15 +1281,23 @@
 (defun (setf generic-function-initial-methods) (new-value gf)
   (set-generic-function-initial-methods gf new-value))
 
+(defun generic-function-methods (gf)
+  (sys:%generic-function-methods gf))
 (defun (setf generic-function-methods) (new-value gf)
   (set-generic-function-methods gf new-value))
 
+(defun generic-function-method-class (gf)
+  (sys:%generic-function-method-class gf))
 (defun (setf generic-function-method-class) (new-value gf)
   (set-generic-function-method-class gf new-value))
 
+(defun generic-function-method-combination (gf)
+  (sys:%generic-function-method-combination gf))
 (defun (setf generic-function-method-combination) (new-value gf)
   (set-generic-function-method-combination gf new-value))
 
+(defun generic-function-argument-precedence-order (gf)
+  (sys:%generic-function-argument-precedence-order gf))
 (defun (setf generic-function-argument-precedence-order) (new-value gf)
   (set-generic-function-argument-precedence-order gf new-value))
 
@@ -1844,12 +1855,13 @@ Initialized with the true value near the end of the file.")
     location))
 
 (defun std-compute-discriminating-function (gf)
+  ;; In this function, we know that gf is of class
+  ;; standard-generic-function, so we call various
+  ;; sys:%generic-function-foo readers to break circularities.
   (cond
-    ((and (= (length (generic-function-methods gf)) 1)
-          (typep (car (generic-function-methods gf)) 'standard-reader-method))
-     ;;                 (sys::%format t "standard reader function ~S~%" (generic-function-name gf))
-
-     (let* ((method (%car (generic-function-methods gf)))
+    ((and (= (length (sys:%generic-function-methods gf)) 1)
+          (typep (car (sys:%generic-function-methods gf)) 'standard-reader-method))
+     (let* ((method (%car (sys:%generic-function-methods gf)))
             (class (car (%method-specializers method)))
             (slot-name (reader-method-slot-name method)))
        #'(lambda (arg)
@@ -1879,9 +1891,9 @@ Initialized with the true value near the end of the file.")
            (cond
              ((= number-required 1)
               (cond
-                ((and (eq (generic-function-method-combination gf) 'standard)
-                      (= (length (generic-function-methods gf)) 1))
-                 (let* ((method (%car (generic-function-methods gf)))
+                ((and (eq (sys:%generic-function-method-combination gf) 'standard)
+                      (= (length (sys:%generic-function-methods gf)) 1))
+                 (let* ((method (%car (sys:%generic-function-methods gf)))
                         (specializer (car (%method-specializers method)))
                         (function (or (%method-fast-function method)
                                       (%method-function method))))
@@ -3368,6 +3380,37 @@ or T when any keyword is acceptable due to presence of
 
 (defmethod class-prototype ((class structure-class))
   (allocate-instance class))
+
+;;; Readers for generic function metaobjects
+;;; See AMOP pg. 216ff.
+(atomic-defgeneric generic-function-argument-precedence-order (generic-function)
+  (:method ((generic-function standard-generic-function))
+    (sys:%generic-function-argument-precedence-order generic-function)))
+
+(atomic-defgeneric generic-function-declarations (generic-function)
+  (:method ((generic-function standard-generic-function))
+    ;; TODO: add slot to StandardGenericFunctionClass.java, use it
+    nil))
+
+(atomic-defgeneric generic-function-lambda-list (generic-function)
+  (:method ((generic-function standard-generic-function))
+    (sys:%generic-function-lambda-list generic-function)))
+
+(atomic-defgeneric generic-function-method-class (generic-function)
+  (:method ((generic-function standard-generic-function))
+    (sys:%generic-function-method-class generic-function)))
+
+(atomic-defgeneric generic-function-method-combination (generic-function)
+  (:method ((generic-function standard-generic-function))
+    (sys:%generic-function-method-combination generic-function)))
+
+(atomic-defgeneric generic-function-methods (generic-function)
+  (:method ((generic-function standard-generic-function))
+    (sys:%generic-function-methods generic-function)))
+
+(atomic-defgeneric generic-function-name (generic-function)
+  (:method ((generic-function standard-generic-function))
+    (sys:%generic-function-name generic-function)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require "MOP"))
