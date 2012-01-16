@@ -278,6 +278,8 @@
 (autoload 'jmember-protected-p "java")
 (export 'jnew-runtime-class "JAVA")
 (autoload 'jnew-runtime-class "runtime-class")
+(export 'define-java-class "JAVA")
+(autoload-macro 'define-java-class "runtime-class")
 (export 'ensure-java-class "JAVA")
 (autoload 'ensure-java-class "java")
 (export 'chain "JAVA")
@@ -285,7 +287,7 @@
 (export 'jmethod-let "JAVA")
 (autoload-macro 'jmethod-let "java")
 (export 'jequal "JAVA")
-(autoload-macro 'jequal "java")
+(autoload 'jequal "java")
 
 ;; Profiler.
 (in-package "PROFILER")

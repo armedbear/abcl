@@ -9,14 +9,14 @@
 (defconstant +abcl-java-object+ (make-jvm-class-name "org.armedbear.lisp.JavaObject"))
 
 (defun java:jnew-runtime-class
-    (class-name &key (superclass (make-jvm-class-name "java.lang.Object"))
-     interfaces constructors methods fields (access-flags '(:public)))
+    (class-name &rest args &key (superclass "java.lang.Object")
+     interfaces constructors methods fields (access-flags '(:public)) annotations)
   "Creates and loads a Java class with methods calling Lisp closures
    as given in METHODS.  CLASS-NAME and SUPER-NAME are strings,
    INTERFACES is a list of strings, CONSTRUCTORS, METHODS and FIELDS are
    lists of constructor, method and field definitions.
 
-   Constructor definitions are lists of the form
+   Constructor definitions - currently NOT supported - are lists of the form
    (argument-types function &optional super-invocation-arguments)
    where argument-types is a list of strings and function is a lisp function of
    (1+ (length argument-types)) arguments; the instance (`this') is passed in as
@@ -34,19 +34,59 @@
    primitive types (:void, :int, etc.), and function is a Lisp function of minimum arity
    (1+ (length argument-types)); the instance (`this') is passed in as the first argument.
 
-   Field definitions are lists of the form
-   (field-name type modifier*)
-
-   If FILE-NAME is given, a .class file will be written; this is useful for debugging only."
-  (declare (ignorable constructors fields))
-  (let* ((jvm-class-name (make-jvm-class-name class-name))
-         (class-file (make-class-file jvm-class-name superclass access-flags))
-         (stream (sys::%make-byte-array-output-stream))
+   Field definitions are lists of the form (field-name type &key modifiers annotations)."
+  (declare (ignorable superclass interfaces constructors methods fields access-flags annotations))
+  (let ((stream (sys::%make-byte-array-output-stream))
          ;;TODO provide constructor in MemoryClassLoader
-         (memory-class-loader (java:jnew "org.armedbear.lisp.MemoryClassLoader" ""))
+        (memory-class-loader (java:jnew "org.armedbear.lisp.MemoryClassLoader" "")))
+    (multiple-value-bind (class-file method-implementation-fields)
+        (apply #'java::%jnew-runtime-class class-name stream args)
+      (sys::put-memory-function memory-class-loader
+                                class-name (sys::%get-output-stream-bytes stream))
+      (let ((jclass (java:jcall "loadClass" memory-class-loader class-name)))
+        (dolist (method method-implementation-fields)
+          (setf (java:jfield jclass (car method)) (cdr method)))
+        jclass))))
+
+(defun java::%jnew-runtime-class
+    (class-name stream &key (superclass "java.lang.Object")
+     interfaces constructors methods fields (access-flags '(:public)) annotations)
+  "Actual implementation of jnew-runtime-class. Writes the class bytes to a stream. Returns two values: the finalized class-file structure and the alist of method implementation fields."
+  (let* ((jvm-class-name (make-jvm-class-name class-name))
+         (class-file (make-class-file jvm-class-name (make-jvm-class-name superclass) access-flags))
          method-implementation-fields)
     (setf (class-file-interfaces class-file)
           (mapcar #'make-jvm-class-name interfaces))
+    (when annotations
+      (class-add-attribute class-file (make-runtime-visible-annotations-attribute
+                                       :list (mapcar #'parse-annotation annotations))))
+    (setf method-implementation-fields (java::runtime-class-add-methods class-file methods))
+    (dolist (field-spec fields)
+      (destructuring-bind (name type &key (modifiers '(:public)) annotations) field-spec
+        (let ((field (make-field name (if (keywordp type) type (make-jvm-class-name type))
+                                 :flags modifiers)))
+          (when annotations
+            (field-add-attribute field (make-runtime-visible-annotations-attribute
+                                        :list (mapcar #'parse-annotation annotations))))
+          (class-add-field class-file field))))
+    (if (null constructors)
+      (let ((ctor (make-jvm-method :constructor :void nil :flags '(:public))))
+        (class-add-method class-file ctor)
+        (with-code-to-method (class-file ctor)
+          (aload 0)
+          (emit-invokespecial-init (class-file-superclass class-file) nil)
+          (emit 'return)))
+      (error "constructors not supported"))
+    (finalize-class-file class-file)
+    (write-class-file class-file stream)
+    (finish-output stream)
+    #+test-record-generated-class-file
+    (with-open-file (f (format nil "~A.class" class-name) :direction :output :element-type '(signed-byte 8))
+      (write-sequence (java::list-from-jarray (sys::%get-output-stream-bytes stream)) f))
+    (values class-file method-implementation-fields)))
+
+(defun java::runtime-class-add-methods (class-file methods)
+  (let (method-implementation-fields)
     (dolist (m methods)
       (destructuring-bind (name return-type argument-types function &key (modifiers '(:public)) annotations) m
         (let* ((argument-types (mapcar #'make-jvm-class-name argument-types))
@@ -88,7 +128,7 @@
                                              (list +java-object+ :boolean) +lisp-object+)))
                      (astore (+ i (1+ argc)))))
             ;;Load the Lisp function from its static field
-            (emit-getstatic jvm-class-name field-name +lisp-object+)
+            (emit-getstatic (class-file-class class-file) field-name +lisp-object+)
             (if (<= (1+ argc) call-registers-limit)
                 (progn
                   ;;Load the boxed this
@@ -111,25 +151,9 @@
                (emit 'areturn))
               (t
                (error "Unsupported return type: ~A" return-type)))))))
-    (when (null constructors)
-      (let ((ctor (make-jvm-method :constructor :void nil :flags '(:public))))
-        (class-add-method class-file ctor)
-        (with-code-to-method (class-file ctor)
-          (aload 0)
-          (emit-invokespecial-init (class-file-superclass class-file) nil)
-          (emit 'return))))
-    (finalize-class-file class-file)
-    (write-class-file class-file stream)
-    (finish-output stream)
-    #+test-record-generated-class-file
-    (with-open-file (f (format nil "~A.class" class-name) :direction :output :element-type '(signed-byte 8))
-      (write-sequence (java::list-from-jarray (sys::%get-output-stream-bytes stream)) f))
-    (sys::put-memory-function memory-class-loader
-                              class-name (sys::%get-output-stream-bytes stream))
-    (let ((jclass (java:jcall "loadClass" memory-class-loader class-name)))
-      (dolist (method method-implementation-fields)
-        (setf (java:jfield jclass (car method)) (cdr method)))
-      jclass)))
+    method-implementation-fields))
+
+(defmacro java:define-java-class () :todo)
 
 (defun parse-annotation (annotation)
   (when (annotation-p annotation)
@@ -154,6 +178,13 @@
          ((listp value)
           (make-array-annotation-element :name name :values (mapcar #'parse-annotation-element value)))
          (t (make-primitive-or-string-annotation-element :name name :value value)))))))
+
+;;TODO:
+;; - Fields: test
+;; - Properties + optional accessors (CLOS methods)
+;; - Function calls with 8+ args
+;; - super?
+;; - Constructors?
 
 #+example
 (java:jnew-runtime-class
