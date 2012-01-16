@@ -2896,12 +2896,14 @@ or T when any keyword is acceptable due to presence of
 (defmethod make-instance ((class symbol) &rest initargs)
   (apply #'make-instance (find-class class) initargs))
 
-(defgeneric initialize-instance (instance &key))
+(defgeneric initialize-instance (instance &rest initargs
+                                          &key &allow-other-keys))
 
 (defmethod initialize-instance ((instance standard-object) &rest initargs)
   (apply #'shared-initialize instance t initargs))
 
-(defgeneric reinitialize-instance (instance &key))
+(defgeneric reinitialize-instance (instance &rest initargs
+                                            &key &allow-other-keys))
 
 ;; "The system-supplied primary method for REINITIALIZE-INSTANCE checks the
 ;; validity of initargs and signals an error if an initarg is supplied that is
@@ -2942,7 +2944,9 @@ or T when any keyword is acceptable due to presence of
                         (funcall initfunction)))))))))
   instance)
 
-(defgeneric shared-initialize (instance slot-names &key))
+(defgeneric shared-initialize (instance slot-names
+                                        &rest initargs
+                                        &key &allow-other-keys))
 
 (defmethod shared-initialize ((instance standard-object) slot-names &rest initargs)
   (std-shared-initialize instance slot-names initargs))
@@ -2963,7 +2967,7 @@ or T when any keyword is acceptable due to presence of
 
 ;;; change-class
 
-(defgeneric change-class (instance new-class &key))
+(defgeneric change-class (instance new-class &key &allow-other-keys))
 
 (defmethod change-class ((old-instance standard-object) (new-class standard-class)
                          &rest initargs)
@@ -2992,7 +2996,9 @@ or T when any keyword is acceptable due to presence of
 (defmethod change-class ((instance standard-object) (new-class symbol) &rest initargs)
   (apply #'change-class instance (find-class new-class) initargs))
 
-(defgeneric update-instance-for-different-class (old new &key))
+(defgeneric update-instance-for-different-class (old new
+                                                     &rest initargs
+                                                     &key &allow-other-keys))
 
 (defmethod update-instance-for-different-class
   ((old standard-object) (new standard-object) &rest initargs)
