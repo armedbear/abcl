@@ -696,7 +696,13 @@
 (defun allocate-funcallable-instance (class)
   (unless (class-finalized-p class)
     (std-finalize-inheritance class))
-  (sys::%allocate-funcallable-instance class))
+  (let ((instance (sys::%allocate-funcallable-instance class)))
+    (set-funcallable-instance-function
+     instance
+     #'(lambda (&rest args)
+         (declare (ignore args))
+         (error 'program-error "Called a funcallable-instance with unset function.")))
+    instance))
 
 (defun make-instance-standard-class (metaclass
 				     &rest initargs
