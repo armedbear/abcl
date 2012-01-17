@@ -772,77 +772,6 @@
   (make-hash-table :test #'eq)
   "Cached sets of allowable initargs, keyed on the class they belong to.")
 
-(defun ensure-class (name &rest all-keys &key metaclass &allow-other-keys)
-  ;; Check for duplicate slots.
-  (remf all-keys :metaclass)
-  (let ((slots (getf all-keys :direct-slots)))
-    (dolist (s1 slots)
-      (let ((name1 (canonical-slot-name s1)))
-        (dolist (s2 (cdr (memq s1 slots)))
-          (when (eq name1 (canonical-slot-name s2))
-            (error 'program-error "Duplicate slot ~S" name1))))))
-  ;; Check for duplicate argument names in :DEFAULT-INITARGS.
-  (let ((names ()))
-    (do* ((initargs (getf all-keys :direct-default-initargs) (cddr initargs))
-          (name (car initargs) (car initargs)))
-         ((null initargs))
-      (push name names))
-    (do* ((names names (cdr names))
-          (name (car names) (car names)))
-         ((null names))
-      (when (memq name (cdr names))
-        (error 'program-error
-               :format-control "Duplicate initialization argument name ~S in :DEFAULT-INITARGS."
-               :format-arguments (list name)))))
-  (let ((old-class (find-class name nil)))
-    (cond ((and old-class (eq name (class-name old-class)))
-           (cond ((typep old-class 'built-in-class)
-                  (error "The symbol ~S names a built-in class." name))
-                 ((typep old-class 'forward-referenced-class)
-                  (let ((new-class (apply #'make-instance-standard-class
-                                          +the-standard-class+
-                                          :name name all-keys)))
-                    (%set-find-class name new-class)
-                    (setf (class-direct-subclasses new-class)
-                          (class-direct-subclasses old-class))
-                    (dolist (subclass (class-direct-subclasses old-class))
-                      (setf (class-direct-superclasses subclass)
-                            (substitute new-class old-class
-                                        (class-direct-superclasses subclass))))
-                    (maybe-finalize-class-subtree new-class)
-                    new-class))
-                 (t
-                  ;; We're redefining the class.
-                  (apply #'reinitialize-instance old-class all-keys)
-                  old-class)))
-          (t
-           (let ((class (apply (if metaclass
-                                   #'make-instance
-                                   #'make-instance-standard-class)
-                               (or metaclass
-                                   +the-standard-class+)
-                               :name name all-keys)))
-             (%set-find-class name class)
-             class)))))
-
-
-(defun maybe-finalize-class-subtree (class)
-  (when (every #'class-finalized-p (class-direct-superclasses class))
-    (finalize-inheritance class)
-    (dolist (subclass (class-direct-subclasses class))
-       (maybe-finalize-class-subtree subclass))))
-
-(defmacro defclass (&whole form name direct-superclasses direct-slots &rest options)
-  (unless (>= (length form) 3)
-    (error 'program-error "Wrong number of arguments for DEFCLASS."))
-  (check-declaration-type name)
-  `(ensure-class ',name
-                 :direct-superclasses
-                 (canonicalize-direct-superclasses ',direct-superclasses)
-                 :direct-slots
-                 ,(canonicalize-direct-slots direct-slots)
-                 ,@(canonicalize-defclass-options options)))
-
 (defun expand-long-defcombin (name args)
   (destructuring-bind (lambda-list method-groups &rest body) args
     `(apply #'define-long-form-method-combination
@@ -2594,6 +2523,112 @@ in place, while we still need them to "
 (redefine-class-forwarder (setf class-default-initargs) default-initargs)
 (redefine-class-forwarder class-direct-default-initargs direct-default-initargs)
 (redefine-class-forwarder (setf class-direct-default-initargs) direct-default-initargs)
+
+;;; Class definition
+
+(defun check-duplicate-slots (slots)
+  (dolist (s1 slots)
+    (let ((name1 (canonical-slot-name s1)))
+      (dolist (s2 (cdr (memq s1 slots)))
+        (when (eq name1 (canonical-slot-name s2))
+          (error 'program-error "Duplicate slot ~S" name1))))))
+
+(defun check-duplicate-default-initargs (initargs)
+  (let ((names ()))
+    (do* ((initargs initargs (cddr initargs))
+          (name (car initargs) (car initargs)))
+         ((null initargs))
+      (push name names))
+    (do* ((names names (cdr names))
+          (name (car names) (car names)))
+         ((null names))
+      (when (memq name (cdr names))
+        (error 'program-error
+               :format-control "Duplicate initialization argument name ~S in :DEFAULT-INITARGS."
+               :format-arguments (list name))))))
+
+ ;;; AMOP pg. 182
+(defun ensure-class (name &rest all-keys &key &allow-other-keys)
+  (apply #'ensure-class-using-class (find-class name nil) name all-keys))
+
+;;; AMOP pg. 183ff.
+(defgeneric ensure-class-using-class (class name &key direct-default-initargs
+                                      direct-slots direct-superclasses name
+                                      metaclass &allow-other-keys))
+
+(defmethod ensure-class-using-class :before (class name  &key direct-slots
+                                             direct-default-initargs 
+                                             &allow-other-keys)
+  (check-duplicate-slots direct-slots)
+  (check-duplicate-default-initargs direct-default-initargs))
+
+(defmethod ensure-class-using-class ((class null) name &rest all-keys
+                                     &key (metaclass +the-standard-class+)
+                                     direct-superclasses
+                                     &allow-other-keys)
+  (setf all-keys (copy-list all-keys))  ; since we modify it
+  (remf all-keys :metaclass)
+  (let ((class (apply (if (eq metaclass +the-standard-class+)
+                          #'make-instance-standard-class
+                          #'make-instance)
+                      metaclass :name name
+                      :direct-superclasses (canonicalize-direct-superclasses
+                                            direct-superclasses)
+                      all-keys)))
+    (%set-find-class name class)
+    class))
+
+(defmethod ensure-class-using-class ((class built-in-class) name &rest all-keys
+                                     &key &allow-other-keys)
+  (declare (ignore all-keys))
+  (error "The symbol ~S names a built-in class." name))
+
+ (defmethod ensure-class-using-class ((class forward-referenced-class) name
+                                      &key (metaclass +the-standard-class+)
+                                      direct-superclasses
+                                      &rest all-keys &key &allow-other-keys)
+   (setf all-keys (copy-list all-keys))  ; since we modify it
+   (remf all-keys :metaclass)
+   (change-class class metaclass)
+   (apply #'reinitialize-instance class
+          :direct-superclasses (canonicalize-direct-superclasses
+                                direct-superclasses)
+          all-keys)
+   class)
+
+(defmethod ensure-class-using-class ((class class) name
+                                     &key (metaclass +the-standard-class+ metaclassp)
+                                     direct-superclasses &rest all-keys
+                                     &allow-other-keys)
+  (setf all-keys (copy-list all-keys))  ; since we modify it
+  (remf all-keys :metaclass)
+  (when (and metaclassp (not (eq (class-of class) metaclass)))
+    (error 'program-error
+           "Trying to redefine class ~S with different metaclass."
+           (class-name class)))
+  (apply #'reinitialize-instance class
+         :direct-superclasses (canonicalize-direct-superclasses direct-superclasses)
+         all-keys)
+  class)
+
+(defun maybe-finalize-class-subtree (class)
+  (when (every #'class-finalized-p (class-direct-superclasses class))
+    (finalize-inheritance class)
+    (dolist (subclass (class-direct-subclasses class))
+      (maybe-finalize-class-subtree subclass))))
+
+(defmacro defclass (&whole form name direct-superclasses direct-slots &rest options)
+  (unless (>= (length form) 3)
+    (error 'program-error "Wrong number of arguments for DEFCLASS."))
+  (check-declaration-type name)
+  `(ensure-class ',name
+                 :direct-superclasses
+                 (canonicalize-direct-superclasses ',direct-superclasses)
+                 :direct-slots
+                 ,(canonicalize-direct-slots direct-slots)
+                 ,@(canonicalize-defclass-options options)))
+
+
 
 (defgeneric direct-slot-definition-class (class &rest initargs))
 

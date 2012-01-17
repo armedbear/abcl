@@ -43,6 +43,7 @@
           slot-makunbound-using-class
 
           ensure-class
+          ensure-class-using-class
 
           class-default-initargs
           class-direct-default-initargs
