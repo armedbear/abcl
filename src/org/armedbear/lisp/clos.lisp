@@ -102,6 +102,8 @@
 (defconstant +the-structure-class+ (find-class 'structure-class))
 (defconstant +the-standard-object-class+ (find-class 'standard-object))
 (defconstant +the-standard-method-class+ (find-class 'standard-method))
+(defconstant +the-forward-referenced-class+
+  (find-class 'forward-referenced-class))
 (defconstant +the-standard-reader-method-class+
   (find-class 'standard-reader-method))
 (defconstant +the-standard-generic-function-class+
@@ -285,21 +287,6 @@
 (defun maybe-note-name-defined (name)
   (when (fboundp 'note-name-defined)
     (note-name-defined name)))
-
-(defun canonicalize-direct-superclasses (direct-superclasses)
-  (let ((classes '()))
-    (dolist (class-specifier direct-superclasses)
-      (let ((class (if (classp class-specifier)
-                       class-specifier
-                       (find-class class-specifier nil))))
-        (unless class
-          (setf class (make-forward-referenced-class class-specifier)))
-        (when (and (typep class 'built-in-class)
-                   (not (member class *extensible-built-in-classes*)))
-          (error "Attempt to define a subclass of built-in-class ~S."
-                 class-specifier))
-        (push class classes)))
-    (nreverse classes)))
 
 (defun canonicalize-defclass-options (options)
   (mapappend #'canonicalize-defclass-option options))
@@ -2547,13 +2534,30 @@ in place, while we still need them to "
                :format-control "Duplicate initialization argument name ~S in :DEFAULT-INITARGS."
                :format-arguments (list name))))))
 
+(defun canonicalize-direct-superclasses (direct-superclasses)
+  (let ((classes '()))
+    (dolist (class-specifier direct-superclasses)
+      (let ((class (if (classp class-specifier)
+                       class-specifier
+                       (find-class class-specifier nil))))
+        (unless class
+          (setf class (make-instance +the-forward-referenced-class+
+                                     :name class-specifier))
+          (setf (find-class class-specifier) class))
+        (when (and (typep class 'built-in-class)
+                   (not (member class *extensible-built-in-classes*)))
+          (error "Attempt to define a subclass of built-in-class ~S."
+                 class-specifier))
+        (push class classes)))
+    (nreverse classes)))
+
  ;;; AMOP pg. 182
 (defun ensure-class (name &rest all-keys &key &allow-other-keys)
   (apply #'ensure-class-using-class (find-class name nil) name all-keys))
 
 ;;; AMOP pg. 183ff.
 (defgeneric ensure-class-using-class (class name &key direct-default-initargs
-                                      direct-slots direct-superclasses name
+                                      direct-slots direct-superclasses
                                       metaclass &allow-other-keys))
 
 (defmethod ensure-class-using-class :before (class name  &key direct-slots
@@ -2583,23 +2587,25 @@ in place, while we still need them to "
   (declare (ignore all-keys))
   (error "The symbol ~S names a built-in class." name))
 
- (defmethod ensure-class-using-class ((class forward-referenced-class) name
-                                      &key (metaclass +the-standard-class+)
-                                      direct-superclasses
-                                      &rest all-keys &key &allow-other-keys)
-   (setf all-keys (copy-list all-keys))  ; since we modify it
-   (remf all-keys :metaclass)
-   (change-class class metaclass)
-   (apply #'reinitialize-instance class
-          :direct-superclasses (canonicalize-direct-superclasses
-                                direct-superclasses)
-          all-keys)
-   class)
+(defmethod ensure-class-using-class ((class forward-referenced-class) name
+                                     &rest all-keys
+                                     &key (metaclass +the-standard-class+)
+                                     direct-superclasses &allow-other-keys)
+  (setf all-keys (copy-list all-keys))  ; since we modify it
+  (remf all-keys :metaclass)
+  (change-class class metaclass)
+  (apply #'reinitialize-instance class
+         :name name
+         :direct-superclasses (canonicalize-direct-superclasses
+                               direct-superclasses)
+         all-keys)
+  class)
 
 (defmethod ensure-class-using-class ((class class) name
                                      &key (metaclass +the-standard-class+ metaclassp)
                                      direct-superclasses &rest all-keys
                                      &allow-other-keys)
+  (declare (ignore name))
   (setf all-keys (copy-list all-keys))  ; since we modify it
   (remf all-keys :metaclass)
   (when (and metaclassp (not (eq (class-of class) metaclass)))
@@ -3045,6 +3051,24 @@ or T when any keyword is acceptable due to presence of
 (defmethod shared-initialize ((instance standard-object) slot-names
                               &rest initargs)
   (std-shared-initialize instance slot-names initargs))
+
+(defmethod shared-initialize :after ((instance standard-class) slot-names
+                                     &key direct-superclasses
+                                     direct-slots direct-default-initargs
+                                     &allow-other-keys)
+  (std-after-initialization-for-classes
+   instance :direct-superclasses direct-superclasses
+   :direct-slots direct-slots
+   :direct-default-initargs direct-default-initargs))
+
+(defmethod shared-initialize :after ((instance funcallable-standard-class)
+                                     slot-names &key direct-superclasses
+                                     direct-slots direct-default-initargs
+                                     &allow-other-keys)
+  (std-after-initialization-for-classes
+   instance :direct-superclasses direct-superclasses
+   :direct-slots direct-slots
+   :direct-default-initargs direct-default-initargs))
 
 (defmethod shared-initialize ((slot slot-definition) slot-names
                               &rest args
