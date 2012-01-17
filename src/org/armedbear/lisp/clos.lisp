@@ -1518,6 +1518,7 @@
     (let* ((plist (analyze-lambda-list (generic-function-lambda-list gf)))
            (required-args (getf plist ':required-args)))
       (%set-gf-required-args gf required-args)
+      (%set-gf-optional-args gf (getf plist :optional-args))
       (setf (generic-function-argument-precedence-order gf)
             (if argument-precedence-order
                 (canonicalize-argument-precedence-order argument-precedence-order
