@@ -2027,13 +2027,72 @@ Initialized with the true value near the end of the file.")
 	  (unless (subclassp (car classes) specializer)
 	    (return (values nil t)))))))
 
+(defun check-applicable-method-keyword-args (gf args
+                                             keyword-args
+                                             applicable-keywords)
+  (when (oddp (length keyword-args))
+    (error 'program-error
+           :format-control "Odd number of keyword arguments in call to ~S ~
+with arguments list ~S"
+           :format-arguments (list gf args)))
+  (unless (getf keyword-args :allow-other-keys)
+    (loop for key in keyword-args by #'cddr
+       unless (or (member key applicable-keywords)
+                  (eq key :allow-other-keys))
+       do (error 'program-error
+                 :format-control "Invalid keyword argument ~S in call ~
+to ~S with argument list ~S."
+                 :format-arguments (list key gf args)))))
+
+(defun compute-applicable-keywords (gf applicable-methods)
+  (let ((applicable-keywords
+         (getf (analyze-lambda-list (generic-function-lambda-list gf))
+               :keywords)))
+    (loop for method in applicable-methods
+       do (multiple-value-bind
+                (keywords allow-other-keys)
+              (function-keywords method)
+            (when allow-other-keys
+              (setf applicable-keywords :any)
+              (return))
+            (setf applicable-keywords
+                  (union applicable-keywords keywords))))
+    applicable-keywords))
+
+(defun wrap-emfun-for-keyword-args-check (gf emfun non-keyword-args
+                                          applicable-keywords)
+  #'(lambda (args)
+      (check-applicable-method-keyword-args
+         gf args
+         (nthcdr non-keyword-args args) applicable-keywords)
+      (funcall emfun args)))
+
 (defun slow-method-lookup (gf args)
   (let ((applicable-methods (%compute-applicable-methods gf args)))
     (if applicable-methods
-        (let ((emfun (funcall (if (eq (class-of gf) +the-standard-generic-function-class+)
-                                  #'std-compute-effective-method-function
-                                  #'compute-effective-method-function)
-                              gf applicable-methods)))
+        (let* ((emfun (funcall (if (eq (class-of gf) +the-standard-generic-function-class+)
+                                   #'std-compute-effective-method-function
+                                   #'compute-effective-method-function)
+                               gf applicable-methods))
+               (non-keyword-args
+                (+ (length (gf-required-args gf))
+                   (length (gf-optional-args gf))))
+               (gf-lambda-list (generic-function-lambda-list gf))
+               (checks-required (and (member '&key gf-lambda-list)
+                                     (not (member '&allow-other-keys
+                                                  gf-lambda-list)))
+                 )
+              (applicable-keywords
+               (when checks-required
+                 ;; Don't do applicable keyword checks when this is
+                 ;; one of the 'exceptional four' or when the gf allows
+                 ;; other keywords.
+                 (compute-applicable-keywords gf applicable-methods))))
+          (when (and checks-required
+                     (not (eq applicable-keywords :any)))
+            (setf emfun
+                  (wrap-emfun-for-keyword-args-check gf emfun non-keyword-args
+                                                     applicable-keywords)))
           (cache-emf gf args emfun)
           (funcall emfun args))
         (apply #'no-applicable-method gf args))))
@@ -2407,6 +2466,7 @@ Initialized with the true value near the end of the file.")
     (%set-method-function method function)
     (%set-method-fast-function method fast-function)
     (set-reader-method-slot-name method slot-name)
+    (%set-function-keywords method nil nil)
     method))
 
 (defun add-reader-method (class function-name slot-name)
@@ -2830,8 +2890,7 @@ applicable methods."
               ((null tail))
               (unless (memq initarg allowable-initargs)
                 (error 'program-error
-                       :format-control "Invalid initarg ~S in call to ~S ~
-with arglist ~S."
+                       :format-control "Invalid initarg ~S in call to ~S with arglist ~S."
                        :format-arguments (list initarg call-site args))))))))
 
 (defun merge-initargs-sets (list1 list2)
@@ -2949,7 +3008,8 @@ or T when any keyword is acceptable due to presence of
                                         &rest initargs
                                         &key &allow-other-keys))
 
-(defmethod shared-initialize ((instance standard-object) slot-names &rest initargs)
+(defmethod shared-initialize ((instance standard-object) slot-names
+                              &rest initargs)
   (std-shared-initialize instance slot-names initargs))
 
 (defmethod shared-initialize ((slot slot-definition) slot-names
@@ -3371,7 +3431,6 @@ or T when any keyword is acceptable due to presence of
 (atomic-defgeneric function-keywords (method)
   (:method ((method standard-method))
     (%function-keywords method)))
-
 
 (setf *gf-initialize-instance* (symbol-function 'initialize-instance))
 (setf *gf-allocate-instance* (symbol-function 'allocate-instance))
