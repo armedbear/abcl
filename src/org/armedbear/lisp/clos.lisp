@@ -289,12 +289,16 @@
 (defun canonicalize-direct-superclasses (direct-superclasses)
   (let ((classes '()))
     (dolist (class-specifier direct-superclasses)
-      (if (classp class-specifier)
-          (push class-specifier classes)
-          (let ((class (find-class class-specifier nil)))
-            (unless class
-              (setf class (make-forward-referenced-class class-specifier)))
-            (push class classes))))
+      (let ((class (if (classp class-specifier)
+                       class-specifier
+                       (find-class class-specifier nil))))
+        (unless class
+          (setf class (make-forward-referenced-class class-specifier)))
+        (when (and (typep class 'built-in-class)
+                   (not (member class *extensible-built-in-classes*)))
+          (error "Attempt to define a subclass of built-in-class ~S."
+                 class-specifier))
+        (push class classes)))
     (nreverse classes)))
 
 (defun canonicalize-defclass-options (options)
@@ -790,11 +794,6 @@
         (error 'program-error
                :format-control "Duplicate initialization argument name ~S in :DEFAULT-INITARGS."
                :format-arguments (list name)))))
-  (let ((direct-superclasses (getf all-keys :direct-superclasses)))
-    (dolist (class direct-superclasses)
-      (when (and (typep class 'built-in-class)
-                 (not (member class *extensible-built-in-classes*)))
-        (error "Attempt to define a subclass of a built-in-class: ~S" class))))
   (let ((old-class (find-class name nil)))
     (cond ((and old-class (eq name (class-name old-class)))
            (cond ((typep old-class 'built-in-class)
