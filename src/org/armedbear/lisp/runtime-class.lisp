@@ -61,14 +61,7 @@
       (class-add-attribute class-file (make-runtime-visible-annotations-attribute
                                        :list (mapcar #'parse-annotation annotations))))
     (setf method-implementation-fields (java::runtime-class-add-methods class-file methods))
-    (dolist (field-spec fields)
-      (destructuring-bind (name type &key (modifiers '(:public)) annotations) field-spec
-        (let ((field (make-field name (if (keywordp type) type (make-jvm-class-name type))
-                                 :flags modifiers)))
-          (when annotations
-            (field-add-attribute field (make-runtime-visible-annotations-attribute
-                                        :list (mapcar #'parse-annotation annotations))))
-          (class-add-field class-file field))))
+    (java::runtime-class-add-fields class-file fields)
     (if (null constructors)
       (let ((ctor (make-jvm-method :constructor :void nil :flags '(:public))))
         (class-add-method class-file ctor)
@@ -84,6 +77,11 @@
     (with-open-file (f (format nil "~A.class" class-name) :direction :output :element-type '(signed-byte 8))
       (write-sequence (java::list-from-jarray (sys::%get-output-stream-bytes stream)) f))
     (values class-file method-implementation-fields)))
+
+(defun java::make-accessor-name (prefix name)
+  (let ((initial (char-upcase (aref name 0)))
+        (rest (subseq name 1)))
+    (format nil "~A~A~A" prefix initial rest)))
 
 (defun java::runtime-class-add-methods (class-file methods)
   (let (method-implementation-fields)
@@ -153,6 +151,46 @@
                (error "Unsupported return type: ~A" return-type)))))))
     method-implementation-fields))
 
+(defun java::runtime-class-add-fields (class-file fields)
+  (dolist (field-spec fields)
+    (destructuring-bind (name type &key (modifiers '(:public)) annotations
+                              (getter nil getter-p) (setter nil setter-p)
+                              (property (and (not getter-p) (not setter-p))))
+        field-spec
+      (let* ((type (if (keywordp type) type (make-jvm-class-name type)))
+             (field (make-field name type :flags modifiers)))
+        (when (member :static modifiers)
+          (setf property nil getter nil setter nil))
+        (when annotations
+          (field-add-attribute field (make-runtime-visible-annotations-attribute
+                                      :list (mapcar #'parse-annotation annotations))))
+        (class-add-field class-file field)
+        (when (or getter property)
+          (unless (stringp getter)
+            (setf getter (java::make-accessor-name "get" (if (stringp property) property name))))
+          (let ((jmethod (make-jvm-method getter type nil :flags '(:public))))
+            (class-add-method class-file jmethod)
+            (with-code-to-method (class-file jmethod)
+              (aload 0)
+              (emit-getfield (class-file-class class-file) name type)
+              (cond
+                ((jvm-class-name-p type) (emit 'areturn))
+                ((eq type :int) (emit 'ireturn))
+                (t (error "Unsupported getter return type: ~A" type))))))
+        (when (or setter property)
+          (unless (stringp setter)
+            (setf setter (java::make-accessor-name "set" (if (stringp property) property name))))
+          (let ((jmethod (make-jvm-method setter :void (list type) :flags '(:public))))
+            (class-add-method class-file jmethod)
+            (with-code-to-method (class-file jmethod)
+              (aload 0)
+              (cond
+                ((jvm-class-name-p type) (aload 1))
+                ((eq type :int) (iload 1))
+                (t (error "Unsupported setter parameter type: ~A" type)))
+              (emit-putfield (class-file-class class-file) name type)
+              (emit 'return))))))))
+
 (defmacro java:define-java-class () :todo)
 
 (defun parse-annotation (annotation)
@@ -180,16 +218,16 @@
          (t (make-primitive-or-string-annotation-element :name name :value value)))))))
 
 ;;TODO:
-;; - Fields: test
-;; - Properties + optional accessors (CLOS methods)
 ;; - Function calls with 8+ args
-;; - super?
-;; - Constructors?
+;; - super method invocation. Idea: generate companion methods super_... to use with plain jcall. Add a flag per method to optionally disable this when not needed.
+;; - Constructors
+;; - optional accessors (CLOS methods) for properties?
 
 #+example
 (java:jnew-runtime-class
  "Foo"
  :interfaces (list "java.lang.Comparable")
+ :fields (list '("someField" "java.lang.String") '("anotherField" "java.lang.Object" :getter t))
  :methods (list
            (list "foo" :void '("java.lang.Object")
                  (lambda (this that) (print (list this that)))
