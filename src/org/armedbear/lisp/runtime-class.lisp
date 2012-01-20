@@ -1,5 +1,4 @@
-(require "COMPILER-PASS2")
-(require "JVM-CLASS-FILE")
+(require "JVM")
 
 ;;The package is set to :jvm for convenience, since most of the symbols used
 ;;here come from that package. However, the functions we're definining belong
@@ -186,7 +185,7 @@
               (aload 0)
               (cond
                 ((jvm-class-name-p type) (aload 1))
-                ((eq type :int) (iload 1))
+                ((eq type :int) (emit 'iload 1))
                 (t (error "Unsupported setter parameter type: ~A" type)))
               (emit-putfield (class-file-class class-file) name type)
               (emit 'return))))))))
@@ -218,6 +217,7 @@
          (t (make-primitive-or-string-annotation-element :name name :value value)))))))
 
 ;;TODO:
+;; - Returning nil as null is broken
 ;; - Function calls with 8+ args
 ;; - super method invocation. Idea: generate companion methods super_... to use with plain jcall. Add a flag per method to optionally disable this when not needed.
 ;; - Constructors

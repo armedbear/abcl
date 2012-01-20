@@ -70,41 +70,6 @@ in order to generate 'compilation events'.")
 (defmacro dformat (&rest ignored)
   (declare (ignore ignored)))
 
-(declaim (inline u2 s1 s2))
-
-(defknown u2 (fixnum) cons)
-(defun u2 (n)
-  (declare (optimize speed))
-  (declare (type (unsigned-byte 16) n))
-  (when (not (<= 0 n 65535))
-    (error "u2 argument ~A out of 65k range." n))
-  (list (logand (ash n -8) #xff)
-        (logand n #xff)))
-
-(defknown s1 (fixnum) fixnum)
-(defun s1 (n)
-  (declare (optimize speed))
-  (declare (type (signed-byte 8) n))
-  (when (not (<= -128 n 127))
-    (error "s1 argument ~A out of 8-bit signed range." n))
-  (if (< n 0)
-      (1+ (logxor (- n) #xFF))
-      n))
-
-
-(defknown s2 (fixnum) cons)
-(defun s2 (n)
-  (declare (optimize speed))
-  (declare (type (signed-byte 16) n))
-  (when (not (<= -32768 n 32767))
-    (error "s2 argument ~A out of 16-bit signed range." n))
-  (u2 (if (< n 0) (1+ (logxor (- n) #xFFFF))
-          n)))
-
-
-
-
-
 (defmacro with-saved-compiler-policy (&body body)
   "Saves compiler policy variables, restoring them after evaluating `body'."
   `(let ((*speed* *speed*)

@@ -31,6 +31,7 @@
 
 (in-package #:system)
 
+(require "JVM-CLASS-FILE")
 (require "JAVA")
 
 (export '(lookup-known-symbol))

@@ -30,6 +30,7 @@
 ;;; exception statement from your version.
 
 (in-package "JVM")
+(require '#:compiler-types)
 
 #|
 
@@ -1511,3 +1512,4 @@ be able to
 
 |#
 
+(provide '#:jvm-class-file)

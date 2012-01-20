@@ -42,6 +42,7 @@
   (require "KNOWN-SYMBOLS")
   (require "DUMP-FORM")
   (require "JVM-INSTRUCTIONS")
+  (require "JVM-CLASS-FILE")
   (require "JAVA"))
 
 
