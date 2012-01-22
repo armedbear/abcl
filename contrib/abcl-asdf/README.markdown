@@ -110,13 +110,33 @@ The following ASDF defintion loads enough JVM artifacts to use the
 
 
 Problems
--------
+--------
 
-0.4.1 2011-09-06 
+### 0.5.0 2012-01-22
 
-o  locating the proper Maven3 libraries could work in more places
+   o  just bless this as a release to stablize its offered API "as is"
    
-o  untested under Windows
+   o  definitely failing under MSFT
    
-o  more information should be optionally available when downloading
-   as this process can potentially take a long time.
+   o  ASDF version has to be a three value integer (i.e. no "-snapshot"
+      after version).  Should be fixed with appropiate :AROUND method
+      as implementation specific monkeypatch.
+       
+
+### 0.4.1 2011-09-06 
+
+    o  locating the proper Maven3 libraries could work in more places
+   
+    o  untested under Windows
+   
+    o  more information should be optionally available when downloading
+       as this process can potentially take a long time.
+
+
+#### Colophone
+
+    Mark <evenson.not.org@gmail.com>
+    
+    Created: 2011-01-01
+    Revised: 2012-01-22
+    
