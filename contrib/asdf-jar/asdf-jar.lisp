@@ -35,9 +35,11 @@ Returns the pathname of the packaged jar archive.
           (handler-case (slot-value system 'asdf:version)
             (unbound-slot () "unknown")))
          (package-jar-name 
-          (format nil "~A~A-~A.jar" name (if recursive "-all" "") version))
+          (format nil "~A~A-~A" name (if recursive "-all" "") version))
          (package-jar
-          (make-pathname :directory (pathname-directory out) :defaults package-jar-name))
+          (make-pathname :name package-jar-name
+                         :type "jar"
+                         :defaults out))
          (mapping (make-hash-table :test 'equal))
          (dependencies (dependent-systems system)))
     (when verbose 
@@ -55,10 +57,10 @@ Returns the pathname of the packaged jar archive.
       (let ((base (slot-value system 'asdf::absolute-pathname))
             (name (slot-value system 'asdf::name))
             (asdf (slot-value system 'asdf::source-file)))
-        (setf (gethash asdf mapping) (relative-path base name asdf))
+        (setf (gethash asdf mapping) (archive-relative-path base name asdf))
         (loop :for component :in (all-files system) 
            :for source = (slot-value component 'asdf::absolute-pathname)
-           :for source-entry = (relative-path base name source)
+           :for source-entry = (archive-relative-path base name source)
            :do (setf (gethash source mapping)
                      source-entry)
            :do (when *debug*
@@ -96,11 +98,12 @@ Returns the pathname of the packaged jar archive.
              :when sub :append sub)))
     (remove-duplicates `(,@dependencies ,@sub-depends))))
 
-(defun relative-path (base dir file) 
+(defun archive-relative-path (base dir file) 
   (let* ((relative 
           (nthcdr (length (pathname-directory base)) (pathname-directory file)))
-         (entry-dir `(:relative ,dir ,@(when relative relative))))
-    (make-pathname :directory entry-dir
+         (entry-dir `(:relative ,dir ,@relative)))
+    (make-pathname :device nil
+                   :directory entry-dir
                    :defaults file)))
 
 (defun tmpdir (name)
@@ -117,7 +120,7 @@ Returns the pathname of the packaged jar archive.
 
 The parameter passed to :USE-JAR-FASLS determines whether to instruct
 asdf to use the fasls packaged in the jar.  If this is nil, the fasls
-will be compiled with respect to the ususual asdf output translation
+will be compiled with respect to the usual asdf output translation
 conventions."
   (when (not (typep jar 'pathname))
     (setf jar (pathname jar)))
