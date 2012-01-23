@@ -1,0 +1,25 @@
+# -*- Mode: n3 -*-
+
+@prefix abcl:            <https://abcl.org> 
+@prefix doap:            <http://usefulinc.com/ns/doap#> .
+@prefix rdf:             <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:            <http://www.w3.org/2000/01/rdf-schema#> .
+
+<> a doap:Project.
+<> rdfs:seeAlso         <urn:abcl.org> .
+
+<https://abcl.org/index#doap>
+  a                     doap:Project ;
+  doap:label            "Armed Bear Common Lisp" ;
+  doap:download-page    <http://common-lisp.net/project/armedbear/> ;
+  doap:license          <http://usefulinc.com/doap/licenses/gplv2> ;
+
+  doap:programming-language "Java"^^xsd:string ;
+  doap:shortname "ABCL"^^xsd:string .
+
+doap:Project rdfs:seeAlso 
+  <http://trac.common-lisp.net/armedbear/timeline> , 
+  <http://trac.common-lisp.net/armedbear/wiki> , 
+  <http://code.google.com/p/abcl-dynamic-install/> .
+
+  
