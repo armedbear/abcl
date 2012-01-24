@@ -14,8 +14,10 @@
   doap:download-page    <http://common-lisp.net/project/armedbear/> ;
   doap:license          <http://usefulinc.com/doap/licenses/gplv2> ;
 
-  doap:programming-language "Java"^^xsd:string ;
-  doap:shortname "ABCL"^^xsd:string .
+  doap:programming-language """("Common Lisp" "Java" "Ant" "Shell Script") """" ;
+  doap:shortname "ABCL"^^xsd:string     
+  doap:contributors """( ehu, easye, v-ille, astalla, rudi, peter)"""
+
 
 doap:Project rdfs:seeAlso 
   <http://trac.common-lisp.net/armedbear/timeline> , 
