@@ -506,6 +506,7 @@ from ${abcl.home.dir}
       </uptodate>
     </condition>
 
+    <target name="abcl-contrib.jar" depends="abcl.contrib"/>
     <target name="abcl.contrib" unless="abcl.contrib.uptodate.p">
       <jar destfile="${abcl-contrib.jar}"
            compress="true"
