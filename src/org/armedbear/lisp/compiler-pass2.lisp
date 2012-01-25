@@ -4088,7 +4088,7 @@ given a specific common representation.")
       (with-class-file class-file
         (let ((*current-compiland* compiland))
           (with-saved-compiler-policy
-              (p2-compiland compiland)
+              (compile-to-jvm-class compiland)
             (finish-class (compiland-class-file compiland) f)))))
     (when stream
       (let ((bytes (sys::%get-output-stream-bytes stream)))
@@ -6972,26 +6972,6 @@ We need more thought here.
 
 
 
-;; Returns a list with the types of the arguments
-(defun analyze-args (compiland)
-  (let* ((args (cadr (compiland-p1-result compiland)))
-         (arg-count (length args)))
-    (dformat t "analyze-args args = ~S~%" args)
-    (aver (not (memq '&AUX args)))
-
-    (when (or (memq '&KEY args)
-              (memq '&OPTIONAL args)
-              (memq '&REST args))
-      (setf *using-arg-array* t
-            *hairy-arglist-p* t)
-      (return-from analyze-args (list +lisp-object-array+)))
-
-    (cond ((<= arg-count call-registers-limit)
-           (lisp-object-arg-types arg-count))
-          (t (setf *using-arg-array* t)
-             (setf (compiland-arity compiland) arg-count)
-             (list +lisp-object-array+)))))
-
 (defmacro with-open-class-file ((var class-file) &body body)
   `(with-open-file (,var (abcl-class-file-pathname ,class-file)
                          :direction :output
@@ -7049,8 +7029,10 @@ We need more thought here.
   (setf (local-function-field local-function)
         (symbol-name (gensym "LFUN"))))
 
+
+
 (defknown p2-compiland (t) t)
-(defun p2-compiland (compiland)
+(defun p2-compiland (compiland method)
   (let* ((p1-result (compiland-p1-result compiland))
          (class-file (compiland-class-file compiland))
          (*this-class* (abcl-class-file-class class-file))
@@ -7060,35 +7042,13 @@ We need more thought here.
          (local-closure-vars
           (find compiland *closure-variables* :key #'variable-compiland))
          (body (cddr p1-result))
-         (*using-arg-array* nil)
-         (*hairy-arglist-p* nil)
-         ;; *hairy-arglist-p* != NIL --> *using-arglist-array* != NIL
 
          (*child-p* (not (null (compiland-parent compiland))))
 
-         (arg-types (analyze-args compiland))
-         (method (make-jvm-method "execute" +lisp-object+ arg-types
-				  :flags '(:final :public)))
          (*visible-variables* *visible-variables*)
 
          (*thread* nil)
          (*initialize-thread-var* nil))
-
-    (class-add-method class-file method)
-
-    (setf (abcl-class-file-superclass class-file)
-          (if (or *hairy-arglist-p*
-                  (and *child-p* *closure-variables*))
-              +lisp-compiled-closure+
-              +lisp-compiled-primitive+))
-
-    (let ((constructor
-           (make-constructor class-file (compiland-name compiland) args)))
-      (setf (abcl-class-file-constructor class-file) constructor)
-      (class-add-method class-file constructor))
-    (let ((clinit (make-static-initializer class-file)))
-      (setf (abcl-class-file-static-initializer class-file) clinit)
-      (class-add-method class-file clinit))
 
     (with-code-to-method (class-file method)
       (setf *register* 1 ;; register 0: "this" pointer
@@ -7255,11 +7215,12 @@ We need more thought here.
       (let ((code *code*))
         (setf *code* ())
         (let ((arity (compiland-arity compiland)))
-          (when arity
+          (when (and arity
+                     *using-arg-array*)
             (generate-arg-count-check arity)))
 
         (when *hairy-arglist-p*
-          (aload 0) ; this
+          (aload 0)                     ; this
           (aver (not (null (compiland-argument-register compiland))))
           (aload (compiland-argument-register compiland)) ; arg vector
           (cond ((or (memq '&OPTIONAL args) (memq '&KEY args))
@@ -7281,6 +7242,45 @@ We need more thought here.
         (setf *code* (nconc code *code*)))
       ))
   t)
+
+(defun compile-to-jvm-class (compiland)
+  "Returns ?what? ### a jvm class-file object?"
+  (let* ((class-file (compiland-class-file compiland))
+         (args (cadr (compiland-p1-result compiland)))
+         (*hairy-arglist-p* (or (memq '&KEY args)
+                                (memq '&OPTIONAL args)
+                                (memq '&REST args)))
+         (*using-arg-array* (or *hairy-arglist-p*
+                                (< call-registers-limit (length args)))))
+    (setf (abcl-class-file-superclass class-file)
+          (if (or *hairy-arglist-p*
+                  (and (not (null (compiland-parent compiland)))
+                       *closure-variables*))
+              +lisp-compiled-closure+
+              +lisp-compiled-primitive+))
+    (unless *hairy-arglist-p*
+      (setf (compiland-arity compiland)
+            (length args)))
+
+    ;; Static initializer
+    (let ((clinit (make-static-initializer class-file)))
+      (setf (abcl-class-file-static-initializer class-file) clinit)
+      (class-add-method class-file clinit))
+
+    ;; Constructor
+    (let ((constructor
+           (make-constructor class-file (compiland-name compiland) args)))
+      (setf (abcl-class-file-constructor class-file) constructor)
+      (class-add-method class-file constructor))
+
+    ;; Main method
+    (let* ((method-arg-types (if *using-arg-array*
+                                 (list +lisp-object-array+)
+                                 (lisp-object-arg-types (length args))))
+           (method (make-jvm-method "execute" +lisp-object+ method-arg-types
+                                    :flags '(:final :public))))
+      (class-add-method class-file method)
+      (p2-compiland compiland method))))
 
 (defun p2-with-inline-code (form target representation)
   ;;form = (with-inline-code (&optional target-var repr-var) ...body...)
@@ -7325,7 +7325,7 @@ We need more thought here.
 
     (with-class-file (compiland-class-file compiland)
       (with-saved-compiler-policy
-        (p2-compiland compiland)
+        (compile-to-jvm-class compiland)
         ;;        (finalize-class-file (compiland-class-file compiland))
         (finish-class (compiland-class-file compiland) stream)))))
 
