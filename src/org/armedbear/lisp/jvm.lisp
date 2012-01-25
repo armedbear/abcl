@@ -748,9 +748,9 @@ That's the one which contains the environment used in the outermost block."
                  initialize-instance
                  shared-initialize))
     (let ((gf (and (fboundp sym) (fdefinition sym))))
-      (when (typep gf 'generic-function)
+      (when (typep gf 'standard-generic-function)
         (unless (compiled-function-p gf)
-          (mop::finalize-generic-function gf))))))
+          (mop::finalize-standard-generic-function gf))))))
 
 (finalize-generic-functions)
 

@@ -78,6 +78,7 @@
 ;; * BuiltInClass.java
 ;; * StandardObject.java
 ;; * StandardObjectFunctions.java
+;; * FuncallableStandardObject.java
 ;; * Layout.java
 ;;
 ;; In case of function names, those defined on the Java side can be
@@ -1327,12 +1328,19 @@
   (when (fboundp function-name)
     (let ((gf (fdefinition function-name)))
       (when (typep gf 'generic-function)
-        ;; Remove methods defined by previous DEFGENERIC forms.
+        ;; Remove methods defined by previous DEFGENERIC forms, as
+        ;; specified by CLHS, 7.7 (Macro DEFGENERIC).
         (dolist (method (generic-function-initial-methods gf))
-          (%remove-method gf method))
+          (if (typep gf 'standard-generic-function)
+              (std-remove-method gf method)
+              (remove-method gf method)))
         (setf (generic-function-initial-methods gf) '()))))
   (apply 'ensure-generic-function function-name all-keys))
 
+;;; Bootstrap version of ensure-generic-function, handling only
+;;; standard-generic-function.  This function will be replaced in
+;;; mop.lisp.
+(declaim (notinline ensure-generic-function))
 (defun ensure-generic-function (function-name
                                 &rest all-keys
                                 &key
@@ -1365,7 +1373,7 @@
                         (canonicalize-argument-precedence-order argument-precedence-order
                                                                 required-args)
                         nil)))
-            (finalize-generic-function gf))
+            (finalize-standard-generic-function gf))
           gf)
         (progn
           (when (and (null *clos-booting*)
@@ -1402,9 +1410,11 @@
                    :test 'eql))))
     result))
 
-(defun finalize-generic-function (gf)
+(defun finalize-standard-generic-function (gf)
   (%finalize-generic-function gf)
-  (setf (classes-to-emf-table gf) (make-hash-table :test #'equal))
+  (unless (generic-function-classes-to-emf-table gf)
+    (set-generic-function-classes-to-emf-table gf (make-hash-table :test #'equal)))
+  (clrhash (generic-function-classes-to-emf-table gf))
   (%init-eql-specializations gf (collect-eql-specializer-objects gf))
   (set-funcallable-instance-function
    gf #'(lambda (&rest args)
@@ -1420,26 +1430,27 @@
                                                 method-combination
                                                 argument-precedence-order
                                                 documentation)
+  ;; to avoid circularities, we do not call generic functions in here.
   (declare (ignore generic-function-class))
   (let ((gf (std-allocate-instance +the-standard-generic-function-class+)))
     (%set-generic-function-name gf name)
-    (setf (generic-function-lambda-list gf) lambda-list)
-    (setf (generic-function-initial-methods gf) ())
-    (setf (generic-function-methods gf) ())
-    (setf (generic-function-method-class gf) method-class)
-    (setf (generic-function-method-combination gf) method-combination)
-    (setf (generic-function-documentation gf) documentation)
-    (setf (classes-to-emf-table gf) nil)
+    (%set-generic-function-lambda-list gf lambda-list)
+    (set-generic-function-initial-methods gf ())
+    (set-generic-function-methods gf ())
+    (set-generic-function-method-class gf method-class)
+    (set-generic-function-method-combination gf method-combination)
+    (set-generic-function-documentation gf documentation)
+    (set-generic-function-classes-to-emf-table gf nil)
     (let* ((plist (analyze-lambda-list (generic-function-lambda-list gf)))
            (required-args (getf plist ':required-args)))
       (%set-gf-required-args gf required-args)
       (%set-gf-optional-args gf (getf plist :optional-args))
-      (setf (generic-function-argument-precedence-order gf)
+      (set-generic-function-argument-precedence-order gf
             (if argument-precedence-order
                 (canonicalize-argument-precedence-order argument-precedence-order
                                                         required-args)
                 nil)))
-    (finalize-generic-function gf)
+    (finalize-standard-generic-function gf)
     gf))
 
 (defun canonicalize-specializers (specializers)
@@ -1686,7 +1697,7 @@ Initialized with the true value near the end of the file.")
            (if (eq (generic-function-method-class gf) +the-standard-method-class+)
                (apply #'make-instance-standard-method gf all-keys)
                (apply #'make-instance (generic-function-method-class gf) all-keys))))
-      (%add-method gf method)
+      (std-add-method gf method)
       method)))
 
 (defun make-instance-standard-method (gf
@@ -1713,7 +1724,7 @@ Initialized with the true value near the end of the file.")
                             (getf analyzed-args :allow-other-keys))
     method))
 
-(defun %add-method (gf method)
+(defun std-add-method (gf method)
   (when (%method-generic-function method)
     (error 'simple-error
            :format-control "ADD-METHOD: ~S is a method of ~S."
@@ -1722,16 +1733,16 @@ Initialized with the true value near the end of the file.")
   (let ((old-method (%find-method gf (method-qualifiers method)
                                  (%method-specializers method) nil)))
     (when old-method
-      (%remove-method gf old-method)))
+      (std-remove-method gf old-method)))
   (%set-method-generic-function method gf)
   (push method (generic-function-methods gf))
   (dolist (specializer (%method-specializers method))
     (when (typep specializer 'class) ;; FIXME What about EQL specializer objects?
       (pushnew method (class-direct-methods specializer))))
-  (finalize-generic-function gf)
+  (finalize-standard-generic-function gf)
   gf)
 
-(defun %remove-method (gf method)
+(defun std-remove-method (gf method)
   (setf (generic-function-methods gf)
         (remove method (generic-function-methods gf)))
   (%set-method-generic-function method nil)
@@ -1739,7 +1750,7 @@ Initialized with the true value near the end of the file.")
     (when (typep specializer 'class) ;; FIXME What about EQL specializer objects?
       (setf (class-direct-methods specializer)
             (remove method (class-direct-methods specializer)))))
-  (finalize-generic-function gf)
+  (finalize-standard-generic-function gf)
   gf)
 
 (defun %find-method (gf qualifiers specializers &optional (errorp t))
@@ -2410,7 +2421,7 @@ to ~S with argument list ~S."
                                                                       fast-function
                                                                       (autocompile fast-function))
                                                    :slot-name slot-name)))
-        (%add-method gf method)
+        (std-add-method gf method)
         method))))
 
 (defun add-writer-method (class function-name slot-name)
@@ -3224,7 +3235,7 @@ or T when any keyword is acceptable due to presence of
 ;;; Methods having to do with generic function metaobjects.
 
 (defmethod initialize-instance :after ((gf standard-generic-function) &key)
-  (finalize-generic-function gf))
+  (finalize-standard-generic-function gf))
 
 ;;; Methods having to do with generic function invocation.
 
@@ -3476,12 +3487,12 @@ or T when any keyword is acceptable due to presence of
         (gf-lambda-list (generic-function-lambda-list generic-function)))
     (check-method-lambda-list (%generic-function-name generic-function)
                               method-lambda-list gf-lambda-list))
-  (%add-method generic-function method))
+  (std-add-method generic-function method))
 
 (defgeneric remove-method (generic-function method))
 
 (defmethod remove-method ((generic-function standard-generic-function) method)
-  (%remove-method generic-function method))
+  (std-remove-method generic-function method))
 
 ;; See describe.lisp.
 (defgeneric describe-object (object stream))
