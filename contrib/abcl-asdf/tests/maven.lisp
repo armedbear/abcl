@@ -9,20 +9,22 @@
 
 (in-package :abcl-asdf-test)
 
-(deftest LOG4J.1
+;;;;(deftest LOG4J.1
+(defun test-LOG4J.1 ()
     (let ((result (abcl-asdf:resolve-dependencies "log4j" "log4j")))
       (and result
            (format *standard-output* "~&~A~%" result)
-           (type-p result 'cons)))
-  t)
+           (type-p result 'cons))))
+;;;  t)
 
 
-(deftest ABCL.1
+;;;;(deftest ABCL.1
+(defun test-ABCL.1 ()
     (let ((result (abcl-asdf:resolve-dependencies "org.armedbear.lisp" "abcl")))
       (and result
            (format *standard-output* "~&~A~%" result)
-           (type-p result 'cons)))
-  t)
+           (type-p result 'cons))))
+;;;  t)
 
 
 

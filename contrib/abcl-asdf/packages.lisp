@@ -27,5 +27,5 @@
    #:*inhibit-add-to-classpath*))
 
 (defpackage #:abcl-asdf-test
-  (:use :cl #+nil :abcl-test-lisp) ;;; FIXME
+  (:use :cl #+nil :abcl-test-lisp) ;;; FIXME include some sort of test framework
   (:export #:run))
