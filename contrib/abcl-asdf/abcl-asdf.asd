@@ -18,23 +18,16 @@
                     :depends-on ("abcl-asdf" "asdf-jar")))
             :depends-on (packages))))
 
-
-(eval-when (:compile-toplevel :load-toplevel)
-  (load "~/quicklisp/setup")
-  (apply (intern (symbol-name 'quickload) 'quicklisp) "rt"))
-
 (defsystem :abcl-asdf-test
   :author "Mark Evenson"
-  :depends-on (abcl-asdf quicklisp rt)
+  :depends-on (abcl abcl-test-lisp)
   :components
   ((:module tests :components
             (#+nil (:file "example")
                    (:file "maven")))))
 
-
 (defmethod perform ((o test-op) (c (eql (find-system 'abcl-asdf))))
    "Invoke tests with (asdf:test-system 'abcl-asdf)."
    (asdf:load-system 'abcl-asdf-test)
-
    (funcall (intern (symbol-name 'run) 'abcl-asdf-test)))
 
