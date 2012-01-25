@@ -20,14 +20,17 @@
 
 (defsystem :abcl-asdf-test
   :author "Mark Evenson"
-  :depends-on (abcl abcl-test-lisp)
+  :depends-on (abcl)
   :components
   ((:module tests :components
             (#+nil (:file "example")
                    (:file "maven")))))
 
+#+nil FIXME
 (defmethod perform ((o test-op) (c (eql (find-system 'abcl-asdf))))
    "Invoke tests with (asdf:test-system 'abcl-asdf)."
+   (asdf:load-system 'abcl)
+   (asdf:load-system 'abcl-test-lisp)
    (asdf:load-system 'abcl-asdf-test)
    (funcall (intern (symbol-name 'run) 'abcl-asdf-test)))
 

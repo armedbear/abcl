@@ -13,13 +13,14 @@
 Test:
 (resolve-dependencies "org.slf4j" "slf4j-api" "1.6.1")
 
-(resolve-dependencies "org.apache.maven" "maven-aether-provider" "3.0.3")
+(resolve-dependencies "org.apache.maven" "maven-aether-provider" "3.0.4")
 |#
 
 (defvar *mavens* '("/opt/local/bin/mvn3" "mvn3" "mvn" "mvn.bat")
   "Locations to search for the Maven executable.")
 
 (defun find-mvn () 
+  "Attempt to find a suitable Maven ('mvn') executable on the hosting operating system."
   (dolist (mvn-path *mavens*)
     (let ((mvn 
            (handler-case 
@@ -75,20 +76,28 @@ Test:
 (defparameter *init* nil)
 
 (defun init ()
+  "Run the initialization strategy to bootstrap a Maven dependency node."
   (unless *mvn-libs-directory*
     (setf *mvn-libs-directory* (find-mvn-libs)))
   (unless (probe-file *mvn-libs-directory*)
-    (error "You must download maven-3.0.3 from http://maven.apache.org/download.html, then set ABCL-ASDF:*MVN-DIRECTORY* appropiately."))
+    (error "You must download maven-3.0.3 or later from http://maven.apache.org/download.html, then set ABCL-ASDF:*MVN-DIRECTORY* appropiately."))
   (unless (ensure-mvn-version)
     (error "We need maven-3.0.3 or later."))
   (add-directory-jars-to-class-path *mvn-libs-directory* nil)
   (setf *init* t))
 
 (defparameter *http-wagon-implementations*
-  `("org.apache.maven.wagon.providers.http.HttpWagon" ;; introduced as default with maven-3.0.3
-    "org.apache.maven.wagon.providers.http.LightweightHttpWagon"))
+  `("org.apache.maven.wagon.providers.http.HttpWagon" ;; introduced as default with maven-3.0.4
+    "org.apache.maven.wagon.providers.http.LightweightHttpWagon")
+  "A list of possible candidate implementations that provide access to http and https resources.
+
+Supposedly configurable with the java.net.protocols (c.f. reference maso2000 in the Manual.")
 
 (defun make-wagon-provider ()
+  "Returns an implementation of the org.sonatype.aether.connector.wagon.WagonProvider contract.
+
+The implementation is specified as Lisp closures.  Currently, it only
+specializes the lookup() method if passed an 'http' role hint."
   (unless *init* (init))
   (java:jinterface-implementation 
    "org.sonatype.aether.connector.wagon.WagonProvider"
@@ -137,7 +146,7 @@ Test:
      (#"newLocalRepositoryManager" repository-system local-repository))))
 
 (defun resolve-artifact (group-id artifact-id &optional (version "LATEST" versionp))
-  "Dynamically resolve Maven dependencies for item with GROUP-ID and ARTIFACT-ID at VERSION.
+  "Directly resolve Maven dependencies for item with GROUP-ID and ARTIFACT-ID at VERSION, ignoring dependencies.
 
 Declared dependencies are not attempted to be located.
 
