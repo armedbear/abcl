@@ -2572,6 +2572,7 @@ in place, while we still need them to "
                                      &allow-other-keys)
   (setf all-keys (copy-list all-keys))  ; since we modify it
   (remf all-keys :metaclass)
+  (unless (classp metaclass) (setf metaclass (find-class metaclass)))
   (let ((class (apply (if (eq metaclass +the-standard-class+)
                           #'make-instance-standard-class
                           #'make-instance)
@@ -2593,6 +2594,7 @@ in place, while we still need them to "
                                      direct-superclasses &allow-other-keys)
   (setf all-keys (copy-list all-keys))  ; since we modify it
   (remf all-keys :metaclass)
+  (unless (classp metaclass) (setf metaclass (find-class metaclass)))
   (change-class class metaclass)
   (apply #'reinitialize-instance class
          :name name
@@ -2608,6 +2610,7 @@ in place, while we still need them to "
   (declare (ignore name))
   (setf all-keys (copy-list all-keys))  ; since we modify it
   (remf all-keys :metaclass)
+  (unless (classp metaclass) (setf metaclass (find-class metaclass)))
   (when (and metaclassp (not (eq (class-of class) metaclass)))
     (error 'program-error
            "Trying to redefine class ~S with different metaclass."
