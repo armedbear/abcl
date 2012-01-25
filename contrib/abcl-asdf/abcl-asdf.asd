@@ -3,7 +3,7 @@
 
 (defsystem :abcl-asdf
   :author "Mark Evenson"
-  :version "0.4.1"
+  :version "0.5.0"
   :depends-on (jss)
   :components 
   ((:module packages :pathname "" 
@@ -17,3 +17,24 @@
              (:file "maven-embedder" 
                     :depends-on ("abcl-asdf" "asdf-jar")))
             :depends-on (packages))))
+
+
+(eval-when (:compile-toplevel :load-toplevel)
+  (load "~/quicklisp/setup")
+  (apply (intern (symbol-name 'quickload) 'quicklisp) "rt"))
+
+(defsystem :abcl-asdf-test
+  :author "Mark Evenson"
+  :depends-on (abcl-asdf quicklisp rt)
+  :components
+  ((:module tests :components
+            (#+nil (:file "example")
+                   (:file "maven")))))
+
+
+(defmethod perform ((o test-op) (c (eql (find-system 'abcl-asdf))))
+   "Invoke tests with (asdf:test-system 'abcl-asdf)."
+   (asdf:load-system 'abcl-asdf-test)
+
+   (funcall (intern (symbol-name 'run) 'abcl-asdf-test)))
+

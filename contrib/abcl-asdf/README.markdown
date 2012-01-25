@@ -133,10 +133,10 @@ Problems
        as this process can potentially take a long time.
 
 
-#### Colophone
+#### Colophon
 
     Mark <evenson.not.org@gmail.com>
     
     Created: 2011-01-01
-    Revised: 2012-01-22
+    Revised: 2012-01-24
     

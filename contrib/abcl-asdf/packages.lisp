@@ -16,3 +16,6 @@
    #:*added-to-classpath*
    #:*inhibit-add-to-classpath*))
 
+(defpackage #:abcl-asdf-test
+  (:use :cl :rt)
+  (:export #:run))

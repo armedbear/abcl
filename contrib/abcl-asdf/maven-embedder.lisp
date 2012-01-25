@@ -84,6 +84,10 @@ Test:
   (add-directory-jars-to-class-path *mvn-libs-directory* nil)
   (setf *init* t))
 
+(defparameter *http-wagon-implementations*
+  `("org.apache.maven.wagon.providers.http.HttpWagon" ;; introduced as default with maven-3.0.3
+    "org.apache.maven.wagon.providers.http.LightweightHttpWagon"))
+
 (defun make-wagon-provider ()
   (unless *init* (init))
   (java:jinterface-implementation 
@@ -91,7 +95,7 @@ Test:
    "lookup"
    (lambda (role-hint)
      (if (string-equal "http" role-hint)
-       (java:jnew "org.apache.maven.wagon.providers.http.LightweightHttpWagon")
+         (some (lambda (provider) (java:jnew provider)) *http-wagon-implementations*)
        java:+null+))
    "release"
    (lambda (wagon)
