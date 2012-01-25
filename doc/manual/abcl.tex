@@ -228,9 +228,9 @@ There are two ways to call a Java object method in the low-level (basic) API:
 
 \begin{itemize}
 \item Call a specific method reference (which was previously acquired)
-\item Dynamic dispatch using the method name and
-  the call-specific arguments provided by finding the
-  \ref{section:Parameter matching for FFI dynamic dispatch}{best match}.
+\item Dynamic dispatch using the method name and the call-specific
+  arguments provided by finding the best match (see
+  Section~\ref{sec:param-matching-for-ffi}).
 \end{itemize}
 
 The dynamic dispatch variant is discussed in the next section.
@@ -352,6 +352,7 @@ The parameter values should be values to pass in the function call instead of
 a specification of classes for each parameter.
 
 \subsubsection{Parameter matching for FFI dynamic dispatch}
+\label{sec:param-matching-for-ffi}
 
 The algorithm used to resolve the best matching method given the name
 and the arguments' types is the same as described in the Java Language
@@ -788,7 +789,7 @@ user.  They include functions for manipulating network sockets,
 running external programs, registering object finalizers, constructing
 reference weakly held by the garbage collector and others.
 
-See \ref{Rhodes2007} for a generic function interface to the native
+See \cite{RHODES2007} for a generic function interface to the native
 JVM contract for \code{java.util.List}.
 
 % include autogen docs for the EXTENSIONS package.
@@ -814,7 +815,7 @@ description and retrieval of resources named in a URI scheme that the
 JVM ``understands''.  Support is built-in to the ``http'' and
 ``https'' implementations but additional protocol handlers may be
 installed at runtime by having JVM symbols present in the
-sun.net.protocol.dynmamic pacakge. See Java2007 \cite{Java2007} for more
+sun.net.protocol.dynamic pacakge. See \cite{maso2000} for more
 details.
 
 ABCL has created specializations of the ANSI Pathname object to
@@ -850,7 +851,7 @@ resource (e.g. following redirects) are discarded.
 \end{itemize}
 
 The implementation of URL-PATHNAME allows the ABCL user to laod dynamically
-code from the network.  For example, for Quicklisp (\cite{Xach2011}):
+code from the network.  For example, for Quicklisp (\cite{quicklisp}):
 
 \begin{listing-lisp}
   CL-USER> (load "http://beta.quicklisp.org/quicklisp.lisp")
@@ -858,7 +859,7 @@ code from the network.  For example, for Quicklisp (\cite{Xach2011}):
 
 will load and execute the Quicklisp setup code.
 
-See \ref{_:XACH2011} on page \pageref{_:XACH2011}.
+%See \ref{_:quicklisp} on page \pageref{_:quicklisp}.
 
 \subsubsection{Implementation}
 
@@ -889,7 +890,7 @@ is required, or
 CL-USER> (require 'extensible-sequences)
 \end{listing-lisp}
 
-if only the extensible sequences API as specified in \ref{RHODES2007} is
+if only the extensible sequences API as specified in \cite{RHODES2007} is
 required.
 
 Note that \code{(require 'java-collections)} must be issued before
@@ -1067,12 +1068,10 @@ To one used to the more universal syntax of Lisp pairs for which the
 definition of read and compile time macros is quite natural, the Java
 syntax available to the Java programmer may be said to suck.  To
 alleviate this situation, we introduce the
-\code{SHARPSIGN-DOUBLE-QUOTE} (``\\#"Q'') macro, the first of perhaps
+\code{SHARPSIGN-DOUBLE-QUOTE} (\code{\#"}) reader macro, the first of perhaps
   many exper
 
 \subsection{JSS usage}
-
-\label{section:jss}
 
 Example:
 
@@ -1091,7 +1090,7 @@ CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 \section{asdf-install}
 
 The asdf-install contrib provides an implementation of ASDF-INSTALL.
-Superseded by Quicklisp (see Xach2011 \cite{Xach2011}).
+Superseded by Quicklisp (see Xach2011 \cite{quicklisp}).
 
 The \code{require} of the \code{asdf-install} symbol has the side
 effect of pushing the directory ``~/.asdf-install-dir/systems/'' into
@@ -1121,35 +1120,8 @@ stating the conformance of Armed Bear Common Lisp to \textsc{ANSI}, we
 released abcl-1.0.0.  We released abcl-1.0.1 as a maintainence release
 on January 10, 2012.
 
-
-\begin{thebibliography}{9}
-
-\label{_:1}
-\bibitem{Java2000}
-  ``A New Era for Java Protocol Handlers.''
-  \url{http://java.sun.com/developer/onlineTraining/protocolhandlers/}
-
-\label{_:XACH2011}
-\bibitem{Xach2011}
-  Zach Beene
-  ``Quicklisp:  A system for quickly constructing Common Lisp''
-  \url{http://www.quicklisp.org/}
-
-\label{_:RHODES2007}
-\bibitem{Rhodes2007}
-Christopher Rhodes
-``User-extensible Sequences in Common Lisp''
-ILC '07 Proceedings of the 2007 International Lisp Conference
-% An early draft.  XXX where is the real one?
-\url{http://jcsu.jesus.cam.ac.uk/~csr21/spec.pdf}
-
-\label{_:AMOP}
-\bibitem{AMOP}
-Gregor Kiczales, Jim de Rivieres, and Daniel G. Bobrow
-The Art of the Metaobject Protocol
-% XXX online citation
-
-\end{thebibliography}
+\bibliography{abcl}
+\bibliographystyle{alpha}
 
 \printindex
 
