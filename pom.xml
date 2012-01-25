@@ -13,7 +13,7 @@
   </parent>
   <groupId>org.armedbear.lisp</groupId>
   <artifactId>abcl</artifactId>
-  <version>1.0.1</version>
+  <version>1.1.0-dev</version>
   <packaging>jar</packaging>
   <name>ABCL - Armed Bear Common Lisp</name>
   <description>Common Lisp implementation running on the JVM</description>
