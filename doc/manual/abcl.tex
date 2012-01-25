@@ -5,7 +5,7 @@
 
 \begin{document}
 \title{A Manual for Armed Bear Common Lisp}
-\date{January 10, 2012}
+\date{January 25, 2012}
 \author{Mark~Evenson, Erik~H\"{u}lsmann, Alessio~Stalla, Ville~Voutilainen}
 
 \maketitle
@@ -21,7 +21,7 @@ conformance level.  This manual documents the Armed Bear Common Lisp
 implementation for users of the system.
 
 \subsection{Version}
-This manual corresponds to abcl-1.0.1 released on January 10, 2012.
+This manual corresponds to abcl-1.1.0-dev, as yet unreleased..
 
 \subsection{License}
 
@@ -47,7 +47,6 @@ to be merged with the public trunk.
 \item Alan Ruttenberg
 \texttt{Thanks for JSS.}
 
-
 \item and of course
 \emph{Peter Graves}
 \end{itemize}
@@ -57,7 +56,7 @@ to be merged with the public trunk.
 
 \textsc{ABCL} is packaged as a single jar file usually named either
 ``abcl.jar'' or possibly``abcl-1.0.1.jar'' if one is using a versioned
-package on the local filesytem from your system vendor.  This byte
+package on the local filesystem from your system vendor.  This byte
 archive can be executed under the control of a suitable JVM \footnote
 {Java Virtual Machine} by using the ``-jar'' option to parse the
 manifest, and select the class named therein
@@ -163,7 +162,7 @@ contemporary Common Lisp.
     at an arbitrarily selected call frame.
 
   \item An incomplete implementation of a properly named metaobject
-    protocol (viz. (A)MOP \footnote{The Art of the  Metaobject Protocol} )
+    protocol (c.f. the (A)MOP \footnote{The Art of the  Metaobject Protocol} specification)
 
     % N.b. 
     % TODO go through AMOP with symbols, starting by looking for
@@ -560,7 +559,7 @@ function just as like one would traverse a list in Lisp:;
 
 ABCL can be built with support for JSR-223, which offers a
 language-agnostic API to invoke other languages from Java. The binary
-distribution downloadable from ABCL's common-lisp.net home is built
+distribution download-able from ABCL's common-lisp.net home is built
 with JSR-223 support. If you're building ABCL from source on a pre-1.6
 JVM, you need to have a JSR-223 implementation in your CLASSPATH (such
 as Apache Commons BSF 3.x or greater) in order to build ABCL with
@@ -602,13 +601,13 @@ well. You can obtain an instance of AbclScriptEngine using the
 AbclScriptEngineFactory or by using the service provider mechanism
 through ScriptEngineManager (refer to the javax.script documentation).
 
-\subsubsection{Startup and configuration file}
+\subsubsection{Start-up and configuration file}
 
-At startup (i.e. when its constructor is invoked, as part of the
+At start-up (i.e. when its constructor is invoked, as part of the
 static initialization phase of AbclScriptEngineFactory) the ABCL
 script engine attempts to load an "init file" from the classpath
 (/abcl-script-config.lisp). If present, this file can be used to
-customize the behaviour of the engine, by setting a number of
+customize the behavior of the engine, by setting a number of
 variables in the ABCL-SCRIPT package. Here is a list of the available
 variables:
 
@@ -1058,16 +1057,22 @@ jar archives for ABCL.  Given a running ABCL image with loadable ASDF
 systems the code in this package will recursively package all the
 required source and fasls in a jar archive.
 
-\url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/asdf-jar/README.markdown}
+See \url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/asdf-jar/README.markdown}.
 
 
 \section{jss}
 \label{section:jss}
 
-To one used to a syntax that can construct macros the Java syntax
-may be said to suck, so we introduce the \code{SHARPSIGN-DOUBLE-QUOTE} \#" macro.
+To one used to the more universal syntax of Lisp pairs for which the
+definition of read and compile time macros is quite natural, the Java
+syntax available to the Java programmer may be said to suck.  To
+alleviate this situation, we introduce the
+\code{SHARPSIGN-DOUBLE-QUOTE} (``\\#"Q'') macro, the first of perhaps
+  many exper
 
 \subsection{JSS usage}
+
+\label{section:jss}
 
 Example:
 
@@ -1113,8 +1118,8 @@ contemporary Common Lisp implementation.
 
 On October 22, 2011, with the publication of this Manual explicitly
 stating the conformance of Armed Bear Common Lisp to \textsc{ANSI}, we
-released abcl-1.0.0.
-
+released abcl-1.0.0.  We released abcl-1.0.1 as a maintainence release
+on January 10, 2012.
 
 
 \begin{thebibliography}{9}
@@ -1130,12 +1135,19 @@ released abcl-1.0.0.
   ``Quicklisp:  A system for quickly constructing Common Lisp''
   \url{http://www.quicklisp.org/}
 
+\label{_:RHODES2007}
 \bibitem{Rhodes2007}
 Christopher Rhodes
 ``User-extensible Sequences in Common Lisp''
 ILC '07 Proceedings of the 2007 International Lisp Conference
 % An early draft.  XXX where is the real one?
 \url{http://jcsu.jesus.cam.ac.uk/~csr21/spec.pdf}
+
+\label{_:AMOP}
+\bibitem{AMOP}
+Gregor Kiczales, Jim de Rivieres, and Daniel G. Bobrow
+The Art of the Metaobject Protocol
+% XXX online citation
 
 \end{thebibliography}
 
