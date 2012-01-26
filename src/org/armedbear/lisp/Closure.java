@@ -656,32 +656,14 @@ public class Closure extends Function
       }
   }
 
-  protected final LispObject[] processArgs(LispObject[] args, LispThread thread)
+  
+  private LispObject[] _processArgs(LispObject[] args, LispThread thread,
+          Environment ext) {
+        final LispObject[] array = new LispObject[variables.length];
+        int index = 0;
 
-  {
-    if (optionalParameters.length == 0 && keywordParameters.length == 0)
-      return fastProcessArgs(args);
-    final int argsLength = args.length;
-    if (arity >= 0)
-      {
-        // Fixed arity.
-        if (argsLength != arity)
-          error(new WrongNumberOfArgumentsException(this, arity));
-        return args;
-      }
-    // Not fixed arity.
-    if (argsLength < minArgs)
-      error(new WrongNumberOfArgumentsException(this, minArgs, -1));
-    final LispObject[] array = new LispObject[variables.length];
-    int index = 0;
-    // The bindings established here (if any) are lost when this function
-    // returns. They are used only in the evaluation of initforms for
-    // optional and keyword arguments.
-    final SpecialBindingsMark mark = thread.markSpecialBindings();
-    Environment ext = new Environment(environment);
-    // Section 3.4.4: "...the &environment parameter is bound along with
-    // &whole before any other variables in the lambda list..."
-    try {
+        int argsLength = args.length;
+        
         if (bindInitForms)
           if (envVar != null)
             bindArg(specials, envVar, environment, ext, thread);
@@ -909,11 +891,41 @@ public class Closure extends Function
                   error(new WrongNumberOfArgumentsException(this));
               }
           }
+        return array;
+  }
+  
+  protected final LispObject[] processArgs(LispObject[] args, LispThread thread)
+
+  {
+    if (optionalParameters.length == 0 && keywordParameters.length == 0)
+      return fastProcessArgs(args);
+    if (arity >= 0)
+      {
+        // Fixed arity.
+        if (args.length != arity)
+          error(new WrongNumberOfArgumentsException(this, arity));
+        return args;
+      }
+    // Not fixed arity.
+    if (args.length < minArgs)
+      error(new WrongNumberOfArgumentsException(this, minArgs, -1));
+    
+    if (!bindInitForms)
+        return _processArgs(args, thread, environment);
+    
+    // The bindings established here (if any) are lost when this function
+    // returns. They are used only in the evaluation of initforms for
+    // optional and keyword arguments.
+    final SpecialBindingsMark mark = thread.markSpecialBindings();
+    Environment ext = new Environment(environment);
+    // Section 3.4.4: "...the &environment parameter is bound along with
+    // &whole before any other variables in the lambda list..."
+    try {
+        return _processArgs(args, thread, ext);
     }
     finally {
         thread.resetSpecialBindings(mark);
     }
-    return array;
   }
 
   // No optional or keyword parameters.
