@@ -218,7 +218,7 @@ by their name ending with \code{-RAW}.
 We define a higher level Java API in the topic:Higher level Java JSS
 package developed by Alan Ruttenberg which is available in the
 \code{contrib/} directory, see the  . This package is
-described later in this document, see \ref{section:jss} on page
+described later in this document, see Section~\ref{section:jss} on page
 \pageref{section:jss}.  This section covers the lower level API
 directly available after evaluating \code{(require 'JAVA)}.
 
@@ -1004,12 +1004,11 @@ definitions, as the following example references the
 abstraction for handling logging systems:
 
 \begin{listing-lisp}
-    ;;;; -*- Mode: LISP -*-
-    (in-package :asdf)
+;;;; -*- Mode: LISP -*-
+(in-package :asdf)
 
-    (defsystem :log4j
-      :components ((:mvn "log4j/log4j" 
-                    :version "1.4.9")))
+(defsystem :log4j
+  :components ((:mvn "log4j/log4j" :version "1.4.9")))
 \end{listing-lisp}
 
 \subsection{API}
@@ -1036,16 +1035,23 @@ Bypassing \textsc{ASDF}, one can directly issue requests for the Maven
 artifacts to be downloaded
 
 \begin{listing-lisp}
-CL-USER> (abcl-asdf:resolve-dependencies "com.google.gwt" "gwt-user")
+CL-USER> (abcl-asdf:resolve-dependencies "com.google.gwt"
+                                         "gwt-user")
 WARNING: Using LATEST for unspecified version.
-"/Users/evenson/.m2/repository/com/google/gwt/gwt-user/2.4.0-rc1/gwt-user-2.4.0-rc1.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA-sources.jar"
+"/Users/evenson/.m2/repository/com/google/gwt/gwt-user/2.4.0-rc1
+/gwt-user-2.4.0-rc1.jar:/Users/evenson/.m2/repository/javax/vali
+dation/validation-api/1.0.0.GA/validation-api-1.0.0.GA.jar:/User
+s/evenson/.m2/repository/javax/validation/validation-api/1.0.0.G
+A/validation-api-1.0.0.GA-sources.jar"
 \end{listing-lisp}
 
 To actually load the dependency, use the \code{JAVA:ADD-TO-CLASSPATH} generic
 function:
 
 \begin{listing-lisp}
-CL-USER> (java:add-to-classpath (abcl-asdf:resolve-dependencies "com.google.gwt" "gwt-user"))
+CL-USER> (java:add-to-classpath
+          (abcl-asdf:resolve-dependencies "com.google.gwt"
+                                          "gwt-user"))
 \end{listing-lisp}
 
 Notice that all recursive dependencies have been located and installed
@@ -1058,7 +1064,8 @@ jar archives for ABCL.  Given a running ABCL image with loadable ASDF
 systems the code in this package will recursively package all the
 required source and fasls in a jar archive.
 
-See \url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/asdf-jar/README.markdown}.
+The documentation for this contrib can be found at
+\url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/asdf-jar/README.markdown}.
 
 
 \section{jss}
@@ -1076,15 +1083,17 @@ alleviate this situation, we introduce the
 Example:
 
 \begin{listing-lisp}
-
+CL-USER> (require 'abcl-contrib)
+==> ("ABCL-CONTRIB")
 CL-USER> (require 'jss)
-
+==> ("JSS")
 CL-USER) (#"getProperties" 'java.lang.System)
-
+==> #<java.util.Properties {java.runtime.name=Java.... {2FA21ACF}>
 CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
+==> #<java.util.Hashtable$Enumerator java.util.Has.... {36B4361A}>
+\end{listing-lisp} %$ <-- un-confuse Emacs font-lock
 
-\end{listing-lisp}
-
+Some more information on jss can be found in its documentation at
 \url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/jss/README.markdown}
 
 \section{asdf-install}
