@@ -17,8 +17,11 @@ wrt to the classes on your classpath.
 
 Java methods look like this: #"toString". Java classes are represented
 as symbols, which are resolved to the appropriate java class
-name. When ambiguous, you need to be more specific. A simple example:
+name. When ambiguous, you need to be more specific. A simple example
+from CL-USER:
 
+    (require 'jss)
+    (jss:ensure-compatibility
     (let ((sw (new 'StringWriter)))
        (#"write" sw "Hello ")
        (#"write" sw "World")
@@ -94,7 +97,6 @@ the moment (lazy)
 
 (jcmn class-name) lists the names of all methods for the class
 
-
 Compatibility
 -------------
 
@@ -108,4 +110,25 @@ Some notes on other compatibilty issues:
 
    Since we are no longer using Beanshell, this is no longer present.
    For obtaining the current classloader use JAVA:*CLASSLOADER*.
+   
+# API
+
+  1.0 
+    Equivalent to Alan Ruttenberg's version included with the original
+    [lsw]().  
+    
+[lsw]: http://mumble.net:8080/svn/lsw/trunk/
+[lsw2]: let-me-google-that-for-you    
+    
+
+  3.0 
+     In the JSS package loaded from [abcl-contrib]() 
+     
+abcl-contrib: http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/     
+   
+# Colophon
+
+<> dc:created "2005" ;
+   dc:author "Mark <evenson.not.org@gmail.com>";
+   revised: "27-JAN-2012" .
    
