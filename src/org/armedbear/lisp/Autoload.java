@@ -535,8 +535,6 @@ public class Autoload extends Function
         autoload(PACKAGE_JAVA, "dump-classpath", "JavaClassLoader");
         autoload(PACKAGE_MOP, "eql-specializer-object", "EqualSpecializerObject", true);
         autoload(PACKAGE_MOP, "funcallable-instance-function", "FuncallableStandardObject", false);
-        autoload(PACKAGE_MOP, "method-qualifiers", "StandardMethod", true);
-        autoload(PACKAGE_MOP, "method-specializers", "StandardMethod", true);
         autoload(PACKAGE_MOP, "set-funcallable-instance-function", "FuncallableStandardObject", true);
         autoload(PACKAGE_PROF, "%start-profiler", "Profiler", true);
         autoload(PACKAGE_PROF, "stop-profiler", "Profiler", true);
@@ -559,10 +557,6 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%make-socket", "make_socket");
         autoload(PACKAGE_SYS, "%make-string", "StringFunctions");
         autoload(PACKAGE_SYS, "%make-string-output-stream", "StringOutputStream");
-        autoload(PACKAGE_SYS, "%method-fast-function", "StandardMethod", true);
-        autoload(PACKAGE_SYS, "%method-function", "StandardMethod", true);
-        autoload(PACKAGE_SYS, "%method-generic-function", "StandardMethod", true);
-        autoload(PACKAGE_SYS, "%method-specializers", "StandardMethod", true);
         autoload(PACKAGE_SYS, "%nstring-capitalize", "StringFunctions");
         autoload(PACKAGE_SYS, "%nstring-downcase", "StringFunctions");
         autoload(PACKAGE_SYS, "%nstring-upcase", "StringFunctions");
@@ -574,11 +568,6 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%set-generic-function-lambda-list", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%set-generic-function-name", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%set-gf-required-args", "StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "%set-method-fast-function", "StandardMethod", true);
-        autoload(PACKAGE_SYS, "%set-method-function", "StandardMethod", true);
-        autoload(PACKAGE_SYS, "%set-function-keywords", "StandardMethod", true);
-        autoload(PACKAGE_SYS, "%set-method-generic-function", "StandardMethod", true);
-        autoload(PACKAGE_SYS, "%set-method-specializers", "StandardMethod", true);
         autoload(PACKAGE_SYS, "%set-symbol-macro", "Primitives");
         autoload(PACKAGE_SYS, "%simple-bit-vector-bit-and", "SimpleBitVector");
         autoload(PACKAGE_SYS, "%simple-bit-vector-bit-andc1", "SimpleBitVector");
@@ -637,7 +626,6 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "float-nan-p", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "float-string", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "function-info", "function_info");
-        autoload(PACKAGE_SYS, "%function-keywords", "StandardMethod", true);
         autoload(PACKAGE_SYS, "%generic-function-argument-precedence-order","StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "generic-function-classes-to-emf-table","StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "generic-function-documentation","StandardGenericFunction", true);
@@ -666,8 +654,6 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "make-slot-definition", "SlotDefinition", true);
         autoload(PACKAGE_SYS, "make-structure-class", "StructureClass");
         autoload(PACKAGE_SYS, "make-symbol-macro", "Primitives");
-        autoload(PACKAGE_SYS, "method-documentation", "StandardMethod", true);
-        autoload(PACKAGE_SYS, "method-lambda-list", "StandardMethod", true);
         autoload(PACKAGE_SYS, "psxhash", "HashTableFunctions");
         autoload(PACKAGE_SYS, "puthash", "HashTableFunctions");
         autoload(PACKAGE_SYS, "puthash", "HashTableFunctions");
@@ -680,9 +666,6 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "set-generic-function-method-class","StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "set-generic-function-method-combination","StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "set-generic-function-methods","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "set-method-documentation", "StandardMethod", true);
-        autoload(PACKAGE_SYS, "set-method-lambda-list", "StandardMethod", true);
-        autoload(PACKAGE_SYS, "set-method-qualifiers", "StandardMethod", true);
         autoload(PACKAGE_SYS, "set-slot-definition-allocation", "SlotDefinition", true);
         autoload(PACKAGE_SYS, "set-slot-definition-allocation-class", "SlotDefinition", true);
         autoload(PACKAGE_SYS, "set-slot-definition-initargs", "SlotDefinition", true);

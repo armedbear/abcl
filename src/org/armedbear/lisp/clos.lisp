@@ -65,9 +65,13 @@
 ;;
 ;; Some functionality implemented in the temporary regular functions
 ;; needs to be available later as a method definition to be dispatched
-;; to for the STANDARD-CLASS case.  To prevent repeated code, the
-;; functions are implemented in functions by the same name as the
-;; API functions, but with the STD- prefix.
+;; to for the standard case, e.g. with arguments of type STANDARD-CLASS
+;; or STANDARD-GENERIC-FUNCTION.  To prevent repeated code, the
+;; functions are implemented in functions by the same name as the API
+;; functions, but with the STD- prefix.  These functions are sometimes
+;; used in regular code as well, either in a "fast path" or to break a
+;; circularity (e.g., within compute-discriminating-function when the
+;; user adds a method to compute-discriminating-function).
 ;;
 ;; When hacking this file, note that some important parts are implemented
 ;; in the Java world. These Java bits can be found in the files
@@ -82,7 +86,7 @@
 ;; * Layout.java
 ;;
 ;; In case of function names, those defined on the Java side can be
-;; recognized by their prefixed percent sign.
+;; recognized by their prefixed percent (%) sign.
 ;;
 ;; The API functions need to be declaimed NOTINLINE explicitly, because
 ;; that prevents inlining in the current FASL (which is allowed by the
@@ -107,6 +111,8 @@
   (find-class 'forward-referenced-class))
 (defconstant +the-standard-reader-method-class+
   (find-class 'standard-reader-method))
+(defconstant +the-standard-writer-method-class+
+  (find-class 'standard-writer-method))
 (defconstant +the-standard-generic-function-class+
   (find-class 'standard-generic-function))
 (defconstant +the-T-class+ (find-class 'T))
@@ -164,7 +170,7 @@
          args))
 
 (defun function-keywords (method)
-  (%function-keywords method))
+  (std-function-keywords method))
 
 
 
@@ -739,7 +745,7 @@
     (setf (class-direct-slots class) slots)
     (dolist (direct-slot slots)
       (dolist (reader (slot-definition-readers direct-slot))
-        (add-reader-method class reader (slot-definition-name direct-slot)))
+        (add-reader-method class reader direct-slot))
       (dolist (writer (slot-definition-writers direct-slot))
         (add-writer-method class writer (slot-definition-name direct-slot)))))
   (setf (class-direct-default-initargs class) direct-default-initargs)
@@ -1004,7 +1010,7 @@
                        ,(wrap-with-call-method-macro ,gf
                                                      ',args-var
                                                      (second method)))))
-              (t (%method-function method)))
+              (t (method-function method)))
             ,',args-var
             ,(unless (null next-method-list)
                      ;; by not generating an emf when there are no next methods,
@@ -1181,6 +1187,49 @@
   (check-type eql-specializer eql-specializer)
   (std-slot-value eql-specializer 'sys::object))
 
+;;; Initial versions of some method metaobject readers.  Defined on
+;;; AMOP pg. 218ff, will be redefined when generic functions are set up.
+
+(defun std-method-function (method)
+  (std-slot-value method 'cl:function))
+
+(defun std-method-generic-function (method)
+  (std-slot-value method 'cl:generic-function))
+
+(defun std-method-specializers (method)
+  (std-slot-value method 'sys::specializers))
+
+(defun std-method-qualifiers (method)
+  (std-slot-value method 'sys::qualifiers))
+
+(defun std-accessor-method-slot-definition (accessor-method)
+  (std-slot-value accessor-method 'sys:slot-definition))
+
+;;; Additional method readers
+(defun std-method-fast-function (method)
+  (std-slot-value method 'sys::fast-function))
+
+(defun std-function-keywords (method)
+  (values (std-slot-value method 'sys::keywords)
+          (std-slot-value method 'sys::other-keywords-p)))
+
+;;; Preliminary accessor definitions, will be redefined as generic
+;;; functions later in this file
+
+(declaim (notinline method-generic-function))
+(defun method-generic-function (method)
+  (std-method-generic-function method))
+
+(declaim (notinline method-specializers))
+(defun method-specializers (method)
+  (std-method-specializers method))
+
+(declaim (notinline method-qualifiers))
+(defun method-qualifiers (method)
+  (std-method-qualifiers method))
+
+
+
 ;; MOP (p. 216) specifies the following reader generic functions:
 ;;   generic-function-argument-precedence-order
 ;;   generic-function-declarations
@@ -1231,13 +1280,16 @@
   (set-generic-function-classes-to-emf-table gf new-value))
 
 (defun (setf method-lambda-list) (new-value method)
-  (set-method-lambda-list method new-value))
+  (setf (std-slot-value method 'sys::lambda-list) new-value))
 
 (defun (setf method-qualifiers) (new-value method)
-  (set-method-qualifiers method new-value))
+  (setf (std-slot-value method 'sys::qualifiers) new-value))
+
+(defun method-documentation (method)
+  (std-slot-value method 'documentation))
 
 (defun (setf method-documentation) (new-value method)
-  (set-method-documentation method new-value))
+  (setf (std-slot-value method 'documentation) new-value))
 
 ;;; defgeneric
 
@@ -1403,7 +1455,7 @@
 (defun collect-eql-specializer-objects (generic-function)
   (let ((result nil))
     (dolist (method (generic-function-methods generic-function))
-      (dolist (specializer (%method-specializers method))
+      (dolist (specializer (method-specializers method))
         (when (typep specializer 'eql-specializer)
           (pushnew (eql-specializer-object specializer)
                    result
@@ -1710,33 +1762,33 @@ Initialized with the true value near the end of the file.")
                                       fast-function)
   (declare (ignore gf))
   (let ((method (std-allocate-instance +the-standard-method-class+))
-        (analyzed-args (analyze-lambda-list lambda-list))
-        )
+        (analyzed-args (analyze-lambda-list lambda-list)))
     (setf (method-lambda-list method) lambda-list)
     (setf (method-qualifiers method) qualifiers)
-    (%set-method-specializers method (canonicalize-specializers specializers))
+    (setf (std-slot-value method 'sys::specializers)
+          (canonicalize-specializers specializers))
     (setf (method-documentation method) documentation)
-    (%set-method-generic-function method nil)
-    (%set-method-function method function)
-    (%set-method-fast-function method fast-function)
-    (%set-function-keywords method
-                            (getf analyzed-args :keywords)
-                            (getf analyzed-args :allow-other-keys))
+    (setf (std-slot-value method 'generic-function) nil) ; set by add-method
+    (setf (std-slot-value method 'function) function)
+    (setf (std-slot-value method 'sys::fast-function) fast-function)
+    (setf (std-slot-value method 'sys::keywords) (getf analyzed-args :keywords))
+    (setf (std-slot-value method 'sys::other-keywords-p)
+          (getf analyzed-args :allow-other-keys))
     method))
 
 (defun std-add-method (gf method)
-  (when (%method-generic-function method)
+  (when (method-generic-function method)
     (error 'simple-error
-           :format-control "ADD-METHOD: ~S is a method of ~S."
-           :format-arguments (list method (%method-generic-function method))))
+           :format-control "ADD-METHOD: ~S is already a method of ~S."
+           :format-arguments (list method (method-generic-function method))))
   ;; Remove existing method with same qualifiers and specializers (if any).
-  (let ((old-method (%find-method gf (method-qualifiers method)
-                                 (%method-specializers method) nil)))
+  (let ((old-method (%find-method gf (std-method-qualifiers method)
+                                 (method-specializers method) nil)))
     (when old-method
       (std-remove-method gf old-method)))
-  (%set-method-generic-function method gf)
+  (setf (std-slot-value method 'generic-function) gf)
   (push method (generic-function-methods gf))
-  (dolist (specializer (%method-specializers method))
+  (dolist (specializer (method-specializers method))
     (when (typep specializer 'class) ;; FIXME What about EQL specializer objects?
       (pushnew method (class-direct-methods specializer))))
   (finalize-standard-generic-function gf)
@@ -1745,8 +1797,8 @@ Initialized with the true value near the end of the file.")
 (defun std-remove-method (gf method)
   (setf (generic-function-methods gf)
         (remove method (generic-function-methods gf)))
-  (%set-method-generic-function method nil)
-  (dolist (specializer (%method-specializers method))
+  (setf (std-slot-value method 'generic-function) gf)
+  (dolist (specializer (method-specializers method))
     (when (typep specializer 'class) ;; FIXME What about EQL specializer objects?
       (setf (class-direct-methods specializer)
             (remove method (class-direct-methods specializer)))))
@@ -1768,7 +1820,7 @@ Initialized with the true value near the end of the file.")
                       (and (equal qualifiers
                                   (method-qualifiers method))
                            (equal canonical-specializers
-                                  (%method-specializers method))))
+                                  (method-specializers method))))
                    (generic-function-methods gf))))
     (if (and (null method) errorp)
         (error "No such method for ~S." (%generic-function-name gf))
@@ -1791,12 +1843,14 @@ Initialized with the true value near the end of the file.")
   ;; In this function, we know that gf is of class
   ;; standard-generic-function, so we call various
   ;; sys:%generic-function-foo readers to break circularities.
+  ;; (rudi 2012-01-27): maybe we need to discriminate between
+  ;; standard-methods and methods as well.
   (cond
     ((and (= (length (sys:%generic-function-methods gf)) 1)
           (typep (car (sys:%generic-function-methods gf)) 'standard-reader-method))
      (let* ((method (%car (sys:%generic-function-methods gf)))
-            (class (car (%method-specializers method)))
-            (slot-name (reader-method-slot-name method)))
+            (class (car (std-method-specializers method)))
+            (slot-name (slot-definition-name (accessor-method-slot-definition method))))
        #'(lambda (arg)
            (declare (optimize speed))
            (let* ((layout (std-instance-layout arg))
@@ -1827,9 +1881,9 @@ Initialized with the true value near the end of the file.")
                 ((and (eq (sys:%generic-function-method-combination gf) 'standard)
                       (= (length (sys:%generic-function-methods gf)) 1))
                  (let* ((method (%car (sys:%generic-function-methods gf)))
-                        (specializer (car (%method-specializers method)))
-                        (function (or (%method-fast-function method)
-                                      (%method-function method))))
+                        (specializer (car (std-method-specializers method)))
+                        (function (or (std-method-fast-function method)
+                                      (std-method-function method))))
                    (if (typep specializer 'eql-specializer)
                        (let ((specializer-object (eql-specializer-object specializer)))
                          #'(lambda (arg)
@@ -1885,8 +1939,8 @@ Initialized with the true value near the end of the file.")
                     (if emfun
                         (funcall emfun args)
                         (slow-method-lookup gf args))))))
-;;           (let ((non-key-args (+ number-required
-;;                                  (length (gf-optional-args gf))))))
+           ;;           (let ((non-key-args (+ number-required
+           ;;                                  (length (gf-optional-args gf))))))
            #'(lambda (&rest args)
                (declare (optimize speed))
                (let ((len (length args)))
@@ -1911,7 +1965,7 @@ Initialized with the true value near the end of the file.")
 		    (method-more-specific-p gf m1 m2 required-classes))))))
 
 (defun method-applicable-p (method args)
-  (do* ((specializers (%method-specializers method) (cdr specializers))
+  (do* ((specializers (method-specializers method) (cdr specializers))
         (args args (cdr args)))
        ((null specializers) t)
     (let ((specializer (car specializers)))
@@ -1939,7 +1993,7 @@ Initialized with the true value near the end of the file.")
 ;;; the classes of its arguments only.
 ;;;
 (defun method-applicable-using-classes-p (method classes)
-  (do* ((specializers (%method-specializers method) (cdr specializers))
+  (do* ((specializers (method-specializers method) (cdr specializers))
 	(classes classes (cdr classes))
 	(knownp t))
        ((null specializers)
@@ -2039,8 +2093,8 @@ to ~S with argument list ~S."
 
 (defun std-method-more-specific-p (method1 method2 required-classes argument-precedence-order)
   (if argument-precedence-order
-      (let ((specializers-1 (%method-specializers method1))
-            (specializers-2 (%method-specializers method2)))
+      (let ((specializers-1 (std-method-specializers method1))
+            (specializers-2 (std-method-specializers method2)))
         (dolist (index argument-precedence-order)
           (let ((spec1 (nth index specializers-1))
                 (spec2 (nth index specializers-2)))
@@ -2052,8 +2106,8 @@ to ~S with argument list ~S."
                     (t
                      (return (sub-specializer-p spec1 spec2
                                                 (nth index required-classes)))))))))
-      (do ((specializers-1 (%method-specializers method1) (cdr specializers-1))
-           (specializers-2 (%method-specializers method2) (cdr specializers-2))
+      (do ((specializers-1 (std-method-specializers method1) (cdr specializers-1))
+           (specializers-2 (std-method-specializers method2) (cdr specializers-2))
            (classes required-classes (cdr classes)))
           ((null specializers-1) nil)
         (let ((spec1 (car specializers-1))
@@ -2136,7 +2190,7 @@ to ~S with argument list ~S."
                    #'compute-effective-method-function)
                gf (remove around methods))))
          (setf emf-form
-               (generate-emf-lambda (%method-function around) next-emfun))))
+               (generate-emf-lambda (std-method-function around) next-emfun))))
       ((eq mc-name 'standard)
        (let* ((next-emfun (compute-primary-emfun (cdr primaries)))
               (befores (remove-if-not #'before-method-p methods))
@@ -2145,7 +2199,7 @@ to ~S with argument list ~S."
          (setf emf-form
                (cond
                  ((and (null befores) (null reverse-afters))
-                  (let ((fast-function (%method-fast-function (car primaries))))
+                  (let ((fast-function (std-method-fast-function (car primaries))))
                     (if fast-function
                         (ecase (length (gf-required-args gf))
                           (1
@@ -2156,18 +2210,18 @@ to ~S with argument list ~S."
                            #'(lambda (args)
                                (declare (optimize speed))
                                (funcall fast-function (car args) (cadr args)))))
-                        (generate-emf-lambda (%method-function (car primaries))
+                        (generate-emf-lambda (std-method-function (car primaries))
                                              next-emfun))))
                  (t
-                  (let ((method-function (%method-function (car primaries))))
+                  (let ((method-function (std-method-function (car primaries))))
                     #'(lambda (args)
                         (declare (optimize speed))
                         (dolist (before befores)
-                          (funcall (%method-function before) args nil))
+                          (funcall (std-method-function before) args nil))
                         (multiple-value-prog1
                             (funcall method-function args next-emfun)
                           (dolist (after reverse-afters)
-                            (funcall (%method-function after) args nil))))))))))
+                            (funcall (std-method-function after) args nil))))))))))
       (long-method-combination-p
        (let* ((mc-obj (get mc-name 'method-combination-object))
               (function (long-method-combination-function mc-obj))
@@ -2188,11 +2242,11 @@ to ~S with argument list ~S."
            (setf emf-form
                  (if (and (null (cdr primaries))
                           (not (null ioa)))
-                     (generate-emf-lambda (%method-function (car primaries)) nil)
+                     (generate-emf-lambda (std-method-function (car primaries)) nil)
                      `(lambda (args)
                         (,operator ,@(mapcar
                                       (lambda (primary)
-                                        `(funcall ,(%method-function primary) args nil))
+                                        `(funcall ,(std-method-function primary) args nil))
                                       primaries)))))))))
     (assert (not (null emf-form)))
     (or #+nil (ignore-errors (autocompile emf-form))
@@ -2210,7 +2264,7 @@ to ~S with argument list ~S."
       nil
       (let ((next-emfun (compute-primary-emfun (cdr methods))))
         #'(lambda (args)
-           (funcall (%method-function (car methods)) args next-emfun)))))
+           (funcall (std-method-function (car methods)) args next-emfun)))))
 
 (defvar *call-next-method-p*)
 (defvar *next-method-p-p*)
@@ -2381,48 +2435,72 @@ to ~S with argument list ~S."
                                              documentation
                                              function
                                              fast-function
-                                             slot-name)
+                                             slot-definition)
   (declare (ignore gf))
   (let ((method (std-allocate-instance +the-standard-reader-method-class+)))
     (setf (method-lambda-list method) lambda-list)
     (setf (method-qualifiers method) qualifiers)
-    (%set-method-specializers method (canonicalize-specializers specializers))
+    (setf (std-slot-value method 'sys::specializers)
+          (canonicalize-specializers specializers))
     (setf (method-documentation method) documentation)
-    (%set-method-generic-function method nil)
-    (%set-method-function method function)
-    (%set-method-fast-function method fast-function)
-    (set-reader-method-slot-name method slot-name)
-    (%set-function-keywords method nil nil)
+    (setf (std-slot-value method 'generic-function) nil)
+    (setf (std-slot-value method 'function) function)
+    (setf (std-slot-value method 'sys::fast-function) fast-function)
+    (setf (std-slot-value method 'sys:slot-definition) slot-definition)
+    (setf (std-slot-value method 'sys::keywords) nil)
+    (setf (std-slot-value method 'sys::other-keywords-p) nil)
     method))
 
-(defun add-reader-method (class function-name slot-name)
-  (let* ((lambda-expression
+(defun add-reader-method (class function-name slot-definition)
+  (let* ((method-class (if (eq (class-of class) +the-standard-class+)
+                           +the-standard-reader-method-class+
+                           (reader-method-class class)))
+         (slot-name (slot-definition-name slot-definition))
+         (lambda-expression
           (if (eq (class-of class) +the-standard-class+)
               `(lambda (object) (std-slot-value object ',slot-name))
               `(lambda (object) (slot-value object ',slot-name))))
          (method-function (compute-method-function lambda-expression))
-         (fast-function (compute-method-fast-function lambda-expression)))
-    (let ((method-lambda-list '(object))
-          (gf (find-generic-function function-name nil)))
-      (if gf
-          (check-method-lambda-list function-name
-                                    method-lambda-list
-                                    (generic-function-lambda-list gf))
-        (setf gf (ensure-generic-function function-name :lambda-list method-lambda-list)))
-      (let ((method
-             (make-instance-standard-reader-method gf
-                                                   :lambda-list '(object)
-                                                   :qualifiers ()
-                                                   :specializers (list class)
-                                                   :function (if (autoloadp 'compile)
-                                                                 method-function
-                                                                 (autocompile method-function))
-                                                   :fast-function (if (autoloadp 'compile)
-                                                                      fast-function
-                                                                      (autocompile fast-function))
-                                                   :slot-name slot-name)))
-        (std-add-method gf method)
-        method))))
+         (fast-function (compute-method-fast-function lambda-expression))
+         (method-lambda-list '(object))
+         (gf (find-generic-function function-name nil)))
+    ;; required by AMOP pg. 225
+    (assert (subtypep method-class +the-standard-reader-method-class+))
+    (if gf
+        (check-method-lambda-list function-name
+                                  method-lambda-list
+                                  (generic-function-lambda-list gf))
+        (setf gf (ensure-generic-function function-name
+                                          :lambda-list method-lambda-list)))
+    (let ((method
+           (if (eq method-class +the-standard-reader-method-class+)
+               (make-instance-standard-reader-method
+                gf
+                :lambda-list method-lambda-list
+                :qualifiers ()
+                :specializers (list class)
+                :function (if (autoloadp 'compile)
+                              method-function
+                              (autocompile method-function))
+                :fast-function (if (autoloadp 'compile)
+                                   fast-function
+                                   (autocompile fast-function))
+                :slot-definition slot-definition)
+               (make-instance method-class
+                              :lambda-list method-lambda-list
+                              :qualifiers ()
+                              :specializers (list class)
+                              :function (if (autoloadp 'compile)
+                                            method-function
+                                            (autocompile method-function))
+                              :fast-function (if (autoloadp 'compile)
+                                                 fast-function
+                                                 (autocompile fast-function))
+                              :slot-definition slot-definition))))
+      (if (eq (class-of gf) +the-standard-generic-function-class+)
+          (std-add-method gf method)
+          (add-method gf method))
+      method)))
 
 (defun add-writer-method (class function-name slot-name)
   (let* ((lambda-expression
@@ -2649,18 +2727,34 @@ in place, while we still need them to "
                  ,@(canonicalize-defclass-options options)))
 
 
-
+;;; AMOP pg. 180
 (defgeneric direct-slot-definition-class (class &rest initargs))
 
 (defmethod direct-slot-definition-class ((class class) &rest initargs)
   (declare (ignore initargs))
   +the-standard-direct-slot-definition-class+)
 
+;;; AMOP pg. 181
 (defgeneric effective-slot-definition-class (class &rest initargs))
 
 (defmethod effective-slot-definition-class ((class class) &rest initargs)
   (declare (ignore initargs))
   +the-standard-effective-slot-definition-class+)
+
+;;; AMOP pg. 224
+(defgeneric reader-method-class (class direct-slot &rest initargs))
+
+(defmethod reader-method-class ((class standard-class)
+                                (direct-slot standard-direct-slot-definition)
+                                &rest initargs)
+  (declare (ignore initargs))
+  +the-standard-reader-method-class+)
+
+(defmethod reader-method-class ((class funcallable-standard-class)
+                                (direct-slot standard-direct-slot-definition)
+                                &rest initargs)
+  (declare (ignore initargs))
+  +the-standard-reader-method-class+)
 
 (atomic-defgeneric documentation (x doc-type)
     (:method ((x symbol) doc-type)
@@ -3502,7 +3596,7 @@ or T when any keyword is acceptable due to presence of
 
 (atomic-defgeneric function-keywords (method)
   (:method ((method standard-method))
-    (%function-keywords method)))
+    (std-function-keywords method)))
 
 (setf *gf-initialize-instance* (symbol-function 'initialize-instance))
 (setf *gf-allocate-instance* (symbol-function 'allocate-instance))
@@ -3555,6 +3649,34 @@ or T when any keyword is acceptable due to presence of
 (atomic-defgeneric generic-function-name (generic-function)
   (:method ((generic-function standard-generic-function))
     (sys:%generic-function-name generic-function)))
+
+;;; Readers for Method Metaobjects
+;;; AMOP pg. 218ff.
+
+(atomic-defgeneric method-function (method)
+  (:method ((method standard-method))
+    (std-method-function method)))
+
+(atomic-defgeneric method-generic-function (method)
+  (:method ((method standard-method))
+    (std-method-generic-function method)))
+
+(atomic-defgeneric method-lambda-list (method)
+  (:method ((method standard-method))
+    (std-slot-value method 'sys::lambda-list)))
+
+(atomic-defgeneric method-specializers (method)
+  (:method ((method standard-method))
+    (std-method-specializers method)))
+
+(atomic-defgeneric method-qualifiers (method)
+  (:method ((method standard-method))
+    (std-method-qualifiers method)))
+
+(atomic-defgeneric accessor-method-slot-definition (method)
+  (:method ((method standard-accessor-method))
+    (std-accessor-method-slot-definition method)))
+
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require "MOP"))

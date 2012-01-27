@@ -71,8 +71,21 @@ public final class StandardGenericFunction extends FuncallableStandardObject
     numberOfRequiredArgs = lambdaList.length();
     slots[StandardGenericFunctionClass.SLOT_INDEX_INITIAL_METHODS] =
       NIL;
-    StandardMethod method =
-      new StandardMethod(this, function, lambdaList, specializers);
+    StandardObject method
+        = (StandardObject)StandardClass.STANDARD_METHOD.allocateInstance();
+    method.setInstanceSlotValue(Symbol.GENERIC_FUNCTION, this);
+    method.setInstanceSlotValue(Symbol.LAMBDA_LIST, lambdaList);
+    method.setInstanceSlotValue(Symbol.KEYWORDS, NIL);
+    method.setInstanceSlotValue(Symbol.OTHER_KEYWORDS_P, NIL);
+    method.setInstanceSlotValue(Symbol.SPECIALIZERS, specializers);
+    method.setInstanceSlotValue(Symbol.QUALIFIERS, NIL);
+    // Setting the function slot to nil is a transcription of what the
+    // constructor for StandardMethod instances did (that Java class was
+    // removed for the implementation of subclassable standard-method).
+    // (rudi 2012-01-27)
+    method.setInstanceSlotValue(Symbol.FUNCTION, NIL);
+    method.setInstanceSlotValue(Symbol.FAST_FUNCTION, function);
+    method.setInstanceSlotValue(Symbol.DOCUMENTATION, NIL);
     slots[StandardGenericFunctionClass.SLOT_INDEX_METHODS] =
       list(method);
     slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS] =

@@ -561,18 +561,16 @@ public class StandardClass extends SlotClass
     addStandardClass(Symbol.METHOD, list(METAOBJECT));
 
   public static final StandardClass STANDARD_METHOD =
-    new StandardMethodClass();
-  static
-  {
-    addClass(Symbol.STANDARD_METHOD, STANDARD_METHOD);
-  }
+    addStandardClass(Symbol.STANDARD_METHOD, list(METHOD));
+
+  public static final StandardClass STANDARD_ACCESSOR_METHOD =
+    addStandardClass(Symbol.STANDARD_ACCESSOR_METHOD, list(STANDARD_METHOD));
 
   public static final StandardClass STANDARD_READER_METHOD =
-    new StandardReaderMethodClass();
-  static
-  {
-    addClass(Symbol.STANDARD_READER_METHOD, STANDARD_READER_METHOD);
-  }
+      addStandardClass(Symbol.STANDARD_READER_METHOD, list(STANDARD_ACCESSOR_METHOD));
+
+  public static final StandardClass STANDARD_WRITER_METHOD =
+      addStandardClass(Symbol.STANDARD_WRITER_METHOD, list(STANDARD_ACCESSOR_METHOD));
 
   public static final StandardClass STANDARD_GENERIC_FUNCTION =
     new StandardGenericFunctionClass();
@@ -677,6 +675,31 @@ public class StandardClass extends SlotClass
     EQL_SPECIALIZER.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.OBJECT, list(PACKAGE_MOP.intern("EQL-SPECIALIZER-OBJECT")))));
     METHOD.setCPL(METHOD, METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
+    STANDARD_METHOD.setCPL(STANDARD_METHOD, METHOD, METAOBJECT, STANDARD_OBJECT,
+                           BuiltInClass.CLASS_T);
+    STANDARD_METHOD.setDirectSlotDefinitions(
+      list(new SlotDefinition(Symbol.GENERIC_FUNCTION, NIL),
+           new SlotDefinition(Symbol.LAMBDA_LIST, NIL),
+           new SlotDefinition(Symbol.KEYWORDS, NIL),
+           new SlotDefinition(Symbol.OTHER_KEYWORDS_P, NIL),
+           new SlotDefinition(Symbol.SPECIALIZERS, NIL),
+           new SlotDefinition(Symbol.QUALIFIERS, NIL),
+           new SlotDefinition(Symbol.FUNCTION, NIL),
+           new SlotDefinition(Symbol.FAST_FUNCTION, NIL),
+           new SlotDefinition(Symbol.DOCUMENTATION, NIL)));
+    STANDARD_ACCESSOR_METHOD.setCPL(STANDARD_ACCESSOR_METHOD, STANDARD_METHOD,
+                                    METHOD, METAOBJECT, STANDARD_OBJECT,
+                                    BuiltInClass.CLASS_T);
+    STANDARD_ACCESSOR_METHOD.setDirectSlotDefinitions(
+       list(new SlotDefinition(Symbol.SLOT_DEFINITION, NIL)));
+    STANDARD_READER_METHOD.setCPL(STANDARD_READER_METHOD,
+                                  STANDARD_ACCESSOR_METHOD, STANDARD_METHOD,
+                                  METHOD, METAOBJECT, STANDARD_OBJECT,
+                                  BuiltInClass.CLASS_T);
+    STANDARD_WRITER_METHOD.setCPL(STANDARD_WRITER_METHOD,
+                                  STANDARD_ACCESSOR_METHOD, STANDARD_METHOD,
+                                  METHOD, METAOBJECT, STANDARD_OBJECT,
+                                  BuiltInClass.CLASS_T);
     METHOD_COMBINATION.setCPL(METHOD_COMBINATION, METAOBJECT, STANDARD_OBJECT,
                               BuiltInClass.CLASS_T);
     METHOD_COMBINATION.setDirectSlotDefinitions(
@@ -811,6 +834,11 @@ public class StandardClass extends SlotClass
     FLOATING_POINT_UNDERFLOW.finalizeClass();
     JAVA_EXCEPTION.finalizeClass();
     METAOBJECT.finalizeClass();
+    METHOD.finalizeClass();
+    STANDARD_METHOD.finalizeClass();
+    STANDARD_ACCESSOR_METHOD.finalizeClass();
+    STANDARD_READER_METHOD.finalizeClass();
+    STANDARD_WRITER_METHOD.finalizeClass();
     SPECIALIZER.finalizeClass();
     EQL_SPECIALIZER.finalizeClass();
     METHOD_COMBINATION.finalizeClass();
@@ -861,23 +889,6 @@ public class StandardClass extends SlotClass
                                               EFFECTIVE_SLOT_DEFINITION, SLOT_DEFINITION, METAOBJECT, STANDARD_OBJECT,
                                               BuiltInClass.CLASS_T);
     STANDARD_EFFECTIVE_SLOT_DEFINITION.finalizeClass();
-
-    // STANDARD-METHOD
-    Debug.assertTrue(STANDARD_METHOD.isFinalized());
-    STANDARD_METHOD.setCPL(STANDARD_METHOD, METHOD, METAOBJECT, STANDARD_OBJECT,
-                           BuiltInClass.CLASS_T);
-    STANDARD_METHOD.setDirectSlotDefinitions(STANDARD_METHOD.getClassLayout().generateSlotDefinitions());
-    // There are no inherited slots.
-    STANDARD_METHOD.setSlotDefinitions(STANDARD_METHOD.getDirectSlotDefinitions());
-
-    // STANDARD-READER-METHOD
-    Debug.assertTrue(STANDARD_READER_METHOD.isFinalized());
-    STANDARD_READER_METHOD.setCPL(STANDARD_READER_METHOD, STANDARD_METHOD,
-                                  METHOD, METAOBJECT, STANDARD_OBJECT,
-                                  BuiltInClass.CLASS_T);
-    STANDARD_READER_METHOD.setSlotDefinitions(STANDARD_READER_METHOD.getClassLayout().generateSlotDefinitions());
-    // All but the last slot are inherited.
-    STANDARD_READER_METHOD.setDirectSlotDefinitions(list(STANDARD_READER_METHOD.getSlotDefinitions().reverse().car()));
 
     // STANDARD-GENERIC-FUNCTION
     Debug.assertTrue(STANDARD_GENERIC_FUNCTION.isFinalized());

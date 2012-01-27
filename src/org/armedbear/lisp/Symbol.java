@@ -2975,6 +2975,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_MOP.addExternalSymbol("FUNCALLABLE-STANDARD-OBJECT");
   public static final Symbol FUNCALLABLE_STANDARD_CLASS =
     PACKAGE_MOP.addExternalSymbol("FUNCALLABLE-STANDARD-CLASS");
+  public static final Symbol GENERIC_FUNCTION_METHODS =
+    PACKAGE_MOP.addExternalSymbol("GENERIC-FUNCTION-METHODS");
   public static final Symbol SHORT_METHOD_COMBINATION =
     PACKAGE_MOP.addInternalSymbol("SHORT-METHOD-COMBINATION");
   public static final Symbol LONG_METHOD_COMBINATION =
@@ -2983,8 +2985,12 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_MOP.addExternalSymbol("METAOBJECT");
   public static final Symbol SPECIALIZER =
     PACKAGE_MOP.addExternalSymbol("SPECIALIZER");
+  public static final Symbol STANDARD_ACCESSOR_METHOD =
+    PACKAGE_MOP.addExternalSymbol("STANDARD-ACCESSOR-METHOD");
   public static final Symbol STANDARD_READER_METHOD =
     PACKAGE_MOP.addExternalSymbol("STANDARD-READER-METHOD");
+  public static final Symbol STANDARD_WRITER_METHOD =
+    PACKAGE_MOP.addExternalSymbol("STANDARD-WRITER-METHOD");
   public static final Symbol DIRECT_SLOT_DEFINITION =
     PACKAGE_MOP.addExternalSymbol("DIRECT-SLOT-DEFINITION");
   public static final Symbol EFFECTIVE_SLOT_DEFINITION =
@@ -3149,34 +3155,41 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addInternalSymbol("DEFTYPE-DEFINITION");
   public static final Symbol EXPECTED_TYPE =
     PACKAGE_SYS.addInternalSymbol("EXPECTED-TYPE");
+  public static final Symbol FAST_FUNCTION =
+    PACKAGE_SYS.addInternalSymbol("FAST-FUNCTION");
   public static final Symbol FORMAT_ARGUMENTS =
     PACKAGE_SYS.addInternalSymbol("FORMAT-ARGUMENTS");
   public static final Symbol FORMAT_CONTROL =
     PACKAGE_SYS.addInternalSymbol("FORMAT-CONTROL");
-  public static final Symbol FSET =
-    PACKAGE_SYS.addInternalSymbol("FSET");
+  public static final Symbol FSET = PACKAGE_SYS.addInternalSymbol("FSET");
   public static final Symbol FUNCTION_PRELOAD =
     PACKAGE_SYS.addInternalSymbol("FUNCTION-PRELOAD");
   public static final Symbol INSTANCE =
     PACKAGE_SYS.addInternalSymbol("INSTANCE");
+  public static final Symbol KEYWORDS =
+    PACKAGE_SYS.addInternalSymbol("KEYWORDS");
   public static final Symbol MACROEXPAND_MACRO =
     PACKAGE_SYS.addInternalSymbol("MACROEXPAND-MACRO");
   public static final Symbol MAKE_FUNCTION_PRELOADING_CONTEXT =
     PACKAGE_SYS.addInternalSymbol("MAKE-FUNCTION-PRELOADING-CONTEXT");
-  public static final Symbol NAME =
-    PACKAGE_SYS.addInternalSymbol("NAME");
-  public static final Symbol OBJECT =
-    PACKAGE_SYS.addInternalSymbol("OBJECT");
+  public static final Symbol NAME = PACKAGE_SYS.addInternalSymbol("NAME");
+  public static final Symbol OBJECT = PACKAGE_SYS.addInternalSymbol("OBJECT");
   public static final Symbol OPERANDS =
     PACKAGE_SYS.addInternalSymbol("OPERANDS");
   public static final Symbol OPERATION =
     PACKAGE_SYS.addInternalSymbol("OPERATION");
+  public static final Symbol OTHER_KEYWORDS_P =
+    PACKAGE_SYS.addInternalSymbol("OTHER-KEYWORDS-P");
   public static final Symbol PROXY_PRELOADED_FUNCTION =
     PACKAGE_SYS.addInternalSymbol("PROXY-PRELOADED-FUNCTION");
+  public static final Symbol QUALIFIERS =
+    PACKAGE_SYS.addInternalSymbol("QUALIFIERS");
   public static final Symbol _SOURCE =
     PACKAGE_SYS.addInternalSymbol("%SOURCE");
   public static final Symbol SOCKET_STREAM =
     PACKAGE_SYS.addInternalSymbol("SOCKET-STREAM");
+  public static final Symbol SPECIALIZERS =
+    PACKAGE_SYS.addInternalSymbol("SPECIALIZERS");
   public static final Symbol STRING_INPUT_STREAM =
     PACKAGE_SYS.addInternalSymbol("STRING-INPUT-STREAM");
   public static final Symbol STRING_OUTPUT_STREAM =

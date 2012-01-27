@@ -67,7 +67,7 @@
                                                 full-count hot-count) result)
                        (dolist (method
                                  (mop::generic-function-methods definition))
-                         (let ((function (sys:%method-function method)))
+                         (let ((function (mop:method-function method)))
                            (setf full-count (sys:call-count function))
                            (setf hot-count (sys:hot-count function)))
                          (unless (zerop full-count)
@@ -82,17 +82,17 @@
   (cond ((symbolp object)
          object)
         ((typep object 'generic-function)
-         (sys:%generic-function-name object))
+         (mop:generic-function-name object))
         ((typep object 'method)
          (list 'METHOD
-               (sys:%generic-function-name (sys:%method-generic-function object))
-               (sys:%method-specializers object)))))
+               (mop:generic-function-name (mop:method-generic-function object))
+               (mop:method-specializers object)))))
 
 (defun object-compiled-function-p (object)
   (cond ((symbolp object)
          (compiled-function-p (fdefinition object)))
         ((typep object 'method)
-         (compiled-function-p (sys:%method-function object)))
+         (compiled-function-p (mop:method-function object)))
         (t
          (compiled-function-p object))))
 

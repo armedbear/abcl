@@ -55,25 +55,25 @@
             (class-name class)))
   class)
 
-(defmethod print-object ((gf standard-generic-function) stream)
+(defmethod print-object ((gf generic-function) stream)
   (print-unreadable-object (gf stream :identity t)
     (format stream "~S ~S"
             (class-name (class-of gf))
-            (%generic-function-name gf)))
+            (mop:generic-function-name gf)))
   gf)
 
-(defmethod print-object ((method standard-method) stream)
+(defmethod print-object ((method method) stream)
   (print-unreadable-object (method stream :identity t)
     (format stream "~S ~S~{ ~S~} ~S"
             (class-name (class-of method))
-            (%generic-function-name
-             (%method-generic-function method))
+            (mop:generic-function-name
+             (mop:method-generic-function method))
             (method-qualifiers method)
             (mapcar #'(lambda (c)
-                        (if (typep c 'mop::eql-specializer)
-                            `(eql ,(mop::eql-specializer-object c))
+                        (if (typep c 'mop:eql-specializer)
+                            `(eql ,(mop:eql-specializer-object c))
                           (class-name c)))
-                    (%method-specializers method))))
+                    (mop:method-specializers method))))
   method)
 
 (defmethod print-object ((restart restart) stream)

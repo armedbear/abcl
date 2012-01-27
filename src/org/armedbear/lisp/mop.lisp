@@ -57,6 +57,9 @@
 
           standard-method
           method-function
+          method-specializers
+          method-generic-function
+
           standard-accessor-method
           standard-reader-method
           standard-writer-method
