@@ -20,8 +20,8 @@ as symbols, which are resolved to the appropriate java class
 name. When ambiguous, you need to be more specific. A simple example
 from CL-USER:
 
-    (require 'jss)
-    (jss:ensure-compatibility
+    (require :jss)
+    (in-package :jss)
     (let ((sw (new 'StringWriter)))
        (#"write" sw "Hello ")
        (#"write" sw "World")
