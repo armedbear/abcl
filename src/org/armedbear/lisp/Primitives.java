@@ -544,7 +544,7 @@ public final class Primitives {
 
         @Override
         public LispObject execute(LispObject arg) {
-            return (arg instanceof Function || arg instanceof StandardGenericFunction) ? T : NIL;
+            return (arg instanceof Function || arg instanceof FuncallableStandardObject) ? T : NIL;
         }
     };
 
