@@ -2994,6 +2994,8 @@ in place, while we still need them to "
 
 ;;; Instance creation and initialization
 
+;;; AMOP pg. 168ff.  Checking whether the class is finalized is done
+;;; inside std-allocate-instance and allocate-funcallable-instance.
 (defgeneric allocate-instance (class &rest initargs &key &allow-other-keys))
 
 (defmethod allocate-instance ((class standard-class) &rest initargs)
@@ -3009,6 +3011,10 @@ in place, while we still need them to "
   (%make-structure (class-name class)
                    (make-list (length (class-slots class))
                               :initial-element +slot-unbound+)))
+
+(defmethod allocate-instance ((class built-in-class) &rest initargs)
+  (declare (ignore initargs))
+  (error "Cannot allocate instances of a built-in class: ~S" class))
 
 ;; "The set of valid initialization arguments for a class is the set of valid
 ;; initialization arguments that either fill slots or supply arguments to
