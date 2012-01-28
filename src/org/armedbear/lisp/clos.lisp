@@ -3677,6 +3677,13 @@ or T when any keyword is acceptable due to presence of
   (:method ((method standard-accessor-method))
     (std-accessor-method-slot-definition method)))
 
+;;; SLIME compatibility functions.
+
+(defun %method-generic-function (method)
+  (method-generic-function method))
+
+(defun %method-function (method)
+  (method-function method))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require "MOP"))
