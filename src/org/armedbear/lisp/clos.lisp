@@ -747,7 +747,7 @@
       (dolist (reader (slot-definition-readers direct-slot))
         (add-reader-method class reader direct-slot))
       (dolist (writer (slot-definition-writers direct-slot))
-        (add-writer-method class writer (slot-definition-name direct-slot)))))
+        (add-writer-method class writer direct-slot))))
   (setf (class-direct-default-initargs class) direct-default-initargs)
   (maybe-finalize-class-subtree class)
   (values))
@@ -2427,17 +2427,16 @@ to ~S with argument list ~S."
 
 ;;; Reader and writer methods
 
-(defun make-instance-standard-reader-method (gf
-                                             &key
-                                             lambda-list
-                                             qualifiers
-                                             specializers
-                                             documentation
-                                             function
-                                             fast-function
-                                             slot-definition)
-  (declare (ignore gf))
-  (let ((method (std-allocate-instance +the-standard-reader-method-class+)))
+(defun make-instance-standard-accessor-method (method-class
+                                               &key
+                                               lambda-list
+                                               qualifiers
+                                               specializers
+                                               documentation
+                                               function
+                                               fast-function
+                                               slot-definition)
+  (let ((method (std-allocate-instance method-class)))
     (setf (method-lambda-list method) lambda-list)
     (setf (method-qualifiers method) qualifiers)
     (setf (std-slot-value method 'sys::specializers)
@@ -2452,10 +2451,7 @@ to ~S with argument list ~S."
     method))
 
 (defun add-reader-method (class function-name slot-definition)
-  (let* ((method-class (if (eq (class-of class) +the-standard-class+)
-                           +the-standard-reader-method-class+
-                           (reader-method-class class)))
-         (slot-name (slot-definition-name slot-definition))
+  (let* ((slot-name (slot-definition-name slot-definition))
          (lambda-expression
           (if (eq (class-of class) +the-standard-class+)
               `(lambda (object) (std-slot-value object ',slot-name))
@@ -2463,7 +2459,21 @@ to ~S with argument list ~S."
          (method-function (compute-method-function lambda-expression))
          (fast-function (compute-method-fast-function lambda-expression))
          (method-lambda-list '(object))
-         (gf (find-generic-function function-name nil)))
+         (gf (find-generic-function function-name nil))
+         (initargs `(:lambda-list ,method-lambda-list
+                     :qualifiers ()
+                     :specializers (,class)
+                     :function ,(if (autoloadp 'compile)
+                                    method-function
+                                    (autocompile method-function))
+                     :fast-function ,(if (autoloadp 'compile)
+                                         fast-function
+                                         (autocompile fast-function))
+                     :slot-definition ,slot-definition))
+         (method-class (if (eq class +the-standard-class+)
+                           +the-standard-reader-method-class+
+                           (apply #'reader-method-class class slot-definition
+                                  initargs))))
     ;; required by AMOP pg. 225
     (assert (subtypep method-class +the-standard-reader-method-class+))
     (if gf
@@ -2474,36 +2484,19 @@ to ~S with argument list ~S."
                                           :lambda-list method-lambda-list)))
     (let ((method
            (if (eq method-class +the-standard-reader-method-class+)
-               (make-instance-standard-reader-method
-                gf
-                :lambda-list method-lambda-list
-                :qualifiers ()
-                :specializers (list class)
-                :function (if (autoloadp 'compile)
-                              method-function
-                              (autocompile method-function))
-                :fast-function (if (autoloadp 'compile)
-                                   fast-function
-                                   (autocompile fast-function))
-                :slot-definition slot-definition)
-               (make-instance method-class
-                              :lambda-list method-lambda-list
-                              :qualifiers ()
-                              :specializers (list class)
-                              :function (if (autoloadp 'compile)
-                                            method-function
-                                            (autocompile method-function))
-                              :fast-function (if (autoloadp 'compile)
-                                                 fast-function
-                                                 (autocompile fast-function))
-                              :slot-definition slot-definition))))
+               (apply #'make-instance-standard-accessor-method method-class
+                      initargs)
+               (apply #'make-instance method-class
+                      :generic-function nil ; handled by add-method
+                      initargs))))
       (if (eq (class-of gf) +the-standard-generic-function-class+)
           (std-add-method gf method)
           (add-method gf method))
       method)))
 
-(defun add-writer-method (class function-name slot-name)
-  (let* ((lambda-expression
+(defun add-writer-method (class function-name slot-definition)
+  (let* ((slot-name (slot-definition-name slot-definition))
+         (lambda-expression
           (if (eq (class-of class) +the-standard-class+)
               `(lambda (new-value object)
                  (setf (std-slot-value object ',slot-name) new-value))
@@ -2511,19 +2504,40 @@ to ~S with argument list ~S."
                  (setf (slot-value object ',slot-name) new-value))))
          (method-function (compute-method-function lambda-expression))
          (fast-function (compute-method-fast-function lambda-expression))
-         )
-    (ensure-method function-name
-                   :lambda-list '(new-value object)
-                   :qualifiers ()
-                   :specializers (list +the-T-class+ class)
-;;                    :function `(function ,method-function)
-                   :function (if (autoloadp 'compile)
-                                 method-function
-                                 (autocompile method-function))
-                   :fast-function (if (autoloadp 'compile)
-                                      fast-function
-                                      (autocompile fast-function))
-                   )))
+         (method-lambda-list '(new-value object))
+         (gf (find-generic-function function-name nil))
+         (initargs `(:lambda-list ,method-lambda-list
+                     :qualifiers ()
+                     :specializers (,+the-T-class+ ,class)
+                     :function ,(if (autoloadp 'compile)
+                                    method-function
+                                    (autocompile method-function))
+                     :fast-function ,(if (autoloadp 'compile)
+                                         fast-function
+                                         (autocompile fast-function))))
+         (method-class (if (eq class +the-standard-class+)
+                           +the-standard-writer-method-class+
+                           (apply #'writer-method-class class slot-definition
+                                  initargs))))
+    ;; required by AMOP pg. 242
+    (assert (subtypep method-class +the-standard-writer-method-class+))
+    (if gf
+        (check-method-lambda-list function-name
+                                  method-lambda-list
+                                  (generic-function-lambda-list gf))
+        (setf gf (ensure-generic-function function-name
+                                          :lambda-list method-lambda-list)))
+    (let ((method
+           (if (eq method-class +the-standard-writer-method-class+)
+               (apply #'make-instance-standard-accessor-method method-class
+                      initargs)
+               (apply #'make-instance method-class
+                      :generic-function nil ; handled by add-method
+                      initargs))))
+      (if (eq (class-of gf) +the-standard-generic-function-class+)
+          (std-add-method gf method)
+          (add-method gf method))
+      method)))
 
 (defmacro atomic-defgeneric (function-name &rest rest)
   "Macro to define a generic function and 'swap it into place' after
@@ -2755,6 +2769,21 @@ in place, while we still need them to "
                                 &rest initargs)
   (declare (ignore initargs))
   +the-standard-reader-method-class+)
+
+;;; AMOP pg. 242
+(defgeneric writer-method-class (class direct-slot &rest initargs))
+
+(defmethod writer-method-class ((class standard-class)
+                                (direct-slot standard-direct-slot-definition)
+                                &rest initargs)
+  (declare (ignore initargs))
+  +the-standard-writer-method-class+)
+
+(defmethod writer-method-class ((class funcallable-standard-class)
+                                (direct-slot standard-direct-slot-definition)
+                                &rest initargs)
+  (declare (ignore initargs))
+  +the-standard-writer-method-class+)
 
 (atomic-defgeneric documentation (x doc-type)
     (:method ((x symbol) doc-type)
@@ -3563,7 +3592,8 @@ or T when any keyword is acceptable due to presence of
              args)))
 
 
-
+;;; FIXME (rudi 2012-01-28): this can be a function, it only needs to
+;;; use standard accessor functions
 (defgeneric find-method (generic-function
                          qualifiers
                          specializers
@@ -3572,6 +3602,11 @@ or T when any keyword is acceptable due to presence of
 (defmethod find-method ((generic-function standard-generic-function)
                         qualifiers specializers &optional (errorp t))
   (%find-method generic-function qualifiers specializers errorp))
+
+(defgeneric find-method ((generic-function symbol)
+                         qualifiers specializers &optional (errorp t))
+  (find-method (find-generic-function generic-function errorp)
+               qualifiers specializers errorp))
 
 (defgeneric add-method (generic-function method))
 

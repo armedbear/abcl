@@ -28,12 +28,17 @@
           (and (eql (class-name class) 'funcallable-standard-class)
                (eql (class-name superclass) 'standard-class)))))
 
-(export '(funcallable-standard-object
+(export '(;; classes
+          funcallable-standard-object
           funcallable-standard-class
           forward-referenced-class
-          validate-superclass
           direct-slot-definition-class
           effective-slot-definition-class
+          standard-method
+          standard-accessor-method
+          standard-reader-method
+          standard-writer-method
+          
           compute-effective-slot-definition
           compute-class-precedence-list
           compute-effective-slot-definition
@@ -41,6 +46,7 @@
           finalize-inheritance
           slot-boundp-using-class
           slot-makunbound-using-class
+          validate-superclass
 
           ensure-class
           ensure-class-using-class
@@ -55,14 +61,13 @@
           
           generic-function-lambda-list
 
-          standard-method
           method-function
           method-specializers
           method-generic-function
-
-          standard-accessor-method
           standard-reader-method
           standard-writer-method
+          reader-method-class
+          writer-method-class
 
           slot-definition
           slot-definition-readers
