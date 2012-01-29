@@ -2656,7 +2656,13 @@ in place, while we still need them to "
 
  ;;; AMOP pg. 182
 (defun ensure-class (name &rest all-keys &key &allow-other-keys)
-  (apply #'ensure-class-using-class (find-class name nil) name all-keys))
+  (let ((class (find-class name nil)))
+    ;; CLHS DEFCLASS: "If a class with the same proper name already
+    ;; exists [...] the existing class is redefined."  Ansi-tests
+    ;; CLASS-0309 and CLASS-0310.1 demand this behavior.
+    (if (and class (eql (class-name class) name))
+        (apply #'ensure-class-using-class class name all-keys)
+        (apply #'ensure-class-using-class nil name all-keys))))
 
 ;;; AMOP pg. 183ff.
 (defgeneric ensure-class-using-class (class name &key direct-default-initargs
