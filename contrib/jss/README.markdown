@@ -50,6 +50,8 @@ uses the code in invoke.java to call the method named "write" with
 the arguments sw and "Hello ".  JSS figures out the right java method
 to call, and calls it.
 
+An interactive restart is available to resolve class ambiguity.
+
 Static calls are possible as well with the #" macro, but the
 first argument MUST BE A SYMBOL to distinguish 
 
@@ -82,6 +84,7 @@ runs about three times faster than
  
     (time (dotimes (i 10000) (#"toString" "foo")))
 
+So, something like
 
     (with-constant-signature ((tostring "toString" t)) ...) 
     
@@ -130,5 +133,5 @@ abcl-contrib: http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/
 
 <> dc:created "2005" ;
    dc:author "Mark <evenson.not.org@gmail.com>";
-   revised: "27-JAN-2012" .
+   revised: "29-JAN-2012" .
    
