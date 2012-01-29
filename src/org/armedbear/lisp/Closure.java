@@ -47,24 +47,9 @@ public class Closure extends Function
   public static final int REST     = 3;
   public static final int AUX      = 4;
 
-  // States.
-  private static final int STATE_REQUIRED = 0;
-  private static final int STATE_OPTIONAL = 1;
-  private static final int STATE_KEYWORD  = 2;
-  private static final int STATE_REST     = 3;
-  private static final int STATE_AUX      = 4;
-
-  private Parameter[] requiredParameters = new Parameter[0];
-  private Parameter[] optionalParameters = requiredParameters;
-  private Parameter[] keywordParameters = requiredParameters;
-  private Parameter[] auxVars = requiredParameters;
   private final LispObject body;
   private final LispObject executionBody;
   private final Environment environment;
-  private final boolean andKey;
-  private final boolean allowOtherKeys;
-  private Symbol restVar;
-  private Symbol envVar;
   private int arity;
 
   private int minArgs;
@@ -97,15 +82,8 @@ public class Closure extends Function
                && optional.length == 0)
           ? maxArgs : -1;
 
-      requiredParameters = required;
-      optionalParameters = optional;
-      keywordParameters = keyword;
-
       if (rest != NIL)
         restVar = rest;
-
-      andKey = keys != NIL;
-      allowOtherKeys = moreKeys != NIL;
 
       // stuff we don't need: we're a compiled function
       body = null;
@@ -114,23 +92,25 @@ public class Closure extends Function
 
       ArrayList<ArgumentListProcessor.RequiredParam> reqParams =
               new ArrayList<ArgumentListProcessor.RequiredParam>();
-      for (Parameter req : requiredParameters)
+      for (Parameter req : required)
           reqParams.add(new ArgumentListProcessor.RequiredParam(req.var, false));
 
       ArrayList<ArgumentListProcessor.OptionalParam> optParams =
               new ArrayList<ArgumentListProcessor.OptionalParam>();
-      for (Parameter opt : optionalParameters)
+      for (Parameter opt : optional)
           optParams.add(new ArgumentListProcessor.OptionalParam(opt.var, false,
                   (opt.svar == NIL) ? null : (Symbol)opt.svar, false,
                   opt.initForm));
 
       ArrayList<ArgumentListProcessor.KeywordParam> keyParams =
               new ArrayList<ArgumentListProcessor.KeywordParam>();
-      for (Parameter key : keywordParameters)
+      for (Parameter key : keyword)
           keyParams.add(new ArgumentListProcessor.KeywordParam(key.var, false,
                   (key.svar == NIL) ? null : (Symbol)key.svar, false, key.initForm,
                   key.keyword));
-      arglist = new ArgumentListProcessor(this, reqParams, optParams, keyParams, andKey, allowOtherKeys, restVar);
+      arglist = new ArgumentListProcessor(this, reqParams, optParams,
+                                          keyParams, keys != NIL,
+                                          moreKeys != NIL, restVar);
   }
 
 
@@ -149,233 +129,17 @@ public class Closure extends Function
     if (!(lambdaList == NIL || lambdaList instanceof Cons))
       error(new ProgramError("The lambda list " + lambdaList.princToString() +
                            " is invalid."));
-    boolean _andKey = false;
-    boolean _allowOtherKeys = false;
-    if (lambdaList instanceof Cons)
-      {
-        final int length = lambdaList.length();
-        ArrayList<Parameter> required = null;
-        ArrayList<Parameter> optional = null;
-        ArrayList<Parameter> keywords = null;
-        ArrayList<Parameter> aux = null;
-        int state = STATE_REQUIRED;
-        LispObject remaining = lambdaList;
-        while (remaining != NIL)
-          {
-            LispObject obj = remaining.car();
-            if (obj instanceof Symbol)
-              {
-                if (state == STATE_AUX)
-                  {
-                    if (aux == null)
-                      aux = new ArrayList<Parameter>();
-                    aux.add(new Parameter((Symbol)obj, NIL, AUX));
-                  }
-                else if (obj == Symbol.AND_OPTIONAL)
-                  {
-                    state = STATE_OPTIONAL;
-                    arity = -1;
-                  }
-                else if (obj == Symbol.AND_REST || obj == Symbol.AND_BODY)
-                  {
-                    if (_andKey)
-                      {
-                        error(new ProgramError(
-                          "&REST/&BODY must precede &KEY."));
-                      }
-                    state = STATE_REST;
-                    arity = -1;
-                    maxArgs = -1;
-                    remaining = remaining.cdr();
-                    if (remaining == NIL)
-                      {
-                        error(new ProgramError(
-                          "&REST/&BODY must be followed by a variable."));
-                      }
-                    if (restVar != null) 
-                      {
-                        error(new ProgramError(
-                          "&REST/&BODY may occur only once."));
-                      }
-                    final LispObject remainingcar =  remaining.car();
-                    if (remainingcar instanceof Symbol)
-                      {
-                        restVar = (Symbol) remainingcar;
-                      }
-                    else
-                      {
-                        error(new ProgramError(
-                          "&REST/&BODY must be followed by a variable."));
-                      }
-                  }
-                else if (obj == Symbol.AND_ENVIRONMENT)
-                  {
-                    remaining = remaining.cdr();
-                    envVar = (Symbol) remaining.car();
-                    arity = -1; // FIXME
-                  }
-                else if (obj == Symbol.AND_KEY)
-                  {
-                    state = STATE_KEYWORD;
-                    _andKey = true;
-                    arity = -1;
-                  }
-                else if (obj == Symbol.AND_ALLOW_OTHER_KEYS)
-                  {
-                    _allowOtherKeys = true;
-                    maxArgs = -1;
-                  }
-                else if (obj == Symbol.AND_AUX)
-                  {
-                    // All remaining specifiers are aux variable specifiers.
-                    state = STATE_AUX;
-                    arity = -1; // FIXME
-                  }
-                else
-                  {
-                    if (state == STATE_OPTIONAL)
-                      {
-                        if (optional == null)
-                          optional = new ArrayList<Parameter>();
-                        optional.add(new Parameter((Symbol)obj, NIL, OPTIONAL));
-                        if (maxArgs >= 0)
-                          ++maxArgs;
-                      }
-                    else if (state == STATE_KEYWORD)
-                      {
-                        if (keywords == null)
-                          keywords = new ArrayList<Parameter>();
-                        keywords.add(new Parameter((Symbol)obj, NIL, KEYWORD));
-                        if (maxArgs >= 0)
-                          maxArgs += 2;
-                      }
-                    else
-                      {
-                        if (state != STATE_REQUIRED)
-                          {
-                            error(new ProgramError(
-                              "required parameters cannot appear after &REST/&BODY."));
-                          }
-                        if (required == null)
-                          required = new ArrayList<Parameter>();
-                        required.add(new Parameter((Symbol)obj));
-                        if (maxArgs >= 0)
-                          ++maxArgs;
-                      }
-                  }
-              }
-            else if (obj instanceof Cons)
-              {
-                if (state == STATE_AUX)
-                  {
-                    Symbol sym = checkSymbol(obj.car());
-                    LispObject initForm = obj.cadr();
-                    Debug.assertTrue(initForm != null);
-                    if (aux == null)
-                      aux = new ArrayList<Parameter>();
-                    aux.add(new Parameter(sym, initForm, AUX));
-                  }
-                else if (state == STATE_OPTIONAL)
-                  {
-                    Symbol sym = checkSymbol(obj.car());
-                    LispObject initForm = obj.cadr();
-                    LispObject svar = obj.cdr().cdr().car();
-                    if (optional == null)
-                      optional = new ArrayList<Parameter>();
-                    optional.add(new Parameter(sym, initForm, svar, OPTIONAL));
-                    if (maxArgs >= 0)
-                      ++maxArgs;
-                  }
-                else if (state == STATE_KEYWORD)
-                  {
-                    Symbol keyword;
-                    Symbol var;
-                    LispObject initForm = NIL;
-                    LispObject svar = NIL;
-                    LispObject first = obj.car();
-                    if (first instanceof Cons)
-                      {
-                        keyword = checkSymbol(first.car());
-                        var = checkSymbol(first.cadr());
-                      }
-                    else
-                      {
-                        var = checkSymbol(first);
-                        keyword =
-                          PACKAGE_KEYWORD.intern(var.name);
-                      }
-                    obj = obj.cdr();
-                    if (obj != NIL)
-                      {
-                        initForm = obj.car();
-                        obj = obj.cdr();
-                        if (obj != NIL)
-                          svar = obj.car();
-                      }
-                    if (keywords == null)
-                      keywords = new ArrayList<Parameter>();
-                    keywords.add(new Parameter(keyword, var, initForm, svar));
-                    if (maxArgs >= 0)
-                      maxArgs += 2;
-                  }
-                else
-                  invalidParameter(obj);
-              }
-            else
-              invalidParameter(obj);
-            remaining = remaining.cdr();
-          }
-        if (arity == 0)
-          arity = length;
-        if (required != null)
-          {
-            requiredParameters = new Parameter[required.size()];
-            required.toArray(requiredParameters);
-          }
-        if (optional != null)
-          {
-            optionalParameters = new Parameter[optional.size()];
-            optional.toArray(optionalParameters);
-          }
-        if (keywords != null)
-          {
-            keywordParameters = new Parameter[keywords.size()];
-            keywords.toArray(keywordParameters);
-          }
-        if (aux != null)
-          {
-            auxVars = new Parameter[aux.size()];
-            aux.toArray(auxVars);
-          }
-      }
-    else
-      {
-        // Lambda list is empty.
-        Debug.assertTrue(lambdaList == NIL);
-        arity = 0;
-        maxArgs = 0;
-      }
     this.body = lambdaExpression.cddr();
     LispObject bodyAndDecls = parseBody(this.body, false);
     this.executionBody = bodyAndDecls.car();
     LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
 
     this.environment = env;
-    this.andKey = _andKey;
-    this.allowOtherKeys = _allowOtherKeys;
-    minArgs = requiredParameters.length;
-    if (arity >= 0)
-      Debug.assertTrue(arity == minArgs);
 
     arglist = new ArgumentListProcessor(this, lambdaList, specials);
     freeSpecials = arglist.freeSpecials(specials);
-  }
-
-  private static final void invalidParameter(LispObject obj)
-
-  {
-    error(new ProgramError(obj.princToString() +
-                         " may not be used as a variable in a lambda list."));
+    minArgs = arglist.getMinArgs();
+    arity = arglist.getArity();
   }
 
   @Override
