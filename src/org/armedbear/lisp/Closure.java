@@ -921,79 +921,8 @@ public class Closure extends Function
 
   // No optional or keyword parameters.
   protected final LispObject[] fastProcessArgs(LispObject[] args)
-
   {
-    final int argsLength = args.length;
-    if (arity >= 0)
-      {
-        // Fixed arity.
-        if (argsLength != arity)
-          error(new WrongNumberOfArgumentsException(this, arity));
-        return args;
-      }
-    // Not fixed arity.
-    if (argsLength < minArgs)
-      error(new WrongNumberOfArgumentsException(this, minArgs, -1));
-    final LispObject[] array = new LispObject[variables.length];
-    int index = 0;
-    // Required parameters.
-    for (int i = 0; i < minArgs; i++)
-      {
-        array[index++] = args[i];
-      }
-    int argsUsed = minArgs;
-    // &rest parameter.
-    if (restVar != null)
-      {
-        LispObject rest = NIL;
-        for (int j = argsLength; j-- > argsUsed;)
-          rest = new Cons(args[j], rest);
-        array[index++] = rest;
-      }
-    else if (argsUsed < argsLength)
-      {
-        // No keyword parameters.
-        if (argsUsed + 2 <= argsLength)
-          {
-            // Check for :ALLOW-OTHER-KEYS.
-            LispObject allowOtherKeysValue = NIL;
-            int n = argsUsed;
-            while (n < argsLength)
-              {
-                LispObject keyword = args[n];
-                if (keyword == Keyword.ALLOW_OTHER_KEYS)
-                  {
-                    allowOtherKeysValue = args[n+1];
-                    break;
-                  }
-                n += 2;
-              }
-            if (allowOtherKeys || allowOtherKeysValue != NIL)
-              {
-                // Skip keyword/value pairs.
-                while (argsUsed + 2 <= argsLength)
-                  argsUsed += 2;
-              }
-            else if (andKey)
-              {
-                LispObject keyword = args[argsUsed];
-                if (keyword == Keyword.ALLOW_OTHER_KEYS)
-                  {
-                    // Section 3.4.1.4: "Note that if &key is present, a
-                    // keyword argument of :allow-other-keys is always
-                    // permitted---regardless of whether the associated
-                    // value is true or false."
-                    argsUsed += 2;
-                  }
-              }
-          }
-        if (argsUsed < argsLength)
-          {
-            if (restVar == null)
-              error(new WrongNumberOfArgumentsException(this));
-          }
-      }
-    return array;
+    return arglist.match(args, environment, null, null);
   }
 
   public static class Parameter
