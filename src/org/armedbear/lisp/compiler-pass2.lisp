@@ -95,7 +95,7 @@
 (defknown emit-push-nil () t)
 (declaim (inline emit-push-nil))
 (defun emit-push-nil ()
-  (emit-getstatic +lisp+ "NIL" +lisp-object+))
+  (emit-getstatic +lisp+ "NIL" +lisp-symbol+))
 
 (defknown emit-push-nil-symbol () t)
 (declaim (inline emit-push-nil-symbol))

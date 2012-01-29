@@ -91,7 +91,7 @@ public final class Lisp
 
 
   @DocString(name="nil")
-  public static final LispObject NIL = Nil.NIL;
+  public static final Symbol NIL = Nil.NIL;
 
   // We need NIL before we can call usePackage().
   static
@@ -843,9 +843,7 @@ public final class Lisp
   }
 
   // Environment wrappers.
-  private static final boolean isSpecial(Symbol sym, LispObject ownSpecials,
-                                         Environment env)
-
+  static final boolean isSpecial(Symbol sym, LispObject ownSpecials)
   {
     if (ownSpecials != null)
       {
@@ -865,12 +863,23 @@ public final class Lisp
                                       Environment env, LispThread thread)
 
   {
-    if (isSpecial(sym, ownSpecials, env)) {
+    if (isSpecial(sym, ownSpecials)) {
       env.declareSpecial(sym);
       thread.bindSpecial(sym, value);
     }
     else
       env.bind(sym, value);
+  }
+
+  public static void bindArg(boolean special, Symbol sym, LispObject value,
+                             Environment env, LispThread thread)
+  {
+      if (special) {
+          env.declareSpecial(sym);
+          thread.bindSpecial(sym, value);
+      }
+      else
+          env.bind(sym, value);
   }
 
 
