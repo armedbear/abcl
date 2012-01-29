@@ -70,7 +70,6 @@ public class Closure extends Function
   private int minArgs;
   private int maxArgs;
 
-  private LispObject specials = NIL;
   private Symbol[] freeSpecials = new Symbol[0];
 
   private ArgumentListProcessor arglist;
@@ -359,7 +358,7 @@ public class Closure extends Function
     this.body = lambdaExpression.cddr();
     LispObject bodyAndDecls = parseBody(this.body, false);
     this.executionBody = bodyAndDecls.car();
-    this.specials = parseSpecials(bodyAndDecls.NTH(1));
+    LispObject specials = parseSpecials(bodyAndDecls.NTH(1));
 
     this.environment = env;
     this.andKey = _andKey;
@@ -370,17 +369,6 @@ public class Closure extends Function
 
     arglist = new ArgumentListProcessor(this, lambdaList, specials);
     freeSpecials = arglist.freeSpecials(specials);
-  }
-
-  private final void processParameters(ArrayList<Symbol> vars,
-                                       final Parameter[] parameters)
-  {
-    for (Parameter parameter : parameters)
-      {
-        vars.add(parameter.var);
-        if (parameter.svar != NIL)
-          vars.add((Symbol)parameter.svar);
-      }
   }
 
   private static final void invalidParameter(LispObject obj)
