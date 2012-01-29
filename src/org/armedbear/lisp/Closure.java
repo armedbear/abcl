@@ -76,6 +76,8 @@ public class Closure extends Function
   private boolean bindInitForms;
 
 
+  private ArgumentListProcessor arglist;
+
     /** Construct a closure object with a lambda-list described
      * by these parameters.
      *
@@ -115,6 +117,26 @@ public class Closure extends Function
       body = null;
       executionBody = null;
       environment = null;
+
+      ArrayList<ArgumentListProcessor.RequiredParam> reqParams =
+              new ArrayList<ArgumentListProcessor.RequiredParam>();
+      for (Parameter req : requiredParameters)
+          reqParams.add(new ArgumentListProcessor.RequiredParam(req.var, false));
+
+      ArrayList<ArgumentListProcessor.OptionalParam> optParams =
+              new ArrayList<ArgumentListProcessor.OptionalParam>();
+      for (Parameter opt : optionalParameters)
+          optParams.add(new ArgumentListProcessor.OptionalParam(opt.var, false,
+                  (opt.svar == NIL) ? null : (Symbol)opt.svar, false,
+                  opt.initForm));
+
+      ArrayList<ArgumentListProcessor.KeywordParam> keyParams =
+              new ArrayList<ArgumentListProcessor.KeywordParam>();
+      for (Parameter key : keywordParameters)
+          keyParams.add(new ArgumentListProcessor.KeywordParam(key.var, false,
+                  (key.svar == NIL) ? null : (Symbol)key.svar, false, key.initForm,
+                  key.keyword));
+      arglist = new ArgumentListProcessor(this, reqParams, optParams, keyParams, andKey, allowOtherKeys, restVar);
   }
 
 
@@ -351,6 +373,8 @@ public class Closure extends Function
     if (arity >= 0)
       Debug.assertTrue(arity == minArgs);
     variables = processVariables();
+
+    arglist = new ArgumentListProcessor(this, lambdaList, specials);
   }
 
   private final void processParameters(ArrayList<Symbol> vars,
