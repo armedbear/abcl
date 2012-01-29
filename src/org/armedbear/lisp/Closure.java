@@ -459,16 +459,10 @@ public class Closure extends Function
   {
     final LispThread thread = LispThread.currentThread();
     final SpecialBindingsMark mark = thread.markSpecialBindings();
+
     Environment ext = new Environment(environment);
-    bindRequiredParameters(ext, thread, objects);
-    if (arity != minArgs)
-      {
-        bindParameterDefaults(optionalParameters, ext, thread);
-        if (restVar != null)
-          bindArg(specials, restVar, NIL, ext, thread);
-        bindParameterDefaults(keywordParameters, ext, thread);
-      }
-    bindAuxVars(ext, thread);
+    LispObject[] args = arglist.match(objects, environment, ext, thread);
+    arglist.bindVars(args, ext, thread);
     declareFreeSpecials(ext);
     try
       {
@@ -477,20 +471,6 @@ public class Closure extends Function
     finally
       {
         thread.resetSpecialBindings(mark);
-      }
-  }
-
-  private final void bindRequiredParameters(Environment ext,
-                                            LispThread thread,
-                                            LispObject[] objects)
-
-  {
-    // &whole and &environment before anything
-    if (envVar != null)
-      bindArg(specials, envVar, environment, ext, thread);
-    for (int i = 0; i < objects.length; ++i)
-      {
-        bindArg(specials, requiredParameters[i].var, objects[i], ext, thread);
       }
   }
 
@@ -654,21 +634,8 @@ public class Closure extends Function
     final LispThread thread = LispThread.currentThread();
     final SpecialBindingsMark mark = thread.markSpecialBindings();
     Environment ext = new Environment(environment);
-    if (optionalParameters.length == 0 && keywordParameters.length == 0)
-      args = fastProcessArgs(args);
-    else
-      args = processArgs(args, thread);
-    Debug.assertTrue(args.length == variables.length);
-    if (envVar != null)
-      {
-        bindArg(specials, envVar, environment, ext, thread);
-      }
-    for (int i = 0; i < variables.length; i++)
-      {
-        Symbol sym = variables[i];
-        bindArg(specials, sym, args[i], ext, thread);
-      }
-    bindAuxVars(ext, thread);
+    args = arglist.match(args, environment, ext, thread);
+    arglist.bindVars(args, ext, thread);
     declareFreeSpecials(ext);
     try
       {
@@ -1027,42 +994,6 @@ public class Closure extends Function
           }
       }
     return array;
-  }
-
-  private final void bindParameterDefaults(Parameter[] parameters,
-                                           Environment env,
-                                           LispThread thread)
-
-  {
-    for (Parameter parameter : parameters)
-      {
-        LispObject value;
-        if (parameter.initVal != null)
-          value = parameter.initVal;
-        else
-          value = eval(parameter.initForm, env, thread);
-        bindArg(specials, parameter.var, value, env, thread);
-        if (parameter.svar != NIL)
-	  bindArg(specials, (Symbol)parameter.svar, NIL, env, thread);
-      }
-  }
-
-  private final void bindAuxVars(Environment env, LispThread thread)
-
-  {
-    // Aux variable processing is analogous to LET* processing.
-    for (Parameter parameter : auxVars)
-      {
-        Symbol sym = parameter.var;
-        LispObject value;
-
-        if (parameter.initVal != null)
-          value = parameter.initVal;
-        else
-          value = eval(parameter.initForm, env, thread);
-
-        bindArg(specials, sym, value, env, thread);
-      }
   }
 
   public static class Parameter
