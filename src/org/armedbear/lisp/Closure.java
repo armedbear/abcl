@@ -70,11 +70,8 @@ public class Closure extends Function
   private int minArgs;
   private int maxArgs;
 
-  private Symbol[] variables = new Symbol[0];
   private LispObject specials = NIL;
-
-  private boolean bindInitForms;
-
+  private Symbol[] freeSpecials = new Symbol[0];
 
   private ArgumentListProcessor arglist;
 
@@ -110,8 +107,6 @@ public class Closure extends Function
 
       andKey = keys != NIL;
       allowOtherKeys = moreKeys != NIL;
-      variables = processVariables();
-      bindInitForms = false;
 
       // stuff we don't need: we're a compiled function
       body = null;
@@ -372,9 +367,9 @@ public class Closure extends Function
     minArgs = requiredParameters.length;
     if (arity >= 0)
       Debug.assertTrue(arity == minArgs);
-    variables = processVariables();
 
     arglist = new ArgumentListProcessor(this, lambdaList, specials);
+    freeSpecials = arglist.freeSpecials(specials);
   }
 
   private final void processParameters(ArrayList<Symbol> vars,
@@ -385,27 +380,7 @@ public class Closure extends Function
         vars.add(parameter.var);
         if (parameter.svar != NIL)
           vars.add((Symbol)parameter.svar);
-        if (!bindInitForms)
-          if (!parameter.initForm.constantp())
-            bindInitForms = true;
       }
-  }
-
-  // Also sets bindInitForms.
-  private final Symbol[] processVariables()
-  {
-    ArrayList<Symbol> vars = new ArrayList<Symbol>();
-    for (Parameter parameter : requiredParameters)
-      vars.add(parameter.var);
-    processParameters(vars, optionalParameters);
-    if (restVar != null)
-      {
-        vars.add(restVar);
-      }
-    processParameters(vars, keywordParameters);
-    Symbol[] array = new Symbol[vars.size()];
-    vars.toArray(array);
-    return array;
   }
 
   private static final void invalidParameter(LispObject obj)
@@ -425,6 +400,7 @@ public class Closure extends Function
 
   public final LispObject getVariableList()
   {
+    Symbol[] variables = arglist.getVariables();
     LispObject result = NIL;
     for (int i = variables.length; i-- > 0;)
       result = new Cons(variables[i], result);
@@ -610,22 +586,10 @@ public class Closure extends Function
       }
   }
 
-  private final void declareFreeSpecials(Environment ext)
-
+  private void declareFreeSpecials(Environment ext)
   {
-    LispObject s = specials;
-    special:
-    while (s != NIL) {
-      Symbol special = (Symbol)s.car();
-      s = s.cdr();
-      for (Symbol var : variables)
-	if (special == var)
-          continue special;
-      for (Parameter parameter : auxVars)
-        if (special == parameter.var)
-          continue special;
-      ext.declareSpecial(special);
-    }
+      for (Symbol special : freeSpecials)
+        ext.declareSpecial(special);
   }
 
   @Override

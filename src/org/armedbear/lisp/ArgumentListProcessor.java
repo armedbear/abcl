@@ -471,6 +471,25 @@ public class ArgumentListProcessor {
       }
   }
   
+  public Symbol[] freeSpecials(LispObject specials) {
+      ArrayList<Symbol> list = new ArrayList<Symbol>();
+      
+      next_special:
+          while (specials != NIL) {
+              Symbol special = (Symbol)specials.car();
+              specials = specials.cdr();
+
+              for (Symbol v : variables)
+                  if (v == special)
+                      continue next_special;
+
+              list.add(special);
+          }
+
+      Symbol[] rv = new Symbol[list.size()];
+      return list.toArray(rv);
+  }
+  
   public int getArity() {
       return arity;
   }
@@ -481,6 +500,10 @@ public class ArgumentListProcessor {
   
   public int getMaxArgs() {
       return maxArgs;
+  }
+  
+  public Symbol[] getVariables() {
+      return variables;
   }
   
   private static void invalidParameter(LispObject obj) {
