@@ -1777,10 +1777,11 @@ Initialized with the true value near the end of the file.")
     method))
 
 (defun std-add-method (gf method)
-  (when (method-generic-function method)
+  (when (and (method-generic-function method)
+             (not (eql gf (method-generic-function method))))
     (error 'simple-error
-           :format-control "ADD-METHOD: ~S is already a method of ~S."
-           :format-arguments (list method (method-generic-function method))))
+           :format-control "~S is already a method of ~S, cannot add to ~S."
+           :format-arguments (list method (method-generic-function method) gf)))
   ;; Remove existing method with same qualifiers and specializers (if any).
   (let ((old-method (%find-method gf (std-method-qualifiers method)
                                  (method-specializers method) nil)))
@@ -1789,7 +1790,8 @@ Initialized with the true value near the end of the file.")
   (setf (std-slot-value method 'generic-function) gf)
   (push method (generic-function-methods gf))
   (dolist (specializer (method-specializers method))
-    (when (typep specializer 'class) ;; FIXME What about EQL specializer objects?
+    ;; FIXME use add-direct-method here (AMOP pg. 165))
+    (when (typep specializer 'class)
       (pushnew method (class-direct-methods specializer))))
   (finalize-standard-generic-function gf)
   gf)
@@ -1797,9 +1799,10 @@ Initialized with the true value near the end of the file.")
 (defun std-remove-method (gf method)
   (setf (generic-function-methods gf)
         (remove method (generic-function-methods gf)))
-  (setf (std-slot-value method 'generic-function) gf)
+  (setf (std-slot-value method 'generic-function) nil)
   (dolist (specializer (method-specializers method))
-    (when (typep specializer 'class) ;; FIXME What about EQL specializer objects?
+    ;; FIXME use remove-direct-method here (AMOP pg. 227)
+    (when (typep specializer 'class)
       (setf (class-direct-methods specializer)
             (remove method (class-direct-methods specializer)))))
   (finalize-standard-generic-function gf)
