@@ -82,9 +82,6 @@ public class Closure extends Function
                && optional.length == 0)
           ? maxArgs : -1;
 
-      if (rest != NIL)
-        restVar = rest;
-
       // stuff we don't need: we're a compiled function
       body = null;
       executionBody = null;
@@ -110,7 +107,7 @@ public class Closure extends Function
                   key.keyword));
       arglist = new ArgumentListProcessor(this, reqParams, optParams,
                                           keyParams, keys != NIL,
-                                          moreKeys != NIL, restVar);
+                                          moreKeys != NIL, rest);
   }
 
 
