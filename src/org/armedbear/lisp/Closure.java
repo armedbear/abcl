@@ -171,131 +171,50 @@ public class Closure extends Function
   @Override
   public LispObject execute()
   {
-    if (arity == 0)
-      {
-        return progn(executionBody, environment, 
-                     LispThread.currentThread());
-      }
-    else
       return execute(new LispObject[0]);
   }
     
-  private final LispObject bindParametersAndExecute(LispObject... objects)
-
-  {
-    final LispThread thread = LispThread.currentThread();
-    final SpecialBindingsMark mark = thread.markSpecialBindings();
-
-    Environment ext = new Environment(environment);
-    LispObject[] args = arglist.match(objects, environment, ext, thread);
-    arglist.bindVars(args, ext, thread);
-    declareFreeSpecials(ext);
-    try
-      {
-        return progn(executionBody, ext, thread);
-      }
-    finally
-      {
-        thread.resetSpecialBindings(mark);
-      }
-  }
-
-  public final LispObject invokeArrayExecute(LispObject... objects)
-
-  {
-    return execute(objects);
-  }
-
   @Override
   public LispObject execute(LispObject arg)
   {
-    if (minArgs == 1)
-      {
-        return bindParametersAndExecute(arg);
-      }
-    else
-      {
-        return invokeArrayExecute(arg);
-      }
+        return execute(new LispObject[] {arg});
   }
 
   @Override
   public LispObject execute(LispObject first, LispObject second)
-
   {
-    if (minArgs == 2)
-      {
-        return bindParametersAndExecute(first, second);
-      }
-    else
-      {
-        return invokeArrayExecute(first, second);
-      }
+        return execute(new LispObject[] {first, second});
   }
 
   @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third)
-
   {
-    if (minArgs == 3)
-      {
-        return bindParametersAndExecute(first, second, third);
-      }
-    else
-      {
-        return invokeArrayExecute(first, second, third);
-      }
+        return execute(new LispObject[] {first, second, third});
   }
 
   @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth)
-
   {
-    if (minArgs == 4)
-      {
-        return bindParametersAndExecute(first, second, third, fourth);
-      }
-    else
-      {
-        return invokeArrayExecute(first, second, third, fourth);
-      }
+        return execute(new LispObject[] {first, second, third, fourth});
   }
 
   @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth)
-
   {
-    if (minArgs == 5)
-      {
-        return bindParametersAndExecute(first, second, third, fourth,
-                                        fifth);
-      }
-    else
-      {
-        return invokeArrayExecute(first, second, third, fourth, fifth);
-      }
+        return execute(new LispObject[] {first, second, third, fourth, fifth});
   }
 
   @Override
   public LispObject execute(LispObject first, LispObject second,
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth)
-
   {
-    if (minArgs == 6)
-      {
-        return bindParametersAndExecute(first, second, third, fourth,
-                                        fifth, sixth);
-      }
-    else
-      {
-        return invokeArrayExecute(first, second, third, fourth, fifth,
-                                  sixth);
-      }
+        return execute(new LispObject[] {first, second, third, fourth, fifth,
+                                  sixth});
   }
 
   @Override
@@ -303,18 +222,9 @@ public class Closure extends Function
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
                             LispObject seventh)
-
   {
-    if (minArgs == 7)
-      {
-        return bindParametersAndExecute(first, second, third, fourth,
-                               fifth, sixth, seventh);
-      }
-    else
-      {
-        return invokeArrayExecute(first, second, third, fourth, fifth,
-                                  sixth, seventh);
-      }
+        return execute(new LispObject[] {first, second, third, fourth, fifth,
+                                  sixth, seventh});
   }
 
   @Override
@@ -322,24 +232,9 @@ public class Closure extends Function
                             LispObject third, LispObject fourth,
                             LispObject fifth, LispObject sixth,
                             LispObject seventh, LispObject eighth)
-
   {
-    if (minArgs == 8)
-      {
-        return bindParametersAndExecute(first, second, third, fourth,
-                               fifth, sixth, seventh, eighth);
-      }
-    else
-      {
-        return invokeArrayExecute(first, second, third, fourth, fifth,
-                                  sixth, seventh, eighth);
-      }
-  }
-
-  private void declareFreeSpecials(Environment ext)
-  {
-      for (Symbol special : freeSpecials)
-        ext.declareSpecial(special);
+        return execute(new LispObject[] {first, second, third, fourth, fifth,
+                                  sixth, seventh, eighth});
   }
 
   @Override
@@ -350,7 +245,8 @@ public class Closure extends Function
     Environment ext = new Environment(environment);
     args = arglist.match(args, environment, ext, thread);
     arglist.bindVars(args, ext, thread);
-    declareFreeSpecials(ext);
+    for (Symbol special : freeSpecials)
+      ext.declareSpecial(special);
     try
       {
         return progn(executionBody, ext, thread);
