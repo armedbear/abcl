@@ -107,7 +107,8 @@ public class Closure extends Function
                   key.keyword));
       arglist = new ArgumentListProcessor(this, reqParams, optParams,
                                           keyParams, keys != NIL,
-                                          moreKeys != NIL, rest);
+                                          moreKeys != NIL,
+                                          (rest == NIL) ? null : rest);
   }
 
 
