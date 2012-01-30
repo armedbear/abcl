@@ -50,14 +50,9 @@ public class Closure extends Function
   private final LispObject body;
   private final LispObject executionBody;
   private final Environment environment;
-  private int arity;
 
-  private int minArgs;
-  private int maxArgs;
-
-  private Symbol[] freeSpecials = new Symbol[0];
-
-  private ArgumentListProcessor arglist;
+  private final Symbol[] freeSpecials;
+  private final ArgumentListProcessor arglist;
 
     /** Construct a closure object with a lambda-list described
      * by these parameters.
@@ -74,14 +69,6 @@ public class Closure extends Function
                  Parameter[] optional,
                  Parameter[] keyword,
                  Symbol keys, Symbol rest, Symbol moreKeys) {
-      minArgs = required.length;
-      maxArgs = (rest == NIL && moreKeys == NIL)
-          ? minArgs + optional.length + 2*keyword.length : -1;
-
-      arity = (rest == NIL && moreKeys == NIL && keys == NIL
-               && optional.length == 0)
-          ? maxArgs : -1;
-
       // stuff we don't need: we're a compiled function
       body = null;
       executionBody = null;
@@ -109,6 +96,7 @@ public class Closure extends Function
                                           keyParams, keys != NIL,
                                           moreKeys != NIL,
                                           (rest == NIL) ? null : rest);
+      freeSpecials = new Symbol[0];
   }
 
 
@@ -136,8 +124,6 @@ public class Closure extends Function
 
     arglist = new ArgumentListProcessor(this, lambdaList, specials);
     freeSpecials = arglist.freeSpecials(specials);
-    minArgs = arglist.getMinArgs();
-    arity = arglist.getArity();
   }
 
   @Override
