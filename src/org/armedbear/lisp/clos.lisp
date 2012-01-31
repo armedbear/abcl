@@ -1181,6 +1181,7 @@
             ;; setup, so have to rely on plain functions here.
             (let ((instance (std-allocate-instance (find-class 'eql-specializer))))
               (setf (std-slot-value instance 'sys::object) object)
+              (setf (std-slot-value instance 'direct-methods) nil)
               instance))))
 
 (defun eql-specializer-object (eql-specializer)
@@ -1776,6 +1777,21 @@ Initialized with the true value near the end of the file.")
           (getf analyzed-args :allow-other-keys))
     method))
 
+;;; To be redefined as generic functions later
+(declaim (notinline add-direct-method))
+(defun add-direct-method (specializer method)
+  (if (typep specializer 'eql-specializer)
+      (pushnew method (std-slot-value specializer 'direct-methods))
+      (pushnew method (class-direct-methods specializer))))
+
+(declaim (notinline remove-direct-method))
+(defun remove-direct-method (specializer method)
+  (if (typep specializer 'eql-specializer)
+      (setf (std-slot-value specializer 'direct-methods)
+            (remove method (std-slot-value specializer 'direct-methods)))
+      (setf (class-direct-methods specializer)
+            (remove method (class-direct-methods specializer)))))
+
 (defun std-add-method (gf method)
   (when (and (method-generic-function method)
              (not (eql gf (method-generic-function method))))
@@ -1790,9 +1806,7 @@ Initialized with the true value near the end of the file.")
   (setf (std-slot-value method 'generic-function) gf)
   (push method (generic-function-methods gf))
   (dolist (specializer (method-specializers method))
-    ;; FIXME use add-direct-method here (AMOP pg. 165))
-    (when (typep specializer 'class)
-      (pushnew method (class-direct-methods specializer))))
+    (add-direct-method specializer method))
   (finalize-standard-generic-function gf)
   gf)
 
@@ -1801,10 +1815,7 @@ Initialized with the true value near the end of the file.")
         (remove method (generic-function-methods gf)))
   (setf (std-slot-value method 'generic-function) nil)
   (dolist (specializer (method-specializers method))
-    ;; FIXME use remove-direct-method here (AMOP pg. 227)
-    (when (typep specializer 'class)
-      (setf (class-direct-methods specializer)
-            (remove method (class-direct-methods specializer)))))
+    (remove-direct-method specializer method))
   (finalize-standard-generic-function gf)
   gf)
 
@@ -3726,6 +3737,45 @@ or T when any keyword is acceptable due to presence of
 (atomic-defgeneric accessor-method-slot-definition (method)
   (:method ((method standard-accessor-method))
     (std-accessor-method-slot-definition method)))
+
+;;; specializer-direct-method and friends.
+
+;;; AMOP pg. 237
+(defgeneric specializer-direct-generic-functions (specializer))
+
+(defmethod specializer-direct-generic-functions ((specializer class))
+  (delete-duplicates (mapcar #'method-generic-function
+                             (class-direct-methods specializer))))
+
+(defmethod specializer-direct-generic-functions ((specializer eql-specializer))
+  (delete-duplicates (mapcar #'method-generic-function
+                             (slot-value specializer 'direct-methods))))
+
+;;; AMOP pg. 238
+(defgeneric specializer-direct-methods (specializer))
+
+(defmethod specializer-direct-methods ((specializer class))
+  (class-direct-methods specializer))
+
+(defmethod specializer-direct-methods ((specializer eql-specializer))
+  (slot-value specializer 'direct-methods))
+
+;;; AMOP pg. 165
+(atomic-defgeneric add-direct-method (specializer method)
+  (:method ((specializer class) (method method))
+    (pushnew method (class-direct-methods specializer)))
+  (:method ((specializer eql-specializer) (method method))
+    (pushnew method (slot-value specializer 'direct-methods))))
+
+
+;;; AMOP pg. 227
+(atomic-defgeneric remove-direct-method (specializer method)
+  (:method ((specializer class) (method method))
+    (setf (class-direct-methods specializer)
+          (remove method (class-direct-methods specializer))))
+  (:method ((specializer eql-specializer) (method method))
+    (setf (slot-value specializer 'direct-methods)
+          (remove method (slot-value specializer 'direct-methods)))))
 
 ;;; SLIME compatibility functions.
 

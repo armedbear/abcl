@@ -48,8 +48,6 @@ public class StandardClass extends SlotClass
     = PACKAGE_MOP.intern("PRECEDENCE-LIST");
   public static Symbol symDirectMethods
     = PACKAGE_MOP.intern("DIRECT-METHODS");
-  public static Symbol symDocumentation
-    = PACKAGE_MOP.intern("DOCUMENTATION");
   public static Symbol symDirectSlots
     = PACKAGE_MOP.intern("DIRECT-SLOTS");
   public static Symbol symSlots
@@ -60,6 +58,17 @@ public class StandardClass extends SlotClass
     = PACKAGE_MOP.intern("DEFAULT-INITARGS");
   public static Symbol symFinalizedP
     = PACKAGE_MOP.intern("FINALIZED-P");
+
+  // used as init-function for slots in this file.
+  static Function constantlyNil = new Function() {
+    @Override
+    public LispObject execute()
+    {
+      return NIL;
+    }
+  };
+
+
 
   static Layout layoutStandardClass =
       new Layout(null,
@@ -74,7 +83,7 @@ public class StandardClass extends SlotClass
                       symDirectDefaultInitargs,
                       symDefaultInitargs,
                       symFinalizedP,
-                      symDocumentation),
+                      Symbol.DOCUMENTATION),
                  NIL)
       {
         @Override
@@ -226,13 +235,13 @@ public class StandardClass extends SlotClass
   @Override
   public LispObject getDocumentation()
   {
-    return getInstanceSlotValue(symDocumentation);
+    return getInstanceSlotValue(Symbol.DOCUMENTATION);
   }
 
   @Override
   public void setDocumentation(LispObject doc)
   {
-    setInstanceSlotValue(symDocumentation, doc);
+    setInstanceSlotValue(Symbol.DOCUMENTATION, doc);
   }
 
   @Override
@@ -334,28 +343,18 @@ public class StandardClass extends SlotClass
 
   private static final LispObject standardClassSlotDefinitions()
   {
-      // (CONSTANTLY NIL)
-    Function initFunction = new Function() {
-      @Override
-      public LispObject execute()
-      {
-         return NIL;
-      }
-    };
-
     return
-        list(helperMakeSlotDefinition("NAME", initFunction),
-             helperMakeSlotDefinition("LAYOUT", initFunction),
-             helperMakeSlotDefinition("DIRECT-SUPERCLASSES", initFunction),
-             helperMakeSlotDefinition("DIRECT-SUBCLASSES", initFunction),
-             helperMakeSlotDefinition("PRECEDENCE-LIST", initFunction),
-             helperMakeSlotDefinition("DIRECT-METHODS", initFunction),
-             helperMakeSlotDefinition("DIRECT-SLOTS", initFunction),
-             helperMakeSlotDefinition("SLOTS", initFunction),
-             helperMakeSlotDefinition("DIRECT-DEFAULT-INITARGS", initFunction),
-             helperMakeSlotDefinition("DEFAULT-INITARGS", initFunction),
-             helperMakeSlotDefinition("FINALIZED-P", initFunction),
-             helperMakeSlotDefinition("DOCUMENTATION", initFunction));
+        list(helperMakeSlotDefinition("NAME", constantlyNil),
+             helperMakeSlotDefinition("LAYOUT", constantlyNil),
+             helperMakeSlotDefinition("DIRECT-SUPERCLASSES", constantlyNil),
+             helperMakeSlotDefinition("DIRECT-SUBCLASSES", constantlyNil),
+             helperMakeSlotDefinition("PRECEDENCE-LIST", constantlyNil),
+             helperMakeSlotDefinition("DIRECT-SLOTS", constantlyNil),
+             helperMakeSlotDefinition("SLOTS", constantlyNil),
+             helperMakeSlotDefinition("DIRECT-DEFAULT-INITARGS", constantlyNil),
+             helperMakeSlotDefinition("DEFAULT-INITARGS", constantlyNil),
+             helperMakeSlotDefinition("FINALIZED-P", constantlyNil),
+             helperMakeSlotDefinition("DOCUMENTATION", constantlyNil));
   }
 
 
@@ -673,25 +672,26 @@ public class StandardClass extends SlotClass
     EQL_SPECIALIZER.setCPL(EQL_SPECIALIZER, SPECIALIZER, METAOBJECT,
                            STANDARD_OBJECT, BuiltInClass.CLASS_T);
     EQL_SPECIALIZER.setDirectSlotDefinitions(
-      list(new SlotDefinition(Symbol.OBJECT, list(PACKAGE_MOP.intern("EQL-SPECIALIZER-OBJECT")))));
+      list(new SlotDefinition(Symbol.OBJECT, NIL, constantlyNil),
+           new SlotDefinition(symDirectMethods, NIL, constantlyNil)));
     METHOD.setCPL(METHOD, METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     STANDARD_METHOD.setCPL(STANDARD_METHOD, METHOD, METAOBJECT, STANDARD_OBJECT,
                            BuiltInClass.CLASS_T);
     STANDARD_METHOD.setDirectSlotDefinitions(
-      list(new SlotDefinition(Symbol.GENERIC_FUNCTION, NIL),
-           new SlotDefinition(Symbol.LAMBDA_LIST, NIL),
-           new SlotDefinition(Symbol.KEYWORDS, NIL),
-           new SlotDefinition(Symbol.OTHER_KEYWORDS_P, NIL),
-           new SlotDefinition(Symbol.SPECIALIZERS, NIL),
-           new SlotDefinition(Symbol.QUALIFIERS, NIL),
-           new SlotDefinition(Symbol.FUNCTION, NIL),
-           new SlotDefinition(Symbol.FAST_FUNCTION, NIL),
-           new SlotDefinition(Symbol.DOCUMENTATION, NIL)));
+      list(new SlotDefinition(Symbol.GENERIC_FUNCTION, NIL, constantlyNil),
+           new SlotDefinition(Symbol.LAMBDA_LIST, NIL, constantlyNil),
+           new SlotDefinition(Symbol.KEYWORDS, NIL, constantlyNil),
+           new SlotDefinition(Symbol.OTHER_KEYWORDS_P, NIL, constantlyNil),
+           new SlotDefinition(Symbol.SPECIALIZERS, NIL, constantlyNil),
+           new SlotDefinition(Symbol.QUALIFIERS, NIL, constantlyNil),
+           new SlotDefinition(Symbol.FUNCTION, NIL, constantlyNil),
+           new SlotDefinition(Symbol.FAST_FUNCTION, NIL, constantlyNil),
+           new SlotDefinition(Symbol.DOCUMENTATION, NIL, constantlyNil)));
     STANDARD_ACCESSOR_METHOD.setCPL(STANDARD_ACCESSOR_METHOD, STANDARD_METHOD,
                                     METHOD, METAOBJECT, STANDARD_OBJECT,
                                     BuiltInClass.CLASS_T);
     STANDARD_ACCESSOR_METHOD.setDirectSlotDefinitions(
-       list(new SlotDefinition(Symbol.SLOT_DEFINITION, NIL)));
+      list(new SlotDefinition(Symbol.SLOT_DEFINITION, NIL)));
     STANDARD_READER_METHOD.setCPL(STANDARD_READER_METHOD,
                                   STANDARD_ACCESSOR_METHOD, STANDARD_METHOD,
                                   METHOD, METAOBJECT, STANDARD_OBJECT,
@@ -704,9 +704,11 @@ public class StandardClass extends SlotClass
                               BuiltInClass.CLASS_T);
     METHOD_COMBINATION.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.NAME,
-                              list(Symbol.METHOD_COMBINATION_NAME)),
+                              list(Symbol.METHOD_COMBINATION_NAME),
+                              constantlyNil),
            new SlotDefinition(Symbol.DOCUMENTATION,
-                              list(Symbol.METHOD_COMBINATION_DOCUMENTATION))));
+                              list(Symbol.METHOD_COMBINATION_DOCUMENTATION),
+                              constantlyNil)));
     SHORT_METHOD_COMBINATION.setCPL(SHORT_METHOD_COMBINATION,
                                     METHOD_COMBINATION, METAOBJECT,
                                     STANDARD_OBJECT, BuiltInClass.CLASS_T);
@@ -813,7 +815,6 @@ public class StandardClass extends SlotClass
     STANDARD_CLASS.finalizeClass();
     STANDARD_OBJECT.finalizeClass();
     FUNCALLABLE_STANDARD_OBJECT.finalizeClass();
-    CLASS.finalizeClass();
     FUNCALLABLE_STANDARD_CLASS.finalizeClass();
     FORWARD_REFERENCED_CLASS.finalizeClass();
     GENERIC_FUNCTION.finalizeClass();
@@ -840,6 +841,8 @@ public class StandardClass extends SlotClass
     STANDARD_READER_METHOD.finalizeClass();
     STANDARD_WRITER_METHOD.finalizeClass();
     SPECIALIZER.finalizeClass();
+    CLASS.finalizeClass();
+    BUILT_IN_CLASS.finalizeClass();
     EQL_SPECIALIZER.finalizeClass();
     METHOD_COMBINATION.finalizeClass();
     SHORT_METHOD_COMBINATION.finalizeClass();

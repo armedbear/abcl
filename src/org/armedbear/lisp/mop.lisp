@@ -73,11 +73,16 @@
           slot-definition-readers
           slot-definition-writers
 
+          intern-eql-specializer
           eql-specializer-object
+          specializer-direct-methods
+          specializer-direct-generic-functions
+          add-direct-method
+          remove-direct-method
+
           extract-lambda-list
           extract-specializer-names
-
-          intern-eql-specializer))
+          ))
 
 (provide 'mop)
 
