@@ -34,7 +34,7 @@ Test:
   (let ((mvn (find-mvn)))
     (unless mvn
       (warn "Failed to find Maven3 libraries.")
-      (return-from find-mvn-libs))
+      (return-from find-mvn-libs nil))
     (truename (make-pathname 
                :defaults (merge-pathnames "../lib/" mvn)
                :name nil :type nil))))
@@ -145,6 +145,54 @@ specializes the lookup() method if passed an 'http' role hint."
      session
      (#"newLocalRepositoryManager" repository-system local-repository))))
 
+(defparameter *session* nil
+  "Reference to the Maven RepositorySystemSession")
+
+(defparameter *maven-http-proxy* nil
+  "A string containing the URI of an http proxy for Maven to use.")
+
+(defparameter *repository-system* nil)
+
+(defun ensure-repository-system ()
+  (unless *repository-system*
+    (setf *repository-system* (repository-system)))
+  *repository-system*)
+
+(defun make-proxy ()
+  "Return an org.sonatype.aether.repository.Proxy instance initialized form *MAVEN-HTTP-PROXY*."
+  (unless *maven-http-proxy*
+    (warn "No proxy specified in *MAVEN-HTTP-PROXY*")
+    (return-from make-proxy nil))
+  (let* ((p (pathname *maven-http-proxy*))
+         (scheme (sys::url-pathname-scheme p))
+         (authority (sys::url-pathname-authority p))
+         (host (if (search ":" authority)
+                   (subseq authority 0 (search ":" authority))
+                   authority))
+         (port (when (search ":" authority)
+                 (parse-integer (subseq authority (1+ (search ":" authority))))))
+         ;; TODO allow specification of authentication
+         (authentication java:+null+))
+    (jss:new 'org.sonatype.aether.repository.Proxy
+             scheme host port authentication)))
+
+(defun ensure-session ()
+  "Ensure that the RepositorySystemSession has been created.
+
+If *MAVEN-HTTP-PROXY* is non-nil, parse its value as the http proxy."
+  (unless *session*
+    (ensure-repository-system)
+    (setf *session* (new-session *repository-system*))
+    (#"setRepositoryListener" *session* (make-repository-listener))
+    (when *maven-http-proxy*
+      (let ((proxy (make-proxy)))
+        (#"add" (#"getProxySelector" *session*)
+                proxy 
+                ;; A string specifying non proxy hosts, or null
+                java:+null+))))
+    *session*)
+    
+
 (defun resolve-artifact (group-id artifact-id &optional (version "LATEST" versionp))
   "Directly resolve Maven dependencies for item with GROUP-ID and ARTIFACT-ID at VERSION, ignoring dependencies.
 
@@ -174,6 +222,8 @@ in Java CLASSPATH representation."
     (#"addRepository" artifact-request repository)
     (#"resolveArtifact" system session artifact-request)))
 
+(defparameter *aether-remote-repository* nil) ;;; TODO
+
 (defun resolve-dependencies (group-id artifact-id &optional (version "LATEST" versionp))
   "Dynamically resolve Maven dependencies for item with GROUP-ID and ARTIFACT-ID at VERSION.
 
@@ -186,11 +236,11 @@ in Java CLASSPATH representation."
   (unless *init* (init))
   (unless versionp
     (warn "Using LATEST for unspecified version."))
-  (let* ((system 
-          (repository-system))
-         (session 
-          (new-session system))
-         (artifact
+  (let* ;;((system 
+        ;; (repository-system))
+        ;; (session 
+        ;;  (new-session system))
+         ((artifact
           (java:jnew (jss:find-java-class "aether.util.artifact.DefaultArtifact")
                      (format nil "~A:~A:~A"
                              group-id artifact-id version)))
@@ -202,20 +252,46 @@ in Java CLASSPATH representation."
                      "central" "default" "http://repo1.maven.org/maven2/"))
          (collect-request (java:jnew (jss:find-java-class "CollectRequest"))))
     (#"setRoot" collect-request dependency)
+    (when *maven-http-proxy*
+      (#"setProxy" central (make-proxy)))
     (#"addRepository" collect-request central)
     (let* ((node 
-            (#"getRoot" (#"collectDependencies" system session collect-request)))
+            (#"getRoot" (#"collectDependencies" (ensure-repository-system) (ensure-session) collect-request)))
            (dependency-request 
             (java:jnew (jss:find-java-class "DependencyRequest")
                        node java:+null+))
            (nlg 
             (java:jnew (jss:find-java-class "PreorderNodeListGenerator"))))
-      (#"resolveDependencies" system session dependency-request)
+      (#"resolveDependencies" (ensure-repository-system) (ensure-session) dependency-request)
       (#"accept" node nlg)
       (#"getClassPath" nlg))))
 
+(defparameter *maven-verbose* t
+  "Stream to send output from the Maven Aether subsystem to, or NIL to muffle output")
 
-
+(defun make-repository-listener ()
+  ;;; XXX why does the (flet ((log (e) ...)) (java:jinterface-implementation ...) version not work?
+  (java:jinterface-implementation 
+   "org.sonatype.aether.RepositoryListener"
+   "artifactDeployed" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e)))
+   "artifactDeploying" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e)))
+   "artifactDescriptorInvalid" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e)))
+   "artifactDescriptorMissing" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e)))
+   "artifactDownloaded" (lambda (e) (format *maven-verbose*  "~&transfer-listener: ~A~%" (#"toString" e))) 
+   "artifactDownloading" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e)))
+   "artifactInstalled" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e))) 
+   "artifactInstalling" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e)))
+   "artifactResolved" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e)))
+   "artifactResolving" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e))) 
+   "metadataDeployed" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e))) 
+   "metadataDeploying" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e))) 
+   "metadataDownloaded" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e)))
+   "metadataDownloading" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e)))
+   "metadataInstalled" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e))) 
+   "metadataInstalling" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e)))
+   "metadataInvalid" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e))) 
+   "metadataResolved" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e)))
+   "metadataResolving" (lambda (e) (format *maven-verbose* "~&transfer-listener: ~A~%" (#"toString" e)))))
 
          
 

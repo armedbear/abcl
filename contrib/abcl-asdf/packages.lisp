@@ -14,6 +14,8 @@
 
 ;;;; Maven 
    #:*mvn-libs-directory*
+   #:*maven-http-proxy*
+   #:*maven-verbose*
 
    #:satisfy
    #:as-classpath
