@@ -15,12 +15,15 @@
 ;;;; Maven 
    #:*mvn-libs-directory*
    #:*maven-http-proxy*
+   #:make-remote-repository
+   #:*maven-remote-repository*
    #:*maven-verbose*
+
+   #:resolve-artifact
+   #:resolve-dependencies
 
    #:satisfy
    #:as-classpath
-
-   #:resolve-artifact
 
    #:add-directory-jars-to-class-path
    #:need-to-add-directory-jar?
