@@ -51,8 +51,11 @@
       <name>Alessio Stalla</name>
       <email>alessiostalla (at) gmail (dot) com</email>
     </developer>
+    <developer>
+      <id>rudi</id>
+      <name>Rudi Schlatte</name>
+      <email>rudi (at) constantly (dot) at</email>
+    </developer>
   </developers>
-
-
   <dependencies />
 </project>
