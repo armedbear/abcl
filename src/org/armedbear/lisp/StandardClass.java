@@ -349,6 +349,7 @@ public class StandardClass extends SlotClass
              helperMakeSlotDefinition("DIRECT-SUPERCLASSES", constantlyNil),
              helperMakeSlotDefinition("DIRECT-SUBCLASSES", constantlyNil),
              helperMakeSlotDefinition("PRECEDENCE-LIST", constantlyNil),
+             helperMakeSlotDefinition("DIRECT-METHODS", constantlyNil),
              helperMakeSlotDefinition("DIRECT-SLOTS", constantlyNil),
              helperMakeSlotDefinition("SLOTS", constantlyNil),
              helperMakeSlotDefinition("DIRECT-DEFAULT-INITARGS", constantlyNil),
