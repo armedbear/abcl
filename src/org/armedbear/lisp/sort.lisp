@@ -42,7 +42,16 @@
 (defun stable-sort (sequence predicate &rest args &key key)
   (sequence::seq-dispatch sequence
     (sort-list sequence predicate key)
-    (quick-sort sequence 0 (length sequence) predicate key)
+;;; Jorge Tavares: 
+;;; As a quick fix, I send in attach a patch that uses in stable-sort merge
+;;; sort for all sequences. This is done by coercing the sequence to list,
+;;; calling merge sort and coercing it back to the original sequence type.
+;;; However, as a long term improvement, the best solution would be to
+;;; implement a merge sort for non-list sequences.
+    (coerce (sort-list (coerce sequence 'list) 
+		       predicate
+		       key)
+	    (type-of sequence))
     (apply #'sequence:stable-sort sequence predicate args)))
 
 ;; Adapted from SBCL.
