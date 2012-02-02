@@ -1,11 +1,19 @@
-;;; Use the Aether system in a default Maven3 distribution to download
-;;; and install dependencies.
-;;;
-;;; References:
-;;; -- javadoc
-;;; http://sonatype.github.com/sonatype-aether/apidocs/overview-summary.html 
-;;; -- incomplete, seemingly often wrong
-;;; https://docs.sonatype.org/display/AETHER/Home 
+;;;; Use the Aether system in a localy installed Maven3 distribution to download
+;;;; and install JVM artifact dependencies.
+
+#|
+
+# Implementation references
+
+## Installing Maven
+
+## Current Javadoc for Maven Aether connector
+http://sonatype.github.com/sonatype-aether/apidocs/overview-summary.html 
+
+## Incomplete, seemingly often wrong
+https://docs.sonatype.org/display/AETHER/Home 
+
+|#
 
 (in-package :abcl-asdf)
 
@@ -26,15 +34,59 @@ Test:
   "Locations to search for the Maven executable.")
 
 (defun find-mvn () 
-  "Attempt to find a suitable Maven ('mvn') executable on the hosting operating system."
-  (dolist (mvn-path *mavens*)
-    (let ((mvn 
+  "Attempt to find a suitable Maven ('mvn') executable on the hosting operating system.
+
+Returns the path of the Maven executable or nil if none are found."
+
+  (when (and (asdf:getenv "M2_HOME")  ;; TODO "anaphor" me!
+             (probe-file (asdf:getenv "M2_HOME")))
+    (let* ((m2-home (truename (asdf:getenv "M2_HOME")))
+           (mvn-executable (if (find :unix *features*)
+                               "mvn"
+                               "mvn.bat"))
+           (mvn-path (merge-pathnames 
+                      (format nil "bin/~A" mvn-executable)
+                      m2-home))
+           (mvn (truename mvn-path)))
+      (if mvn
+          (return-from find-mvn mvn)
+          (warn "M2_HOME was set to '~A' in the process environment but '~A' doesn't exist." 
+                m2-home mvn-path))))
+  (when (and (asdf:getenv "M2")  ;; TODO "anaphor" me!
+             (probe-file (asdf:getenv "M2")))
+        (let* ((m2 (truename (asdf:getenv "M2")))
+               (mvn-executable (if (find :unix *features*)
+                                   "mvn"
+                                   "mvn.bat"))
+               (mvn-path (merge-pathnames mvn-executable m2))
+               (mvn (truename mvn-path)))
+          (if mvn
+              (return-from find-mvn mvn)
+              (warn "M2 was set to '~A' in the process environment but '~A' doesn't exist." 
+                    m2 mvn-path))))
+  (let* ((which-cmd 
+	  (if (find :unix *features*)
+	      "which" 
+	      ;; Starting with Windows Server 2003
+	      "where.exe"))
+	 (which-cmd-p 
            (handler-case 
-               (truename (read-line (sys::process-output 
-                                     (sys::run-program "which" `(,mvn-path))))) ;; TODO equivalent for MSDOS
-             (end-of-file () nil))))
-      (when mvn
-        (return-from find-mvn mvn)))))
+	       (sys::run-program which-cmd nil)
+	     (t () nil))))
+    (when which-cmd-p
+      (dolist (mvn-path *mavens*)
+	(let ((mvn 
+	       (handler-case 
+		   (truename (read-line (sys::process-output 
+					 (sys::run-program 
+					  which-cmd `(,mvn-path))))) 
+		 (end-of-file () nil)
+		 (t (e) 
+		   (format *maven-verbose* 
+			   "~&Failed to find Maven executable '~A' in PATH because~&~A" 
+			   mvn-path e)))))
+	  (when mvn
+	    (return-from find-mvn mvn)))))))
 
 (defun find-mvn-libs ()
   (let ((mvn (find-mvn)))
