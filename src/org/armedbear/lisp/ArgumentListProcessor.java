@@ -467,7 +467,12 @@ public class ArgumentListProcessor {
    */
   public void bindVars(LispObject[] values, Environment env, LispThread thread) {
       for (int i = 0; i < variables.length; i++) {
-          bindArg(specials[i], variables[i], values[i], env, thread);
+          Symbol var = variables[i];
+          // If a symbol is declared special after a function is defined,
+          // the interpreter binds a lexical variable instead of a dynamic
+          // one if we don't check isSpecialVariable()
+          bindArg(specials[i] || var.isSpecialVariable(),
+                  var, values[i], env, thread);
       }
   }
   
