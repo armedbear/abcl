@@ -38,55 +38,52 @@ Test:
 
 Returns the path of the Maven executable or nil if none are found."
 
-  (when (and (asdf:getenv "M2_HOME")  ;; TODO "anaphor" me!
-             (probe-file (asdf:getenv "M2_HOME")))
-    (let* ((m2-home (truename (asdf:getenv "M2_HOME")))
-           (mvn-executable (if (find :unix *features*)
+  (let ((m2-home (asdf:getenv "M2_HOME"))
+        (m2 (asdf:getenv "M@"))
+        (mvn-executable (if (find :unix *features*)
                                "mvn"
-                               "mvn.bat"))
-           (mvn-path (merge-pathnames 
-                      (format nil "bin/~A" mvn-executable)
-                      m2-home))
-           (mvn (truename mvn-path)))
-      (if mvn
-          (return-from find-mvn mvn)
-          (warn "M2_HOME was set to '~A' in the process environment but '~A' doesn't exist." 
-                m2-home mvn-path))))
-  (when (and (asdf:getenv "M2")  ;; TODO "anaphor" me!
-             (probe-file (asdf:getenv "M2")))
-        (let* ((m2 (truename (asdf:getenv "M2")))
-               (mvn-executable (if (find :unix *features*)
-                                   "mvn"
-                                   "mvn.bat"))
-               (mvn-path (merge-pathnames mvn-executable m2))
-               (mvn (truename mvn-path)))
-          (if mvn
-              (return-from find-mvn mvn)
-              (warn "M2 was set to '~A' in the process environment but '~A' doesn't exist." 
-                    m2 mvn-path))))
-  (let* ((which-cmd 
-	  (if (find :unix *features*)
-	      "which" 
-	      ;; Starting with Windows Server 2003
-	      "where.exe"))
-	 (which-cmd-p 
-           (handler-case 
-	       (sys::run-program which-cmd nil)
-	     (t () nil))))
-    (when which-cmd-p
-      (dolist (mvn-path *mavens*)
-	(let ((mvn 
-	       (handler-case 
-		   (truename (read-line (sys::process-output 
-					 (sys::run-program 
-					  which-cmd `(,mvn-path))))) 
-		 (end-of-file () nil)
-		 (t (e) 
-		   (format *maven-verbose* 
-			   "~&Failed to find Maven executable '~A' in PATH because~&~A" 
-			   mvn-path e)))))
-	  (when mvn
-	    (return-from find-mvn mvn)))))))
+                               "mvn.bat")))
+    (when (and m2-home (probe-file m2-home))
+      (let* ((m2-home (truename m2-home))
+             (mvn-path (merge-pathnames 
+                        (format nil "bin/~A" mvn-executable)
+                        m2-home))
+             (mvn (truename mvn-path)))
+        (if mvn
+            (return-from find-mvn mvn)
+            (warn "M2_HOME was set to '~A' in the process environment but '~A' doesn't exist." 
+                  m2-home mvn-path))))
+    (when (and m2 (probe-file m2))
+      (let* ((m2 (truename m2))
+             (mvn-path (merge-pathnames mvn-executable m2))
+             (mvn (truename mvn-path)))
+        (if mvn
+            (return-from find-mvn mvn)
+            (warn "M2 was set to '~A' in the process environment but '~A' doesn't exist." 
+                  m2 mvn-path))))
+    (let* ((which-cmd 
+            (if (find :unix *features*)
+                "which" 
+                ;; Starting with Windows Server 2003
+                "where.exe"))
+           (which-cmd-p 
+            (handler-case 
+                (sys::run-program which-cmd nil)
+              (t () nil))))
+      (when which-cmd-p
+        (dolist (mvn-path *mavens*)
+          (let ((mvn 
+                 (handler-case 
+                     (truename (read-line (sys::process-output 
+                                           (sys::run-program 
+                                            which-cmd `(,mvn-path))))) 
+                   (end-of-file () nil)
+                   (t (e) 
+                     (format *maven-verbose* 
+                             "~&Failed to find Maven executable '~A' in PATH because~&~A" 
+                             mvn-path e)))))
+            (when mvn
+              (return-from find-mvn mvn))))))))
 
 (defun find-mvn-libs ()
   (let ((mvn (find-mvn)))
