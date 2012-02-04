@@ -3,10 +3,16 @@
 \documentclass[10pt]{book}
 \usepackage{abcl}
 
+\usepackage{hyperref} % Put this one last, it redefines lots of internals
+
+
 \begin{document}
-\title{A Manual for Armed Bear Common Lisp}
-\date{January 25, 2012}
-\author{Mark~Evenson, Erik~H\"{u}lsmann, Rudi~Schlatte, Alessio~Stalla, Ville~Voutilainen}
+\title{Armed Bear Common Lisp User Manual}
+\date{Version 1.1.0-dev\\
+\smallskip
+January 25, 2012}
+\author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
+  Alessio Stalla \and Ville Voutilainen}
 
 \maketitle
 
@@ -14,173 +20,160 @@
 
 \chapter{Introduction}
 
-Armed Bear is a conforming implementation of the ANSI Common Lisp
-standard (see \ref{chapter:conformance} on page
-\pageref{chapter:conformance} which states the details of the
-conformance level.  This manual documents the Armed Bear Common Lisp
-implementation for users of the system.
+Armed Bear Common Lisp (ABCL) is an implementation of Common Lisp that
+runs on the Java Virtual Machine.  It compiles to Java bytecode and
+integrates with Java code and libraries in a seamless way:
+\begin{itemize}
+\item Lisp code can create Java objects and call their methods (see
+  Section~\ref{sec:lisp-java}, page~\pageref{sec:lisp-java}).
+\item Java code can call Lisp functions and generic functions, either
+  directly (Section~\ref{sec:calling-lisp-from-java},
+  page~\pageref{sec:calling-lisp-from-java}) or via \texttt{JSR-223}
+  (Section~\ref{sec:java-scripting-api},
+  page~\pageref{sec:java-scripting-api}).
+\item \code{jinterface-implementation} creates Lisp-side implementations
+  of Java interfaces that can be used as listeners for Swing classes and
+  similar.
+\end{itemize}
+ABCL is supported by the Lisp library manager
+QuickLisp\footnote{\url{http://quicklisp.org/}} and can run many of the
+programs and libraries provided therein out-of-the-box.
 
-\subsection{Version}
-This manual corresponds to abcl-1.1.0-dev, as yet unreleased..
+\section{Conformance}
+\label{section:conformance}
 
-\subsection{License}
-
-The implementation is licensed under the terms of the GPL v2 of June
-1991 with the ``classpath-exception'' that makes its deployment in
-commercial settings quite reasonable.  The license is viral in the
-sense that if you change the implementation, and redistribute those
-changes, you are required to provide the source to those changes back
-to be merged with the public trunk.
-
-\subsection{Contributors}
-
-% TODO format this better, optionally link to URI
+\subsection{ANSI Common Lisp}
+\textsc{ABCL} is currently a (non)-conforming ANSI Common Lisp
+implementation due to the following known issues:
 
 \begin{itemize}
-\item Philipp Marek
-\texttt{Thanks for the markup}
-\item Douglas Miles
-\texttt{Thanks for the whacky IKVM stuff and keeping the flame alive
+\item The generic function signatures of the \code{DOCUMENTATION} symbol
+  do not match the specification.
+\item The \code{TIME} form does not return a proper \code{VALUES}
+  environment to its caller.
+\end{itemize}
+
+Somewhat confusingly, this statement of non-conformance in the
+accompanying user documentation fulfills the requirements that
+\textsc{ABCL} is a conforming ANSI Common Lisp implementation according
+to the Common Lisp HyperSpec~\cite{CLHS}.  Clarifications to this point
+are solicited.
+
+ABCL aims to be be a fully conforming ANSI Common Lisp implementation.
+Any other behavior should be reported as a bug.
+
+\subsection{Contemporary Common Lisp}
+In addition to ANSI conformance, \textsc{ABCL} strives to implement
+features expected of a contemporary Common Lisp, i.e. a Lisp of the
+post-2005 Renaissance.
+
+The following known problems detract from \textsc{ABCL} being a proper
+contemporary Common Lisp.
+\begin{itemize}
+\item An incomplete implementation of interactive debugging mechanisms,
+  namely a no-op version of \code{STEP} \footnote{Somewhat surprisingly
+    allowed by \textsc{ANSI}}, the inability to inspect local variables
+  in a given call frame, and the inability to resume a halted
+  computation at an arbitrarily selected call frame.
+\item An incomplete implementation of a proper metaobject protocol
+  (c.f. the (A)MOP specification~\cite{AMOP, AMOPspec})
+\item Incomplete streams abstraction, in that \textsc{ABCL} needs
+  suitable abstraction between ANSI and Gray streams.  The streams could
+  be optimized to the JVM NIO abstractions at great profit for binary
+  byte-level manipulations.
+\item Incomplete documentation (missing docstrings from exported symbols
+  and the draft status of this user manual).
+\end{itemize}
+
+
+
+\section{License}
+
+ABCL is licensed under the terms of the GPL v2 of June 1991 with the
+``classpath-exception'' (see the file \texttt{COPYING} in the source
+distribution for the license, term 13 in the same file for the classpath
+exception).  This license broadly means that you must distribute the
+sources to ABCL, including any changes you make, together with a program
+that includes ABCL, but that you are not required to distribute the
+sources of the whole program.  Submitting your changes upstream to the
+ABCL development team is actively encouraged and very much appreciated,
+of course.
+
+\section{Contributors}
+
+\begin{itemize}
+\item Philipp Marek \texttt{Thanks for the markup}
+\item Douglas Miles \texttt{Thanks for the whacky IKVM stuff and keeping the flame alive
   in the dark years.}
-
-
-\item Alan Ruttenberg
-\texttt{Thanks for JSS.}
-
+\item Alan Ruttenberg \texttt{Thanks for JSS.}
 \item and of course
 \emph{Peter Graves}
 \end{itemize}
 
 
-\chapter{Running}
+\chapter{Running ABCL}
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-``abcl.jar'' or possibly``abcl-1.0.1.jar'' if one is using a versioned
-package on the local filesystem from your system vendor.  This byte
-archive can be executed under the control of a suitable JVM \footnote
-{Java Virtual Machine} by using the ``-jar'' option to parse the
-manifest, and select the class named therein
-``\code{org.armedbear.lisp.Main}'' for execution, viz:
+\texttt{abcl.jar} or possibly something like \texttt{abcl-1.0.1.jar} if
+using a versioned package on the local filesystem from your system
+vendor.  This jar file can be executed from the command line to obtain a
+REPL\footnote{Read-Eval Print Loop, a Lisp commandline}, viz:
 
 \begin{listing-shell}
   cmd$ java -jar abcl.jar
-\end{listing-shell}
+\end{listing-shell} %$ unconfuse Emacs syntax highlighting
 
-\emph{N.b.} for the proceeding command to work, the ``java'' executable needs
-to be in your path.
+\emph{N.b.} for the proceeding command to work, the \texttt{java}
+executable needs to be in your path.
 
-To make it easier to facilitate the use of ABCL in tool chains (such
-as SLIME \footnote{SLIME is the Superior Lisp Mode for Interaction
-  under Emacs}) the invocation is wrapped in a Bourne shell script
-under \textsc{UNIX} or a \textsc{DOS} command script under Windows so that ABCL may be
-executed simply as:
+To facilitate the use of ABCL in tool chains such as SLIME~\cite{slime}
+(the Superior Lisp Interaction Mode for Emacs), we provide both a Bourne
+shell script and a \textsc{DOS} batch file.  If you or your
+administrator adjusted the path properly, ABCL may be executed simply
+as:
 
 \begin{listing-shell}
   cmd$ abcl
-\end{listing-shell}
+\end{listing-shell}%$
+
+Probably the easiest way of setting up an editing environment using the
+Emacs editor is to use QuickLisp and follow the instructions at
+\url{http://www.quicklisp.org/beta/#slime}.
 
 \section{Options}
 
 ABCL supports the following command line options:
 
-\begin{verbatim}
---help
-    Displays this message.
---noinform
-    Suppresses the printing of startup information and banner.
---noinit
-    Suppresses the loading of the '~/.abclrc' startup file.
---nosystem
-    Suppresses loading the 'system.lisp' customization file. 
---eval <FORM>
-    Evaluates the <FORM> before initializing REPL.
---load <FILE>
-    Loads the file <FILE> before initializing REPL.
---load-system-file <FILE>
-    Loads the system file <FILE> before initializing REPL.
---batch
-    The process evaluates forms specified by arguments and possibly by those
-    by those in the intialization file '~/.abcl', and then exits.
+\begin{description}
+\item[\texttt{--help}] displays a help message.
+\item[\texttt{--noinform}] Suppresses the printing of startup information and banner.
+\item[\texttt{--noinit}] suppresses the loading of the \texttt{\~/.abclrc} startup file.
+\item[\texttt{--nosystem}] suppresses loading the \texttt{system.lisp} customization file. 
+\item[\texttt{--eval FORM}] evaluates FORM before initializing the REPL.
+\item[\texttt{--load FILE}] loads the file FILE before initializing the REPL.
+\item[\texttt{--load-system-file FILE}] loads the system file FILE before initializing the REPL.
+\item[\texttt{--batch}] evaluates forms specified by arguments and in
+  the intialization file \texttt{\~/.abclrc}, and then exits without
+  starting a REPL.
+\end{description}
 
-The occurance of '--' copies the remaining arguments, unprocessed, into
-the variable EXTENSIONS:*COMMAND-LINE-ARGUMENT-LIST*.
-\end{verbatim}
-
-All of the command line arguments which follow the occurrence of ``----''
-are passed into a list bound to the EXT:*COMMAND-LINE-ARGUMENT-LIST*
-variable.
+All of the command line arguments following the occurrence of \verb+--+
+are passed unprocessed into a list of strings accessible via the
+variable \code{EXT:*COMMAND-LINE-ARGUMENT-LIST*} from within ABCL.
 
 \section{Initialization}
 
-If the \textsc{ABCL} process is started without the ``--noinit'' flag, it
-attempts to load a file named ``.abclrc'' located in the user's home
-directory and then interpret its contents.  
+If the \textsc{ABCL} process is started without the \code{--noinit}
+flag, it attempts to load a file named \code{.abclrc} in the user's home
+directory and then interpret its contents.
 
 The user's home directory is determined by the value of the JVM system
-property ``user.home''.  This value may--or may not--correspond to the
-value of the HOME system environment variable at the discretion of the
-JVM implementation that \textsc{ABCL} finds itself hosted upon.
+property \texttt{user.home}.  This value may or may not correspond
+to the value of the \texttt{HOME} system environment variable, at the
+discretion of the JVM implementation that \textsc{ABCL} finds itself
+hosted upon.
 
-\chapter{Conformance}
-\label{chapter:conformance}
-
-\section{ANSI Common Lisp}
-\textsc{ABCL} is currently a (non)-conforming ANSI Common Lisp
-implementation due to the following known issues:
-
-\begin{itemize}
-  \item The generic function signatures of the DOCUMENTATION symbol do
-    not match the CLHS.
-  \item The TIME form does not return a proper VALUES environment to
-    its caller.
-\end{itemize}
-
-Somewhat confusingly, this statement of non-conformance in the
-accompanying user documentation fulfills the requirements that
-\textsc{ABCL} is a conforming ANSI Common Lisp implementation
-according to the CLHS \footnote{Common Lisp Hyperspec language
-  reference document.}.  Clarifications to this point are solicited.
-
-ABCL aims to be be a fully conforming ANSI Common Lisp implementation.
-Any other behavior should be reported as a bug.
-
-\section{Contemporary Common Lisp}
-In addition to ANSI conformance, \textsc{ABCL} strives to implement features
-expected of a contemporary Common Lisp \footnote{i.e. a Lisp of the
-  post 2005 Renaissance}
-
-\subsection{Deficiencies}
-The following known problems detract from \textsc{ABCL} being a proper
-contemporary Common Lisp.
-\begin{itemize}
-
-  \item An incomplete implementation of interactive debugging
-    mechanisms namely a no-op version of
-    \code{STEP} \footnote{Somewhat surprisingly allowed by
-      \textsc{ANSI}}, the inability to inspect local variables in a
-    given call frame, and the inability to resume a halted computation
-    at an arbitrarily selected call frame.
-
-  \item An incomplete implementation of a properly named metaobject
-    protocol (c.f. the (A)MOP \footnote{The Art of the  Metaobject Protocol} specification)
-
-    % N.b. 
-    % TODO go through AMOP with symbols, starting by looking for
-    % matching function signature.
-    % XXX is this really blocking ANSI conformance?  Answer: we have
-    % to start with such a ``census'' to determine what we have.
-
-  \item Incomplete streams abstraction, in that \textsc{ABCL} needs suitable
-    abstraction between ANSI and Gray streams.  The streams could be
-    optimized to the JVM NIO abstractions at great profit for binary
-    byte-level manipulations.
-    
-  \item Incomplete documentation (missing docstrings from exported
-    symbols and the draft status of the User Manual).
-
-\end{itemize}
-
-\chapter{Interaction with Hosting JVM}
+\chapter{Interaction with the Hosting JVM}
 
 %  Plan of Attack
 %
@@ -194,33 +187,32 @@ Machine.  This chapter describes the mechanisms by which the
 implementation interacts with that hosting mechanism.
 
 \section{Lisp to Java}
+\label{sec:lisp-java}
 
 \textsc{ABCL} offers a number of mechanisms to interact with Java from its
 Lisp environment. It allows calling both instance and static methods
 of Java objects, manipulation of instance and static fields on Java
 objects, and construction of new Java objects.
 
-When calling Java routines, some values will automatically be
-converted by the FFI \footnote{FFI stands for Foreign Function
-  Interface which is the term of art which describes how a Lisp
-  implementation encapsulates invocation in other languages.}  from
-Lisp values to Java values. These conversions typically apply to
-strings, integers and floats. Other values need to be converted to
-their Java equivalents by the programmer before calling the Java
-object method. Java values returned to Lisp are also generally
+When calling Java routines, some values will automatically be converted
+by the FFI\footnote{Foreign Function Interface, the term for the part of
+  a Lisp implementation that implements calling code written in other
+  languages.}  from Lisp values to Java values. These conversions
+typically apply to strings, integers and floats. Other values need to be
+converted to their Java equivalents by the programmer before calling the
+Java object method. Java values returned to Lisp are also generally
 converted back to their Lisp counterparts. Some operators make an
-exception to this rule and do not perform any conversion; those are
-the ``raw'' counterparts of certain FFI functions and are recognizable
-by their name ending with \code{-RAW}.
+exception to this rule and do not perform any conversion; those are the
+``raw'' counterparts of certain FFI functions and are recognizable by
+their name ending with \code{-RAW}.
 
 \subsection{Low-level Java API}
 
-We define a higher level Java API in the topic:Higher level Java JSS
-package developed by Alan Ruttenberg which is available in the
-\code{contrib/} directory, see the  . This package is
-described later in this document, see Section~\ref{section:jss} on page
-\pageref{section:jss}.  This section covers the lower level API
-directly available after evaluating \code{(require 'JAVA)}.
+This subsection covers the low-level API available after evaluating
+\code{(require 'JAVA)}.  A higher level Java API, developed by Alan
+Ruttenberg, is available in the \code{contrib/} directory and described
+later in this document, see Section~\ref{section:jss} on page
+\pageref{section:jss}.
 
 \subsubsection{Calling Java Object Methods}
 
@@ -233,23 +225,21 @@ There are two ways to call a Java object method in the low-level (basic) API:
   Section~\ref{sec:param-matching-for-ffi}).
 \end{itemize}
 
-The dynamic dispatch variant is discussed in the next section.
+\code{JAVA:JMETHOD} is used to acquire a specific method reference.  The
+function takes two or more arguments. The first is a Java class
+designator (a \code{JAVA:JAVA-CLASS} object returned by
+\code{JAVA:JCLASS} or a string naming a Java class). The second is a
+string naming the method.
 
-\code{JAVA:JMETHOD} is used to acquire a specific method reference.
-The function takes at two or more arguments. The first is Java class designator
-(a \code{JAVA:JAVA-CLASS} object returned by \code{JAVA:JCLASS} or a string naming
-a Java class). The second is a string naming the method.
+Any arguments beyond the first two should be strings naming Java
+classes, with one exception as listed in the next paragraph. These
+classes specify the types of the arguments for the method.
 
-Any arguments beyond the first two should be strings naming Java classes with
-one exception as listed in the next paragraph. These
-classes specify the types of the arguments for the method to be returned.
+When \code{JAVA:JMETHOD} is called with three parameters and the last
+parameter is an integer, the first method by that name and matching
+number of parameters is returned.
 
-There's additional calling convention to the \code{JAVA:JMETHOD} function:
-When the method is called with three parameters and the last parameter is an
-integer, the first method by that name and matching number of parameters is
-returned.
-
-Once one has a reference to the method, one may invoke it using
+Once a method reference has been acquired, it can be invoked using
 \code{JAVA:JCALL}, which takes the method as the first argument. The
 second argument is the object instance to call the method on, or
 \code{NIL} in case of a static method.  Any remaining parameters are
@@ -280,8 +270,8 @@ Method method = els.getClass().getMethod("hasMoreElements");
 method.invoke(els);
 \end{listing-java}
 
-even though the method \code{hasMoreElements()} is public in \code{Enumeration},
-the above code fails with
+Even though the method \code{hasMoreElements()} is public in
+\code{Enumeration}, the above code fails with
 
 \begin{listing-java}
 java.lang.IllegalAccessException: Class ... can
@@ -292,8 +282,8 @@ not access a member of class java.util.zip.ZipFile\$2 with modifiers
        at ...
 \end{listing-java}
 
-because the method has been overridden by a non-public class and the
-reflection API, unlike javac, is not able to handle such a case.
+This is because the method has been overridden by a non-public class and
+the reflection API, unlike \texttt{javac}, is not able to handle such a case.
 
 While code like that is uncommon in Java, it is typical of ABCL's FFI
 calls. The code above corresponds to the following Lisp code:
@@ -307,15 +297,15 @@ calls. The code above corresponds to the following Lisp code:
 except that the dynamic dispatch part is not shown.
 
 To avoid such pitfalls, all Java objects in \textsc{ABCL} carry an extra
-field representing the ``intended class'' of the object. That is the class
-that is used first by \code{JAVA:JCALL} and similar to resolve methods;
-the actual class of the object is only tried if the method is not found
-in the intended class. Of course, the intended class is always a super-class
-of the actual class - in the worst case, they coincide. The intended class
-is deduced by the return type of the method that originally returned
-the Java object; in the case above, the intended class of \code{ELS}
-is \code{java.util.Enumeration} because that's the return type of
-the \code{entries} method.
+field representing the ``intended class'' of the object. That class is
+used first by \code{JAVA:JCALL} and similar to resolve methods; the
+actual class of the object is only tried if the method is not found in
+the intended class. Of course, the intended class is always a
+super-class of the actual class -- in the worst case, they coincide. The
+intended class is deduced by the return type of the method that
+originally returned the Java object; in the case above, the intended
+class of \code{ELS} is \code{java.util.Enumeration} because that is the
+return type of the \code{entries} method.
 
 While this strategy is generally effective, there are cases where the
 intended class becomes too broad to be useful. The typical example
@@ -340,11 +330,9 @@ operator.
 
 \subsubsection{Calling Java class static methods}
 
-Like with non-static methods, references to static methods can be acquired
-by using the \code{JAVA:JMETHOD} primitive. In order to call this method,
-it's not possible to use the \code{JAVA:JCALL} primitive however: there's a 
-separate API to retrieve a reference to static methods. This
-primitive is called \code{JAVA:JSTATIC}. 
+Like non-static methods, references to static methods can be acquired by
+using the \code{JAVA:JMETHOD} primitive. Static methods are called with
+\code{JAVA:JSTATIC} instead of \code{JAVA:JCALL}.
 
 Like \code{JAVA:JCALL}, \code{JAVA:JSTATIC} supports dynamic dispatch by
 passing the name of the method as a string instead of passing a method reference.
@@ -363,88 +351,69 @@ Specification. Any deviation should be reported as a bug.
 \subsubsection{Instantiating Java objects}
 
 Java objects can be instantiated (created) from Lisp by calling
-a constructor from the class of the object to be created. The same way
-\code{JAVA:JMETHOD} is used to acquire a method reference, the
-\code{JAVA:JCONSTRUCTOR} primitive can be used to acquire a constructor
+a constructor from the class of the object to be created. The
+\code{JAVA:JCONSTRUCTOR} primitive is used to acquire a constructor
 reference. It's arguments specify the types of arguments of the constructor
 method the same way as with \code{JAVA:JMETHOD}.
 
-The constructor can't be passed to \code{JAVA:JCALL}, but instead should
-be passed as an argument to \code{JAVA:JNEW}.
+The obtained constructor is passed as an argument to \code{JAVA:JNEW},
+together with any arguments.  \code{JAVA:JNEW} can also be invoked with
+a string naming the class as its first argument.
 
-\subsubsection{Accessing Java object fields}
+\subsubsection{Accessing Java object and class fields}
 
-Fields in Java objects can be accessed using the getter and setter functions
-\code{JAVA:GETFIELD} and \code{JAVA:PUTFIELD}. This applies to values stored in object
-instances. If you want to access static fields: see the next section.
-
-Like \code{JAVA:JCALL} and friends, values returned from these accessors carry
-an intended class around and values which can be converted to Lisp values will
-be converted.
-
-\subsubsection{Accessing Java static fields}
-
-Static fields in Java objects (class fields) can be accessed using the getter
-and setter functions \code{JAVA:GETSTATIC} and \code{JAVA:PUTSTATIC}. Values
-stored in object instance fields can be accessed as described in the previous
-section.
+Fields in Java objects can be accessed using the getter and setter
+functions \code{JAVA:JFIELD} and \code{(SETF JAVA:JFIELD)}.  Static
+(class) fields are accessed the same way, but with a class object or
+string naming a class as first argument.
 
 Like \code{JAVA:JCALL} and friends, values returned from these accessors carry
-an intended class around and values which can be converted to Lisp values will
+an intended class around, and values which can be converted to Lisp values will
 be converted.
 
-\section{Lisp from Java}
+\section{Java to Lisp}
 
-In order to access the Lisp world from Java, one needs to be aware
-of a few things. The most important ones are listed below.
+This section describes the various ways that one interacts with Lisp
+from Java code.  In order to access the Lisp world from Java, one needs
+to be aware of a few things, the most important ones being listed below:
 
 \begin{itemize}
-\item All Lisp values are descendants of LispObject.java
-\item In order to 
-\item Lisp symbols are accessible via either directly referencing the
-  Symbol.java instance or by dynamically introspecting the
-  corresponding Package.java instance.
+\item All Lisp values are descendants of \code{LispObject}.
+\item Lisp symbols are accessible either via static members of the
+  \code{Symbol} class, or by dynamically introspecting a \code{Package}
+  object.
 \item The Lisp dynamic environment may be saved via
   \code{LispThread.bindSpecial(Binding)} and restored via
   \code{LispThread.resetSpecialBindings(Mark)}.
-\item Functions may be executed by invocation of the
-  Function.execute(args [...]) 
+\item Functions can be executed by invoking \code{LispObject.execute(args
+    [...])}
 \end{itemize}
 
-\subsection{Lisp FFI}
-
-FFI stands for "Foreign Function Interface" which is the phase which
-the contemporary Lisp world refers to methods of "calling out" from
-Lisp into "foreign" languages and environments.  This document
-describes the various ways that one interacts with Lisp world of ABCL
-from Java, considering the hosted Lisp as the "Foreign Function" that
-needs to be "Interfaced".
-
 \subsection{Calling Lisp from Java}
+\label{sec:calling-lisp-from-java}
 
-Note: As the entire ABCL Lisp system resides in the org.armedbear.lisp
-package the following code snippets do not show the relevant import
-statements in the interest of brevity.  An example of the import
-statement would be
-
+Note: the entire ABCL Lisp system resides in the
+\texttt{org.armedbear.lisp} package, but the following code snippets do
+not show the relevant import statements in the interest of brevity.  An
+example of the import statement would be
 \begin{listing-java}
   import org.armedbear.lisp.*;
 \end{listing-java}
-
 to potentially import all the JVM symbol from the `org.armedbear.lisp'
 namespace.
 
-Per JVM, there can only ever be a single Lisp interpreter.  This is
-started by calling the static method `Interpreter.createInstance()`.
+There can only ever be a single Lisp interpreter per JVM instance.  A
+reference to this interpreter is obtained by calling the static method
+\code{Interpreter.createInstance()}.
 
 \begin{listing-java}
   Interpreter interpreter = Interpreter.createInstance();
 \end{listing-java}
 
 If this method has already been invoked in the lifetime of the current
-Java process it will return null, so if you are writing Java whose
-life-cycle is a bit out of your control (like in a Java servlet), a
-safer invocation pattern might be:
+Java process it will return \texttt{null}, so if you are writing Java
+whose life-cycle is a bit out of your control (like in a Java servlet),
+a safer invocation pattern might be:
 
 \begin{listing-java}
   Interpreter interpreter = Interpreter.getInstance();
@@ -454,8 +423,7 @@ safer invocation pattern might be:
 \end{listing-java}
 
 
-The Lisp \code{eval} primitive may be simply passed strings for evaluation,
-as follows
+The Lisp \code{eval} primitive may simply be passed strings for evaluation:
 
 \begin{listing-java}
   String line = "(load \"file.lisp\")";
@@ -464,115 +432,118 @@ as follows
 
 Notice that all possible return values from an arbitrary Lisp
 computation are collapsed into a single return value.  Doing useful
-further computation on the ``LispObject'' depends on knowing what the
-result of the computation might be, usually involves some amount
+further computation on the \code{LispObject} depends on knowing what the
+result of the computation might be.  This usually involves some amount
 of \code{instanceof} introspection, and forms a whole topic to itself
-(c.f. [Introspecting a LispObject])
+(see Section~\ref{topic:Introspecting a LispObject},
+page~\pageref{topic:Introspecting a LispObject}).
 
 Using \code{eval} involves the Lisp interpreter.  Lisp functions may
-be directly invoked by Java method calls as follows.  One simply
-locates the package containing the symbol, then obtains a reference to
-the symbol, and then invokes the \code{execute()} method with the
-desired parameters.
+also be directly invoked by Java method calls as follows.  One simply
+locates the package containing the symbol, obtains a reference to the
+symbol, and then invokes the \code{execute()} method with the desired
+parameters.
 
 \begin{listing-java}
-    interpreter.eval("(defun foo (msg) (format nil \"You told me '~A'~%\" msg))");
-    Package pkg = Packages.findPackage("CL-USER");
-    Symbol foo = pkg.findAccessibleSymbol("FOO"); 
-    Function fooFunction = (Function)foo.getSymbolFunction();
-    JavaObject parameter = new JavaObject("Lisp is fun!");
-    LispObject result = fooFunction.execute(parameter);
-    // How to get the "naked string value"?
-    System.out.println("The result was " + result.writeToString()); 
+  interpreter.eval("(defun foo (msg)" +
+    "(format nil \"You told me '~A'~%\" msg))");
+  Package pkg = Packages.findPackage("CL-USER");
+  Symbol foo = pkg.findAccessibleSymbol("FOO"); 
+  Function fooFunction = (Function)foo.getSymbolFunction();
+  JavaObject parameter = new JavaObject("Lisp is fun!");
+  LispObject result = fooFunction.execute(parameter);
+  // How to get the "naked string value"?
+  System.out.println("The result was " + result.writeToString()); 
 \end{listing-java}
 
-If one is calling an primitive function in the CL package the syntax
-becomes considerably simpler.  If we can locate the instance of
-definition in the ABCL Java source, we can invoke the symbol directly.
-For instance, to tell if a `LispObject` contains a reference to a symbol.
+If one is calling a function in the CL package, the syntax can become
+considerably simpler.  If we can locate the instance of definition in
+the ABCL Java source, we can invoke the symbol directly.  For instance,
+to tell if a \code{LispObject} is (Lisp) \texttt{NIL}, we can invoke the
+CL function \code{NULL} in the following way:
 
 \begin{listing-java}
-    boolean nullp(LispObject object) {
-      LispObject result = Primitives.NULL.execute(object);
-      if (result == NIL) { // the symbol 'NIL' is explicitly named in the Java
-                           // namespace at ``Symbol.NIL''
-                           // but is always present in the
-                           // local namespace in its unadorned form for
-                           // the convenience of the User.
-        return false;
-      }
-      return true;
-   }
+  boolean nullp(LispObject object) {
+    LispObject result = Primitives.NULL.execute(object);
+    if (result == NIL) { // the symbol 'NIL' is explicitly named in the Java
+                         // namespace at ``Symbol.NIL''
+                         // but is always present in the
+                         // local namespace in its unadorned form for
+                         // the convenience of the User.
+      return false;
+    }
+    return true;
+ }
 \end{listing-java}
 
 \subsubsection{Introspecting a LispObject}
 \label{topic:Introspecting a LispObject}
 
-We present various patterns for introspecting an an arbitrary
-`LispObject` which can represent the result of every Lisp evaluation
+We present various patterns for introspecting an arbitrary
+\code{LispObject} which can hold the result of every Lisp evaluation
 into semantics that Java can meaningfully deal with.
 
-\subsubsection{LispObject as \code{boolean}}
+\paragraph{LispObject as \code{boolean}}
 
-If the LispObject a generalized boolean values, one can use
-\code{getBooleanValue()} to convert to Java:
+If the \code{LispObject} is to be interpreted as a generalized boolean
+value, one can use \code{getBooleanValue()} to convert to Java:
 
 \begin{listing-java}
-     LispObject object = Symbol.NIL;
-     boolean javaValue = object.getBooleanValue();
+   LispObject object = Symbol.NIL;
+   boolean javaValue = object.getBooleanValue();
 \end{listing-java}
 
-Although since in Lisp, any value other than NIL means "true"
-(so-called generalized Boolean), the use of Java equality it quite a
-bit easier to type and more optimal in terms of information it conveys
-to the compiler would be:
+Since in Lisp any value other than \code{NIL} means "true", Java
+equality can also be used, which is a bit easier to type and better in
+terms of information it conveys to the compiler:
 
 \begin{listing-java}
     boolean javaValue = (object != Symbol.NIL);
 \end{listing-java}
 
-\paragraph{LispObject is a list}
+\paragraph{LispObject as a list}
 
-If LispObject is a list, it will have the type `Cons`.  One can then use
-the \code{copyToArray} to make things a bit more suitable for Java
-iteration.
+If \code{LispObject} is a list, it will have the type \code{Cons}.  One
+can then use the \code{copyToArray} method to make things a bit more
+suitable for Java iteration.
 
 \begin{listing-java}
-    LispObject result = interpreter.eval("'(1 2 4 5)");
-    if (result instanceof Cons) {
-      LispObject array[] = ((Cons)result.copyToArray());
-      ...
-    }
+  LispObject result = interpreter.eval("'(1 2 4 5)");
+  if (result instanceof Cons) {
+    LispObject array[] = ((Cons)result.copyToArray());
+    ...
+  }
 \end{listing-java}
 
-A more Lispy way to iterated down a list is to use the `cdr()` access
+A more Lispy way to iterate down a list is to use the `cdr()` access
 function just as like one would traverse a list in Lisp:;
 
 \begin{listing-java}
-    LispObject result = interpreter.eval("'(1 2 4 5)");
-    while (result != Symbol.NIL) {
-      doSomething(result.car());
-      result = result.cdr();
-    }
+  LispObject result = interpreter.eval("'(1 2 4 5)");
+  while (result != Symbol.NIL) {
+    doSomething(result.car());
+    result = result.cdr();
+  }
 \end{listing-java}
 
-\subsection{Java Scripting API (JSR-223)}
+\section{Java Scripting API (JSR-223)}
+\label{sec:java-scripting-api}
 
-ABCL can be built with support for JSR-223, which offers a
-language-agnostic API to invoke other languages from Java. The binary
-distribution download-able from ABCL's common-lisp.net home is built
-with JSR-223 support. If you're building ABCL from source on a pre-1.6
-JVM, you need to have a JSR-223 implementation in your CLASSPATH (such
-as Apache Commons BSF 3.x or greater) in order to build ABCL with
-JSR-223 support; otherwise, this feature will not be built.
+ABCL can be built with support for JSR-223~\cite{jsr-223}, which offers
+a language-agnostic API to invoke other languages from Java. The binary
+distribution download-able from ABCL's homepage is built with JSR-223
+support. If you're building ABCL from source on a pre-1.6 JVM, you need
+to have a JSR-223 implementation in your classpath (such as Apache
+Commons BSF 3.x or greater) in order to build ABCL with JSR-223 support;
+otherwise, this feature will not be built.
 
 This section describes the design decisions behind the ABCL JSR-223
 support. It is not a description of what JSR-223 is or a tutorial on
 how to use it. See
-http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/jsr-223
+\url{http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/jsr-223}
 for example usage.
 
-\subsubsection{Conversions}
+\subsection{Conversions}
 
 In general, ABCL's implementation of the JSR-223 API performs implicit
 conversion from Java objects to Lisp objects when invoking Lisp from
@@ -580,45 +551,46 @@ Java, and the opposite when returning values from Java to Lisp. This
 potentially reduces coupling between user code and ABCL. To avoid such
 conversions, wrap the relevant objects in \code{JavaObject} instances.
 
-\subsubsection{Implemented JSR-223 interfaces}
+\subsection{Implemented JSR-223 interfaces}
 
-JSR-223 defines three main interfaces, of which two (Invocable and
-Compilable) are optional. ABCL implements all the three interfaces -
-ScriptEngine and the two optional ones - almost completely. While the
-JSR-223 API is not specific to a single scripting language, it was
-designed with languages with a more or less Java-like object model in
-mind: languages such as Javascript, Python, Ruby, which have a concept
-of "class" or "object" with "fields" and "methods". Lisp is a bit
-different, so certain adaptations were made, and in one case a method
-has been left unimplemented since it does not map at all to Lisp.
+JSR-223 defines three main interfaces, of which two (\code{Invocable}
+and \code{Compilable}) are optional. ABCL implements all the three
+interfaces - \code{ScriptEngine} and the two optional ones - almost
+completely. While the JSR-223 API is not specific to a single scripting
+language, it was designed with languages with a more or less Java-like
+object model in mind: languages such as Javascript, Python, Ruby, which
+have a concept of "class" or "object" with "fields" and "methods". Lisp
+is a bit different, so certain adaptations were made, and in one case a
+method has been left unimplemented since it does not map at all to Lisp.
 
 \subsubsection{The ScriptEngine}
 
-The main interface defined by JSR-223, javax.script.ScriptEngine, is
-implemented by the class
-\code{org.armedbear.lisp.scripting.AbclScriptEngine}. AbclScriptEngine
+The main interface defined by JSR-223, \code{javax.script.ScriptEngine},
+is implemented by the class
+\code{org.armedbear.lisp.scripting.AbclScriptEngine}. \code{AbclScriptEngine}
 is a singleton, reflecting the fact that ABCL is a singleton as
-well. You can obtain an instance of AbclScriptEngine using the
-AbclScriptEngineFactory or by using the service provider mechanism
-through ScriptEngineManager (refer to the javax.script documentation).
+well. You can obtain an instance of \code{AbclScriptEngine} using the
+\code{AbclScriptEngineFactory} or by using the service provider
+mechanism through \code{ScriptEngineManager} (refer to the
+\texttt{javax.script} documentation).
 
-\subsubsection{Start-up and configuration file}
+\subsection{Start-up and configuration file}
 
 At start-up (i.e. when its constructor is invoked, as part of the
-static initialization phase of AbclScriptEngineFactory) the ABCL
+static initialization phase of \code{AbclScriptEngineFactory}) the ABCL
 script engine attempts to load an "init file" from the classpath
-(/abcl-script-config.lisp). If present, this file can be used to
+(\texttt{/abcl-script-config.lisp}). If present, this file can be used to
 customize the behavior of the engine, by setting a number of
-variables in the ABCL-SCRIPT package. Here is a list of the available
+variables in the \code{ABCL-SCRIPT} package. Here is a list of the available
 variables:
 
-\begin{itemize}
-\item *use-throwing-debugger* Controls whether ABCL uses a
+\begin{description}
+\item[\texttt{*use-throwing-debugger*}] controls whether ABCL uses a
   non-standard debugging hook function to throw a Java exception
   instead of dropping into the debugger in case of unhandled error
   conditions.
   \begin{itemize}
-  \item Default value: T
+  \item Default value: \texttt{T}
   \item Rationale: it is more convenient for Java programmers using
     Lisp as a scripting language to have it return exceptions to Java
     instead of handling them in the Lisp world.
@@ -626,39 +598,41 @@ variables:
     to misbehave in certain circumstances, so consider disabling it if
     it doesn't work for you.
   \end{itemize}
-\item *launch-swank-at-startup* If true, Swank will be launched at
-  startup. See *swank-dir* and *swank-port*.
+\item[\texttt{*launch-swank-at-startup*}] If true, Swank will be launched at
+  startup. See \texttt{*swank-dir*} and \texttt{*swank-port*}.
   \begin{itemize}
-  \item Default value: NIL
+  \item Default value: \texttt{NIL}
   \end{itemize}
-\item *swank-dir* The directory where Swank is installed. Must be set
-  if *launch-swank-at-startup* is true.
-\item *swank-port* The port where Swank will listen for
-  connections. Must be set if *launch-swank-at-startup* is true.
+\item[\texttt{*swank-dir*}] The directory where Swank is installed. Must be set
+  if \texttt{*launch-swank-at-startup*} is true.
+\item[\texttt{*swank-port*}] The port where Swank will listen for
+  connections. Must be set if \texttt{*launch-swank-at-startup*} is
+  true.
   \begin{itemize}
   \item Default value: 4005
   \end{itemize}
-\end{itemize}
+\end{description}
 
 Additionally, at startup the AbclScriptEngine will \code{(require
   'asdf)} - in fact, it uses asdf to load Swank.
 
-\subsubsection{Evaluation}
+\subsection{Evaluation}
 
-Code is read and evaluated in the package ABCL-SCRIPT-USER. This
-packages USEs the COMMON-LISP, JAVA and ABCL-SCRIPT packages. Future
-versions of the script engine might make this default package
-configurable. The \code{CL:LOAD} function is used under the hood for
-evaluating code, and thus the same behavior of LOAD is
-guaranteed. This allows, among other things, \code{IN-PACKAGE} forms
-to change the package in which the loaded code is read.
+Code is read and evaluated in the package \code{ABCL-SCRIPT-USER}. This
+packages \texttt{USE}s the \code{COMMON-LISP}, \code{JAVA} and
+\code{ABCL-SCRIPT} packages. Future versions of the script engine might
+make this default package configurable. The \code{CL:LOAD} function is
+used under the hood for evaluating code, and thus the behavior of
+\code{LOAD} is guaranteed. This allows, among other things,
+\code{IN-PACKAGE} forms to change the package in which the loaded code
+is read.
 
 It is possible to evaluate code in what JSR-223 calls a
-"ScriptContext" (basically a flat environment of name->value
+``ScriptContext'' (basically a flat environment of name$\rightarrow$value
 pairs). This context is used to establish special bindings for all the
 variables defined in it; since variable names are strings from Java's
-point of view, they are first interned using READ-FROM-STRING with, as
-usual, ABCL-SCRIPT-USER as the default package. Variables are declared
+point of view, they are first interned using \code{READ-FROM-STRING} with, as
+usual, \code{ABCL-SCRIPT-USER} as the default package. Variables are declared
 special because CL's \code{LOAD}, \code{EVAL} and \code{COMPILE}
 functions work in a null lexical environment and would ignore
 non-special bindings.
@@ -667,29 +641,29 @@ Contrary to what the function \code{LOAD} does, evaluation of a series
 of forms returns the value of the last form instead of T, so the
 evaluation of short scripts does the Right Thing.
 
-\subsubsection{Compilation}
+\subsection{Compilation}
 
 AbclScriptEngine implements the \code{javax.script.Compilable}
 interface. Currently it only supports compilation using temporary
 files. Compiled code, returned as an instance of
-javax.script.CompiledScript, is read, compiled and executed by default
-in the ABCL-SCRIPT-USER package, just like evaluated code. Differently
-from evaluated code, though, due to the way the ABCL compiler works,
-compiled code contains no reference to top-level self-evaluating
-objects (like numbers or strings). Thus, when evaluated, a piece of
-compiled code will return the value of the last non-self-evaluating
-form: for example the code "(do-something) 42" will return 42 when
-interpreted, but will return the result of (do-something) when
-compiled and later evaluated. To ensure consistency of behavior
-between interpreted and compiled code, make sure the last form is
-always a compound form - at least (identity some-literal-object). Note
-that this issue should not matter in real code, where it is unlikely a
-top-level self-evaluating form will appear as the last form in a file
-(in fact, the Common Lisp load function always returns T upon success;
-with JSR-223 this policy has been changed to make evaluation of small
-code snippets work as intended).
+\texttt{javax.script.CompiledScript}, is read, compiled and executed by
+default in the \texttt{ABCL-SCRIPT-USER} package, just like evaluated
+code.  In contrast to evaluated code, though, due to the way the ABCL
+compiler works, compiled code contains no reference to top-level
+self-evaluating objects (like numbers or strings). Thus, when evaluated,
+a piece of compiled code will return the value of the last
+non-self-evaluating form: for example the code ``\code{(do-something)
+  42}'' will return 42 when interpreted, but will return the result of
+(do-something) when compiled and later evaluated. To ensure consistency
+of behavior between interpreted and compiled code, make sure the last
+form is always a compound form - at least \code{(identity
+some-literal-object)}. Note that this issue should not matter in real
+code, where it is unlikely a top-level self-evaluating form will appear
+as the last form in a file (in fact, the Common Lisp load function
+always returns \texttt{T} upon success; with JSR-223 this policy has been changed
+to make evaluation of small code snippets work as intended).
 
-\subsubsection{Invocation of functions and methods}
+\subsection{Invocation of functions and methods}
 
 AbclScriptEngine implements the \code{javax.script.Invocable}
 interface, which allows to directly call Lisp functions and methods,
@@ -698,10 +672,10 @@ partially possible with Lisp since it has functions, but not methods -
 not in the traditional OO sense, at least, since Lisp methods are not
 attached to objects but belong to generic functions. Thus, the method
 \code{invokeMethod()} is not implemented and throws an
-UnsupportedOperationException when called. The \code{invokeFunction()}
+\texttt{UnsupportedOperationException} when called. The \code{invokeFunction()}
 method should be used to call both regular and generic functions.
 
-\subsubsection{Implementation of Java interfaces in Lisp}
+\subsection{Implementation of Java interfaces in Lisp}
 
 ABCL can use the Java reflection-based proxy feature to implement Java
 interfaces in Lisp. It has several built-in ways to implement an
@@ -729,7 +703,7 @@ Built-in interface-implementation types include:
   the interface will be passed the method name, the Lisp-this object,
   and all the parameters. Useful for interfaces with a single method,
   or to implement custom interface-implementation strategies.
-\item a hash-map of method-name -> Lisp function mappings. Function
+\item a hash-map of method-name $\rightarrow$ Lisp function mappings. Function
   signature is \code{(lisp-this \&rest args)}.
 \item a Lisp package. The name of the Java method to invoke is first
   transformed in an idiomatic Lisp name (\code{javaMethodName} becomes
@@ -738,12 +712,12 @@ Built-in interface-implementation types include:
   will be called. Function signature is as the hash-table case.
 \end{itemize}
 
-This functionality is exposed by the AbclScriptEngine with the two
-methods getInterface(Class) and getInterface(Object, Class). The
-former returns an interface implemented with the current Lisp package,
-the latter allows the programmer to pass an interface-implementation
-object which will in turn be passed to the jmake-proxy generic
-function.
+This functionality is exposed by the class \code{AbclScriptEngine} via
+the two methods \code{getInterface(Class)} and
+\code{getInterface(Object, Class)}. The former returns an interface
+implemented with the current Lisp package, the latter allows the
+programmer to pass an interface-implementation object which will in turn
+be passed to the \code{jmake-proxy} generic function.
 
 \chapter{Implementation Dependent Extensions}
 
@@ -1102,7 +1076,7 @@ The asdf-install contrib provides an implementation of ASDF-INSTALL.
 Superseded by Quicklisp (see Xach2011 \cite{quicklisp}).
 
 The \code{require} of the \code{asdf-install} symbol has the side
-effect of pushing the directory ``~/.asdf-install-dir/systems/'' into
+effect of pushing the directory ``\~/.asdf-install-dir/systems/'' into
 the value of the \textsc{ASDF} central registry in
 \code{asdf:*central-registry*}, providing a convenient mechanism for
 stashing \textsc{ABCL} specific system definitions for convenient
