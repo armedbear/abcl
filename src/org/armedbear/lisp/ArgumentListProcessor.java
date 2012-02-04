@@ -102,39 +102,39 @@ public class ArgumentListProcessor {
    * @param moreKeys Indicates whether &allow-other-keys was specified
    * @param rest Specifies the &rest variable name, if one was specified, or 'null' if none
    */
-  public ArgumentListProcessor(Operator fun, Collection<RequiredParam> required,
-          Collection<OptionalParam> optional, Collection<KeywordParam> keyword,
+  public ArgumentListProcessor(Operator fun, int requiredCount,
+          OptionalParam[] optional, KeywordParam[] keyword,
           boolean key, boolean moreKeys, Symbol rest) {
 
       function = fun;
       
-      requiredParameters = new RequiredParam[required.size()];
-      requiredParameters = required.toArray(requiredParameters);
+      requiredParameters = new RequiredParam[requiredCount];
+      positionalParameters = new Param[requiredCount + optional.length 
+              + ((rest != null) ? 1 : 0)];
       
-      optionalParameters = new OptionalParam[optional.size()];
-      optionalParameters = optional.toArray(optionalParameters);
+      // the same anonymous required parameter can be used any number of times
+      RequiredParam r = new RequiredParam();
+      for (int i = 0; i < requiredCount; i++) {
+          requiredParameters[i] = r;
+          positionalParameters[i] = r;
+      }
+          
+      optionalParameters = optional;
+      System.arraycopy(optional, 0,
+              positionalParameters, requiredCount, optional.length);
 
-      keywordParameters = new KeywordParam[keyword.size()];
-      keywordParameters = keyword.toArray(keywordParameters);
-      
       restVar = rest;
       if (restVar != null)
-        restParam = new RestParam(rest, false);
-      
+        positionalParameters[requiredCount + optional.length] =
+                restParam = new RestParam(rest, false);
+
       andKey = key;
       allowOtherKeys = moreKeys;
-      
-      List<Param> positionalParam = new ArrayList<Param>();
-      positionalParam.addAll(required);
-      positionalParam.addAll(optional);
-      if (restVar != null)
-          positionalParam.add(restParam);
+      keywordParameters = keyword;
 
-      
-      positionalParameters = new Param[positionalParam.size()];
-      positionalParameters = positionalParam.toArray(positionalParameters);
-      
+
       auxVars = new Param[0];
+
       
       variables = extractVariables();
       specials = new boolean[variables.length]; // default values 'false' -- leave that way
@@ -145,7 +145,7 @@ public class ArgumentListProcessor {
       arity = (rest == null && ! allowOtherKeys && ! andKey && optionalParameters.length == 0)
               ? maxArgs : -1;
       
-      if (optional.isEmpty() && keyword.isEmpty())
+      if (keyword.length == 0)
           matcher = new FastMatcher();
       else
           matcher = new SlowMatcher();
@@ -430,6 +430,10 @@ public class ArgumentListProcessor {
     
 
     
+  }
+  
+  public void setFunction(Operator fun) {
+      function = fun;
   }
   
   /** Matches the function call arguments 'args' with the lambda list,
@@ -865,6 +869,11 @@ public class ArgumentListProcessor {
       Symbol var;
       boolean special;
       
+      // Used above to create anonymous required parameters
+      public RequiredParam() {
+          this(T, false);
+      }
+      
       public RequiredParam(Symbol var, boolean special) {
           this.var = var;
           this.special = special;
@@ -894,6 +903,9 @@ public class ArgumentListProcessor {
       boolean suppliedSpecial;
       InitForm initForm;
       
+      public OptionalParam(boolean suppliedVar, LispObject form) {
+          this(T, false, suppliedVar ? T : null, false, form);
+      }
       
       public OptionalParam(Symbol var, boolean special,
                     Symbol suppliedVar, boolean suppliedSpecial,
@@ -980,6 +992,10 @@ public class ArgumentListProcessor {
   /** Class used to represent optional parameters and their initforms */
   public static class KeywordParam extends OptionalParam {
       public Symbol keyword;
+      
+      public KeywordParam(boolean suppliedVar, LispObject form, Symbol keyword) {
+          this(T, false, suppliedVar ? T : null, false, form, keyword);
+      }
       
       public KeywordParam(Symbol var, boolean special,
                    Symbol suppliedVar, boolean suppliedSpecial,

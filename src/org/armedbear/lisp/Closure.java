@@ -36,8 +36,6 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-import java.util.ArrayList;
-
 public class Closure extends Function
 {
   // Parameter types.
@@ -65,37 +63,12 @@ public class Closure extends Function
      * @param rest the &amp;rest parameter, or NIL if none
      * @param moreKeys NIL if &amp;allow-other-keys not present, T otherwise
      */
-  public Closure(Parameter[] required,
-                 Parameter[] optional,
-                 Parameter[] keyword,
-                 Symbol keys, Symbol rest, Symbol moreKeys) {
+  public Closure(ArgumentListProcessor arglist) {
       // stuff we don't need: we're a compiled function
       body = null;
       executionBody = null;
       environment = null;
-
-      ArrayList<ArgumentListProcessor.RequiredParam> reqParams =
-              new ArrayList<ArgumentListProcessor.RequiredParam>();
-      for (Parameter req : required)
-          reqParams.add(new ArgumentListProcessor.RequiredParam(req.var, false));
-
-      ArrayList<ArgumentListProcessor.OptionalParam> optParams =
-              new ArrayList<ArgumentListProcessor.OptionalParam>();
-      for (Parameter opt : optional)
-          optParams.add(new ArgumentListProcessor.OptionalParam(opt.var, false,
-                  (opt.svar == NIL) ? null : (Symbol)opt.svar, false,
-                  opt.initForm));
-
-      ArrayList<ArgumentListProcessor.KeywordParam> keyParams =
-              new ArrayList<ArgumentListProcessor.KeywordParam>();
-      for (Parameter key : keyword)
-          keyParams.add(new ArgumentListProcessor.KeywordParam(key.var, false,
-                  (key.svar == NIL) ? null : (Symbol)key.svar, false, key.initForm,
-                  key.keyword));
-      arglist = new ArgumentListProcessor(this, reqParams, optParams,
-                                          keyParams, keys != NIL,
-                                          moreKeys != NIL,
-                                          (rest == NIL) ? null : rest);
+      this.arglist = arglist;
       freeSpecials = new Symbol[0];
   }
 
@@ -252,99 +225,6 @@ public class Closure extends Function
   protected final LispObject[] fastProcessArgs(LispObject[] args)
   {
     return arglist.match(args, environment, null, null);
-  }
-
-  public static class Parameter
-  {
-    final Symbol var;
-    final LispObject initForm;
-    final LispObject initVal;
-    final LispObject svar;
-    private final int type;
-    final Symbol keyword;
-
-    public Parameter(Symbol var)
-    {
-      this.var = var;
-      this.initForm = null;
-      this.initVal = null;
-      this.svar = NIL;
-      this.type = REQUIRED;
-      this.keyword = null;
-    }
-
-    public Parameter(Symbol var, LispObject initForm, int type)
-
-    {
-      this.var = var;
-      this.initForm = initForm;
-      this.initVal = processInitForm(initForm);
-      this.svar = NIL;
-      this.type = type;
-      keyword =
-        type == KEYWORD ? PACKAGE_KEYWORD.intern(var.name) : null;
-    }
-
-    public Parameter(Symbol var, LispObject initForm, LispObject svar,
-                     int type)
-
-    {
-      this.var = var;
-      this.initForm = initForm;
-      this.initVal = processInitForm(initForm);
-      this.svar = (svar != NIL) ? checkSymbol(svar) : NIL;
-      this.type = type;
-      keyword =
-        type == KEYWORD ? PACKAGE_KEYWORD.intern(var.name) : null;
-    }
-
-    public Parameter(Symbol keyword, Symbol var, LispObject initForm,
-                     LispObject svar)
-
-    {
-      this.var = var;
-      this.initForm = initForm;
-      this.initVal = processInitForm(initForm);
-      this.svar = (svar != NIL) ? checkSymbol(svar) : NIL;
-      type = KEYWORD;
-      this.keyword = keyword;
-    }
-
-    @Override
-    public String toString()
-    {
-      if (type == REQUIRED)
-        return var.toString();
-      StringBuffer sb = new StringBuffer();
-      if (keyword != null)
-        {
-          sb.append(keyword);
-          sb.append(' ');
-        }
-      sb.append(var.toString());
-      sb.append(' ');
-      sb.append(initForm);
-      sb.append(' ');
-      sb.append(type);
-      return sb.toString();
-    }
-
-    private static final LispObject processInitForm(LispObject initForm)
-
-    {
-      if (initForm.constantp())
-        {
-          if (initForm instanceof Symbol)
-            return initForm.getSymbolValue();
-          if (initForm instanceof Cons)
-            {
-              Debug.assertTrue(initForm.car() == Symbol.QUOTE);
-              return initForm.cadr();
-            }
-          return initForm;
-        }
-      return null;
-    }
   }
 
   // ### lambda-list-names

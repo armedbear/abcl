@@ -136,6 +136,7 @@ initialized from the `java-dotted-name'."
 (define-class-name +java-string+ "java.lang.String")
 (define-class-name +java-system+ "java.lang.System")
 (define-class-name +java-io-input-stream+ "java.io.InputStream")
+(define-class-name +java-util-collection+ "java.util.Collection")
 (define-class-name +lisp-object+ "org.armedbear.lisp.LispObject")
 (defconstant +lisp-object-array+ (class-array +lisp-object+))
 (define-class-name +lisp-simple-string+ "org.armedbear.lisp.SimpleString")
@@ -177,10 +178,17 @@ initialized from the `java-dotted-name'."
 (define-class-name +lisp-package+ "org.armedbear.lisp.Package")
 (define-class-name +lisp-readtable+ "org.armedbear.lisp.Readtable")
 (define-class-name +lisp-stream+ "org.armedbear.lisp.Stream")
+(define-class-name +lisp-operator+ "org.armedbear.lisp.Operator")
 (define-class-name +lisp-closure+ "org.armedbear.lisp.Closure")
 (define-class-name +lisp-compiled-closure+ "org.armedbear.lisp.CompiledClosure")
-(define-class-name +lisp-closure-parameter+
-    "org.armedbear.lisp.Closure$Parameter")
+(define-class-name +argument-list-processor+
+    "org.armedbear.lisp.ArgumentListProcessor")
+(define-class-name +alp-required-parameter+
+    "org.armedbear.lisp.ArgumentListProcessor$RequiredParam")
+(define-class-name +alp-optional-parameter+
+    "org.armedbear.lisp.ArgumentListProcessor$OptionalParam")
+(define-class-name +alp-keyword-parameter+
+    "org.armedbear.lisp.ArgumentListProcessor$KeywordParam")
 (defconstant +lisp-closure-parameter-array+
   (class-array +lisp-closure-parameter+))
 

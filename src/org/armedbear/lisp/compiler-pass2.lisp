@@ -949,12 +949,13 @@ representation, based on the derived type of the LispObject."
 				  :flags '(:public)))
          ;; We don't normally need to see debugging output for constructors.
          (super (class-file-superclass class))
-         req-params-register
          opt-params-register
          key-params-register
+         req-count
          rest-p
          keys-p
-         more-keys-p)
+         more-keys-p
+         alp-register)
     (with-code-to-method (class method)
       (allocate-register nil)
       (unless (eq super +lisp-compiled-primitive+)
@@ -964,13 +965,14 @@ representation, based on the derived type of the LispObject."
             (parse-lambda-list args)
           (setf rest-p rest
                 more-keys-p allow-other-keys-p
-                keys-p key-p)
+                keys-p key-p
+                req-count (length req))
           (macrolet
-              ((parameters-to-array ((param params register) &body body)
+              ((parameters-to-array ((param params register class) &body body)
                  (let ((count-sym (gensym)))
                    `(progn
                       (emit-push-constant-int (length ,params))
-                      (emit-anewarray +lisp-closure-parameter+)
+                      (emit-anewarray ,class)
                       (astore (setf ,register *registers-allocated*))
                       (allocate-register nil)
                       (do* ((,count-sym 0 (1+ ,count-sym))
@@ -980,28 +982,25 @@ representation, based on the derived type of the LispObject."
                         (declare (ignorable ,param))
                         (aload ,register)
                         (emit-push-constant-int ,count-sym)
-                        (emit-new +lisp-closure-parameter+)
+                        (emit-new ,class)
                         (emit 'dup)
                         ,@body
                         (emit 'aastore))))))
-            ;; process required args
-            (parameters-to-array (ignore req req-params-register)
-               (emit-push-t) ;; we don't need the actual symbol
-               (emit-invokespecial-init +lisp-closure-parameter+
-                                        (list +lisp-symbol+)))
-
-            (parameters-to-array (param opt opt-params-register)
-               (emit-push-t) ;; we don't need the actual variable-symbol
+             (parameters-to-array (param opt opt-params-register
+                                         +alp-optional-parameter+)
+               (if (null (third param)) ;; supplied-p or not?
+                   (emit 'iconst_0)
+                   (emit 'iconst_1))
                (emit-read-from-string (second param)) ;; initform
-               (if (null (third param))               ;; supplied-p
-                   (emit-push-nil)
-                   (emit-push-t)) ;; we don't need the actual supplied-p symbol
-               (emit-getstatic +lisp-closure+ "OPTIONAL" :int)
-               (emit-invokespecial-init +lisp-closure-parameter+
-                                        (list +lisp-symbol+ +lisp-object+
-                                              +lisp-object+ :int)))
+               (emit-invokespecial-init +alp-optional-parameter+
+                                        (list :boolean +lisp-object+)))
 
-            (parameters-to-array (param key key-params-register)
+            (parameters-to-array (param key key-params-register
+                                        +alp-keyword-parameter+)
+               (if (null (third param)) ;; supplied-p or not?
+                   (emit 'iconst_0)
+                   (emit 'iconst_1))
+               (emit-read-from-string (second param)) ;; initform
                (let ((keyword (fourth param)))
                  (if (keywordp keyword)
                      (progn
@@ -1016,38 +1015,49 @@ representation, based on the derived type of the LispObject."
                        (emit-invokestatic +lisp+ "internInPackage"
                                           (list +java-string+ +java-string+)
                                           +lisp-symbol+))))
-               (emit-push-t) ;; we don't need the actual variable-symbol
-               (emit-read-from-string (second (car key)))
-               (if (null (third param))
-                   (emit-push-nil)
-                   (emit-push-t)) ;; we don't need the actual supplied-p symbol
-               (emit-invokespecial-init +lisp-closure-parameter+
-                                        (list +lisp-symbol+ +lisp-symbol+
-                                              +lisp-object+ +lisp-object+))))))
+               (emit-invokespecial-init +alp-keyword-parameter+
+                                        (list :boolean +lisp-object+
+                                              +lisp-symbol+))))))
       (aload 0) ;; this
       (cond ((eq super +lisp-compiled-primitive+)
              (emit-constructor-lambda-name lambda-name)
              (emit-constructor-lambda-list args)
              (emit-invokespecial-init super (lisp-object-arg-types 2)))
-            ((equal super +lisp-compiled-closure+) ;;### only needs EQ when SUPER is guaranteed to be CLASS-NAME
-             (aload req-params-register)
+            ((equal super +lisp-compiled-closure+)
+             ;;### only needs EQ when SUPER is guaranteed to be CLASS-NAME
+             (emit-new +argument-list-processor+)
+             (emit 'dup)
+             (emit 'dup)
+             (astore (setf alp-register (allocate-register nil)))
+             (emit 'aconst_null)
+             (emit-push-int req-count)
              (aload opt-params-register)
              (aload key-params-register)
              (if keys-p
-                 (emit-push-t)
-                 (emit-push-nil-symbol))
+                 (emit 'iconst_1)
+                 (emit 'iconst_0))
+             (if more-keys-p
+                 (emit 'iconst_1)
+                 (emit 'iconst_0))
              (if rest-p
                  (emit-push-t)
-                 (emit-push-nil-symbol))
-             (if more-keys-p
-                 (emit-push-t)
-                 (emit-push-nil-symbol))
+                 (emit 'aconst_null))
+             (emit-invokespecial-init +argument-list-processor+
+                                      (list
+                                       +lisp-operator+
+                                       :int
+                                       (class-array +alp-optional-parameter+)
+                                       (class-array +alp-keyword-parameter+)
+                                       :boolean
+                                       :boolean
+                                       +lisp-symbol+))
              (emit-invokespecial-init super
-                                      (list +lisp-closure-parameter-array+
-                                            +lisp-closure-parameter-array+
-                                            +lisp-closure-parameter-array+
-                                            +lisp-symbol+
-                                            +lisp-symbol+ +lisp-symbol+)))
+                                      (list +argument-list-processor+))
+             (aload alp-register)
+             (aload 0)
+             (emit-invokevirtual +argument-list-processor+
+                                 "setFunction"
+                                 (list +lisp-operator+) nil))
             (t
              (sys::%format t "unhandled superclass ~A for ~A~%"
                            super

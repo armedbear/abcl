@@ -41,12 +41,9 @@ public class CompiledClosure extends Closure
 
   public ClosureBinding[] ctx;
 
-  public CompiledClosure(Parameter[] required,
-                         Parameter[] optional,
-                         Parameter[] keyword,
-                         Symbol keys, Symbol rest, Symbol moreKeys)
+  public CompiledClosure(ArgumentListProcessor arglist)
   {
-      super(required, optional, keyword, keys, rest, moreKeys);
+      super(arglist);
   }
 
 
