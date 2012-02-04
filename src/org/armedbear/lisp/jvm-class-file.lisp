@@ -189,8 +189,6 @@ initialized from the `java-dotted-name'."
     "org.armedbear.lisp.ArgumentListProcessor$OptionalParam")
 (define-class-name +alp-keyword-parameter+
     "org.armedbear.lisp.ArgumentListProcessor$KeywordParam")
-(defconstant +lisp-closure-parameter-array+
-  (class-array +lisp-closure-parameter+))
 
 #|
 

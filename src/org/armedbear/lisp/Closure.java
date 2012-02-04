@@ -221,12 +221,6 @@ public class Closure extends Function
     return arglist.match(args, environment, environment, thread);
   }
 
-  // No optional or keyword parameters.
-  protected final LispObject[] fastProcessArgs(LispObject[] args)
-  {
-    return arglist.match(args, environment, null, null);
-  }
-
   // ### lambda-list-names
   private static final Primitive LAMBDA_LIST_NAMES =
       new Primitive("lambda-list-names", PACKAGE_SYS, true)

@@ -545,6 +545,62 @@ public class ArgumentListProcessor {
   /** ArgumentMatcher class which implements full-blown argument matching,
    * including validation of the keywords passed. */
   private class SlowMatcher extends ArgumentMatcher {
+      private LispObject[] _match(LispObject[] args, Environment _environment,
+                Environment env, LispThread thread) {
+        final ArgList argslist = new ArgList(_environment, args);
+        final LispObject[] array = new LispObject[variables.length];
+        int index = 0;
+
+        
+        for (Param p : positionalParameters)
+            index = p.assign(index, array, argslist, env, thread);
+
+        if (andKey) {
+            argslist.assertRemainderKeywords();
+
+            for (Param p : keywordParameters)
+                index = p.assign(index, array, argslist, env, thread);
+        }
+        for (Param p : auxVars)
+            index = p.assign(index, array, argslist, env, thread);
+
+        if (andKey) {
+            if (allowOtherKeys)
+                return array;
+
+            if (!argslist.consumed()) // verify keywords
+              {
+                LispObject allowOtherKeysValue =
+                        argslist.findKeywordArg(Keyword.ALLOW_OTHER_KEYS, NIL);
+
+                if (allowOtherKeysValue != NIL)
+                    return array;
+
+                // verify keywords
+                next_key:
+                  while (! argslist.consumed()) {
+                      LispObject key = argslist.consume();
+                      argslist.consume(); // consume value
+
+                      if (key == Keyword.ALLOW_OTHER_KEYS)
+                          continue next_key;
+
+                      for (KeywordParam k : keywordParameters)
+                          if (k.keyword == key)
+                              continue next_key;
+
+                      error(new ProgramError("Unrecognized keyword argument " +
+                                              key.printObject()));
+                  }
+              }
+        } 
+
+        if (restVar == null && !argslist.consumed())
+            error(new WrongNumberOfArgumentsException(function));
+
+        return array;
+      }
+      
       @Override
       LispObject[] match(LispObject[] args, Environment _environment,
                 Environment env, LispThread thread) {
@@ -560,60 +616,12 @@ public class ArgumentListProcessor {
         if (args.length < minArgs)
           error(new WrongNumberOfArgumentsException(function, minArgs, -1));
 
+        if (thread == null)
+            return _match(args, _environment, env, thread);
           
         final SpecialBindingsMark mark = thread.markSpecialBindings();
-        final LispObject[] array = new LispObject[variables.length];
-        int index = 0;
-        ArgList argslist = new ArgList(_environment, args);
-        
         try {
-            for (Param p : positionalParameters)
-                index = p.assign(index, array, argslist, env, thread);
-            
-            if (andKey) {
-                argslist.assertRemainderKeywords();
-            
-                for (Param p : keywordParameters)
-                    index = p.assign(index, array, argslist, env, thread);
-            }
-            for (Param p : auxVars)
-                index = p.assign(index, array, argslist, env, thread);
-            
-            if (andKey) {
-                if (allowOtherKeys)
-                    return array;
-                
-                if (!argslist.consumed()) // verify keywords
-                  {
-                    LispObject allowOtherKeysValue =
-                            argslist.findKeywordArg(Keyword.ALLOW_OTHER_KEYS, NIL);
-
-                    if (allowOtherKeysValue != NIL)
-                        return array;
-
-                    // verify keywords
-                    next_key:
-                      while (! argslist.consumed()) {
-                          LispObject key = argslist.consume();
-                          argslist.consume(); // consume value
-
-                          if (key == Keyword.ALLOW_OTHER_KEYS)
-                              continue next_key;
-
-                          for (KeywordParam k : keywordParameters)
-                              if (k.keyword == key)
-                                  continue next_key;
-
-                          error(new ProgramError("Unrecognized keyword argument " +
-                                                  key.printObject()));
-                      }
-                  }
-            } 
-            
-            if (restVar == null && !argslist.consumed())
-                error(new WrongNumberOfArgumentsException(function));
-                
-            return array;
+            return _match(args, _environment, env, thread);
         }
         finally {
             thread.resetSpecialBindings(mark);

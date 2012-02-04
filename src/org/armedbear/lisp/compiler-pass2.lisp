@@ -7046,7 +7046,6 @@ We need more thought here.
   (let* ((p1-result (compiland-p1-result compiland))
          (class-file (compiland-class-file compiland))
          (*this-class* (abcl-class-file-class class-file))
-         (args (cadr p1-result))
          (closure-args (intersection *closure-variables*
                                      (compiland-arg-vars compiland)))
          (local-closure-vars
@@ -7233,24 +7232,16 @@ We need more thought here.
           (aload 0)                     ; this
           (aver (not (null (compiland-argument-register compiland))))
           (aload (compiland-argument-register compiland)) ; arg vector
-          (cond ((or (memq '&OPTIONAL args) (memq '&KEY args))
-                 (ensure-thread-var-initialized)
-                 (maybe-initialize-thread-var)
-                 (emit-push-current-thread)
-                 (emit-invokevirtual *this-class* "processArgs"
-                                     (list +lisp-object-array+ +lisp-thread+)
-                                     +lisp-object-array+))
-                (t
-                 (emit-invokevirtual *this-class* "fastProcessArgs"
-                                     (list +lisp-object-array+)
-                                     +lisp-object-array+)))
+          (emit 'aconst_null) ;; no thread arg required:
+                 ;; there's no non-constant initform or special
+                 ;; which might require the thread
+          (emit-invokevirtual *this-class* "processArgs"
+                              (list +lisp-object-array+ +lisp-thread+)
+                              +lisp-object-array+)
           (astore (compiland-argument-register compiland)))
 
-        (unless (and *hairy-arglist-p*
-                     (or (memq '&OPTIONAL args) (memq '&KEY args)))
-          (maybe-initialize-thread-var))
-        (setf *code* (nconc code *code*)))
-      ))
+        (maybe-initialize-thread-var)
+        (setf *code* (nconc code *code*)))))
   t)
 
 (defun compile-to-jvm-class (compiland)
