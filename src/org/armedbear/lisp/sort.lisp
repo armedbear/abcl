@@ -36,7 +36,7 @@
 (defun sort (sequence predicate &rest args &key key)
   (sequence::seq-dispatch sequence
     (sort-list sequence predicate key)
-    (quick-sort sequence 0 (length sequence) predicate key)
+    (quicksort sequence 0 (1- (length sequence)) predicate (or key #'identity))
     (apply #'sequence:sort sequence predicate args)))
 
 (defun stable-sort (sequence predicate &rest args &key key)
@@ -182,6 +182,56 @@
         (if (eq list-1 (cdr head))
             (return list-1))))))
 
+#|
+<> dc:author "Jorge Tavares" ;
+    dc:description 
+""" 
+The quicksort function picks the pivot by selecting a midpoint and
+also sorts the smaller partition first. These are enough to avoid the
+stack overflow problem as reported. I've performed some tests and it
+looks it is correct 
+"""" .
+|#
+;;;
+;;; QUICKSORT
+;;; - the pivot is a middle point
+;;; - sorts the smaller partition first
+;;;
+(defun quicksort (vector start end predicate key)
+  (declare (type fixnum start end)
+	   (type function predicate key))
+  (if (< start end)
+      (let* ((i start)
+	     (j (1+ end))
+	     (p (+ start (ash (- end start) -1)))
+	     (d (aref vector p))
+	     (kd (funcall key d)))
+	(rotatef (aref vector p) (aref vector start))
+	(block outer-loop
+	  (loop
+	    (loop 
+	      (unless (> (decf j) i) (return-from outer-loop))
+	      (when (funcall predicate 
+			     (funcall key (aref vector j)) kd)
+		(return)))
+	    (loop 
+	      (unless (< (incf i) j) (return-from outer-loop))
+	      (unless (funcall predicate
+			       (funcall key (aref vector i)) kd)
+		(return)))
+	    (rotatef (aref vector i) (aref vector j))))
+	(setf (aref vector start) (aref vector j)
+	      (aref vector j) d)
+	(if (< (- j start) (- end j))
+	    (progn
+	      (quicksort vector start (1- j) predicate key)
+	      (quicksort vector (1+ j) end predicate key))
+	    (progn
+	      (quicksort vector (1+ j) end predicate key)
+	      (quicksort vector start (1- j) predicate key))))
+      vector))
+
+;;; DEPRECATED -- to be removed in abcl-1.4
 ;;; From ECL.
 (defun quick-sort (seq start end pred key)
   (unless key (setq key #'identity))
