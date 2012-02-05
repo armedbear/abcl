@@ -1406,6 +1406,8 @@
                                 &allow-other-keys)
   (when (autoloadp function-name)
     (resolve function-name))
+  (setf all-keys (copy-list all-keys))  ; since we modify it
+  (remf all-keys :generic-function-class)
   (let ((gf (find-generic-function function-name nil)))
     (if gf
         (progn
