@@ -959,7 +959,9 @@ classloader as an optional third argument.
 (defparameter *other-classloader*
   (jcall "getBaseLoader" cl-user::*classpath-manager*))
   
-(defmethod print-object ((device-id (java:jclass "dto.nbi.service.hdm.alcatel.com.NBIDeviceID" *other-classloader*))
+(defmethod print-object ((device-id (java:jclass 
+                                     "dto.nbi.service.hdm.alcatel.com.NBIDeviceID" 
+                                     *other-classloader*))
                          stream)
   ;;; ...
 )
@@ -982,31 +984,34 @@ Note that this sequence is never output by the implementation.  Instead,
 the corresponding Unicode character is output for characters whose
 code is greater than 0x00ff.
 
-\section{Overloading of the CL:REQUIRE mechanism}
+\section{Overloading of the CL:REQUIRE Mechanism}
 
-The CL:REQUIRE mechanism is overloaded in the following ways:
+The \code{CL:REQUIRE} mechanism is overloaded by attaching the following
+semantic to the execution of \code{REQUIRE} on the following symbols:
 
 \begin{description}
 
-  \item{ASDF} Loads the ASDF implementation shipped with the
-    implementation.  After ASDF has been loaded in this manner,
-    symbols passed to CL:REQUIRE which are otherwise unresolved, are
-    passed to ASDF for a chance for resolution.  This means, for
-    instance that if CL-PPCRE can be located as a loadable ASDF system
-    \code{(require 'cl-ppcre)} is equivalent to
-    \code{(asdf:load-system 'cl-ppcre)}.
+  \item{\code{ASDF}} Loads the \textsc{ASDF} implementation shipped
+    with the implementation.  After \textsc{ASDF} has been loaded in
+    this manner, symbols passed to \code{CL:REQUIRE} which are
+    otherwise unresolved, are passed to ASDF for a chance for
+    resolution.  This means, for instance if \code{CL-PPCRE} can be
+    located as a loadable \textsc{ASDF} system \code{(require
+      'cl-ppcre)} is equivalent to \code{(asdf:load-system
+      'cl-ppcre)}.
 
-  \item{ABCL-CONTRIB} Locates and pushes the toplevel contents of
-    ``abcl-contrib.jar'' into the ASDF central registry.  
+  \item{\code{ABCL-CONTRIB}} Locates and pushes the toplevel contents of
+    ``abcl-contrib.jar'' into the \textsc{ASDF} central registry.  
 
 \end{description}
 
-The user may extend the CL:REQUIRE mechanism by pushing function hooks
-into SYSTEM:*MODULE-PROVIDER-FUNCTIONS*.  Each such hook function
-takes a single argument containing the symbol passed to CL:REQUIRE and
-returns a non-nil value if it can successful resolve the symbol.
+The user may extend the \code{CL:REQUIRE} mechanism by pushing
+function hooks into \code{SYSTEM:*MODULE-PROVIDER-FUNCTIONS*}.  Each
+such hook function takes a single argument containing the symbol
+passed to \code{CL:REQUIRE} and returns a non-\code{NIL} value if it
+can successful resolve the symbol.
 
-\subsection{JSS optionally extends the Reader}
+\section{JSS optionally extends the Reader}
 
 The JSS contrib consitutes an additional, optional extension to the
 reader in the definition of the \#\" reader macro.  See section
