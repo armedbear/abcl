@@ -828,11 +828,21 @@ a \code{CL:PATHNAME} is accepted with the following caveats:
 \item A stream obtained via OPEN on a URL-PATHNAME cannot be the
   target of write operations.
 
-\item No canonicalization is performed on the underlying \textsc{URI} (i.e. the
-implementation does not attempt to compute the current name of the
-representing resource unless it is requested to be resolved.)  Upon
-resolution, any cannoicalization procedures followed in resolving the
-resource (e.g. following redirects) are discarded.  
+\index{URI}
+\item No canonicalization is performed on the underlying \textsc{URI}
+  (i.e. the implementation does not attempt to compute the current
+  name of the representing resource unless it is requested to be
+  resolved.)  Upon resolution, any cannoicalization procedures
+  followed in resolving the resource (e.g. following redirects) are
+  discarded.  Users may programatically initiate a new, local
+  computation by applying the \code{CL:TRUENAME} function to a
+  \code{EXT:URL-PATHNAME} object.  Depending on the reliablity and
+  properties of your local \textsc{REST} infrastructure, these results
+  may not necessarily be idempotent over time\footnote {See
+  \cite{evenson2011} for the draft of the publication of the technical
+  details}.
+
+
 
 \end{itemize}
 
