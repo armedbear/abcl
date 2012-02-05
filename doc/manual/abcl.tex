@@ -10,7 +10,7 @@
 \title{Armed Bear Common Lisp User Manual}
 \date{Version 1.1.0-dev\\
 \smallskip
-January 25, 2012}
+Feburary 5, 2012}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -114,7 +114,7 @@ of course.
 \chapter{Running ABCL}
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-\texttt{abcl.jar} or possibly something like \texttt{abcl-1.0.1.jar} if
+\texttt{abcl.jar} or possibly something like \texttt{abcl-1.1.0.jar} if
 using a versioned package on the local filesystem from your system
 vendor.  This jar file can be executed from the command line to obtain a
 REPL\footnote{Read-Eval Print Loop, a Lisp commandline}, viz:
@@ -758,13 +758,13 @@ directly via the JSS contrib to great effect.
 \section{EXTENSIONS}
 
 The symbols in the EXTENSIONS package (nicknamed ``EXT'') constitutes
-extensions to the ANSI standard that are potentially useful to the
+extensions to the \textsc{ANSI} standard that are potentially useful to the
 user.  They include functions for manipulating network sockets,
 running external programs, registering object finalizers, constructing
 reference weakly held by the garbage collector and others.
 
 See \cite{RHODES2007} for a generic function interface to the native
-JVM contract for \code{java.util.List}.
+\textsc{JVM} contract for \code{java.util.List}.
 
 % include autogen docs for the EXTENSIONS package.
 \include{extensions}
@@ -774,28 +774,34 @@ JVM contract for \code{java.util.List}.
 Naturally, in striving to be a useful contemporary Common Lisp
 implementation, ABCL endeavors to include extensions beyond the ANSI
 specification which are either widely adopted or are especially useful
-in working with the hosting JVM.
+in working with the hosting \textsc{JVM}.
 
-\section{Implementation Dependent}
-\begin{enumerate}
-  \item Compiler to JVM 5 bytecode
-  \item Pathname extensions
-\end{enumerate}
+\section{Compiler to Java 5 Bytecode}
+
+The \code{CL:COMPILE-FILE} interface emits a packed fasl format whose
+Pathname has the type  ``abcl''.  These fasls are operating system neutral
+byte archives packaged by the zip compression format which contain
+artifacts whose loading \code{CL:LOAD} understands.
 
 \section{Pathname}
 
 We implement an extension to the Pathname that allows for the
-description and retrieval of resources named in a URI scheme that the
-JVM ``understands''.  Support is built-in to the ``http'' and
+description and retrieval of resources named in a
+\textsc{URI} \footnote{A \textsc{URI} is essentially a superset of
+  what is commonly understood as a \textsc{URL} We sometimesuse the
+  term URL as shorthand in describing the URL Pathnames, even though
+  the corresponding encoding is more akin to a URI as described in
+  RFC3986 \cite{rfc3986}.}  scheme that the \textsc{JVM}
+``understands''.  Support is built-in to comprehend the ``http'' and
 ``https'' implementations but additional protocol handlers may be
-installed at runtime by having JVM symbols present in the
+installed at runtime by having \textsc{JVM} symbols present in the
 sun.net.protocol.dynamic pacakge. See \cite{maso2000} for more
 details.
 
-ABCL has created specializations of the ANSI Pathname object to
-enable to use of URIs to address dynamically loaded resources for the
-JVM.  A URL-PATHNAME has a corresponding URL whose canonical
-representation is defined to be the NAMESTRING of the Pathname.
+\textsc{ABCL} has created specializations of the ANSI Pathname object to
+enable to use of \textsc{URI}s to address dynamically loaded resources for the
+JVM.  A \code{URL-PATHNAME} has a corresponding \textsc{URI} whose canonical
+representation is defined to be the \code{NAMESTRING} of the Pathname.
 
 %
 \begin{verbatim}
@@ -804,19 +810,25 @@ representation is defined to be the NAMESTRING of the Pathname.
 % TODO Render via some LaTeX mode for graphviz?
 
   <jar-pathname> a <url-pathname>.
-  <url-pathname> a <pathname>.
-  <logical-pathname> a <pathname> .
+  <url-pathname> a <cl:pathname>.
+  <cl:logical-pathname> a <cl:pathname> .
 \end{verbatim}
 
-Both URL-PATHNAME and JAR-PATHNAME may be used anywhere a PATHNAME is
-accepted with the following caveats:
+\label{EXTENSIONS:URL-PATHNAME}
+\index{URL-PATHNAME}
+
+\label{EXTENSIONS:JAR-PATHNAME}
+\index{JAR-PATHNAME}
+
+Both \code{URL-PATHNAME} and \code{JAR-PATHNAME} may be used anywhere
+a \code{CL:PATHNAME} is accepted with the following caveats:
 
 \begin{itemize}
 
 \item A stream obtained via OPEN on a URL-PATHNAME cannot be the
   target of write operations.
 
-\item No canonicalization is performed on the underlying URI (i.e. the
+\item No canonicalization is performed on the underlying \textsc{URI} (i.e. the
 implementation does not attempt to compute the current name of the
 representing resource unless it is requested to be resolved.)  Upon
 resolution, any cannoicalization procedures followed in resolving the
@@ -824,8 +836,10 @@ resource (e.g. following redirects) are discarded.
 
 \end{itemize}
 
-The implementation of URL-PATHNAME allows the ABCL user to laod dynamically
-code from the network.  For example, for Quicklisp (\cite{quicklisp}):
+The implementation of \code{URL-PATHNAME} allows the \textsc{ABCL}
+user to dynamically load code from the network.  For example,
+Quicklisp (\cite{quicklisp}) may be completely installed from the REPL
+as the single form:
 
 \begin{listing-lisp}
   CL-USER> (load "http://beta.quicklisp.org/quicklisp.lisp")
@@ -837,8 +851,55 @@ will load and execute the Quicklisp setup code.
 
 \subsubsection{Implementation}
 
-\code{DEVICE} either a string denoting a drive letter under DOS or a cons
-specifying a \code{URL-PATHNAME}.
+The implementation of these extensions stores all the additional
+information in the PATHNAME object itself in ways that while strictly
+speaking are conformant, nonetheless may trip up libraries that don't
+expect the following:
+
+\begin{itemize}
+\item \code{DEVICE} can be either a string denoting a drive letter
+  under DOS or a list of exactly one or two elements.  If
+  \code{DEVICE} is a list, it denotes a \code{JAR-PATHNAME}, with the entries
+  containing \code{PATHNAME} objects which describe the outer and (possibley)
+  locations of the jar archive.
+
+\item A \code{URL-PATHNAME} always has a \code{HOST} component that is a
+  property list.  The values of the \code{HOST} property list are
+  always character strings.  The allowed keys have the following meanings:
+  \begin{description}
+  \item[:SCHEME] Scheme of URI ("http", "ftp", "bundle", etc.)
+  \item[:AUTHORITY] Valid authority according to the URI scheme.  For
+    "http" this could be "example.org:8080". 
+  \item[:QUERY] The query of the \textsc{URI} 
+  \item[:FRAGMENT] The fragment portion of the \textsc{URI}
+  \end{description}
+
+
+\item In order to encapsulate the implementation decisions for these
+  meanings, the following functions provide a setf-able API for
+  reading and writing such values: \code{URL-PATHNAME-QUERY},
+  \code{URL-PATHNAME-FRAGMENT}, \code{URL-PATHNAME-AUTHORITY}, and
+  \code{URL-PATHNAME-SCHEME}.  The specific subtype of a Pathname may
+  be determined with the predicates \code{PATHNAME-URL-P} and
+  \code{PATHNAME-JAR-P}.
+
+\label{EXTENSIONS:URL-PATHNAME-SCHEME}
+\index{URL-PATHNAME-SCHEME}
+
+\label{EXTENSIONS:URL-PATHNAME-FRAGMENT}
+\index{URL-PATHNAME-FRAGMENT}
+
+\label{EXTENSIONS:URL-PATHNAME-AUTHORITY}
+\index{URL-PATHNAME-AUTHORITY}
+
+\label{EXTENSIONS:PATHNAME-URL-P}
+\index{PATHNAME-URL-P}
+
+\label{EXTENSIONS:URL-PATHNAME-QUERY}
+\index{URL-PATHNAME-QUERY}
+
+\end{itemize}
+
          
 \section{Extensible Sequences}
 
@@ -921,21 +982,46 @@ Note that this sequence is never output by the implementation.  Instead,
 the corresponding Unicode character is output for characters whose
 code is greater than 0x00ff.
 
+\section{Overloading of the CL:REQUIRE mechanism}
+
+The CL:REQUIRE mechanism is overloaded in the following ways:
+
+\begin{description}
+
+  \item{ASDF} Loads the ASDF implementation shipped with the
+    implementation.  After ASDF has been loaded in this manner,
+    symbols passed to CL:REQUIRE which are otherwise unresolved, are
+    passed to ASDF for a chance for resolution.  This means, for
+    instance that if CL-PPCRE can be located as a loadable ASDF system
+    \code{(require 'cl-ppcre)} is equivalent to
+    \code{(asdf:load-system 'cl-ppcre)}.
+
+  \item{ABCL-CONTRIB} Locates and pushes the toplevel contents of
+    ``abcl-contrib.jar'' into the ASDF central registry.  
+
+\end{description}
+
+The user may extend the CL:REQUIRE mechanism by pushing function hooks
+into SYSTEM:*MODULE-PROVIDER-FUNCTIONS*.  Each such hook function
+takes a single argument containing the symbol passed to CL:REQUIRE and
+returns a non-nil value if it can successful resolve the symbol.
+
 \subsection{JSS optionally extends the Reader}
 
 The JSS contrib consitutes an additional, optional extension to the
-reader in the definition of the \#\" reader macro.  See
+reader in the definition of the \#\" reader macro.  See section
 \ref{section:jss} on page \pageref{section:jss} for more information.
 
 \section{ASDF}
 
-asdf-2.017.22 is packaged as core component of ABCL, but not
-initialized by default, as it relies on the CLOS subsystem which can
-take a bit of time to start \footnote{While this time is ``merely'' on
-  the order of seconds for contemporary 2011 machines, for
-  applications that need to initialize quickly, for example a web
-  server, this time might be unnecessarily long}.  ASDF may be loaded
-by the \textsc{ANSI} \code{REQUIRE} mechanism as follows:
+asdf-2.019 (see \cite{asdf}) is packaged as core component of ABCL,
+but not initialized by default, as it relies on the CLOS subsystem
+which can take a bit of time to start \footnote{While this time is
+  ``merely'' on the order of seconds for contemporary 2011 machines,
+  for applications that need to initialize quickly, for example a web
+  server, this time might be unnecessarily long}.  The packaged ASDF
+may be loaded by the \textsc{ANSI} \code{REQUIRE} mechanism as
+follows:
 
 \begin{listing-lisp}
 CL-USER> (require 'asdf)
@@ -945,7 +1031,7 @@ CL-USER> (require 'asdf)
 
 The ABCL contrib is packaged as a separate jar archive usually named
 \code{abcl-contrib.jar} or possibly something like
-\code{abcl-contrib-1.0.0.jar}.  The contrib jar is not loaded by the
+\code{abcl-contrib-1.1.0.jar}.  The contrib jar is not loaded by the
 implementation by default, and must be first intialized by the
 \code{REQUIRE} mechanism before using any specific contrib:
 
@@ -1048,9 +1134,14 @@ The documentation for this contrib can be found at
 To one used to the more universal syntax of Lisp pairs for which the
 definition of read and compile time macros is quite natural, the Java
 syntax available to the Java programmer may be said to suck.  To
-alleviate this situation, we introduce the
-\code{SHARPSIGN-DOUBLE-QUOTE} (\code{\#"}) reader macro, the first of perhaps
-  many exper
+alleviate this situation, the JSS contrib introduces the
+\code{SHARPSIGN-DOUBLE-QUOTE} (\code{\#"}) reader macro, which allows the
+the specification of the name of invoking function as the first
+element of the relevant s-expr which tends to be more congruent to
+how Lisp programmers seem to be wired to think.
+
+While quite useful, we don't expect that the JSS contrib will be the
+last experiment in wrangling Java from Common Lisp.
 
 \subsection{JSS usage}
 
@@ -1088,7 +1179,7 @@ access.
 started in 1998 by Peter Graves.  Sometime in 2003, a whole lot of
 code that had previously not been released publically was suddenly
 committed that enabled ABCL to be plausibly termed an emergent ANSI
-Common Lisp implementation canidate.
+Common Lisp implementation candidate.
 
 From 2006 to 2008, Peter manned the development lists, incorporating
 patches as made sense.  After a suitable search, Peter nominated Erik
@@ -1109,8 +1200,3 @@ on January 10, 2012.
 \printindex
 
 \end{document}
-
-% TODO
-%   1.  Create mechanism for swigging DocString and Lisp docs into
-%       sections ('grovel.lisp')
-
