@@ -55,7 +55,7 @@
 (in-package #:abcl-asdf)
 
 (defgeneric satisfy (something)
- :documentation "Returns a string in JVM CLASSPATH format as entries delimited by classpath separator string."
+ (:documentation "Returns a string in JVM CLASSPATH format as entries delimited by classpath separator string."))
 
 (defmethod satisfy ((mvn-component asdf::mvn))
   "Resolve all runtime dependencies of MVN-COMPONENT.

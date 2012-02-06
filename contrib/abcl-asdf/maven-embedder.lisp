@@ -308,7 +308,7 @@ in Java CLASSPATH representation."
                              group-id artifact-id version)))
          (dependency 
           (java:jnew (jss:find-java-class "aether.graph.Dependency")
-                     artifact "compile"))
+                     artifact (java:jfield (jss:find-java-class "JavaScopes") "RUNTIME")))
          (collect-request (java:jnew (jss:find-java-class "CollectRequest"))))
     (#"setRoot" collect-request dependency)
     (#"addRepository" collect-request (ensure-remote-repository))
