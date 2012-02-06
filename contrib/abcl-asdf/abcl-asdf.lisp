@@ -64,8 +64,8 @@ Returns a string in JVM CLASSPATH format as entries delimited by classpath separ
 
 (defun as-classpath (classpath)
   "Break apart the JVM CLASSPATH string into a list of its consituents."
-  ;;; XXX Maybe doesn't work under Windows?
-  (split-string classpath ":"))
+  (split-string classpath 
+                (java:jfield "java.io.File" "pathSeparator")))
 
 (defun split-string (string split-char)
   (loop :for i = 0 :then (1+ j)
