@@ -159,9 +159,14 @@ specializes the lookup() method if passed an 'http' role hint."
    "org.sonatype.aether.connector.wagon.WagonProvider"
    "lookup"
    (lambda (role-hint)
-     (if (string-equal "http" role-hint)
-         (some (lambda (provider) (java:jnew provider)) *http-wagon-implementations*)
-       java:+null+))
+     (cond 
+       ((find role-hint '("http" "https") :test #'string-equal)
+        (some (lambda (provider) (java:jnew provider)) *http-wagon-implementations*))
+       (t
+        (progn 
+          (format *maven-verbose* 
+                  "~&WagonProvider stub passed '~A' as a hint it couldn't satisfy.~%" role-hint)
+           java:+null+))))
    "release"
    (lambda (wagon)
      (declare (ignore wagon)))))
@@ -361,4 +366,3 @@ in Java CLASSPATH representation."
      #'log)))
 
          
-
