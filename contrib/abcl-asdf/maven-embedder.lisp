@@ -368,3 +368,10 @@ in Java CLASSPATH representation."
      #'log)))
 
          
+;;; "log4j:log4j:1.9.2" or "log4j:log4j"
+(defmethod satisfy ((string t))
+  (let ((result (split-string string ":")))
+    (cond 
+      ((<= 2 (length result) 3)
+       (apply #'resolve-dependencies result)))))
+  

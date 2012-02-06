@@ -14,7 +14,7 @@
 (defmethod find-component ((component iri) path)
   component)
 
-;;; We interpret compilation to ensure that load-op will succeed
+;;; We intercept compilation to ensure that load-op will succeed
 (defmethod perform ((op compile-op) (c mvn))
   (maybe-parse-mvn c)
   (abcl-asdf:satisfy c))
@@ -54,7 +54,10 @@
 
 (in-package #:abcl-asdf)
 
-(defun satisfy (mvn-component)
+(defgeneric satisfy (something)
+ :documentation "Returns a string in JVM CLASSPATH format as entries delimited by classpath separator string."
+
+(defmethod satisfy ((mvn-component asdf::mvn))
   "Resolve all runtime dependencies of MVN-COMPONENT.
 
 Returns a string in JVM CLASSPATH format as entries delimited by classpath separator string."
