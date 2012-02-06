@@ -211,7 +211,7 @@ specializes the lookup() method if passed an 'http' role hint."
   "A string containing the URI of an http proxy for Maven to use.")
 
 (defun make-proxy ()
-  "Return an org.sonatype.aether.repository.Proxy instance initialized form *MAVEN-HTTP-PROXY*."
+  "Return an org.sonatype.aether.repository.Proxy instance initialized from *MAVEN-HTTP-PROXY*."
   (unless *maven-http-proxy*
     (warn "No proxy specified in *MAVEN-HTTP-PROXY*")
     (return-from make-proxy nil))
@@ -255,7 +255,7 @@ If *MAVEN-HTTP-PROXY* is non-nil, parse its value as the http proxy."
 
 ;;; TODO change this to work on artifact strings like log4j:log4j:jar:1.2.16
 (defun resolve-artifact (group-id artifact-id &optional (version "LATEST" versionp))
-  "Directly resolve Maven dependencies for item with GROUP-ID and ARTIFACT-ID at VERSION, ignoring dependencies.
+  "Resolve artifact to location on the local filesystem.
 
 Declared dependencies are not attempted to be located.
 
@@ -272,7 +272,9 @@ Returns the Maven specific string for the artifact "
           (java:jnew "org.sonatype.aether.resolution.ArtifactRequest")))
     (#"setArtifact" artifact-request artifact)
     (#"addRepository" artifact-request (ensure-remote-repository))
-    (#"toString" (#"resolveArtifact" (ensure-repository-system) (ensure-session) artifact-request))))
+    (#"toString" (#"getFile" 
+                  (#"getArtifact" (#"resolveArtifact" (ensure-repository-system) 
+                                                      (ensure-session) artifact-request))))))
 
 (defun make-remote-repository (id type url) 
   (jss:new 'aether.repository.RemoteRepository id type url))
