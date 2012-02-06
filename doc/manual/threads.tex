@@ -1,12 +1,10 @@
-\subsection{Exported Symbols from the THREADS package}
-
 \paragraph{}
 \label{THREADS:MAILBOX-EMPTY-P}
 \index{MAILBOX-EMPTY-P}
 --- Function: \textbf{mailbox-empty-p} [\textbf{threads}] \textit{mailbox}
 
 \begin{adjustwidth}{5em}{5em}
-Returns non-NIL if the mailbox can be read from, NIL otherwise.
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -15,7 +13,7 @@ Returns non-NIL if the mailbox can be read from, NIL otherwise.
 --- Function: \textbf{threadp} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -24,7 +22,7 @@ NOT-DOCUMENTED
 --- Function: \textbf{destroy-thread} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -33,7 +31,7 @@ NOT-DOCUMENTED
 --- Macro: \textbf{with-mutex} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -60,7 +58,7 @@ Releases a lock on the `mutex'.
 --- Function: \textbf{object-wait} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -69,7 +67,7 @@ NOT-DOCUMENTED
 --- Function: \textbf{make-thread} [\textbf{threads}] \textit{function \&key name}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -87,16 +85,16 @@ Returns an object to be used with the `with-thread-lock' macro.
 --- Function: \textbf{object-notify-all} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
 \label{THREADS:MAKE-MAILBOX}
 \index{MAKE-MAILBOX}
---- Function: \textbf{make-mailbox} [\textbf{threads}] \textit{}
+--- Function: \textbf{make-mailbox} [\textbf{threads}] \textit{\&key ((queue g2304220) NIL)}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -105,7 +103,7 @@ NOT-DOCUMENTED
 --- Function: \textbf{object-notify} [\textbf{threads}] \textit{object}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -154,9 +152,10 @@ When an item is available, it is returned.
 \paragraph{}
 \label{THREADS:SYNCHRONIZED-ON}
 \index{SYNCHRONIZED-ON}
---- NIL: \textbf{synchronized-on} [\textbf{threads}] \textit{}
+--- Special Operator: \textbf{synchronized-on} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -172,10 +171,10 @@ When the function returns, the thread's original computation continues. If  mult
 \paragraph{}
 \label{THREADS:MAKE-MUTEX}
 \index{MAKE-MUTEX}
---- Function: \textbf{make-mutex} [\textbf{threads}] \textit{}
+--- Function: \textbf{make-mutex} [\textbf{threads}] \textit{\&key ((in-use g2304421) NIL)}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -184,7 +183,7 @@ NOT-DOCUMENTED
 --- Class: \textbf{thread} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -193,7 +192,7 @@ NOT-DOCUMENTED
 --- Macro: \textbf{with-thread-lock} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -212,7 +211,7 @@ to wake up for retrieval of that object.
 --- Function: \textbf{thread-name} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -221,7 +220,7 @@ NOT-DOCUMENTED
 --- Function: \textbf{current-thread} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -230,6 +229,6 @@ NOT-DOCUMENTED
 --- Function: \textbf{mapcar-threads} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 

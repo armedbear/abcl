@@ -1,12 +1,10 @@
-\subsection{Exported Symbols from the JAVA package}
 \paragraph{}
 \label{JAVA:JAVA-EXCEPTION-CAUSE}
 \index{JAVA-EXCEPTION-CAUSE}
 --- Function: \textbf{java-exception-cause} [\textbf{java}] \textit{java-exception}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the cause of JAVA-EXCEPTION. (The cause is the Java Throwable
-  object that caused JAVA-EXCEPTION to be signalled.)
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -44,7 +42,7 @@ Creates and returns an implementation of a Java interface with
 --- Function: \textbf{dump-classpath} [\textbf{java}] \textit{\&optional classloader}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -84,30 +82,12 @@ Length to truncate toString() PRINT-OBJECT output for an otherwise unspecialized
 \end{adjustwidth}
 
 \paragraph{}
-\label{JAVA:JRUN-EXCEPTION-PROTECTED}
-\index{JRUN-EXCEPTION-PROTECTED}
---- Function: \textbf{jrun-exception-protected} [\textbf{java}] \textit{closure}
-
-\begin{adjustwidth}{5em}{5em}
-Invokes the function CLOSURE and returns the result.  Signals an error if stack or heap exhaustion occurs.
-\end{adjustwidth}
-
-\paragraph{}
 \label{JAVA:JINSTANCE-OF-P}
 \index{JINSTANCE-OF-P}
 --- Function: \textbf{jinstance-of-p} [\textbf{java}] \textit{obj class}
 
 \begin{adjustwidth}{5em}{5em}
 OBJ is an instance of CLASS (or one of its subclasses)
-\end{adjustwidth}
-
-\paragraph{}
-\label{JAVA:JMETHOD-NAME}
-\index{JMETHOD-NAME}
---- Function: \textbf{jmethod-name} [\textbf{java}] \textit{method}
-
-\begin{adjustwidth}{5em}{5em}
-Returns the name of METHOD as a Lisp string
 \end{adjustwidth}
 
 \paragraph{}
@@ -120,14 +100,39 @@ Invokes the static method METHOD on class CLASS with ARGS. Does not attempt to c
 \end{adjustwidth}
 
 \paragraph{}
+\label{JAVA:DEFINE-JAVA-CLASS}
+\index{DEFINE-JAVA-CLASS}
+--- Macro: \textbf{define-java-class} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
 \label{JAVA:JCLASS-OF}
 \index{JCLASS-OF}
 --- Function: \textbf{jclass-of} [\textbf{java}] \textit{object \&optional name}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the name of the Java class of OBJECT. If the NAME argument is
-  supplied, verifies that OBJECT is an instance of the named class. The name
-  of the class or nil is always returned as a second value.
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JRUN-EXCEPTION-PROTECTED}
+\index{JRUN-EXCEPTION-PROTECTED}
+--- Function: \textbf{jrun-exception-protected} [\textbf{java}] \textit{closure}
+
+\begin{adjustwidth}{5em}{5em}
+Invokes the function CLOSURE and returns the result.  Signals an error if stack or heap exhaustion occurs.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JMETHOD-NAME}
+\index{JMETHOD-NAME}
+--- Function: \textbf{jmethod-name} [\textbf{java}] \textit{method}
+
+\begin{adjustwidth}{5em}{5em}
+Returns the name of METHOD as a Lisp string
 \end{adjustwidth}
 
 \paragraph{}
@@ -136,9 +141,18 @@ Returns the name of the Java class of OBJECT. If the NAME argument is
 --- Function: \textbf{get-current-classloader} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
+\paragraph{}
+\label{JAVA:JGET-PROPERTY-VALUE}
+\index{JGET-PROPERTY-VALUE}
+--- Function: \textbf{\%jget-property-value} [\textbf{java}] \textit{java-object property-name}
+
+\begin{adjustwidth}{5em}{5em}
+Gets a JavaBeans property on JAVA-OBJECT.
+SYSTEM-INTERNAL: Use jproperty-value instead.
+\end{adjustwidth}
 
 \paragraph{}
 \label{JAVA:JNEW-ARRAY-FROM-LIST}
@@ -146,7 +160,7 @@ NOT-DOCUMENTED
 --- Function: \textbf{jnew-array-from-list} [\textbf{java}] \textit{element-type list}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -164,7 +178,7 @@ Returns a reference to the Java method METHOD-NAME of CLASS-REF with the given P
 --- Function: \textbf{get-default-classloader} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -200,7 +214,17 @@ Returns a reference to the Java class designated by NAME-OR-CLASS-REF. If the CL
 --- Function: \textbf{jproperty-value} [\textbf{java}] \textit{obj prop}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JSET-PROPERTY-VALUE}
+\index{JSET-PROPERTY-VALUE}
+--- Function: \textbf{\%jset-property-value} [\textbf{java}] \textit{java-object property-name value}
+
+\begin{adjustwidth}{5em}{5em}
+Sets a JavaBean property on JAVA-OBJECT.
+SYSTEM-INTERNAL: Use (setf jproperty-value) instead.
 \end{adjustwidth}
 
 \paragraph{}
@@ -215,10 +239,33 @@ Returns the type (Java class) of FIELD
 \paragraph{}
 \label{JAVA:JNEW-RUNTIME-CLASS}
 \index{JNEW-RUNTIME-CLASS}
---- Function: \textbf{jnew-runtime-class} [\textbf{java}] \textit{}
+--- Function: \textbf{jnew-runtime-class} [\textbf{java}] \textit{class-name \&rest args \&key (superclass java.lang.Object) interfaces constructors methods fields (access-flags (quote (public))) annotations}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+Creates and loads a Java class with methods calling Lisp closures
+   as given in METHODS.  CLASS-NAME and SUPER-NAME are strings,
+   INTERFACES is a list of strings, CONSTRUCTORS, METHODS and FIELDS are
+   lists of constructor, method and field definitions.
+
+   Constructor definitions - currently NOT supported - are lists of the form
+   (argument-types function \&optional super-invocation-arguments)
+   where argument-types is a list of strings and function is a lisp function of
+   (1+ (length argument-types)) arguments; the instance (`this') is passed in as
+   the last argument. The optional super-invocation-arguments is a list of numbers
+   between 1 and (length argument-types), where the number k stands for the kth argument
+   to the just defined constructor. If present, the constructor of the superclass
+   will be called with the appropriate arguments. E.g., if the constructor definition is
+   (("java.lang.String" "int") \#'(lambda (string i this) ...) (2 1))
+   then the constructor of the superclass with argument types (int, java.lang.String) will
+   be called with the second and first arguments.
+
+   Method definitions are lists of the form
+   (method-name return-type argument-types function \&key modifiers annotations)
+   where method-name is a string, return-type and argument-types are strings or keywords for
+   primitive types (:void, :int, etc.), and function is a Lisp function of minimum arity
+   (1+ (length argument-types)); the instance (`this') is passed in as the first argument.
+
+   Field definitions are lists of the form (field-name type \&key modifiers annotations).
 \end{adjustwidth}
 
 \paragraph{}
@@ -249,12 +296,21 @@ Returns a vector of parameter types (Java classes) for METHOD
 \end{adjustwidth}
 
 \paragraph{}
+\label{JAVA:JNEW}
+\index{JNEW}
+--- Function: \textbf{jnew} [\textbf{java}] \textit{constructor \&rest args}
+
+\begin{adjustwidth}{5em}{5em}
+Invokes the Java constructor CONSTRUCTOR with the arguments ARGS.
+\end{adjustwidth}
+
+\paragraph{}
 \label{JAVA:JREGISTER-HANDLER}
 \index{JREGISTER-HANDLER}
 --- Function: \textbf{jregister-handler} [\textbf{java}] \textit{object event handler \&key data count}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -276,33 +332,6 @@ Returns T if OBJECT is a JAVA-OBJECT.
 \end{adjustwidth}
 
 \paragraph{}
-\label{JAVA:UNREGISTER-JAVA-EXCEPTION}
-\index{UNREGISTER-JAVA-EXCEPTION}
---- Function: \textbf{unregister-java-exception} [\textbf{java}] \textit{exception-name}
-
-\begin{adjustwidth}{5em}{5em}
-Unregisters the Java Throwable EXCEPTION-NAME previously registered by REGISTER-JAVA-EXCEPTION.
-\end{adjustwidth}
-
-\paragraph{}
-\label{JAVA:JNEW}
-\index{JNEW}
---- Function: \textbf{jnew} [\textbf{java}] \textit{constructor \&rest args}
-
-\begin{adjustwidth}{5em}{5em}
-Invokes the Java constructor CONSTRUCTOR with the arguments ARGS.
-\end{adjustwidth}
-
-\paragraph{}
-\label{JAVA:JRUNTIME-CLASS-EXISTS-P}
-\index{JRUNTIME-CLASS-EXISTS-P}
---- Function: \textbf{jruntime-class-exists-p} [\textbf{java}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
-\end{adjustwidth}
-
-\paragraph{}
 \label{JAVA:JARRAY-COMPONENT-TYPE}
 \index{JARRAY-COMPONENT-TYPE}
 --- Function: \textbf{jarray-component-type} [\textbf{java}] \textit{atype}
@@ -317,7 +346,16 @@ Returns the component type of the array type ATYPE
 --- Generic Function: \textbf{add-to-classpath} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:UNREGISTER-JAVA-EXCEPTION}
+\index{UNREGISTER-JAVA-EXCEPTION}
+--- Function: \textbf{unregister-java-exception} [\textbf{java}] \textit{exception-name}
+
+\begin{adjustwidth}{5em}{5em}
+Unregisters the Java Throwable EXCEPTION-NAME previously registered by REGISTER-JAVA-EXCEPTION.
 \end{adjustwidth}
 
 \paragraph{}
@@ -335,9 +373,7 @@ Attempts to coerce JAVA-OBJECT into a Lisp object.
 --- Function: \textbf{jclass-name} [\textbf{java}] \textit{class-ref \&optional name}
 
 \begin{adjustwidth}{5em}{5em}
-When called with one argument, returns the name of the Java class
-  designated by CLASS-REF. When called with two arguments, tests
-  whether CLASS-REF matches NAME.
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -364,7 +400,7 @@ The JVM null object reference.
 --- Function: \textbf{ensure-java-class} [\textbf{java}] \textit{jclass}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -373,7 +409,7 @@ NOT-DOCUMENTED
 --- Class: \textbf{java-class} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -382,7 +418,7 @@ NOT-DOCUMENTED
 --- Macro: \textbf{jmethod-let} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -447,7 +483,7 @@ Creates a new Java array of type ELEMENT-TYPE, with the given DIMENSIONS.
 --- Macro: \textbf{chain} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -484,6 +520,7 @@ Supported argument patterns:
       Stores value in a field of the instance. The class is
       derived from the instance.
 
+
 \end{adjustwidth}
 
 \paragraph{}
@@ -492,7 +529,7 @@ Supported argument patterns:
 --- Class: \textbf{java-object} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -519,7 +556,7 @@ The JVM primitive value for boolean true.
 --- Function: \textbf{jmake-invocation-handler} [\textbf{java}] \textit{function}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -537,7 +574,7 @@ Finds the most specific Java method METHOD-NAME on INSTANCE applicable to argume
 --- Function: \textbf{make-classloader} [\textbf{java}] \textit{\&optional parent}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -586,15 +623,6 @@ Returns the Java class that OBJ belongs to
 \end{adjustwidth}
 
 \paragraph{}
-\label{JAVA:JREDEFINE-METHOD}
-\index{JREDEFINE-METHOD}
---- Function: \textbf{jredefine-method} [\textbf{java}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
-\end{adjustwidth}
-
-\paragraph{}
 \label{JAVA:JCLASS-FIELDS}
 \index{JCLASS-FIELDS}
 --- Function: \textbf{jclass-fields} [\textbf{java}] \textit{class \&key declared public}
@@ -609,7 +637,7 @@ Returns a vector of all (or just the declared/public, if DECLARED/PUBLIC is true
 --- Class: \textbf{java-exception} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -618,7 +646,7 @@ NOT-DOCUMENTED
 --- Function: \textbf{describe-java-object} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -655,6 +683,7 @@ Supported argument patterns:
    Case 7: field-name  instance  value:
       Stores value in a field of the instance. The class is
       derived from the instance.
+
 
 \end{adjustwidth}
 
@@ -709,7 +738,7 @@ Stores NEW-VALUE at the given index in JAVA-ARRAY.
 --- Function: \textbf{jarray-length} [\textbf{java}] \textit{java-array}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -736,7 +765,7 @@ Returns the field named FIELD-NAME of CLASS
 --- Generic Function: \textbf{jmake-proxy} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-NOT-DOCUMENTED
+not-documented
 \end{adjustwidth}
 
 \paragraph{}

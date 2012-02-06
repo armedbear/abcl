@@ -1,4 +1,4 @@
-#-abcl We're only grovelling ABCL docstrings here.
+
 (defun grovel-docstrings-as-tex (&optional (package (find-package :java)))
   (let ((output-file (format nil "~A.tex" (string-downcase (package-name package)))))
     (with-open-file (stream output-file :direction :output)
@@ -6,22 +6,31 @@
       (loop :for symbol :being :each :external-symbol :of package 
          :doing (format stream "~&~A~%~%" (symbol-as-tex symbol))))))
 
+(require :asdf)
+
 (asdf:load-system 'swank) ;; XXX Does this load the SWANK-BACKEND package as well
+
+(defun texify-string (string &optional remove)
+  (with-output-to-string (s)
+    (loop for char across string
+         do (if (find char '(#\& #\% #\#))
+                (unless remove
+                  (write-char #\\ s)
+                  (write-char char s))
+                (write-char char s)))))
+
+(defun texify (thing)
+  "Return STRING with LaTeX-sensitive characters escaped.
+Downcase symbol names but leave strings alone."
+  (cond ((listp thing)
+         (format nil "~A" (mapcar #'texify thing)))
+        ((stringp thing) (texify-string thing))
+        ((symbolp thing) (texify-string (string-downcase (symbol-name thing))))))
 
 (defun arglist-as-tex (symbol)
   (handler-case 
       (loop :for arg :in (arglist symbol)
-         :collecting
-         (format nil 
-                 ;;; XXX should really check the entire input for TeX escapes
-                 (if (and (symbolp arg)
-                          (or (string= (subseq (symbol-name arg) 0 1) #\&)
-                              (string= (subseq (symbol-name arg) 0 1) #\%)))
-                     "\\~A"
-                     "~A")
-                 (if (symbolp arg)
-                     (string-downcase (symbol-name arg))
-                     (format nil "~(~A~)" arg))))
+         :collecting (texify arg))
     (t (e) 
       (progn (warn "Failed to form arglist for ~A: ~A" symbol e)
              (list "")))))
@@ -72,15 +81,22 @@
                            symbol)
               package-name (string-downcase 
                             (package-name (find-package (symbol-package symbol)))))
-        (format nil "~&\\paragraph{}~&\\label{~A:~A}~&\\index{~A}~&--- ~A: \\textbf{~A} [\\textbf{~A}] \\textit{~A}~%~%\\begin{adjustwidth}{5em}{5em}~&~A~&\\end{adjustwidth}"
-                (package-name (find-package (symbol-package symbol)))
-                (symbol-name symbol)
-                (symbol-name symbol)
+        (format nil "~&\\paragraph{}
+\\label{~A:~A}
+\\index{~A}
+--- ~A: \\textbf{~A} [\\textbf{~A}] \\textit{~A}
+
+\\begin{adjustwidth}{5em}{5em}
+~A
+\\end{adjustwidth}"
+                (texify-string (package-name (find-package (symbol-package symbol))) t)
+                (texify-string (symbol-name symbol) t)
+                (texify-string (symbol-name symbol) t)
                 (cdr (assoc type *type-alist*))
-                symbol-name
-                package-name
+                (texify symbol-name)
+                (texify package-name)
                 (if arglist arglist "")
-                (if documentation documentation "")))))
+                (if documentation (texify documentation) "")))))
                 
                 
 
