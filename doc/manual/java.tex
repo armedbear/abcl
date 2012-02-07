@@ -136,43 +136,6 @@ Returns the name of METHOD as a Lisp string
 \end{adjustwidth}
 
 \paragraph{}
-\label{JAVA:GET-CURRENT-CLASSLOADER}
-\index{GET-CURRENT-CLASSLOADER}
---- Function: \textbf{get-current-classloader} [\textbf{java}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{JAVA:JGET-PROPERTY-VALUE}
-\index{JGET-PROPERTY-VALUE}
---- Function: \textbf{\%jget-property-value} [\textbf{java}] \textit{java-object property-name}
-
-\begin{adjustwidth}{5em}{5em}
-Gets a JavaBeans property on JAVA-OBJECT.
-SYSTEM-INTERNAL: Use jproperty-value instead.
-\end{adjustwidth}
-
-\paragraph{}
-\label{JAVA:JNEW-ARRAY-FROM-LIST}
-\index{JNEW-ARRAY-FROM-LIST}
---- Function: \textbf{jnew-array-from-list} [\textbf{java}] \textit{element-type list}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{JAVA:JMETHOD}
-\index{JMETHOD}
---- Function: \textbf{jmethod} [\textbf{java}] \textit{class-ref method-name \&rest parameter-class-refs}
-
-\begin{adjustwidth}{5em}{5em}
-Returns a reference to the Java method METHOD-NAME of CLASS-REF with the given PARAMETER-CLASS-REFS.
-\end{adjustwidth}
-
-\paragraph{}
 \label{JAVA:GET-DEFAULT-CLASSLOADER}
 \index{GET-DEFAULT-CLASSLOADER}
 --- Function: \textbf{get-default-classloader} [\textbf{java}] \textit{}
@@ -188,6 +151,15 @@ not-documented
 
 \begin{adjustwidth}{5em}{5em}
 Return a vector of all (or just the declared/public, if DECLARED/PUBLIC is true) methods of CLASS
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:GET-CURRENT-CLASSLOADER}
+\index{GET-CURRENT-CLASSLOADER}
+--- Function: \textbf{get-current-classloader} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -209,22 +181,30 @@ Returns a reference to the Java class designated by NAME-OR-CLASS-REF. If the CL
 \end{adjustwidth}
 
 \paragraph{}
-\label{JAVA:JPROPERTY-VALUE}
-\index{JPROPERTY-VALUE}
---- Function: \textbf{jproperty-value} [\textbf{java}] \textit{obj prop}
+\label{JAVA:JNEW-ARRAY-FROM-LIST}
+\index{JNEW-ARRAY-FROM-LIST}
+--- Function: \textbf{jnew-array-from-list} [\textbf{java}] \textit{element-type list}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{JAVA:JSET-PROPERTY-VALUE}
-\index{JSET-PROPERTY-VALUE}
---- Function: \textbf{\%jset-property-value} [\textbf{java}] \textit{java-object property-name value}
+\label{JAVA:JMETHOD}
+\index{JMETHOD}
+--- Function: \textbf{jmethod} [\textbf{java}] \textit{class-ref method-name \&rest parameter-class-refs}
 
 \begin{adjustwidth}{5em}{5em}
-Sets a JavaBean property on JAVA-OBJECT.
-SYSTEM-INTERNAL: Use (setf jproperty-value) instead.
+Returns a reference to the Java method METHOD-NAME of CLASS-REF with the given PARAMETER-CLASS-REFS.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JPROPERTY-VALUE}
+\index{JPROPERTY-VALUE}
+--- Function: \textbf{jproperty-value} [\textbf{java}] \textit{obj prop}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
 \end{adjustwidth}
 
 \paragraph{}

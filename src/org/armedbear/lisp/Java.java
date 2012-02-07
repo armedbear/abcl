@@ -1228,7 +1228,7 @@ public final class Java
     {
         pf__jget_property_value() 
         {
-	    super("%jget-property-value", PACKAGE_JAVA, true,
+	    super("%jget-property-value", PACKAGE_JAVA, false,
                   "java-object property-name");
         }
     	
@@ -1259,7 +1259,7 @@ public final class Java
     {
         pf__jset_property_value()
         {
-	    super("%jset-property-value", PACKAGE_JAVA, true,
+	    super("%jset-property-value", PACKAGE_JAVA, false,
                   "java-object property-name value");
         }
     	
