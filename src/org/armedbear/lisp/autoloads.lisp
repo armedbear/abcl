@@ -250,6 +250,8 @@
 (autoload 'jnew-array-from-array "java")
 (export 'jnew-array-from-list "JAVA")
 (autoload 'jnew-array-from-list "java")
+(export 'jarray-from-list "JAVA")
+(autoload 'jarray-from-list "java")
 (export 'jclass-constructors "JAVA")
 (autoload 'jclass-constructors "java")
 (export 'jconstructor-params "JAVA")

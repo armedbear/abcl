@@ -114,7 +114,9 @@ not-documented
 --- Function: \textbf{jclass-of} [\textbf{java}] \textit{object \&optional name}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Returns the name of the Java class of OBJECT. If the NAME argument is
+  supplied, verifies that OBJECT is an instance of the named class. The name
+  of the class or nil is always returned as a second value.
 \end{adjustwidth}
 
 \paragraph{}
@@ -353,7 +355,20 @@ Attempts to coerce JAVA-OBJECT into a Lisp object.
 --- Function: \textbf{jclass-name} [\textbf{java}] \textit{class-ref \&optional name}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+When called with one argument, returns the name of the Java class
+  designated by CLASS-REF. When called with two arguments, tests
+  whether CLASS-REF matches NAME.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JARRAY-FROM-LIST}
+\index{JARRAY-FROM-LIST}
+--- Function: \textbf{jarray-from-list} [\textbf{java}] \textit{list}
+
+\begin{adjustwidth}{5em}{5em}
+Return a Java array from LIST whose type is inferred from the first element.
+
+For more control over the type of the array, use JNEW-ARRAY-FROM-LIST.
 \end{adjustwidth}
 
 \paragraph{}
