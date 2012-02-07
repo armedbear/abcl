@@ -11,20 +11,36 @@ To use:
 ABCL specific contributions to ASDF system definition mainly concerned
 with finding JVM artifacts such as jar archives to be dynamically loaded.
 
-Examples
---------
+Example 1
+---------
+
+For the following ASDF definition stored in a file named "log4j.asd"
+that loadable by ASDF
 
     ;;;; -*- Mode: LISP -*-
     (in-package :asdf)
 
-    (defsystem :log4j
-      :components ((:mvn "log4j/log4j" 
-                    :version "1.4.9")))
+    (defsystem log4j
+      :components ((:mvn "log4j/log4j/1.4.9")))
+
+After issuing 
+
+    CL-USER> (asdf:load-system :log4j)
+    
+all the Log4j libraries would be dynamically added to the classpath so
+that the following code would
+
+    (let ((logger (#"getLogger" 'log4j.Logger (symbol-name (gensym)))))
+      (#"trace" logger "Kilroy wuz here.")))
+ 
+ output the message "Kilroy wuz here" to the log4j logging system.
+      
 
 API
 ---
 
-We define an API as consisting of the following ASDF classes:
+We define an API within the ASDF package consisting of the following
+ASDF classes:
 
 JAR-DIRECTORY, JAR-FILE, and CLASS-FILE-DIRECTORY for JVM artifacts
 that have a currently valid pathname representation 
@@ -32,10 +48,13 @@ that have a currently valid pathname representation
 And the MVN and IRI classes descend from ASDF-COMPONENT, but do not
 directly have a filesystem location.
 
-For use outside of ASDF, we currently define one method,
-RESOLVE-DEPENDENCIES which locates, downloads, caches, and then loads
+For use outside of ASDF, we currently define the generic function
+ABCL-ASDF:RESOLVE which locates, downloads, caches, and then loads
 into the currently executing JVM process all recursive dependencies
 annotated in the Maven pom.xml graph.
+
+One can muffle the verbosity of the Maven Aether resolver by setting
+ABCL-ASDF:*MAVEN-VERBOSE* to NIL.
 
 Example 2
 ---------
@@ -43,12 +62,19 @@ Example 2
 Bypassing ASDF, one can directly issue requests for the Maven
 artifacts to be downloaded
 
-    CL-USER> (abcl-asdf:resolve-dependencies "com.google.gwt" "gwt-user")
+    CL-USER> (abcl-asdf:resolve "com.google.gwt:gwt-user")
     WARNING: Using LATEST for unspecified version.
     "/Users/evenson/.m2/repository/com/google/gwt/gwt-user/2.4.0-rc1/gwt-user-2.4.0-rc1.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA-sources.jar"
 
 Notice that all recursive dependencies have been located and installed
 as well.
+
+ABCL-ASDF:RESOLVE does not added the resolved dependencies to the
+current JVM classpath.  Use JAVA:ADD-TO-CLASSPATH as follows to do
+that:
+
+    CL-USER> (java:add-to-classpath (abcl-asdf:as-classpath (abcl-asdf:resolve "com.google.gwt:gwt-user")))
+
 
 
 Example 3
@@ -102,15 +128,20 @@ The following ASDF defintion loads enough JVM artifacts to use the
 	    ((:jar-file "WSML-grammar-20081202")
 	     (:jar-file "wsmo-api-0.6.2")
 	     (:jar-file "wsmo4j-0.6.2")))
-      (:module log4j-libs
-	 :pathname "lib/ext/log4j/" :components
-	      ((:jar-file "log4j-1.2.14")))))
+      (:module log4j-libs 
+         :pathname "lib/ext/log4j/" :components
+	     ((:jar-file "log4j-1.2.14")))))
 
 [1]:  http://www.iris-reasoner.org/
 
-
-Problems
+Releases
 --------
+
+### 0.7.0 2012-02-05
+
+Plausibly work under MSFT operating systems.
+
+Working with maven-3.0.4 and working in more places.
 
 ### 0.5.0 2012-01-22
 
@@ -138,5 +169,5 @@ Problems
     Mark <evenson.not.org@gmail.com>
     
     Created: 2011-01-01
-    Revised: 2012-01-24
+    Revised: 2012-02-06
     

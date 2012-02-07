@@ -17,13 +17,13 @@
 ;;; We intercept compilation to ensure that load-op will succeed
 (defmethod perform ((op compile-op) (c mvn))
   (maybe-parse-mvn c)
-  (abcl-asdf:satisfy c))
+  (abcl-asdf:resolve c))
      
 (defmethod perform ((operation load-op) (c mvn))
   (maybe-parse-mvn c)
   (java:add-to-classpath 
    (abcl-asdf:as-classpath 
-    (abcl-asdf:satisfy c))))
+    (abcl-asdf:resolve c))))
 
 ;;; A Maven URI has the form "mvn:group-id/artifact-id/version"
 ;;;
@@ -54,10 +54,10 @@
 
 (in-package #:abcl-asdf)
 
-(defgeneric satisfy (something)
+(defgeneric resolve (something)
  (:documentation "Returns a string in JVM CLASSPATH format as entries delimited by classpath separator string."))
 
-(defmethod satisfy ((mvn-component asdf::mvn))
+(defmethod resolve ((mvn-component asdf::mvn))
   "Resolve all runtime dependencies of MVN-COMPONENT.
 
 Returns a string in JVM CLASSPATH format as entries delimited by classpath separator string."

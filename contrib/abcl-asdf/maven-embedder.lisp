@@ -3,15 +3,22 @@
 
 #|
 
-# Implementation references
+# Implementation 
+
+Not multi-threaded safe, and unclear how much work that would be.
 
 ## Installing Maven
+http://maven.apache.org/download.html
 
 ## Current Javadoc for Maven Aether connector
 http://sonatype.github.com/sonatype-aether/apidocs/overview-summary.html 
 
 ## Incomplete, seemingly often wrong
 https://docs.sonatype.org/display/AETHER/Home 
+
+Note that this is not an implementation of Maven per se, but the use
+of the Maven Aether connector infrastructure.  Among other things, this means
+that the Maven specific "~/.m2/settings.xml" file is NOT parsed for settings.
 
 |#
 
@@ -368,8 +375,15 @@ in Java CLASSPATH representation."
      #'log)))
 
          
-;;; "log4j:log4j:1.9.2" or "log4j:log4j"
-(defmethod satisfy ((string t))
+(defmethod resolve ((string t))
+  "Resolve a colon separated GROUP-ID:ARTIFACT-ID[:VERSION] reference to a Maven artifact.
+
+Examples of artifact references: \"log4j:log4j:1.2.14\" for
+'log4j-1.2.14.jar'.  Resolving \"log4j:log4j\" would return the latest
+version of the artifact known to the distributed Maven pom.xml graph.
+
+Returns a string containing the necessary classpath entries for this
+artifact and all of its transitive dependencies."
   (let ((result (split-string string ":")))
     (cond 
       ((<= 2 (length result) 3)

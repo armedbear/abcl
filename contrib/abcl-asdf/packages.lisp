@@ -2,7 +2,10 @@
   (:use :cl)
   (:export 
 ;;; Public API
+   #:resolve
+
    #:resolve-dependencies
+   #:resolve-artifact
 
    #:find-mvn
 
@@ -22,7 +25,6 @@
    #:resolve-artifact
    #:resolve-dependencies
 
-   #:satisfy
    #:as-classpath
 
    #:add-directory-jars-to-class-path
