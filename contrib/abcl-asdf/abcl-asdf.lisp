@@ -31,20 +31,25 @@
 ;;; use the component 'version' for the version string.
 (defun maybe-parse-mvn (component)
   (with-slots (asdf::name asdf::group-id asdf::artifact-id
-               asdf::version asdf::schema asdf::path) component
+               asdf::version asdf::schema asdf::path) 
+      component
     (when (null asdf::artifact-id) 
-      (let ((slash (search "/" name)))
-        (unless (and (integerp slash)
-                     asdf::version)
+      (let ((parsed (abcl-asdf::split-string name "/")))
+         (unless (or (= (length parsed) 3)
+                     (and (= (length parsed) 2)
+                          asdf::version))
           (error "Failed to construct a mvn reference from name '~A' and version '~A'"
-                 asdf::name asdf::version))
-        (setf asdf::group-id (subseq asdf::name 0 slash)
-              asdf::artifact-id (subseq asdf::name (1+ slash))
-              asdf::schema "mvn"
-              asdf::version (if (eq asdf::version :latest)
-                                "LATEST"
-                                asdf::version)
-              asdf::path (format nil "~A/~A" asdf::name asdf::version))))))
+                 asdf::name 
+                 (if asdf::version
+                     asdf::version
+                     "UNSPECIFED")))
+         (setf asdf::group-id (first parsed)
+               asdf::artifact-id (second parsed)
+               asdf::schema "mvn"
+               asdf::version (if (third parsed)
+                                 (third parsed)
+                                 "LATEST"))
+         (setf asdf::path (format nil "~A/~A" asdf::name asdf::version))))))
 
 (defmethod source-file-type ((component iri) (system system))
   nil)

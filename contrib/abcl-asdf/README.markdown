@@ -21,7 +21,7 @@ that loadable by ASDF
     (in-package :asdf)
 
     (defsystem log4j
-      :components ((:mvn "log4j/log4j/1.4.9")))
+      :components ((:mvn "log4j/log4j/1.2.13")))
 
 After issuing 
 
@@ -31,27 +31,28 @@ all the Log4j libraries would be dynamically added to the classpath so
 that the following code would
 
     (let ((logger (#"getLogger" 'log4j.Logger (symbol-name (gensym)))))
-      (#"trace" logger "Kilroy wuz here.")))
+      (#"trace" logger "Kilroy wuz here."))
  
- output the message "Kilroy wuz here" to the log4j logging system.
+output the message "Kilroy wuz here" to the log4j logging system.
       
 
 API
 ---
 
 We define an API within the ASDF package consisting of the following
-ASDF classes:
+ASDF classes derived from ASDF:COMPONENT:
 
 JAR-DIRECTORY, JAR-FILE, and CLASS-FILE-DIRECTORY for JVM artifacts
-that have a currently valid pathname representation 
+that have a currently valid pathname representation (i.e. they exist
+on the local filesystem).
 
-And the MVN and IRI classes descend from ASDF-COMPONENT, but do not
+And we define  MVN and IRI classes descend from ASDF-COMPONENT, but do not
 directly have a filesystem location.
 
 For use outside of ASDF, we currently define the generic function
 ABCL-ASDF:RESOLVE which locates, downloads, caches, and then loads
 into the currently executing JVM process all recursive dependencies
-annotated in the Maven pom.xml graph.
+annotated in the ditributed Maven pom.xml graph.
 
 One can muffle the verbosity of the Maven Aether resolver by setting
 ABCL-ASDF:*MAVEN-VERBOSE* to NIL.
@@ -74,8 +75,6 @@ current JVM classpath.  Use JAVA:ADD-TO-CLASSPATH as follows to do
 that:
 
     CL-USER> (java:add-to-classpath (abcl-asdf:as-classpath (abcl-asdf:resolve "com.google.gwt:gwt-user")))
-
-
 
 Example 3
 ---------
@@ -141,7 +140,7 @@ Releases
 
 Plausibly work under MSFT operating systems.
 
-Working with maven-3.0.4 and working in more places.
+Working with maven-3.0.4.
 
 ### 0.5.0 2012-01-22
 
