@@ -1,7 +1,7 @@
 JSS
 ===
 
-Created by Alan Ruttenburg
+Created by Alan Ruttenberg
 
 
 JSS stands for either "Java Simple Syntax" or "Java Syntax Sucks",
@@ -107,7 +107,7 @@ The function ENSURE-COMPATIBILITY attempts to provide a compatibility
 mode to existing users of JSS by importing the necessary symbols into
 CL-USER.
 
-Some notes on other compatibilty issues:
+Some notes on other compatibility issues:
 
 *classpath-manager* 
 
