@@ -35,7 +35,7 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-public final class StandardGenericFunctionClass extends StandardClass
+public final class StandardGenericFunctionClass extends FuncallableStandardClass
 {
   public static final int SLOT_INDEX_NAME                      = 0;
   public static final int SLOT_INDEX_LAMBDA_LIST               = 1;

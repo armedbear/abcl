@@ -93,6 +93,31 @@ public class StandardClass extends SlotClass
         }
       };
 
+  static Layout layoutFuncallableStandardClass =
+      new Layout(null,
+                 list(symName,
+                      symLayout,
+                      symDirectSuperclasses,
+                      symDirectSubclasses,
+                      symPrecedenceList,
+                      symDirectMethods,
+                      symDirectSlots,
+                      symSlots,
+                      symDirectDefaultInitargs,
+                      symDefaultInitargs,
+                      symFinalizedP,
+                      Symbol.DOCUMENTATION),
+                 NIL)
+      {
+        @Override
+        public LispClass getLispClass()
+        {
+          return FUNCALLABLE_STANDARD_CLASS;
+        }
+      };
+
+  
+
   public StandardClass()
   {
       super(layoutStandardClass);
@@ -123,6 +148,38 @@ public class StandardClass extends SlotClass
       setDirectDefaultInitargs(NIL);
       setDefaultInitargs(NIL);
       setFinalized(false);
+  }
+
+  public StandardClass(Layout layout)
+  {
+    super(layout);
+    setDirectSuperclasses(NIL);
+    setDirectSubclasses(NIL);
+    setClassLayout(layout);
+    setCPL(NIL);
+    setDirectMethods(NIL);
+    setDocumentation(NIL);
+    setDirectSlotDefinitions(NIL);
+    setSlotDefinitions(NIL);
+    setDirectDefaultInitargs(NIL);
+    setDefaultInitargs(NIL);
+    setFinalized(false);
+  }
+
+  public StandardClass(Layout layout, Symbol symbol, LispObject directSuperclasses)
+  {
+    super(layout, symbol, directSuperclasses);
+    setDirectSubclasses(NIL);
+    setClassLayout(layout);
+    setCPL(NIL);
+    setDirectMethods(NIL);
+    setDocumentation(NIL);
+    setDirectSlotDefinitions(NIL);
+    setSlotDefinitions(NIL);
+    setDirectDefaultInitargs(NIL);
+    setDefaultInitargs(NIL);
+    setFinalized(false);
+    
   }
 
   @Override
@@ -426,8 +483,11 @@ public class StandardClass extends SlotClass
                        list(STANDARD_OBJECT, BuiltInClass.FUNCTION));
 
   public static final StandardClass GENERIC_FUNCTION =
-    addStandardClass(Symbol.GENERIC_FUNCTION,
-                     list(METAOBJECT, FUNCALLABLE_STANDARD_OBJECT));
+    new FuncallableStandardClass(Symbol.GENERIC_FUNCTION,
+                                 list(METAOBJECT, FUNCALLABLE_STANDARD_OBJECT));
+  static {
+    addClass(Symbol.GENERIC_FUNCTION, GENERIC_FUNCTION);
+  }
 
   public static final StandardClass METHOD_COMBINATION =
     addStandardClass(Symbol.METHOD_COMBINATION, list(METAOBJECT));
