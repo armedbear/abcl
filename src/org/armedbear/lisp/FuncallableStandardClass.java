@@ -1,7 +1,7 @@
 /*
- * StandardClass.java
+ * FuncallableStandardClass.java
  *
- * Copyright (C) 2003-2005 Peter Graves
+ * Copyright (C) 2003-2005 Peter Graves, 2012 Rudolf Schlatte
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
