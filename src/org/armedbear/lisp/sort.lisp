@@ -304,7 +304,41 @@
         ;; into one list.  This may waste one outer iteration to realize.
         (if (eq list-1 (cdr head))
             (return list-1))))))
+;;;
+;;; MERGE
+;;;
 
+;;; From ECL. Should already be user-extensible as it does no type dispatch
+;;; and uses only user-extensible functions.
+(defun merge (result-type sequence1 sequence2 predicate
+                          &key key
+                          &aux (l1 (length sequence1)) (l2 (length sequence2)))
+  (unless key (setq key #'identity))
+  (do ((newseq (make-sequence result-type (+ l1 l2)))
+       (j 0 (1+ j))
+       (i1 0)
+       (i2 0))
+    ((and (= i1 l1) (= i2 l2)) newseq)
+    (cond ((and (< i1 l1) (< i2 l2))
+           (cond ((funcall predicate
+                           (funcall key (elt sequence1 i1))
+                           (funcall key (elt sequence2 i2)))
+                  (setf (elt newseq j) (elt sequence1 i1))
+                  (incf i1))
+                 ((funcall predicate
+                           (funcall key (elt sequence2 i2))
+                           (funcall key (elt sequence1 i1)))
+                  (setf (elt newseq j) (elt sequence2 i2))
+                  (incf i2))
+                 (t
+                  (setf (elt newseq j) (elt sequence1 i1))
+                  (incf i1))))
+          ((< i1 l1)
+           (setf (elt newseq j) (elt sequence1 i1))
+           (incf i1))
+          (t
+           (setf (elt newseq j) (elt sequence2 i2))
+           (incf i2)))))
 
 ;;;
 ;;; SORT 
@@ -376,18 +410,46 @@
 	 (,quicksort-call ,sequence ,mstart ,mend ,mpredicate ,mkey)))))
 
 (defun quicksort (sequence predicate key)
-  (let ((end (1- (length sequence))))
-    (typecase sequence
-      (simple-vector 
-       (if key
-	   (quicksort-body simple-vector svref predicate key sequence 0 end)
-	   (quicksort-body simple-vector svref predicate nil sequence 0 end)))
-      (vector 
-       (if key
-	   (quicksort-body vector aref predicate key sequence 0 end)
-	   (quicksort-body vector aref predicate nil sequence 0 end))))
-    sequence))
+  (handler-case 
+      (let ((end (1- (length sequence))))
+        (typecase sequence
+          (simple-vector 
+           (if key
+               (quicksort-body simple-vector svref predicate key sequence 0 end)
+               (quicksort-body simple-vector svref predicate nil sequence 0 end)))
+          (vector 
+           (if key
+               (quicksort-body vector aref predicate key sequence 0 end)
+               (quicksort-body vector aref predicate nil sequence 0 end))))
+        sequence)
+    (t (e) 
+      (warn "~&New quicksort implementation failed with~&'~A'.~&Trying stable implementation...~&" e)
+      (quick-sort sequence 0 (length sequence) predicate key))))
 
+;;; DEPRECATED -- to be removed in abcl-1.4
+;;; From ECL.
+;;; Alternative implementation for quick-sort SORT
+(defun quick-sort (seq start end pred key)
+  (unless key (setq key #'identity))
+  (if (<= end (1+ start))
+      seq
+      (let* ((j start) (k end) (d (elt seq start)) (kd (funcall key d)))
+        (block outer-loop
+          (loop (loop (decf k)
+                  (unless (< j k) (return-from outer-loop))
+                  (when (funcall pred (funcall key (elt seq k)) kd)
+                    (return)))
+            (loop (incf j)
+              (unless (< j k) (return-from outer-loop))
+              (unless (funcall pred (funcall key (elt seq j)) kd)
+                (return)))
+            (let ((temp (elt seq j)))
+              (setf (elt seq j) (elt seq k)
+                    (elt seq k) temp))))
+        (setf (elt seq start) (elt seq j)
+              (elt seq j) d)
+        (quick-sort seq start j pred key)
+        (quick-sort seq (1+ j) end pred key))))
 
 ;;;
 ;;; main SORT and STABLE-SORT function calls
