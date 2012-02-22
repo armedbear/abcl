@@ -164,6 +164,44 @@
 (define-class->%class-forwarder class-direct-default-initargs)
 (define-class->%class-forwarder (setf class-direct-default-initargs))
 
+(defun fixup-standard-class-hierarchy ()
+  ;; Make the result of class-direct-subclasses for the pre-built
+  ;; classes agree with AMOP Table 5.1 (pg. 141).  This could be done in
+  ;; StandardClass.java where these classes are defined, but here it's
+  ;; less painful
+  (flet ((add-subclasses (class subclasses)
+           (when (atom subclasses) (setf subclasses (list subclasses)))
+           (setf (class-direct-subclasses (find-class class))
+                 (union (class-direct-subclasses (find-class class))
+                        (mapcar #'find-class subclasses)))))
+    (add-subclasses t 'standard-object)
+    (add-subclasses 'function 'funcallable-standard-object)
+    (add-subclasses 'standard-object '(funcallable-standard-object metaobject))
+    (add-subclasses 'metaobject
+                    '(generic-function method method-combination
+                      slot-definition specializer))
+    (add-subclasses 'funcallable-standard-object 'generic-function)
+    (add-subclasses 'generic-function 'standard-generic-function)
+    (add-subclasses 'method 'standard-method)
+    (add-subclasses 'standard-method 'standard-accessor-method)
+    (add-subclasses 'standard-accessor-method
+                    '(standard-reader-method standard-writer-method))
+    (add-subclasses 'slot-definition
+                    '(direct-slot-definition effective-slot-definition
+                      standard-slot-definition))
+    (add-subclasses 'standard-slot-definition
+                    '(standard-direct-slot-definition
+                      standard-effective-slot-definition))
+    (add-subclasses 'direct-slot-definition 'standard-direct-slot-definition)
+    (add-subclasses 'effective-slot-definition
+                    'standard-effective-slot-definition)
+    (add-subclasses 'specializer '(eql-specializer class))
+    (add-subclasses 'class
+                    '(built-in-class forward-referenced-class standard-class
+                      funcallable-standard-class))))
+(fixup-standard-class-hierarchy)
+
+
 (defun no-applicable-method (generic-function &rest args)
   (error "There is no applicable method for the generic function ~S when called with arguments ~S."
          generic-function
