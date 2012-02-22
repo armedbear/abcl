@@ -71,6 +71,12 @@ public final class SlotDefinitionClass extends StandardClass
         for(int i = instanceSlotNames.length - 1; i >= 0; i--) {
             slotDefinitions = slotDefinitions.push(new SlotDefinition(this, instanceSlotNames[i]));
         }
+        // The Java class SlotDefinition sets the location slot to NIL
+        // in its constructor; here we make Lisp-side subclasses of
+        // standard-*-slot-definition do the same.
+        LispObject locationSlot = slotDefinitions.nthcdr(8).car();
+        SlotDefinition.SET_SLOT_DEFINITION_INITFORM.execute(locationSlot, NIL);
+        SlotDefinition.SET_SLOT_DEFINITION_INITFUNCTION.execute(locationSlot, StandardClass.constantlyNil);
         setDirectSlotDefinitions(slotDefinitions);
         setSlotDefinitions(slotDefinitions);
 
