@@ -1790,7 +1790,9 @@ Initialized with the true value near the end of the file.")
            (if (eq (generic-function-method-class gf) +the-standard-method-class+)
                (apply #'make-instance-standard-method gf all-keys)
                (apply #'make-instance (generic-function-method-class gf) all-keys))))
-      (std-add-method gf method)
+      (if (eq (generic-function-method-class gf) +the-standard-method-class+)
+          (std-add-method gf method)
+          (add-method gf method))
       method)))
 
 (defun make-instance-standard-method (gf
@@ -2473,7 +2475,7 @@ to ~S with argument list ~S."
          (ensure-method ',function-name
                         :lambda-list ',lambda-list
                         :qualifiers ',qualifiers
-                        :specializers ,specializers-form
+                        :specializers (canonicalize-specializers ,specializers-form)
                         ,@(if documentation `(:documentation ,documentation))
                         :function (function ,method-function)
                         ,@(if fast-function `(:fast-function (function ,fast-function)))
