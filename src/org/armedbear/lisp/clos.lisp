@@ -210,7 +210,11 @@
 (defun function-keywords (method)
   (std-function-keywords method))
 
-
+(declaim (notinline map-dependents))
+(defun map-dependents (metaobject function)
+  ;; stub, will be redefined later
+  (declare (ignore metaobject function))
+  nil)
 
 (defmacro push-on-end (value location)
   `(setf ,location (nconc ,location (list ,value))))
@@ -1423,7 +1427,12 @@
         ;; specified by CLHS, 7.7 (Macro DEFGENERIC).
         (dolist (method (generic-function-initial-methods gf))
           (if (typep gf 'standard-generic-function)
-              (std-remove-method gf method)
+              (progn
+                (std-remove-method gf method)
+                (map-dependents gf
+                                #'(lambda (dep)
+                                    (update-dependent gf dep
+                                                      'remove-method method))))
               (remove-method gf method)))
         (setf (generic-function-initial-methods gf) '()))))
   (apply 'ensure-generic-function function-name all-keys))
@@ -1791,7 +1800,11 @@ Initialized with the true value near the end of the file.")
                (apply #'make-instance-standard-method gf all-keys)
                (apply #'make-instance (generic-function-method-class gf) all-keys))))
       (if (eq (generic-function-method-class gf) +the-standard-method-class+)
-          (std-add-method gf method)
+          (progn
+            (std-add-method gf method)
+            (map-dependents gf
+                            #'(lambda (dep)
+                                (update-dependent gf dep 'add-method method))))
           (add-method gf method))
       method)))
 
@@ -2546,7 +2559,11 @@ to ~S with argument list ~S."
                       :generic-function nil ; handled by add-method
                       initargs))))
       (if (eq (class-of gf) +the-standard-generic-function-class+)
-          (std-add-method gf method)
+          (progn
+            (std-add-method gf method)
+            (map-dependents gf
+                            #'(lambda (dep)
+                                (update-dependent gf dep 'add-method method))))
           (add-method gf method))
       method)))
 
@@ -2591,7 +2608,11 @@ to ~S with argument list ~S."
                       :generic-function nil ; handled by add-method
                       initargs))))
       (if (eq (class-of gf) +the-standard-generic-function-class+)
-          (std-add-method gf method)
+          (progn
+            (std-add-method gf method)
+            (map-dependents gf
+                            #'(lambda (dep)
+                                (update-dependent gf dep 'add-method method))))
           (add-method gf method))
       method)))
 
@@ -3390,7 +3411,26 @@ or T when any keyword is acceptable due to presence of
                   (list* class all-keys)
                   class t all-keys
                   nil 'reinitialize-instance)
-  (apply #'std-after-initialization-for-classes class all-keys))
+  (apply #'std-after-initialization-for-classes class all-keys)
+  (map-dependents class #'(lambda (dep) (update-dependent class dep all-keys))))
+
+(defmethod reinitialize-instance :after ((class funcallable-standard-class)
+                                         &rest all-keys)
+  (remhash class *make-instance-initargs-cache*)
+  (remhash class *reinitialize-instance-initargs-cache*)
+  (%make-instances-obsolete class)
+  (setf (class-finalized-p class) nil)
+  (check-initargs (list #'allocate-instance
+                        #'initialize-instance)
+                  (list* class all-keys)
+                  class t all-keys
+                  nil 'reinitialize-instance)
+  (apply #'std-after-initialization-for-classes class all-keys)
+  (map-dependents class #'(lambda (dep) (update-dependent class dep all-keys))))
+
+(defmethod reinitialize-instance :after ((gf standard-generic-function)
+                                         &rest all-keys)
+  (map-dependents gf #'(lambda (dep) (update-dependent gf dep all-keys))))
 
 ;;; Finalize inheritance
 
@@ -3686,10 +3726,23 @@ or T when any keyword is acceptable due to presence of
                               method-lambda-list gf-lambda-list))
   (std-add-method generic-function method))
 
+(defmethod add-method :after ((generic-function standard-generic-function)
+                              (method method))
+  (map-dependents generic-function
+                  #'(lambda (dep) (update-dependent generic-function dep
+                                                    'add-method method))))
+
 (defgeneric remove-method (generic-function method))
 
-(defmethod remove-method ((generic-function standard-generic-function) method)
+(defmethod remove-method ((generic-function standard-generic-function)
+                          (method method))
   (std-remove-method generic-function method))
+
+(defmethod remove-method :after ((generic-function standard-generic-function)
+                                 (method method))
+  (map-dependents generic-function
+                  #'(lambda (dep) (update-dependent generic-function dep
+                                                    'remove-method method))))
 
 ;; See describe.lisp.
 (defgeneric describe-object (object stream))
@@ -3818,6 +3871,47 @@ or T when any keyword is acceptable due to presence of
   (:method ((specializer eql-specializer) (method method))
     (setf (slot-value specializer 'direct-methods)
           (remove method (slot-value specializer 'direct-methods)))))
+
+;;; The Dependent Maintenance Protocol (AMOP pg. 160ff.)
+
+(defvar *dependents* (make-hash-table :test 'eq :weakness :key))
+
+;;; AMOP pg. 164
+(defgeneric add-dependent (metaobject dependent))
+(defmethod add-dependent ((metaobject standard-class) dependent)
+  (pushnew dependent (gethash metaobject *dependents* nil)))
+(defmethod add-dependent ((metaobject funcallable-standard-class) dependent)
+  (pushnew dependent (gethash metaobject *dependents* nil)))
+(defmethod add-dependent ((metaobject standard-generic-function) dependent)
+  (pushnew dependent (gethash metaobject *dependents* nil)))
+
+;;; AMOP pg. 225
+(defgeneric remove-dependent (metaobject dependent))
+(defmethod remove-dependent ((metaobject standard-class) dependent)
+  (setf (gethash metaobject *dependents*)
+        (delete dependent (gethash metaobject *dependents* nil) :test #'eq)))
+(defmethod remove-dependent ((metaobject funcallable-standard-class) dependent)
+  (setf (gethash metaobject *dependents*)
+        (delete dependent (gethash metaobject *dependents* nil) :test #'eq)))
+(defmethod remove-dependent ((metaobject standard-generic-function) dependent)
+  (setf (gethash metaobject *dependents*)
+        (delete dependent (gethash metaobject *dependents* nil) :test #'eq)))
+
+;;; AMOP pg. 210
+(atomic-defgeneric map-dependents (metaobject function)
+  (:method ((metaobject standard-class) function)
+    (dolist (dependent (gethash metaobject *dependents* nil))
+      (funcall function dependent)))
+  (:method ((metaobject funcallable-standard-class) function)
+    (dolist (dependent (gethash metaobject *dependents* nil))
+      (funcall function dependent)))
+  (:method ((metaobject standard-generic-function) function)
+    (dolist (dependent (gethash metaobject *dependents* nil))
+      (funcall function dependent))))
+
+;;; AMOP pg. 239
+(defgeneric update-dependent (metaobject dependent &rest initargs))
+
 
 ;;; SLIME compatibility functions.
 

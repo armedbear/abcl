@@ -82,7 +82,11 @@
 
           extract-lambda-list
           extract-specializer-names
-          ))
+
+          add-dependent
+          remove-dependent
+          map-dependents
+          update-dependent))
 
 (provide 'mop)
 
