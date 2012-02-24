@@ -73,6 +73,7 @@
           slot-definition-readers
           slot-definition-writers
           slot-definition-location
+          standard-instance-access
 
           intern-eql-specializer
           eql-specializer-object
