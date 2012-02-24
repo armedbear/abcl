@@ -72,6 +72,7 @@
           slot-definition
           slot-definition-readers
           slot-definition-writers
+          slot-definition-location
 
           intern-eql-specializer
           eql-specializer-object
