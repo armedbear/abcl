@@ -1013,6 +1013,19 @@ semantic to the execution of \code{REQUIRE} on the following symbols:
   \item{\code{ABCL-CONTRIB}} Locates and pushes the toplevel contents of
     ``abcl-contrib.jar'' into the \textsc{ASDF} central registry.  
 
+    \begin{enumerate}
+      \item \code{abcl-asdf}
+        Functions for loading JVM artifacts dynamically, hooking into ASDF 2 objects where possible.
+      \item \code{asdf-jar} Package addressable JVM artifacts via
+        \code{abcl-asdf} descriptions as a single binary artifact
+        including recursive dependencies.
+      \item \code{mvn}
+        These systems name common JVM artifacts from the distributed pom.xml graph of Maven Aether:
+        \begin{enumerate}
+          \item \code{jna} Dynamically load 'jna.jar' version 3.0.9 from the network.
+        
+    \end{enumeration}
+
 \end{description}
 
 The user may extend the \code{CL:REQUIRE} mechanism by pushing
