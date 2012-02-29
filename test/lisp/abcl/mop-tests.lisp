@@ -597,3 +597,12 @@
   t)
 
 
+(defgeneric apply-rule (rule))
+(defmethod apply-rule ((rule t) &aux (context (format nil "~A" rule)))
+  (format nil "Applying rule '~A' in context '~A'" rule context))
+
+;;; See ticket # 199
+(deftest defmethod-&aux.1
+    (apply-rule "1")
+  "Applying rule '1' in context '1'")
+    
