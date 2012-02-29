@@ -5,5 +5,5 @@
 (require :asdf)
 (asdf:defsystem :jna 
     :version "3.0.9"
-    :defsystem-depends-on (abcl-asdf)
+;;    :defsystem-depends-on (abcl-asdf) ;;; XXX not working in the bowels of ASDF
     :components ((:mvn "com.sun.jna/jna/3.0.9")))
