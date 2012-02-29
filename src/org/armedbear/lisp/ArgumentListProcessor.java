@@ -609,7 +609,7 @@ public class ArgumentListProcessor {
           {
             // Fixed arity.
             if (args.length != arity)
-              error(new WrongNumberOfArgumentsException(function, arity));
+              error(new WrongNumberOfArgumentsException(function, list(args), arity));
             return args;
           }
         // Not fixed arity.
@@ -639,7 +639,7 @@ public class ArgumentListProcessor {
           {
             // Fixed arity.
             if (argsLength != arity)
-              error(new WrongNumberOfArgumentsException(function, arity));
+              error(new WrongNumberOfArgumentsException(function, list(args), arity));
             return args;
           }
         // Not fixed arity.

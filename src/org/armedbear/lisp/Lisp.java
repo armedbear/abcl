@@ -882,6 +882,13 @@ public final class Lisp
           env.bind(sym, value);
   }
 
+  public static LispObject list(LispObject[] obj) {
+      LispObject theList = NIL;
+      if (obj.length > 0)
+      for (int i = obj.length - 1; i >= 0; i--)
+          theList = new Cons(obj[i], theList);
+      return theList;
+  }
 
   public static final Cons list(LispObject obj1, LispObject... remaining)
   {

@@ -40,28 +40,40 @@ public final class WrongNumberOfArgumentsException extends ProgramError
     private Operator operator;
     private int expectedMinArgs;
     private int expectedMaxArgs;
+    private LispObject actualArgs;
     private String message;
 
     public WrongNumberOfArgumentsException(Operator operator) {
         this(operator, -1);
     }
 
-    public WrongNumberOfArgumentsException(Operator operator, int expectedMin,
-            int expectedMax) {
+    public WrongNumberOfArgumentsException(Operator operator, LispObject args,
+            int expectedMin, int expectedMax) {
         // This is really just an ordinary PROGRAM-ERROR, broken out into its
         // own Java class as a convenience for the implementation.
         super(StandardClass.PROGRAM_ERROR);
         this.operator = operator;
 	this.expectedMinArgs = expectedMin;
 	this.expectedMaxArgs = expectedMax;
+        this.actualArgs = args;
         setFormatControl(getMessage());
         setFormatArguments(NIL);
     }
-    
+
+    public WrongNumberOfArgumentsException(Operator operator,
+            int expectedMin, int expectedMax) {
+        this(operator, null, expectedMin, expectedMax);
+    }
+        
     public WrongNumberOfArgumentsException(Operator operator, int expectedArgs) {
         this(operator, expectedArgs, expectedArgs);
     }
 
+    public WrongNumberOfArgumentsException(Operator operator, LispObject args,
+            int expectedArgs) {
+        this(operator, args, expectedArgs, expectedArgs);
+    }
+    
     public WrongNumberOfArgumentsException(String message) {
         super(StandardClass.PROGRAM_ERROR);
 	if(message == null) {
@@ -99,6 +111,10 @@ public final class WrongNumberOfArgumentsException extends ProgramError
             
 	    sb.append(" expected");
 	}
+        if (actualArgs != null) {
+            sb.append(" -- provided: ");
+            sb.append(actualArgs.princToString());
+        }
         sb.append('.');
         return message = sb.toString();
     }
