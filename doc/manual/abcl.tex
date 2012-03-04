@@ -10,7 +10,7 @@
 \title{Armed Bear Common Lisp User Manual}
 \date{Version 1.1.0-dev\\
 \smallskip
-Feburary 5, 2012}
+March 3, 2012}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -1023,6 +1023,9 @@ semantic to the execution of \code{REQUIRE} on the following symbols:
         These systems name common JVM artifacts from the distributed pom.xml graph of Maven Aether:
         \begin{enumerate}
           \item \code{jna} Dynamically load 'jna.jar' version 3.0.9 from the network.
+        \end{enumerate}
+      \item \code{quicklisp-abcl} (Not working) boot a local Quicklisp
+        installation via the ASDF:IRI type introduced bia ABCL-ASDF.
         
     \end{enumeration}
 
@@ -1159,14 +1162,15 @@ The documentation for this contrib can be found at
 \section{jss}
 \label{section:jss}
 
-To one used to the more universal syntax of Lisp pairs for which the
-definition of read and compile time macros is quite natural, the Java
-syntax available to the Java programmer may be said to suck.  To
-alleviate this situation, the JSS contrib introduces the
-\code{SHARPSIGN-DOUBLE-QUOTE} (\code{\#"}) reader macro, which allows the
-the specification of the name of invoking function as the first
-element of the relevant s-expr which tends to be more congruent to
-how Lisp programmers seem to be wired to think.
+To one used to the more universal syntax of Lisp pairs upon which the
+definition of read and compile time macros is quite
+natural \footnote{See Graham's ``On Lisp'' http://lib.store.yahoo.net/lib/paulgraham/onlisp.pdf.}, the Java syntax available to
+the Java programmer may be said to suck.  To alleviate this situation,
+the JSS contrib introduces the \code{SHARPSIGN-DOUBLE-QUOTE}
+(\code{\#"}) reader macro, which allows the the specification of the
+name of invoking function as the first element of the relevant s-expr
+which tends to be more congruent to how Lisp programmers seem to be
+wired to think.
 
 While quite useful, we don't expect that the JSS contrib will be the
 last experiment in wrangling Java from Common Lisp.
