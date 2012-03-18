@@ -60,6 +60,8 @@
           class-prototype
           
           generic-function-lambda-list
+          generic-function-argument-precedence-order
+          generic-function-method-class
 
           method-function
           method-specializers
