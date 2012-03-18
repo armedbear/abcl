@@ -1383,8 +1383,11 @@
     (t
      (list `',(car option) `',(cadr option)))))
 
-;; From OpenMCL.
-(defun canonicalize-argument-precedence-order (apo req)
+;; From OpenMCL (called canonicalize-argument-precedence-order there,
+;; but AMOP specifies argument-precedence-order to return a permutation
+;; of the required arguments, not a list of indices, so we calculate
+;; them on demand).
+(defun argument-precedence-order-indices (apo req)
   (cond ((equal apo req) nil)
         ((not (eql (length apo) (length req)))
          (error 'program-error
@@ -1448,7 +1451,7 @@
                                 (generic-function-class +the-standard-generic-function-class+)
                                 (method-class +the-standard-method-class+)
                                 (method-combination 'standard)
-                                (argument-precedence-order nil apo-p)
+                                argument-precedence-order
                                 documentation
                                 &allow-other-keys)
   (when (autoloadp function-name)
@@ -1469,12 +1472,8 @@
                  (required-args (getf plist ':required-args)))
             (%set-gf-required-args gf required-args)
             (%set-gf-optional-args gf (getf plist :optional-args))
-            (when apo-p
-              (setf (generic-function-argument-precedence-order gf)
-                    (if argument-precedence-order
-                        (canonicalize-argument-precedence-order argument-precedence-order
-                                                                required-args)
-                        nil)))
+            (setf (generic-function-argument-precedence-order gf)
+                  (or argument-precedence-order required-args))
             (finalize-standard-generic-function gf))
           gf)
         (progn
@@ -1547,11 +1546,8 @@
            (required-args (getf plist ':required-args)))
       (%set-gf-required-args gf required-args)
       (%set-gf-optional-args gf (getf plist :optional-args))
-      (set-generic-function-argument-precedence-order gf
-            (if argument-precedence-order
-                (canonicalize-argument-precedence-order argument-precedence-order
-                                                        required-args)
-                nil)))
+      (set-generic-function-argument-precedence-order
+       gf (or argument-precedence-order required-args)))
     (finalize-standard-generic-function gf)
     gf))
 
@@ -2026,12 +2022,17 @@ Initialized with the true value near the end of the file.")
   (if (or (null methods) (null (%cdr methods)))
       methods
       (sort methods
-	    (if (eq (class-of gf) +the-standard-generic-function-class+)
-		#'(lambda (m1 m2)
-		    (std-method-more-specific-p m1 m2 required-classes
-						(generic-function-argument-precedence-order gf)))
-		#'(lambda (m1 m2)
-		    (method-more-specific-p gf m1 m2 required-classes))))))
+            (if (eq (class-of gf) +the-standard-generic-function-class+)
+                (let ((method-indices
+                       (argument-precedence-order-indices
+                        (generic-function-argument-precedence-order gf)
+                        (getf (analyze-lambda-list (generic-function-lambda-list gf))
+                              ':required-args))))
+                  #'(lambda (m1 m2)
+                      (std-method-more-specific-p
+                       m1 m2 required-classes method-indices)))
+                #'(lambda (m1 m2)
+                    (method-more-specific-p gf m1 m2 required-classes))))))
 
 (defun method-applicable-p (method args)
   (do* ((specializers (method-specializers method) (cdr specializers))
@@ -3478,8 +3479,12 @@ or T when any keyword is acceptable due to presence of
 
 (defmethod method-more-specific-p ((gf standard-generic-function)
                                    method1 method2 required-classes)
-  (std-method-more-specific-p method1 method2 required-classes
-                              (generic-function-argument-precedence-order gf)))
+  (let ((method-indices
+         (argument-precedence-order-indices
+          (generic-function-argument-precedence-order gf)
+          (getf (analyze-lambda-list (generic-function-lambda-list gf))
+                ':required-args))))
+    (std-method-more-specific-p method1 method2 required-classes method-indices)))
 
 ;;; XXX AMOP has COMPUTE-EFFECTIVE-METHOD
 (defgeneric compute-effective-method-function (gf methods))
@@ -3783,11 +3788,8 @@ or T when any keyword is acceptable due to presence of
          (required-args (getf plist ':required-args)))
     (%set-gf-required-args instance required-args)
     (%set-gf-optional-args instance (getf plist :optional-args))
-    (set-generic-function-argument-precedence-order instance
-                                                    (if argument-precedence-order
-                                                        (canonicalize-argument-precedence-order argument-precedence-order
-                                                                                                required-args)
-                                                        nil)))
+    (set-generic-function-argument-precedence-order
+     instance (or argument-precedence-order required-args)))
   (finalize-standard-generic-function instance))
 
 ;;; Readers for generic function metaobjects
