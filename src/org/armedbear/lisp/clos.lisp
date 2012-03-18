@@ -3775,6 +3775,21 @@ or T when any keyword is acceptable due to presence of
 (defmethod class-prototype ((class structure-class))
   (allocate-instance class))
 
+(defmethod shared-initialize :after ((instance standard-generic-function)
+                                     slot-names
+                                     &key lambda-list argument-precedence-order
+                                     &allow-other-keys)
+  (let* ((plist (analyze-lambda-list lambda-list))
+         (required-args (getf plist ':required-args)))
+    (%set-gf-required-args instance required-args)
+    (%set-gf-optional-args instance (getf plist :optional-args))
+    (set-generic-function-argument-precedence-order instance
+                                                    (if argument-precedence-order
+                                                        (canonicalize-argument-precedence-order argument-precedence-order
+                                                                                                required-args)
+                                                        nil)))
+  (finalize-standard-generic-function instance))
+
 ;;; Readers for generic function metaobjects
 ;;; See AMOP pg. 216ff.
 (atomic-defgeneric generic-function-argument-precedence-order (generic-function)

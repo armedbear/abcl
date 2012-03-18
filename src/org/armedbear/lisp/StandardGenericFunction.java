@@ -49,6 +49,26 @@ public final class StandardGenericFunction extends FuncallableStandardObject
           StandardClass.STANDARD_GENERIC_FUNCTION.getClassLayout().getLength());
   }
 
+  public StandardGenericFunction(Layout layout)
+  {
+    super(layout);
+    slots[StandardGenericFunctionClass.SLOT_INDEX_NAME] = NIL;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_LAMBDA_LIST] = NIL;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS] = NIL;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_OPTIONAL_ARGS] = NIL;
+    numberOfRequiredArgs = 0;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_INITIAL_METHODS] = NIL;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_METHODS] = NIL;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS] =
+      StandardClass.STANDARD_METHOD;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION] =
+      Symbol.STANDARD;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER] =
+      NIL;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE] = NIL;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION] = NIL;
+  }
+
   public StandardGenericFunction(String name, Package pkg, boolean exported,
                                  Function function, LispObject lambdaList,
                                  LispObject specializers)
