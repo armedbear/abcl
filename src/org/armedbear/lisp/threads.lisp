@@ -78,8 +78,7 @@ When an item is available, it is returned."
 
 (defun mailbox-peek (mailbox)
   "Returns two values. The second returns non-NIL when the mailbox
-is empty. The first is the next item to be read from the mailbox
-if the first is NIL.
+is empty. The first is the next item to be read from the mailbox.
 
 Note that due to multi-threading, the first value returned upon
 peek, may be different from the one returned upon next read in the
