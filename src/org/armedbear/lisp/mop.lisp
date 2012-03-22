@@ -64,8 +64,11 @@
           generic-function-method-class
 
           method-function
-          method-specializers
           method-generic-function
+          method-lambda-list
+          method-specializers
+          method-qualifiers
+
           standard-reader-method
           standard-writer-method
           reader-method-class
