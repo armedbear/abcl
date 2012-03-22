@@ -58,7 +58,10 @@
           class-direct-superclasses
           class-finalized-p
           class-prototype
-          
+
+          add-direct-subclass
+          remove-direct-subclass
+
           generic-function-lambda-list
           generic-function-argument-precedence-order
           generic-function-method-class

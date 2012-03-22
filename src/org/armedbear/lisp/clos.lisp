@@ -164,6 +164,14 @@
 (define-class->%class-forwarder class-direct-default-initargs)
 (define-class->%class-forwarder (setf class-direct-default-initargs))
 
+(declaim (notinline add-direct-subclass remove-direct-subclass))
+(defun add-direct-subclass (superclass subclass)
+  (setf (class-direct-subclasses superclass)
+        (adjoin subclass (class-direct-subclasses superclass))))
+(defun remove-direct-subclass (superclass subclass)
+  (setf (class-direct-subclasses superclass)
+        (remove subclass (class-direct-subclasses superclass))))
+
 (defun fixup-standard-class-hierarchy ()
   ;; Make the result of class-direct-subclasses for the pre-built
   ;; classes agree with AMOP Table 5.1 (pg. 141).  This could be done in
@@ -779,8 +787,12 @@
   (let ((supers (or direct-superclasses
                     (list +the-standard-object-class+))))
     (setf (class-direct-superclasses class) supers)
+    ;; FIXME (rudi 2012-03-22: follow the AMOP spec here when classes
+    ;; are reinitialized: call add-direct-subclass for newly-added
+    ;; superclasses, call remove-direct-subclass for removed
+    ;; superclasses
     (dolist (superclass supers)
-      (pushnew class (class-direct-subclasses superclass))))
+      (add-direct-subclass superclass class)))
   (let ((slots (mapcar #'(lambda (slot-properties)
                           (apply #'make-direct-slot-definition class slot-properties))
                        direct-slots)))
@@ -2731,6 +2743,16 @@ in place, while we still need them to "
                  class-specifier))
         (push class classes)))
     (nreverse classes)))
+
+(atomic-defgeneric add-direct-subclass (superclass subclass)
+  (:method ((superclass class) (subclass class))
+    (setf (class-direct-subclasses superclass)
+          (adjoin subclass (class-direct-subclasses superclass)))))
+
+(atomic-defgeneric remove-direct-subclass (superclass subclass)
+  (:method ((superclass class) (subclass class))
+    (setf (class-direct-subclasses superclass)
+          (remove subclass (class-direct-subclasses superclass)))))
 
  ;;; AMOP pg. 182
 (defun ensure-class (name &rest all-keys &key &allow-other-keys)
