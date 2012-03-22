@@ -443,7 +443,7 @@
   slot)
 
 (defun make-direct-slot-definition (class &rest args)
-  (let ((slot-class (direct-slot-definition-class class)))
+  (let ((slot-class (apply #'direct-slot-definition-class class args)))
     (if (eq slot-class +the-standard-direct-slot-definition-class+)
 	(let ((slot (make-slot-definition +the-standard-direct-slot-definition-class+)))
 	  (apply #'init-slot-definition slot :allocation-class class args)
@@ -454,7 +454,7 @@
 	    slot)))))
 
 (defun make-effective-slot-definition (class &rest args)
-  (let ((slot-class (effective-slot-definition-class class)))
+  (let ((slot-class (apply #'effective-slot-definition-class class args)))
     (if (eq slot-class +the-standard-effective-slot-definition-class+)
 	(let ((slot (make-slot-definition +the-standard-effective-slot-definition-class+)))
 	  (apply #'init-slot-definition slot args)
