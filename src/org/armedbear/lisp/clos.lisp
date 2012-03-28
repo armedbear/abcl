@@ -664,7 +664,13 @@
 
 (defun std-compute-effective-slot-definition (class name direct-slots)
   (let ((initer (find-if-not #'null direct-slots
-                             :key 'slot-definition-initfunction)))
+                             :key 'slot-definition-initfunction))
+        (documentation (find-if-not #'null direct-slots
+                                    :key 'slot-definition-documentation))
+        (types (delete-duplicates
+                (delete t (mapcar #'slot-definition-type direct-slots))
+                :test #'equal))
+        )
     (make-effective-slot-definition
      class
      :name name
@@ -679,10 +685,14 @@
                            direct-slots))
      :allocation (slot-definition-allocation (car direct-slots))
      :allocation-class (when (slot-boundp (car direct-slots)
-					  'sys::allocation-class)
-			 ;;for some classes created in Java
-			 ;;(e.g. SimpleCondition) this slot is unbound
-			 (slot-definition-allocation-class (car direct-slots))))))
+                                          'sys::allocation-class)
+                         ;;for some classes created in Java
+                         ;;(e.g. SimpleCondition) this slot is unbound
+                         (slot-definition-allocation-class (car direct-slots)))
+     :type (cond ((null types) t)
+                 ((= 1 (length types)) types)
+                 (t (list* 'and types)))
+     :documentation documentation)))
 
 ;;; Standard instance slot access
 
