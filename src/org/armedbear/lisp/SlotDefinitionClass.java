@@ -46,6 +46,8 @@ public final class SlotDefinitionClass extends StandardClass
     public static final int SLOT_INDEX_ALLOCATION       = 6;
     public static final int SLOT_INDEX_ALLOCATION_CLASS = 7;
     public static final int SLOT_INDEX_LOCATION         = 8;
+    public static final int SLOT_INDEX_TYPE             = 9;
+    public static final int SLOT_INDEX_DOCUMENTATION    = 10;
 
     /**
      * For internal use only. This constructor hardcodes the layout of the class, and can't be used
@@ -63,7 +65,9 @@ public final class SlotDefinitionClass extends StandardClass
             pkg.intern("WRITERS"),
             pkg.intern("ALLOCATION"),
             pkg.intern("ALLOCATION-CLASS"),
-            pkg.intern("LOCATION")
+            pkg.intern("LOCATION"),
+            Symbol.TYPE,
+            Symbol.DOCUMENTATION
         };
         setClassLayout(new Layout(this, instanceSlotNames, NIL));
         //Set up slot definitions so that this class can be extended by users

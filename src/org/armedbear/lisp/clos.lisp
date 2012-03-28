@@ -302,13 +302,13 @@
                (error 'program-error
                       "duplicate slot option :TYPE for slot named ~S"
                       name))
-             (setf type (cadr olist))) ;; FIXME type is ignored
+             (setf type (cadr olist)))
             (:documentation
              (when documentation
                (error 'program-error
                       "duplicate slot option :DOCUMENTATION for slot named ~S"
                       name))
-             (setf documentation (cadr olist))) ;; FIXME documentation is ignored
+             (setf documentation (cadr olist)))
             (:reader
              (maybe-note-name-defined (cadr olist))
              (push-on-end (cadr olist) readers))
@@ -338,6 +338,8 @@
           ,@(when initargs `(:initargs ',initargs))
           ,@(when readers `(:readers ',readers))
           ,@(when writers `(:writers ',writers))
+          ,@(when type `(:type ',type))
+          ,@(when documentation `(:documentation ',documentation))
           ,@other-options
 	  ,@non-std-options))))
 
@@ -432,14 +434,30 @@
 (defun (setf slot-definition-location) (value slot-definition)
   (set-slot-definition-location slot-definition value))
 
+(defun slot-definition-type (slot-definition)
+  (%slot-definition-type slot-definition))
+
+(declaim (notinline (setf slot-definition-type)))
+(defun (setf slot-definition-type) (value slot-definition)
+  (set-slot-definition-type slot-definition value))
+
+(defun slot-definition-documentation (slot-definition)
+  (%slot-definition-documentation slot-definition))
+
+(declaim (notinline (setf slot-definition-documentation)))
+(defun (setf slot-definition-documentation) (value slot-definition)
+  (set-slot-definition-documentation slot-definition value))
+
 (defun init-slot-definition (slot &key name
-                             (initargs ())
-                             (initform nil)
-                             (initfunction nil)
-                             (readers ())
-                             (writers ())
-                             (allocation :instance)
-                             (allocation-class nil))
+                                    (initargs ())
+                                    (initform nil)
+                                    (initfunction nil)
+                                    (readers ())
+                                    (writers ())
+                                    (allocation :instance)
+                                    (allocation-class nil)
+                                    (type t)
+                                    (documentation nil))
   (setf (slot-definition-name slot) name)
   (setf (slot-definition-initargs slot) initargs)
   (setf (slot-definition-initform slot) initform)
@@ -448,6 +466,8 @@
   (setf (slot-definition-writers slot) writers)
   (setf (slot-definition-allocation slot) allocation)
   (setf (slot-definition-allocation-class slot) allocation-class)
+  (setf (slot-definition-type slot) type)
+  (setf (slot-definition-documentation slot) documentation)
   slot)
 
 (defun make-direct-slot-definition (class &rest args)
@@ -752,10 +772,10 @@
     instance))
 
 (defun make-instance-standard-class (metaclass
-				     &rest initargs
+                                     &rest initargs
                                      &key name direct-superclasses direct-slots
-                                     direct-default-initargs
-                                     documentation)
+                                       direct-default-initargs
+                                       documentation)
   (declare (ignore metaclass))
   (let ((class (std-allocate-instance +the-standard-class+)))
     (check-initargs (list #'allocate-instance #'initialize-instance)
@@ -2976,6 +2996,12 @@ in place, while we still need them to "
 (defmethod (setf documentation) (new-value (x standard-method) (doc-type (eql 't)))
   (setf (method-documentation x) new-value))
 
+(defmethod documentation ((x standard-slot-definition) (doc-type (eql 't)))
+  (slot-definition-documentation x))
+
+(defmethod (setf documentation) (new-value (x standard-slot-definition) (doc-type (eql 't)))
+  (setf (slot-definition-documentation x) new-value))
+
 (defmethod documentation ((x package) (doc-type (eql 't)))
   (%documentation x doc-type))
 
@@ -3626,7 +3652,29 @@ or T when any keyword is acceptable due to presence of
       (set-slot-definition-location slot-definition value)
       (setf (slot-value slot-definition 'sys::location) value))))
 
-;;; No %slot-definition-type.
+(atomic-defgeneric slot-definition-type (slot-definition)
+  (:method ((slot-definition slot-definition))
+    (slot-definition-dispatch slot-definition
+      (%slot-definition-type slot-definition)
+      (slot-value slot-definition 'cl:type))))
+
+(atomic-defgeneric (setf slot-definition-type) (value slot-definition)
+  (:method (value (slot-definition slot-definition))
+    (slot-definition-dispatch slot-definition
+      (set-slot-definition-type slot-definition value)
+      (setf (slot-value slot-definition 'cl:type) value))))
+
+(atomic-defgeneric slot-definition-documentation (slot-definition)
+  (:method ((slot-definition slot-definition))
+    (slot-definition-dispatch slot-definition
+      (%slot-definition-documentation slot-definition)
+      (slot-value slot-definition 'cl:documentation))))
+
+(atomic-defgeneric (setf slot-definition-documentation) (value slot-definition)
+  (:method (value (slot-definition slot-definition))
+    (slot-definition-dispatch slot-definition
+      (set-slot-definition-documentation slot-definition value)
+      (setf (slot-value slot-definition 'cl:documentation) value))))
 
 
 ;;; Conditions.
