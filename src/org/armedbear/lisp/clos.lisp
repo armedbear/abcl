@@ -695,10 +695,9 @@
 
 (defun %set-slot-value (object slot-name new-value)
   (if (or (eq (class-of (class-of object)) +the-standard-class+)
-	  (eq (class-of (class-of object)) +the-structure-class+))
+          (eq (class-of (class-of object)) +the-structure-class+))
       (setf (std-slot-value object slot-name) new-value)
-      (set-slot-value-using-class new-value (class-of object)
-                                  object slot-name)))
+      (setf (slot-value-using-class (class-of object) object slot-name) new-value)))
 
 (defsetf slot-value %set-slot-value)
 
@@ -3011,10 +3010,6 @@ in place, while we still need them to "
 
 
 ;;; Slot access
-
-(defun set-slot-value-using-class (new-value class instance slot-name)
-  (declare (ignore class)) ; FIXME
-  (setf (std-slot-value instance slot-name) new-value))
 
 (defgeneric slot-value-using-class (class instance slot-name))
 
