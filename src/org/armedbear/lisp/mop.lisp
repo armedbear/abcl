@@ -44,9 +44,11 @@
           compute-effective-slot-definition
           compute-slots
           finalize-inheritance
+          validate-superclass
+
+          slot-value-using-class
           slot-boundp-using-class
           slot-makunbound-using-class
-          validate-superclass
 
           ensure-class
           ensure-class-using-class
