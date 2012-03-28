@@ -3952,6 +3952,96 @@ or T when any keyword is acceptable due to presence of
 (defgeneric update-dependent (metaobject dependent &rest initargs))
 
 
+;;; ensure-generic-function(-using-class), AMOP pg. 185ff.
+(defgeneric ensure-generic-function-using-class (generic-function function-name
+                                                 &key
+                                                   argument-precedence-order
+                                                   declarations documentation
+                                                   generic-function-class
+                                                   lambda-list method-class
+                                                   method-combination
+                                                   name
+                                                 &allow-other-keys))
+
+(defmethod ensure-generic-function-using-class ((generic-function generic-function)
+                                                function-name
+                                                &rest all-keys
+                                                &key (generic-function-class +the-standard-generic-function-class+)
+                                                  lambda-list
+                                                  argument-precedence-order
+                                                  (method-class +the-standard-method-class+)
+                                                  documentation
+                                                &allow-other-keys)
+  (setf all-keys (copy-list all-keys))  ; since we modify it
+  (remf all-keys :generic-function-class)
+  (unless (classp generic-function-class)
+    (setf generic-function-class (find-class generic-function-class)))
+  (unless (classp method-class) (setf method-class (find-class method-class)))
+  (unless (eq generic-function-class (class-of generic-function))
+    (error "The class ~S is incompatible with the existing class of ~S."
+           generic-function-class generic-function))
+  (unless (or (null (generic-function-methods generic-function))
+              (lambda-lists-congruent-p lambda-list (generic-function-lambda-list generic-function)))
+    (error "The lambda list ~S is incompatible with the existing methods of ~S."
+           lambda-list generic-function))
+  (unless (or (null (generic-function-methods generic-function))
+              (eq method-class (generic-function-method-class generic-function)))
+    (error "The method class ~S is incompatible with the existing methods of ~S."
+           method-class generic-function))
+  ;; FIXME (rudi 2012-03-26): should call reinitialize-instance here, as
+  ;; per AMOP.
+  (setf (generic-function-lambda-list generic-function) lambda-list)
+  (setf (generic-function-documentation generic-function) documentation)
+  (let* ((plist (analyze-lambda-list lambda-list))
+         (required-args (getf plist ':required-args)))
+    (%set-gf-required-args generic-function required-args)
+    (%set-gf-optional-args generic-function (getf plist :optional-args))
+    (setf (generic-function-argument-precedence-order generic-function)
+          (or argument-precedence-order required-args))
+    (finalize-standard-generic-function generic-function))
+  generic-function)
+
+(defmethod ensure-generic-function-using-class ((generic-function null)
+                                                function-name
+                                                &rest all-keys
+                                                &key (generic-function-class +the-standard-generic-function-class+)
+                                                  (method-class +the-standard-method-class+)
+                                                  (method-combination 'standard)
+                                                &allow-other-keys)
+  (setf all-keys (copy-list all-keys))  ; since we modify it
+  (remf all-keys :generic-function-class)
+  (unless (classp generic-function-class)
+    (setf generic-function-class (find-class generic-function-class)))
+  (unless (classp method-class) (setf method-class (find-class method-class)))
+  (when (and (null *clos-booting*) (fboundp function-name))
+    (if (autoloadp function-name)
+        (fmakunbound function-name)
+        (error 'program-error
+               :format-control "~A already names an ordinary function, macro, or special operator."
+               :format-arguments (list function-name))))
+  (apply (if (eq generic-function-class +the-standard-generic-function-class+)
+             #'make-instance-standard-generic-function
+             #'make-instance)
+         generic-function-class
+         :name function-name
+         :method-class method-class
+         :method-combination method-combination
+         all-keys))
+
+(defun ensure-generic-function (function-name &rest all-keys
+                                &key
+                                  lambda-list generic-function-class
+                                  method-class
+                                  method-combination
+                                  argument-precedence-order
+                                  documentation
+                                &allow-other-keys)
+  (declare (ignore lambda-list generic-function-class method-class
+                   method-combination argument-precedence-order documentation))
+  (apply #'ensure-generic-function-using-class
+         (find-generic-function function-name nil)
+         function-name all-keys))
+
 ;;; SLIME compatibility functions.
 
 (defun %method-generic-function (method)

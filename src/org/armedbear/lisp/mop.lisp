@@ -50,6 +50,7 @@
 
           ensure-class
           ensure-class-using-class
+          ensure-generic-function-using-class
 
           class-default-initargs
           class-direct-default-initargs
