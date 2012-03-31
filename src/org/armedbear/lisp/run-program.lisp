@@ -40,11 +40,13 @@
 ;;; This implementation uses the JVM facilities for running external
 ;;; processes.
 ;;; <http://download.oracle.com/javase/6/docs/api/java/lang/ProcessBuilder.html>.
-(defun run-program (program args &key environment (wait t))
+(defun run-program (program args &key environment (wait t) clear-env)
   ;;For documentation, see below.
   (let ((pb (%make-process-builder program args)))
-    (when environment
-      (let ((env-map (%process-builder-environment pb)))
+    (let ((env-map (%process-builder-environment pb)))
+      (when clear-env
+        (%process-builder-env-clear env-map))            
+      (when environment
         (dolist (entry environment)
           (%process-builder-env-put env-map
                                     (princ-to-string (car entry))
@@ -80,9 +82,12 @@ Notes about Unix environments (as in the :environment):
 The &key arguments have the following meanings:
 
 :environment 
-    An alist of STRINGs (name . value) describing the new
-    environment. The default is to copy the environment of the current
-    process.
+    An alist of STRINGs (name . value) describing new
+    environment values that replace existing ones.
+
+:clear-env
+    If non-NIL, the current environment is cleared before the
+    values supplied by :environment are inserted.
 
 :wait 
     If non-NIL, which is the default, wait until the created process
@@ -130,6 +135,9 @@ The &key arguments have the following meanings:
 
 (defun %process-builder-env-put (env-map key value)
   (java:jcall "put" env-map key value))
+
+(defun %process-builder-env-clear (env-map)
+  (java:jcall "clear" env-map))
 
 (defun %process-builder-start (pb)
   (java:jcall "start" pb))

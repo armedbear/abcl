@@ -37,6 +37,7 @@ import static org.armedbear.lisp.Lisp.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.*;
 
 public final class Extensions
 {
@@ -317,4 +318,28 @@ public final class Extensions
         return NIL;
     }
   }
+
+  // ### getenv-all variable => string
+  private static final Primitive GETENV_ALL = new getenv_all();
+  private static class getenv_all extends Primitive 
+  {
+    getenv_all() 
+    {
+      super("getenv-all", PACKAGE_EXT, true, "variable",
+             "Returns all environment variables as an alist containing (name . value)");
+    }
+    @Override
+    public LispObject execute()
+    {
+      Cons result = new Cons(NIL);
+      Map<String, String> env = System.getenv();
+      for (Map.Entry<String, String> entry : env.entrySet()) {
+          Cons entryPair = new Cons(new SimpleString(entry.getKey()), 
+                                    new SimpleString(entry.getValue()));
+          result = new Cons(entryPair, result);
+      }
+      return result;
+    }
+  }
+
 }
