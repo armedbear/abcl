@@ -22,6 +22,8 @@ that the Maven specific "~/.m2/settings.xml" file is NOT parsed for settings.
 
 |#
 
+;;; N.b. evaluated *after* we load the ABCL specific modifications of ASDF in abcl-asdf.lisp
+
 (in-package :abcl-asdf)
 
 (require :abcl-contrib)
@@ -134,7 +136,7 @@ Returns the path of the Maven executable or nil if none are found."
           (>= minor 1))
      (and (>= major 3)
           (>= major 0)
-          (>= patch 3)))))
+          (>= patch 4)))))
 
 (defparameter *init* nil)
 
@@ -143,13 +145,14 @@ Returns the path of the Maven executable or nil if none are found."
   (unless (or force *mvn-libs-directory*)
     (setf *mvn-libs-directory* (find-mvn-libs)))
   (unless (probe-file *mvn-libs-directory*)
-    (error "You must download maven-3.0.3 or later from http://maven.apache.org/download.html, then set ABCL-ASDF:*MVN-DIRECTORY* appropiately."))
+    (error "You must download maven-3.0.4 or later from http://maven.apache.org/download.html, then set ABCL-ASDF:*MVN-DIRECTORY* appropiately."))
   (unless (ensure-mvn-version)
-    (error "We need maven-3.0.3 or later."))
+    (error "We need maven-3.0.4 or later."))
   (add-directory-jars-to-class-path *mvn-libs-directory* nil)
   (setf *init* t))
 
 (defparameter *http-wagon-implementations*
+  ;;; maven-3.0.3 reported as not working with all needed functionality
   `("org.apache.maven.wagon.providers.http.HttpWagon" ;; introduced as default with maven-3.0.4
     "org.apache.maven.wagon.providers.http.LightweightHttpWagon")
   "A list of possible candidate implementations that provide access to http and https resources.
