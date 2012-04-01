@@ -289,19 +289,30 @@ Returns the Maven specific string for the artifact "
 (defun make-remote-repository (id type url) 
   (jss:new 'aether.repository.RemoteRepository id type url))
 
+(defparameter *default-repository* 
+   "http://repo1.maven.org/maven2/")
+
+(defun add-repository (repository)
+  (ensure-remote-repository :repository repository))
+
 (defparameter *maven-remote-repository*  nil
     "The remote repository used by the Maven Aether embedder.")
-(defun ensure-remote-repository () 
+(defun ensure-remote-repository (&key repository *default-repository* repository-p) 
   (unless *init* (init))
-  (unless *maven-remote-repository*
-    (let ((r (make-remote-repository "central" "default" "http://repo1.maven.org/maven2/")))
+  (unless (or repository-p 
+              *maven-remote-repository*)
+    (let ((r (make-remote-repository "central" "default" repository)))
       (when *maven-http-proxy*
         (#"setProxy" r (make-proxy)))
       (setf *maven-remote-repository* r)))
   *maven-remote-repository*)
 
-(defun resolve-dependencies (group-id artifact-id &optional (version "LATEST" versionp))
-  "Dynamically resolve Maven dependencies for item with GROUP-ID and ARTIFACT-ID at VERSION.
+(defun resolve-dependencies (group-id artifact-id 
+                             &optional  ;;; XXX Uggh.  Move to keywords when we get the moxie.
+                             (version "LATEST" versionp)
+                             (repository *maven-remote-repository* repository-p))
+  "Dynamically resolve Maven dependencies for item with GROUP-ID and ARTIFACT-ID 
+optionally with a VERSION and a REPOSITORY.  Users of the function are advised 
 
 All recursive dependencies will be visited before resolution is successful.
 
@@ -321,7 +332,10 @@ in Java CLASSPATH representation."
                      artifact (java:jfield (jss:find-java-class "JavaScopes") "RUNTIME")))
          (collect-request (java:jnew (jss:find-java-class "CollectRequest"))))
     (#"setRoot" collect-request dependency)
-    (#"addRepository" collect-request (ensure-remote-repository))
+    (#"addRepository" collect-request 
+                      (if repository-p
+                          (ensure-remote-repository :repository repository)
+                          (ensure-remote-repository)))
     (let* ((node 
             (#"getRoot" (#"collectDependencies" (ensure-repository-system) (ensure-session) collect-request)))
            (dependency-request 
@@ -378,7 +392,7 @@ in Java CLASSPATH representation."
      #'log)))
 
          
-(defmethod resolve ((string t))
+(defmethod resolve ((string string))
   "Resolve a colon separated GROUP-ID:ARTIFACT-ID[:VERSION] reference to a Maven artifact.
 
 Examples of artifact references: \"log4j:log4j:1.2.14\" for
@@ -389,6 +403,13 @@ Returns a string containing the necessary classpath entries for this
 artifact and all of its transitive dependencies."
   (let ((result (split-string string ":")))
     (cond 
-      ((<= 2 (length result) 3)
+      ((= (length result) 3)
+       (resolve-dependencies (first result) (second result) (third result)))
+      (t
        (apply #'resolve-dependencies result)))))
   
+#+nil
+(defmethod resolve ((mvn asdf:mvn))
+  (with-slots (asdf::group-id asdf::artifact-id asdf::version)
+      (asdf:ensure-parsed-mvn mvn)
+    (resolve-dependencies (format nil "~A:~A:~A" asdf::group-id asdf::artifact-id asdf::version))))

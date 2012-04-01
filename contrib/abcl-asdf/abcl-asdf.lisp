@@ -1,6 +1,7 @@
 ;;;; The ABCL specific overrides in ASDF.  
 ;;;;
 ;;;; Done separate from asdf.lisp for stability.
+(require :asdf)
 (in-package :asdf)
 
 (defclass iri (component) 
@@ -11,8 +12,8 @@
    (fragment :initform nil)))
 
 (defclass mvn (iri) 
-  ((group-id :initform nil)
-   (artifact-id :initform nil)
+  ((group-id :initarg :group-id :initform nil)
+   (artifact-id :initarg :artifact-id :initform nil)
    (repository :initform "http://repo1.maven.org/maven2/") ;;; XXX unimplmented
 ;; inherited from ASDF:COMPONENT ??? what are the CL semantics on overriding -- ME 2012-04-01
 #+nil   (version :initform nil)))
@@ -21,16 +22,17 @@
 (defmethod find-component ((component iri) path)
   component)
 
+
 ;;; We intercept compilation to ensure that load-op will succeed
 (defmethod perform ((op compile-op) (c mvn))
-  (ensure-parsed-mvn c)
-  (abcl-asdf:resolve c))
+  (abcl-asdf:resolve   
+   (ensure-parsed-mvn c)))
      
 (defmethod perform ((operation load-op) (c mvn))
-  (ensure-parsed-mvn c)
   (java:add-to-classpath 
    (abcl-asdf:as-classpath 
-    (abcl-asdf:resolve c))))
+    (abcl-asdf:resolve 
+     (ensure-parsed-mvn c)))))
 
 ;;; A Maven URI has the form "mvn:group-id/artifact-id/version"
 ;;;
@@ -44,6 +46,13 @@
 ;;; anything more, so that is part of the motivation behind this effort.
 (defparameter *mvn-repositories* nil
   "A list of all Maven repositories encountered in the lifetime of this instance of the implementation.")
+
+#+nil
+(defmethod slot-missing ((class mvn) object slot-name operation &optional new-value)
+  (setf (slot-value object slot-name) 
+        (if new-value
+            new-value
+            nil)))
 
 (defun ensure-parsed-mvn (component)
   (with-slots (name group-id artifact-id
@@ -71,7 +80,11 @@
         (setf schema "mvn")
         (pushnew repository *mvn-repositories*)
         ;;; Always normalized path "on the way out" to contain group-id/artifact-id/version
-        (setf path (format nil "~A/~A/~A" group-id artifact-id version))))))
+        (setf path (format nil "~A/~A/~A" group-id artifact-id version))))
+    component))
+
+(export `(mvn iri ensure-parsed-mvn
+              group-id artifact-id version) 'asdf)
 
 (defmethod source-file-type ((component iri) (system system))
   nil)
