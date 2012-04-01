@@ -1,3 +1,6 @@
+;;;; The ABCL specific overrides in ASDF.  
+;;;;
+;;;; Done separate from asdf.lisp for stability.
 (in-package :asdf)
 
 (defclass iri (component) 
@@ -10,7 +13,8 @@
 (defclass mvn (iri) 
   ((group-id :initform nil)
    (artifact-id :initform nil)
-;; inherited from ASDF:COMPONENT
+   (repository :initform "http://repo1.maven.org/maven2/") ;;; XXX unimplmented
+;; inherited from ASDF:COMPONENT ??? what are the CL semantics on overriding -- ME 2012-04-01
 #+nil   (version :initform nil)))
 
 #+nil
