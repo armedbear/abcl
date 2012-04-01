@@ -1,4 +1,5 @@
 (in-package :asdf)
+
 (defclass iri (component) 
   ((schema :initform nil)
    (authority :initform nil)
@@ -8,7 +9,9 @@
 
 (defclass mvn (iri) 
   ((group-id :initform nil)
-   (artifact-id :initform nil)))
+   (artifact-id :initform nil)
+;; inherited from ASDF:COMPONENT
+#+nil   (version :initform nil)))
 
 #+nil
 (defmethod find-component ((component iri) path)
@@ -28,28 +31,36 @@
 ;;; A Maven URI has the form "mvn:group-id/artifact-id/version"
 ;;;
 ;;; Currently we "stuff" the group-id/artifact-id into the 'name' and
-;;; use the component 'version' for the version string.
+;;; use the component 'version' for the version.  Parts of ASDF 
+;;; *reallY* want ASDF:VERSION to be a triple of intergers, and never
+;;; anything more, so that is part of the motivation behind this effort.
+;;; ??? rename me to ENSURE-MVN-PARSE ??
 (defun maybe-parse-mvn (component)
-  (with-slots (asdf::name asdf::group-id asdf::artifact-id
-               asdf::version asdf::schema asdf::path) 
+  (with-slots (name group-id artifact-id
+               version schema path) 
       component
     (when (null asdf::artifact-id) 
-      (let ((parsed (abcl-asdf::split-string name "/")))
-         (unless (or (= (length parsed) 3)
-                     (and (= (length parsed) 2)
-                          asdf::version))
-          (error "Failed to construct a mvn reference from name '~A' and version '~A'"
-                 asdf::name 
-                 (if asdf::version
-                     asdf::version
-                     "UNSPECIFED")))
-         (setf asdf::group-id (first parsed)
-               asdf::artifact-id (second parsed)
-               asdf::schema "mvn"
-               asdf::version (if (third parsed)
-                                 (third parsed)
-                                 "LATEST"))
-         (setf asdf::path (format nil "~A/~A" asdf::name asdf::version))))))
+      (let ((parsed (abcl-asdf::split-string name "/"))
+            (asdf-version-p (slot-boundp component 'version))
+            (default-version "LATEST"))
+        (cond ((= (length parsed) 3)
+               (setf 
+                group-id (first parsed)
+                artifact-id (second parsed)
+                version (third parsed)))
+              ((= (length parsed) 2)
+               (setf 
+                group-id (first parsed)
+                artifact-id (second parsed)
+                version (if asdf-version-p
+                            version
+                            default-version)))
+              (t
+               (error "Failed to construct a mvn reference from name '~A' and version '~A'"
+                      name version)))
+        (setf schema "mvn")
+        ;;; Always normalized path "on the way out" to contain group-id/artifact-id/version
+        (setf path (format nil "~A/~A/~A" group-id artifact-id version))))))
 
 (defmethod source-file-type ((component iri) (system system))
   nil)
