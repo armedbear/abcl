@@ -13,6 +13,10 @@
 
    #:init
 
+;;; ASDF
+;;;   #:iri #:mvn
+;;;   #:ensure-parsed-mvn
+
 ;;; "Internal" API
 
 ;;;; Maven 

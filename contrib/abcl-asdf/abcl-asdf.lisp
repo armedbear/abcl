@@ -23,25 +23,31 @@
 
 ;;; We intercept compilation to ensure that load-op will succeed
 (defmethod perform ((op compile-op) (c mvn))
-  (maybe-parse-mvn c)
+  (ensure-parsed-mvn c)
   (abcl-asdf:resolve c))
      
 (defmethod perform ((operation load-op) (c mvn))
-  (maybe-parse-mvn c)
+  (ensure-parsed-mvn c)
   (java:add-to-classpath 
    (abcl-asdf:as-classpath 
     (abcl-asdf:resolve c))))
 
 ;;; A Maven URI has the form "mvn:group-id/artifact-id/version"
 ;;;
+;;; Sometimes people write "group-id:artifact-id:version" to refer to
+;;; Maven artifacts.  One can use ABCL-ASDF:RESOLVE directly for
+;;; serialized references to artifacts of this form.
+;;;
 ;;; Currently we "stuff" the group-id/artifact-id into the 'name' and
 ;;; use the component 'version' for the version.  Parts of ASDF 
 ;;; *reallY* want ASDF:VERSION to be a triple of intergers, and never
 ;;; anything more, so that is part of the motivation behind this effort.
-;;; ??? rename me to ENSURE-MVN-PARSE ??
-(defun maybe-parse-mvn (component)
+(defparameter *mvn-repositories* nil
+  "A list of all Maven repositories encountered in the lifetime of this instance of the implementation.")
+
+(defun ensure-parsed-mvn (component)
   (with-slots (name group-id artifact-id
-               version schema path) 
+               version schema path repository) 
       component
     (when (null asdf::artifact-id) 
       (let ((parsed (abcl-asdf::split-string name "/"))
@@ -63,6 +69,7 @@
                (error "Failed to construct a mvn reference from name '~A' and version '~A'"
                       name version)))
         (setf schema "mvn")
+        (pushnew repository *mvn-repositories*)
         ;;; Always normalized path "on the way out" to contain group-id/artifact-id/version
         (setf path (format nil "~A/~A/~A" group-id artifact-id version))))))
 
