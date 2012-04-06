@@ -194,6 +194,7 @@ directory to search for classes or a list of such values."))
   (jcall (jmethod "java.lang.Class" "getComponentType") atype))
 
 (defun jarray-length (java-array)
+  "Returns the length of a Java primitive array."
   (jstatic "getLength" "java.lang.reflect.Array" java-array)  )
 
 (defun (setf jarray-ref) (new-value java-array &rest indices)
@@ -201,7 +202,7 @@ directory to search for classes or a list of such values."))
 
 (defun jnew-array-from-array (element-type array)
   "Returns a new Java array with base type ELEMENT-TYPE (a string or a class-ref)
-   initialized from ARRAY"
+   initialized from ARRAY."
   (flet
     ((row-major-to-index (dimensions n)
                          (loop for dims on dimensions
@@ -220,6 +221,8 @@ directory to search for classes or a list of such values."))
         (apply #'(setf jarray-ref) (row-major-aref array i) jarray (row-major-to-index dimensions i))))))
 
 (defun jnew-array-from-list (element-type list)
+  "Returns a new Java array with base type ELEMENT-TYPE (a string or a class-ref)
+   initialized from a Lisp list."
   (let ((jarray (jnew-array element-type (length list)))
 	(i 0))
     (dolist (x list)
@@ -367,8 +370,9 @@ calls on the java.util.Enumeration `jenumeration`."
      (t
       (error "Unknown load-form for ~A" class-name)))))
 
-(defun jproperty-value (obj prop)
-  (%jget-property-value obj prop))
+(defun jproperty-value (object property)
+  "setf-able access on the Java Beans notion of property named PROPETRY on OBJECT."
+  (%jget-property-value object property))
 
 (defun (setf jproperty-value) (value obj prop)
   (%jset-property-value obj prop value))
@@ -451,6 +455,7 @@ calls on the java.util.Enumeration `jenumeration`."
     supers))
 
 (defun ensure-java-class (jclass)
+  "Attempt to ensure that the Java class referenced by JCLASS exists in the current process of the implementation."
   (let ((class (%find-java-class jclass)))
     (if class
 	class
