@@ -135,7 +135,7 @@ Returns the path of the Maven executable or nil if none are found."
      (and (>= major 3)
           (>= minor 1))
      (and (>= major 3)
-          (>= major 0)
+          (>= minor 0)
           (>= patch 4)))))
 
 (defparameter *init* nil)
