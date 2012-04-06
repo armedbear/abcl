@@ -106,3 +106,8 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
 
 
       
+(deftest bugs.with-constant-signature.1 
+    (with-constant-signature ((substring "substring")) 
+      (substring "some string" 2))
+  t)
+
