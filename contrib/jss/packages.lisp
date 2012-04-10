@@ -26,8 +26,11 @@
    #:vector-to-list
    #:jarray-to-list
 
-;;; deprecated
+;;; XXX Necessary to work in OSGi?
    #:get-java-field ; use JAVA:JFIELD
+   #:set-java-field ; use JAVA-JFIELD
+
+;;; deprecated
    #:list-to-list
 
 ;;; Move to JAVA?

@@ -319,8 +319,9 @@
 
 (defvar *running-in-osgi* (ignore-errors (jclass "org.osgi.framework.BundleActivator")))
 
-
 (defun get-java-field (object field &optional (try-harder *running-in-osgi*))
+  "Get the value of the FIELD contained in OBJECT.
+If OBJECT is a symbol it names a dot qualified static FIELD."
   (if try-harder
       (let* ((class (if (symbolp object)
 			(setq object (find-java-class object))
@@ -338,8 +339,13 @@
             (jfield class field))
           (jfield field object))))
 
-;; use #"getSuperclass" and #"getInterfaces" to see whether there are fields in superclasses that we might set
+;; TODO use #"getSuperclass" and #"getInterfaces" to see whether there
+;; are fields in superclasses that we might set
 (defun set-java-field (object field value &optional (try-harder *running-in-osgi*))
+  "Set the FIELD of OBJECT to VALUE.
+If OBJECT is a symbol, it names a dot qualified Java class to look for
+a static FIELD.  If OBJECT is an instance of java:java-object, the
+associated is used to look up the static FIELD."
   (if try-harder
       (let* ((class (if (symbolp object)
 			(setq object (find-java-class object))
@@ -353,8 +359,11 @@
 	(values (#"set" jfield object value) jfield))
     (if (symbolp object)
 	(let ((class (find-java-class object)))
-	  (#"pokeStatic" 'invoke class field value))
-      (#"poke" 'invoke object field value))))
+          (setf (jfield (#"getName" class) field) value))
+        (if (typep object 'java-object)
+            (setf (jfield (jclass-of object) field) value)
+            (setf (jfield object field) value)))))
+
 
 (defconstant +for-name+ 
   (jmethod "java.lang.Class" "forName" "java.lang.String" "boolean" "java.lang.ClassLoader"))
