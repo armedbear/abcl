@@ -561,7 +561,15 @@ associated is used to look up the static FIELD."
 
 (defun hashmap-to-hashtable (hashmap &rest rest &key (keyfun #'identity) (valfun #'identity) (invert? nil)
 				    table 
-			       &allow-other-keys )
+                             &allow-other-keys )
+  "Converts the a HASHMAP reference to a java.util.HashMap object to a Lisp hashtable.
+
+The REST paramter specifies arguments to the underlying MAKE-HASH-TABLE call.
+
+KEYFUN and VALFUN specifies functions to be run on the keys and values
+of the HASHMAP right before they are placed in the hashtable.
+
+If INVERT? is non-nil than reverse the keys and values in the resulting hashtable."
   (let ((keyset (#"keySet" hashmap))
 	(table (or table (apply 'make-hash-table
 				(loop for (key value) on rest by #'cddr
