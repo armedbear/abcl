@@ -85,14 +85,21 @@
 
 (declaim (ftype (function (t) t) verify-load))
 (defun verify-load (classfile)
-  #|(if (> *safety* 0) 
       (and classfile
-         (let ((*load-truename* *output-file-pathname*))
-           (report-error
-            (load-compiled-function classfile))))
-    t)|#
-  (declare (ignore classfile))
-  t)
+           (unless
+                 (> (file-length (open classfile :direction :input))
+                    0)
+             ;;; TODO hook into a real ABCL compiler condition hierarchy
+             (signal "Internal compiler error detected: Fasl contains ~
+zero-length jvm classfile corresponding to ~A." classfile)))
+           (if (> *safety* *speed*)
+               (progn
+                 (warn "Because(> *safety* *speed*): Testing fasl via ~
+the potentially slow loading of its JVM bytecode." )
+                 (let ((*load-truename* *output-file-pathname*))
+                   (report-error
+                    (load-compiled-function classfile))))
+               t))
 
 (declaim (ftype (function (t) t) note-toplevel-form))
 (defun note-toplevel-form (form)
@@ -150,7 +157,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     ;;  and its arguments may be (and should be) more efficient.
     (return-from convert-toplevel-form
       (precompiler:precompile-form form nil *compile-file-environment*)))
-  (let* ((expr `(lambda () ,form))
+  (let* ((toplevel-form (third form))
+         (expr `(lambda () ,form))
          (saved-class-number *class-number*)
          (classfile (next-classfile-name))
          (result
@@ -161,17 +169,34 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                  :if-exists :supersede)
             (report-error (jvm:compile-defun nil
                                              expr *compile-file-environment*
-                                             classfile f declare-inline))))
-         (compiled-function (verify-load classfile)))
+                                             classfile f
+                                             declare-inline))))
+         (compiled-function (handler-case (verify-load classfile)
+                              (t (c) 
+                                (error "Compilation failed for JVM class number ~A
+corresponding to form ~A~&with condition ~A" 
+                                       saved-class-number toplevel-form c)))))
     (declare (ignore result))
-    (setf form
-          (if compiled-function
-              `(funcall (sys::get-fasl-function *fasl-loader*
-                                                ,saved-class-number))
-              (precompiler:precompile-form form nil
-                                           *compile-file-environment*)))))
-
-
+    (progn
+      (when (> *debug* 0)
+        ;;; ??? define an API by perhaps exporting these symbols?
+        (setf (getf form 'form-source) 
+              toplevel-form
+              
+              (getf form 'classfile) 
+              classfile
+                   
+              (getf form 'compiled-function) 
+              compiled-function
+                  
+              (getf form 'class-number) 
+              saved-class-number))
+      (setf form
+            (if compiled-function
+                `(funcall (sys::get-fasl-function *fasl-loader*
+                                                  ,saved-class-number))
+                (precompiler:precompile-form form nil
+                                             *compile-file-environment*))))))
 
 
 (declaim (ftype (function (t stream t) t) process-progn))
