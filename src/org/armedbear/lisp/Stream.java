@@ -50,6 +50,11 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.BitSet;
 
+import java.util.List;
+import java.util.LinkedList;
+import java.util.SortedMap;
+import java.util.Set;
+
 import org.armedbear.lisp.util.DecodingReader;
 
 /** The stream class
@@ -142,6 +147,7 @@ public class Stream extends StructureObject {
     public Stream(Symbol structureClass, InputStream inputStream, LispObject elementType) {
         this(structureClass, inputStream, elementType, keywordDefault);
     }
+  
 
 
     // Input stream constructors.
@@ -329,6 +335,35 @@ public class Stream extends StructureObject {
                 && reader instanceof DecodingReader)
             ((DecodingReader)reader).setCharset(Charset.forName(encoding));
     }
+
+
+  public static final Primitive AVAILABLE_ENCODINGS = new pf_available_encodings();
+  @DocString(name="available-encodings",
+             returns="encodings",
+             doc="Returns all charset encodings suitable for passing to a stream constructor available at runtime.")
+  private static final class pf_available_encodings extends Primitive {
+    pf_available_encodings() {
+      super("available-encodings", PACKAGE_SYS, true);
+    }
+    public LispObject execute() {
+      LispObject result = NIL;
+      for (Symbol encoding : availableEncodings()) {
+        result = result.push(encoding);
+      }
+      return result.nreverse();
+    }
+  }
+
+  static public List<Symbol> availableEncodings() {
+    List<Symbol> result = new LinkedList<Symbol>();
+
+    SortedMap<String, Charset> available = Charset.availableCharsets();
+    Set<String> encodings = available.keySet();
+    for (String charset : encodings) {
+      result.add(new Symbol(charset));
+    }
+    return result;
+  }
 
     public boolean isOpen() {
         return open;
