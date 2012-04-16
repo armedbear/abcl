@@ -83,6 +83,9 @@
   (declare (ignore ignored))
   (assert nil))
 
+(defparameter *diagnostic* t
+  "The stream to emit compiler diagnostic messages to, or nil to muffle output.")
+
 (declaim (ftype (function (t) t) verify-load))
 (defun verify-load (classfile)
       (and classfile
@@ -94,8 +97,8 @@
 zero-length jvm classfile corresponding to ~A." classfile)))
            (if (> *safety* *speed*)
                (progn
-                 (warn "Because(> *safety* *speed*): Testing fasl via ~
-the potentially slow loading of its JVM bytecode." )
+                 (format *diagnostic* 
+                         "~&SYSTEM::*DIAGNOSTIC* Testing compiled bytecode by loading classfile into JVM because (> *safety* *speed*).~%")
                  (let ((*load-truename* *output-file-pathname*))
                    (report-error
                     (load-compiled-function classfile))))
