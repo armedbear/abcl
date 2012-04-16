@@ -93,6 +93,7 @@
 (declaim (ftype (function (t) t) verify-load))
 (defun verify-load (classfile &key (force nil))
   "Return whether the file at the path denoted by CLASSFILE is a loadable JVM artifact."
+  (declare (ignore force))
   (unless classfile
     (diag "Nil classfile argument passed to verify-load.")
     (return-from verify-load nil))
@@ -102,6 +103,7 @@
     (diag "Internal compiler error detected: Fasl contains ~
 zero-length jvm classfile corresponding to ~A." classfile)
     (return-from verify-load nil))
+  #+nil
   (when (or force (> *safety* *speed*))
     (diag "Testing compiled bytecode by loading classfile into JVM.")
     (let ((*load-truename* *output-file-pathname*))
