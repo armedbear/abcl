@@ -83,26 +83,31 @@
   (declare (ignore ignored))
   (assert nil))
 
-(defparameter *diagnostic* t
+;;; ??? rename to something shorter?
+(defparameter *compiler-diagnostic* nil
   "The stream to emit compiler diagnostic messages to, or nil to muffle output.")
+(export '*compiler-diagnostic*)
+(defmacro diag (fmt &rest args)
+  `(format *compiler-diagnostic* "~&SYSTEM::*COMPILER-DIAGNOSTIC* ~A~&" (format nil ,fmt ,@args)))
 
 (declaim (ftype (function (t) t) verify-load))
-(defun verify-load (classfile)
-      (and classfile
-           (unless
-                 (> (file-length (open classfile :direction :input))
-                    0)
+(defun verify-load (classfile &key (force nil))
+  "Return whether the file at the path denoted by CLASSFILE is a loadable JVM artifact."
+  (unless classfile
+    (diag "Nil classfile argument passed to verify-load.")
+    (return-from verify-load nil))
+  (when 
+      (= 0 (file-length (open classfile :direction :input)))
              ;;; TODO hook into a real ABCL compiler condition hierarchy
-             (signal "Internal compiler error detected: Fasl contains ~
-zero-length jvm classfile corresponding to ~A." classfile)))
-           (if (> *safety* *speed*)
-               (progn
-                 (format *diagnostic* 
-                         "~&SYSTEM::*DIAGNOSTIC* Testing compiled bytecode by loading classfile into JVM because (> *safety* *speed*).~%")
-                 (let ((*load-truename* *output-file-pathname*))
-                   (report-error
-                    (load-compiled-function classfile))))
-               t))
+    (diag "Internal compiler error detected: Fasl contains ~
+zero-length jvm classfile corresponding to ~A." classfile)
+    (return-from verify-load nil))
+  (when (or force (> *safety* *speed*))
+    (diag "Testing compiled bytecode by loading classfile into JVM.")
+    (let ((*load-truename* *output-file-pathname*))
+      ;; load-compiled-function used to be wrapped via report-error
+      (return-from verify-load (load-compiled-function classfile))))
+  t)
 
 (declaim (ftype (function (t) t) note-toplevel-form))
 (defun note-toplevel-form (form)
@@ -174,14 +179,12 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                                              expr *compile-file-environment*
                                              classfile f
                                              declare-inline))))
-         (compiled-function (handler-case (verify-load classfile)
-                              (t (c) 
-                                (error "Compilation failed for JVM class number ~A
-corresponding to form ~A~&with condition ~A" 
-                                       saved-class-number toplevel-form c)))))
-    (declare (ignore result))
+         (compiled-function (verify-load classfile)))
+    (declare (ignore toplevel-form result))
     (progn
+      #+nil
       (when (> *debug* 0)
+;; TODO        (annotate form toplevel-form classfile compiled-function fasl-class-number)
         ;;; ??? define an API by perhaps exporting these symbols?
         (setf (getf form 'form-source) 
               toplevel-form
