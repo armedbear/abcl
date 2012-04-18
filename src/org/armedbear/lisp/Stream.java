@@ -360,7 +360,7 @@ public class Stream extends StructureObject {
     SortedMap<String, Charset> available = Charset.availableCharsets();
     Set<String> encodings = available.keySet();
     for (String charset : encodings) {
-      result.add(new Symbol(charset));
+      result.add(new Symbol(charset, PACKAGE_KEYWORD));
     }
     return result;
   }
