@@ -959,7 +959,59 @@ ${basedir}/../cl-bench
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
       <echo>Finished recording test output in ${abcl.test.log.file}.</echo>
     </target>
-    
+
+
+<target name="abcl.diagnostic" description="Emit diagnostics describing available hosting JVM properties."
+        depends="abcl.build.diagnostic"/>
+<!-- 
+
+Possible JVM values from http://docs.oracle.com/javase/6/docs/api/java/lang/System.html#getProperties 
+
+java.version 	Java Runtime Environment version
+java.vendor 	Java Runtime Environment vendor
+java.vendor.url 	Java vendor URL
+java.home 	Java installation directory
+java.vm.specification.version 	Java Virtual Machine specification version
+java.vm.specification.vendor 	Java Virtual Machine specification vendor
+java.vm.specification.name 	Java Virtual Machine specification name
+java.vm.version 	Java Virtual Machine implementation version
+java.vm.vendor 	Java Virtual Machine implementation vendor
+java.vm.name 	Java Virtual Machine implementation name
+java.specification.version 	Java Runtime Environment specification version
+java.specification.vendor 	Java Runtime Environment specification vendor
+java.specification.name 	Java Runtime Environment specification name
+java.class.version 	Java class format version number
+java.class.path 	Java class path
+java.library.path 	List of paths to search when loading libraries
+java.io.tmpdir 	Default temp file path
+java.compiler 	Name of JIT compiler to use
+java.ext.dirs 	Path of extension directory or directories
+os.name 	Operating system name
+os.arch 	Operating system architecture
+os.version 	Operating system version
+file.separator 	File separator ("/" on UNIX)
+path.separator 	Path separator (":" on UNIX)
+line.separator 	Line separator ("\n" on UNIX)
+user.name 	User's account name
+user.home 	User's home directory
+user.dir
+
+-->
+
+<target name="abcl.build.diagnostic" description="Emit diagnostics describing available hosting JVM properties.">
+  <echo>:java.version    ${java.version}</echo>
+  <echo>:java.vendor     ${java.vendor}</echo>
+  <echo>:java.vm.vendor  ${java.vm.vendor}</echo>
+  <echo>:java.vm.name    ${java.vm.name}</echo>
+
+  <echo>:os.name    ${os.name}</echo>
+  <echo>:os.arch    ${os.arch}</echo>
+  <echo>:os.version ${os.version}</echo>
+  
+  <echo>:java.specification.version       ${java.specification.version}</echo>
+  <echo>:java.vm.specification.version    ${java.vm.specification.version}</echo>
+</target>
+
     <target name="abcl.release" 
             depends="abcl.binary.tar,abcl.source.tar,abcl.binary.zip,abcl.source.zip">
       <copy file="${abcl.jar.path}"
