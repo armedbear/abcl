@@ -206,7 +206,6 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <exclude name="org/armedbear/lisp/scripting/**/*.lisp"/>
       <exclude name="org/armedbear/lisp/boot.lisp"/>
       <exclude name="org/armedbear/lisp/emacs.lisp"/>
-      <exclude name="org/armedbear/lisp/runtime-class.lisp"/>
       <exclude name="org/armedbear/lisp/run-benchmarks.lisp"/>
     </patternset>
 
