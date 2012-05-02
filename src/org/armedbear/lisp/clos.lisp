@@ -104,6 +104,8 @@
 (export '(class-precedence-list class-slots
           slot-definition-name))
 (defconstant +the-standard-class+ (find-class 'standard-class))
+(defconstant +the-funcallable-standard-class+
+  (find-class 'funcallable-standard-class))
 (defconstant +the-structure-class+ (find-class 'structure-class))
 (defconstant +the-standard-object-class+ (find-class 'standard-object))
 (defconstant +the-standard-method-class+ (find-class 'standard-method))

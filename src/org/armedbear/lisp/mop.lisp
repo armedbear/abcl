@@ -13,20 +13,29 @@
 ;;;   2. Tighten the type checks so that only instances of
 ;;;      FUNCALLABLE-STANDARD-CLASS are callable.
 
+;;; AMOP pg. 240ff.
 (defgeneric validate-superclass (class superclass)
  (:documentation 
   "This generic function is called to determine whether the class
   superclass is suitable for use as a superclass of class."))
 
-;;; TODO Hook VALIDATE-SUPERCLASS into during class metaobject
-;;; initialization and reinitialization. (AMOP p.240-1)
 (defmethod validate-superclass ((class class) (superclass class))
-  (or (eql (class-name superclass) t)
-      (eql (class-name class) (class-name superclass))
-      (or (and (eql (class-name class) 'standard-class)
-               (eql (class-name superclass) 'funcallable-standard-class))
-          (and (eql (class-name class) 'funcallable-standard-class)
-               (eql (class-name superclass) 'standard-class)))))
+  (or (eql superclass +the-T-class+)
+      (eql (class-of class) (class-of superclass))
+      (or (and (eql (class-of class) +the-standard-class+)
+               (eql (class-of superclass) +the-funcallable-standard-class+))
+          (and (eql (class-of class) +the-funcallable-standard-class+)
+               (eql (class-of superclass) +the-standard-class+)))))
+
+(defmethod shared-initialize :before ((instance class)
+                                      slot-names
+                                      &key direct-superclasses
+                                      &allow-other-keys)
+  (declare (ignore slot-names))
+  (dolist (superclass direct-superclasses)
+    (assert (validate-superclass instance superclass) (instance superclass)
+            "Class ~S is not compatible with superclass ~S"
+            instance superclass)))
 
 (export '(;; classes
           funcallable-standard-object

@@ -439,6 +439,14 @@ calls on the java.util.Enumeration `jenumeration`."
 	   :initform (error "class is required")
 	   :reader java-class-jclass)))
 
+;;; FIXME (rudi 2012-05-02): consider replacing the metaclass of class
+;;; java-object to be java-class here instead of allowing this subclass
+;;; relationship.  On the other hand, abcl ran for the longest time
+;;; without an implementation of validate-superclass, so this doesn't
+;;; introduce new sources for bugs.
+(defmethod mop:validate-superclass ((class java-class) (superclass built-in-class))
+  t)
+
 ;;init java.lang.Object class
 (defconstant +java-lang-object-class+
   (%register-java-class +java-lang-object+
