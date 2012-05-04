@@ -3,10 +3,11 @@
   (:nicknames #:ansi-tests #:abcl-ansi-tests #:gcl-ansi)
   (:export #:run 
            #:verify-ansi-tests
-	   #:load-tests
-	   #:clean-tests
+           #:do-tests-matching
+           #:load-tests
+           #:clean-tests
            #:full-report
-	   #:report #:parse)
+           #:report #:parse)
   ;; This should be REGRESSION-TEST included with the ANSI-TESTS, but
   ;; it is possible that the user may have included a slightly
   ;; different version from say Quicklisp.  
@@ -15,9 +16,3 @@
                 #:*entries* 
                 #:do-test #:do-tests 
                 #:do-entries))
-
-
-
-		   
-	     
-
