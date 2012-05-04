@@ -66,15 +66,42 @@
    "Invoke tests with (asdf:oos 'asdf:test-op :abcl-test-lisp)."
    (funcall (intern (symbol-name 'run) :abcl.test.lisp)))
 
+;;;;
+;;;; ASDF definitions and the ANSI-TEST
+;;;;
+
+;;; We refer to the ANSI-TESTS source tree, which isn't shipped as
+;;; part of ABCL, but may be obtained at 
+;;; <svn://common-lisp.net/project/ansi-test/svn/trunk/ansi-tests>.
+
+;;; We currently require that the ANSI-TESTS to be in a sibling
+;;; directory named "ansi-tests" which should be manually synced with
+;;; the contents of the SVN repository listed above.
+
+;;; The ASDF definition for ABCL.TEST.ANSI defines VERIFY-ANSI-TESTS
+;;; which provides a more useful diagnostic, but I can't seem to find
+;;; a way to hook this into the ASDF:LOAD-OP phase
+(defsystem :ansi-rt
+  :description "Enapsulation of the REGRESSION-TEST framework use by ~
+the ANSI test suite, so that we may build on its 'API'.
+
+Requires that the contents of <svn://common-lisp.net/project/ansi-test/svn/trunk/ansi-tests> ~
+be in a directory named '../ansi-test/'."
+  :pathname "../ansi-tests/" ;;; NB works when loaded from ASDF but not with a naked EVAL
+  :default-component-class cl-source-file.lsp
+  :components ((:file "rt-package")
+               (:file "rt" :depends-on (rt-package))))
+
 (defsystem :ansi-interpreted 
   :version "1.2" 
-  :description "Test ABCL with the interpreted ANSI tests" :components 
+  :description "Test ABCL with the interpreted ANSI tests." 
+  :depends-on (ansi-rt) :components 
   ((:module ansi-tests :pathname "test/lisp/ansi/" :components
             ((:file "packages")
              (:file "abcl-ansi" :depends-on ("packages"))
              (:file "parse-ansi-errors" :depends-on ("abcl-ansi"))))))
 (defmethod perform :before ((o test-op) (c (eql (find-system :ansi-interpreted))))
-  (load-system  :ansi-interpreted))
+  (load-system :ansi-interpreted))
 
 (defmethod perform :after ((o load-op) (c (eql (find-system :ansi-interpreted))))
   (funcall (intern (symbol-name 'load-tests) :abcl.test.ansi)))
@@ -83,9 +110,10 @@
   (funcall (intern (symbol-name 'run) :abcl.test.ansi)
 	   :compile-tests nil))
 
-
 (defsystem :ansi-compiled :version "1.2" 
-           :description "Test ABCL with the compiled ANSI tests." :components 
+           :description "Test ABCL with the compiled ANSI tests." 
+           :depends-on (ansi-rt)
+           :components 
            ((:module ansi-tests :pathname "test/lisp/ansi/" :components
                      ((:file "packages")
                       (:file "abcl-ansi" :depends-on ("packages"))

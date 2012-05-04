@@ -36,8 +36,7 @@ Possibly running the compiled version of the tests if COMPILE-TESTS is non-NIL."
       (probe-file *ansi-tests-directory*)
     (error 'file-error
 	   "Failed to find the GCL ANSI tests in '~A'. Please
-locally obtain ~A, and set the value of *ANSI-TESTS-DIRECTORY* to that
-location."  
+locally obtain ~A, and place it in a sibling directory to the ABCL source named '../ansi-tests/'"
 	     *ansi-tests-directory*
 	     *ansi-tests-master-source-location*)))
 
