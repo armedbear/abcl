@@ -1,13 +1,3 @@
-(defpackage #:abcl.test.ansi
-  (:use :cl :cl-user)
-  (:nicknames #:ansi-tests #:abcl-ansi-tests #:gcl-ansi)
-  (:export #:run 
-	   #:verify-ansi-tests
-	   #:load-tests
-	   #:clean-tests
-           #:full-report
-	   #:report #:parse))
-
 (in-package :abcl.test.ansi)
 
 (defparameter *ansi-tests-master-source-location*
@@ -84,6 +74,19 @@ location."
 			    "compile-file-test-lp.out" 
 			    "ldtest.lsp")))))
 
-		   
-	     
+;;; XXX move this into test-utilities.lisp?
+(defvar *last-run-matching* "bit-vector")
 
+(defun do-tests-matching (&optional (match *last-run-matching*))
+  "Run all tests in suite whose symbol contains MATCH in a case-insensitive manner."
+  (setf *last-run-matching* match)
+  (let* ((matching (string-upcase match))
+         (count 0))
+    (mapcar (lambda (entry) 
+              (if (search matching (symbol-name (rt::name entry)))
+                  (setf (rt::pend entry) t
+                        count (1+ count))
+                  (setf (rt::pend entry) nil)))
+            (rest rt::*entries*))
+    (format t "Performing ~A tests matching '~A'.~%" count matching)
+    (rt::do-entries t)))

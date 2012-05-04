@@ -66,37 +66,44 @@
    "Invoke tests with (asdf:oos 'asdf:test-op :abcl-test-lisp)."
    (funcall (intern (symbol-name 'run) :abcl.test.lisp)))
 
-;;; Test ABCL with the interpreted ANSI tests
-(defsystem :ansi-interpreted :version "1.1" 
-           :components
-           ((:module ansi-tests :pathname "test/lisp/ansi/" :components
-	       ((:file "package")
-                (:file "parse-ansi-errors" :depends-on ("package"))))))
+(defsystem :ansi-interpreted 
+  :version "1.2" 
+  :description "Test ABCL with the interpreted ANSI tests" :components 
+  ((:module ansi-tests :pathname "test/lisp/ansi/" :components
+            ((:file "packages")
+             (:file "abcl-ansi" :depends-on ("packages"))
+             (:file "parse-ansi-errors" :depends-on ("abcl-ansi"))))))
 (defmethod perform :before ((o test-op) (c (eql (find-system :ansi-interpreted))))
   (load-system  :ansi-interpreted))
+
+(defmethod perform :after ((o load-op) (c (eql (find-system :ansi-interpreted))))
+  (funcall (intern (symbol-name 'load-tests) :abcl.test.ansi)))
+
 (defmethod perform ((o test-op) (c (eql (find-system :ansi-interpreted))))
   (funcall (intern (symbol-name 'run) :abcl.test.ansi)
 	   :compile-tests nil))
 
-;;; Test ABCL with the compiled ANSI tests
-(defsystem :ansi-compiled :version "1.1" 
-           :components
+
+(defsystem :ansi-compiled :version "1.2" 
+           :description "Test ABCL with the compiled ANSI tests." :components 
            ((:module ansi-tests :pathname "test/lisp/ansi/" :components
-	       ((:file "package")
-                (:file "parse-ansi-errors" :depends-on ("package"))))))
+                     ((:file "packages")
+                      (:file "abcl-ansi" :depends-on ("packages"))
+                      (:file "parse-ansi-errors" :depends-on ("abcl-ansi"))))))
+
 (defmethod perform :before ((o test-op) (c (eql (find-system :ansi-compiled))))
   (load-system :ansi-compiled))
 (defmethod perform ((o test-op) (c (eql (find-system :ansi-compiled))))
   (funcall (intern (symbol-name 'run) :abcl.test.ansi)
 	   :compile-tests t))
 
-;;; Test ABCL with CL-BENCH 
-(defsystem :cl-bench :components
-           ((:module cl-bench-package :pathname "../cl-bench/"
-                    :components ((:file "defpackage")))
-            (:module cl-bench-wrapper :pathname "test/lisp/cl-bench/" 
-                     :depends-on (cl-bench-package) :components
-                     ((:file "wrapper")))))
+(defsystem :cl-bench 
+  :description "Test ABCL with CL-BENCH."
+  :components ((:module cl-bench-package :pathname "../cl-bench/"
+                        :components ((:file "defpackage")))
+               (:module cl-bench-wrapper :pathname "test/lisp/cl-bench/" 
+                        :depends-on (cl-bench-package) :components
+                        ((:file "wrapper")))))
 (defmethod perform :before ((o test-op) (c (eql (find-system :cl-bench))))
   (load-system :cl-bench))
 (defmethod perform ((o test-op) (c (eql (find-system :cl-bench))))
