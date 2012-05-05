@@ -27,6 +27,11 @@
           (and (eql (class-of class) +the-funcallable-standard-class+)
                (eql (class-of superclass) +the-standard-class+)))))
 
+;;; This is against the letter of the MOP, but very much in its spirit.
+(defmethod validate-superclass ((class class)
+                                (superclass forward-referenced-class))
+  t)
+
 (defmethod shared-initialize :before ((instance class)
                                       slot-names
                                       &key direct-superclasses
