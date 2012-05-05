@@ -50,15 +50,7 @@
 
 (defmethod print-object ((class class) stream)
   (print-unreadable-object (class stream :identity t)
-    (format stream "~S ~S"
-            (class-name (class-of class))
-            ;; Handle partially-initialized class metaobjects
-            ;; gracefully; useful for error reporting.
-            (cond ((not (slot-exists-p class 'name))
-                   "(a class object without name slot)")
-                  ((not (slot-boundp class 'name))
-                   "(a class object with unset name)")
-                  (t (class-name class)))))
+    (format stream "~S ~S" (class-name (class-of class)) (class-name class)))
   class)
 
 (defmethod print-object ((gf generic-function) stream)
