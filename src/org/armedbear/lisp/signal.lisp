@@ -67,8 +67,8 @@
     (let ((*current-error-depth* (1+ *current-error-depth*)))
       (cond ((> *current-error-depth* *maximum-error-depth*)
              (%format *debug-io*
-                      "~%Maximum error depth exceeded (~D nested errors).~%"
-                      *current-error-depth*)
+                      "~%Maximum error depth exceeded (~D nested errors) with '~A'.~%"
+                      *current-error-depth* condition)
              (if (fboundp 'internal-debug)
                  (internal-debug)
                  (quit)))
