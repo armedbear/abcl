@@ -52,6 +52,10 @@
 ;;; - the merge-vectors algorithm is inspired from the CCL base code 
 ;;;
 
+;;; http://trac.common-lisp.net/armedbear/ticket/196
+;;; TODO Restore the optimization for SIMPLE-VECTOR types by
+;;; conditionally using aref/svref instead of always using AREF
+
 (defmacro merge-vectors-body (type ref a start-a end-a b start-b end-b aux start-aux predicate &optional key)
   (let ((i-a (gensym)) 
 	(i-b (gensym))
@@ -95,7 +99,8 @@
 		   (loop 
 		     (if (funcall ,predicate ,k-b ,k-a)
 			 (progn 
-			   (setf (svref ,aux ,i-aux) ,v-b
+;;			   (setf (svref ,aux ,i-aux) ,v-b ;; FIXME Ticket #196
+			   (setf (aref ,aux ,i-aux) ,v-b
 				 ,i-aux (+ ,i-aux 1)
 				 ,i-b (+ ,i-b 1))
 			   (when (= ,i-b ,end-b) (return))
@@ -104,7 +109,8 @@
 				       `(,k-b (funcall ,key ,v-b))
 				       `(,k-b ,v-b))))
 			 (progn 
-			   (setf (svref ,aux ,i-aux) ,v-a
+;;			   (setf (svref ,aux ,i-aux) ,v-a ;; FIXME Ticket #196
+			   (setf (aref ,aux ,i-aux) ,v-a
 				 ,i-aux (+ ,i-aux 1)
 				 ,i-a (+ ,i-a 1))
 			   (when (= ,i-a ,end-a)
@@ -118,7 +124,8 @@
 				       `(,k-a (funcall ,key ,v-a))
 				       `(,k-a ,v-a))))))))
 	    (loop
-	      (setf (svref ,aux ,i-aux) ,v-a
+;;	      (setf (svref ,aux ,i-aux) ,v-a ;; FIXME Ticket #196
+	      (setf (aref ,aux ,i-aux) ,v-a
 		    ,i-a (+ ,i-a 1))
 	      (when (= ,i-a ,end-a) (return))
 	      (setf ,v-a (,ref ,a ,i-a)
@@ -156,7 +163,8 @@
 			 `(merge-vectors-body ,type ,ref ,sequence ,start ,mid ,sequence 
 					      ,mid ,end ,aux ,start ,predicate)))))
 	 (let ((,maux (make-array ,mend)))
-	   (declare (type simple-vector ,maux))
+;;	   (declare (type simple-vector ,maux))
+	   (declare (type vector ,maux))
 	   (,merge-sort-call ,msequence ,mstart ,mend ,mpredicate ,mkey ,maux nil))))))
 
 (defun merge-sort-vectors (sequence predicate key)
