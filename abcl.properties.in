@@ -13,8 +13,12 @@
 #abcl.compile.lisp.skip=true
 
 # java.options sets the Java options in the abcl wrapper scripts
+#
+# See
+# http://www.oracle.com/technetwork/java/javase/tech/vmoptions-jsp-140102.html
+# for options for the Oracle HotSpot JVM
 
-# Examples:
+# HotSpot Examples:
 
 # Java7 on 64bit optimizations
 #java.options=-d64 -Xmx16g -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=2g
@@ -22,8 +26,8 @@
 # Set the JVM to use a maximum of 1GB of RAM (only works for 64bit JVMs)
 #java.options=-d64 -Xmx1g
 
-# Use a default garbage collector on another 
-#java.options=-d64 -Xmx4g -XX:+PrintGCDetails -XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:MaxGCPauseMillis=100
+# Use the G1 garbage collector stablized with jdk1.7.0_04
+#java.options=-d64 -Xmx4g -XX:+PrintGCDetails -XX:+UseG1GC 
 
 # Use a separate concurrent GC thread (java-1.6_14 or later)
 #java.options=-d64 -Xmx8g -XX:+UseConcMarkSweepGC
