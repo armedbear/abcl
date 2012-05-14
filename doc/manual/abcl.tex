@@ -10,7 +10,7 @@
 \title{Armed Bear Common Lisp User Manual}
 \date{Version 1.1.0-dev\\
 \smallskip
-March 3, 2012}
+May 14, 2012}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -820,13 +820,13 @@ representation is defined to be the \code{NAMESTRING} of the Pathname.
 \label{EXTENSIONS:JAR-PATHNAME}
 \index{JAR-PATHNAME}
 
-Both \code{URL-PATHNAME} and \code{JAR-PATHNAME} may be used anywhere
+Both \code{EXT:URL-PATHNAME} and \code{EXT:JAR-PATHNAME} may be used anywhere
 a \code{CL:PATHNAME} is accepted with the following caveats:
 
 \begin{itemize}
 
-\item A stream obtained via OPEN on a URL-PATHNAME cannot be the
-  target of write operations.
+\item A stream obtained via \code{CL:OPEN} on a \code{CL:URL-PATHNAME}
+  cannot be the target of write operations.
 
 \index{URI}
 \item No canonicalization is performed on the underlying \textsc{URI}
@@ -846,7 +846,7 @@ a \code{CL:PATHNAME} is accepted with the following caveats:
 
 \end{itemize}
 
-The implementation of \code{URL-PATHNAME} allows the \textsc{ABCL}
+The implementation of \code{EXT:URL-PATHNAME} allows the \textsc{ABCL}
 user to dynamically load code from the network.  For example,
 Quicklisp (\cite{quicklisp}) may be completely installed from the REPL
 as the single form:
