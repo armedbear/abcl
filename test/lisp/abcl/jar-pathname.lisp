@@ -42,6 +42,8 @@
         (print form s)))))
 
 (defun jar-file-init ()
+  "Create the jar archives used for testing.
+Returns the two values of the pathnames of the created archives."
   (let* ((temp-file (java:jcall "getAbsolutePath" 
                                (java:jstatic "createTempFile" "java.io.File" "jar" "tmp")))
          (temp-dir (make-pathname :directory (append 
@@ -102,7 +104,8 @@
       (ensure-directories-exist *tmp-directory-whitespace*)
       (setf *tmp-jar-path-whitespace*
             (merge-pathnames "baz.jar" *tmp-directory-whitespace*))
-      (cl-fad-copy-file *tmp-jar-path* *tmp-jar-path-whitespace*))))
+      (cl-fad-copy-file *tmp-jar-path* *tmp-jar-path-whitespace*)))
+  (values *tmp-jar-path* *tmp-jar-path-whitespace*))
 
 (defun clean-jar-tests () 
   (when (probe-file *tmp-directory*)
@@ -199,7 +202,7 @@
   t)
 
 (defparameter *url-jar-pathname-base*
-  "jar:http://abcl-dynamic-install.googlecode.com/files/baz-20110610a.jar!/")
+  "jar:http://abcl-dynamic-install.googlecode.com/files/baz-20120514a.jar!/")
 
 (defmacro load-url-relative (path) 
   `(load (format nil "~A~A" *url-jar-pathname-base* ,path)))
