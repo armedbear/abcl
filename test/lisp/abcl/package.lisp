@@ -3,12 +3,14 @@
   (:nicknames "ABCL-TEST-LISP" "ABCL-TEST")
   (:export 
    #:run 
-   #:do-matching #:run-matching
    #:do-test 
    #:do-tests
+   #:do-tests-matching
    ;; previously in file-system-tests.lisp
    #:pathnames-equal-p #:run-shell-command #:copy-file #:make-symbolic-link
    #:touch #:make-temporary-directory #:delete-directory-and-files
+   ;;; Deprecated
+   #:do-matching #:run-matching
    ))
 (in-package #:abcl.test.lisp)
 
@@ -27,7 +29,7 @@
 ;;; XXX move this into test-utilities.lisp?
 (defvar *last-run-matching* "url-pathname")
 
-(defun do-matching (&optional (match *last-run-matching*))
+(defun do-tests-matching (&optional (match *last-run-matching*))
   "Run all tests in suite whose symbol contains MATCH in a case-insensitive manner."
   (setf *last-run-matching* match)
   (let* ((matching (string-upcase match))
@@ -42,7 +44,8 @@
     (abcl-rt::do-entries t)))
 
 ;;; Deprecated 
-(setf (symbol-function 'run-matching) #'do-matching)
+(setf (symbol-function 'run-matching) #'do-tests-matching)
+(setf (symbol-function 'do-matching) #'do-tests-matching)
 
     
 
