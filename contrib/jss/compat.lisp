@@ -4,6 +4,7 @@
   "Whether backwards compatibility with JSS's use of CL-USER has been enabled.")
 
 (defun ensure-compatibility ()
+  "Ensure backwards compatibility with JSS's use of CL-USER."
   (require 'abcl-asdf)
   (loop :for symbol :in '("add-directory-jars-to-class-path"
                           "need-to-add-directory-jar?")

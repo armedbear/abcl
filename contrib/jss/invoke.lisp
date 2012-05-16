@@ -1,7 +1,7 @@
 ;; invoke.lisp v2.0
 ;;
 ;; Copyright (C) 2005 Alan Ruttenberg
-;; Copyright (C) 2011 Mark Evenson
+;; Copyright (C) 2011-2 Mark Evenson
 ;;
 ;; Since most of this code is derivative of the Jscheme System, it is
 ;; licensed under the same terms, namely:
@@ -122,11 +122,15 @@
 (in-package :jss)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar *do-auto-imports* t))
+  (defvar *do-auto-imports* t 
+    "Whether to automatically introspect all Java classes on the classpath when JSS is loaded."))
 
 (defvar *imports-resolved-classes* (make-hash-table :test 'equal))
 
 (defun find-java-class (name)
+  "Returns the java.lang.Class representation of NAME.
+
+NAME can either string or a symbol according to the usual JSS conventions."
   (jclass (maybe-resolve-class-against-imports name)))
 
 (defmacro invoke-add-imports (&rest imports)
@@ -176,42 +180,20 @@
                 (apply #'jstatic method object-as-class args)
                 (apply #'jcall method object args))))))
 
-;;; Method name as String --> String  | Symbol --> jmethod
-(defvar *methods-cache* (make-hash-table :test #'equal))
-
-(defun get-jmethod (method object) 
-  (when (gethash method *methods-cache*)
-    (gethash 
-     (if (symbolp object) (lookup-class-name object) (jobject-class object))
-     (gethash method *methods-cache*))))
-
-(defun set-jmethod (method object jmethod) 
-  (unless (gethash method *methods-cache*)
-    (setf (gethash method *methods-cache*) (make-hash-table :test #'equal)))
-  (setf 
-   (gethash 
-    (if (symbolp object) (lookup-class-name object) (jobject-class object))
-    (gethash method *methods-cache*))
-   jmethod))
-
 (defconstant +set-accessible+ 
   (jmethod "java.lang.reflect.AccessibleObject" "setAccessible" "boolean"))
 
-;;; TODO optimize me!
 (defun invoke-find-method (method object args)
-  (let ((jmethod (get-jmethod method object)))
-    (unless jmethod
-      (setf jmethod 
-            (if (symbolp object)
+  (let ((result 
+         (if (symbolp object)
                 ;;; static method
-                (apply #'jmethod (lookup-class-name object) 
-                       method (mapcar #'jobject-class args))
+             (apply #'jmethod (lookup-class-name object) 
+                    method (mapcar #'jobject-class args))
                   ;;; instance method
-                (apply #'jresolve-method 
-                       method object args)))
-      (jcall +set-accessible+ jmethod +true+)
-      (set-jmethod method object jmethod))
-    jmethod))
+             (apply #'jresolve-method 
+                    method object args))))
+    (jcall +set-accessible+ result +true+)
+    result))
 
 ;; This is the reader macro for java methods. it translates the method
 ;; into a lambda form that calls invoke. Which is nice because you
@@ -232,6 +214,16 @@
   (set-dispatch-macro-character #\# #\" 'read-invoke))
 
 (defmacro with-constant-signature (fname-jname-pairs &body body)
+  "Expand all references to FNAME-JNAME-PAIRS in BODY into static function calls promising that the same function bound in the FNAME-JNAME-PAIRS will be invoked with the same argument signature.
+
+FNAME-JNAME-PAIRS is a list of (symbol function &optional raw)
+elements where symbol will be the symbol bound to the method named by
+the string function.  If the optional parameter raw is non-nil, the
+result will be the raw JVM object, uncoerced by the usual conventions.
+
+Use this macro if you are making a lot of calls and 
+want to avoid the overhead of the dynamic dispatch."
+
   (if (null fname-jname-pairs)
       `(progn ,@body)
       (destructuring-bind ((fname jname &optional raw) &rest ignore) fname-jname-pairs
@@ -259,7 +251,6 @@
 							       (jclass "java.lang.String"))
 						      (jclass "java.util.regex.Pattern") 
 						      ".*?([^.]*)$")))
-
 	 (last-name 
 	  (let ((matcher (#0"matcher" last-name-pattern name)))
 	    (#"matches" matcher)
@@ -308,6 +299,7 @@
 	 ))))
 
 (defun jar-import (file)
+  "Import all the Java classes contained in the pathname FILE into the JSS dynamic lookup cache."
   (when (probe-file file)
     (loop for (name . full-class-name) in (get-all-jar-classnames file)
        do 
@@ -315,6 +307,9 @@
 		  :test 'equal))))
 
 (defun new (class-name &rest args)
+  "Invoke the Java constructor for CLASS-NAME with ARGS.
+
+CLASS-NAME may either be a symbol or a string according to the usual JSS conventions."
   (invoke-restargs 'new class-name args))
 
 (defvar *running-in-osgi* (ignore-errors (jclass "org.osgi.framework.BundleActivator")))
@@ -404,6 +399,7 @@ associated is used to look up the static FIELD."
     (do-auto-imports)))
 
 (defun japropos (string)
+"Output the names of all Java class names loaded in the current process which match STRING.."
   (setq string (string string))
   (let ((matches nil))
     (maphash (lambda(key value) 
@@ -425,11 +421,20 @@ associated is used to look up the static FIELD."
    (remove-duplicates (map 'list (if full #"toString" 'jmethod-name) (#"getMethods" (find-java-class class))) :test 'equal)
    (ignore-errors (remove-duplicates (map 'list (if full #"toString" 'jmethod-name) (#"getConstructors" (find-java-class class))) :test 'equal))))
 
-(defun jcmn (class &optional full)
-  (if full 
+(defun java-class-method-names (class &optional stream)
+  "Return a list of the public methods encapsulated by the JVM CLASS.
+
+If STREAM non-nil, output a verbose description to the named output stream.
+
+CLASS may either be a string naming a fully qualified JVM class in dot
+notation, or a symbol resolved against all class entries in the
+current classpath."
+  (if stream
       (dolist (method (jclass-method-names class t))
-	(format t "~a~%" method))
+	(format stream "~a~%" method))
       (jclass-method-names class)))
+
+(setf (symbol-function 'jcmn) 'java-class-method-names)
 
 (defun path-to-class (classname)
   (let ((full (lookup-class-name classname)))
@@ -503,6 +508,7 @@ associated is used to look up the static FIELD."
        ))
 
 (defun classfiles-import (directory)
+  "Load all Java classes recursively contained under DIRECTORY in the current process."
   (setq directory (truename directory))
   (loop for full-class-name in (all-classes-below-directory directory)
        for name = (#"replaceAll" full-class-name "^.*\\." "")
@@ -525,6 +531,7 @@ associated is used to look up the static FIELD."
      :collecting (jcall "get" list i)))
 
 (defun jarray-to-list (jarray)
+  "Convert the Java array named by JARRARY into a Lisp list."
   (declare (optimize (speed 3) (safety 0)))
   (jlist-to-list
    (jstatic "asList" "java.util.Arrays" jarray)))
@@ -545,6 +552,7 @@ associated is used to look up the static FIELD."
 ;; Contribution of Luke Hope. (Thanks!)
 
 (defun iterable-to-list (iterable)
+  "Return the items contained the java.lang.Iterable ITERABLE as a list."
  (declare (optimize (speed 3) (safety 0)))
  (let ((it (#"iterator" iterable)))
    (with-constant-signature ((hasmore "hasMoreElements")

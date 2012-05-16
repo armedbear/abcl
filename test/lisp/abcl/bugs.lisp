@@ -110,8 +110,8 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
       (require :abcl-contrib)
       (require :jss)
       (jss:with-constant-signature ((substring "substring")) 
-        (substring "some string" 2)))
-  t)
+        (substring "01234" 2)))
+  "234")
 
 
 ;;; http://trac.common-lisp.net/armedbear/ticket/199

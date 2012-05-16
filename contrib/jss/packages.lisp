@@ -11,7 +11,7 @@
 
    #:invoke-add-imports
    #:find-java-class
-   #:jcmn
+   #:jcmn #:java-class-method-names
    #:japropos
    #:new 
    
