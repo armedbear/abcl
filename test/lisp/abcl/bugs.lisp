@@ -104,10 +104,26 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
       (string= result docstring))
   t)
 
-
-      
+;;; http://trac.common-lisp.net/armedbear/ticket/205
 (deftest bugs.with-constant-signature.1 
-    (with-constant-signature ((substring "substring")) 
-      (substring "some string" 2))
+    (progn 
+      (require :abcl-contrib)
+      (require :jss)
+      (jss:with-constant-signature ((substring "substring")) 
+        (substring "some string" 2)))
   t)
 
+
+;;; http://trac.common-lisp.net/armedbear/ticket/199
+(deftest bugs.clos.aux.1 
+    ;;; XXX possible collision with previously defined names
+    (progn
+      (defclass room ()
+        ((decorators :reader room-decorators)))
+      (defgeneric decorators (room))
+      (defmethod decorators ((room room) 
+                             &aux (d (decorators room)))
+        d)
+      (decorators (make-instance 'room)))
+  t)
+      
