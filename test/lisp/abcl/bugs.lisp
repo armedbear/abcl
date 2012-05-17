@@ -126,4 +126,10 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
         d)
       (decorators (make-instance 'room)))
   t)
+
+(deftest bugs.aux.1
+    ((lambda (a &aux (b (+ a 1))) 
+       b)
+     2)
+  3)
       
