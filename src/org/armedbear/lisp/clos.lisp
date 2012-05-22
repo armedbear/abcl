@@ -1403,6 +1403,12 @@
          (push item options))))
     (setf options (nreverse options)
           methods (nreverse methods))
+    ;;; Since DEFGENERIC currently shares its argument parsing with
+    ;;; DEFMETHOD, we perform this check here.
+    (when (find '&aux lambda-list)
+      (error 'program-error
+             :format-control "&AUX is not allowed in a generic function lambda list: ~S"
+             :format-arguments (list lambda-list)))
     `(prog1
        (%defgeneric
         ',function-name
@@ -1981,8 +1987,13 @@ Initialized with the true value near the end of the file.")
             (lambda-list (%generic-function-lambda-list gf))
             (exact (null (intersection lambda-list
                                        '(&rest &optional &key
-                                         &allow-other-keys &aux)))))
-       (if exact
+                                         &allow-other-keys))))
+            (no-aux (null (some 
+                           (lambda (method) 
+                             (find '&aux (std-slot-value method 'sys::lambda-list)))
+                           (sys:%generic-function-methods gf)))))
+       (if (and exact
+                no-aux)
            (cond
              ((= number-required 1)
               (cond

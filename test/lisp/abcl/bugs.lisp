@@ -115,19 +115,7 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
 
 
 ;;; http://trac.common-lisp.net/armedbear/ticket/199
-(deftest bugs.clos.aux.1 
-    ;;; XXX possible collision with previously defined names
-    (progn
-      (defclass room ()
-        ((decorators :reader room-decorators)))
-      (defgeneric decorators (room))
-      (defmethod decorators ((room room) 
-                             &aux (d (decorators room)))
-        d)
-      (decorators (make-instance 'room)))
-  t)
-
-(deftest bugs.aux.1
+(deftest bugs.clos.aux.1
     ((lambda (a &aux (b (+ a 1))) 
        b)
      2)
