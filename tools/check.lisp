@@ -6,11 +6,30 @@
 (defun generate-bisect-wrapper ()
   "Create 'check.sh', a script suitable for use with hg bisect.
 
-  To use, adjust the contents of the *TESTS*
+To use, first clone 
 
    hg clone https://evenson.not.org@code.google.com/p/abcl-dynamic-install/ ./abcl
-&& cd abcl
-&& hg bisect --reset && hg bisect --good && hg --command sh ./check.sh
+   cd abcl
+
+Then copy 'check.lisp' to this directory, as well as the bisect
+wrapper script 'check.sh'.  Adjust 'check.lisp' to raise an error if
+the problem exists in a given changeset.
+
+Then reset the hg bisection data via:
+
+   hg bisect --reset
+
+Mark the last known good and earliest known bad changeset via
+
+   hg bisect --good <revision>
+   hg bisect --bad <revision>
+
+Then issue
+
+   hg bisect --command sh ./check.sh
+
+which will churn through the revisions until it finds the earliest
+known version in which the 'check.lisp' raises the error.
 "
   (let ((check.sh #p"check.sh"))
     (unless (probe-file check.sh)
