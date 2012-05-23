@@ -104,16 +104,6 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
       (string= result docstring))
   t)
 
-;;; http://trac.common-lisp.net/armedbear/ticket/205
-(deftest bugs.with-constant-signature.1 
-    (progn 
-      (require :abcl-contrib)
-      (require :jss)
-      (jss:with-constant-signature ((substring "substring")) 
-        (substring "01234" 2)))
-  "234")
-
-
 ;;; http://trac.common-lisp.net/armedbear/ticket/199
 (deftest bugs.clos.aux.1
     ((lambda (a &aux (b (+ a 1))) 
