@@ -3071,7 +3071,7 @@ public final class Primitives {
     };
 
     // ### gensym
-    private static final Primitive GENSYM = new pf_gensym();
+    public static final Primitive GENSYM = new pf_gensym();
     private static final class pf_gensym extends Primitive {
         pf_gensym() {
             super(Symbol.GENSYM, "&optional x");

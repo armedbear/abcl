@@ -257,8 +257,9 @@ public final class Extensions
     }
   }
 
-  // ### make-temp-file => pathname
-  private static final Primitive MAKE_TEMP_FILE = new make_temp_file();
+  public static final Primitive MAKE_TEMP_FILE = new make_temp_file();
+  @DocString(name="make_temp_file",
+             doc="Create and return the pathname of a previously non-existent file.")
   private static class make_temp_file extends Primitive { 
     make_temp_file() {
       super("make-temp-file", PACKAGE_EXT, true, "");
@@ -276,6 +277,32 @@ public final class Extensions
         {
           Debug.trace(e);
         }
+      return NIL;
+    }
+  }
+
+  public static final Primitive MAKE_TEMP_DIRECTORY = new make_temp_directory();
+  @DocString(name="make_temp_directory",
+             doc="Create and return the pathname of a previously non-existent directory.")
+  private static class make_temp_directory extends Primitive { 
+    make_temp_directory() {
+      super("make-temp-directory", PACKAGE_EXT, true, "");
+    }
+    @Override
+    public LispObject execute()
+    {
+      try {
+          String tmpdir = System.getProperty("java.io.tmpdir");
+          String name = Primitives.GENSYM.execute().getStringValue();
+          File dir = new File(tmpdir, name);
+          File file = new File(dir, "xx");
+
+          if (file.mkdirs()) {
+            return new Pathname(dir + "/");
+          }
+      } catch (Throwable t) {
+        Debug.trace(t);
+      }
       return NIL;
     }
   }
