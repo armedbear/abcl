@@ -42,12 +42,15 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-// ### unzip pathname directory => unzipped_pathnames
+@DocString(name="unzip",
+           args="pathname &optional directory => unzipped_pathnames",
+           doc="Unpack zip archive at PATHNAME returning a list of extracted pathnames.\nIf the optional DIRECTORY is specified, root the abstraction in that directory, otherwise use the current value of *DEFAULT-PATHNAME-DEFAULTS.")
 public final class unzip 
   extends Primitive
 {
     public unzip() {
-        super("unzip", PACKAGE_SYS, true, "pathname &optional directory => unzipped_pathnames");
+        super("unzip", PACKAGE_SYS, true, 
+              "pathname &optional directory => unzipped_pathnames");
     }
   
     @Override
