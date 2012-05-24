@@ -295,9 +295,8 @@ public final class Extensions
           String tmpdir = System.getProperty("java.io.tmpdir");
           String name = Primitives.GENSYM.execute().getStringValue();
           File dir = new File(tmpdir, name);
-          File file = new File(dir, "xx");
 
-          if (file.mkdirs()) {
+          if (dir.mkdirs()) {
             return new Pathname(dir + "/");
           }
       } catch (Throwable t) {
