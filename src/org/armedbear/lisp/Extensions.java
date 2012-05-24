@@ -292,13 +292,11 @@ public final class Extensions
     public LispObject execute()
     {
       try {
-          String tmpdir = System.getProperty("java.io.tmpdir");
-          String name = Primitives.GENSYM.execute().getStringValue();
-          File dir = new File(tmpdir, name);
-
-          if (dir.mkdirs()) {
-            return new Pathname(dir + "/");
-          }
+        File dir = File.createTempFile("abcl", null);
+        dir.delete();
+        if (dir.mkdirs()) {
+          return new Pathname(dir + "/");
+        }
       } catch (Throwable t) {
         Debug.trace(t);
       }
