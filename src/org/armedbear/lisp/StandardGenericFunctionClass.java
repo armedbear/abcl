@@ -63,10 +63,10 @@ public final class StandardGenericFunctionClass extends FuncallableStandardClass
         pkg.intern("INITIAL-METHODS"),
         pkg.intern("METHODS"),
         pkg.intern("METHOD-CLASS"),
-        pkg.intern("METHOD-COMBINATION"),
+        pkg.intern("%METHOD-COMBINATION"),
         pkg.intern("ARGUMENT-PRECEDENCE-ORDER"),
         pkg.intern("CLASSES-TO-EMF-TABLE"),
-        Symbol.DOCUMENTATION
+        Symbol._DOCUMENTATION
       };
     setClassLayout(new Layout(this, instanceSlotNames, NIL));
     setFinalized(true);

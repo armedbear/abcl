@@ -66,8 +66,8 @@ public final class SlotDefinitionClass extends StandardClass
             pkg.intern("ALLOCATION"),
             pkg.intern("ALLOCATION-CLASS"),
             pkg.intern("LOCATION"),
-            Symbol.TYPE,
-            Symbol.DOCUMENTATION
+            Symbol._TYPE,
+            Symbol._DOCUMENTATION
         };
         setClassLayout(new Layout(this, instanceSlotNames, NIL));
         //Set up slot definitions so that this class can be extended by users
@@ -78,11 +78,16 @@ public final class SlotDefinitionClass extends StandardClass
         // The Java class SlotDefinition sets the location slot to NIL
         // in its constructor; here we make Lisp-side subclasses of
         // standard-*-slot-definition do the same.
-        LispObject locationSlot = slotDefinitions.nthcdr(8).car();
+        LispObject locationSlot = slotDefinitions.nthcdr(SLOT_INDEX_LOCATION).car();
         SlotDefinition.SET_SLOT_DEFINITION_INITFORM.execute(locationSlot, NIL);
         SlotDefinition.SET_SLOT_DEFINITION_INITFUNCTION.execute(locationSlot, StandardClass.constantlyNil);
         setDirectSlotDefinitions(slotDefinitions);
         setSlotDefinitions(slotDefinitions);
+        // Fix initargs of TYPE, DOCUMENTATION slots.
+        LispObject typeSlot = slotDefinitions.nthcdr(SLOT_INDEX_TYPE).car();
+        SlotDefinition.SET_SLOT_DEFINITION_INITARGS.execute(typeSlot, list(internKeyword("TYPE")));
+        LispObject documentationSlot = slotDefinitions.nthcdr(SLOT_INDEX_DOCUMENTATION).car();
+        SlotDefinition.SET_SLOT_DEFINITION_INITARGS.execute(documentationSlot, list(internKeyword("DOCUMENTATION")));
 
         setFinalized(true);
     }

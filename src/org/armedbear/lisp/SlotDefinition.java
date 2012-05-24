@@ -104,6 +104,19 @@ public final class SlotDefinition extends StandardObject
     slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
   }
 
+  public SlotDefinition(LispObject name, LispObject readers,
+                        Function initFunction, LispObject initargs)
+  {
+    this();
+    Debug.assertTrue(name instanceof Symbol);
+    slots[SlotDefinitionClass.SLOT_INDEX_NAME] = name;
+    slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = initFunction;
+    slots[SlotDefinitionClass.SLOT_INDEX_INITFORM] = NIL;
+    slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] = initargs;
+    slots[SlotDefinitionClass.SLOT_INDEX_READERS] = readers;
+    slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
+  }
+
   public static StandardObject checkSlotDefinition(LispObject obj) {
           if (obj instanceof StandardObject) return (StandardObject)obj;
       return (StandardObject)type_error(obj, Symbol.SLOT_DEFINITION);
@@ -278,7 +291,7 @@ public final class SlotDefinition extends StandardObject
     }
   };
 
-  private static final Primitive SET_SLOT_DEFINITION_INITARGS
+  static final Primitive SET_SLOT_DEFINITION_INITARGS
     = new pf_set_slot_definition_initargs();
   @DocString(name="set-slot-definition-initargs",
              args="slot-definition initargs")

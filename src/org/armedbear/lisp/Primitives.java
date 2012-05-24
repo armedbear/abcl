@@ -5561,7 +5561,7 @@ public final class Primitives {
             if (arg instanceof LispClass)
                 return ((LispClass)arg).getDocumentation();
             else
-                return ((StandardObject)arg).getInstanceSlotValue(Symbol.DOCUMENTATION);
+                return ((StandardObject)arg).getInstanceSlotValue(Symbol._DOCUMENTATION);
         }
     };
 
@@ -5579,7 +5579,7 @@ public final class Primitives {
             if (first instanceof LispClass)
                 ((LispClass)first).setDocumentation(second);
             else
-                ((StandardObject)first).setInstanceSlotValue(Symbol.DOCUMENTATION, second);
+                ((StandardObject)first).setInstanceSlotValue(Symbol._DOCUMENTATION, second);
             return second;
         }
     };

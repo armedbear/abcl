@@ -83,7 +83,7 @@ public class StandardClass extends SlotClass
                       symDirectDefaultInitargs,
                       symDefaultInitargs,
                       symFinalizedP,
-                      Symbol.DOCUMENTATION),
+                      Symbol._DOCUMENTATION),
                  NIL)
       {
         @Override
@@ -106,7 +106,7 @@ public class StandardClass extends SlotClass
                       symDirectDefaultInitargs,
                       symDefaultInitargs,
                       symFinalizedP,
-                      Symbol.DOCUMENTATION),
+                      Symbol._DOCUMENTATION),
                  NIL)
       {
         @Override
@@ -292,13 +292,13 @@ public class StandardClass extends SlotClass
   @Override
   public LispObject getDocumentation()
   {
-    return getInstanceSlotValue(Symbol.DOCUMENTATION);
+    return getInstanceSlotValue(Symbol._DOCUMENTATION);
   }
 
   @Override
   public void setDocumentation(LispObject doc)
   {
-    setInstanceSlotValue(Symbol.DOCUMENTATION, doc);
+    setInstanceSlotValue(Symbol._DOCUMENTATION, doc);
   }
 
   @Override
@@ -412,7 +412,9 @@ public class StandardClass extends SlotClass
              helperMakeSlotDefinition("DIRECT-DEFAULT-INITARGS", constantlyNil),
              helperMakeSlotDefinition("DEFAULT-INITARGS", constantlyNil),
              helperMakeSlotDefinition("FINALIZED-P", constantlyNil),
-             helperMakeSlotDefinition("DOCUMENTATION", constantlyNil));
+             new SlotDefinition(Symbol._DOCUMENTATION,
+                                list(PACKAGE_MOP.intern("CLASS-DOCUMENTATION")),
+                                constantlyNil, list(internKeyword("DOCUMENTATION"))));
   }
 
 
@@ -739,20 +741,24 @@ public class StandardClass extends SlotClass
     STANDARD_METHOD.setCPL(STANDARD_METHOD, METHOD, METAOBJECT, STANDARD_OBJECT,
                            BuiltInClass.CLASS_T);
     STANDARD_METHOD.setDirectSlotDefinitions(
-      list(new SlotDefinition(Symbol.GENERIC_FUNCTION, NIL, constantlyNil),
+      list(new SlotDefinition(Symbol._GENERIC_FUNCTION, NIL, constantlyNil,
+                              list(internKeyword("GENERIC-FUNCTION"))),
            new SlotDefinition(Symbol.LAMBDA_LIST, NIL, constantlyNil),
            new SlotDefinition(Symbol.KEYWORDS, NIL, constantlyNil),
            new SlotDefinition(Symbol.OTHER_KEYWORDS_P, NIL, constantlyNil),
            new SlotDefinition(Symbol.SPECIALIZERS, NIL, constantlyNil),
            new SlotDefinition(Symbol.QUALIFIERS, NIL, constantlyNil),
-           new SlotDefinition(Symbol.FUNCTION, NIL, constantlyNil),
+           new SlotDefinition(Symbol._FUNCTION, NIL, constantlyNil,
+                              list(internKeyword("FUNCTION"))),
            new SlotDefinition(Symbol.FAST_FUNCTION, NIL, constantlyNil),
-           new SlotDefinition(Symbol.DOCUMENTATION, NIL, constantlyNil)));
+           new SlotDefinition(Symbol._DOCUMENTATION, NIL, constantlyNil,
+                              list(internKeyword("DOCUMENTATION")))));
     STANDARD_ACCESSOR_METHOD.setCPL(STANDARD_ACCESSOR_METHOD, STANDARD_METHOD,
                                     METHOD, METAOBJECT, STANDARD_OBJECT,
                                     BuiltInClass.CLASS_T);
     STANDARD_ACCESSOR_METHOD.setDirectSlotDefinitions(
-      list(new SlotDefinition(Symbol.SLOT_DEFINITION, NIL)));
+      list(new SlotDefinition(Symbol._SLOT_DEFINITION, NIL, constantlyNil,
+                              list(internKeyword("SLOT-DEFINITION")))));
     STANDARD_READER_METHOD.setCPL(STANDARD_READER_METHOD,
                                   STANDARD_ACCESSOR_METHOD, STANDARD_METHOD,
                                   METHOD, METAOBJECT, STANDARD_OBJECT,
@@ -767,9 +773,9 @@ public class StandardClass extends SlotClass
       list(new SlotDefinition(Symbol.NAME,
                               list(Symbol.METHOD_COMBINATION_NAME),
                               constantlyNil),
-           new SlotDefinition(Symbol.DOCUMENTATION,
+           new SlotDefinition(Symbol._DOCUMENTATION,
                               list(Symbol.METHOD_COMBINATION_DOCUMENTATION),
-                              constantlyNil)));
+                              constantlyNil, list(internKeyword("DOCUMENTATION")))));
     SHORT_METHOD_COMBINATION.setCPL(SHORT_METHOD_COMBINATION,
                                     METHOD_COMBINATION, METAOBJECT,
                                     STANDARD_OBJECT, BuiltInClass.CLASS_T);

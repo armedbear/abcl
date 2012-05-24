@@ -211,7 +211,6 @@
                       funcallable-standard-class))))
 (fixup-standard-class-hierarchy)
 
-
 (defun no-applicable-method (generic-function &rest args)
   (error "There is no applicable method for the generic function ~S when called with arguments ~S."
          generic-function
@@ -869,7 +868,7 @@
                                        arguments declarations forms)
   (let ((instance (std-allocate-instance (find-class 'long-method-combination))))
     (setf (std-slot-value instance 'sys::name) name)
-    (setf (std-slot-value instance 'documentation) documentation)
+    (setf (std-slot-value instance 'sys:%documentation) documentation)
     (setf (std-slot-value instance 'sys::lambda-list) lambda-list)
     (setf (std-slot-value instance 'method-group-specs) method-group-specs)
     (setf (std-slot-value instance 'args-lambda-list) args-lambda-list)
@@ -887,7 +886,7 @@
 
 (defun method-combination-documentation (method-combination)
   (check-type method-combination method-combination)
-  (std-slot-value method-combination 'documentation))
+  (std-slot-value method-combination 'sys:%documentation))
 
 (defun short-method-combination-operator (method-combination)
   (check-type method-combination short-method-combination)
@@ -943,7 +942,7 @@
        (let ((instance (std-allocate-instance
                         (find-class 'short-method-combination))))
          (setf (std-slot-value instance 'sys::name) ',name)
-         (setf (std-slot-value instance 'documentation) ',documentation)
+         (setf (std-slot-value instance 'sys:%documentation) ',documentation)
          (setf (std-slot-value instance 'operator) ',operator)
          (setf (std-slot-value instance 'identity-with-one-argument)
                ',identity-with-one-arg)
@@ -1277,10 +1276,10 @@
 ;;; AMOP pg. 218ff, will be redefined when generic functions are set up.
 
 (defun std-method-function (method)
-  (std-slot-value method 'cl:function))
+  (std-slot-value method 'sys::%function))
 
 (defun std-method-generic-function (method)
-  (std-slot-value method 'cl:generic-function))
+  (std-slot-value method 'sys::%generic-function))
 
 (defun std-method-specializers (method)
   (std-slot-value method 'sys::specializers))
@@ -1289,7 +1288,7 @@
   (std-slot-value method 'sys::qualifiers))
 
 (defun std-accessor-method-slot-definition (accessor-method)
-  (std-slot-value accessor-method 'sys:slot-definition))
+  (std-slot-value accessor-method 'sys::%slot-definition))
 
 ;;; Additional method readers
 (defun std-method-fast-function (method)
@@ -1372,10 +1371,10 @@
   (setf (std-slot-value method 'sys::qualifiers) new-value))
 
 (defun method-documentation (method)
-  (std-slot-value method 'documentation))
+  (std-slot-value method 'sys:%documentation))
 
 (defun (setf method-documentation) (new-value method)
-  (setf (std-slot-value method 'documentation) new-value))
+  (setf (std-slot-value method 'sys:%documentation) new-value))
 
 ;;; defgeneric
 
@@ -1869,8 +1868,8 @@ Initialized with the true value near the end of the file.")
     (setf (std-slot-value method 'sys::specializers)
           (canonicalize-specializers specializers))
     (setf (method-documentation method) documentation)
-    (setf (std-slot-value method 'generic-function) nil) ; set by add-method
-    (setf (std-slot-value method 'function) function)
+    (setf (std-slot-value method 'sys::%generic-function) nil) ; set by add-method
+    (setf (std-slot-value method 'sys::%function) function)
     (setf (std-slot-value method 'sys::fast-function) fast-function)
     (setf (std-slot-value method 'sys::keywords) (getf analyzed-args :keywords))
     (setf (std-slot-value method 'sys::other-keywords-p)
@@ -1903,7 +1902,7 @@ Initialized with the true value near the end of the file.")
                                  (method-specializers method) nil)))
     (when old-method
       (std-remove-method gf old-method)))
-  (setf (std-slot-value method 'generic-function) gf)
+  (setf (std-slot-value method 'sys::%generic-function) gf)
   (push method (generic-function-methods gf))
   (dolist (specializer (method-specializers method))
     (add-direct-method specializer method))
@@ -1913,7 +1912,7 @@ Initialized with the true value near the end of the file.")
 (defun std-remove-method (gf method)
   (setf (generic-function-methods gf)
         (remove method (generic-function-methods gf)))
-  (setf (std-slot-value method 'generic-function) nil)
+  (setf (std-slot-value method 'sys::%generic-function) nil)
   (dolist (specializer (method-specializers method))
     (remove-direct-method specializer method))
   (finalize-standard-generic-function gf)
@@ -2566,10 +2565,10 @@ to ~S with argument list ~S."
     (setf (std-slot-value method 'sys::specializers)
           (canonicalize-specializers specializers))
     (setf (method-documentation method) documentation)
-    (setf (std-slot-value method 'generic-function) nil)
-    (setf (std-slot-value method 'function) function)
+    (setf (std-slot-value method 'sys::%generic-function) nil)
+    (setf (std-slot-value method 'sys::%function) function)
     (setf (std-slot-value method 'sys::fast-function) fast-function)
-    (setf (std-slot-value method 'sys:slot-definition) slot-definition)
+    (setf (std-slot-value method 'sys::%slot-definition) slot-definition)
     (setf (std-slot-value method 'sys::keywords) nil)
     (setf (std-slot-value method 'sys::other-keywords-p) nil)
     method))
@@ -3679,25 +3678,25 @@ or T when any keyword is acceptable due to presence of
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (%slot-definition-type slot-definition)
-      (slot-value slot-definition 'cl:type))))
+      (slot-value slot-definition 'sys::%type))))
 
 (atomic-defgeneric (setf slot-definition-type) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (set-slot-definition-type slot-definition value)
-      (setf (slot-value slot-definition 'cl:type) value))))
+      (setf (slot-value slot-definition 'sys::%type) value))))
 
 (atomic-defgeneric slot-definition-documentation (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (%slot-definition-documentation slot-definition)
-      (slot-value slot-definition 'cl:documentation))))
+      (slot-value slot-definition 'sys:%documentation))))
 
 (atomic-defgeneric (setf slot-definition-documentation) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
       (set-slot-definition-documentation slot-definition value)
-      (setf (slot-value slot-definition 'cl:documentation) value))))
+      (setf (slot-value slot-definition 'sys:%documentation) value))))
 
 
 ;;; Conditions.

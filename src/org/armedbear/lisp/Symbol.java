@@ -3162,8 +3162,12 @@ public class Symbol extends LispObject implements java.io.Serializable
   public static final Symbol FORMAT_CONTROL =
     PACKAGE_SYS.addInternalSymbol("FORMAT-CONTROL");
   public static final Symbol FSET = PACKAGE_SYS.addInternalSymbol("FSET");
+  public static final Symbol _FUNCTION =
+    PACKAGE_SYS.addInternalSymbol("%FUNCTION");
   public static final Symbol FUNCTION_PRELOAD =
     PACKAGE_SYS.addInternalSymbol("FUNCTION-PRELOAD");
+  public static final Symbol _GENERIC_FUNCTION =
+    PACKAGE_SYS.addInternalSymbol("%GENERIC-FUNCTION");
   public static final Symbol INSTANCE =
     PACKAGE_SYS.addInternalSymbol("INSTANCE");
   public static final Symbol KEYWORDS =
@@ -3184,6 +3188,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addInternalSymbol("PROXY-PRELOADED-FUNCTION");
   public static final Symbol QUALIFIERS =
     PACKAGE_SYS.addInternalSymbol("QUALIFIERS");
+  public static final Symbol _SLOT_DEFINITION =
+    PACKAGE_SYS.addInternalSymbol("%SLOT-DEFINITION");
   public static final Symbol _SOURCE =
     PACKAGE_SYS.addInternalSymbol("%SOURCE");
   public static final Symbol SOCKET_STREAM =
@@ -3198,6 +3204,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addInternalSymbol("SYSTEM-STREAM");
   public static final Symbol STACK_FRAME =
     PACKAGE_SYS.addInternalSymbol("STACK-FRAME");
+  public static final Symbol _TYPE =
+    PACKAGE_SYS.addInternalSymbol("%TYPE");
   public static final Symbol LISP_STACK_FRAME =
     PACKAGE_SYS.addInternalSymbol("LISP-STACK-FRAME");
   public static final Symbol JAVA_STACK_FRAME =

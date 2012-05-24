@@ -93,7 +93,7 @@ public final class StandardGenericFunction extends FuncallableStandardObject
       NIL;
     StandardObject method
         = (StandardObject)StandardClass.STANDARD_METHOD.allocateInstance();
-    method.setInstanceSlotValue(Symbol.GENERIC_FUNCTION, this);
+    method.setInstanceSlotValue(Symbol._GENERIC_FUNCTION, this);
     method.setInstanceSlotValue(Symbol.LAMBDA_LIST, lambdaList);
     method.setInstanceSlotValue(Symbol.KEYWORDS, NIL);
     method.setInstanceSlotValue(Symbol.OTHER_KEYWORDS_P, NIL);
@@ -103,9 +103,9 @@ public final class StandardGenericFunction extends FuncallableStandardObject
     // constructor for StandardMethod instances did (that Java class was
     // removed for the implementation of subclassable standard-method).
     // (rudi 2012-01-27)
-    method.setInstanceSlotValue(Symbol.FUNCTION, NIL);
+    method.setInstanceSlotValue(Symbol._FUNCTION, NIL);
     method.setInstanceSlotValue(Symbol.FAST_FUNCTION, function);
-    method.setInstanceSlotValue(Symbol.DOCUMENTATION, NIL);
+    method.setInstanceSlotValue(Symbol._DOCUMENTATION, NIL);
     slots[StandardGenericFunctionClass.SLOT_INDEX_METHODS] =
       list(method);
     slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS] =
