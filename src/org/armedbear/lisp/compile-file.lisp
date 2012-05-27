@@ -97,12 +97,13 @@
   (unless classfile
     (diag "Nil classfile argument passed to verify-load.")
     (return-from verify-load nil))
-  (when 
-      (= 0 (file-length (open classfile :direction :input)))
-             ;;; TODO hook into a real ABCL compiler condition hierarchy
-    (diag "Internal compiler error detected: Fasl contains ~
+  (with-open-file (cf classfile :direction :input)
+    (when 
+        (= 0 (file-length cf))
+;;; TODO hook into a real ABCL compiler condition hierarchy
+      (diag "Internal compiler error detected: Fasl contains ~
 zero-length jvm classfile corresponding to ~A." classfile)
-    (return-from verify-load nil))
+      (return-from verify-load nil)))
   #+nil
   (when (or force (> *safety* *speed*))
     (diag "Testing compiled bytecode by loading classfile into JVM.")
