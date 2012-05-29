@@ -7,6 +7,22 @@
 ;;;   .clisprc.lisp      (CLISP)
 ;;;   .lispworks         (LispWorks)
 
+;;; Customize the procedure used by CL:DISASSEMBLE
+(progn 
+  (setf *disassembler*       
+        (let ((strategies (list 
+                                   (lambda (p)
+                                     (let ((class (make-pathname :name (pathname-name p)))
+                                           (path (directory-namestring p)))
+                                       (format nil "javap -c -l -verbose -classpath ~A ~A" path class))
+                                     "/Users/evenson/bin/jad -a -p"
+                                     (lambda (p)
+                                       (format nil "java -jar ~
+/Users/evenson/work/classfileanalyzer/classfileanalyzer.jar ~A"
+                                               p))))))
+          (first strategies))))
+
+
 (defparameter *ansi-tests-directory*
   #-(or windows mswindows win32)
   #p"/home/peter/xcl/x/ansi-tests/"
