@@ -1,0 +1,36 @@
+JFLI
+====
+
+The Java Foreign Linker Interface (JFLI) provides an abstraction to
+manipulate Java classes from Armed Bear Common Lisp that has been
+ported to other Lisp implementations.
+
+Incorporated into ABCL from <git://github.com/mrohne/jfli>.
+
+
+README
+------
+
+jfli (http://jfli.sf.net) is a library that provides access to Java
+from Lisp. jfli-abcl is jfli modified to work with ABCL
+(http://armedbear-j.sf.net); it provides the same interface to Java,
+but, since ABCL lives on the JVM, it doesn't need jni.
+
+jfli-abcl has an experimental NEW-CLASS macro that writes and loads a
+Java class at runtime, and defines the usual jfli-like Lisp interface
+to it. See the documentation of NEW-CLASS and the examples for the
+syntax. If you want to use it, make sure that (1) asm.jar
+(http://asm.objectweb.org) is in your classpath, and (2) the runtime
+generated Java classes are in the Java package of the same name as the
+Lisp package in which they're defined, like this:
+
+(in-package "FOO")
+(new-class "FOO.MyClass" ...)
+
+Caveats: jfli-abcl inherits all the bugs from jfli; see the archives
+of the jfli-users mailing list for a partial list. It probably also
+adds some of its own. I'm particularly interested in the latter type.
+
+Please send (ABCL-specific) bug reports, suggestions, examples,
+and whatever else you can think of, to asimon@math.bme.hu. 
+

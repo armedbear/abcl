@@ -1,0 +1,10 @@
+This is a swing/jdbc example.
+
+To try it, (compile and) load table-gen.lisp and table.lisp
+(you need to modify it a bit first if you're not using PostgreSQL), in
+this order, then do
+
+(table:create-and-show-gui "select * from <your table here>")
+
+The cells are editable, so don't try it on an important db table.
+

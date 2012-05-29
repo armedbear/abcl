@@ -1,0 +1,27 @@
+This example is a Lisp version of Explorer v9 from
+http://www-106.ibm.com/developerworks/opensource/library/os-ecgui3/
+The gifs are from
+ftp://www6.software.ibm.com/software/developer/library/os-ecgui3/examples.zip
+
+To use it, (optionally compile) and load swt9jfli-gen.lisp first, and
+then swt9jfli.lisp. Start it with (swt0:main).
+
+But make sure first that besides asm.jar (http:/asm.objectweb.org),
+the various swt-related jars are in your classpath. I start abcl like
+this:
+
+/usr/java/jdk1.5.0/bin/java -cp /home/simon/java/j2/j/src/\
+:/usr/share/java/pg74.215.jdbc3.jar\
+:/home/simon/java/asm-1.5.1/lib/asm-1.5.1.jar\
+:/opt/home/simon/java/eclipse/plugins/org.eclipse.core.boot_2.1.3/boot.jar\
+:/opt/home/simon/java/eclipse/plugins/org.eclipse.core.runtime_2.1.1/runtime.jar\
+:/opt/home/simon/java/eclipse/plugins/org.eclipse.jface_2.1.3/jface.jar\
+:/opt/home/simon/java/eclipse/plugins/org.eclipse.jface.text_2.1.0/jfacetext.jar\
+:/opt/home/simon/java/eclipse/plugins/org.eclipse.swt.gtk_2.1.3/ws/gtk/swt.jar\
+:/opt/home/simon/java/eclipse/plugins/org.eclipse.swt.gtk_2.1.3/ws/gtk/swt-pi.jar\
+ -Djava.library.path=/opt/home/simon/java/eclipse/plugins/org.eclipse.swt.gtk_2.1.3/os/linux/x86/\
+:/home/simon/java/jogl/\
+ org.armedbear.lisp.Main "$@"
+
+If everything goes well, a window like
+http://www.math.bme.hu/~asimon/lisp/swt.png should appear.
