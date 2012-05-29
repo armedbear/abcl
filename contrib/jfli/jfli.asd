@@ -1,5 +1,6 @@
-(defpackage :jfli-system (:use :cl :asdf))
-(in-package :jfli-system)
-
-(defsystem jfli
-  :components ((:file "jfli")))
+(require :asdf)
+(asdf:defsystem jfli
+  :version "0.1.0"
+  :components ((:file "jfli")
+               (:module test :components
+                        ((:file "yanking")))))
