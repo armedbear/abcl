@@ -99,6 +99,7 @@
           slot-definition-writers
           slot-definition-location
           standard-instance-access
+          funcallable-standard-instance-access
 
           intern-eql-specializer
           eql-specializer-object

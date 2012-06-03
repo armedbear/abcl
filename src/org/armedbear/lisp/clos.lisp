@@ -99,7 +99,14 @@
 ;; ### Note that the "declares all API functions as regular functions"
 ;; isn't true when I write the above, but it's definitely the target.
 ;;
-;;
+;; A note about AMOP: the first chapters (and the sample Closette
+;; implementation) of the book sometimes deviate from the specification.
+;; For example, in the examples slot-value-using-class has the slot name
+;; as third argument where in the specification it is the effective slot
+;; definition.  When in doubt, we aim to follow the specification, the
+;; MOP test suite at http://common-lisp.net/project/closer/features.html
+;; and the behavior of other CL implementations in preference to
+;; chapters 1-4 and appendix D.
 
 (export '(class-precedence-list class-slots
           slot-definition-name))
@@ -256,6 +263,9 @@
 
 (defsetf std-instance-layout %set-std-instance-layout)
 (defsetf standard-instance-access %set-standard-instance-access)
+(defun funcallable-standard-instance-access (instance location)
+  (standard-instance-access instance location))
+(defsetf funcallable-standard-instance-access %set-standard-instance-access)
 
 (defun (setf find-class) (new-value symbol &optional errorp environment)
   (declare (ignore errorp environment))
@@ -528,9 +538,9 @@
          (unless (slot-definition-location slot)
            (let ((allocation-class (slot-definition-allocation-class slot)))
              (setf (slot-definition-location slot)
-		   (if (eq allocation-class class)
-		       (cons (slot-definition-name slot) +slot-unbound+)
-		       (slot-location allocation-class (slot-definition-name slot))))))
+                   (if (eq allocation-class class)
+                       (cons (slot-definition-name slot) +slot-unbound+)
+                       (slot-location allocation-class (slot-definition-name slot))))))
          (push (slot-definition-location slot) shared-slots))))
     (when old-layout
       ;; Redefined class: initialize added shared slots.
@@ -717,25 +727,38 @@
     (and layout (layout-slot-location layout slot-name))))
 
 (defun slot-value (object slot-name)
-  (if (or (eq (class-of (class-of object)) +the-standard-class+)
-	  (eq (class-of (class-of object)) +the-structure-class+))
-      (std-slot-value object slot-name)
-      (slot-value-using-class (class-of object) object slot-name)))
+  (let* ((class (class-of object))
+         (metaclass (class-of class)))
+    (if (or (eq metaclass +the-standard-class+)
+            (eq metaclass +the-structure-class+)
+            (eq metaclass +the-funcallable-standard-class+))
+        (std-slot-value object slot-name)
+        (slot-value-using-class class object
+                                (find-slot-definition class slot-name)))))
 
 (defsetf std-slot-value set-std-slot-value)
 
 (defun %set-slot-value (object slot-name new-value)
-  (if (or (eq (class-of (class-of object)) +the-standard-class+)
-          (eq (class-of (class-of object)) +the-structure-class+))
-      (setf (std-slot-value object slot-name) new-value)
-      (setf (slot-value-using-class (class-of object) object slot-name) new-value)))
+  (let* ((class (class-of object))
+         (metaclass (class-of class)))
+    (if (or (eq metaclass +the-standard-class+)
+            (eq metaclass +the-structure-class+)
+            (eq metaclass +the-funcallable-standard-class+))
+        (setf (std-slot-value object slot-name) new-value)
+        (setf (slot-value-using-class class object
+                                      (find-slot-definition class slot-name))
+              new-value))))
 
 (defsetf slot-value %set-slot-value)
 
 (defun slot-boundp (object slot-name)
-  (if (eq (class-of (class-of object)) +the-standard-class+)
-      (std-slot-boundp object slot-name)
-      (slot-boundp-using-class (class-of object) object slot-name)))
+  (let* ((class (class-of object))
+         (metaclass (class-of class)))
+    (if (or (eq metaclass +the-standard-class+) 
+            (eq metaclass +the-funcallable-standard-class+))
+        (std-slot-boundp object slot-name)
+        (slot-boundp-using-class class object
+                                 (find-slot-definition class slot-name)))))
 
 (defun std-slot-makunbound (instance slot-name)
   (let ((location (instance-slot-location instance slot-name)))
@@ -748,9 +771,13 @@
   instance)
 
 (defun slot-makunbound (object slot-name)
-  (if (eq (class-of (class-of object)) +the-standard-class+)
-      (std-slot-makunbound object slot-name)
-      (slot-makunbound-using-class (class-of object) object slot-name)))
+  (let* ((class (class-of object))
+         (metaclass (class-of class)))
+    (if (or (eq metaclass +the-standard-class+)
+            (eq metaclass +the-funcallable-standard-class+))
+        (std-slot-makunbound object slot-name)
+        (slot-makunbound-using-class class object
+                                     (find-slot-definition class slot-name)))))
 
 (defun std-slot-exists-p (instance slot-name)
   (not (null (find slot-name (class-slots (class-of instance))
@@ -1975,10 +2002,12 @@ Initialized with the true value near the end of the file.")
                         :datum arg
                         :expected-type class))
                (setf location (slow-reader-lookup gf layout slot-name)))
-             (if (consp location)
-                 ;; Shared slot.
-                 (cdr location)
-                 (standard-instance-access arg location))))))
+             (let ((value (if (consp location)
+                              (cdr location) ; :allocation :class
+                              (funcallable-standard-instance-access arg location))))
+               (if (eq value +slot-unbound+)
+                   (slot-unbound class arg slot-name)
+                   value))))))
 
     (t
      (let* ((emf-table (classes-to-emf-table gf))
@@ -3058,37 +3087,97 @@ in place, while we still need them to "
 
 
 ;;; Slot access
+;;; 
+;;; See AMOP pg. 156ff. for an overview.
+;;; 
+;;; AMOP specifies these generic functions to dispatch on slot objects
+;;; (with the exception of slot-exists-p-using-class), although its
+;;; sample implementation Closette dispatches on slot names.  We let
+;;; slot-value and friends call their gf counterparts with the effective
+;;; slot definition, but leave the definitions dispatching on slot name
+;;; in place for user convenience.
 
-(defgeneric slot-value-using-class (class instance slot-name))
+;;; AMOP pg. 235
+(defgeneric slot-value-using-class (class instance slot))
 
-(defmethod slot-value-using-class ((class standard-class) instance slot-name)
-  (std-slot-value instance slot-name))
+(defmethod slot-value-using-class ((class standard-class) instance (slot symbol))
+  (std-slot-value instance slot))
+(defmethod slot-value-using-class ((class standard-class) instance
+                                   (slot standard-effective-slot-definition))
+  (let* ((location (slot-definition-location slot))
+         (value (if (consp location)
+                    (cdr location)      ; :allocation :class
+                    (standard-instance-access instance location))))
+    (if (eq value +slot-unbound+)
+        (slot-unbound class instance (slot-definition-name slot))
+        value)))
+
 (defmethod slot-value-using-class ((class funcallable-standard-class)
-                                   instance slot-name)
-  (std-slot-value instance slot-name))
-(defmethod slot-value-using-class ((class structure-class) instance slot-name)
-  (std-slot-value instance slot-name))
+                                   instance (slot symbol))
+  (std-slot-value instance slot))
+(defmethod slot-value-using-class ((class funcallable-standard-class) instance
+                                   (slot standard-effective-slot-definition))
+  (let* ((location (slot-definition-location slot))
+         (value (if (consp location)
+                    (cdr location)      ; :allocation :class
+                    (funcallable-standard-instance-access instance location))))
+    (if (eq value +slot-unbound+)
+        (slot-unbound class instance (slot-definition-name slot))
+        value)))
 
-(defgeneric (setf slot-value-using-class) (new-value class instance slot-name))
+(defmethod slot-value-using-class ((class structure-class) instance
+                                   (slot symbol))
+  (std-slot-value instance slot))
+(defmethod slot-value-using-class ((class structure-class) instance
+                                   (slot standard-effective-slot-definition))
+  (std-slot-value instance (slot-definition-name slot)))
+
+;;; AMOP pg. 231
+(defgeneric (setf slot-value-using-class) (new-value class instance slot))
 
 (defmethod (setf slot-value-using-class) (new-value
                                           (class standard-class)
                                           instance
-                                          slot-name)
-  (setf (std-slot-value instance slot-name) new-value))
+                                          (slot symbol))
+  (setf (std-slot-value instance slot) new-value))
+(defmethod (setf slot-value-using-class) (new-value
+                                          (class standard-class)
+                                          instance
+                                          (slot standard-effective-slot-definition))
+  (let ((location (slot-definition-location slot)))
+    (if (consp location)                ; :allocation :class
+        (setf (cdr location) new-value)
+        (setf (standard-instance-access instance location) new-value))))
 
 (defmethod (setf slot-value-using-class) (new-value
                                           (class funcallable-standard-class)
                                           instance
-                                          slot-name)
-  (setf (std-slot-value instance slot-name) new-value))
+                                          (slot symbol))
+  (setf (std-slot-value instance slot) new-value))
+(defmethod (setf slot-value-using-class) (new-value
+                                          (class funcallable-standard-class)
+                                          instance
+                                          (slot standard-effective-slot-definition))
+  (let ((location (slot-definition-location slot)))
+    (if (consp location)                ; :allocation :class
+        (setf (cdr location) new-value)
+        (setf (funcallable-standard-instance-access instance location)
+              new-value))))
 
 (defmethod (setf slot-value-using-class) (new-value
                                           (class structure-class)
                                           instance
-                                          slot-name)
-  (setf (std-slot-value instance slot-name) new-value))
+                                          (slot symbol))
+  (setf (std-slot-value instance slot) new-value))
+(defmethod (setf slot-value-using-class) (new-value
+                                          (class structure-class)
+                                          instance
+                                          (slot standard-effective-slot-definition))
+  (setf (std-slot-value instance (slot-definition-name slot)) new-value))
 
+;;; slot-exists-p-using-class is not specified by AMOP, and obviously
+;;; cannot be specialized on the slot type.  Hence, its implementation
+;;; differs from slot-(boundp|makunbound|value)-using-class
 (defgeneric slot-exists-p-using-class (class instance slot-name))
 
 (defmethod slot-exists-p-using-class (class instance slot-name)
@@ -3105,29 +3194,63 @@ in place, while we still need them to "
       (return-from slot-exists-p-using-class t)))
   nil)
 
-(defgeneric slot-boundp-using-class (class instance slot-name))
-(defmethod slot-boundp-using-class ((class standard-class) instance slot-name)
-  (std-slot-boundp instance slot-name))
-(defmethod slot-boundp-using-class ((class funcallable-standard-class) instance slot-name)
-  (std-slot-boundp instance slot-name))
-(defmethod slot-boundp-using-class ((class structure-class) instance slot-name)
+
+(defgeneric slot-boundp-using-class (class instance slot))
+(defmethod slot-boundp-using-class ((class standard-class) instance (slot symbol))
+  (std-slot-boundp instance slot))
+(defmethod slot-boundp-using-class ((class standard-class) instance
+                                    (slot standard-effective-slot-definition))
+  (let ((location (slot-definition-location slot)))
+    (if (consp location)
+        (eq (cdr location) +slot-unbound+) ; :allocation :class
+        (eq (standard-instance-access instance location) +slot-unbound+))))
+
+(defmethod slot-boundp-using-class ((class funcallable-standard-class) instance
+                                    (slot symbol))
+  (std-slot-boundp instance slot))
+(defmethod slot-boundp-using-class ((class funcallable-standard-class) instance
+                                    (slot standard-effective-slot-definition))
+  (let ((location (slot-definition-location slot)))
+    (if (consp location)
+        (eq (cdr location) +slot-unbound+) ; :allocation :class
+        (eq (funcallable-standard-instance-access instance location)
+            +slot-unbound+))))
+
+(defmethod slot-boundp-using-class ((class structure-class) instance slot)
   "Structure slots can't be unbound, so this method always returns T."
-  (declare (ignore class instance slot-name))
+  (declare (ignore class instance slot))
   t)
 
-(defgeneric slot-makunbound-using-class (class instance slot-name))
+(defgeneric slot-makunbound-using-class (class instance slot))
 (defmethod slot-makunbound-using-class ((class standard-class)
                                         instance
-                                        slot-name)
-  (std-slot-makunbound instance slot-name))
+                                        (slot symbol))
+  (std-slot-makunbound instance slot))
+(defmethod slot-makunbound-using-class ((class standard-class)
+                                        instance
+                                        (slot standard-effective-slot-definition))
+  (let ((location (slot-definition-location slot)))
+    (if (consp location)
+        (setf (cdr location) +slot-unbound+)
+        (setf (standard-instance-access instance location) +slot-unbound+))))
+
 (defmethod slot-makunbound-using-class ((class funcallable-standard-class)
                                         instance
-                                        slot-name)
-  (std-slot-makunbound instance slot-name))
+                                        (slot symbol))
+  (std-slot-makunbound instance slot))
+(defmethod slot-makunbound-using-class ((class funcallable-standard-class)
+                                        instance
+                                        (slot symbol))
+  (let ((location (slot-definition-location slot)))
+    (if (consp location)
+        (setf (cdr location) +slot-unbound+)
+        (setf (funcallable-standard-instance-access instance location)
+              +slot-unbound+))))
+
 (defmethod slot-makunbound-using-class ((class structure-class)
                                         instance
-                                        slot-name)
-  (declare (ignore class instance slot-name))
+                                        slot)
+  (declare (ignore class instance slot))
   (error "Structure slots can't be unbound"))
 
 (defgeneric slot-missing (class instance slot-name operation &optional new-value))

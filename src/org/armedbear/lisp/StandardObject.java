@@ -450,13 +450,10 @@ public class StandardObject extends LispObject
                             list(Symbol.INTEGER, Fixnum.ZERO,
                                  Fixnum.getInstance(instance.slots.length)));
         }
-      if (value == UNBOUND_VALUE)
-        {
-          LispObject slotName = instance.layout.getSlotNames()[index];
-          value = Symbol.SLOT_UNBOUND.execute(instance.getLispClass(),
-                                              instance, slotName);
-          LispThread.currentThread()._values = null;
-        }
+      // We let UNBOUND_VALUE escape here, since invoking
+      // standard-instance-access on an unbound slot has undefined
+      // consequences (AMOP pg. 239), and we use this behavior to
+      // implement slot-boundp-using-class.
       return value;
     }
   };
