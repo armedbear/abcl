@@ -681,10 +681,9 @@ public class StandardClass extends SlotClass
             new SlotDefinition(Symbol.FORMAT_ARGUMENTS,
                                list(Symbol.SIMPLE_CONDITION_FORMAT_ARGUMENTS),
                                NIL)));
-    CONDITION.setDirectDefaultInitargs(list(Keyword.FORMAT_ARGUMENTS,
-                                             // FIXME
-                                             new Closure(list(Symbol.LAMBDA, NIL, NIL),
-                                                         new Environment())));
+    CONDITION.setDirectDefaultInitargs(list(list(Keyword.FORMAT_ARGUMENTS,
+                                                 NIL,
+                                                 constantlyNil)));
     CONTROL_ERROR.setCPL(CONTROL_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
                          STANDARD_OBJECT, BuiltInClass.CLASS_T);
     DIVISION_BY_ZERO.setCPL(DIVISION_BY_ZERO, ARITHMETIC_ERROR, ERROR,

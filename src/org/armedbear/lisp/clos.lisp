@@ -369,12 +369,10 @@
     (:default-initargs
      (list
       ':direct-default-initargs
-      `(list ,@(mapappend
-                #'(lambda (x) x)
-                (mapplist
-                 #'(lambda (key value)
-                    `(',key ,(make-initfunction value)))
-                 (cdr option))))))
+      `(list ,@(mapplist
+                #'(lambda (key value)
+                    `(list ',key ',value ,(make-initfunction value)))
+                (cdr option)))))
     ((:documentation :report)
      (list (car option) `',(cadr option)))
     (t (list `(quote ,(car option)) `(quote ,(cdr option))))))
@@ -505,10 +503,12 @@
 ;;; finalize-inheritance
 
 (defun std-compute-class-default-initargs (class)
-  (mapcan #'(lambda (c)
-              (copy-list
-               (class-direct-default-initargs c)))
-          (class-precedence-list class)))
+  (delete-duplicates
+   (mapcan #'(lambda (c)
+               (copy-list
+                (class-direct-default-initargs c)))
+           (class-precedence-list class))
+   :key #'car :from-end t))
 
 (defun std-finalize-inheritance (class)
   ;; In case the class is already finalized, return
@@ -3380,13 +3380,13 @@ or T when any keyword is acceptable due to presence of
 
 (defun augment-initargs-with-defaults (class initargs)
   (let ((default-initargs '()))
-    (do* ((list (class-default-initargs class) (cddr list))
-          (key (car list) (car list))
-          (fn (cadr list) (cadr list)))
-         ((null list))
-      (when (eq (getf initargs key 'not-found) 'not-found)
-        (setf default-initargs (append default-initargs (list key (funcall fn))))))
-    (append initargs default-initargs)))
+    (dolist (initarg (class-default-initargs class))
+      (let ((key (first initarg))
+            (fn (third initarg)))
+        (when (eq (getf initargs key +slot-unbound+) +slot-unbound+)
+          (push key default-initargs)
+          (push (funcall fn) default-initargs))))
+    (append initargs (nreverse default-initargs))))
 
 (defmethod make-instance ((class standard-class) &rest initargs)
   (setf initargs (augment-initargs-with-defaults class initargs))

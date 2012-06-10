@@ -122,6 +122,9 @@ public class SlotClass extends LispClass
 
     LispObject computeDefaultInitargs()
     {
+      // KLUDGE (rudi 2012-06-02): duplicate initargs are not removed
+      // here, but this does not hurt us since no Lisp class we define
+      // Java-side has non-nil direct default initargs.
         LispObject result = NIL;
         LispObject cpl = getCPL();
         while (cpl != NIL) {
