@@ -55,6 +55,7 @@
           
           compute-effective-slot-definition
           compute-class-precedence-list
+          compute-default-initargs
           compute-effective-slot-definition
           compute-slots
           finalize-inheritance

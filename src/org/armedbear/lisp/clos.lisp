@@ -502,7 +502,11 @@
 
 ;;; finalize-inheritance
 
-(defun std-compute-class-default-initargs (class)
+(declaim (notinline compute-default-initargs))
+(defun compute-default-initargs (class)
+  (std-compute-default-initargs class))
+
+(defun std-compute-default-initargs (class)
   (delete-duplicates
    (mapcan #'(lambda (c)
                (copy-list
@@ -555,7 +559,7 @@
     (setf (class-layout class)
           (make-layout class (nreverse instance-slots) (nreverse shared-slots))))
   (setf (class-default-initargs class)
-        (std-compute-class-default-initargs class))
+        (compute-default-initargs class))
   (setf (class-finalized-p class) t))
 
 (declaim (notinline finalize-inheritance))
@@ -3628,6 +3632,15 @@ or T when any keyword is acceptable due to presence of
        (std-finalize-inheritance class))
     (:method ((class funcallable-standard-class))
        (std-finalize-inheritance class)))
+
+;;; Default initargs
+
+;;; AMOP pg. 174
+(atomic-defgeneric compute-default-initargs (class)
+  (:method ((class standard-class))
+    (std-compute-default-initargs class))
+  (:method ((class funcallable-standard-class))
+    (std-compute-default-initargs class)))
 
 ;;; Class precedence lists
 
