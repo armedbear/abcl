@@ -57,6 +57,8 @@
           compute-class-precedence-list
           compute-default-initargs
           compute-effective-slot-definition
+          compute-applicable-methods
+          compute-applicable-methods-using-classes
           compute-effective-method
           compute-slots
           finalize-inheritance
@@ -77,6 +79,8 @@
           class-direct-superclasses
           class-finalized-p
           class-prototype
+          class-precedence-list
+          class-slots
 
           add-direct-subclass
           remove-direct-subclass
@@ -97,9 +101,13 @@
           writer-method-class
 
           slot-definition
-          slot-definition-readers
-          slot-definition-writers
+          slot-definition-initargs
           slot-definition-location
+          slot-definition-name
+          slot-definition-readers
+          slot-definition-type
+          slot-definition-writers
+
           standard-instance-access
           funcallable-standard-instance-access
 

@@ -108,8 +108,6 @@
 ;; and the behavior of other CL implementations in preference to
 ;; chapters 1-4 and appendix D.
 
-(export '(class-precedence-list class-slots
-          slot-definition-name))
 (defconstant +the-standard-class+ (find-class 'standard-class))
 (defconstant +the-funcallable-standard-class+
   (find-class 'funcallable-standard-class))
@@ -3088,9 +3086,6 @@ in place, while we still need them to "
 		   (values nil nil))))))
       (values (sort-methods methods gf classes)
 	      t))))
-
-(export '(compute-applicable-methods
-	  compute-applicable-methods-using-classes))
 
 
 ;;; Slot access
