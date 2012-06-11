@@ -46,8 +46,7 @@
           funcallable-standard-object
           funcallable-standard-class
           forward-referenced-class
-          direct-slot-definition-class
-          effective-slot-definition-class
+          slot-definition
           standard-method
           standard-accessor-method
           standard-reader-method
@@ -78,29 +77,32 @@
           class-direct-subclasses
           class-direct-superclasses
           class-finalized-p
-          class-prototype
           class-precedence-list
+          class-prototype
           class-slots
 
           add-direct-subclass
           remove-direct-subclass
 
-          generic-function-lambda-list
           generic-function-argument-precedence-order
+          generic-function-declarations
+          generic-function-lambda-list
           generic-function-method-class
+          generic-function-method-combination
+          generic-function-name
 
           method-function
           method-generic-function
           method-lambda-list
           method-specializers
           method-qualifiers
+          accessor-method-slot-definition
 
-          standard-reader-method
-          standard-writer-method
           reader-method-class
           writer-method-class
 
-          slot-definition
+          direct-slot-definition-class
+          effective-slot-definition-class
           slot-definition-initargs
           slot-definition-location
           slot-definition-name
