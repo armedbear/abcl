@@ -676,8 +676,8 @@
 (defun std-compute-effective-slot-definition (class name direct-slots)
   (let ((initer (find-if-not #'null direct-slots
                              :key 'slot-definition-initfunction))
-        (documentation (find-if-not #'null direct-slots
-                                    :key 'slot-definition-documentation))
+        (documentation-slot (find-if-not #'null direct-slots
+                                         :key 'slot-definition-documentation))
         (types (delete-duplicates
                 (delete t (mapcar #'slot-definition-type direct-slots))
                 :test #'equal))
@@ -703,7 +703,7 @@
      :type (cond ((null types) t)
                  ((= 1 (length types)) types)
                  (t (list* 'and types)))
-     :documentation documentation)))
+     :documentation (documentation documentation-slot t))))
 
 ;;; Standard instance slot access
 
