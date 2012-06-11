@@ -57,6 +57,7 @@
           compute-class-precedence-list
           compute-default-initargs
           compute-effective-slot-definition
+          compute-effective-method
           compute-slots
           finalize-inheritance
           validate-superclass

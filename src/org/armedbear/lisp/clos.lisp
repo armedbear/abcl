@@ -1130,8 +1130,9 @@
             ,(unless (null next-method-list)
                      ;; by not generating an emf when there are no next methods,
                      ;; we ensure next-method-p returns NIL
-                     (compute-effective-method-function
-                        ,gf (process-next-method-list next-method-list))))))
+                     (compute-effective-method
+                      ,gf (generic-function-method-combination ,gf)
+                      (process-next-method-list next-method-list))))))
      ,@forms))
 
 (defmacro with-args-lambda-list (args-lambda-list
@@ -2207,9 +2208,10 @@ to ~S with argument list ~S."
   (let ((applicable-methods (%compute-applicable-methods gf args)))
     (if applicable-methods
         (let* ((emfun (funcall (if (eq (class-of gf) +the-standard-generic-function-class+)
-                                   #'std-compute-effective-method-function
-                                   #'compute-effective-method-function)
-                               gf applicable-methods))
+                                   #'std-compute-effective-method
+                                   #'compute-effective-method)
+                               gf (generic-function-method-combination gf)
+                               applicable-methods))
                (non-keyword-args
                 (+ (length (gf-required-args gf))
                    (length (gf-optional-args gf))))
@@ -2237,9 +2239,10 @@ to ~S with argument list ~S."
   (let ((applicable-methods (%compute-applicable-methods gf (list arg))))
     (if applicable-methods
         (let ((emfun (funcall (if (eq (class-of gf) +the-standard-generic-function-class+)
-                                  #'std-compute-effective-method-function
-                                  #'compute-effective-method-function)
-                              gf applicable-methods)))
+                                  #'std-compute-effective-method
+                                  #'compute-effective-method)
+                              gf (generic-function-method-combination gf)
+                              applicable-methods)))
           (when emfun
             (setf (gethash arg-specialization (classes-to-emf-table gf)) emfun))
           emfun))))
@@ -2304,9 +2307,8 @@ to ~S with argument list ~S."
                  next-method-form)))
           next-method-list))
 
-(defun std-compute-effective-method-function (gf methods)
-  (let* ((mc (generic-function-method-combination gf))
-         (mc-name (if (atom mc) mc (%car mc)))
+(defun std-compute-effective-method (gf mc methods)
+  (let* ((mc-name (if (atom mc) mc (%car mc)))
          (options (if (atom mc) '() (%cdr mc)))
          (order (car options))
          (primaries '())
@@ -2342,9 +2344,10 @@ to ~S with argument list ~S."
        (let ((next-emfun
               (funcall
                (if (eq (class-of gf) +the-standard-generic-function-class+)
-                   #'std-compute-effective-method-function
-                   #'compute-effective-method-function)
-               gf (remove around methods))))
+                   #'std-compute-effective-method
+                   #'compute-effective-method)
+               gf (generic-function-method-combination gf)
+               (remove around methods))))
          (setf emf-form
                (generate-emf-lambda (std-method-function around) next-emfun))))
       ((eq mc-name 'standard)
@@ -3687,10 +3690,10 @@ or T when any keyword is acceptable due to presence of
                 ':required-args))))
     (std-method-more-specific-p method1 method2 required-classes method-indices)))
 
-;;; XXX AMOP has COMPUTE-EFFECTIVE-METHOD
-(defgeneric compute-effective-method-function (gf methods))
-(defmethod compute-effective-method-function ((gf standard-generic-function) methods)
-  (std-compute-effective-method-function gf methods))
+;;; AMOP pg. 176
+(defgeneric compute-effective-method (gf method-combination methods))
+(defmethod compute-effective-method ((gf standard-generic-function) method-combination methods)
+  (std-compute-effective-method gf method-combination methods))
 
 (defgeneric compute-applicable-methods (gf args))
 (defmethod compute-applicable-methods ((gf standard-generic-function) args)
