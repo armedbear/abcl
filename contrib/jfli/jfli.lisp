@@ -7,8 +7,9 @@
 ;    You must not remove this notice, or any other, from this software.
 
 ;    Ported to ABCL by asimon@math.bme.hu. 
-;    Minor ABCL fixes by A. Vodonosov (avodonosov@yandex.ru).
-;    Ripped out CLOS mirror support
+;    Minor ABCL fixes by:
+;    A. Vodonosov (avodonosov@yandex.ru).
+;    Alex Mizrahi (alex.mizrahi@gmail.com)
 
 (defpackage :jfli
   (:use :common-lisp :java)
@@ -25,6 +26,7 @@
    :find-java-class
    :new
    :make-new
+   :make-typed-ref
    :jeq
 
    ;array support
@@ -44,28 +46,59 @@
    :new-proxy
    :unregister-proxy
 
+   ;conversions
+   :box-boolean
+   :box-byte
+   :box-char
+   :box-double
+   :box-float
+   :box-integer
+   :box-long
+   :box-short
+   :box-string
+   :unbox-boolean
+   :unbox-byte
+   :unbox-char
+   :unbox-double
+   :unbox-float
+   :unbox-integer
+   :unbox-long
+   :unbox-short
+   :unbox-string
+
+;   :ensure-package
+;   :member-symbol
+;   :class-symbol
+;   :constructor-symbol
+
+   :*null*
+   :new-class
+   :super
    ))
 
 (in-package :jfli)
 
-#+ignore
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defconstant +null+ (make-immediate-object nil :ref))
-  (defconstant +false+ (make-immediate-object nil :boolean))
-  (defconstant +true+ (make-immediate-object t :boolean)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun string-append (&rest strings)
-    (apply #'concatenate 'string (mapcar #'(lambda (s) (if (symbolp s) (symbol-name s) s)) strings)))
-  (defun intern-and-unexport (string package)
-    (multiple-value-bind (symbol status)
-	(find-symbol string package)
-      (when (and *compile-file-pathname* (eq status :external)) (unexport symbol package))
-      (intern string package))))
+(defun string-append (&rest strings)
+  (apply #'concatenate 'string (mapcar #'(lambda (s) (if (symbolp s) (symbol-name s) s)) strings)))
+
+
+(defun intern-and-unexport (string package)
+  (multiple-value-bind (symbol status)
+      (find-symbol string package)
+    (when (and *compile-file-pathname* (eq status :external)) (unexport symbol package))
+    (intern string package)))
+)
 
 (defun is-assignable-from (class-1 class-2)
   (jcall (jmethod "java.lang.Class" "isAssignableFrom" "java.lang.Class") 
 	 class-2 class-1))  ;;not a typo
+
+#+abcl_not_used
+(defun new-object-array (len element-type initial-element)
+  (jnew-array-from-array element-type (make-array (list len) :initial-element initial-element)))
+
 
 (defun java-ref-p (x)
   (java-object-p x))
@@ -89,9 +122,6 @@
 (defun convert-to-java-string (s)
   (jnew (jconstructor "java.lang.String" "java.lang.String") s))
 
-(defun convert-from-java-string (s)
-  (values s))
-
 (define-symbol-macro boolean.type (jfield "java.lang.Boolean" "TYPE"))
 (define-symbol-macro byte.type (jfield "java.lang.Byte" "TYPE"))
 (define-symbol-macro character.type (jfield "java.lang.Character" "TYPE"))
@@ -100,9 +130,23 @@
 (define-symbol-macro long.type (jfield "java.lang.Long" "TYPE"))
 (define-symbol-macro float.type (jfield "java.lang.Float" "TYPE"))
 (define-symbol-macro double.type (jfield "java.lang.Double" "TYPE"))
-(define-symbol-macro string.type (jclass "java.lang.String"))
-(define-symbol-macro object.type (jclass "java.lang.Object"))
 (define-symbol-macro void.type (jfield "java.lang.Void" "TYPE"))
+
+#|
+(defconstant boolean.type (jfield "java.lang.Boolean" "TYPE"))
+(defconstant byte.type (jfield "java.lang.Byte" "TYPE"))
+(defconstant character.type (jfield "java.lang.Character" "TYPE"))
+(defconstant short.type (jfield "java.lang.Short" "TYPE"))
+(defconstant integer.type (jfield "java.lang.Integer" "TYPE"))
+(defconstant long.type (jfield "java.lang.Long" "TYPE"))
+(defconstant float.type (jfield "java.lang.Float" "TYPE"))
+(defconstant double.type (jfield "java.lang.Double" "TYPE"))
+|#
+
+(defconstant *null* java:+null+)
+
+(defun identity-or-nil (obj)
+  (unless (equal obj *null*) obj))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;; utilities ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -138,16 +182,30 @@
 (eval-when (:compile-toplevel)
   (intern-and-unexport "OBJECT." "java.lang"))
 
+;create object. to bootstrap the hierarchy
+(defclass |java.lang|::object. ()
+  ((ref :reader ref :initarg :ref)
+   (lisp-allocated :reader lisp-allocated-p :initarg :lisp-allocated :initform nil))
+  (:documentation "the superclass of all Java typed reference classes"))
+
 (defun get-ref (x)
   "any function taking an object can be passed a raw java-ref ptr or a typed reference instance.
 Will also convert strings for use as objects"
+;; avodonosov: 
+;; typecase instead of etypecase 
+;; to allow not only jfli-wrapped objects
+;; as a parameters of NEW-CLASS, but also native 
+;; Lisp objects too (in case of ABCL they are java 
+;; instances anyway).
+;; For example that may be org.armedbear.lisp.Function.
   (typecase x
     (java-ref x)
+    (|java.lang|::object. (ref x))
     (string (convert-to-java-string x))
     (null nil)
     ((or number character) x)
     ;; avodonosov: otherwise clause
-    (otherwise x)))
+	(otherwise x)))
 
 (defun is-same-object (obj1 obj2)
   (equal obj1 obj2))
@@ -240,18 +298,17 @@ prefixed by 'classname.' -
               (:short short.type)
               (:double double.type)
               (:byte byte.type)
-	      (:object object.type)
 	      (:void void.type)
               (otherwise (get-java-class-ref class-sym-or-string))))
     (string (get-java-class-ref (canonic-class-symbol class-sym-or-string)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;; Wrapper Generation ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;; typed reference support ;;;;;;;;;;;;;;;;;;;;;;;;
 #|
-In an effort to reduce the volume of stuff generated when wrapping entire libraries,
-the wrappers just generate minimal stubs, which, if and when invoked at runtime,
-complete the work of building thunking closures, so very little code is generated for
-things never called (Java libraries have huge numbers of symbols).
-Not sure if this approach matters, but that's how it works
+The library maintains a hierarchy of typed reference classes that parallel the
+class hierarchy on the Java side
+new returns a typed reference, but other functions that return objects
+return raw references (for efficiency) 
+make-typed-ref can create fully-typed wrappers when desired
 |#
 
 (defun get-superclass-names (full-class-name)
@@ -275,6 +332,67 @@ Not sure if this approach matters, but that's how it works
                             (lambda (x y)
                               (is-assignable-from x y)))))
       (mapcar #'jclass-name result))))
+#|
+(defun get-superclass-names (full-class-name)
+  (let* ((class (get-java-class-ref (canonic-class-symbol full-class-name)))
+         (super (class.getsuperclass class))
+         (interfaces (class.getinterfaces class))
+         (supers ()))
+    (do-jarray (i interfaces)
+      (push (class.getname i) supers))
+    ;hmmm - where should the base class go in the precedence list?
+    ;is it more important than the interfaces? this says no
+    (if super
+        (push (class.getname super) supers)
+      (push "java.lang.Object" supers))
+    (nreverse supers)))
+|#
+
+(defun %ensure-java-class (full-class-name)
+  "walks the superclass hierarchy and makes sure all the classes are fully defined
+(they may be undefined or just forward-referenced-class)
+caches this has been done on the class-symbol's plist"
+  (let* ((class-sym (class-symbol full-class-name))
+         (class (find-class class-sym nil)))
+    (if (or (eql class-sym '|java.lang|::object.)
+            (get class-sym :ensured))
+        class
+	(let ((supers (get-superclass-names full-class-name)))
+	  (dolist (super supers)
+	    (%ensure-java-class super))
+	  (unless (and class (subtypep class 'standard-object))
+	    (setf class
+		  #+abcl
+		  (sys::ensure-class  class-sym :direct-superclasses (mapcar #'(lambda (c) (find-class (class-symbol c))) supers))))
+	  (setf (get class-sym :ensured) t)
+	  class))))
+
+
+(defun ensure-java-hierarchy (class-sym)
+  "Works off class-sym for efficient use in new
+This will only work on class-syms created by def-java-class,
+as it depends upon symbol-value being the canonic class symbol"
+  (unless (get class-sym :ensured)
+    (%ensure-java-class (java-class-name class-sym))))
+
+(defun make-typed-ref (java-ref)
+  "Given a raw java-ref, determines the full type of the object
+and returns an instance of a typed reference wrapper"
+  (when java-ref
+    (let ((class (jobject-class java-ref)))
+      (if (jclass-array-p class)
+          (error "typed refs not supported for arrays (yet)")
+        (make-instance (%ensure-java-class (jclass-name class)) :ref java-ref)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;; Wrapper Generation ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#|
+In an effort to reduce the volume of stuff generated when wrapping entire libraries,
+the wrappers just generate minimal stubs, which, if and when invoked at runtime,
+complete the work of building thunking closures, so very little code is generated for
+things never called (Java libraries have huge numbers of symbols).
+Not sure if this approach matters, but that's how it works
+|#
 
 (defmacro def-java-class (full-class-name)
   "Given the package-qualified, case-correct name of a java class, will generate
@@ -284,8 +402,9 @@ wrapper functions for its contructors, fields and methods."
     (let* ((class-sym (unexported-class-symbol full-class-name))
            (defs
 	     (list*
+	      #+nil `(format t "!!!!!!!!!!~a~%" ,full-class-name)
 	      `(ensure-package ,pacakge)
-	      ;;build a path from the simple class symbol to the canonic
+					;build a path from the simple class symbol to the canonic
 	      `(defconstant ,class-sym ',(canonic-class-symbol full-class-name))
 	      `(export ',class-sym (symbol-package ',class-sym))
 	      `(def-java-constructors ,full-class-name)
@@ -300,7 +419,10 @@ wrapper functions for its contructors, fields and methods."
 			   (lambda (p) `(ensure-package ,(package-name p)))
 			   (remove (symbol-package class-sym)
 				   (remove-duplicates (mapcar #'symbol-package supers))))
-			  super-exports))))))
+			  super-exports
+			  (list 
+			   `(defclass ,(class-symbol full-class-name)
+			      ,supers ()))))))))
       `(locally ,@defs))))
 
 (defun jarfile.new (fn)
@@ -403,22 +525,24 @@ then call the requested ctor - subsequent calls will be direct"
   (let* ((ctor-list (get-ctor-list full-class-name)))
     (when ctor-list
       (setf (fdefinition (constructor-symbol full-class-name))
-            (make-ctor-thunk ctor-list)))))
+            (make-ctor-thunk ctor-list (class-symbol full-class-name))))))
 
-(defun make-ctor-thunk (ctors)
+(defun make-ctor-thunk (ctors class-sym)
   (if (rest ctors) ;overloaded
-      (make-overloaded-ctor-thunk ctors)
-    (make-non-overloaded-ctor-thunk (first ctors))))
+      (make-overloaded-ctor-thunk ctors class-sym)
+    (make-non-overloaded-ctor-thunk (first ctors) class-sym)))
 
-(defun make-non-overloaded-ctor-thunk (ctor)
+(defun make-non-overloaded-ctor-thunk (ctor class-sym)
   (let ((arg-boxers (get-arg-boxers (jconstructor-params ctor))))
     (lambda (&rest args)
-      (let* ((arglist (build-arglist args arg-boxers))
-	     (object (apply #'jnew ctor arglist)))
-	(unbox-object object)))))
+      (let ((arglist (build-arglist args arg-boxers)))
+	(ensure-java-hierarchy class-sym)
+	(make-instance class-sym
+		       :ref (apply #'jnew ctor arglist)
+		       :lisp-allocated t)))))
 
-(defun make-overloaded-ctor-thunk (ctors)
-  (let ((thunks (make-ctor-thunks-by-args-length ctors)))
+(defun make-overloaded-ctor-thunk (ctors class-sym)
+  (let ((thunks (make-ctor-thunks-by-args-length ctors class-sym)))
     (lambda (&rest args)
       (let ((fn (cdr (assoc (length args) thunks))))
         (if fn
@@ -426,7 +550,7 @@ then call the requested ctor - subsequent calls will be direct"
                    args)
           (error "invalid arity"))))))
 
-(defun make-ctor-thunks-by-args-length (ctors)
+(defun make-ctor-thunks-by-args-length (ctors class-sym)
   "returns an alist of thunks keyed by number of args"
   (let ((ctors-by-args-length (make-hash-table))
         (thunks-by-args-length nil))
@@ -436,17 +560,17 @@ then call the requested ctor - subsequent calls will be direct"
     (maphash #'(lambda (args-len ctors)
                  (push (cons args-len
                              (if (rest ctors);truly overloaded
-                                 (make-type-overloaded-ctor-thunk ctors)
+                                 (make-type-overloaded-ctor-thunk ctors class-sym)
                                ;only one ctor with this number of args
-                               (make-non-overloaded-ctor-thunk (first ctors))))
+                               (make-non-overloaded-ctor-thunk (first ctors) class-sym)))
                        thunks-by-args-length))
              ctors-by-args-length)
     thunks-by-args-length))
 
-(defun make-type-overloaded-ctor-thunk (ctors)
+(defun make-type-overloaded-ctor-thunk (ctors class-sym)
   "these methods have the same number of args and must be distinguished by type"
   (let ((thunks (mapcar #'(lambda (ctor)
-                            (list (make-non-overloaded-ctor-thunk ctor)
+                            (list (make-non-overloaded-ctor-thunk ctor class-sym)
                                   (jarray-to-list (jconstructor-params ctor))))
                         ctors)))
     (lambda (&rest args)
@@ -584,18 +708,24 @@ static fields also get a symbol-macro *classname.fieldname*"
         (progn
           (setf (fdefinition field-sym)
                 (lambda ()
-                  (funcall unboxer (jfield-raw class field-name))))
+                  (funcall unboxer (jfield-raw class field-name) #+nil (field.get field nil))))
           (setf (fdefinition `(setf ,field-sym))
                 (lambda (arg)
-                  (jfield field-name nil (get-ref (funcall boxer arg)))
+                  (jfield field-name nil
+                             (get-ref (if (and boxer (not (boxed? arg)))
+                                          (funcall boxer arg)
+                                        arg)))
                   arg)))
       (progn 
         (setf (fdefinition field-sym)
               (lambda (obj)
-                (funcall unboxer (jfield-raw class field-name (get-ref obj)))))
+                (funcall unboxer (jfield-raw class field-name (get-ref obj)) #+nil(field.get field (get-ref obj)))))
         (setf (fdefinition `(setf ,field-sym))
               (lambda (arg obj)
-                (jfield field-name (get-ref obj) (get-ref (funcall boxer arg)))
+                (jfield field-name (get-ref obj)
+                           (get-ref (if (and boxer (not (boxed? arg)))
+                                        (funcall boxer arg)
+                                      arg)))
                 arg))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; methods ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -627,13 +757,13 @@ that calls the latter
               (mapcar #'class-name-for-doc (jarray-to-list (jmethod-params m)))))))
 
 (defmacro def-java-methods (full-class-name)
-  (let ((class-methods (get-class-methods full-class-name))
+  (let ((methods-by-name (get-methods-by-name full-class-name))
         (defs nil))
     (maphash (lambda (name methods)
                (let ((method-sym (unexported-member-symbol full-class-name name)))
                  (push `(defun ,method-sym (&rest args)
                           ,(build-method-doc-string name methods)
-                          (apply #'install-method-and-call ,full-class-name ,name args))
+                          (apply #'install-methods-and-call ,full-class-name ,name args))
                        defs)
                  (push `(export ',method-sym (symbol-package ',method-sym))
                        defs)
@@ -641,7 +771,7 @@ that calls the latter
                  (flet ((add-setter-if (prefix)
                           (when (eql 0 (search prefix name))
                             (let ((setname (string-append "set" (subseq name (length prefix)))))
-                              (when (gethash setname class-methods)
+                              (when (gethash setname methods-by-name)
                                 (push `(defun (setf ,method-sym) (val &rest args)
                                          (progn
                                            (apply #',(member-symbol full-class-name setname)
@@ -650,15 +780,15 @@ that calls the latter
                                       defs))))))
                    (add-setter-if "get")
                    (add-setter-if "is"))))
-             class-methods)
+             methods-by-name)
     `(locally ,@(nreverse defs))))
 
-(defun install-method-and-call (full-class-name name &rest args)
+(defun install-methods-and-call (full-class-name method &rest args)
   "initially all the member function symbols for a class are bound to this function,
 when first called it will replace them with the appropriate direct thunks,
 then call the requested method - subsequent calls via those symbols will be direct"
-  (install-method full-class-name name)
-  (apply (member-symbol full-class-name name) args))
+  (install-methods full-class-name)
+  (apply (member-symbol full-class-name method) args))
 
 (defun decode-array-name (tn)
   (let ((prim (assoc tn
@@ -689,7 +819,8 @@ then call the requested method - subsequent calls via those symbols will be dire
 (defun jmethod-made-accessible (method)
   "Return a method made accessible"
     (jcall (jmethod "java.lang.reflect.AccessibleObject" "setAccessible" "boolean") 
-	   method +true+)
+	   method
+           java:+true+)
     method)
 
 (defun jclass-relevant-methods (class)
@@ -698,22 +829,24 @@ then call the requested method - subsequent calls via those symbols will be dire
 	 (map 'list #'jmethod-made-accessible 
 	      (remove-if-not #'jmember-protected-p (jclass-methods class :declared t)))))
 
-(defun get-class-methods (full-class-name)
+(defun get-methods-by-name (full-class-name)
   "returns an #'equal hashtable of lists of java.lang.Method refs keyed by name"
   (let* ((class-sym (canonic-class-symbol full-class-name))
          (class (get-java-class-ref class-sym))
          (methods (jclass-relevant-methods class))
-         (class-methods (make-hash-table :test #'equal)))
+         (methods-by-name (make-hash-table :test #'equal)))
     (loop for method in methods
 	  do
-	  (push method (gethash (jmethod-name method) class-methods)))
-    class-methods))
+	  (push method (gethash (jmethod-name method) methods-by-name)))
+    methods-by-name))
 
-(defun install-method (full-class-name name)
-  (let* ((class-methods (get-class-methods full-class-name))
-	 (methods (gethash name class-methods)))
-    (setf (fdefinition (member-symbol full-class-name name))
-	  (make-method-thunk methods))))
+(defun install-methods (full-class-name)
+  (let ((methods-by-name (get-methods-by-name full-class-name)))
+    (maphash
+     (lambda (name methods)
+       (setf (fdefinition (member-symbol full-class-name name))
+             (make-method-thunk methods)))
+     methods-by-name)))
 
 (defun make-method-thunk (methods)
   (if (rest methods) ;overloaded
@@ -726,9 +859,11 @@ then call the requested method - subsequent calls via those symbols will be dire
         (is-static (jmember-static-p method))
 	(caller (if is-static #'jstatic-raw #'jcall-raw)))
     (lambda (&rest args)
-      (let ((object (if is-static nil (get-ref (first args))))
-	    (arglist (build-arglist (if is-static args (rest args)) arg-boxers)))
-	(funcall unboxer-fn (apply caller method object arglist))))))
+      (let ((arglist (build-arglist (if is-static args (rest args)) arg-boxers)))
+	(funcall unboxer-fn
+		 (apply caller  method
+			(if is-static nil (get-ref (first args)))
+			arglist))))))
 
 (defun make-overloaded-thunk (methods)
   (let ((thunks (make-thunks-by-args-length methods)))
@@ -781,8 +916,11 @@ then call the requested method - subsequent calls via those symbols will be dire
 (defun jref (array &rest subscripts)
   (apply #'jarray-ref-raw array subscripts))
 
+
 (defun (setf jref) (val array &rest subscripts)
-  (apply #'jarray-set array (get-ref val) subscripts))
+  (apply #'jarray-set array val subscripts))
+
+
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defmacro def-refs (&rest types)
@@ -794,10 +932,11 @@ then call the requested method - subsequent calls via those symbols will be dire
                `(defun ,ref-sym (array &rest subscripts)
                   ,(format nil "like aref, for Java arrays of ~A, settable" (symbol-name type))
 		 (assert (every #'integerp subscripts))
-		 (unbox-object (apply #'jarray-ref array subscripts)))
+		 (apply #'jarray-ref array subscripts))
+
                `(defun (setf ,ref-sym) (val array &rest subscripts)
 		 (assert (every #'integerp subscripts))
-		 (apply #'jarray-set array val subscripts)
+		 (apply #'jarray-set array ,(if (eql type 'boolean) '(box-boolean val) 'val) subscripts)
                   ))))
           types))))
 
@@ -844,16 +983,15 @@ then call the requested method - subsequent calls via those symbols will be dire
 (defmethod make-new-array ((type (eql :long)) &rest dimensions)
   (apply #'make-new-array long.type dimensions))
 
-(defmethod make-new-array ((type (eql :object)) &rest dimensions)
-  (apply #'make-new-array object.type dimensions))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;; arg/param helpers ;;;;;;;;;;;;;;;;;;;;;;
 
 
 (defun get-arg-boxers (param-types)
   "returns a list with one entry per param, either nil or a function that boxes the arg"
-  (loop for param-type across param-types collect
-       (get-boxer-fn (jclass-name param-type))))
+  (loop for param-type across param-types
+	collecting (get-boxer-fn (jclass-name param-type))))
+
+
 
 (defun build-arglist (args arg-boxers)
   (when args
@@ -883,10 +1021,21 @@ then call the requested method - subsequent calls via those symbols will be dire
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;; argument conversion and boxing ;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun box-string (s)
+  "Given a string or symbol, returns reference to a Java string"
+  (convert-to-java-string s))
+
+(defun unbox-string (ref &optional delete-local)
+  "Given a reference to a Java string, returns a Lisp string" 
+  (declare (ignore delete-local))
+  (convert-from-java-string (get-ref ref)))
+
+
+
 (defun get-boxer-fn (class-name)
   (if (string= class-name "boolean")
       #'box-boolean
-      #'identity))
+      nil))
 
 (defun get-boxer-fn-sym (class-name)
   (if (string= class-name "boolean")
@@ -901,50 +1050,41 @@ then call the requested method - subsequent calls via those symbols will be dire
   (cond
    ((null x) nil)
    ((boxed? x) (jobject-class (get-ref x)))
-   ((integerp x) integer.type)
+   ((typep x '(integer -2147483648 +2147483647)) integer.type)
+   ((typep x '(integer -9223372036854775808 +9223372036854775807)) long.type)
    ((numberp x) double.type)
+   ; ((characterp x) character.type) ;;;FIXME!!
    ((eq x t) boolean.type)
-   ((stringp x) string.type)
-   ((symbolp x) string.type)
-   (t object.type)
+   ((or (stringp x) (symbolp x))
+    (get-java-class-ref '|java.lang|::|String|))
    (t (error "can't infer box type"))))
 
+
 (defun get-unboxer-fn (class-name)
-  (cond ((string= class-name "void") #'unbox-void)
-	((is-name-of-primitive class-name) #'unbox-primitive)
-	((string= class-name "java.lang.String") #'unbox-string)
-	((string= class-name "java.lang.Boolean") #'unbox-boolean)
-	(t #'unbox-object)))
+  (if (string= class-name "void")
+      #'unbox-void
+      (if (or (is-name-of-primitive class-name) (string= class-name "java.lang.String"))
+	  #'jobject-lisp-value
+	  #'identity-or-nil)))
 
 (defun get-unboxer-fn-sym (class-name)
-  (cond ((string= class-name "void") 'unbox-void)
-	((is-name-of-primitive class-name) 'unbox-primitive)
-	((string= class-name "java.lang.String") 'unbox-string)
-	((string= class-name "java.lang.Boolean") 'unbox-boolean)
-	(t 'unbox-object)))
+  (if (string= class-name "void")
+      'unbox-void
+      (if (or (is-name-of-primitive class-name) (string= class-name "java.lang.String"))
+	  'jobject-lisp-value
+	  'identity-or-nil)))
+
 
 (defun unbox-void (x &optional delete-local)
   (declare (ignore x delete-local))
   nil)
 
-(defun unbox-primitive (x)
-  (unless (equal x +null+)
-    (jobject-lisp-value x)))
-
-(defun unbox-string (x)
-  (unless (equal x +null+)
-    (jobject-lisp-value x)))
-
-(defun unbox-boolean (x)
-  (unless (equal x +null+)
-    (jobject-lisp-value x)))
-
-(defun unbox-object (x)
-  (unless (equal x +null+)
-    (jcoerce x (jclass-of x))))
+(defun box-void (x)
+  (declare (ignore x))
+  nil)
 
 (defun box-boolean (x)
-  (if x +true+ +false+))
+  (if x java:+true+ java:+false+))
 
 ;;;;;;;;;;;;;;;;;;;;;;;; proxy support ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1025,6 +1165,26 @@ Creates, registers and returns a Java object that implements the supplied interf
 		      arg-defs (jarray-to-list params))))
       `(java::%jnew-proxy ,@(process-idefs interface-defs)))))
 
+
+#+nil
+(defun jrc (class-name super-name interfaces constructors methods fields &optional filename)
+  "A friendlier version of jnew-runtime-class."
+  #+nil (format t "~s~%~s~%~s~%~s~%~s~%~s~%" class-name super-name interfaces constructors methods fields filename)
+  (if (java:jruntime-class-exists-p class-name)
+      (progn 
+	(warn "Java class ~a already exists. Redefining methods." class-name)
+	(loop for 
+	      (argument-types function super-invocation-args) in constructors
+	      do 
+	      (java:jredefine-method class-name nil argument-types function))
+	(loop for 
+	      (method-name return-type argument-types function &rest modifiers)
+	      in methods
+	      do 
+	      (java:jredefine-method class-name method-name argument-types function)))
+      (java:jnew-runtime-class class-name super-name interfaces constructors methods fields filename)))
+
+
 (defun get-modifiers (member)
   (jcall (jmethod "java.lang.reflect.Member" "getModifiers") member))
 
@@ -1046,10 +1206,164 @@ Creates, registers and returns a Java object that implements the supplied interf
            mods)
 	  collect mod)))
 
+
+(defun get-java-object (x)
+  (typecase x
+    (|java.lang|::object. (ref x))
+    (t x)))
+
 (defun find-java-class-name-in-macro (c)
   (etypecase c
     (symbol (jclass-name (find-java-class (symbol-value c))))
     (string c)))
 
+#+nil
+(defmacro new-class (class-name super-and-interface-names constructor-defs method-defs field-defs)
+  "class-name -> string
+   super-and-interface-names -> class-name | (class-name interface-name*)
+   constructor-defs -> (constructor-def*)
+   constructor-def -> (ctr-arg-defs body) 
+   /the first form in body may be (super arg-name+); this will call the constructor of the superclass
+    with the listed arguments/
+   ctr-arg-def -> (arg-name arg-type)
+   method-def -> (method-name return-type access-modifiers arg-defs* body)
+   /access-modifiers may be nil (to get the modifiers from the superclass), a keyword, or
+   a list of keywords/
+   method-name -> string 
+arg-def -> arg-name | (arg-name arg-type)
+arg-type -> \"package.qualified.ClassName\" | classname. | :primitive
+class-name -> \"package.qualified.ClassName\" | classname. 
+interface-name -> \"package.qualified.InterfaceName\" | interfacename. 
+
+Creates, registers and returns a Java object that implements the supplied interfaces"
+  (let ((this (intern "THIS" *package*))
+        (defined-method-names))
+    (labels ((process-ctr-def (ctr-def ctrs)
+	       (destructuring-bind ((&rest arg-defs) &body body)
+                   ctr-def
+                 (let ((ctr-param-names 
+			(mapcar 
+			 #'(lambda (arg-def) (find-java-class-name-in-macro (cadr arg-def)))
+			 arg-defs))
+		       ;(ctr-param-names (mapcar #'cadr arg-defs))
+		       (gargs (gensym))
+		       (head (car body))
+		       (sia))
+		   (when (and (consp head) (eq (car head) 'super))
+		     (setq sia (mapcar 
+				#'(lambda (arg-name) 
+				   (1+ (position arg-name arg-defs :key #'car)))
+				(cdr head))
+			   body (cdr body)))
+                   `(,ctr-param-names
+                     (lambda (&rest ,gargs)
+			 (let ,(arg-lets (append arg-defs (list this))
+					 (append 
+					  ctr-param-names
+					  (list class-name))
+					 gargs
+					 0)
+			   ,@body))
+                     ,sia))))
+	     (process-method-def (method-def methods)
+               (destructuring-bind (method-name return-type modifiers (&rest arg-defs) &body body)
+                   method-def
+                 (push method-name defined-method-names)
+                 (let* ((method (matching-method method-name arg-defs methods))
+                        (method-params 
+                         (if method
+                             (jarray-to-list (jmethod-params method))
+                             (mapcar #'(lambda (arg-def) (find-java-class-in-macro (cadr arg-def))) arg-defs)))
+                        (method-param-names 
+                         #+nil
+			  (if method
+                             (mapcar #'jclass-name (jarray-to-list method-params))
+                             (mapcar #'cadr arg-defs))
+			  (mapcar #'jclass-name method-params))
+                        (return-type-name
+                         (jclass-name 
+                          (if method (jmethod-return-type method) (find-java-class-in-macro return-type))))
+                        (modifiers 
+			 #+nil
+			  (if method (get-modifier-list method) '("public"))
+			  (cond ((and (null modifiers) method) (get-modifier-list method))
+				((symbolp modifiers) (list (string-downcase (symbol-name modifiers))))
+				((consp modifiers) (mapcar #'(lambda (m) (string-downcase (symbol-name m))) modifiers))
+				(t (error (format t "Need to provide modifiers for method ~A" method-name)))))
+                        (gargs (gensym))) 
+                   `(,method-name ,return-type-name ,method-param-names
+                     (lambda (&rest ,gargs)
+		       ;;(,(get-boxer-fn-sym return-type-name)
+		       (get-java-object  ;;check!
+			 (let ,(arg-lets (append arg-defs (list this))
+					 (append 
+					  method-param-names 
+					  #+nil (map 'list #'(lambda (p) (jclass-name p)) method-params)
+					  (list class-name))
+					 gargs
+					 0)
+			   ,@body))
+		       )
+                     ,@modifiers))))
+             (arg-lets (arg-defs params gargs idx)
+               (when arg-defs
+                 (let ((arg (first arg-defs))
+                       (param (first params)))
+                   (cons `(,(if (atom arg) arg (first arg))
+                           (,(get-unboxer-fn-sym param)
+                            (nth ,idx ,gargs)))
+                         (arg-lets (rest arg-defs) (rest params) gargs (1+ idx))))))
+             (matching-method (method-name arg-defs methods)
+               (let (match)
+                 (loop for method across methods
+                       when (method-matches method-name arg-defs method)
+                       do
+                       (if match
+                           (error (format nil "more than one method matches ~A" method-name))
+                           (setf match method)))
+                 match))
+             (method-matches (method-name arg-defs method)
+               (when (string-equal method-name (jmethod-name method))
+                 (let ((params (jmethod-params method)))
+                   (when (= (length arg-defs) (length params))
+                     (is-congruent arg-defs params)))))
+             (is-congruent (arg-defs params)
+               (every (lambda (arg param)
+                        (or (atom arg)  ;no type spec matches anything
+                            (jeq (find-java-class-in-macro (second arg)) param)))
+                      arg-defs (jarray-to-list params))))
+      (unless (consp super-and-interface-names)
+	(setq super-and-interface-names (list super-and-interface-names)))
+      (let* ((super-name (find-java-class-name-in-macro (car super-and-interface-names)))
+	     (interfaces (mapcar #'find-java-class-name-in-macro (cdr super-and-interface-names)))
+	     (super (jclass super-name))
+             (super-ctrs (jclass-constructors super))
+             (ctrs-ret (loop for ctr-def in constructor-defs collecting
+                        (process-ctr-def ctr-def super-ctrs)))
+	     (super-methods (jclass-methods super))
+             (iface-methods 
+              (apply #'concatenate 'vector 
+                     (mapcar #'(lambda (ifn)
+                                 (jclass-methods (jclass ifn)))
+                             interfaces)))
+             (methods-ret (loop for method-def in method-defs collecting
+                        (process-method-def
+                         method-def 
+                         (concatenate 'vector super-methods iface-methods)))))
+        ;;check to make sure every function is defined
+        (loop for method across iface-methods
+              for mname = (jmethod-name method)
+              unless (member mname defined-method-names :test #'string-equal)
+              do 
+              (warn (format nil "class doesn't define:~%~A" mname)))
+	`(progn 
+	  (jrc ,class-name ,super-name ,interfaces 
+	   ',ctrs-ret
+	   ',methods-ret
+	   (loop for (fn type . mods) in ',field-defs
+	    collecting `(,fn ,(find-java-class-name-in-macro type)
+			 ,@(mapcar #'(lambda (mod) (string-downcase (symbol-name mod))) mods)))
+	  #+nil ,(namestring (merge-pathnames class-name "/tmp/")))
+	  (eval '(def-java-class ,class-name)))))))
 
 
