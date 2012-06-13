@@ -1,5 +1,5 @@
 ;;; -*- mode: Common-Lisp; Base: 10 ; Syntax: ANSI-Common-Lisp ; coding: utf-8 -*-
-;;; This is ASDF 2.21: Another System Definition Facility.
+;;; This is ASDF 2.22: Another System Definition Facility.
 ;;;
 ;;; Feedback, bug reports, and patches are all welcome:
 ;;; please mail to <asdf-devel@common-lisp.net>.
@@ -116,7 +116,7 @@
          ;; "2.345.6" would be a development version in the official upstream
          ;; "2.345.0.7" would be your seventh local modification of official release 2.345
          ;; "2.345.6.7" would be your seventh local modification of development version 2.345.6
-         (asdf-version "2.21")
+         (asdf-version "2.22")
          (existing-asdf (find-class 'component nil))
          (existing-version *asdf-version*)
          (already-there (equal asdf-version existing-version)))
@@ -1343,7 +1343,7 @@ processed in order by OPERATE."))
     :initarg :if-component-dep-fails
     :accessor module-if-component-dep-fails)
    (default-component-class
-    :initform *default-component-class*
+    :initform nil
     :initarg :default-component-class
     :accessor module-default-component-class)))
 
@@ -2788,6 +2788,11 @@ details."
         directory-pathname
         (default-directory))))
 
+(defun* find-class* (x &optional (errorp t) environment)
+  (etypecase x
+    ((or standard-class built-in-class) x)
+    (symbol (find-class x errorp environment))))
+
 (defun* class-for-type (parent type)
   (or (loop :for symbol :in (list
                              type
@@ -2799,8 +2804,10 @@ details."
                                  class (find-class 'component)))
         :return class)
       (and (eq type :file)
-           (or (and parent (module-default-component-class parent))
-               (find-class *default-component-class*)))
+           (find-class*
+            (or (loop :for module = parent :then (component-parent module) :while module
+                  :thereis (module-default-component-class module))
+                *default-component-class*) nil))
       (sysdef-error "don't recognize component type ~A" type)))
 
 (defun* maybe-add-tree (tree op1 op2 c)
@@ -2886,7 +2893,7 @@ Returns the new tree (which probably shares structure with the old one)"
         (type name &rest rest &key
               ;; the following list of keywords is reproduced below in the
               ;; remove-keys form.  important to keep them in sync
-              components pathname default-component-class
+              components pathname
               perform explain output-files operation-done-p
               weakly-depends-on depends-on serial in-order-to
               do-first
@@ -2913,7 +2920,7 @@ Returns the new tree (which probably shares structure with the old one)"
                         :pathname pathname
                         :parent parent
                         (remove-keys
-                         '(components pathname default-component-class
+                         '(components pathname
                            perform explain output-files operation-done-p
                            weakly-depends-on depends-on serial in-order-to)
                          rest)))
@@ -2927,10 +2934,6 @@ Returns the new tree (which probably shares structure with the old one)"
           (setf ret (apply 'make-instance (class-for-type parent type) args)))
       (component-pathname ret) ; eagerly compute the absolute pathname
       (when (typep ret 'module)
-        (setf (module-default-component-class ret)
-              (or default-component-class
-                  (and (typep parent 'module)
-                       (module-default-component-class parent))))
         (let ((*serial-depends-on* nil))
           (setf (module-components ret)
                 (loop
@@ -3687,7 +3690,7 @@ Please remove it from your ASDF configuration"))
     #+sbcl ,(let ((h (getenv "SBCL_HOME")))
                  (when (plusp (length h)) `((,(truenamize h) ,*wild-inferiors*) ())))
     ;; The below two are not needed: no precompiled ASDF system there
-    ;; #+ecl (,(translate-logical-pathname "SYS:**;*.*") ())
+    #+ecl (,(translate-logical-pathname "SYS:**;*.*") ())
     ;; #+clozure ,(ignore-errors (list (wilden (let ((*default-pathname-defaults* #p"")) (truename #p"ccl:"))) ()))
     ;; All-import, here is where we want user stuff to be:
     :inherit-configuration
@@ -4011,21 +4014,24 @@ with a different configuration, so the configuration would be re-read then."
       entries))
 
 (defun* directory-files (directory &optional (pattern *wild-file*))
-  (setf directory (pathname directory))
-  (when (wild-pathname-p directory)
-    (error "Invalid wild in ~S" directory))
-  (unless (member (pathname-directory pattern) '(() (:relative)) :test 'equal)
-    (error "Invalid file pattern ~S" pattern))
-  (when (typep directory 'logical-pathname)
-    (setf pattern (make-pathname-logical pattern (pathname-host directory))))
-  (let ((entries (ignore-errors (directory* (merge-pathnames* pattern directory)))))
-    (filter-logical-directory-results
-     directory entries
-     #'(lambda (f)
-         (make-pathname :defaults directory
-                        :name (pathname-name f)
-                        :type (make-pathname-component-logical (pathname-type f))
-                        :version (make-pathname-component-logical (pathname-version f)))))))
+  (let ((dir (pathname directory)))
+    (when (typep dir 'logical-pathname)
+      ;; Because of the filtering we do below,
+      ;; logical pathnames have restrictions on wild patterns.
+      ;; Not that the results are very portable when you use these patterns on physical pathnames.
+      (when (wild-pathname-p dir)
+        (error "Invalid wild pattern in logical directory ~S" directory))
+      (unless (member (pathname-directory pattern) '(() (:relative)) :test 'equal)
+        (error "Invalid file pattern ~S for logical directory ~S" pattern directory))
+      (setf pattern (make-pathname-logical pattern (pathname-host dir))))
+    (let ((entries (ignore-errors (directory* (merge-pathnames* pattern dir)))))
+      (filter-logical-directory-results
+       directory entries
+       #'(lambda (f)
+           (make-pathname :defaults dir
+                          :name (make-pathname-component-logical (pathname-name f))
+                          :type (make-pathname-component-logical (pathname-type f))
+                          :version (make-pathname-component-logical (pathname-version f))))))))
 
 (defun* directory-asd-files (directory)
   (directory-files directory *wild-asd*))
@@ -4399,7 +4405,7 @@ with a different configuration, so the configuration would be re-read then."
     (let ((*verbose-out* (make-broadcast-stream))
           (system (find-system (string-downcase name) nil)))
       (when system
-        (operate *require-asdf-operator* system :verbose nil)
+        (operate *require-asdf-operator* system :verbose nil :force-not (loaded-systems))
         t))))
 
 #+(or abcl clisp clozure cmu ecl sbcl)

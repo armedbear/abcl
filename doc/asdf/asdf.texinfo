@@ -2924,12 +2924,19 @@ though it may at times require some creativity
 
 @section Controlling source file character encoding
 
-Starting with ASDF 2.21, components accept a @code{:encoding} option.
+Starting with ASDF 2.21, components accept a @code{:encoding} option
+so authors may specify which character encoding should be used
+to read and evaluate their source code.
+When left unspecified, the encoding is inherited
+from the parent module or system;
+if no encoding is specified at any point,
+the default @code{:autodetect} is assumed.
 By default, only @code{:default}, @code{:utf-8}
 and @code{:autodetect} are accepted.
-@code{:autodetect} is the default, and calls
+@code{:autodetect}, the default, calls
 @code{*encoding-detection-hook*} which by default always returns
 @code{*default-encoding*} which itself defaults to @code{:default}.
+
 In other words, there now are plenty of extension hooks, but
 by default ASDF follows the backwards compatible behavior
 of using whichever @code{:default} encoding your implementation uses,
@@ -2948,7 +2955,7 @@ as @code{:asdf-unicode} will be present in @code{*features*}
 only if you're using a recent ASDF
 on an implementation that supports unicode.
 We recommend that you avoid using unprotected @code{:encoding} specifications
-until after ASDF 2.21 becomes widespread, hopefully by the end of 2012.
+until after ASDF 2.21 or later becomes widespread, hopefully by the end of 2012.
 
 While it offers plenty of hooks for extension,
 and one such extension is being developed (see below),
@@ -3156,7 +3163,7 @@ Instead we recommend the use of such a function as
 @code{xcvb-driver:run-program/}
 from the @code{xcvb-driver} system that is distributed with XCVB:
 @url{http://common-lisp.net/project/xcvb}.
-It's only alternative that supports
+It's the only alternative that supports
 as many implementations and operating systems as ASDF does,
 and provides well-defined behavior outside Unix (i.e. on Windows).
 (The only unsupported exception is Genera, since on it
@@ -3225,6 +3232,11 @@ ASDF 2 and its release candidates push
 ASDF-dependent code you may check for this feature
 to see if the new API is present.
 @emph{All} versions of ASDF should have the @code{:asdf} feature.
+
+Additionally, all versions of asdf 2
+define a function @code{(asdf:asdf-version)} you may use to query the version;
+and the source code of recent versions of asdf 2 features the version number
+prominently on the second line of its source code.
 
 If you are experiencing problems or limitations of any sort with ASDF 1,
 we recommend that you should upgrade to ASDF 2,
@@ -3453,7 +3465,7 @@ They replace A-B-L, and there is compatibility mode to emulate
 your previous A-B-L configuration.
 See @code{enable-asdf-binary-locations-compatibility} in
 @pxref{Controlling where ASDF saves compiled files,,Backward Compatibility}.
-But thou shall not load ABL on top of ASDF 2.
+But thou shalt not load ABL on top of ASDF 2.
 
 @end itemize
 
@@ -3469,7 +3481,8 @@ a logical pathname (or implementation-dependent hierarchical pathname)
 must now be specified with @code{#p} syntax
 where the namestring might have previously sufficed;
 moreover when evaluation is desired @code{#.} must be used,
-where it wasn't necessary in the toplevel @code{:pathname} argument.
+where it wasn't necessary in the toplevel @code{:pathname} argument
+(but necessary in other @code{:pathname} arguments).
 
 @item
 There is a slight performance bug, notably on SBCL,
@@ -3485,7 +3498,7 @@ and not use any deep @code{:tree} entry but only @code{:directory} entries
 or shallow @code{:tree} entries.
 Or you can fix your implementation to not be quite that slow
 when recursing through directories.
-@emph{Update}: performance bug fixed the hard way in 2.010.
+@emph{Update}: This performance bug fixed the hard way in 2.010.
 
 @item
 On Windows, only LispWorks supports proper default configuration pathnames
@@ -3542,6 +3555,7 @@ As to how to include ASDF, we recommend the following:
 @item
 If ASDF isn't loaded yet, then @code{(require "asdf")}
 should load the version of ASDF that is bundled with your system.
+If possible so should @code{(require "ASDF")}.
 You may have it load some other version configured by the user,
 if you allow such configuration.
 
