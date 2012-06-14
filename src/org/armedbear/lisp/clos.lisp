@@ -2722,42 +2722,50 @@ generic functions without providing sensible behaviour..."
          (%set-generic-function-name gf ',function-name)
          gf))))
 
-(defmacro redefine-class-forwarder (name slot)
+(defmacro redefine-class-forwarder (name slot &optional body-alist)
   "Define a generic function on a temporary symbol as an accessor
 for the slot `slot'. Then, when definition is complete (including
 allocation of methods), swap the definition in place.
 
-Without this approach, we can't depend the old forwarders to be
-in place, while we still need them to "
-  (let* (($name (if (consp name) (cadr name) name))
-         (%name (intern (concatenate 'string
-                                     "%"
-                                     (if (consp name)
-                                         (symbol-name 'set-) "")
-                                     (symbol-name $name))
-                        (find-package "SYS"))))
-    `(atomic-defgeneric ,name (;; splice a new-value parameter for setters
-                               ,@(when (consp name) (list 'new-value))
-                               class)
-         ,@(mapcar (if (consp name)
-                       #'(lambda (class-name)
-                           `(:method (new-value (class ,class-name))
-                              (,%name new-value class)))
-                       #'(lambda (class-name)
-                           `(:method ((class ,class-name))
-                              (,%name class))))
-                   '(built-in-class forward-referenced-class structure-class))
-         ,@(mapcar #'(lambda (class-name)
-                       `(:method (,@(when (consp name) (list 'new-value))
-                                  (class ,class-name))
-                          ,(if (consp name)
-                               `(setf (slot-value class ',slot) new-value)
-                               `(slot-value class ',slot))))
-                   '(standard-class funcallable-standard-class)))))
+`body-alist' can be used to override the default method bodies for given
+metaclasses.  In substitute method bodies, `class' names the class
+instance and, for setters, `new-value' the new value."
+  (let* ((setterp (consp name))
+         (%name
+          (intern (concatenate 'string
+                               "%"
+                               (if setterp (symbol-name 'set-) "")
+                               (symbol-name (if setterp (cadr name) name)))
+                  (find-package "SYS")))
+         (bodies
+          (append body-alist
+                  (if setterp
+                      `((built-in-class . (,%name new-value class))
+                        (forward-referenced-class . (,%name new-value class))
+                        (structure-class . (,%name new-value class))
+                        (standard-class . (setf (slot-value class ',slot)
+                                                new-value))
+                        (funcallable-standard-class . (setf (slot-value class ',slot)
+                                                            new-value)))
+                      `((built-in-class . (,%name class))
+                        (forward-referenced-class . (,%name class))
+                        (structure-class . (,%name class))
+                        (standard-class . (slot-value class ',slot))
+                        (funcallable-standard-class . (slot-value class ',slot)))))))
+    `(atomic-defgeneric ,name (,@(when setterp (list 'new-value)) class)
+        ,@(mapcar #'(lambda (class-name)
+                      `(:method (,@(when setterp (list 'new-value))
+                                 (class ,class-name))
+                         ,(cdr (assoc class-name bodies))))
+                  '(built-in-class forward-referenced-class structure-class
+                    standard-class funcallable-standard-class)))))
 
 
 (redefine-class-forwarder class-name name)
-(redefine-class-forwarder (setf class-name) name)
+;;; AMOP pg. 230
+(redefine-class-forwarder (setf class-name) name
+   ((standard-class . (reinitialize-instance class :name new-value))
+    (funcallable-standard-class . (reinitialize-instance class :name new-value))))
 (redefine-class-forwarder class-slots slots)
 (redefine-class-forwarder (setf class-slots) slots)
 (redefine-class-forwarder class-direct-slots direct-slots)
