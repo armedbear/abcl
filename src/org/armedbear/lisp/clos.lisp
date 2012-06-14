@@ -4052,6 +4052,11 @@ or T when any keyword is acceptable due to presence of
   (:method ((generic-function standard-generic-function))
     (sys:%generic-function-name generic-function)))
 
+;;; AMOP pg. 231
+(defgeneric (setf generic-function-name) (new-value gf)
+  (:method (new-value (gf generic-function))
+    (reinitialize-instance gf :name new-value)))
+
 ;;; Readers for Method Metaobjects
 ;;; AMOP pg. 218ff.
 
