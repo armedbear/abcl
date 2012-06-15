@@ -1,11 +1,20 @@
 ;;; -*- Mode: Lisp -*-
 
-;;; See also:
-;;;   .clinit.cl         (Allegro)
-;;;   .cmucl-init.lisp   (CMUCL)
-;;;   .sbclrc            (SBCL)
-;;;   .clisprc.lisp      (CLISP)
-;;;   .lispworks         (LispWorks)
+;;; Possible codas for inclusion in the Armed Bear startup file #p"~/.abclrc"
+
+#-quicklisp
+(let ((quicklisp-local  #P"~/quicklisp/setup.lisp")
+      (quicklisp-remote #p"http://beta.quicklisp.org/quiclisp.lisp"))
+  (unless (probe-file quicklisp-local)
+    (unless (probe-file quicklisp-remote)     ;;; XXX possibly search for a proxy÷
+      (load quicklisp-remote)))
+  (when (probe-file quicklisp-local)
+    (load quicklisp-local)))
+
+(require :asdf)
+(require :abcl-contrib)
+(require :abcl-asdf)
+(setf abcl-asdf::*maven-http-proxy* "http://localhost:3128/")
 
 ;;; Customize the procedure used by CL:DISASSEMBLE
 (setf *disassembler*       
