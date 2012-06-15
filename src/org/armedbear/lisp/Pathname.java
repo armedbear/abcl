@@ -2282,6 +2282,22 @@ public class Pathname extends LispObject {
         return result;
     }
 
+  public static final Primitive GET_INPUT_STREAM = new pf_get_input_stream();
+  @DocString(name="get-input-stream",
+             args="pathname",
+             doc="Returns a java.io.InputStream for resource denoted by PATHNAME.")
+  private static final class pf_get_input_stream extends Primitive {
+    pf_get_input_stream() {
+      super("ensure-input-stream", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject pathname) {
+      Pathname p = (Pathname) coerceToPathname(pathname);
+      return new JavaObject(p.getInputStream());
+    }
+  };
+
+
     public InputStream getInputStream() {
         InputStream result = null;
         if (isJar()) {

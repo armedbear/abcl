@@ -513,4 +513,9 @@ calls on the java.util.Enumeration `jenumeration`."
   (declare (ignore initargs))
   (error "make-instance not supported for ~S" class))
 
+(defun jinput-stream (pathname)
+  "Returns a java.io.InputStream for resource denoted by PATHNAME."
+  (sys:ensure-input-stream pathname))
+
 (provide "JAVA")
+

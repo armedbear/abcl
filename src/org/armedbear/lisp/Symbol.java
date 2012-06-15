@@ -3064,6 +3064,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_JAVA.addExternalSymbol("JCLASS-NAME");
   public static final Symbol JCLASS_OF =
     PACKAGE_JAVA.addExternalSymbol("JCLASS-OF");
+  public static final Symbol JINPUT_STREAM =
+    PACKAGE_JAVA.addExternalSymbol("JINPUT-STREAM");
   public static final Symbol JMETHOD_RETURN_TYPE =
     PACKAGE_JAVA.addExternalSymbol("JMETHOD-RETURN-TYPE");
   public static final Symbol JRESOLVE_METHOD =
@@ -3084,6 +3086,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("FLOAT-UNDERFLOW-MODE");
   public static final Symbol FLOAT_OVERFLOW_MODE =
     PACKAGE_SYS.addExternalSymbol("FLOAT-OVERFLOW-MODE");
+  public static final Symbol ENSURE_INPUT_STREAM =
+    PACKAGE_SYS.addExternalSymbol("ENSURE-INPUT-STREAM");
   public static final Symbol CLASS_BYTES =
     PACKAGE_SYS.addExternalSymbol("CLASS-BYTES");
   public static final Symbol _CLASS_SLOTS =

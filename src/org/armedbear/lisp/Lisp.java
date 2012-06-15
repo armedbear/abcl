@@ -1064,7 +1064,7 @@ public final class Lisp
           return (Symbol)// Not reached.       
               type_error(obj, Symbol.SYMBOL);
   }
-
+  
   public static final LispObject checkList(LispObject obj)
 
   {
