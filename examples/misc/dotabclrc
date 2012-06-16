@@ -4,9 +4,9 @@
 
 #-quicklisp
 (let ((quicklisp-local  #P"~/quicklisp/setup.lisp")
-      (quicklisp-remote #p"http://beta.quicklisp.org/quiclisp.lisp"))
+      (quicklisp-remote #p"http://beta.quicklisp.org/quicklisp.lisp"))
   (unless (probe-file quicklisp-local)
-    (unless (probe-file quicklisp-remote)     ;;; XXX possibly search for a proxy÷
+    (when (probe-file quicklisp-remote)     ;;; XXX possibly search for a proxy÷
       (load quicklisp-remote)))
   (when (probe-file quicklisp-local)
     (load quicklisp-local)))
