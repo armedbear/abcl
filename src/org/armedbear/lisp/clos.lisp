@@ -1922,16 +1922,15 @@ Initialized with the true value near the end of the file.")
             (remove method (class-direct-methods specializer)))))
 
 (defun std-add-method (gf method)
-  (when (and (method-generic-function method)
-             (not (eql gf (method-generic-function method))))
-    (error 'simple-error
-           :format-control "~S is already a method of ~S, cannot add to ~S."
-           :format-arguments (list method (method-generic-function method) gf)))
-  ;; Remove existing method with same qualifiers and specializers (if any).
+  ;; calls sites need to make sure that method is either a method of the
+  ;; given gf or does not have a gf.
   (let ((old-method (%find-method gf (std-method-qualifiers method)
                                  (method-specializers method) nil)))
     (when old-method
-      (std-remove-method gf old-method)))
+      (if (and (eq (class-of gf) +the-standard-generic-function-class+)
+               (eq (class-of old-method) +the-standard-method-class+))
+          (std-remove-method gf old-method)
+          (remove-method gf old-method))))
   (setf (std-slot-value method 'sys::%generic-function) gf)
   (push method (generic-function-methods gf))
   (dolist (specializer (method-specializers method))
@@ -3950,17 +3949,26 @@ or T when any keyword is acceptable due to presence of
   (find-method (find-generic-function generic-function errorp)
                qualifiers specializers errorp))
 
+;;; AMOP pg. 167
 (defgeneric add-method (generic-function method))
 
+(defmethod add-method :before ((generic-function generic-function)
+                               (method method))
+  (when (and (method-generic-function method)
+             (not (eql generic-function (method-generic-function method))))
+    (error 'simple-error
+           :format-control "~S is already a method of ~S, cannot add to ~S."
+           :format-arguments (list method (method-generic-function method)
+                                   generic-function)))
+  (check-method-lambda-list (generic-function-name generic-function)
+                            (method-lambda-list method)
+                            (generic-function-lambda-list generic-function)))
+
 (defmethod add-method ((generic-function standard-generic-function)
-                       (method method))
-  (let ((method-lambda-list (method-lambda-list method))
-        (gf-lambda-list (generic-function-lambda-list generic-function)))
-    (check-method-lambda-list (%generic-function-name generic-function)
-                              method-lambda-list gf-lambda-list))
+                       (method standard-method))
   (std-add-method generic-function method))
 
-(defmethod add-method :after ((generic-function standard-generic-function)
+(defmethod add-method :after ((generic-function generic-function)
                               (method method))
   (map-dependents generic-function
                   #'(lambda (dep) (update-dependent generic-function dep
@@ -3969,10 +3977,10 @@ or T when any keyword is acceptable due to presence of
 (defgeneric remove-method (generic-function method))
 
 (defmethod remove-method ((generic-function standard-generic-function)
-                          (method method))
+                          (method standard-method))
   (std-remove-method generic-function method))
 
-(defmethod remove-method :after ((generic-function standard-generic-function)
+(defmethod remove-method :after ((generic-function generic-function)
                                  (method method))
   (map-dependents generic-function
                   #'(lambda (dep) (update-dependent generic-function dep
