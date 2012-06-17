@@ -65,6 +65,7 @@ public final class StandardGenericFunction extends FuncallableStandardObject
       Symbol.STANDARD;
     slots[StandardGenericFunctionClass.SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER] =
       NIL;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_DECLARATIONS] = NIL;
     slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE] = NIL;
     slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION] = NIL;
   }
@@ -114,6 +115,7 @@ public final class StandardGenericFunction extends FuncallableStandardObject
       Symbol.STANDARD;
     slots[StandardGenericFunctionClass.SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER] =
       NIL;
+    slots[StandardGenericFunctionClass.SLOT_INDEX_DECLARATIONS] = NIL;
     slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE] =
       NIL;
     slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION] = NIL;
@@ -483,6 +485,43 @@ public final class StandardGenericFunction extends FuncallableStandardObject
       return second;
     }
   };
+
+  private static final Primitive GENERIC_FUNCTION_DECLARATIONS
+    = new pf_generic_function_declarations();
+  @DocString(name="%generic-function-declarations")
+  private static final class pf_generic_function_declarations extends Primitive
+  {
+    pf_generic_function_declarations()
+    { 
+      super("%generic-function-declarations", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      return checkStandardGenericFunction(arg)
+        .slots[StandardGenericFunctionClass .SLOT_INDEX_DECLARATIONS];
+    }
+  };
+
+  private static final Primitive SET_GENERIC_FUNCTION_DECLARATIONS
+    = new pf_set_generic_function_declarations();
+  @DocString(name="set-generic-function-declarations")
+  private static final class pf_set_generic_function_declarations extends Primitive
+  {
+    pf_set_generic_function_declarations()
+    {
+      super("set-generic-function-declarations", PACKAGE_SYS, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+    {
+      checkStandardGenericFunction(first)
+        .slots[StandardGenericFunctionClass.SLOT_INDEX_DECLARATIONS] = second;
+      return second;
+    }
+  };
+
+
 
   private static final Primitive GENERIC_FUNCTION_CLASSES_TO_EMF_TABLE
     = new pf_generic_function_classes_to_emf_table();

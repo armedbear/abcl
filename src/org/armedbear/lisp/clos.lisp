@@ -1412,10 +1412,17 @@
                                     &rest options-and-method-descriptions)
   (let ((options ())
         (methods ())
+        (declarations ())
         (documentation nil))
     (dolist (item options-and-method-descriptions)
       (case (car item)
-        (declare) ; FIXME
+        (declare
+         (when declarations
+           (error 'program-error
+                  :format-control "Two declare forms in definition of generic function ~S."
+                  :format-arguments (list function-name)))
+         (setf declarations t)
+         (push (list :declarations (cdr item)) options))
         (:documentation
          (when documentation
            (error 'program-error
@@ -1608,6 +1615,7 @@
                                                 method-class
                                                 method-combination
                                                 argument-precedence-order
+                                                declarations
                                                 documentation)
   ;; to avoid circularities, we do not call generic functions in here.
   (declare (ignore generic-function-class))
@@ -1618,6 +1626,7 @@
     (set-generic-function-methods gf ())
     (set-generic-function-method-class gf method-class)
     (set-generic-function-method-combination gf method-combination)
+    (set-generic-function-declarations gf declarations)
     (set-generic-function-documentation gf documentation)
     (set-generic-function-classes-to-emf-table gf nil)
     (let* ((plist (analyze-lambda-list (generic-function-lambda-list gf)))
@@ -4030,15 +4039,14 @@ or T when any keyword is acceptable due to presence of
   (finalize-standard-generic-function instance))
 
 ;;; Readers for generic function metaobjects
-;;; See AMOP pg. 216ff.
+;;; AMOP pg. 216ff.
 (atomic-defgeneric generic-function-argument-precedence-order (generic-function)
   (:method ((generic-function standard-generic-function))
     (sys:%generic-function-argument-precedence-order generic-function)))
 
 (atomic-defgeneric generic-function-declarations (generic-function)
   (:method ((generic-function standard-generic-function))
-    ;; TODO: add slot to StandardGenericFunctionClass.java, use it
-    nil))
+    (sys:%generic-function-declarations generic-function)))
 
 (atomic-defgeneric generic-function-lambda-list (generic-function)
   (:method ((generic-function standard-generic-function))
@@ -4254,10 +4262,12 @@ or T when any keyword is acceptable due to presence of
                                   method-class
                                   method-combination
                                   argument-precedence-order
+                                  declarations
                                   documentation
                                 &allow-other-keys)
   (declare (ignore lambda-list generic-function-class method-class
-                   method-combination argument-precedence-order documentation))
+                   method-combination argument-precedence-order declarations
+                   documentation))
   (apply #'ensure-generic-function-using-class
          (find-generic-function function-name nil)
          function-name all-keys))

@@ -46,8 +46,9 @@ public final class StandardGenericFunctionClass extends FuncallableStandardClass
   public static final int SLOT_INDEX_METHOD_CLASS              = 6;
   public static final int SLOT_INDEX_METHOD_COMBINATION        = 7;
   public static final int SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER = 8;
-  public static final int SLOT_INDEX_CLASSES_TO_EMF_TABLE      = 9;
-  public static final int SLOT_INDEX_DOCUMENTATION             = 10;
+  public static final int SLOT_INDEX_DECLARATIONS              = 9;
+  public static final int SLOT_INDEX_CLASSES_TO_EMF_TABLE      = 10;
+  public static final int SLOT_INDEX_DOCUMENTATION             = 11;
 
   public StandardGenericFunctionClass()
   {
@@ -65,6 +66,7 @@ public final class StandardGenericFunctionClass extends FuncallableStandardClass
         pkg.intern("METHOD-CLASS"),
         pkg.intern("%METHOD-COMBINATION"),
         pkg.intern("ARGUMENT-PRECEDENCE-ORDER"),
+        Symbol.DECLARATIONS,
         pkg.intern("CLASSES-TO-EMF-TABLE"),
         Symbol._DOCUMENTATION
       };
