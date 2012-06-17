@@ -113,6 +113,8 @@
   (find-class 'funcallable-standard-class))
 (defconstant +the-structure-class+ (find-class 'structure-class))
 (defconstant +the-standard-object-class+ (find-class 'standard-object))
+(defconstant +the-funcallable-standard-object-class+
+  (find-class 'funcallable-standard-object))
 (defconstant +the-standard-method-class+ (find-class 'standard-method))
 (defconstant +the-forward-referenced-class+
   (find-class 'forward-referenced-class))
@@ -843,8 +845,12 @@
                                              &key direct-superclasses direct-slots
                                              direct-default-initargs
                                              &allow-other-keys)
-  (let ((supers (or direct-superclasses
-                    (list +the-standard-object-class+))))
+  (let ((supers (cond (direct-superclasses)
+                      ((subtypep (class-of class)
+                                 +the-funcallable-standard-class+)
+                       (list +the-funcallable-standard-object-class+))
+                      ((subtypep (class-of class) +the-standard-class+)
+                       (list +the-standard-object-class+)))))
     (setf (class-direct-superclasses class) supers)
     ;; FIXME (rudi 2012-03-22: follow the AMOP spec here when classes
     ;; are reinitialized: call add-direct-subclass for newly-added
