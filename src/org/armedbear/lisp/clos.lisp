@@ -2017,7 +2017,8 @@ Initialized with the true value near the end of the file.")
                               (cdr location) ; :allocation :class
                               (funcallable-standard-instance-access arg location))))
                (if (eq value +slot-unbound+)
-                   (slot-unbound class arg slot-name)
+                   ;; fix SLOT-UNBOUND.5 from ansi test suite
+                   (nth-value 0 (slot-unbound class arg slot-name))
                    value))))))
 
     (t
@@ -3127,7 +3128,8 @@ instance and, for setters, `new-value' the new value."
                     (cdr location)      ; :allocation :class
                     (standard-instance-access instance location))))
     (if (eq value +slot-unbound+)
-        (slot-unbound class instance (slot-definition-name slot))
+        ;; fix SLOT-UNBOUND.5 from ansi test suite
+        (nth-value 0 (slot-unbound class instance (slot-definition-name slot)))
         value)))
 
 (defmethod slot-value-using-class ((class funcallable-standard-class)
@@ -3140,7 +3142,8 @@ instance and, for setters, `new-value' the new value."
                     (cdr location)      ; :allocation :class
                     (funcallable-standard-instance-access instance location))))
     (if (eq value +slot-unbound+)
-        (slot-unbound class instance (slot-definition-name slot))
+        ;; fix SLOT-UNBOUND.5 from ansi test suite
+        (nth-value 0 (slot-unbound class instance (slot-definition-name slot)))
         value)))
 
 (defmethod slot-value-using-class ((class structure-class) instance
