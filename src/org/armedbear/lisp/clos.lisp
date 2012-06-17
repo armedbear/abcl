@@ -1417,12 +1417,7 @@
     (dolist (item options-and-method-descriptions)
       (case (car item)
         (declare
-         (when declarations
-           (error 'program-error
-                  :format-control "Two declare forms in definition of generic function ~S."
-                  :format-arguments (list function-name)))
-         (setf declarations t)
-         (push (list :declarations (cdr item)) options))
+         (setf declarations (append declarations (cdr item))))
         (:documentation
          (when documentation
            (error 'program-error
@@ -1437,6 +1432,7 @@
           methods))
         (t
          (push item options))))
+    (when declarations (push (list :declarations declarations) options))
     (setf options (nreverse options)
           methods (nreverse methods))
     ;;; Since DEFGENERIC currently shares its argument parsing with
