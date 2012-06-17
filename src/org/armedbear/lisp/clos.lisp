@@ -2769,8 +2769,8 @@ instance and, for setters, `new-value' the new value."
 (redefine-class-forwarder class-name name)
 ;;; AMOP pg. 230
 (redefine-class-forwarder (setf class-name) name
-   ((standard-class . (reinitialize-instance class :name new-value))
-    (funcallable-standard-class . (reinitialize-instance class :name new-value))))
+   ((standard-class . (progn (reinitialize-instance class :name new-value) new-value))
+    (funcallable-standard-class . (progn (reinitialize-instance class :name new-value) new-value))))
 (redefine-class-forwarder class-slots slots)
 (redefine-class-forwarder (setf class-slots) slots)
 (redefine-class-forwarder class-direct-slots direct-slots)
