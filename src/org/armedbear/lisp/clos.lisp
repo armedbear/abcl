@@ -2803,10 +2803,8 @@ instance and, for setters, `new-value' the new value."
 
 (defun check-duplicate-default-initargs (initargs)
   (let ((names ()))
-    (do* ((initargs initargs (cddr initargs))
-          (name (car initargs) (car initargs)))
-         ((null initargs))
-      (push name names))
+    (dolist (initarg initargs)
+      (push (car initarg) names))
     (do* ((names names (cdr names))
           (name (car names) (car names)))
          ((null names))
