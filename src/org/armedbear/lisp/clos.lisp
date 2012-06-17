@@ -852,10 +852,6 @@
                       ((subtypep (class-of class) +the-standard-class+)
                        (list +the-standard-object-class+)))))
     (setf (class-direct-superclasses class) supers)
-    ;; FIXME (rudi 2012-03-22: follow the AMOP spec here when classes
-    ;; are reinitialized: call add-direct-subclass for newly-added
-    ;; superclasses, call remove-direct-subclass for removed
-    ;; superclasses
     (dolist (superclass supers)
       (add-direct-subclass superclass class)))
   (let ((slots (mapcar #'(lambda (slot-properties)
@@ -3622,16 +3618,42 @@ or T when any keyword is acceptable due to presence of
                                        &rest args)
   (apply #'std-after-initialization-for-classes class args))
 
-(defmethod reinitialize-instance :after ((class standard-class) &rest all-keys)
-  (remhash class *make-instance-initargs-cache*)
-  (remhash class *reinitialize-instance-initargs-cache*)
-  (%make-instances-obsolete class)
-  (setf (class-finalized-p class) nil)
+(defmethod reinitialize-instance :before ((class standard-class)
+                                          &key direct-superclasses
+                                          &rest all-keys)
   (check-initargs (list #'allocate-instance
                         #'initialize-instance)
                   (list* class all-keys)
                   class t all-keys
                   nil 'reinitialize-instance)
+  (dolist (superclass (set-difference (class-direct-superclasses class)
+                                      direct-superclasses))
+    (remove-direct-subclass superclass class))
+  (dolist (superclass (set-difference direct-superclasses
+                                      (class-direct-superclasses class)))
+    (add-direct-subclass superclass class)))
+
+(defmethod reinitialize-instance :before ((class funcallable-standard-class)
+                                          &key direct-superclasses
+                                          &rest all-keys)
+  (check-initargs (list #'allocate-instance
+                        #'initialize-instance)
+                  (list* class all-keys)
+                  class t all-keys
+                  nil 'reinitialize-instance)
+  (dolist (superclass (set-difference (class-direct-superclasses class)
+                                      direct-superclasses))
+    (remove-direct-subclass superclass class))
+  (dolist (superclass (set-difference direct-superclasses
+                                      (class-direct-superclasses class)))
+    (add-direct-subclass superclass class)))
+
+(defmethod reinitialize-instance :after ((class standard-class) &rest all-keys)
+  (remhash class *make-instance-initargs-cache*)
+  (remhash class *reinitialize-instance-initargs-cache*)
+  (%make-instances-obsolete class)
+  (setf (class-finalized-p class) nil)
+  ;; KLUDGE (rudi 2012-06-17) this calls add-direct-subclass again
   (apply #'std-after-initialization-for-classes class all-keys)
   (map-dependents class #'(lambda (dep) (update-dependent class dep all-keys))))
 
@@ -3641,11 +3663,7 @@ or T when any keyword is acceptable due to presence of
   (remhash class *reinitialize-instance-initargs-cache*)
   (%make-instances-obsolete class)
   (setf (class-finalized-p class) nil)
-  (check-initargs (list #'allocate-instance
-                        #'initialize-instance)
-                  (list* class all-keys)
-                  class t all-keys
-                  nil 'reinitialize-instance)
+  ;; KLUDGE (rudi 2012-06-17) this calls add-direct-subclass again
   (apply #'std-after-initialization-for-classes class all-keys)
   (map-dependents class #'(lambda (dep) (update-dependent class dep all-keys))))
 
