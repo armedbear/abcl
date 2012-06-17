@@ -1522,8 +1522,7 @@
   (apply 'ensure-generic-function function-name all-keys))
 
 ;;; Bootstrap version of ensure-generic-function, handling only
-;;; standard-generic-function.  This function will be replaced in
-;;; mop.lisp.
+;;; standard-generic-function.  This function is replaced later.
 (declaim (notinline ensure-generic-function))
 (defun ensure-generic-function (function-name
                                 &rest all-keys
@@ -1615,6 +1614,7 @@
                                                 documentation)
   ;; to avoid circularities, we do not call generic functions in here.
   (declare (ignore generic-function-class))
+  (check-argument-precedence-order lambda-list argument-precedence-order)
   (let ((gf (std-allocate-instance +the-standard-generic-function-class+)))
     (%set-generic-function-name gf name)
     (%set-generic-function-lambda-list gf lambda-list)
@@ -1843,6 +1843,17 @@
         (error "The method-lambda-list ~S does not accept ~
                 all of the keyword arguments defined for the ~
                 generic function." method-lambda-list name)))))
+
+(defun check-argument-precedence-order (lambda-list argument-precedence-order)
+  (when argument-precedence-order
+    (if lambda-list
+        ;; raising the required program-errors is a side-effect of
+        ;; calculating the given permutation of apo vs req
+        (argument-precedence-order-indices
+         argument-precedence-order
+         (getf (analyze-lambda-list lambda-list) :required-args))
+        ;; AMOP pg. 198
+        (error 'program-error "argument precedence order specified without lambda list"))))
 
 (defvar *gf-initialize-instance* nil
   "Cached value of the INITIALIZE-INSTANCE generic function.
@@ -3676,10 +3687,6 @@ or T when any keyword is acceptable due to presence of
 (defmethod compute-effective-slot-definition
   ((class funcallable-standard-class) name direct-slots)
   (std-compute-effective-slot-definition class name direct-slots))
-;;; Methods having to do with generic function metaobjects.
-
-(defmethod initialize-instance :after ((gf standard-generic-function) &key)
-  (finalize-standard-generic-function gf))
 
 ;;; Methods having to do with generic function invocation.
 
@@ -4023,6 +4030,12 @@ or T when any keyword is acceptable due to presence of
 (defmethod class-prototype ((class structure-class))
   (allocate-instance class))
 
+(defmethod shared-initialize :before ((instance generic-function)
+                                      slot-names
+                                      &key lambda-list argument-precedence-order
+                                      &allow-other-keys)
+  (check-argument-precedence-order lambda-list argument-precedence-order))
+
 (defmethod shared-initialize :after ((instance standard-generic-function)
                                      slot-names
                                      &key lambda-list argument-precedence-order
@@ -4193,9 +4206,7 @@ or T when any keyword is acceptable due to presence of
                                                 &rest all-keys
                                                 &key (generic-function-class +the-standard-generic-function-class+)
                                                   lambda-list
-                                                  argument-precedence-order
                                                   (method-class +the-standard-method-class+)
-                                                  documentation
                                                 &allow-other-keys)
   (setf all-keys (copy-list all-keys))  ; since we modify it
   (remf all-keys :generic-function-class)
@@ -4213,17 +4224,8 @@ or T when any keyword is acceptable due to presence of
               (eq method-class (generic-function-method-class generic-function)))
     (error "The method class ~S is incompatible with the existing methods of ~S."
            method-class generic-function))
-  ;; FIXME (rudi 2012-03-26): should call reinitialize-instance here, as
-  ;; per AMOP.
-  (setf (generic-function-lambda-list generic-function) lambda-list)
-  (setf (generic-function-documentation generic-function) documentation)
-  (let* ((plist (analyze-lambda-list lambda-list))
-         (required-args (getf plist ':required-args)))
-    (%set-gf-required-args generic-function required-args)
-    (%set-gf-optional-args generic-function (getf plist :optional-args))
-    (setf (generic-function-argument-precedence-order generic-function)
-          (or argument-precedence-order required-args))
-    (finalize-standard-generic-function generic-function))
+  (apply #'reinitialize-instance generic-function
+         :method-class method-class all-keys)
   generic-function)
 
 (defmethod ensure-generic-function-using-class ((generic-function null)
