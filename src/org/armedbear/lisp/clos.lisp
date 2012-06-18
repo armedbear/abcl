@@ -1574,15 +1574,6 @@
                           all-keys))
           gf))))
 
-(defun initial-discriminating-function (gf args)
-  (set-funcallable-instance-function
-   gf
-   (funcall (if (eq (class-of gf) +the-standard-generic-function-class+)
-                #'std-compute-discriminating-function
-                #'compute-discriminating-function)
-            gf))
-  (apply gf args))
-
 (defun collect-eql-specializer-objects (generic-function)
   (let ((result nil))
     (dolist (method (generic-function-methods generic-function))
@@ -1600,8 +1591,10 @@
   (clrhash (generic-function-classes-to-emf-table gf))
   (%init-eql-specializations gf (collect-eql-specializer-objects gf))
   (set-funcallable-instance-function
-   gf #'(lambda (&rest args)
-          (initial-discriminating-function gf args)))
+   gf
+   (if (eq (class-of gf) +the-standard-generic-function-class+)
+       (std-compute-discriminating-function gf)
+       (compute-discriminating-function gf)))
   ;; FIXME Do we need to warn on redefinition somewhere else?
   (let ((*warn-on-redefinition* nil))
     (setf (fdefinition (%generic-function-name gf)) gf))
