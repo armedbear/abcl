@@ -56,6 +56,7 @@
           compute-class-precedence-list
           compute-default-initargs
           compute-effective-slot-definition
+          compute-discriminating-function
           compute-applicable-methods
           compute-applicable-methods-using-classes
           compute-effective-method
