@@ -331,8 +331,7 @@
              (push-on-end (cadr olist) readers)
              (push-on-end `(setf ,(cadr olist)) writers))
             (t
-             (push-on-end `(quote ,(car olist)) non-std-options)
-             (push-on-end `(quote ,(cadr olist)) non-std-options))))
+             (push-on-end (cadr olist) (getf non-std-options (car olist))))))
         `(list
           :name ',name
           ,@(when initfunction
@@ -352,7 +351,10 @@
           ,@(when type `(:type ',type))
           ,@(when documentation `(:documentation ',documentation))
           ,@other-options
-	  ,@non-std-options))))
+          ,@(mapcar #'(lambda (opt) (if (or (atom opt) (/= 1 (length opt)))
+                                        `',opt
+                                        `',(car opt)))
+                    non-std-options)))))
 
 (defun maybe-note-name-defined (name)
   (when (fboundp 'note-name-defined)
