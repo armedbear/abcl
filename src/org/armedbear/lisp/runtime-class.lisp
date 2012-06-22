@@ -82,15 +82,48 @@
         (rest (subseq name 1)))
     (format nil "~A~A~A" prefix initial rest)))
 
+;;This is missing from compiler-pass2.lisp. Probably this and similar functions should reside
+;;in a dedicated file, independent from both runtime-class and compiler-pass2.
+(defun emit-invokespecial (class-name method-name arg-types return-type)
+  (let* ((stack-effect (apply #'descriptor-stack-effect return-type arg-types))
+         (index (pool-add-method-ref *pool* class-name
+                                     method-name (cons return-type arg-types)))
+         (instruction (apply #'%emit 'invokespecial (u2 index))))
+    (declare (type (signed-byte 8) stack-effect))
+    (setf (instruction-stack instruction) (1- stack-effect))))
+
+(defun java::canonicalize-java-type (type)
+  (cond
+    ((stringp type) (make-jvm-class-name type))
+    ((keywordp type) type)
+    (t (error "Unrecognized Java type: ~A" type))))
+
+(defun java::emit-unbox-and-return (return-type)
+  (cond
+    ((eq return-type :void)
+     (emit 'pop)
+     (emit 'return))
+    ((eq return-type :int)
+     (emit-invokevirtual +lisp-object+ "intValue" nil :int)
+     (emit 'ireturn))
+    ((eq return-type :boolean)
+     (emit-invokevirtual +lisp-object+ "getBooleanValue" nil :boolean)
+     (emit 'ireturn))
+    ((jvm-class-name-p return-type)
+     (emit-invokevirtual +lisp-object+ "javaInstance" nil +java-object+)
+     (emit-checkcast return-type)
+     (emit 'areturn))
+    (t
+     (error "Unsupported return type: ~A" return-type))))
+
 (defun java::runtime-class-add-methods (class-file methods)
   (let (method-implementation-fields)
     (dolist (m methods)
-      (destructuring-bind (name return-type argument-types function &key (modifiers '(:public)) annotations) m
-        (let* ((argument-types (mapcar #'make-jvm-class-name argument-types))
+      (destructuring-bind (name return-type argument-types function
+                           &key (modifiers '(:public)) annotations override) m
+        (let* ((argument-types (mapcar #'java::canonicalize-java-type argument-types))
                (argc (length argument-types))
-               (return-type (if (keywordp return-type)
-                                return-type
-                                (make-jvm-class-name return-type)))
+               (return-type (java::canonicalize-java-type return-type))
                (jmethod (make-jvm-method name return-type argument-types :flags modifiers))
                (field-name (string (gensym name))))
           (class-add-method class-file jmethod)
@@ -135,22 +168,40 @@
                     (aload (+ argc 2 i))))
                 (error "execute(LispObject[]) is currently not supported"))
             (emit-call-execute (1+ (length argument-types)))
-            (cond
-              ((eq return-type :void)
-               (emit 'pop)
-               (emit 'return))
-              ((eq return-type :int)
-               (emit-invokevirtual +lisp-object+ "intValue" nil :int)
-               (emit 'ireturn))
-              ((eq return-type :boolean)
-               (emit-invokevirtual +lisp-object+ "getBooleanValue" nil :boolean)
-               (emit 'ireturn))
-              ((jvm-class-name-p return-type)
-               (emit-invokevirtual +lisp-object+ "javaInstance" nil +java-object+)
-               (emit-checkcast return-type)
-               (emit 'areturn))
-              (t
-               (error "Unsupported return type: ~A" return-type)))))))
+            (java::emit-unbox-and-return return-type))
+          (cond
+            ((eq override t)
+             (let ((super-method
+                    (make-jvm-method (format nil "super$~A" name)
+                                     return-type argument-types :flags modifiers)))
+               (class-add-method class-file super-method)
+               (with-code-to-method (class-file super-method)
+                 (dotimes (i (1+ (length argument-types)))
+                   (allocate-register nil))
+                 (aload 0)
+                 (loop
+                    :for arg-type :in argument-types
+                    :for i :from 1
+                    :do (progn
+                          (cond
+                            ((keywordp arg-type)
+                             (error "Unsupported arg-type: ~A" arg-type))
+                            ((eq arg-type :int) :todo)
+                            (t (aload i)))))
+                 (emit-invokespecial (class-file-superclass class-file) name
+                                     argument-types return-type)
+                 ;(emit 'pop)
+                 (cond
+                   ((eq return-type :void)
+                    (emit 'return))
+                   ((eq return-type :int)
+                    (emit 'ireturn))
+                   ((eq return-type :boolean)
+                    (emit 'ireturn))
+                   ((jvm-class-name-p return-type)
+                    (emit 'areturn))
+                   (t
+                    (error "Unsupported return type: ~A" return-type))))))))))
     method-implementation-fields))
 
 (defun java::runtime-class-add-fields (class-file fields)
