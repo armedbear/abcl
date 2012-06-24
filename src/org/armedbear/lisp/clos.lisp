@@ -2051,11 +2051,11 @@ Initialized with the true value near the end of the file.")
   ;; In this function, we know that gf is of class
   ;; standard-generic-function, so we call various
   ;; sys:%generic-function-foo readers to break circularities.
-  ;; (rudi 2012-01-27): maybe we need to discriminate between
-  ;; standard-methods and methods as well.
   (cond
     ((and (= (length (sys:%generic-function-methods gf)) 1)
-          (typep (car (sys:%generic-function-methods gf)) 'standard-reader-method))
+          (eq (type-of (car (sys:%generic-function-methods gf))) 'standard-reader-method)
+          (eq (type-of (car (std-method-specializers (%car (sys:%generic-function-methods gf))))) 'standard-class))
+     ;; we are standard and can elide slot-value(-using-class)
      (let* ((method (%car (sys:%generic-function-methods gf)))
             (class (car (std-method-specializers method)))
             (slot-name (slot-definition-name (accessor-method-slot-definition method))))
@@ -2736,7 +2736,8 @@ to ~S with argument list ~S."
                                     (autocompile method-function))
                      :fast-function ,(if (autoloadp 'compile)
                                          fast-function
-                                         (autocompile fast-function))))
+                                         (autocompile fast-function))
+                     :slot-definition ,slot-definition))
          (method-class (if (eq class +the-standard-class+)
                            +the-standard-writer-method-class+
                            (apply #'writer-method-class class slot-definition
