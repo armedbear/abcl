@@ -774,7 +774,10 @@ public class StandardClass extends SlotClass
                               constantlyNil),
            new SlotDefinition(Symbol._DOCUMENTATION,
                               list(Symbol.METHOD_COMBINATION_DOCUMENTATION),
-                              constantlyNil, list(internKeyword("DOCUMENTATION")))));
+                              constantlyNil, list(internKeyword("DOCUMENTATION"))),
+           new SlotDefinition(PACKAGE_MOP.intern("OPTIONS"),
+                              NIL, constantlyNil,
+                              list(internKeyword("OPTIONS")))));
     SHORT_METHOD_COMBINATION.setCPL(SHORT_METHOD_COMBINATION,
                                     METHOD_COMBINATION, METAOBJECT,
                                     STANDARD_OBJECT, BuiltInClass.CLASS_T);

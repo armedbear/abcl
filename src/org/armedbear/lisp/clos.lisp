@@ -184,8 +184,8 @@
 (defun fixup-standard-class-hierarchy ()
   ;; Make the result of class-direct-subclasses for the pre-built
   ;; classes agree with AMOP Table 5.1 (pg. 141).  This could be done in
-  ;; StandardClass.java where these classes are defined, but here it's
-  ;; less painful
+  ;; StandardClass.java where these classes are defined, but it's less
+  ;; painful to do it Lisp-side.
   (flet ((add-subclasses (class subclasses)
            (when (atom subclasses) (setf subclasses (list subclasses)))
            (setf (class-direct-subclasses (find-class class))
@@ -197,6 +197,8 @@
     (add-subclasses 'metaobject
                     '(generic-function method method-combination
                       slot-definition specializer))
+    (add-subclasses 'method-combination
+                    '(long-method-combination short-method-combination))
     (add-subclasses 'funcallable-standard-object 'generic-function)
     (add-subclasses 'generic-function 'standard-generic-function)
     (add-subclasses 'method 'standard-method)
@@ -911,6 +913,7 @@
     (setf (std-slot-value instance 'arguments) arguments)
     (setf (std-slot-value instance 'declarations) declarations)
     (setf (std-slot-value instance 'forms) forms)
+    (setf (std-slot-value instance 'options) nil)
     instance))
 
 (defun method-combination-name (method-combination)
@@ -979,6 +982,7 @@
          (setf (std-slot-value instance 'operator) ',operator)
          (setf (std-slot-value instance 'identity-with-one-argument)
                ',identity-with-one-arg)
+         (setf (std-slot-value instance 'options) nil)
          (setf (get ',name 'method-combination-object) instance)
          ',name))))
 
@@ -1001,10 +1005,6 @@
 ;;;
 ;;; long form of define-method-combination (from Sacla and XCL)
 ;;;
-(defun define-method-combination-type (name &rest initargs)
-    (setf (get name 'method-combination-object)
-          (apply '%make-long-method-combination initargs)))
-
 (defun method-group-p (selecter qualifiers)
   ;; selecter::= qualifier-pattern | predicate
   (etypecase selecter
@@ -1284,11 +1284,60 @@
                      :method-group-specs ,method-group-specs
                      ,@(long-form-method-combination-args args)))
          (lambda-expression (apply #'method-combination-type-lambda initargs)))
-    (apply #'define-method-combination-type name
-           `(,@initargs
-;;              :function ,(compile nil lambda-expression)
-             :function ,(coerce-to-function lambda-expression)))
+    (setf (get name 'method-combination-object)
+          (apply '%make-long-method-combination
+                 :function (coerce-to-function lambda-expression) initargs))
     name))
+
+(defun std-find-method-combination (gf name options)
+  (declare (ignore gf))
+  (when (and (eql name 'standard) options)
+    ;; CLHS DEFGENERIC
+    (error "The standard method combination does not accept any arguments."))
+  (let ((mc (get name 'method-combination-object)))
+    (cond
+      ((null mc) (error "Method combination ~S not found" name))
+      ((null options) mc)
+      ((typep mc 'short-method-combination)
+       (make-instance
+        'short-method-combination
+        :name name
+        :documentation (method-combination-documentation mc)
+        :operator (short-method-combination-operator mc)
+        :identity-with-one-argument
+        (short-method-combination-identity-with-one-argument mc)
+        :options options))
+      ((typep mc 'long-method-combination)
+       (make-instance
+        'long-method-combination
+        :name name
+        :documentation (method-combination-documentation mc)
+        :lambda-list (long-method-combination-lambda-list mc)
+        :method-group-specs (long-method-combination-method-group-specs mc)
+        :args-lambda-list (long-method-combination-args-lambda-list mc)
+        :generic-function-symbol (long-method-combination-generic-function-symbol mc)
+        :function (long-method-combination-function mc)
+        :arguments (long-method-combination-arguments mc)
+        :declarations (long-method-combination-declarations mc)
+        :forms (long-method-combination-forms mc)
+        :options options)))))
+
+(declaim (notinline find-method-combination))
+(defun find-method-combination (gf name options)
+  (std-find-method-combination gf name options))
+
+(defconstant +the-standard-method-combination+
+  (let ((instance (std-allocate-instance (find-class 'method-combination))))
+    (setf (std-slot-value instance 'sys::name) 'standard)
+    (setf (std-slot-value instance 'sys:%documentation)
+          "The standard method combination.")
+    (setf (std-slot-value instance 'options) nil)
+    instance)
+  "The standard method combination.
+Do not use this object for identity since it changes between
+compile-time and run-time.  To detect the standard method combination,
+compare the method combination name to the symbol 'standard.")
+(setf (get 'standard 'method-combination-object) +the-standard-method-combination+)
 
 (defparameter *eql-specializer-table* (make-hash-table :test 'eql))
 
@@ -1384,6 +1433,7 @@
 (defun generic-function-method-combination (gf)
   (sys:%generic-function-method-combination gf))
 (defun (setf generic-function-method-combination) (new-value gf)
+  (assert (typep new-value 'method-combination))
   (set-generic-function-method-combination gf new-value))
 
 (defun generic-function-argument-precedence-order (gf)
@@ -1534,7 +1584,7 @@
                                 lambda-list
                                 (generic-function-class +the-standard-generic-function-class+)
                                 (method-class +the-standard-method-class+)
-                                (method-combination 'standard)
+                                (method-combination +the-standard-method-combination+ mc-p)
                                 argument-precedence-order
                                 documentation
                                 &allow-other-keys)
@@ -1566,6 +1616,8 @@
             (error 'program-error
                    :format-control "~A already names an ordinary function, macro, or special operator."
                    :format-arguments (list function-name)))
+          (when mc-p
+            (error "Preliminary ensure-method does not support :method-combination argument."))
           (setf gf (apply (if (eq generic-function-class +the-standard-generic-function-class+)
                               #'make-instance-standard-generic-function
                               #'make-instance)
@@ -1982,7 +2034,8 @@ Initialized with the true value near the end of the file.")
         method)))
 
 (defun fast-callable-p (gf)
-  (and (eq (generic-function-method-combination gf) 'standard)
+  (and (eq (method-combination-name (generic-function-method-combination gf))
+           'standard)
        (null (intersection (%generic-function-lambda-list gf)
                            '(&rest &optional &key &allow-other-keys &aux)))))
 
@@ -2041,7 +2094,7 @@ Initialized with the true value near the end of the file.")
            (cond
              ((= number-required 1)
               (cond
-                ((and (eq (sys:%generic-function-method-combination gf) 'standard)
+                ((and (eq (method-combination-name (sys:%generic-function-method-combination gf)) 'standard)
                       (= (length (sys:%generic-function-methods gf)) 1))
                  (let* ((method (%car (sys:%generic-function-methods gf)))
                         (specializer (car (std-method-specializers method)))
@@ -2318,23 +2371,24 @@ to ~S with argument list ~S."
                  next-method-form)))
           next-method-list))
 
-(defun std-compute-effective-method (gf mc methods)
-  (let* ((mc-name (if (atom mc) mc (%car mc)))
-         (options (if (atom mc) '() (%cdr mc)))
+(defun std-compute-effective-method (gf method-combination methods)
+  (assert (typep method-combination 'method-combination))
+  (let* ((mc-name (method-combination-name method-combination))
+         (options (slot-value method-combination 'options))
          (order (car options))
          (primaries '())
          (arounds '())
          around
          emf-form
          (long-method-combination-p
-          (typep (get mc-name 'method-combination-object) 'long-method-combination)))
+          (typep method-combination 'long-method-combination)))
     (unless long-method-combination-p
       (dolist (m methods)
         (let ((qualifiers (method-qualifiers m)))
           (cond ((null qualifiers)
                  (if (eq mc-name 'standard)
                      (push m primaries)
-                     (error "Method combination type mismatch.")))
+                     (error "Method combination type mismatch: missing qualifier for method combination ~S." method-combination)))
                 ((cdr qualifiers)
                  (error "Invalid method qualifiers."))
                 ((eq (car qualifiers) :around)
@@ -2357,10 +2411,9 @@ to ~S with argument list ~S."
                (if (eq (class-of gf) +the-standard-generic-function-class+)
                    #'std-compute-effective-method
                    #'compute-effective-method)
-               gf (generic-function-method-combination gf)
-               (remove around methods))))
+               gf method-combination (remove around methods))))
          (setf emf-form
-               (generate-emf-lambda (std-method-function around) next-emfun))))
+               (generate-emf-lambda (method-function around) next-emfun))))
       ((eq mc-name 'standard)
        (let* ((next-emfun (compute-primary-emfun (cdr primaries)))
               (befores (remove-if-not #'before-method-p methods))
@@ -2383,41 +2436,36 @@ to ~S with argument list ~S."
                         (generate-emf-lambda (std-method-function (car primaries))
                                              next-emfun))))
                  (t
-                  (let ((method-function (std-method-function (car primaries))))
+                  (let ((method-function (method-function (car primaries))))
                     #'(lambda (args)
                         (declare (optimize speed))
                         (dolist (before befores)
-                          (funcall (std-method-function before) args nil))
+                          (funcall (method-function before) args nil))
                         (multiple-value-prog1
                             (funcall method-function args next-emfun)
                           (dolist (after reverse-afters)
-                            (funcall (std-method-function after) args nil))))))))))
+                            (funcall (method-function after) args nil))))))))))
       (long-method-combination-p
-       (let* ((mc-obj (get mc-name 'method-combination-object))
-              (function (long-method-combination-function mc-obj))
-              (arguments (rest (slot-value gf 'method-combination))))
-         (assert (typep mc-obj 'long-method-combination))
+       (let ((function (long-method-combination-function method-combination))
+             (arguments (slot-value method-combination 'options)))
          (assert function)
          (setf emf-form
                (if arguments
                    (apply function gf methods arguments)
                    (funcall function gf methods)))))
       (t
-       (let ((mc-obj (get mc-name 'method-combination-object)))
-         (unless (typep mc-obj 'short-method-combination)
-           (error "Unsupported method combination type ~A."
-                  mc-name))
-         (let* ((operator (short-method-combination-operator mc-obj))
-                (ioa (short-method-combination-identity-with-one-argument mc-obj)))
-           (setf emf-form
-                 (if (and (null (cdr primaries))
-                          (not (null ioa)))
-                     (generate-emf-lambda (std-method-function (car primaries)) nil)
-                     `(lambda (args)
-                        (,operator ,@(mapcar
-                                      (lambda (primary)
-                                        `(funcall ,(std-method-function primary) args nil))
-                                      primaries)))))))))
+       (unless (typep method-combination 'short-method-combination)
+         (error "Unsupported method combination type ~A." mc-name))
+       (let ((operator (short-method-combination-operator method-combination))
+             (ioa (short-method-combination-identity-with-one-argument method-combination)))
+         (setf emf-form
+               (if (and ioa (null (cdr primaries)))
+                   (generate-emf-lambda (method-function (car primaries)) nil)
+                   `(lambda (args)
+                      (,operator ,@(mapcar
+                                    (lambda (primary)
+                                      `(funcall ,(method-function primary) args nil))
+                                    primaries))))))))
     (assert (not (null emf-form)))
     (or #+nil (ignore-errors (autocompile emf-form))
         (coerce-to-function emf-form))))
@@ -4065,6 +4113,11 @@ or T when any keyword is acceptable due to presence of
     (%set-gf-optional-args instance (getf plist :optional-args))
     (set-generic-function-argument-precedence-order
      instance (or argument-precedence-order required-args)))
+  (when (eq (generic-function-method-combination instance) 'standard)
+    ;; fix up "naked" (make-instance 'standard-generic-function) -- gfs
+    ;; created via defgeneric have that slot initalized properly
+    (set-generic-function-method-combination instance
+                                             +the-standard-method-combination+))
   (finalize-standard-generic-function instance))
 
 ;;; Readers for generic function metaobjects
@@ -4128,6 +4181,14 @@ or T when any keyword is acceptable due to presence of
 (atomic-defgeneric accessor-method-slot-definition (method)
   (:method ((method standard-accessor-method))
     (std-accessor-method-slot-definition method)))
+
+
+;;; find-method-combination
+
+;;; AMOP pg. 191
+(atomic-defgeneric find-method-combination (gf name options)
+  (:method (gf (name symbol) options)
+    (std-find-method-combination gf name options)))
 
 ;;; specializer-direct-method and friends.
 
@@ -4226,6 +4287,7 @@ or T when any keyword is acceptable due to presence of
                                                 &key (generic-function-class +the-standard-generic-function-class+)
                                                   lambda-list
                                                   (method-class +the-standard-method-class+)
+                                                  (method-combination +the-standard-method-combination+)
                                                 &allow-other-keys)
   (setf all-keys (copy-list all-keys))  ; since we modify it
   (remf all-keys :generic-function-class)
@@ -4243,8 +4305,15 @@ or T when any keyword is acceptable due to presence of
               (eq method-class (generic-function-method-class generic-function)))
     (error "The method class ~S is incompatible with the existing methods of ~S."
            method-class generic-function))
+  (unless (typep method-combination 'method-combination)
+    (setf method-combination
+          (find-method-combination generic-function
+                                   (car method-combination)
+                                   (cdr method-combination))))
   (apply #'reinitialize-instance generic-function
-         :method-class method-class all-keys)
+         :method-combination method-combination
+         :method-class method-class
+         all-keys)
   generic-function)
 
 (defmethod ensure-generic-function-using-class ((generic-function null)
@@ -4252,13 +4321,18 @@ or T when any keyword is acceptable due to presence of
                                                 &rest all-keys
                                                 &key (generic-function-class +the-standard-generic-function-class+)
                                                   (method-class +the-standard-method-class+)
-                                                  (method-combination 'standard)
+                                                  (method-combination +the-standard-method-combination+)
                                                 &allow-other-keys)
   (setf all-keys (copy-list all-keys))  ; since we modify it
   (remf all-keys :generic-function-class)
   (unless (classp generic-function-class)
     (setf generic-function-class (find-class generic-function-class)))
   (unless (classp method-class) (setf method-class (find-class method-class)))
+  (unless (typep method-combination 'method-combination)
+    (setf method-combination
+          (find-method-combination (class-prototype generic-function-class)
+                                   (car method-combination)
+                                   (cdr method-combination))))
   (when (and (null *clos-booting*) (fboundp function-name))
     (if (autoloadp function-name)
         (fmakunbound function-name)

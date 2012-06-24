@@ -121,6 +121,8 @@
           add-direct-method
           remove-direct-method
 
+          find-method-combination
+
           extract-lambda-list
           extract-specializer-names
 

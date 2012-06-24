@@ -74,6 +74,12 @@
                     (mop:method-specializers method))))
   method)
 
+(defmethod print-object ((method-combination method-combination) stream)
+  (print-unreadable-object (method-combination stream :identity t)
+    (format stream "~A ~S" (class-name (class-of method-combination))
+            (mop::method-combination-name method-combination)))
+  method-combination)
+
 (defmethod print-object ((restart restart) stream)
   (if *print-escape*
       (print-unreadable-object (restart stream :type t :identity t)

@@ -62,7 +62,7 @@ public final class StandardGenericFunction extends FuncallableStandardObject
     slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS] =
       StandardClass.STANDARD_METHOD;
     slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION] =
-      Symbol.STANDARD;
+      Symbol.STANDARD; // fixed up by shared-initialize :after in clos.lisp
     slots[StandardGenericFunctionClass.SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER] =
       NIL;
     slots[StandardGenericFunctionClass.SLOT_INDEX_DECLARATIONS] = NIL;
@@ -112,7 +112,7 @@ public final class StandardGenericFunction extends FuncallableStandardObject
     slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS] =
       StandardClass.STANDARD_METHOD;
     slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION] =
-      Symbol.STANDARD;
+      Symbol.STANDARD; // fixed up by shared-initialize :after in clos.lisp
     slots[StandardGenericFunctionClass.SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER] =
       NIL;
     slots[StandardGenericFunctionClass.SLOT_INDEX_DECLARATIONS] = NIL;
