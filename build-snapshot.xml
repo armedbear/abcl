@@ -1,0 +1,65 @@
+<project xmlns="antlib:org.apache.tools.ant">
+
+<target name="abcl.snapshot" 
+        depends="abcl.release,abcl.diagnostic,abcl.version"
+        description="Introspect and dump the current build and
+  (presumed ) runtime targets as binary executable JVM objects.">
+
+  <copy file="${dist.dir}/abcl-bin-${abcl.version}.tar.gz"
+        verbose="true"
+        toFile="${dist.dir}/abcl-bin-${abcl.src.version}.tar.gz"/>
+
+  <copy file="${dist.dir}/abcl-src-${abcl.version}.tar.gz"
+        verbose="true"
+        toFile="${dist.dir}/abcl-src-${abcl.src.version}.tar.gz"/>
+
+        <echo>
+abcl.version: ${abcl.version}
+abcl.version.hg: ${abcl.version.hg}
+abcl.src.version: ${abcl.src.version}
+
+</echo>
+</target>
+
+<target name="abcl.version" depends="abcl.stamp,abcl.version.hg"/>
+
+<!-- Introspect for other versioning systems if we haven't determined an upstream SVN version -->
+<target name="abcl.version.hg"
+        depends="abcl.stamp">
+  <exec executable="hg" 
+    outputproperty="abcl.version.hg.raw"
+    failifexecutionfails="false"
+    searchpath="true">
+        <arg value="id"/>
+        <arg value="--id"/>
+  </exec>
+
+  <property name="abcl.version.hg"
+            value="hg-${abcl.version.hg.raw}"/>
+  <property name="abcl.version"
+            value="${abcl.version.hg}"/>
+  <property name="abcl.src.version"
+            value="${abcl.version.hg}"/>
+</target>
+
+<!-- Writing the corresponding task for abcl.version.git.raw is an exercise left to the reader. -->
+
+
+<!-- FIXME Some macrology would be helpful as the basic rules seem obvious ?!? -->
+
+<target name="urn:org.abcl.build.ant.targets.diagnostic"
+        depends="abcl.release"/>
+
+<target name="snap" 
+        depends="abcl.snapshot"/>
+
+<target name="snapshot" 
+        depends="abcl.snapshot"/>
+
+<target name="org.not.abcl.build.ant.targets.diagnostic"
+        depends="abcl.diagnostic"/>
+
+<target name="org.not.abcl.build.ant.targets.snapshot"
+        depends="abcl.snapshot"/>
+
+</project>

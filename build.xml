@@ -960,11 +960,19 @@ ${basedir}/../cl-bench
     </target>
 
 
-<target name="abcl.diagnostic" description="Emit diagnostics describing available hosting JVM properties."
+<target name="abcl.diagnostic" 
+        description="Emit diagnostics describing available hosting JVM properties."
         depends="abcl.build.diagnostic"/>
 <!-- 
 
-Possible JVM values from http://docs.oracle.com/javase/6/docs/api/java/lang/System.html#getProperties 
+urn:org.abcl.build.ant.targets.diagnostic
+
+"Possible JVM values from"
+
+http://docs.oracle.com/javase/6/docs/api/java/lang/System.html#getProperties 
+
+.
+
 
 java.version 	Java Runtime Environment version
 java.vendor 	Java Runtime Environment vendor
@@ -1022,6 +1030,8 @@ user.dir
     <import file="netbeans-build.xml" optional="true"/> 
 <!--    <import file="j-build.xml" optional="true"/>  -->
     <import file="not.org-build.xml" optional="true"/> 
+    
+    <import file="build-snapshot.xml" optional="true"/>
 </project>
 
 
