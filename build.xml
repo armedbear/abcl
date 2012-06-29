@@ -147,8 +147,8 @@ For help on the automatic tests available, use the Ant target 'help.test'.
           <matches string="${java.version}" pattern="1\.5"/>
           <!-- Don't use 1.6.0_09 or earlier. -->
           <matches string="${java.version}" pattern="1\.6\.0_[1-9][0-9]"/>
-          <!-- 1.7.0_04 works much better. FIXME: will break at jdk-1.7.0_10 -->
-          <matches string="${java.version}" pattern="1\.7\.0_[3-9]"/>
+          <!-- 1.7.0_04 works much better. FIXME: will break at jdk-1.7.0_99 -->
+          <matches string="${java.version}" pattern="1\.7\.0_[3-9][0-9]"/>
         </or>  
       </condition>
 
