@@ -60,6 +60,7 @@
           compute-applicable-methods
           compute-applicable-methods-using-classes
           compute-effective-method
+          make-method-lambda
           compute-slots
           finalize-inheritance
           validate-superclass

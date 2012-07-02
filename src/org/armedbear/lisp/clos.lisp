@@ -800,15 +800,9 @@
   (eq (slot-definition-allocation slot) :instance))
 
 (defun std-allocate-instance (class)
-  ;; AMOP says ALLOCATE-INSTANCE checks if the class is finalized
-  ;; and if not, tries to finalize it.
-  (unless (class-finalized-p class)
-    (std-finalize-inheritance class))
   (sys::%std-allocate-instance class))
 
 (defun allocate-funcallable-instance (class)
-  (unless (class-finalized-p class)
-    (std-finalize-inheritance class))
   (let ((instance (sys::%allocate-funcallable-instance class)))
     (set-funcallable-instance-function
      instance
@@ -816,6 +810,11 @@
          (declare (ignore args))
          (error 'program-error "Called a funcallable-instance with unset function.")))
     instance))
+
+(declaim (notinline class-prototype))
+(defun class-prototype (class)
+  (unless (class-finalized-p class) (error "Class ~A not finalized" (class-name class)))
+  (std-allocate-instance class))
 
 (defun make-instance-standard-class (metaclass
                                      &rest initargs
@@ -1387,6 +1386,10 @@ compare the method combination name to the symbol 'standard.")
 (declaim (notinline method-generic-function))
 (defun method-generic-function (method)
   (std-method-generic-function method))
+
+(declaim (notinline method-function))
+(defun method-function (method)
+  (std-method-function method))
 
 (declaim (notinline method-specializers))
 (defun method-specializers (method)
@@ -2602,6 +2605,12 @@ to ~S with argument list ~S."
           (t
            nil))))))
 
+(declaim (notinline make-method-lambda))
+(defun make-method-lambda (generic-function method lambda-expression env)
+  (declare (ignore generic-function method env))
+  (values (compute-method-function lambda-expression) nil))
+
+
 ;; From CLHS section 7.6.5:
 ;; "When a generic function or any of its methods mentions &key in a lambda
 ;; list, the specific set of keyword arguments accepted by the generic function
@@ -2618,13 +2627,17 @@ to ~S with argument list ~S."
         `(,@(subseq lambda-list 0 key-end) &allow-other-keys ,@aux-part))
       lambda-list))
 
-(defmacro defmethod (&rest args)
+(defmacro defmethod (&rest args &environment env)
   (multiple-value-bind
       (function-name qualifiers lambda-list specializers documentation declarations body)
       (parse-defmethod args)
     (let* ((specializers-form '())
            (lambda-expression `(lambda ,lambda-list ,@declarations ,body))
-           (method-function (compute-method-function lambda-expression))
+           (gf (or (find-generic-function function-name nil)
+                   (ensure-generic-function function-name :lambda-list lambda-list)))
+           (method-function
+             (make-method-lambda gf (class-prototype (generic-function-method-class gf))
+                                 lambda-expression env))
            (fast-function (compute-method-fast-function lambda-expression))
            )
       (dolist (specializer specializers)
@@ -3338,8 +3351,7 @@ instance and, for setters, `new-value' the new value."
 
 ;;; Instance creation and initialization
 
-;;; AMOP pg. 168ff.  Checking whether the class is finalized is done
-;;; inside std-allocate-instance and allocate-funcallable-instance.
+;;; AMOP pg. 168ff.
 (defgeneric allocate-instance (class &rest initargs &key &allow-other-keys))
 
 (defmethod allocate-instance ((class standard-class) &rest initargs)
@@ -3359,6 +3371,11 @@ instance and, for setters, `new-value' the new value."
 (defmethod allocate-instance ((class built-in-class) &rest initargs)
   (declare (ignore initargs))
   (error "Cannot allocate instances of a built-in class: ~S" class))
+
+(defmethod allocate-instance :before ((class class) &rest initargs)
+  (declare (ignore initargs))
+  (unless (class-finalized-p class)
+    (finalize-inheritance class)))
 
 ;; "The set of valid initialization arguments for a class is the set of valid
 ;; initialization arguments that either fill slots or supply arguments to
@@ -3782,6 +3799,15 @@ or T when any keyword is acceptable due to presence of
 (defmethod compute-applicable-methods ((gf standard-generic-function) args)
   (%compute-applicable-methods gf args))
 
+;;; AMOP pg. 207
+(atomic-defgeneric make-method-lambda (generic-function method lambda-expression environment)
+  (:method ((generic-function standard-generic-function)
+            (method standard-method)
+            lambda-expression environment)
+    (declare (ignore environment))
+    (values (compute-method-function lambda-expression) nil)))
+
+
 ;;; Slot definition accessors
 
 (defmacro slot-definition-dispatch (slot-definition std-form generic-form)
@@ -4083,20 +4109,20 @@ or T when any keyword is acceptable due to presence of
 (setf *gf-reinitialize-instance* (symbol-function 'reinitialize-instance))
 (setf *clos-booting* nil)
 
-(defgeneric class-prototype (class))
+(atomic-defgeneric class-prototype (class)
+  (:method ((class standard-class))
+    (allocate-instance class))
+  (:method ((class funcallable-standard-class))
+    (allocate-instance class))
+  (:method ((class structure-class))
+    (allocate-instance class))
+  (:method :before (class)
+    (unless (class-finalized-p class)
+      (error "~@<~S is not finalized.~:@>" class))))
 
-(defmethod class-prototype :before (class)
-  (unless (class-finalized-p class)
-    (error "~@<~S is not finalized.~:@>" class)))
 
-(defmethod class-prototype ((class standard-class))
-  (allocate-instance class))
 
-(defmethod class-prototype ((class funcallable-standard-class))
-  (allocate-instance class))
 
-(defmethod class-prototype ((class structure-class))
-  (allocate-instance class))
 
 (defmethod shared-initialize :before ((instance generic-function)
                                       slot-names
