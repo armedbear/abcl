@@ -2199,13 +2199,17 @@ Initialized with the true value near the end of the file.")
           (unless (subclassp (class-of (car args)) specializer)
             (return nil))))))
 
-(defun %compute-applicable-methods (gf args)
+(defun std-compute-applicable-methods (gf args)
   (let ((required-classes (mapcar #'class-of (required-portion gf args)))
         (methods '()))
     (dolist (method (generic-function-methods gf))
       (when (method-applicable-p method args)
         (push method methods)))
     (sort-methods methods gf required-classes)))
+
+(declaim (notinline compute-applicable-methods))
+(defun compute-applicable-methods (gf args)
+  (std-compute-applicable-methods gf args))
 
 ;;; METHOD-APPLICABLE-USING-CLASSES-P
 ;;;
@@ -2272,7 +2276,10 @@ to ~S with argument list ~S."
       (funcall emfun args)))
 
 (defun slow-method-lookup (gf args)
-  (let ((applicable-methods (%compute-applicable-methods gf args)))
+  (let ((applicable-methods
+          (if (eq (class-of gf) +the-standard-generic-function-class+)
+              (std-compute-applicable-methods gf args)
+              (compute-applicable-methods gf args))))
     (if applicable-methods
         (let* ((emfun (funcall (if (eq (class-of gf) +the-standard-generic-function-class+)
                                    #'std-compute-effective-method
@@ -2303,7 +2310,10 @@ to ~S with argument list ~S."
         (apply #'no-applicable-method gf args))))
 
 (defun slow-method-lookup-1 (gf arg arg-specialization)
-  (let ((applicable-methods (%compute-applicable-methods gf (list arg))))
+  (let ((applicable-methods
+          (if (eq (class-of gf) +the-standard-generic-function-class+)
+              (std-compute-applicable-methods gf (list arg))
+              (compute-applicable-methods gf (list arg)))))
     (if applicable-methods
         (let ((emfun (funcall (if (eq (class-of gf) +the-standard-generic-function-class+)
                                   #'std-compute-effective-method
@@ -3150,9 +3160,9 @@ instance and, for setters, `new-value' the new value."
 
 ;;; Applicable methods
 
-(defgeneric compute-applicable-methods (gf args)
+(atomic-defgeneric compute-applicable-methods (gf args)
   (:method ((gf standard-generic-function) args)
-    (%compute-applicable-methods gf args)))
+    (std-compute-applicable-methods gf args)))
 
 (defgeneric compute-applicable-methods-using-classes (gf classes)
   (:method ((gf standard-generic-function) classes)
@@ -3387,12 +3397,14 @@ instance and, for setters, `new-value' the new value."
                                              initargs)
   (let* ((methods
           (nconc
-             (compute-applicable-methods #'shared-initialize
-                                         (list* instance
-                                                shared-initialize-param
-                                                initargs))
+             (std-compute-applicable-methods #'shared-initialize
+                                             (list* instance
+                                                    shared-initialize-param
+                                                    initargs))
              (mapcan #'(lambda (gf)
-                         (compute-applicable-methods gf args))
+                         (if (eq (class-of gf) +the-standard-generic-function-class+)
+                             (std-compute-applicable-methods gf args)
+                             (compute-applicable-methods gf args)))
                      gf-list)))
          (method-keyword-args
           (reduce #'merge-initargs-sets
@@ -3797,7 +3809,7 @@ or T when any keyword is acceptable due to presence of
 
 (defgeneric compute-applicable-methods (gf args))
 (defmethod compute-applicable-methods ((gf standard-generic-function) args)
-  (%compute-applicable-methods gf args))
+  (std-compute-applicable-methods gf args))
 
 ;;; AMOP pg. 207
 (atomic-defgeneric make-method-lambda (generic-function method lambda-expression environment)
