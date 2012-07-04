@@ -1621,7 +1621,8 @@ compare the method combination name to the symbol 'standard.")
                    :format-arguments (list function-name)))
           (when mc-p
             (error "Preliminary ensure-method does not support :method-combination argument."))
-          (setf gf (apply (if (eq generic-function-class +the-standard-generic-function-class+)
+          (setf gf (apply (if (eq generic-function-class
+                                  +the-standard-generic-function-class+)
                               #'make-instance-standard-generic-function
                               #'make-instance)
                           generic-function-class
@@ -2222,18 +2223,18 @@ Initialized with the true value near the end of the file.")
 ;;;
 (defun method-applicable-using-classes-p (method classes)
   (do* ((specializers (method-specializers method) (cdr specializers))
-	(classes classes (cdr classes))
-	(knownp t))
+        (classes classes (cdr classes))
+        (knownp t))
        ((null specializers)
-	(if knownp (values t t) (values nil nil)))
+        (if knownp (values t t) (values nil nil)))
     (let ((specializer (car specializers)))
       (if (typep specializer 'eql-specializer)
-	  (if (eql (class-of (eql-specializer-object specializer)) 
-		   (car classes))
-	      (setf knownp nil)
-	      (return (values nil t)))
-	  (unless (subclassp (car classes) specializer)
-	    (return (values nil t)))))))
+          (if (eql (class-of (eql-specializer-object specializer)) 
+                   (car classes))
+              (setf knownp nil)
+              (return (values nil t)))
+          (unless (subclassp (car classes) specializer)
+            (return (values nil t)))))))
 
 (defun check-applicable-method-keyword-args (gf args
                                              keyword-args
@@ -2279,21 +2280,21 @@ to ~S with argument list ~S."
   (let ((applicable-methods
           (if (eq (class-of gf) +the-standard-generic-function-class+)
               (std-compute-applicable-methods gf args)
-              (compute-applicable-methods gf args))))
+              (or (compute-applicable-methods-using-classes gf (mapcar #'class-of args))
+                  (compute-applicable-methods gf args)))))
     (if applicable-methods
-        (let* ((emfun (funcall (if (eq (class-of gf) +the-standard-generic-function-class+)
+        (let* ((emfun (funcall (if (eq (class-of gf)
+                                       +the-standard-generic-function-class+)
                                    #'std-compute-effective-method
                                    #'compute-effective-method)
                                gf (generic-function-method-combination gf)
                                applicable-methods))
-               (non-keyword-args
-                (+ (length (gf-required-args gf))
-                   (length (gf-optional-args gf))))
+               (non-keyword-args (+ (length (gf-required-args gf))
+                                    (length (gf-optional-args gf))))
                (gf-lambda-list (generic-function-lambda-list gf))
                (checks-required (and (member '&key gf-lambda-list)
                                      (not (member '&allow-other-keys
-                                                  gf-lambda-list)))
-                 )
+                                                  gf-lambda-list))))
               (applicable-keywords
                (when checks-required
                  ;; Don't do applicable keyword checks when this is
@@ -2313,9 +2314,11 @@ to ~S with argument list ~S."
   (let ((applicable-methods
           (if (eq (class-of gf) +the-standard-generic-function-class+)
               (std-compute-applicable-methods gf (list arg))
-              (compute-applicable-methods gf (list arg)))))
+              (or (compute-applicable-methods-using-classes gf (list (class-of arg)))
+                  (compute-applicable-methods gf (list arg))))))
     (if applicable-methods
-        (let ((emfun (funcall (if (eq (class-of gf) +the-standard-generic-function-class+)
+        (let ((emfun (funcall (if (eq (class-of gf)
+                                      +the-standard-generic-function-class+)
                                   #'std-compute-effective-method
                                   #'compute-effective-method)
                               gf (generic-function-method-combination gf)
@@ -3402,7 +3405,8 @@ instance and, for setters, `new-value' the new value."
                                                     shared-initialize-param
                                                     initargs))
              (mapcan #'(lambda (gf)
-                         (if (eq (class-of gf) +the-standard-generic-function-class+)
+                         (if (eq (class-of gf)
+                                 +the-standard-generic-function-class+)
                              (std-compute-applicable-methods gf args)
                              (compute-applicable-methods gf args)))
                      gf-list)))
