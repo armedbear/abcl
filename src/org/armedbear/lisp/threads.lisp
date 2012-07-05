@@ -56,7 +56,7 @@
   "Sends an item into the mailbox, notifying 1 waiter
 to wake up for retrieval of that object."
   (threads:synchronized-on mailbox
-     (push (mailbox-queue mailbox) item)
+     (push item (mailbox-queue mailbox))
      (threads:object-notify mailbox)))
 
 (defun mailbox-empty-p (mailbox)
