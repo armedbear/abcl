@@ -2798,16 +2798,17 @@ it's been fully defined with all its methods.
 
 Note: the user should really use the (:method ..) method description
 way of defining methods; there's not much use in atomically defining
-generic functions without providing sensible behaviour..."
+generic functions without providing sensible behaviour."
   (let ((temp-sym (gensym)))
     `(progn
        (defgeneric ,temp-sym ,@rest)
        (let ((gf (symbol-function ',temp-sym)))
-         (setf ,(if (and (consp function-name)
-                         (eq (car function-name) 'setf))
-                    `(get ',(second function-name) 'setf-function)
-                  `(symbol-function ',function-name)) gf)
+         ;; FIXME (rudi 2012-07-08): fset gets the source location info
+         ;; to charpos 23 always (but (setf fdefinition) leaves the
+         ;; outdated source position in place, which is even worse).
+         (fset ',function-name gf)
          (%set-generic-function-name gf ',function-name)
+         (fmakunbound ',temp-sym)
          gf))))
 
 (defmacro redefine-class-forwarder (name slot &optional body-alist)
