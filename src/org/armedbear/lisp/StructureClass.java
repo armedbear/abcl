@@ -120,6 +120,7 @@ public class StructureClass extends SlotClass
                 c.setCPL(c, BuiltInClass.STRUCTURE_OBJECT, BuiltInClass.CLASS_T);
             c.setDirectSlotDefinitions(directSlots);
             c.setSlotDefinitions(slots);
+            c.setFinalized(true);
             addClass(symbol, c);
             return c;
         }
