@@ -93,3 +93,6 @@
           :report "Skip symbol"))))
   T)
 
+(defun delete-package (package)
+  (with-simple-restart (continue "Ignore missing package.")
+    (sys::%delete-package package)))

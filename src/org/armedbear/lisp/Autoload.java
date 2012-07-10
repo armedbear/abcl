@@ -381,7 +381,7 @@ public class Autoload extends Function
         autoload("cos", "MathFunctions");
         autoload("cosh", "MathFunctions");
         autoload("delete-file", "delete_file");
-        autoload("delete-package", "PackageFunctions");
+        autoload("%delete-package", "PackageFunctions");
         autoload("echo-stream-input-stream", "EchoStream");
         autoload("echo-stream-output-stream", "EchoStream");
         autoload("exp", "MathFunctions");

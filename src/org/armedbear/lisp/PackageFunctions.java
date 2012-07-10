@@ -204,9 +204,9 @@ public final class PackageFunctions
         }
     };
 
-    // ### delete-package
-    private static final Primitive DELETE_PACKAGE =
-        new Primitive("delete-package", "package")
+    // ### %delete-package
+    private static final Primitive _DELETE_PACKAGE =
+        new Primitive("%delete-package", PACKAGE_SYS, false)
     {
         @Override
         public LispObject execute(LispObject arg)
