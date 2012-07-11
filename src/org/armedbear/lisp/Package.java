@@ -170,6 +170,12 @@ public final class Package extends LispObject implements java.io.Serializable
                 }
             }
 
+            if (usedByList != null) {
+              while (!usedByList.isEmpty()) {
+                usedByList.get(0).unusePackage(this);
+              }
+            }
+
             Packages.deletePackage(this);
 
             makeSymbolsUninterned(internalSymbols);
