@@ -111,7 +111,7 @@ public class FaslClassLoader extends JavaClassLoader {
     }
 
     public byte[] getFunctionClassBytes(String name) {
-        Pathname pathname = new Pathname(name.substring("org/armedbear/lisp/".length()) + ".cls");
+        Pathname pathname = new Pathname(name.substring("org/armedbear/lisp/".length()) + "." + Lisp._COMPILE_FILE_CLASS_EXTENSION_.symbolValue().getStringValue());
         return readFunctionBytes(pathname);
     }
 

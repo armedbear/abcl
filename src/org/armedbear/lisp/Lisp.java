@@ -2482,10 +2482,12 @@ public final class Lisp
    internSpecial("*AUTOLOADING-CACHE*", PACKAGE_SYS, NIL);
 
   // ### *compile-file-type*
-  public static final String COMPILE_FILE_TYPE = "abcl";
   public static final Symbol _COMPILE_FILE_TYPE_ =
-    internConstant("*COMPILE-FILE-TYPE*", PACKAGE_SYS,
-                   new SimpleString(COMPILE_FILE_TYPE));
+   exportSpecial("*COMPILE-FILE-TYPE*", PACKAGE_SYS, new SimpleString("abcl"));    
+  
+  // ### *compile-file-class-extension*
+  public static final Symbol _COMPILE_FILE_CLASS_EXTENSION_ =
+   exportSpecial("*COMPILE-FILE-CLASS-EXTENSION*", PACKAGE_SYS, new SimpleString("cls"));
 
   // ### *compile-file-zip*
   public static final Symbol _COMPILE_FILE_ZIP_ =

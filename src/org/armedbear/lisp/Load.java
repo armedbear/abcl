@@ -73,6 +73,7 @@ public final class Load
                 return t;
             }
         }
+        final String COMPILE_FILE_TYPE = Lisp._COMPILE_FILE_TYPE_.symbolValue().getStringValue();
         if (name.type == NIL
             && (name.name != NIL || name.name != null)) {
             Pathname lispPathname = new Pathname(name);
@@ -80,7 +81,7 @@ public final class Load
             lispPathname.invalidateNamestring();
             LispObject lisp = Pathname.truename(lispPathname, false);
             Pathname abclPathname = new Pathname(name);
-            abclPathname.type = new SimpleString("abcl");
+            abclPathname.type = new SimpleString(COMPILE_FILE_TYPE);
             abclPathname.invalidateNamestring();
             LispObject abcl = Pathname.truename(abclPathname, false);
             if (lisp instanceof Pathname && abcl instanceof Pathname) {
@@ -262,12 +263,13 @@ public final class Load
         }
         URL url = null;
         truename = findLoadableFile(mergedPathname);
+        final String COMPILE_FILE_TYPE = Lisp._COMPILE_FILE_TYPE_.symbolValue().getStringValue();
         if (truename == null || truename.equals(NIL) || bootPath.equals(NIL)) {
             // Make an attempt to use the boot classpath
             String path = pathname.asEntryPath();
-            url = Lisp.class.getResource(path);
+            url = Lisp.class.getResource(path);            
             if (url == null || url.toString().endsWith("/")) {
-                url = Lisp.class.getResource(path.replace('-', '_') + ".abcl");
+                url = Lisp.class.getResource(path.replace('-', '_') + "." + COMPILE_FILE_TYPE);
                 if (url == null) {
                     url = Lisp.class.getResource(path + ".lisp");
                 }
@@ -476,7 +478,7 @@ public final class Load
             if (!truename.equals(NIL)) {
                 truePathname = new Pathname(((Pathname)truename).getNamestring());
                 String type = truePathname.type.getStringValue();
-                if (type.equals(COMPILE_FILE_TYPE)
+                if (type.equals(Lisp._COMPILE_FILE_TYPE_.symbolValue(thread).getStringValue())
                     || type.equals(COMPILE_FILE_INIT_FASL_TYPE.toString())) {
                     Pathname truenameFasl = new Pathname(truePathname);
                     thread.bindSpecial(Symbol.LOAD_TRUENAME_FASL, truenameFasl);

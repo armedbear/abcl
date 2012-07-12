@@ -86,7 +86,7 @@
     (unless output-path
       (setf output-path *default-pathname-defaults*))
     (flet ((do-compile (file)
-             (let ((out (make-pathname :type "abcl"
+             (let ((out (make-pathname :type *compile-file-type*
                                        :defaults (merge-pathnames
                                                   file output-path))))
                (compile-file-if-needed file :output-file out))))
@@ -273,8 +273,10 @@
                            "write-sequence.lisp")))
     t))
 
-(defun compile-system (&key quit (zip t) output-path)
-  (let ((status -1))
+(defun compile-system (&key quit (zip t) (cls-ext *compile-file-class-extension*) (abcl-ext *compile-file-type*) output-path)
+  (let ((status -1)
+	(*compile-file-class-extension* cls-ext)
+	(*compile-file-type* abcl-ext))
     (check-lisp-home)
     (time
      (with-compilation-unit ()

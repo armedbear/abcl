@@ -136,7 +136,8 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	}
 
 	public static boolean isCompiled(String filespec) {
-		if (filespec.endsWith(".abcl")) {
+		final String compiledExt = "." + Lisp._COMPILE_FILE_TYPE_.symbolValue().getStringValue();
+		if (filespec.endsWith(compiledExt)) {
 			return true;
 		}
 		File source;
@@ -144,10 +145,10 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		if (filespec.endsWith(".lisp")) {
 			source = new File(filespec);
 			compiled = new File(filespec.substring(0, filespec.length() - 5)
-					+ ".abcl");
+					+ compiledExt);
 		} else {
 			source = new File(filespec + ".lisp");
-			compiled = new File(filespec + ".abcl");
+			compiled = new File(filespec + compiledExt);
 		}
 		if (!source.exists()) {
 			throw new IllegalArgumentException("The source file " + filespec + " cannot be found");

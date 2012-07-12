@@ -53,7 +53,7 @@
   (let ((name
          (sanitize-class-name
 	  (%format nil "~A_~D" (pathname-name output-file-pathname) n))))
-    (namestring (merge-pathnames (make-pathname :name name :type "cls")
+    (namestring (merge-pathnames (make-pathname :name name :type *compile-file-class-extension*)
                                  output-file-pathname))))
 
 (defun sanitize-class-name (name)
@@ -616,7 +616,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
          (pathnames nil)
          (fasl-loader (namestring (merge-pathnames
                                    (make-pathname :name (fasl-loader-classname)
-                                                  :type "cls")
+                                                  :type *compile-file-class-extension*)
                                    output-file))))
     (when (probe-file fasl-loader)
       (push fasl-loader pathnames))
