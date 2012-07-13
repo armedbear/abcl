@@ -197,6 +197,7 @@
     (add-subclasses 'metaobject
                     '(generic-function method method-combination
                       slot-definition specializer))
+    (add-subclasses 'specializer '(class))
     (add-subclasses 'method-combination
                     '(long-method-combination short-method-combination))
     (add-subclasses 'funcallable-standard-object 'generic-function)
