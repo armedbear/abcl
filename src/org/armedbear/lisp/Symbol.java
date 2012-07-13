@@ -3150,8 +3150,6 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addInternalSymbol("PROXY-PRELOADED-FUNCTION");
   public static final Symbol QUALIFIERS =
     PACKAGE_SYS.addInternalSymbol("QUALIFIERS");
-  public static final Symbol _SLOT_DEFINITION =
-    PACKAGE_SYS.addInternalSymbol("%SLOT-DEFINITION");
   public static final Symbol _SOURCE =
     PACKAGE_SYS.addInternalSymbol("%SOURCE");
   public static final Symbol SOCKET_STREAM =

@@ -616,15 +616,6 @@ public class StandardClass extends SlotClass
   public static final StandardClass STANDARD_METHOD =
     addStandardClass(Symbol.STANDARD_METHOD, list(METHOD));
 
-  public static final StandardClass STANDARD_ACCESSOR_METHOD =
-    addStandardClass(Symbol.STANDARD_ACCESSOR_METHOD, list(STANDARD_METHOD));
-
-  public static final StandardClass STANDARD_READER_METHOD =
-      addStandardClass(Symbol.STANDARD_READER_METHOD, list(STANDARD_ACCESSOR_METHOD));
-
-  public static final StandardClass STANDARD_WRITER_METHOD =
-      addStandardClass(Symbol.STANDARD_WRITER_METHOD, list(STANDARD_ACCESSOR_METHOD));
-
   public static final StandardClass STANDARD_GENERIC_FUNCTION =
     new StandardGenericFunctionClass();
   static
@@ -738,20 +729,6 @@ public class StandardClass extends SlotClass
            new SlotDefinition(Symbol.FAST_FUNCTION, NIL, constantlyNil),
            new SlotDefinition(Symbol._DOCUMENTATION, NIL, constantlyNil,
                               list(internKeyword("DOCUMENTATION")))));
-    STANDARD_ACCESSOR_METHOD.setCPL(STANDARD_ACCESSOR_METHOD, STANDARD_METHOD,
-                                    METHOD, METAOBJECT, STANDARD_OBJECT,
-                                    BuiltInClass.CLASS_T);
-    STANDARD_ACCESSOR_METHOD.setDirectSlotDefinitions(
-      list(new SlotDefinition(Symbol._SLOT_DEFINITION, NIL, constantlyNil,
-                              list(internKeyword("SLOT-DEFINITION")))));
-    STANDARD_READER_METHOD.setCPL(STANDARD_READER_METHOD,
-                                  STANDARD_ACCESSOR_METHOD, STANDARD_METHOD,
-                                  METHOD, METAOBJECT, STANDARD_OBJECT,
-                                  BuiltInClass.CLASS_T);
-    STANDARD_WRITER_METHOD.setCPL(STANDARD_WRITER_METHOD,
-                                  STANDARD_ACCESSOR_METHOD, STANDARD_METHOD,
-                                  METHOD, METAOBJECT, STANDARD_OBJECT,
-                                  BuiltInClass.CLASS_T);
     PACKAGE_ERROR.setCPL(PACKAGE_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
                          STANDARD_OBJECT, BuiltInClass.CLASS_T);
     PACKAGE_ERROR.setDirectSlotDefinitions(
@@ -851,9 +828,6 @@ public class StandardClass extends SlotClass
     METAOBJECT.finalizeClass();
     METHOD.finalizeClass();
     STANDARD_METHOD.finalizeClass();
-    STANDARD_ACCESSOR_METHOD.finalizeClass();
-    STANDARD_READER_METHOD.finalizeClass();
-    STANDARD_WRITER_METHOD.finalizeClass();
     SPECIALIZER.finalizeClass();
     CLASS.finalizeClass();
     BUILT_IN_CLASS.finalizeClass();

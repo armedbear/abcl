@@ -118,10 +118,6 @@
 (defconstant +the-standard-method-class+ (find-class 'standard-method))
 (defconstant +the-forward-referenced-class+
   (find-class 'forward-referenced-class))
-(defconstant +the-standard-reader-method-class+
-  (find-class 'standard-reader-method))
-(defconstant +the-standard-writer-method-class+
-  (find-class 'standard-writer-method))
 (defconstant +the-standard-generic-function-class+
   (find-class 'standard-generic-function))
 (defconstant +the-T-class+ (find-class 'T))
@@ -200,9 +196,6 @@
     (add-subclasses 'funcallable-standard-object 'generic-function)
     (add-subclasses 'generic-function 'standard-generic-function)
     (add-subclasses 'method 'standard-method)
-    (add-subclasses 'standard-method 'standard-accessor-method)
-    (add-subclasses 'standard-accessor-method
-                    '(standard-reader-method standard-writer-method))
     (add-subclasses 'slot-definition
                     '(direct-slot-definition effective-slot-definition
                       standard-slot-definition))
@@ -925,6 +918,20 @@ Handle with care."
    arguments
    declarations
    forms))
+
+(define-primordial-class standard-accessor-method (standard-method)
+  ((sys::%slot-definition :initarg :slot-definition :initform nil)))
+
+(define-primordial-class standard-reader-method (standard-accessor-method)
+  ())
+(defconstant +the-standard-reader-method-class+
+  (find-class 'standard-reader-method))
+
+(define-primordial-class standard-writer-method (standard-accessor-method)
+  ())
+(defconstant +the-standard-writer-method-class+
+  (find-class 'standard-writer-method))
+
 
 (defvar *extensible-built-in-classes*
   (list (find-class 'sequence)
