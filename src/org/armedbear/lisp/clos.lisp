@@ -870,9 +870,6 @@
   (maybe-finalize-class-subtree class)
   (values))
 
-(defun canonical-slot-name (canonical-slot)
-  (getf canonical-slot :name))
-
 (defvar *extensible-built-in-classes*
   (list (find-class 'sequence)
         (find-class 'java:java-object)))
@@ -2879,11 +2876,13 @@ instance and, for setters, `new-value' the new value."
 ;;; Class definition
 
 (defun check-duplicate-slots (slots)
-  (dolist (s1 slots)
-    (let ((name1 (canonical-slot-name s1)))
-      (dolist (s2 (cdr (memq s1 slots)))
-        (when (eq name1 (canonical-slot-name s2))
-          (error 'program-error "Duplicate slot ~S" name1))))))
+  (flet ((canonical-slot-name (canonical-slot)
+           (getf canonical-slot :name)))
+    (dolist (s1 slots)
+      (let ((name1 (canonical-slot-name s1)))
+        (dolist (s2 (cdr (memq s1 slots)))
+          (when (eq name1 (canonical-slot-name s2))
+            (error 'program-error "Duplicate slot ~S" name1)))))))
 
 (defun check-duplicate-default-initargs (initargs)
   (let ((names ()))
