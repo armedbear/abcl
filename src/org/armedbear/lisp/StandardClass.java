@@ -199,16 +199,18 @@ public class StandardClass extends SlotClass
   {
     LispObject layout = getInstanceSlotValue(symLayout);
     if (layout == UNBOUND_VALUE)
-        return null;
+      return null;
 
     if (! (layout instanceof Layout)) {
-        (new Error()).printStackTrace();
-        LispThread.currentThread().printBacktrace();
-        return (Layout)Lisp.error(Symbol.TYPE_ERROR,
-                new SimpleString("The value " + layout.princToString()
-                    + " is not of expected type " + Symbol.LAYOUT.princToString()
-                    + " in class " + this.princToString() + "."));
-      }
+      (new Error()).printStackTrace();
+      LispThread.currentThread().printBacktrace();
+      System.out.println("Class: " + this.princToString());
+      return (Layout)Lisp.error(Symbol.TYPE_ERROR,
+              new SimpleString("The value " + layout.princToString()
+                               + " is not of expected type "
+                               + Symbol.LAYOUT.princToString()
+                               + " in class " + this.princToString() + "."));
+    }
     
     return (layout == UNBOUND_VALUE) ? null : (Layout)layout;
   }
@@ -448,8 +450,6 @@ public class StandardClass extends SlotClass
     addStandardClass(Symbol.METAOBJECT, list(STANDARD_OBJECT));
   public static final StandardClass SPECIALIZER =
     addStandardClass(Symbol.SPECIALIZER, list(METAOBJECT));
-  public static final StandardClass EQL_SPECIALIZER =
-    addStandardClass(Symbol.EQL_SPECIALIZER, list(SPECIALIZER));
 
     public static final StandardClass SLOT_DEFINITION =
         addStandardClass(Symbol.SLOT_DEFINITION, list(METAOBJECT));
@@ -731,11 +731,6 @@ public class StandardClass extends SlotClass
       list(new SlotDefinition(Symbol.CAUSE, list(Symbol.JAVA_EXCEPTION_CAUSE))));
     METAOBJECT.setCPL(METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     SPECIALIZER.setCPL(SPECIALIZER, METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
-    EQL_SPECIALIZER.setCPL(EQL_SPECIALIZER, SPECIALIZER, METAOBJECT,
-                           STANDARD_OBJECT, BuiltInClass.CLASS_T);
-    EQL_SPECIALIZER.setDirectSlotDefinitions(
-      list(new SlotDefinition(Symbol.OBJECT, NIL, constantlyNil),
-           new SlotDefinition(symDirectMethods, NIL, constantlyNil)));
     METHOD.setCPL(METHOD, METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     STANDARD_METHOD.setCPL(STANDARD_METHOD, METHOD, METAOBJECT, STANDARD_OBJECT,
                            BuiltInClass.CLASS_T);
@@ -912,7 +907,6 @@ public class StandardClass extends SlotClass
     SPECIALIZER.finalizeClass();
     CLASS.finalizeClass();
     BUILT_IN_CLASS.finalizeClass();
-    EQL_SPECIALIZER.finalizeClass();
     METHOD_COMBINATION.finalizeClass();
     SHORT_METHOD_COMBINATION.finalizeClass();
     LONG_METHOD_COMBINATION.finalizeClass();

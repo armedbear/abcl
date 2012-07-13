@@ -214,7 +214,6 @@
     (add-subclasses 'direct-slot-definition 'standard-direct-slot-definition)
     (add-subclasses 'effective-slot-definition
                     'standard-effective-slot-definition)
-    (add-subclasses 'specializer '(eql-specializer class))
     (add-subclasses 'class
                     '(built-in-class forward-referenced-class standard-class
                       funcallable-standard-class))))
@@ -483,26 +482,36 @@
   (setf (slot-definition-documentation slot) documentation)
   slot)
 
+(declaim (notinline direct-slot-definition-class))
+(defun direct-slot-definition-class (class &rest args)
+  (declare (ignore class args))
+  +the-standard-direct-slot-definition-class+)
+
 (defun make-direct-slot-definition (class &rest args)
   (let ((slot-class (apply #'direct-slot-definition-class class args)))
     (if (eq slot-class +the-standard-direct-slot-definition-class+)
-	(let ((slot (make-slot-definition +the-standard-direct-slot-definition-class+)))
-	  (apply #'init-slot-definition slot :allocation-class class args)
-	  slot)
-	(progn
-	  (let ((slot (apply #'make-instance slot-class :allocation-class class
-			     args)))
-	    slot)))))
+        (let ((slot (make-slot-definition +the-standard-direct-slot-definition-class+)))
+          (apply #'init-slot-definition slot :allocation-class class args)
+          slot)
+        (progn
+          (let ((slot (apply #'make-instance slot-class :allocation-class class
+                             args)))
+            slot)))))
+
+(declaim (notinline effective-slot-definition-class))
+(defun effective-slot-definition-class (class &rest args)
+  (declare (ignore class args))
+  +the-standard-effective-slot-definition-class+)
 
 (defun make-effective-slot-definition (class &rest args)
   (let ((slot-class (apply #'effective-slot-definition-class class args)))
     (if (eq slot-class +the-standard-effective-slot-definition-class+)
-	(let ((slot (make-slot-definition +the-standard-effective-slot-definition-class+)))
-	  (apply #'init-slot-definition slot args)
-	  slot)
-	(progn
-	  (let ((slot (apply #'make-instance slot-class args)))
-	    slot)))))
+        (let ((slot (make-slot-definition +the-standard-effective-slot-definition-class+)))
+          (apply #'init-slot-definition slot args)
+          slot)
+        (progn
+          (let ((slot (apply #'make-instance slot-class args)))
+            slot)))))
 
 ;;; finalize-inheritance
 
@@ -529,8 +538,8 @@
                 #'compute-class-precedence-list)
             class))
   (setf (class-slots class)
-                   (funcall (if (eq (class-of class) +the-standard-class+)
-                                #'std-compute-slots
+        (funcall (if (eq (class-of class) +the-standard-class+)
+                     #'std-compute-slots
                      #'compute-slots) class))
   (let ((old-layout (class-layout class))
         (length 0)
@@ -688,8 +697,7 @@
                                          :key 'slot-definition-documentation))
         (types (delete-duplicates
                 (delete t (mapcar #'slot-definition-type direct-slots))
-                :test #'equal))
-        )
+                :test #'equal)))
     (make-effective-slot-definition
      class
      :name name
@@ -711,7 +719,9 @@
      :type (cond ((null types) t)
                  ((= 1 (length types)) types)
                  (t (list* 'and types)))
-     :documentation (documentation documentation-slot t))))
+     :documentation (if documentation-slot
+                        (documentation documentation-slot t)
+                        nil))))
 
 ;;; Standard instance slot access
 
@@ -816,6 +826,12 @@
   (unless (class-finalized-p class) (error "Class ~A not finalized" (class-name class)))
   (std-allocate-instance class))
 
+(defun maybe-finalize-class-subtree (class)
+  (when (every #'class-finalized-p (class-direct-superclasses class))
+    (finalize-inheritance class)
+    (dolist (subclass (class-direct-subclasses class))
+      (maybe-finalize-class-subtree subclass))))
+
 (defun make-instance-standard-class (metaclass
                                      &rest initargs
                                      &key name direct-superclasses direct-slots
@@ -823,12 +839,15 @@
                                        documentation)
   (declare (ignore metaclass))
   (let ((class (std-allocate-instance +the-standard-class+)))
-    (check-initargs (list #'allocate-instance #'initialize-instance)
-                    (list* class initargs)
-                    class t initargs
-                    *make-instance-initargs-cache* 'make-instance)
+    (unless *clos-booting*
+      (check-initargs (list #'allocate-instance #'initialize-instance)
+                      (list* class initargs)
+                      class t initargs
+                      *make-instance-initargs-cache* 'make-instance))
     (%set-class-name name class)
-    (%set-class-layout nil class)
+    ;; KLUDGE: necessary in define-primordial-class, otherwise
+    ;; StandardClass.getClassLayout() throws an error
+    (unless *clos-booting* (%set-class-layout nil class))
     (%set-class-direct-subclasses ()  class)
     (%set-class-direct-methods ()  class)
     (%set-class-documentation class documentation)
@@ -869,6 +888,26 @@
   (setf (class-direct-default-initargs class) direct-default-initargs)
   (maybe-finalize-class-subtree class)
   (values))
+
+;;; Bootstrap the lower parts of the metaclass hierarchy.
+
+(defmacro define-primordial-class (name superclasses direct-slots)
+  "Primitive class definition tool.
+No non-standard metaclasses, accessor methods, duplicate slots,
+non-existent superclasses, default initargs, or other complicated stuff.
+Handle with care."
+  (let ((class (gensym)))
+    `(let ((,class (make-instance-standard-class
+                    nil
+                    :name ',name
+                    :direct-superclasses ',(mapcar #'find-class superclasses)
+                    :direct-slots ,(canonicalize-direct-slots direct-slots))))
+       (%set-find-class ',name ,class)
+       ,class)))
+
+(define-primordial-class eql-specializer (specializer)
+  ((object :initform nil)
+   (direct-methods :initform nil)))
 
 (defvar *extensible-built-in-classes*
   (list (find-class 'sequence)
@@ -1343,13 +1382,13 @@ compare the method combination name to the symbol 'standard.")
             ;; we will be called during generic function invocation
             ;; setup, so have to rely on plain functions here.
             (let ((instance (std-allocate-instance (find-class 'eql-specializer))))
-              (setf (std-slot-value instance 'sys::object) object)
+              (setf (std-slot-value instance 'object) object)
               (setf (std-slot-value instance 'direct-methods) nil)
               instance))))
 
 (defun eql-specializer-object (eql-specializer)
   (check-type eql-specializer eql-specializer)
-  (std-slot-value eql-specializer 'sys::object))
+  (std-slot-value eql-specializer 'object))
 
 ;;; Initial versions of some method metaobject readers.  Defined on
 ;;; AMOP pg. 218ff, will be redefined when generic functions are set up.
@@ -2997,12 +3036,6 @@ instance and, for setters, `new-value' the new value."
          :direct-superclasses (canonicalize-direct-superclasses direct-superclasses)
          all-keys)
   class)
-
-(defun maybe-finalize-class-subtree (class)
-  (when (every #'class-finalized-p (class-direct-superclasses class))
-    (finalize-inheritance class)
-    (dolist (subclass (class-direct-subclasses class))
-      (maybe-finalize-class-subtree subclass))))
 
 (defmacro defclass (&whole form name direct-superclasses direct-slots &rest options)
   (unless (>= (length form) 3)
