@@ -195,11 +195,8 @@
     (add-subclasses 'function 'funcallable-standard-object)
     (add-subclasses 'standard-object '(funcallable-standard-object metaobject))
     (add-subclasses 'metaobject
-                    '(generic-function method method-combination
-                      slot-definition specializer))
+                    '(generic-function method slot-definition specializer))
     (add-subclasses 'specializer '(class))
-    (add-subclasses 'method-combination
-                    '(long-method-combination short-method-combination))
     (add-subclasses 'funcallable-standard-object 'generic-function)
     (add-subclasses 'generic-function 'standard-generic-function)
     (add-subclasses 'method 'standard-method)
@@ -909,6 +906,25 @@ Handle with care."
 (define-primordial-class eql-specializer (specializer)
   ((object :initform nil)
    (direct-methods :initform nil)))
+
+(define-primordial-class method-combination (metaobject)
+  ((sys::name :initform nil)
+   (sys::%documentation :initarg :documentation :initform nil)
+   (options :initarg :options :initform nil)))
+
+(define-primordial-class short-method-combination (method-combination)
+  (operator
+   identity-with-one-argument))
+
+(define-primordial-class long-method-combination (method-combination)
+  (sys::lambda-list
+   method-group-specs
+   args-lambda-list
+   generic-function-symbol
+   function
+   arguments
+   declarations
+   forms))
 
 (defvar *extensible-built-in-classes*
   (list (find-class 'sequence)

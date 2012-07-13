@@ -66,7 +66,7 @@ public final class StandardGenericFunctionClass extends FuncallableStandardClass
         pkg.intern("METHOD-CLASS"),
         pkg.intern("%METHOD-COMBINATION"),
         pkg.intern("ARGUMENT-PRECEDENCE-ORDER"),
-        Symbol.DECLARATIONS,
+        pkg.intern("DECLARATIONS"),
         pkg.intern("CLASSES-TO-EMF-TABLE"),
         Symbol._DOCUMENTATION
       };
