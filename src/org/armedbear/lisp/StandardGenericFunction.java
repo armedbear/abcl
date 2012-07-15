@@ -70,57 +70,6 @@ public final class StandardGenericFunction extends FuncallableStandardObject
     slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION] = NIL;
   }
 
-  public StandardGenericFunction(String name, Package pkg, boolean exported,
-                                 Function function, LispObject lambdaList,
-                                 LispObject specializers)
-  {
-    this();
-    Symbol symbol;
-    if (exported)
-      symbol = pkg.internAndExport(name.toUpperCase());
-    else
-      symbol = pkg.intern(name.toUpperCase());
-    symbol.setSymbolFunction(this);
-    this.function = function;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_NAME] = symbol;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_LAMBDA_LIST] =
-      lambdaList;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS] =
-      lambdaList;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_OPTIONAL_ARGS] =
-      NIL;
-    numberOfRequiredArgs = lambdaList.length();
-    slots[StandardGenericFunctionClass.SLOT_INDEX_INITIAL_METHODS] =
-      NIL;
-    StandardObject method
-        = (StandardObject)StandardClass.STANDARD_METHOD.allocateInstance();
-    method.setInstanceSlotValue(Symbol._GENERIC_FUNCTION, this);
-    method.setInstanceSlotValue(Symbol.LAMBDA_LIST, lambdaList);
-    method.setInstanceSlotValue(Symbol.KEYWORDS, NIL);
-    method.setInstanceSlotValue(Symbol.OTHER_KEYWORDS_P, NIL);
-    method.setInstanceSlotValue(Symbol.SPECIALIZERS, specializers);
-    method.setInstanceSlotValue(Symbol.QUALIFIERS, NIL);
-    // Setting the function slot to nil is a transcription of what the
-    // constructor for StandardMethod instances did (that Java class was
-    // removed for the implementation of subclassable standard-method).
-    // (rudi 2012-01-27)
-    method.setInstanceSlotValue(Symbol._FUNCTION, NIL);
-    method.setInstanceSlotValue(Symbol.FAST_FUNCTION, function);
-    method.setInstanceSlotValue(Symbol._DOCUMENTATION, NIL);
-    slots[StandardGenericFunctionClass.SLOT_INDEX_METHODS] =
-      list(method);
-    slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS] =
-      StandardClass.STANDARD_METHOD;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION] =
-      Symbol.STANDARD; // fixed up by shared-initialize :after in clos.lisp
-    slots[StandardGenericFunctionClass.SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER] =
-      NIL;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_DECLARATIONS] = NIL;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE] =
-      NIL;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION] = NIL;
-  }
-
   void finalizeInternal()
   {
     cache = null;
@@ -802,14 +751,6 @@ public final class StandardGenericFunction extends FuncallableStandardObject
       return location != null ? location : NIL;
     }
   };
-
-  private static final StandardGenericFunction GENERIC_FUNCTION_NAME =
-    new StandardGenericFunction("generic-function-name",
-                                PACKAGE_MOP,
-                                true,
-                                _GENERIC_FUNCTION_NAME,
-                                list(Symbol.GENERIC_FUNCTION),
-                                list(StandardClass.STANDARD_GENERIC_FUNCTION));
 
   private static class CacheEntry
   {

@@ -1473,6 +1473,9 @@ compare the method combination name to the symbol 'standard.")
 ;;; These are defined with % in package SYS, defined as functions here
 ;;; and redefined as generic functions once we're all set up.
 
+(defun generic-function-name (gf)
+  (%generic-function-name gf))
+
 (defun generic-function-lambda-list (gf)
   (%generic-function-lambda-list gf))
 (defsetf generic-function-lambda-list %set-generic-function-lambda-list)
