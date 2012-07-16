@@ -888,11 +888,12 @@ No non-standard metaclasses, accessor methods, duplicate slots,
 non-existent superclasses, default initargs, or other complicated stuff.
 Handle with care."
   (let ((class (gensym)))
-    `(let ((,class (make-instance-standard-class
-                    nil
-                    :name ',name
-                    :direct-superclasses ',(mapcar #'find-class superclasses)
-                    :direct-slots ,(canonicalize-direct-slots direct-slots))))
+    `(let ((,class (or (find-class ',name nil)
+                       (make-instance-standard-class
+                        nil
+                        :name ',name
+                        :direct-superclasses ',(mapcar #'find-class superclasses)
+                        :direct-slots ,(canonicalize-direct-slots direct-slots)))))
        (%set-find-class ',name ,class)
        ,class)))
 
