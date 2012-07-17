@@ -50,7 +50,9 @@
 
 (defmethod print-object ((class class) stream)
   (print-unreadable-object (class stream :identity t)
-    (format stream "~S ~S" (class-name (class-of class)) (class-name class)))
+    ;; Avoid recursive errors for uninitialized class objects, e.g. when
+    ;; validate-superclass fails
+    (format stream "~S ~S" (class-name (class-of class)) (ignore-errors (class-name class))))
   class)
 
 (defmethod print-object ((gf generic-function) stream)
