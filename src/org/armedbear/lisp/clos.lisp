@@ -901,23 +901,23 @@ Handle with care."
    (direct-methods :initform nil)))
 
 (define-primordial-class method-combination (metaobject)
-  ((sys::name :initform nil)
+  ((sys::name :initarg :name :initform nil)
    (sys::%documentation :initarg :documentation :initform nil)
    (options :initarg :options :initform nil)))
 
 (define-primordial-class short-method-combination (method-combination)
-  (operator
-   identity-with-one-argument))
+  ((operator :initarg :operator)
+   (identity-with-one-argument :initarg :identity-with-one-argument)))
 
 (define-primordial-class long-method-combination (method-combination)
-  (sys::lambda-list
-   method-group-specs
-   args-lambda-list
-   generic-function-symbol
-   function
-   arguments
-   declarations
-   forms))
+  ((sys::lambda-list :initarg :lambda-list)
+   (method-group-specs :initarg :method-group-specs)
+   (args-lambda-list :initarg :args-lambda-list)
+   (generic-function-symbol :initarg :generic-function-symbol)
+   (function :initarg :function)
+   (arguments :initarg :arguments)
+   (declarations :initarg :declarations)
+   (forms :initarg :forms)))
 
 (define-primordial-class standard-accessor-method (standard-method)
   ((sys::%slot-definition :initarg :slot-definition :initform nil)))
@@ -1033,7 +1033,6 @@ Handle with care."
          (operator
           (getf (cddr whole) :operator name)))
     `(progn
-       ;; Class short-method-combination is defined in StandardClass.java.
        (let ((instance (std-allocate-instance
                         (find-class 'short-method-combination))))
          (setf (std-slot-value instance 'sys::name) ',name)
