@@ -2879,14 +2879,22 @@ or with a default of @code{nil}
 if no value is specified in any transitive parent.
 
 The argument must be a either @code{nil}, a fbound symbol,
-a lambda-expression (e.g. @code{(lambda (thunk) ...(funcall thunk) ...)})
+a lambda-expression (e.g. @code{(lambda (thunk) ...(funcall thunk ...) ...)})
 a function object (e.g. using @code{#.#'} but that's discouraged
 because it prevents the introspection done by e.g. asdf-dependency-grovel),
 or a string that when read yields a symbol or a lambda-expression.
 @code{nil} means the normal compile-file function will be called.
 A non-nil value designates a function of one argument
-that will be called with a thunk for calling
-the compile-file function with proper arguments.
+that will be called with a function that
+calls the @code{*compile-op-compile-file-function*} (usually @code{compile-file*})
+with proper arguments;
+the around-compile hook may supply additional arguments
+to pass to that @code{*compile-op-compile-file-function*}.
+One notable argument that is heeded by @code{compile-file*} is
+@code{:compile-check}, a function called when the compilation was otherwise a success,
+with the same arguments as @code{compile-file},
+to determine whether 
+(NB: The ability to pass such extra flags is only available starting with asdf 2.22.1.)
 
 Note that by using a string, you may reference
 a function, symbol and/or package
