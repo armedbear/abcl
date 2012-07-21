@@ -3176,16 +3176,16 @@ instance and, for setters, `new-value' the new value."
   (%set-class-documentation x new-value))
 
 (defmethod documentation ((x structure-class) (doc-type (eql 't)))
-  (%documentation x doc-type))
+  (%documentation x t))
 
 (defmethod documentation ((x structure-class) (doc-type (eql 'type)))
-  (%documentation x doc-type))
+  (%documentation x t))
 
 (defmethod (setf documentation) (new-value (x structure-class) (doc-type (eql 't)))
-  (%set-documentation x doc-type new-value))
+  (%set-documentation x t new-value))
 
 (defmethod (setf documentation) (new-value (x structure-class) (doc-type (eql 'type)))
-  (%set-documentation x doc-type new-value))
+  (%set-documentation x t new-value))
 
 (defmethod documentation ((x standard-generic-function) (doc-type (eql 't)))
   (generic-function-documentation x))
@@ -3218,7 +3218,26 @@ instance and, for setters, `new-value' the new value."
   (%set-documentation x doc-type new-value))
 
 (defmethod documentation ((x symbol) (doc-type (eql 'function)))
-  (%documentation x doc-type))
+  (%documentation x 'function))
+
+(defmethod documentation ((x symbol) (doc-type (eql 'type)))
+  (let ((class (find-class x nil)))
+    (if class
+        (documentation class t)
+        (%documentation x 'type))))
+
+(defmethod documentation ((x symbol) (doc-type (eql 'structure)))
+  (%documentation x 'structure))
+
+(defmethod (setf documentation) (new-value (x symbol) (doc-type (eql 'type)))
+  (let ((class (find-class x nil)))
+    (if class
+        (setf (documentation class t) new-value)
+        (%set-documentation x 'type new-value))))
+
+(defmethod (setf documentation) (new-value (x symbol)
+                                 (doc-type (eql 'structure)))
+  (%set-documentation x 'structure new-value))
 
 ;;; Applicable methods
 

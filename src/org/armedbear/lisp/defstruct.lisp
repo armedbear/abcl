@@ -125,6 +125,7 @@
 (defvar *dd-direct-slots*)
 (defvar *dd-slots*)
 (defvar *dd-inherited-accessors*)
+(defvar *dd-documentation*)
 
 (defun keywordify (symbol)
   (intern (symbol-name symbol) +keyword-package+))
@@ -514,7 +515,8 @@
                                 print-object
                                 direct-slots
                                 slots
-                                inherited-accessors)
+                                inherited-accessors
+                                documentation)
   (setf (get name 'structure-definition)
         (make-defstruct-description :name name
                                     :conc-name conc-name
@@ -531,8 +533,12 @@
                                     :direct-slots direct-slots
                                     :slots slots
                                     :inherited-accessors inherited-accessors))
+  (%set-documentation name 'structure documentation)
   (when (or (null type) named)
-    (make-structure-class name direct-slots slots (car include)))
+    (let ((structure-class
+            (make-structure-class name direct-slots slots (car include))))
+      (%set-documentation name 'type documentation)
+      (%set-documentation structure-class t documentation)))
   (when default-constructor
     (proclaim `(ftype (function * t) ,default-constructor))))
 
@@ -552,7 +558,8 @@
         (*dd-print-object* nil)
         (*dd-direct-slots* ())
         (*dd-slots* ())
-        (*dd-inherited-accessors* ()))
+        (*dd-inherited-accessors* ())
+        (*dd-documentation* nil))
     (parse-name-and-options (if (atom name-and-options)
                                 (list name-and-options)
                                 name-and-options))
@@ -564,7 +571,7 @@
             (return)))
         (setf *dd-default-constructor* (default-constructor-name)))
     (when (stringp (car slots))
-      (%set-documentation *dd-name* 'structure (pop slots)))
+      (setf *dd-documentation* (pop slots)))
     (dolist (slot slots)
       (let* ((name (if (atom slot) slot (car slot)))
              (reader (if *dd-conc-name*
@@ -656,7 +663,8 @@
                              ,@(if *dd-print-object* `(:print-object ',*dd-print-object*))
                              :direct-slots ',*dd-direct-slots*
                              :slots ',*dd-slots*
-                             :inherited-accessors ',*dd-inherited-accessors*))
+                             :inherited-accessors ',*dd-inherited-accessors*
+                             :documentation ',*dd-documentation*))
        ,@(define-constructors)
        ,@(define-predicate)
        ,@(define-access-functions)
