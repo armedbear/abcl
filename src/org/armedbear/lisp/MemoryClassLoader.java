@@ -78,6 +78,13 @@ public class MemoryClassLoader extends JavaClassLoader {
                 return c;
             }
         }
+        
+        if (checkPreCompiledClassLoader) {
+            Class<?> c = findPrecompiledClassOrNull(name);
+            if (c != null) {
+                return c;     
+            }
+        }
 
         // Fall through to our super's default handling
         return super.loadClass(name, resolve);
@@ -86,8 +93,13 @@ public class MemoryClassLoader extends JavaClassLoader {
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         try {
+            if (checkPreCompiledClassLoader) {
+                Class<?> c = findPrecompiledClassOrNull(name);
+                if (c != null)
+                        return c;                       
+            }
             byte[] b = getFunctionClassBytes(name);
-            return defineClass(name, b, 0, b.length);
+            return defineLispClass(name, b, 0, b.length);
         } catch(Throwable e) { //TODO handle this better, readFunctionBytes uses Debug.assert() but should return null
             e.printStackTrace();
             if(e instanceof ControlTransfer) { throw (ControlTransfer) e; }
@@ -96,23 +108,17 @@ public class MemoryClassLoader extends JavaClassLoader {
     }
 
     public byte[] getFunctionClassBytes(String name) {
-        return (byte[])hashtable.get(name).javaInstance();
-    }
-
-    public byte[] getFunctionClassBytes(Class<?> functionClass) {
-        return getFunctionClassBytes(functionClass.getName());
-    }
-
-    public byte[] getFunctionClassBytes(Function f) {
-        byte[] b = getFunctionClassBytes(f.getClass());
-        f.setClassBytes(b);
-        return b;
+        if (hashtable.containsKey(name)) {
+            return (byte[])hashtable.get(name).javaInstance();
+        }
+        return super.getFunctionClassBytes(name);
     }
 
     public LispObject loadFunction(String name) {
         try {
-            Function f = (Function) loadClass(name).newInstance();
-            f.setClassBytes(getFunctionClassBytes(name));
+            Class clz = loadClass(name);
+            Function f = (Function) clz.newInstance();
+            getFunctionClassBytes(f); //as a side effect it sets them
             return f;
         } catch(Throwable e) {
             if(e instanceof ControlTransfer) { throw (ControlTransfer) e; }
@@ -135,29 +141,28 @@ public class MemoryClassLoader extends JavaClassLoader {
 
     private static final Primitive PUT_MEMORY_FUNCTION = new pf_put_memory_function();
     private static final class pf_put_memory_function extends Primitive {
-	pf_put_memory_function() {
+        pf_put_memory_function() {
             super("put-memory-function", PACKAGE_SYS, false, "loader class-name class-bytes");
         }
 
         @Override
         public LispObject execute(LispObject loader, LispObject className, LispObject classBytes) {
             MemoryClassLoader l = (MemoryClassLoader) loader.javaInstance(MemoryClassLoader.class);
-	    return (LispObject)l.hashtable.put(className.getStringValue(), (JavaObject)classBytes);
+            return (LispObject)l.hashtable.put(className.getStringValue(), (JavaObject)classBytes);
         }
     };
     
     private static final Primitive GET_MEMORY_FUNCTION = new pf_get_memory_function();
     private static final class pf_get_memory_function extends Primitive {
-	pf_get_memory_function() {
+        pf_get_memory_function() {
             super("get-memory-function", PACKAGE_SYS, false, "loader class-name");
         }
 
         @Override
         public LispObject execute(LispObject loader, LispObject name) {
             MemoryClassLoader l = (MemoryClassLoader) loader.javaInstance(MemoryClassLoader.class);
-	    return l.loadFunction(name.getStringValue());
+            return l.loadFunction(name.getStringValue());
         }
     };
-
-
 }
+

@@ -59,9 +59,16 @@ public class FaslClassLoader extends JavaClassLoader {
          * which - in ABCL - is pretty deep, most of the time.
          */
         if (name.startsWith(baseName + "_")) {
-            String internalName = "org/armedbear/lisp/" + name;
+            String internalName = name.replace(".", "/");
+            if (!internalName.contains("/")) internalName = "org/armedbear/lisp/" + internalName;
             Class<?> c = this.findLoadedClass(internalName);
 
+            if (c == null && checkPreCompiledClassLoader) {
+            	c = findPrecompiledClassOrNull(name);
+            	// Oh, we have to return here so we don't become the owning class loader?
+            	if (c != null)
+                  return c;
+            }            
             if (c == null) {
                 c = findClass(name);
             }
@@ -80,8 +87,13 @@ public class FaslClassLoader extends JavaClassLoader {
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         try {
+            if (checkPreCompiledClassLoader) {
+            	Class<?> c = findPrecompiledClassOrNull(name);
+            	if (c != null)
+            		return c;                	
+            }
             byte[] b = getFunctionClassBytes(name);
-            return defineClass(name, b, 0, b.length);
+            return defineLispClass(name, b, 0, b.length);
         } catch(Throwable e) { //TODO handle this better, readFunctionBytes uses Debug.assert() but should return null
             e.printStackTrace();
             if(e instanceof ControlTransfer) { throw (ControlTransfer) e; }
@@ -110,27 +122,16 @@ public class FaslClassLoader extends JavaClassLoader {
       return null;
     }
 
-    public byte[] getFunctionClassBytes(String name) {
-        Pathname pathname = new Pathname(name.substring("org/armedbear/lisp/".length()) + "." + Lisp._COMPILE_FILE_CLASS_EXTENSION_.symbolValue().getStringValue());
-        return readFunctionBytes(pathname);
-    }
-
-    public byte[] getFunctionClassBytes(Class<?> functionClass) {
-        return getFunctionClassBytes(functionClass.getName());
-    }
-
-    public byte[] getFunctionClassBytes(Function f) {
-        byte[] b = getFunctionClassBytes(f.getClass());
-        f.setClassBytes(b);
-        return b;
-    }
-
     public LispObject loadFunction(int fnNumber) {
         //Function name is fnIndex + 1
         String name = baseName + "_" + (fnNumber + 1);
         try {
-            Function f = (Function) loadClass(name).newInstance();
-            f.setClassBytes(getFunctionClassBytes(name));
+            Class clz = loadClass(name);
+            Function f = (Function) clz.newInstance();
+            if (clz.getClassLoader() instanceof JavaClassLoader) {
+                // Don't do this for system classes (though probably dont need this for other classes) 
+                f.setClassBytes(getFunctionClassBytes(name));
+            }
             return f;
         } catch(Throwable e) {
             if(e instanceof ControlTransfer) { throw (ControlTransfer) e; }

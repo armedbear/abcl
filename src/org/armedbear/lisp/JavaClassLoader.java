@@ -38,12 +38,80 @@ import static org.armedbear.lisp.Lisp.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 
 public class JavaClassLoader extends URLClassLoader {
 
     private static JavaClassLoader persistentInstance;
+
+    public static boolean checkPreCompiledClassLoader = true;
+    
+    public Class<?> loadClass(String name) throws ClassNotFoundException {
+        if (checkPreCompiledClassLoader) {
+            Class<?> c = findPrecompiledClassOrNull(name);
+            if (c != null) {
+                return c;                       
+            }
+        }
+        return loadClass(name, false);
+    }
+    
+    /**
+     * Returns a class loaded by the system or bootstrap class loader;
+     * or return null if not found.
+     * 
+     * On AOT systems like GCJ and IKVM this means a class implemented in ASM or CLR
+     * 
+     * like findLoadedClass it does not throw an exception if a class is not found
+     */
+    public Class<?> findPrecompiledClassOrNull(String name) {
+        ClassLoader ourCL = JavaClassLoader.class.getClassLoader();
+        while (ourCL != null) {
+            try {
+                return Class.forName(name, true, ourCL);
+            } catch (ClassNotFoundException cnf) {
+            }
+            ourCL = ourCL.getParent();
+        }
+        try {
+            return findSystemClass(name);
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
+    
+    public byte[] getFunctionClassBytes(String name) {
+        Pathname pathname 
+            = new Pathname(name.substring("org/armedbear/lisp/".length()) 
+                           + "." + Lisp._COMPILE_FILE_CLASS_EXTENSION_.symbolValue().getStringValue());
+        return readFunctionBytes(pathname);
+    }
+
+    public byte[] getFunctionClassBytes(Class<?> functionClass) {
+        String className = functionClass.getName();
+        try {
+            String ext = Lisp._COMPILE_FILE_CLASS_EXTENSION_.symbolValue().getStringValue();
+            InputStream is = getResourceAsStream(className.replace('.', '/') + "." + ext);
+            if (is != null) {
+                byte[] imgDataBa = new byte[(int) is.available()];
+                DataInputStream dataIs = new DataInputStream(is);
+                dataIs.readFully(imgDataBa);
+                return imgDataBa;
+            }
+        } catch (IOException e) {
+        }
+        return getFunctionClassBytes(className);
+    }
+
+    final public byte[] getFunctionClassBytes(Function f) {
+        byte[] b = getFunctionClassBytes(f.getClass());
+        f.setClassBytes(b);
+        return b;
+    }
 
     private static Set<String> packages = Collections.synchronizedSet(new HashSet<String>());
 
@@ -53,11 +121,11 @@ public class JavaClassLoader extends URLClassLoader {
     }
 
     public JavaClassLoader(ClassLoader parent) {
-	super(new URL[] {}, parent);
+        super(new URL[] {}, parent);
     }
 
     public JavaClassLoader(URL[] classpath, ClassLoader parent) {
-	super(classpath, parent);
+        super(classpath, parent);
     }
 
     public static JavaClassLoader getPersistentInstance()
@@ -69,7 +137,7 @@ public class JavaClassLoader extends URLClassLoader {
     {
         if (persistentInstance == null)
             persistentInstance = new JavaClassLoader();
-	definePackage(packageName);
+        definePackage(packageName);
         return persistentInstance;
     }
 
@@ -89,30 +157,36 @@ public class JavaClassLoader extends URLClassLoader {
                                                 byte[] classbytes)
     {
         try {
-            long length = classbytes.length;
+            long length = classbytes.length; 
             if (length < Integer.MAX_VALUE) {
                 Class<?> c =
-                    defineClass(className, classbytes, 0, (int) length);
+                    defineLispClass(className, classbytes, 0, (int) length);
                 if (c != null) {
                     resolveClass(c);
                     return c;
                 }
             }
         }
-    	catch (LinkageError e) {
+        catch (LinkageError e) {
                 throw e;
-    	}
+        }
         catch (Throwable t) {
             Debug.trace(t);
         }
         return null;
     }
 
+    protected final Class<?> defineLispClass(String name, byte[] b, int off, int len)
+                throws ClassFormatError {        
+        ///if (checkPreCompiledClassLoader) Debug.trace("DEFINE JAVA CLASS " + name + " " + len);
+        return defineClass(name, b, off, len);
+    }
+    
     public Class<?> loadClassFromByteArray(String className, byte[] bytes,
                                                 int offset, int length)
     {
         try {
-            Class<?> c = defineClass(className, bytes, offset, length);
+            Class<?> c = defineLispClass(className, bytes, offset, length);
             if (c != null) {
                 resolveClass(c);
                 return c;
@@ -130,15 +204,15 @@ public class JavaClassLoader extends URLClassLoader {
 
     @Override
     public void addURL(URL url) {
-	super.addURL(url);
+        super.addURL(url);
     }
 
     public static final Symbol CLASSLOADER = PACKAGE_JAVA.intern("*CLASSLOADER*");
 
     private static final Primitive GET_DEFAULT_CLASSLOADER = new pf_get_default_classloader();
     private static final class pf_get_default_classloader extends Primitive {
-	
-	private final LispObject defaultClassLoader = new JavaObject(new JavaClassLoader());
+        
+        private final LispObject defaultClassLoader = new JavaObject(new JavaClassLoader());
 
         pf_get_default_classloader() {
             super("get-default-classloader", PACKAGE_JAVA, true, "");
@@ -146,7 +220,7 @@ public class JavaClassLoader extends URLClassLoader {
 
         @Override
         public LispObject execute() {
-	    return defaultClassLoader;
+            return defaultClassLoader;
         }
     };
 
@@ -161,12 +235,12 @@ public class JavaClassLoader extends URLClassLoader {
 
         @Override
         public LispObject execute() {
-	    return new JavaObject(new JavaClassLoader(getCurrentClassLoader()));
+            return new JavaObject(new JavaClassLoader(getCurrentClassLoader()));
         }
 
         @Override
         public LispObject execute(LispObject parent) {
-	    return new JavaObject(new JavaClassLoader((ClassLoader) parent.javaInstance(ClassLoader.class)));
+            return new JavaObject(new JavaClassLoader((ClassLoader) parent.javaInstance(ClassLoader.class)));
         }
     };
 
@@ -181,19 +255,19 @@ public class JavaClassLoader extends URLClassLoader {
 
         @Override
         public LispObject execute() {
-	    return execute(new JavaObject(getCurrentClassLoader()));
+            return execute(new JavaObject(getCurrentClassLoader()));
         }
 
         @Override
         public LispObject execute(LispObject classloader) {
-	    LispObject list = NIL;
-	    Object o = classloader.javaInstance();
-	    while(o instanceof ClassLoader) {
-		ClassLoader cl = (ClassLoader) o;
-		list = list.push(dumpClassPath(cl));
-		o = cl.getParent();
-	    }
-	    return list.nreverse();
+            LispObject list = NIL;
+            Object o = classloader.javaInstance();
+            while(o instanceof ClassLoader) {
+                ClassLoader cl = (ClassLoader) o;
+                list = list.push(dumpClassPath(cl));
+                o = cl.getParent();
+            }
+            return list.nreverse();
         }
     };
 
@@ -221,26 +295,26 @@ public class JavaClassLoader extends URLClassLoader {
 
         @Override
         public LispObject execute(LispObject jarOrJars) {
-	    return execute(jarOrJars, new JavaObject(getCurrentClassLoader()));
+            return execute(jarOrJars, new JavaObject(getCurrentClassLoader()));
         }
 
         @Override
         public LispObject execute(LispObject jarOrJars, LispObject classloader) {
-	    Object o = classloader.javaInstance();
-	    if(o instanceof JavaClassLoader) {
-		JavaClassLoader jcl = (JavaClassLoader) o;
-		if(jarOrJars instanceof Cons) {
-		    while(jarOrJars != NIL) {
-			addURL(jcl, jarOrJars.car());
-			jarOrJars = jarOrJars.cdr();
-		    }
-		} else {
-		    addURL(jcl, jarOrJars);
-		}
-		return T;
-	    } else {
-		return error(new TypeError(o + " must be an instance of " + JavaClassLoader.class.getName()));
-	    }
+            Object o = classloader.javaInstance();
+            if(o instanceof JavaClassLoader) {
+                JavaClassLoader jcl = (JavaClassLoader) o;
+                if(jarOrJars instanceof Cons) {
+                    while(jarOrJars != NIL) {
+                        addURL(jcl, jarOrJars.car());
+                        jarOrJars = jarOrJars.cdr();
+                    }
+                } else {
+                    addURL(jcl, jarOrJars);
+                }
+                return T;
+            } else {
+                return error(new TypeError(o + " must be an instance of " + JavaClassLoader.class.getName()));
+            }
         }
     };
 
@@ -256,24 +330,24 @@ public class JavaClassLoader extends URLClassLoader {
 
 
     public static LispObject dumpClassPath(ClassLoader o) {
-	if(o instanceof URLClassLoader) {
-	    LispObject list = NIL;
-	    for(URL u : ((URLClassLoader) o).getURLs()) {
-		list = list.push(new Pathname(u));
-	    }
-	    return new Cons(new JavaObject(o), list.nreverse());
-	} else {
-	    return new JavaObject(o);
-	}
+        if(o instanceof URLClassLoader) {
+            LispObject list = NIL;
+            for(URL u : ((URLClassLoader) o).getURLs()) {
+                list = list.push(new Pathname(u));
+            }
+            return new Cons(new JavaObject(o), list.nreverse());
+        } else {
+            return new JavaObject(o);
+        }
     }
 
     public static ClassLoader getCurrentClassLoader() {
-	LispObject classLoader = CLASSLOADER.symbolValueNoThrow();
-	if(classLoader != null) {
-	    return (ClassLoader) classLoader.javaInstance(ClassLoader.class);
-	} else {
-	    return Lisp.class.getClassLoader();
-	}
+        LispObject classLoader = CLASSLOADER.symbolValueNoThrow();
+        if(classLoader != null) {
+            return (ClassLoader) classLoader.javaInstance(ClassLoader.class);
+        } else {
+            return Lisp.class.getClassLoader();
+        }
     }
 
 
