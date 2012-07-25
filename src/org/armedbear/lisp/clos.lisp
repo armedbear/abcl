@@ -4416,8 +4416,8 @@ or T when any keyword is acceptable due to presence of
     (setf generic-function-class (find-class generic-function-class)))
   (unless (classp method-class) (setf method-class (find-class method-class)))
   (unless (eq generic-function-class (class-of generic-function))
-    (error "The class ~S is incompatible with the existing class of ~S."
-           generic-function-class generic-function))
+    (error "The class ~S is incompatible with the existing class (~S) of ~S."
+           generic-function-class (class-of generic-function) generic-function))
   (unless (or (null (generic-function-methods generic-function))
               (lambda-lists-congruent-p lambda-list (generic-function-lambda-list generic-function)))
     (error "The lambda list ~S is incompatible with the existing methods of ~S."
