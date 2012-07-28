@@ -577,21 +577,28 @@ if that parent belongs to the same compiland."
                (eq name (block-name block)))
       (return block))))
 
-(defun %find-enclosed-blocks (form)
+(defun %find-enclosed-blocks (form traversed-blocks)
   "Helper function for `find-enclosed-blocks`, implementing the actual
-algorithm specified there."
+algorithm specified there.
+`traversed-blocks' prevents traversal of recursive structures."
   (cond
    ((node-p form) (list form))
    ((atom form) nil)
    (t
     ;; We can't use MAPCAN or DOLIST here: they'll choke on dotted lists
     (do* ((tail form (cdr tail))
+          (current-block (if (consp tail)
+                             (car tail) tail)
+                         (if (consp tail)
+                             (car tail) tail))
           blocks)
          ((null tail) blocks)
-      (setf blocks
-            (nconc (%find-enclosed-blocks (if (consp tail)
-                                              (car tail) tail))
-                   blocks))
+      (unless (gethash current-block traversed-blocks)
+        (setf (gethash current-block traversed-blocks) t)
+        (setf blocks
+              (nconc (%find-enclosed-blocks current-block
+                                            traversed-blocks)
+                     blocks)))
       (when (not (listp tail))
         (return blocks))))))
 
@@ -609,7 +616,7 @@ field of the immediate enclosed blocks."
                  (null (node-children first-enclosing-block)))
         (return-from find-enclosed-blocks))))
 
-  (%find-enclosed-blocks form))
+  (%find-enclosed-blocks form (make-hash-table :test 'eq)))
 
 
 (defun some-nested-block (predicate blocks)
