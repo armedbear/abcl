@@ -597,16 +597,6 @@ public class StandardClass extends SlotClass
   public static final StandardClass UNDEFINED_FUNCTION =
     addStandardClass(Symbol.UNDEFINED_FUNCTION, list(CELL_ERROR));
 
-  public static final StandardClass COMPILER_ERROR =
-    addStandardClass(Symbol.COMPILER_ERROR, list(CONDITION));
-    
-  public static final StandardClass INTERNAL_COMPILER_ERROR =
-    addStandardClass(Symbol.INTERNAL_COMPILER_ERROR, list(CONDITION));
-
-  public static final StandardClass COMPILER_UNSUPPORTED_FEATURE_ERROR =
-    addStandardClass(Symbol.COMPILER_UNSUPPORTED_FEATURE_ERROR,
-                     list(CONDITION));
-
   public static final StandardClass JAVA_EXCEPTION =
     addStandardClass(Symbol.JAVA_EXCEPTION, list(ERROR));
 
@@ -649,13 +639,6 @@ public class StandardClass extends SlotClass
       list(new SlotDefinition(Symbol.NAME,
                                list(Symbol.CELL_ERROR_NAME))));
     CLASS.setCPL(CLASS, SPECIALIZER, METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
-    COMPILER_ERROR.setCPL(COMPILER_ERROR, CONDITION, STANDARD_OBJECT,
-                          BuiltInClass.CLASS_T);
-    INTERNAL_COMPILER_ERROR.setCPL(INTERNAL_COMPILER_ERROR, CONDITION, STANDARD_OBJECT,
-                                   BuiltInClass.CLASS_T);
-    COMPILER_UNSUPPORTED_FEATURE_ERROR.setCPL(COMPILER_UNSUPPORTED_FEATURE_ERROR,
-                                              CONDITION, STANDARD_OBJECT,
-                                              BuiltInClass.CLASS_T);
     CONDITION.setCPL(CONDITION, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     CONDITION.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.FORMAT_CONTROL,
@@ -811,9 +794,6 @@ public class StandardClass extends SlotClass
     GENERIC_FUNCTION.finalizeClass();
     ARITHMETIC_ERROR.finalizeClass();
     CELL_ERROR.finalizeClass();
-    COMPILER_ERROR.finalizeClass();
-    INTERNAL_COMPILER_ERROR.finalizeClass();
-    COMPILER_UNSUPPORTED_FEATURE_ERROR.finalizeClass();
     CONDITION.finalizeClass();
     CONTROL_ERROR.finalizeClass();
     DIVISION_BY_ZERO.finalizeClass();

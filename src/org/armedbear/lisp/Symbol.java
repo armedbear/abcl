@@ -2925,12 +2925,6 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_EXT.addExternalSymbol("MEMQL");
   public static final Symbol NIL_VECTOR =
     PACKAGE_EXT.addExternalSymbol("NIL-VECTOR");
-  public static final Symbol COMPILER_ERROR =
-    PACKAGE_EXT.addExternalSymbol("COMPILER-ERROR");
-  public static final Symbol INTERNAL_COMPILER_ERROR =
-    PACKAGE_EXT.addExternalSymbol("INTERNAL-COMPILER-ERROR");
-  public static final Symbol COMPILER_UNSUPPORTED_FEATURE_ERROR =
-    PACKAGE_EXT.addExternalSymbol("COMPILER-UNSUPPORTED-FEATURE-ERROR");
   public static final Symbol MAILBOX =
     PACKAGE_EXT.addExternalSymbol("MAILBOX");
   public static final Symbol MUTEX =
