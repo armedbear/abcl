@@ -45,7 +45,7 @@ import java.text.MessageFormat;
 
 public final class LispThread extends LispObject
 {
-    static boolean use_fast_calls = false;
+//    static boolean use_fast_calls = false;
 
     // use a concurrent hashmap: we may want to add threads
     // while at the same time iterating the hash
@@ -625,9 +625,6 @@ public final class LispThread extends LispObject
     @Override
     public LispObject execute(LispObject function)
     {
-        if (use_fast_calls)
-            return function.execute();
-
         pushStackFrame(new LispStackFrame(function));
         try {
             return function.execute();
@@ -639,11 +636,7 @@ public final class LispThread extends LispObject
 
     @Override
     public LispObject execute(LispObject function, LispObject arg)
-
     {
-        if (use_fast_calls)
-            return function.execute(arg);
-
         pushStackFrame(new LispStackFrame(function, arg));
         try {
             return function.execute(arg);
@@ -656,11 +649,7 @@ public final class LispThread extends LispObject
     @Override
     public LispObject execute(LispObject function, LispObject first,
                               LispObject second)
-
     {
-        if (use_fast_calls)
-            return function.execute(first, second);
-
         pushStackFrame(new LispStackFrame(function, first, second));
         try {
             return function.execute(first, second);
@@ -673,11 +662,7 @@ public final class LispThread extends LispObject
     @Override
     public LispObject execute(LispObject function, LispObject first,
                               LispObject second, LispObject third)
-
     {
-        if (use_fast_calls)
-            return function.execute(first, second, third);
-
         pushStackFrame(new LispStackFrame(function, first, second, third));
         try {
             return function.execute(first, second, third);
@@ -691,11 +676,7 @@ public final class LispThread extends LispObject
     public LispObject execute(LispObject function, LispObject first,
                               LispObject second, LispObject third,
                               LispObject fourth)
-
     {
-        if (use_fast_calls)
-            return function.execute(first, second, third, fourth);
-
         pushStackFrame(new LispStackFrame(function, first, second, third, fourth));
         try {
             return function.execute(first, second, third, fourth);
@@ -709,11 +690,7 @@ public final class LispThread extends LispObject
     public LispObject execute(LispObject function, LispObject first,
                               LispObject second, LispObject third,
                               LispObject fourth, LispObject fifth)
-
     {
-        if (use_fast_calls)
-            return function.execute(first, second, third, fourth, fifth);
-
         pushStackFrame(new LispStackFrame(function, first, second, third, fourth, fifth));
         try {
             return function.execute(first, second, third, fourth, fifth);
@@ -728,11 +705,7 @@ public final class LispThread extends LispObject
                               LispObject second, LispObject third,
                               LispObject fourth, LispObject fifth,
                               LispObject sixth)
-
     {
-        if (use_fast_calls)
-            return function.execute(first, second, third, fourth, fifth, sixth);
-
         pushStackFrame(new LispStackFrame(function, first, second, 
 					  third, fourth, fifth, sixth));
         try {
@@ -748,12 +721,7 @@ public final class LispThread extends LispObject
                               LispObject second, LispObject third,
                               LispObject fourth, LispObject fifth,
                               LispObject sixth, LispObject seventh)
-
     {
-        if (use_fast_calls)
-            return function.execute(first, second, third, fourth, fifth, sixth,
-                                    seventh);
-
         pushStackFrame(new LispStackFrame(function, first, second, third, 
 					  fourth, fifth, sixth, seventh));
         try {
@@ -770,12 +738,7 @@ public final class LispThread extends LispObject
                               LispObject fourth, LispObject fifth,
                               LispObject sixth, LispObject seventh,
                               LispObject eighth)
-
     {
-        if (use_fast_calls)
-            return function.execute(first, second, third, fourth, fifth, sixth,
-                                    seventh, eighth);
-
         pushStackFrame(new LispStackFrame(function, first, second, third, 
 					  fourth, fifth, sixth, seventh, eighth));
         try {
@@ -788,11 +751,7 @@ public final class LispThread extends LispObject
     }
 
     public LispObject execute(LispObject function, LispObject[] args)
-
     {
-        if (use_fast_calls)
-            return function.execute(args);
-
         pushStackFrame(new LispStackFrame(function, args));
         try {
             return function.execute(args);
@@ -1202,18 +1161,6 @@ public final class LispThread extends LispObject
         }
     };
 
-
-    @DocString(name="use-fast-calls")
-    private static final Primitive USE_FAST_CALLS =
-        new Primitive("use-fast-calls", PACKAGE_SYS, true)
-    {
-        @Override
-        public LispObject execute(LispObject arg)
-        {
-            use_fast_calls = (arg != NIL);
-            return use_fast_calls ? T : NIL;
-        }
-    };
 
     @DocString(name="synchronized-on", args="form &body body")
     private static final SpecialOperator SYNCHRONIZED_ON =
