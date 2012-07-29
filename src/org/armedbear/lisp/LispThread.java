@@ -45,8 +45,6 @@ import java.text.MessageFormat;
 
 public final class LispThread extends LispObject
 {
-//    static boolean use_fast_calls = false;
-
     // use a concurrent hashmap: we may want to add threads
     // while at the same time iterating the hash
     final static ConcurrentHashMap<Thread,LispThread> map =
