@@ -104,6 +104,13 @@
       (diag "Internal compiler error detected: Fasl contains ~
 zero-length jvm classfile corresponding to ~A." classfile)
       (return-from verify-load nil)))
+  ;; ### FIXME
+  ;; The section below can't work, because we have
+  ;; circular references between classes of outer- and innerscoped
+  ;; functions. We need the class loader to resolve these circular
+  ;; references for us. Our FASL class loader does exactly that,
+  ;; so we need a class loader here which knows how to find
+  ;; all the .cls files related to the current scope being loaded.
   #+nil
   (when (or force (> *safety* *speed*))
     (diag "Testing compiled bytecode by loading classfile into JVM.")
