@@ -34,7 +34,6 @@
 
 package org.armedbear.lisp;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
 import static org.armedbear.lisp.Lisp.*;
