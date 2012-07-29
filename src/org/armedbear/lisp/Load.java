@@ -215,14 +215,19 @@ public final class Load
         }
     }
 
-    public static final LispObject loadSystemFile(String filename, boolean auto)
-
+    public static LispObject loadSystemFile(String filename, boolean auto)
     {
         LispThread thread = LispThread.currentThread();
         if (auto) {
             final SpecialBindingsMark mark = thread.markSpecialBindings();
+            // Due to autoloading, we're not sure about the loader state.
+            // Make sure that all reader relevant variables have known state.
             thread.bindSpecial(Symbol.CURRENT_READTABLE,
                                STANDARD_READTABLE.symbolValue(thread));
+            thread.bindSpecial(Symbol.READ_BASE, Fixnum.constants[10]);
+            thread.bindSpecial(Symbol.READ_SUPPRESS, NIL);
+            thread.bindSpecial(Symbol.READ_EVAL, T);
+            thread.bindSpecial(Symbol.READ_DEFAULT_FLOAT_FORMAT, Symbol.SINGLE_FLOAT);
             thread.bindSpecial(Symbol._PACKAGE_, PACKAGE_CL_USER);
             try {
                 return loadSystemFile(filename,
