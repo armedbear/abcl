@@ -178,6 +178,9 @@
 (load-system-file "signal")
 (load-system-file "list")
 (load-system-file "require")
+;; precompiler has a large performance benefit on interpreted code
+;; load as early as possible
+(load-system-file "precompiler")
 (load-system-file "extensible-sequences-base")
 (load-system-file "sequences")
 (load-system-file "error")
