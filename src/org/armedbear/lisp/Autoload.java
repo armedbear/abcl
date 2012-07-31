@@ -544,6 +544,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%finalize-generic-function", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%generic-function-lambda-list", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%generic-function-name", "StandardGenericFunction", true);
+        autoload(PACKAGE_SYS, "set-generic-function-declarations", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%get-output-stream-bytes", "ByteArrayOutputStream"); //AS 20090325
         autoload(PACKAGE_SYS, "%get-output-stream-array", "ByteArrayOutputStream");
         autoload(PACKAGE_SYS, "%make-array", "make_array");
@@ -568,6 +569,11 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%set-generic-function-lambda-list", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%set-generic-function-name", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%set-gf-required-args", "StandardGenericFunction", true);
+        autoload(PACKAGE_SYS, "%set-gf-optional-args", "StandardGenericFunction", true);
+        autoload(PACKAGE_SYS, "gf-required-args", "StandardGenericFunction", true);
+        autoload(PACKAGE_SYS, "gf-optional-args", "StandardGenericFunction", true);
+        autoload(PACKAGE_SYS, "%init-eql-specializations", "StandardGenericFunction", true);
+        autoload(PACKAGE_SYS, "%get-arg-specialization", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%set-symbol-macro", "Primitives");
         autoload(PACKAGE_SYS, "%simple-bit-vector-bit-and", "SimpleBitVector");
         autoload(PACKAGE_SYS, "%simple-bit-vector-bit-andc1", "SimpleBitVector");
