@@ -40,6 +40,10 @@
 
 (defvar *output-file-pathname*)
 
+(defvar *toplevel-functions*)
+(defvar *toplevel-macros*)
+
+
 (defun base-classname (&optional (output-file-pathname *output-file-pathname*))
   (sanitize-class-name (pathname-name output-file-pathname)))
 
@@ -403,6 +407,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 (defun process-toplevel-defmethod/defgeneric (form stream compile-time-too)
   (note-toplevel-form form)
   (note-name-defined (second form))
+  (push (second form) *toplevel-functions*)
   (let ((*compile-print* nil))
     (process-toplevel-form (macroexpand-1 form *compile-file-environment*)
                            stream compile-time-too))
@@ -428,6 +433,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
   (note-toplevel-form form)
   (let ((name (second form)))
     (eval form)
+    (push name *toplevel-macros*)
     (let* ((expr (function-lambda-expression (macro-function name)))
            (saved-class-number *class-number*)
            (classfile (next-classfile-name)))
@@ -527,6 +533,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                                 ',(inline-expansion name))))))
     (push name jvm::*functions-defined-in-current-file*)
     (note-name-defined name)
+    (push name *toplevel-functions*)
     ;; If NAME is not fbound, provide a dummy definition so that
     ;; getSymbolFunctionOrDie() will succeed when we try to verify that
     ;; functions defined later in the same file can be loaded correctly.
@@ -693,6 +700,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                      output-file
                      ((:verbose *compile-verbose*) *compile-verbose*)
                      ((:print *compile-print*) *compile-print*)
+                     (extract-toplevel-funcs-and-macros nil)
                      external-format)
   (declare (ignore external-format))    ; FIXME
   (unless (or (and (probe-file input-file) (not (file-directory-p input-file)))
@@ -712,6 +720,10 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                                      output-file))
          (temp-file2 (merge-pathnames (make-pathname :type (concatenate 'string type "-tmp2"))
                                      output-file))
+         (functions-file (merge-pathnames (make-pathname :type "funcs") output-file))
+         (macros-file (merge-pathnames (make-pathname :type "macs") output-file))
+         *toplevel-functions*
+         *toplevel-macros*
          (warnings-p nil)
          (failure-p nil))
     (with-open-file (in input-file :direction :input)
@@ -766,6 +778,34 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                     (finalize-fasl-output)
                     (dolist (name *fbound-names*)
                       (fmakunbound name)))))))
+        (when extract-toplevel-funcs-and-macros
+          (setf *toplevel-functions*
+                (remove-if-not (lambda (func-name)
+                                 (if (symbolp func-name)
+                                     (symbol-package func-name)
+                                     T))
+                               (remove-duplicates *toplevel-functions*)))
+          (when *toplevel-functions*
+            (with-open-file (f-out functions-file
+                                   :direction :output
+                                   :if-does-not-exist :create
+                                   :if-exists :supersede)
+
+              (let ((*package* (find-package :keyword)))
+                (write *toplevel-functions* :stream f-out))))
+          (setf *toplevel-macros*
+                (remove-if-not (lambda (mac-name)
+                                 (if (symbolp mac-name)
+                                     (symbol-package mac-name)
+                                     T))
+                               (remove-duplicates *toplevel-macros*)))
+          (when *toplevel-macros*
+            (with-open-file (m-out macros-file
+                                   :direction :output
+                                   :if-does-not-exist :create
+                                   :if-exists :supersede)
+              (let ((*package* (find-package :keyword)))
+                (write *toplevel-macros* :stream m-out)))))
         (with-open-file (in temp-file :direction :input)
           (with-open-file (out temp-file2 :direction :output
                                :if-does-not-exist :create
@@ -835,7 +875,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                                         (file-write-date output-file))))
            (if (or (null target-write-time)
                    (<= target-write-time source-write-time))
-               (apply 'compile-file input-file allargs)
+               (apply #'compile-file input-file allargs)
                output-file)))))
 
 (provide 'compile-file)
