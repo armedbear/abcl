@@ -251,6 +251,7 @@ from ${abcl.home.dir}
             inputstring="(handler-case (compile-system :zip nil :quit t :output-path &quot;${abcl.lisp.output}/&quot;) (t (x) (progn (format t &quot;~A: ~A~%&quot; (type-of x) x) (exit :status -1))))"
             classname="org.armedbear.lisp.Main">
         <jvmarg value="-Dabcl.home=${abcl.home.dir}${file.separator}"/>
+        <jvmarg value="-Dabcl.autoload.verbose=Y"/>
         <arg value="--noinit"/>
         <arg value="--nosystem"/>
         <arg value="--eval"/>
