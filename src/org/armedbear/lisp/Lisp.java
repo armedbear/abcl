@@ -223,8 +223,11 @@ public final class Lisp
         if (car instanceof Symbol)
           {
             LispObject obj = env.lookupFunction(car);
-            if (obj instanceof Autoload)
+            if (obj instanceof AutoloadMacro)
               {
+                // Don't autoload function objects here:
+                // we want that to happen upon the first use.
+                // in case of macro functions, this *is* the first use.
                 Autoload autoload = (Autoload) obj;
                 autoload.load();
                 obj = car.getSymbolFunction();
@@ -1808,6 +1811,15 @@ public final class Lisp
       }
     else if (obj instanceof Cons && obj.car() == Symbol.LAMBDA)
       return new Closure(obj, new Environment());
+    if (obj instanceof Cons && obj.car() == Symbol.NAMED_LAMBDA) {
+        LispObject name = obj.cadr();
+        if (name instanceof Symbol || isValidSetfFunctionName(name)) {
+            return new Closure(name,
+                               new Cons(Symbol.LAMBDA, obj.cddr()),
+                               new Environment());
+        }
+        return type_error(name, FUNCTION_NAME);
+    }
     error(new UndefinedFunction(obj));
     // Not reached.
     return null;
