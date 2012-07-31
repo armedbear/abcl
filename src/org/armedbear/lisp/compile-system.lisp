@@ -89,7 +89,9 @@
              (let ((out (make-pathname :type *compile-file-type*
                                        :defaults (merge-pathnames
                                                   file output-path))))
-               (compile-file-if-needed file :output-file out))))
+               (compile-file-if-needed file
+                                       :output-file out
+                                       :extract-toplevel-funcs-and-macros t))))
       (load (do-compile "defstruct.lisp"))
       (load (do-compile "coerce.lisp"))
       (load (do-compile "open.lisp"))
