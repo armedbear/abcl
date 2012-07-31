@@ -688,13 +688,6 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "unzip", "unzip", true);
         autoload(PACKAGE_SYS, "zip", "zip", true);
 
-        autoload(PACKAGE_SYS, "proxy-preloaded-function",
-                 "AutoloadedFunctionProxy", false);
-        autoload(PACKAGE_SYS, "make-function-preloading-context",
-                 "AutoloadedFunctionProxy", false);
-        autoload(PACKAGE_SYS, "function-preload",
-                 "AutoloadedFunctionProxy", false);
-
         autoload(Symbol.COPY_LIST, "copy_list");
 
 	autoload(PACKAGE_SYS, "make-fasl-class-loader", "FaslClassLoader", false);
