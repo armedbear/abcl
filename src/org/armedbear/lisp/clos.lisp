@@ -1653,8 +1653,6 @@ compare the method combination name to the symbol 'standard.")
                                 argument-precedence-order
                                 documentation
                                 &allow-other-keys)
-  (when (autoloadp function-name)
-    (resolve function-name))
   (setf all-keys (copy-list all-keys))  ; since we modify it
   (remf all-keys :generic-function-class)
   (let ((gf (find-generic-function function-name nil)))
@@ -1677,7 +1675,14 @@ compare the method combination name to the symbol 'standard.")
           gf)
         (progn
           (when (and (null *clos-booting*)
-                     (fboundp function-name))
+                     (and (fboundp function-name)
+                          ;; since we're overwriting an autoloader,
+                          ;; we're probably meant to redefine it,
+                          ;; so throwing an error here might be a bad idea.
+                          ;; also, resolving the symbol isn't
+                          ;; a good option either: we've seen that lead to
+                          ;; recursive loading of the same file
+                          (not (autoloadp function-name))))
             (error 'program-error
                    :format-control "~A already names an ordinary function, macro, or special operator."
                    :format-arguments (list function-name)))
