@@ -705,7 +705,8 @@ public final class Load
         {
             final LispThread thread = LispThread.currentThread();
             return loadSystemFile(arg.getStringValue(),
-                                  Symbol.LOAD_VERBOSE.symbolValue(thread) != NIL,
+                                  Symbol.LOAD_VERBOSE.symbolValue(thread) != NIL
+                                  || System.getProperty("abcl.autoload.verbose") != null,
                                   Symbol.LOAD_PRINT.symbolValue(thread) != NIL,
                                   false);
         }
