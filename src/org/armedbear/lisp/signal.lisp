@@ -71,7 +71,7 @@
                       *current-error-depth* condition)
              (if (fboundp 'internal-debug)
                  (internal-debug)
-                 (quit)))
+                 (quit :status 89))) ;; it's a prime and a fibonacci!
             (t
              (invoke-debugger condition))))))
 
