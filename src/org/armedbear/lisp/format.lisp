@@ -33,6 +33,8 @@
 
 (in-package "SYSTEM")
 
+(require "PRINT-OBJECT")
+
 ;;; From primordial-extensions.lisp.
 
 ;;; Concatenate together the names of some strings and symbols,
