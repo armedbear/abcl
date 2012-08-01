@@ -79,6 +79,140 @@
        (dolist (file files)
          (grovel-java-definitions-in-file file stream))))))
 
+
+;;
+;; Functions to generate autoloads.lisp
+;;
+
+(defun packages-from-combos (combos)
+  (remove-duplicates (mapcar #'symbol-package
+                             (mapcar #'sys:fdefinition-block-name
+                                     (mapcar #'second combos)))))
+
+(defun remove-multi-combo-symbols (combos)
+  (remove-if (lambda (x)
+               (< 1 (count x combos :key #'second)))
+             combos
+             :key #'second))
+
+(defun set-equal (set1 set2 &key test)
+  (or (eq set1 set2)
+      (equal set1 set2)
+      (and (subsetp set2 set1 :test test)
+           (subsetp set1 set2 :test test))))
+
+(defun combos-to-symbol-filesets (combos)
+  (let (filesets)
+    (dolist (combo combos)
+      (pushnew (list (second combo)) filesets :test #'equal :key #'first)
+      (pushnew (first combo)
+               (cdr (assoc (second combo) filesets :test #'equal))
+               :test #'string=))
+    filesets))
+
+(defun combos-to-fileset-symbols (combos)
+  (let (fileset-symbols)
+    (dolist (symbol-fileset (combos-to-symbol-filesets combos))
+      (pushnew (list (cdr symbol-fileset)) fileset-symbols
+               :test (lambda (x y) (set-equal x y :test #'string=))
+               :key #'first)
+      (pushnew (first symbol-fileset)
+               (cdr (assoc (cdr symbol-fileset) fileset-symbols
+                           :test (lambda (x y) (set-equal x y :test #'string=))))))
+    fileset-symbols))
+
+(defun write-autoloader (stream package type fileset-symbols)
+  (when fileset-symbols
+    (write `(in-package ,package) :stream stream)
+    (terpri stream)
+    (let ((*package* (find-package package)))
+      (write `(dolist (fs ',fileset-symbols)
+                (funcall #',type (cdr fs) (car (car fs)))) :stream stream)
+      (terpri stream))))
+
+(defun write-package-filesets (stream package type filesets-symbols)
+  (let* ((filter-package (find-package package))
+         (filtered-filesets
+         (remove-if (lambda (x)
+                      (null (cdr x)))
+                    (mapcar (lambda (x)
+                              (cons (car x)
+                                    (remove-if-not (lambda (x)
+                                                     ;;; ### TODO: Support SETF functions
+                                                     (and (symbolp x)
+                                                          (eq (symbol-package x)
+                                                              filter-package)))
+                                                   (cdr x))))
+                            filesets-symbols))))
+    (write-autoloader stream package type filtered-filesets)))
+
+(defun load-combos (path-spec)
+  (let (all-functions)
+    (dolist (functions-file (directory path-spec)
+             all-functions)
+      ;; every file has 1 form: the list of functions in it.
+      (let ((base-name (pathname-name functions-file)))
+        (unless (member base-name '("asdf" "gray-streams") :test #'string=)
+          ;; exclude ASDF and GRAY-STREAMS: they have external
+          ;; symbols we don't have until we load them, but we need
+          ;; those symbols to read the symbols files
+          (with-open-file (f functions-file
+                             :direction :input)
+            (dolist (function-name (read f))
+              (push (list base-name function-name) all-functions))))))))
+
+(defun generate-autoloads (symbol-files-pathspec)
+  (flet ((filter-combos (combos)
+           (remove-if (lambda (x)
+                        ;; exclude the symbols from the files
+                        ;; below: putting autoloaders on some of
+                        ;; the symbols conflicts with the bootstrapping
+                        ;; Primitives which have been defined Java-side
+                        (member x '( ;; function definitions to be excluded
+                                    "fdefinition" "early-defuns"
+                                    "require" "signal"
+                                    "extensible-sequences-base" "restart"
+                                    "extensible-sequences"
+                                    ;; macro definitions to be excluded
+                                    "macros" "backquote" "precompiler")
+                                :test #'string=))
+                      (remove-multi-combo-symbols combos)
+                      :key #'first))
+         (symbols-pathspec (filespec)
+           (merge-pathnames filespec symbol-files-pathspec)))
+    (let ((funcs (filter-combos (load-combos (symbols-pathspec "*.funcs"))))
+          (macs (filter-combos (load-combos (symbols-pathspec "*.macs")))))
+      (with-open-file (f (symbols-pathspec "autoloads-gen.lisp")
+                         :direction :output :if-does-not-exist :create
+                         :if-exists :supersede)
+        ;; Generate the lisp file. This file will be included after compilation,
+        ;; so any comments are just for debugging purposes.
+        (terpri f)
+        (write-line ";; ---- GENERATED CONTENT BELOW" f)
+        (terpri f)
+        (write '(identity T) :stream f)
+        (dolist (package '(:format :sequence :loop :mop :xp :precompiler
+                           :profiler :java :jvm :extensions :threads
+                           :toplevel :system :cl))
+          ;; Limit the set of packages:
+          ;;  During incremental compilation, the packages GRAY-STREAMS
+          ;;    and ASDF are not being created. Nor are these packages
+          ;;    vital to the correct operation of the base system.
+          (write-line ";; FUNCTIONS" f)
+          (terpri f)
+          (write-package-filesets f package 'ext:autoload
+                                  (combos-to-fileset-symbols funcs))
+          (write-line ";; MACROS" f)
+          (terpri f)
+          (write-package-filesets f package 'ext:autoload-macro
+                                  (combos-to-fileset-symbols macs)))))))
+
+
+;;
+;; --- End of autoloads.lisp
+;;
+
+
 (defun %compile-system (&key output-path)
   (let ((*default-pathname-defaults* (pathname *lisp-home*))
         (*warn-on-redefinition* nil)
@@ -138,11 +272,9 @@
                            "arrays.lisp"
                            "assert.lisp"
                            "assoc.lisp"
-                           "autoloads.lisp"
                            "aver.lisp"
                            "bit-array-ops.lisp"
                            "boole.lisp"
-                           ;;"boot.lisp"
                            "butlast.lisp"
                            "byte-io.lisp"
                            "case.lisp"
@@ -190,7 +322,6 @@
                            "gui.lisp"
                            "inline.lisp"
                            "inspect.lisp"
-                           ;;"j.lisp"
                            "java.lisp"
                            "java-collections.lisp"
                            "known-functions.lisp"
@@ -242,7 +373,6 @@
                            "restart.lisp"
                            "revappend.lisp"
                            "rotatef.lisp"
-                           ;;"run-benchmarks.lisp"
                            "run-program.lisp"
                            "run-shell-command.lisp"
                            "runtime-class.lisp"
@@ -272,7 +402,20 @@
                            "with-package-iterator.lisp"
                            "with-slots.lisp"
                            "with-standard-io-syntax.lisp"
-                           "write-sequence.lisp")))
+                           "write-sequence.lisp"))
+      ;; With all files compiled, we need to use the symbols collected
+      ;; to generate and compile autoloads.lisp
+
+      ;; Generate the autoloads-gen file in the build directory in order
+      ;; not to clobber the source file - that should keep the system
+      ;; buildable
+
+      (format t "; Generating autoloads...~%")
+      (generate-autoloads output-path)
+      ;; Compile the file in the build directory instead of the one in the
+      ;; sources directory - the latter being for bootstrapping only.
+      (do-compile (merge-pathnames #p"autoloads-gen.lisp" output-path))
+      (do-compile "autoloads.lisp"))
     t))
 
 (defun compile-system (&key quit (zip t) (cls-ext *compile-file-class-extension*) (abcl-ext *compile-file-type*) output-path)

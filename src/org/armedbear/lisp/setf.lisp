@@ -58,9 +58,13 @@
                                  t))))
 
 (defun get-setf-expansion (form &optional environment)
-  (when (and (consp form)
-             (autoloadp (%car form)))
-    (resolve (%car form)))
+;  ### FIXME: resolving here causes functions to be loaded at
+;       Macro expansion time instead of upon their first call!
+;       Discussion to be had on the mailing list.
+;       EH 2012-08-01
+;  (when (and (consp form)
+;             (autoloadp (%car form)))
+;    (resolve (%car form)))
   (let (temp)
     (cond ((symbolp form)
            (multiple-value-bind (expansion expanded)
@@ -86,8 +90,12 @@
         (if (atom place)
             `(setq ,place ,value-form)
             (progn
-              (when (symbolp (%car place))
-                (resolve (%car place)))
+;              ### FIXME: resolving here causes functions to be loaded at
+;                   Macro expansion time instead of upon their first call!
+;                   Discussion to be had on the mailing list.
+;                   EH 2012-08-01
+;              (when (symbolp (%car place))
+;                (resolve (%car place)))
               (multiple-value-bind (dummies vals store-vars setter getter)
                   (get-setf-expansion place environment)
                 (let ((inverse (get (car place) 'setf-inverse)))

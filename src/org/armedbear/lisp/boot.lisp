@@ -146,6 +146,7 @@
 (defun nreverse (sequence)
   (sys::%nreverse sequence))
 
+(load-system-file "autoloads-gen")
 (load-system-file "autoloads")
 (load-system-file "early-defuns")
 (load-system-file "backquote")
