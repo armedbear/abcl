@@ -1024,7 +1024,7 @@ user.dir
 </target>
 
     <target name="abcl.release" 
-            depends="abcl.binary.tar,abcl.source.tar,abcl.binary.zip,abcl.source.zip">
+            depends="abcl.clean,abcl.binary.tar,abcl.source.tar,abcl.binary.zip,abcl.source.zip">
       <copy file="${abcl.jar.path}"
             tofile="${dist.dir}/abcl-${abcl.version}.jar"/>
       <copy file="${abcl-contrib.jar}"
