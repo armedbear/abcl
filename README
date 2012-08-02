@@ -1,9 +1,9 @@
 GENERAL INFORMATION
 ===================
 
-Armed Bear Common Lisp is an implementation of ANSI Common Lisp that
-runs in a Java virtual machine.  It compiles Lisp code directly to
-Java byte code.
+Armed Bear Common Lisp is a conforming implementation of ANSI Common
+Lisp that runs in a Java virtual machine.  It compiles Lisp code
+directly to Java byte code.
 
 
 LICENSE
@@ -47,7 +47,7 @@ following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 0.25.0
+    Armed Bear Common Lisp 1.1.0-dev
     Java 1.6.0_21 Sun Microsystems Inc.
     Java HotSpot(TM) Client VM
     Low-level initialization completed in 0.3 seconds.
@@ -64,13 +64,13 @@ preferred (and most tested way) is to being to use the Ant build tool:
 
 * Use the Ant build tool for Java environments.
 
-* Use the NetBeans 6.x IDE to open ABCL as a project.
+* Use the NetBeans [67].x IDE to open ABCL as a project.
 
 * Bootstrap ABCL using a Common Lisp implementation. Supported
   implementations for this process: SBCL, CMUCL, OpenMCL, Allegro
   CL, LispWorks or CLISP.
 
-In all cases you need a Java 5 or later JDK (JDK 1.5 and 1.6 have been
+In all cases you need a Java 5 or later JDK (JDK 1.[567] have been
 tested).  Just the JRE isn't enough, as you need the Java compiler
 ('javac') to compile the Java source of the ABCL implementation.
 
@@ -182,14 +182,14 @@ Because of this,
 
 ### Tests 
 
-ABCL 1.0.0 now fails only 18 out of 21708 total tests in the ANSI CL
+ABCL 1.1.0-dev now fails only 1[4-6] out of 21708 total tests in the ANSI CL
 test suite (derived from the tests originally written for GCL).
 
 Maxima's test suite runs without failures.
 
 ### Deficiencies 
 
-The MOP implementation is incomplete.
+The MOP implementation is incompletel untested.
 
 Patches to address any of the issues mentioned above will
 be gladly accepted.
@@ -201,10 +201,14 @@ Please report problems to the development mailing list:
 Have fun!
 
 On behalf of all ABCL development team and contributors,
-Erik Huelsmann
-Mark Evenson
-Alessio Stalla
-Ville Voutilaninen
 
-October 2011
+    Mark Evenson
+    Erik Huelsmann
+    Rudi Schlatte
+    Alessio Stalla
+    Ville Voutilaninen
+
+
+August 2012 
+
 
