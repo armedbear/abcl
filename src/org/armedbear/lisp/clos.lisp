@@ -1167,7 +1167,7 @@ Handle with care."
     `(let ((,value (getf ,plist ,key ,not-exist)))
        (if (eq ,not-exist ,value) ,init-form ,value))))
 
-(defun wrap-with-call-method-macro (gf args-var forms)
+(defun wrap-with-call-method-macro (gf args-var emf-form)
   `(macrolet
        ((call-method (method &optional next-method-list)
           `(funcall
@@ -1193,7 +1193,7 @@ Handle with care."
                      (compute-effective-method
                       ,gf (generic-function-method-combination ,gf)
                       (process-next-method-list next-method-list))))))
-     ,@forms))
+     ,emf-form))
 
 (defmacro with-args-lambda-list (args-lambda-list
                                  generic-function-symbol
@@ -1285,12 +1285,12 @@ Handle with care."
        (with-method-groups ,method-group-specs
            ,methods
          ,(if (null args-lambda-list)
-              `(let ((result (progn ,@forms)))
+              `(let ((emf-form (progn ,@forms)))
                  `(lambda (,',args-var)
                     ,(wrap-with-call-method-macro ,generic-function-symbol
-                                                  ',args-var (list result))))
+                                                  ',args-var emf-form)))
               `(lambda (,args-var)
-                 (let* ((result
+                 (let* ((emf-form
                          (with-args-lambda-list ,args-lambda-list
                              ,generic-function-symbol ,args-var
                            ,@forms))
@@ -1298,8 +1298,7 @@ Handle with care."
                          `(lambda (,',args-var) ;; ugly: we're reusing it
                           ;; to prevent calling gensym on every EMF invocation
                           ,(wrap-with-call-method-macro ,generic-function-symbol
-                                                        ',args-var
-                                                        (list result)))))
+                                                        ',args-var emf-form))))
                    (funcall function ,args-var))))))))
 
 (defun declarationp (expr)
