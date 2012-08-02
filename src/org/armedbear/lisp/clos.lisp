@@ -1130,7 +1130,7 @@ Handle with care."
 (defun extract-optional-part (lambda-list)
   (extract-specified-part '&optional lambda-list))
 
-(defun parse-define-method-combination-arguments-lambda-list (lambda-list)
+(defun parse-define-method-combination-args-lambda-list (lambda-list)
   ;; Define-method-combination Arguments Lambda Lists
   ;; http://www.lispworks.com/reference/HyperSpec/Body/03_dj.htm
   (let ((required (extract-required-part lambda-list))
@@ -1204,7 +1204,7 @@ Handle with care."
         (noptional (gensym))
         (rest-args (gensym)))
     (multiple-value-bind (whole required optional rest keys aux)
-        (parse-define-method-combination-arguments-lambda-list args-lambda-list)
+        (parse-define-method-combination-args-lambda-list args-lambda-list)
       `(let* ((,gf-lambda-list (slot-value ,generic-function-symbol 'sys::lambda-list))
               (,nrequired (length (extract-required-part ,gf-lambda-list)))
               (,noptional (length (extract-optional-part ,gf-lambda-list)))
