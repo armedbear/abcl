@@ -1113,9 +1113,13 @@ Handle with care."
                (if (eq (first lambda-list) key)
                    (cddr lambda-list)
                    lambda-list)))
-    (ldiff (skip '&environment (skip '&whole lambda-list))
-           (member-if #'(lambda (it) (member it lambda-list-keywords))
-                      lambda-list))))
+    (let* ((trimmed-lambda-list
+            (skip '&environment (skip '&whole lambda-list)))
+           (after-required-lambda-list
+            (member-if #'(lambda (it) (member it lambda-list-keywords))
+                       trimmed-lambda-list)))
+      (when after-required-lambda-list
+        (ldiff trimmed-lambda-list after-required-lambda-list)))))
 
 (defun extract-specified-part (key lambda-list)
   (case key
