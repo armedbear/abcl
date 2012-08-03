@@ -571,7 +571,7 @@
      ,@(mapcar (lambda (method)
                  `(call-method ,method))
                methods)
-     (list ,x (length ',others))))
+     (list ,x (length ,others))))
 
 (defgeneric dmc-test-mc.7 (x &rest others)
   (:method-combination dmc-test.7))
