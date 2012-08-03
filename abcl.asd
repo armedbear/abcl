@@ -40,6 +40,7 @@
                       #+abcl
                       (:file "mop-tests" :depends-on 
                              ("mop-tests-setup"))
+                      (:file "clos-tests")
                       (:file "file-system-tests")
                       #+abcl
                       (:file "jar-pathname" :depends-on 
