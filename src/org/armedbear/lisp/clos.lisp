@@ -1118,8 +1118,9 @@ Handle with care."
            (after-required-lambda-list
             (member-if #'(lambda (it) (member it lambda-list-keywords))
                        trimmed-lambda-list)))
-      (when after-required-lambda-list
-        (ldiff trimmed-lambda-list after-required-lambda-list)))))
+      (if after-required-lambda-list
+        (ldiff trimmed-lambda-list after-required-lambda-list)
+        trimmed-lambda-list))))
 
 (defun extract-specified-part (key lambda-list)
   (case key
