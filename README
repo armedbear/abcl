@@ -1,5 +1,8 @@
+Armed Bear Common Lisp README
+=============================
+
 GENERAL INFORMATION
-===================
+-------------------
 
 Armed Bear Common Lisp is a conforming implementation of ANSI Common
 Lisp that runs in a Java virtual machine.  It compiles Lisp code
@@ -194,21 +197,23 @@ The MOP implementation is incompletel untested.
 Patches to address any of the issues mentioned above will
 be gladly accepted.
 
+# Contact
+
 Please report problems to the development mailing list:
 
     <armedbear-devel@common-lisp.net>
 
 Have fun!
 
+# Authors 
+
 On behalf of all ABCL development team and contributors,
 
     Mark Evenson
     Erik Huelsmann
-    Rudi Schlatte
+    Rudolf Schlatte
     Alessio Stalla
-    Ville Voutilaninen
-
+    Ville Voutilainen
 
 August 2012 
-
 
