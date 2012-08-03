@@ -1164,8 +1164,8 @@ Handle with care."
   "Similar to getf except eval and return INIT-FORM if KEY has no value in PLIST."
   (let ((not-exist (gensym))
         (value (gensym)))
-    `(let ((,value (getf ,plist ,key ,not-exist)))
-       (if (eq ,not-exist ,value) ,init-form ,value))))
+    `(let ((,value (getf ,plist ,key ',not-exist)))
+       (if (eq ',not-exist ,value) ,init-form ,value))))
 
 (defun wrap-with-call-method-macro (gf args-var emf-form)
   `(macrolet
