@@ -921,6 +921,18 @@ ${basedir}/../cl-bench
       <java fork="true" dir="${basedir}"
             classpathref="abcl.classpath.dist"
             classname="org.armedbear.lisp.Main">
+        <!-- Run in 64bit mode-->
+        <jvmarg value="-d64"/> 
+
+        <!-- Enable JVM assertions -->
+        <jvmarg value="-ea"/>  
+        
+        <!-- (Possibly) unload classes when reference count reaches zero -->
+        <jvmarg value="-XX:+CMSClassUnloadingEnabled"/> 
+
+        <!-- Increase the size of the space used to store JVM class metadata. -->
+        <jvmarg value="-XX:MaxPermSize=768m"/> 
+
         <arg value="--noinit"/> 
         <arg value="--eval"/><arg value="(require (quote asdf))"/>
         <arg value="--eval"/><arg value="(asdf:operate (quote asdf:load-op) :abcl)"/>
