@@ -1249,13 +1249,69 @@ Handle with care."
                      method-group-specs))
          ,@forms))))
 
+(defun method-combination-type-lambda-with-args-emf
+    (&key args-lambda-list generic-function-symbol forms &allow-other-keys)
+  (multiple-value-bind
+        (whole required optional rest keys aux)
+      (parse-define-method-combination-args-lambda-list args-lambda-list)
+    (let ((gf-lambda-list (gensym))
+          (args-var (gensym))
+          (emf-form (gensym)))
+      `(let* ((,gf-lambda-list (slot-value ,generic-function-symbol
+                                           'sys::lambda-list))
+              (nreq (length (extract-required-part ,gf-lambda-list)))
+              (nopt (length (extract-optional-part ,gf-lambda-list)))
+              (,emf-form
+               (let* (,@(when whole
+                              `((,whole ',args-var)))
+                      ,@(when rest
+                              `((,rest `(subseq ,',args-var
+                                                (+ ,nreq ,nopt)))))
+                        ,@(loop for var in required
+                             and i upfrom 0
+                             collect `(,var (when (< ,i nreq)
+                                              `(nth ,,i ,',args-var))))
+                        ,@(loop for (var initform) in optional
+                             and i upfrom 0
+                             ;; check for excess parameters
+                             ;; only assign initform if the parameter
+                             ;; isn't in excess: the spec says explicitly
+                             ;; to bind those in excess to forms evaluating
+                             ;; to nil.
+                             ;; This leaves initforms to be used with
+                             ;; parameters not supplied in excess, but
+                             ;; not available arguments list
+                             ;;
+                             ;; Also, if specified, bind "supplied-p"
+                             collect `(,var (if (< ,i nopt)
+                                                `(nth ,(+ ,i nreq)
+                                                      ,',args-var)
+                                                ',initform)))
+                        ,@(loop for ((key var) initform) in keys
+                             ;; Same as optional parameters:
+                             ;; even though keywords can't be supplied in
+                             ;; excess, we should bind "supplied-p" in case
+                             ;; the key isn't supplied in the arguments list
+                             collect `(,var `(getk (subseq ,',args-var
+                                                           (+ ,nreq ,nopt)) ,',key
+                                                           ,',initform)))
+                        ,@(loop for (var initform) in aux
+                             collect `(,var ',initform)))
+                 ,@forms)))
+         `(lambda (,',args-var)
+            ;; This is the lambda which *is* the effective method
+            ;; hence gets called on every method invocation
+            ;; be as efficient in this method as we can be
+            ,(wrap-with-call-method-macro ,generic-function-symbol
+                                          ',args-var ,emf-form))))))
+
 (defun method-combination-type-lambda
-  (&key name lambda-list args-lambda-list generic-function-symbol
+  (&rest all-args
+   &key name lambda-list args-lambda-list generic-function-symbol
         method-group-specs declarations forms &allow-other-keys)
   (declare (ignore name))
   (let ((methods (gensym))
         (args-var (gensym))
-        (gf-lambda-list (gensym))
         (emf-form (gensym)))
     `(lambda (,generic-function-symbol ,methods ,@lambda-list)
        ;; This is the lambda which computes the effective method
@@ -1270,56 +1326,7 @@ Handle with care."
                     ;; be as efficient in this method as we can be
                     ,(wrap-with-call-method-macro ,generic-function-symbol
                                                   ',args-var ,emf-form)))
-              (multiple-value-bind
-                    (whole required optional rest keys aux)
-                  (parse-define-method-combination-args-lambda-list args-lambda-list)
-                `(let* ((,gf-lambda-list (slot-value ,generic-function-symbol
-                                                     'sys::lambda-list))
-                        (nreq (length (extract-required-part ,gf-lambda-list)))
-                        (nopt (length (extract-optional-part ,gf-lambda-list)))
-                        (,emf-form
-                         (let* (,@(when whole
-                                        `((,whole ',args-var)))
-                                ,@(when rest
-                                        `((,rest `(subseq ,',args-var
-                                                          (+ ,nreq ,nopt)))))
-                                ,@(loop for var in required
-                                     and i upfrom 0
-                                     collect `(,var (when (< ,i nreq)
-                                                      `(nth ,,i ,',args-var))))
-                                ,@(loop for (var initform) in optional
-                                     and i upfrom 0
-                                     ;; check for excess parameters
-                                     ;; only assign initform if the parameter
-                                     ;; isn't in excess: the spec says explicitly
-                                     ;; to bind those in excess to forms evaluating
-                                     ;; to nil.
-                                     ;; This leaves initforms to be used with
-                                     ;; parameters not supplied in excess, but
-                                     ;; not available arguments list
-                                     ;;
-                                     ;; Also, if specified, bind "supplied-p"
-                                     collect `(,var (if (< ,i nopt)
-                                                        `(nth ,(+ ,i nreq)
-                                                              ,',args-var)
-                                                        ',initform)))
-                                ,@(loop for ((key var) initform) in keys
-                                     ;; Same as optional parameters:
-                                     ;; even though keywords can't be supplied in
-                                     ;; excess, we should bind "supplied-p" in case
-                                     ;; the key isn't supplied in the arguments list
-                                     collect `(,var `(getk (subseq ,',args-var
-                                                                   (+ ,nreq ,nopt)) ,',key
-                                                                   ,',initform)))
-                                ,@(loop for (var initform) in aux
-                                     collect `(,var ',initform)))
-                           ,@forms)))
-                   `(lambda (,',args-var)
-                      ;; This is the lambda which *is* the effective method
-                      ;; hence gets called on every method invocation
-                      ;; be as efficient in this method as we can be
-                      ,(wrap-with-call-method-macro ,generic-function-symbol
-                                                    ',args-var ,emf-form)))))))))
+              (apply #'method-combination-type-lambda-with-args-emf all-args))))))
 
 (defun declarationp (expr)
   (and (consp expr) (eq (car expr) 'DECLARE)))
