@@ -256,7 +256,7 @@
     (vector-push-extend (list 'number p1 p2) s))
   (:method ((p1 string) (p2 t) s)
     (vector-push-extend (list 'string p1 p2) s))
-  (:method ((p1 t) (p2 t) s1) (vector-push-extend (list t p1 p2) s)))
+  (:method ((p1 t) (p2 t) s) (vector-push-extend (list t p1 p2) s)))
 
 (deftest dmc-test.5a
     (let ((v (make-array 0 :adjustable t :fill-pointer t)))
