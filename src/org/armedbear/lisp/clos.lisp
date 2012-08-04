@@ -1200,36 +1200,6 @@ Handle with care."
                       (process-next-method-list next-method-list))))))
      ,emf-form))
 
-(defmacro with-args-lambda-list (args-lambda-list
-                                 generic-function-symbol
-                                 gf-args-symbol
-                                 &body forms)
-  (let ((gf-lambda-list (gensym))
-        (nrequired (gensym))
-        (noptional (gensym))
-        (rest-args (gensym)))
-    (multiple-value-bind (whole required optional rest keys aux)
-        (parse-define-method-combination-args-lambda-list args-lambda-list)
-      `(let* ((,gf-lambda-list (slot-value ,generic-function-symbol 'sys::lambda-list))
-              (,nrequired (length (extract-required-part ,gf-lambda-list)))
-              (,noptional (length (extract-optional-part ,gf-lambda-list)))
-              (,rest-args (subseq ,gf-args-symbol (+ ,nrequired ,noptional)))
-              ,@(when whole `((,whole ,gf-args-symbol)))
-              ,@(loop for var in required and i upfrom 0
-                  collect `(,var (when (< ,i ,nrequired)
-                                   (nth ,i ,gf-args-symbol))))
-              ,@(loop for (var init-form) in optional and i upfrom 0
-                  collect
-                  `(,var (if (< ,i ,noptional)
-                             (nth (+ ,nrequired ,i) ,gf-args-symbol)
-                             ,init-form)))
-              ,@(when rest `((,rest ,rest-args)))
-              ,@(loop for ((key var) init-form) in keys and i upfrom 0
-                  collect `(,var (getk ,rest-args ',key ,init-form)))
-              ,@(loop for (var init-form) in aux and i upfrom 0
-                  collect `(,var ,init-form)))
-         ,@forms))))
-
 (defun assert-unambiguous-method-sorting (group-name methods)
   (let ((specializers (make-hash-table :test 'equal)))
     (dolist (method methods)
@@ -1284,27 +1254,72 @@ Handle with care."
         method-group-specs declarations forms &allow-other-keys)
   (declare (ignore name))
   (let ((methods (gensym))
-        (args-var (gensym)))
+        (args-var (gensym))
+        (gf-lambda-list (gensym))
+        (emf-form (gensym)))
     `(lambda (,generic-function-symbol ,methods ,@lambda-list)
+       ;; This is the lambda which computes the effective method
        ,@declarations
        (with-method-groups ,method-group-specs
            ,methods
          ,(if (null args-lambda-list)
-              `(let ((emf-form (progn ,@forms)))
+              `(let ((,emf-form (progn ,@forms)))
                  `(lambda (,',args-var)
+                    ;; This is the lambda which *is* the effective method
+                    ;; hence gets called on every method invocation
+                    ;; be as efficient in this method as we can be
                     ,(wrap-with-call-method-macro ,generic-function-symbol
-                                                  ',args-var emf-form)))
-              `(lambda (,args-var)
-                 (let* ((emf-form
-                         (with-args-lambda-list ,args-lambda-list
-                             ,generic-function-symbol ,args-var
-                           ,@forms))
-                        (function
-                         `(lambda (,',args-var) ;; ugly: we're reusing it
-                          ;; to prevent calling gensym on every EMF invocation
-                          ,(wrap-with-call-method-macro ,generic-function-symbol
-                                                        ',args-var emf-form))))
-                   (funcall function ,args-var))))))))
+                                                  ',args-var ,emf-form)))
+              (multiple-value-bind
+                    (whole required optional rest keys aux)
+                  (parse-define-method-combination-args-lambda-list args-lambda-list)
+                `(let* ((,gf-lambda-list (slot-value ,generic-function-symbol
+                                                     'sys::lambda-list))
+                        (nreq (length (extract-required-part ,gf-lambda-list)))
+                        (nopt (length (extract-optional-part ,gf-lambda-list)))
+                        (,emf-form
+                         (let* (,@(when whole
+                                        `((,whole ',args-var)))
+                                ,@(when rest
+                                        `((,rest `(subseq ,',args-var
+                                                          (+ ,nreq ,nopt)))))
+                                ,@(loop for var in required
+                                     and i upfrom 0
+                                     collect `(,var (when (< ,i nreq)
+                                                      `(nth ,,i ,',args-var))))
+                                ,@(loop for (var initform) in optional
+                                     and i upfrom 0
+                                     ;; check for excess parameters
+                                     ;; only assign initform if the parameter
+                                     ;; isn't in excess: the spec says explicitly
+                                     ;; to bind those in excess to forms evaluating
+                                     ;; to nil.
+                                     ;; This leaves initforms to be used with
+                                     ;; parameters not supplied in excess, but
+                                     ;; not available arguments list
+                                     ;;
+                                     ;; Also, if specified, bind "supplied-p"
+                                     collect `(,var (if (< ,i nopt)
+                                                        `(nth ,(+ ,i nreq)
+                                                              ,',args-var)
+                                                        ',initform)))
+                                ,@(loop for ((key var) initform) in keys
+                                     ;; Same as optional parameters:
+                                     ;; even though keywords can't be supplied in
+                                     ;; excess, we should bind "supplied-p" in case
+                                     ;; the key isn't supplied in the arguments list
+                                     collect `(,var `(getk (subseq ,',args-var
+                                                                   (+ ,nreq ,nopt)) ,',key
+                                                                   ,',initform)))
+                                ,@(loop for (var initform) in aux
+                                     collect `(,var ',initform)))
+                           ,@forms)))
+                   `(lambda (,',args-var)
+                      ;; This is the lambda which *is* the effective method
+                      ;; hence gets called on every method invocation
+                      ;; be as efficient in this method as we can be
+                      ,(wrap-with-call-method-macro ,generic-function-symbol
+                                                    ',args-var ,emf-form)))))))))
 
 (defun declarationp (expr)
   (and (consp expr) (eq (car expr) 'DECLARE)))
