@@ -1261,7 +1261,7 @@ Handle with care."
                            (gensym)))
            (binding-forms (gensym))
            (needs-args-len-var (gensym))
-          (emf-form (gensym)))
+           (emf-form (gensym)))
       `(let* ((,gf-lambda-list (slot-value ,generic-function-symbol
                                            'sys::lambda-list))
               (nreq (length (extract-required-part ,gf-lambda-list)))
@@ -1280,8 +1280,7 @@ Handle with care."
                                               `(nth ,,i ,',args-var))))
                         ,@(loop for (var initform supplied-var) in optional
                              and i upfrom 0
-                             for supplied-binding = (or supplied-var
-                                                        (when initform (gensym)))
+                             for supplied-binding = (or supplied-var (gensym))
                              for var-binding = (gensym)
                              ;; check for excess parameters
                              ;; only assign initform if the parameter
@@ -1293,7 +1292,6 @@ Handle with care."
                              ;; not available in the arguments list
                              ;;
                              ;; Also, if specified, bind "supplied-p"
-                             if supplied-binding
                              collect `(,supplied-binding
                                        (when (< ,i nopt)
                                          (setq ,needs-args-len-var t)
