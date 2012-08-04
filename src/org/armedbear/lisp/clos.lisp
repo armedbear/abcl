@@ -1254,13 +1254,20 @@ Handle with care."
   (multiple-value-bind
         (whole required optional rest keys aux)
       (parse-define-method-combination-args-lambda-list args-lambda-list)
-    (let ((gf-lambda-list (gensym))
-          (args-var (gensym))
+    (let* ((gf-lambda-list (gensym))
+           (args-var (gensym))
+           (args-len-var (when (or (some #'second optional)
+                                   (some #'second keys))
+                           (gensym)))
+           (binding-forms (gensym))
+           (needs-args-len-var (gensym))
           (emf-form (gensym)))
       `(let* ((,gf-lambda-list (slot-value ,generic-function-symbol
                                            'sys::lambda-list))
               (nreq (length (extract-required-part ,gf-lambda-list)))
               (nopt (length (extract-optional-part ,gf-lambda-list)))
+              (,binding-forms)
+              (,needs-args-len-var)
               (,emf-form
                (let* (,@(when whole
                               `((,whole ',args-var)))
@@ -1271,22 +1278,37 @@ Handle with care."
                              and i upfrom 0
                              collect `(,var (when (< ,i nreq)
                                               `(nth ,,i ,',args-var))))
-                        ,@(loop for (var initform) in optional
+                        ,@(loop for (var initform supplied-var) in optional
                              and i upfrom 0
+                             for supplied-binding = (or supplied-var
+                                                        (when initform (gensym)))
+                             for var-binding = (gensym)
                              ;; check for excess parameters
                              ;; only assign initform if the parameter
                              ;; isn't in excess: the spec says explicitly
-                             ;; to bind those in excess to forms evaluating
+                             ;; to bind parameters in excess to forms evaluating
                              ;; to nil.
                              ;; This leaves initforms to be used with
                              ;; parameters not supplied in excess, but
-                             ;; not available arguments list
+                             ;; not available in the arguments list
                              ;;
                              ;; Also, if specified, bind "supplied-p"
-                             collect `(,var (if (< ,i nopt)
-                                                `(nth ,(+ ,i nreq)
-                                                      ,',args-var)
-                                                ',initform)))
+                             if supplied-binding
+                             collect `(,supplied-binding
+                                       (when (< ,i nopt)
+                                         (setq ,needs-args-len-var t)
+                                         (push `(,',supplied-binding
+                                                 (< ,(+ ,i nreq) ,',args-len-var))
+                                               ,binding-forms)
+                                         ',supplied-binding))
+                             collect `(,var (when (< ,i nopt)
+                                              (push `(,',var-binding
+                                                      (if ,',supplied-binding
+                                                          (nth ,(+ ,i nreq)
+                                                               ,',args-var)
+                                                          ,',initform))
+                                                    ,binding-forms)
+                                              ',var-binding)))
                         ,@(loop for ((key var) initform) in keys
                              ;; Same as optional parameters:
                              ;; even though keywords can't be supplied in
@@ -1296,14 +1318,24 @@ Handle with care."
                                                            (+ ,nreq ,nopt)) ,',key
                                                            ,',initform)))
                         ,@(loop for (var initform) in aux
-                             collect `(,var ',initform)))
+                             for var-binding = (gensym)
+                             collect `(,var (progn
+                                              (push '(,var-binding ,initform)
+                                                    ,binding-forms)
+                                              ',var-binding))))
                  ,@forms)))
          `(lambda (,',args-var)
-            ;; This is the lambda which *is* the effective method
-            ;; hence gets called on every method invocation
-            ;; be as efficient in this method as we can be
-            ,(wrap-with-call-method-macro ,generic-function-symbol
-                                          ',args-var ,emf-form))))))
+            ;; set up bindings to ensure the expressions to which the
+            ;; variables of the arguments option have been bound are
+            ;; evaluated exactly once.
+            (let* (,@(when ,needs-args-len-var
+                           `((,',args-len-var (length ,',args-var))))
+                   ,@(reverse ,binding-forms))
+              ;; This is the lambda which *is* the effective method
+              ;; hence gets called on every method invocation
+              ;; be as efficient in this method as we can be
+              ,(wrap-with-call-method-macro ,generic-function-symbol
+                                            ',args-var ,emf-form)))))))
 
 (defun method-combination-type-lambda
   (&rest all-args
