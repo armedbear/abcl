@@ -355,7 +355,7 @@
   (:method (x) x))
 
 (deftest dmc-test-args-with-whole.3a
-    T
+    (dmc-test-args-with-whole.3a T)
   T)
 
 (define-method-combination dmc-test-args-with-whole.3b ()
@@ -370,7 +370,7 @@
   (:method (x) x))
 
 (deftest dmc-test-args-with-whole.3b
-    T
+    (dmc-test-args-with-whole.3b T)
   T)
 
 (define-method-combination dmc-test-args-with-whole.3c ()
@@ -385,7 +385,7 @@
   (:method (x) x))
 
 (deftest dmc-test-args-with-whole.3c
-    T
+    (dmc-test-args-with-whole.3c T)
   T)
 
 
@@ -401,7 +401,7 @@
   (:method (x) x))
 
 (deftest dmc-test-args-with-whole.3d
-    T
+    (dmc-test-args-with-whole.3d T)
   T)
 
 (define-method-combination dmc-test-args-with-whole.4 ()
@@ -416,7 +416,7 @@
   (:method (x) x))
 
 (deftest dmc-test-args-with-whole.4
-    T
+    (dmc-test-args-with-whole.4 T)
   T)
 
 (define-method-combination dmc-test-args-with-whole.5 ()
@@ -431,6 +431,93 @@
   (:method (x) x))
 
 (deftest dmc-test-args-with-whole.5
-    T
+    (dmc-test-args-with-whole.5 T)
   T)
 
+(define-method-combination dmc-test-args-with-optional.1 ()
+  ((methods ()))
+  (:arguments &optional a)
+  `(progn ,@(mapcar (lambda (method) `(call-method ,method))
+                    methods)
+          ,a))
+
+(defgeneric dmc-test-args-with-optional.1 (x &optional b)
+  (:method-combination dmc-test-args-with-optional.1)
+  (:method (x &optional b) (progn x b)))
+
+(deftest dmc-test-args-with-optional.1a
+    (dmc-test-args-with-optional.1 T)
+  nil)
+
+(deftest dmc-test-args-with-optional.1b
+    (dmc-test-args-with-optional.1 T T)
+  T)
+
+(define-method-combination dmc-test-args-with-optional.2 ()
+  ((methods *))
+  (:arguments &optional (a :default))
+  (print `(progn ,@(mapcar (lambda (method) `(call-method ,method))
+                           methods)
+                 ,a)))
+
+(defgeneric dmc-test-args-with-optional.2 (x &optional b)
+  (:method-combination dmc-test-args-with-optional.2)
+  (:method (x &optional b) (progn x b)))
+
+(deftest dmc-test-args-with-optional.2a
+    :documentation "TODO"
+    (dmc-test-args-with-optional.2 T)
+  :default)
+
+(deftest dmc-test-args-with-optional.2b
+    :documentation "Describe what the test does here."
+    (dmc-test-args-with-optional.2 T T)
+  T)
+
+(define-method-combination dmc-test-args-with-optional.3 ()
+  ((methods *))
+  (:arguments &optional (a :default))
+  (print `(progn ,@(mapcar (lambda (method) `(call-method ,method))
+                           methods)
+                 ,a)))
+
+(defgeneric dmc-test-args-with-optional.3 (x)
+  (:method-combination dmc-test-args-with-optional.3)
+  (:method (x) (progn x)))
+
+(deftest dmc-test-args-with-optional.3
+    :documentation "TODO"
+    (dmc-test-args-with-optional.3 T)
+  nil)
+
+
+(define-method-combination dmc-test-args-with-optional.4 ()
+  ((methods ()))
+  (:arguments &optional (a :default sup-p))
+  `(progn ,@(mapcar (lambda (method) `(call-method ,method))
+                    methods)
+          (values ,a ,sup-p)))
+
+(defgeneric dmc-test-args-with-optional.4a (x &optional b)
+  (:method-combination dmc-test-args-with-optional.4)
+  (:method (x &optional b) (progn x b)))
+
+(deftest dmc-test-args-with-optional.4a
+    (dmc-test-args-with-optional.4a T)
+  :default
+  nil)
+
+(deftest dmc-test-args-with-optional.4b
+    (dmc-test-args-with-optional.4a T T)
+  T
+  T)
+
+(defgeneric dmc-test-args-with-optional.4c (x)
+  (:method-combination dmc-test-args-with-optional.4)
+  (:method (x) (progn x)))
+
+(deftest dmc-test-args-with-optional.4c
+    :documentation "TODO"
+    (dmc-test-args-with-optional.4c T)
+  nil
+  nil)
