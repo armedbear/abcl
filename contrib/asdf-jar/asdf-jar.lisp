@@ -140,22 +140,4 @@ conventions."
      `(:output-translations (,(merge-pathnames "/**/*.*" jar)) 
                             :inherit-configuration))))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-	
-
-  
-  
+(provide :asdf-jar)
