@@ -1165,13 +1165,6 @@ Handle with care."
                            `(,spec nil)))
                     aux))))
 
-(defmacro getk (plist key init-form)
-  "Similar to getf except eval and return INIT-FORM if KEY has no value in PLIST."
-  (let ((not-exist (gensym))
-        (value (gensym)))
-    `(let ((,value (getf ,plist ,key ',not-exist)))
-       (if (eq ',not-exist ,value) ,init-form ,value))))
-
 (defun wrap-with-call-method-macro (gf args-var emf-form)
   `(macrolet
        ((call-method (method &optional next-method-list)
@@ -1275,16 +1268,21 @@ Handle with care."
                (let* (,@(when whole
                               `((,whole ',args-var)))
                       ,@(when rest
+                              ;; ### TODO: use a fresh symbol for the rest
+                              ;;   binding being generated and pushed into binding-forms
                               `((,rest (progn
                                          (push `(,',rest
                                                  (subseq ,',args-var
                                                           ,(+ nreq nopt)))
                                                ,binding-forms)
                                          ',rest))))
-                        ,@(loop for var in required
-                             and i upfrom 0
+                        ,@(loop for var in required and i upfrom 0
+                               for var-binding = (gensym)
                              collect `(,var (when (< ,i nreq)
-                                              `(nth ,,i ,',args-var))))
+                                              (push `(,',var-binding
+                                                      (nth ,,i ,',args-var))
+                                                    ,binding-forms)
+                                              ',var-binding)))
                         ,@(loop for (var initform supplied-var) in optional
                              and i upfrom 0
                              for supplied-binding = (or supplied-var (gensym))
@@ -1302,6 +1300,8 @@ Handle with care."
                              collect `(,supplied-binding
                                        (when (< ,i nopt)
                                          (setq ,needs-args-len-var t)
+                              ;; ### TODO: use a fresh symbol for the supplied binding
+                              ;;   binding being generated and pushed into binding-forms
                                          (push `(,',supplied-binding
                                                  (< ,(+ ,i nreq) ,',args-len-var))
                                                ,binding-forms)
@@ -1323,15 +1323,19 @@ Handle with care."
                              ;; the key isn't supplied in the arguments list
                              collect `(,supplied-binding
                                        (progn
+                              ;; ### TODO: use a fresh symbol for the rest
+                              ;;   binding being generated and pushed into binding-forms
                                          (push `(,',supplied-binding
-                                                 (member ,',key ,',rest)))
+                                                 (member ,',key ,',rest))
+                                               ,binding-forms)
                                          ',supplied-binding))
                              collect `(,var (progn
                                               (push `(,',var-binding
                                                       (if ,',supplied-binding
                                                           (cadr ,',supplied-binding)
                                                           ,',initform))
-                                                    ,binding-forms))))
+                                                    ,binding-forms)
+                                              ',var-binding)))
                         ,@(loop for (var initform) in aux
                              for var-binding = (gensym)
                              collect `(,var (progn
