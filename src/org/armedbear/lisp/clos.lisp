@@ -1254,6 +1254,9 @@ Handle with care."
   (multiple-value-bind
         (whole required optional rest keys aux)
       (parse-define-method-combination-args-lambda-list args-lambda-list)
+    (unless rest
+      (when keys
+        (setf rest (gensym))))
     (let* ((gf-lambda-list (gensym))
            (args-var (gensym))
            (args-len-var (when (or (some #'second optional)
@@ -1272,8 +1275,12 @@ Handle with care."
                (let* (,@(when whole
                               `((,whole ',args-var)))
                       ,@(when rest
-                              `((,rest `(subseq ,',args-var
-                                                (+ ,nreq ,nopt)))))
+                              `((,rest (progn
+                                         (push `(,',rest
+                                                 (subseq ,',args-var
+                                                          ,(+ nreq nopt)))
+                                               ,binding-forms)
+                                         ',rest))))
                         ,@(loop for var in required
                              and i upfrom 0
                              collect `(,var (when (< ,i nreq)
@@ -1307,14 +1314,24 @@ Handle with care."
                                                           ,',initform))
                                                     ,binding-forms)
                                               ',var-binding)))
-                        ,@(loop for ((key var) initform) in keys
+                        ,@(loop for ((key var) initform supplied-var) in keys
+                             for supplied-binding = (or supplied-var (gensym))
+                             for var-binding = (gensym)
                              ;; Same as optional parameters:
                              ;; even though keywords can't be supplied in
                              ;; excess, we should bind "supplied-p" in case
                              ;; the key isn't supplied in the arguments list
-                             collect `(,var `(getk (subseq ,',args-var
-                                                           (+ ,nreq ,nopt)) ,',key
-                                                           ,',initform)))
+                             collect `(,supplied-binding
+                                       (progn
+                                         (push `(,',supplied-binding
+                                                 (member ,',key ,',rest)))
+                                         ',supplied-binding))
+                             collect `(,var (progn
+                                              (push `(,',var-binding
+                                                      (if ,',supplied-binding
+                                                          (cadr ,',supplied-binding)
+                                                          ,',initform))
+                                                    ,binding-forms))))
                         ,@(loop for (var initform) in aux
                              for var-binding = (gensym)
                              collect `(,var (progn
