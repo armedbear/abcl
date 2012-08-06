@@ -1723,32 +1723,35 @@ compare the method combination name to the symbol 'standard.")
 (defun ensure-generic-function (function-name
                                 &rest all-keys
                                 &key
-                                lambda-list
+                                (lambda-list nil lambda-list-supplied-p)
                                 (generic-function-class +the-standard-generic-function-class+)
                                 (method-class +the-standard-method-class+)
                                 (method-combination +the-standard-method-combination+ mc-p)
                                 argument-precedence-order
-                                documentation
+                                (documentation nil documentation-supplied-p)
                                 &allow-other-keys)
   (setf all-keys (copy-list all-keys))  ; since we modify it
   (remf all-keys :generic-function-class)
   (let ((gf (find-generic-function function-name nil)))
     (if gf
         (progn
-          (unless (or (null (generic-function-methods gf))
-                      (lambda-lists-congruent-p lambda-list (generic-function-lambda-list gf)))
-            (error 'simple-error
-                   :format-control "The lambda list ~S is incompatible with the existing methods of ~S."
-                   :format-arguments (list lambda-list gf)))
-          (setf (generic-function-lambda-list gf) lambda-list)
-          (setf (generic-function-documentation gf) documentation)
-          (let* ((plist (analyze-lambda-list lambda-list))
-                 (required-args (getf plist ':required-args)))
-            (%set-gf-required-args gf required-args)
-            (%set-gf-optional-args gf (getf plist :optional-args))
-            (setf (generic-function-argument-precedence-order gf)
-                  (or argument-precedence-order required-args))
-            (finalize-standard-generic-function gf))
+          (when lambda-list-supplied-p
+            (unless (or (null (generic-function-methods gf))
+                        (lambda-lists-congruent-p lambda-list
+                                                  (generic-function-lambda-list gf)))
+              (error 'simple-error
+                     :format-control "The lambda list ~S is incompatible with the existing methods of ~S."
+                     :format-arguments (list lambda-list gf)))
+            (setf (generic-function-lambda-list gf) lambda-list)
+            (let* ((plist (analyze-lambda-list lambda-list))
+                   (required-args (getf plist ':required-args)))
+              (%set-gf-required-args gf required-args)
+              (%set-gf-optional-args gf (getf plist :optional-args))))
+          (setf (generic-function-argument-precedence-order gf)
+                (or argument-precedence-order (gf-required-args gf)))
+          (when documentation-supplied-p
+            (setf (generic-function-documentation gf) documentation))
+          (finalize-standard-generic-function gf)
           gf)
         (progn
           (when (and (null *clos-booting*)
@@ -4486,14 +4489,15 @@ or T when any keyword is acceptable due to presence of
                                                    name
                                                  &allow-other-keys))
 
-(defmethod ensure-generic-function-using-class ((generic-function generic-function)
-                                                function-name
-                                                &rest all-keys
-                                                &key (generic-function-class +the-standard-generic-function-class+)
-                                                  lambda-list
-                                                  (method-class +the-standard-method-class+)
-                                                  (method-combination +the-standard-method-combination+)
-                                                &allow-other-keys)
+(defmethod ensure-generic-function-using-class
+    ((generic-function generic-function)
+     function-name
+     &rest all-keys
+     &key (generic-function-class +the-standard-generic-function-class+)
+     (lambda-list nil lambda-list-supplied-p)
+     (method-class +the-standard-method-class+)
+     (method-combination +the-standard-method-combination+)
+     &allow-other-keys)
   (setf all-keys (copy-list all-keys))  ; since we modify it
   (remf all-keys :generic-function-class)
   (unless (classp generic-function-class)
@@ -4502,10 +4506,12 @@ or T when any keyword is acceptable due to presence of
   (unless (eq generic-function-class (class-of generic-function))
     (error "The class ~S is incompatible with the existing class (~S) of ~S."
            generic-function-class (class-of generic-function) generic-function))
-  (unless (or (null (generic-function-methods generic-function))
-              (lambda-lists-congruent-p lambda-list (generic-function-lambda-list generic-function)))
-    (error "The lambda list ~S is incompatible with the existing methods of ~S."
-           lambda-list generic-function))
+  (when lambda-list-supplied-p
+    (unless (or (null (generic-function-methods generic-function))
+                (lambda-lists-congruent-p lambda-list
+                                          (generic-function-lambda-list generic-function)))
+      (error "The lambda list ~S is incompatible with the existing methods of ~S."
+             lambda-list generic-function)))
   (unless (or (null (generic-function-methods generic-function))
               (eq method-class (generic-function-method-class generic-function)))
     (error "The method class ~S is incompatible with the existing methods of ~S."
