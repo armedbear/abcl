@@ -579,7 +579,7 @@ public final class SingleFloat extends LispObject
 
         if (value != value) {
             if (printReadably)
-                return "#.(progn \"Comment: create a NaN.\" (/ 0.0s0 0.0s0))";
+                return "#.(CL:PROGN \"Comment: create a NaN.\" (CL:/ 0.0s0 0.0s0))";
             else
                 return unreadableString("SINGLE-FLOAT NaN", false);
         }

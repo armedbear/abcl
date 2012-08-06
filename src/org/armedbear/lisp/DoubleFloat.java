@@ -590,7 +590,7 @@ public final class DoubleFloat extends LispObject
 
         if (value != value) {
             if (printReadably)
-                return "#.(progn \"Comment: create a NaN.\" (/ 0.0d0 0.0d0))";
+                return "#.(CL:PROGN \"Comment: create a NaN.\" (CL:/ 0.0d0 0.0d0))";
             else
                 return unreadableString("DOUBLE-FLOAT NaN", false);
         }
