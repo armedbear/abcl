@@ -1191,7 +1191,7 @@ extend the class any further."
 
 (defun serialize-package (pkg)
   "Generate code to restore a serialized package."
-  (emit 'ldc (pool-string (concatenate 'string "#.(FIND-PACKAGE \""
+  (emit 'ldc (pool-string (concatenate 'string "#.(CL:FIND-PACKAGE \""
                                        (package-name pkg) "\")")))
   (emit-invokestatic +lisp+ "readObjectFromString"
                      (list +java-string+) +lisp-object+))

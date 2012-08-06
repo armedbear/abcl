@@ -865,7 +865,7 @@ public final class Package extends LispObject implements java.io.Serializable
     public String printObject()
     {
         if (_PRINT_FASL_.symbolValue() != NIL && name != null) {
-            StringBuilder sb = new StringBuilder("#.(FIND-PACKAGE \"");
+            StringBuilder sb = new StringBuilder("#.(CL:FIND-PACKAGE \"");
             sb.append(name);
             sb.append("\")");
             return sb.toString();
