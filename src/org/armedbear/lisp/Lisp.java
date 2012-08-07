@@ -2324,8 +2324,8 @@ public final class Lisp
   static
   {
     final String osName = System.getProperty("os.name");
-    final String version = System.getProperty("java.version");
-    final String os_arch = System.getProperty("os.arch");
+    final String javaVersion = System.getProperty("java.version");
+    final String osArch = System.getProperty("os.arch");
 
     // Common features
     LispObject featureList = list(Keyword.ARMEDBEAR, Keyword.ABCL,
@@ -2361,22 +2361,21 @@ public final class Lisp
     else if (osName.startsWith("Windows"))
       featureList = new Cons(Keyword.WINDOWS, featureList);
     // Java version
-    if (version.startsWith("1.5")) {
+    if (javaVersion.startsWith("1.5")) {
         featureList = new Cons(Keyword.JAVA_1_5, featureList);
-    } else if (version.startsWith("1.6")) {
+    } else if (javaVersion.startsWith("1.6")) {
         featureList = new Cons(Keyword.JAVA_1_6, featureList);
-    } else if (version.startsWith("1.7")) {
+    } else if (javaVersion.startsWith("1.7")) {
         featureList = new Cons(Keyword.JAVA_1_7, featureList);
     }
     // Processor architecture
-    if(os_arch != null) {
-      if (os_arch.equals("amd64"))
+    if(osArch != null) {
+      if (osArch.equals("amd64"))
         featureList = new Cons(Keyword.X86_64, featureList);
-      else if (os_arch.equals("x86"))
+      else if (osArch.equals("x86"))
         featureList = new Cons(Keyword.X86, featureList);
     }
-    Symbol.FEATURES.initializeSpecial(NIL);
-    Symbol.FEATURES.setSymbolValue(featureList);
+    Symbol.FEATURES.initializeSpecial(featureList);
   }
 
   static
