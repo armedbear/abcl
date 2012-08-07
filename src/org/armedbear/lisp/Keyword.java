@@ -104,6 +104,7 @@ public final class Keyword
         LOAD_TOPLEVEL       = internKeyword("LOAD-TOPLEVEL"),
         LOCAL               = internKeyword("LOCAL"),
         LONG                = internKeyword("LONG"),
+        MOP                 = internKeyword("MOP"),
         NAME                = internKeyword("NAME"),
         NETBSD              = internKeyword("NETBSD"),
         NEW_VERSION         = internKeyword("NEW"),

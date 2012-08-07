@@ -2323,118 +2323,60 @@ public final class Lisp
   // ### *features*
   static
   {
-    Symbol.FEATURES.initializeSpecial(NIL);
-    String osName = System.getProperty("os.name");
+    final String osName = System.getProperty("os.name");
+    final String version = System.getProperty("java.version");
+    final String os_arch = System.getProperty("os.arch");
+
+    // Common features
+    LispObject featureList = list(Keyword.ARMEDBEAR, Keyword.ABCL,
+                                  Keyword.COMMON_LISP, Keyword.ANSI_CL,
+                                  Keyword.CDR6, Keyword.MOP);
+    // OS type
     if (osName.startsWith("Linux"))
-      {
-        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
-                                             Keyword.ABCL,
-                                             Keyword.COMMON_LISP,
-                                             Keyword.ANSI_CL,
-                                             Keyword.UNIX,
-                                             Keyword.LINUX,
-                                             Keyword.CDR6));
-      }
+      featureList = Primitives.APPEND.execute(list(Keyword.UNIX,
+                                                  Keyword.LINUX),
+                                             featureList);
     else if (osName.startsWith("SunOS"))
-      {
-        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
-                                             Keyword.ABCL,
-                                             Keyword.COMMON_LISP,
-                                             Keyword.ANSI_CL,
-                                             Keyword.UNIX,
-                                             Keyword.SUNOS,
-                                             Keyword.SOLARIS,
-                                             Keyword.CDR6));
-      }
+      featureList = Primitives.APPEND.execute(list(Keyword.UNIX,
+                                                   Keyword.SUNOS,
+                                                   Keyword.SOLARIS),
+                                              featureList);
     else if (osName.startsWith("Mac OS X") ||
              osName.startsWith("Darwin"))
-      {
-        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
-                                             Keyword.ABCL,
-                                             Keyword.COMMON_LISP,
-                                             Keyword.ANSI_CL,
-                                             Keyword.UNIX,
-                                             Keyword.DARWIN,
-                                             Keyword.CDR6));
-      }
+      featureList = Primitives.APPEND.execute(list(Keyword.UNIX,
+                                                   Keyword.DARWIN),
+                                              featureList);
     else if (osName.startsWith("FreeBSD"))
-      {
-        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
-                                             Keyword.ABCL,
-                                             Keyword.COMMON_LISP,
-                                             Keyword.ANSI_CL,
-                                             Keyword.UNIX,
-                                             Keyword.FREEBSD,
-                                             Keyword.CDR6));
-      }
+      featureList = Primitives.APPEND.execute(list(Keyword.UNIX,
+                                                   Keyword.FREEBSD),
+                                              featureList);
     else if (osName.startsWith("OpenBSD"))
-      {
-        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
-                                             Keyword.ABCL,
-                                             Keyword.COMMON_LISP,
-                                             Keyword.ANSI_CL,
-                                             Keyword.UNIX,
-                                             Keyword.OPENBSD,
-                                             Keyword.CDR6));
-      }
+      featureList = Primitives.APPEND.execute(list(Keyword.UNIX,
+                                                   Keyword.OPENBSD),
+                                              featureList);
     else if (osName.startsWith("NetBSD"))
-      {
-        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
-                                             Keyword.ABCL,
-                                             Keyword.COMMON_LISP,
-                                             Keyword.ANSI_CL,
-                                             Keyword.UNIX,
-                                             Keyword.NETBSD,
-                                             Keyword.CDR6));
-      }
+      featureList = Primitives.APPEND.execute(list(Keyword.UNIX,
+                                                   Keyword.NETBSD),
+                                              featureList);
     else if (osName.startsWith("Windows"))
-      {
-        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
-                                             Keyword.ABCL,
-                                             Keyword.COMMON_LISP,
-                                             Keyword.ANSI_CL,
-                                             Keyword.WINDOWS,
-                                             Keyword.CDR6));
-      }
-    else
-      {
-        Symbol.FEATURES.setSymbolValue(list(Keyword.ARMEDBEAR,
-                                             Keyword.ABCL,
-                                             Keyword.COMMON_LISP,
-                                             Keyword.ANSI_CL,
-                                             Keyword.CDR6));
-      }
-  }
-  static
-  {
-    final String version = System.getProperty("java.version");
-    if (version.startsWith("1.5"))
-      {
-        Symbol.FEATURES.setSymbolValue(new Cons(Keyword.JAVA_1_5,
-                                                Symbol.FEATURES.getSymbolValue()));
-      }
-    else if (version.startsWith("1.6"))
-      {
-        Symbol.FEATURES.setSymbolValue(new Cons(Keyword.JAVA_1_6,
-                                                Symbol.FEATURES.getSymbolValue()));
-      }
-    else if (version.startsWith("1.7"))
-      {
-        Symbol.FEATURES.setSymbolValue(new Cons(Keyword.JAVA_1_7,
-                                                Symbol.FEATURES.getSymbolValue()));
-      }
-  }
-  static
-  {
-    String os_arch = System.getProperty("os.arch");
+      featureList = new Cons(Keyword.WINDOWS, featureList);
+    // Java version
+    if (version.startsWith("1.5")) {
+        featureList = new Cons(Keyword.JAVA_1_5, featureList);
+    } else if (version.startsWith("1.6")) {
+        featureList = new Cons(Keyword.JAVA_1_6, featureList);
+    } else if (version.startsWith("1.7")) {
+        featureList = new Cons(Keyword.JAVA_1_7, featureList);
+    }
+    // Processor architecture
     if(os_arch != null) {
       if (os_arch.equals("amd64"))
-        Symbol.FEATURES.setSymbolValue(new Cons(Keyword.X86_64,
-                                                Symbol.FEATURES.getSymbolValue()));
+        featureList = new Cons(Keyword.X86_64, featureList);
       else if (os_arch.equals("x86"))
-        Symbol.FEATURES.setSymbolValue(new Cons(Keyword.X86,
-                                                Symbol.FEATURES.getSymbolValue()));
+        featureList = new Cons(Keyword.X86, featureList);
     }
+    Symbol.FEATURES.initializeSpecial(NIL);
+    Symbol.FEATURES.setSymbolValue(featureList);
   }
 
   static
