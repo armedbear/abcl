@@ -45,13 +45,12 @@ Initialized via SYSTEM:FIND-CONTRIB")
                                                   :directory '(:absolute :wild)
                                                   :name :wild
                                                   :type "asd")))
-                (let ((asdf-directory 
-                       (make-pathname :defaults asdf-file :name nil :type nil)))
-                  (format verbose "Adding ~A to ASDF.~%" asdf-directory)
-                  (push asdf-directory asdf:*central-registry*)))
+                (let ((asdf-directory (make-pathname :defaults asdf-file :name nil :type nil)))
+                  (unless (find asdf-directory asdf:*central-registry* :test #'equal)
+                    (push asdf-directory asdf:*central-registry*)
+                    (format verbose "~&Added ~A to ASDF.~&" asdf-directory))))
               *abcl-contrib*)
         (format verbose "Failed to find abcl-contrib at '~A'." abcl-contrib))))))
-
 
 (when (find-contrib :verbose t)
   (provide :abcl-contrib))
