@@ -492,7 +492,10 @@
 	  ((symbolp place)
            (multiple-value-bind
                  (expansion expanded)
-               (expand-macro place)
+               ;; Expand once in case the form expands
+               ;; into something that needs special
+               ;; SETF treatment
+               (macroexpand-1 place)
              (if expanded
                  (precompile1 (list* 'SETF expansion
                                      (cddr form)))
@@ -511,7 +514,10 @@
                (val (%cadr args)))
           (multiple-value-bind
                 (expansion expanded)
-              (expand-macro sym)
+              ;; Expand once in case the form expands
+              ;; into something that needs special
+              ;; SETF treatment
+              (macroexpand-1 sym)
             (if expanded
                 (precompile1 (list 'SETF expansion val))
                 (list 'SETQ sym (precompile1 val)))))
