@@ -48,17 +48,26 @@
   "Generates code that can be used to expand a named local function inline.
 It can work either per-function (no args provided) or per-call."
   (if args-p
-      (expand-function-call-inline nil lambda-list
-                                   (copy-tree `((block ,name ,@body)))
-                                   args)
+      (multiple-value-bind
+            (body decls)
+          (parse-body body)
+        (expand-function-call-inline nil lambda-list
+                                     ;; the forms below get wrapped
+                                     ;; in a LET, making the decls
+                                     ;; part of the decls of the LET.
+                                     (copy-tree `(,@decls (block ,name ,@body)))
+                                     args))
       (cond ((intersection lambda-list
                            '(&optional &rest &key &allow-other-keys &aux)
                            :test #'eq)
              nil)
             (t
-             (setf body (copy-tree body))
-             (list 'LAMBDA lambda-list
-                   (list* 'BLOCK name body))))))
+             (multiple-value-bind
+                   (body decls)
+                 (parse-body body)
+               (setf body (copy-tree body))
+               `(lambda ,lambda-list ,@decls
+                        (block ,name ,@body)))))))
 
 
 ;;; Pass 1.

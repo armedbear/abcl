@@ -528,7 +528,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
             ;; FIXME Need to support SETF functions too!
             (setf (inline-expansion name)
                   (jvm::generate-inline-expansion block-name
-                                                  lambda-list body))
+                                                  lambda-list
+                                                  (append decls body)))
             (output-form `(setf (inline-expansion ',name)
                                 ',(inline-expansion name))))))
     (push name jvm::*functions-defined-in-current-file*)
