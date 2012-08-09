@@ -495,7 +495,7 @@
                ;; Expand once in case the form expands
                ;; into something that needs special
                ;; SETF treatment
-               (macroexpand-1 place)
+               (macroexpand-1 place *precompile-env*)
              (if expanded
                  (precompile1 (list* 'SETF expansion
                                      (cddr form)))
@@ -517,7 +517,7 @@
               ;; Expand once in case the form expands
               ;; into something that needs special
               ;; SETF treatment
-              (macroexpand-1 sym)
+              (macroexpand-1 sym *precompile-env*)
             (if expanded
                 (precompile1 (list 'SETF expansion val))
                 (list 'SETQ sym (precompile1 val)))))
