@@ -389,7 +389,7 @@
            (read-line stream)
            *null-cmd*)
           (t
-           (read stream nil)))))
+           (read stream nil *null-cmd*)))))
 
 (defun repl-read-form-fun (in out)
   (loop
