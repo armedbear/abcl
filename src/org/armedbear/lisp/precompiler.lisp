@@ -443,7 +443,7 @@
 (defun precompile-do/do*-end-form (end-form)
   (let ((end-test-form (car end-form))
         (result-forms (cdr end-form)))
-    (list* end-test-form (mapcar #'precompile1 result-forms))))
+    (list* (precompile1 end-test-form) (mapcar #'precompile1 result-forms))))
 
 (defun precompile-do/do* (form)
   (if *in-jvm-compile*
