@@ -33,7 +33,7 @@
 
 (defun write-byte (byte stream)
   (declare (type stream stream))
-  (let ((element-type (stream-element-type stream)))
+  (let ((element-type (expand-deftype (stream-element-type stream))))
     (require-type byte element-type)
     (let ((width (cadr element-type)))
       (if (= width 8)
@@ -48,7 +48,7 @@
 
 (defun read-byte (stream &optional (eof-error-p t) eof-value)
   (declare (type stream stream))
-  (let* ((element-type (stream-element-type stream)))
+  (let* ((element-type (expand-deftype (stream-element-type stream))))
     (unless element-type
       (if eof-error-p
           (error 'end-of-file :stream stream)

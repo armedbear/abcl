@@ -45,7 +45,7 @@
                :expected-type '(integer 0)))
       (setf end (length sequence)))
   (let ((end (the fixnum end))
-        (stream-element-type (stream-element-type stream)))
+        (stream-element-type (expand-deftype (stream-element-type stream))))
     (cond ((eq stream-element-type 'character)
            (if (stringp sequence)
                (%write-string sequence stream start end)

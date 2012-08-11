@@ -37,7 +37,7 @@
   (if end
       (require-type end '(integer 0))
       (setf end (length sequence)))
-  (let* ((element-type (stream-element-type stream)))
+  (let* ((element-type (expand-deftype (stream-element-type stream))))
     (cond ((eq element-type 'character)
            (do ((pos start (1+ pos)))
                ((>= pos end) pos)
