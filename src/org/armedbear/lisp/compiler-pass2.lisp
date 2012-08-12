@@ -6192,30 +6192,23 @@ We need more thought here.
        (emit-move-from-stack target representation))
       (1
        (compile-form (%car args) target representation))
-      (2
-       (let ((arg1 (%car args))
-             (arg2 (%cadr args))
-             (FAIL (gensym))
-             (DONE (gensym)))
-         (compile-forms-and-maybe-emit-clear-values arg1 'stack :boolean)
-         (emit 'ifeq FAIL)
-         (ecase representation
-           (:boolean
-            (compile-forms-and-maybe-emit-clear-values arg2 'stack :boolean)
-            (emit 'goto DONE)
-            (label FAIL)
-            (emit 'iconst_0))
-           ((nil)
-            (compile-form arg2 'stack nil)
-            (emit 'goto DONE)
-            (label FAIL)
-            (emit-push-nil)))
-         (label DONE)
-         (emit-move-from-stack target representation)))
       (t
-       ;; (and a b c d e f) => (and a (and b c d e f))
-       (let ((new-form `(and ,(%car args) (and ,@(%cdr args)))))
-         (p2-and new-form target representation))))))
+       (let ((FAIL (gensym))
+             (DONE (gensym))
+             (butlast-args (butlast args)))
+         (loop
+            for form in butlast-args
+            do (compile-form form 'stack nil)
+            do (emit-push-nil)
+            do (emit 'if_acmpeq FAIL))
+         (apply #'maybe-emit-clear-values butlast-args)
+         (compile-form (car (last args)) target representation)
+         (emit 'goto DONE)
+         (label FAIL)
+         (apply #'maybe-emit-clear-values butlast-args)
+         (emit-push-false representation)
+         (emit-move-from-stack target representation)
+         (label DONE))))))
 
 (defknown p2-or (t t t) t)
 (defun p2-or (form target representation)
@@ -6226,26 +6219,25 @@ We need more thought here.
        (emit-move-from-stack target representation))
       (1
        (compile-form (%car args) target representation))
-      (2
-       (let ((arg1 (%car args))
-             (arg2 (%cadr args))
-             (LABEL1 (gensym))
-             (LABEL2 (gensym)))
-         (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
-         (emit 'dup)
-         (emit-push-nil)
-         (emit 'if_acmpne LABEL1)
-         (emit 'pop)
-         (compile-form arg2 'stack representation)
-         (emit 'goto LABEL2)
-         (label LABEL1)
-         (fix-boxing representation nil) ; FIXME use derived result type
-         (label LABEL2)
-         (emit-move-from-stack target representation)))
       (t
-       ;; (or a b c d e f) => (or a (or b c d e f))
-       (let ((new-form `(or ,(%car args) (or ,@(%cdr args)))))
-         (p2-or new-form target representation))))))
+       (let ((SUCCESS (gensym))
+             (DONE (gensym))
+             (butlast-args (butlast args)))
+         (loop
+            for form in butlast-args
+            do (compile-form form 'stack nil)
+            do (emit 'dup)  ;; leave value on the stack for SUCCESS to use
+            do (emit-push-nil)
+            do (emit 'if_acmpne SUCCESS)
+            do (emit 'pop))
+         (apply #'maybe-emit-clear-values butlast-args)
+         (compile-form (car (last args)) target representation)
+         (emit 'goto DONE)
+         (label SUCCESS)
+         (fix-boxing representation nil)  ;; value is still on the stack
+         (emit-move-from-stack target representation)
+         (apply #'maybe-emit-clear-values butlast-args)
+         (label DONE))))))
 
 (defun p2-values (form target representation)
   (let* ((args (cdr form))
