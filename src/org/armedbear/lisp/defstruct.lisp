@@ -669,6 +669,8 @@
        ,@(define-predicate)
        ,@(define-access-functions)
        ,@(define-copier)
+       ,@(when (or *dd-print-function* *dd-print-object*)
+               `((require "PRINT-OBJECT")))
        ,@(define-print-function)
        ',*dd-name*)))
 
