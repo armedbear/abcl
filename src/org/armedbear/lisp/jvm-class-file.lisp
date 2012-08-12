@@ -71,6 +71,29 @@ The reason to do so is that the exceptions need to refer to labels
     (:short      "S")
     ((nil :void) "V")))
 
+(defun pretty-class (type &optional (default-package ""))
+  (let* ((p-len (1+ (length default-package)))
+         (len (length type))
+         (cnt (when (< p-len len)
+                (count #\/ type :start p-len)))
+         (type (if (and cnt (= 0 cnt))
+                   (subseq type p-len len)
+                   (substitute #\. #\/ type))))
+    type))
+
+(defun pretty-type (type &optional (default-package ""))
+  (cond
+    ((eql #\I type) "int")
+    ((eql #\J type) "long")
+    ((eql #\F type) "float")
+    ((eql #\D type) "double")
+    ((eql #\Z type) "boolean")
+    ((eql #\C type) "char")
+    ((eql #\B type) "byte")
+    ((eql #\S type) "short")
+    ((eql #\V type) "void")
+    ((stringp type)
+     (pretty-class (subseq type 1 (1- (length type))) default-package))))
 
 #|
 
@@ -265,14 +288,41 @@ take that effect into account."
   (index 0)
   entries-list
   ;; the entries hash stores raw values, except in case of string and
-  ;; utf8, because both are string values
+  ;; utf8, because both are string values in which case a two-element
+  ;; list - containing the tag and the value - is used
   (entries (make-hash-table :test #'equal :size 2048 :rehash-size 2.0)))
+
+(defun matching-index-p (entry index)
+  (eql (constant-index entry) index))
+
+(defun find-pool-entry (pool item &key (test #'matching-index-p))
+  (find-if (lambda (x)
+             (funcall test x item))
+           (pool-entries-list pool)))
 
 
 (defstruct constant
   "Structure to be included in all constant sub-types."
   tag
   index)
+
+(defgeneric print-pool-constant (pool entry stream &key &allow-other-keys)
+  (:method (pool (entry t) stream &key)
+    (print-object entry stream)))
+
+(defmethod print-pool-constant :around (pool entry stream &key recursive)
+  (cond
+    ((and (null *print-readably*)
+          (null *print-escape*)
+          (null recursive))
+     (princ #\# stream)
+     (princ (constant-index entry) stream)
+     (princ #\Space stream)
+     (princ #\< stream)
+     (call-next-method)
+     (princ #\> stream))
+    (t
+     (call-next-method))))
 
 (defparameter +constant-type-map+
   '((:class          7 1)
@@ -293,6 +343,24 @@ take that effect into account."
   "Structure holding information on a 'class' type item in the constant pool."
   name-index)
 
+(defmethod print-pool-constant (pool (entry constant-class) stream
+                                &key recursive package)
+  (cond
+    ((and (null *print-escape*)
+          (null *print-readably*))
+     ;; human readable
+     (unless recursive
+       (princ "Class " stream))
+     (princ
+      (pretty-class (constant-utf8-value
+                     (find-pool-entry pool
+                                      (constant-class-name-index entry)))
+                    package)
+      stream))
+    (t
+     ;; READable
+     (call-next-method))))
+
 (defstruct (constant-member-ref (:constructor
                                  %make-constant-member-ref
                                      (tag index class-index name/type-index))
@@ -301,6 +369,39 @@ take that effect into account."
 (a field, method or interface method reference) in the constant pool."
   class-index
   name/type-index)
+
+(defmethod print-pool-constant (pool (entry constant-member-ref) stream
+                                &key recursive package)
+  (cond
+    ((and (null *print-escape*)
+          (null *print-readably*))
+     ;; human readable
+     (unless recursive
+       (princ (case (constant-member-ref-tag entry)
+                (9 "Field ")
+                (10 "Method ")
+                (11 "Interface method "))
+              stream))
+     (let ((name-prefix
+            (with-output-to-string (s)
+              (print-pool-constant pool
+                          (find-pool-entry pool
+                                           (constant-member-ref-class-index entry))
+                          s
+                          :recursive t
+                          :package package)
+              (princ #\. s))))
+       (print-pool-constant pool
+                            (find-pool-entry pool
+                                             (constant-member-ref-name/type-index entry))
+                            stream
+                            :name-prefix name-prefix
+                            :recursive t
+                            :package package)))
+    (t
+     ;; READable
+     (call-next-method))))
+
 
 (declaim (inline make-constant-field-ref make-constant-method-ref
                  make-constant-interface-method-ref))
@@ -324,12 +425,44 @@ interface-method reference."
   "Structure holding information on a 'string' type item in the constant pool."
   value-index)
 
+
+(defmethod print-pool-constant (pool (entry constant-string) stream
+                                &key recursive)
+  (cond
+    ((and (null *print-readably*)
+          (null *print-escape*))
+     (unless recursive
+       (princ "String " stream))
+     (princ #\" stream)
+     (print-pool-constant pool
+                          (find-pool-entry pool
+                                           (constant-string-value-index entry))
+                          stream
+                          :recursive t)
+     (princ #\" stream))
+    (t
+     (call-next-method))))
+
 (defstruct (constant-float/int (:constructor
                                 %make-constant-float/int (tag index value))
                                (:include constant))
   "Structure holding information on a 'float' or 'integer' type item
 in the constant pool."
   value)
+
+(defmethod print-pool-constant (pool (entry constant-float/int) stream
+                                &key recursive)
+  (cond
+    ((and (null *print-escape*)
+          (null *print-readably*))
+     (unless recursive
+       (princ (case (constant-tag entry)
+                (3 "int ")
+                (4 "float "))
+              stream))
+     (princ (constant-float/int-value entry) stream))
+    (t
+     (call-next-method))))
 
 (declaim (inline make-constant-float make-constant-int))
 (defun make-constant-float (index value)
@@ -346,6 +479,20 @@ in the constant pool."
   "Structure holding information on a 'double' or 'long' type item
 in the constant pool."
   value)
+
+(defmethod print-pool-constant (pool (entry constant-double/long) stream
+                                &key recursive)
+  (cond
+    ((and (null *print-escape*)
+          (null *print-readably*))
+     (unless recursive
+       (princ (case (constant-tag entry)
+                (5 "long ")
+                (6 "double "))
+              stream))
+     (princ (constant-double/long-value entry) stream))
+    (t
+     (call-next-method))))
 
 (declaim (inline make-constant-double make-constant-float))
 (defun make-constant-double (index value)
@@ -366,6 +513,59 @@ in the constant pool."
 constant pool; this type of element is used by 'member-ref' type items."
   name-index
   descriptor-index)
+
+(defun parse-descriptor (descriptor)
+  (let (arguments
+        method-descriptor-p
+        (index 0))
+    (when (eql (aref descriptor 0) #\()
+      ;; parse the arguments here...
+      (assert (find #\) descriptor))
+      (setf method-descriptor-p t)
+      (loop until (eql (aref descriptor index) #\))
+         do (incf index)
+         if (find (aref descriptor index) "IJFDZCBSV")
+         do (push (aref descriptor index) arguments)
+         if (eql (aref descriptor index) #\L)
+         do (loop for i upfrom index
+               until (eql (aref descriptor i) #\;)
+               finally (push (subseq descriptor index (1+ i))
+                             arguments)
+               finally (setf index i))
+         finally (incf index)))
+    (values (let ((return-value (subseq descriptor index)))
+              (if (= (length return-value) 1)
+                  (aref return-value 0)
+                  return-value))
+            (nreverse arguments)
+            method-descriptor-p)))
+
+(defmethod print-pool-constant (pool (entry constant-name/type) stream
+                                &key name-prefix package)
+  (cond
+    ((and (null *print-readably*)
+          (null *print-escape*))
+     (multiple-value-bind
+           (type arguments method-descriptor-p)
+         (let ((entry (find-pool-entry pool
+                            (constant-name/type-descriptor-index entry))))
+           (if (constant-utf8-p entry)
+               (parse-descriptor (constant-utf8-value entry))
+               (class-ref entry)))
+       (princ (pretty-type type package) stream)
+       (princ #\Space stream)
+       (when name-prefix
+         (princ name-prefix stream))
+       (print-pool-constant pool
+                            (find-pool-entry pool (constant-name/type-name-index entry))
+                            stream
+                            :recursive t)
+       (when method-descriptor-p
+         (format stream "(~{~A~^,~})" (mapcar (lambda (x)
+                                                (pretty-type x package))
+                                              arguments)))))
+    (t
+     (call-next-method))))
 
 (defstruct (constant-utf8 (:constructor make-constant-utf8 (index value))
                           (:include constant
@@ -762,7 +962,7 @@ to allow debugging output of the constant section of the class file.")
       (incf pool-index)
       (let ((tag (constant-tag entry)))
         (when *jvm-class-debug-pool*
-          (print-constant entry t))
+          (print-entry entry t))
         (write-u1 tag stream)
         (case tag
           (1                            ; UTF8
@@ -788,7 +988,7 @@ to allow debugging output of the constant section of the class file.")
            (error "write-constant-pool-entry unhandled tag ~D~%" tag)))))))
 
 
-(defun print-constant (entry stream)
+(defun print-entry (entry stream)
   "Debugging helper to print the content of a constant-pool entry."
   (let ((tag (constant-tag entry))
         (index (constant-index entry)))
@@ -805,6 +1005,13 @@ to allow debugging output of the constant section of the class file.")
                         (constant-name/type-descriptor-index entry)))
       (7 (sys::%format t "cls: ~a~%" (constant-class-name-index entry)))
       (8 (sys::%format t "str: ~a~%" (constant-string-value-index entry))))))
+
+
+(defmethod print-pool-constant (pool (entry constant-utf8) stream &key)
+  (if (and (null *print-escape*)
+           (null *print-readably*))
+      (princ (constant-utf8-value entry) stream)
+      (call-next-method)))
 
 
 #|
@@ -1043,7 +1250,8 @@ has been finalized."
                      (nconc (mapcar #'exception-start-pc handlers)
                             (mapcar #'exception-end-pc handlers)
                             (mapcar #'exception-handler-pc handlers))
-                     (code-optimize code))))
+                     (code-optimize code)
+                     (class-file-constants class))))
     (invoke-callbacks :code-finalized class parent
                       (coerce c 'list) handlers)
     (unless (code-max-stack code)
@@ -1055,6 +1263,7 @@ has been finalized."
     (multiple-value-bind
           (c labels)
         (code-bytes c)
+      (assert (< 0 (length c) 65536))
       (setf (code-code code) c
             (code-labels code) labels)))
 

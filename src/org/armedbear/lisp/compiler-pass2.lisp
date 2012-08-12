@@ -213,7 +213,7 @@ the top-most value's representation being 'rep1'."
   (let* ((stack-effect (apply #'descriptor-stack-effect return-type arg-types))
          (index (pool-add-method-ref *pool* class-name
                                      method-name (cons return-type arg-types)))
-         (instruction (apply #'%emit 'invokestatic (u2 index))))
+         (instruction (%emit 'invokestatic index)))
     (setf (instruction-stack instruction) stack-effect)))
 
 
@@ -234,7 +234,7 @@ the top-most value's representation being 'rep1'."
   (let* ((stack-effect (apply #'descriptor-stack-effect return-type arg-types))
          (index (pool-add-method-ref *pool* class-name
                                      method-name (cons return-type arg-types)))
-         (instruction (apply #'%emit 'invokevirtual (u2 index))))
+         (instruction (%emit 'invokevirtual index)))
     (declare (type (signed-byte 8) stack-effect))
     (let ((explain *explain*))
       (when (and explain (memq :java-calls explain))
@@ -251,7 +251,7 @@ the top-most value's representation being 'rep1'."
   (let* ((stack-effect (apply #'descriptor-stack-effect :void arg-types))
          (index (pool-add-method-ref *pool* class-name
                                      "<init>" (cons nil arg-types)))
-         (instruction (apply #'%emit 'invokespecial (u2 index))))
+         (instruction (%emit 'invokespecial index)))
     (declare (type (signed-byte 8) stack-effect))
     (setf (instruction-stack instruction) (1- stack-effect))))
 
@@ -291,29 +291,29 @@ the top-most value's representation being 'rep1'."
 (defknown emit-getstatic (t t t) t)
 (defun emit-getstatic (class-name field-name type)
   (let ((index (pool-add-field-ref *pool* class-name field-name type)))
-    (apply #'%emit 'getstatic (u2 index))))
+    (%emit 'getstatic index)))
 
 (defknown emit-putstatic (t t t) t)
 (defun emit-putstatic (class-name field-name type)
   (let ((index (pool-add-field-ref *pool* class-name field-name type)))
-    (apply #'%emit 'putstatic (u2 index))))
+    (%emit 'putstatic index)))
 
 (declaim (inline emit-getfield emit-putfield))
 (defknown emit-getfield (t t t) t)
 (defun emit-getfield (class-name field-name type)
   (let* ((index (pool-add-field-ref *pool* class-name field-name type)))
-    (apply #'%emit 'getfield (u2 index))))
+    (%emit 'getfield index)))
 
 (defknown emit-putfield (t t t) t)
 (defun emit-putfield (class-name field-name type)
   (let* ((index (pool-add-field-ref *pool* class-name field-name type)))
-    (apply #'%emit 'putfield (u2 index))))
+    (%emit 'putfield index)))
 
 
 (defknown emit-new (t) t)
 (declaim (inline emit-new emit-anewarray emit-checkcast emit-instanceof))
 (defun emit-new (class-name)
-  (apply #'%emit 'new (u2 (pool-class class-name))))
+  (%emit 'new (pool-class class-name)))
 
 (defknown emit-anewarray (t) t)
 (defun emit-anewarray (class-name)
@@ -321,11 +321,11 @@ the top-most value's representation being 'rep1'."
 
 (defknown emit-checkcast (t) t)
 (defun emit-checkcast (class-name)
-  (apply #'%emit 'checkcast (u2 (pool-class class-name))))
+  (apply #'%emit 'checkcast (list (pool-class class-name))))
 
 (defknown emit-instanceof (t) t)
 (defun emit-instanceof (class-name)
-  (apply #'%emit 'instanceof (u2 (pool-class class-name))))
+  (apply #'%emit 'instanceof (list (pool-class class-name))))
 
 
 (defvar type-representations '((:int fixnum)
@@ -1085,6 +1085,10 @@ extend the class any further."
     (emit 'return))
   (with-code-to-method (class (abcl-class-file-static-initializer class))
     (emit 'return))
+  (when *compiler-debug*
+    (print "; Writing class file ")
+    (print (abcl-class-file-class-name class))
+    (terpri))
   (finalize-class-file class)
   (write-class-file class stream))
 

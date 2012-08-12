@@ -448,17 +448,34 @@
   (and instruction
        (= (the fixnum (instruction-opcode (the instruction instruction))) 202)))
 
-(defun print-code (code)
+(defun format-instruction-args (instruction pool)
+  (if (memql (instruction-opcode instruction) '(18 19 20
+                                                178 179 180 181 182 183 184 185
+                                                187
+                                                192 193))
+      (let ((*print-readably* nil)
+            (*print-escape* nil))
+        (with-output-to-string (s)
+          (print-pool-constant pool
+                               (find-pool-entry pool
+                                                (car (instruction-args instruction))) s
+                               :package "org/armedbear/lisp")))
+      (when (instruction-args instruction)
+        (format nil "~S" (instruction-args instruction)))))
+
+(defun print-code (code pool)
+  (declare (ignorable pool))
   (dotimes (i (length code))
     (let ((instruction (elt code i)))
-      (sys::%format t "~D ~A ~S ~S ~S~%"
+      (format t "~3D ~A ~19T~A ~A ~A~%"
                     i
                     (opcode-name (instruction-opcode instruction))
-                    (instruction-args instruction)
-                    (instruction-stack instruction)
-                    (instruction-depth instruction)))))
+                    (or (format-instruction-args instruction pool) "")
+                    (or (instruction-stack instruction) "")
+                    (or (instruction-depth instruction) "")))))
 
-(defun print-code2 (code)
+(defun print-code2 (code pool)
+  (declare (ignorable pool))
   (dotimes (i (length code))
     (let ((instruction (elt code i)))
       (case (instruction-opcode instruction)
@@ -482,8 +499,8 @@
                      (list
                       (inst 'aload (car (instruction-args instruction)))
                       (inst 'aconst_null)
-                      (inst 'putfield (u2 (pool-field +lisp-thread+ "_values"
-                                                      +lisp-object-array+)))))
+                      (inst 'putfield (list (pool-field +lisp-thread+ "_values"
+                                                        +lisp-object-array+)))))
              (vector-push-extend instruction vector)))
           (t
            (vector-push-extend instruction vector)))))))
@@ -602,19 +619,9 @@
                  172 ; ireturn
                  176 ; areturn
                  177 ; return
-                 178 ; getstatic
-                 179 ; putstatic
-                 180 ; getfield
-                 181 ; putfield
-                 182 ; invokevirtual
-                 183 ; invockespecial
-                 184 ; invokestatic
-                 187 ; new
                  189 ; anewarray
                  190 ; arraylength
                  191 ; athrow
-                 192 ; checkcast
-                 193 ; instanceof
                  194 ; monitorenter
                  195 ; monitorexit
                  198 ; ifnull
@@ -714,6 +721,13 @@
     (when (not (<= -128 n 127))
       (error "IINC argument ~A out of bounds." n))
     (inst 132 (list register (s1 n)))))
+
+(define-resolver (178 179 180 181 182 183 184 185 192 193 187)
+    (instruction)
+  (let* ((arg (car (instruction-args instruction))))
+    (setf (instruction-args instruction)
+          (u2 arg))
+    instruction))
 
 (defknown resolve-instruction (t) t)
 (defun resolve-instruction (instruction)
@@ -970,13 +984,13 @@
 (defvar *enable-optimization* t)
 
 (defknown optimize-code (t t) t)
-(defun optimize-code (code handler-labels)
+(defun optimize-code (code handler-labels pool)
   (unless *enable-optimization*
     (format t "optimizations are disabled~%"))
   (when *enable-optimization*
     (when *compiler-debug*
       (format t "----- before optimization -----~%")
-      (print-code code))
+      (print-code code pool))
     (loop
        (let ((changed-p nil))
          (multiple-value-setq
@@ -1003,7 +1017,7 @@
       (setf code (coerce code 'vector)))
     (when *compiler-debug*
       (sys::%format t "----- after optimization -----~%")
-      (print-code code)))
+      (print-code code pool)))
   code)
 
 
@@ -1036,6 +1050,7 @@
                    (offset (- (the (unsigned-byte 16)
                                 (symbol-value (the symbol label)))
                               index)))
+              (assert (<= -32768 offset 32767))
               (setf (instruction-args instruction) (s2 offset))))
           (unless (= (instruction-opcode instruction) 202) ; LABEL
             (incf index (opcode-size (instruction-opcode instruction)))))))
@@ -1054,10 +1069,10 @@
               (incf index)))))
       (values bytes labels))))
 
-(defun finalize-code (code handler-labels optimize)
+(defun finalize-code (code handler-labels optimize pool)
   (setf code (coerce (nreverse code) 'vector))
   (when optimize
-    (setf code (optimize-code code handler-labels)))
+    (setf code (optimize-code code handler-labels pool)))
   (resolve-instructions (expand-virtual-instructions code)))
 
 (provide '#:opcodes)
