@@ -489,10 +489,12 @@ where each of the vars returned is a list with these elements:
       ;; Make free specials visible.
       (dolist (variable (let-free-specials block))
         (push variable *visible-variables*)))
-    (let ((*blocks* (cons block *blocks*)))
-      (setf body (p1-body body)))
-    (setf (let-form block) (list* op varlist body))
-    block))
+    (with-saved-compiler-policy
+      (process-optimization-declarations body)
+      (let ((*blocks* (cons block *blocks*)))
+        (setf body (p1-body body)))
+      (setf (let-form block) (list* op varlist body))
+      block)))
 
 (defun p1-locally (form)
   (let* ((*visible-variables* *visible-variables*)
@@ -504,9 +506,11 @@ where each of the vars returned is a list with these elements:
 ;;       (format t "p1-locally ~S is special~%" name)
       (push special *visible-variables*))
     (let ((*blocks* (cons block *blocks*)))
-      (setf (locally-form block)
-            (list* 'LOCALLY (p1-body (cdr form))))
-      block)))
+      (with-saved-compiler-policy
+        (process-optimization-declarations (cdr form))
+        (setf (locally-form block)
+              (list* 'LOCALLY (p1-body (cdr form))))
+        block))))
 
 (defknown p1-m-v-b (t) t)
 (defun p1-m-v-b (form)
@@ -538,10 +542,12 @@ where each of the vars returned is a list with these elements:
       (dolist (special (m-v-b-free-specials block))
         (push special *visible-variables*))
       (setf (m-v-b-vars block) (nreverse vars)))
-    (setf body (p1-body body))
-    (setf (m-v-b-form block)
-          (list* 'MULTIPLE-VALUE-BIND varlist values-form body))
-    block))
+    (with-saved-compiler-policy
+      (process-optimization-declarations body)
+      (setf body (p1-body body))
+      (setf (m-v-b-form block)
+            (list* 'MULTIPLE-VALUE-BIND varlist values-form body))
+      block)))
 
 (defun p1-block (form)
   (let* ((block (make-block-node (cadr form)))
@@ -956,9 +962,11 @@ where each of the vars returned is a list with these elements:
             (process-declarations-for-vars body nil block))
       (dolist (special (labels-free-specials block))
         (push special *visible-variables*))
-      (setf (labels-form block)
-            (list* (car form) local-functions (p1-body (cddr form))))
-      block)))
+      (with-saved-compiler-policy
+        (process-optimization-declarations (cddr form))
+        (setf (labels-form block)
+              (list* (car form) local-functions (p1-body (cddr form))))
+        block))))
 
 (defknown p1-funcall (t) t)
 (defun p1-funcall (form)
