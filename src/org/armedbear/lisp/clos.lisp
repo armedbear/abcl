@@ -2796,7 +2796,7 @@ to ~S with argument list ~S."
     (let* ((specializers-form '())
            (lambda-expression `(lambda ,lambda-list ,@declarations ,body))
            (gf (or (find-generic-function function-name nil)
-                   (ensure-generic-function function-name :lambda-list lambda-list)))
+                   (class-prototype (find-class 'standard-generic-function))))
            (method-function
              (make-method-lambda gf (class-prototype (generic-function-method-class gf))
                                  lambda-expression env))
