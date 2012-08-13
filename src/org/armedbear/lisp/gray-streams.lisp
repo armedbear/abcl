@@ -156,7 +156,7 @@
 (defvar *ansi-read-char* #'read-char)
 (defvar *ansi-peek-char* #'peek-char)
 (defvar *ansi-unread-char* #'unread-char)
-(defvar *ansi-listen* nil)
+(defvar *ansi-listen* #'listen)
 (defvar *ansi-read-line* #'read-line)
 (defvar *ansi-read-char-no-hang* #'read-char-no-hang)
 (defvar *ansi-write-char* #'write-char)
@@ -639,7 +639,7 @@
 (setf (symbol-function 'common-lisp::read-sequence) #'gray-read-sequence)
 (setf (symbol-function 'common-lisp::write-sequence) #'gray-write-sequence)
 (setf (symbol-function 'common-lisp::file-position) #'gray-file-position)
-
+(setf (symbol-function 'common-lisp::listen) #'gray-listen)
 #|
 (setf (symbol-function 'common-lisp::make-two-way-stream) #'gray-make-two-way-stream)
 (setf (symbol-function 'common-lisp::two-way-stream-input-stream) #'gray-two-way-stream-input-stream)
