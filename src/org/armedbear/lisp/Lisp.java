@@ -520,7 +520,7 @@ public final class Lisp
           }
         else
           {
-            if (first.car() == Symbol.LAMBDA)
+            if (first instanceof Cons && first.car() == Symbol.LAMBDA)
               {
                 Closure closure = new Closure(first, env);
                 return evalCall(closure, ((Cons)obj).cdr, env, thread);
