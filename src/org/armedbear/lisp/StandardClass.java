@@ -865,7 +865,31 @@ public class StandardClass extends SlotClass
                                      STANDARD_OBJECT,
                                      BuiltInClass.FUNCTION,
                                      BuiltInClass.CLASS_T);
-    STANDARD_GENERIC_FUNCTION.setDirectSlotDefinitions(STANDARD_GENERIC_FUNCTION.getClassLayout().generateSlotDefinitions());
+    STANDARD_GENERIC_FUNCTION.setDirectSlotDefinitions(
+      list(new SlotDefinition(PACKAGE_SYS.intern("NAME"), NIL, constantlyNil),
+           new SlotDefinition(PACKAGE_SYS.intern("LAMBDA-LIST"), NIL,
+                              constantlyNil),
+           new SlotDefinition(PACKAGE_SYS.intern("REQUIRED-ARGS"), NIL,
+                              constantlyNil),
+           new SlotDefinition(PACKAGE_SYS.intern("OPTIONAL-ARGS"), NIL,
+                              constantlyNil),
+           new SlotDefinition(PACKAGE_SYS.intern("INITIAL-METHODS"), NIL,
+                              constantlyNil),
+           new SlotDefinition(PACKAGE_SYS.intern("METHODS"), NIL,
+                              constantlyNil),
+           new SlotDefinition(PACKAGE_SYS.intern("METHOD-CLASS"), NIL,
+                              constantlyNil),
+           new SlotDefinition(PACKAGE_SYS.intern("%METHOD-COMBINATION"), NIL,
+                              constantlyNil,
+                              list(internKeyword("METHOD-COMBINATION"))),
+           new SlotDefinition(PACKAGE_SYS.intern("ARGUMENT-PRECEDENCE-ORDER"),
+                              NIL, constantlyNil),
+           new SlotDefinition(PACKAGE_SYS.intern("DECLARATIONS"), NIL,
+                              constantlyNil),
+           new SlotDefinition(PACKAGE_SYS.intern("CLASSES-TO-EMF-TABLE"), NIL,
+                              constantlyNil),
+           new SlotDefinition(Symbol._DOCUMENTATION, NIL, constantlyNil,
+                              list(internKeyword("DOCUMENTATION")))));
     // There are no inherited slots.
     STANDARD_GENERIC_FUNCTION.setSlotDefinitions(STANDARD_GENERIC_FUNCTION.getDirectSlotDefinitions());
   }

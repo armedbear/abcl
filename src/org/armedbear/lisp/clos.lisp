@@ -4493,10 +4493,10 @@ or T when any keyword is acceptable due to presence of
     ((generic-function generic-function)
      function-name
      &rest all-keys
-     &key (generic-function-class +the-standard-generic-function-class+)
+     &key (generic-function-class (class-of generic-function))
      (lambda-list nil lambda-list-supplied-p)
-     (method-class +the-standard-method-class+)
-     (method-combination +the-standard-method-combination+)
+     (method-class (generic-function-method-class generic-function))
+     (method-combination (generic-function-method-combination generic-function))
      &allow-other-keys)
   (setf all-keys (copy-list all-keys))  ; since we modify it
   (remf all-keys :generic-function-class)
