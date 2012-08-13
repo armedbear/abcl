@@ -165,151 +165,151 @@ where each of the vars returned is a list with these elements:
 
 (defun match-lambda-list (parsed-lambda-list arguments)
   (flet ((pop-required-argument ()
-	   (if (null arguments)
-	       (error 'lambda-list-mismatch :mismatch-type :too-few-arguments)
-	       (pop arguments)))
-	 (var (var-info) (car var-info))
-	 (initform (var-info) (cadr var-info))
-	 (p-var (var-info) (caddr var-info)))
+           (if (null arguments)
+               (error 'lambda-list-mismatch :mismatch-type :too-few-arguments)
+               (pop arguments)))
+         (var (var-info) (car var-info))
+         (initform (var-info) (cadr var-info))
+         (p-var (var-info) (caddr var-info)))
     (destructuring-bind (req opt key key-p rest allow-others-p aux whole env)
-	parsed-lambda-list
+        parsed-lambda-list
       (declare (ignore whole env))
       (let (req-bindings temp-bindings bindings ignorables)
-	;;Required arguments.
-	(setf req-bindings
-	      (loop :for var :in req :collect `(,var ,(pop-required-argument))))
+        ;;Required arguments.
+        (setf req-bindings
+              (loop :for var :in req :collect `(,var ,(pop-required-argument))))
 
-	;;Optional arguments.
-	(when opt
-	  (dolist (var-info opt)
-	    (if arguments
-		(progn
-		  (push-argument-binding (var var-info) (pop arguments)
-					 temp-bindings bindings)
-		  (when (p-var var-info)
-		    (push `(,(p-var var-info) t) bindings)))
-		(progn
-		  (push `(,(var var-info) ,(initform var-info)) bindings)
-		  (when (p-var var-info)
-		    (push `(,(p-var var-info) nil) bindings)))))
-	  (setf bindings (nreverse bindings)))
-	
-	(unless (or key-p rest (null arguments))
-	  (error 'lambda-list-mismatch :mismatch-type :too-many-arguments))
+        ;;Optional arguments.
+        (when opt
+          (dolist (var-info opt)
+            (if arguments
+                (progn
+                  (push-argument-binding (var var-info) (pop arguments)
+                                         temp-bindings bindings)
+                  (when (p-var var-info)
+                    (push `(,(p-var var-info) t) bindings)))
+                (progn
+                  (push `(,(var var-info) ,(initform var-info)) bindings)
+                  (when (p-var var-info)
+                    (push `(,(p-var var-info) nil) bindings)))))
+          (setf bindings (nreverse bindings)))
+        
+        (unless (or key-p rest (null arguments))
+          (error 'lambda-list-mismatch :mismatch-type :too-many-arguments))
 
-	;;Keyword and rest arguments.
-	(if key-p
-	    (multiple-value-bind (kbindings ktemps kignor)
-		(match-keyword-and-rest-args 
-		 key allow-others-p rest arguments)
-	      (setf bindings (append bindings kbindings)
-		    temp-bindings (append temp-bindings ktemps)
-		    ignorables (append kignor ignorables)))
-	    (when rest
-	      (let (rest-binding)
-		(push-argument-binding (var rest) `(list ,@arguments)
-				       temp-bindings rest-binding)
-		(setf bindings (append bindings rest-binding)))))
-	;;Aux parameters.
-	(when aux
-	  (setf bindings
-		`(,@bindings
-		  ,@(loop
-		       :for var-info :in aux
-		       :collect `(,(var var-info) ,(initform var-info))))))
-	(values (append req-bindings temp-bindings bindings)
-		ignorables)))))
+        ;;Keyword and rest arguments.
+        (if key-p
+            (multiple-value-bind (kbindings ktemps kignor)
+                (match-keyword-and-rest-args 
+                 key allow-others-p rest arguments)
+              (setf bindings (append bindings kbindings)
+                    temp-bindings (append temp-bindings ktemps)
+                    ignorables (append kignor ignorables)))
+            (when rest
+              (let (rest-binding)
+                (push-argument-binding (var rest) `(list ,@arguments)
+                                       temp-bindings rest-binding)
+                (setf bindings (append bindings rest-binding)))))
+        ;;Aux parameters.
+        (when aux
+          (setf bindings
+                `(,@bindings
+                  ,@(loop
+                       :for var-info :in aux
+                       :collect `(,(var var-info) ,(initform var-info))))))
+        (values (append req-bindings temp-bindings bindings)
+                ignorables)))))
 
 (defun match-keyword-and-rest-args (key allow-others-p rest arguments)
   (flet ((var (var-info) (car var-info))
-	 (initform (var-info) (cadr var-info))
-	 (p-var (var-info) (caddr var-info))
-	 (keyword (var-info) (cadddr var-info)))
+         (initform (var-info) (cadr var-info))
+         (p-var (var-info) (caddr var-info))
+         (keyword (var-info) (cadddr var-info)))
     (when (oddp (list-length arguments))
       (error 'lambda-list-mismatch
-	     :mismatch-type :odd-number-of-keyword-arguments))
+             :mismatch-type :odd-number-of-keyword-arguments))
     
     (let (temp-bindings bindings other-keys-found-p ignorables already-seen
-	  args)
+          args)
       ;;If necessary, make up a fake argument to hold :allow-other-keys,
       ;;needed later. This also handles nicely:
       ;;  3.4.1.4.1 Suppressing Keyword Argument Checking
       ;;third statement.
       (unless (find :allow-other-keys key :key #'keyword)
-	(let ((allow-other-keys-temp (gensym (symbol-name :allow-other-keys))))
-	  (push allow-other-keys-temp ignorables)
-	  (push (list allow-other-keys-temp nil nil :allow-other-keys) key)))
+        (let ((allow-other-keys-temp (gensym (symbol-name :allow-other-keys))))
+          (push allow-other-keys-temp ignorables)
+          (push (list allow-other-keys-temp nil nil :allow-other-keys) key)))
       
       ;;First, let's bind the keyword arguments that have been passed by
       ;;the caller. If we encounter an unknown keyword, remember it.
       ;;As per the above, :allow-other-keys will never be considered
       ;;an unknown keyword.
       (loop
-	 :for var :in arguments :by #'cddr
-	 :for value :in (cdr arguments) :by #'cddr
-	 :do (let ((var-info (find var key :key #'keyword)))
-	       (if (and var-info (not (member var already-seen)))
-		   ;;var is one of the declared keyword arguments
-		   (progn
-		     (push-argument-binding (var var-info) value
-					    temp-bindings bindings)
-		     (when (p-var var-info)
-		       (push `(,(p-var var-info) t) bindings))
-		     (push var args)
-		     (push (var var-info) args)
-		     (push var already-seen))
-		   (let ((g (gensym)))
-		     (push `(,g ,value) temp-bindings)
-		     (push var args)
-		     (push g args)
-		     (push g ignorables)
-		     (unless var-info
-		       (setf other-keys-found-p t))))))
+         :for var :in arguments :by #'cddr
+         :for value :in (cdr arguments) :by #'cddr
+         :do (let ((var-info (find var key :key #'keyword)))
+               (if (and var-info (not (member var already-seen)))
+                   ;;var is one of the declared keyword arguments
+                   (progn
+                     (push-argument-binding (var var-info) value
+                                            temp-bindings bindings)
+                     (when (p-var var-info)
+                       (push `(,(p-var var-info) t) bindings))
+                     (push var args)
+                     (push (var var-info) args)
+                     (push var already-seen))
+                   (let ((g (gensym)))
+                     (push `(,g ,value) temp-bindings)
+                     (push var args)
+                     (push g args)
+                     (push g ignorables)
+                     (unless var-info
+                       (setf other-keys-found-p t))))))
       
       ;;Then, let's bind those arguments that haven't been passed in
       ;;to their default value, in declaration order.
       (let (defaults)
-	(loop
-	   :for var-info :in key
-	   :do (unless (find (var var-info) bindings :key #'car)
-		 (push `(,(var var-info) ,(initform var-info)) defaults)
-		 (when (p-var var-info)
-		   (push `(,(p-var var-info) nil) defaults))))
-	(setf bindings (append (nreverse defaults) bindings)))
+        (loop
+           :for var-info :in key
+           :do (unless (find (var var-info) bindings :key #'car)
+                 (push `(,(var var-info) ,(initform var-info)) defaults)
+                 (when (p-var var-info)
+                   (push `(,(p-var var-info) nil) defaults))))
+        (setf bindings (append (nreverse defaults) bindings)))
       
       ;;If necessary, check for unrecognized keyword arguments.
       (when (and other-keys-found-p (not allow-others-p))
-	(if (loop
-	       :for var :in arguments :by #'cddr
-	       :if (eq var :allow-other-keys)
-	       :do (return t))
-	    ;;We know that :allow-other-keys has been passed, so we
-	    ;;can access the binding for it and be sure to get the
-	    ;;value passed by the user and not an initform.
-	    (let* ((arg (var (find :allow-other-keys key :key #'keyword)))
-		   (binding (find arg bindings :key #'car))
-		   (form (cadr binding)))
-	      (if (constantp form)
-		  (unless (eval form)
-		    (error 'lambda-list-mismatch
-			   :mismatch-type :unknown-keyword))
-		  (setf (cadr binding)
-			`(or ,(cadr binding)
-			     (error 'program-error
-				    "Unrecognized keyword argument")))))
-	    ;;TODO: it would be nice to report *which* keyword
-	    ;;is unknown
-	    (error 'lambda-list-mismatch :mismatch-type :unknown-keyword)))
+        (if (loop
+               :for var :in arguments :by #'cddr
+               :if (eq var :allow-other-keys)
+               :do (return t))
+            ;;We know that :allow-other-keys has been passed, so we
+            ;;can access the binding for it and be sure to get the
+            ;;value passed by the user and not an initform.
+            (let* ((arg (var (find :allow-other-keys key :key #'keyword)))
+                   (binding (find arg bindings :key #'car))
+                   (form (cadr binding)))
+              (if (constantp form)
+                  (unless (eval form)
+                    (error 'lambda-list-mismatch
+                           :mismatch-type :unknown-keyword))
+                  (setf (cadr binding)
+                        `(or ,(cadr binding)
+                             (error 'program-error
+                                    "Unrecognized keyword argument")))))
+            ;;TODO: it would be nice to report *which* keyword
+            ;;is unknown
+            (error 'lambda-list-mismatch :mismatch-type :unknown-keyword)))
       (when rest
-	(setf bindings (append bindings `((,(var rest) (list ,@(nreverse args)))))))
+        (setf bindings (append bindings `((,(var rest) (list ,@(nreverse args)))))))
       (values bindings temp-bindings ignorables))))
 
 #||test for the above
 (handler-case
     (let ((lambda-list
-	   (multiple-value-list
-	    (jvm::parse-lambda-list
-	     '(a b &optional (c 42) &rest foo &key (bar c) baz ((kaz kuz) bar))))))
+           (multiple-value-list
+            (jvm::parse-lambda-list
+             '(a b &optional (c 42) &rest foo &key (bar c) baz ((kaz kuz) bar))))))
       (jvm::match-lambda-list
        lambda-list
        '((print 1) 3 (print 32) :bar 2)))
@@ -319,16 +319,16 @@ where each of the vars returned is a list with these elements:
 (defun expand-function-call-inline (form lambda-list body args)
   (handler-case
       (multiple-value-bind (bindings ignorables)
-	  (match-lambda-list (multiple-value-list
-			      (parse-lambda-list lambda-list))
-			     args)
-	`(let* ,bindings
-	   ,@(when ignorables
-		   `((declare (ignorable ,@ignorables))))
-	   ,@body))
+          (match-lambda-list (multiple-value-list
+                              (parse-lambda-list lambda-list))
+                             args)
+        `(let* ,bindings
+           ,@(when ignorables
+                   `((declare (ignorable ,@ignorables))))
+           ,@body))
     (lambda-list-mismatch (x)
       (compiler-warn "Invalid function call: ~S (mismatch type: ~A)"
-		     form (lambda-list-mismatch-type x))
+                     form (lambda-list-mismatch-type x))
       form)))
 
 ;; Returns a list of declared free specials, if any are found.
@@ -408,31 +408,31 @@ where each of the vars returned is a list with these elements:
 (defmacro p1-let/let*-vars
     (block varlist variables-var var body1 body2)
   (let ((varspec (gensym))
-	(initform (gensym))
-	(name (gensym)))
+        (initform (gensym))
+        (name (gensym)))
     `(let ((,variables-var ()))
        (dolist (,varspec ,varlist)
-	 (cond ((consp ,varspec)
+         (cond ((consp ,varspec)
                 ;; Even though the precompiler already signals this
                 ;; error, double checking can't hurt; after all, we're
                 ;; also rewriting &AUX into LET* bindings.
-		(unless (<= 1 (length ,varspec) 2)
-		  (compiler-error "The LET/LET* binding specification ~S is invalid."
-				  ,varspec))
-		(let* ((,name (%car ,varspec))
-		       (,initform (p1 (%cadr ,varspec)))
-		       (,var (make-variable :name (check-name ,name)
+                (unless (<= 1 (length ,varspec) 2)
+                  (compiler-error "The LET/LET* binding specification ~S is invalid."
+                                  ,varspec))
+                (let* ((,name (%car ,varspec))
+                       (,initform (p1 (%cadr ,varspec)))
+                       (,var (make-variable :name (check-name ,name)
                                             :initform ,initform
                                             :block ,block)))
-		  (when (neq ,initform (cadr ,varspec))
-		    (setf (cadr ,varspec) ,initform))
-		  (push ,var ,variables-var)
-		  ,@body1))
-	       (t
-		(let ((,var (make-variable :name (check-name ,varspec)
+                  (when (neq ,initform (cadr ,varspec))
+                    (setf (cadr ,varspec) ,initform))
+                  (push ,var ,variables-var)
+                  ,@body1))
+               (t
+                (let ((,var (make-variable :name (check-name ,varspec)
                                            :block ,block)))
-		  (push ,var ,variables-var)
-		  ,@body1))))
+                  (push ,var ,variables-var)
+                  ,@body1))))
        ,@body2)))
 
 (defknown p1-let-vars (t) t)
@@ -458,7 +458,7 @@ where each of the vars returned is a list with these elements:
   (declare (type cons form))
   (let* ((*visible-variables* *visible-variables*)
          (block (make-let/let*-node))
-	 (*block* block)
+         (*block* block)
          (op (%car form))
          (varlist (cadr form))
          (body (cddr form)))
@@ -499,7 +499,7 @@ where each of the vars returned is a list with these elements:
 (defun p1-locally (form)
   (let* ((*visible-variables* *visible-variables*)
          (block (make-locally-node))
-	 (*block* block)
+         (*block* block)
          (free-specials (process-declarations-for-vars (cdr form) nil block)))
     (setf (locally-free-specials block) free-specials)
     (dolist (special free-specials)
@@ -519,7 +519,7 @@ where each of the vars returned is a list with these elements:
       (return-from p1-m-v-b (p1-let/let* new-form))))
   (let* ((*visible-variables* *visible-variables*)
          (block (make-m-v-b-node))
-	 (*block* block)
+         (*block* block)
          (varlist (cadr form))
          ;; Process the values-form first. ("The scopes of the name binding and
          ;; declarations do not include the values-form.")
@@ -551,7 +551,7 @@ where each of the vars returned is a list with these elements:
 
 (defun p1-block (form)
   (let* ((block (make-block-node (cadr form)))
-	 (*block* block)
+         (*block* block)
          (*blocks* (cons block *blocks*)))
     (setf (cddr form) (p1-body (cddr form)))
     (setf (block-form block) form)
@@ -568,7 +568,7 @@ where each of the vars returned is a list with these elements:
   (let* ((tag (p1 (cadr form)))
          (body (cddr form))
          (block (make-catch-node))
-	 (*block* block)
+         (*block* block)
          ;; our subform processors need to know
          ;; they're enclosed in a CATCH block
          (*blocks* (cons block *blocks*))
@@ -592,7 +592,7 @@ where each of the vars returned is a list with these elements:
   (let* ((synchronized-object (p1 (cadr form)))
          (body (cddr form))
          (block (make-synchronized-node))
-	 (*block* block)
+         (*block* block)
          (*blocks* (cons block *blocks*))
          result)
     (dolist (subform body)
@@ -616,7 +616,7 @@ where each of the vars returned is a list with these elements:
       ;; However, p1 transforms the forms being processed, so, we
       ;; need to copy the forms to create a second copy.
       (let* ((block (make-unwind-protect-node))
-	     (*block* block)
+             (*block* block)
              ;; a bit of jumping through hoops...
              (unwinding-forms (p1-body (copy-tree (cddr form))))
              (unprotected-forms (p1-body (cddr form)))
@@ -667,7 +667,7 @@ where each of the vars returned is a list with these elements:
 
 (defun p1-tagbody (form)
   (let* ((block (make-tagbody-node))
-	 (*block* block)
+         (*block* block)
          (*blocks* (cons block *blocks*))
          (*visible-tags* *visible-tags*)
          (local-tags '())
@@ -1058,7 +1058,7 @@ where each of the vars returned is a list with these elements:
   (let* ((symbols-form (p1 (cadr form)))
          (values-form (p1 (caddr form)))
          (block (make-progv-node))
-	 (*block* block)
+         (*block* block)
          (*blocks* (cons block *blocks*))
          (body (cdddr form)))
 ;;  The (commented out) block below means to detect compile-time
@@ -1316,7 +1316,7 @@ where each of the vars returned is a list with these elements:
                   (UNWIND-PROTECT       p1-unwind-protect)
                   (THREADS:SYNCHRONIZED-ON
                                         p1-threads-synchronized-on)
-		  (JVM::WITH-INLINE-CODE identity)))
+                  (JVM::WITH-INLINE-CODE identity)))
     (install-p1-handler (%car pair) (%cadr pair))))
 
 (initialize-p1-handlers)
