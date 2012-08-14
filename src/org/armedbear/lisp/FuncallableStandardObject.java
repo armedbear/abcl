@@ -41,7 +41,6 @@ import static org.armedbear.lisp.Lisp.*;
 public class FuncallableStandardObject extends StandardObject
 {
   protected LispObject function;
-  protected int numberOfRequiredArgs;
 
   protected FuncallableStandardObject()
   {

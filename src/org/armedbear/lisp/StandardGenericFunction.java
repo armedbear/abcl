@@ -56,7 +56,6 @@ public final class StandardGenericFunction extends FuncallableStandardObject
     slots[StandardGenericFunctionClass.SLOT_INDEX_LAMBDA_LIST] = NIL;
     slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS] = NIL;
     slots[StandardGenericFunctionClass.SLOT_INDEX_OPTIONAL_ARGS] = NIL;
-    numberOfRequiredArgs = 0;
     slots[StandardGenericFunctionClass.SLOT_INDEX_INITIAL_METHODS] = NIL;
     slots[StandardGenericFunctionClass.SLOT_INDEX_METHODS] = NIL;
     slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS] =
@@ -228,7 +227,6 @@ public final class StandardGenericFunction extends FuncallableStandardObject
     {
       final StandardGenericFunction gf = checkStandardGenericFunction(first);
       gf.slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS] = second;
-      gf.numberOfRequiredArgs = second.length();
       return second;
     }
   };
@@ -577,8 +575,11 @@ public final class StandardGenericFunction extends FuncallableStandardObject
     {
       final StandardGenericFunction gf = checkStandardGenericFunction(first);
       LispObject args = second;
-      LispObject[] array = new LispObject[gf.numberOfRequiredArgs];
-      for (int i = gf.numberOfRequiredArgs; i-- > 0;)
+      int numberOfRequiredArgs
+        = gf.slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS]
+        .length();
+      LispObject[] array = new LispObject[numberOfRequiredArgs];
+      for (int i = numberOfRequiredArgs; i-- > 0;)
         {
           array[i] = gf.getArgSpecialization(args.car());
           args = args.cdr();
@@ -606,8 +607,11 @@ public final class StandardGenericFunction extends FuncallableStandardObject
     {
       final StandardGenericFunction gf = checkStandardGenericFunction(first);
       LispObject args = second;
-      LispObject[] array = new LispObject[gf.numberOfRequiredArgs];
-      for (int i = gf.numberOfRequiredArgs; i-- > 0;)
+      int numberOfRequiredArgs
+        = gf.slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS]
+        .length();
+      LispObject[] array = new LispObject[numberOfRequiredArgs];
+      for (int i = numberOfRequiredArgs; i-- > 0;)
         {
           array[i] = gf.getArgSpecialization(args.car());
           args = args.cdr();
