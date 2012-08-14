@@ -1649,6 +1649,14 @@ public final class Lisp
         type_error(obj, Symbol.PACKAGE);
   }
 
+  public static Pathname checkPathname(LispObject obj)
+  {
+          if (obj instanceof Pathname)     
+                  return (Pathname) obj;         
+          return (Pathname) // Not reached.       
+        type_error(obj, Symbol.PATHNAME);
+  }
+
   public static final Function checkFunction(LispObject obj)
 
   {
