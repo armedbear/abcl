@@ -7479,7 +7479,7 @@ generated class."
     (resolve name) ;; Make sure the symbol has been resolved by the autoloader
     (setf definition (fdefinition name)))
   (when (compiled-function-p definition)
-    (return-from jvm-compile (values name nil nil)))
+    (return-from jvm-compile (values (or name definition) nil nil)))
   (let ((catch-errors *catch-errors*)
         (warnings-p nil)
         (failure-p nil)
