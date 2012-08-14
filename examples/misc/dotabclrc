@@ -1,16 +1,18 @@
 ;;; -*- Mode: Lisp -*-
 
-;;; Possible codas for inclusion in the Armed Bear startup file #p"~/.abclrc"
+;;; Possible code for inclusion in the Armed Bear startup file #p"~/.abclrc"
 
 #-quicklisp
 (let ((quicklisp-local  #P"~/quicklisp/setup.lisp")
       (quicklisp-remote #p"http://beta.quicklisp.org/quicklisp.lisp"))
   (unless (probe-file quicklisp-local)
     (when (probe-file quicklisp-remote)     ;;; XXX possibly search for a proxy÷
-      (load quicklisp-remote)))
+      (load quicklisp-remote)
+      (funcall (intern (symbol-name 'install) :quicklisp-quickstart))))
   (when (probe-file quicklisp-local)
     (load quicklisp-local)))
 
+;; 
 (require :asdf)
 (require :abcl-contrib)
 (require :abcl-asdf)
