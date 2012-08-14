@@ -7341,23 +7341,23 @@ Returns the a abcl-class-file structure containing the description of the
 generated class."
   (aver (eq (car form) 'LAMBDA))
   (catch 'compile-defun-abort
-    (let* ((class-file (make-abcl-class-file :pathname filespec))
-           (*compiler-error-bailout*
-            `(lambda ()
-               (compile-1
-                (make-compiland :name ',name
-                                :lambda-expression (make-compiler-error-form ',form)
-                                :class-file
-                                (make-abcl-class-file :pathname ,filespec))
-                ,stream)))
-           (*compile-file-environment* environment))
-      (compile-1 (make-compiland :name name
-                                 :lambda-expression
-                                 (precompiler:precompile-form form t
-                                                              environment)
-                                 :class-file class-file)
-                 stream)
-      class-file)))
+    (flet ((compiler-bailout ()
+             (let ((class-file (make-abcl-class-file :pathname filespec))
+                   (error-form (make-compiler-error-form form)))
+               (compile-1 (make-compiland :name name
+                                          :lambda-expression error-form
+                                          :class-file class-file)
+                          stream)
+               class-file)))
+      (let* ((class-file (make-abcl-class-file :pathname filespec))
+             (*compiler-error-bailout* #'compiler-bailout)
+             (*compile-file-environment* environment)
+             (precompiled-form (pre:precompile-form form t environment)))
+        (compile-1 (make-compiland :name name
+                                   :lambda-expression precompiled-form
+                                   :class-file class-file)
+                   stream)
+        class-file))))
 
 (defvar *catch-errors* t)
 
