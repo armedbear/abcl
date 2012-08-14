@@ -977,17 +977,9 @@ where each of the vars returned is a list with these elements:
     (when (and (consp function-form)
                (eq (%car function-form) 'FUNCTION))
       (let ((name (%cadr function-form)))
-;;         (format t "p1-funcall name = ~S~%" name)
         (let ((source-transform (source-transform name)))
           (when source-transform
-;;             (format t "found source transform for ~S~%" name)
-;;             (format t "old form = ~S~%" form)
-;;             (let ((new-form (expand-source-transform form)))
-;;               (when (neq new-form form)
-;;                 (format t "new form = ~S~%" new-form)
-;;                 (return-from p1-funcall (p1 new-form))))
             (let ((new-form (expand-source-transform (list* name (cddr form)))))
-;;               (format t "new form = ~S~%" new-form)
               (return-from p1-funcall (p1 new-form)))
             )))))
   ;; Otherwise...
@@ -1164,9 +1156,6 @@ where each of the vars returned is a list with these elements:
   (let* ((op (car form))
          (local-function (find-local-function op)))
     (when local-function
-;;            (format t "p1 local call to ~S~%" op)
-;;            (format t "inline-p = ~S~%" (inline-p op))
-
       (when (and *enable-inline-expansion* (inline-p op)
                  (local-function-definition local-function))
         (let* ((definition (local-function-definition local-function))
@@ -1272,7 +1261,7 @@ where each of the vars returned is a list with these elements:
                 (p1 `(%funcall (function ,op) ,@(cdr form)))
                 (p1 maybe-optimized-call))))
          (t
-          form))))))
+          (compiler-unsupported "P1 unhandled case ~S" form)))))))
 
 (defun install-p1-handler (symbol handler)
   (setf (get symbol 'p1-handler) handler))
@@ -1322,7 +1311,6 @@ where each of the vars returned is a list with these elements:
 (initialize-p1-handlers)
 
 (defun p1-compiland (compiland)
-;;   (format t "p1-compiland name = ~S~%" (compiland-name compiland))
   (let ((*current-compiland* compiland)
         (*local-functions* *local-functions*)
         (*visible-variables* *visible-variables*)
