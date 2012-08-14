@@ -2669,7 +2669,7 @@ given a specific common representation.")
         (t result)))))
 
 (defun p2-test-char= (form success-label failure-label)
-  (when (check-arg-count form 2)
+  (when (= (length form) 3) ;; only optimize the "exactly 2 arguments" case
     (let* ((arg1 (%cadr form))
            (arg2 (%caddr form)))
       (with-operand-accumulation
