@@ -202,9 +202,9 @@ public class StandardClass extends SlotClass
       return null;
 
     if (! (layout instanceof Layout)) {
-      (new Error()).printStackTrace();
-      LispThread.currentThread().printBacktrace();
-      System.out.println("Class: " + this.princToString());
+      // (new Error()).printStackTrace();
+      // LispThread.currentThread().printBacktrace();
+      // System.err.println("Class: " + this.princToString());
       return (Layout)Lisp.error(Symbol.TYPE_ERROR,
               new SimpleString("The value " + layout.princToString()
                                + " is not of expected type "
