@@ -1069,7 +1069,7 @@
     (sys::%set-arglist new (sys::arglist old))
     (when (macro-function name)
       (setf new (make-macro name new)))
-    (if (typep old 'standard-generic-function)
+    (if (typep old 'mop:funcallable-standard-object)
         (mop:set-funcallable-instance-function old new)
         (setf (fdefinition name) new))))
 

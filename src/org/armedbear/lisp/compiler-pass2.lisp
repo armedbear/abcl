@@ -7492,7 +7492,7 @@ generated class."
         environment)
     (unless (and (consp definition) (eq (car definition) 'LAMBDA))
       (let ((function definition))
-        (when (typep definition 'standard-generic-function)
+        (when (typep definition 'mop:funcallable-standard-object)
           (setf function (mop::funcallable-instance-function function)))
         (multiple-value-setq
             (expression environment)
