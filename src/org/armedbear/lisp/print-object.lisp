@@ -59,7 +59,7 @@
   (print-unreadable-object (gf stream :identity t)
     (format stream "~S ~S"
             (class-name (class-of gf))
-            (mop:generic-function-name gf)))
+            (ignore-errors (mop:generic-function-name gf))))
   gf)
 
 (defmethod print-object ((method method) stream)
