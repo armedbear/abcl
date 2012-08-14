@@ -1689,16 +1689,24 @@ public class Stream extends StructureObject {
         if (pastEnd)
             return NIL;
         try {
-            if (! _charReady())
-                return NIL;
+            if (isCharacterInputStream()) {
+                if (! _charReady())
+                    return NIL;
 
-            int n = _readChar();
-            if (n < 0)
-                return NIL;
+                int n = _readChar();
+                if (n < 0)
+                    return NIL;
 
-            _unreadChar(n);
+                _unreadChar(n);
 
-            return T;
+                return T;
+            } else if (isInputStream()) {
+                if (! _byteReady())
+                    return NIL;
+                
+                return T;
+            } else
+                return error(new StreamError(this, "Not an input stream"));
         } catch (IOException e) {
             return error(new StreamError(this, e));
         }
@@ -1795,6 +1803,12 @@ public class Stream extends StructureObject {
         if (reader == null)
             streamNotCharacterInputStream();
         return reader.ready();
+    }
+    
+    protected boolean _byteReady() throws IOException {
+        if (in == null)
+            streamNotInputStream();
+        return (in.available() != 0);
     }
 
     /** Writes a character into the underlying stream,
