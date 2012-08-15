@@ -763,6 +763,11 @@ interface."
                       (equal (method-descriptor c) return-and-args)))
              (class-file-methods class))))
 
+(defun class-remove-method (class method)
+  (setf (class-file-methods class)
+        (remove method (class-file-methods class)))
+  method)
+
 (defun class-add-attribute (class attribute)
   "Adds `attribute' to the class; attributes must be instances of
 structure classes which include the `attribute' structure class."

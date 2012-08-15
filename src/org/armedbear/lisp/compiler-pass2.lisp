@@ -1084,7 +1084,9 @@ extend the class any further."
   (with-code-to-method (class (abcl-class-file-constructor class))
     (emit 'return))
   (with-code-to-method (class (abcl-class-file-static-initializer class))
-    (emit 'return))
+    (if (= 0 (length *code*))
+        (class-remove-method class (abcl-class-file-static-initializer class))
+        (emit 'return)))
   (when *compiler-debug*
     (print "; Writing class file ")
     (print (abcl-class-file-class-name class))
