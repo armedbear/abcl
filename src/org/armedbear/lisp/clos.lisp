@@ -3125,7 +3125,7 @@ instance and, for setters, `new-value' the new value."
   (setf all-keys (copy-list all-keys))  ; since we modify it
   (remf all-keys :metaclass)
   (unless (classp metaclass) (setf metaclass (find-class metaclass)))
-  (change-class class metaclass)
+  (apply #'change-class class metaclass all-keys)
   (apply #'reinitialize-instance class
          :name name
          :direct-superclasses (canonicalize-direct-superclasses

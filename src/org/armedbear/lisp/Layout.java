@@ -265,10 +265,20 @@ public class Layout extends LispObject
       {
         final LispObject lispClass = arg;
         LispObject oldLayout;
-        if (lispClass instanceof LispClass)
-            oldLayout = ((LispClass)lispClass).getClassLayout();
-        else
-            oldLayout = Symbol.CLASS_LAYOUT.execute(lispClass);
+        // Non-finalized classes might not have a valid layout, but they do
+        // not have instances either so we can abort.
+        if (lispClass instanceof LispClass) {
+          if (!((LispClass)lispClass).isFinalized())
+            return arg;
+          oldLayout = ((LispClass)lispClass).getClassLayout();
+        } else if (lispClass instanceof StandardObject) {
+          if (((StandardObject)arg)
+              .getInstanceSlotValue(StandardClass.symFinalizedP) == NIL)
+            return arg;
+          oldLayout = Symbol.CLASS_LAYOUT.execute(lispClass);
+        } else {
+          return error(new TypeError(arg, Symbol.CLASS));
+        }
 
         Layout newLayout = new Layout((Layout)oldLayout);
         if (lispClass instanceof LispClass)
