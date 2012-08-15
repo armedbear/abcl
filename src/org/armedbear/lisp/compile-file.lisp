@@ -696,86 +696,57 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 (defvar *forms-for-output* nil)
 (defvar *fasl-stream* nil)
 
-(defun compile-file (input-file
-                     &key
-                     output-file
-                     ((:verbose *compile-verbose*) *compile-verbose*)
-                     ((:print *compile-print*) *compile-print*)
-                     (extract-toplevel-funcs-and-macros nil)
-                     external-format)
-  (declare (ignore external-format))    ; FIXME
-  (unless (or (and (probe-file input-file) (not (file-directory-p input-file)))
-              (pathname-type input-file))
-    (let ((pathname (merge-pathnames (make-pathname :type "lisp") input-file)))
-      (when (probe-file pathname)
-        (setf input-file pathname))))
-  (setf output-file (make-pathname 
-		     :defaults (if output-file
-				   (merge-pathnames output-file 
-						    *default-pathname-defaults*)
-				   (compile-file-pathname input-file))
-		     :version nil))
-  (let* ((*output-file-pathname* output-file)
-         (type (pathname-type output-file))
-         (temp-file (merge-pathnames (make-pathname :type (concatenate 'string type "-tmp"))
-                                     output-file))
-         (temp-file2 (merge-pathnames (make-pathname :type (concatenate 'string type "-tmp2"))
-                                     output-file))
-         (functions-file (merge-pathnames (make-pathname :type "funcs") output-file))
-         (macros-file (merge-pathnames (make-pathname :type "macs") output-file))
-         *toplevel-functions*
-         *toplevel-macros*
-         (warnings-p nil)
-         (failure-p nil))
-    (with-open-file (in input-file :direction :input)
-      (let* ((*compile-file-pathname* (make-pathname :defaults (pathname in)
-						     :version nil))
-             (*compile-file-truename* (make-pathname :defaults (truename in)
-                                                     :version nil))
-             (*source* *compile-file-truename*)
-             (*class-number* 0)
-             (namestring (namestring *compile-file-truename*))
-             (start (get-internal-real-time))
-             *fasl-uninterned-symbols*)
-        (when *compile-verbose*
-          (format t "; Compiling ~A ...~%" namestring))
-        (with-compilation-unit ()
-          (with-open-file (out temp-file
-                               :direction :output :if-exists :supersede
-                               :external-format *fasl-external-format*)
-            (let ((*readtable* *readtable*)
-                  (*read-default-float-format* *read-default-float-format*)
-                  (*read-base* *read-base*)
-                  (*package* *package*)
-                  (jvm::*functions-defined-in-current-file* '())
-                  (*fbound-names* '())
-                  (*fasl-stream* out)
-                  *forms-for-output*)
-              (jvm::with-saved-compiler-policy
-                (jvm::with-file-compilation
-                    (handler-bind
-                        ((style-warning 
-                          #'(lambda (c)
-                              (setf warnings-p t)
-                              ;; let outer handlers do their thing
-                              (signal c)
-                              ;; prevent the next handler
-                              ;; from running: we're a
-                              ;; WARNING subclass
-                              (continue)))
-                         ((or warning compiler-error)
-                          #'(lambda (c)
-                              (declare (ignore c))
-                              (setf warnings-p t
-                                    failure-p t))))
-                      (loop
-                         (let* ((*source-position* (file-position in))
-                                (jvm::*source-line-number* (stream-line-number in))
-                                (form (read in nil in))
-                                (*compiler-error-context* form))
-                           (when (eq form in)
-                             (return))
-                           (process-toplevel-form form out nil))))
+(defun compile-from-stream (in output-file temp-file temp-file2
+                            extract-toplevel-funcs-and-macros
+                            functions-file macros-file)
+  (let* ((*compile-file-pathname* (make-pathname :defaults (pathname in)
+                                                 :version nil))
+         (*compile-file-truename* (make-pathname :defaults (truename in)
+                                                 :version nil))
+         (*source* *compile-file-truename*)
+         (*class-number* 0)
+         (namestring (namestring *compile-file-truename*))
+         (start (get-internal-real-time))
+         *fasl-uninterned-symbols*)
+    (when *compile-verbose*
+      (format t "; Compiling ~A ...~%" namestring))
+    (with-compilation-unit ()
+      (with-open-file (out temp-file
+                           :direction :output :if-exists :supersede
+                           :external-format *fasl-external-format*)
+        (let ((*readtable* *readtable*)
+              (*read-default-float-format* *read-default-float-format*)
+              (*read-base* *read-base*)
+              (*package* *package*)
+              (jvm::*functions-defined-in-current-file* '())
+              (*fbound-names* '())
+              (*fasl-stream* out)
+              *forms-for-output*)
+          (jvm::with-saved-compiler-policy
+            (jvm::with-file-compilation
+              (handler-bind
+                  ((style-warning 
+                    #'(lambda (c)
+                        (setf warnings-p t)
+                        ;; let outer handlers do their thing
+                        (signal c)
+                        ;; prevent the next handler
+                        ;; from running: we're a
+                        ;; WARNING subclass
+                        (continue)))
+                   ((or warning compiler-error)
+                    #'(lambda (c)
+                        (declare (ignore c))
+                        (setf warnings-p t
+                              failure-p t))))
+                (loop
+                   (let* ((*source-position* (file-position in))
+                          (jvm::*source-line-number* (stream-line-number in))
+                          (form (read in nil in))
+                          (*compiler-error-context* form))
+                     (when (eq form in)
+                       (return))
+                     (process-toplevel-form form out nil))))
                     (finalize-fasl-output)
                     (dolist (name *fbound-names*)
                       (fmakunbound name)))))))
@@ -859,8 +830,49 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
         (when *compile-verbose*
           (format t "~&; Wrote ~A (~A seconds)~%"
                   (namestring output-file)
-                  (/ (- (get-internal-real-time) start) 1000.0)))))
-    (values (truename output-file) warnings-p failure-p)))
+                  (/ (- (get-internal-real-time) start) 1000.0)))) )
+
+(defun compile-file (input-file
+                     &key
+                     output-file
+                     ((:verbose *compile-verbose*) *compile-verbose*)
+                     ((:print *compile-print*) *compile-print*)
+                     (extract-toplevel-funcs-and-macros nil)
+                     external-format)
+  (declare (ignore external-format))    ; FIXME
+  (flet ((pathname-with-type (pathname type &optional suffix)
+           (when suffix
+             (setq type (concatenate 'string type suffix)))
+           (merge-pathnames (make-pathname :type type)
+                            pathname)))
+    (unless (or (and (probe-file input-file)
+                     (not (file-directory-p input-file)))
+                (pathname-type input-file))
+      (let ((pathname (pathname-with-type input-file "lisp")))
+        (when (probe-file pathname)
+          (setf input-file pathname))))
+    (setf output-file
+          (make-pathname :defaults
+                         (if output-file
+                             (merge-pathnames output-file
+                                              *default-pathname-defaults*)
+                             (compile-file-pathname input-file))
+                         :version nil))
+    (let* ((*output-file-pathname* output-file)
+           (type (pathname-type output-file))
+           (temp-file (pathname-with-type output-file type "-tmp"))
+           (temp-file2 (pathname-with-type output-file type "-tmp2"))
+           (functions-file (pathname-with-type output-file "funcs"))
+           (macros-file (pathname-with-type output-file "macs"))
+           *toplevel-functions*
+           *toplevel-macros*
+           (warnings-p nil)
+           (failure-p nil))
+      (with-open-file (in input-file :direction :input)
+        (compile-from-stream in output-file temp-file temp-file2
+                             extract-toplevel-funcs-and-macros
+                             functions-file macros-file))
+      (values (truename output-file) warnings-p failure-p))))
 
 (defun compile-file-if-needed (input-file &rest allargs &key force-compile
                                &allow-other-keys)
