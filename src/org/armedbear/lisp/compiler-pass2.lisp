@@ -1549,7 +1549,7 @@ The field type of the object is specified by OBJ-REF."
              (stringp form)
              (packagep form)
              (pathnamep form)
-             (vectorp form)
+             (arrayp form)
              (structure-object-p form)
              (standard-object-p form)
              (java:java-object-p form))
