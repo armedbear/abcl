@@ -921,7 +921,7 @@ where each of the vars returned is a list with these elements:
     (dolist (local-function local-functions)
       (push local-function *local-functions*))
     (with-saved-compiler-policy
-        (process-optimization-declarations (cddr form))
+      (process-optimization-declarations (cddr form))
       (let* ((block (make-flet-node))
              (*block* block)
              (*blocks* (cons block *blocks*))
