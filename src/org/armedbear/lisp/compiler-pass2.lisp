@@ -3251,8 +3251,10 @@ given a specific common representation.")
     (dolist (variable (m-v-b-free-specials block))
       (push variable *visible-variables*))
     ;; Body.
-    (let ((*blocks* (cons block *blocks*)))
-      (compile-progn-body (cdddr form) target))
+    (with-saved-compiler-policy
+      (process-optimization-declarations (cdddr form))
+      (let ((*blocks* (cons block *blocks*)))
+        (compile-progn-body (cdddr form) target)))
     (when bind-special-p
       (restore-dynamic-environment (m-v-b-environment-register block)))))
 
@@ -4102,10 +4104,8 @@ given a specific common representation.")
                                    :element-type '(unsigned-byte 8)
                                    :if-exists :supersede)))
       (with-class-file class-file
-        (let ((*current-compiland* compiland))
-          (with-saved-compiler-policy
-              (compile-to-jvm-class compiland)
-            (finish-class (compiland-class-file compiland) f)))))
+        (compile-to-jvm-class compiland)
+        (finish-class (compiland-class-file compiland) f)))
     (when stream
       (let ((bytes (sys::%get-output-stream-bytes stream)))
         (sys::put-memory-function *memory-class-loader*
@@ -4127,8 +4127,10 @@ given a specific common representation.")
       (push local-function *local-functions*))
     (dolist (special (flet-free-specials block))
       (push special *visible-variables*))
-    (let ((*blocks* (cons block *blocks*)))
-      (compile-progn-body body target representation))))
+    (with-saved-compiler-policy
+      (process-optimization-declarations body)
+      (let ((*blocks* (cons block *blocks*)))
+        (compile-progn-body body target representation)))))
 
 (defknown p2-labels-node (t t t) t)
 (defun p2-labels-node (block target representation)
@@ -4143,8 +4145,10 @@ given a specific common representation.")
       (compile-local-function local-function))
     (dolist (special (labels-free-specials block))
       (push special *visible-variables*))
-    (let ((*blocks* (cons block *blocks*)))
-      (compile-progn-body body target representation))))
+    (with-saved-compiler-policy
+      (process-optimization-declarations body)
+      (let ((*blocks* (cons block *blocks*)))
+        (compile-progn-body body target representation)))))
 
 (defun p2-lambda (local-function target)
   (compile-local-function local-function)
@@ -7055,7 +7059,8 @@ We need more thought here.
          (*visible-variables* *visible-variables*)
 
          (*thread* nil)
-         (*initialize-thread-var* nil))
+         (*initialize-thread-var* nil)
+         (*current-compiland* compiland))
 
     (with-code-to-method (class-file method)
       (setf *register* 1 ;; register 0: "this" pointer
@@ -7171,38 +7176,41 @@ We need more thought here.
               (setf (variable-register variable) register)
               (setf (variable-index variable) nil)))))
 
-      (p2-compiland-process-type-declarations body)
-      (generate-type-checks-for-variables (compiland-arg-vars compiland))
+      (with-saved-compiler-policy
+        (process-optimization-declarations body)
+
+        (p2-compiland-process-type-declarations body)
+        (generate-type-checks-for-variables (compiland-arg-vars compiland))
 
       ;; Unbox variables.
-      (dolist (variable (compiland-arg-vars compiland))
-        (p2-compiland-unbox-variable variable))
+        (dolist (variable (compiland-arg-vars compiland))
+          (p2-compiland-unbox-variable variable))
 
       ;; Establish dynamic bindings for any variables declared special.
-      (when (some #'variable-special-p (compiland-arg-vars compiland))
-        ;; Save the dynamic environment
-        (setf (compiland-environment-register compiland)
-              (allocate-register nil))
-        (save-dynamic-environment (compiland-environment-register compiland))
-        (dolist (variable (compiland-arg-vars compiland))
-          (when (variable-special-p variable)
-            (setf (variable-binding-register variable) (allocate-register nil))
-            (emit-push-current-thread)
-            (emit-push-variable-name variable)
-            (cond ((variable-register variable)
-                   (aload (variable-register variable))
-                   (setf (variable-register variable) nil))
-                  ((variable-index variable)
-                   (aload (compiland-argument-register compiland))
-                   (emit-push-constant-int (variable-index variable))
-                   (emit 'aaload)
-                   (setf (variable-index variable) nil)))
-            (emit-invokevirtual +lisp-thread+ "bindSpecial"
-                                (list +lisp-symbol+ +lisp-object+)
-                                +lisp-special-binding+)
-            (astore (variable-binding-register variable)))))
+        (when (some #'variable-special-p (compiland-arg-vars compiland))
+          ;; Save the dynamic environment
+          (setf (compiland-environment-register compiland)
+                (allocate-register nil))
+          (save-dynamic-environment (compiland-environment-register compiland))
+          (dolist (variable (compiland-arg-vars compiland))
+            (when (variable-special-p variable)
+              (setf (variable-binding-register variable) (allocate-register nil))
+              (emit-push-current-thread)
+              (emit-push-variable-name variable)
+              (cond ((variable-register variable)
+                     (aload (variable-register variable))
+                     (setf (variable-register variable) nil))
+                    ((variable-index variable)
+                     (aload (compiland-argument-register compiland))
+                     (emit-push-constant-int (variable-index variable))
+                     (emit 'aaload)
+                     (setf (variable-index variable) nil)))
+              (emit-invokevirtual +lisp-thread+ "bindSpecial"
+                                  (list +lisp-symbol+ +lisp-object+)
+                                  +lisp-special-binding+)
+              (astore (variable-binding-register variable)))))
 
-      (compile-progn-body body 'stack)
+        (compile-progn-body body 'stack))
 
       (when (compiland-environment-register compiland)
         (restore-dynamic-environment (compiland-environment-register compiland)))
@@ -7292,12 +7300,9 @@ We need more thought here.
   (let ((*all-variables* nil)
         (*closure-variables* nil)
         (*undefined-variables* nil)
-        (*local-functions* *local-functions*)
-        (*current-compiland* compiland))
-    (with-saved-compiler-policy
-        ;; Pass 1.
-        (p1-compiland compiland))
+        (*local-functions* *local-functions*))
 
+    (p1-compiland compiland)
     ;; *all-variables* doesn't contain variables which
     ;; are in an enclosing lexical environment (variable-environment)
     ;; so we don't need to filter them out
@@ -7323,10 +7328,8 @@ We need more thought here.
       ;; Pass 2.
 
     (with-class-file (compiland-class-file compiland)
-      (with-saved-compiler-policy
-        (compile-to-jvm-class compiland)
-        ;;        (finalize-class-file (compiland-class-file compiland))
-        (finish-class (compiland-class-file compiland) stream)))))
+      (compile-to-jvm-class compiland)
+      (finish-class (compiland-class-file compiland) stream))))
 
 (defvar *compiler-error-bailout*)
 
