@@ -193,15 +193,33 @@
         (write '(identity T) :stream f)
         (dolist (package '(:format :sequence :loop :mop :xp :precompiler
                            :profiler :java :jvm :extensions :threads
-                           :toplevel :system :cl))
+                           :top-level :system :cl))
           ;; Limit the set of packages:
           ;;  During incremental compilation, the packages GRAY-STREAMS
           ;;    and ASDF are not being created. Nor are these packages
           ;;    vital to the correct operation of the base system.
+
+          (let ((*package* (find-package package))
+                externals)
+            (do-external-symbols (sym package
+                                      externals)
+              (when (eq (symbol-package sym)
+                        *package*)
+                (push sym externals)))
+            (when externals
+              (write-line ";; EXPORTS" f)
+              (write `(cl:in-package ,package) :stream f)
+              (terpri f)
+              (write `(cl:export ',externals) :stream f)
+              (terpri f)))
+
+
+          (terpri f)
           (write-line ";; FUNCTIONS" f)
           (terpri f)
           (write-package-filesets f package 'ext:autoload
                                   (combos-to-fileset-symbols funcs))
+          (terpri f)
           (write-line ";; MACROS" f)
           (terpri f)
           (write-package-filesets f package 'ext:autoload-macro
