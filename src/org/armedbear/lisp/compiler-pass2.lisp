@@ -7300,7 +7300,7 @@ We need more thought here.
   (let ((*all-variables* nil)
         (*closure-variables* nil)
         (*undefined-variables* nil)
-        (*local-functions* *local-functions*))
+        (*local-functions* nil))
 
     (p1-compiland compiland)
     ;; *all-variables* doesn't contain variables which
