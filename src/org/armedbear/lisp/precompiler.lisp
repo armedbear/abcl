@@ -323,6 +323,10 @@
 
 (in-package "PRECOMPILER")
 
+
+(export '(precompile-form precompile))
+
+
 ;; No source-transforms and inlining in precompile-function-call
 ;; No macro expansion in precompile-dolist and precompile-dotimes
 ;; No macro expansion in precompile-do/do*

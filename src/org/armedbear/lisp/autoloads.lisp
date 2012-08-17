@@ -106,25 +106,6 @@
 
 (in-package "SYSTEM")
 
-;; #:SYSTEM in PRECOMPILER.LISP
-
-
-(export '(process-optimization-declarations
-          inline-p notinline-p inline-expansion expand-inline
-          note-name-defined precompile))
-
-
-
-;; #:SYSTEM in SOURCE-TRANSFORM.LISP
-
-(export '(source-transform define-source-transform expand-source-transform))
-
-(in-package "PRECOMPILER")
-
-(export '(precompile-form precompile))
-
-
-(in-package "SYSTEM")
 
 ;; This one must be last, or at least past print-object and clos:
 ;; we don't want FORMATs executed before we can load those to end us
