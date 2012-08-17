@@ -33,6 +33,12 @@
 (in-package #:threads)
 
 
+(export '(make-mailbox mailbox-send mailbox-empty-p
+          mailbox-read mailbox-peek
+          make-thread-lock with-thread-lock
+          make-mutex get-mutex release-mutex with-mutex))
+
+
 ;;
 ;; MAKE-THREAD helper to establish restarts
 ;;

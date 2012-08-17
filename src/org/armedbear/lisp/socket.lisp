@@ -29,7 +29,12 @@
 ;;; obligated to do so.  If you do not wish to do so, delete this
 ;;; exception statement from your version.
 
-(in-package "SYSTEM")
+(in-package "EXTENSIONS")
+
+(export '(make-socket make-server-socket server-socket-close socket-accept
+          socket-close get-socket-stream socket-peer-port socket-local-port
+          socket-local-address socket-peer-address))
+
 
 (defun get-socket-stream (socket &key (element-type 'character) (external-format :default))
   ":ELEMENT-TYPE must be CHARACTER or (UNSIGNED-BYTE 8); the default is CHARACTER.
@@ -42,22 +47,22 @@ EXTERNAL-FORMAT must be of the same format as specified for OPEN."
          (error 'simple-type-error
                 :format-control
                 ":ELEMENT-TYPE must be CHARACTER or (UNSIGNED-BYTE 8).")))
-  (%socket-stream socket element-type external-format))
+  (sys::%socket-stream socket element-type external-format))
 
 (defun make-socket (host port)
-  (%make-socket host port))
+  (sys::%make-socket host port))
 
 (defun make-server-socket (port)
-  (%make-server-socket port))
+  (sys::%make-server-socket port))
 
 (defun socket-accept (socket)
-  (%socket-accept socket))
+  (sys::%socket-accept socket))
 
 (defun socket-close (socket)
-  (%socket-close socket))
+  (sys::%socket-close socket))
 
 (defun server-socket-close (socket)
-  (%server-socket-close socket))
+  (sys::%server-socket-close socket))
 
 (declaim (inline %socket-address %socket-port))
 (defun %socket-address (socket addressName)

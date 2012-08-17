@@ -84,26 +84,6 @@
 (export 'process-kill)
 (autoload 'process-kill "run-program")
 
-(export 'make-socket)
-(export 'make-server-socket)
-(export 'server-socket-close)
-(export 'socket-accept)
-(export 'socket-close)
-(export 'get-socket-stream)
-(export 'socket-peer-port)
-(export 'socket-local-port)
-(export 'socket-local-address)
-(export 'socket-peer-address)
-
-(in-package "THREADS")
-
-(export '(make-mailbox mailbox-send mailbox-empty-p
-          mailbox-read mailbox-peek))
-(export '(make-thread-lock with-thread-lock))
-(export '(make-mutex get-mutex release-mutex with-mutex))
-
-
-(in-package "EXTENSIONS")
 
 (export '(grovel-java-definitions compile-system))
 (export 'aver)
