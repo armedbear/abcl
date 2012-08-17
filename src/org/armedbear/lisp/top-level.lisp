@@ -31,16 +31,9 @@
 
 ;;; Adapted from SB-ACLREPL (originally written by Kevin Rosenberg).
 
-(in-package #:system)
-
-(defvar *inspect-break* nil)
-
-(defvar *inspected-object-stack* nil)
-
-(defvar *inspected-object* nil)
-
 (in-package #:top-level)
 
+(require 'inspect)
 
 (defvar *null-cmd* (gensym))
 (defvar *handled-cmd* (gensym))

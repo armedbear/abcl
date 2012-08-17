@@ -32,8 +32,14 @@
 (in-package #:system)
 
 (require 'clos)
-
 (require 'format)
+
+
+(defvar *inspect-break* nil)
+(defvar *inspected-object-stack* nil)
+(defvar *inspected-object* nil)
+
+
 
 (defun leader (name)
   (let ((size (max 0 (- 16 (length (string name))))))
