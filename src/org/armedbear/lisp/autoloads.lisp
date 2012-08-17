@@ -49,16 +49,11 @@
 (in-package "SYSTEM")
 
 (export '%ldb '#:system)
-(export '(ensure-class subclassp %defgeneric canonicalize-direct-superclasses)
-        '#:system)
 (export 'concatenate-to-string '#:system)
 
 (in-package "MOP")
-(export '(class-precedence-list class-slots slot-definition-allocation 
-          slot-definition-initargs slot-definition-initform
-          slot-definition-initfunction slot-definition-name
-          compute-applicable-methods
-          compute-applicable-methods-using-classes))
+(export '(class-precedence-list class-slots %defgeneric
+          canonicalize-direct-superclasses))
 
 
 ;; Java interface.

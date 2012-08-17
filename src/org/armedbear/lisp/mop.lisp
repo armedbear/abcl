@@ -51,7 +51,7 @@
           standard-accessor-method
           standard-reader-method
           standard-writer-method
-          
+
           compute-effective-slot-definition
           compute-class-precedence-list
           compute-default-initargs
@@ -105,6 +105,7 @@
 
           direct-slot-definition-class
           effective-slot-definition-class
+          slot-definition-allocation
           slot-definition-initargs
           slot-definition-location
           slot-definition-name
