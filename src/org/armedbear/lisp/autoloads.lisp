@@ -52,7 +52,7 @@
 (export 'concatenate-to-string '#:system)
 
 (in-package "MOP")
-(export '(class-precedence-list class-slots %defgeneric
+(export '(%defgeneric
           canonicalize-direct-superclasses))
 
 

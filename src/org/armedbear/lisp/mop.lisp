@@ -107,6 +107,8 @@
           effective-slot-definition-class
           slot-definition-allocation
           slot-definition-initargs
+          slot-definition-initform
+          slot-definition-initfunction
           slot-definition-location
           slot-definition-name
           slot-definition-readers
