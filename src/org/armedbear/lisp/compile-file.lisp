@@ -31,8 +31,7 @@
 
 (in-package #:system)
 
-(require "JVM")
-;; (require "COMPILER-ERROR") already made accessible through JVM
+(require "COMPILER-PASS2")
 
 (defvar *fbound-names*)
 

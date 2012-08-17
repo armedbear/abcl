@@ -34,21 +34,7 @@
 (export '(compile-defun *catch-errors* jvm-compile-package
           derive-compiler-type))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "LOOP")
-  (require "FORMAT")
-  (require "CLOS")
-  (require "PRINT-OBJECT")
-  (require "COMPILER-TYPES")
-  (require "COMPILER-ERROR")
-  (require "KNOWN-FUNCTIONS")
-  (require "DUMP-FORM")
-  (require "JVM-INSTRUCTIONS")
-  (require "JVM-CLASS-FILE")
-  (require "KNOWN-SYMBOLS")
-  (require "JAVA")
-  (require "COMPILER-PASS1")
-  (require "COMPILER-PASS2"))
+(require "JVM-CLASS-FILE")
 
 (defvar *closure-variables* nil)
 

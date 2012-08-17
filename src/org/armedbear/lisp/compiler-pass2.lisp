@@ -43,6 +43,8 @@
   (require "DUMP-FORM")
   (require "JVM-INSTRUCTIONS")
   (require "JVM-CLASS-FILE")
+  (require "JVM")
+  (require "COMPILER-PASS1")
   (require "JAVA"))
 
 

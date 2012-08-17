@@ -32,6 +32,9 @@
 
 (in-package #:jvm)
 
+(require "COMPILER-ERROR")
+
+
 (declaim (inline u2 s1 s2))
 
 (defknown u2 (fixnum) cons)
