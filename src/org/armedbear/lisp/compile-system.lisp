@@ -190,7 +190,6 @@
         (terpri f)
         (write-line ";; ---- GENERATED CONTENT BELOW" f)
         (terpri f)
-        (write '(identity T) :stream f)
         (dolist (package '(:format :sequence :loop :mop :xp :precompiler
                            :profiler :java :jvm :extensions :threads
                            :top-level :system :cl))
