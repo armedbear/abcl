@@ -33,6 +33,16 @@
 
 (in-package "SYSTEM")
 
+;; If we're here due to an autoloader,
+;; we should prevent a circular dependency:
+;; when the debugger tries to print an error,
+;; it autoloads us, but if that autoloading causes
+;; another error, it circularly starts autoloading us.
+;;
+;; So, we replace whatever is in the function slot until
+;; we can reliably call FORMAT
+(setf (symbol-function 'format) #'sys::%format)
+
 (require "PRINT-OBJECT")
 
 ;;; From primordial-extensions.lisp.
