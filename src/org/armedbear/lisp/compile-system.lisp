@@ -90,10 +90,18 @@
                                      (mapcar #'second combos)))))
 
 (defun remove-multi-combo-symbols (combos)
-  (remove-if (lambda (x)
-               (< 1 (count x combos :key #'second)))
-             combos
-             :key #'second))
+  (princ "; Removing multi-homed symbols")
+  (let ((sym-hash (make-hash-table :size (* 2 (length combos)))))
+    (dolist (combo combos)
+      (incf (gethash (second combo) sym-hash 0)))
+    (print (remove-if-not (lambda (x)
+                            (< 1 (gethash x sym-hash)))
+                          combos
+                          :key #'second))
+    (remove-if (lambda (x)
+                 (< 1 (gethash x sym-hash)))
+               combos
+               :key #'second)))
 
 (defun set-equal (set1 set2 &key test)
   (or (eq set1 set2)
@@ -118,7 +126,8 @@
                :key #'first)
       (pushnew (first symbol-fileset)
                (cdr (assoc (cdr symbol-fileset) fileset-symbols
-                           :test (lambda (x y) (set-equal x y :test #'string=))))))
+                           :test (lambda (x y)
+                                   (set-equal x y :test #'string=))))))
     fileset-symbols))
 
 (defun write-autoloader (stream package type fileset-symbols)
@@ -163,25 +172,34 @@
 
 (defun generate-autoloads (symbol-files-pathspec)
   (flet ((filter-combos (combos)
-           (remove-if (lambda (x)
-                        ;; exclude the symbols from the files
-                        ;; below: putting autoloaders on some of
-                        ;; the symbols conflicts with the bootstrapping
-                        ;; Primitives which have been defined Java-side
-                        (member x '( ;; function definitions to be excluded
-                                    "fdefinition" "early-defuns"
-                                    "require" "signal"
-                                    "extensible-sequences-base" "restart"
-                                    "extensible-sequences"
-                                    ;; macro definitions to be excluded
-                                    "macros" "backquote" "precompiler")
-                                :test #'string=))
-                      (remove-multi-combo-symbols combos)
-                      :key #'first))
+           (remove-multi-combo-symbols
+            (remove-if (lambda (x)
+                         ;; exclude the symbols from the files
+                         ;; below: putting autoloaders on some of
+                         ;; the symbols conflicts with the bootstrapping
+                         ;; Primitives which have been defined Java-side
+                         (member x '( ;; function definitions to be excluded
+                                     "fdefinition" "early-defuns"
+                                     "require" "signal" "restart"
+
+                                     ;; extensible sequences override
+                                     ;; lots of default functions;
+                                     ;; java-collections implements
+                                     ;; extensible sequences
+                                     "extensible-sequences-base"
+                                     "extensible-sequences" "java-collections"
+
+                                     ;; macro definitions to be excluded
+                                     "macros" ;; "backquote"
+                                     "precompiler")
+                                 :test #'string=))
+                       combos
+                       :key #'first)))
          (symbols-pathspec (filespec)
            (merge-pathnames filespec symbol-files-pathspec)))
     (let ((funcs (filter-combos (load-combos (symbols-pathspec "*.funcs"))))
-          (macs (filter-combos (load-combos (symbols-pathspec "*.macs")))))
+          (macs (filter-combos (load-combos (symbols-pathspec "*.macs"))))
+          (exps (filter-combos (load-combos (symbols-pathspec "*.exps")))))
       (with-open-file (f (symbols-pathspec "autoloads-gen.lisp")
                          :direction :output :if-does-not-exist :create
                          :if-exists :supersede)
@@ -198,13 +216,13 @@
           ;;    and ASDF are not being created. Nor are these packages
           ;;    vital to the correct operation of the base system.
 
-          (let ((*package* (find-package package))
-                externals)
-            (do-external-symbols (sym package
-                                      externals)
-              (when (eq (symbol-package sym)
-                        *package*)
-                (push sym externals)))
+          (let* ((*package* (find-package package))
+                 (all-exported-symbols
+                  (remove-duplicates (mapcar #'second exps)))
+                 (externals (remove-if-not (lambda (sym)
+                                             (eq (symbol-package sym)
+                                                 *package*))
+                                           all-exported-symbols)))
             (when externals
               (write-line ";; EXPORTS" f)
               (write `(cl:in-package ,package) :stream f)
