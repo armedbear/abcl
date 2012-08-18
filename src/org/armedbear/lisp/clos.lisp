@@ -52,6 +52,9 @@
 
 (in-package #:mop)
 
+(export '(%defgeneric canonicalize-direct-superclasses))
+
+
 ;;
 ;;
 ;;
@@ -4586,5 +4589,5 @@ or T when any keyword is acceptable due to presence of
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require "MOP"))
 
-(provide 'clos)
+(provide "CLOS")
 

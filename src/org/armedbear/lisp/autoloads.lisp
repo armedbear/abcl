@@ -51,9 +51,6 @@
 (export '%ldb '#:system)
 (export 'concatenate-to-string '#:system)
 
-(in-package "MOP")
-(export '(%defgeneric
-          canonicalize-direct-superclasses))
 
 ;; Profiler.
 (in-package "PROFILER")
