@@ -299,7 +299,6 @@
       (load (do-compile "ldb.lisp"))
       (load (do-compile "destructuring-bind.lisp"))
       (load (do-compile "asdf.lisp"))
-      (load (do-compile "socket.lisp"))
       ;; But not for these.
       (mapc #'do-compile '("abcl-contrib.lisp"
                            "adjoin.lisp"
@@ -417,6 +416,7 @@
                            "sets.lisp"
                            "shiftf.lisp"
                            "signal.lisp"
+                           "socket.lisp"
                            "sort.lisp"
                            "step.lisp"
                            "strings.lisp"
