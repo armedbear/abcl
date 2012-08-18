@@ -1,6 +1,7 @@
 (require "CLOS")
 (require "JAVA")
 (require "EXTENSIBLE-SEQUENCES")
+(require "PRINT-OBJECT")
 
 (in-package :java)
 
