@@ -30,31 +30,17 @@
 ;;; exception statement from your version.
 
 
-;; This file lists public functions which package users can depend upon.
-;;
+;; ABOUT THIS FILE
+
 ;; In order to avoid loading the full CL system (of which not all functions
-;; may be required by the current program), this file makes sure the symbols
-;; are available, but when it tries to execute them, the autoloader causes
-;; the actual functions or macros to be loaded.
+;; may be required by the current program), this file makes sure symbols
+;; of public functions have their function slots bound to a proxy function
+;; which loads the actual functions or macros on invocation.
 
-;; This file lists for each autoloaded symbol which file has to be
-;; REQUIRE'd to make it available.
-;;
-;; Please note: the actual function definition may not be always in the
-;;    same file as the one which needs to be REQUIRE'd; an example of
-;;    such a case is the compiler: all compiler functions have to be
-;;    loaded through loading jvm.lisp.
+;; There are two autoloader files: autoload-gen.lisp, which is automatically
+;; generated based on the source files, and this file, which is manually
+;; maintained for any symbols that can't be automatically detected.
 
-
-
-;; Extensions.
-(in-package "EXTENSIONS")
-
-;; due to the macro-expansion of DEFSTRUCT,
-;; slot accessors aren't being "detected"
-(autoload 'process-input "run-program")
-(autoload 'process-output "run-program")
-(autoload 'process-error "run-program")
 
 
 
