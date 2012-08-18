@@ -41,6 +41,7 @@
 
 (defvar *toplevel-functions*)
 (defvar *toplevel-macros*)
+(defvar *toplevel-exports*)
 
 
 (defun base-classname (&optional (output-file-pathname *output-file-pathname*))
@@ -280,6 +281,16 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (when compile-time-too
       (eval form)))
   nil)
+
+(declaim (ftype (function (t t t) t) process-toplevel-export))
+(defun process-toplevel-export (form stream compile-time-too)
+  (when (eq (car (second form)) 'QUOTE) ;; constant export list
+    (let ((sym-or-syms (second (second form))))
+      (setf *toplevel-exports*
+            (append  *toplevel-exports* (if (listp sym-or-syms)
+                                            sym-or-syms
+                                            (list sym-or-syms))))))
+  (precompile-toplevel-form form stream compile-time-too))
 
 (declaim (ftype (function (t t t) t) process-toplevel-mop.ensure-method))
 (defun process-toplevel-mop.ensure-method (form stream compile-time-too)
@@ -561,7 +572,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                 (DEFUN process-toplevel-defun)
                 (DEFVAR process-toplevel-defvar/defparameter)
                 (EVAL-WHEN process-toplevel-eval-when)
-                (EXPORT precompile-toplevel-form)
+                (EXPORT process-toplevel-export)
                 (IMPORT process-toplevel-import)
                 (IN-PACKAGE process-toplevel-defpackage/in-package)
                 (LOCALLY process-toplevel-locally)
@@ -697,7 +708,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 
 (defun compile-from-stream (in output-file temp-file temp-file2
                             extract-toplevel-funcs-and-macros
-                            functions-file macros-file)
+                            functions-file macros-file exports-file)
   (let* ((*compile-file-pathname* (make-pathname :defaults (pathname in)
                                                  :version nil))
          (*compile-file-truename* (make-pathname :defaults (truename in)
@@ -776,7 +787,20 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                                    :if-does-not-exist :create
                                    :if-exists :supersede)
               (let ((*package* (find-package :keyword)))
-                (write *toplevel-macros* :stream m-out)))))
+                (write *toplevel-macros* :stream m-out))))
+          (setf *toplevel-exports*
+                (remove-if-not (lambda (sym)
+                                 (if (symbolp sym)
+                                     (symbol-package sym)
+                                     T))
+                               (remove-duplicates *toplevel-exports*)))
+          (when *toplevel-exports*
+            (with-open-file (e-out exports-file
+                                   :direction :output
+                                   :if-does-not-exist :create
+                                   :if-exists :supersede)
+              (let ((*package* (find-package :keyword)))
+                (write *toplevel-exports* :stream e-out)))))
         (with-open-file (in temp-file :direction :input)
           (with-open-file (out temp-file2 :direction :output
                                :if-does-not-exist :create
@@ -863,14 +887,16 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
            (temp-file2 (pathname-with-type output-file type "-tmp2"))
            (functions-file (pathname-with-type output-file "funcs"))
            (macros-file (pathname-with-type output-file "macs"))
+           (exports-file (pathname-with-type output-file "exps"))
            *toplevel-functions*
            *toplevel-macros*
+           *toplevel-exports*
            (warnings-p nil)
            (failure-p nil))
       (with-open-file (in input-file :direction :input)
         (compile-from-stream in output-file temp-file temp-file2
                              extract-toplevel-funcs-and-macros
-                             functions-file macros-file))
+                             functions-file macros-file exports-file))
       (values (truename output-file) warnings-p failure-p))))
 
 (defun compile-file-if-needed (input-file &rest allargs &key force-compile
