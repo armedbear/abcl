@@ -46,11 +46,6 @@
 ;;    loaded through loading jvm.lisp.
 
 
-(in-package "SYSTEM")
-
-(export '%ldb '#:system)
-(export 'concatenate-to-string '#:system)
-
 
 ;; Extensions.
 (in-package "EXTENSIONS")
