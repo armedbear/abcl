@@ -31,7 +31,8 @@
 
 (in-package #:profiler)
 
-(export '(*hidden-functions*))
+(export '(*hidden-functions* *granularity*
+          show-call-counts show-hot-counts with-profiling))
 
 (require '#:clos)
 (require '#:format)

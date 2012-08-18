@@ -52,10 +52,6 @@
 (export 'concatenate-to-string '#:system)
 
 
-;; Profiler.
-(in-package "PROFILER")
-(export '(*granularity* show-call-counts show-hot-counts with-profiling))
-
 ;; Extensions.
 (in-package "EXTENSIONS")
 (export 'simple-search)
