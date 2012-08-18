@@ -33,6 +33,8 @@
 
 (in-package "SYSTEM")
 
+(export 'aver)
+
 (defun %failed-aver (expr-as-string)
   (error 'simple-error
          :format-control "Failed AVER: ~S"

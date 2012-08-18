@@ -54,47 +54,13 @@
 
 ;; Extensions.
 (in-package "EXTENSIONS")
-(export 'simple-search)
-(export 'run-shell-command)
-(autoload 'run-shell-command)
-(export 'run-program)
-(autoload 'run-program)
-(export 'process) ;; Not a function, but a DEFSTRUCT
-(export 'process-p)
-(autoload 'process-p "run-program")
-(export 'process-input)
+
+;; due to the macro-expansion of DEFSTRUCT,
+;; slot accessors aren't being "detected"
 (autoload 'process-input "run-program")
-(export 'process-output)
 (autoload 'process-output "run-program")
-(export 'process-error)
 (autoload 'process-error "run-program")
-(export 'process-alive-p)
-(autoload 'process-alive-p "run-program")
-(export 'process-wait)
-(autoload 'process-wait "run-program")
-(export 'process-exit-code)
-(autoload 'process-exit-code "run-program")
-(export 'process-kill)
-(autoload 'process-kill "run-program")
 
-
-(export '(grovel-java-definitions compile-system))
-(export 'aver)
-(export 'collect)
-(export 'compile-file-if-needed)
-(export 'describe-compiler-policy)
-(export 'macroexpand-all)
-
-(export '*gui-backend*)
-(export 'init-gui)
-(export 'make-dialog-prompt-stream)
-
-;; JVM compiler.
-(in-package "JVM")
-(export '(jvm-compile-package))
-
-(in-package "LISP")
-(export 'compiler-let)
 
 
 (in-package "SYSTEM")

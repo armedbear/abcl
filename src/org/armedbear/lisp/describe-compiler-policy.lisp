@@ -30,6 +30,8 @@
 
 (in-package "SYSTEM")
 
+(export 'describe-compiler-policy)
+
 (defun describe-compiler-policy ()
   (format t "~&; Compiler policy: safety ~D, space ~D, speed ~D, debug ~D~%"
           *safety* *space* *speed* *debug*)

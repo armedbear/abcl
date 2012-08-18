@@ -31,8 +31,7 @@
 
 (in-package "JVM")
 
-(export '(compile-defun *catch-errors* jvm-compile-package
-          derive-compiler-type))
+(export '(compile-defun *catch-errors* derive-compiler-type))
 
 (require "JVM-CLASS-FILE")
 

@@ -7558,16 +7558,6 @@ generated class."
 
 
 
-(defun jvm-compile-package (package-designator)
-  (let ((pkg (if (packagep package-designator)
-                 package-designator
-                 (find-package package-designator))))
-      (dolist (sym (sys::package-symbols pkg))
-        (when (fboundp sym)
-          (unless (or (special-operator-p sym) (macro-function sym))
-            (jvm-compile sym)))))
-  t)
-
 (defun initialize-p2-handlers ()
   (mapc #'install-p2-handler '(declare
                                multiple-value-call

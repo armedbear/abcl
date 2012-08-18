@@ -31,5 +31,7 @@
 
 (in-package "SYSTEM")
 
+(export '(run-shell-command))
+
 (defun run-shell-command (command &key directory (output *standard-output*))
   (%run-shell-command command directory output))

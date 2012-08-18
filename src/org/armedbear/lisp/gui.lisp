@@ -2,6 +2,9 @@
 
 (require :java)
 
+(export '(*gui-backend* init-gui make-dialog-prompt-stream))
+
+
 (defvar *gui-backend* :swing)
 
 (defun init-gui ()
@@ -15,8 +18,8 @@
 
 (defmethod %make-dialog-prompt-stream ((gui-backend (eql :swing)))
   (java:jnew (java:jconstructor
-	      "org.armedbear.lisp.java.swing.SwingDialogPromptStream")))
+              "org.armedbear.lisp.java.swing.SwingDialogPromptStream")))
 
 (defmethod %make-dialog-prompt-stream ((gui-backend (eql :awt)))
   (java:jnew (java:jconstructor
-	      "org.armedbear.lisp.java.awt.AwtDialogPromptStream")))
+              "org.armedbear.lisp.java.awt.AwtDialogPromptStream")))

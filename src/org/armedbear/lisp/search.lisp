@@ -33,6 +33,9 @@
 
 (require "EXTENSIBLE-SEQUENCES-BASE")
 
+(export '(simple-search))
+
+
 ;; From CMUCL.
 
 (eval-when (:compile-toplevel :execute)

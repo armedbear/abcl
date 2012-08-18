@@ -33,6 +33,10 @@
 
 (require "JAVA")
 
+(export '(run-program process process-p process-input process-output
+          process-error process-alive-p process-wait process-exit-code
+          process-kill))
+
 ;;; Vaguely inspired by sb-ext:run-program in SBCL. 
 ;;;
 ;;; See <http://www.sbcl.org/manual/Running-external-programs.html>. 

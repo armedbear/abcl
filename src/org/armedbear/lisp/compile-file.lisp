@@ -33,6 +33,9 @@
 
 (require "COMPILER-PASS2")
 
+
+(export 'compile-file-if-needed)
+
 (defvar *fbound-names*)
 
 (defvar *class-number*)

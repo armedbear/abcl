@@ -1050,10 +1050,15 @@
 (export '(precompile-form))
 
 (in-package #:ext)
+
+(export 'macroexpand-all)
+
 (defun macroexpand-all (form &optional env)
   (precompiler:precompile-form form t env))
 
 (in-package #:lisp)
+
+(export '(compiler-let))
 
 (defmacro compiler-let (bindings &body forms &environment env)
   (let ((bindings (mapcar #'(lambda (binding)

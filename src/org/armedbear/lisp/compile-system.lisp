@@ -35,6 +35,9 @@
 (require "COLLECT")
 (require "COMPILE-FILE")
 
+(export '(grovel-java-definitions-in-file compile-system))
+
+
 (defun check-lisp-home ()
   (loop
     (cond ((and *lisp-home*
