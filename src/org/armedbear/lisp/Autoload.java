@@ -564,6 +564,8 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%run-shell-command", "ShellCommand");
         autoload(PACKAGE_SYS, "%server-socket-close", "server_socket_close");
         autoload(PACKAGE_SYS, "%set-arglist", "arglist");
+        autoload(PACKAGE_CL, "find-class", "LispClass", true);
+        autoload(PACKAGE_SYS, "%set-find-class", "LispClass", true);
         autoload(PACKAGE_SYS, "%set-class-direct-slots", "SlotClass", true);
         autoload(PACKAGE_SYS, "%set-function-info", "function_info");
         autoload(PACKAGE_SYS, "%set-generic-function-lambda-list", "StandardGenericFunction", true);
@@ -618,7 +620,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "cache-slot-location", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "canonicalize-logical-host", "LogicalPathname", true);
         autoload(PACKAGE_SYS, "class-direct-slots", "SlotClass");
-	autoload(PACKAGE_SYS, "%float-bits", "FloatFunctions");
+        autoload(PACKAGE_SYS, "%float-bits", "FloatFunctions");
         autoload(PACKAGE_SYS, "coerce-to-double-float", "FloatFunctions");
         autoload(PACKAGE_SYS, "coerce-to-single-float", "FloatFunctions");
         autoload(PACKAGE_SYS, "compute-class-direct-slots", "SlotClass", true);
@@ -683,7 +685,16 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "set-slot-definition-writers", "SlotDefinition", true);
         autoload(PACKAGE_SYS, "simple-list-remove-duplicates", "simple_list_remove_duplicates");
         autoload(PACKAGE_SYS, "single-float-bits", "FloatFunctions", true);
-        autoload(PACKAGE_SYS, "%std-allocate-instance", "StandardObjectFunctions", true);
+        autoload(PACKAGE_SYS, "%std-allocate-instance", "StandardObject", true);
+        autoload(PACKAGE_SYS, "swap-slots", "StandardObject", true);
+        autoload(PACKAGE_SYS, "std-instance-layout", "StandardObject", true);
+        autoload(PACKAGE_SYS, "%set-std-instance-layout", "StandardObject", true);
+        autoload(PACKAGE_SYS, "std-instance-class", "StandardObject", true);
+        autoload(PACKAGE_SYS, "standard-instance-access", "StandardObject", true);
+        autoload(PACKAGE_SYS, "%set-standard-instance-access", "StandardObject", true);
+        autoload(PACKAGE_SYS, "std-slot-boundp", "StandardObject", true);
+        autoload(PACKAGE_SYS, "std-slot-value", "StandardObject", true);
+        autoload(PACKAGE_SYS, "set-std-slot-value", "StandardObject", true);
         autoload(PACKAGE_SYS, "%allocate-funcallable-instance", "FuncallableStandardObject", true);
         autoload(PACKAGE_SYS, "unzip", "unzip", true);
         autoload(PACKAGE_SYS, "zip", "zip", true);

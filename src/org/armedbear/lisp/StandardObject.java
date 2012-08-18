@@ -615,4 +615,33 @@ public class StandardObject extends LispObject
       return third;
     }
   };
+
+  private static final Primitive _STD_ALLOCATE_INSTANCE 
+    = new pf__std_allocate_instance();
+  @DocString(name="%std-allocate-instance",
+             args="class",
+             returns="instance")
+  private static final class pf__std_allocate_instance extends Primitive
+  {
+    pf__std_allocate_instance()
+    {
+      super("%std-allocate-instance", PACKAGE_SYS, true, "class");
+    }
+    @Override
+    public LispObject execute(LispObject arg)
+    {
+      if (arg == StandardClass.STANDARD_CLASS)
+        return new StandardClass();
+      if (arg instanceof StandardClass)
+        return ((StandardClass)arg).allocateInstance();
+      if (arg.typep(StandardClass.STANDARD_CLASS) != NIL) {
+        LispObject l = Symbol.CLASS_LAYOUT.execute(arg);
+        if (! (l instanceof Layout))
+          return error(new ProgramError("Invalid standard class layout for: " + arg.princToString()));
+        
+        return new StandardObject((Layout)l);
+      }
+      return type_error(arg, Symbol.STANDARD_CLASS);
+    }
+  };
 }
