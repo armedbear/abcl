@@ -314,3 +314,5 @@
         (t
          (%print-object object stream)))
   object)
+
+(provide "PRINT")

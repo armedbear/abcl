@@ -59,6 +59,8 @@
 
 ;must do the following in common lisps not supporting *print-shared*
 
+(require "PRINT")
+
 (defvar *print-shared* nil)
 (export '(*print-shared*))
 

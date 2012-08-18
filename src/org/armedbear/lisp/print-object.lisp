@@ -121,4 +121,4 @@
                 (cell-error-name x)))
       (format stream "The variable ~S is unbound." (cell-error-name x))))
 
-(provide 'print-object)
+(provide "PRINT-OBJECT")

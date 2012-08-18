@@ -57,6 +57,8 @@
 
 (in-package #:xp)
 
+(require "PPRINT")
+
 (defvar *ipd* nil ;see initialization at end of file.
   "initial print dispatch table.")
 
@@ -333,3 +335,5 @@
 (set-pprint-dispatch+ 'pprint-dispatch-table #'pprint-dispatch-print '(0) *ipd*)
 
 (setf *print-pprint-dispatch* (copy-pprint-dispatch nil))
+
+(provide "PPRINT-DISPATCH")
