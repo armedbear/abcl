@@ -552,7 +552,9 @@
         (error 'program-error
                :format-control "Structure redefinition not supported ~
                               in DEFSTRUCT for ~A"
-               :format-arguments (list name))))
+               :format-arguments (list name)))
+      ;; Since they're the same, continue with the old one.
+      (setf description old))
     (setf (get name 'structure-definition) description))
   (%set-documentation name 'structure documentation)
   (when (or (null type) named)
