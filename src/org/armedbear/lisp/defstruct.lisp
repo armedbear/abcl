@@ -517,8 +517,8 @@
                                 slots
                                 inherited-accessors
                                 documentation)
-  (setf (get name 'structure-definition)
-        (make-defstruct-description :name name
+  (let ((description
+         (make-defstruct-description :name name
                                     :conc-name conc-name
                                     :default-constructor default-constructor
                                     :constructors constructors
@@ -533,6 +533,27 @@
                                     :direct-slots direct-slots
                                     :slots slots
                                     :inherited-accessors inherited-accessors))
+        (old (get name 'structure-definition)))
+    (when old
+      (unless
+          ;; Assert that the structure definitions are exactly the same
+          ;; we need to support this type of redefinition during bootstrap
+          ;; building ourselves
+          (and (equalp (aref old 0) (aref description 0))
+               ;; the CONC-NAME slot is an uninterned symbol if not supplied
+               ;; thus different on each redefinition round. Check that the
+               ;; names are equal, because it produces the same end result
+               ;; when they are.
+               (string= (aref old 1) (aref description 1))
+               (dotimes (index 13 t)
+                 (when (not (equalp (aref old (+ 2 index))
+                                    (aref description (+ 2 index))))
+                   (return nil))))
+        (error 'program-error
+               :format-control "Structure redefinition not supported ~
+                              in DEFSTRUCT for ~A"
+               :format-arguments (list name))))
+    (setf (get name 'structure-definition) description))
   (%set-documentation name 'structure documentation)
   (when (or (null type) named)
     (let ((structure-class
