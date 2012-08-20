@@ -107,7 +107,7 @@ where each of the vars returned is a list with these elements:
         (&environment (setf state :env))
         (t
          (case state
-           (:req (push arg req))
+           (:req (push (list arg) req))
            (:rest (setf rest (list arg)
                         state :none))
            (:env (setf env (list arg)
@@ -176,7 +176,8 @@ where each of the vars returned is a list with these elements:
       (let (req-bindings temp-bindings bindings ignorables)
         ;;Required arguments.
         (setf req-bindings
-              (loop :for var :in req :collect `(,var ,(pop-required-argument))))
+              (loop :for (var) :in req
+                 :collect `(,var ,(pop-required-argument))))
 
         ;;Optional arguments.
         (when opt
@@ -757,6 +758,17 @@ where each of the vars returned is a list with these elements:
                  (push `(DECLARE (,(car decl) ,name)) other-decls)))))))
     (values (nreverse other-decls)
             (nreverse specific-decls))))
+
+(defun lambda-list-names (lambda-list)
+  "Returns a list of variable names extracted from `lambda-list'."
+  (multiple-value-bind
+        (req opt key key-p rest allow-key-p aux whole env)
+      (parse-lambda-list lambda-list)
+    (declare (ignore key-p allow-key-p))
+    (mapcan (lambda (x)
+              (mapcar #'first x))
+            (list req opt key aux rest whole env))))
+
 
 (defun rewrite-aux-vars (form)
   (let* ((lambda-list (cadr form))

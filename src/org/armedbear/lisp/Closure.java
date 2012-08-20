@@ -220,16 +220,4 @@ public class Closure extends Function
   {
     return arglist.match(args, environment, environment, thread);
   }
-
-  // ### lambda-list-names
-  private static final Primitive LAMBDA_LIST_NAMES =
-      new Primitive("lambda-list-names", PACKAGE_SYS, true)
-    {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-        Closure closure = new Closure(list(Symbol.LAMBDA, arg, NIL), new Environment());
-        return closure.getVariableList();
-      }
-    };
 }
