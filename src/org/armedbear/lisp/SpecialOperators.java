@@ -498,6 +498,8 @@ for (Cons x : nonSequentialVars)
                     }
                     return type_error(name, FUNCTION_NAME);
                 }
+                if (car == Symbol.MACRO_FUNCTION)
+                    return new Closure(arg, env);
             }
             return error(new UndefinedFunction(list(Keyword.NAME, arg)));
         }

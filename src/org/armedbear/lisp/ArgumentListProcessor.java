@@ -38,9 +38,17 @@ import java.util.List;
 import java.util.ArrayList;
 import static org.armedbear.lisp.Lisp.*;
 
-/** A class to parse a lambda list and match function call arguments with it
+/** A class to parse a lambda list and match function call arguments with it.
+ * 
+ * The lambda list may either be of type ORDINARY or MACRO lambda list.
+ * All other lambda lists are parsed elsewhere in our code base.
  */
 public class ArgumentListProcessor {
+    
+  public enum LambdaListType {
+      ORDINARY,
+      MACRO
+  }
 
   // States.
   private static final int STATE_REQUIRED = 0;
@@ -162,7 +170,8 @@ public class ArgumentListProcessor {
    * @param specials A list of symbols specifying which variables to
    *    bind as specials during initform evaluation
    */
-  public ArgumentListProcessor(Operator fun, LispObject lambdaList, LispObject specials) {
+  public ArgumentListProcessor(Operator fun, LispObject lambdaList,
+          LispObject specials, LambdaListType type) {
     function = fun;
     
     boolean _andKey = false;
@@ -176,11 +185,28 @@ public class ArgumentListProcessor {
         ArrayList<Param> aux = null;
         int state = STATE_REQUIRED;
         LispObject remaining = lambdaList;
+        
+        if (remaining.car() == Symbol.AND_WHOLE) {
+            if (type == LambdaListType.ORDINARY) {
+                error(new ProgramError("&WHOLE not allowed in ordinary lambda lists."));
+            } else {
+                // skip the &WHOLE <var> part of the lambda list
+                remaining = remaining.cdr().cdr();
+            }
+        }
+            
+          
         while (remaining != NIL)
           {
             LispObject obj = remaining.car();
             if (obj instanceof Symbol)
               {
+                if (obj == Symbol.AND_WHOLE) {
+                    if (type == LambdaListType.ORDINARY)
+                      error(new ProgramError("&WHOLE not allowed in ordinary lambda lists."));
+                    else
+                      error(new ProgramError("&WHOLE must appear first in macro lambda list."));
+                }
                 if (state == STATE_AUX)
                   {
                     if (aux == null)
@@ -200,6 +226,8 @@ public class ArgumentListProcessor {
                         error(new ProgramError(
                           "&REST/&BODY must precede &KEY."));
                       }
+                    if (type == LambdaListType.ORDINARY && obj == Symbol.AND_BODY)
+                      error(new ProgramError("&BODY not allowed in ordinary lambda lists."));
                     state = STATE_REST;
                     arity = -1;
                     maxArgs = -1;
@@ -228,6 +256,8 @@ public class ArgumentListProcessor {
                   }
                 else if (obj == Symbol.AND_ENVIRONMENT)
                   {
+                    if (type == LambdaListType.ORDINARY)
+                      error(new ProgramError("&ENVIRONMENT not allowed in ordinary lambda lists."));
                     remaining = remaining.cdr();
                     envVar = (Symbol) remaining.car();
                     envParam = new EnvironmentParam(envVar, isSpecial(envVar, specials));

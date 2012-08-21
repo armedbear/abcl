@@ -95,7 +95,16 @@ public class Closure extends Function
 
     this.environment = env;
 
-    arglist = new ArgumentListProcessor(this, lambdaList, specials);
+    /* In the bootstrapping process, functions with MACRO LAMBDA LIST
+     * lambda list types are being generated using the MACRO_FUNCTION instead
+     * of the LAMBDA or NAMED_LAMBDA keys.
+     * 
+     * Use that to perform argument list lambda list keyword checking.
+     */
+    arglist = new ArgumentListProcessor(this, lambdaList, specials,
+            (lambdaExpression.car() == Symbol.MACRO_FUNCTION) ?
+            ArgumentListProcessor.LambdaListType.MACRO
+            : ArgumentListProcessor.LambdaListType.ORDINARY);
     freeSpecials = arglist.freeSpecials(specials);
   }
 

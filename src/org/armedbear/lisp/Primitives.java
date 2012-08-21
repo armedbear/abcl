@@ -1879,12 +1879,18 @@ public final class Primitives {
         public LispObject execute(LispObject args, Environment env)
 
         {
+            /* Create an expansion function
+             * `(lambda (,formArg ,envArg)
+             *     (apply (function (macro-function ,lambdaList
+             *                         (block ,symbol ,@body)))
+             *            (cdr ,formArg)))
+             */
             Symbol symbol = checkSymbol(args.car());
             LispObject lambdaList = checkList(args.cadr());
             LispObject body = args.cddr();
             LispObject block = new Cons(Symbol.BLOCK, new Cons(symbol, body));
             LispObject toBeApplied =
-                list(Symbol.FUNCTION, list(Symbol.LAMBDA, lambdaList, block));
+                list(Symbol.FUNCTION, list(Symbol.MACRO_FUNCTION, lambdaList, block));
             final LispThread thread = LispThread.currentThread();
             LispObject formArg = gensym("FORM-", thread);
             LispObject envArg = gensym("ENV-", thread); // Ignored.
@@ -1899,8 +1905,8 @@ public final class Primitives {
                 put(symbol, Symbol.MACROEXPAND_MACRO, macroObject);
             else
                 symbol.setSymbolFunction(macroObject);
-            macroObject.setLambdaList(lambdaList);
-            thread._values = null;
+            macroObject.setLambdaList(args.cadr());
+            LispThread.currentThread()._values = null;
             return symbol;
         }
     };
@@ -3656,13 +3662,19 @@ public final class Primitives {
         public LispObject execute(LispObject definition)
 
         {
+            /* Create an expansion function
+             * `(lambda (,formArg ,envArg)
+             *     (apply (function (macro-function ,lambdaList
+             *                         (block ,symbol ,@body)))
+             *            (cdr ,formArg)))
+             */
             Symbol symbol = checkSymbol(definition.car());
             LispObject lambdaList = definition.cadr();
             LispObject body = definition.cddr();
             LispObject block =
                 new Cons(Symbol.BLOCK, new Cons(symbol, body));
             LispObject toBeApplied =
-                list(Symbol.LAMBDA, lambdaList, block);
+                list(Symbol.FUNCTION, list(Symbol.MACRO_FUNCTION, lambdaList, block));
             final LispThread thread = LispThread.currentThread();
             LispObject formArg = gensym("WHOLE-", thread);
             LispObject envArg = gensym("ENVIRONMENT-", thread); // Ignored.
