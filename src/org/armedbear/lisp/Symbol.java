@@ -942,6 +942,19 @@ public class Symbol extends LispObject implements java.io.Serializable
 	    return this;
 	}
     }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if (pkg instanceof Package) {
+            sb.append(((Package)pkg).getName());
+            sb.append(":");
+        } else {
+            sb.append("#:");
+        }
+        sb.append(name);
+        return sb.toString();
+    }
 
 
   // External symbols in CL package.
