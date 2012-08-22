@@ -647,7 +647,7 @@
        (car definition)
        (make-macro (car definition)
                    (make-closure
-                    (make-expander-for-macrolet definition)
+                    (make-macro-expander definition)
                     NIL))))
     (multiple-value-bind (body decls)
         (parse-body (cddr form) nil)

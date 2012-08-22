@@ -368,8 +368,8 @@
 	 ,@local-decls
 	 ,body))))
 
-;; Redefine SYS:MAKE-EXPANDER-FOR-MACROLET to use PARSE-DEFMACRO.
-(defun make-expander-for-macrolet (definition)
+;; Redefine SYS:MAKE-MACRO-EXPANDER to use PARSE-DEFMACRO.
+(defun make-macro-expander (definition)
   (let* ((name (car definition))
          (lambda-list (cadr definition))
          (form (gensym "WHOLE-"))

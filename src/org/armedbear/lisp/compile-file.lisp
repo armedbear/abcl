@@ -247,7 +247,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
       (environment-add-macro-definition *compile-file-environment*
                                         (car definition)
                                         (make-macro (car definition)
-                                                    (make-expander-for-macrolet definition))))
+                                                    (make-macro-expander definition))))
     (dolist (body-form (cddr form))
       (process-toplevel-form body-form stream compile-time-too)))
   nil)
