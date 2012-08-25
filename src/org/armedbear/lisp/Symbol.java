@@ -3110,6 +3110,10 @@ public class Symbol extends LispObject implements java.io.Serializable
 
 
   // Internal symbols in SYSTEM package.
+  public static final Symbol ALLOCATION =
+    PACKAGE_SYS.addInternalSymbol("ALLOCATION");
+  public static final Symbol ALLOCATION_CLASS =
+    PACKAGE_SYS.addInternalSymbol("ALLOCATION-CLASS");
   public static final Symbol BACKQUOTE_MACRO =
     PACKAGE_SYS.addInternalSymbol("BACKQUOTE-MACRO");
   public static final Symbol CASE_FROB_STREAM =
@@ -3137,10 +3141,24 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addInternalSymbol("FUNCTION-PRELOAD");
   public static final Symbol _GENERIC_FUNCTION =
     PACKAGE_SYS.addInternalSymbol("%GENERIC-FUNCTION");
+  public static final Symbol INITARGS =
+    PACKAGE_SYS.addInternalSymbol("INITARGS");
+  public static final Symbol INITFORM =
+    PACKAGE_SYS.addInternalSymbol("INITFORM");
+  public static final Symbol INITFUNCTION =
+    PACKAGE_SYS.addInternalSymbol("INITFUNCTION");
   public static final Symbol INSTANCE =
     PACKAGE_SYS.addInternalSymbol("INSTANCE");
+  public static final Symbol JAVA_STACK_FRAME =
+    PACKAGE_SYS.addInternalSymbol("JAVA-STACK-FRAME");
   public static final Symbol KEYWORDS =
     PACKAGE_SYS.addInternalSymbol("KEYWORDS");
+  public static final Symbol LAMBDA_LIST =
+    PACKAGE_SYS.addInternalSymbol("LAMBDA-LIST");
+  public static final Symbol LISP_STACK_FRAME =
+    PACKAGE_SYS.addInternalSymbol("LISP-STACK-FRAME");
+  public static final Symbol LOCATION =
+    PACKAGE_SYS.addInternalSymbol("LOCATION");
   public static final Symbol MACROEXPAND_MACRO =
     PACKAGE_SYS.addInternalSymbol("MACROEXPAND-MACRO");
   public static final Symbol MAKE_FUNCTION_PRELOADING_CONTEXT =
@@ -3157,6 +3175,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addInternalSymbol("PROXY-PRELOADED-FUNCTION");
   public static final Symbol QUALIFIERS =
     PACKAGE_SYS.addInternalSymbol("QUALIFIERS");
+  public static final Symbol READERS =
+    PACKAGE_SYS.addInternalSymbol("READERS");
   public static final Symbol _SOURCE =
     PACKAGE_SYS.addInternalSymbol("%SOURCE");
   public static final Symbol SOCKET_STREAM =
@@ -3173,12 +3193,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addInternalSymbol("STACK-FRAME");
   public static final Symbol _TYPE =
     PACKAGE_SYS.addInternalSymbol("%TYPE");
-  public static final Symbol LISP_STACK_FRAME =
-    PACKAGE_SYS.addInternalSymbol("LISP-STACK-FRAME");
-  public static final Symbol JAVA_STACK_FRAME =
-    PACKAGE_SYS.addInternalSymbol("JAVA-STACK-FRAME");
-  public static final Symbol LAMBDA_LIST =
-    PACKAGE_SYS.addInternalSymbol("LAMBDA-LIST");
+  public static final Symbol WRITERS =
+    PACKAGE_SYS.addInternalSymbol("WRITERS");
 
   // CDR6
   public static final Symbol _INSPECTOR_HOOK_ =

@@ -50,22 +50,23 @@ public final class SlotDefinitionClass extends StandardClass
     public static final int SLOT_INDEX_DOCUMENTATION    = 10;
 
     /**
-     * For internal use only. This constructor hardcodes the layout of the class, and can't be used
-     * to create arbitrary subclasses of slot-definition.
+     * For internal use only. This constructor hardcodes the layout of
+     * the class, and can't be used to create arbitrary subclasses of
+     * slot-definition since new slots get added at the beginning.
      */
     public SlotDefinitionClass(Symbol symbol, LispObject cpl) {
         super(symbol, cpl);
         Package pkg = PACKAGE_SYS;
         LispObject[] instanceSlotNames = {
-            pkg.intern("NAME"),
-            pkg.intern("INITFUNCTION"),
-            pkg.intern("INITFORM"),
-            pkg.intern("INITARGS"),
-            pkg.intern("READERS"),
-            pkg.intern("WRITERS"),
-            pkg.intern("ALLOCATION"),
-            pkg.intern("ALLOCATION-CLASS"),
-            pkg.intern("LOCATION"),
+            Symbol.NAME,
+            Symbol.INITFUNCTION,
+            Symbol.INITFORM,
+            Symbol.INITARGS,
+            Symbol.READERS,
+            Symbol.WRITERS,
+            Symbol.ALLOCATION,
+            Symbol.ALLOCATION_CLASS,
+            Symbol.LOCATION,
             Symbol._TYPE,
             Symbol._DOCUMENTATION
         };
