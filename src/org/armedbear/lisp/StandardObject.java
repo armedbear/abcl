@@ -428,6 +428,10 @@ public class StandardObject extends LispObject
     public LispObject execute(LispObject first, LispObject second)
     {
       final StandardObject instance = checkStandardObject(first);
+      if (instance.layout.isInvalid()) {
+        // Update instance.
+        instance.updateLayout();
+      }
       final int index;
       if (second instanceof Fixnum) {
         index = ((Fixnum)second).value;
@@ -473,6 +477,10 @@ public class StandardObject extends LispObject
                               LispObject third)
     {
       final StandardObject instance = checkStandardObject(first);
+      if (instance.layout.isInvalid()) {
+        // Update instance.
+        instance.updateLayout();
+      }
       final int index;
       if (second instanceof Fixnum) {
         index = ((Fixnum)second).value;
