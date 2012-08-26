@@ -92,9 +92,19 @@ where each of the vars returned is a list with these elements:
  keyword  - the keyword argument to match against
 
 "
-  (let ((state :req)
+  (let ((remaining lambda-list)
+        (state :req)
         req opt key rest whole env aux key-p allow-others-p)
-    (dolist (arg lambda-list)
+    (when (eq (car lambda-list) '&WHOLE)
+      (let ((var (second lambda-list)))
+        (when (memq var lambda-list-keywords)
+          (error 'program-error
+                 :format-control "Lambda list keyword ~A found where &WHOLE ~
+                                  variable expected in lambda list ~A."
+                 :format-arguments (list var lambda-list)))
+        (setf whole (list var))
+        (setf remaining (nthcdr 2 lambda-list))))
+    (dolist (arg remaining)
       (case arg
         (&optional (setf state :opt))
         (&key (setf state :key
@@ -105,6 +115,10 @@ where each of the vars returned is a list with these elements:
                                  allow-others-p t))
         (&whole (setf state :whole))
         (&environment (setf state :env))
+        (&whole
+         (error 'program-error
+                :format-control "&WHOLE must appear first in lambda list ~A."
+                :format-arguments (list lambda-list)))
         (t
          (case state
            (:req (push (list arg) req))
@@ -112,8 +126,6 @@ where each of the vars returned is a list with these elements:
                         state :none))
            (:env (setf env (list arg)
                        state :req))
-           (:whole (setf whole (list arg)
-                         state :req))
            (:none
             (error "Invalid lambda list: argument found in :none state."))
            (:opt
@@ -767,17 +779,25 @@ where each of the vars returned is a list with these elements:
     (declare (ignore key-p allow-key-p))
     (mapcan (lambda (x)
               (mapcar #'first x))
-            (list req opt key aux rest whole env))))
+            (list req opt key aux (list rest) (list whole) (list env)))))
 
+(defun lambda-list-keyword-p (x)
+  (memq x lambda-list-keywords))
 
 (defun rewrite-aux-vars (form)
   (let* ((lambda-list (cadr form))
          (aux-p (memq '&AUX lambda-list))
-         (lets (cdr aux-p))
+         (post-aux-&environment (memq '&ENVIRONMENT aux-p))
+         (lets (ldiff (cdr aux-p) post-aux-&environment)) ; strip trailing &environment
          aux-vars)
     (unless aux-p
       ;; no rewriting required
       (return-from rewrite-aux-vars form))
+    (dolist (var lets)
+      (when (lambda-list-keyword-p var)
+        (error 'program-error
+               :format-control "Lambda list keyword ~A not allowed after &AUX in ~A."
+               :format-arguments (list var lambda-list))))
     (multiple-value-bind (body decls)
         (parse-body (cddr form))
       (dolist (form lets)
@@ -785,7 +805,9 @@ where each of the vars returned is a list with these elements:
                (push (car form) aux-vars))
               (t
                (push form aux-vars))))
-      (setf lambda-list (subseq lambda-list 0 (position '&AUX lambda-list)))
+      (setf lambda-list
+            (append (subseq lambda-list 0 (position '&AUX lambda-list))
+                    post-aux-&environment))
       (multiple-value-bind (let-decls lambda-decls)
           (split-decls decls (lambda-list-names lambda-list))
         `(lambda ,lambda-list
