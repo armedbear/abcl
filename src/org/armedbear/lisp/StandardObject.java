@@ -473,7 +473,23 @@ public class StandardObject extends LispObject
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third)
     {
-      checkStandardObject(first).slots[Fixnum.getValue(second)] = third; // FIXME
+      final StandardObject instance = checkStandardObject(first);
+      final int index;
+      if (second instanceof Fixnum) {
+        index = ((Fixnum)second).value;
+      } else {
+        return type_error(second,
+                          list(Symbol.INTEGER, Fixnum.ZERO,
+                               Fixnum.getInstance(instance.slots.length)));
+      }
+
+      try {
+        instance.slots[index] = third;
+      } catch (ArrayIndexOutOfBoundsException e) {
+        return type_error(second,
+                          list(Symbol.INTEGER, Fixnum.ZERO,
+                               Fixnum.getInstance(instance.slots.length)));
+      }
       return third;
     }
   };
