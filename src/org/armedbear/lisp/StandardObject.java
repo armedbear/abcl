@@ -429,27 +429,26 @@ public class StandardObject extends LispObject
     {
       final StandardObject instance = checkStandardObject(first);
       final int index;
-      if (second instanceof Fixnum)
-        {
-          index = ((Fixnum)second).value;
-        }
-      else
-        {
-          return type_error(second,
-                            list(Symbol.INTEGER, Fixnum.ZERO,
-                                 Fixnum.getInstance(instance.slots.length)));
-        }
+      if (second instanceof Fixnum) {
+        index = ((Fixnum)second).value;
+      } else {
+        return type_error(second, Symbol.INTEGER);
+      }
+
       LispObject value;
-      try
-        {
-          value = instance.slots[index];
-        }
-      catch (ArrayIndexOutOfBoundsException e)
-        {
+      try {
+        value = instance.slots[index];
+      } catch (ArrayIndexOutOfBoundsException e) {
+        if (instance.slots.length > 0)
           return type_error(second,
                             list(Symbol.INTEGER, Fixnum.ZERO,
-                                 Fixnum.getInstance(instance.slots.length)));
-        }
+                                 Fixnum.getInstance(instance.slots.length - 1)));
+        else
+          return error(new ProgramError("The object "
+                                        + instance.princToString() +
+                                        " has no slots."));
+
+      }
       // We let UNBOUND_VALUE escape here, since invoking
       // standard-instance-access on an unbound slot has undefined
       // consequences (AMOP pg. 239), and we use this behavior to
@@ -478,17 +477,20 @@ public class StandardObject extends LispObject
       if (second instanceof Fixnum) {
         index = ((Fixnum)second).value;
       } else {
-        return type_error(second,
-                          list(Symbol.INTEGER, Fixnum.ZERO,
-                               Fixnum.getInstance(instance.slots.length)));
+        return type_error(second, Symbol.INTEGER);
       }
-
       try {
         instance.slots[index] = third;
       } catch (ArrayIndexOutOfBoundsException e) {
-        return type_error(second,
-                          list(Symbol.INTEGER, Fixnum.ZERO,
-                               Fixnum.getInstance(instance.slots.length)));
+        if (instance.slots.length > 0)
+          return type_error(second,
+                            list(Symbol.INTEGER, Fixnum.ZERO,
+                                 Fixnum.getInstance(instance.slots.length - 1)));
+        else
+          return error(new ProgramError("The object "
+                                        + instance.princToString() +
+                                        " has no slots."));
+
       }
       return third;
     }
