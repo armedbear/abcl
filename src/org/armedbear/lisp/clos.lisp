@@ -1269,7 +1269,10 @@ Handle with care."
               (,needs-args-len-var)
               (,emf-form
                (let* (,@(when whole
-                              `((,whole ',args-var)))
+                              `((,whole (progn
+                                          (push `(,',whole ,',args-var)
+                                                ,binding-forms)
+                                          ',args-var))))
                       ,@(when rest
                               ;; ### TODO: use a fresh symbol for the rest
                               ;;   binding being generated and pushed into binding-forms
