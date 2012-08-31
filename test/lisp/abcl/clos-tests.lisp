@@ -330,7 +330,7 @@
 (define-method-combination dmc-test-args-with-whole.2 ()
   ((methods ()))
   (:arguments &whole whole &rest rest)
-  `(progn (format nil "using ~a ~a" whole rest)
+  `(progn (format nil "using ~a ~a" ,whole ,rest)
           ,@(mapcar (lambda (method) `(call-method ,method))
                     methods)))
 
@@ -346,7 +346,7 @@
 (define-method-combination dmc-test-args-with-whole.3a ()
   ((methods ()))
   (:arguments &whole whole &optional opt)
-  `(progn (format nil "using ~a ~a" whole opt)
+  `(progn (format nil "using ~a ~a" ,whole ,opt)
           ,@(mapcar (lambda (method) `(call-method ,method))
                     methods)))
 
@@ -361,7 +361,7 @@
 (define-method-combination dmc-test-args-with-whole.3b ()
   ((methods ()))
   (:arguments &whole whole &optional opt &key k)
-  `(progn (format nil "using ~a ~a ~a" whole opt k)
+  `(progn (format nil "using ~a ~a ~a" ,whole ,opt ,k)
           ,@(mapcar (lambda (method) `(call-method ,method))
                     methods)))
 
@@ -376,7 +376,7 @@
 (define-method-combination dmc-test-args-with-whole.3c ()
   ((methods ()))
   (:arguments &whole whole &optional opt &rest r)
-  `(progn (format nil "using ~a ~a ~a" whole opt r)
+  `(progn (format nil "using ~a ~a ~a" ,whole ,opt ,r)
           ,@(mapcar (lambda (method) `(call-method ,method))
                     methods)))
 
@@ -392,7 +392,7 @@
 (define-method-combination dmc-test-args-with-whole.3d ()
   ((methods ()))
   (:arguments &whole whole &optional opt &rest r &key k)
-  `(progn (format nil "using ~a ~a ~a ~a" whole opt r k)
+  `(progn (format nil "using ~a ~a ~a ~a" ,whole ,opt ,r ,k)
           ,@(mapcar (lambda (method) `(call-method ,method))
                     methods)))
 
@@ -407,7 +407,7 @@
 (define-method-combination dmc-test-args-with-whole.4 ()
   ((methods ()))
   (:arguments &whole whole &key k)
-  `(progn (format nil "using ~a ~a" whole k)
+  `(progn (format nil "using ~a ~a" ,whole ,k)
           ,@(mapcar (lambda (method) `(call-method ,method))
                     methods)))
 
@@ -422,7 +422,7 @@
 (define-method-combination dmc-test-args-with-whole.5 ()
   ((methods ()))
   (:arguments &whole whole &aux a)
-  `(progn (format nil "using ~a ~a" whole a)
+  `(progn (format nil "using ~a ~a" ,whole ,a)
           ,@(mapcar (lambda (method) `(call-method ,method))
                     methods)))
 
