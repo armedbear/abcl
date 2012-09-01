@@ -482,3 +482,20 @@
          10545160975)
   t)
 
+
+;;; ticket #241
+(deftest compiler.4a
+    (multiple-value-bind
+          (rv error)
+        (ignore-errors
+          (compile nil '(lambda (&rest args &optional x))))
+      (typep error 'program-error))
+  t)
+
+(deftest compiler.4b
+    (multiple-value-bind
+          (rv error)
+        (ignore-errors
+          (compile nil '(lambda (&key args &optional x))))
+      (typep error 'program-error))
+  t)
