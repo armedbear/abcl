@@ -257,13 +257,13 @@
         (*prevent-fasl-circle-detection* t))
     (unless output-path
       (setf output-path *default-pathname-defaults*))
-    (flet ((do-compile (file)
+    (flet ((do-compile (file &key (extract t))
              (let ((out (make-pathname :type *compile-file-type*
                                        :defaults (merge-pathnames
                                                   file output-path))))
                (compile-file-if-needed file
                                        :output-file out
-                                       :extract-toplevel-funcs-and-macros t))))
+                                       :extract-toplevel-funcs-and-macros extract))))
       (load (do-compile "defstruct.lisp"))
       (load (do-compile "coerce.lisp"))
       (load (do-compile "open.lisp"))
@@ -452,8 +452,10 @@
       (generate-autoloads output-path)
       ;; Compile the file in the build directory instead of the one in the
       ;; sources directory - the latter being for bootstrapping only.
-      (do-compile (merge-pathnames #p"autoloads-gen.lisp" output-path))
-      (do-compile "autoloads.lisp"))
+      (do-compile (merge-pathnames #p"autoloads-gen.lisp" output-path)
+        :extract nil)
+      (do-compile "autoloads.lisp"
+        :extract nil))
     t))
 
 (defun compile-system (&key quit (zip t) (cls-ext *compile-file-class-extension*) (abcl-ext *compile-file-type*) output-path)
