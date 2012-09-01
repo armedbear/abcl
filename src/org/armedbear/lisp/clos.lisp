@@ -2255,8 +2255,6 @@ Initialized with the true value near the end of the file.")
                  (let* ((method (%car (sys:%generic-function-methods gf)))
                         (specializer (car (std-method-specializers method)))
                         (function (std-method-fast-function method)))
-                   ;;### The above doesn't work: STD-METHOD-FUNCTION
-                   ;; is a function of 2 args: ARGS and NEXT-EMFUN and being called with one below...
                    (if (typep specializer 'eql-specializer)
                        (let ((specializer-object (eql-specializer-object specializer)))
                          #'(lambda (arg)
