@@ -29,7 +29,7 @@
 ;;; obligated to do so.  If you do not wish to do so, delete this
 ;;; exception statement from your version.
 
-(require '#:opcodes)
+(require '#:jvm-instructions)
 
 (in-package #:jvm)
 
@@ -55,7 +55,7 @@
       ((7 8)
        (list tag (read-u2 stream)))
       (1
-       (let* ((len (read-u2 stream))
+`       (let* ((len (read-u2 stream))
               (s (make-string len)))
          (dotimes (i len)
            (setf (char s i) (code-char (read-u1 stream))))
