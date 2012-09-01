@@ -473,10 +473,12 @@
   t)
 
 
+;;; ticket #189
+(deftest compiler.3
+    (eql (funcall (compile nil (lambda (a)
+                           (declare (type unsigned-byte a))
+                           (max 28105919 a 1016934843)))
+                  10545160975)
+         10545160975)
+  t)
 
-
-
-        
-
-        
-        

@@ -5247,7 +5247,8 @@ for use with derive-type-times.")
 
 (define-int-bounds-derivation max (low1 low2 high1 high2)
   (values (or (when (and low1 low2) (max low1 low2)) low1 low2)
-          (or (when (and high1 high2) (max high1 high2)) high1 high2)))
+          ; if either maximum is unbound, their maximum is unbound
+          (when (and high1 high2) (max high1 high2))))
 
 (declaim (ftype (function (t) t) derive-type-max))
 (defun derive-type-max (form)
@@ -5256,7 +5257,8 @@ for use with derive-type-times.")
     (derive-compiler-types args op)))
 
 (define-int-bounds-derivation min (low1 high1 low2 high2)
-  (values (or (when (and low1 low2) (min low1 low2)) low1 low2)
+  (values (when (and low1 low2) (min low1 low2))
+          ; if either minimum is unbound, their minimum is unbound
           (or (when (and high1 high2) (min high1 high2)) high1 high2)))
 
 (defknown derive-type-min (t) t)
