@@ -50,6 +50,7 @@ public final class SlimeOutputStream extends Stream
         isOutputStream = true;
         isCharacterStream = true;
         isBinaryStream = false;
+        eolStyle = EolStyle.LF;
         setWriter(stringWriter = new StringWriter());
         this.f = f;
     }

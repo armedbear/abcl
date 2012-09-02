@@ -50,6 +50,7 @@ public class SlimeInputStream extends Stream
         isOutputStream = false;
         isCharacterStream = true;
         isBinaryStream = false;
+        eolStyle = EolStyle.LF;
         this.f = f;
         this.ostream = ostream;
     }
