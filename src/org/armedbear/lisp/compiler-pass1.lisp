@@ -94,6 +94,7 @@ where each of the vars returned is a list with these elements:
 "
   (let ((remaining lambda-list)
         (state :req)
+        keyword-required
         req opt key rest whole env aux key-p allow-others-p)
     (when (eq (car lambda-list) '&WHOLE)
       (let ((var (second lambda-list)))
@@ -104,59 +105,99 @@ where each of the vars returned is a list with these elements:
                  :format-arguments (list var lambda-list)))
         (setf whole (list var))
         (setf remaining (nthcdr 2 lambda-list))))
-    (dolist (arg remaining)
-      (case arg
-        (&optional (setf state :opt))
-        (&key (setf state :key
-                    key-p t))
-        (&rest (setf state :rest))
-        (&aux (setf state :aux))
-        (&allow-other-keys (setf state :none
-                                 allow-others-p t))
-        (&whole (setf state :whole))
-        (&environment (setf state :env))
-        (&whole
-         (error 'program-error
-                :format-control "&WHOLE must appear first in lambda list ~A."
-                :format-arguments (list lambda-list)))
-        (t
-         (case state
-           (:req (push (list arg) req))
-           (:rest (setf rest (list arg)
-                        state :none))
-           (:env (setf env (list arg)
-                       state :req))
-           (:none
-            (error "Invalid lambda list: argument found in :none state."))
-           (:opt
-            (cond
-              ((symbolp arg)
-               (push (list arg nil nil nil) opt))
-              ((consp arg)
-               (push (list (car arg) (cadr arg) (caddr arg)) opt))
-              (t
-               (error "Invalid state."))))
-           (:aux
-            (cond
-              ((symbolp arg)
-               (push (list arg nil nil nil) aux))
-              ((consp arg)
-               (push (list (car arg) (cadr arg) nil nil) aux))
-              (t
-               (error "Invalid :aux state."))))
-           (:key
-            (cond
-              ((symbolp arg)
-               (push (list arg nil nil (sys::keywordify arg)) key))
-              ((and (consp arg)
-                    (consp (car arg)))
-               (push (list (cadar arg) (cadr arg) (caddr arg) (caar arg)) key))
-              ((consp arg)
-               (push (list (car arg) (cadr arg) (caddr arg)
-                           (sys::keywordify (car arg))) key))
-              (t
-               (error "Invalid :key state."))))
-           (t (error "Invalid state found."))))))
+
+    (do* ((arg (pop remaining) (pop tail))
+          (tail remaining tail))
+         ((and (null arg)
+               (endp tail)))
+      (let* ((allowable-previous-states
+              ;; even if the arglist could theoretically contain the
+              ;; keyword :req, this still works, because the cdr will
+              ;; be NIL, meaning that the code below thinks we DIDN'T
+              ;; find a new state. Which happens to be true.
+              (cdr (member arg '(&whole &environment &aux &allow-other-keys
+                                 &key &rest &optional :req)))))
+        (cond
+          (allowable-previous-states
+           (setf keyword-required nil) ;; we have a keyword...
+           (case arg
+             (&key
+              (setf key-p t))
+             (&rest
+              (when (endp tail)
+                (error 'program-error
+                       :format-control "&REST without variable in lambda list ~A."
+                       :format-arguments (list lambda-list)))
+              (setf rest (list (pop tail))
+                    keyword-required t))
+             (&allow-other-keys
+              (unless (eq state '&KEY)
+                (error 'program-error
+                       :format-control "&ALLOW-OTHER-KEYS outside of &KEY ~
+                                        section in lambda list ~A"
+                       :format-arguments (list lambda-list)))
+              (setf allow-others-p t
+                    keyword-required t
+                    arg nil))
+             (&environment
+              (setf env (list (pop tail))
+                    keyword-required t
+                    ;; &ENVIRONMENT can appear anywhere; retain our last
+                    ;; state so we know what next keywords are valid
+                    arg state))
+             (&whole
+              (error 'program-error
+                     :format-control "&WHOLE must appear first in lambda list ~A."
+                     :format-arguments (list lambda-list))))
+           (when arg
+             ;; ### verify that the next state is valid
+             (unless (or (null state)
+                         (member state allowable-previous-states))
+               (error 'program-error
+                      :format-control "~A not allowed after ~A ~
+                                       in lambda-list ~S"
+                      :format-arguments (list arg state lambda-list)))
+             (setf state arg)))
+          (keyword-required
+           ;; a keyword was required, but none was found...
+           (error 'program-error
+                  :format-control "Lambda list keyword expected, but found ~
+                                   ~A in lambda list ~A"
+                  :format-arguments (list arg lambda-list)))
+          (t ;; a variable specification
+           (case state
+             (:req (push (list arg) req))
+             (&optional
+              (cond ((symbolp arg)
+                     (push (list arg) opt))
+                    ((consp arg)
+                     (push (list (car arg) (cadr arg)
+                                 (caddr arg)) opt))
+                    (t
+                     (error "Invalid &OPTIONAL variable."))))
+             (&key
+              (cond ((symbolp arg)
+                     (push (list arg nil nil (sys::keywordify arg)) key))
+                    ((consp arg)
+                     (push (list (if (consp (car arg))
+                                     (cadar arg) (car arg))
+                                 (cadr arg) (caddr arg)
+                                 (if (consp (car arg))
+                                     (caar arg)
+                                     (sys::keywordify (car arg)))) key))
+                    (t
+                     (error "Invalid &KEY variable."))))
+             (&aux
+              (cond ((symbolp arg)
+                     (push (list arg nil nil nil) aux))
+                    ((consp arg)
+                     (push (list (car arg) (cadr arg) nil nil) aux))
+                    (t
+                     (error "Invalid &aux state."))))
+             (t
+              (error 'program-error
+                     :format-control "Invalid state found: ~A."
+                     :format-arguments (list state))))))))
     (values
      (nreverse req)
      (nreverse opt)
