@@ -220,12 +220,12 @@ You can usually load this copy using Common Lisp's @code{require} function:
 
 As of the writing of this manual,
 the following implementations provide ASDF 2 this way:
-abcl allegro ccl clisp cmucl ecl lispworks sbcl xcl.
+abcl allegro ccl clisp cmucl ecl lispworks mkcl sbcl xcl.
 The following implementation doesn't provide it yet but will in a future release:
 scl.
 The following implementations are obsolete, not actively maintained,
 and most probably will never bundle it:
-cormancl gcl genera mcl.
+cormanlisp gcl genera mcl.
 
 If the implementation you are using doesn't provide ASDF 2,
 see @pxref{Loading ASDF,,Loading an otherwise installed ASDF} below.
@@ -637,7 +637,7 @@ by evaluating the following Lisp form:
 @end example
 
 On some implementations (namely recent versions of
-ABCL, Clozure CL, CLISP, CMUCL, ECL, SBCL and SCL),
+ABCL, Allegro CL, Clozure CL, CMUCL, ECL, GNU CLISP, LispWorks, MKCL, SBCL and XCL),
 ASDF hooks into the @code{CL:REQUIRE} facility
 and you can just use:
 
@@ -2917,7 +2917,7 @@ checking that some compile-time side-effects were properly balanced,
 etc.
 
 Note that there is no around-load hook. This is on purpose.
-Some implementations such as ECL or GCL link object files,
+Some implementations such as ECL, GCL or MKCL link object files,
 which allows for no such hook.
 Other implementations allow for concatenating FASL files,
 which doesn't allow for such a hook either.
