@@ -33,7 +33,7 @@
 
 (in-package "SYSTEM")
 
-(defun ensure-directories-exist (pathspec &key verbose)
+(defun ensure-directories-exist (pathspec &key (verbose t)) ;; DEBUG
   (let ((pathname (pathname pathspec))
 	(created-p nil))
 ;;; CLHS: Function ENSURE-DIRECTORIES-EXIST "An error of type
@@ -46,23 +46,24 @@
 	     :format-control "Bad place for a wild HOST, DEVICE, or DIRECTORY component."
 	     :pathname pathname))
     (let ((dir (pathname-directory pathname)))
-      (loop for i from 1 upto (length dir)
-        do (let ((newpath (make-pathname
-                           :host (pathname-host pathname)
-                           :device (pathname-device pathname)
-                           :directory (subseq dir 0 i))))
-             (unless (probe-file newpath)
-               (let ((namestring (namestring newpath)))
-                 (when verbose
-                   (fresh-line)
-                   (format *standard-output*
-                           "Creating directory: ~A~%"
-                           namestring))
-                 (mkdir namestring)
-                 (unless (probe-file namestring)
-                   (error 'file-error
-                          :pathname pathspec
-                          :format-control "Can't create directory ~A."
-                          :format-arguments (list namestring)))
+      (loop :for i :from 1 :upto (length dir)
+         :doing (let ((newpath (make-pathname
+                                :host (pathname-host pathname)
+                                :device (if (pathname-device pathname)
+                                            (pathname-device pathname)
+                                            :unspecific)
+                                :directory (subseq dir 0 i))))
+                  (unless (probe-directory newpath)
+                    (when verbose
+                      (fresh-line)
+                      (format *standard-output*
+                              "Creating directory of pathname ~A.~&" 
+                              newpath))
+                    (mkdir newpath)
+                    (unless (probe-directory newpath)
+                      (error 'file-error
+                             :pathname newpath
+                             :format-control "Can't ensure directory~& ~S ~&ancestor of~&  ~S."
+                             :format-arguments (list newpath pathname)))
                  (setq created-p t)))))
-      (values pathname created-p))))
+      (values pathname created-p)))
