@@ -3474,8 +3474,8 @@ instance and, for setters, `new-value' the new value."
                                     (slot standard-effective-slot-definition))
   (let ((location (slot-definition-location slot)))
     (if (consp location)
-        (eq (cdr location) +slot-unbound+) ; :allocation :class
-        (eq (standard-instance-access instance location) +slot-unbound+))))
+        (not (eq (cdr location) +slot-unbound+)) ; :allocation :class
+        (not (eq (standard-instance-access instance location) +slot-unbound+)))))
 
 (defmethod slot-boundp-using-class ((class funcallable-standard-class) instance
                                     (slot symbol))
@@ -3484,9 +3484,9 @@ instance and, for setters, `new-value' the new value."
                                     (slot standard-effective-slot-definition))
   (let ((location (slot-definition-location slot)))
     (if (consp location)
-        (eq (cdr location) +slot-unbound+) ; :allocation :class
-        (eq (funcallable-standard-instance-access instance location)
-            +slot-unbound+))))
+        (not (eq (cdr location) +slot-unbound+)) ; :allocation :class
+        (not (eq (funcallable-standard-instance-access instance location)
+                 +slot-unbound+)))))
 
 (defmethod slot-boundp-using-class ((class structure-class) instance slot)
   "Structure slots can't be unbound, so this method always returns T."
