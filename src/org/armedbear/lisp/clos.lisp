@@ -548,9 +548,16 @@
         (:class
          (unless (slot-definition-location slot)
            (let ((allocation-class (slot-definition-allocation-class slot)))
-             (setf (slot-definition-location slot)
-                   (if (eq allocation-class class)
-                       (cons (slot-definition-name slot) +slot-unbound+)
+             (if (eq allocation-class class)
+                 ;; We initialize class slots here so they can be
+                 ;; accessed without creating a dummy instance.
+                 (let ((initfunction (slot-definition-initfunction slot)))
+                   (setf (slot-definition-location slot)
+                         (cons (slot-definition-name slot)
+                               (if initfunction
+                                   (funcall initfunction)
+                                   +slot-unbound+))))
+                 (setf (slot-definition-location slot)
                        (slot-location allocation-class (slot-definition-name slot))))))
          (push (slot-definition-location slot) shared-slots))))
     (when old-layout
