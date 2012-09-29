@@ -1916,10 +1916,10 @@ compare the method combination name to the symbol 'standard.")
          (opts (getf plist :optional-args))
          (auxs (getf plist :auxiliary-args)))
     `(,@requireds
+      ,@(if opts `(&optional ,@opts) ())
       ,@(if rv `(&rest ,rv) ())
       ,@(if (or ks keysp aok) `(&key ,@ks) ())
       ,@(if aok '(&allow-other-keys) ())
-      ,@(if opts `(&optional ,@opts) ())
       ,@(if auxs `(&aux ,@auxs) ()))))
 
 (defun extract-specializer-names (specialized-lambda-list)
