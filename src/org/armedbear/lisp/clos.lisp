@@ -1944,35 +1944,59 @@ compare the method combination name to the symbol 'standard.")
         (optionals ())
         (auxs ())
         (allow-other-keys nil)
-        (state :parsing-required))
+        (state :required))
     (dolist (arg lambda-list)
       (if (member arg lambda-list-keywords)
           (ecase arg
             (&optional
-             (setq state :parsing-optional))
+             (unless (eq state :required)
+               (error 'program-error
+                      :format-control "~A followed by &OPTIONAL not allowed ~
+                                       in lambda list ~S"
+                      :format-arguments (list state lambda-list)))
+             (setq state '&optional))
             (&rest
-             (setq state :parsing-rest))
+             (unless (or (eq state :required)
+                         (eq state '&optional))
+               (error 'program-error
+                      :format-control "~A followed by &REST not allowed ~
+                                       in lambda list ~S"
+                      :format-arguments (list state lambda-list)))
+             (setq state '&rest))
             (&key
+             (unless (or (eq state :required)
+                         (eq state '&optional)
+                         (eq state '&rest))
+               (error 'program-error
+                      :format-control "~A followed by &KEY not allowed
+                                       in lambda list ~S"
+                      :format-arguments (list state lambda-list)))
              (setq keysp t)
-             (setq state :parsing-key))
+             (setq state '&key))
             (&allow-other-keys
+             (unless (eq state '&key)
+               (error 'program-error
+                      :format-control "&ALLOW-OTHER-KEYS not allowed while
+                                       parsing ~A in lambda list ~S"
+                      :format-arguments (list state lambda-list)))
              (setq allow-other-keys 't))
             (&aux
+             ;; &aux comes last; any other previous state is fine
              (setq state :parsing-aux)))
           (case state
-            (:parsing-required
+            (:required
              (push-on-end arg required-args)
              (if (listp arg)
                  (progn (push-on-end (car arg) required-names)
                    (push-on-end (cadr arg) specializers))
                  (progn (push-on-end arg required-names)
                    (push-on-end 't specializers))))
-            (:parsing-optional (push-on-end arg optionals))
-            (:parsing-rest (setq rest-var arg))
-            (:parsing-key
+            (&optional (push-on-end arg optionals))
+            (&rest (setq rest-var arg))
+            (&key
              (push-on-end (get-keyword-from-arg arg) keys)
              (push-on-end arg key-args))
-            (:parsing-aux (push-on-end arg auxs)))))
+            (&aux (push-on-end arg auxs)))))
     (list  :required-names required-names
            :required-args required-args
            :specializers specializers
@@ -3143,8 +3167,9 @@ instance and, for setters, `new-value' the new value."
   class)
 
 (defmethod ensure-class-using-class ((class class) name
+                                     &rest all-keys
                                      &key (metaclass +the-standard-class+ metaclassp)
-                                     direct-superclasses &rest all-keys
+                                     direct-superclasses
                                      &allow-other-keys)
   (declare (ignore name))
   (setf all-keys (copy-list all-keys))  ; since we modify it
@@ -3870,8 +3895,8 @@ or T when any keyword is acceptable due to presence of
   (apply #'std-after-initialization-for-classes class args))
 
 (defmethod reinitialize-instance :before ((class standard-class)
-                                          &key direct-superclasses
-                                          &rest all-keys)
+                                          &rest all-keys
+                                          &key direct-superclasses)
   (check-initargs (list #'allocate-instance
                         #'initialize-instance)
                   (list* class all-keys)
@@ -3885,8 +3910,8 @@ or T when any keyword is acceptable due to presence of
     (add-direct-subclass superclass class)))
 
 (defmethod reinitialize-instance :before ((class funcallable-standard-class)
-                                          &key direct-superclasses
-                                          &rest all-keys)
+                                          &rest all-keys
+                                          &key direct-superclasses)
   (check-initargs (list #'allocate-instance
                         #'initialize-instance)
                   (list* class all-keys)
