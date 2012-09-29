@@ -1324,6 +1324,11 @@ public class Pathname extends LispObject {
             } else if (key == Keyword.DEVICE) {
                 device = value;
                 deviceSupplied = true;
+                if (!(value instanceof AbstractString
+                      || value.equals(Keyword.UNSPECIFIC)
+                      || value.equals(NIL)
+                      || value instanceof Cons))
+                  error(new TypeError("DEVICE is not a string, :UNSPECIFIC, NIL, or a list.", value, NIL));
             } else if (key == Keyword.DIRECTORY) {
                 directorySupplied = true;
                 if (value instanceof AbstractString) {
