@@ -1,3 +1,10 @@
+# ISSUE MERGE-PATHNAMES with specialization of JAR-PATHNAME and URL-PATHNAME
+
+## UC0 Loading jna.jar for CFFI via Quicklisp
+
+This happens in loading systems via ASDF recursively in jars (abcl-contrib.jar)
+
+## UC1
 If *DEFAULT-PATHNAME-DEFAULTS* is a JAR-PATHNAME, commands like 
 
     CL-USER: (probe-file #"/") 
@@ -28,4 +35,10 @@ HOST is NIL.
 
 
 
+
+### Colophon
+
+Mark <evenson@panix.com>
+Created:  01-SEP-2012
+Revised:  30-SEP-2012
 
