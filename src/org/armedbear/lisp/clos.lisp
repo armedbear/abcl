@@ -675,8 +675,9 @@
 ;;; Slot inheritance
 
 (defun std-compute-slots (class)
-  (let* ((all-slots (mapappend #'class-direct-slots
-                               (class-precedence-list class)))
+  (let* ((all-slots (nreverse ;; Slots of base class should come first
+                     (mapappend #'(lambda (c) (reverse (class-direct-slots c)))
+                                (reverse (class-precedence-list class)))))
          (all-names (remove-duplicates
                      (mapcar 'slot-definition-name all-slots))))
     (mapcar #'(lambda (name)
