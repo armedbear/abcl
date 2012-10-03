@@ -549,8 +549,13 @@
                (equalp (aref old 6) (aref description 6))
                (equalp (aref old 7) (aref description 7))
                (equalp (aref old 8) (aref description 8))
-               (equalp (aref old 12) (aref description 12))
-               (equalp (aref old 13) (aref description 13)))
+               (every (lambda (x y)
+                        (and (equalp (dsd-name x) (dsd-name y))
+                             (equalp (dsd-index x) (dsd-index y))
+                             (equalp (dsd-type x) (dsd-type y))))
+                      (append (aref old 12) (aref old 13))
+                      (append (aref description 12)
+                              (aref description 13))))
         (error 'program-error
                :format-control "Structure redefinition not supported ~
                               in DEFSTRUCT for ~A"
