@@ -287,7 +287,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 
 (declaim (ftype (function (t t t) t) process-toplevel-export))
 (defun process-toplevel-export (form stream compile-time-too)
-  (when (eq (car (second form)) 'QUOTE) ;; constant export list
+  (when (and (listp (second form))
+             (eq (car (second form)) 'QUOTE)) ;; constant export list
     (let ((sym-or-syms (second (second form))))
       (setf *toplevel-exports*
             (append  *toplevel-exports* (if (listp sym-or-syms)
