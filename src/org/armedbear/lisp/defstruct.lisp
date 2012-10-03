@@ -545,10 +545,12 @@
                ;; names are equal, because it produces the same end result
                ;; when they are.
                (string= (aref old 1) (aref description 1))
-               (dotimes (index 13 t)
-                 (when (not (equalp (aref old (+ 2 index))
-                                    (aref description (+ 2 index))))
-                   (return nil))))
+               (equalp (aref old 5) (aref description 5))
+               (equalp (aref old 6) (aref description 6))
+               (equalp (aref old 7) (aref description 7))
+               (equalp (aref old 8) (aref description 8))
+               (equalp (aref old 12) (aref description 12))
+               (equalp (aref old 13) (aref description 13)))
         (error 'program-error
                :format-control "Structure redefinition not supported ~
                               in DEFSTRUCT for ~A"
