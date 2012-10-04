@@ -1983,7 +1983,7 @@ compare the method combination name to the symbol 'standard.")
              (setq allow-other-keys 't))
             (&aux
              ;; &aux comes last; any other previous state is fine
-             (setq state :parsing-aux)))
+             (setq state '&aux)))
           (case state
             (:required
              (push-on-end arg required-args)
