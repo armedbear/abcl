@@ -2,23 +2,19 @@
 
 # XXX should be called 'build.properties' but this collides with its usage by the Eclipe IDE
 
-# Template for settings the Ant based build process.
-
+# Template for Ant based build process settings.
 
 # Attempt to perform incremental compilation? 
 #abcl.build.incremental=true
 
-# skips the compilation of Lisp sources in Netbeans 
-# (for debugging compiler-pass1.lisp and subsequent passes)
-#abcl.compile.lisp.skip=true
+# Additional site specific startup code to be merged in 'system.lisp' at build time
+#abcl.startup.file=${basedir}/startup.lisp
 
 # java.options sets the Java options in the abcl wrapper scripts
 #
 # See
 # http://www.oracle.com/technetwork/java/javase/tech/vmoptions-jsp-140102.html
-# for options for the Oracle HotSpot JVM
-
-# HotSpot Examples:
+# for options for the Oracle HotSpot JVM.
 
 # Java7 on 64bit optimizations
 #java.options=-d64 -Xmx16g -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=2g
@@ -26,7 +22,7 @@
 # Set the JVM to use a maximum of 1GB of RAM (only works for 64bit JVMs)
 #java.options=-d64 -Xmx1g
 
-# Use the G1 garbage collector stablized with jdk1.7.0_04
+# Use the G1 garbage collector stablized with jdk1.7.0_04, printing GC details
 #java.options=-d64 -Xmx4g -XX:+PrintGCDetails -XX:+UseG1GC 
 
 # Use a separate concurrent GC thread (java-1.6_14 or later)
@@ -43,5 +39,13 @@
 # Enable assertions specified via the JVM contract
 #java.options=-ea
 
-# Additional site specific startup code to be merged in 'system.lisp' at build time
-#abcl.startup.file=${basedir}/startup.lisp
+## ABCL Development
+
+# skips the compilation of Lisp sources in Netbeans 
+# (for debugging compiler-pass1.lisp and subsequent passes)
+#abcl.compile.lisp.skip=true
+
+# JVM option to execute when debugging the Lisp compilation via 'abcl.compile.lisp.debug'
+#abcl.compile.lisp.debug.jvmarg=-agentlib:jdwp=transport=dt_socket,server=y,address=6789,suspend=y
+
+

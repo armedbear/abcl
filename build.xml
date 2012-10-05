@@ -81,7 +81,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
     </patternset>
 
     <patternset id="abcl.objects">
-      <!-- "system.lisp" is dynamically created by COMPILE-SYSTEM -->
+      <!-- "system.lisp" is dynamically created by COMPILE-fSYSTEM -->
       <include name="org/armedbear/lisp/system.lisp"/> 
       <include name="org/armedbear/lisp/**/*.class"/>
       <include name="org/armedbear/lisp/**/*.cls"/> 
@@ -232,11 +232,17 @@ For help on the automatic tests available, use the Ant target 'help.test'.
 
     <property name="system.lisp.file" 
               value="${build.classes.dir}/org/armedbear/lisp/system.lisp"/>
-    
+
     <target name="abcl.compile.lisp" 
             depends="abcl.copy.lisp,abcl.compile.java,abcl.system.update.maybe,abcl.fasls.uptodate"
             unless="abcl.fasls.uptodate.p">
-      <echo>
+      <abcl.compile.lisp/>
+    </target>
+
+    <macrodef name="abcl.compile.lisp">
+      <element name="additional.jvmarg" optional="true"/>
+      <sequential>
+        <echo>
 Compiling Lisp system 
 from ${abcl.home.dir}
  to  ${abcl.lisp.output}</echo>
@@ -252,6 +258,7 @@ from ${abcl.home.dir}
             classname="org.armedbear.lisp.Main">
         <jvmarg value="-Dabcl.home=${abcl.home.dir}${file.separator}"/>
         <jvmarg value="-Dabcl.autoload.verbose=Y"/>
+        <additional.jvmarg/>
         <arg value="--noinit"/>
         <arg value="--nosystem"/>
         <arg value="--eval"/>
@@ -260,6 +267,20 @@ from ${abcl.home.dir}
       <concat destfile="${system.lisp.file}" append="true">
         <fileset file="${abcl.startup.file}"/>
       </concat>
+        </sequential>
+    </macrodef>
+
+    <property name="abcl.compile.lisp.debug.jvmarg"
+              value="-agentlib:jdwp=transport=dt_socket,server=y,address=6789,suspend=y"/>
+    <target name="abcl.compile.lisp.debug" 
+            depends="abcl.copy.lisp,abcl.compile.java,abcl.system.update.maybe,abcl.fasls.uptodate"
+            unless="abcl.fasls.uptodate.p">
+      <echo>Debugging with jvmarg ${abcl.compile.lisp.debug.jvmarg}</echo>
+      <abcl.compile.lisp> 
+          <additional.jvmarg>
+            <jvmarg value="${abcl.compile.lisp.debug.jvmarg}"/>
+          </additional.jvmarg>
+      </abcl.compile.lisp>
     </target>
 
     <property name="abcl.build.path"
