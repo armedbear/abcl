@@ -47,8 +47,8 @@ Test:
 
 Returns the path of the Maven executable or nil if none are found."
 
-  (let ((m2-home (asdf:getenv "M2_HOME"))
-        (m2 (asdf:getenv "M2"))
+  (let ((m2-home (ext:getenv "M2_HOME"))
+        (m2 (ext:getenv "M2"))
         (mvn-executable (if (find :unix *features*)
                                "mvn"
                                "mvn.bat")))

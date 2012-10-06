@@ -1,5 +1,5 @@
 ;;; -*- mode: Common-Lisp; Base: 10 ; Syntax: ANSI-Common-Lisp ; coding: utf-8 -*-
-;;; This is ASDF 2.24: Another System Definition Facility.
+;;; This is ASDF 2.25: Another System Definition Facility.
 ;;;
 ;;; Feedback, bug reports, and patches are all welcome:
 ;;; please mail to <asdf-devel@common-lisp.net>.
@@ -118,7 +118,7 @@
          ;; "2.345.6" would be a development version in the official upstream
          ;; "2.345.0.7" would be your seventh local modification of official release 2.345
          ;; "2.345.6.7" would be your seventh local modification of development version 2.345.6
-         (asdf-version "2.24")
+         (asdf-version "2.25")
          (existing-asdf (find-class 'component nil))
          (existing-version *asdf-version*)
          (already-there (equal asdf-version existing-version)))
@@ -364,9 +364,10 @@
             #:user-source-registry-directory
             #:system-source-registry-directory
 
-            ;; Utilities
+            ;; Utilities: please use asdf-utils instead
+            #|
             ;; #:aif #:it
-            #:appendf #:orf
+            ;; #:appendf #:orf
             #:length=n-p
             #:remove-keys #:remove-keyword
             #:first-char #:last-char #:string-suffix-p
@@ -389,7 +390,7 @@
             #:while-collecting
             #:*wild* #:*wild-file* #:*wild-directory* #:*wild-inferiors*
             #:*wild-path* #:wilden
-            #:directorize-pathname-host-device
+            #:directorize-pathname-host-device|#
             )))
         #+genera (import 'scl:boolean :asdf)
         (setf *asdf-version* asdf-version
@@ -462,6 +463,7 @@ or ASDF:LOAD-SOURCE-OP if your fasl loading is somehow broken.")
 (progn
   (deftype logical-pathname () nil)
   (defun make-broadcast-stream () *error-output*)
+  (defun translate-logical-pathname (x) x)
   (defun file-namestring (p)
     (setf p (pathname p))
     (format nil "~@[~A~]~@[.~A~]" (pathname-name p) (pathname-type p))))
@@ -3321,8 +3323,9 @@ located."
 (defun* user-homedir ()
   (truenamize
    (pathname-directory-pathname
+    #+cormanlisp (ensure-directory-pathname (user-homedir-pathname))
     #+mcl (current-user-homedir-pathname)
-    #-mcl (user-homedir-pathname))))
+    #-(or cormanlisp mcl) (user-homedir-pathname))))
 
 (defun* ensure-pathname* (x want-absolute want-directory fmt &rest args)
   (when (plusp (length x))
@@ -3356,11 +3359,13 @@ located."
                 (loop :for dir :in (getenv-absolute-directories "XDG_CONFIG_DIRS")
                   :collect (subpathname* dir "common-lisp/"))))
            ,@(when (os-windows-p)
-               `(,(subpathname* (or #+lispworks (sys:get-folder-path :local-appdata)
+               `(,(subpathname* (or #+(and lispworks (not lispworks-personal-edition))
+                                    (sys:get-folder-path :local-appdata)
                                     (getenv-absolute-directory "LOCALAPPDATA"))
                                "common-lisp/config/")
                  ;; read-windows-registry HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders\AppData
-                 ,(subpathname* (or #+lispworks (sys:get-folder-path :appdata)
+                 ,(subpathname* (or #+(and lispworks (not lispworks-personal-edition))
+                                    (sys:get-folder-path :appdata)
                                     (getenv-absolute-directory "APPDATA"))
                                 "common-lisp/config/")))
            ,(subpathname (user-homedir) ".config/common-lisp/"))))
@@ -3373,7 +3378,8 @@ located."
     ((os-windows-p)
      (aif
       ;; read-windows-registry HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders\Common AppData
-      (subpathname* (or #+lispworks (sys:get-folder-path :common-appdata)
+      (subpathname* (or #+(and lispworks (not lispworks-personal-edition))
+                        (sys:get-folder-path :common-appdata)
                         (getenv-absolute-directory "ALLUSERSAPPDATA")
                         (subpathname* (getenv-absolute-directory "ALLUSERSPROFILE") "Application Data/"))
                     "common-lisp/config/")
@@ -3501,9 +3507,11 @@ and the order is by decreasing length of namestring of the source pathname.")
     (or
      (try (getenv-absolute-directory "XDG_CACHE_HOME") "common-lisp" :implementation)
      (when (os-windows-p)
-       (try (or #+lispworks (sys:get-folder-path :local-appdata)
+       (try (or #+(and lispworks (not lispworks-personal-edition))
+                (sys:get-folder-path :local-appdata)
                 (getenv-absolute-directory "LOCALAPPDATA")
-                #+lispworks (sys:get-folder-path :appdata)
+                #+(and lispworks (not lispworks-personal-edition))
+                (sys:get-folder-path :appdata)
                 (getenv-absolute-directory "APPDATA"))
             "common-lisp" "cache" :implementation))
      '(:home ".cache" "common-lisp" :implementation))))
@@ -4242,11 +4250,14 @@ with a different configuration, so the configuration would be re-read then."
                 ,@(or (getenv-absolute-directories "XDG_DATA_DIRS")
                       '("/usr/local/share" "/usr/share"))))
           ,@(when (os-windows-p)
-              `(,(or #+lispworks (sys:get-folder-path :local-appdata)
+              `(,(or #+(and lispworks (not lispworks-personal-edition))
+                     (sys:get-folder-path :local-appdata)
                      (getenv-absolute-directory "LOCALAPPDATA"))
-                ,(or #+lispworks (sys:get-folder-path :appdata)
+                ,(or #+(and lispworks (not lispworks-personal-edition))
+                     (sys:get-folder-path :appdata)
                      (getenv-absolute-directory "APPDATA"))
-                ,(or #+lispworks (sys:get-folder-path :common-appdata)
+                ,(or #+(and lispworks (not lispworks-personal-edition))
+                     (sys:get-folder-path :common-appdata)
                      (getenv-absolute-directory "ALLUSERSAPPDATA")
                      (subpathname* (getenv-absolute-directory "ALLUSERSPROFILE") "Application Data/")))))
         :collect `(:directory ,(subpathname* dir "common-lisp/systems/"))
