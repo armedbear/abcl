@@ -1,17 +1,23 @@
 # $Id$
 
-# XXX should be called 'build.properties' but this collides with its usage by the Eclipe IDE
+# XXX should be called 'build.properties' but this collides with its
+#     usage by the Eclipe IDE
 
 # Template for Ant based build process settings.
 
+# Copy to 'abcl.properties' to set options to local builds.
+
 # Attempt to perform incremental compilation? 
-#abcl.build.incremental=true
+abcl.build.incremental=true
 
 # Additional site specific startup code to be merged in 'system.lisp' at build time
 #abcl.startup.file=${basedir}/startup.lisp
 
-# java.options sets the Java options in the abcl wrapper scripts
-#
+## java.options sets the Java options in the abcl wrapper scripts
+
+# Reasonable defaults for circa-2012, ORCL JVM implementations
+java.options=-d64 -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g
+
 # See
 # http://www.oracle.com/technetwork/java/javase/tech/vmoptions-jsp-140102.html
 # for options for the Oracle HotSpot JVM.
@@ -37,6 +43,7 @@
 #java.options=-d64 -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g
 
 # Enable assertions specified via the JVM contract
+# TODO move all use of org.armedbear.lisp.Debug assertions to this interface.
 #java.options=-ea
 
 ## ABCL Development
@@ -46,6 +53,7 @@
 #abcl.compile.lisp.skip=true
 
 # JVM option to execute when debugging the Lisp compilation via 'abcl.compile.lisp.debug'
+# Debug the compilation by connecting a JVM debugger to localhost:6789 via JDWP.
 #abcl.compile.lisp.debug.jvmarg=-agentlib:jdwp=transport=dt_socket,server=y,address=6789,suspend=y
 
 
