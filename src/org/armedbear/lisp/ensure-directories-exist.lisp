@@ -33,7 +33,7 @@
 
 (in-package "SYSTEM")
 
-(defun ensure-directories-exist (pathspec &key (verbose t)) ;; DEBUG
+(defun ensure-directories-exist (pathspec &key (verbose nil)) 
   (let ((pathname (pathname pathspec))
 	(created-p nil))
 ;;; CLHS: Function ENSURE-DIRECTORIES-EXIST "An error of type
