@@ -421,3 +421,6 @@ artifact and all of its transitive dependencies."
   (with-slots (asdf::group-id asdf::artifact-id asdf::version)
       (asdf:ensure-parsed-mvn mvn)
     (resolve-dependencies (format nil "~A:~A:~A" asdf::group-id asdf::artifact-id asdf::version))))
+
+;;; Currently the last file listed in ASDF
+(provide 'abcl-asdf)

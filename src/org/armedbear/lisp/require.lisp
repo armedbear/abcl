@@ -38,8 +38,10 @@
 
 (defun module-provide-system (module) 
   (let ((*readtable* (copy-readtable nil)))
-    (handler-case 
-        (load-system-file (string-downcase (string module)))
+    (handler-case
+        (progn 
+          (load-system-file (string-downcase (string module)))
+          (provide module))
       (t (e) 
         (unless (and (typep e 'error)
                      (search "Failed to find loadable system file"
@@ -57,11 +59,13 @@
       (cond (pathnames
              (unless (listp pathnames) (setf pathnames (list pathnames)))
              (dolist (x pathnames)
-               (load x)))
+               (load x))
+             (provide module-name))
             (t
-             (unless (some (lambda (p) (funcall p module-name))
+             (if (some (lambda (p) (funcall p module-name))
                            (append (list #'module-provide-system)
                                  sys::*module-provider-functions*))
-               (error "Don't know how to ~S ~A." 'require module-name))))
+                 (provide module-name) ;; Shouldn't hurt
+                 (error "Don't know how to ~S ~A." 'require module-name))))
       (set-difference *modules* saved-modules))))
 

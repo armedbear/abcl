@@ -1,7 +1,5 @@
 ;;;; -*- Mode: LISP -*-
-(in-package :asdf)
-
-(defsystem :jss
+(asdf:defsystem :jss
   :author "Alan Ruttenberg, Mark Evenson"
   :version "3.0.3" 
   :components 

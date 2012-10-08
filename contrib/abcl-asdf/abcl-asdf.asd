@@ -1,7 +1,6 @@
 ;;;; -*- Mode: LISP -*-
-(in-package :asdf)
 
-(defsystem :abcl-asdf
+(asdf:defsystem :abcl-asdf
   :author "Mark Evenson"
   :version "0.8.0"
   :depends-on (jss)
@@ -18,7 +17,7 @@
                     :depends-on ("abcl-asdf" "asdf-jar")))
             :depends-on (packages))))
 
-(defsystem :abcl-asdf-test
+(asdf:defsystem :abcl-asdf-test
   :author "Mark Evenson"
   :depends-on (abcl-asdf)
   :components
