@@ -5,7 +5,8 @@
 
 # Implementation 
 
-Not multi-threaded safe, and unclear how much work that would be.
+Not necessarily multi-threaded safe, and unclear how much work that
+would be, as it is unknown how the Maven implementation behaves.
 
 ## Installing Maven
 http://maven.apache.org/download.html
@@ -22,7 +23,8 @@ that the Maven specific "~/.m2/settings.xml" file is NOT parsed for settings.
 
 |#
 
-;;; N.b. evaluated *after* we load the ABCL specific modifications of ASDF in abcl-asdf.lisp
+;;; N.b. evaluated *after* we load the ABCL specific modifications of
+;;;      ASDF in abcl-asdf.lisp
 
 (in-package :abcl-asdf)
 
@@ -157,7 +159,7 @@ Returns the path of the Maven executable or nil if none are found."
     "org.apache.maven.wagon.providers.http.LightweightHttpWagon")
   "A list of possible candidate implementations that provide access to http and https resources.
 
-Supposedly configurable with the java.net.protocols (c.f. reference maso2000 in the Manual.")
+Supposedly configurable with the java.net.protocols (c.f. reference maso2000 in the Manual.)")
 
 (defun make-wagon-provider ()
   "Returns an implementation of the org.sonatype.aether.connector.wagon.WagonProvider contract.
@@ -184,26 +186,25 @@ specializes the lookup() method if passed an 'http' role hint."
 (defun make-repository-system ()
   (unless *init* (init))
   (let ((locator 
-         (java:jnew "org.apache.maven.repository.internal.DefaultServiceLocator"))
-        (repository-connector-factory-class 
-         (java:jclass "org.sonatype.aether.spi.connector.RepositoryConnectorFactory"))
-        (wagon-repository-connector-factory-class
-         (java:jclass "org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory"))
+         (java:jnew "org.apache.maven.repository.internal.MavenServiceLocator"))
         (wagon-provider-class 
          (java:jclass "org.sonatype.aether.connector.wagon.WagonProvider"))
+        (wagon-repository-connector-factory-class
+         (java:jclass "org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory"))
+        (repository-connector-factory-class 
+         (java:jclass "org.sonatype.aether.spi.connector.RepositoryConnectorFactory"))
         (repository-system-class
          (java:jclass "org.sonatype.aether.RepositorySystem")))
-    (#"addService" locator
-                   repository-connector-factory-class 
-                   wagon-repository-connector-factory-class)
     (#"setServices" locator
                     wagon-provider-class
-                    (java:jnew-array-from-list 
-                     "org.sonatype.aether.connector.wagon.WagonProvider"
-                     (list 
-                      (make-wagon-provider))))
-    (#"getService" locator
-                   repository-system-class)))
+                   (java:jarray-from-list
+                    (list (make-wagon-provider))))
+    (#"addService" locator
+                   repository-connector-factory-class
+                   wagon-repository-connector-factory-class)
+    (values (#"getService" locator
+                           repository-system-class)
+            locator)))
         
 (defun make-session (repository-system)
   "Construct a new org.sonatype.aether.RepositorySystemSession from REPOSITORY-SYSTEM"
@@ -215,7 +216,8 @@ specializes the lookup() method if passed an 'http' role hint."
                                                (user-homedir-pathname))))))
     (#"setLocalRepositoryManager" 
      session
-     (#"newLocalRepositoryManager" repository-system local-repository))))
+     (#"newLocalRepositoryManager" repository-system
+                                   local-repository))))
 
 (defparameter *maven-http-proxy* nil
   "A string containing the URI of an http proxy for Maven to use.")
@@ -240,19 +242,19 @@ specializes the lookup() method if passed an 'http' role hint."
 
 (defparameter *repository-system*  nil
   "The org.sonatype.aether.RepositorySystem used by the Maeven Aether connector.")
-(defun ensure-repository-system ()
-  (unless *repository-system*
+(defun ensure-repository-system (&key (force nil))
+  (when (or force (not *repository-system*))
     (setf *repository-system* (make-repository-system)))
   *repository-system*)
 
 (defparameter *session* nil
   "Reference to the Maven RepositorySystemSession")
-(defun ensure-session ()
+(defun ensure-session (&key (force nil))
   "Ensure that the RepositorySystemSession has been created.
 
 If *MAVEN-HTTP-PROXY* is non-nil, parse its value as the http proxy."
-  (unless *session*
-    (ensure-repository-system)
+  (when (or force (not *session*))
+    (ensure-repository-system :force force)
     (setf *session* (make-session *repository-system*))
     (#"setRepositoryListener" *session* (make-repository-listener))
     (when *maven-http-proxy*
@@ -297,10 +299,13 @@ Returns the Maven specific string for the artifact "
 
 (defparameter *maven-remote-repository*  nil
     "The remote repository used by the Maven Aether embedder.")
-(defun ensure-remote-repository (&key repository *default-repository* repository-p) 
+(defun ensure-remote-repository (&key 
+                                   (force nil)
+                                   (repository *default-repository* repository-p))
   (unless *init* (init))
-  (unless (or repository-p 
-              *maven-remote-repository*)
+  (when (or force  
+            repository-p 
+            (not *maven-remote-repository*))
     (let ((r (make-remote-repository "central" "default" repository)))
       (when *maven-http-proxy*
         (#"setProxy" r (make-proxy)))
