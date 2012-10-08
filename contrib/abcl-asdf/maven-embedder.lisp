@@ -41,7 +41,10 @@ Test:
 (defparameter *maven-verbose* t
   "Stream to send output from the Maven Aether subsystem to, or NIL to muffle output")
 
-(defvar *mavens* '("/opt/local/bin/mvn3" "mvn3" "mvn" "mvn3.bat" "mvn.bat")
+(defparameter *mavens* 
+  (if (find :windows *features*)
+      '("mvn.bat" "mvn3.bat")
+      '("/opt/local/bin/mvn3" "mvn3" "mvn"))
   "Locations to search for the Maven executable.")
 
 (defun find-mvn () 
