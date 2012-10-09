@@ -4,7 +4,7 @@ We wish to resolve the following issues.
 
 ## UC0 Loading jna.jar for CFFI via Quicklisp
 
-This happens in loading systems via ASDF recursively in jars, most
+Currently we cannount load systems via ASDF recursively in jars, most
 importantly for those packaged in 'abcl-contrib.jar', which prevents
 CFFI from loading the necessary JNA code.
 
@@ -89,6 +89,11 @@ HOST is NIL.
 
 ## Implementation
 
+Since Windows systems do have a default DEVICE for a normal file
+PATHNAME, namely the current "drive letter" of the process, the
+implementation changes will be mostly wrapped in runtime conditionals
+for non-Windows systems.
+
 ### TRUENAME sets DEVICE to :UNSPECIFIC
 
 TRUENAME sets DEVICE to :UNSPECIFIC running on non-Windows when
@@ -111,5 +116,5 @@ we set the DEVICE to be :UNSPECIFIC.
 
 Mark <evenson@panix.com>
 Created:  01-SEP-2012
-Revised:  08-OCT-2012
+Revised:  09-OCT-2012
 
