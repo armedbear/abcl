@@ -556,7 +556,7 @@ public final class LispCharacter extends LispObject
     if (lower.length() == 5
         && lower.startsWith("u")) {
         try {
-            int i = Integer.parseInt(lower.substring(1, 5), 16);
+            final int i = Integer.parseInt(lower.substring(1, 5), 16);
             return i;
         } catch (NumberFormatException e) {};
     }
@@ -585,6 +585,17 @@ public final class LispCharacter extends LispObject
       return ' ';
     if (lower.equals("rubout"))
       return 127;
+    if (lower.startsWith("u")) {
+      int length = lower.length();
+      if (length > 1 && length < 5) {
+        try {
+          final int i = Integer.parseInt(lower.substring(1), 16);
+          return i;
+        } catch (NumberFormatException e) {};
+        // fall through
+      }
+    }
+
     // Unknown.
     return -1;
   }

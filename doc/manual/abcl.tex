@@ -979,16 +979,16 @@ classloader as an optional third argument.
 
 \section{Extensions to the Reader}
 
-We implement a special hexadecimal escape sequence for specifying
-characters to the Lisp reader, namely we allow a sequences of the form
-\# \textbackslash Uxxxx to be processed by the reader as character
-whose code is specified by the hexadecimal digits ``xxxx''.  The
-hexadecimal sequence must be exactly four digits long \footnote{This
-  represents a compromise with contemporary in 2011 32bit hosting
-  architecures for which we wish to make text processing efficient.
-  Should the User require more control over UNICODE processing we
-  recommend Edi Weisz' excellent work with FLEXI-STREAMS which we
-  fully support}, padded by leading zeros for values less than 0x1000.
+We implement a special hexadecimal escape sequence for specifying 32
+bit characters to the Lisp reader\footnote{This represents a
+  compromise with contemporary in 2011 32bit hosting architecures for
+  which we wish to make text processing efficient.  Should the User
+  require more control over UNICODE processing we recommend Edi Weisz'
+  excellent work with FLEXI-STREAMS which we fully support}, namely we
+allow a sequences of the form \# \textbackslash Uxxxx to be processed
+by the reader as character whose code is specified by the hexadecimal
+digits ``xxxx''.  The hexadecimal sequence may be one to four digits
+long.
 
 Note that this sequence is never output by the implementation.  Instead,
 the corresponding Unicode character is output for characters whose
