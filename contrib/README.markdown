@@ -37,12 +37,12 @@ jfli
 mvn
 ---
    
-A collection of various useful JVM artifacts downloaded and cached
-by the Aether Maven connector.  Requires the maven-3.0.4 executable
-"mvn" (or "mvn.bat') to be in the current processes's path.
+A collection of various useful JVM artifacts downloaded and cached by
+the Aether Maven connector.  Requires the maven-3.0.4 executable "mvn"
+(or "mvn.bat" under MSFT Windows) to be in the current processes's path.
     
 jna     
-    Cache, from the network if necessary, the jna-3.0.9.jar in
+    Cache, from the network if necessary, the jna-3.4.0.jar in
     the current JVM process, allowing the bootstrapping of
     dynamically linking to shared executables on the host platform.
 
@@ -56,7 +56,7 @@ asdf-install
     
     Deprecated, use Quicklisp from the REPL via
     
-        CL-USER> (load "http://beta.quicklisp.org/quicklisp.lisp")
+        CL-USER> (load "https://beta.quicklisp.org/quicklisp.lisp")
        
     instead.
 
@@ -64,6 +64,7 @@ asdf-install
 
 Mark <evenson.not.org@gmail.com>
 Created:  2011-09-11
-Revised:  2012-08-04
+Revised:  2012-10-12
+
 
 
