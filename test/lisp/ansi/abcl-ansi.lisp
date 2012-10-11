@@ -80,7 +80,8 @@ locally obtain ~A, and place it in a sibling directory to the ABCL source named 
   "Run all tests in suite whose symbol contains MATCH in a case-insensitive manner."
   (setf *last-run-matching* match)
   (let* ((matching (string-upcase match))
-         (count 0))
+         (count 0)
+         (*default-pathname-defaults* *ansi-tests-directory*))
     (mapcar (lambda (entry) 
               (if (search matching (symbol-name (rt::name entry)))
                   (setf (rt::pend entry) t
