@@ -1985,7 +1985,24 @@ public class Pathname extends LispObject {
             result.device = p.device;
         } else {
             if (!p.isURL()) {
-                result.device = d.device;
+                // If the defaults contain a JAR-PATHNAME, and the
+                // pathname to be be merged does not have a specified
+                // DEVICE, a specified HOST, and doesn't contain a
+                // relative DIRECTORY, then on non-MSDOG, set its
+                // device to :UNSPECIFIC.
+                if (pathname.host == NIL
+                    && pathname.device == NIL
+                    && d.isJar()
+                    && !Utilities.isPlatformWindows) {
+                    if (pathname.directory != NIL
+                        && pathname.directory.car() == Keyword.ABSOLUTE) {
+                        result.device = Keyword.UNSPECIFIC;
+                    } else {
+                        result.device = d.device;
+                    }
+                } else {
+                    result.device = d.device;
+                }
             }
         }
 

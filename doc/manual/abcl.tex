@@ -51,6 +51,20 @@ implementation due to the following known issues:
   do not match the specification.
 \item The \code{TIME} form does not return a proper \code{VALUES}
   environment to its caller.
+\item When merging pathnames and the defaults point to a \code{JAR-PATHNAME},
+  we set the \code{DEVICE} of the result to \code{:UNSPECIFIC} if the pathname to be
+  be merged does not contain a specified \code{DEVICE}, does not contain a
+  specified \code{HOST}, does contain a relative \code{DIRECTORY}, and we are
+  not running on a \textsc{MSFT} Windows platform.\footnote{The intent of this
+    rather arcane sounding deviation from conformance is so that the
+    result of a merge won't fill in a DEVICE with the wrong "default
+    device for the host" in the sense of the fourth paragraph in the
+    [CLHS description of MERGE-PATHNAMES][2] (the paragraph beginning
+    "If the PATHNAME explicitly specifies a host and not a device…").
+    A future version of the implementation may return to conformance
+    by using the \code{HOST} value to reflect the type explicitly.
+  }
+
 \end{itemize}
 
 Somewhat confusingly, this statement of non-conformance in the
