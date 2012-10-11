@@ -1,4 +1,4 @@
-/*
+/* 
  * Pathname.java
  *
  * Copyright (C) 2003-2007 Peter Graves
@@ -1639,7 +1639,7 @@ public class Pathname extends LispObject {
                             Pathname p;
                             if (file.isDirectory()) {
                                 if (arg2 != NIL) {
-                                    p = Utilities.getDirectoryPathname(file);
+                                    p = Pathname.getDirectoryPathname(file);
                                 } else {
                                     p = new Pathname(file.getAbsolutePath()); 
                                 }
@@ -1915,7 +1915,7 @@ public class Pathname extends LispObject {
         }
     }
 
-    private static final Primitive MERGE_PATHNAMES = new pf_merge_pathnames();
+    static final Primitive MERGE_PATHNAMES = new pf_merge_pathnames();
     @DocString(name="merge-pathnames",
                args="pathname &optional default-pathname default-version",
                returns="pathname",
@@ -2114,6 +2114,7 @@ public class Pathname extends LispObject {
         return dir;
     }
 
+
     public static final LispObject truename(Pathname pathname) {
         return truename(pathname, false);
     }
@@ -2134,6 +2135,15 @@ public class Pathname extends LispObject {
     public static final LispObject truename(Pathname pathname,
                                             boolean errorIfDoesNotExist) 
     {
+        if (pathname == null || pathname.equals(NIL)) {  // XXX duplicates code at the end of this longish function: figure out proper nesting of labels.
+            if (errorIfDoesNotExist) {
+                StringBuilder sb = new StringBuilder("The file ");
+                sb.append(pathname.princToString());
+                sb.append(" does not exist.");
+                return error(new FileError(sb.toString(), pathname));
+            }
+            return NIL;
+        }
         if (pathname instanceof LogicalPathname) {
             pathname = LogicalPathname.translateLogicalPathname((LogicalPathname) pathname);
         }
@@ -2142,27 +2152,22 @@ public class Pathname extends LispObject {
                                        pathname));
         }
         if (!(pathname.isJar() || pathname.isURL())) {
-            pathname
+            Pathname result 
                 = mergePathnames(pathname,
                                  coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue()),
                                  NIL);
-            final String namestring = pathname.getNamestring();
-            if (namestring == null) {
-                return error(new FileError("Pathname has no namestring: " 
-                                           + pathname.princToString(),
-                                           pathname));
-            }
-            
-            final File file = new File(namestring);
-            if (file.isDirectory()) {
-                return Utilities.getDirectoryPathname(file);
-            }
+            final File file = result.getFile();
             if (file.exists()) {
-                try {
-                    return new Pathname(file.getCanonicalPath());
-                } catch (IOException e) {
-                    return error(new FileError(e.getMessage(), pathname));
+                if (file.isDirectory()) {
+                    result = Pathname.getDirectoryPathname(file);
+                } else {
+                    try {
+                        result = new Pathname(file.getCanonicalPath());
+                    } catch (IOException e) {
+                        return error(new FileError(e.getMessage(), pathname));
+                    }
                 }
+                return result;
             }
         } else if (pathname.isURL()) {
             if (pathname.getInputStream() != null) {
@@ -2343,7 +2348,7 @@ public class Pathname extends LispObject {
                             + ": " + e);
             }
         } else {
-            File file = Utilities.getFile(this);
+            File file = getFile();
             try { 
                 result = new FileInputStream(file);
             } catch (IOException e) {
@@ -2360,7 +2365,7 @@ public class Pathname extends LispObject {
      */
     public long getLastModified() {
         if (!(isJar() || isURL())) {
-            File f = Utilities.getFile(this);
+            File f = getFile();
             return f.lastModified();
         }
 
@@ -2452,7 +2457,7 @@ public class Pathname extends LispObject {
                                      defaultedPathname);
             }
                     
-            File file = Utilities.getFile(defaultedPathname);
+            File file = defaultedPathname.getFile();
             return file.mkdir() ? T : NIL;
         }
     }
@@ -2461,57 +2466,66 @@ public class Pathname extends LispObject {
     @DocString(name="rename-file",
                args="filespec new-name",
                returns="defaulted-new-name, old-truename, new-truename",
-    doc="rename-file modifies the file system in such a way that the file indicated by FILESPEC is renamed to DEFAULTED-NEW-NAME.")
+               doc = "Modifies the file system in such a way that the file indicated by FILESPEC is renamed to DEFAULTED-NEW-NAME.\n"
+               + "\n"
+               + "Returns three values if successful. The primary value, DEFAULTED-NEW-NAME, is \n"
+               + "the resulting name which is composed of NEW-NAME with any missing components filled in by \n"
+               + "performing a merge-pathnames operation using filespec as the defaults. The secondary \n" 
+               + "value, OLD-TRUENAME, is the truename of the file before it was renamed. The tertiary \n"
+               + "value, NEW-TRUENAME, is the truename of the file after it was renamed.\n")
     private static class pf_rename_file extends Primitive {
         pf_rename_file() {
             super("rename-file", "filespec new-name");
         }
         @Override
         public LispObject execute(LispObject first, LispObject second) {
-            final Pathname original = (Pathname) truename(first, true);
-            final String originalNamestring = original.getNamestring();
+            Pathname oldPathname = coerceToPathname(first);
+            Pathname oldTruename = (Pathname) truename(oldPathname, true);
             Pathname newName = coerceToPathname(second);
             if (newName.isWild()) {
                 error(new FileError("Bad place for a wild pathname.", newName));
             }
-            if (original.isJar()) {
-                error(new FileError("Bad place for a jar pathname.", original));
+            if (oldTruename.isJar()) {
+                error(new FileError("Bad place for a jar pathname.", oldTruename));
             }
             if (newName.isJar()) {
                 error(new FileError("Bad place for a jar pathname.", newName));
             }
-            if (original.isURL()) {
-                error(new FileError("Bad place for a URL pathname.", original));
+            if (oldTruename.isURL()) {
+                error(new FileError("Bad place for a URL pathname.", oldTruename));
             }
             if (newName.isURL()) {
                 error(new FileError("Bad place for a jar pathname.", newName));
             }
                 
-            newName = mergePathnames(newName, original, NIL);
-            final String newNamestring;
-            if (newName instanceof LogicalPathname) {
-                newNamestring = LogicalPathname.translateLogicalPathname((LogicalPathname) newName).getNamestring();
+            Pathname defaultedNewName = mergePathnames(newName, oldTruename, NIL);
+
+            File source = oldTruename.getFile();
+            File destination = null;
+            if (defaultedNewName instanceof LogicalPathname) {
+                destination = LogicalPathname.translateLogicalPathname((LogicalPathname)defaultedNewName)
+                    .getFile();
             } else {
-                newNamestring = newName.getNamestring();
+                destination = defaultedNewName.getFile();
             }
-            if (originalNamestring != null && newNamestring != null) {
-                final File source = new File(originalNamestring);
-                final File destination = new File(newNamestring);
-                if (Utilities.isPlatformWindows) {
-                    if (destination.isFile()) {
-                        ZipCache.remove(destination);
-                        destination.delete();
-                    }
-                }
-                if (source.renameTo(destination)) { // Success!
-                        return LispThread.currentThread().setValues(newName, original,
-                                                                    truename(newName, true));
-                }
+            // By default, MSDOG doesn't allow one to remove files that are open.
+            if (Utilities.isPlatformWindows) {
+              if (destination.isFile()) {
+                ZipCache.remove(destination);
+                destination.delete();
+              }
+            }
+            if (source.renameTo(destination)) { // Success!
+              Pathname newTruename = (Pathname)truename(defaultedNewName, true);
+              return LispThread.currentThread().setValues(defaultedNewName, 
+                                                          oldTruename,
+                                                          newTruename);
             }
             return error(new FileError("Unable to rename "
-                                       + original.princToString()
+                                       + oldTruename.princToString()
                                        + " to " + newName.princToString()
-                                       + "."));
+                                       + ".",
+                                       oldTruename));
         }
     }
     
@@ -2655,5 +2669,33 @@ public class Pathname extends LispObject {
         }
         return null; // Error
     }
+
+
+    File getFile() {
+        String namestring = getNamestring(); // XXX UNC pathnames currently have no namestring
+        if (namestring != null) {
+            return new File(namestring);
+        }
+        error(new FileError("Pathname has no namestring: " + princToString(),
+                        this));
+        // Not reached.
+        return null;
+    }
+    public static Pathname getDirectoryPathname(File file) {
+        try {
+            String namestring = file.getCanonicalPath();
+            if (namestring != null && namestring.length() > 0) {
+                if (namestring.charAt(namestring.length() - 1) != File.separatorChar) {
+                    namestring = namestring.concat(File.separator);
+                }
+            }
+            return new Pathname(namestring);
+        } catch (IOException e) {
+            error(new LispError(e.getMessage()));
+            // Not reached.
+            return null;
+        }
+    }
+
 }
 

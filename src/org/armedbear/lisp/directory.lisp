@@ -117,9 +117,9 @@
                   (dolist (entry entries)
                     (cond ((file-directory-p entry)
                            (when (pathname-match-p (file-namestring (pathname-as-file entry)) (file-namestring pathname))
-                             (push entry matching-entries)))
+                             (push (truename entry) matching-entries)))
                           ((pathname-match-p (or (file-namestring entry) "") (file-namestring pathname))
-                           (push entry matching-entries))))
+                           (push (truename entry) matching-entries))))
                   matching-entries))))
         ;; Not wild.
         (let ((truename (probe-file pathname)))

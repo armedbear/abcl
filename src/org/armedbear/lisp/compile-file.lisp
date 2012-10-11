@@ -1,3 +1,4 @@
+
 ;;; compile-file.lisp
 ;;;
 ;;; Copyright (C) 2004-2006 Peter Graves
@@ -53,15 +54,15 @@
 (defun fasl-loader-classname (&optional (output-file-pathname *output-file-pathname*))
   (%format nil "~A_0" (base-classname output-file-pathname)))
 
-(declaim (ftype (function (t) t) compute-classfile-name))
-(defun compute-classfile-name (n &optional (output-file-pathname
+(declaim (ftype (function (t) t) compute-classfile))
+(defun compute-classfile (n &optional (output-file-pathname
                                             *output-file-pathname*))
-  "Computes the name of the class file associated with number `n'."
+  "Computes the pathname of the class file associated with number `n'."
   (let ((name
          (sanitize-class-name
 	  (%format nil "~A_~D" (pathname-name output-file-pathname) n))))
-    (namestring (merge-pathnames (make-pathname :name name :type *compile-file-class-extension*)
-                                 output-file-pathname))))
+    (merge-pathnames (make-pathname :name name :type *compile-file-class-extension*)
+                                 output-file-pathname)))
 
 (defun sanitize-class-name (name)
   (let ((name (copy-seq name)))
@@ -74,9 +75,9 @@
     name))
   
 
-(declaim (ftype (function () t) next-classfile-name))
-(defun next-classfile-name ()
-  (compute-classfile-name (incf *class-number*)))
+(declaim (ftype (function () t) next-classfile))
+(defun next-classfile ()
+  (compute-classfile (incf *class-number*)))
 
 (defmacro report-error (&rest forms)
   `(handler-case (progn ,@forms)
@@ -185,7 +186,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
   (let* ((toplevel-form (third form))
          (expr `(lambda () ,form))
          (saved-class-number *class-number*)
-         (classfile (next-classfile-name))
+         (classfile (next-classfile))
          (result
           (with-open-file
               (f classfile
@@ -307,7 +308,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                (let ((lambda-expression (cadr function-form)))
                  (jvm::with-saved-compiler-policy
                      (let* ((saved-class-number *class-number*)
-                            (classfile (next-classfile-name))
+                            (classfile (next-classfile))
                             (result
                              (with-open-file
                                  (f classfile
@@ -450,7 +451,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (push name *toplevel-macros*)
     (let* ((expr (function-lambda-expression (macro-function name)))
            (saved-class-number *class-number*)
-           (classfile (next-classfile-name)))
+           (classfile (next-classfile)))
       (with-open-file
           (f classfile
              :direction :output
@@ -490,7 +491,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
           (let* ((expr `(lambda ,lambda-list
                           ,@decls (block ,block-name ,@body)))
                  (saved-class-number *class-number*)
-                 (classfile (next-classfile-name))
+                 (classfile (next-classfile))
                  (internal-compiler-errors nil)
                  (result (with-open-file
                              (f classfile
@@ -636,21 +637,25 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
       (eval form))))
 
 (defun populate-zip-fasl (output-file)
-  (let* ((type ;; Don't use ".zip", it'll result in an extension
-          ;;  with a dot, which is rejected by NAMESTRING
+  (let* ((type ;; Don't use ".zip", it'll result in an extension with
+               ;; a dot, which is rejected by NAMESTRING
           (%format nil "~A~A" (pathname-type output-file) "-zip"))
-         (zipfile (namestring
-                   (merge-pathnames (make-pathname :type type)
-                                    output-file)))
+         (output-file (if (logical-pathname-p output-file)
+                          (translate-logical-pathname output-file)
+                          output-file))
+         (zipfile 
+          (if (find :windows *features*)
+              (make-pathname :defaults output-file :type type)
+              (make-pathname :defaults output-file :type type
+                             :device :unspecific)))
          (pathnames nil)
-         (fasl-loader (namestring (merge-pathnames
-                                   (make-pathname :name (fasl-loader-classname)
-                                                  :type *compile-file-class-extension*)
-                                   output-file))))
+         (fasl-loader (make-pathname :defaults output-file
+                                     :name (fasl-loader-classname)
+                                     :type *compile-file-class-extension*)))
     (when (probe-file fasl-loader)
       (push fasl-loader pathnames))
     (dotimes (i *class-number*)
-      (let ((truename (probe-file (compute-classfile-name (1+ i)))))
+      (let ((truename (probe-file (compute-classfile (1+ i)))))
         (when truename
           (push truename pathnames)
           ;;; XXX it would be better to just use the recorded number
@@ -668,8 +673,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                                               :defaults truename)))
               (push resource pathnames))))))
     (setf pathnames (nreverse (remove nil pathnames)))
-    (let ((load-file (merge-pathnames (make-pathname :type "_")
-                                      output-file)))
+    (let ((load-file (make-pathname :defaults output-file
+                                    :type "_")))
       (rename-file output-file load-file)
       (push load-file pathnames))
     (zip zipfile pathnames)
@@ -710,6 +715,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 (defvar *forms-for-output* nil)
 (defvar *fasl-stream* nil)
 
+(defvar *debug-compile-from-stream* nil)
 (defun compile-from-stream (in output-file temp-file temp-file2
                             extract-toplevel-funcs-and-macros
                             functions-file macros-file exports-file)
@@ -722,6 +728,9 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
          (namestring (namestring *compile-file-truename*))
          (start (get-internal-real-time))
          *fasl-uninterned-symbols*)
+    (setf *debug-compile-from-stream* 
+          (list :in in
+                :compile-file-pathname *compile-file-pathname*))
     (when *compile-verbose*
       (format t "; Compiling ~A ...~%" namestring))
     (with-compilation-unit ()
@@ -848,7 +857,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                  while (not (eq line :eof))
                  do (write-line line out)))))
         (delete-file temp-file)
-        (remove-zip-cache-entry output-file) ;; Necessary under windows
+        (when (find :windows *features*)
+          (remove-zip-cache-entry output-file))
         (rename-file temp-file2 output-file)
 
         (when *compile-file-zip*
@@ -870,8 +880,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
   (flet ((pathname-with-type (pathname type &optional suffix)
            (when suffix
              (setq type (concatenate 'string type suffix)))
-           (merge-pathnames (make-pathname :type type)
-                            pathname)))
+           (make-pathname :type type :defaults pathname)))
     (unless (or (and (probe-file input-file)
                      (not (file-directory-p input-file)))
                 (pathname-type input-file))

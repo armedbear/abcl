@@ -90,44 +90,6 @@ public final class Utilities
         return false;
     }
 
-    public static File getFile(Pathname pathname)
-    {
-        return getFile(pathname,
-                       coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue()));
-    }
-
-    public static File getFile(Pathname pathname, Pathname defaultPathname)
-
-    {
-        Pathname merged =
-            Pathname.mergePathnames(pathname, defaultPathname, NIL);
-        String namestring = merged.getNamestring();
-        if (namestring != null)
-            return new File(namestring);
-        error(new FileError("Pathname has no namestring: " + merged.princToString(),
-                             merged));
-        // Not reached.
-        return null;
-    }
-
-    public static Pathname getDirectoryPathname(File file)
-
-    {
-        try {
-            String namestring = file.getCanonicalPath();
-            if (namestring != null && namestring.length() > 0) {
-                if (namestring.charAt(namestring.length() - 1) != File.separatorChar)
-                    namestring = namestring.concat(File.separator);
-            }
-            return new Pathname(namestring);
-        }
-        catch (IOException e) {
-            error(new LispError(e.getMessage()));
-            // Not reached.
-            return null;
-        }
-    }
-
     public static ZipInputStream getZipInputStream(ZipFile zipfile,
                                                    String entryName) {
         return Utilities.getZipInputStream(zipfile, entryName, false);

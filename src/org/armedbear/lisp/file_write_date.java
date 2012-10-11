@@ -51,7 +51,8 @@ public final class file_write_date extends Primitive
         Pathname pathname = coerceToPathname(arg);
         if (pathname.isWild())
             error(new FileError("Bad place for a wild pathname.", pathname));
-        long lastModified = pathname.getLastModified();
+        Pathname defaultedPathname = (Pathname) Pathname.MERGE_PATHNAMES.execute(pathname);
+        long lastModified = defaultedPathname.getLastModified();
         if (lastModified == 0)
             return NIL;
         return number(lastModified / 1000 + 2208988800L);

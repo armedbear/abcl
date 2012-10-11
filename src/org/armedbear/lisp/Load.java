@@ -140,8 +140,8 @@ public final class Load
                 = coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue());
             mergedPathname = Pathname.mergePathnames(pathname, pathnameDefaults);
         }
-
-        Pathname truename = findLoadableFile(mergedPathname != null ? mergedPathname : pathname);
+        Pathname loadableFile = findLoadableFile(mergedPathname != null ? mergedPathname : pathname);
+        Pathname truename = coercePathnameOrNull(Pathname.truename(loadableFile));
 
         if (truename == null || truename.equals(NIL)) {
             if (ifDoesNotExist) {
@@ -193,8 +193,8 @@ public final class Load
                 }
             }
             truename = (Pathname)initTruename;
-        }
-        
+        } 
+				
         InputStream in = truename.getInputStream();
         Debug.assertTrue(in != null);
     
@@ -249,6 +249,20 @@ public final class Load
     private static final Symbol FASL_LOADER = PACKAGE_SYS.intern("*FASL-LOADER*");
     static final LispObject COMPILE_FILE_INIT_FASL_TYPE = new SimpleString("_");
 
+    private static final Pathname coercePathnameOrNull(LispObject p) {
+        if (p == null) {
+            return null;
+        }
+        Pathname result = null;
+        try {
+            result = (Pathname)p;
+        } catch (Throwable t) { // XXX narrow me!
+            return null;
+        }
+        return result;
+    }
+        
+
     public static final LispObject loadSystemFile(final String filename,
                                                   boolean verbose,
                                                   boolean print,
@@ -267,8 +281,12 @@ public final class Load
             mergedPathname = pathname;
         }
         URL url = null;
-        truename = findLoadableFile(mergedPathname);
-        final String COMPILE_FILE_TYPE = Lisp._COMPILE_FILE_TYPE_.symbolValue().getStringValue();
+        Pathname loadableFile = findLoadableFile(mergedPathname);
+        truename = coercePathnameOrNull(Pathname.truename(loadableFile));
+        
+        final String COMPILE_FILE_TYPE 
+          = Lisp._COMPILE_FILE_TYPE_.symbolValue().getStringValue();
+
         if (truename == null || truename.equals(NIL) || bootPath.equals(NIL)) {
             // Make an attempt to use the boot classpath
             String path = pathname.asEntryPath();
@@ -286,7 +304,8 @@ public final class Load
             }                
             if (!bootPath.equals(NIL)) {
                 Pathname urlPathname = new Pathname(url);
-                truename = findLoadableFile(urlPathname);
+							  loadableFile = findLoadableFile(urlPathname);
+								truename = (Pathname)Pathname.truename(loadableFile);
                 if (truename == null) {
                     return error(new LispError("Failed to find loadable system file in boot classpath "
                                                + "'" + url + "'"));
@@ -481,7 +500,13 @@ public final class Load
             // Lisp.readFunctionBytes().
             Pathname truePathname = null;
             if (!truename.equals(NIL)) {
-                truePathname = new Pathname(((Pathname)truename).getNamestring());
+                if (truename instanceof Pathname) {
+                    truePathname = new Pathname((Pathname)truename);
+                } else if (truename instanceof AbstractString) {
+                    truePathname = new Pathname(truename.getStringValue());
+                } else {
+                    Debug.assertTrue(false);
+                }
                 String type = truePathname.type.getStringValue();
                 if (type.equals(Lisp._COMPILE_FILE_TYPE_.symbolValue(thread).getStringValue())
                     || type.equals(COMPILE_FILE_INIT_FASL_TYPE.toString())) {

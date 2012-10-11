@@ -215,7 +215,7 @@ public final class zip extends Primitive
 
             final Pathname source = Lisp.coerceToPathname(key);
             final Pathname destination = Lisp.coerceToPathname(value);
-            final File file = Utilities.getFile(source);
+            final File file = source.getFile();
             try {
                 String jarEntry = destination.getNamestring();
                 if (jarEntry.startsWith("/")) {

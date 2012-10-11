@@ -74,8 +74,9 @@ public final class probe_file
             Pathname pathname = coerceToPathname(arg);
             if (pathname.isWild())
                 error(new FileError("Bad place for a wild pathname.", pathname));
-            File file = Utilities.getFile(pathname);
-            return file.isDirectory() ? Utilities.getDirectoryPathname(file) : NIL;
+            Pathname defaultedPathname = (Pathname)Pathname.MERGE_PATHNAMES.execute(pathname);
+            File file = defaultedPathname.getFile();
+            return file.isDirectory() ? Pathname.getDirectoryPathname(file) : NIL;
         }
     };
 
@@ -85,12 +86,12 @@ public final class probe_file
         new Primitive("file-directory-p", PACKAGE_EXT, true)
     {
         @Override
-        public LispObject execute(LispObject arg)
+        public LispObject execute(LispObject arg)  // XXX Should this merge with defaults?
         {
             Pathname pathname = coerceToPathname(arg);
             if (pathname.isWild())
                 error(new FileError("Bad place for a wild pathname.", pathname));
-            File file = Utilities.getFile(pathname);
+            File file = pathname.getFile();
             return file.isDirectory() ? T : NIL;
         }
     };

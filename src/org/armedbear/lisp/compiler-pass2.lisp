@@ -7555,7 +7555,7 @@ generated class."
 
 (defmacro with-file-compilation (&body body)
   `(let ((*file-compilation* t)
-         (*pathnames-generator* #'sys::next-classfile-name))
+         (*pathnames-generator* #'sys::next-classfile))
      ,@body))
 
 
