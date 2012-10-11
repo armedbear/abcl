@@ -3961,19 +3961,38 @@ effectively disabling the output translation facility."
          (setf output-truename nil failure-p t)))
       (values output-truename warnings-p failure-p))))
 
-#+abcl
+#+abcl 
 (defun* translate-jar-pathname (source wildcard)
   (declare (ignore wildcard))
-  (let* ((p (pathname (first (pathname-device source))))
-         (root (format nil "/___jar___file___root___/~@[~A/~]"
-                       (and (find :windows *features*)
-                            (pathname-device p)))))
-    (apply-output-translations
-     (merge-pathnames*
-      (relativize-pathname-directory source)
-      (merge-pathnames*
-       (relativize-pathname-directory (ensure-directory-pathname p))
-       root)))))
+  (let* ((jar 
+          (pathname (first (pathname-device source))))
+         (target-root-directory-namestring
+          (format nil "/___jar___file___root___/~@[~A/~]"
+                  (and (find :windows *features*)
+                       (pathname-device jar))))
+         (relative-source 
+          (relativize-pathname-directory source))
+         (relative-jar 
+          (relativize-pathname-directory (ensure-directory-pathname jar)))
+         (target-root-directory
+          (if (find :windows *features*)
+              (make-pathname :name nil
+                             :type nil
+                             :version nil
+                             :defaults (parse-namestring target-root-directory-namestring))
+              (make-pathname :device :unspecific 
+                             :name nil
+                             :type nil
+                             :version nil
+                             :defaults (parse-namestring target-root-directory-namestring))))
+         (target-root 
+          (merge-pathnames* relative-jar target-root-directory))
+         (target 
+          (merge-pathnames* relative-source target-root)))
+    (if (find :windows *features*)
+        (apply-output-translations target)
+        (make-pathname :defaults (apply-output-translations target)
+                       :device :unspecific))))
 
 ;;;; -----------------------------------------------------------------
 ;;;; Compatibility mode for ASDF-Binary-Locations
