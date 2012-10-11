@@ -2167,6 +2167,9 @@ public class Pathname extends LispObject {
                         return error(new FileError(e.getMessage(), pathname));
                     }
                 }
+                if (Utilities.isPlatformUnix) {
+                  result.device = Keyword.UNSPECIFIC;
+                }
                 return result;
             }
         } else if (pathname.isURL()) {
