@@ -19,7 +19,7 @@
 
 (asdf:defsystem :abcl-asdf-test
   :author "Mark Evenson"
-  :depends-on (abcl-asdf)
+  :defsystem-depends-on (abcl-asdf)
   :components
   ((:module tests :serial t :components
             ((:file "example")
