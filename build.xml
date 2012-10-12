@@ -612,7 +612,7 @@ will compile (if necessary) and load JSS.
       <echo>WARNING:  This target is removing local application inter-Lisp fasls, forcing recompilation.
       </echo>
       <echo>Deleting local SLIME fasls under ${slime.fasls}</echo>
-      <delete dir="slime.fasls"/>
+      <delete dir="${slime.fasls}"/>
       <echo>Deleting local Quicklisp fasls under ${quicklisp.common-lisp.fasls}</echo>
       <delete dir="${quicklisp.common-lisp.fasls}"/>
     </target>
