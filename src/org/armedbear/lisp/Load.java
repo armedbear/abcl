@@ -38,6 +38,7 @@ import static org.armedbear.lisp.Lisp.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.MessageFormat;
 
 /* This file holds ABCL's (FASL and non-FASL) loading behaviours.
  *
@@ -165,7 +166,10 @@ public final class Load
                 n = "jar:file:" + Pathname.uriEncode(n) + "!/" + name + "."
                     + COMPILE_FILE_INIT_FASL_TYPE;
             }
-            mergedPathname = new Pathname(n);
+            if (!((mergedPathname = new Pathname(n)) instanceof Pathname)) {
+              return error(new FileError((MessageFormat.format("Failed to address JAR-PATHNAME truename {0} for name {1}", truename.princToString(), name)), truename));
+            }
+
             LispObject initTruename = Pathname.truename(mergedPathname);
             if (initTruename == null || initTruename.equals(NIL)) {
                 // Maybe the enclosing JAR has been renamed?
