@@ -604,10 +604,26 @@ will compile (if necessary) and load JSS.
       <delete file="abcl.bat"/>
     </target>
 
+    <property name="slime.fasls" 
+              value="${user.home}/.slime/"/>
+    <property name="quicklisp.common-lisp.fasls"
+              value="${user.home}/.cache/common-lisp/"/>
+    <target name="abcl.clean.application.fasls">
+      <echo>WARNING:  This target is removing local application inter-Lisp fasls, forcing recompilation.
+      </echo>
+      <echo>Deleting local SLIME fasls under ${slime.fasls}</echo>
+      <delete dir="slime.fasls"/>
+      <echo>Deleting local Quicklisp fasls under ${quicklisp.common-lisp.fasls}</echo>
+      <delete dir="${quicklisp.common-lisp.fasls}"/>
+    </target>
+
     <target name="abcl.dist" depends="abcl.jar">
       <copy file="${abcl.jar.path}"
             toFile="${dist.dir}/abcl-${abcl.version}.jar"/>
     </target>
+
+
+
 
     <target name="abcl.distclean" depends="abcl.clean">
       <delete dir="${dist.dir}"/>
