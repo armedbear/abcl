@@ -25,6 +25,9 @@
                   (return abcl-jar)))))
         (java:add-to-classpath (abcl-asdf:resolve
                                 "net.java.dev.jna:jna:3.4.0")))
-    (t (e) (error "Failed to resolve 'jna.jar' because~&~A." e))))
+    (t (e) 
+      (progn 
+        (unless (jss:find-java-class "com.sun.jna.Native")
+          (error "Failed to resolve 'jna.jar' because~&~A." e))))))
 
                          
