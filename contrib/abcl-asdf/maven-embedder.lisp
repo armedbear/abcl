@@ -413,6 +413,8 @@ artifact and all of its transitive dependencies."
     (cond 
       ((= (length result) 3)
        (resolve-dependencies (first result) (second result) (third result)))
+      ((string= string "com.sun.jna:jna")
+       (resolve-dependencies "net.java.dev.jna" "jna" "3.4.0"))
       (t
        (apply #'resolve-dependencies result)))))
   
