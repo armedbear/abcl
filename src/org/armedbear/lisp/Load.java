@@ -170,7 +170,7 @@ public final class Load
               return error(new FileError((MessageFormat.format("Failed to address JAR-PATHNAME truename {0} for name {1}", truename.princToString(), name)), truename));
             }
 
-            LispObject initTruename = Pathname.truename(mergedPathname);
+            LispObject initTruename = coercePathnameOrNull(Pathname.truename(mergedPathname));
             if (initTruename == null || initTruename.equals(NIL)) {
                 // Maybe the enclosing JAR has been renamed?
                 Pathname p = new Pathname(mergedPathname);
