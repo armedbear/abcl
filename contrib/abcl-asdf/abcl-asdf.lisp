@@ -100,10 +100,20 @@
 (defmethod resolve ((mvn-component asdf::mvn))
   "Resolve all runtime dependencies of MVN-COMPONENT.
 
-Returns a string in JVM CLASSPATH format as entries delimited by classpath separator string."
-  
-  (with-slots (asdf::group-id asdf::artifact-id asdf::version) mvn-component
-    (resolve-dependencies asdf::group-id asdf::artifact-id asdf::version)))
+Returns a string in JVM CLASSPATH format as entries delimited by
+classpath separator string.  Can possibly be a single entry denoting a
+remote binary artifact."
+  (let ((name (asdf::component-name mvn-component)))
+    (if (find-mvn)
+        (with-slots (asdf::group-id asdf::artifact-id asdf::version) mvn-component
+          (resolve-dependencies asdf::group-id asdf::artifact-id asdf::version))
+        (cond 
+          ((string= name
+                    "net.java.dev.jna/jna/3.4.0"
+                    (let ((uri #p"http://repo1.maven.org/maven2/net/java/dev/jna/jna/3.4.0/jna-3.4.0.jar"))
+                      (values (namestring uri) uri))))
+          (t 
+           (error "Failed to resolve MVN component name ~A." name))))))
 
 (defun as-classpath (classpath)
   "Break apart the JVM CLASSPATH string into a list of its consituents."
