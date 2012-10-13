@@ -103,17 +103,30 @@
 Returns a string in JVM CLASSPATH format as entries delimited by
 classpath separator string.  Can possibly be a single entry denoting a
 remote binary artifact."
-  (with-slots (name group-id artifact-id version) mvn-component
-    (if (find-mvn)
-        (resolve-dependencies group-id artifact-id version))
-    (cond 
-          ((string= name
-                    "net.java.dev.jna/jna/3.4.0"
-                    (let ((uri #p"http://repo1.maven.org/maven2/net/java/dev/jna/jna/3.4.0/jna-3.4.0.jar"))
-                      (values (namestring uri) uri))))
-          (t 
-           (error "Failed to resolve MVN component name ~A." name)))))
-
+  (macrolet ((aif (something consequence alternative))
+             `(let ((it ,(something)))
+                (if it
+                    consequence
+                    alternative)))
+    (let ((name (slot-value mvn-component 'asdf::name))
+          (group-id (slot-value mvn-component 'asdf::group-id))
+          (artifact-id (slot-value mvn-component 'asdf::artifact-id))
+          (version (let ((it (slot-value mvn-component 'asdf::version)))
+                     (cond
+                       ((not it)
+                        it)
+                       (t 
+                        "LATEST")))))
+      (if (find-mvn)
+          (resolve-dependencies group-id artifact-id version)
+          (cond 
+            ((string= name
+                      "net.java.dev.jna/jna/3.4.0"
+                      (let ((uri #p"http://repo1.maven.org/maven2/net/java/dev/jna/jna/3.4.0/jna-3.4.0.jar"))
+                        (values (namestring uri) uri))))
+            (t 
+             (error "Failed to resolve MVN component name ~A." name)))))))
+  
 (defun as-classpath (classpath)
   "Break apart the JVM CLASSPATH string into a list of its consituents."
   (split-string classpath 
