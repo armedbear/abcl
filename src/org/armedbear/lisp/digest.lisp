@@ -54,7 +54,7 @@
                                      (funcall #'digest p 'nio))
                                    paths)))))
     ((null paths)
-     nil)))
+     nil)))))
                                       
            
 (defgeneric digest (url algorithim  &optional (digest 'sha-256))
