@@ -38,23 +38,22 @@
                   (java::list-from-jarray digest))))
 (export 'sha256 :system)
 (defun sha256 (&rest paths-or-strings)
-  (format *debug-io* "~&Args: ~S~&" paths-or-strings)
   (cond 
     ((= 1 (length paths-or-strings))
      (typecase paths-or-strings
        (pathname
-        (ascii-digest (digest (first paths) 'nio)))
-       (string 
+        (ascii-digest (digest (first paths-or-strings) 'nio)))
+       (string (error "Somebody implement me please")))) ; FIXME
         
-    ((consp paths)
+    ((consp paths-or-strings)
      (concatenate 'string
                   (append
                    (mapcar #'ascii-digest
                            (mapcar (lambda (p)
                                      (funcall #'digest p 'nio))
-                                   paths)))))
-    ((null paths)
-     nil)))))
+                                   paths-or-strings)))))
+    ((null paths-or-strings)
+     nil)))
                                       
            
 (defgeneric digest (url algorithim  &optional (digest 'sha-256))
