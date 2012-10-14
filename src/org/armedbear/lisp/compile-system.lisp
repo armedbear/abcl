@@ -325,6 +325,7 @@
                            "copy-seq.lisp"
                            "copy-symbol.lisp"
                            "count.lisp"
+                           "digest.lisp"
                            "debug.lisp"
                            "define-modify-macro.lisp"
                            "define-symbol-macro.lisp"
