@@ -8,15 +8,18 @@
 
 \begin{document}
 \title{Armed Bear Common Lisp User Manual}
-\date{Version 1.1.0-dev\\
+\date{Version 1.1.0\\
 \smallskip
-May 14, 2012}
+October 15, 2012}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
 \maketitle
 
 \tableofcontents
+
+%%\chapter{Preface}
+%%Preface to the second edition, abcl-1.1.0.
 
 \chapter{Introduction}
 
@@ -856,8 +859,6 @@ a \code{CL:PATHNAME} is accepted with the following caveats:
   \cite{evenson2011} for the draft of the publication of the technical
   details}.
 
-
-
 \end{itemize}
 
 The implementation of \code{EXT:URL-PATHNAME} allows the \textsc{ABCL}
@@ -870,6 +871,15 @@ as the single form:
 \end{listing-lisp}
 
 will load and execute the Quicklisp setup code.
+
+The implementation currently breaks ANSI conformance by allowing the
+types able to be READ for the DEVICE to return a possible CONS of
+PATHNAME objects.  %% citation from CLHS needed.
+
+In order to ``smooth over'' the bit about types being READ from
+PATHNAME components, we extend the semantics for the usual PATHNAME
+merge semantics when *DEFAULT-PATHNAME-DEFAULTS* contains a
+\code{JAR-PATHNAME}.  
 
 %See \ref{_:quicklisp} on page \pageref{_:quicklisp}.
 
@@ -1002,7 +1012,7 @@ bit characters to the Lisp reader\footnote{This represents a
 allow a sequences of the form \# \textbackslash Uxxxx to be processed
 by the reader as character whose code is specified by the hexadecimal
 digits ``xxxx''.  The hexadecimal sequence may be one to four digits
-long.
+long.  % Why doesn't ALEXANDRIA work?
 
 Note that this sequence is never output by the implementation.  Instead,
 the corresponding Unicode character is output for characters whose
@@ -1036,7 +1046,7 @@ semantic to the execution of \code{REQUIRE} on the following symbols:
       \item \code{mvn}
         These systems name common JVM artifacts from the distributed pom.xml graph of Maven Aether:
         \begin{enumerate}
-          \item \code{jna} Dynamically load 'jna.jar' version 3.0.9 from the network.
+          \item \code{jna} Dynamically load 'jna.jar' version 3.4.0 from the network.
         \end{enumerate}
       \item \code{quicklisp-abcl} (Not working) boot a local Quicklisp
         installation via the ASDF:IRI type introduced bia ABCL-ASDF.
@@ -1059,7 +1069,7 @@ reader in the definition of the \#\" reader macro.  See section
 
 \section{ASDF}
 
-asdf-2.019 (see \cite{asdf}) is packaged as core component of ABCL,
+asdf-2.25 (see \cite{asdf}) is packaged as core component of ABCL,
 but not initialized by default, as it relies on the CLOS subsystem
 which can take a bit of time to start \footnote{While this time is
   ``merely'' on the order of seconds for contemporary 2011 machines,
@@ -1239,6 +1249,9 @@ On October 22, 2011, with the publication of this Manual explicitly
 stating the conformance of Armed Bear Common Lisp to \textsc{ANSI}, we
 released abcl-1.0.0.  We released abcl-1.0.1 as a maintainence release
 on January 10, 2012.
+
+In October 2012, we revised the implementation with the release of
+abcl-1.1.0 and accumulated changes to this manual.
 
 \bibliography{abcl}
 \bibliographystyle{alpha}
