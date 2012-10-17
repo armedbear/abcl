@@ -146,5 +146,14 @@ be in a directory named '../ansi-test/'."
 		     ((:file "build-abcl") 
 		      (:file "customizations" :depends-on ("build-abcl"))))))
 
+(defsystem :abcl-contrib
+  ;; :version "1.1"
+  :components ((:static-file "README")))
+  ;; #+nil ((:module source :pathname "src/org/armedbear/lisp/" :components 
+  ;;                       ((:file  "abcl-contrib")
+  ;;                        #+nil::needs-abcl-asdf (:iri "jar-file:dist/abcl-contrib.jar"))))
 
+;; XXX Currently need to force load via (asdf:load-system :abcl-contrib :force t)
+(defmethod perform ((o load-op) (c (eql (find-system :abcl-contrib))))
+ (require :abcl-contrib))
 
