@@ -146,14 +146,14 @@ Returns the path of the Maven executable or nil if none are found."
 (defparameter *init* nil)
 
 (defun init (&optional &key (force nil))
-  "Run the initialization strategy to bootstrap a Maven dependency node."
-  (unless (or force *mvn-libs-directory*)
-    (setf *mvn-libs-directory* (find-mvn-libs)))
-  (unless (probe-file *mvn-libs-directory*)
-    (error "You must download maven-3.0.4 or later from http://maven.apache.org/download.html, then set ABCL-ASDF:*MVN-DIRECTORY* appropiately."))
-  (unless (ensure-mvn-version)
-    (error "We need maven-3.0.4 or later."))
-  (add-directory-jars-to-class-path *mvn-libs-directory* nil)
+ "Run the initialization strategy to bootstrap a Maven dependency node."
+ (unless (or force *mvn-libs-directory*)
+   (setf *mvn-libs-directory* (find-mvn-libs)))
+  (unless (and *mvn-libs-directory*
+               (probe-file *mvn-libs-directory*))
+   (error "You must download maven-3.0.4 or later from http://maven.apache.org/download.html, then set ABCL-ASDF:*MVN-DIRECTORY* appropiately."))
+ (unless (ensure-mvn-version)
+   (error "We need maven-3.0.4 or later."))  (add-directory-jars-to-class-path *mvn-libs-directory* nil)
   (setf *init* t))
 
 (defparameter *http-wagon-implementations*

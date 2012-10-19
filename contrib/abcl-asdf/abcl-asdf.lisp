@@ -120,10 +120,9 @@ remote binary artifact."
       (if (find-mvn)
           (resolve-dependencies group-id artifact-id version)
           (cond 
-            ((string= name
-                      "net.java.dev.jna/jna/3.4.0"
-                      (let ((uri #p"http://repo1.maven.org/maven2/net/java/dev/jna/jna/3.4.0/jna-3.4.0.jar"))
-                        (values (namestring uri) uri))))
+            ((string= name "net.java.dev.jna/jna/3.4.0")
+             (let ((uri #p"http://repo1.maven.org/maven2/net/java/dev/jna/jna/3.4.0/jna-3.4.0.jar")))
+                        (values (namestring uri) uri))
             (t 
              (error "Failed to resolve MVN component name ~A." name)))))))
   
