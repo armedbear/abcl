@@ -2986,6 +2986,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_MOP.addExternalSymbol("GENERIC-FUNCTION-METHODS");
   public static final Symbol METAOBJECT =
     PACKAGE_MOP.addExternalSymbol("METAOBJECT");
+  public static final Symbol METHOD_FUNCTION =
+    PACKAGE_MOP.addExternalSymbol("METHOD-FUNCTION");
   public static final Symbol SPECIALIZER =
     PACKAGE_MOP.addExternalSymbol("SPECIALIZER");
   public static final Symbol STANDARD_ACCESSOR_METHOD =

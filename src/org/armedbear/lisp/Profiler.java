@@ -76,17 +76,14 @@ public class Profiler
                                 methods =
                                     Symbol.GENERIC_FUNCTION_METHODS.execute(object);
                             }
-                            // TODO: extract methods from non-standard
-                            // generic functions here once they are
-                            // implemented
                             while (methods != null && methods != NIL) {
-                                LispObject maybeMethod = methods.car();
-                                if (maybeMethod instanceof StandardObject) {
-                                    StandardObject method = (StandardObject) maybeMethod;
-                                    LispObject function = method.getInstanceSlotValue(Symbol._FUNCTION);
-                                    function.setCallCount(0);
-                                    function.setHotCount(0);
-                                    methods = methods.cdr();
+                                LispObject method = methods.car();
+                                LispObject function =
+                                  Symbol.METHOD_FUNCTION.execute(method);
+                                if (function != NIL) {
+                                  function.setCallCount(0);
+                                  function.setHotCount(0);
+                                  methods = methods.cdr();
                                 }
                             }
                         }
