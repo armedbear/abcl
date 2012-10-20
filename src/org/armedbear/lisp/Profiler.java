@@ -83,7 +83,7 @@ public class Profiler
                                 LispObject maybeMethod = methods.car();
                                 if (maybeMethod instanceof StandardObject) {
                                     StandardObject method = (StandardObject) maybeMethod;
-                                    LispObject function = method.getInstanceSlotValue(Symbol.FUNCTION);
+                                    LispObject function = method.getInstanceSlotValue(Symbol._FUNCTION);
                                     function.setCallCount(0);
                                     function.setHotCount(0);
                                     methods = methods.cdr();
