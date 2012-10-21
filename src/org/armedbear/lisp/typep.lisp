@@ -177,6 +177,11 @@
        (and (simple-typep object 'nil-vector)
             (or (endp i)
                 (eql (%car i) (length object)))))
+      (MOD
+       (and (integerp object)
+            (or (zerop object)
+                (and (plusp object)
+                     (< object (second type))))))
       ((FUNCTION VALUES)
        (error 'simple-error
               :format-control "~S types are not a legal argument to TYPEP: ~S"
