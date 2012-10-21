@@ -38,6 +38,8 @@ import static org.armedbear.lisp.Lisp.*;
 // ### peek-char
 public final class peek_char extends Primitive
 {
+    private static LispObject internalEOF = new LispObject();
+    
     private peek_char()
     {
         super("peek-char",
@@ -68,7 +70,9 @@ public final class peek_char extends Primitive
                 in = ((EchoStream)stream).getInputStream();
             else
                 in = stream;
-            final LispObject result = in.readChar(eofError, eofValue);
+            final LispObject result = in.readChar(eofError, internalEOF);
+            if (result == internalEOF)
+                return eofValue;
             if (result instanceof LispCharacter)
                 in.unreadChar((LispCharacter)result);
             return result;
@@ -79,7 +83,10 @@ public final class peek_char extends Primitive
             // operation on the next character."
             Readtable rt = currentReadtable();
             while (true) {
-                LispObject result = stream.readChar(eofError, eofValue);
+                LispObject result = stream.readChar(eofError, internalEOF);
+                if (result == internalEOF)
+                    return eofValue;
+                
                 if (result instanceof LispCharacter) {
                     char c = ((LispCharacter)result).value;
                     if (!rt.isWhitespace(c)) {
@@ -96,7 +103,10 @@ public final class peek_char extends Primitive
             // found; that character is left in INPUT-STREAM."
             char c = ((LispCharacter)peekType).value;
             while (true) {
-                LispObject result = stream.readChar(eofError, eofValue);
+                LispObject result = stream.readChar(eofError, internalEOF);
+                if (result == internalEOF)
+                    return eofValue;
+                
                 if (result instanceof LispCharacter) {
                     if (((LispCharacter)result).value == c) {
                         stream.unreadChar((LispCharacter)result);
