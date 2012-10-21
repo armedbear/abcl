@@ -4033,6 +4033,8 @@ call that function where you would otherwise have loaded and configured A-B-L.")
     (initialize-output-translations
      `(:output-translations
        ,@source-to-target-mappings
+       #+abcl (#p"jar:file:/**/*.jar!/**/*.*" (:function translate-jar-pathname))
+       #+abcl (#p"/___jar___file___root___/**/*.*" (,@destination-directory))
        ((:root ,*wild-inferiors* ,mapped-files)
         (,@destination-directory ,mapped-files))
        (t t)
