@@ -715,7 +715,6 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 (defvar *forms-for-output* nil)
 (defvar *fasl-stream* nil)
 
-(defvar *debug-compile-from-stream* nil)
 (defun compile-from-stream (in output-file temp-file temp-file2
                             extract-toplevel-funcs-and-macros
                             functions-file macros-file exports-file)
@@ -728,9 +727,6 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
          (namestring (namestring *compile-file-truename*))
          (start (get-internal-real-time))
          *fasl-uninterned-symbols*)
-    (setf *debug-compile-from-stream* 
-          (list :in in
-                :compile-file-pathname *compile-file-pathname*))
     (when *compile-verbose*
       (format t "; Compiling ~A ...~%" namestring))
     (with-compilation-unit ()
@@ -814,10 +810,11 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                                    :if-exists :supersede)
               (let ((*package* (find-package :keyword)))
                 (write *toplevel-exports* :stream e-out)))))
-        (with-open-file (in temp-file :direction :input)
+        (with-open-file (in temp-file :direction :input :external-format *fasl-external-format*)
           (with-open-file (out temp-file2 :direction :output
                                :if-does-not-exist :create
-                               :if-exists :supersede)
+                               :if-exists :supersede
+                               :external-format *fasl-external-format*)
             (let ((*package* (find-package '#:cl))
                   (*print-fasl* t)
                   (*print-array* t)
@@ -875,8 +872,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                      ((:verbose *compile-verbose*) *compile-verbose*)
                      ((:print *compile-print*) *compile-print*)
                      (extract-toplevel-funcs-and-macros nil)
-                     external-format)
-  (declare (ignore external-format))    ; FIXME
+                     (external-format :utf-8))
   (flet ((pathname-with-type (pathname type &optional suffix)
            (when suffix
              (setq type (concatenate 'string type suffix)))
@@ -906,7 +902,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
            *toplevel-exports*
            (warnings-p nil)
            (failure-p nil))
-      (with-open-file (in input-file :direction :input)
+      (with-open-file (in input-file :direction :input :external-format external-format)
         (compile-from-stream in output-file temp-file temp-file2
                              extract-toplevel-funcs-and-macros
                              functions-file macros-file exports-file))
