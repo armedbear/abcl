@@ -127,29 +127,17 @@ public final class ConcatenatedStream extends Stream
     @Override
     public LispObject listen()
     {
-        if (unreadChar >= 0)
-            return T;
         if (streams == NIL)
             return NIL;
-        LispObject obj = readCharNoHang(false, this);
-        if (obj == this)
-            return NIL;
-        unreadChar = ((LispCharacter)obj).getValue();
-        return T;
+        Stream stream = (Stream)streams.car();
+        return stream.listen();
     }
-
-    private int unreadChar = -1;
 
     // Returns -1 at end of file.
     @Override
     protected int _readChar() throws java.io.IOException
     {
         int n;
-        if (unreadChar >= 0) {
-            n = unreadChar;
-            unreadChar = -1;
-            return n;
-        }
         if (streams == NIL)
             return -1;
         Stream stream = (Stream) streams.car();
@@ -161,18 +149,18 @@ public final class ConcatenatedStream extends Stream
     }
 
     @Override
-    protected void _unreadChar(int n)
+    protected void _unreadChar(int n) throws java.io.IOException
     {
-        if (unreadChar >= 0)
-            error(new StreamError(this, "UNREAD-CHAR was invoked twice consecutively without an intervening call to READ-CHAR."));
-        unreadChar = n;
+      if (streams == NIL)
+            error(new StreamError(this, "UNREAD-CHAR was invoked without a stream to unread into."));
+      Stream stream = (Stream)streams.car();
+
+      stream._unreadChar(n);
     }
 
     @Override
     protected boolean _charReady() throws java.io.IOException
     {
-        if (unreadChar >= 0)
-            return true;
         if (streams == NIL)
             return false;
         Stream stream = (Stream) streams.car();
