@@ -99,7 +99,7 @@ EXTERNAL-FORMAT must be of the same format as specified for OPEN."
   "Time in SECONDS to set local implementation of 'SO_RCVTIMEO' on SOCKET."
   (java:jcall (java:jmethod "java.net.Socket" "setSoTimeout"  "int")
               socket
-              (/ seconds 1000)))
+              (* seconds 1000))) ;; underlying API in ms.
 
 (defun write-timeout (socket seconds)
   "No-op setting of write timeout to SECONDS on SOCKET."
