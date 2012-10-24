@@ -407,7 +407,7 @@ public final class Primitives {
     };
 
     // ### values
-    private static final Primitive VALUES = new pf_values();
+    public static final Primitive VALUES = new pf_values();
     private static final class pf_values extends Primitive {
         pf_values() {
             super(Symbol.VALUES, "&rest object");

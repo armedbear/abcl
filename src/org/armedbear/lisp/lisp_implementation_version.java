@@ -34,6 +34,7 @@
 package org.armedbear.lisp;
 
 import java.math.BigInteger;
+import java.text.MessageFormat;
 
 // ### lisp_implementation_version
 // lisp_implementation_version <no arguments> => description
@@ -47,7 +48,14 @@ public final class lisp_implementation_version extends Primitive
     @Override
     public LispObject execute()
     {
-        return new SimpleString(Version.getVersion());
+        String vendor = System.getProperty("java.vendor");
+        vendor = vendor.replace(" ", "_");
+        String jdkVersion = MessageFormat.format("{0}-{1}-{2})",
+                                          vendor,
+                                          System.getProperty("os.arch"),
+                                          System.getProperty("java.runtime.version"));
+        return Primitives.VALUES.execute(new SimpleString(Version.getVersion()),
+                                         new SimpleString(jdkVersion));
     }
 
     private static final lisp_implementation_version LISP_IMPLEMENTATION_VERSION =
