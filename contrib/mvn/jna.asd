@@ -2,10 +2,10 @@
 
 ;;;; Need to have jna.jar present for CFFI to have a chance of working.
 (asdf:defsystem :jna 
-    :version "3.4.0"
+    :version "3.5.0"
     :defsystem-depends-on (jss abcl-asdf)
-;; FIXME: 
-    :components ((:mvn "net.java.dev.jna/jna/3.4.0")))
+;; FIXME: always seems to be resolving the LATEST maven artifact.
+    :components ((:mvn "net.java.dev.jna/jna/3.5.0")))
 
 (in-package :asdf) 
 (defmethod perform :after ((o load-op) (c (eql (find-system :jna))))
@@ -23,8 +23,9 @@
       (unless 
           (java:add-to-classpath (abcl-asdf:resolve "net.java.dev.jna:jna:3.4.0"))
         (unless 
-            (java:add-to-classpath #p"http://repo1.maven.org/maven2/net/java/dev/jna/jna/3.4.0/jna-3.4.0.jar")
-          (error "Failed to load jna-3.4.0.jar from the network via URI."))
+            ;; Might want to download to local filesystem, then place in classpath
+            (java:add-to-classpath #p"http://repo1.maven.org/maven2/net/java/dev/jna/jna/3.5.0/jna-3.5.0.jar")
+          (error "Failed to load jna-3.5.0.jar from the network via URI."))
         (error "Failed to load jna.jar via ABCL-ASDF.")))
     (t (e) 
       (error "Failed to resolve 'jna.jar' because~&~A.~&" e))))
