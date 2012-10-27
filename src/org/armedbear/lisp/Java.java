@@ -472,6 +472,7 @@ public final class Java
                 else
                     methodArgs[i-2] = arg.javaInstance(argTypes[i-2]);
             }
+            m.setAccessible(true);
             Object result = m.invoke(null, methodArgs);
 	    return JavaObject.getInstance(result, translate, m.getReturnType());
         }
