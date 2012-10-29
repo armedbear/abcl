@@ -17,10 +17,13 @@
   ;;; Load local Quicklisp if it has been an installed
   (let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp" 
                                          (user-homedir-pathname))))
-    (handler-case
-        (when (probe-file quicklisp-init)
-          (load quicklisp-init))
-      (t (e) (load "https://beta.quicklisp.org/quickstart/setup.lisp")))))
+    (if (probe-file quicklisp-init)
+        (load quicklisp-init)
+        (progn
+          (load "http://beta.quicklisp.org/quicklisp.lisp")
+          (funcall (intern "install" "QUICKLISP-QUICKSTART"))))))
+        
+    
   
 
 
