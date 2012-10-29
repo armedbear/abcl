@@ -21,7 +21,7 @@
         (load quicklisp-init)
         (progn
           (load "http://beta.quicklisp.org/quicklisp.lisp")
-          (funcall (intern "install" "QUICKLISP-QUICKSTART"))))))
+          (funcall (intern "INSTALL" "QUICKLISP-QUICKSTART"))))))
         
     
   
