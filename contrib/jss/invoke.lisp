@@ -533,8 +533,8 @@ current classpath."
 (defun jarray-to-list (jarray)
   "Convert the Java array named by JARRARY into a Lisp list."
   (declare (optimize (speed 3) (safety 0)))
-  (jlist-to-list
-   (jstatic "asList" "java.util.Arrays" jarray)))
+  (loop :for i :from 0 :below (jarray-length jarray)
+     :collecting (jarray-ref jarray i)))
 
 ;;; Deprecated 
 ;;; 
