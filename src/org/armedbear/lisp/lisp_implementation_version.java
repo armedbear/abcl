@@ -48,12 +48,12 @@ public final class lisp_implementation_version extends Primitive
     @Override
     public LispObject execute()
     {
-        String jdkVersion = MessageFormat.format("{0}-{1}-{2})",
+        String jdkVersion = MessageFormat.format("{0}-{1}-{2}",
                                                  System.getProperty("java.vm.name"),
                                                  System.getProperty("java.vm.vendor"),
                                                  System.getProperty("java.runtime.version"))
             .replace(" ", "_");
-        String osVersion  = MessageFormat.format("{0}-{1}-{2})",
+        String osVersion  = MessageFormat.format("{0}-{1}-{2}",
                                                  System.getProperty("os.arch"),
                                                  System.getProperty("os.name"),
                                                  System.getProperty("os.version"))
