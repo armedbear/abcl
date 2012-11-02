@@ -1,6 +1,28 @@
 ;;; -*- Mode: Lisp -*-
 
-;;; Possible code for inclusion in the Armed Bear startup file #p"~/.abclrc"
+;;; Possible code for inclusion in the Armed Bear startup file
+;;; #p"~/.abclrc"
+
+
+;;; Some commonly useful customizations to ABCL output
+(setf 
+ ;; Truncate the output of java.lang.String object after this many
+ ;; characters, outputing "...." afterwards.  
+ ;; The default is 32.  Is this too small?
+ *java-object-to-string-length* 8192 
+
+ ;; Show what is being loaded and the loading time.  
+ ;; Helpful on slower systems to figure out what is taking the time.
+ *load-verbose* t
+
+ ;; Emit warnings from debug code
+ sys:*debug-warn* t
+
+ ;; Bring some order to the forms output by the REPL
+ ;; Not currently the default, but it probably should be after we
+ ;; rework the pretty printer and/or streams to properly work with
+ ;; GRAY-STREAMS:
+ *print-pretty* t)
 
 #-quicklisp
 (let ((quicklisp-local  #P"~/quicklisp/setup.lisp")
