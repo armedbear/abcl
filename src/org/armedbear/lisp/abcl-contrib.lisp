@@ -10,7 +10,7 @@
                 (equal (pathname-type p) "jar")
                 (java:jstatic "matches"
                               "java.util.regex.Pattern" 
-                              "abcl(-[0-9]\\.[0-9]\\.[0-9](-.+)?)?" 
+                              "abcl(-[0-9]\\.[0-9]\\.[0-9]([+~-].+)?)?" 
                               (pathname-name p))
                 p)))
     (dolist (loader (java:dump-classpath))
