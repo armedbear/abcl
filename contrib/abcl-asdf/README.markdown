@@ -46,8 +46,34 @@ JAR-DIRECTORY, JAR-FILE, and CLASS-FILE-DIRECTORY for JVM artifacts
 that have a currently valid pathname representation (i.e. they exist
 on the local filesystem).
 
-And we define  MVN and IRI classes descend from ASDF-COMPONENT, but do not
+The MVN and IRI classes descend from ASDF-COMPONENT, but do not
 directly have a filesystem location.
+
+The IRI component is currently unused, but serves as a point to base
+the inheritance of the MVN component while allowing other forms of
+uri-like resources to be encapsulated in the future.
+
+The MVN component should specifiy a [Maven URI][1] as its PATH.  A
+Maven URI has the form "GROUP-ID/ARTIFACT-ID/VERSION" which specifies
+the dependency to be satisfied for this component by resolution
+through the Maven distributed dependency graph.  The scheme (the
+initial "mvn://") is implied, usually omitted for brevity.  If a
+VERSION is not specified (i.e. by a form like "GROUP-ID/ARTIFACT-ID"),
+then the latest available version of the artifact will be retrieved
+from the network.
+
+[1]: http://team.ops4j.org/wiki/display/paxurl/Mvn+Protocol
+
+The MVN component may specify a CLASSNAME which if present in the
+current jvm, inhibits further loading from the network.  This may be
+used to bypass the invocation of Maven.  Since classnames are not
+unique to jar archives, this mechanism may not have the desired result
+in all cases, but it is surpisingly, like the rest of Java, "good
+enough" for everyday use.
+
+The MVN component may specify an ALTERNATE-URI which will be added to
+the jvm classpath if Maven cannot be located.  Since a Maven URI may
+refer to more than one binary artifact, this may not work in all cases.
 
 For use outside of ASDF, we currently define the generic function
 ABCL-ASDF:RESOLVE which locates, downloads, caches, and then loads
@@ -136,6 +162,11 @@ The following ASDF defintion loads enough JVM artifacts to use the
 Releases
 --------
 
+### 9.9.2 2012-11-09
+
+
+
+
 ### 0.7.0 2012-02-05
 
 Plausibly work under MSFT operating systems.
@@ -168,5 +199,5 @@ Working with maven-3.0.4.
     Mark <evenson.not.org@gmail.com>
     
     Created: 2011-01-01
-    Revised: 2012-02-06
+    Revised: 2012-11-09
     

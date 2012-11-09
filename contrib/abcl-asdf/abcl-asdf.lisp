@@ -1,4 +1,4 @@
-;;;; The ABCL specific overrides in ASDF.  
+s;;;; The ABCL specific overrides in ASDF.  
 ;;;;
 ;;;; Done separate from asdf.lisp for stability.
 (require :asdf)
@@ -15,6 +15,8 @@
   ((group-id :initarg :group-id :initform nil)
    (artifact-id :initarg :artifact-id :initform nil)
    (repository :initform "http://repo1.maven.org/maven2/") ;;; XXX unimplmented
+   (classname :initarg :classname :initform nil)
+   (alternate-uri :initarg :alternate-uri :initform nil)
 ;; inherited from ASDF:COMPONENT ??? what are the CL semantics on overriding -- ME 2012-04-01
 #+nil   (version :initform nil)))
 
@@ -29,10 +31,10 @@
    (ensure-parsed-mvn c)))
      
 (defmethod perform ((operation load-op) (c mvn))
-  (java:add-to-classpath 
-   (abcl-asdf:as-classpath 
-    (abcl-asdf:resolve 
-     (ensure-parsed-mvn c)))))
+  (let ((resolved-path 
+         (abcl-asdf:resolve (ensure-parsed-mvn c))))
+    (when (stringp resolved-path)
+      (java:add-to-classpath (abcl-asdf:as-classpath resolved-path)))))
 
 ;;; A Maven URI has the form "mvn:group-id/artifact-id/version"
 ;;;
@@ -100,9 +102,10 @@
 (defmethod resolve ((mvn-component asdf::mvn))
   "Resolve all runtime dependencies of MVN-COMPONENT.
 
-Returns a string in JVM CLASSPATH format as entries delimited by
-classpath separator string.  Can possibly be a single entry denoting a
-remote binary artifact."
+Returns either a string in jvm classpath format as entries delimited
+by classpath separator string or T.  If the value T is returned, it
+denotes that current JVM already has already loaded a given class. Can possibly be a
+single entry denoting a remote binary artifact."
   (macrolet ((aif (something consequence alternative))
              `(let ((it ,(something)))
                 (if it
@@ -111,20 +114,30 @@ remote binary artifact."
     (let ((name (slot-value mvn-component 'asdf::name))
           (group-id (slot-value mvn-component 'asdf::group-id))
           (artifact-id (slot-value mvn-component 'asdf::artifact-id))
+          (classname (slot-value mvn-component 'asdf::classname))
+          (alternate-uri (slot-value mvn-component 'asdf::alternate-uri))
           (version (let ((it (slot-value mvn-component 'asdf::version)))
                      (cond
                        ((not it)
                         it)
                        (t 
                         "LATEST")))))
-      (if (find-mvn)
-          (resolve-dependencies group-id artifact-id version)
-          (cond 
-            ((string= name "net.java.dev.jna/jna/3.4.0")
-             (let ((uri #p"http://repo1.maven.org/maven2/net/java/dev/jna/jna/3.4.0/jna-3.4.0.jar")))
-                        (values (namestring uri) uri))
-            (t 
-             (error "Failed to resolve MVN component name ~A." name)))))))
+      (handler-case 
+          (when (and classname 
+                     (jss:find-java-class classname))
+            (warn "Not loading ~A from the network because ~A is present in classpath."
+                  name classname)
+            (return-from resolve t))
+        (java:java-exception (e)
+          (unless (java:jinstance-of-p (java:java-exception-cause e)
+                                  "java.lang.ClassNotFoundException")
+            (error "Unexpected Java exception~&~A.~&" e))
+          (if (find-mvn)
+              (resolve-dependencies group-id artifact-id version)
+              (if alternate-uri
+                  (values (namestring alternate-uri) alternate-uri)
+                  (t 
+                   (error "Failed to resolve MVN component name ~A." name)))))))))
   
 (defun as-classpath (classpath)
   "Break apart the JVM CLASSPATH string into a list of its consituents."
