@@ -2,7 +2,7 @@
 
 (asdf:defsystem :abcl-asdf
   :author "Mark Evenson"
-  :version "0.9.0"
+  :version "0.9.1"
   :depends-on (jss)
   :components 
   ((:module packages :pathname "" 
@@ -19,12 +19,11 @@
 
 (asdf:defsystem :abcl-asdf-test
   :author "Mark Evenson"
-  :defsystem-depends-on (abcl-asdf)
-  :components
-  ((:module tests :serial t :components
-            ((:file "example")
-             (:file "maven")
-             (:file "test")))))
+  :defsystem-depends-on (abcl abcl-test-lisp abcl-asdf)
+  :components ((:module tests :serial t 
+                        :components ((:file "example")
+                                     (:file "maven")
+                                     (:file "test")))))
 
 #|
 (defmethod perform ((o test-op) (c (eql (find-system 'abcl-asdf-test))))
