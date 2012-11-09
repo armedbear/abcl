@@ -44,18 +44,24 @@
 ;;; This implementation uses the JVM facilities for running external
 ;;; processes.
 ;;; <http://download.oracle.com/javase/6/docs/api/java/lang/ProcessBuilder.html>.
-(defun run-program (program args &key environment (wait t) clear-env)
+(defun run-program (program args &key environment (wait t) clear-environment)
+  "Run PROGRAM with ARGS in with ENVIRONMENT variables.
+Possibly WAIT for subprocess to exit.
+
+Optionally CLEAR-ENVIRONMENT of the subprocess of any non specified values."
   ;;For documentation, see below.
-  (let ((pb (%make-process-builder program args)))
-    (let ((env-map (%process-builder-environment pb)))
-      (when clear-env
+  (let* ((program-namestring (namestring (pathname program)))
+
+         (process-builder (%make-process-builder program-namestring args)))
+    (let ((env-map (%process-builder-environment process-builder)))
+      (when clear-environment
         (%process-builder-env-clear env-map))            
       (when environment
         (dolist (entry environment)
           (%process-builder-env-put env-map
                                     (princ-to-string (car entry))
                                     (princ-to-string (cdr entry))))))
-    (let ((process (make-process (%process-builder-start pb))))
+    (let ((process (make-process (%process-builder-start process-builder))))
       (when wait (process-wait process))
       process)))
 
