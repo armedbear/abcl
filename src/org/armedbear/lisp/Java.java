@@ -888,6 +888,12 @@ public final class Java
                 else
                     methodArgs[i-2] = arg.javaInstance(argTypes[i-2]);
             }
+            if (!method.isAccessible()) {
+                 // Possible for static member classes: see #229
+                 if (Modifier.isPublic(method.getModifiers())) { 
+    	              method.setAccessible(true);
+                 }
+	    }
             return JavaObject.getInstance(method.invoke(instance, methodArgs),
                                           translate,
                                           method.getReturnType());
@@ -961,12 +967,26 @@ public final class Java
         Class actualClass = null;
         if(method == null) {
             actualClass = instance.getClass();
-            if(intendedClass != actualClass &&
-               Modifier.isPublic(actualClass.getModifiers())) {
+            if(intendedClass != actualClass) { 
                 method = findMethod(actualClass, methodName, methodArgs);
+		if (method != null) {
+		   if (isMethodCallableOnInstance(actualClass, method)) {
+		      return method;
+		   }
+		}
             }
         }
         return method;
+    }
+    
+    private static boolean isMethodCallableOnInstance(Class instance, Method method) {
+       if (Modifier.isPublic(method.getModifiers())) {
+	  return true;
+       }
+       if (instance.isMemberClass()) {
+	  return isMethodCallableOnInstance(instance.getEnclosingClass(), method);
+       }
+       return false;
     }
 
     private static Method findMethod(Class<?> c, String methodName, Object[] javaArgs) {
