@@ -1,4 +1,4 @@
-s;;;; The ABCL specific overrides in ASDF.  
+;;;; The ABCL specific overrides in ASDF.  
 ;;;;
 ;;;; Done separate from asdf.lisp for stability.
 (require :asdf)
