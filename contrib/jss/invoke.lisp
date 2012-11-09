@@ -377,22 +377,34 @@ associated is used to look up the static FIELD."
     (format stream "method ~a" (#"toString" obj))))
 
 (defun do-auto-imports ()
-  (flet ((import-class-path (cp)
-	   (map nil
-		(lambda(s) 
-		  (setq s (jcall "toString" s))
+  (labels ((expand-paths (cp)
+           (loop :for s :in cp
+              :appending (loop :for entry 
+                            :in (let ((p (pathname s)))
+                                  (if (wild-pathname-p p)
+                                      (directory p)
+                                      (list p)))
+                            :collecting entry)))
+         (import-classpath (cp)
+	   (mapcar 
+		(lambda (p) 
 		  (when *load-verbose*
-		    (format t ";Importing ~a~%" s))
+		    (format t ";; Importing ~A~%" p))
 		  (cond 
-		    ((file-directory-p s) )
-		    ((equal (pathname-type s) "jar")
-		     (jar-import (merge-pathnames (jcall "toString" s) 
+		    ((file-directory-p p) )
+		    ((equal (pathname-type p) "jar")
+		     (jar-import (merge-pathnames p
                                                   (format nil "~a/" (jstatic "getProperty" "java.lang.System" "user.dir")))))))
-		(jcall "split" cp 
-                       (string (jfield (jclass "java.io.File") "pathSeparatorChar"))))))
-    (import-class-path (jcall "getClassPath" (jstatic "getRuntimeMXBean" '|java.lang.management.ManagementFactory|)))
-    (import-class-path (jcall "getBootClassPath" (jstatic "getRuntimeMXBean" '|java.lang.management.ManagementFactory|)))
-    ))
+                cp))
+         (split-classpath (cp)
+           (coerce 
+            (jcall "split" cp 
+                   (string (jfield (jclass "java.io.File") "pathSeparatorChar")))
+            'cons))
+         (do-imports (cp)
+           (import-classpath (expand-paths (split-classpath cp)))))
+    (do-imports (jcall "getClassPath" (jstatic "getRuntimeMXBean" '|java.lang.management.ManagementFactory|)))
+    (do-imports (jcall "getBootClassPath" (jstatic "getRuntimeMXBean" '|java.lang.management.ManagementFactory|)))))
 
 (eval-when (:load-toplevel :execute)
   (when *do-auto-imports* 
