@@ -654,11 +654,15 @@ public class Pathname extends LispObject {
             StringBuilder prefix = new StringBuilder();
             for (int i = 0; i < jars.length; i++) {
                 prefix.append("jar:");
-                if (!((Pathname)jars[i]).isURL() && i == 0) {
+		LispObject component = jars[i];
+		if (!(component instanceof Pathname)) {
+		   return null; // If DEVICE is a CONS, it should only contain Pathname 
+		}
+                if (! ((Pathname)component).isURL() && i == 0) {
                     sb.append("file:");
                     uriEncoded = true;
                 }
-                Pathname jar = (Pathname) jars[i];
+                Pathname jar = (Pathname) component;
                 String encodedNamestring;
                 if (uriEncoded) {
                     encodedNamestring = uriEncode(jar.getNamestring());
@@ -2152,14 +2156,8 @@ public class Pathname extends LispObject {
     public static final LispObject truename(Pathname pathname,
                                             boolean errorIfDoesNotExist) 
     {
-        if (pathname == null || pathname.equals(NIL)) {  // XXX duplicates code at the end of this longish function: figure out proper nesting of labels.
-            if (errorIfDoesNotExist) {
-                StringBuilder sb = new StringBuilder("The file ");
-                sb.append(pathname.princToString());
-                sb.append(" does not exist.");
-                return error(new FileError(sb.toString(), pathname));
-            }
-            return NIL;
+        if (pathname == null || pathname.equals(NIL)) {  
+           return doTruenameExit(pathname, errorIfDoesNotExist); 
         }
         if (pathname instanceof LogicalPathname) {
             pathname = LogicalPathname.translateLogicalPathname((LogicalPathname) pathname);
@@ -2209,6 +2207,9 @@ public class Pathname extends LispObject {
             // Possibly canonicalize jar file directory
             Cons jars = (Cons) pathname.device;
             LispObject o = jars.car();
+	    if (!(o instanceof Pathname)) {
+	       return doTruenameExit(pathname, errorIfDoesNotExist);
+	    }
             if (o instanceof Pathname 
                 && !(((Pathname)o).isURL())
                 // XXX Silently fail to call truename() if the default
@@ -2286,6 +2287,10 @@ public class Pathname extends LispObject {
             }
         }
         error:
+	  return doTruenameExit(pathname, errorIfDoesNotExist);
+    }
+    
+    static private LispObject doTruenameExit(Pathname pathname, boolean errorIfDoesNotExist) {
         if (errorIfDoesNotExist) {
             StringBuilder sb = new StringBuilder("The file ");
             sb.append(pathname.princToString());

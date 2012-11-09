@@ -111,3 +111,14 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
      2)
   3)
       
+;;; http://trac.common-lisp.net/armedbear/ticket/243
+(deftest bugs.pathname.make-pathname.1
+    (signals-error 
+     (make-pathname :device (list "foo"))
+     'error)
+t)
+
+
+(deftest bugs.pathname.make-pathname.2
+  (probe-file (make-pathname :device (list "foo")))
+nil)
