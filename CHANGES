@@ -1,7 +1,45 @@
 Version 1.1.0
 =============
 svn.uri=:"http//common-lisp.net/project/armedbear/svn/trunk/abcl/"
-(unreleased)
+(15 November 2012)
+
+Features
+--------
+
+  *  A functioning (A)MOP implementation through the hard work of Rudi Schlatte
+
+  *  The implementation can be used across many more Quicklisp systems
+     because the two top blockers have been fixed:
+
+     Nota bene: all of the following systems need patches to work as
+     of the 2012-10-13 Quicklisp.  All patches have been accepted in
+     at least an initial form by the upstream maintainers.
+
+     ** CLOSER-MOP 
+     ** CFFI 
+     ** HUNCHENTOOT 
+
+  *  Java 5 bytecode Compiler 
+
+     The internal Lisp-to-Java bytecode compiler has been hardened by
+     regression testing across Quicklisp libraries.  
+
+     ** large objects (???)
+     ** (??)
+
+  *  ABCL-ASDF Network installation of binary artifacts named by Maven POM uris.
+
+     ** based on stock ASDF-2.26
+
+     ** checks at runtime if a given class is present in the accessible classloaders 
+
+     ** If the check for the presence of a class fails, find a
+        maven-3.0.4 binary locally, execute its Aether connector to
+        retrieve its transitive dependencies from the network.
+ 
+  *  JSS Java Syntax Sucks
+    
+     ** extensive bugfixing
 
 Changes
 -------
