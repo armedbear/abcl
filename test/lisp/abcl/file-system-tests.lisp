@@ -459,7 +459,11 @@
        #+clisp
        ;; CLISP's PROBE-DIRECTORY just returns T.
        (ext:probe-directory directory-namestring)
-       #-clisp
+       ;; ABCL fills in DEVICE as :UNSPECIFIC when resolving
+       ;; filesystem paths on non-M$DOG
+       #+abcl
+       (not (null (truename directory-namestring)))
+       #-(or clisp abcl)
        (pathnames-equal-p (probe-file directory-namestring)
                           (pathname directory-namestring))
        ;; 4. Delete the directory.
