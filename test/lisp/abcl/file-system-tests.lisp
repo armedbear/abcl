@@ -341,7 +341,8 @@
                                                      :defaults directory-pathname))))
             (and (listp directory)
                  (= (length directory) 1)
-                 (pathnames-equal-p (car directory) file-pathname))))
+                 (pathnames-equal-p (truename (car directory))
+                                    (truename file-pathname)))))
       (delete-directory-and-files directory-pathname)))
   t)
 #+clisp
