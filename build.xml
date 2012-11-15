@@ -447,7 +447,7 @@ from ${abcl.home.dir}
       </uptodate>
     </target>
 
-    <target name="abcl.jar" depends="abcl.jar.uptodate"
+    <target name="abcl.jar" depends="abcl.jar.uptodate,abcl-contrib.jar"
             unless="abcl.jar.uptodate.p">
       <mkdir dir="${dist.dir}"/>
       <jar destfile="${abcl.jar.path}"
