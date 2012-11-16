@@ -119,8 +119,9 @@
             ,namestring))
 
 ;; Define a logical host.
-(setf (logical-pathname-translations "effluvia")
-      '(("**;*.*.*" "/usr/local/**/*.*")))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf (logical-pathname-translations "effluvia")
+        '(("**;*.*.*" "/usr/local/**/*.*"))))
 
 (deftest equal.1
   (equal (make-pathname :name "foo" :type "bar")
