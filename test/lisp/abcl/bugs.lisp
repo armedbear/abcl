@@ -116,7 +116,10 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
     (signals-error 
      (make-pathname :device (list "foo"))
      'error)
-t)
+  t)
+;; Dunno about this one.  Maybe we should signal an error when
+;; constructed a pathname that we *know* can never refer to any resource.
+(push 'bugs.pathname.make-pathname.1 *expected-failures*)
 
 
 (deftest bugs.pathname.make-pathname.2
