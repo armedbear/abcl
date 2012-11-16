@@ -14,6 +14,10 @@
   "Run the ANSI-TESTS suite, to be found in *ANSI-TESTS-DIRECTORY*.
 Possibly running the compiled version of the tests if COMPILE-TESTS is non-NIL."
   (verify-ansi-tests)
+  (mapcar (lambda (result)
+            (when (second result)
+              (format t "Removed ~A.~&" (first result))))
+          (clean-tests))
   (let* ((ansi-tests-directory 
 	  *ansi-tests-directory*)
 	 (boot-file 
@@ -57,7 +61,9 @@ locally obtain ~A, and place it in a sibling directory to the ABCL source named 
   ;; so we don't have to hunt for 'make' in the PATH on win32.
   (verify-ansi-tests)
 
-  (mapcar #'delete-file
+  (mapcar (lambda (p)
+            (when (probe-file p)
+              (list p (delete-file p))))
 	  (append (directory (format nil "~A/*.cls" *ansi-tests-directory*))
 		  (directory (format nil "~A/*.abcl" *ansi-tests-directory*))
 		  (directory (format nil "~A/scratch/*" *ansi-tests-directory*))
