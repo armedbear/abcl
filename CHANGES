@@ -1,56 +1,86 @@
 Version 1.1.0
 =============
 svn.uri=:"http//common-lisp.net/project/armedbear/svn/trunk/abcl/"
-(15 November 2012)
+(22 November 2012)
 
 Features
 --------
 
-  *  A functioning (A)MOP implementation through the hard work of Rudi Schlatte
+  *  A functioning (A)MOP implementation through the hard work of Rudi
+     Schlatte (@rudi)
 
   *  The implementation can be used across many more Quicklisp systems
-     because the two top blockers have been fixed:
+     through a process of extensive testing.  Thanks @xach!
 
      Nota bene: all of the following systems need patches to work as
      of the 2012-10-13 Quicklisp.  All patches have been accepted in
      at least an initial form by the upstream maintainers.
 
      ** CLOSER-MOP 
+        Quite possible with local patches 
      ** CFFI 
+       Needs patches to 2012-10-13 Quicklisp.  [!!?]
+       *** Dynamic interfaces idempotent across process -- no more reloading
      ** HUNCHENTOOT 
-
+       *** some bugs with underlying streams to be fixed in abcl-1.2-dev
+     ** CXML
+        Basic XML parsing works.  XPath still borked. [???]     
   *  Java 5 bytecode Compiler 
 
      The internal Lisp-to-Java bytecode compiler has been hardened by
      regression testing across Quicklisp libraries.  
 
-     ** large objects (???)
-     ** (??)
+     **  Extensive interpreter/compiler bug fixes due to access to cl-test-suite [???] @antov
+     ** large objects (?!?)
 
-  *  ABCL-ASDF Network installation of binary artifacts named by Maven POM uris.
+  *  The facility to construct runtime classes via JNEW-RUNTIME-CLASS (@astalla)
 
-     ** based on stock ASDF-2.26
-
-     ** checks at runtime if a given class is present in the accessible classloaders 
-
-     ** If the check for the presence of a class fails, find a
-        maven-3.0.4 binary locally, execute its Aether connector to
-        retrieve its transitive dependencies from the network.
-
-  *  The facility to construct runtime classes via JNEW-RUNTIME-CLASS
+    Pretty close to full coverage of primtives for creating synthethic
+    java classes at runtime.  Easy to extend with your needs; sensible
+    defaults.
   
     ** Fields
+    *** getter/setters 
     ** Annotations
-    ** getter/setters for fields
- 
-  *  JSS Java Syntax Sucks
-    
-     ** extensive bugfixing
 
+
+  * ASDF
+
+     ** Stock ASDF-2.26 with conditional patches for the URL-PATHAME and
+        JAR-PATHNAME implementation extensions to ANSI.
+
+  *  ABCL-CONTRIB
+
+     ** ABCL-ASDF 
+
+        Network installation of binary artifacts named by Maven POM uris.
+
+        *** checks at runtime if a given class is present in the
+            accessible classloaders
+
+        *** If the check for the presence of a class fails, find a
+            maven-3.0.4 binary locally, execute its Aether connector
+            to retrieve its transitive dependencies from the network.
+
+      ** JSS 
+         
+         Java Syntax Sucks.  q.v [lsw2]
+    
+         Extensive bugfixing wrt. method resolution [#229]
+
+      ** JFLI
+
+         A "captured from the wild" version of what @rich.hickey did before Clojure.
+        
   
 
 Changes
 -------
+
+  * [#249] PATHNAME merge semantics DWIMs on an inferred type
+
+  Extends ANSI PATHNAME in a non-conforming manner, which was probably
+  already the case.
 
   * [r13695] Reimplementation of global symbol macros to avoid using
     the symbol's value slot.
@@ -69,6 +99,25 @@ Changes
   * [r13796] [r13797] N3 DOAP description for ABCL
 
   * [r13803] Build target 'abcl-contrib.jar' packages ABCL-CONTRIB
+
+Fixes
+-----
+
+  * ANSI [#241]
+ 
+     ** &AUX parameters fixes RESTAS 
+
+    
+  * [#221] Stack exhaustsion on funcall in non-existing package
+
+  * [#113] DEFSTRUCT concurrency 
+
+  * [#216][#211] Compiler 
+
+    ** stack inconsistency
+
+  * [#187] Better SORT and STABLE-SORT via Jorge Tavares [???]
+
 
 
 Version 1.0.1
