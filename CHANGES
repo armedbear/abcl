@@ -36,10 +36,18 @@ Features
      ** If the check for the presence of a class fails, find a
         maven-3.0.4 binary locally, execute its Aether connector to
         retrieve its transitive dependencies from the network.
+
+  *  The facility to construct runtime classes via JNEW-RUNTIME-CLASS
+  
+    ** Fields
+    ** Annotations
+    ** getter/setters for fields
  
   *  JSS Java Syntax Sucks
     
      ** extensive bugfixing
+
+  
 
 Changes
 -------
@@ -51,6 +59,16 @@ Changes
     ANSI specification.
 
   * [r13700] ABCL loads under the Weblogic 10.3 application server.
+
+  * [r13768] [#193] Allow zero-length symbols
+  
+  * [r13785] JNEW-RUNTIME-CLASS gets fields and annotations
+  
+  * [r13790] JNEW-RUNTIME-CLASS getters/setters for fields
+
+  * [r13796] [r13797] N3 DOAP description for ABCL
+
+  * [r13803] Build target 'abcl-contrib.jar' packages ABCL-CONTRIB
 
 
 Version 1.0.1
