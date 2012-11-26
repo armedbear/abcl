@@ -968,6 +968,13 @@ method definition (see the section below).
 
 \section{Extensions to CLOS}
 
+\subsection{Metaobject Protocol}
+
+ABCL implements the metaobject protocol for CLOS as specified in AMOP.
+The symbols are exported from the package \code{MOP}.
+
+\subsection{Specializing on Java classes}
+
 There is an additional syntax for specializing the parameter of a
 generic function on a java class, viz. \code{(java:jclass CLASS-STRING)}
 where \code{CLASS-STRING} is a string naming a Java class in dotted package
@@ -993,10 +1000,10 @@ classloader as an optional third argument.
 (defparameter *other-classloader*
   (jcall "getBaseLoader" cl-user::*classpath-manager*))
   
-(defmethod print-object ((device-id (java:jclass 
-                                     "dto.nbi.service.hdm.alcatel.com.NBIDeviceID" 
-                                     *other-classloader*))
-                         stream)
+(defmethod print-object
+   ((device-id (java:jclass "dto.nbi.service.hdm.alcatel.com.NBIDeviceID" 
+                            *other-classloader*))
+    stream)
   ;;; ...
 )
 \end{listing-lisp}
@@ -1009,9 +1016,9 @@ bit characters to the Lisp reader\footnote{This represents a
   which we wish to make text processing efficient.  Should the User
   require more control over UNICODE processing we recommend Edi Weisz'
   excellent work with FLEXI-STREAMS which we fully support}, namely we
-allow a sequences of the form \# \textbackslash Uxxxx to be processed
+allow a sequences of the form \verb~#\U~\emph{\texttt{xxxx}} to be processed
 by the reader as character whose code is specified by the hexadecimal
-digits ``xxxx''.  The hexadecimal sequence may be one to four digits
+digits \emph{\texttt{xxxx}}.  The hexadecimal sequence may be one to four digits
 long.  % Why doesn't ALEXANDRIA work?
 
 Note that this sequence is never output by the implementation.  Instead,
