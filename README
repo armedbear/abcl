@@ -97,6 +97,7 @@ Then simply executing
     unix$ ant
 
 or
+
     dos> ant.bat
 
 from the directory containing this README file will create an
@@ -189,6 +190,9 @@ ABCL 1.1.0-dev now fails only 1[4-6] out of 21708 total tests in the ANSI CL
 test suite (derived from the tests originally written for GCL).
 
 Maxima's test suite runs without failures.
+
+ABCL comes with a test suite, see the output of `ant help.test` for more
+information.
 
 ### Deficiencies 
 
