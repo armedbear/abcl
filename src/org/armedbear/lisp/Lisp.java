@@ -2378,9 +2378,9 @@ public final class Lisp
     }
     // Processor architecture
     if(osArch != null) {
-      if (osArch.equals("amd64"))
+      if (osArch.equals("amd64") || osArch.equals("x86_64"))
         featureList = new Cons(Keyword.X86_64, featureList);
-      else if (osArch.equals("x86"))
+      else if (osArch.equals("x86") || osArch.equals("i386"))
         featureList = new Cons(Keyword.X86, featureList);
     }
     Symbol.FEATURES.initializeSpecial(featureList);
