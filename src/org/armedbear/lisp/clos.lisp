@@ -3340,7 +3340,14 @@ instance and, for setters, `new-value' the new value."
   (%set-documentation x doc-type new-value))
 
 (defmethod documentation ((x symbol) (doc-type (eql 'function)))
-  (%documentation x 'function))
+  (if (typep (fdefinition x) 'generic-function)
+      (documentation (fdefinition x) doc-type)
+      (%documentation x doc-type)))
+
+(defmethod (setf documentation) (new-value (x symbol) (doc-type (eql 'function)))
+  (if (typep (fdefinition x) 'generic-function)
+      (setf (documentation (fdefinition x) 'function) new-value)
+      (%set-documentation x 'function new-value)))
 
 (defmethod documentation ((x symbol) (doc-type (eql 'type)))
   (let ((class (find-class x nil)))

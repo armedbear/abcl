@@ -5670,6 +5670,7 @@ public final class Primitives {
             LispObject doc = object.getDocumentation(docType);
             if (doc == NIL) {
                 if (docType == Symbol.FUNCTION && object instanceof Symbol) {
+                    // Generic functions are handled at lisp-level, not here
                     LispObject function = object.getSymbolFunction();
                     if (function != null)
                         doc = function.getDocumentation(docType);
@@ -5692,6 +5693,7 @@ public final class Primitives {
                                   LispObject documentation)
 
         {
+            // Generic functions are handled at lisp-level, not here
             object.setDocumentation(docType, documentation);
             return documentation;
         }
