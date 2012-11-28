@@ -159,45 +159,10 @@ The following ASDF defintion loads enough JVM artifacts to use the
 
 [1]:  http://www.iris-reasoner.org/
 
-Releases
---------
-
-### 9.9.2 2012-11-09
-
-
-
-
-### 0.7.0 2012-02-05
-
-Plausibly work under MSFT operating systems.
-
-Working with maven-3.0.4.
-
-### 0.5.0 2012-01-22
-
-   o  just bless this as a release to stablize its offered API "as is"
-   
-   o  definitely failing under MSFT
-   
-   o  ASDF version has to be a three value integer (i.e. no "-snapshot"
-      after version).  Should be fixed with appropiate :AROUND method
-      as implementation specific monkeypatch.
-       
-
-### 0.4.1 2011-09-06 
-
-    o  locating the proper Maven3 libraries could work in more places
-   
-    o  untested under Windows
-   
-    o  more information should be optionally available when downloading
-       as this process can potentially take a long time.
-
-
 #### Colophon
 
     Mark <evenson.not.org@gmail.com>
     
     Created: 2011-01-01
-    Revised: 2012-11-09
+    Revised: 2012-11-28
     

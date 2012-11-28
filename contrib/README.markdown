@@ -38,7 +38,7 @@ mvn
 ---
    
 A collection of various useful JVM artifacts downloaded and cached by
-the Aether Maven connector.  Requires the maven-3.0.4 executable "mvn"
+the Aether Maven connector.  Requires the maven-3.0.3 executable "mvn"
 (or "mvn.bat" under MSFT Windows) to be in the current processes's path.
     
 jna     
@@ -64,7 +64,7 @@ asdf-install
 
 Mark <evenson.not.org@gmail.com>
 Created:  2011-09-11
-Revised:  2012-10-12
+Revised:  2012-11-28
 
 
 

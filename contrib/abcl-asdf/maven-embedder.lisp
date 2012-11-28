@@ -144,7 +144,7 @@ Returns the path of the Maven executable or nil if none are found."
           (>= minor 1))
      (and (>= major 3)
           (>= minor 0)
-          (>= patch 4)))))
+          (>= patch 3)))))
 
 (defparameter *init* nil)
 
@@ -154,18 +154,22 @@ Returns the path of the Maven executable or nil if none are found."
    (setf *mvn-libs-directory* (find-mvn-libs)))
   (unless (and *mvn-libs-directory*
                (probe-file *mvn-libs-directory*))
-   (error "You must download maven-3.0.4 or later from http://maven.apache.org/download.html, then set ABCL-ASDF:*MVN-DIRECTORY* appropiately."))
+   (error "Please obtain and install maven-3.0.4 locally from http://maven.apache.org/download.html, then set ABCL-ASDF:*MVN-DIRECTORY* appropiately."))
  (unless (ensure-mvn-version)
-   (error "We need maven-3.0.4 or later."))  (add-directory-jars-to-class-path *mvn-libs-directory* nil)
+   (error "We need maven-3.0.3 or later."))  (add-directory-jars-to-class-path *mvn-libs-directory* nil)
   (setf *init* t))
 
-(defparameter *http-wagon-implementations*
-  ;;; maven-3.0.3 reported as not working with all needed functionality
-  `("org.apache.maven.wagon.providers.http.HttpWagon" ;; introduced as default with maven-3.0.4
-    "org.apache.maven.wagon.providers.http.LightweightHttpWagon")
-  "A list of possible candidate implementations that provide access to http and https resources.
+(defun find-http-wagon ()
+  "Find an implementation of the object that provides access to http and https resources.
 
-Supposedly configurable with the java.net.protocols (c.f. reference maso2000 in the Manual.)")
+Supposedly configurable with the java.net.protocols (c.f. reference
+maso2000 in the Manual.)"
+  (handler-case 
+      ;; maven-3.0.4
+      (java:jnew "org.apache.maven.wagon.providers.http.HttpWagon") 
+    (error () 
+      ;; maven-3.0.3 reported as not working with all needed functionality
+      (java:jnew  "org.apache.maven.wagon.providers.http.LightweightHttpWagon"))))
 
 (defun make-wagon-provider ()
   "Returns an implementation of the org.sonatype.aether.connector.wagon.WagonProvider contract.
@@ -179,7 +183,7 @@ specializes the lookup() method if passed an 'http' role hint."
    (lambda (role-hint)
      (cond 
        ((find role-hint '("http" "https") :test #'string-equal)
-        (some (lambda (provider) (java:jnew provider)) *http-wagon-implementations*))
+        (find-http-wagon))
        (t
         (progn 
           (format *maven-verbose* 
@@ -189,10 +193,16 @@ specializes the lookup() method if passed an 'http' role hint."
    (lambda (wagon)
      (declare (ignore wagon)))))
 
+(defun find-service-locator ()
+  (handler-case 
+      (java:jnew "org.apache.maven.repository.internal.MavenServiceLocator") ;; maven-3.0.4
+    (error () 
+      (java:jnew "org.apache.maven.repository.internal.DefaultServiceLocator"))))
+
 (defun make-repository-system ()
   (unless *init* (init))
   (let ((locator 
-         (java:jnew "org.apache.maven.repository.internal.MavenServiceLocator"))
+         (find-service-locator))
         (wagon-provider-class 
          (java:jclass "org.sonatype.aether.connector.wagon.WagonProvider"))
         (wagon-repository-connector-factory-class
@@ -415,17 +425,13 @@ artifact and all of its transitive dependencies."
   (let ((result (split-string string ":")))
     (cond 
       ((= (length result) 3)
-       (resolve-dependencies (first result) (second result) (third result)))
+       (resolve-dependencies 
+        (first result) (second result) (third result)))
       ((string= string "com.sun.jna:jna")
-       (resolve-dependencies "net.java.dev.jna" "jna" "3.4.0"))
+       (warn "Replacing request for no longer available com.sun.jna:jna with net.java.dev.jna:jna")
+       (resolve-dependencies "net.java.dev.jna" "jna" "LATEST"))
       (t
        (apply #'resolve-dependencies result)))))
   
-#+nil
-(defmethod resolve ((mvn asdf:mvn))
-  (with-slots (asdf::group-id asdf::artifact-id asdf::version)
-      (asdf:ensure-parsed-mvn mvn)
-    (resolve-dependencies (format nil "~A:~A:~A" asdf::group-id asdf::artifact-id asdf::version))))
-
 ;;; Currently the last file listed in ASDF
 (provide 'abcl-asdf)
