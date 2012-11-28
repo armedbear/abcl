@@ -19,9 +19,15 @@
                                          (user-homedir-pathname))))
     (if (probe-file quicklisp-init)
         (load quicklisp-init)
-        (progn
-          (load "http://beta.quicklisp.org/quicklisp.lisp")
-          (funcall (intern "INSTALL" "QUICKLISP-QUICKSTART"))))))
+        (handler-case 
+            (load "https://beta.quicklisp.org/quicklisp.lisp")
+          (error (e)
+            (warn "Using insecure transport for remote installation
+              of Quicklisp:~&~A~&." e)
+            (load "http://beta.quicklisp.org/quicklisp.lisp"))))
+    (unless (find-package :quicklisp)
+      (funcall (intern "INSTALL" "QUICKLISP-QUICKSTART")))))
+
         
     
   
