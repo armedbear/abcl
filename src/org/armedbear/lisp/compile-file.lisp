@@ -726,7 +726,9 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
          (*class-number* 0)
          (namestring (namestring *compile-file-truename*))
          (start (get-internal-real-time))
-         *fasl-uninterned-symbols*)
+         *fasl-uninterned-symbols*
+         (warnings-p nil)
+         (failure-p nil))
     (when *compile-verbose*
       (format t "; Compiling ~A ...~%" namestring))
     (with-compilation-unit ()
@@ -864,7 +866,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
         (when *compile-verbose*
           (format t "~&; Wrote ~A (~A seconds)~%"
                   (namestring output-file)
-                  (/ (- (get-internal-real-time) start) 1000.0)))) )
+                  (/ (- (get-internal-real-time) start) 1000.0)))
+        (values (truename output-file) warnings-p failure-p)))
 
 (defun compile-file (input-file
                      &key
@@ -899,14 +902,13 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
            (exports-file (pathname-with-type output-file "exps"))
            *toplevel-functions*
            *toplevel-macros*
-           *toplevel-exports*
-           (warnings-p nil)
-           (failure-p nil))
+           *toplevel-exports*)
       (with-open-file (in input-file :direction :input :external-format external-format)
-        (compile-from-stream in output-file temp-file temp-file2
-                             extract-toplevel-funcs-and-macros
-                             functions-file macros-file exports-file))
-      (values (truename output-file) warnings-p failure-p))))
+        (multiple-value-bind (output-file-truename warnings-p failure-p)
+            (compile-from-stream in output-file temp-file temp-file2
+                                 extract-toplevel-funcs-and-macros
+                                 functions-file macros-file exports-file)
+          (values (truename output-file) warnings-p failure-p))))))
 
 (defun compile-file-if-needed (input-file &rest allargs &key force-compile
                                &allow-other-keys)
