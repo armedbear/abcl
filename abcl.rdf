@@ -10,7 +10,9 @@
 <> rdfs:seeAlso         <urn:abcl.not.org> .
 <> rdfs:seeAlso         <urn:not.org> .
 
-<> dc:modified          "01-FEB-2012" .
+<> dc:modified          "01-DEC-2012" .
+
+<> dc:version           "abcl-1.2-dev" .
 
 <https://abcl.org/index#doap>
   a                     doap:Project ;
