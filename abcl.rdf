@@ -1,6 +1,6 @@
 # -*- Mode: n3 -*-
 
-@prefix abcl:            <https://abcl.org> 
+@prefix abcl:            <https://abcl.org> .
 @prefix doap:            <http://usefulinc.com/ns/doap#> .
 @prefix rdf:             <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:            <http://www.w3.org/2000/01/rdf-schema#> .
@@ -10,6 +10,7 @@
 <> rdfs:seeAlso         <urn:abcl.not.org> .
 <> rdfs:seeAlso         <urn:not.org> .
 
+@prefix dc:              <http://purl.org/dc/elements/1.1/> .
 <> dc:modified          "01-DEC-2012" .
 
 <> dc:version           "abcl-1.2-dev" .
@@ -17,14 +18,19 @@
 <https://abcl.org/index#doap>
   a                     doap:Project ;
   doap:label            "Armed Bear Common Lisp" ;
-  doap:download-page    <http://common-lisp.net/project/armedbear/> ;
-  doap:license  [
-     _:license <http://usefulinc.com/doap/licenses/gplv2> ,
-               <http://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
-               ]
-  doap:programming-language """("Common Lisp" "Java" "Ant" "Shell Script") """" ;
-  doap:shortname "ABCL"^^xsd:string     
+  doap:download    <http://common-lisp.net/project/armedbear/> ;
+  doap:shortname "ABCL" ;
   doap:contributors """( ehu easye v-ille astalla rudi peter)""" .
+
+<https://abcl.org/index#doap>  
+  doap:language 
+  "Common Lisp", "Java", "Ant", "Bourne Shell Script", "Windows Batch Script"  .
+
+<https://abcl.org/index#doap>
+  doap:license  [
+     dc:license <http://usefulinc.com/doap/licenses/gplv2> ,
+     <http://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
+               ] .
 
 doap:Project rdfs:seeAlso 
   <http://trac.common-lisp.net/armedbear/timeline> , 
