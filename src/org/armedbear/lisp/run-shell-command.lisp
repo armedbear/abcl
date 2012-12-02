@@ -33,5 +33,7 @@
 
 (export '(run-shell-command))
 
+;; Deprecated:  use SYS:RUN-PROGRAM ;; XXX
 (defun run-shell-command (command &key directory (output *standard-output*))
+  "Deprecated.  Use SYS:RUN-PROGRAM."
   (sys::%run-shell-command command directory output))
