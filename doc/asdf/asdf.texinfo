@@ -317,9 +317,9 @@ Finally, note that there are some limitations to upgrading ASDF:
 @item
 Any ASDF extension becomes invalid, and will need to be reloaded.
 This applies to e.g. CFFI-Grovel, or to hacks used by ironclad, etc.
-Starting with ASDF 2.014.8, ASDF will actually invalidate
-all previously loaded systems when it is loaded on top of
-a different ASDF version.
+Starting with ASDF 2.014.8 (as far as releases go, 2.015),
+ASDF will actually invalidate all previously loaded systems
+when it is loaded on top of a different ASDF version.
 @item
 Until all implementations provide ASDF 2.015 or later,
 it is safer if you upgrade ASDF and its extensions as a special step
@@ -341,6 +341,13 @@ with such code as:
                      (asdf:asdf-version) *required-asdf-version*))
   (error "FOO requires ASDF ~A or later." *required-asdf-version*))
 @end example
+@item
+Until all implementations provide ASDF 2.27 or later,
+it is unsafe for a system to transitively depend on ASDF
+and not directly depend on ASDF;
+if any of the system you use either depends-on asdf,
+system-depends-on asdf, or transitively does,
+you should also do as well.
 @end itemize
 
 
@@ -637,7 +644,8 @@ by evaluating the following Lisp form:
 @end example
 
 On some implementations (namely recent versions of
-ABCL, Allegro CL, Clozure CL, CMUCL, ECL, GNU CLISP, LispWorks, MKCL, SBCL and XCL),
+ABCL, Allegro CL, Clozure CL, CMUCL, ECL, GNU CLISP,
+LispWorks, MKCL, SBCL and XCL),
 ASDF hooks into the @code{CL:REQUIRE} facility
 and you can just use:
 
@@ -688,6 +696,13 @@ Reminder: before ASDF can operate on a system, however,
 it must be able to find and load that system's definition.
 @xref{Configuring ASDF,,Configuring ASDF to find your systems}.
 
+For the advanced users, note that
+@code{require-system} calls @code{load-system}
+with keyword arguments @code{:force-not (loaded-systems)}.
+@code{loaded-systems} returns a list of the names of loaded systems.
+@code{load-system} applies @code{operate} with the operation from
+@code{*load-system-operation*}, which by default is @code{load-op},
+the system, and any provided keyword arguments.
 
 @section Summary
 
@@ -1309,8 +1324,8 @@ and easier than having them all be @code{EQL} methods.
 
 Operations are invoked on systems via @code{operate}.
 @anchor{operate}
-@deffn {Generic function} @code{operate} @var{operation} @var{system} @&rest @var{initargs}
-@deffnx {Generic function} @code{oos} @var{operation} @var{system} @&rest @var{initargs}
+@deffn {Generic function} @code{operate} @var{operation} @var{system} @&rest @var{initargs} @&key @code{force} @code{force-not} @code{verbose} @&allow-other-keys
+@deffnx {Generic function} @code{oos} @var{operation} @var{system} @&rest @var{initargs} @&key @&allow-other-keys
 @code{operate} invokes @var{operation} on @var{system}.
 @code{oos} is a synonym for @code{operate}.
 
@@ -1325,6 +1340,16 @@ to invoke other operations on the system or its components:
 the new operations will be created
 with the same @var{initargs} as the original one.
 
+If @var{force} is @code{t}, then all systems
+are forced to be recompiled even if not modified since last compilation.
+If @var{force} is a list, then it specifies a list of systems that
+are forced to be recompiled even if not modified since last compilation.
+If @var{force-not} is @code{t}, then all systems
+are forced not to be recompiled even if modified since last compilation.
+If @var{force-not} is a list, then it specifies a list of systems that
+are forced not to be recompiled even if modified since last compilation.
+@var{force} takes precedences over @var{force-not};
+both of them apply to systems that are dependencies and were already compiled.
 @end deffn
 
 @menu
@@ -2886,17 +2911,25 @@ or a string that when read yields a symbol or a lambda-expression.
 @code{nil} means the normal compile-file function will be called.
 A non-nil value designates a function of one argument
 that will be called with a function that
-calls the @code{*compile-op-compile-file-function*} (usually @code{compile-file*})
+calls the @code{*compile-op-compile-file-function*}
+(usually @code{compile-file*})
 with proper arguments;
 the around-compile hook may supply additional arguments
 to pass to that @code{*compile-op-compile-file-function*}.
-One notable argument that is heeded by @code{compile-file*} is
-@code{:compile-check}, a function called when the compilation was otherwise a success,
-with the same arguments as @code{compile-file},
-to determine whether 
-(NB: The ability to pass such extra flags is only available starting with asdf 2.22.1.)
 
-Note that by using a string, you may reference
+One notable argument that is heeded by @code{compile-file*} is
+@code{:compile-check},
+a function called when the compilation was otherwise a success,
+with the same arguments as @code{compile-file};
+the function shall return true if the compilation
+and its resulting compiled file respected all system-specific invariants,
+and false (NIL) if it broke any of those invariants;
+it may issue warnings or errors before it returns NIL.
+(NB: The ability to pass such extra flags
+is only available starting with ASDF 2.22.3.)
+This feature is notably exercised by asdf-finalizers.
+
+By using a string, you may reference
 a function, symbol and/or package
 that will only be created later during the build, but
 isn't yet present at the time the defsystem form is evaluated.
@@ -3241,9 +3274,9 @@ ASDF-dependent code you may check for this feature
 to see if the new API is present.
 @emph{All} versions of ASDF should have the @code{:asdf} feature.
 
-Additionally, all versions of asdf 2
+Additionally, all versions of ASDF 2
 define a function @code{(asdf:asdf-version)} you may use to query the version;
-and the source code of recent versions of asdf 2 features the version number
+and the source code of recent versions of ASDF 2 features the version number
 prominently on the second line of its source code.
 
 If you are experiencing problems or limitations of any sort with ASDF 1,
@@ -3462,7 +3495,8 @@ It is trivial to disable output translations.
 @xref{FAQ,,``How can I wholly disable the compiler output cache?''}.
 
 @item
-Some systems in the large have been known not to play well with output translations.
+Some systems in the large have been known
+not to play well with output translations.
 They were relatively easy to fix.
 Once again, it is also easy to disable output translations,
 or to override its configuration.
@@ -3482,9 +3516,11 @@ Other issues include the following:
 @itemize
 
 @item
-ASDF pathname designators are now specified in places where they were unspecified,
+ASDF pathname designators are now specified
+in places where they were unspecified,
 and a few small adjustments have to be made to some non-portable defsystems.
-Notably, in the @code{:pathname} argument to a @code{defsystem} and its components,
+Notably, in the @code{:pathname} argument
+to a @code{defsystem} and its components,
 a logical pathname (or implementation-dependent hierarchical pathname)
 must now be specified with @code{#p} syntax
 where the namestring might have previously sufficed;
@@ -3512,20 +3548,26 @@ when recursing through directories.
 On Windows, only LispWorks supports proper default configuration pathnames
 based on the Windows registry.
 Other implementations make do with environment variables,
-that you may have to define yourself if you're using an older version of Windows.
+that you may have to define yourself
+if you're using an older version of Windows.
 Windows support is somewhat less tested than Unix support.
 Please help report and fix bugs.
+@emph{Update}: As of ASDF 2.21, all implementations
+should now use the same proper default configuration pathnames
+and they should actually work, though they haven't all been tested.
 
 @item
 The mechanism by which one customizes a system so that Lisp files
 may use a different extension from the default @file{.lisp} has changed.
-Previously, the pathname for a component was lazily computed when operating on a system,
+Previously, the pathname for a component
+was lazily computed when operating on a system,
 and you would
 @code{(defmethod source-file-type ((component cl-source-file) (system (eql (find-system 'foo))))
   (declare (ignorable component system)) "lis")}.
 Now, the pathname for a component is eagerly computed when defining the system,
 and instead you will @code{(defclass cl-source-file.lis (cl-source-file) ((type :initform "lis")))}
-and use @code{:default-component-class cl-source-file.lis} as argument to @code{defsystem},
+and use @code{:default-component-class cl-source-file.lis}
+as argument to @code{defsystem},
 as detailed in a @pxref{FAQ,How do I create a system definition where all the source files have a .cl extension?} below.
 
 @findex source-file-type
@@ -3553,7 +3595,8 @@ Starting with current candidate releases of ASDF 2,
 it should always be a good time to upgrade to a recent ASDF.
 You may consult with the maintainer for which specific version they recommend,
 but the latest @code{release} should be correct.
-We trust you to thoroughly test it with your implementation before you release it.
+We trust you to thoroughly test it with your implementation
+before you release it.
 If there are any issues with the current release,
 it's a bug that you should report upstream and that we will fix ASAP.
 
@@ -3571,6 +3614,7 @@ if you allow such configuration.
 If your system provides a mechanism to hook into @code{CL:REQUIRE},
 then it would be nice to add ASDF to this hook the same way that
 ABCL, CCL, CLISP, CMUCL, ECL, SBCL and SCL do it.
+Please send us appropriate code to this end.
 
 @item
 You may, like SBCL, have ASDF be implicitly used to require systems
@@ -3906,25 +3950,16 @@ but just to add options to the existing syntax.
 Reinstate @code{parse-option} or something akin.
 
 
-** document all the error classes
-
-** what to do with compile-file failure
-
-Should check the primary return value from compile-file and see if
-that gets us any closer to a sensible error handling strategy
-
-** foreign files
-
-lift unix-dso stuff from db-sockets
-
 ** Diagnostics
 
 A ``dry run'' of an operation can be made with the following form:
 
 @lisp
-(traverse (make-instance '<operation-name>)
-          (find-system <system-name>)
-          'explain)
+(let ((asdf::*verbose-out* *standard-output*))
+  (loop :for (op . comp) :in
+    (asdf::traverse (make-instance '<operation-name> :force t)
+                    (asdf:find-system <system-name>))
+    :do (asdf:explain op comp)))
 @end lisp
 
 This uses unexported symbols.
@@ -3934,13 +3969,9 @@ What would be a nice interface for this functionality?
 
 ** reuse the same scratch package whenever a system is reloaded from disk
 
+Have a package ASDF-USER instead of all these temporary packages?
+
 ** proclamations probably aren't
-
-** when a system is reloaded with fewer components than it previously had, odd things happen
-
-We should do something inventive when processing a @code{defsystem} form,
-like take the list of kids and @code{setf} the slot to @code{nil},
-then transfer children from old to new list as they're found.
 
 ** (stuff that might happen later)
 
@@ -3950,9 +3981,11 @@ then transfer children from old to new list as they're found.
 
         @code{(asdf:compile-system :araneida :force t)}
 
-also forces compilation of every other system the @code{:araneida} system depends on.
+also forces compilation of every other system
+the @code{:araneida} system depends on.
 This is rarely useful to me;
-usually, when I want to force recompilation of something more than a single source file,
+usually, when I want to force recompilation
+of something more than a single source file,
 I want to recompile only one system.
 So it would be more useful to have @code{make-sub-operation}
 refuse to propagate @code{:force t} to other systems, and
