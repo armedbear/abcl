@@ -46,27 +46,13 @@
 ;;; <http://download.oracle.com/javase/6/docs/api/java/lang/ProcessBuilder.html>.
 (defun run-program (program args &key environment (wait t) clear-environment)
   "Run PROGRAM with ARGS in with ENVIRONMENT variables.
+
 Possibly WAIT for subprocess to exit.
 
-Optionally CLEAR-ENVIRONMENT of the subprocess of any non specified values."
-  ;;For documentation, see below.
-  (let* ((program-namestring (namestring (pathname program)))
+Optionally CLEAR-ENVIRONMENT of the subprocess of any non specified values.
 
-         (process-builder (%make-process-builder program-namestring args)))
-    (let ((env-map (%process-builder-environment process-builder)))
-      (when clear-environment
-        (%process-builder-env-clear env-map))            
-      (when environment
-        (dolist (entry environment)
-          (%process-builder-env-put env-map
-                                    (princ-to-string (car entry))
-                                    (princ-to-string (cdr entry))))))
-    (let ((process (make-process (%process-builder-start process-builder))))
-      (when wait (process-wait process))
-      process)))
+Creates a new process running the the PROGRAM.
 
-(setf (documentation 'run-program 'function)
-      "Creates a new process running the the PROGRAM.
 ARGS are a list of strings to be passed to the program as arguments. 
 
 For no arguments, use nil which means that just the name of the
@@ -87,7 +73,7 @@ Notes about Unix environments (as in the :environment):
       someone else, is a mother lode of security problems. If you are
       contemplating doing this, read about it first. (The Perl
       community has a lot of good documentation about this and other
-      security issues in script-like programs.)
+      security issues in script-like programs.
 
 The &key arguments have the following meanings:
 
@@ -102,8 +88,22 @@ The &key arguments have the following meanings:
 :wait 
     If non-NIL, which is the default, wait until the created process
     finishes. If NIL, continue running Lisp until the program
-    finishes.")
+    finishes.
+"
+  (let* ((program-namestring (namestring (pathname program)))
 
+         (process-builder (%make-process-builder program-namestring args)))
+    (let ((env-map (%process-builder-environment process-builder)))
+      (when clear-environment
+        (%process-builder-env-clear env-map))            
+      (when environment
+        (dolist (entry environment)
+          (%process-builder-env-put env-map
+                                    (princ-to-string (car entry))
+                                    (princ-to-string (cdr entry))))))
+    (let ((process (make-process (%process-builder-start process-builder))))
+      (when wait (process-wait process))
+      process)))
 ;;The process structure.
 
 (defstruct (process (:constructor %make-process (jprocess)))
