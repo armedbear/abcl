@@ -1718,7 +1718,7 @@ compare the method combination name to the symbol 'standard.")
         ;; Remove methods defined by previous DEFGENERIC forms, as
         ;; specified by CLHS, 7.7 (Macro DEFGENERIC).
         (dolist (method (generic-function-initial-methods gf))
-          (if (typep gf 'standard-generic-function)
+          (if (eq  (class-of gf) +the-standard-generic-function-class+)
               (progn
                 (std-remove-method gf method)
                 (map-dependents gf
@@ -2125,7 +2125,9 @@ Initialized with the true value near the end of the file.")
            (if (eq (generic-function-method-class gf) +the-standard-method-class+)
                (apply #'make-instance-standard-method gf all-keys)
                (apply #'make-instance (generic-function-method-class gf) all-keys))))
-      (if (eq (generic-function-method-class gf) +the-standard-method-class+)
+      (if (and
+           (eq (generic-function-method-class gf) +the-standard-method-class+)
+           (eq (class-of gf) +the-standard-generic-function-class+))
           (progn
             (std-add-method gf method)
             (map-dependents gf
