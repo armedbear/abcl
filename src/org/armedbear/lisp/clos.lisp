@@ -865,16 +865,18 @@
 ;                class canonicalized-slot)
 ;         canonicalized-slot))
 
+(defun canonicalize-direct-superclass-list (class direct-superclasses)
+  (cond (direct-superclasses)
+        ((subtypep (class-of class) +the-funcallable-standard-class+)
+         (list +the-funcallable-standard-object-class+))
+        ((subtypep (class-of class) +the-standard-class+)
+         (list +the-standard-object-class+))))
+
 (defun std-after-initialization-for-classes (class
                                              &key direct-superclasses direct-slots
                                              direct-default-initargs
                                              &allow-other-keys)
-  (let ((supers (cond (direct-superclasses)
-                      ((subtypep (class-of class)
-                                 +the-funcallable-standard-class+)
-                       (list +the-funcallable-standard-object-class+))
-                      ((subtypep (class-of class) +the-standard-class+)
-                       (list +the-standard-object-class+)))))
+  (let ((supers (canonicalize-direct-superclass-list class direct-superclasses)))
     (setf (class-direct-superclasses class) supers)
     (dolist (superclass supers)
       (add-direct-subclass superclass class)))
@@ -3781,24 +3783,6 @@ or T when any keyword is acceptable due to presence of
                               &rest initargs)
   (std-shared-initialize instance slot-names initargs))
 
-(defmethod shared-initialize :after ((instance standard-class) slot-names
-                                     &key direct-superclasses
-                                     direct-slots direct-default-initargs
-                                     &allow-other-keys)
-  (std-after-initialization-for-classes
-   instance :direct-superclasses direct-superclasses
-   :direct-slots direct-slots
-   :direct-default-initargs direct-default-initargs))
-
-(defmethod shared-initialize :after ((instance funcallable-standard-class)
-                                     slot-names &key direct-superclasses
-                                     direct-slots direct-default-initargs
-                                     &allow-other-keys)
-  (std-after-initialization-for-classes
-   instance :direct-superclasses direct-superclasses
-   :direct-slots direct-slots
-   :direct-default-initargs direct-default-initargs))
-
 (defmethod shared-initialize ((slot slot-definition) slot-names
                               &rest args
                               &key name initargs initform initfunction
@@ -3934,24 +3918,48 @@ or T when any keyword is acceptable due to presence of
                                       (class-direct-superclasses class)))
     (add-direct-subclass superclass class)))
 
-(defmethod reinitialize-instance :after ((class standard-class) &rest all-keys)
+(defun std-after-reinitialization-for-classes (class
+                                               &rest all-keys
+                                               &key (direct-superclasses nil direct-superclasses-p)
+                                               (direct-slots nil direct-slots-p)
+                                               (direct-default-initargs nil direct-default-initargs-p)
+                                               &allow-other-keys)
   (remhash class *make-instance-initargs-cache*)
   (remhash class *reinitialize-instance-initargs-cache*)
   (%make-instances-obsolete class)
   (setf (class-finalized-p class) nil)
-  ;; KLUDGE (rudi 2012-06-17) this calls add-direct-subclass again
-  (apply #'std-after-initialization-for-classes class all-keys)
+  (when direct-superclasses-p
+    (let* ((old-supers (class-direct-superclasses class))
+           (new-supers (canonicalize-direct-superclass-list
+                        class direct-superclasses)))
+      (setf (class-direct-superclasses class) new-supers)
+      (dolist (old-superclass (set-difference old-supers new-supers))
+        (remove-direct-subclass old-superclass class))
+      (dolist (new-superclass (set-difference new-supers old-supers))
+        (add-direct-subclass new-superclass class))))
+  (when direct-slots-p
+    ;; FIXME: maybe remove old reader and writer methods?
+    (let ((slots (mapcar #'(lambda (slot-properties)
+                             (apply #'make-direct-slot-definition class slot-properties))
+                         direct-slots)))
+      (setf (class-direct-slots class) slots)
+      (dolist (direct-slot slots)
+        (dolist (reader (slot-definition-readers direct-slot))
+          (add-reader-method class reader direct-slot))
+        (dolist (writer (slot-definition-writers direct-slot))
+          (add-writer-method class writer direct-slot)))))
+  (when direct-default-initargs-p
+    (setf (class-direct-default-initargs class) direct-default-initargs))
+  (maybe-finalize-class-subtree class)
   (map-dependents class #'(lambda (dep) (update-dependent class dep all-keys))))
+
+(defmethod reinitialize-instance :after ((class standard-class)
+                                         &rest all-keys)
+  (apply #'std-after-reinitialization-for-classes class all-keys))
 
 (defmethod reinitialize-instance :after ((class funcallable-standard-class)
                                          &rest all-keys)
-  (remhash class *make-instance-initargs-cache*)
-  (remhash class *reinitialize-instance-initargs-cache*)
-  (%make-instances-obsolete class)
-  (setf (class-finalized-p class) nil)
-  ;; KLUDGE (rudi 2012-06-17) this calls add-direct-subclass again
-  (apply #'std-after-initialization-for-classes class all-keys)
-  (map-dependents class #'(lambda (dep) (update-dependent class dep all-keys))))
+  (apply #'std-after-reinitialization-for-classes class all-keys))
 
 (defmethod reinitialize-instance :after ((gf standard-generic-function)
                                          &rest all-keys)
