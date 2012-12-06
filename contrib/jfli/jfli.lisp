@@ -363,7 +363,7 @@ caches this has been done on the class-symbol's plist"
 	  (unless (and class (subtypep class 'standard-object))
 	    (setf class
 		  #+abcl
-		  (sys::ensure-class  class-sym :direct-superclasses (mapcar #'(lambda (c) (find-class (class-symbol c))) supers))))
+		  (mop::ensure-class  class-sym :direct-superclasses (mapcar #'(lambda (c) (find-class (class-symbol c))) supers))))
 	  (setf (get class-sym :ensured) t)
 	  class))))
 
