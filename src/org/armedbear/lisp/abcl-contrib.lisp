@@ -2,10 +2,9 @@
 
 (require :asdf)
 
-;;; TODO possibly allow customization in system.lisp?
 (defun find-system-jar () 
+  "Return the pathname of the system jar, one of `abcl.jar` or `abcl-m.n.p.jar` or `abcl-m.n.p-something.jar`."
   (flet ((match-system-jar (p)
-           "Match `abcl.jar` or `abcl-1.0.1.jar` or `abcl-1.0.1-something.jar`"
            (and (pathnamep p)
                 (equal (pathname-type p) "jar")
                 (java:jstatic "matches"
@@ -27,7 +26,8 @@ Initialized via SYSTEM::FIND-SYSTEM-JAR.")
 Initialized via SYSTEM:FIND-CONTRIB")
 
 (defun find-contrib (&key (verbose nil))
-"Attempt to find the ABCL contrib jar and add its contents to ASDF."
+  "Attempt to find the ABCL contrib jar and add its contents to ASDF.
+Returns the pathname of the contrib if it can be found."
   (unless *abcl-contrib*
     (unless *abcl-jar*
       (setf *abcl-jar* (find-system-jar)))
@@ -50,7 +50,7 @@ Initialized via SYSTEM:FIND-CONTRIB")
                     (push asdf-directory asdf:*central-registry*)
                     (format verbose "~&Added ~A to ASDF.~&" asdf-directory))))
               *abcl-contrib*)
-        (format verbose "Failed to find abcl-contrib at '~A'." abcl-contrib))))))
+            (error "Failed to find abcl-contrib at '~A'." abcl-contrib))))))
 
 (when (find-contrib :verbose t)
   (provide :abcl-contrib))
