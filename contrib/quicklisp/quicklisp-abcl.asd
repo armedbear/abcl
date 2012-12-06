@@ -3,13 +3,16 @@
 (require :abcl-contrib)
 (require :abcl-asdf)
 (in-package :asdf)
+
 ;; Quicklisp defines:
 ;;(defvar *setup-url* "http://beta.quicklisp.org/quickstart/setup.lisp")
+
 (defsystem :quicklisp-abcl
+    :description 
+    "Load Quicklisp from the network if it isn't already installed. <urn:abcl.org/release/1.1.0/contrib/quicklisp-abcl#0.2.0>"
     :version "0.2.0"
-    :description "Convenience stubs to load locally installed Quicklisp."
-;;    #+nil::defsystem-depends-on (abcl-asdf)
     :components nil)
+
 ;; #+nil::needs-abcl-asdf((:iri "http://beta.quicklisp.org/quicklisp.lisp"))
 ;;    #+nil::in-order-to ((asdf:compile-op (ql::install)))  ;;; FIXME tickle the internal Quicklisp setup 
 

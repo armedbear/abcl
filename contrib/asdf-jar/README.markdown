@@ -1,10 +1,6 @@
 ASDF-JAR
 ========
 
-    Mark Evenson
-    Created: 20-JUN-2011
-    Modified: 20-JUN-2011
-
 ASDF-JAR provides a system for packaging ASDF systems into jar
 archives for ABCL.  Given a running ABCL image with loadable ASDF
 systems the code in this package will recursively package all the
@@ -57,3 +53,10 @@ should load the ASDF system from the jar.
 
 Setting CL:*LOAD-VERBOSE* will allow one to verify that the subsequent
 load is indeed coming from the jar.
+
+# Colophon
+
+Mark Evenson
+Created: 20-JUN-2011
+Modified: 20-JUN-2011
+<> abcl:documents <release#asdf-jar> .

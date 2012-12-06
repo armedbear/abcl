@@ -34,3 +34,6 @@ adds some of its own. I'm particularly interested in the latter type.
 Please send (ABCL-specific) bug reports, suggestions, examples,
 and whatever else you can think of, to asimon@math.bme.hu. 
 
+# Colophon
+
+<> abcl:documents <urn:abcl.org/release/1.1.0/contrib/jfli#0.2.0> .

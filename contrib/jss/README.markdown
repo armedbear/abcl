@@ -133,5 +133,7 @@ abcl-contrib: http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/
 
 <> dc:created "2005" ;
    dc:author "Mark <evenson.not.org@gmail.com>";
-   revised: "29-JAN-2012" .
+   dc:revised "06-DEC-2012" ;
+   <> abcl:documents <urn:abcl.org/release/1.1.0/contrib/jss#3.0.5" .
+
    

@@ -3,9 +3,9 @@ ABCL-ASDF
 
 To use:
 
-    CL-USER> (require 'abcl-contrib)
+    CL-USER> (require :abcl-contrib)
 
-    CL-USER> (require 'abcl-asdf)
+    CL-USER> (require :abcl-asdf)
     
     
 ABCL specific contributions to ASDF system definition mainly concerned
@@ -42,16 +42,16 @@ API
 We define an API within the ASDF package consisting of the following
 ASDF classes derived from ASDF:COMPONENT:
 
-JAR-DIRECTORY, JAR-FILE, and CLASS-FILE-DIRECTORY for JVM artifacts
-that have a currently valid pathname representation (i.e. they exist
-on the local filesystem).
+    JAR-DIRECTORY, JAR-FILE, and CLASS-FILE-DIRECTORY for JVM artifacts
+    that have a currently valid pathname representation (i.e. they exist
+    on the local filesystem).
 
-The MVN and IRI classes descend from ASDF-COMPONENT, but do not
-directly have a filesystem location.
+    The MVN and IRI classes descend from ASDF-COMPONENT, but do not
+    directly have a filesystem location.
 
-The IRI component is currently unused, but serves as a point to base
-the inheritance of the MVN component while allowing other forms of
-uri-like resources to be encapsulated in the future.
+    The IRI component is currently unused, but serves as a point to base
+    the inheritance of the MVN component while allowing other forms of
+    uri-like resources to be encapsulated in the future.
 
 The MVN component should specifiy a [Maven URI][1] as its PATH.  A
 Maven URI has the form "GROUP-ID/ARTIFACT-ID/VERSION" which specifies
@@ -164,5 +164,5 @@ The following ASDF defintion loads enough JVM artifacts to use the
     Mark <evenson.not.org@gmail.com>
     
     Created: 2011-01-01
-    Revised: 2012-11-28
+    Revised: 2012-12-06
     
