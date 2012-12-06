@@ -8,10 +8,9 @@
 
 \begin{document}
 \title{Armed Bear Common Lisp User Manual}
-\date{Version 1.2\\
-DRAFT
+\date{Version 1.1.0\\
 \smallskip
-December 01, 2012}
+December 5, 2012}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -19,14 +18,18 @@ December 01, 2012}
 
 \tableofcontents
 
-%%\chapter{Preface}
 %%Preface to the second edition, abcl-1.1.0.
+
+\subsection{Preface to the Second Edition}
+
+ABCL 1.1 now contains (A)MOP.  We hope you enjoy!  --The Mgmt.
 
 \chapter{Introduction}
 
 Armed Bear Common Lisp (ABCL) is an implementation of Common Lisp that
-runs on the Java Virtual Machine.  It compiles to Java bytecode and
-integrates with Java code and libraries in a seamless way:
+runs on the Java Virtual Machine.  It compiles Common Lisp to Java 5
+bytecode, providing the following integration methods for interfacing
+with Java code and libraries:
 \begin{itemize}
 \item Lisp code can create Java objects and call their methods (see
   Section~\ref{sec:lisp-java}, page~\pageref{sec:lisp-java}).
@@ -63,7 +66,7 @@ implementation due to the following known issues:
     rather arcane sounding deviation from conformance is so that the
     result of a merge won't fill in a DEVICE with the wrong "default
     device for the host" in the sense of the fourth paragraph in the
-    [CLHS description of MERGE-PATHNAMES][2] (the paragraph beginning
+    CLHS description of MERGE-PATHNAMES (see in \cite{CLHS} the paragraph beginning
     "If the PATHNAME explicitly specifies a host and not a device…").
     A future version of the implementation may return to conformance
     by using the \code{HOST} value to reflect the type explicitly.
@@ -93,8 +96,6 @@ contemporary Common Lisp.
     allowed by \textsc{ANSI}}, the inability to inspect local variables
   in a given call frame, and the inability to resume a halted
   computation at an arbitrarily selected call frame.
-\item An incomplete implementation of a proper metaobject protocol
-  (c.f. the (A)MOP specification~\cite{AMOP, AMOPspec})
 \item Incomplete streams abstraction, in that \textsc{ABCL} needs
   suitable abstraction between ANSI and Gray streams.  The streams could
   be optimized to the JVM NIO abstractions at great profit for binary
@@ -135,7 +136,7 @@ of course.
 \texttt{abcl.jar} or possibly something like \texttt{abcl-1.1.0.jar} if
 using a versioned package on the local filesystem from your system
 vendor.  This jar file can be executed from the command line to obtain a
-REPL\footnote{Read-Eval Print Loop, a Lisp commandline}, viz:
+REPL\footnote{Read-Eval Print Loop, a Lisp command-line}, viz:
 
 \begin{listing-shell}
   cmd$ java -jar abcl.jar
@@ -163,15 +164,15 @@ Emacs editor is to use QuickLisp and follow the instructions at
 ABCL supports the following command line options:
 
 \begin{description}
-\item[\texttt{--help}] displays a help message.
-\item[\texttt{--noinform}] Suppresses the printing of startup information and banner.
-\item[\texttt{--noinit}] suppresses the loading of the \verb+~/.abclrc+ startup file.
-\item[\texttt{--nosystem}] suppresses loading the \texttt{system.lisp} customization file. 
-\item[\texttt{--eval FORM}] evaluates FORM before initializing the REPL.
-\item[\texttt{--load FILE}] loads the file FILE before initializing the REPL.
-\item[\texttt{--load-system-file FILE}] loads the system file FILE before initializing the REPL.
-\item[\texttt{--batch}] evaluates forms specified by arguments and in
-  the intialization file \verb+~/.abclrc+, and then exits without
+\item[\texttt{  --help}] displays a help message.
+\item[\texttt{  --noinform}] Suppresses the printing of startup information and banner.
+\item[\texttt{  --noinit}] suppresses the loading of the \verb+~/.abclrc+ startup file.
+\item[\texttt{  --nosystem}] suppresses loading the \texttt{system.lisp} customization file. 
+\item[\texttt{  --eval FORM}] evaluates FORM before initializing the REPL.
+\item[\texttt{  --load FILE}] loads the file FILE before initializing the REPL.
+\item[\texttt{  --load-system-file FILE}] loads the system file FILE before initializing the REPL.
+\item[\texttt{  --batch}] evaluates forms specified by arguments and in
+  the initialization file \verb+~/.abclrc+, and then exits without
   starting a REPL.
 \end{description}
 
@@ -212,17 +213,19 @@ Lisp environment. It allows calling both instance and static methods
 of Java objects, manipulation of instance and static fields on Java
 objects, and construction of new Java objects.
 
-When calling Java routines, some values will automatically be converted
-by the FFI\footnote{Foreign Function Interface, the term for the part of
-  a Lisp implementation that implements calling code written in other
-  languages.}  from Lisp values to Java values. These conversions
-typically apply to strings, integers and floats. Other values need to be
-converted to their Java equivalents by the programmer before calling the
-Java object method. Java values returned to Lisp are also generally
-converted back to their Lisp counterparts. Some operators make an
-exception to this rule and do not perform any conversion; those are the
-``raw'' counterparts of certain FFI functions and are recognizable by
-their name ending with \code{-RAW}.
+When calling Java routines, some values will automatically be
+converted by the FFI\footnote{Foreign Function Interface, is the term
+  of art for the part of a Lisp implementation which implements
+  calling code written in other languages, typically normalized to the
+  local C compiler calling conventions.}  from Lisp values to Java
+values. These conversions typically apply to strings, integers and
+floats. Other values need to be converted to their Java equivalents by
+the programmer before calling the Java object method. Java values
+returned to Lisp are also generally converted back to their Lisp
+counterparts. Some operators make an exception to this rule and do not
+perform any conversion; those are the ``raw'' counterparts of certain
+FFI functions and are recognizable by their name ending with
+\code{-RAW}.
 
 \subsection{Low-level Java API}
 
@@ -737,6 +740,11 @@ implemented with the current Lisp package, the latter allows the
 programmer to pass an interface-implementation object which will in turn
 be passed to the \code{jmake-proxy} generic function.
 
+\subsection{Implementation of Java classes in Lisp}
+
+See \code{JAVA:JNEW-RUNTIME-CLASS} on \ref{JAVA:JNEW-RUNTIME-CLASS}.
+
+
 \chapter{Implementation Dependent Extensions}
 
 As outlined by the CLHS ANSI conformance guidelines, we document the
@@ -759,6 +767,10 @@ CL-USER> (add-to-classpath "/path/to/some.jar")
 N.b \code{ADD-TO-CLASSPATH} only affects the classloader used by ABCL
 (the value of the special variable \code{JAVA:*CLASSLOADER*}. It has
 no effect on Java code outside ABCL.
+
+\subsection{Creating a synthetic Java Class at Runtime}
+
+See \code{JAVA:JNEW-RUNTIME-CLASS} on \ref{JAVA:JNEW-RUNTIME-CLASS}.
 
 % include autogen docs for the JAVA package.
 \include{java}
@@ -803,32 +815,36 @@ artifacts whose loading \code{CL:LOAD} understands.
 
 \section{Pathname}
 
-We implement an extension to the Pathname that allows for the
-description and retrieval of resources named in a
+We implement an extension to the \code{CL:PATHNAME} that allows for
+the description and retrieval of resources named in a
 \textsc{URI} \footnote{A \textsc{URI} is essentially a superset of
-  what is commonly understood as a \textsc{URL} We sometimesuse the
+  what is commonly understood as a \textsc{URL} We sometime suse the
   term URL as shorthand in describing the URL Pathnames, even though
   the corresponding encoding is more akin to a URI as described in
   RFC3986 \cite{rfc3986}.}  scheme that the \textsc{JVM}
-``understands''.  Support is built-in to comprehend the ``http'' and
-``https'' implementations but additional protocol handlers may be
-installed at runtime by having \textsc{JVM} symbols present in the
-sun.net.protocol.dynamic pacakge. See \cite{maso2000} for more
-details.
+``understands''.  By definition, support is built-in into the JVM to
+access the ``http'' and ``https'' schemes but additional protocol
+handlers may be installed at runtime by having \textsc{JVM} symbols
+present in the sun.net.protocol.dynamic package. See \cite{maso2000}
+for more details.
 
-\textsc{ABCL} has created specializations of the ANSI Pathname object to
-enable to use of \textsc{URI}s to address dynamically loaded resources for the
-JVM.  A \code{URL-PATHNAME} has a corresponding \textsc{URI} whose canonical
-representation is defined to be the \code{NAMESTRING} of the Pathname.
+\textsc{ABCL} has created specializations of the ANSI
+\code{CL:PATHNAME} object to enable to use of \textsc{URI}s to address
+dynamically loaded resources for the JVM.  The \code{EXT:URL-PATHNAME}
+specialization. has a corresponding \textsc{URI} whose canonical
+representation is defined to be the \code{NAMESTRING} of the
+Pathname. The \code{EXT:JAR-PATHNAME} extension further specializes
+the the \code{EXT:URL-PATHNAME} to provide access to components of zip
+archives.  
 
-%
-\begin{verbatim}
-
-# RDF description of type hierarchy 
+% RDF description of type hierarchy 
 % TODO Render via some LaTeX mode for graphviz?
-
-  <jar-pathname> a <url-pathname>.
-  <url-pathname> a <cl:pathname>.
+\begin{verbatim}
+  @prefix ext:   <http://abcl.not.org/cl-packages/extensions/> .
+  @prefix cl:    <http://abcl.not.org/cl-pacages/common-lisp/> .
+  
+  <ext:jar-pathname> a <ext:url-pathname>.
+  <ext:url-pathname> a <cl:pathname>.
   <cl:logical-pathname> a <cl:pathname> .
 \end{verbatim}
 
@@ -838,8 +854,9 @@ representation is defined to be the \code{NAMESTRING} of the Pathname.
 \label{EXTENSIONS:JAR-PATHNAME}
 \index{JAR-PATHNAME}
 
-Both \code{EXT:URL-PATHNAME} and \code{EXT:JAR-PATHNAME} may be used anywhere
-a \code{CL:PATHNAME} is accepted with the following caveats:
+Both the \code{EXT:URL-PATHNAME} and \code{EXT:JAR-PATHNAME} objects
+may be used anywhere a \code{CL:PATHNAME} is accepted with the
+following caveats:
 
 \begin{itemize}
 
@@ -847,24 +864,25 @@ a \code{CL:PATHNAME} is accepted with the following caveats:
   cannot be the target of write operations.
 
 \index{URI}
-\item No canonicalization is performed on the underlying \textsc{URI}
-  (i.e. the implementation does not attempt to compute the current
-  name of the representing resource unless it is requested to be
-  resolved.)  Upon resolution, any cannoicalization procedures
+\item Any results of canonicalization procesures performed on the
+  underlying \textsc{URI} are discarded between resolutions (i.e. the
+  implementation does not attempt to cache the results of current name
+  resolution of the representing resource unless it is requested to be
+  resolved.)  Upon resolution, any canoicalization procedures
   followed in resolving the resource (e.g. following redirects) are
   discarded.  Users may programatically initiate a new, local
   computation by applying the \code{CL:TRUENAME} function to a
   \code{EXT:URL-PATHNAME} object.  Depending on the reliablity and
   properties of your local \textsc{REST} infrastructure, these results
   may not necessarily be idempotent over time\footnote {See
-  \cite{evenson2011} for the draft of the publication of the technical
-  details}.
+    \cite{evenson2011} for the draft of the publication of the
+    technical details}.
 
 \end{itemize}
 
 The implementation of \code{EXT:URL-PATHNAME} allows the \textsc{ABCL}
 user to dynamically load code from the network.  For example,
-Quicklisp (\cite{quicklisp}) may be completely installed from the REPL
+Quicklisp (\cite{quicklisp}) may be completely installed from the \textsc{REPL}
 as the single form:
 
 \begin{listing-lisp}
@@ -873,32 +891,36 @@ as the single form:
 
 will load and execute the Quicklisp setup code.
 
-The implementation currently breaks ANSI conformance by allowing the
-types able to be READ for the DEVICE to return a possible CONS of
-PATHNAME objects.  %% citation from CLHS needed.
+The implementation currently breaks \textsc{ANSI} conformance by allowing the
+types able to be \code{CL:READ} for the \var{DEVICE} to return a possible \code{CONS} of
+\code{CL:PATHNAME} objects.  %% citation from CLHS needed.
 
-In order to ``smooth over'' the bit about types being READ from
-PATHNAME components, we extend the semantics for the usual PATHNAME
-merge semantics when *DEFAULT-PATHNAME-DEFAULTS* contains a
-\code{JAR-PATHNAME}.  
+In order to ``smooth over'' the bit about types being \code{CL:READ} from
+\code{CL:PATHNAME} components, we extend the semantics for the usual PATHNAME
+merge semantics when \code{*DEFAULT-PATHNAME-DEFAULTS*} contains a
+\code{EXT:JAR-PATHNAME}.  
 
 %See \ref{_:quicklisp} on page \pageref{_:quicklisp}.
 
 \subsubsection{Implementation}
 
 The implementation of these extensions stores all the additional
-information in the PATHNAME object itself in ways that while strictly
+information in the \code{CL:PATHNAME} object itself in ways that while strictly
 speaking are conformant, nonetheless may trip up libraries that don't
 expect the following:
 
 \begin{itemize}
 \item \code{DEVICE} can be either a string denoting a drive letter
-  under DOS or a list of exactly one or two elements.  If
-  \code{DEVICE} is a list, it denotes a \code{JAR-PATHNAME}, with the entries
-  containing \code{PATHNAME} objects which describe the outer and (possibley)
-  locations of the jar archive.
+  under \textsc{DOS} or a list of exactly one or two elements.  If
+  \code{DEVICE} is a list, it denotes a \code{EXT:JAR-PATHNAME}, with
+  the entries containing \code{CL:PATHNAME} objects which describe the
+  outer and (possibly inner) locations of the jar
+  archive \footnote{The case of inner and outer
+    \code{EXT:EJAR-PATHNAME} arises when zip archives themselves
+    contain zip archives which is the case when the ABCL fasl is
+    included in the abcl.jar zip archive.}.
 
-\item A \code{URL-PATHNAME} always has a \code{HOST} component that is a
+\item A \code{EXT:URL-PATHNAME} always has a \code{HOST} component that is a
   property list.  The values of the \code{HOST} property list are
   always character strings.  The allowed keys have the following meanings:
   \begin{description}
@@ -908,7 +930,6 @@ expect the following:
   \item[:QUERY] The query of the \textsc{URI} 
   \item[:FRAGMENT] The fragment portion of the \textsc{URI}
   \end{description}
-
 
 \item In order to encapsulate the implementation decisions for these
   meanings, the following functions provide a setf-able API for
@@ -945,6 +966,8 @@ extensible sequences.  These user extensible sequences are used
 directly in \code{java-collections.lisp} provide these CLOS
 abstractions on the standard Java collection classes as defined by the
 \code{java.util.List} contract.
+
+%% an Example of using java.util.Lisp in Lisp would be nice
 
 This extension is not automatically loaded by the implementation.   It
 may be loaded via:
@@ -1015,8 +1038,8 @@ We implement a special hexadecimal escape sequence for specifying 32
 bit characters to the Lisp reader\footnote{This represents a
   compromise with contemporary in 2011 32bit hosting architecures for
   which we wish to make text processing efficient.  Should the User
-  require more control over UNICODE processing we recommend Edi Weisz'
-  excellent work with FLEXI-STREAMS which we fully support}, namely we
+  require more control over \textsc{UNICODE} processing we recommend Edi Weisz'
+  excellent work with \textsc|{FLEXI-STREAMS}  which we fully support}, namely we
 allow a sequences of the form \verb~#\U~\emph{\texttt{xxxx}} to be processed
 by the reader as character whose code is specified by the hexadecimal
 digits \emph{\texttt{xxxx}}.  The hexadecimal sequence may be one to four digits
@@ -1054,7 +1077,10 @@ semantic to the execution of \code{REQUIRE} on the following symbols:
       \item \code{mvn}
         These systems name common JVM artifacts from the distributed pom.xml graph of Maven Aether:
         \begin{enumerate}
-          \item \code{jna} Dynamically load 'jna.jar' version 3.4.0 from the network.
+          \item \code{jna} Dynamically load 'jna.jar' version 3.5.1
+            from the network \footnote{This loading can be inhibited
+              if, at runtime, the Java class corresponding
+              ``:classname'' clause of the system defition is present.}
         \end{enumerate}
       \item \code{quicklisp-abcl} (Not working) boot a local Quicklisp
         installation via the ASDF:IRI type introduced bia ABCL-ASDF.
@@ -1072,12 +1098,13 @@ can successful resolve the symbol.
 \section{JSS optionally extends the Reader}
 
 The JSS contrib consitutes an additional, optional extension to the
-reader in the definition of the \#\" reader macro.  See section
-\ref{section:jss} on page \pageref{section:jss} for more information.
+reader in the definition of the \code{SHARPSIGN-DOUBLE-QUOTE}
+(``\#\"'') reader macro.  See section \ref{section:jss} on page
+\pageref{section:jss} for more information.
 
 \section{ASDF}
 
-asdf-2.25 (see \cite{asdf}) is packaged as core component of ABCL,
+asdf-2.26.6 (see \cite{asdf}) is packaged as core component of ABCL,
 but not initialized by default, as it relies on the CLOS subsystem
 which can take a bit of time to start \footnote{While this time is
   ``merely'' on the order of seconds for contemporary 2011 machines,
@@ -1115,9 +1142,9 @@ with the \code{ABCL-ASDF:RESOLVE-DEPENDENCIES} symbol.
 %dynamically loaded.
 
 
-The following \textsc{ASDF} components are added: \code{JAR-FILE},
-\code{JAR-DIRECTORY}, \code{CLASS-FILE-DIRECTORY} and \code{MVN}.
-
+When loaded, abcl-asdf adds the following objects to \textsc{ASDF}:
+\code{JAR-FILE}, \code{JAR-DIRECTORY}, \code{CLASS-FILE-DIRECTORY} and
+\code{MVN}, exporting them (and others) as public symbols.
 
 \subsection{Referencing Maven Artifacts via ASDF}
 
@@ -1196,13 +1223,14 @@ The documentation for this contrib can be found at
 
 To one used to the more universal syntax of Lisp pairs upon which the
 definition of read and compile time macros is quite
-natural \footnote{See Graham's ``On Lisp'' http://lib.store.yahoo.net/lib/paulgraham/onlisp.pdf.}, the Java syntax available to
-the Java programmer may be said to suck.  To alleviate this situation,
-the JSS contrib introduces the \code{SHARPSIGN-DOUBLE-QUOTE}
-(\code{\#"}) reader macro, which allows the the specification of the
-name of invoking function as the first element of the relevant s-expr
-which tends to be more congruent to how Lisp programmers seem to be
-wired to think.
+natural \footnote{See Graham's ``On Lisp''
+  http://lib.store.yahoo.net/lib/paulgraham/onlisp.pdf.}, the Java
+syntax available to the Java programmer may be said to suck.  To
+alleviate this situation, the JSS contrib introduces the
+\code{SHARPSIGN-DOUBLE-QUOTE} (\code{\#"}) reader macro, which allows
+the the specification of the name of invoking function as the first
+element of the relevant s-expr which tends to be more congruent to how
+Lisp programmers seem to be wired to think.
 
 While quite useful, we don't expect that the JSS contrib will be the
 last experiment in wrangling Java from Common Lisp.
@@ -1224,6 +1252,11 @@ CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 
 Some more information on jss can be found in its documentation at
 \url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/jss/README.markdown}
+
+\section{jfli}
+\label{section:jfli}
+
+The contrib contains a pure-Java version of JFLI. 
 
 \section{asdf-install}
 
@@ -1258,8 +1291,28 @@ stating the conformance of Armed Bear Common Lisp to \textsc{ANSI}, we
 released abcl-1.0.0.  We released abcl-1.0.1 as a maintainence release
 on January 10, 2012.
 
-In October 2012, we revised the implementation with the release of
-abcl-1.1.0 and accumulated changes to this manual.
+In December 2012, we revised the implementation by adding (A)MOP
+with the release of abcl-1.1.0.
+
+\appendix 
+
+\chapter{The MOP Dictionary}
+
+\include{mop}o
+
+\chapter{The SYSTEM Dictionary}
+
+The public interfaces in this package are subject to change with
+ABCL 1.2.
+
+\include{system}
+
+\chapter{The JSS Dictionary}
+
+These public interfaces are provided by the JSS contrib.
+
+\include{jss}
+
 
 \bibliography{abcl}
 \bibliographystyle{alpha}
