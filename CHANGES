@@ -57,8 +57,9 @@ Features
 
   * ASDF
 
-     ** Stock ASDF-2.26 with conditional patches for the URL-PATHAME and
-        JAR-PATHNAME implementation extensions to ANSI.
+     ** Stock ASDF-2.26.6 which includes #+abcl conditional patches
+        for the URL-PATHAME and JAR-PATHNAME implementation extensions
+        to ANSI.
 
   *  ABCL-CONTRIB
 
