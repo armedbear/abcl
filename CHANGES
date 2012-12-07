@@ -4,10 +4,15 @@ svn.uri=:"http//common-lisp.net/project/armedbear/svn/trunk/abcl/"
 (unreleased)
 
 
+Version 1.1.1
+=============
+svn.uri=:"http//common-lisp.net/project/armedbear/branches/1.1.x/"
+(unreleased)
+
 Version 1.1.0
 =============
-svn.uri=:"http//common-lisp.net/project/armedbear/svn/trunk/abcl/"
-(22 November 2012)
+svn.uri=:"http//common-lisp.net/project/armedbear/svn/tags/1.1.0/abcl/"
+(07 December 2012)
 
 Features
 --------
@@ -78,8 +83,6 @@ Features
 
          A "captured from the wild" version of what @rich.hickey did before Clojure.
         
-  
-
 Changes
 -------
 
@@ -124,6 +127,70 @@ Fixes
 
   * [#187] Better SORT and STABLE-SORT via Jorge Tavares [???]
 
+Issues
+------
+
+    id	summary	owner	type	priority	component	version
+    173	Cannot initialize ABCL within .ear	mevenson	defect	blocker	interpreter	0.27
+    191	Compiling SHARPSIGN SHARPSIGN form causes stack overflow	ehuelsmann	defect	blocker	compiler	1.0
+    196	STABLE-SORT is only stable for lists	ehuelsmann	defect	blocker	interpreter	1.0.1
+    216	JVM stack inconsistency triggered by compiler	ehuelsmann	defect	blocker	compiler	
+    221	Stack exhaustion on invocation of function in non-existing package	ehuelsmann	defect	blocker	interpreter	
+    234	ABCL-ASDF mvn errors with VERSION slot unbound	mevenson	defect	blocker	ASDF	1.1.0-dev
+    237	JNA fails to load blocking CFFI	mevenson	defect	blocker	libraries	1.1.0-dev
+    249	Problems under Ubuntu	mevenson	defect	blocker	libraries	1.1.0-dev
+    250	SYS:SHA256 does not compile	ehuelsmann	defect	blocker	build	1.1.0-dev
+    265	COMPILE-FILE.2 COMPILE-FILE.2A ANSI regression	ehuelsmann	defect	blocker	compiler	1.1.0-dev
+    268	ABCL-ASDF working with maven-3.0.3	mevenson	defect	blocker	libraries	
+    269	SLIME cannot browse systems with November Quicklisp	somebody	defect	blocker	other	1.1.0-dev
+    270	Is BUGS.DEFEGENERIC.1 a valid test?	rschlatte	defect	blocker	(A)MOP	1.1.0-dev
+    271	ASDF-2.26 changes synced upstream	mevenson	defect	blocker	other	1.1.0-dev
+    272	DESCRIBE.[14] ANSI regression	rschlatte	defect	blocker	(A)MOP	1.1.0-dev
+    275	ABCL-CONTRIB still provided if abcl-contrib.jar cannot be located	mevenson	defect	blocker	abcl-contrib	1.1.0-dev
+    276	defmethod doesn't call add-method	rschlatte	defect	blocker	(A)MOP	
+    277	reinitialize-instance on class metaobjects incorrect	rschlatte	defect	blocker	(A)MOP	
+    113	DEFSTRUCT redefinition can crash ABCL on MAKE-STRUCT	mevenson	defect	critical	java	
+    199	CL:DEFMETHOD fails for &AUX arguments that reference other arguments	mevenson	defect	critical	CLOS	1.1.0-dev
+    213	ABCL-ASDF breakage on trunk	mevenson	defect	critical	interpreter	1.1.0-dev
+    215	ABCL-ASDF:RESOLVE should work in more (some?) cases	mevenson	defect	critical	other	1.1.0-dev
+    229	JSS method resolution failure	mevenson	defect	critical	java	1.1.0-dev
+    246	CFFI: dynamically generated classes referred from .fasl can not be found after ABCL restart	mevenson	defect	critical	libraries	1.1.0-dev
+    168	Compilation fails for quicklisp let-plus	ehuelsmann	defect	major	compiler	
+    187	Stack Overflow for Worst-case Vector Sort	nobody	defect	major	java	1.0
+    202	ENSURE-GENERIC-FUNCTION assumes LAMBDA-LIST is NIL	ehuelsmann	defect	major	(A)MOP	1.1.0-dev
+    204	abcl-asdf maybe-parse-mvn ignores version information	mevenson	defect	major	libraries	1.1.0-dev
+    205	JSS logic for resolving methods a little wonky (could use better diagnostics on why resolution has failed)	mevenson	defect	major	libraries	1.0.1
+    207	DECLARE should signal conditions when type declarations are violated	ehuelsmann	defect	major	interpreter	1.1.0-dev
+    210	Add JFLI to contrib	mevenson	enhancement	major	libraries	
+    217	ANSI tests wont run on Revision 14011: /trunk/abcl	rschlatte	defect	major	build	1.1.0-dev
+    219	Keyword argument checking for lambda lists is too lenient for ANSI	ehuelsmann	defect	major	interpreter	1.0.1
+    220	Lambda list checking too lenient	nobody	defect	major	java	1.1.0-dev
+    224	Autoloader fails when *read-XXXX* variables bound to non-standard values	nobody	defect	major	java	1.1.0-dev
+    225	One of the paths in STD-COMPUTE-DISCRIMINATING function not working	somebody	defect	major	CLOS	
+    235	Compiled cl+ssl sources not reloadable	mevenson	defect	major	compiler	1.1.0-dev
+    241	&rest and &aux can't coexist anymore in lambda lists	ehuelsmann	defect	major	compiler	
+    243	ClassCastException in MAKE-PATHNAME	mevenson	defect	major	java	1.1.0-dev
+    245	Slots of a class with a custom meta-class are reported as unbound.	rschlatte	defect	major	(A)MOP	
+    247	CFFI: $Proxy3 is not assignable to com.sun.jna.Pointer	mevenson	defect	major	libraries	1.1.0-dev
+    252	MOP rework broke profiler?	ehuelsmann	defect	major	(A)MOP	1.1.0-dev
+    254	Cannot load ASDF systems in jar archives with ASDF-BINARY-LOCATIONS-COMPATIBILTY enabled	mevenson	defect	major	ASDF	1.1.0-dev
+    255	ASDF file encoding specification doesn't work	mevenson	defect	major	ASDF	1.1.0-dev
+    263	loading systems from abcl-contrib fails if CLASSPATH has a component with wildcard	mevenson	defect	major	abcl-contrib	1.1.0-dev
+    264	abcl-asdf.asd broken since revision 14233	mevenson	defect	major	abcl-contrib	1.1.0-dev
+    60	Implement USE-FAST-CALLS properly	ehuelsmann	defect	minor	compiler	
+    130	"SLIME under Windows has ""extra"" CRLF"	mevenson	defect	minor	other	
+    172	DOCUMENTATION does not work for generic functions	ehuelsmann	defect	minor	interpreter	0.27
+    174	Conformance bug in time implementation when using SLIME	mevenson	defect	minor	other	0.27
+    175	abcl.release target fails occasionally	unassigned	defect	minor	build	0.27
+    189	Compiler fails for 'unsigned-byte type declaration	ehuelsmann	defect	minor	compiler	1.0
+    201	&WHOLE broken in DEFINE-METHOD-COMBINATION	somebody	defect	minor	CLOS	1.1.0-dev
+    206	COMPILER-UNSUPPORTED-FEATURE-ERROR is derived from CONDITION, rather than from ERROR	ehuelsmann	defect	minor	compiler	
+    208	"Files loaded via ""--load <FILE>"" on the command line have no pathname defaults"	ehuelsmann	defect	minor	interpreter	1.1.0-dev
+    211	closure-common fails to load correctly after compilation	mevenson	defect	minor	compiler	1.1.0-dev
+    214	Stack overflow when compiler macro with fallback is triggered	ehuelsmann	defect	minor	compiler	1.0.1
+    232	Allow wrapper script to reference install directory instead of build directory	mevenson	enhancement	minor	build	1.1.0-dev
+    192	ASDF::IMPLEMENTATION-IDENTIFIER contains ABCL build environment identifier	mevenson	defect	trivial	ASDF	1.0.1
+    195	prompt is displayed twice when evaluating NIL at the REPL	vvoutilainen	defect	trivial	interpreter	
 
 
 Version 1.0.1
