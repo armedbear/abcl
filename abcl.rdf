@@ -21,9 +21,8 @@
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
   dc:modified          "06-DEC-2012" ;
-
-<> dc:version           "abcl-1.2.0" .
-<>  a abcl:release   "dev" .
+  dc:version           "abcl-1.2.0" ;
+  abcl:release   "dev" .
 
 <> 
   rdfs:seeAlso <file:README> ;
