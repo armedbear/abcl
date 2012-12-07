@@ -42,6 +42,7 @@
 ;;;; bytes, running digest over that concatentation
 (defun sha256 (&rest paths-or-strings) ;;; XXX more than one arg is very broken.
   "Returned ASCIIfied representation of SHA256 digest of byte-based resource at PATHS-OR-STRINGs." 
+  (warn "Unaudited computatation of cryptograhpical digest initiated.") ;; TODO Need tests with some tool for verification
   (let ((first (first paths-or-strings))
         (rest (rest paths-or-strings)))
     (concatenate 'string 
