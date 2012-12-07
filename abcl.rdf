@@ -20,7 +20,7 @@
   dc:identifier        <urn:abcl.org/release/1.1.0> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "06-DEC-2012" ;
+  dc:modified          "07-DEC-2012" ;
   dc:version           "abcl-1.2.0" ;
   abcl:release   "dev" .
 
@@ -112,7 +112,9 @@ doap:Project rdfs:seeAlso [
 doap:Project rdfs:seeAlso 
   <http://trac.common-lisp.net/armedbear/timeline> , 
   <http://trac.common-lisp.net/armedbear/wiki> , 
-  <http://code.google.com/p/abcl-dynamic-install/> .
+  <http://code.google.com/p/abcl-dynamic-install/> ,
+  <svn://common-lisp.net/project/armedbear/svn/tags/1.1.0/abcl/> ,
+  <svn://common-lisp.net/project/armedbear/svn/trunk/abcl/> .
 
 <> doap:packages 
    abcl:abcl-contrib ;
