@@ -90,8 +90,9 @@ doap:Project rdfs:seeAlso [
   dc:source   abcl:tag ;
   dc:Software [ 
      a rdf:Bag;
-     rdf:_1 <urn:abcl:previousVersion> ; 
-     rdf:_2 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.0-rc-2.jar> 
+     rdf:_1 <urn:abcl:previousVersion> ;
+     rdf:_2 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.0.1.jar> ;
+     rdf:_3 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.0-rc-2.jar> 
   ] ;
 ] .
 
@@ -115,6 +116,7 @@ doap:Project rdfs:seeAlso
   <http://code.google.com/p/abcl-dynamic-install/> ,
   <svn://common-lisp.net/project/armedbear/svn/tags/1.1.0/abcl/> ,
   <svn://common-lisp.net/project/armedbear/svn/trunk/abcl/> .
+
 
 <> doap:packages 
    abcl:abcl-contrib ;
