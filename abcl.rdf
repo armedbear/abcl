@@ -55,11 +55,11 @@
 
 <abcl:doap> 
   dc:contributor [ 
-    a rdf:Alt;
+    a rdf:Bag;
     rdf:_1 _:ehu ;  
     rdf:_2 _:easye ;
     rdf:_3 _:ville ;
-    rdf:_4 _:astala ;
+    rdf:_4 _:astalla ;
     rdf:_5 _:rudi 
 ] .
 
