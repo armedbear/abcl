@@ -35,10 +35,6 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -1241,75 +1237,6 @@ public final class Java
         }
     };
 
-    private static final Primitive JGET_PROPERTY_VALUE = new pf__jget_property_value();
-    @DocString(name="%jget-propety-value", args="java-object property-name",
-    doc="Gets a JavaBeans property on JAVA-OBJECT.\n" +
-        "SYSTEM-INTERNAL: Use jproperty-value instead.")
-    private static final class pf__jget_property_value extends Primitive
-    {
-        pf__jget_property_value() 
-        {
-	    super("%jget-property-value", PACKAGE_JAVA, false,
-                  "java-object property-name");
-        }
-    	
-        @Override
-        public LispObject execute(LispObject javaObject, LispObject propertyName) {
-			try {
-				Object obj = javaObject.javaInstance();
-				PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
-				Object value = pd.getReadMethod().invoke(obj);
-				if(value instanceof LispObject) {
-				    return (LispObject) value;
-				} else if(value != null) {
-				    return JavaObject.getInstance(value, true);
-				} else {
-				    return NIL;
-				}
-			} catch (Exception e) {
-                return error(new JavaException(e));
-			}
-        }
-    };
-    
-    private static final Primitive JSET_PROPERTY_VALUE = new pf__jset_property_value();
-    @DocString(name="%jset-propety-value", args="java-object property-name value",
-    doc="Sets a JavaBean property on JAVA-OBJECT.\n" +
-        "SYSTEM-INTERNAL: Use (setf jproperty-value) instead.")
-    private static final class pf__jset_property_value extends Primitive
-    {
-        pf__jset_property_value()
-        {
-	    super("%jset-property-value", PACKAGE_JAVA, false,
-                  "java-object property-name value");
-        }
-    	
-        @Override
-        public LispObject execute(LispObject javaObject, LispObject propertyName, LispObject value) {
-	    Object obj = null;
-	    try {
-		obj = javaObject.javaInstance();
-		PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
-		Object jValue;
-		//TODO maybe we should do this in javaInstance(Class)
-		if(value instanceof JavaObject) {
-		    jValue = value.javaInstance();
-		} else {
-		    if(Boolean.TYPE.equals(pd.getPropertyType()) ||
-		       Boolean.class.equals(pd.getPropertyType())) {
-			jValue = value != NIL;
-		    } else {
-			jValue = value != NIL ? value.javaInstance() : null;
-		    }
-		}
-		pd.getWriteMethod().invoke(obj, jValue);
-		return value;
-	    } catch (Exception e) {
-            return error(new JavaException(e));
-	    }
-        }
-    };
-
     private static final Primitive JRUN_EXCEPTION_PROTECTED = new pf_jrun_exception_protected();
     @DocString(name="jrun-exception-protected", args="closure",
     doc="Invokes the function CLOSURE and returns the result.  "+
@@ -1338,19 +1265,6 @@ public final class Java
         }
     };
 
-    static PropertyDescriptor getPropertyDescriptor(Object obj, LispObject propertyName) throws IntrospectionException {
-        String prop = ((AbstractString) propertyName).getStringValue();
-        BeanInfo beanInfo = Introspector.getBeanInfo(obj.getClass());
-        for(PropertyDescriptor pd : beanInfo.getPropertyDescriptors()) {
-        	if(pd.getName().equals(prop)) {
-        		return pd;
-        	}
-        }
-        error(new LispError("Property " + prop + " not found in " + obj));
-
-        return null; // not reached
-    }
-    
     private static Class classForName(String className) {
 	return classForName(className, JavaClassLoader.getPersistentInstance());
     }
