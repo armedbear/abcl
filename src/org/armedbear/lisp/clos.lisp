@@ -675,11 +675,12 @@
 ;;; Slot inheritance
 
 (defun std-compute-slots (class)
-  (let* ((all-slots (nreverse ;; Slots of base class should come first
-                     (mapappend #'(lambda (c) (reverse (class-direct-slots c)))
-                                (reverse (class-precedence-list class)))))
-         (all-names (remove-duplicates
-                     (mapcar 'slot-definition-name all-slots))))
+  (let* ((all-slots (mapappend #'(lambda (c) (class-direct-slots c))
+                               ;; Slots of base class must come first
+                               (reverse (class-precedence-list class))))
+         (all-names (delete-duplicates
+                     (mapcar 'slot-definition-name all-slots)
+                     :from-end t)))
     (mapcar #'(lambda (name)
                (funcall
                 (if (eq (class-of class) +the-standard-class+)
@@ -687,9 +688,12 @@
                     #'compute-effective-slot-definition)
                 class
                 name
-                (remove name all-slots
-                        :key 'slot-definition-name
-                        :test-not #'eq)))
+                ;; Slot of inherited class must override initfunction,
+                ;; documentation of base class
+                (nreverse
+                 (remove name all-slots
+                         :key 'slot-definition-name
+                         :test-not #'eq))))
             all-names)))
 
 (defun std-compute-effective-slot-definition (class name direct-slots)
