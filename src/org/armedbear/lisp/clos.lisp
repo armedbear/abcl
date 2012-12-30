@@ -1825,8 +1825,8 @@ compare the method combination name to the symbol 'standard.")
 
 (defun make-instance-standard-generic-function (generic-function-class
                                                 &key name lambda-list
-                                                method-class
-                                                method-combination
+                                                (method-class +the-standard-method-class+)
+                                                (method-combination +the-standard-method-combination+)
                                                 argument-precedence-order
                                                 declarations
                                                 documentation)
@@ -1834,6 +1834,11 @@ compare the method combination name to the symbol 'standard.")
   (declare (ignore generic-function-class))
   (check-argument-precedence-order lambda-list argument-precedence-order)
   (let ((gf (std-allocate-instance +the-standard-generic-function-class+)))
+    (unless (classp method-class) (setf method-class (find-class method-class)))
+    (unless (typep method-combination 'method-combination)
+      (setf method-combination
+            (find-method-combination
+             gf (car method-combination) (cdr method-combination))))
     (%set-generic-function-name gf name)
     (%set-generic-function-lambda-list gf lambda-list)
     (set-generic-function-initial-methods gf ())
@@ -4370,6 +4375,7 @@ or T when any keyword is acceptable due to presence of
 (defmethod shared-initialize :after ((instance standard-generic-function)
                                      slot-names
                                      &key lambda-list argument-precedence-order
+                                       (method-combination '(standard))
                                      &allow-other-keys)
   (let* ((plist (analyze-lambda-list lambda-list))
          (required-args (getf plist ':required-args)))
@@ -4377,11 +4383,13 @@ or T when any keyword is acceptable due to presence of
     (%set-gf-optional-args instance (getf plist :optional-args))
     (set-generic-function-argument-precedence-order
      instance (or argument-precedence-order required-args)))
-  (when (eq (generic-function-method-combination instance) 'standard)
-    ;; fix up "naked" (make-instance 'standard-generic-function) -- gfs
-    ;; created via defgeneric have that slot initalized properly
-    (set-generic-function-method-combination instance
-                                             +the-standard-method-combination+))
+  (unless (typep (generic-function-method-combination instance)
+                 'method-combination)
+    ;; this fixes (make-instance 'standard-generic-function) -- the
+    ;; constructor of StandardGenericFunction sets this slot to '(standard)
+    (setf (generic-function-method-combination instance)
+          (find-method-combination
+           instance (car method-combination) (cdr method-combination))))
   (finalize-standard-generic-function instance))
 
 ;;; Readers for generic function metaobjects
@@ -4587,19 +4595,11 @@ or T when any keyword is acceptable due to presence of
                                                 function-name
                                                 &rest all-keys
                                                 &key (generic-function-class +the-standard-generic-function-class+)
-                                                  (method-class +the-standard-method-class+)
-                                                  (method-combination +the-standard-method-combination+)
                                                 &allow-other-keys)
   (setf all-keys (copy-list all-keys))  ; since we modify it
   (remf all-keys :generic-function-class)
   (unless (classp generic-function-class)
     (setf generic-function-class (find-class generic-function-class)))
-  (unless (classp method-class) (setf method-class (find-class method-class)))
-  (unless (typep method-combination 'method-combination)
-    (setf method-combination
-          (find-method-combination (class-prototype generic-function-class)
-                                   (car method-combination)
-                                   (cdr method-combination))))
   (when (and (null *clos-booting*) (fboundp function-name))
     (if (autoloadp function-name)
         (fmakunbound function-name)
@@ -4609,11 +4609,7 @@ or T when any keyword is acceptable due to presence of
   (apply (if (eq generic-function-class +the-standard-generic-function-class+)
              #'make-instance-standard-generic-function
              #'make-instance)
-         generic-function-class
-         :name function-name
-         :method-class method-class
-         :method-combination method-combination
-         all-keys))
+         generic-function-class :name function-name all-keys))
 
 (defun ensure-generic-function (function-name &rest all-keys
                                 &key
