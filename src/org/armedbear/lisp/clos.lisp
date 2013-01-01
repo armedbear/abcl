@@ -1,7 +1,7 @@
 ;;; clos.lisp
 ;;;
 ;;; Copyright (C) 2003-2007 Peter Graves
-;;; Copyright (C) 2010 Mark Evenson
+;;; Copyright (C) 2010-2013 Mark Evenson
 ;;; $Id$
 ;;;
 ;;; This program is free software; you can redistribute it and/or
@@ -3253,133 +3253,6 @@ instance and, for setters, `new-value' the new value."
                                 &rest initargs)
   (declare (ignore initargs))
   +the-standard-writer-method-class+)
-
-(atomic-defgeneric documentation (x doc-type)
-    (:method ((x symbol) doc-type)
-        (%documentation x doc-type))
-    (:method ((x function) doc-type)
-        (%documentation x doc-type)))
-
-(atomic-defgeneric (setf documentation) (new-value x doc-type)
-    (:method (new-value (x symbol) doc-type)
-        (%set-documentation x doc-type new-value))
-    (:method (new-value (x function) doc-type)
-        (%set-documentation x doc-type new-value)))
-
-
-;; FIXME This should be a weak hashtable!
-(defvar *list-documentation-hashtable* (make-hash-table :test #'equal))
-
-(defmethod documentation ((x list) (doc-type (eql 'function)))
-  (let ((alist (gethash x *list-documentation-hashtable*)))
-    (and alist (cdr (assoc doc-type alist)))))
-
-(defmethod documentation ((x list) (doc-type (eql 'compiler-macro)))
-  (let ((alist (gethash x *list-documentation-hashtable*)))
-    (and alist (cdr (assoc doc-type alist)))))
-
-(defmethod (setf documentation) (new-value (x list) (doc-type (eql 'function)))
-  (let* ((alist (gethash x *list-documentation-hashtable*))
-         (entry (and alist (assoc doc-type alist))))
-    (cond (entry
-           (setf (cdr entry) new-value))
-          (t
-           (setf (gethash x *list-documentation-hashtable*)
-                 (push (cons doc-type new-value) alist)))))
-  new-value)
-
-(defmethod (setf documentation) (new-value (x list) (doc-type (eql 'compiler-macro)))
-  (let* ((alist (gethash x *list-documentation-hashtable*))
-         (entry (and alist (assoc doc-type alist))))
-    (cond (entry
-           (setf (cdr entry) new-value))
-          (t
-           (setf (gethash x *list-documentation-hashtable*)
-                 (push (cons doc-type new-value) alist)))))
-  new-value)
-
-(defmethod documentation ((x class) (doc-type (eql 't)))
-  (class-documentation x))
-
-(defmethod documentation ((x class) (doc-type (eql 'type)))
-  (class-documentation x))
-
-(defmethod (setf documentation) (new-value (x class) (doc-type (eql 't)))
-  (%set-class-documentation x new-value))
-
-(defmethod (setf documentation) (new-value (x class) (doc-type (eql 'type)))
-  (%set-class-documentation x new-value))
-
-(defmethod documentation ((x structure-class) (doc-type (eql 't)))
-  (%documentation x t))
-
-(defmethod documentation ((x structure-class) (doc-type (eql 'type)))
-  (%documentation x t))
-
-(defmethod (setf documentation) (new-value (x structure-class) (doc-type (eql 't)))
-  (%set-documentation x t new-value))
-
-(defmethod (setf documentation) (new-value (x structure-class) (doc-type (eql 'type)))
-  (%set-documentation x t new-value))
-
-(defmethod documentation ((x standard-generic-function) (doc-type (eql 't)))
-  (generic-function-documentation x))
-
-(defmethod (setf documentation) (new-value (x standard-generic-function) (doc-type (eql 't)))
-  (setf (generic-function-documentation x) new-value))
-
-(defmethod documentation ((x standard-generic-function) (doc-type (eql 'function)))
-  (generic-function-documentation x))
-
-(defmethod (setf documentation) (new-value (x standard-generic-function) (doc-type (eql 'function)))
-  (setf (generic-function-documentation x) new-value))
-
-(defmethod documentation ((x standard-method) (doc-type (eql 't)))
-  (method-documentation x))
-
-(defmethod (setf documentation) (new-value (x standard-method) (doc-type (eql 't)))
-  (setf (method-documentation x) new-value))
-
-(defmethod documentation ((x standard-slot-definition) (doc-type (eql 't)))
-  (slot-definition-documentation x))
-
-(defmethod (setf documentation) (new-value (x standard-slot-definition) (doc-type (eql 't)))
-  (setf (slot-definition-documentation x) new-value))
-
-(defmethod documentation ((x package) (doc-type (eql 't)))
-  (%documentation x doc-type))
-
-(defmethod (setf documentation) (new-value (x package) (doc-type (eql 't)))
-  (%set-documentation x doc-type new-value))
-
-(defmethod documentation ((x symbol) (doc-type (eql 'function)))
-  (if (and (fboundp x) (typep (fdefinition x) 'generic-function))
-      (documentation (fdefinition x) doc-type)
-      (%documentation x doc-type)))
-
-(defmethod (setf documentation) (new-value (x symbol) (doc-type (eql 'function)))
-  (if (and (fboundp x) (typep (fdefinition x) 'generic-function))
-      (setf (documentation (fdefinition x) 'function) new-value)
-      (%set-documentation x 'function new-value)))
-
-(defmethod documentation ((x symbol) (doc-type (eql 'type)))
-  (let ((class (find-class x nil)))
-    (if class
-        (documentation class t)
-        (%documentation x 'type))))
-
-(defmethod documentation ((x symbol) (doc-type (eql 'structure)))
-  (%documentation x 'structure))
-
-(defmethod (setf documentation) (new-value (x symbol) (doc-type (eql 'type)))
-  (let ((class (find-class x nil)))
-    (if class
-        (setf (documentation class t) new-value)
-        (%set-documentation x 'type new-value))))
-
-(defmethod (setf documentation) (new-value (x symbol)
-                                 (doc-type (eql 'structure)))
-  (%set-documentation x 'structure new-value))
 
 ;;; Applicable methods
 

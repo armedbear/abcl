@@ -343,6 +343,7 @@
                            "do-external-symbols.lisp"
                            "do-symbols.lisp"
                            "do.lisp"
+                           "documentation.lisp"
                            "dolist.lisp"
                            "dotimes.lisp"
                            "dribble.lisp"
