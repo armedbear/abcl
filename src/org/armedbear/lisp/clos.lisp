@@ -3843,6 +3843,17 @@ or T when any keyword is acceptable due to presence of
                                          &rest all-keys)
   (apply #'std-after-reinitialization-for-classes class all-keys))
 
+(defmethod reinitialize-instance :before ((gf standard-generic-function)
+                                          &key
+                                            (lambda-list nil lambda-list-supplied-p)
+                                          &allow-other-keys)
+  (when lambda-list-supplied-p
+    (unless (or (null (generic-function-methods gf))
+                (lambda-lists-congruent-p lambda-list
+                                          (generic-function-lambda-list gf)))
+      (error "The lambda list ~S is incompatible with the existing methods of ~S."
+             lambda-list gf))))
+
 (defmethod reinitialize-instance :after ((gf standard-generic-function)
                                          &rest all-keys)
   (map-dependents gf #'(lambda (dep) (update-dependent gf dep all-keys))))
@@ -4431,7 +4442,6 @@ or T when any keyword is acceptable due to presence of
      function-name
      &rest all-keys
      &key (generic-function-class (class-of generic-function))
-     (lambda-list nil lambda-list-supplied-p)
      (method-class (generic-function-method-class generic-function))
      (method-combination (generic-function-method-combination generic-function))
      &allow-other-keys)
@@ -4443,16 +4453,10 @@ or T when any keyword is acceptable due to presence of
   (unless (eq generic-function-class (class-of generic-function))
     (error "The class ~S is incompatible with the existing class (~S) of ~S."
            generic-function-class (class-of generic-function) generic-function))
-  (when lambda-list-supplied-p
-    (unless (or (null (generic-function-methods generic-function))
-                (lambda-lists-congruent-p lambda-list
-                                          (generic-function-lambda-list generic-function)))
-      (error "The lambda list ~S is incompatible with the existing methods of ~S."
-             lambda-list generic-function)))
-  (unless (or (null (generic-function-methods generic-function))
-              (eq method-class (generic-function-method-class generic-function)))
-    (error "The method class ~S is incompatible with the existing methods of ~S."
-           method-class generic-function))
+  ;; We used to check for changes in method class here, but CLHS says:
+  ;; "If function-name specifies a generic function that has a different
+  ;; value for the :method-class argument, the value is changed, but any
+  ;; existing methods are not changed."
   (unless (typep method-combination 'method-combination)
     (setf method-combination
           (find-method-combination generic-function
