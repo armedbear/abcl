@@ -1,0 +1,1722 @@
+\input texinfo
+@setfilename abcl.info
+@settitle Armed Bear Common Lisp User Manual
+@afourpaper
+@set EDITION 1.1.0
+
+
+@c Editing Hints
+@c
+@c Use emacs.  Use M-x texinfo-all-menus-update to update menus.
+
+
+@c Some index prettification helper macros, for tricking the texindex
+@c collation "engine" (from sbcl's manual)
+@macro earmuffs{name}
+*\name\*
+@end macro
+@macro setf{name}
+(setf \name\)
+@end macro
+
+
+
+@c for install-info
+@dircategory Software development
+@direntry
+* abcl: (abcl).           Armed Bear Common Lisp
+@end direntry
+
+@copying
+@quotation
+This manual is part of ABCL.  ABCL is licensed under the terms of the
+GPL v2 of June 1991 with the ``classpath-exception'' (see the file
+@file{COPYING} in the source distribution for the license, term 13 in
+the same file for the classpath exception).  This license broadly means
+that you must distribute the sources to ABCL, including any changes you
+make, together with a program that includes ABCL, but that you are not
+required to distribute the sources of the whole program.  Submitting
+your changes upstream to the ABCL development team is actively
+encouraged and very much appreciated, of course.
+@end quotation
+@end copying
+
+
+@titlepage
+@title Armed Bear Common Lisp User Manual
+@subtitle Version 1.1.0
+@subtitle December 5, 2012
+@author Mark Evenson
+@author Erik H@"ulsmann
+@author Rudolf Schlatte
+@author Alessio Stalla
+@author Ville Voutilainen
+
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@ifnottex
+
+@node Top
+@top abcl
+
+@menu
+* Introduction::
+* Running ABCL::
+* Interaction with Java::
+* Implementation Dependent Extensions::
+* Beyond ANSI::
+* Contrib::
+* History::
+* Concept Index::
+* Function Index::
+* Variable Index::
+* Type Index::
+* Colophon::
+@end menu
+
+@end ifnottex
+
+@contents
+
+
+
+
+@node Introduction
+@chapter Introduction
+
+Armed Bear Common Lisp (ABCL) is an implementation of Common Lisp that
+runs on the Java Virtual Machine.  It compiles Common Lisp to Java 5
+bytecode, providing the following integration methods for interfacing
+with Java code and libraries:
+
+@itemize
+@item
+Lisp code can create Java objects and call their methods.  @xref{Calling
+from Lisp to Java}.
+@item
+Java code can call Lisp functions and generic functions, either directly
+(@pxref{Calling from Java to Lisp}) or via @t{JSR-223} (@pxref{Java
+Scripting API (JSR-223)}).
+@item
+@code{jinterface-implementation} creates Lisp-side implementations of
+Java interfaces that can be used as listeners for Swing classes and
+similar.
+@end itemize
+
+ABCL is supported by the Lisp library manager QuickLisp
+(@url{http://quicklisp.org/}) and can run many of the programs and
+libraries provided therein out-of-the-box.
+
+
+@menu
+* Conformance::
+* Contributors::
+@end menu
+
+@node Conformance
+@section Conformance
+
+ABCL aims to be be a fully conforming ANSI Common Lisp implementation.
+Any other behavior should be reported as a bug.  ABCL is currently a
+(non)-conforming ANSI Common Lisp implementation due to the following
+known issues:
+
+@itemize
+@item
+The generic function signatures of the @code{DOCUMENTATION} symbol do
+not match the specification.
+
+@item
+The @code{TIME} form does not return a proper @code{VALUES} environment
+to its caller.
+
+@item
+When merging pathnames and the defaults point to a @code{JAR-PATHNAME},
+we set the @code{DEVICE} of the result to @code{:UNSPECIFIC} if the
+pathname to be be merged does not contain a specified @code{DEVICE},
+does not contain a specified @code{HOST}, does contain a relative
+@code{DIRECTORY}, and we are not running on a MSFT Windows
+platform.@footnote{The intent of this rather arcane sounding deviation
+from conformance is so that the result of a merge won't fill in a
+@code{DEVICE} with the wrong "default device for the host" in the sense
+of the fourth paragraph in the CLHS description of
+@code{MERGE-PATHNAMES} (see the paragraph beginning "If the
+@code{PATHNAME} explicitly specifies a host and not a device@dots{}").
+A future version of the implementation may return to conformance by
+using the @code{HOST} value to reflect the type explicitly.}
+
+@end itemize
+
+Somewhat confusingly, this statement of non-conformance in the
+accompanying user documentation fulfills the requirements that ABCL is a
+conforming ANSI Common Lisp implementation according to the Common Lisp
+HyperSpec.  Clarifications to this point are solicited.
+
+
+@menu
+* Contemporary Common Lisp::
+@end menu
+
+@node Contemporary Common Lisp
+@subsection Contemporary Common Lisp
+
+In addition to ANSI conformance, ABCL strives to implement features
+expected of a contemporary Common Lisp, i.e. a Lisp of the post-2005
+Renaissance.
+
+The following known problems detract from ABCL being a proper
+contemporary Common Lisp.
+
+@itemize
+
+@item
+An incomplete implementation of interactive debugging mechanisms, namely
+a no-op version of @code{STEP}, no support for inspecting local
+variables in a given call frame, and no support for resuming a halted
+computation at an arbitrarily selected call frame.
+
+@item
+Incomplete streams abstraction, in that ABCL needs suitable abstraction
+between ANSI and Gray streams.  The streams could be optimized to the
+JVM NIO abstractions at great profit for binary byte-level
+manipulations.
+
+@item
+Incomplete documentation (missing docstrings from exported symbols
+and the draft status of this user manual).
+
+@end itemize
+
+
+@node Contributors
+@section Contributors
+
+@itemize
+@item
+Philipp Marek (Thanks for the markup)
+
+@item
+Douglas Miles (Thanks for the whacky IKVM stuff and for keeping the
+flame alive in the dark years)
+
+@item
+Alan Ruttenberg (Thanks for JSS)
+
+@item
+and of course
+@emph{Peter Graves}
+@end itemize
+
+
+
+
+@node Running ABCL
+@chapter Running ABCL
+
+ABCL is packaged as a single jar file usually named either
+@file{abcl.jar} or possibly something like @file{abcl-1.1.0.jar} if
+using a versioned package on the local filesystem from your system
+vendor.  This jar file can be executed from the command line to obtain a
+REPL@footnote{Read-Eval Print Loop, a Lisp command-line}, viz:
+
+@example
+cmd$ java -jar abcl.jar
+@end example
+
+@emph{N.b.} for the proceeding command to work, the @code{java}
+executable needs to be in your path.
+
+To facilitate the use of ABCL in tool chains such as SLIME, the Superior
+Lisp Interaction Mode for Emacs, we provide both a Bourne shell script
+and a @code{DOS} batch file.  If you or your administrator adjusted the
+path properly, ABCL may be executed simply as:
+
+@example
+cmd$ abcl
+@end example
+
+Probably the easiest way of setting up an editing environment using the
+Emacs editor is to use QuickLisp and follow the instructions at
+@url{http://www.quicklisp.org/beta/#slime}.
+
+
+@menu
+* Options::
+* Initialization::
+@end menu
+
+@node Options
+@section Options
+
+ABCL supports the following command line options:
+
+@table @option
+@item --help
+displays a help message.
+
+@item --noinform
+Suppresses the printing of startup information and banner.
+
+@item --noinit
+suppresses the loading of the @file{~/.abclrc} startup file.
+
+@item --nosystem
+suppresses loading the @file{system.lisp} customization file. 
+
+@item --eval FORM
+evaluates @var{FORM} before initializing the REPL.
+
+@item --load FILE
+loads the file @var{FILE} before initializing the REPL.
+
+@item --load-system-file FILE
+loads the system file @var{FILE} before initializing the REPL.
+
+@item --batch
+evaluates forms specified by arguments and in the initialization file
+@file{~/.abclrc}, and then exits without starting a REPL.
+@end table
+
+All other command line arguments, as well as all arguments following the
+occurrence of a double hyphen (@option{--}) are passed unprocessed into a
+list of strings accessible via the variable
+@var{ext:*command-line-argument-list*} from within ABCL.
+
+@defvar @earmuffs{command-line-argument-list}
+  This variable contains a (possibly empty) list of command-line
+  arguments.  Any arguments that were processed already (e.g.,
+  @option{--load FILE}) are removed from this list.
+@end defvar
+
+
+@node Initialization
+@section Initialization
+
+If the ABCL process is started without the @samp{--noinit} flag, it
+attempts to load a file named @file{.abclrc} in the user's home
+directory and then interpret its contents.
+
+The user's home directory is determined by the value of the JVM system
+property @code{user.home}.  This value may or may not correspond
+to the value of the @env{HOME} system environment variable, at the
+discretion of the JVM implementation that ABCL finds itself
+hosted upon.
+
+
+
+@node Interaction with Java
+@chapter Interaction with Java
+
+ABCL is a Common Lisp implementation hosted on a Java Virtual Machine.
+This chapter describes the mechanisms by which the implementation
+interacts with that hosting mechanism.  This interactions can go in two
+directions: Lisp-to-Java and Java-to-Lisp.
+
+
+@menu
+* Calling from Lisp to Java::
+* Calling from Java to Lisp::
+* Java Scripting API (JSR-223)::
+@end menu
+
+@node Calling from Lisp to Java
+@section Calling from Lisp to Java
+
+ABCL offers a number of mechanisms to interact with Java from its
+Lisp environment. It allows calling both instance and static methods
+of Java objects, manipulation of instance and static fields on Java
+objects, and construction of new Java objects.
+
+When calling Java routines, some values are automatically converted from
+Lisp values to Java values.  These conversions apply to strings,
+integers and floats.  Other values need to be converted to their Java
+equivalents by the programmer before calling the Java object method.
+Java values returned to Lisp are also converted back to their Lisp
+counterparts.  If this conversion is not desired, certain Lisp-to-Java
+functions have ``raw'' counterparts which do not perform any conversion.
+These are recognizable by their name ending with @code{-RAW}.
+
+This section covers the low-level Lisp-to-Java API of ABCL.
+Functions in this section are available after evaluating @code{(require
+'JAVA)}.  A higher level Java API, developed by Alan Ruttenberg, is
+available in the @file{contrib/} directory and described later in this
+document, @pxref{JSS}.
+
+
+@menu
+* Creating Java objects::
+* Accessing Java object and class fields::
+* Calling Java Methods::
+* Calling Java Static Methods::
+* Parameter matching for FFI dynamic dispatch::
+* Implementating Java interfaces in Lisp::
+* Implementation of Java classes in Lisp::
+@end menu
+
+@node Creating Java objects
+@subsection Creating Java objects
+
+Java objects can be created from Lisp by calling a constructor from the
+class of the object to be created.  The @code{JAVA:JCONSTRUCTOR}
+primitive is used to acquire a constructor reference.
+
+@defun jconstructor (class-ref &rest parameter-class-refs)
+  Returns a reference to the Java constructor of @var{CLASS-REF}
+  accepting the given @var{PARAMETER-CLASS-REFS}.  If
+  @var{PARAMETER-CLASS-REFS} is a single integer, the first method with
+  the given number of parameters is returned instead.
+@end defun
+
+The obtained constructor can be passed as an argument to
+@code{JAVA:JNEW}, together with any arguments.  @code{JAVA:JNEW} can
+also be invoked with a string naming the class as its first argument.
+
+@defun jnew (constructor &rest args)
+  Creates a new Java object by invoking @var{CONSTRUCTOR} with arguments
+  @var{ARGS}.  @var{CONSTRUCTOR} can be a constructor reference or a
+  string naming a class.
+@end defun
+
+
+@node Accessing Java object and class fields
+@subsection Accessing Java object and class fields
+
+Fields in Java objects can be accessed using the getter and setter
+functions @code{JAVA:JFIELD} and @code{(SETF JAVA:JFIELD)}.  Static
+(class) fields are accessed the same way, but with a class object or
+string naming a class as first argument.
+
+Like @code{JAVA:JCALL} and friends, values returned from these accessors
+carry an intended class around, and values which can be converted to
+Lisp values will be converted.
+
+@defun jfield (class-ref-or-field field-or-instance @
+    &optional instance value)
+
+  Retrieves or modifies a field in a Java class or instance.
+
+  Supported argument patterns:
+
+  @table @code
+
+  @item class-ref  field-name
+  Retrieve the value of static field @var{field-name} of class
+  @var{class-ref}.
+
+  @item class-ref  field-name  instance-ref
+  Retrieves the value of a class field of the instance.
+
+  @item class-ref  field-name  primitive-value:
+  Stores @var{primitive-value} in static field @var{field-name}.
+
+  @item class-ref  field-name  instance-ref  value
+  Stores @var{value} in a class field of the instance.
+
+  @item class-ref  field-name  nil  value
+  Stores value in a static field (when value may be confused with an
+  instance-ref).
+
+  @item field-name  instance
+  Retrieves the value of a field of the instance. The class is derived
+  from the instance.
+
+  @item field-name  instance  value
+  Stores value in a field of the instance. The class is derived from the
+  instance.
+  @end table
+@end defun
+
+
+@node Calling Java Methods
+@subsection Calling Java Methods
+
+Methods on a java object method in the low-level (basic) API can be
+called in two ways:
+
+@itemize
+@item
+Calling a specific method reference (which was previously acquired)
+
+@item
+Dynamic dispatch using the method name and the call-specific arguments
+provided by finding the best match (@pxref{Parameter matching for FFI dynamic dispatch}).
+@end itemize
+
+@defun jmethod (class-ref method-name &rest parameter-class-refs)
+  Returns a reference to the Java method @var{method-name} of
+  @var{class-ref} accepting the given @var{parameter-class-refs}.  If
+  @var{parameter-class-refs} is a single integer, the first method with
+  the given number of parameters is returned instead.
+
+  The function @code{java:jmethod} is used to acquire a specific method
+  reference.  Its first argument is a Java class designator (a
+  @code{java:java-class} object returned by @code{java:jclass} or a
+  string naming a Java class). The second argument is a string naming
+  the method.
+
+  Any arguments beyond the first two should be strings naming Java
+  classes, with one exception as listed in the next paragraph. These
+  classes specify the types of the arguments for the method.
+
+  When @code{java:jmethod} is called with three parameters and the last
+  parameter is an integer, the first method by that name and matching
+  number of parameters is returned.
+@end defun
+
+Once a method reference has been acquired, it can be invoked using
+@code{java:jcall}, which takes the method as the first argument. The
+second argument is the object instance to call the method on, or
+@code{NIL} in case of a static method.  Any remaining parameters are
+used as the remaining arguments for the call.
+
+@defun jcall (method instance &rest args)
+@defunx jcall-raw (method instance &rest args)
+  Invokes the Java method @var{method} on @var{instance} with arguments
+  @var{args}.  @var{Method} can be a method reference acquired via
+  @code{jmethod} or a string naming a method.  The @code{-raw} version
+  does not attempt to coerce the arguments or result into a Lisp object.
+@end defun
+
+
+@node Calling Java Static Methods
+@subsection Calling Java Static Methods
+
+Like non-static methods, references to static (class) methods can be
+acquired by using the @code{java:jmethod} primitive. Static methods are
+called with @code{java:jstatic} instead of @code{java:jcall}.
+
+@defun jstatic (method class &rest args)
+@defunx jstatic-raw (method class &rest args)
+  Invoke the static method @var{method} on class @var{class} with
+  @var{args}.  The @code{-raw} version does not attempt to coerce the
+  arguments or result into a Lisp object.
+@end defun
+
+Like @code{java:jcall}, @code{java:jstatic} supports dynamic dispatch by
+passing the name of the method as a string instead of passing a method
+reference.  The parameter values should be values to pass in the
+function call instead of a specification of classes for each parameter.
+
+
+@node Parameter matching for FFI dynamic dispatch
+@subsection Parameter matching for FFI dynamic dispatch
+
+The algorithm used to resolve the best matching method given the name
+and the arguments' types is the same as described in the Java Language
+Specification. Any deviation should be reported as a bug.
+
+@c % ###TODO reference to correct JLS section
+
+
+@menu
+* Dynamic dispatch Caveats::
+@end menu
+
+@node Dynamic dispatch Caveats
+@subsubsection Dynamic dispatch: Caveats
+
+Dynamic dispatch, i.e., invoking a Java method via method name instead
+of method reference, is performed by using the Java reflection API.
+Generally the dispatch works fine, but there are corner cases where the
+API does not correctly reflect all the details involved in calling a
+Java method.  An example is the following Java code:
+
+@example
+ZipFile jar = new ZipFile("/path/to/some.jar");
+Object els = jar.entries();
+Method method = els.getClass().getMethod("hasMoreElements");
+method.invoke(els);
+@end example
+
+Even though the method @code{hasMoreElements()} is public in
+@code{Enumeration}, the above code fails with
+
+@example
+java.lang.IllegalAccessException: Class ... can
+not access a member of class java.util.zip.ZipFile\$2 with modifiers
+"public"
+       at sun.reflect.Reflection.ensureMemberAccess(Reflection.java:65)
+       at java.lang.reflect.Method.invoke(Method.java:583)
+       at ...
+@end example
+
+This is because the method has been overridden by a non-public class and
+the reflection API, unlike @code{javac}, is not able to handle such a case.
+
+While code like that is uncommon in Java, it is typical of ABCL's FFI
+calls. The code above corresponds to the following Lisp code:
+
+@lisp
+(let* ((jar (jnew "java.util.zip.ZipFile" "/path/to/some.jar"))
+       (els (jcall "entries" jar)))
+  (jcall "hasMoreElements" els))
+@end lisp
+
+@noindent
+except that the dynamic dispatch part is not shown.
+
+To avoid such pitfalls, all Java objects in ABCL carry an extra field
+representing the ``intended class'' of the object. That class is used
+first by @code{JAVA:JCALL} and similar to resolve methods; the actual
+class of the object is only tried if the method is not found in the
+intended class. Of course, the intended class is always a super-class of
+the actual class -- in the worst case, they coincide. The intended class
+is deduced by the return type of the method that originally returned the
+Java object; in the case above, the intended class of @code{ELS} is
+@code{java.util.Enumeration} because that is the return type of the
+@code{entries} method.
+
+While this strategy is generally effective, there are cases where the
+intended class becomes too broad to be useful. The typical example
+is the extraction of an element from a collection, since methods in
+the collection API erase all types to @code{Object}. The user can
+always force a more specific intended class by using the @code{JAVA:JCOERCE}
+operator.
+
+@c % \begin{itemize}
+@c % \item Java values are accessible as objects of type JAVA:JAVA-OBJECT.
+@c % \item The Java FFI presents a Lisp package (JAVA) with many useful
+@c %   symbols for manipulating the artifacts of expectation on the JVM,
+@c %   including creation of new objects \ref{JAVA:JNEW}, \ref{JAVA:JMETHOD}), the
+@c %   introspection of values \ref{JAVA:JFIELD}, the execution of methods
+@c %   (\ref{JAVA:JCALL}, \ref{JAVA:JCALL-RAW}, \ref{JAVA:JSTATIC})
+@c % \item The JSS package (\ref{JSS}) in contrib introduces a convenient macro
+@c %   syntax \ref{JSS:SHARPSIGN_DOUBLEQUOTE_MACRO} for accessing Java
+@c %   methods, and additional convenience functions.
+@c % \item Java classes and libraries may be dynamically added to the
+@c %   classpath at runtime (JAVA:ADD-TO-CLASSPATH).
+@c % \end{itemize}
+
+
+@node Implementating Java interfaces in Lisp
+@subsection Implementating Java interfaces in Lisp
+
+ABCL can use the Java reflection-based proxy feature to implement Java
+interfaces in Lisp. It has several built-in ways to implement an
+interface, and supports definition of new ones. The
+@code{JAVA:JMAKE-PROXY} generic function is used to make such
+proxies. 
+
+@deffn {Generic Function} jmake-proxy interface implementation @
+    &optional lisp-this
+
+  Returns a proxy Java object implementing the provided interface(s)
+  using methods implemented in Lisp - typically closures, but
+  implementations are free to provide other mechanisms. 
+
+  @code{interface} is a Java interface metaobject (e.g. obtained by
+  invoking @code{jclass}), or a string naming a Java interface.
+  @code{implementation} is the object used to implement the interface --
+  several built-in methods of jmake-proxy exist for various types of
+  implementations.  @code{lisp-this} is an object passed as first
+  argument to the functions implementing the Lisp ``methods'' of the
+  interface, and defaults to @code{NIL}.
+
+  The @var{implementation} argument can be of type:
+
+  @table @code
+  @item function
+  The given function will be called with two or more arguments (method
+  name, @var{lisp-this}, method arguments if applicable) upon any method
+  invocation on the proxy object.  Useful for interfaces with a single
+  method, or to implement custom interface-implementation strategies.
+
+  @item hash-table
+
+  The Java interface method names are used as keys in the given hash
+  table to obtain the functions implementing them.  Functions will be
+  called with one or more arguments (@var{lisp-this}, method arguments
+  if applicable).
+
+  @item package
+  The Java interface method names are mapped to symbols in
+  @code{package}. A method called @code{javaMethodName} is mapped to a
+  Lisp symbol @code{JAVA-METHOD-NAME}. An error is signaled if no such
+  symbol exists in the package, or if the symbol exists but does not
+  name a function.  Functions will be called with one or more arguments
+  (@var{lisp-this}, method arguments if applicable).
+
+  @end table
+@end deffn
+
+The returned proxy is an instance of the interface, with methods
+implemented with Lisp functions, and can be passed to Java methods
+expecting an instance of the given interface.
+
+
+@node Implementation of Java classes in Lisp
+@subsection Implementation of Java classes in Lisp
+
+@defun jnew-runtime-class (class-name &rest args @
+     &key (superclass @code{java.lang.Object}) interfaces @
+     constructors methods fields (access-flags @code{'(public)}) @
+     annotations)
+
+  Creates and loads a Java class with methods calling Lisp closures as
+  given in @var{methods}.  @var{class-name} and @var{super-name} are
+  strings, @var{interfaces} is a list of strings, @var{constructors},
+  @var{methods} and @var{fields} are lists of constructor, method and
+  field definitions, respectively.
+
+  Constructor definitions - currently NOT supported - are lists of the
+  form @code{(argument-types function &optional
+  super-invocation-arguments)} where @var{argument-types} is a list of
+  strings and @var{function} is a lisp function of @code{(1+ (length
+  argument-types))} arguments; the instance (@code{this}) is passed in
+  as the last argument. The optional @var{super-invocation-arguments} is
+  a list of numbers between 1 and @code{(length argument-types)}, where
+  the number @var{k} stands for the @var{k}th argument to the just
+  defined constructor.  If present, the constructor of the superclass
+  will be called with the appropriate arguments.  E.g., if the
+  constructor definition is @code{(("java.lang.String" "int") #'(lambda
+  (string i this) ...)  (2 1))} then the constructor of the superclass
+  with argument types @code{(int, java.lang.String)} will be called with
+  the second and first arguments.
+
+  Method definitions are lists of the form @code{(method-name
+  return-type argument-types function &key modifiers annotations)} where
+  @var{method-name} is a string, @var{return-type} and
+  @var{argument-types} are strings or keywords for primitive types
+  (@code{:void}, @code{:int}, etc.), and @var{function} is a Lisp
+  function of minimum arity @code{(1+ (length argument-types))}; the
+  instance (@code{this}) is passed in as the first argument.
+
+  Field definitions are lists of the form @code{(field-name type &key
+  modifiers annotations)}.
+@end defun
+
+
+@node Calling from Java to Lisp
+@section Calling from Java to Lisp
+
+This section describes the various ways that one interacts with Lisp
+from Java code.  In order to access the Lisp world from Java, one needs
+to be aware of a few things, the most important ones being listed below:
+
+@itemize
+@item
+All Lisp values are descendants of @code{LispObject}.
+
+@item
+Lisp symbols are accessible either via static members of the
+@code{Symbol} class, or by dynamically introspecting a @code{Package}
+object.
+
+@item
+The Lisp dynamic environment may be saved via
+@code{LispThread.bindSpecial(Binding)} and restored via
+@code{LispThread.resetSpecialBindings(Mark)}.
+
+@item
+Functions can be executed by invoking @code{LispObject.execute(args
+    [...])}
+
+@end itemize
+
+
+@menu
+* Acquiring an Interpreter Object::
+* Evaluating Lisp Forms::
+* Calling Common Lisp Functions Directly::
+* Introspecting a Lisp Object::
+@end menu
+
+@node Acquiring an Interpreter Object
+@subsection Acquiring an Interpreter Object
+
+The entire ABCL Lisp system resides in the
+@code{org.armedbear.lisp} package, but the following code snippets do
+not show the relevant import statements in the interest of brevity.  An
+example of the import statement would be
+@example
+import org.armedbear.lisp.*;
+@end example
+to potentially import all the JVM symbol from the
+@code{org.armedbear.lisp} namespace.
+
+There can only ever be a single Lisp interpreter per JVM instance.  A
+reference to this interpreter is obtained by calling the static method
+@code{Interpreter.createInstance()}.
+
+@example
+Interpreter interpreter = Interpreter.createInstance();
+@end example
+
+If this method has already been invoked in the lifetime of the current
+Java process it will return @code{null}, so if you are writing Java
+whose life-cycle is a bit out of your control (like in a Java servlet),
+a safer invocation pattern might be:
+
+@example
+Interpreter interpreter = Interpreter.getInstance();
+if (interpreter == null) @{
+  interpreter = Interpreter.createInstance();
+@}
+@end example
+
+
+@node Evaluating Lisp Forms
+@subsection Evaluating Lisp Forms
+
+The Lisp @code{eval} primitive may simply be passed strings for
+evaluation:
+
+@example
+String line = "(load \"file.lisp\")";
+LispObject result = interpreter.eval(line);
+@end example
+
+Notice that all possible return values from an arbitrary Lisp
+computation are collapsed into a single return value.  Doing useful
+further computation on the @code{LispObject} depends on knowing what the
+result of the computation might be.  This usually involves some amount
+of @code{instanceof} introspection, and forms a whole topic to itself
+(@pxref{Introspecting a Lisp Object}).
+
+Using @code{eval} involves the Lisp interpreter.  Lisp functions may
+also be directly invoked by Java method calls as follows.  One simply
+locates the package containing the symbol, obtains a reference to the
+symbol, and then invokes the @code{execute()} method with the desired
+parameters.
+
+@example
+interpreter.eval("(defun foo (msg)" +
+  "(format nil \"You told me '~A'~%\" msg))");
+Package pkg = Packages.findPackage("CL-USER");
+Symbol foo = pkg.findAccessibleSymbol("FOO"); 
+Function fooFunction = (Function)foo.getSymbolFunction();
+JavaObject parameter = new JavaObject("Lisp is fun!");
+LispObject result = fooFunction.execute(parameter);
+// How to get the "naked string value"?
+System.out.println("The result was " + result.writeToString()); 
+@end example
+
+
+@node Calling Common Lisp Functions Directly
+@subsection Calling Common Lisp Functions Directly
+
+If one is calling a function in the @var{CL} package, the syntax can
+become considerably simpler.  If we can locate the instance of
+definition in the ABCL Java source, we can invoke the symbol directly.
+For instance, to tell if a @code{LispObject} is (Lisp) @code{NIL}, we
+can invoke the CL function @code{NULL} in the following way:
+
+@example
+boolean nullp(LispObject object) @{
+  LispObject result = Primitives.NULL.execute(object);
+  if (result == NIL) @{ // the symbol 'NIL' is explicitly named in the Java
+                       // namespace at ``Symbol.NIL''
+                       // but is always present in the
+                       // local namespace in its unadorned form for
+                       // the convenience of the User.
+    return false;
+  @}
+  return true;
+@}
+@end example
+
+
+@node Introspecting a Lisp Object
+@subsection Introspecting a Lisp Object
+
+We present various patterns for introspecting an arbitrary
+@code{LispObject} which can hold the result of every Lisp evaluation
+into semantics that Java can meaningfully deal with.
+
+
+@menu
+* LispObject as boolean::
+* LispObject as a list::
+@end menu
+
+@node LispObject as boolean
+@subsubsection LispObject as @code{boolean}
+
+If the @code{LispObject} is to be interpreted as a generalized boolean
+value, one can use @code{getBooleanValue()} to convert to Java:
+
+@example
+LispObject object = Symbol.NIL;
+boolean javaValue = object.getBooleanValue();
+@end example
+
+Since in Lisp any value other than @code{NIL} means "true", Java
+equality can also be used, which is a bit easier to type and better in
+terms of information it conveys to the compiler:
+
+@example
+boolean javaValue = (object != Symbol.NIL);
+@end example
+
+
+@node LispObject as a list
+@subsubsection LispObject as a list
+
+If @code{LispObject} is a list, it will have the Java type @code{Cons}.
+One can then use the @code{copyToArray} method to make things a bit more
+suitable for Java iteration.
+
+@example
+LispObject result = interpreter.eval("'(1 2 4 5)");
+if (result instanceof Cons) @{
+  LispObject array[] = ((Cons)result.copyToArray());
+  ...
+@}
+@end example
+
+A more Lispy way to iterate down a list is to use the @code{cdr()}
+access function just as like one would traverse a list in Lisp:;
+
+@example
+LispObject result = interpreter.eval("'(1 2 4 5)");
+while (result != Symbol.NIL) @{
+  doSomething(result.car());
+  result = result.cdr();
+@}
+@end example
+
+
+@node Java Scripting API (JSR-223)
+@section Java Scripting API (JSR-223)
+
+ABCL can be built with support for JSR-223, which offers a
+language-agnostic API to invoke other languages from Java. The binary
+distribution from ABCL's homepage is built with JSR-223 support. If you
+are building ABCL from source on a pre-1.6 JVM, you need to have a
+JSR-223 implementation in your classpath (such as Apache Commons BSF 3.x
+or greater) in order to build ABCL with JSR-223 support; otherwise, this
+feature will not be built.
+
+This section describes the design decisions behind the ABCL JSR-223
+support. It is not a description of what JSR-223 is or a tutorial on how
+to use it. See
+@url{http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/jsr-223}
+for example usage.
+
+
+@menu
+* Conversions::
+* Implemented JSR-223 interfaces::
+* Start-up and configuration file::
+* Evaluation::
+* Compilation::
+* Invocation of functions and methods::
+* Creating Lisp interface proxies::
+@end menu
+
+@node Conversions
+@subsection Conversions
+
+In general, ABCL's implementation of the JSR-223 API performs implicit
+conversion from Java objects to Lisp objects when invoking Lisp from
+Java, and the opposite when returning values from Java to Lisp. This
+potentially reduces coupling between user code and ABCL. To avoid such
+conversions, wrap the relevant objects in @code{JavaObject} instances.
+
+
+@node Implemented JSR-223 interfaces
+@subsection Implemented JSR-223 interfaces
+
+JSR-223 defines three main interfaces, of which two (@code{Invocable}
+and @code{Compilable}) are optional. ABCL implements all three
+interfaces - @code{ScriptEngine} and the two optional ones - almost
+completely. While the JSR-223 API is not specific to a single scripting
+language, it was designed with languages with a more or less Java-like
+object model in mind: languages such as Javascript, Python, Ruby, which
+have a concept of "class" or "object" with "fields" and "methods". Lisp
+is a bit different, so certain adaptations were made, and in one case a
+method has been left unimplemented since it does not map at all to Lisp.
+
+
+@menu
+* The ScriptEngine object::
+@end menu
+
+@node The ScriptEngine object
+@subsubsection The ScriptEngine object
+
+The main interface defined by JSR-223, @code{javax.script.ScriptEngine},
+is implemented by the class
+@code{org.armedbear.lisp.scripting.AbclScriptEngine}. @code{AbclScriptEngine}
+is a singleton, reflecting the fact that ABCL is a singleton as
+well. You can obtain an instance of @code{AbclScriptEngine} using
+@code{AbclScriptEngineFactory} or by using the service provider
+mechanism through @code{ScriptEngineManager} (refer to the
+@code{javax.script} documentation).
+
+
+@node Start-up and configuration file
+@subsection Start-up and configuration file
+
+At start-up (i.e. when its constructor is invoked, as part of the static
+initialization phase of @code{AbclScriptEngineFactory}), the ABCL script
+engine attempts to load an "init file" from the classpath
+(@file{/abcl-script-config.lisp}). If present, this file can be used to
+customize the behavior of the engine, by setting a number of variables
+in the @code{ABCL-SCRIPT} package. Here is a list of the available
+variables:
+
+@defvar @earmuffs{use-throwing-debugger}
+controls whether ABCL uses a non-standard debugging hook function to
+throw a Java exception instead of dropping into the debugger in case of
+unhandled error conditions.
+
+Its default value is @code{T}, since it is more convenient for Java
+programmers using Lisp as a scripting language to have it return
+exceptions to Java instead of handling them in the Lisp world.
+
+Known issues: the non-standard debugger hook has been reported to
+misbehave in certain circumstances, so consider disabling it if it
+doesn't work for you.
+@end defvar
+
+@defvar @earmuffs{launch-swank-at-startup}
+If true, Swank will be launched at startup. See @code{*swank-dir*} and
+@code{*swank-port*}.  Default value: @code{NIL}.
+@end defvar
+
+@defvar @earmuffs{swank-dir}
+The directory where Swank is installed. Must be set if
+@code{*launch-swank-at-startup*} is true.
+@end defvar
+
+@defvar @earmuffs{swank-port}
+The port where Swank will listen for connections. Must be set if
+@code{*launch-swank-at-startup*} is true.  Default value: 4005
+@end defvar
+
+Additionally, at startup the @code{AbclScriptEngine} will execute
+@code{(require 'asdf)} - in fact, it uses asdf to load Swank.
+
+
+@node Evaluation
+@subsection Evaluation
+
+Code is read and evaluated in the package @code{ABCL-SCRIPT-USER}. This
+package uses the @code{COMMON-LISP}, @code{JAVA} and @code{ABCL-SCRIPT}
+packages. Future versions of the script engine might make thisf default
+package configurable. The @code{CL:LOAD} function is used under the hood
+for evaluating code, and thus the behavior of @code{LOAD} is
+guaranteed. This allows, among other things, @code{IN-PACKAGE} forms to
+change the package in which the loaded code is read.
+
+It is possible to evaluate code in what JSR-223 calls a
+``ScriptContext'' (basically a flat environment of name-to-value
+pairs). This context is used to establish special bindings for all the
+variables defined in it; since variable names are strings from Java's
+point of view, they are first interned using @code{READ-FROM-STRING}
+with, as usual, @code{ABCL-SCRIPT-USER} as the default
+package. Variables are declared special because CL's @code{LOAD},
+@code{EVAL} and @code{COMPILE} functions work in a null lexical
+environment and would ignore non-special bindings.
+
+Contrary to what the function @code{LOAD} does, evaluation of a series
+of forms returns the value of the last form instead of @code{T}, so the
+evaluation of short scripts does the Right Thing.
+
+
+@node Compilation
+@subsection Compilation
+
+@code{AbclScriptEngine} implements the @code{javax.script.Compilable}
+interface. Currently it only supports compilation using temporary
+files. Compiled code, returned as an instance of
+@code{javax.script.CompiledScript}, is read, compiled and executed by
+default in the @code{ABCL-SCRIPT-USER} package, just like evaluated
+code.  In contrast to evaluated code, though, due to the way the ABCL
+compiler works, compiled code contains no reference to top-level
+self-evaluating objects (like numbers or strings). Thus, when evaluated,
+a piece of compiled code will return the value of the last
+non-self-evaluating form: for example the code @code{(do-something) 42}
+will return 42 when interpreted, but will return the result of
+@code{(do-something)} when compiled and later executed. To ensure
+consistency of behavior between interpreted and compiled code, make sure
+the last form is always a compound form -- at least @code{(identity
+some-literal-object)}. Note that this issue should not matter in real
+code, where it is unlikely a top-level self-evaluating form will appear
+as the last form in a file (in fact, the Common Lisp load function
+always returns @code{T} upon success; with JSR-223 this policy has
+been changed to make evaluation of small code snippets work as
+intended).
+
+
+@node Invocation of functions and methods
+@subsection Invocation of functions and methods
+
+@code{AbclScriptEngine} implements the @code{javax.script.Invocable}
+interface, which allows to directly call Lisp functions and methods, and
+to obtain Lisp implementations of Java interfaces. This is only
+partially possible with Lisp since it has functions, but not methods --
+not in the traditional OO sense, at least, since Lisp methods belong to
+generic functions. Thus, the method @code{invokeMethod()} is not
+implemented and throws an @code{UnsupportedOperationException} when
+called. The @code{invokeFunction()} method is used to call both regular
+and generic functions.
+
+
+@node Creating Lisp interface proxies
+@subsection Creating Lisp interface proxies
+
+The functionality of @code{jmake-proxy} is exposed by the class
+@code{AbclScriptEngine} via the two methods @code{getInterface(Class)}
+and @code{getInterface(Object, Class)}. The former returns an interface
+implemented with the current Lisp package, the latter allows the
+programmer to pass an interface-implementation object which will in turn
+be passed to the @code{jmake-proxy} generic function.
+
+
+
+
+@node Implementation Dependent Extensions
+@chapter Implementation Dependent Extensions
+
+As outlined by the CLHS ANSI conformance guidelines, we document the
+extensions to the Armed Bear Lisp implementation made accessible to the
+user by virtue of being an exported symbol in the @code{JAVA},
+@code{THREADS}, or @code{EXTENSIONS} packages.
+
+
+@menu
+* Extensions in the JAVA package::
+* Extensions in the THREADS package::
+* Extensions in the EXT package::
+@end menu
+
+@node Extensions in the JAVA package
+@section Extensions in the JAVA package
+
+@c % include autogen docs for the JAVA package.
+@c \include{java}
+
+@node Extensions in the THREADS package
+@section Extensions in the THREADS package
+
+The extensions for handling multithreaded execution are collected in
+the @code{THREADS} package.  Most of the abstractions in Doug Lea's
+excellent @code{java.util.concurrent} packages may be manipulated
+directly via the JSS contrib to great effect.
+
+@c % include autogen docs for the THREADS package.
+@c \include{threads}
+
+@node Extensions in the EXT package
+@section Extensions in the EXT package
+
+The symbols in the @code{EXTENSIONS} package (nicknamed @code{EXT})
+constitutes extensions to the ANSI standard that are
+potentially useful to the user.  They include functions for manipulating
+network sockets, running external programs, registering object
+finalizers, constructing reference weakly held by the garbage collector
+and others.
+
+For a generic function interface to the native JVM contract for
+@code{java.util.List}, @pxref{Extensible Sequences}.
+
+@c % include autogen docs for the EXTENSIONS package.
+@c \include{extensions}
+
+@node Beyond ANSI
+@chapter Beyond ANSI
+
+Naturally, in striving to be a useful contemporary Common Lisp
+implementation, ABCL endeavors to include extensions beyond the ANSI
+specification which are either widely adopted or are especially useful
+in working with the hosting JVM.
+
+@menu
+* Modifying the JVM Classpath::
+* Compiler to Java 5 Bytecode::
+* Pathnames::
+* Extensible Sequences::
+* Extensions to CLOS::
+* Extensions to the Reader::
+* Overloading of the REQUIRE Mechanism::
+* JSS optionally extends the Reader::
+* ASDF::
+@end menu
+
+@node Modifying the JVM Classpath
+@section Modifying the JVM Classpath
+
+@deffn {Generic Function} add-to-classpath jar-or-jars @
+     &optional classloader
+
+  The @code{add-to-classpath} generic functions allows one to add a
+  pathname or list of pathnames to the current classpath used by ABCL,
+  allowing the dynamic loading of JVM objects:
+
+@lisp
+(add-to-classpath "/path/to/some.jar")
+@end lisp
+
+  N.b @code{add-to-classpath} only affects the classloader used by ABCL
+  (the value of the special variable @code{java::*classloader*}). It has
+  no effect on Java code outside ABCL.
+@end deffn
+
+@node Compiler to Java 5 Bytecode
+@section Compiler to Java 5 Bytecode
+
+The @code{CL:COMPILE-FILE} interface emits a packed fasl format whose
+Pathname has the type @file{abcl}.  These fasls are operating system
+neutral byte archives packaged by the zip compression format which
+contain artifacts that are understood by @code{CL:LOAD}.
+
+@node Pathnames
+@section Pathnames
+
+We implement an extension to the @code{CL:PATHNAME} that allows for the
+description and retrieval of resources named in a URI@footnote{A
+URI is essentially a superset of what is commonly understood as a
+URL. We sometimes use the term URL as shorthand in describing the
+URL Pathnames, even though the corresponding encoding is more akin to a
+URI as described in RFC3986.} scheme that the JVM ``understands''.  By
+definition, support is built-in into the JVM to access the
+@code{http://} and @code{https://} schemes but additional protocol
+handlers may be installed at runtime by having JVM symbols present
+in the @code{sun.net.protocol.dynamic} package (see
+@url{http://java.sun.com/developer/onlineTraining/protocolhandlers/} for
+more details).
+
+ABCL has created specializations of the ANSI @code{PATHNAME} object to
+enable to use of URIs to address dynamically loaded resources for
+the JVM.  The @code{EXT:URL-PATHNAME} specialization has a corresponding
+URI whose canonical representation is defined to be the
+@code{NAMESTRING} of the Pathname. The @code{EXT:JAR-PATHNAME} extension
+further specializes the the @code{EXT:URL-PATHNAME} to provide access to
+components of zip and jar archives.
+
+@c % RDF description of type hierarchy 
+@c % TODO Render via some LaTeX mode for graphviz?
+@example
+@@prefix ext:   <http://abcl.not.org/cl-packages/extensions/> .
+@@prefix cl:    <http://abcl.not.org/cl-pacages/common-lisp/> .
+  
+<ext:jar-pathname> a <ext:url-pathname>.
+<ext:url-pathname> a <cl:pathname>.
+<cl:logical-pathname> a <cl:pathname> .
+@end example
+
+@deftp {Built-In Class} url-pathname
+@deftpx {Built-In Class} jar-pathname
+
+  @code{url-pathname} and @code{jar-pathname} are subclasses of the
+  @code{pathname} built-in class.  Objects of type
+  @code{Ext:url-pathname} and @code{ext:jar-pathname} may be used
+  anywhere a @code{cl:pathname} is accepted with the following caveats:
+
+@itemize
+@item
+A stream obtained via @code{cl:open} on a @code{ext:url-pathname} cannot
+be the target of write operations.
+
+@item
+Any results of canonicalization procesures performed on the underlying
+URI are discarded between resolutions (i.e. the implementation does not
+attempt to cache the results of current name resolution of the
+representing resource unless it is requested to be resolved).  Upon
+resolution, any canoicalization procedures followed in resolving the
+resource (e.g., following redirects) are discarded.  Users may
+programatically initiate a new, local computation by applying the
+@code{cl:truename} function to a @code{ext:url-pathname} object.
+Depending on the reliablity and properties of your local REST
+infrastructure, these results may not necessarily be idempotent over
+time.@footnote {See
+@url{http://code.google.com/p/abcl-dynamic-install/source/browse/doc/design/pathnames/pathnames.tex}
+for the draft of the publication of the technical details}
+@end itemize
+
+@end deftp
+
+The implementation of @code{ext:url-pathname} allows the ABCL user to
+dynamically load code from the network.  For example, Quicklisp may be
+completely installed from the REPL as the single form:
+
+@lisp
+CL-USER> (load "http://beta.quicklisp.org/quicklisp.lisp")
+@end lisp
+
+The implementation currently breaks ANSI conformance by allowing the
+types able to be @code{cl:read} for the @var{device} to return a
+possible @code{cons} of @code{cl:pathname} objects.
+@c %% citation from CLHS needed.
+
+In order to ``smooth over'' the bit about types being @code{cl:read} from
+@code{cl:pathname} components, we extend the semantics for the usual PATHNAME
+merge semantics when @code{*default-pathname-defaults*} contains a
+@code{ext:jar-pathname}.  
+
+@menu
+* Implementation of Pathname Extensions::
+@end menu
+
+@node Implementation of Pathname Extensions
+@subsection Implementation of Pathname Extensions
+
+The implementation of these extensions stores all the additional
+information in the @code{CL:PATHNAME} object itself in ways that while
+strictly speaking are conformant, nonetheless may trip up libraries that
+don't expect the following:
+
+@itemize
+@item
+@code{DEVICE} can be either a string denoting a drive letter under DOS,
+or a list of exactly one or two elements.  If @code{DEVICE} is a list,
+it denotes a @code{EXT:JAR-PATHNAME}, with the entries containing
+@code{CL:PATHNAME} objects which describe the outer and (possibly inner)
+locations of the jar archive.@footnote{The case of inner and outer
+@code{EXT:EJAR-PATHNAME} arises when zip archives themselves contain zip
+archives, which is the case when the ABCL fasl is included in the
+@file{abcl.jar} zip archive.}
+
+@item
+An @code{EXT:URL-PATHNAME} always has a @code{HOST} component that is a
+property list.  The values of the @code{HOST} property list are always
+character strings.  The allowed keys have the following meanings:
+
+@table @code
+
+@item :SCHEME
+Scheme of URI ("http", "ftp", "bundle", etc.)
+
+@item :AUTHORITY
+Valid authority according to the URI scheme.  For "http" this could be
+"example.org:8080".
+
+@item :QUERY
+The query portion of the URI
+
+@item :FRAGMENT
+The fragment portion of the URI
+@end table
+@end itemize
+
+In order to encapsulate the implementation decisions for these meanings,
+the following functions provide a @code{setf}-able API for reading and writing
+such values.  
+
+@deffn {Accessor} url-pathname-scheme 
+@deffnx {Accessor} url-pathname-fragment
+@deffnx {Accessor} url-pathname-authority
+@deffnx {Accessor} url-pathname-query
+  These functions and their @code{setf} form provide read and write
+  access to the components of a @code{url-pathname} object.
+@end deffn
+
+The specific subtype of a Pathname may be determined with the predicates
+@code{pathname-url-p} and @code{pathname-jar-p}.
+
+@defun pathname-url-p object
+@defunx pathname-jar-p object
+  These predicates return @code{T} if @var{object} is a designator for a
+  pathname of the specific type.  E.g.:
+@lisp
+(pathname-url-p "http://google.com/")
+@result{} T
+@end lisp
+@end defun
+
+
+@node Extensible Sequences
+@section Extensible Sequences
+
+See
+@url{http://doc.gold.ac.uk/~mas01cr/papers/ilc2007/sequences-20070301.pdf}
+for the design.
+
+The @code{SEQUENCE} package fully implements Christophe Rhodes' proposal
+for extensible sequences.  These user extensible sequences are used
+directly in @code{java-collections.lisp} to provide these CLOS abstractions
+on the standard Java collection classes as defined by the
+@code{java.util.List} contract.
+
+@c %% an Example of using java.util.Lisp in Lisp would be nice
+
+This extension is not automatically loaded by the implementation.   It
+may be loaded via:
+
+@lisp
+CL-USER> (require 'java-collections)
+@end lisp
+
+if both extensible sequences and their application to Java collections
+is required, or
+
+@lisp
+CL-USER> (require 'extensible-sequences)
+@end lisp
+
+if only the extensible sequences API is required.
+
+Note that @code{(require 'java-collections)} must be issued before
+@code{java.util.List} or any subclass is used as a specializer in a CLOS
+method definition (see the section below).
+
+@node Extensions to CLOS
+@section Extensions to CLOS
+
+@menu
+* Metaobject Protocol::
+* Specializing on Java classes::
+@end menu
+
+@node Metaobject Protocol
+@subsection Metaobject Protocol
+
+ABCL implements the metaobject protocol for CLOS as specified in AMOP.
+The symbols are exported from the package @code{MOP}.
+
+@node Specializing on Java classes
+@subsection Specializing on Java classes
+
+There is an additional syntax for specializing the parameter of a
+generic function on a java class, viz. @code{(java:jclass CLASS-STRING)}
+where @code{CLASS-STRING} is a string naming a Java class in dotted package
+form.
+
+For instance, the following specialization would perhaps allow one to
+print more information about the contents of a
+@code{java.util.Collection} object:
+
+@lisp
+(defmethod print-object ((coll (java:jclass "java.util.Collection"))
+                         stream)
+  ;;; ...
+)
+@end lisp
+
+If the class had been loaded via a classloader other than the original
+the class you wish to specialize on, one needs to specify the
+classloader as an optional third argument.
+
+@lisp
+(defparameter *other-classloader*
+  (jcall "getBaseLoader" cl-user::*classpath-manager*))
+  
+(defmethod print-object
+   ((device-id (java:jclass "dto.nbi.service.hdm.alcatel.com.NBIDeviceID" 
+                            *other-classloader*))
+    stream)
+  ;;; ...
+)
+@end lisp
+
+@node Extensions to the Reader
+@section Extensions to the Reader
+
+We implement a special hexadecimal escape sequence for specifying 32-bit
+characters to the Lisp reader,@footnote{This represents a compromise
+with contemporary in 2011 32bit hosting architecures for which we wish
+to make text processing efficient.  Should the User require more control
+over UNICODE processing we recommend Edi Weiz's excellent work with
+FLEXI-STREAMS which we fully support} namely we allow a sequences of the
+form @code{#\Uxxxx} to be processed by the reader as character whose
+code is specified by the hexadecimal digits @code{xxxx}.  The
+hexadecimal sequence may be one to four digits long.
+
+Note that this sequence is never output by the implementation.  Instead,
+the corresponding Unicode character is output for characters whose
+code is greater than @code{0x00ff}.
+
+@node Overloading of the REQUIRE Mechanism
+@section Overloading of the CL:REQUIRE Mechanism
+
+The @code{CL:REQUIRE} mechanism is overloaded by attaching the following
+semantic to the execution of @code{REQUIRE} on the following symbols:
+
+@table @code
+@item ASDF
+
+Loads the ASDF implementation shipped with ABCL.  After ASDF has been
+loaded in this manner, symbols passed to @code{CL:REQUIRE} which are
+otherwise unresolved are passed to ASDF for a chance for resolution.
+This means, for instance, if @code{CL-PPCRE} can be located as a loadable
+ASDF system, @code{(require 'cl-ppcre)} is equivalent to
+@code{(asdf:load-system 'cl-ppcre)}.
+
+@item ABCL-CONTRIB
+Locates and pushes the toplevel contents of @file{abcl-contrib.jar} into
+the ASDF central registry, namely:
+
+    @table @code
+    @item abcl-asdf
+    Functions for loading JVM artifacts dynamically, hooking into ASDF
+    objects where possible.  @xref{abcl-asdf}.
+
+    @item asdf-jar
+    Package addressable JVM artifacts via @code{abcl-asdf} descriptions
+    as a single binary artifact including recursive dependencies.
+
+    @item mvn
+
+    These systems name common JVM artifacts from the distributed pom.xml
+    graph of Maven Aether, at the moment @code{jna} dynamically loads
+    @code{jna.jar} version 3.5.1 from the network.@footnote{This loading
+    can be inhibited if, at runtime, the Java class corresponding
+    @code{:classname} clause of the system definition is present.}
+        
+    @end table
+
+@end table
+
+@defvar @earmuffs{module-provider-functions}
+  The user may extend the @code{cl:require} mechanism by pushing
+  function hooks onto this variable.  Each such hook function must take
+  a single argument containing the symbol passed to @code{cl:require}
+  and return a non-@code{NIL} value if it successfully resolved the
+  symbol.
+@end defvar
+
+@node JSS optionally extends the Reader
+@section JSS optionally extends the Reader
+
+The JSS contrib consitutes an additional, optional extension to the
+reader in the definition of the @code{SHARPSIGN-DOUBLE-QUOTE}
+(@code{#"}) reader macro.  @xref{JSS}.
+
+@node ASDF
+@section ASDF
+
+ASDF is packaged as a core component of ABCL, but not initialized by
+default as it relies on the CLOS subsystem which can take a bit of time
+to start.@footnote{While this time is ``merely'' on the order of seconds
+for contemporary 2011 machines, for applications that need to initialize
+quickly, for example a web server, this time might be unnecessarily
+long}  The packaged ASDF may be loaded by the ANSI
+@code{REQUIRE} mechanism as follows:
+
+@lisp
+CL-USER> (require 'asdf)
+@end lisp
+
+@node Contrib
+@chapter Contrib
+
+The ABCL contrib is packaged as a separate jar archive usually named
+@file{abcl-contrib.jar} or possibly something like
+@file{abcl-contrib-1.1.0.jar}.  The contrib jar is not loaded by the
+implementation by default, and must be first intialized by the
+@code{REQUIRE} mechanism before using any specific contrib:
+
+@lisp
+CL-USER> (require 'abcl-contrib)
+@end lisp
+
+@menu
+* abcl-asdf::
+* asdf-jar::
+* JSS::
+* jfli::
+* asdf-install::
+@end menu
+
+@node abcl-asdf
+@section abcl-asdf
+
+This contrib enables an additional syntax for ASDF system definition
+which dynamically loads JVM artifacts such as @file{jar} archives
+via encapsulation of the Maven build tool.  The Maven Aether component
+can also be directly manipulated by the function associated with the
+@code{ABCL-ASDF:RESOLVE-DEPENDENCIES} symbol.
+
+@c %ABCL specific contributions to ASDF system definition mainly
+@c %concerned with finding JVM artifacts such as jar archives to be
+@c %dynamically loaded.
+
+When loaded, abcl-asdf adds the following objects to ASDF:
+@code{JAR-FILE}, @code{JAR-DIRECTORY}, @code{CLASS-FILE-DIRECTORY} and
+@code{MVN}, exporting them (and others) as public symbols from the
+@code{ASDF} package.
+
+@menu
+* Referencing Maven Artifacts via ASDF::
+* The abcl-asdf API::
+* Directly Instructing Maven to Download JVM Artifacts::
+@end menu
+
+@node Referencing Maven Artifacts via ASDF
+@subsection Referencing Maven Artifacts via ASDF
+
+Maven artifacts may be referenced within ASDF system definitions.  The
+following example references the @code{log4j-1.4.9.jar} JVM artifact
+which provides a widely-used abstraction for handling logging systems:
+
+@lisp
+(in-package :asdf)
+
+(defsystem :log4j
+  :components ((:mvn "log4j/log4j" :version "1.4.9")))
+@end lisp
+
+@node The abcl-asdf API
+@subsection The abcl-asdf API
+
+We define an API for abcl-asdf as consisting of the following
+ASDF classes:
+
+@code{JAR-DIRECTORY}, @code{JAR-FILE}, and @code{CLASS-FILE-DIRECTORY}
+for JVM artifacts that have a currently valid pathname representation.
+
+Both the @code{MVN} and @code{IRI} classes descend from
+@code{ASDF-COMPONENT}, but do not directly have a filesystem location.
+
+For use outside of ASDF system definitions, we currently define one
+method, @code{ABCL-ASDF:RESOLVE-DEPENDENCIES} which locates,
+downloads, caches, and then loads into the currently executing JVM
+process all recursive dependencies annotated in the Maven @file{pom.xml}
+graph.
+
+@node Directly Instructing Maven to Download JVM Artifacts
+@subsection Directly Instructing Maven to Download JVM Artifacts
+
+Bypassing ASDF, one can directly issue requests for the Maven
+artifacts to be downloaded:
+
+@lisp
+CL-USER> (abcl-asdf:resolve-dependencies "com.google.gwt" "gwt-user")
+@print{} WARNING: Using LATEST for unspecified version.
+@print{} "/Users/evenson/.m2/repository/com/google/gwt/gwt-user/2.4.0-rc1
+@print{} /gwt-user-2.4.0-rc1.jar:/Users/evenson/.m2/repository/javax/vali
+@print{} dation/validation-api/1.0.0.GA/validation-api-1.0.0.GA.jar:/User
+@print{} s/evenson/.m2/repository/javax/validation/validation-api/1.0.0.G
+@print{} A/validation-api-1.0.0.GA-sources.jar"
+@end lisp
+
+To actually load the dependency, use the @code{JAVA:ADD-TO-CLASSPATH}
+generic function:
+
+@lisp
+CL-USER> (java:add-to-classpath
+          (abcl-asdf:resolve-dependencies "com.google.gwt" "gwt-user"))
+@end lisp
+
+Notice that all recursive dependencies have been located and installed
+locally from the network as well.
+
+@node asdf-jar
+@section asdf-jar
+
+The asdf-jar contrib provides a system for packaging ASDF systems into
+jar archives for ABCL.  Given a running ABCL image with loadable ASDF
+systems the code in this package will recursively package all the
+required source and fasls in a jar archive.
+
+The documentation for this contrib can be found at
+@url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/asdf-jar/README.markdown}.
+
+
+@node JSS
+@section JSS
+
+To one used to the more universal syntax of Lisp pairs upon which the
+definition of read and compile time macros is quite
+natural,@footnote{See Graham's ``On Lisp''
+@url{http://lib.store.yahoo.net/lib/paulgraham/onlisp.pdf}.} the Java
+syntax available to the Java programmer may be said to suck.  To
+alleviate this situation, the JSS contrib introduces the
+@code{SHARPSIGN-DOUBLE-QUOTE} (@code{#"}) reader macro, which allows the
+specification of the name of invoking function as the first element of
+the relevant s-expr which tends to be more congruent to how Lisp
+programmers seem to be wired to think.
+
+While quite useful, we don't expect that the JSS contrib will be the
+last experiment in wrangling Java from Common Lisp.
+
+@menu
+* JSS usage::
+@end menu
+
+@node JSS usage
+@subsection JSS usage
+
+Example:
+
+@lisp
+CL-USER> (require 'abcl-contrib)
+@result{} ("ABCL-CONTRIB")
+CL-USER> (require 'jss)
+@result{} ("JSS")
+CL-USER) (#"getProperties" 'java.lang.System)
+@result{} #<java.util.Properties @{java.runtime.name=Java.... @{2FA21ACF@}>
+CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
+@result{} #<java.util.Hashtable$Enumerator java.util.Has.... @{36B4361A@}>
+@end lisp
+
+Some more information on jss can be found in its documentation at
+@url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/jss/README.markdown}
+
+@node jfli
+@section jfli
+
+This contrib contains a pure-Java version of JFLI. 
+
+@node asdf-install
+@section asdf-install
+
+The asdf-install contrib provides an implementation of ASDF-INSTALL.
+This method of installing Lisp libraries is superseded by Quicklisp,
+which can be installed via @code{(load
+"http://beta.quicklisp.org/quicklisp.lisp")}.
+
+
+@node History
+@chapter History
+
+ABCL was originally the extension language for the J editor, which was
+started in 1998 by Peter Graves.  Sometime in 2003, a whole lot of code
+that had previously not been released publically was suddenly committed
+that enabled ABCL to be plausibly termed an emergent ANSI Common Lisp
+implementation candidate.
+
+From 2006 to 2008, Peter manned the development lists, incorporating
+patches as made sense.  After a suitable search, Peter nominated Erik
+H@"ulsmann to take over the project.
+
+In 2008, the implementation was transferred to the current maintainers,
+who have strived to improve its usability as a contemporary Common Lisp
+implementation.
+
+On October 22, 2011, with the publication of this Manual explicitly
+stating the conformance of Armed Bear Common Lisp to ANSI, we
+released abcl-1.0.0.  We released abcl-1.0.1 as a maintainence release
+on January 10, 2012.
+
+In December 2012, we revised the implementation by adding (A)MOP with
+the release of abcl-1.1.0.
+
+@node Concept Index
+@appendix Concept Index
+
+@printindex cp
+
+@node Function Index
+@appendix Function Index
+     
+@printindex fn
+
+@node Variable Index
+@appendix Variable Index
+     
+@printindex vr
+
+@node Type Index
+@appendix Type Index
+
+@printindex tp
+
+@node Colophon
+@unnumbered Colophon
+
+This manual is maintained in Texinfo, and automatically translated into
+other forms (e.g. HTML or pdf). If you're @emph{reading} this manual in
+one of these non-Texinfo translated forms, that's fine, but if you want
+to @emph{modify} this manual, you are strongly advised to seek out a
+Texinfo version and modify that instead of modifying a translated
+version. Even better might be to seek out @emph{the} Texinfo version
+(maintained at the time of this writing as part of the ABCL project at
+@uref{http://common-lisp.net/project/armedbear/}) and submit a patch.
+
+@bye
