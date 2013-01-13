@@ -125,7 +125,7 @@
 
 (declaim (ftype (function (cons stream) t) dump-cons))
 (defun dump-cons (object stream)
-  (cond ((and (eq (car object) 'QUOTE) (= (length object) 2))
+  (cond ((and (eq (car object) 'QUOTE) (proper-list-of-length-p object 2))
          (%stream-write-char #\' stream)
          (dump-object (%cadr object) stream))
         (t
