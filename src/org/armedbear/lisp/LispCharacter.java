@@ -560,30 +560,25 @@ public final class LispCharacter extends LispObject
             return i;
         } catch (NumberFormatException e) {};
     }
-
-    if (lower.equals("null"))
-      return 0;
     if (lower.equals("nul"))
       return 0;
-    if (lower.equals("bell"))
+    if (lower.equals("bel"))
       return 7;
-    if (lower.equals("backspace"))
+    if (lower.equals("bs"))
       return '\b';
-    if (lower.equals("tab"))
+    if (lower.equals("ht"))
       return '\t';
-    if (lower.equals("linefeed"))
+    if (lower.equals("linefeed") || lower.equals("lf")) 
       return '\n';
-    if (lower.equals("newline"))
-      return '\n';
-    if (lower.equals("page"))
+    if (lower.equals("ff"))
       return '\f';
-    if (lower.equals("return"))
+    if (lower.equals("cr"))
       return '\r';
-    if (lower.equals("escape"))
-        return 27;
-    if (lower.equals("space"))
+    if (lower.equals("esc"))
+      return 27;
+    if (lower.equals("space") || lower.equals("sp"))
       return ' ';
-    if (lower.equals("rubout"))
+    if (lower.equals("rubout") || lower.equals("del"))
       return 127;
     if (lower.startsWith("u")) {
       int length = lower.length();
