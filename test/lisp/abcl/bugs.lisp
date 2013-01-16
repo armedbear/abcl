@@ -133,3 +133,11 @@ nil)
        :collecting (cons x y))
   ((0.0 . 0) (0.0 . 1)))
 
+
+;; http://trac.common-lisp.net/armedbear/ticket/294
+(deftest bugs.reader.1
+    (let ((*readtable* *readtable*))
+      (set-macro-character #\? (lambda (stream char) (code-char (read stream nil nil t))))
+      '(a .?0))
+  (A . #\Null))
+      

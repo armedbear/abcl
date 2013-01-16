@@ -739,18 +739,11 @@ public class Stream extends StructureObject {
     private static final boolean isTokenDelimiter(char c, Readtable rt)
 
     {
-        switch (c) {
-        case '"':
-        case '\'':
-        case '(':
-        case ')':
-        case ',':
-        case ';':
-        case '`':
-            return true;
-        default:
-            return rt.isWhitespace(c);
-        }
+        byte type = rt.getSyntaxType(c);
+
+        return type == Readtable.SYNTAX_TYPE_TERMINATING_MACRO ||
+                type == Readtable.SYNTAX_TYPE_WHITESPACE;
+        
     }
 
     public LispObject readDispatchChar(char dispChar,
@@ -909,7 +902,8 @@ public class Stream extends StructureObject {
                 c = (char) n; // ### BUG: Codepoint conversion
                 if (rt.isWhitespace(c))
                     break;
-                if (c == '(' || c == ')') {
+                if (rt.getSyntaxType(c) == 
+                    Readtable.SYNTAX_TYPE_TERMINATING_MACRO) {
                     _unreadChar(c);
                     break;
                 }
