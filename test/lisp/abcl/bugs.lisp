@@ -125,3 +125,11 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
 (deftest bugs.pathname.make-pathname.2
   (probe-file (make-pathname :device (list "foo")))
 nil)
+
+;; http://trac.common-lisp.net/armedbear/ticket/293
+(deftest bugs.loop.1
+    (loop :with x :of-type (float 0) = 0.0
+       :for y :upto 1
+       :collecting (cons x y))
+  ((0.0 . 0) (0.0 . 1)))
+

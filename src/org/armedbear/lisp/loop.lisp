@@ -976,10 +976,23 @@ code to be loaded.
 
 (defun loop-typed-init (data-type &optional step-var-p)
   (when (and data-type (subtypep data-type 'number))
-    (if (or (subtypep data-type 'float)
-	    (subtypep data-type '(complex float)))
-	(coerce (if step-var-p 1 0) data-type)
-	(if step-var-p 1 0))))
+    ;; From SBCL
+    (let ((init (if step-var-p 1 0)))
+      (flet ((like (&rest types)
+               (coerce init (find-if (lambda (type)
+                                       (subtypep data-type type))
+                                     types))))
+        (cond ((subtypep data-type 'float)
+               (like 'single-float 'double-float
+                     'short-float 'long-float 'float))
+              ((subtypep data-type '(complex float))
+               (like '(complex single-float)
+                     '(complex double-float)
+                     '(complex short-float)
+                     '(complex long-float)
+                     '(complex float)))
+              (t
+               init))))))
 
 (defun loop-optional-type (&optional variable)
   ;; No variable specified implies that no destructuring is permissible.
