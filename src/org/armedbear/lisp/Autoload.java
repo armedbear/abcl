@@ -98,7 +98,6 @@ public class Autoload extends Function
                                                   "org.armedbear.lisp.".concat(className)));
     }
 
-
     private static void effectiveLoad(String className, String fileName) {
         if (className != null) {
             try {
@@ -276,10 +275,14 @@ public class Autoload extends Function
         return unreadableString(sb.toString());
     }
 
-    // ### autoload
-    private static final Primitive AUTOLOAD =
-        new Primitive("autoload", PACKAGE_EXT, true)
-    {
+    public static final Primitive AUTOLOAD = new pf_autoload();
+    @DocString(name="autoload",
+               args="symbol-or-symbols filename",
+               doc="Setup the autoload for SYMBOL-OR-SYMBOLS optionally corresponding to FILENAME.")
+    private static final class pf_autoload extends Primitive {
+        pf_autoload() {    
+            super("autoload", PACKAGE_EXT, true);
+        }
         @Override
         public LispObject execute(LispObject first)
         {
@@ -318,14 +321,16 @@ public class Autoload extends Function
         }
     };
 
-    // ### resolve
-    // Force autoload to be resolved.
-    private static final Primitive RESOLVE =
-        new Primitive("resolve", PACKAGE_EXT, true, "symbol")
-    {
+    public static final Primitive RESOLVE = new pf_resolve();
+    @DocString(name="resolve", 
+               args="symbol",
+               doc="Force the symbol to be resolved via the autoloader mechanism.")
+    private static final class pf_resolve extends Primitive {
+        pf_resolve() {
+            super("resolve", PACKAGE_EXT, true, "symbol");
+        }
         @Override
-        public LispObject execute(LispObject arg)
-        {
+        public LispObject execute(LispObject arg) {
             Symbol symbol = checkSymbol(arg);
             LispObject fun = symbol.getSymbolFunction();
             if (fun instanceof Autoload) {
@@ -335,12 +340,17 @@ public class Autoload extends Function
             }
             return fun;
         }
-    };
+    }
 
-    // ### autoloadp
-    private static final Primitive AUTOLOADP =
-        new Primitive("autoloadp", PACKAGE_EXT, true, "symbol")
-    {
+    public static final Primitive AUTOLOADP = new pf_autoloadp();
+    @DocString(name="autoloadp", 
+               args="symbol",
+               doc="Boolean predicate for whether SYMBOL stands for a function that currently needs to be autoloaded.")
+    private static final class pf_autoloadp extends Primitive {
+        pf_autoloadp() {
+            super("autoloadp", PACKAGE_EXT, true, "symbol");
+        }
+                   
         @Override
         public LispObject execute(LispObject arg)
         {
