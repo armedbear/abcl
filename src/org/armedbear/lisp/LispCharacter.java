@@ -578,7 +578,7 @@ public final class LispCharacter extends LispObject
       return 27;
     if (lower.equals("space") || lower.equals("sp"))
       return ' ';
-    if (lower.equals("rubout") || lower.equals("del"))
+    if (lower.equals("rubout") || lower.equals("del") || lower.equals("delete"))
       return 127;
     if (lower.startsWith("u")) {
       int length = lower.length();
