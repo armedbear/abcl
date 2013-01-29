@@ -35,9 +35,9 @@
 
    Field definitions are lists of the form (field-name type &key modifiers annotations)."
   (declare (ignorable superclass interfaces constructors methods fields access-flags annotations))
-  (let ((stream (sys::%make-byte-array-output-stream))
-         ;;TODO provide constructor in MemoryClassLoader
-        (memory-class-loader (java:jnew "org.armedbear.lisp.MemoryClassLoader" "")))
+  (let* ((stream (sys::%make-byte-array-output-stream))
+        (current-class-loader (java:get-current-classloader))
+        (memory-class-loader (java:jnew "org.armedbear.lisp.MemoryClassLoader" current-class-loader)))
     (multiple-value-bind (class-file method-implementation-fields)
         (apply #'java::%jnew-runtime-class class-name stream args)
       (sys::put-memory-function memory-class-loader

@@ -52,6 +52,11 @@ public class MemoryClassLoader extends JavaClassLoader {
         this.internalNamePrefix = internalNamePrefix;
     }
 
+    public MemoryClassLoader(JavaClassLoader parent) {
+        super(parent);
+        this.internalNamePrefix = "";
+    }
+
     @Override
     protected Class<?> loadClass(String name, boolean resolve)
             throws ClassNotFoundException {

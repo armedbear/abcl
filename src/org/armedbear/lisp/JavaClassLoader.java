@@ -123,6 +123,10 @@ public class JavaClassLoader extends URLClassLoader {
     public JavaClassLoader(ClassLoader parent) {
         super(new URL[] {}, parent);
     }
+    
+    public JavaClassLoader(JavaClassLoader parent) {
+        super(new URL[] {}, (ClassLoader)parent);
+    }
 
     public JavaClassLoader(URL[] classpath, ClassLoader parent) {
         super(classpath, parent);
