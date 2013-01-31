@@ -50,7 +50,9 @@ Test:
 (defun find-mvn () 
   "Attempt to find a suitable Maven ('mvn') executable on the hosting operating system.
 
-Returns the path of the Maven executable or nil if none are found."
+Returns the path of the Maven executable or nil if none are found.
+
+Emits warnings if not able to find a suitable executable."
 
   (let ((m2-home (ext:getenv "M2_HOME"))
         (m2 (ext:getenv "M2"))
@@ -97,7 +99,8 @@ Returns the path of the Maven executable or nil if none are found."
                              "~&Failed to find Maven executable '~A' in PATH because~&~A" 
                              mvn-path e)))))
             (when mvn
-              (return-from find-mvn mvn))))))))
+              (return-from find-mvn mvn)))))))
+  (warn "Unable to locate Maven executable."))
 
 (defun find-mvn-libs ()
   (let ((mvn (find-mvn)))

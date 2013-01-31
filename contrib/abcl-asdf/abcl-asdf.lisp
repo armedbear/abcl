@@ -131,13 +131,13 @@ single entry denoting a remote binary artifact."
         (java:java-exception (e)
           (unless (java:jinstance-of-p (java:java-exception-cause e)
                                   "java.lang.ClassNotFoundException")
-            (error "Unexpected Java exception~&~A.~&" e))
-          (if (find-mvn)
-              (resolve-dependencies group-id artifact-id version)
-              (if alternate-uri
-                  (values (namestring alternate-uri) alternate-uri)
-                  (t 
-                   (error "Failed to resolve MVN component name ~A." name)))))))))
+            (error "Unexpected Java exception~&~A.~&" e))))
+      (if (find-mvn)
+          (resolve-dependencies group-id artifact-id version)
+          (if alternate-uri
+              (values (namestring alternate-uri) alternate-uri)
+              (t 
+               (error "Failed to resolve MVN component name ~A." name)))))))
   
 (defun as-classpath (classpath)
   "Break apart the JVM CLASSPATH string into a list of its consituents."
