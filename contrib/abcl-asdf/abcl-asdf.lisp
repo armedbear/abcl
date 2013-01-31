@@ -17,8 +17,8 @@
    (repository :initform "http://repo1.maven.org/maven2/") ;;; XXX unimplmented
    (classname :initarg :classname :initform nil)
    (alternate-uri :initarg :alternate-uri :initform nil)
-;; inherited from ASDF:COMPONENT ??? what are the CL semantics on overriding -- ME 2012-04-01
-#+nil   (version :initform nil)))
+   ;; inherited from ASDF:COMPONENT ??? what are the CL semantics on overriding -- ME 2012-04-01
+   #+nil   (version :initform nil)))
 
 #+nil
 (defmethod find-component ((component iri) path)
@@ -29,7 +29,7 @@
 (defmethod perform ((op compile-op) (c mvn))
   (abcl-asdf:resolve   
    (ensure-parsed-mvn c)))
-     
+
 (defmethod perform ((operation load-op) (c mvn))
   (let ((resolved-path 
          (abcl-asdf:resolve (ensure-parsed-mvn c))))
@@ -58,7 +58,7 @@
 
 (defun ensure-parsed-mvn (component)
   (with-slots (name group-id artifact-id
-               version schema path repository) 
+                    version schema path repository) 
       component
     (when (null asdf::artifact-id) 
       (let ((parsed (abcl-asdf::split-string name "/"))
@@ -97,7 +97,7 @@
 (in-package #:abcl-asdf)
 
 (defgeneric resolve (something)
- (:documentation "Returns a string in JVM CLASSPATH format as entries delimited by classpath separator string."))
+  (:documentation "Returns a string in JVM CLASSPATH format as entries delimited by classpath separator string."))
 
 (defmethod resolve ((mvn-component asdf::mvn))
   "Resolve all runtime dependencies of MVN-COMPONENT.
@@ -106,39 +106,31 @@ Returns either a string in jvm classpath format as entries delimited
 by classpath separator string or T.  If the value T is returned, it
 denotes that current JVM already has already loaded a given class. Can possibly be a
 single entry denoting a remote binary artifact."
-  (macrolet ((aif (something consequence alternative))
-             `(let ((it ,(something)))
-                (if it
-                    consequence
-                    alternative)))
-    (let ((name (slot-value mvn-component 'asdf::name))
-          (group-id (slot-value mvn-component 'asdf::group-id))
-          (artifact-id (slot-value mvn-component 'asdf::artifact-id))
-          (classname (slot-value mvn-component 'asdf::classname))
-          (alternate-uri (slot-value mvn-component 'asdf::alternate-uri))
-          (version (let ((it (slot-value mvn-component 'asdf::version)))
-                     (cond
-                       ((not it)
-                        it)
-                       (t 
-                        "LATEST")))))
-      (handler-case 
-          (when (and classname 
-                     (jss:find-java-class classname))
-            (warn "Not loading ~A from the network because ~A is present in classpath."
-                  name classname)
-            (return-from resolve t))
-        (java:java-exception (e)
-          (unless (java:jinstance-of-p (java:java-exception-cause e)
-                                  "java.lang.ClassNotFoundException")
-            (error "Unexpected Java exception~&~A.~&" e))))
-      (if (find-mvn)
-          (resolve-dependencies group-id artifact-id version)
-          (if alternate-uri
-              (values (namestring alternate-uri) alternate-uri)
-              (t 
-               (error "Failed to resolve MVN component name ~A." name)))))))
-  
+  (let ((name (slot-value mvn-component 'asdf::name))
+        (group-id (slot-value mvn-component 'asdf::group-id))
+        (artifact-id (slot-value mvn-component 'asdf::artifact-id))
+        (classname (slot-value mvn-component 'asdf::classname))
+        (alternate-uri (slot-value mvn-component 'asdf::alternate-uri))
+        (version (if (slot-value mvn-component 'asdf::version)
+                     (slot-value mvn-component 'asdf::version)
+                     "LATEST")))
+    (handler-case 
+        (when (and classname 
+                   (jss:find-java-class classname))
+          (warn "Not loading ~A from the network because ~A is present in classpath."
+                name classname)
+          (return-from resolve t))
+      (java:java-exception (e)
+        (unless (java:jinstance-of-p (java:java-exception-cause e)
+                                     "java.lang.ClassNotFoundException")
+          (error "Unexpected Java exception~&~A.~&" e))))
+    (if (find-mvn)
+        (resolve-dependencies group-id artifact-id version)
+        (if alternate-uri
+            (values (namestring alternate-uri) alternate-uri)
+            (t 
+             (error "Failed to resolve MVN component name ~A." name))))))
+
 (defun as-classpath (classpath)
   "Break apart the JVM CLASSPATH string into a list of its consituents."
   (split-string classpath 
