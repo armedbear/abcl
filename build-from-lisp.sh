@@ -15,17 +15,15 @@ fi
 
 check_boolean()
 {
-    if [ "$1" == "t" ]   || \
-       [ "$1" == "T" ]   || \
-       [ "$1" == "nil" ] || \
-       [ "$1" == "NIL" ]
-    then
-        return
-    else
-        usage
-        echo "Error: Argument \`$1' is neither \"nil\" nor \"t\"."
-        exit 1
-    fi
+    case "$1" in
+        [Tt]|[Nn][Ii][Ll])
+            :;;
+        *)
+            usage
+            echo "Error: Argument \`$1' is neither \"nil\" nor \"t\"."
+            exit 1
+            ;;
+    esac
 }
 
 IMPL="$1"
