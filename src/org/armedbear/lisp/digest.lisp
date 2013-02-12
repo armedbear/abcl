@@ -77,7 +77,7 @@
            
 (defgeneric digest (resource &key (digest 'sha-256))
   (:documentation "Digest byte based resource at RESOURCE."))
-(defun digest-path (path) (asciify-digest (digest path 'nio 'sha-256)))
+(defun digest-path (path) (asciify (digest path 'nio 'sha-256)))
 
 (defvar *digest-types* 
   '((sha-1 . "SHA-1")
