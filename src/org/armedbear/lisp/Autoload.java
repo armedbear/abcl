@@ -728,5 +728,8 @@ public class Autoload extends Function
         autoload(Symbol.JCLASS_NAME, "jclass_name");
         autoload(Symbol.JCLASS_OF, "jclass_of");
         autoload(Symbol.JMETHOD_RETURN_TYPE, "jmethod_return_type");
+
+        autoload(PACKAGE_JAVA, "%jget-property-value", "JavaBeans", false);
+        autoload(PACKAGE_JAVA, "%jset-property-value", "JavaBeans", false);
     }
 }
