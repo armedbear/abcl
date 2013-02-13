@@ -2769,6 +2769,7 @@ public final class Lisp
     loadClass("org.armedbear.lisp.CompiledClosure");
     loadClass("org.armedbear.lisp.Autoload");
     loadClass("org.armedbear.lisp.AutoloadMacro");
+    loadClass("org.armedbear.lisp.AutoloadGeneralizedReference");
     loadClass("org.armedbear.lisp.cxr");
     loadClass("org.armedbear.lisp.Do");
     loadClass("org.armedbear.lisp.dolist");

@@ -46,6 +46,8 @@
 (defvar *toplevel-functions*)
 (defvar *toplevel-macros*)
 (defvar *toplevel-exports*)
+(defvar *toplevel-setf-expanders*)
+(defvar *toplevel-setf-functions*)
 
 
 (defun base-classname (&optional (output-file-pathname *output-file-pathname*))
@@ -423,6 +425,10 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
   (note-toplevel-form form)
   (note-name-defined (second form))
   (push (second form) *toplevel-functions*)
+  (when (and (consp (second form))
+             (eq 'setf (first (second form))))
+    (push (second (second form))
+          *toplevel-setf-functions*))
   (let ((*compile-print* nil))
     (process-toplevel-form (macroexpand-1 form *compile-file-environment*)
                            stream compile-time-too))
@@ -550,6 +556,9 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (push name jvm::*functions-defined-in-current-file*)
     (note-name-defined name)
     (push name *toplevel-functions*)
+    (when (and (consp name)
+               (eq 'setf (first name)))
+      (push (second name) *toplevel-setf-functions*))
     ;; If NAME is not fbound, provide a dummy definition so that
     ;; getSymbolFunctionOrDie() will succeed when we try to verify that
     ;; functions defined later in the same file can be loaded correctly.
@@ -605,6 +614,11 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
         (return-from process-toplevel-form))
       (when (and (symbolp operator)
                  (macro-function operator *compile-file-environment*))
+        (when (eq operator 'define-setf-expander) ;; ??? what if the symbol is package qualified?
+          (push (second form) *toplevel-setf-expanders*))
+        (when (and (eq operator 'defsetf) ;; ??? what if the symbol is package qualified?
+                   (consp (third form))) ;; long form of DEFSETF
+          (push (second form) *toplevel-setf-expanders*))
         (note-toplevel-form form)
         ;; Note that we want MACROEXPAND-1 and not MACROEXPAND here, in
         ;; case the form being expanded expands into something that needs
@@ -613,7 +627,6 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
           (process-toplevel-form (macroexpand-1 form *compile-file-environment*)
                                  stream compile-time-too))
         (return-from process-toplevel-form))
-
       (cond
         ((and (symbolp operator)
               (not (special-operator-p operator))
@@ -717,7 +730,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 
 (defun compile-from-stream (in output-file temp-file temp-file2
                             extract-toplevel-funcs-and-macros
-                            functions-file macros-file exports-file)
+                            functions-file macros-file exports-file 
+                            setf-functions-file setf-expanders-file)
   (let* ((*compile-file-pathname* (make-pathname :defaults (pathname in)
                                                  :version nil))
          (*compile-file-truename* (make-pathname :defaults (truename in)
@@ -777,7 +791,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                                  (if (symbolp func-name)
                                      (symbol-package func-name)
                                      T))
-                               (remove-duplicates *toplevel-functions*)))
+                               (remove-duplicates
+                            *toplevel-functions*)))
           (when *toplevel-functions*
             (with-open-file (f-out functions-file
                                    :direction :output
@@ -811,7 +826,33 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                                    :if-does-not-exist :create
                                    :if-exists :supersede)
               (let ((*package* (find-package :keyword)))
-                (write *toplevel-exports* :stream e-out)))))
+                (write *toplevel-exports* :stream e-out))))
+          (setf *toplevel-setf-functions*
+                (remove-if-not (lambda (sym)
+                                 (if (symbolp sym)
+                                     (symbol-package sym)
+                                     T))
+                               (remove-duplicates *toplevel-setf-functions*)))
+          (when *toplevel-setf-functions*
+            (with-open-file (e-out setf-functions-file
+                                   :direction :output
+                                   :if-does-not-exist :create
+                                   :if-exists :supersede)
+              (let ((*package* (find-package :keyword)))
+                (write *toplevel-setf-functions* :stream e-out))))
+          (setf *toplevel-setf-expanders*
+                (remove-if-not (lambda (sym)
+                                 (if (symbolp sym)
+                                     (symbol-package sym)
+                                     T))
+                               (remove-duplicates *toplevel-setf-expanders*)))
+          (when *toplevel-setf-expanders*
+            (with-open-file (e-out setf-expanders-file
+                                   :direction :output
+                                   :if-does-not-exist :create
+                                   :if-exists :supersede)
+              (let ((*package* (find-package :keyword)))
+                (write *toplevel-setf-expanders* :stream e-out)))))
         (with-open-file (in temp-file :direction :input :external-format *fasl-external-format*)
           (with-open-file (out temp-file2 :direction :output
                                :if-does-not-exist :create
@@ -900,14 +941,19 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
            (functions-file (pathname-with-type output-file "funcs"))
            (macros-file (pathname-with-type output-file "macs"))
            (exports-file (pathname-with-type output-file "exps"))
+           (setf-functions-file (pathname-with-type output-file "setf-functions"))
+           (setf-expanders-file (pathname-with-type output-file "setf-expanders"))
            *toplevel-functions*
            *toplevel-macros*
-           *toplevel-exports*)
+           *toplevel-exports*
+           *toplevel-setf-functions*
+           *toplevel-setf-expanders*)
       (with-open-file (in input-file :direction :input :external-format external-format)
         (multiple-value-bind (output-file-truename warnings-p failure-p)
             (compile-from-stream in output-file temp-file temp-file2
                                  extract-toplevel-funcs-and-macros
-                                 functions-file macros-file exports-file)
+                                 functions-file macros-file exports-file 
+                                 setf-functions-file setf-expanders-file)
           (values (truename output-file) warnings-p failure-p))))))
 
 (defun compile-file-if-needed (input-file &rest allargs &key force-compile

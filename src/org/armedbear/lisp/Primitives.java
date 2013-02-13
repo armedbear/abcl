@@ -3574,7 +3574,7 @@ public final class Primitives {
     };
 
     // ### put symbol indicator value => value
-    private static final Primitive PUT = new pf_put();
+    public static final Primitive PUT = new pf_put();
     private static final class pf_put extends Primitive {
         pf_put() {
             super("put", PACKAGE_SYS, true);

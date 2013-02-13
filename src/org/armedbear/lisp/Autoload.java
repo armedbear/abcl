@@ -43,7 +43,7 @@ public class Autoload extends Function
     protected final String fileName;
     protected final String className;
 
-    private final Symbol symbol;
+    protected final Symbol symbol;
 
     protected Autoload(Symbol symbol)
     {
@@ -262,7 +262,7 @@ public class Autoload extends Function
     {
         StringBuilder sb = new StringBuilder();
         sb.append(symbol.princToString());
-        sb.append(" \"");
+        sb.append(" stub to be autoloaded from \"");
         if (className != null) {
             int index = className.lastIndexOf('.');
             if (index >= 0)
@@ -272,12 +272,13 @@ public class Autoload extends Function
             sb.append(".class");
         } else
             sb.append(getFileName());
+        sb.append("\"");
         return unreadableString(sb.toString());
     }
 
     public static final Primitive AUTOLOAD = new pf_autoload();
     @DocString(name="autoload",
-               args="symbol-or-symbols filename",
+               args="symbol-or-symbols &optional filename",
                doc="Setup the autoload for SYMBOL-OR-SYMBOLS optionally corresponding to FILENAME.")
     private static final class pf_autoload extends Primitive {
         pf_autoload() {    
@@ -731,5 +732,9 @@ public class Autoload extends Function
 
         autoload(PACKAGE_JAVA, "%jget-property-value", "JavaBeans", false);
         autoload(PACKAGE_JAVA, "%jset-property-value", "JavaBeans", false);
+
+        autoload(PACKAGE_EXT, "autoload-setf-expander", "AutoloadGeneralizedReference", true);
+        autoload(PACKAGE_EXT, "autoload-setf-function", "AutoloadGeneralizedReference", true);
+        autoload(PACKAGE_EXT, "autoload-ref-p", "AutoloadGeneralizedReference", true);
     }
 }

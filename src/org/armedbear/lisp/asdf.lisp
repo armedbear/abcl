@@ -49,9 +49,9 @@
 
 (in-package :cl-user)
 
-#+abcl
-(eval-when (:load-toplevel :compile-toplevel :execute)
-  (documentation 'car 'function)) ;; workaround (SETF DOCUMENTATION) autoloader bug
+;; #+abcl
+;; (eval-when (:load-toplevel :compile-toplevel :execute)
+;;   (documentation 'car 'function)) ;; workaround (SETF DOCUMENTATION) autoloader bug
 
 #+cmu
 (eval-when (:load-toplevel :compile-toplevel :execute)

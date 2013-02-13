@@ -1780,7 +1780,10 @@ compare the method combination name to the symbol 'standard.")
                           ;; also, resolving the symbol isn't
                           ;; a good option either: we've seen that lead to
                           ;; recursive loading of the same file
-                          (not (autoloadp function-name))))
+                          (and (not (autoloadp function-name))
+                               (and (consp function-name)
+                                    (eq 'setf (first function-name))
+                                    (not (autoload-ref-p (second function-name)))))))
             (error 'program-error
                    :format-control "~A already names an ordinary function, macro, or special operator."
                    :format-arguments (list function-name)))
@@ -4478,7 +4481,10 @@ or T when any keyword is acceptable due to presence of
   (unless (classp generic-function-class)
     (setf generic-function-class (find-class generic-function-class)))
   (when (and (null *clos-booting*) (fboundp function-name))
-    (if (autoloadp function-name)
+    (if (or (autoloadp function-name)
+            (and (consp function-name)
+                 (eq 'setf (first function-name))
+                 (autoload-ref-p (second function-name))))
         (fmakunbound function-name)
         (error 'program-error
                :format-control "~A already names an ordinary function, macro, or special operator."

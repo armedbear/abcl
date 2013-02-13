@@ -148,12 +148,11 @@
          (remove-if (lambda (x)
                       (null (cdr x)))
                     (mapcar (lambda (x)
-                              (cons (car x)
+                               (cons (car x)
                                     (remove-if-not (lambda (x)
-                                                     ;;; ### TODO: Support SETF functions
-                                                     (and (symbolp x)
-                                                          (eq (symbol-package x)
-                                                              filter-package)))
+                                                      (and (symbolp x)
+                                                           (eq (symbol-package x)
+                                                               filter-package)))
                                                    (cdr x))))
                             filesets-symbols))))
     (write-autoloader stream package type filtered-filesets)))
@@ -174,34 +173,40 @@
               (push (list base-name function-name) all-functions))))))))
 
 (defun generate-autoloads (symbol-files-pathspec)
-  (flet ((filter-combos (combos)
-           (remove-multi-combo-symbols
-            (remove-if (lambda (x)
-                         ;; exclude the symbols from the files
-                         ;; below: putting autoloaders on some of
-                         ;; the symbols conflicts with the bootstrapping
-                         ;; Primitives which have been defined Java-side
-                         (member x '( ;; function definitions to be excluded
-                                     "fdefinition" "early-defuns"
-                                     "require" "signal" "restart"
+  (labels ((filter-combos (combos)
+             (remove-multi-combo-symbols
+              (remove-if (lambda (x)
+                           ;; exclude the symbols from the files
+                           ;; below: putting autoloaders on some of
+                           ;; the symbols conflicts with the bootstrapping
+                           ;; Primitives which have been defined Java-side
+                           (member x '( ;; function definitions to be excluded
+                                       "fdefinition" "early-defuns"
+                                       "require" "signal" "restart"
 
-                                     ;; extensible sequences override
-                                     ;; lots of default functions;
-                                     ;; java-collections implements
-                                     ;; extensible sequences
-                                     "extensible-sequences-base"
-                                     "extensible-sequences" "java-collections"
+                                       ;; extensible sequences override
+                                       ;; lots of default functions;
+                                       ;; java-collections implements
+                                       ;; extensible sequences
+                                       "extensible-sequences-base"
+                                       "extensible-sequences" "java-collections"
 
-                                     ;; macro definitions to be excluded
-                                     "macros" ;; "backquote"
-                                     "precompiler")
-                                 :test #'string=))
-                       combos
-                       :key #'first)))
-         (symbols-pathspec (filespec)
-           (merge-pathnames filespec symbol-files-pathspec)))
+                                       ;; macro definitions to be excluded
+                                       "macros" ;; "backquote"
+                                       "precompiler")
+                                   :test #'string=))
+                         combos
+                         :key #'first)))
+           (filter-setf-combos (combos)
+             (filter-combos 
+              (remove-multi-combo-symbols
+               (remove-if (lambda (x) (member x '("clos") :test #'string=)) combos :key #'first))))
+           (symbols-pathspec (filespec)
+             (merge-pathnames filespec symbol-files-pathspec)))
     (let ((funcs (filter-combos (load-combos (symbols-pathspec "*.funcs"))))
           (macs (filter-combos (load-combos (symbols-pathspec "*.macs"))))
+          (setf-functions (filter-setf-combos (load-combos (symbols-pathspec "*.setf-functions"))))
+          (setf-expanders (filter-setf-combos (load-combos (symbols-pathspec "*.setf-expanders"))))
           (exps (filter-combos (load-combos (symbols-pathspec "*.exps")))))
       (with-open-file (f (symbols-pathspec "autoloads-gen.lisp")
                          :direction :output :if-does-not-exist :create
@@ -243,8 +248,19 @@
           (write-line ";; MACROS" f)
           (terpri f)
           (write-package-filesets f package 'ext:autoload-macro
-                                  (combos-to-fileset-symbols macs)))))))
+                                  (combos-to-fileset-symbols macs))
 
+          (terpri f)
+
+          (write-line ";; SETF-FUNCTIONS" f)
+          (terpri f)
+          (write-package-filesets f package 'ext:autoload-setf-function
+                                    (combos-to-fileset-symbols setf-functions))
+          (terpri f)
+          (write-line ";; SETF-EXPANDERS" f)
+          (terpri f)
+          (write-package-filesets f package 'ext:autoload-setf-expander
+                                  (combos-to-fileset-symbols setf-expanders)))))))
 
 ;;
 ;; --- End of autoloads.lisp
