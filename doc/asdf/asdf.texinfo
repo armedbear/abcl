@@ -41,11 +41,11 @@ for Common Lisp programs and libraries.
 You can find the latest version of this manual at
 @url{http://common-lisp.net/project/asdf/asdf.html}.
 
-ASDF Copyright @copyright{} 2001-2012 Daniel Barlow and contributors.
+ASDF Copyright @copyright{} 2001-2013 Daniel Barlow and contributors.
 
-This manual Copyright @copyright{} 2001-2012 Daniel Barlow and contributors.
+This manual Copyright @copyright{} 2001-2013 Daniel Barlow and contributors.
 
-This manual revised @copyright{} 2009-2012 Robert P. Goldman and Francois-Rene Rideau.
+This manual revised @copyright{} 2009-2013 Robert P. Goldman and Francois-Rene Rideau.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -157,6 +157,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @cindex ASDF versions
 @cindex :asdf
 @cindex :asdf2
+@cindex :asdf3
 
 ASDF is Another System Definition Facility:
 a tool for specifying how systems of Common Lisp software
@@ -176,16 +177,17 @@ to learn how to define a system of your own.
 the ASDF internals and how to extend ASDF.
 
 @emph{Nota Bene}:
-We have released ASDF 2.000 on May 31st 2010.
-Subsequent releases of ASDF 2 have since then been included
+We have released ASDF 2.000 on May 31st 2010,
+and ASDF 3.0 on January 31st 2013.
+Releases of ASDF 2 and later have since then been included
 in all actively maintained CL implementations that used to bundle ASDF 1,
 plus some implementations that didn't use to,
 and has been made to work with all actively used CL implementations and a few more.
 @xref{FAQ,,``What has changed between ASDF 1 and ASDF 2?''}.
-Furthermore, it is possible to upgrade from ASDF 1 to ASDF 2 on the fly.
-For this reason, we have stopped supporting ASDF 1;
-if you are using ASDF 1 and are experiencing any kind of issues or limitations,
-we recommend you upgrade to ASDF 2
+Furthermore, it is possible to upgrade from ASDF 1 to ASDF 2 or ASDF 3 on the fly.
+For this reason, we have stopped supporting ASDF 1 and ASDF 2.
+If you are using ASDF 1 or ASDF 2 and are experiencing any kind of issues or limitations,
+we recommend you upgrade to ASDF 3
 --- and we explain how to do that. @xref{Loading ASDF}.
 
 Also note that ASDF is not to be confused with ASDF-Install.
@@ -217,7 +219,7 @@ so you may more easily modify it, we recommend clbuild.
 
 @section Loading a pre-installed ASDF
 
-Most recent Lisp implementations include a copy of ASDF 2.
+Most recent Lisp implementations include a copy of ASDF 2, and soon ASDF 3.
 You can usually load this copy using Common Lisp's @code{require} function:
 
 @lisp
@@ -233,7 +235,7 @@ The following implementations are obsolete, not actively maintained,
 and most probably will never bundle it:
 cormanlisp gcl genera mcl.
 
-If the implementation you are using doesn't provide ASDF 2,
+If the implementation you are using doesn't provide ASDF 2 or ASDF 3,
 see @pxref{Loading ASDF,,Loading an otherwise installed ASDF} below.
 If that implementation is still actively maintained,
 you may also send a bug report to your Lisp vendor and complain
@@ -290,14 +292,14 @@ before you contact us and raise an issue.
 
 @section Upgrading ASDF
 
-If your implementation provides ASDF 2.27 or later,
+If your implementation provides ASDF 3 or later,
 you only need to @code{(require "asdf")}:
 ASDF will automatically look whether an updated version of itself is available
 amongst the regularly configured systems, before it compiles anything else.
 See @pxref{Configuring ASDF} below.
 
 If your implementation does provide ASDF 2 or later,
-but not ASDF 2.27 or later,
+but not ASDF 3 or later,
 and you want to upgrade to a more recent version,
 you need to install and configure your ASDF as above,
 and additionally, you need to explicitly tell ASDF to load itself,
@@ -346,13 +348,13 @@ ASDF will actually invalidate all previously loaded systems
 when it is loaded on top of a different ASDF version,
 starting with ASDF 2.014.8 (as far as releases go, 2.015);
 and it will automatically attempt this self-upgrade as its very first step
-starting with ASDF 2.27.
+starting with ASDF 3.
 
 @item
 For this an many other reasons,
 it important reason to load, configure and upgrade ASDF (if needed)
 as one of the very first things done by your build and startup scripts.
-Until all implementations provide ASDF 2.27 or later,
+Until all implementations provide ASDF 3 or later,
 it is safer if you upgrade ASDF and its extensions as a special step
 at the very beginning of whatever script you are running,
 before you start using ASDF to load anything else;
@@ -360,7 +362,7 @@ even afterwards, it is still a good idea, to avoid having to
 load and reload code twice as it gets invalidated.
 
 @item
-Until all implementations provide ASDF 2.27 or later,
+Until all implementations provide ASDF 3 or later,
 it is unsafe to upgrade ASDF as part of loading a system
 that depends on a more recent version of ASDF,
 since the new one might shadow the old one while the old one is running,
@@ -376,7 +378,7 @@ with such code as:
   (error "FOO requires ASDF ~A or later." *required-asdf-version*))
 @end example
 @item
-Until all implementations provide ASDF 2.27 or later,
+Until all implementations provide ASDF 3 or later,
 it is unsafe for a system to transitively depend on ASDF
 and not directly depend on ASDF;
 if any of the system you use either depends-on asdf,
@@ -490,7 +492,7 @@ as part of some initialization script that builds or starts
 your Common Lisp software system.
 (For instance, some SBCL users used to put it in their @file{~/.sbclrc}.)
 
-The @code{asdf:*central-registry*} is empty by default in ASDF 2,
+The @code{asdf:*central-registry*} is empty by default in ASDF 2 or ASDF 3,
 but is still supported for compatibility with ASDF 1.
 When used, it takes precedence over the above source-registry@footnote{
 It is possible to further customize
@@ -695,7 +697,7 @@ and you can just use:
 In older versions of ASDF, you needed to use
 @code{(asdf:oos 'asdf:load-op :@var{foo})}.
 If your ASDF is too old to provide @code{asdf:load-system} though
-we recommend that you upgrade to ASDF 2.
+we recommend that you upgrade to ASDF 3.
 @xref{Loading ASDF,,Loading an otherwise installed ASDF}.
 
 Note the name of a system is specified as a string or a symbol,
@@ -1319,10 +1321,10 @@ as well as any dependency pointing to it.
 As compared to using @code{#+} which is expanded at read-time,
 this allows you to have an object in your component hierarchy
 that can be used for manipulations beside building your project.
-This option was added in ASDF 2.27.
+This option was added in ASDF 3.
 
 @subsection if-component-dep-fails option
-This option was removed in ASDF 2.27.
+This option was removed in ASDF 3.
 Its semantics was limited in purpose and dubious to explain,
 and its implementation was breaking a hole into the ASDF object model.
 Please use the @code{if-feature} option instead.
@@ -1411,52 +1413,30 @@ To be successfully buildable, this graph of actions but be acyclic.
 If, as a user, extender or implementer of ASDF, you fail
 to keep the dependency graph without cycles,
 ASDF will fail loudly as it eventually finds one.
-
 To clearly distinguish the direction of dependencies,
-ASDF 2.27 introduces the words @emph{parent} and @emph{child}
+ASDF 3 uses the words @emph{requiring} and @emph{required}
 as applied to an action depending on the other:
-the parent action @code{depends-on} the completion of all children actions
+the requiring action @code{depends-on} the completion of all required actions
 before it may itself be @code{perform}ed.
-ASDF has long had parent operations and children operations,
-whereby the ancestor holds some options valid for all the children (notably regarding forcing).
 
-Using the defsystem syntax, users may easily express
+Using the @code{defsystem} syntax, users may easily express
 direct dependencies along the graph of the object hierarchy:
 between a component and its parent, its children, and its siblings.
 By defining custom CLOS methods, you can express more elaborate dependencies as you wish.
 Most common operations, such as @code{load-op}, @code{compile-op} or @code{load-source-op}
-automatically ``descend'' the component hierarchy and are ``covariant'' with it:
+are automatically propagate ``downward'' the component hierarchy and are ``covariant'' with it:
 to act the operation on the parent module, you must first act it on all the children components,
 with the action on the parent being parent of the action on each child.
-Other operations, such as @code{parent-load-op} and @code{parent-load-source-op}
-(introduced in ASDF 2.27) ``ascend'' the component hierarchy and are ``contravariant'' with it:
-to act the operation on the child component, you must first act it on all its parent module, and so on,
-ensuring that all the module's dependencies are (compiled and) loaded
+Other operations, such as @code{prepare-op} and @code{prepare-source-op}
+(introduced in ASDF 3) are automatically propagated ``upward'' the component hierarchy
+and are ``contravariant'' with it:
+to perform the operation of preparing for compilation of a child component,
+you must perform the operation of preparing for compilation of its parent component, and so on,
+ensuring that all the parent's dependencies are (compiled and) loaded
 before the child component may be compiled and loaded.
 Yet other operations, such as @code{test-op} or @code{load-fasl-op}
-remain at the system level, and do not descend the hierarchy,
-instead doing something global.
-Finally, some operations such a POIU's @code{parallel-load-op}
-are not even meant to be performed or to have dependencies,
-but are only ways to specialize @code{operate} into behaving differently
-(in this case, having it operate in parallel).
-
-Parent and child thus mean different things for components and for actions.
-They also mean two different things for operations.
-Each operation has a @code{parent} slot,
-which links it up all the way to an ancestor @emph{operation}
-that contains all configuration data related to the current run of @code{operate}
-(usually the links are made with @code{make-sub-operation}
-which ensures the chain or parents is of length zero or one).
-Each operation also has a notion of a @code{parent-operation},
-such that current operation acting on a current component
-is parent of the parent-operation acting on the parent.
-That's how @code{parent-load-op} is the @code{parent-operation}
-or both @code{load-op} and @code{compile-op} (see above).
-
-It isn't too confusing: parent and child are generic ways to denote a clear directional relationship,
-and whether we're discussing component structure, action structure, operation structure
-or contravariant operation prerequisites, it is usually very clear which relationship we're discussing.
+remain at the system level, and are not propagated along the hierarchy,
+but instead do something global on the system.
 
 @menu
 * Operations::
@@ -1651,7 +1631,7 @@ Of course, @emph{before} you define such systems,
 you should not forget to @code{(asdf:clear-configuration)}.
 
 @code{load-fasl-op} is available on all actively supported Lisp implementations,
-and on those implementations only, and only since ASDF 2.27.
+and on those implementations only, and only since ASDF 3.
 This functionality was previously available for select implementations,
 as part of a separate system @code{asdf-bundle},
 itself descended from @code{asdf-ecl}.
@@ -1899,7 +1879,7 @@ For more information on the semantics of version specifiers, see @ref{The defsys
 @c @xref{Predefined operations of ASDF}.
 @c @emph{Nota Bene}:
 @c This operation, planned for ASDF 1,
-@c is still not implemented yet as of ASDF 2.
+@c is still not implemented yet as of ASDF 3.
 @c Don't hold your breath.
 
 
@@ -2095,7 +2075,7 @@ are inferred to be of this type.
 
 @item
 @code{:if-component-dep-fails}
-This attribute was removed in ASDF 2.27. Do not use it.
+This attribute was removed in ASDF 3. Do not use it.
 Use @code{:if-feature} instead.
 
 @item
@@ -2279,7 +2259,7 @@ One great innovation of the original ASDF was its ability to leverage
 @code{CL:TRUENAME} to locate where your source code was and where to build it,
 allowing for symlink farms as a simple but effective configuration mechanism
 that is easy to control programmatically.
-ASDF2 still supports this configuration style, and it is enabled by default;
+ASDF 3 still supports this configuration style, and it is enabled by default;
 however we recommend you instead use
 our source-registry configuration mechanism described below,
 because it is easier to setup in a portable way across users and implementations.
@@ -2289,7 +2269,7 @@ either because it is very slow on their system, or
 because they are using content-addressed storage where the truename of a file
 is related to a digest of its individual contents,
 and not to other files in the same intended project.
-For these people, ASDF 2.27 allows to eschew the @code{TRUENAME} mechanism,
+For these people, ASDF 3 allows to eschew the @code{TRUENAME} mechanism,
 by setting the variable @var{asdf:*resolve-symlinks*} to @code{NIL}.
 
 PS: Yes, if you haven't read Vernor Vinge's short but great classic
@@ -2315,7 +2295,7 @@ we try to use folder configuration from the registry regarding
 @code{Common AppData} and similar directories.
 Since support for querying the Windows registry
 is not possible to do in reasonable amounts of portable Common Lisp code,
-ASDF 2 relies on the environment variables that Windows usually exports.
+ASDF 3 relies on the environment variables that Windows usually exports.
 
 @section Backward Compatibility
 
@@ -2729,7 +2709,7 @@ while changing formats from version to version (or platform to platform)
 which means that you'll have to recompile binaries
 as you switch from one implementation to the next.
 
-ASDF 2 includes the @code{asdf-output-translations} facility
+Since ASDF 2, ASDF includes the @code{asdf-output-translations} facility
 to mitigate the problem.
 
 @section Configurations
@@ -3592,7 +3572,7 @@ The following documentation is only for the purpose of your migrating away from 
 in a way that preserves semantics.
 
 Instead we recommend the use @code{run-program} above
-available as part of ASDF since ASDF 2.27.
+available as part of ASDF since ASDF 3.
 
 @code{run-shell-command} takes as arguments a @code{format} control-string
 and arguments to be passed to @code{format} after this control-string
@@ -3776,7 +3756,7 @@ between ASDF 1 and ASDF 2, with many bugs squashed.
 In particular, dependencies were not correctly propagated
 across modules but now are.
 It has been completely rewritten many times over
-between ASDF 2.000 and ASDF 2.27,
+between ASDF 2.000 and ASDF 3,
 with fundamental issues in the original model being fixed.
 Timestamps were not propagated at all, and now are.
 The internal model of how actions depend on each other
@@ -3981,8 +3961,8 @@ In the meantime, you can load @file{asdf.lisp} directly.
 
 @subsection ``I'm a Common Lisp implementation vendor. When and how should I upgrade ASDF?''
 
-Starting with current candidate releases of ASDF 2,
-it should always be a good time to upgrade to a recent ASDF.
+Since ASDF 2,
+it should always be a good time to upgrade to a recent version of ASDF.
 You may consult with the maintainer for which specific version they recommend,
 but the latest @code{release} should be correct.
 We trust you to thoroughly test it with your implementation
@@ -4292,7 +4272,7 @@ you might skip package complications:
 It is possible to achieve the same effect
 in a way that supports both ASDF 1 and ASDF 2,
 but really, friends don't let friends use ASDF 1.
-Please upgrade to ASDF 2.
+Please upgrade to ASDF 3.
 In short, though: do same as above, but
 @emph{before} you use the class in a @code{defsystem},
 you also define the following method:
