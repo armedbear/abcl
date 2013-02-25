@@ -336,6 +336,42 @@ public class Stream extends StructureObject {
             ((DecodingReader)reader).setCharset(Charset.forName(encoding));
     }
 
+  public static final Primitive STREAM_EXTERNAL_FORMAT = new pf_stream_external_format();
+  @DocString(
+    name="stream-external-format", 
+    args="stream",
+    doc="Returns the external format of STREAM."
+  )
+  private static final class pf_stream_external_format extends Primitive {
+    pf_stream_external_format() {
+      super("stream-external-format", "stream");
+    }
+    public LispObject execute(LispObject arg) {
+      if (arg instanceof Stream) {
+        return ((Stream)arg).getExternalFormat();
+      } else {
+        return error(new TypeError(arg, Symbol.STREAM));
+      }
+    }
+  }
+
+  // DEFSETF-ed in 'setf.lisp'
+  public static final Primitive SET_STREAM_EXTERNAL_FORMAT = new pf__set_stream_external_format();
+  @DocString(
+    name="%set-stream-external-format",
+    args="stream format"
+  )
+  private static final class pf__set_stream_external_format extends Primitive {
+    pf__set_stream_external_format() {
+        super("%set-stream-external-format",
+              PACKAGE_SYS, false, "stream external-format");
+    }
+    public LispObject execute(LispObject stream, LispObject format) {
+      Stream s = checkStream(stream);
+      s.setExternalFormat(format);
+      return format;
+    }
+  };
 
   public static final Primitive AVAILABLE_ENCODINGS = new pf_available_encodings();
   @DocString(name="available-encodings",

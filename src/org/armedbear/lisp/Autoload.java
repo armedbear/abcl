@@ -325,7 +325,8 @@ public class Autoload extends Function
     public static final Primitive RESOLVE = new pf_resolve();
     @DocString(name="resolve", 
                args="symbol",
-               doc="Force the symbol to be resolved via the autoloader mechanism.")
+               doc="Resolve the function named by SYMBOL via the autoloader mechanism.\n"
+               + "Returns either the function or NIL if no resolution was possible.")
     private static final class pf_resolve extends Primitive {
         pf_resolve() {
             super("resolve", PACKAGE_EXT, true, "symbol");
@@ -339,7 +340,7 @@ public class Autoload extends Function
                 autoload.load();
                 return symbol.getSymbolFunction();
             }
-            return fun;
+            return ((fun == null) ? NIL : fun);
         }
     }
 
@@ -392,7 +393,7 @@ public class Autoload extends Function
         autoload("cos", "MathFunctions");
         autoload("cosh", "MathFunctions");
         autoload("delete-file", "delete_file");
-        autoload("%delete-package", "PackageFunctions");
+        autoload(PACKAGE_SYS, "%delete-package", "PackageFunctions");
         autoload("echo-stream-input-stream", "EchoStream");
         autoload("echo-stream-output-stream", "EchoStream");
         autoload("exp", "MathFunctions");
@@ -428,7 +429,7 @@ public class Autoload extends Function
         autoload("hash-table-size", "HashTableFunctions");
         autoload("hash-table-test", "HashTableFunctions");
         autoload("hash-table-test", "HashTableFunctions");
-        autoload("%import", "PackageFunctions");
+        autoload(PACKAGE_SYS, "%import", "PackageFunctions");
         autoload("input-stream-p", "input_stream_p");
         autoload("integer-decode-float", "FloatFunctions");
         autoload("interactive-stream-p", "interactive_stream_p");
@@ -498,7 +499,7 @@ public class Autoload extends Function
         autoload("stream-element-type", "stream_element_type");
         autoload("stream-error-stream", "StreamError");
         autoload("stream-external-format", "stream_external_format");
-        autoload("%set-stream-external-format", "stream_external_format");
+        autoload(PACKAGE_SYS, "%set-stream-external-format", "Stream");
         autoload("stringp", "StringFunctions");
         autoload("sxhash", "HashTableFunctions");
         autoload("sxhash", "HashTableFunctions");
@@ -630,11 +631,10 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "cache-emf", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "cache-slot-location", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "canonicalize-logical-host", "LogicalPathname", true);
-        autoload(PACKAGE_SYS, "class-direct-slots", "SlotClass");
+        autoload(PACKAGE_SYS, "%class-direct-slots", "SlotClass");
         autoload(PACKAGE_SYS, "%float-bits", "FloatFunctions");
         autoload(PACKAGE_SYS, "coerce-to-double-float", "FloatFunctions");
         autoload(PACKAGE_SYS, "coerce-to-single-float", "FloatFunctions");
-        autoload(PACKAGE_SYS, "compute-class-direct-slots", "SlotClass", true);
         autoload(PACKAGE_SYS, "create-new-file", "create_new_file");
         autoload(PACKAGE_SYS, "default-time-zone", "Time");
         autoload(PACKAGE_SYS, "disassemble-class-bytes", "disassemble_class_bytes", true);
@@ -667,7 +667,6 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "make-double-float", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "make-file-stream", "FileStream");
         autoload(PACKAGE_SYS, "make-fill-pointer-output-stream", "FillPointerOutputStream");
-        autoload(PACKAGE_SYS, "make-forward-referenced-class", "ForwardReferencedClass", true);
         autoload(PACKAGE_SYS, "make-layout", "Layout", true);
         autoload(PACKAGE_SYS, "make-single-float", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "make-slot-definition", "SlotDefinition", true);
