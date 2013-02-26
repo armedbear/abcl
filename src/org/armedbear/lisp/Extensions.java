@@ -176,10 +176,16 @@ public final class Extensions
     }
   }
 
-  // ### source-pathname
-  public static final Primitive SOURCE_PATHNAME = new source_pathname();
-  private static class source_pathname extends Primitive {
-    source_pathname() {
+  // XXX rename to something else as it doesn't always refer to a pathname.
+  public static final Primitive SOURCE_PATHNAME = new pf_source_pathname();
+  @DocString(
+    name="source-pathname",
+    args="symbol",
+    doc="Returns either the pathname corresponding to the file from which this symbol was compiled,"
+    + "or the keyword :TOP-LEVEL."
+  )
+  private static class pf_source_pathname extends Primitive {
+    pf_source_pathname() {
       super("source-pathname", PACKAGE_EXT, true);
     }
     @Override

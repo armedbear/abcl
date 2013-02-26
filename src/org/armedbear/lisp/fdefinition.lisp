@@ -37,7 +37,9 @@
   (when (and *warn-on-redefinition* (fboundp name) (not (autoloadp name)))
     (cond ((symbolp name)
            (let ((old-source 
-                  (truename (source-pathname name)))
+                  (if (keywordp (source-pathname name))
+                      (source-pathname name)
+                      (truename (source-pathname name))))
                  (current-source 
                   (if (not *source*) 
                       :top-level
