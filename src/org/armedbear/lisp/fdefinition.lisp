@@ -36,9 +36,14 @@
 (defun check-redefinition (name)
   (when (and *warn-on-redefinition* (fboundp name) (not (autoloadp name)))
     (cond ((symbolp name)
-           (let ((old-source (source-pathname name))
-                 (current-source (or *source* :top-level)))
-             (cond ((equal old-source current-source)) ; OK
+           (let ((old-source 
+                  (truename (source-pathname name)))
+                 (current-source 
+                  (if (not *source*) 
+                      :top-level
+                      (truename *source*))))
+             (cond ((equal old-source 
+                           current-source)) ; OK
                    (t
                     (if (eq current-source :top-level)
                         (style-warn "redefining ~S at top level" name)
