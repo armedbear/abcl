@@ -125,15 +125,15 @@ public final class Load
                                         boolean print,
                                         boolean ifDoesNotExist)
     {
-        return load(pathname, verbose, print, ifDoesNotExist, false);
+        return load(pathname, verbose, print, ifDoesNotExist, false, Keyword.DEFAULT);
     }
 
     public static final LispObject load(final Pathname pathname,
                                         boolean verbose,
                                         boolean print,
                                         boolean ifDoesNotExist,
-                                        boolean returnLastResult)
-
+                                        boolean returnLastResult,
+                                        LispObject externalFormat)
     {
         Pathname mergedPathname = null;
         if (!pathname.isAbsolute() && !pathname.isJar()) {
@@ -204,7 +204,7 @@ public final class Load
     
         try {
             return loadFileFromStream(pathname, truename,
-                                      new Stream(Symbol.SYSTEM_STREAM, in, Symbol.CHARACTER),
+                                      new Stream(Symbol.SYSTEM_STREAM, in, Symbol.CHARACTER, externalFormat),
                                       verbose, print, false, returnLastResult);
         }
         finally {
@@ -271,7 +271,6 @@ public final class Load
                                                   boolean verbose,
                                                   boolean print,
                                                   boolean auto)
-
     {
         InputStream in = null;
         Pathname pathname = null;
@@ -655,44 +654,47 @@ public final class Load
     }
 
 
-    // ### %load filespec verbose print if-does-not-exist => generalized-boolean
+    // ### %load filespec verbose print if-does-not-exist external-format=> generalized-boolean
     private static final Primitive _LOAD = new _load();
     private static class _load extends Primitive {
         _load() {
             super("%load", PACKAGE_SYS, false,
-                  "filespec verbose print if-does-not-exist");
+                  "filespec verbose print if-does-not-exist external-format");
         }
         @Override
         public LispObject execute(LispObject filespec, LispObject verbose,
-                                  LispObject print, LispObject ifDoesNotExist)
+                                  LispObject print, LispObject ifDoesNotExist, 
+                                  LispObject externalFormat)
         {
-            return load(filespec, verbose, print, ifDoesNotExist, NIL);
+            return load(filespec, verbose, print, ifDoesNotExist, NIL, externalFormat);
         }
     }
 
-    // ### %load-returning-last-result filespec verbose print if-does-not-exist => object
+    // ### %load-returning-last-result filespec verbose print if-does-not-exist external-format => object
     private static final Primitive _LOAD_RETURNING_LAST_RESULT = new _load_returning_last_result();
     private static class _load_returning_last_result extends Primitive {
         _load_returning_last_result() {
             super("%load-returning-last-result", PACKAGE_SYS, false,
-                  "filespec verbose print if-does-not-exist");
+                  "filespec verbose print if-does-not-exist external-format");
         }
         @Override
         public LispObject execute(LispObject filespec, LispObject verbose,
-                                  LispObject print, LispObject ifDoesNotExist)
-            {
-            return load(filespec, verbose, print, ifDoesNotExist, T);
+                                  LispObject print, LispObject ifDoesNotExist, 
+                                  LispObject externalFormat) {
+             return load(filespec, verbose, print, ifDoesNotExist, T, externalFormat);
         }
     }
 
     static final LispObject load(LispObject filespec,
-                                         LispObject verbose,
-                                         LispObject print,
-                                         LispObject ifDoesNotExist,
-                                         LispObject returnLastResult)
+                                 LispObject verbose,
+                                 LispObject print,
+                                 LispObject ifDoesNotExist,
+                                 LispObject returnLastResult,
+                                 LispObject externalFormat)
         {
         if (filespec instanceof Stream) {
             if (((Stream)filespec).isOpen()) {
+                // !?! in this case the external-format specifier is ignored:  warn user?
                 LispObject pathname;
                 if (filespec instanceof FileStream)
                     pathname = ((FileStream)filespec).getPathname();
@@ -720,7 +722,8 @@ public final class Load
                     verbose != NIL,
                     print != NIL,
                     ifDoesNotExist != NIL,
-                    returnLastResult != NIL);
+                    returnLastResult != NIL,
+                    externalFormat);
     }
 
     // ### load-system-file
