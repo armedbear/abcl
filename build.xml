@@ -639,7 +639,7 @@ will compile (if necessary) and load JSS.
       <apply executable="etags" parallel="true" verbose="true" maxparallel="300">
         <arg value="--append"/>
         <arg value="--regex=|[ \t]+//[ \t]+###[ \t]+\([^ \t]+\)|\1|"/>
-        <arg value='--regex=|[ \t]*@DocString([ \t]*name=\"\([^\"]*\)|\1|'/>
+        <arg value='--regex=|[ \t]*@DocString([ \n\r\t]*name=\"\([^\"]*\)|\1|m'/>
         <fileset dir="${src.dir}">
           <patternset refid="abcl.source.java"/>
           <patternset refid="abcl.source.lisp"/>
