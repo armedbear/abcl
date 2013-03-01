@@ -1175,7 +1175,7 @@ public class Stream extends StructureObject {
                 if (invert)
                     packageName = invert(packageName, packageFlags);
 
-                pkg = Packages.findPackage(packageName);
+                pkg = getCurrentPackage().findPackage(packageName);
                 if (pkg == null)
                     return error(new ReaderError("The package \"" + packageName + "\" can't be found.", this));
             }

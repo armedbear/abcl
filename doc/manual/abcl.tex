@@ -956,6 +956,105 @@ expect the following:
 
 \end{itemize}
 
+\section{Package-Local Nicknames}
+\label{sec:pack-local-nickn}
+
+ABCL allows giving packages local nicknames: they allow short and
+easy-to-use names to be used without fear of name conflict associated
+with normal nicknames.\footnote{Package-local nicknames were originally
+developed in SBCL.}
+
+A local nickname is valid only when inside the package for which it
+has been specified. Different packages can use same local nickname for
+different global names, or different local nickname for same global
+name.
+
+Symbol \code{:package-local-nicknames} in \code{*features*} denotes the
+support for this feature.
+
+\index{DEFPACKAGE}
+The options to \code{defpackage} are extended with a new option
+\code{:local-nicknames (local-nickname actual-package-name)*}.
+
+The new package has the specified local nicknames for the corresponding
+actual packages.
+
+Example:
+\begin{listing-lisp}
+(defpackage :bar (:intern "X"))
+(defpackage :foo (:intern "X"))
+(defpackage :quux (:use :cl)
+  (:local-nicknames (:bar :foo) (:foo :bar)))
+(find-symbol "X" :foo) ; => FOO::X
+(find-symbol "X" :bar) ; => BAR::X
+(let ((*package* (find-package :quux)))
+  (find-symbol "X" :foo))               ; => BAR::X
+(let ((*package* (find-package :quux)))
+  (find-symbol "X" :bar))               ; => FOO::X
+\end{listing-lisp}
+
+\index{PACKAGE-LOCAL-NICKNAMES}
+--- Function: \textbf{package-local-nicknames} [\textbf{ext}] \textit{package-designator}
+
+\begin{adjustwidth}{5em}{5em}
+  Returns an alist of \code{(local-nickname . actual-package)}
+  describing the nicknames local to the designated package.
+
+  When in the designated package, calls to \code{find-package} with any
+  of the local-nicknames will return the corresponding actual-package
+  instead. This also affects all implied calls to \code{find-package},
+  including those performed by the reader.
+
+  When printing a package prefix for a symbol with a package local
+  nickname, the local nickname is used instead of the real name in order
+  to preserve print-read consistency.
+\end{adjustwidth}
+
+\index{PACKAGE-LOCALLY-NICKNAMED-BY-LIST}
+--- Function: \textbf{package-locally-nicknamed-by-list} [\textbf{ext}] \textit{package-designator}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a list of packages which have a local nickname for the
+designated package.
+\end{adjustwidth}
+
+\index{ADD-PACKAGE-LOCAL-NICKNAME}
+--- Function: \textbf{add-package-local-nickname} [\textbf{ext}] \textit{local-nickname actual-package \&optional package-designator}
+
+\begin{adjustwidth}{5em}{5em}
+  Adds \code{local-nickname} for \code{actual-package} in the designated
+  package, defaulting to current package. \code{local-nickname} must be
+  a string designator, and \code{actual-package} must be a package
+  designator.
+
+  Returns the designated package.
+
+  Signals an error if \code{local-nickname} is already a package local
+  nickname for a different package, or if \code{local-nickname} is one
+  of "CL", "COMMON-LISP", or, "KEYWORD", or if \code{local-nickname} is
+  a global name or nickname for the package to which the nickname would
+  be added.
+
+  When in the designated package, calls to \code{find-package} with the
+  \code{local-nickname} will return the package the designated
+  \code{actual-package} instead. This also affects all implied calls to
+  \code{find-package}, including those performed by the reader.
+
+  When printing a package prefix for a symbol with a package local
+  nickname, local nickname is used instead of the real name in order to
+  preserve print-read consistency.
+\end{adjustwidth}
+
+\index{REMOVE-PACKAGE-LOCAL-NICKNAME}
+--- Function: \textbf{remove-package-local-nickname} [\textbf{ext}] \textit{old-nickname \&optional package-designator}
+
+\begin{adjustwidth}{5em}{5em}
+  If the designated package had \code{old-nickname} as a local nickname
+  for another package, it is removed. Returns true if the nickname
+  existed and was removed, and \code{nil} otherwise.
+\end{adjustwidth}
+
+
          
 \section{Extensible Sequences}
 

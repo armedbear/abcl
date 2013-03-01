@@ -1319,6 +1319,102 @@ The specific subtype of a Pathname may be determined with the predicates
 @end lisp
 @end defun
 
+@node Package-Local Nicknames
+@section Package-Local Nicknames
+
+ABCL allows giving packages local nicknames: they allow short and
+easy-to-use names to be used without fear of name conflict associated
+with normal nicknames.@footnote{Package-local nicknames were originally
+developed in SBCL.}
+
+A local nickname is valid only when inside the package for which it
+has been specified. Different packages can use same local nickname for
+different global names, or different local nickname for same global
+name.
+
+Symbol @code{:package-local-nicknames} in @code{*features*} denotes the
+support for this feature.
+
+@defmac defpackage name [[option]]* @result{} package
+
+Options are extended to include
+
+@itemize
+@item
+@code{:local-nicknames} @var{(local-nickname actual-package-name)}*
+
+The package has the specified local nicknames for the corresponding
+actual packages.
+@end itemize
+
+Example:
+
+@lisp
+(defpackage :bar (:intern "X"))
+(defpackage :foo (:intern "X"))
+(defpackage :quux (:use :cl) (:local-nicknames (:bar :foo) (:foo :bar)))
+(find-symbol "X" :foo) ; => FOO::X
+(find-symbol "X" :bar) ; => BAR::X
+(let ((*package* (find-package :quux)))
+  (find-symbol "X" :foo))               ; => BAR::X
+(let ((*package* (find-package :quux)))
+  (find-symbol "X" :bar))               ; => FOO::X
+@end lisp
+@end defmac
+
+@defun package-local-nicknames (package-designator)
+
+Returns an alist of (local-nickname . actual-package) describing the
+nicknames local to the designated package.
+
+When in the designated package, calls to @code{find-package} with any of
+the local-nicknames will return the corresponding actual-package
+instead. This also affects all implied calls to @code{find-package},
+including those performed by the reader.
+
+When printing a package prefix for a symbol with a package local
+nickname, the local nickname is used instead of the real name in order
+to preserve print-read consistency.
+@end defun
+
+@defun package-locally-nicknamed-by-list (package-designator)
+
+Returns a list of packages which have a local nickname for the
+designated package.
+@end defun
+
+@defun add-package-local-nickname (local-nickname actual-package &optional package-designator)
+
+Adds @code{local-nickname} for @code{actual-package} in the designated
+package, defaulting to current package. @code{local-nickname} must be a
+string designator, and @code{actual-package} must be a package
+designator.
+
+Returns the designated package.
+
+Signals an error if @code{local-nickname} is already a package local
+nickname for a different package, or if @code{local-nickname} is one of
+"CL", "COMMON-LISP", or, "KEYWORD", or if @code{local-nickname} is a
+global name or nickname for the package to which the nickname would be
+added.
+
+When in the designated package, calls to @code{find-package} with the
+@code{local-nickname} will return the package the designated
+@code{actual-package} instead. This also affects all implied calls to
+@code{find-package}, including those performed by the reader.
+
+When printing a package prefix for a symbol with a package local nickname,
+local nickname is used instead of the real name in order to preserve
+print-read consistency.
+@end defun
+
+@defun remove-package-local-nickname (old-nickname &optional package-designator)
+
+If the designated package had @code{old-nickname} as a local nickname
+for another package, it is removed. Returns true if the nickname existed
+and was removed, and @code{nil} otherwise.
+@end defun
+
 
 @node Extensible Sequences
 @section Extensible Sequences

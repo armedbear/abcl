@@ -270,6 +270,69 @@ public final class PackageFunctions
         }
     };
 
+  // ### package-local-nicknames
+  // package-local-nicknames package => nickname-alist
+  private static final Primitive PACKAGE_LOCAL_NICKNAMES =
+    new Primitive("package-local-nicknames", PACKAGE_EXT, true, "package")
+    {
+      @Override
+      public LispObject execute(LispObject arg)
+      {
+        return coerceToPackage(arg).getLocalPackageNicknames();
+      }
+    };
+
+  // ### add-package-local-nickname
+  // add-package-local-nickname local-nickname package &optional package-designator => package
+  private static final Primitive ADD_PACKAGE_LOCAL_NICKNAME =
+    new Primitive("add-package-local-nickname", PACKAGE_EXT, true,
+                  "local-nickname package &optional package-designator")
+    {
+      @Override
+      public LispObject execute(LispObject nick, LispObject pack,
+                                LispObject target)
+      {
+        return coerceToPackage(target).addLocalPackageNickname(nick.getStringValue(), coerceToPackage(pack));
+      }
+      @Override
+      public LispObject execute(LispObject nick, LispObject pack)
+      {
+        return this.execute(nick, pack, getCurrentPackage());
+      }
+    };
+
+  // ### remove-package-local-nickname
+  // remove-package-local-nickname old-nickname &optional package-designator => boolean
+  private static final Primitive REMOVE_PACKAGE_LOCAL_NICKNAME =
+    new Primitive("remove-package-local-nickname", PACKAGE_EXT, true,
+                  "old-nickname &optional package-designator")
+    {
+      @Override
+      public LispObject execute(LispObject nick, LispObject target)
+      {
+        return coerceToPackage(target).removeLocalPackageNickname(nick.getStringValue());
+      }
+      @Override
+      public LispObject execute(LispObject nick)
+      {
+        return this.execute(nick, getCurrentPackage());
+      }
+    };
+
+  // ### package-locally-nicknamed-by-list
+  // package-locally-nicknamed-by-list package => package-list
+  private static final Primitive PACKAGE_LOCALLY_NICKNAMED_BY_LIST =
+    new Primitive("package-locally-nicknamed-by-list", PACKAGE_EXT, true,
+                  "package")
+    {
+      @Override
+      public LispObject execute(LispObject pack)
+      {
+        return Packages.getPackagesNicknamingPackage(coerceToPackage(pack));
+      }
+    };
+
+
     // ### %defpackage name nicknames size shadows shadowing-imports use
     // imports interns exports doc-string => package
     private static final Primitive _DEFPACKAGE =
@@ -278,9 +341,10 @@ public final class PackageFunctions
         @Override
         public LispObject execute(LispObject[] args)
         {
-            if (args.length != 10)
-                return error(new WrongNumberOfArgumentsException(this, 10));
+            if (args.length != 11)
+                return error(new WrongNumberOfArgumentsException(this, 11));
             final String packageName = args[0].getStringValue();
+            Package currentpkg = getCurrentPackage();
             LispObject nicknames = checkList(args[1]);
             // FIXME size is ignored
             // LispObject size = args[2];
@@ -290,16 +354,17 @@ public final class PackageFunctions
             LispObject imports = checkList(args[6]);
             LispObject interns = checkList(args[7]);
             LispObject exports = checkList(args[8]);
+            LispObject localNicknames = checkList(args[9]);
             // FIXME docString is ignored
-            // LispObject docString = args[9];
-            Package pkg = Packages.findPackage(packageName);
+            // LispObject docString = args[10];
+            Package pkg = currentpkg.findPackage(packageName);
             if (pkg != null)
                 return pkg;
             if (nicknames != NIL) {
                 LispObject list = nicknames;
                 while (list != NIL) {
                     String nick = javaString(list.car());
-                    if (Packages.findPackage(nick) != null) {
+                    if (currentpkg.findPackage(nick) != null) {
                         return error(new PackageError("A package named " + nick +
                                                        " already exists."));
                     }
@@ -340,7 +405,7 @@ public final class PackageFunctions
                     pkg.usePackage((Package)obj);
                 else {
                     LispObject string = obj.STRING();
-                    Package p = Packages.findPackage(string.getStringValue());
+                    Package p = currentpkg.findPackage(string.getStringValue());
                     if (p == null)
                         return error(new LispError(obj.princToString() +
                                                     " is not the name of a package."));
@@ -374,6 +439,13 @@ public final class PackageFunctions
                 String symbolName = exports.car().getStringValue();
                 pkg.export(pkg.intern(symbolName));
                 exports = exports.cdr();
+            }
+            while (localNicknames != NIL) {
+              LispObject nickDecl = localNicknames.car();
+              String name = nickDecl.car().getStringValue();
+              Package pack = coerceToPackage(nickDecl.cadr());
+              pkg.addLocalPackageNickname(name, pack);
+              localNicknames = localNicknames.cdr();
             }
             return pkg;
         }

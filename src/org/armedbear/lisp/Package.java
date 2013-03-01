@@ -38,6 +38,7 @@ import static org.armedbear.lisp.Lisp.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,6 +64,7 @@ public final class Package extends LispObject implements java.io.Serializable
     private transient ArrayList<String> nicknames;
     private transient LispObject useList = null;
     private transient ArrayList<Package> usedByList = null;
+  private transient ConcurrentHashMap<String, Package> localNicknames;
 
     // Anonymous package.
     public Package()
@@ -758,6 +760,67 @@ public final class Package extends LispObject implements java.io.Serializable
         return list;
     }
 
+  public LispObject getLocalPackageNicknames()
+  {
+    LispObject list = NIL;
+    if (localNicknames != null) {
+      for (Map.Entry<String, Package> entry : localNicknames.entrySet()) {
+        list = new Cons(new Cons(entry.getKey(), entry.getValue()), list);
+      }
+    }
+    return list;
+  }
+
+  public LispObject addLocalPackageNickname(String name, Package pack)
+  {
+    if (name.equals("CL") || name.equals("COMMON-LISP")
+        || name.equals("KEYWORD")) {
+      return error(new LispError("Trying to define a local nickname for "
+                                 + name));
+    }
+    if (name.equals(this.name) || nicknames.contains(name)) {
+      return error(new LispError("Trying to override package name or nickname with a local nickname "
+                                 + name));
+    }
+    if (localNicknames == null) {
+      localNicknames = new ConcurrentHashMap<String, Package>();
+    }
+    if (localNicknames.containsKey(name)) {
+      return error(new LispError(name + " is already a nickname for "
+                                 + pack.getName()));
+    } else {
+      localNicknames.put(name, pack);
+      return pack;
+    }
+  }
+
+  public LispObject removeLocalPackageNickname(String name)
+  {
+    if (localNicknames == null || !localNicknames.containsKey(name)) {
+      return NIL;
+    } else {
+      // return generalized boolean: package that was nicknamed to `name'
+      return localNicknames.remove(name);
+    }
+  }
+
+  public Collection<Package> getLocallyNicknamedPackages()
+  {
+    // for implementing package-locally-nicknamed-by-list
+    if (localNicknames == null) return new ArrayList<Package>();
+    else return localNicknames.values();
+  }
+
+  // Find package named `name', taking local nicknames into account
+  public Package findPackage(String name)
+  {
+    if (localNicknames != null) {
+      Package pkg = localNicknames.get(name);
+      if (pkg != null) return pkg;
+    }
+    return Packages.findPackageGlobally(name);
+  }
+
     public LispObject getShadowingSymbols()
     {
         LispObject list = NIL;
@@ -878,7 +941,7 @@ public final class Package extends LispObject implements java.io.Serializable
     }
 
     public Object readResolve() throws java.io.ObjectStreamException {
-	Package pkg = Packages.findPackage(name);
+	Package pkg = findPackage(name);
 	if(pkg != null) {
 	    return pkg;
 	} else {

@@ -3177,17 +3177,17 @@ public final class Primitives {
                 return arg;
             if (arg instanceof AbstractString) {
                 Package pkg =
-                    Packages.findPackage(arg.getStringValue());
+                  getCurrentPackage().findPackage(arg.getStringValue());
                 return pkg != null ? pkg : NIL;
             }
             if (arg instanceof Symbol) {
-                Package pkg = Packages.findPackage(checkSymbol(arg).getName());
+                Package pkg = getCurrentPackage().findPackage(checkSymbol(arg).getName());
                 return pkg != null ? pkg : NIL;
             }
             if (arg instanceof LispCharacter) {
                 String packageName =
                     String.valueOf(new char[] {((LispCharacter)arg).getValue()});
-                Package pkg = Packages.findPackage(packageName);
+                Package pkg = getCurrentPackage().findPackage(packageName);
                 return pkg != null ? pkg : NIL;
             }
             return NIL;
@@ -3222,7 +3222,8 @@ public final class Primitives {
 
         {
             String packageName = javaString(first);
-            Package pkg = Packages.findPackage(packageName);
+            Package currentpkg = getCurrentPackage();
+            Package pkg = currentpkg.findPackage(packageName);
             if (pkg != null)
                 error(new LispError("Package " + packageName +
                                     " already exists."));
@@ -3231,7 +3232,7 @@ public final class Primitives {
                 LispObject list = nicknames;
                 while (list != NIL) {
                     String nick = javaString(list.car());
-                    if (Packages.findPackage(nick) != null) {
+                    if (currentpkg.findPackage(nick) != null) {
                         error(new PackageError("A package named " + nick +
                                                " already exists."));
                     }
@@ -3247,7 +3248,7 @@ public final class Primitives {
                         // OK.
                     } else {
                         String s = javaString(obj);
-                        Package p = Packages.findPackage(s);
+                        Package p = currentpkg.findPackage(s);
                         if (p == null) {
                             error(new LispError(obj.princToString() +
                                                 " is not the name of a package."));
@@ -3272,7 +3273,7 @@ public final class Primitives {
                     pkg.usePackage((Package)obj);
                 else {
                     String s = javaString(obj);
-                    Package p = Packages.findPackage(s);
+                    Package p = currentpkg.findPackage(s);
                     if (p == null) {
                         error(new LispError(obj.princToString() +
                                             " is not the name of a package."));
@@ -3296,7 +3297,7 @@ public final class Primitives {
         @Override
         public LispObject execute(LispObject arg) {
             final String packageName = javaString(arg);
-            final Package pkg = Packages.findPackage(packageName);
+            final Package pkg = getCurrentPackage().findPackage(packageName);
             if (pkg == null)
                 return error(new PackageError("The name " + packageName +
                                               " does not designate any package."));

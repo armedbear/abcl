@@ -1839,7 +1839,7 @@ public final class Lisp
   {
     if (obj instanceof Package)
       return (Package) obj;
-    Package pkg = Packages.findPackage(javaString(obj));
+    Package pkg = getCurrentPackage().findPackage(javaString(obj));
     if (pkg != null)
       return pkg;
     error(new PackageError(obj.princToString() + " is not the name of a package."));
@@ -2147,7 +2147,7 @@ public final class Lisp
   public static final Symbol internInPackage(String name, String packageName)
 
   {
-    Package pkg = Packages.findPackage(packageName);
+    Package pkg = getCurrentPackage().findPackage(packageName);
     if (pkg == null)
       error(new LispError(packageName + " is not the name of a package."));
     return pkg.intern(name);
@@ -2338,7 +2338,8 @@ public final class Lisp
     // Common features
     LispObject featureList = list(Keyword.ARMEDBEAR, Keyword.ABCL,
                                   Keyword.COMMON_LISP, Keyword.ANSI_CL,
-                                  Keyword.CDR6, Keyword.MOP);
+                                  Keyword.CDR6, Keyword.MOP,
+                                  internKeyword("PACKAGE-LOCAL-NICKNAMES"));
     // OS type
     if (osName.startsWith("Linux"))
       featureList = Primitives.APPEND.execute(list(Keyword.UNIX,

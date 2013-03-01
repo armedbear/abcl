@@ -86,8 +86,10 @@ public final class Packages
       }
   }
 
-  // Returns null if package doesn't exist.
-  public static final synchronized Package findPackage(String name)
+  // Finds package named `name'.  Returns null if package doesn't exist.
+  // Called by Package.findPackage after checking package-local package
+  // nicknames.
+  static final synchronized Package findPackageGlobally(String name)
   {
     return (Package) map.get(name);
   }
@@ -144,11 +146,9 @@ public final class Packages
   public static final synchronized LispObject listAllPackages()
   {
     LispObject result = NIL;
-    for (Iterator it = packages.iterator(); it.hasNext();)
-      {
-        Package pkg = (Package) it.next();
-        result = new Cons(pkg, result);
-      }
+    for (Package pkg : packages) {
+      result = new Cons(pkg, result);
+    }
     return result;
   }
 
@@ -157,5 +157,18 @@ public final class Packages
     Package[] array = new Package[packages.size()];
     packages.toArray(array);
     return array;
+  }
+
+  public static final synchronized LispObject getPackagesNicknamingPackage(Package thePackage)
+  {
+    LispObject result = NIL;
+    for (Package pkg : packages) {
+      for (Package nicknamedPackage : pkg.getLocallyNicknamedPackages()) {
+        if (thePackage.equals(nicknamedPackage)) {
+          result = new Cons(pkg, result);
+        }
+      }
+    }
+    return result;
   }
 }
