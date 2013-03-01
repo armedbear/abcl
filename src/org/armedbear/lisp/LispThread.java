@@ -607,6 +607,10 @@ public final class LispThread extends LispObject
 
     public final void popStackFrame()
     {
+        // Pop off intervening JavaFrames until we get back to a LispFrame
+        while (stack != null && stack instanceof JavaStackFrame) { 
+            stack = stack.getNext();
+        }
         if (stack != null)
             stack = stack.getNext();
     }
