@@ -72,22 +72,52 @@
 
 (defconst *opcodes* (make-hash-table :test 'equalp))
 
-(defstruct jvm-opcode name number size stack-effect register-used)
+;; instruction arguments are encoded as part of the instruction,
+;; we're not talking stack values here.
 
-(defun %define-opcode (name number size stack-effect register)
+;; b = signed byte (8-bit)
+;; B = unsigned byte (8-bit)
+;; w = signed word (16-bit)
+;; W = unsigned word (16-bit)
+;; i = signed int (32-bit)
+;; I = unsigend int (32-bit)
+
+;; o = signed offset (relative code pointer) (16-bit)
+;; p = pool index (unsigned 8-bit)
+;; P = pool index (unsigned 16-bit)
+;; l = local variable (8-bit)
+;; L = local variable (16-bit)
+
+;; z = zero padding (1 to 3 bytes) to guarantee 4-byte alignment
+;;      of the following arguments
+;; q = lookupswitch variable length instruction arguments
+;; Q = tableswitch variable length instruction arguments
+
+;; t = 8-bit java builtin type designator (in {4,5,6,7,8,9,10,11})
+
+
+(defstruct jvm-opcode name number size stack-effect register-used
+           (args-spec ""))
+
+(defun %define-opcode (name number size stack-effect register
+                       &optional args-spec)
   (declare (type fixnum number size))
   (let* ((name (string name))
          (opcode (make-jvm-opcode :name name
                                   :number number
                                   :size size
                                   :stack-effect stack-effect
-                                  :register-used register)))
+                                  :register-used register
+                                  :args-spec args-spec)))
      (setf (svref *opcode-table* number) opcode)
      (setf (gethash name *opcodes*) opcode)
      (setf (gethash number *opcodes*) opcode)))
 
-(defmacro define-opcode (name number size stack-effect register)
-  `(%define-opcode ',name ,number ,size ,stack-effect ,register))
+(defmacro define-opcode (name number size stack-effect register
+                         &optional args-spec)
+  `(%define-opcode ',name ,number ,size ,stack-effect ,register
+                   ,@(when args-spec
+                           (list args-spec))))
 
 ;; name number size stack-effect register-used
 (define-opcode nop 0 1 0 nil)
@@ -108,9 +138,9 @@
 (define-opcode dconst_1 15 1 2 nil)
 (define-opcode bipush 16 2 1 nil)
 (define-opcode sipush 17 3 1 nil)
-(define-opcode ldc 18 2 1 nil)
-(define-opcode ldc_w 19 3 1 nil)
-(define-opcode ldc2_w 20 3 2 nil)
+(define-opcode ldc 18 2 1 nil "p")
+(define-opcode ldc_w 19 3 1 nil "P")
+(define-opcode ldc2_w 20 3 2 nil "P")
 (define-opcode iload 21 2 1 t)
 (define-opcode lload 22 2 2 t)
 (define-opcode fload 23 2 nil t)
@@ -269,22 +299,22 @@
 (define-opcode ireturn 172 1 -1 nil)
 (define-opcode areturn 176 1 -1 nil)
 (define-opcode return 177 1 0 nil)
-(define-opcode getstatic 178 3 1 nil)
-(define-opcode putstatic 179 3 -1 nil)
-(define-opcode getfield 180 3 0 nil)
-(define-opcode putfield 181 3 -2 nil)
-(define-opcode invokevirtual 182 3 nil nil)
-(define-opcode invokespecial 183 3 nil nil)
-(define-opcode invokestatic 184 3 nil nil)
-(define-opcode invokeinterface 185 5 nil nil)
+(define-opcode getstatic 178 3 1 nil "P")
+(define-opcode putstatic 179 3 -1 nil "P")
+(define-opcode getfield 180 3 0 nil "P")
+(define-opcode putfield 181 3 -2 nil "P")
+(define-opcode invokevirtual 182 3 nil nil "P")
+(define-opcode invokespecial 183 3 nil nil "P")
+(define-opcode invokestatic 184 3 nil nil "P")
+(define-opcode invokeinterface 185 5 nil nil "P")
 (define-opcode unused 186 0 nil nil)
-(define-opcode new 187 3 1 nil)
+(define-opcode new 187 3 1 nil "P")
 (define-opcode newarray 188 2 nil nil)
 (define-opcode anewarray 189 3 0 nil)
 (define-opcode arraylength 190 1 0 nil)
 (define-opcode athrow 191 1 0 nil)
-(define-opcode checkcast 192 3 0 nil)
-(define-opcode instanceof 193 3 0 nil)
+(define-opcode checkcast 192 3 0 nil "P")
+(define-opcode instanceof 193 3 0 nil "P")
 (define-opcode monitorenter 194 1 -1 nil)
 (define-opcode monitorexit 195 1 -1 nil)
 (define-opcode wide 196 0 nil nil)
@@ -325,6 +355,9 @@
   (declare (optimize speed))
   (jvm-opcode-stack-effect (svref *opcode-table* opcode-number)))
 
+(defun opcode-args-spec (opcode-number)
+  (let ((opcode (gethash opcode-number *opcodes*)))
+    (and opcode (jvm-opcode-args-spec))))
 
 
 
@@ -806,22 +839,13 @@
         (when (eql opcode 202) ; LABEL
           (let ((label (car (instruction-args instruction))))
             (set label i)))
-        (if (instruction-stack instruction)
-            (when (opcode-stack-effect opcode)
-              (unless (eql (instruction-stack instruction)
-                           (opcode-stack-effect opcode))
-                (sys::%format t "instruction-stack = ~S ~
-                                 opcode-stack-effect = ~S~%"
-                              (instruction-stack instruction)
-                              (opcode-stack-effect opcode))
-                (sys::%format t "index = ~D instruction = ~A~%" i
-                              (print-instruction instruction))))
-            (setf (instruction-stack instruction)
-                  (opcode-stack-effect opcode)))
         (unless (instruction-stack instruction)
-          (sys::%format t "no stack information for instruction ~D~%"
-                        (instruction-opcode instruction))
-          (aver nil))))
+          (setf (instruction-stack instruction)
+                (opcode-stack-effect opcode))
+          (unless (instruction-stack instruction)
+            (sys::%format t "no stack information for instruction ~D~%"
+                          (instruction-opcode instruction))
+            (aver nil)))))
     (analyze-stack-path code 0 0)
     (dolist (entry-point exception-entry-points)
       ;; Stack depth is always 1 when handler is called.
@@ -1078,4 +1102,4 @@
     (setf code (optimize-code code handler-labels pool)))
   (resolve-instructions (expand-virtual-instructions code)))
 
-(provide '#:opcodes)
+(provide '#:jvm-instructions)
