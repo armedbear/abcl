@@ -834,23 +834,23 @@ the description and retrieval of resources named in a
 ``understands''.  By definition, support is built-in into the JVM to
 access the ``http'' and ``https'' schemes but additional protocol
 handlers may be installed at runtime by having \textsc{JVM} symbols
-present in the sun.net.protocol.dynamic package. See \cite{maso2000}
-for more details.
+present in the \code{sun.net.protocol.dynamic} package. See
+\cite{maso2000} for more details.
 
 \textsc{ABCL} has created specializations of the ANSI
 \code{CL:PATHNAME} object to enable to use of \textsc{URI}s to address
 dynamically loaded resources for the JVM.  The \code{EXT:URL-PATHNAME}
-specialization. has a corresponding \textsc{URI} whose canonical
+specialization has a corresponding \textsc{URI} whose canonical
 representation is defined to be the \code{NAMESTRING} of the
-Pathname. The \code{EXT:JAR-PATHNAME} extension further specializes
-the the \code{EXT:URL-PATHNAME} to provide access to components of zip
-archives.  
+\cpde{CL:PATHNAME}. The \code{EXT:JAR-PATHNAME} extension further
+specializes the the \code{EXT:URL-PATHNAME} to provide access to
+components of zip archives.  
 
 % RDF description of type hierarchy 
 % TODO Render via some LaTeX mode for graphviz?
 \begin{verbatim}
   @prefix ext:   <http://abcl.not.org/cl-packages/extensions/> .
-  @prefix cl:    <http://abcl.not.org/cl-pacages/common-lisp/> .
+  @prefix cl:    <http://abcl.not.org/cl-packages/common-lisp/> .
   
   <ext:jar-pathname> a <ext:url-pathname>.
   <ext:url-pathname> a <cl:pathname>.
@@ -877,22 +877,22 @@ following caveats:
   underlying \textsc{URI} are discarded between resolutions (i.e. the
   implementation does not attempt to cache the results of current name
   resolution of the representing resource unless it is requested to be
-  resolved.)  Upon resolution, any canoicalization procedures
+  resolved.)  Upon resolution, any canonicalization procedures
   followed in resolving the resource (e.g. following redirects) are
   discarded.  Users may programatically initiate a new, local
-  computation by applying the \code{CL:TRUENAME} function to a
-  \code{EXT:URL-PATHNAME} object.  Depending on the reliablity and
-  properties of your local \textsc{REST} infrastructure, these results
-  may not necessarily be idempotent over time\footnote {See
-    \cite{evenson2011} for the draft of the publication of the
-    technical details}.
+  computation of the resolution of the resource by applying the
+  \code{CL:TRUENAME} function to a \code{EXT:URL-PATHNAME} object.
+  Depending on the reliablity and properties of your local
+  \textsc{REST} infrastructure, these results may not necessarily be
+  idempotent over time\footnote {See \cite{evenson2011} for the draft
+    of the publication of the technical details}.
 
 \end{itemize}
 
 The implementation of \code{EXT:URL-PATHNAME} allows the \textsc{ABCL}
 user to dynamically load code from the network.  For example,
-Quicklisp (\cite{quicklisp}) may be completely installed from the \textsc{REPL}
-as the single form:
+\textsc{Quicklisp} (\cite{quicklisp}) may be completely installed from
+the \textsc{REPL} as the single form:
 
 \begin{listing-lisp}
   CL-USER> (load "http://beta.quicklisp.org/quicklisp.lisp")
@@ -904,10 +904,12 @@ The implementation currently breaks \textsc{ANSI} conformance by allowing the
 types able to be \code{CL:READ} for the \code{DEVICE} to return a possible \code{CONS} of
 \code{CL:PATHNAME} objects.  %% citation from CLHS needed.
 
-In order to ``smooth over'' the bit about types being \code{CL:READ} from
-\code{CL:PATHNAME} components, we extend the semantics for the usual PATHNAME
-merge semantics when \code{*DEFAULT-PATHNAME-DEFAULTS*} contains a
-\code{EXT:JAR-PATHNAME}.  
+In order to ``smooth over'' the bit about types being \code{CL:READ}
+from \code{CL:PATHNAME} components, we extend the semantics for the
+usual PATHNAME merge semantics when \code{*DEFAULT-PATHNAME-DEFAULTS*}
+contains a \code{EXT:JAR-PATHNAME} with the ``do what I mean''
+algorithim described in \ref{section:conformance} on page
+\pageref{section:conformance}.
 
 %See \ref{_:quicklisp} on page \pageref{_:quicklisp}.
 
@@ -1382,7 +1384,7 @@ Some more information on jss can be found in its documentation at
 
 The contrib contains a pure-Java version of JFLI. 
 
-\url{http://svn.common-lisp.net/armedbear/tags/trunk/abcl/contrib/jfli/README}.
+\url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/jfli/README}.
 
 
 \section{asdf-install}
