@@ -8,9 +8,9 @@
 
 \begin{document}
 \title{Armed Bear Common Lisp User Manual}
-\date{Version 1.1.0\\
+\date{Version 1.2.0-dev\\
 \smallskip
-December 5, 2012}
+March 2, 2013}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -18,18 +18,19 @@ December 5, 2012}
 
 \tableofcontents
 
-%%Preface to the second edition, abcl-1.1.0.
+%%Preface to the second edition, abcl-1.1.
 
 \subsection{Preface to the Second Edition}
 
-ABCL 1.1 now contains (A)MOP.  We hope you enjoy!  --The Mgmt.
+\textsc{ABCL} 1.1 now contains \textsc{(A)MOP}.  We hope you enjoy!  --The Mgmt.
 
 \chapter{Introduction}
 
-Armed Bear Common Lisp (ABCL) is an implementation of Common Lisp that
-runs on the Java Virtual Machine.  It compiles Common Lisp to Java 5
-bytecode, providing the following integration methods for interfacing
-with Java code and libraries:
+Armed Bear Common Lisp (\textsc{ABCL}) is an implementation of Common
+Lisp that runs on the Java Virtual Machine.  It compiles Common Lisp
+to Java 5 bytecode \footnote{The class file version is ``49.0''.},
+providing the following integration methods for interfacing with Java
+code and libraries:
 \begin{itemize}
 \item Lisp code can create Java objects and call their methods (see
   Section~\ref{sec:lisp-java}, page~\pageref{sec:lisp-java}).
@@ -42,31 +43,31 @@ with Java code and libraries:
   of Java interfaces that can be used as listeners for Swing classes and
   similar.
 \end{itemize}
-ABCL is supported by the Lisp library manager
-QuickLisp\footnote{\url{http://quicklisp.org/}} and can run many of the
+\textsc{ABCL} is supported by the Lisp library manager
+\textsc{QuickLisp}\footnote{\url{http://quicklisp.org/}} and can run many of the
 programs and libraries provided therein out-of-the-box.
 
 \section{Conformance}
 \label{section:conformance}
 
 \subsection{ANSI Common Lisp}
-\textsc{ABCL} is currently a (non)-conforming ANSI Common Lisp
+\textsc{ABCL} is currently a (non)-conforming \textsc{ANSI} Common Lisp
 implementation due to the following known issues:
 
 \begin{itemize}
-\item The generic function signatures of the \code{DOCUMENTATION} symbol
+\item The generic function signatures of the \code{CL:DOCUMENTATION} symbol
   do not match the specification.
-\item The \code{TIME} form does not return a proper \code{VALUES}
+\item The \code{CL:TIME} form does not return a proper \code{CL:VALUES}
   environment to its caller.
-\item When merging pathnames and the defaults point to a \code{JAR-PATHNAME},
+\item When merging pathnames and the defaults point to a \code{EXT:JAR-PATHNAME},
   we set the \code{DEVICE} of the result to \code{:UNSPECIFIC} if the pathname to be
   be merged does not contain a specified \code{DEVICE}, does not contain a
   specified \code{HOST}, does contain a relative \code{DIRECTORY}, and we are
   not running on a \textsc{MSFT} Windows platform.\footnote{The intent of this
     rather arcane sounding deviation from conformance is so that the
-    result of a merge won't fill in a DEVICE with the wrong "default
+    result of a merge won't fill in a \code{DEVICE} with the wrong "default
     device for the host" in the sense of the fourth paragraph in the
-    CLHS description of MERGE-PATHNAMES (see in \cite{CLHS} the paragraph beginning
+    \textsc{CLHS} description of MERGE-PATHNAMES (see in \cite{CLHS} the paragraph beginning
     "If the PATHNAME explicitly specifies a host and not a device…").
     A future version of the implementation may return to conformance
     by using the \code{HOST} value to reflect the type explicitly.
@@ -80,11 +81,11 @@ accompanying user documentation fulfills the requirements that
 to the Common Lisp HyperSpec~\cite{CLHS}.  Clarifications to this point
 are solicited.
 
-ABCL aims to be be a fully conforming ANSI Common Lisp implementation.
+\textsc{ABCL} aims to be be a fully conforming \textsc{ANSI} Common Lisp implementation.
 Any other behavior should be reported as a bug.
 
 \subsection{Contemporary Common Lisp}
-In addition to ANSI conformance, \textsc{ABCL} strives to implement
+In addition to \textsc{ANSI} conformance, \textsc{ABCL} strives to implement
 features expected of a contemporary Common Lisp, i.e. a Lisp of the
 post-2005 Renaissance.
 
@@ -97,26 +98,29 @@ contemporary Common Lisp.
   in a given call frame, and the inability to resume a halted
   computation at an arbitrarily selected call frame.
 \item Incomplete streams abstraction, in that \textsc{ABCL} needs
-  suitable abstraction between ANSI and Gray streams.  The streams could
-  be optimized to the JVM NIO abstractions at great profit for binary
-  byte-level manipulations.
-\item Incomplete documentation (missing docstrings from exported symbols
-  and the draft status of this user manual).
+  suitable abstraction between \textsc{ANSI} and Gray
+  streams.  \footnote{The streams could be optimized to the
+    \textsc{JVM} NIO \cite{nio} abstractions at great profit for
+    binary byte-level manipulations.}
+\item Incomplete documentation (missing docstrings from exported
+  symbols and the draft status of this user manual).
 \end{itemize}
 
 
 
 \section{License}
 
-ABCL is licensed under the terms of the GPL v2 of June 1991 with the
-``classpath-exception'' (see the file \texttt{COPYING} in the source
-distribution for the license, term 13 in the same file for the classpath
-exception).  This license broadly means that you must distribute the
-sources to ABCL, including any changes you make, together with a program
-that includes ABCL, but that you are not required to distribute the
-sources of the whole program.  Submitting your changes upstream to the
-ABCL development team is actively encouraged and very much appreciated,
-of course.
+\textsc{ABCL} is licensed under the terms of the \textsc{GPL} v2 of
+June 1991 with the ``classpath-exception'' (see the file
+\texttt{COPYING} in the source distribution \footnote{See
+  \url{http://svn.common-lisp.net/armedbear/trunk/abcl/COPYING}} for
+the license, term 13 in the same file for the classpath exception).
+This license broadly means that you must distribute the sources to
+ABCL, including any changes you make, together with a program that
+includes ABCL, but that you are not required to distribute the sources
+of the whole program.  Submitting your changes upstream to the ABCL
+development team is actively encouraged and very much appreciated, of
+course.
 
 \section{Contributors}
 
@@ -132,11 +136,14 @@ of course.
 
 \chapter{Running ABCL}
 
+
 \textsc{ABCL} is packaged as a single jar file usually named either
-\texttt{abcl.jar} or possibly something like \texttt{abcl-1.1.0.jar} if
+\texttt{abcl.jar} or possibly something like \texttt{abcl-1.2.0.jar} if
 using a versioned package on the local filesystem from your system
 vendor.  This jar file can be executed from the command line to obtain a
-REPL\footnote{Read-Eval Print Loop, a Lisp command-line}, viz:
+\textsc{REPL}\footnote{Read-Eval Print Loop, a Lisp command-line}, viz:
+
+\index{REPL}
 
 \begin{listing-shell}
   cmd$ java -jar abcl.jar
@@ -156,12 +163,14 @@ as:
 \end{listing-shell}%$
 
 Probably the easiest way of setting up an editing environment using the
-Emacs editor is to use QuickLisp and follow the instructions at
+\textsc{Emacs} editor is to use \textsc{Quicklisp} and follow the instructions at
 \url{http://www.quicklisp.org/beta/#slime}.
 
 \section{Options}
 
 ABCL supports the following command line options:
+
+\index{Command Line Options}
 
 \begin{description}
 \item[\texttt{  --help}] displays a help message.
@@ -173,7 +182,7 @@ ABCL supports the following command line options:
 \item[\texttt{  --load-system-file FILE}] loads the system file FILE before initializing the REPL.
 \item[\texttt{  --batch}] evaluates forms specified by arguments and in
   the initialization file \verb+~/.abclrc+, and then exits without
-  starting a REPL.
+  starting a \textsc{REPL}.
 \end{description}
 
 All of the command line arguments following the occurrence of \verb+--+
@@ -1086,15 +1095,16 @@ if only the extensible sequences API as specified in \cite{RHODES2007} is
 required.
 
 Note that \code{(require 'java-collections)} must be issued before
-\code{java.util.List} or any subclass is used as a specializer in a CLOS
+\code{java.util.List} or any subclass is used as a specializer in a \textsc{CLOS}
 method definition (see the section below).
 
 \section{Extensions to CLOS}
 
 \subsection{Metaobject Protocol}
 
-ABCL implements the metaobject protocol for CLOS as specified in AMOP.
-The symbols are exported from the package \code{MOP}.
+\textsc{ABCL} implements the metaobject protocol for \textsc{CLOS} as
+specified in \textsc{(A)MOP}.  The symbols are exported from the
+package \code{MOP}.
 
 \subsection{Specializing on Java classes}
 
@@ -1155,7 +1165,8 @@ semantic to the execution of \code{REQUIRE} on the following symbols:
 
 \begin{description}
 
-  \item{\code{ASDF}} Loads the \textsc{ASDF} implementation shipped
+  \item{\code{ASDF}} 
+    Loads the \textsc{ASDF} implementation shipped
     with the implementation.  After \textsc{ASDF} has been loaded in
     this manner, symbols passed to \code{CL:REQUIRE} which are
     otherwise unresolved, are passed to ASDF for a chance for
@@ -1164,27 +1175,36 @@ semantic to the execution of \code{REQUIRE} on the following symbols:
       'cl-ppcre)} is equivalent to \code{(asdf:load-system
       'cl-ppcre)}.
 
-  \item{\code{ABCL-CONTRIB}} Locates and pushes the toplevel contents of
+  \item{\code{ABCL-CONTRIB}} 
+    Locates and pushes the toplevel contents of
     ``abcl-contrib.jar'' into the \textsc{ASDF} central registry.  
 
     \begin{enumerate}
-      \item \code{abcl-asdf}
-        Functions for loading JVM artifacts dynamically, hooking into ASDF 2 objects where possible.
-      \item \code{asdf-jar} Package addressable JVM artifacts via
+      \item \code{abcl-asdf} 
+        Functions for loading JVM artifacts
+        dynamically, hooking into ASDF 2 objects where possible.
+      \item \code{asdf-jar} 
+        Package addressable JVM artifacts via
         \code{abcl-asdf} descriptions as a single binary artifact
         including recursive dependencies.
-      \item \code{mvn}
-        These systems name common JVM artifacts from the distributed pom.xml graph of Maven Aether:
+      \item \code{mvn} 
+        These systems name common JVM artifacts from
+        the distributed pom.xml graph of Maven Aether:
         \begin{enumerate}
-          \item \code{jna} Dynamically load 'jna.jar' version 3.5.1
+          \item \code{jna} 
+            Dynamically load 'jna.jar' version 3.5.1
             from the network \footnote{This loading can be inhibited
               if, at runtime, the Java class corresponding
               ``:classname'' clause of the system defition is present.}
         \end{enumerate}
-      \item \code{quicklisp-abcl} (Not working) boot a local Quicklisp
-        installation via the ASDF:IRI type introduced bia ABCL-ASDF.
-        
-    \end{enumerate}
+      \item \code{quicklisp-abcl} Boot a local Quicklisp installation
+        via the ASDF:IRI type introduced bia ABCL-ASDF.
+
+\begin{listing-lisp}
+CL-USER> (asdf:load-system :quicklisp-abcl :force t)
+\end{listing-lisp}
+
+\end{enumerate}
 
 \end{description}
 
@@ -1194,7 +1214,7 @@ such hook function takes a single argument containing the symbol
 passed to \code{CL:REQUIRE} and returns a non-\code{NIL} value if it
 can successful resolve the symbol.
 
-\section{JSS optionally extends the Reader}
+\section{JSS extension of the Reader by SHARPSIGN-DOUBLE-QUOTE}
 
 The JSS contrib consitutes an additional, optional extension to the
 reader in the definition of the \code{SHARPSIGN-DOUBLE-QUOTE}
@@ -1203,12 +1223,12 @@ reader in the definition of the \code{SHARPSIGN-DOUBLE-QUOTE}
 
 \section{ASDF}
 
-asdf-2.26.6 (see \cite{asdf}) is packaged as core component of ABCL,
-but not initialized by default, as it relies on the CLOS subsystem
+asdf-2.30 (see \cite{asdf}) is packaged as core component of \textsc{ABCL},
+but not initialized by default, as it relies on the \textsc{CLOS} subsystem
 which can take a bit of time to start \footnote{While this time is
   ``merely'' on the order of seconds for contemporary 2011 machines,
   for applications that need to initialize quickly, for example a web
-  server, this time might be unnecessarily long}.  The packaged ASDF
+  server, this time might be unnecessarily long}.  The packaged \textsc{ASDF}
 may be loaded by the \textsc{ANSI} \code{REQUIRE} mechanism as
 follows:
 
@@ -1218,9 +1238,9 @@ CL-USER> (require 'asdf)
 
 \chapter{Contrib}
 
-The ABCL contrib is packaged as a separate jar archive usually named
+The \textsc{ABCL} contrib is packaged as a separate jar archive usually named
 \code{abcl-contrib.jar} or possibly something like
-\code{abcl-contrib-1.1.0.jar}.  The contrib jar is not loaded by the
+\code{abcl-contrib-1.2.0.jar}.  The contrib jar is not loaded by the
 implementation by default, and must be first intialized by the
 \code{REQUIRE} mechanism before using any specific contrib:
 
@@ -1306,12 +1326,17 @@ CL-USER> (java:add-to-classpath
 Notice that all recursive dependencies have been located and installed
 locally from the network as well.
 
+More extensive documentations and examples can be found at
+\url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/abcl-asdf/README.markdown}.
+
+
 \section{asdf-jar}
 
-The asdf-jar contrib provides a system for packaging ASDF systems into
-jar archives for ABCL.  Given a running ABCL image with loadable ASDF
-systems the code in this package will recursively package all the
-required source and fasls in a jar archive.
+The asdf-jar contrib provides a system for packaging \textsc{ASDF}
+systems into jar archives for \textsc{ABCL}.  Given a running
+\textsc{ABCL} image with loadable \textsc{ASDF} systems the code in
+this package will recursively package all the required source and
+fasls in a jar archive.
 
 The documentation for this contrib can be found at
 \url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/asdf-jar/README.markdown}.
@@ -1357,6 +1382,9 @@ Some more information on jss can be found in its documentation at
 
 The contrib contains a pure-Java version of JFLI. 
 
+\url{http://svn.common-lisp.net/armedbear/tags/trunk/abcl/contrib/jfli/README}.
+
+
 \section{asdf-install}
 
 The asdf-install contrib provides an implementation of ASDF-INSTALL.
@@ -1369,7 +1397,11 @@ the value of the \textsc{ASDF} central registry in
 stashing \textsc{ABCL} specific system definitions for convenient
 access.
 
+\url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/asdf-install/README}.
+
+
 \chapter{History}
+\index{History}
 
 \textsc{ABCL} was originally the extension language for the J editor, which was
 started in 1998 by Peter Graves.  Sometime in 2003, a whole lot of
@@ -1390,8 +1422,9 @@ stating the conformance of Armed Bear Common Lisp to \textsc{ANSI}, we
 released abcl-1.0.0.  We released abcl-1.0.1 as a maintainence release
 on January 10, 2012.
 
-In December 2012, we revised the implementation by adding (A)MOP
-with the release of abcl-1.1.0.
+In December 2012, we revised the implementation by adding
+\textsc{(A)MOP} with the release of abcl-1.1.0.  We released
+abcl-1.1.1 as a maintainence release on Feburary 14, 2013.
 
 \appendix 
 
@@ -1402,7 +1435,7 @@ with the release of abcl-1.1.0.
 \chapter{The SYSTEM Dictionary}
 
 The public interfaces in this package are subject to change with
-ABCL 1.2.
+\textsc{ABCL} 1.2.
 
 \include{system}
 
@@ -1411,7 +1444,6 @@ ABCL 1.2.
 These public interfaces are provided by the JSS contrib.
 
 \include{jss}
-
 
 \bibliography{abcl}
 \bibliographystyle{alpha}
