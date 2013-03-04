@@ -2122,7 +2122,9 @@ itself is *not* compiled by this function."
               (format t ";   full call to ~S~%" op)))))
       (when (or (<= *speed* *debug*) *require-stack-frame*)
         (emit-push-current-thread))
-      (cond ((eq op (compiland-name *current-compiland*)) ; recursive call
+      (cond ((and (eq op (compiland-name *current-compiland*))
+                  (null (compiland-parent *current-compiland*)))
+                                        ; recursive call
              (if (notinline-p op)
                  (emit-load-externalized-object op)
                  (aload 0)))
