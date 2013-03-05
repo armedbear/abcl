@@ -466,106 +466,95 @@ public class Symbol extends LispObject implements java.io.Serializable
     final LispObject readtableCase =
       ((Readtable)CURRENT_READTABLE.symbolValue(thread)).getReadtableCase();
     boolean printReadably = (PRINT_READABLY.symbolValue(thread) != NIL);
-    if (printReadably)
-      {
-        if (readtableCase != Keyword.UPCASE ||
-            printCase != Keyword.UPCASE)
-          {
-            StringBuilder sb = new StringBuilder();
-            if (pkg == PACKAGE_KEYWORD)
-              {
-                sb.append(':');
-              }
-            else if (pkg instanceof Package)
-              {
-                sb.append(multipleEscape(((Package)pkg).getName()));
-                sb.append("::");
-              }
-            else
-              {
-                sb.append("#:");
-              }
-            sb.append(multipleEscape(n));
-            return sb.toString();
-          }
-        else
-          printEscape = true;
+
+    if (printReadably) {
+      if (readtableCase != Keyword.UPCASE || printCase != Keyword.UPCASE) {
+        StringBuilder sb = new StringBuilder();
+        if (pkg == PACKAGE_KEYWORD) {
+          sb.append(':');
+        } else if (pkg instanceof Package) {
+          sb.append(multipleEscape(((Package)pkg).getName()));
+          sb.append("::");
+        } else {
+          sb.append("#:");
+        }
+        sb.append(multipleEscape(n));
+        return sb.toString();
       }
-    if (!printEscape)
-      {
-        if (pkg == PACKAGE_KEYWORD)
-          {
-            if (printCase == Keyword.DOWNCASE)
-              return n.toLowerCase();
-            if (printCase == Keyword.CAPITALIZE)
-              return capitalize(n, readtableCase);
-            return n;
-          }
-        // Printer escaping is disabled.
-        if (readtableCase == Keyword.UPCASE)
-          {
-            if (printCase == Keyword.DOWNCASE)
-              return n.toLowerCase();
-            if (printCase == Keyword.CAPITALIZE)
-              return capitalize(n, readtableCase);
-            return n;
-          }
-        else if (readtableCase == Keyword.DOWNCASE)
-          {
-            // "When the readtable case is :DOWNCASE, uppercase characters
-            // are printed in their own case, and lowercase characters are
-            // printed in the case specified by *PRINT-CASE*." (22.1.3.3.2)
-            if (printCase == Keyword.DOWNCASE)
-              return n;
-            if (printCase == Keyword.UPCASE)
-              return n.toUpperCase();
-            if (printCase == Keyword.CAPITALIZE)
-              return capitalize(n, readtableCase);
-            return n;
-          }
-        else if (readtableCase == Keyword.PRESERVE)
-          {
-            return n;
-          }
-        else // INVERT
-          return invert(n);
+      else {
+        printEscape = true;
       }
+    }
+    if (!printEscape) {
+      if (pkg == PACKAGE_KEYWORD) {
+        if (printCase == Keyword.DOWNCASE)
+          return n.toLowerCase();
+        if (printCase == Keyword.CAPITALIZE)
+          return capitalize(n, readtableCase);
+        return n;
+      }
+      // Printer escaping is disabled.
+      if (readtableCase == Keyword.UPCASE) {
+        if (printCase == Keyword.DOWNCASE)
+          return n.toLowerCase();
+        if (printCase == Keyword.CAPITALIZE)
+          return capitalize(n, readtableCase);
+        return n;
+      } else if (readtableCase == Keyword.DOWNCASE) {
+        // "When the readtable case is :DOWNCASE, uppercase characters
+        // are printed in their own case, and lowercase characters are
+        // printed in the case specified by *PRINT-CASE*." (22.1.3.3.2)
+        if (printCase == Keyword.DOWNCASE)
+          return n;
+        if (printCase == Keyword.UPCASE)
+          return n.toUpperCase();
+        if (printCase == Keyword.CAPITALIZE)
+          return capitalize(n, readtableCase);
+        return n;
+      } else if (readtableCase == Keyword.PRESERVE) {
+        return n;
+      } else // INVERT
+        return invert(n);
+    }
     // Printer escaping is enabled.
     final boolean escapeSymbolName = needsEscape(n, readtableCase, thread);
     String symbolName = escapeSymbolName ? multipleEscape(n) : n;
-    if (!escapeSymbolName)
-      {
-        if (readtableCase == Keyword.PRESERVE) { }
-        else if (readtableCase == Keyword.INVERT)
-          symbolName = invert(symbolName);
-        else if (printCase == Keyword.DOWNCASE)
-          symbolName = symbolName.toLowerCase();
-        else if (printCase == Keyword.UPCASE)
-          symbolName = symbolName.toUpperCase();
-        else if (printCase == Keyword.CAPITALIZE)
+    if (!escapeSymbolName) {
+      if (readtableCase == Keyword.PRESERVE) {
+        // nothing to do
+      } else if (readtableCase == Keyword.INVERT) {
+        symbolName = invert(symbolName);
+      } else if (printCase == Keyword.DOWNCASE) {
+        symbolName = symbolName.toLowerCase();
+      } else if (printCase == Keyword.UPCASE) {
+        symbolName = symbolName.toUpperCase();
+      } else if (printCase == Keyword.CAPITALIZE) {
           symbolName = capitalize(symbolName, readtableCase);
       }
-    if (pkg == NIL)
-      {
-        if (printReadably || PRINT_GENSYM.symbolValue(thread) != NIL)
-          return "#:".concat(symbolName);
-        else
+    }
+    if (pkg == NIL) {
+      if (printReadably || PRINT_GENSYM.symbolValue(thread) != NIL) {
+        return "#:".concat(symbolName);
+      } else {
           return symbolName;
       }
-    if (pkg == PACKAGE_KEYWORD)
+    }
+    if (pkg == PACKAGE_KEYWORD) {
       return ":".concat(symbolName);
+    }
     // "Package prefixes are printed if necessary." (22.1.3.3.1)
+    // Here we also use a package-local nickname if appropriate.
     final Package currentPackage = (Package) _PACKAGE_.symbolValue(thread);
-    if (pkg == currentPackage)
+    if (pkg == currentPackage) {
       return symbolName;
-    if (currentPackage != null && currentPackage.uses(pkg))
-      {
+    }
+    if (currentPackage != null && currentPackage.uses(pkg)) {
         // Check for name conflict in current package.
         if (currentPackage.findExternalSymbol(name) == null)
           if (currentPackage.findInternalSymbol(name) == null)
             if (((Package)pkg).findExternalSymbol(name) != null)
               return symbolName;
-      }
+    }
     // Has this symbol been imported into the current package?
     if (currentPackage.findExternalSymbol(name) == this)
       return symbolName;
@@ -573,6 +562,17 @@ public class Symbol extends LispObject implements java.io.Serializable
       return symbolName;
     // Package prefix is necessary.
     String packageName = ((Package)pkg).getName();
+    if (currentPackage.getLocallyNicknamedPackages().contains(pkg)) {
+      LispObject nicknames = currentPackage.getLocalPackageNicknames();
+      while (nicknames != NIL) {
+        if (nicknames.car().cdr() == pkg) {
+          packageName = javaString(nicknames.car().car());
+          nicknames = NIL;
+        } else {
+          nicknames = nicknames.cdr();
+        }
+      }
+    }
     final boolean escapePackageName = needsEscape(packageName, readtableCase, thread);
     if (escapePackageName)
       {
