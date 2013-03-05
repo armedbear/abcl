@@ -787,8 +787,13 @@ public final class Package extends LispObject implements java.io.Serializable
       localNicknames = new ConcurrentHashMap<String, Package>();
     }
     if (localNicknames.containsKey(name)) {
-      return error(new LispError(name + " is already a nickname for "
-                                 + pack.getName()));
+      if (localNicknames.get(name) != pack) {
+        return error(new LispError(name + " is already a nickname for "
+                                   + pack.getName()));
+      } else {
+        // nothing to do
+        return pack;
+      }
     } else {
       localNicknames.put(name, pack);
       return pack;
