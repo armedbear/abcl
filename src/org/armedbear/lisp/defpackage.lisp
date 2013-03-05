@@ -131,7 +131,7 @@
                     nickdecl))
            (let ((nickname (string (first nickdecl)))
                  (package-name (designated-package-name (second nickdecl))))
-             (when (member package-name '("CL" "COMMON-LISP" "KEYWORD")
+             (when (member nickname '("CL" "COMMON-LISP" "KEYWORD")
                            :test #'string-equal)
                (cerror "Continue anyway"
                        (format nil "Trying to define a local nickname for package ~A"

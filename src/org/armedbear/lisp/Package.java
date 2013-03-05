@@ -778,7 +778,8 @@ public final class Package extends LispObject implements java.io.Serializable
       return error(new LispError("Trying to define a local nickname for "
                                  + name));
     }
-    if (name.equals(this.name) || nicknames.contains(name)) {
+    if (name.equals(this.name)
+        || (nicknames != null && nicknames.contains(name))) {
       return error(new LispError("Trying to override package name or nickname with a local nickname "
                                  + name));
     }
