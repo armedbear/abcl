@@ -625,9 +625,6 @@ will compile (if necessary) and load JSS.
             toFile="${dist.dir}/abcl-${abcl.version}.jar"/>
     </target>
 
-
-
-
     <target name="abcl.distclean" depends="abcl.clean">
       <delete dir="${dist.dir}"/>
       <delete file="abcl"/>
@@ -947,8 +944,10 @@ ${basedir}/../cl-bench
             classname="org.armedbear.lisp.Main">
         <arg value="--noinit"/> 
         <arg value="--eval"/><arg value="(require (quote asdf))"/>
-        <arg value="--eval"/><arg value="(asdf:operate (quote asdf:load-op) :abcl)"/>
-        <arg value="--eval"/><arg value="(asdf:operate (quote asdf:test-op) :ansi-interpreted)"/>
+        <arg value="--eval"/>
+          <arg value="(asdf:initialize-source-registry `(:source-registry (:directory ,*default-pathname-defaults*) :inherit-configuration)))"/>
+        <arg value="--eval"/><arg value="(asdf:load-system :abcl)"/>
+        <arg value="--eval"/><arg value="(asdf:test-system :ansi-interpreted)"/>
         <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
@@ -975,8 +974,10 @@ ${basedir}/../cl-bench
 
         <arg value="--noinit"/> 
         <arg value="--eval"/><arg value="(require (quote asdf))"/>
-        <arg value="--eval"/><arg value="(asdf:operate (quote asdf:load-op) :abcl)"/>
-        <arg value="--eval"/><arg value="(asdf:operate (quote asdf:test-op) :ansi-compiled)"/>
+        <arg value="--eval"/>
+          <arg value="(asdf:initialize-source-registry `(:source-registry (:directory ,*default-pathname-defaults*) :inherit-configuration)))"/>
+        <arg value="--eval"/><arg value="(asdf:load-system :abcl)"/>
+        <arg value="--eval"/><arg value="(asdf:test-system :ansi-compiled)"/>
         <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
@@ -991,8 +992,10 @@ ${basedir}/../cl-bench
             classname="org.armedbear.lisp.Main">
         <arg value="--noinit"/> 
         <arg value="--eval"/><arg value="(require (quote asdf))"/>
-        <arg value="--eval"/><arg value="(asdf:operate (quote asdf:load-op) :abcl)"/>
-        <arg value="--eval"/><arg value="(asdf:operate (quote asdf:test-op) :abcl-test-lisp)"/>
+        <arg value="--eval"/>
+          <arg value="(asdf:initialize-source-registry `(:source-registry (:directory ,*default-pathname-defaults*) :inherit-configuration)))"/>
+        <arg value="--eval"/><arg value="(asdf:load-system :abcl)"/>
+        <arg value="--eval"/><arg value="(asdf:test-system :abcl-test-lisp)"/>
         <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
@@ -1007,8 +1010,10 @@ ${basedir}/../cl-bench
             classname="org.armedbear.lisp.Main">
         <arg value="--noinit"/> 
         <arg value="--eval"/><arg value="(require (quote asdf))"/>
-        <arg value="--eval"/><arg value="(asdf:operate (quote asdf:load-op) :abcl)"/>
-        <arg value="--eval"/><arg value="(asdf:operate (quote asdf:test-op) :cl-bench)"/>
+        <arg value="--eval"/>
+          <arg value="(asdf:initialize-source-registry `(:source-registry (:directory ,*default-pathname-defaults*) :inherit-configuration)))"/>
+        <arg value="--eval"/><arg value="(asdf:load-system :abcl)"/>
+        <arg value="--eval"/><arg value="(asdf:test-system :cl-bench)"/>
         <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
