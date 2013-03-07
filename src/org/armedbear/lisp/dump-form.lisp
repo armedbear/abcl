@@ -75,7 +75,8 @@
        (return))
      (when (null object)
        (return-from df-check-cons))
-     (df-register-circularity object)))
+     (when (eq :circular (df-register-circularity object))
+       (return))))
 
 (defun df-check-vector (object)
   (dotimes (index (length object))
@@ -267,6 +268,7 @@ being written to the FASL: the READTABLE-CASE setting influences symbol printing
         (*circularity* (make-hash-table :test #'eq))
         (*instance-forms* (make-hash-table :test #'eq))
         (*circle-counter* 0))
+;;    (print form)
     (unless *prevent-fasl-circle-detection*
       (df-check-object form))
     (dump-object form stream)))
