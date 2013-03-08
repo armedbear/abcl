@@ -35,26 +35,27 @@
 
 (defun check-redefinition (name)
   (when (and *warn-on-redefinition* (fboundp name) (not (autoloadp name)))
-    (cond ((symbolp name)
-           (let ((old-source 
-                  (if (keywordp (source-pathname name))
-                      (source-pathname name)
-                      (truename (source-pathname name))))
-                 (current-source 
-                  (if (not *source*) 
-                      :top-level
-                      (truename *source*))))
-             (cond ((equal old-source 
-                           current-source)) ; OK
-                   (t
-                    (if (eq current-source :top-level)
-                        (style-warn "redefining ~S at top level" name)
-                        (let ((*package* +cl-package+))
-                          (if (eq old-source :top-level)
-                              (style-warn "redefining ~S in ~S (previously defined at top level)"
-                                          name current-source)
-                              (style-warn "redefining ~S in ~S (previously defined in ~S)"
-                                          name current-source old-source)))))))))))
+    (when (and (symbolp name)
+               (source-pathname name))
+      (let ((old-source 
+             (if (keywordp (source-pathname name))
+                 (source-pathname name)
+                 (truename (source-pathname name))))
+            (current-source 
+             (if (not *source*) 
+                 :top-level
+                 (truename *source*))))
+        (cond ((equal old-source 
+                      current-source)) ; OK
+              (t
+               (if (eq current-source :top-level)
+                   (style-warn "redefining ~S at top level" name)
+                   (let ((*package* +cl-package+))
+                     (if (eq old-source :top-level)
+                         (style-warn "redefining ~S in ~S (previously defined at top level)"
+                                     name current-source)
+                         (style-warn "redefining ~S in ~S (previously defined in ~S)"
+                                     name current-source old-source))))))))))
 
 (defun record-source-information (name &optional source-pathname source-position)
   (unless source-pathname
