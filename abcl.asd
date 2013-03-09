@@ -61,7 +61,9 @@
                       (:file "zip")
                       #+abcl
                       (:file "pathname-tests" :depends-on 
-                             ("utilities"))))))
+                             ("utilities"))
+                      #+abcl
+                      (:file "package-local-nicknames-tests")))))
 
 (defmethod perform ((o test-op) (c (eql (find-system 'abcl-test-lisp))))
    "Invoke tests with (asdf:oos 'asdf:test-op :abcl-test-lisp)."
