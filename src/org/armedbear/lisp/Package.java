@@ -792,11 +792,11 @@ public final class Package extends LispObject implements java.io.Serializable
                                    + pack.getName()));
       } else {
         // nothing to do
-        return pack;
+        return this;
       }
     } else {
       localNicknames.put(name, pack);
-      return pack;
+      return this;
     }
   }
 
