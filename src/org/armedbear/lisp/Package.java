@@ -178,6 +178,13 @@ public final class Package extends LispObject implements java.io.Serializable
               }
             }
 
+            LispObject packages = Packages.getPackagesNicknamingPackage(this);
+            while (packages != NIL) {
+              Package p = (Package)((Cons)packages).car();
+              packages = ((Cons)packages).cdr();
+              p.removeLocalPackageNicknamesForPackage(this);
+            }
+
             Packages.deletePackage(this);
 
             makeSymbolsUninterned(internalSymbols);
@@ -807,6 +814,19 @@ public final class Package extends LispObject implements java.io.Serializable
     } else {
       // return generalized boolean: package that was nicknamed to `name'
       return localNicknames.remove(name);
+    }
+  }
+
+  public void removeLocalPackageNicknamesForPackage(Package p)
+  {
+    if (localNicknames == null || !localNicknames.containsValue(p)) {
+      return;
+    } else {
+      for (Map.Entry<String, Package> entry : localNicknames.entrySet()) {
+        if (entry.getValue() == p) {
+          localNicknames.remove(entry.getKey());
+        }
+      }
     }
   }
 
