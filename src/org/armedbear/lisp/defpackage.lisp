@@ -129,14 +129,20 @@
            (unless (= (length nickdecl) 2)
              (error 'program-error "Malformed local nickname declaration ~A"
                     nickdecl))
-           (let ((nickname (string (first nickdecl)))
+           (let ((local-nickname (string (first nickdecl)))
                  (package-name (designated-package-name (second nickdecl))))
-             (when (member nickname '("CL" "COMMON-LISP" "KEYWORD")
-                           :test #'string-equal)
+             (when (member local-nickname '("CL" "COMMON-LISP" "KEYWORD")
+                           :test #'string=)
                (cerror "Continue anyway"
                        (format nil "Trying to define a local nickname for package ~A"
-                               package-name)))
-             (push (list nickname package-name) local-nicknames))))
+                               local-nickname)))
+             (when (member local-nickname (list* package nicknames)
+                           :test #'string=)
+               (cerror "Continue anyway"
+                       "Trying to override the name or a nickname (~A) ~
+                        with a local nickname for another package ~A"
+                       local-nickname package-name))
+             (push (list local-nickname package-name) local-nicknames))))
         (t
          (error 'program-error "bad DEFPACKAGE option: ~S" option))))
     (check-disjoint `(:intern ,@interns) `(:export  ,@exports))
