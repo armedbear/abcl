@@ -780,16 +780,6 @@ public final class Package extends LispObject implements java.io.Serializable
 
   public LispObject addLocalPackageNickname(String name, Package pack)
   {
-    if (name.equals("CL") || name.equals("COMMON-LISP")
-        || name.equals("KEYWORD")) {
-      return error(new LispError("Trying to define a local nickname for "
-                                 + name));
-    }
-    if (name.equals(this.name)
-        || (nicknames != null && nicknames.contains(name))) {
-      return error(new LispError("Trying to override package name or nickname with a local nickname "
-                                 + name));
-    }
     if (localNicknames == null) {
       localNicknames = new ConcurrentHashMap<String, Package>();
     }

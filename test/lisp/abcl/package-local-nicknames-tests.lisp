@@ -151,31 +151,29 @@
                       (ext:add-package-local-nickname :own-name-as-nickname1 p2 p1)
                     (error ()
                       :oops))))
-      ;; TODO: add continuable errors for this
-      ;; (handler-bind ((error #'continue))
-      ;;   (ext:add-package-local-nickname :own-name-as-nickname1 p2 p1))
-      ;; (assert (eq (intern "FOO" p2)
-      ;;             (let ((*package* p1))
-      ;;               (intern "FOO" :own-name-as-nickname1))))
+      (handler-bind ((error #'continue))
+        (ext:add-package-local-nickname :own-name-as-nickname1 p2 p1))
+      (assert (eq (intern "FOO" p2)
+                  (let ((*package* p1))
+                    (intern "FOO" :own-name-as-nickname1))))
       :success)
   :success)
 
 
 
 (deftest pln-own-nickname-as-local-nickname
-  (with-tmp-packages ((p1 (make-package "OWN-NICKNAME-AS-NICKNAME1"
-                                        :nicknames '("OWN-NICKNAME")))
-                      (p2 (make-package "OWN-NICKNAME-AS-NICKNAME2")))
-    (assert (eq :oops
-                (handler-case
-                    (add-package-local-nickname :own-nickname p2 p1)
-                  (error ()
-                    :oops))))
-    ;; TODO: make errors continuable
-    ;; (handler-bind ((error #'continue))
-    ;;   (add-package-local-nickname :own-nickname p2 p1))
-    ;; (assert (eq (intern "FOO" p2)
-    ;;             (let ((*package* p1))
-    ;;               (intern "FOO" :own-nickname))))
-    :success)
+    (with-tmp-packages ((p1 (make-package "OWN-NICKNAME-AS-NICKNAME1"
+                                          :nicknames '("OWN-NICKNAME")))
+                        (p2 (make-package "OWN-NICKNAME-AS-NICKNAME2")))
+      (assert (eq :oops
+                  (handler-case
+                      (ext:add-package-local-nickname :own-nickname p2 p1)
+                    (error ()
+                      :oops))))
+      (handler-bind ((error #'continue))
+        (ext:add-package-local-nickname :own-nickname p2 p1))
+      (assert (eq (intern "FOO" p2)
+                  (let ((*package* p1))
+                    (intern "FOO" :own-nickname))))
+      :success)
   :success)

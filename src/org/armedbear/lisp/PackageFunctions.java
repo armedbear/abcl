@@ -285,7 +285,7 @@ public final class PackageFunctions
   // ### add-package-local-nickname
   // add-package-local-nickname local-nickname package &optional package-designator => package
   private static final Primitive ADD_PACKAGE_LOCAL_NICKNAME =
-    new Primitive("add-package-local-nickname", PACKAGE_EXT, true,
+    new Primitive("%add-package-local-nickname", PACKAGE_SYS, false,
                   "local-nickname package &optional package-designator")
     {
       @Override

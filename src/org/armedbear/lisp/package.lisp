@@ -96,3 +96,24 @@
 (defun delete-package (package)
   (with-simple-restart (continue "Ignore missing package.")
     (sys::%delete-package package)))
+
+(defun add-package-local-nickname (local-nickname actual-package
+                                   &optional (package-designator *package*))
+  (let* ((local-nickname (string local-nickname))
+         (package-designator (or (find-package package-designator)
+                                 (error "Package ~A not found" package-designator)))
+         (actual-package (or (find-package actual-package)
+                             (error "Package ~A not found" actual-package))))
+    (when (member local-nickname '("CL" "COMMON-LISP" "KEYWORD")
+                  :test #'string=)
+      (cerror "Continue anyway"
+              "Trying to define a local nickname called ~A" local-nickname))
+    (when (member local-nickname (list* (package-name package-designator)
+                                        (package-nicknames package-designator))
+                  :test #'string=)
+      (cerror "Continue anyway"
+              "Trying to override the name or nickname ~A  for package ~A ~
+               with a local nickname for another package ~A"
+              local-nickname package-designator actual-package))
+    (sys::%add-package-local-nickname local-nickname actual-package
+                                      package-designator)))
