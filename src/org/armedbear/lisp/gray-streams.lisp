@@ -648,6 +648,15 @@
 (setf (symbol-function 'common-lisp::two-way-stream-output-stream) #'gray-two-way-stream-output-stream)
 |#
 
+(eval-when (:load-toplevel)
+  (mapcar (lambda (o) (mop:finalize-inheritance (find-class o)))
+          '(fundamental-stream 
+            fundamental-input-stream fundamental-output-stream
+            fundamental-character-stream 
+            fundamental-character-input-stream fundamental-character-output-stream
+            fundamental-binary-stream
+            fundamental-binary-input-stream fundamental-binary-output-stream)))
+ 
 (provide 'gray-streams)
 
 ;;; Fixup Gray/ANSI stream relations 
