@@ -114,6 +114,8 @@
 ;;;; Much of the implementation of the Gray streams below is from the
 ;;;; document referenced earlier.
 ;;;;
+(require "PPRINT")
+
 (defpackage "GRAY-STREAMS"
   (:use
    "COMMON-LISP")
