@@ -649,3 +649,21 @@
 |#
 
 (provide 'gray-streams)
+
+;;; Fixup Gray/ANSI stream relations 
+
+(defparameter *sys--stream-charpos* #'sys::stream-charpos)
+(defun sys::stream-charpos (stream)
+  (cond         
+    ((subtypep (type-of stream) 'gray-streams:fundamental-stream)
+     (stream-line-column stream))
+    ((streamp stream)
+     (funcall *sys--stream-charpos* stream))))
+
+(defparameter *sys--stream-%set-charpos* #'sys::stream-%set-charpos)
+(defun sys::stream-%set-charpos (new-value stream)
+  (cond 
+    ((subtypep (type-of stream) 'gray-streams:fundamental-stream)
+     (setf (stream-line-column stream) new-value))
+    ((streamp stream)
+     (sys::stream-%set-charpos stream new-value))))
