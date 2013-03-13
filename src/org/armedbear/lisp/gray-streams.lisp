@@ -675,4 +675,4 @@
     ((subtypep (type-of stream) 'gray-streams:fundamental-stream)
      (setf (stream-line-column stream) new-value))
     ((streamp stream)
-     (sys::stream-%set-charpos stream new-value))))
+     (funcall *sys--stream-%set-charpos* stream new-value))))
