@@ -138,7 +138,7 @@ The following ASDF defintion loads enough JVM artifacts to use the
 
     (defsystem :wsml2reasoner-jars
       :version "0.6.4"  ;; last sync with SVN
-      :depends-on (:abcld) :components 
+      :defsystem-depends-on (abcl-contrib abcl-asdf) :components 
     ((:module wsml2reasoner 
 	    :pathname "lib/" :components
 	    ((:jar-file "wsml2reasoner")))
@@ -164,5 +164,5 @@ The following ASDF defintion loads enough JVM artifacts to use the
     Mark <evenson.not.org@gmail.com>
     
     Created: 2011-01-01
-    Revised: 2012-12-06
+    Revised: 2013-03-20
     
