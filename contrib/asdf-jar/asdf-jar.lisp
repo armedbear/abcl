@@ -82,7 +82,7 @@ Returns the pathname of the packaged jar archive.
 
 (defun all-files (component)
   (loop :for c 
-     :being :each :hash-value :of (slot-value component 'asdf::components-by-name)
+     :being :each :hash-value :of (slot-value component 'asdf::children-by-name)
      :when (typep c 'asdf:module)
      :append (all-files c)
      :when (typep c 'asdf:source-file)
