@@ -567,17 +567,19 @@ current classpath."
   "Return the items contained the java.lang.Iterable ITERABLE as a list."
  (declare (optimize (speed 3) (safety 0)))
  (let ((it (#"iterator" iterable)))
-   (with-constant-signature ((hasmore "hasMoreElements")
-			     (next "nextElement"))
-     (loop while (hasmore it)
-	collect (next it)))))
+   (with-constant-signature ((has-next "hasNext")
+			     (next "next"))
+     (loop :while (has-next it)
+	:collect (next it)))))
 
 (defun vector-to-list (vector)
+  "Return the elements of java.lang.Vector VECTOR as a list."
  (declare (optimize (speed 3) (safety 0)))
- (with-constant-signature ((hasmore "hasMoreElements")
+ (with-constant-signature ((has-more "hasMoreElements")
 			   (next "nextElement"))
-     (loop while (hasmore vector)
-	collect (next vector))))
+   (let ((elements (#"elements" vector)))
+     (loop :while (has-more elements)
+	:collect (next elements)))))
 
 (defun hashmap-to-hashtable (hashmap &rest rest &key (keyfun #'identity) (valfun #'identity) (invert? nil)
 				    table 

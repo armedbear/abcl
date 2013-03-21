@@ -1,8 +1,8 @@
 ;;;; -*- Mode: LISP -*-
 (asdf:defsystem :jss
   :author "Alan Ruttenberg, Mark Evenson"
-  :version "3.0.5" 
-  :description "<> asdf:defsystem <urn:abcl.org/release/1.1.0/contrib/jss#3.05"
+  :version "3.0.6" 
+  :description "<> asdf:defsystem <urn:abcl.org/release/1.1.0/contrib/jss#3.06"
   :components ((:module base 
                         :pathname "" :serial t 
                         :components ((:file "packages")
