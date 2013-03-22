@@ -444,19 +444,13 @@ where each of the vars returned is a list with these elements:
 (declaim (ftype (function (t) t) p1-body))
 (defun p1-body (body)
   (declare (optimize speed))
-  (let ((tail body))
-    (loop
-      (when (endp tail)
-        (return))
-      (setf (car tail) (p1 (%car tail)))
-      (setf tail (%cdr tail))))
-  body)
+  (loop for form in body
+     collect (p1 form)))
 
 (defknown p1-default (t) t)
 (declaim (inline p1-default))
 (defun p1-default (form)
-  (setf (cdr form) (p1-body (cdr form)))
-  form)
+  (cons (car form) (p1-body (cdr form))))
 
 (defmacro p1-let/let*-vars
     (block varlist variables-var var body1 body2)
@@ -605,8 +599,8 @@ where each of the vars returned is a list with these elements:
 (defun p1-block (form)
   (let* ((block (make-block-node (cadr form)))
          (*block* block)
-         (*blocks* (cons block *blocks*)))
-    (setf (cddr form) (p1-body (cddr form)))
+         (*blocks* (cons block *blocks*))
+         (form (list* (car form) (cadr form) (p1-body (cddr form)))))
     (setf (block-form block) form)
     (when (block-non-local-return-p block)
       ;; Add a closure variable for RETURN-FROM to use
