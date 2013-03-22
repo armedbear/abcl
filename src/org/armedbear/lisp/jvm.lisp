@@ -40,7 +40,10 @@
 (defvar *enable-dformat* nil)
 (defvar *callbacks* nil
   "A list of functions to be called by the compiler and code generator
-in order to generate 'compilation events'.")
+in order to generate 'compilation events'.
+
+A callback function takes five arguments:  
+CALLBACK-TYPE CLASS PARENT CONTENT EXCEPTION-HANDLERS.")
 
 (declaim (inline invoke-callbacks))
 (defun invoke-callbacks (&rest args)
