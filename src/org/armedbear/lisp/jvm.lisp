@@ -269,6 +269,15 @@ of the compilands being processed (p1: so far; p2: in total).")
   (compiland *current-compiland*)
   block)
 
+
+(defmethod print-object ((object jvm::variable-info) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (princ (jvm::variable-name object) stream)
+    (princ " in " stream)
+    (princ (jvm::compiland-name (jvm::variable-compiland object)) stream)))
+
+
+
 (defstruct (var-ref (:constructor make-var-ref (variable)))
   ;; The variable this reference refers to. Will be NIL if the VAR-REF has been
   ;; rewritten to reference a constant value.
@@ -277,6 +286,11 @@ of the compilands being processed (p1: so far; p2: in total).")
   constant-p
   ;; The constant value of this VAR-REF.
   constant-value)
+
+(defmethod print-object ((object jvm::var-ref) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (princ "ref ")
+    (print-object (jvm::var-ref-variable object) stream)))
 
 ;; obj can be a symbol or variable
 ;; returns variable or nil
