@@ -84,7 +84,7 @@
       (with-standard-io-syntax
         (let ((*print-readably* nil)
               (*print-structure* nil))
-          (%format *trace-output* (indent "~D: ~S~%") *trace-depth*
+          (format *trace-output* (indent "~D: ~S~%") *trace-depth*
                   (cons name args))))
       (when breakp
         (break))
@@ -96,11 +96,11 @@
         (with-standard-io-syntax
           (let ((*print-readably* nil)
                 (*print-structure* nil))
-            (%format *trace-output* (indent "~D: ~A returned") *trace-depth* name)
+            (format *trace-output* (indent "~D: ~A returned") *trace-depth* name)
             (if results
                 (dolist (result results)
-                  (%format *trace-output* " ~S" result))
-                (%format *trace-output* " no values"))
+                  (format *trace-output* " ~S" result))
+                (format *trace-output* " no values"))
             (terpri *trace-output*)))
         (values-list results)))))
 
