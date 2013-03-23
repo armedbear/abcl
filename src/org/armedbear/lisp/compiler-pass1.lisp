@@ -452,54 +452,48 @@ where each of the vars returned is a list with these elements:
 (defun p1-default (form)
   (cons (car form) (p1-body (cdr form))))
 
-(defmacro p1-let/let*-vars
-    (block varlist variables-var var body1 body2)
-  (let ((varspec (gensym))
-        (initform (gensym))
-        (name (gensym)))
-    `(let ((,variables-var ()))
-       (dolist (,varspec ,varlist)
-         (cond ((consp ,varspec)
-                ;; Even though the precompiler already signals this
-                ;; error, double checking can't hurt; after all, we're
-                ;; also rewriting &AUX into LET* bindings.
-                (unless (<= 1 (length ,varspec) 2)
-                  (compiler-error "The LET/LET* binding specification ~S is invalid."
-                                  ,varspec))
-                (let* ((,name (%car ,varspec))
-                       (,initform (p1 (%cadr ,varspec)))
-                       (,var (make-variable :name (check-name ,name)
-                                            :initform ,initform
-                                            :block ,block)))
-                  (when (neq ,initform (cadr ,varspec))
-                    (setf (cadr ,varspec) ,initform))
-                  (push ,var ,variables-var)
-                  ,@body1))
-               (t
-                (let ((,var (make-variable :name (check-name ,varspec)
-                                           :block ,block)))
-                  (push ,var ,variables-var)
-                  ,@body1))))
-       ,@body2)))
+(defun let/let*-variables (block bindings)
+  (loop for binding in bindings
+     if (consp binding)
+     collect (make-variable :name (check-name (car binding))
+                            :initform (cadr binding)
+                            :block block)
+     else
+     collect (make-variable :name (check-name binding)
+                            :block block)))
+
+(defun valid-let/let*-binding-p (varspec)
+  (when (consp varspec)
+    (unless (<= 1 (length varspec) 2)
+      (compiler-error "The LET/LET* binding specification ~
+                       ~S is invalid." varspec)))
+  T)
+
+(defun check-let/let*-bindings (bindings)
+  (every #'valid-let/let*-binding-p bindings))
 
 (defknown p1-let-vars (t) t)
 (defun p1-let-vars (block varlist)
-  (p1-let/let*-vars block
-   varlist vars var
-   ()
-   ((setf vars (nreverse vars))
+  (check-let/let*-bindings varlist)
+  (let ((vars (let/let*-variables block varlist)))
+    (dolist (variable vars)
+      (setf (variable-initform variable)
+            (p1 (variable-initform variable))))
     (dolist (variable vars)
       (push variable *visible-variables*)
       (push variable *all-variables*))
-    vars)))
+    vars))
 
 (defknown p1-let*-vars (t) t)
 (defun p1-let*-vars (block varlist)
-  (p1-let/let*-vars block
-   varlist vars var
-   ((push var *visible-variables*)
-    (push var *all-variables*))
-   ((nreverse vars))))
+  (check-let/let*-bindings varlist)
+  (let ((vars (let/let*-variables block varlist)))
+    (dolist (variable vars)
+      (setf (variable-initform variable)
+            (p1 (variable-initform variable)))
+      (push variable *visible-variables*)
+      (push variable *all-variables*))
+    vars))
 
 (defun p1-let/let* (form)
   (declare (type cons form))
