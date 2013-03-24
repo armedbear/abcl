@@ -188,10 +188,11 @@ public class FuncallableStandardObject extends StandardObject
         if (! (l instanceof Layout)) {
           return error(new ProgramError("Invalid standard class layout for: " + arg.princToString()));
         }
-        // KLUDGE (rudi 2012-03-17): make (make-instance
-        // 'standard-generic-function) work -- subsequent code expects
-        // the additional slots to be present.
-        return new StandardGenericFunction((Layout)l);
+        if (Symbol.SUBTYPEP.execute(arg, StandardClass.STANDARD_GENERIC_FUNCTION) != NIL) {
+          return new StandardGenericFunction((Layout)l);
+        } else {
+          return new FuncallableStandardObject((Layout)l);
+        }
       }
       return type_error(arg, Symbol.FUNCALLABLE_STANDARD_CLASS);
     }
