@@ -55,6 +55,9 @@
 (defmacro defparameter (name initial-value &optional docstring)
   `(%defparameter ',name ,initial-value ,docstring))
 
+(defmacro truly-the (type value)
+  `(the ,type ,value))
+
 (defmacro %car (x)
   `(car (truly-the cons ,x)))
 
