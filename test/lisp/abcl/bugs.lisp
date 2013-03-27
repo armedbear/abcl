@@ -141,3 +141,21 @@ nil)
       '(a .?0))
   (A . #\Null))
       
+;;; http://trac.common-lisp.net/armedbear/ticket/311
+(deftest bugs.export.1
+   (let ((a (symbol-name (gensym "PACKAGE-")))
+         (b (symbol-name (gensym "PACKAGE-")))
+         result)
+     (make-package a)
+     (intern "FOO" a)
+     (export (find-symbol "FOO" a) a)
+     (make-package b :use (list a))
+     (export (find-symbol "FOO" b) b)
+     (unexport (find-symbol "FOO" a) a)
+     (setf result (unexport (find-symbol "FOO" b) b))
+     (delete-package a)
+     (delete-package b)
+     result)
+  t)
+
+        

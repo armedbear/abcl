@@ -560,28 +560,16 @@ public final class Package extends LispObject implements java.io.Serializable
     public synchronized void unexport(final Symbol symbol)
 
     {
-        if (symbol.getPackage() == this) {
-            if (externalSymbols.get(symbol.name.toString()) == symbol) {
-                externalSymbols.remove(symbol.name.toString());
-                internalSymbols.put(symbol.name.toString(), symbol);
-            }
-        } else {
-            // Signal an error if symbol is not accessible.
-            if (useList instanceof Cons) {
-                LispObject usedPackages = useList;
-                while (usedPackages != NIL) {
-                    Package pkg = (Package) usedPackages.car();
-                    if (pkg.findExternalSymbol(symbol.name) == symbol)
-                        return; // OK.
-                    usedPackages = usedPackages.cdr();
-                }
-            }
-            StringBuilder sb = new StringBuilder("The symbol ");
-            sb.append(symbol.getQualifiedName());
-            sb.append(" is not accessible in package ");
-            sb.append(name);
-            error(new PackageError(sb.toString()));
-        }
+      if (externalSymbols.get(symbol.name.toString()) == symbol) {
+        externalSymbols.remove(symbol.name.toString());
+        internalSymbols.put(symbol.name.toString(), symbol);
+      } else if (!(internalSymbols.get(symbol.name.toString()) == symbol)) {
+        StringBuilder sb = new StringBuilder("The symbol ");
+        sb.append(symbol.getQualifiedName());
+        sb.append(" is not accessible in package ");
+        sb.append(name);
+        error(new PackageError(sb.toString()));
+      }
     }
 
     public synchronized void shadow(final String symbolName)
