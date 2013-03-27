@@ -415,7 +415,7 @@ public class Readtable extends LispObject
         char c = LispCharacter.getValue(first);
         final LispObject designator;
         if (second instanceof Function
-            || second instanceof StandardGenericFunction)
+            || second instanceof FuncallableStandardObject)
           designator = second;
         else if (second instanceof Symbol)
           designator = second;

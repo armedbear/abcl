@@ -1809,7 +1809,7 @@ public final class Lisp
   {
     if (obj instanceof Function)
       return obj;
-    if (obj instanceof StandardGenericFunction)
+    if (obj instanceof FuncallableStandardObject)
       return obj;
     if (obj instanceof Symbol)
       {

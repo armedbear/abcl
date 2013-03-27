@@ -469,7 +469,7 @@ for (Cons x : nonSequentialVars)
                 }
                 if (operator instanceof Function)
                     return operator;
-                if (operator instanceof StandardGenericFunction)
+                if (operator instanceof FuncallableStandardObject)
                     return operator;
                 return error(new UndefinedFunction(arg));
             }
