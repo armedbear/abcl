@@ -37,14 +37,16 @@
   (when (and *warn-on-redefinition* (fboundp name) (not (autoloadp name)))
     (when (and (symbolp name)
                (source-pathname name))
+      ;; SOURCE-PATHNAME is badly named as it is either a PATHNAMAE
+      ;; or the symbol :TOP-LEVEL
       (let ((old-source 
              (if (keywordp (source-pathname name))
                  (source-pathname name)
-                 (truename (source-pathname name))))
+                 (probe-file (source-pathname name))))
             (current-source 
              (if (not *source*) 
                  :top-level
-                 (truename *source*))))
+                 (probe-file *source*))))
         (cond ((equal old-source 
                       current-source)) ; OK
               (t
