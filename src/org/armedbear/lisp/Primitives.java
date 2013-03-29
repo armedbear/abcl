@@ -2658,10 +2658,10 @@ public final class Primitives {
                 value1 = NIL;
                 value2 = T;
                 value3 = ((Function)arg).getLambdaName();
-            } else if (arg instanceof StandardGenericFunction) {
+            } else if (arg instanceof FuncallableStandardObject) {
                 value1 = NIL;
                 value2 = T;
-                value3 = ((StandardGenericFunction)arg).getGenericFunctionName();
+                value3 = ((FuncallableStandardObject)arg).getName();
             } else
                 return type_error(arg, Symbol.FUNCTION);
             return LispThread.currentThread().setValues(value1, value2, value3);
@@ -4218,8 +4218,8 @@ public final class Primitives {
             if (arg instanceof Operator) {
                 return ((Operator)arg).getLambdaName();
             }
-            if (arg instanceof StandardGenericFunction) {
-                return ((StandardGenericFunction)arg).getGenericFunctionName();
+            if (arg instanceof FuncallableStandardObject) {
+                return ((FuncallableStandardObject)arg).getName();
             }
             return type_error(arg, Symbol.FUNCTION);
         }
@@ -4240,8 +4240,8 @@ public final class Primitives {
                 ((Operator)first).setLambdaName(second);
                 return second;
             }
-            if (first instanceof StandardGenericFunction) {
-                ((StandardGenericFunction)first).setGenericFunctionName(second);
+            if (first instanceof FuncallableStandardObject) {
+                ((FuncallableStandardObject)first).setName(second);
                 return second;
             }
             return type_error(first, Symbol.FUNCTION);

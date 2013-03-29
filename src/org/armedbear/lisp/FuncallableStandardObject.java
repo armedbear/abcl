@@ -42,6 +42,9 @@ public class FuncallableStandardObject extends StandardObject
 {
   protected LispObject function;
 
+  public static int SLOT_INDEX_NAME = 1;
+
+
   protected FuncallableStandardObject()
   {
     super();
@@ -85,6 +88,17 @@ public class FuncallableStandardObject extends StandardObject
       return T;
     return super.typep(type);
   }
+
+  public LispObject getName()
+  {
+    return slots[FuncallableStandardClass.SLOT_INDEX_NAME];
+  }
+
+  public void setName(LispObject name)
+  {
+    slots[FuncallableStandardClass.SLOT_INDEX_NAME] = name;
+  }
+
 
   @Override
   public LispObject execute()

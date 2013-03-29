@@ -91,20 +91,10 @@ public final class StandardGenericFunction extends FuncallableStandardObject
     return super.typep(type);
   }
 
-  public LispObject getGenericFunctionName()
-  {
-    return slots[StandardGenericFunctionClass.SLOT_INDEX_NAME];
-  }
-
-  public void setGenericFunctionName(LispObject name)
-  {
-    slots[StandardGenericFunctionClass.SLOT_INDEX_NAME] = name;
-  }
-
   @Override
   public String printObject()
   {
-    LispObject name = getGenericFunctionName();
+    LispObject name = getName();
     if (name != null)
       {
         StringBuilder sb = new StringBuilder();
