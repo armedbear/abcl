@@ -468,13 +468,18 @@ public final class Package extends LispObject implements java.io.Serializable
             }
         }
         // Reaching here, it's OK to remove the symbol.
-        if (internalSymbols.get(symbol.name.toString()) == symbol)
-            internalSymbols.remove(symbol.name.toString());
-        else if (externalSymbols.get(symbol.name.toString()) == symbol)
+        boolean found = false;
+        if (externalSymbols.get(symbol.name.toString()) == symbol) {
             externalSymbols.remove(symbol.name.toString());
-        else
-            // Not found.
+            found = true;
+        }
+        if (internalSymbols.get(symbol.name.toString()) == symbol) {
+            internalSymbols.remove(symbol.name.toString());
+            found = true;
+        }
+        if (! found)
             return NIL;
+
         if (shadow) {
             Debug.assertTrue(shadowingSymbols != null);
             shadowingSymbols.remove(symbolName);
