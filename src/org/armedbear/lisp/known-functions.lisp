@@ -429,7 +429,6 @@
              ext:classp
              ext:fixnump
              ext:memql
-             sys:%generic-function-name
              sys::puthash
              precompiler::precompile1
              declare
@@ -444,7 +443,6 @@
              sys::require-type
              sys::arg-count-error
              sys:subclassp
-             sys:gf-required-args
              sys:cache-emf
              sys:get-cached-emf
              ext:autoloadp

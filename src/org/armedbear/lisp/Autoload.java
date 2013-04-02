@@ -554,9 +554,6 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%adjust-array", "adjust_array");
         autoload(PACKAGE_SYS, "%defpackage", "PackageFunctions");
         autoload(PACKAGE_SYS, "%finalize-generic-function", "StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "%generic-function-lambda-list", "StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "%generic-function-name", "StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "set-generic-function-declarations", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%get-output-stream-bytes", "ByteArrayOutputStream"); //AS 20090325
         autoload(PACKAGE_SYS, "%get-output-stream-array", "ByteArrayOutputStream");
         autoload(PACKAGE_SYS, "%make-array", "make_array");
@@ -580,12 +577,6 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%set-find-class", "LispClass", true);
         autoload(PACKAGE_SYS, "%set-class-direct-slots", "SlotClass", true);
         autoload(PACKAGE_SYS, "%set-function-info", "function_info");
-        autoload(PACKAGE_SYS, "%set-generic-function-lambda-list", "StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "%set-generic-function-name", "StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "%set-gf-required-args", "StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "%set-gf-optional-args", "StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "gf-required-args", "StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "gf-optional-args", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%init-eql-specializations", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%get-arg-specialization", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%set-symbol-macro", "Primitives");
@@ -645,18 +636,9 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "float-nan-p", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "float-string", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "function-info", "function_info");
-        autoload(PACKAGE_SYS, "%generic-function-argument-precedence-order","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "generic-function-classes-to-emf-table","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "generic-function-documentation","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "generic-function-initial-methods","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "%generic-function-method-class","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "%generic-function-method-combination","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "%generic-function-methods","StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "get-cached-emf", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "get-cached-slot-location", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "get-function-info-value", "function_info");
-        autoload(PACKAGE_SYS, "gf-required-args", "StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "gf-optional-args", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "hash-table-entries", "HashTableFunctions");
         autoload(PACKAGE_SYS, "hash-table-entries", "HashTableFunctions");
         autoload(PACKAGE_SYS, "layout-class", "Layout", true);
@@ -677,13 +659,6 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "puthash", "HashTableFunctions");
         autoload(PACKAGE_SYS, "remove-zip-cache-entry", "ZipCache");
         autoload(PACKAGE_SYS, "set-function-info-value", "function_info");
-        autoload(PACKAGE_SYS, "set-generic-function-argument-precedence-order","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "set-generic-function-classes-to-emf-table","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "set-generic-function-documentation","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "set-generic-function-initial-methods","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "set-generic-function-method-class","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "set-generic-function-method-combination","StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "set-generic-function-methods","StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "set-slot-definition-allocation", "SlotDefinition", true);
         autoload(PACKAGE_SYS, "set-slot-definition-allocation-class", "SlotDefinition", true);
         autoload(PACKAGE_SYS, "set-slot-definition-initargs", "SlotDefinition", true);

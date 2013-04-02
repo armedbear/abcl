@@ -104,19 +104,19 @@
   (%set-documentation x t new-value))
 
 (defmethod documentation ((x standard-generic-function) (doc-type (eql 't)))
-  (generic-function-documentation x))
+  (std-slot-value x 'sys::%documentation))
 
 (defmethod (setf documentation) (new-value (x standard-generic-function)
                                  (doc-type (eql 't)))
-  (setf (generic-function-documentation x) new-value))
+  (setf (std-slot-value x 'sys::%documentation) new-value))
 
 (defmethod documentation ((x standard-generic-function)
                           (doc-type (eql 'function)))
-  (generic-function-documentation x))
+  (std-slot-value x 'sys::%documentation))
 
 (defmethod (setf documentation) (new-value (x standard-generic-function)
                                  (doc-type (eql 'function)))
-  (setf (generic-function-documentation x) new-value))
+  (setf (std-slot-value x 'sys::%documentation) new-value))
 
 (defmethod documentation ((x standard-method) (doc-type (eql 't)))
   (method-documentation x))

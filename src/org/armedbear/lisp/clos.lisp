@@ -1555,58 +1555,52 @@ compare the method combination name to the symbol 'standard.")
 
 
 
-;; MOP (p. 216) specifies the following reader generic functions:
-;;   generic-function-argument-precedence-order
-;;   generic-function-declarations
-;;   generic-function-lambda-list
-;;   generic-function-method-class
-;;   generic-function-method-combination
-;;   generic-function-methods
-;;   generic-function-name
+;;; MOP (p. 216) specifies the following reader generic functions:
+;;;   generic-function-argument-precedence-order
+;;;   generic-function-declarations
+;;;   generic-function-lambda-list
+;;;   generic-function-method-class
+;;;   generic-function-method-combination
+;;;   generic-function-methods
+;;;   generic-function-name
 
-;;; These are defined with % in package SYS, defined as functions here
-;;; and redefined as generic functions once we're all set up.
+;;; Additionally, we define the following reader functions:
+;;;   generic-function-required-arguments
+;;;   generic-function-optional-arguments
+
+;;; These are defined as functions here and redefined as generic
+;;; functions via atomic-defgeneric once we're all set up.
 
 (defun generic-function-name (gf)
-  (%generic-function-name gf))
+  (std-slot-value gf 'sys::name))
 
 (defun generic-function-lambda-list (gf)
-  (%generic-function-lambda-list gf))
-(defsetf generic-function-lambda-list %set-generic-function-lambda-list)
-
-(defun (setf generic-function-documentation) (new-value gf)
-  (set-generic-function-documentation gf new-value))
-
-(defun (setf generic-function-initial-methods) (new-value gf)
-  (set-generic-function-initial-methods gf new-value))
+  (std-slot-value gf 'sys::lambda-list))
 
 (defun generic-function-methods (gf)
-  (sys:%generic-function-methods gf))
-(defun (setf generic-function-methods) (new-value gf)
-  (set-generic-function-methods gf new-value))
+  (std-slot-value gf 'sys::methods))
 
 (defun generic-function-method-class (gf)
-  (sys:%generic-function-method-class gf))
-(defun (setf generic-function-method-class) (new-value gf)
-  (set-generic-function-method-class gf new-value))
+  (std-slot-value gf 'sys::method-class))
 
 (defun generic-function-method-combination (gf)
-  (sys:%generic-function-method-combination gf))
-(defun (setf generic-function-method-combination) (new-value gf)
-  (assert (typep new-value 'method-combination))
-  (set-generic-function-method-combination gf new-value))
+  (std-slot-value gf 'sys::%method-combination))
 
 (defun generic-function-argument-precedence-order (gf)
-  (sys:%generic-function-argument-precedence-order gf))
-(defun (setf generic-function-argument-precedence-order) (new-value gf)
-  (set-generic-function-argument-precedence-order gf new-value))
+  (std-slot-value gf 'sys::argument-precedence-order))
+
+(defun generic-function-required-arguments (gf)
+  (std-slot-value gf 'sys::required-args))
+
+(defun generic-function-optional-arguments (gf)
+  (std-slot-value gf 'sys::optional-args))
 
 (declaim (ftype (function * t) classes-to-emf-table))
 (defun classes-to-emf-table (gf)
-  (generic-function-classes-to-emf-table gf))
+  (std-slot-value gf 'sys::classes-to-emf-table))
 
 (defun (setf classes-to-emf-table) (new-value gf)
-  (set-generic-function-classes-to-emf-table gf new-value))
+  (setf (std-slot-value gf 'sys::classes-to-emf-table) new-value))
 
 (defun (setf method-lambda-list) (new-value method)
   (setf (std-slot-value method 'sys::lambda-list) new-value))
@@ -1640,17 +1634,20 @@ compare the method combination name to the symbol 'standard.")
          (setf documentation t)
          (push item options))
         (:method
-         (push
-          `(push (defmethod ,function-name ,@(cdr item))
-                 (generic-function-initial-methods (fdefinition ',function-name)))
-          methods))
+            ;; KLUDGE (rudi 2013-04-02): this only works with subclasses
+            ;; of standard-generic-function, since the initial-methods
+            ;; slot is not mandated by AMOP
+            (push
+             `(push (defmethod ,function-name ,@(cdr item))
+               (std-slot-value (fdefinition ',function-name) 'sys::initial-methods))
+             methods))
         (t
          (push item options))))
     (when declarations (push (list :declarations declarations) options))
     (setf options (nreverse options)
           methods (nreverse methods))
-    ;;; Since DEFGENERIC currently shares its argument parsing with
-    ;;; DEFMETHOD, we perform this check here.
+    ;; Since DEFGENERIC currently shares its argument parsing with
+    ;; DEFMETHOD, we perform this check here.
     (when (find '&aux lambda-list)
       (error 'program-error
              :format-control "&AUX is not allowed in a generic function lambda list: ~S"
@@ -1720,19 +1717,19 @@ compare the method combination name to the symbol 'standard.")
 (defun %defgeneric (function-name &rest all-keys)
   (when (fboundp function-name)
     (let ((gf (fdefinition function-name)))
-      (when (typep gf 'generic-function)
+      (when (typep gf 'standard-generic-function)
         ;; Remove methods defined by previous DEFGENERIC forms, as
-        ;; specified by CLHS, 7.7 (Macro DEFGENERIC).
-        (dolist (method (generic-function-initial-methods gf))
-          (if (eq  (class-of gf) +the-standard-generic-function-class+)
-              (progn
-                (std-remove-method gf method)
-                (map-dependents gf
-                                #'(lambda (dep)
-                                    (update-dependent gf dep
-                                                      'remove-method method))))
-              (remove-method gf method)))
-        (setf (generic-function-initial-methods gf) '()))))
+        ;; specified by CLHS, 7.7 (Macro DEFGENERIC).  KLUDGE: only
+        ;; works for subclasses of standard-generic-function.  Since
+        ;; AMOP doesn't specify a reader for initial methods, we have to
+        ;; skip this step otherwise.
+        (dolist (method (std-slot-value gf 'sys::initial-methods))
+          (std-remove-method gf method)
+          (map-dependents gf
+                          #'(lambda (dep)
+                              (update-dependent gf dep
+                                                'remove-method method))))
+        (setf (std-slot-value gf 'sys::initial-methods) '()))))
   (apply 'ensure-generic-function function-name all-keys))
 
 ;;; Bootstrap version of ensure-generic-function, handling only
@@ -1760,15 +1757,16 @@ compare the method combination name to the symbol 'standard.")
               (error 'simple-error
                      :format-control "The lambda list ~S is incompatible with the existing methods of ~S."
                      :format-arguments (list lambda-list gf)))
-            (setf (generic-function-lambda-list gf) lambda-list)
+            (setf (std-slot-value gf 'sys::lambda-list) lambda-list)
             (let* ((plist (analyze-lambda-list lambda-list))
                    (required-args (getf plist ':required-args)))
-              (%set-gf-required-args gf required-args)
-              (%set-gf-optional-args gf (getf plist :optional-args))))
-          (setf (generic-function-argument-precedence-order gf)
-                (or argument-precedence-order (gf-required-args gf)))
+              (setf (std-slot-value gf 'sys::required-args) required-args)
+              (setf (std-slot-value gf 'sys::optional-args)
+                    (getf plist :optional-args))))
+          (setf (std-slot-value gf 'sys::argument-precedence-order)
+                (or argument-precedence-order (generic-function-required-arguments gf)))
           (when documentation-supplied-p
-            (setf (generic-function-documentation gf) documentation))
+            (setf (std-slot-value gf 'sys::%documentation) documentation))
           (finalize-standard-generic-function gf)
           gf)
         (progn
@@ -1812,9 +1810,9 @@ compare the method combination name to the symbol 'standard.")
 
 (defun finalize-standard-generic-function (gf)
   (%finalize-generic-function gf)
-  (unless (generic-function-classes-to-emf-table gf)
-    (set-generic-function-classes-to-emf-table gf (make-hash-table :test #'equal)))
-  (clrhash (generic-function-classes-to-emf-table gf))
+  (if (classes-to-emf-table gf)
+      (clrhash (classes-to-emf-table gf))
+      (setf (classes-to-emf-table gf) (make-hash-table :test #'equal)))
   (%init-eql-specializations gf (collect-eql-specializer-objects gf))
   (set-funcallable-instance-function
    gf
@@ -1823,7 +1821,7 @@ compare the method combination name to the symbol 'standard.")
        (compute-discriminating-function gf)))
   ;; FIXME Do we need to warn on redefinition somewhere else?
   (let ((*warn-on-redefinition* nil))
-    (setf (fdefinition (%generic-function-name gf)) gf))
+    (setf (fdefinition (generic-function-name gf)) gf))
   (values))
 
 (defun make-instance-standard-generic-function (generic-function-class
@@ -1842,21 +1840,21 @@ compare the method combination name to the symbol 'standard.")
       (setf method-combination
             (find-method-combination
              gf (car method-combination) (cdr method-combination))))
-    (%set-generic-function-name gf name)
-    (%set-generic-function-lambda-list gf lambda-list)
-    (set-generic-function-initial-methods gf ())
-    (set-generic-function-methods gf ())
-    (set-generic-function-method-class gf method-class)
-    (set-generic-function-method-combination gf method-combination)
-    (set-generic-function-declarations gf declarations)
-    (set-generic-function-documentation gf documentation)
-    (set-generic-function-classes-to-emf-table gf nil)
+    (setf (std-slot-value gf 'sys::name) name)
+    (setf (std-slot-value gf 'sys::lambda-list) lambda-list)
+    (setf (std-slot-value gf 'sys::initial-methods) ())
+    (setf (std-slot-value gf 'sys::methods) ())
+    (setf (std-slot-value gf 'sys::method-class) method-class)
+    (setf (std-slot-value gf 'sys::%method-combination) method-combination)
+    (setf (std-slot-value gf 'sys::declarations) declarations)
+    (setf (std-slot-value gf 'sys::%documentation) documentation)
+    (setf (std-slot-value gf 'sys::classes-to-emf-table) nil)
     (let* ((plist (analyze-lambda-list (generic-function-lambda-list gf)))
            (required-args (getf plist ':required-args)))
-      (%set-gf-required-args gf required-args)
-      (%set-gf-optional-args gf (getf plist :optional-args))
-      (set-generic-function-argument-precedence-order
-       gf (or argument-precedence-order required-args)))
+      (setf (std-slot-value gf 'sys::required-args) required-args)
+      (setf (std-slot-value gf 'sys::optional-args) (getf plist :optional-args))
+      (setf (std-slot-value gf 'sys::argument-precedence-order)
+            (or argument-precedence-order required-args)))
     (finalize-standard-generic-function gf)
     gf))
 
@@ -1914,11 +1912,11 @@ compare the method combination name to the symbol 'standard.")
                      real-body)))))
 
 (defun required-portion (gf args)
-  (let ((number-required (length (gf-required-args gf))))
+  (let ((number-required (length (generic-function-required-arguments gf))))
     (when (< (length args) number-required)
       (error 'program-error
              :format-control "Not enough arguments for generic function ~S."
-             :format-arguments (list (%generic-function-name gf))))
+             :format-arguments (list (generic-function-name gf))))
     (subseq args 0 number-required)))
 
 (defun extract-lambda-list (specialized-lambda-list)
@@ -2200,14 +2198,14 @@ Initialized with the true value near the end of the file.")
           (std-remove-method gf old-method)
           (remove-method gf old-method))))
   (setf (std-slot-value method 'sys::%generic-function) gf)
-  (push method (generic-function-methods gf))
+  (push method (std-slot-value gf 'sys::methods))
   (dolist (specializer (method-specializers method))
     (add-direct-method specializer method))
   (finalize-standard-generic-function gf)
   gf)
 
 (defun std-remove-method (gf method)
-  (setf (generic-function-methods gf)
+  (setf (std-slot-value gf 'sys::methods)
         (remove method (generic-function-methods gf)))
   (setf (std-slot-value method 'sys::%generic-function) nil)
   (dolist (specializer (method-specializers method))
@@ -2219,11 +2217,11 @@ Initialized with the true value near the end of the file.")
   ;; "If the specializers argument does not correspond in length to the number
   ;; of required arguments of the generic-function, an an error of type ERROR
   ;; is signaled."
-  (unless (= (length specializers) (length (gf-required-args gf)))
+  (unless (= (length specializers) (length (generic-function-required-arguments gf)))
     (error "The specializers argument has length ~S, but ~S has ~S required parameters."
            (length specializers)
            gf
-           (length (gf-required-args gf))))
+           (length (generic-function-required-arguments gf))))
   (let* ((canonical-specializers (canonicalize-specializers specializers))
          (method
           (find-if #'(lambda (method)
@@ -2233,13 +2231,13 @@ Initialized with the true value near the end of the file.")
                                   (method-specializers method))))
                    (generic-function-methods gf))))
     (if (and (null method) errorp)
-        (error "No such method for ~S." (%generic-function-name gf))
+        (error "No such method for ~S." (generic-function-name gf))
         method)))
 
 (defun fast-callable-p (gf)
   (and (eq (method-combination-name (generic-function-method-combination gf))
            'standard)
-       (null (intersection (%generic-function-lambda-list gf)
+       (null (intersection (generic-function-lambda-list gf)
                            '(&rest &optional &key &allow-other-keys &aux)))))
 
 (declaim (ftype (function * t) slow-method-lookup-1))
@@ -2252,125 +2250,129 @@ Initialized with the true value near the end of the file.")
 
 (defun std-compute-discriminating-function (gf)
   ;; In this function, we know that gf is of class
-  ;; standard-generic-function, so we call various
-  ;; sys:%generic-function-foo readers to break circularities.
-  (cond
-    ((and (= (length (sys:%generic-function-methods gf)) 1)
-          (eq (type-of (car (sys:%generic-function-methods gf))) 'standard-reader-method)
-          (eq (type-of (car (std-method-specializers (%car (sys:%generic-function-methods gf))))) 'standard-class))
-     ;; we are standard and can elide slot-value(-using-class)
-     (let* ((method (%car (sys:%generic-function-methods gf)))
-            (class (car (std-method-specializers method)))
-            (slot-name (slot-definition-name (accessor-method-slot-definition method))))
-       #'(lambda (arg)
-           (declare (optimize speed))
-           (let* ((layout (std-instance-layout arg))
-                  (location (get-cached-slot-location gf layout)))
-             (unless location
-               (unless (simple-typep arg class)
-                 ;; FIXME no applicable method
-                 (error 'simple-type-error
-                        :datum arg
-                        :expected-type class))
-               (setf location (slow-reader-lookup gf layout slot-name)))
-             (let ((value (if (consp location)
-                              (cdr location) ; :allocation :class
-                              (funcallable-standard-instance-access arg location))))
-               (if (eq value +slot-unbound+)
-                   ;; fix SLOT-UNBOUND.5 from ansi test suite
-                   (nth-value 0 (slot-unbound class arg slot-name))
-                   value))))))
+  ;; standard-generic-function, so we can access the instance's slots
+  ;; via std-slot-value.  This breaks circularities when redefining
+  ;; generic function accessors.
+  (let ((methods (std-slot-value gf 'sys::methods)))
+    (cond
+      ((and (= (length methods) 1)
+            (eq (type-of (car methods)) 'standard-reader-method)
+            (eq (type-of (car (std-method-specializers (%car methods))))
+                'standard-class))
+       (let* ((method (%car methods))
+              (class (car (std-method-specializers method)))
+              (slot-name (slot-definition-name (accessor-method-slot-definition method))))
+         #'(lambda (arg)
+             (declare (optimize speed))
+             (let* ((layout (std-instance-layout arg))
+                    (location (get-cached-slot-location gf layout)))
+               (unless location
+                 (unless (simple-typep arg class)
+                   ;; FIXME no applicable method
+                   (error 'simple-type-error
+                          :datum arg
+                          :expected-type class))
+                 (setf location (slow-reader-lookup gf layout slot-name)))
+               (let ((value (if (consp location)
+                                (cdr location) ; :allocation :class
+                                (funcallable-standard-instance-access arg location))))
+                 (if (eq value +slot-unbound+)
+                     ;; fix SLOT-UNBOUND.5 from ansi test suite
+                     (nth-value 0 (slot-unbound class arg slot-name))
+                     value))))))
 
-    (t
-     (let* ((emf-table (classes-to-emf-table gf))
-            (number-required (length (gf-required-args gf)))
-            (lambda-list (%generic-function-lambda-list gf))
-            (exact (null (intersection lambda-list
-                                       '(&rest &optional &key
-                                         &allow-other-keys))))
-            (no-aux (null (some 
-                           (lambda (method) 
-                             (find '&aux (std-slot-value method 'sys::lambda-list)))
-                           (sys:%generic-function-methods gf)))))
-       (if (and exact
-                no-aux)
-           (cond
-             ((= number-required 1)
-              (cond
-                ((and (eq (method-combination-name (sys:%generic-function-method-combination gf)) 'standard)
-                      (= (length (sys:%generic-function-methods gf)) 1)
-                      (std-method-fast-function (%car (sys:%generic-function-methods gf))))
-                 (let* ((method (%car (sys:%generic-function-methods gf)))
-                        (specializer (car (std-method-specializers method)))
-                        (function (std-method-fast-function method)))
-                   (if (typep specializer 'eql-specializer)
-                       (let ((specializer-object (eql-specializer-object specializer)))
+      (t
+       (let* ((emf-table (classes-to-emf-table gf))
+              (number-required (length (generic-function-required-arguments gf)))
+              (lambda-list (generic-function-lambda-list gf))
+              (exact (null (intersection lambda-list
+                                         '(&rest &optional &key
+                                           &allow-other-keys))))
+              (no-aux (null (some 
+                             (lambda (method) 
+                               (find '&aux (std-slot-value method 'sys::lambda-list)))
+                             methods))))
+         (if (and exact
+                  no-aux)
+             (cond
+               ((= number-required 1)
+                (cond
+                  ((and (eq (method-combination-name
+                             (std-slot-value gf 'sys::%method-combination))
+                            'standard)
+                        (= (length methods) 1)
+                        (std-method-fast-function (%car methods)))
+                   (let* ((method (%car methods))
+                          (specializer (car (std-method-specializers method)))
+                          (function (std-method-fast-function method)))
+                     (if (typep specializer 'eql-specializer)
+                         (let ((specializer-object (eql-specializer-object specializer)))
+                           #'(lambda (arg)
+                               (declare (optimize speed))
+                               (if (eql arg specializer-object)
+                                   (funcall function arg)
+                                   (no-applicable-method gf (list arg)))))
                          #'(lambda (arg)
                              (declare (optimize speed))
-                             (if (eql arg specializer-object)
-                                 (funcall function arg)
-                                 (no-applicable-method gf (list arg)))))
-                       #'(lambda (arg)
-                           (declare (optimize speed))
-                           (unless (simple-typep arg specializer)
-                             ;; FIXME no applicable method
-                             (error 'simple-type-error
-                                    :datum arg
-                                    :expected-type specializer))
-                           (funcall function arg)))))
-                (t
-                 #'(lambda (arg)
-                     (declare (optimize speed))
-                     (let* ((specialization
-                             (%get-arg-specialization gf arg))
-                            (emfun (or (gethash1 specialization
-                                                 emf-table)
-                                       (slow-method-lookup-1
-                                        gf arg specialization))))
-                       (if emfun
-                           (funcall emfun (list arg))
-                           (apply #'no-applicable-method gf (list arg))))))))
-             ((= number-required 2)
-              #'(lambda (arg1 arg2)
-                  (declare (optimize speed))
-                  (let* ((args (list arg1 arg2))
-                         (emfun (get-cached-emf gf args)))
-                    (if emfun
-                        (funcall emfun args)
-                        (slow-method-lookup gf args)))))
-             ((= number-required 3)
-              #'(lambda (arg1 arg2 arg3)
-                  (declare (optimize speed))
-                  (let* ((args (list arg1 arg2 arg3))
-                         (emfun (get-cached-emf gf args)))
-                    (if emfun
-                        (funcall emfun args)
-                        (slow-method-lookup gf args)))))
-             (t
-              #'(lambda (&rest args)
-                  (declare (optimize speed))
-                  (let ((len (length args)))
-                    (unless (= len number-required)
-                      (error 'program-error
-                             :format-control "Not enough arguments for generic function ~S."
-                             :format-arguments (list (%generic-function-name gf)))))
-                  (let ((emfun (get-cached-emf gf args)))
-                    (if emfun
-                        (funcall emfun args)
-                        (slow-method-lookup gf args))))))
-           ;;           (let ((non-key-args (+ number-required
-           ;;                                  (length (gf-optional-args gf))))))
-           #'(lambda (&rest args)
-               (declare (optimize speed))
-               (let ((len (length args)))
-                 (unless (>= len number-required)
-                   (error 'program-error
-                          :format-control "Not enough arguments for generic function ~S."
-                          :format-arguments (list (%generic-function-name gf)))))
-               (let ((emfun (get-cached-emf gf args)))
-                 (if emfun
-                     (funcall emfun args)
-                     (slow-method-lookup gf args)))))))))
+                             (unless (simple-typep arg specializer)
+                               ;; FIXME no applicable method
+                               (error 'simple-type-error
+                                      :datum arg
+                                      :expected-type specializer))
+                             (funcall function arg)))))
+                  (t
+                   #'(lambda (arg)
+                       (declare (optimize speed))
+                       (let* ((specialization
+                                (%get-arg-specialization gf arg))
+                              (emfun (or (gethash1 specialization
+                                                   emf-table)
+                                         (slow-method-lookup-1
+                                          gf arg specialization))))
+                         (if emfun
+                             (funcall emfun (list arg))
+                             (apply #'no-applicable-method gf (list arg))))))))
+               ((= number-required 2)
+                #'(lambda (arg1 arg2)
+                    (declare (optimize speed))
+                    (let* ((args (list arg1 arg2))
+                           (emfun (get-cached-emf gf args)))
+                      (if emfun
+                          (funcall emfun args)
+                          (slow-method-lookup gf args)))))
+               ((= number-required 3)
+                #'(lambda (arg1 arg2 arg3)
+                    (declare (optimize speed))
+                    (let* ((args (list arg1 arg2 arg3))
+                           (emfun (get-cached-emf gf args)))
+                      (if emfun
+                          (funcall emfun args)
+                          (slow-method-lookup gf args)))))
+               (t
+                #'(lambda (&rest args)
+                    (declare (optimize speed))
+                    (let ((len (length args)))
+                      (unless (= len number-required)
+                        (error 'program-error
+                               :format-control "Not enough arguments for generic function ~S."
+                               :format-arguments (list (generic-function-name gf)))))
+                    (let ((emfun (get-cached-emf gf args)))
+                      (if emfun
+                          (funcall emfun args)
+                          (slow-method-lookup gf args))))))
+             ;;           (let ((non-key-args (+ number-required
+             ;;                                  (length (generic-function-optional-arguments gf))))))
+             #'(lambda (&rest args)
+                 (declare (optimize speed))
+                 (let ((len (length args)))
+                   (unless (>= len number-required)
+                     (error 'program-error
+                            :format-control "Not enough arguments for generic function ~S."
+                            :format-arguments (list (generic-function-name gf)))))
+                 (let ((emfun (get-cached-emf gf args)))
+                   (if emfun
+                       (funcall emfun args)
+                       (slow-method-lookup gf args))))))))))
 
 (defun sort-methods (methods gf required-classes)
   (if (or (null methods) (null (%cdr methods)))
@@ -2488,8 +2490,8 @@ to ~S with argument list ~S."
                                    #'compute-effective-method)
                                gf (generic-function-method-combination gf)
                                applicable-methods))
-               (non-keyword-args (+ (length (gf-required-args gf))
-                                    (length (gf-optional-args gf))))
+               (non-keyword-args (+ (length (generic-function-required-arguments gf))
+                                    (length (generic-function-optional-arguments gf))))
                (gf-lambda-list (generic-function-lambda-list gf))
                (checks-required (and (member '&key gf-lambda-list)
                                      (not (member '&allow-other-keys
@@ -2639,7 +2641,7 @@ to ~S with argument list ~S."
                  ((and (null befores) (null reverse-afters))
                   (let ((fast-function (std-method-fast-function (car primaries))))
                     (if fast-function
-                        (ecase (length (gf-required-args gf))
+                        (ecase (length (generic-function-required-arguments gf))
                           (1
                            #'(lambda (args)
                                (declare (optimize speed))
@@ -3006,7 +3008,7 @@ generic functions without providing sensible behaviour."
          ;; to charpos 23 always (but (setf fdefinition) leaves the
          ;; outdated source position in place, which is even worse).
          (fset ',function-name gf)
-         (%set-generic-function-name gf ',function-name)
+         (setf (std-slot-value gf 'sys::name) ',function-name)
          (fmakunbound ',temp-sym)
          gf))))
 
@@ -4266,15 +4268,16 @@ or T when any keyword is acceptable due to presence of
                                      &allow-other-keys)
   (let* ((plist (analyze-lambda-list lambda-list))
          (required-args (getf plist ':required-args)))
-    (%set-gf-required-args instance required-args)
-    (%set-gf-optional-args instance (getf plist :optional-args))
-    (set-generic-function-argument-precedence-order
-     instance (or argument-precedence-order required-args)))
+    (setf (std-slot-value instance 'sys::required-args) required-args)
+    (setf (std-slot-value instance 'sys::optional-args)
+          (getf plist :optional-args)) 
+    (setf (std-slot-value instance 'sys::argument-precedence-order)
+          (or argument-precedence-order required-args)))
   (unless (typep (generic-function-method-combination instance)
                  'method-combination)
     ;; this fixes (make-instance 'standard-generic-function) -- the
     ;; constructor of StandardGenericFunction sets this slot to '(standard)
-    (setf (generic-function-method-combination instance)
+    (setf (std-slot-value instance 'sys::%method-combination)
           (find-method-combination
            instance (car method-combination) (cdr method-combination))))
   (finalize-standard-generic-function instance))
@@ -4283,31 +4286,39 @@ or T when any keyword is acceptable due to presence of
 ;;; AMOP pg. 216ff.
 (atomic-defgeneric generic-function-argument-precedence-order (generic-function)
   (:method ((generic-function standard-generic-function))
-    (sys:%generic-function-argument-precedence-order generic-function)))
+    (std-slot-value generic-function 'sys::argument-precedence-order)))
 
 (atomic-defgeneric generic-function-declarations (generic-function)
   (:method ((generic-function standard-generic-function))
-    (sys:%generic-function-declarations generic-function)))
+    (std-slot-value generic-function 'sys::declarations)))
 
 (atomic-defgeneric generic-function-lambda-list (generic-function)
   (:method ((generic-function standard-generic-function))
-    (sys:%generic-function-lambda-list generic-function)))
+    (std-slot-value generic-function 'sys::lambda-list)))
 
 (atomic-defgeneric generic-function-method-class (generic-function)
   (:method ((generic-function standard-generic-function))
-    (sys:%generic-function-method-class generic-function)))
+    (std-slot-value generic-function 'sys::method-class)))
 
 (atomic-defgeneric generic-function-method-combination (generic-function)
   (:method ((generic-function standard-generic-function))
-    (sys:%generic-function-method-combination generic-function)))
+    (std-slot-value generic-function 'sys::%method-combination)))
 
 (atomic-defgeneric generic-function-methods (generic-function)
   (:method ((generic-function standard-generic-function))
-    (sys:%generic-function-methods generic-function)))
+    (std-slot-value generic-function 'sys::methods)))
 
 (atomic-defgeneric generic-function-name (generic-function)
   (:method ((generic-function standard-generic-function))
-    (sys:%generic-function-name generic-function)))
+    (slot-value generic-function 'sys::name)))
+
+(atomic-defgeneric generic-function-required-arguments (generic-function)
+  (:method ((generic-function standard-generic-function))
+    (std-slot-value generic-function 'sys::required-args)))
+
+(atomic-defgeneric generic-function-optional-arguments (generic-function)
+  (:method ((generic-function standard-generic-function))
+    (std-slot-value generic-function 'sys::optional-args)))
 
 ;;; AMOP pg. 231
 (defgeneric (setf generic-function-name) (new-value gf)

@@ -375,7 +375,7 @@ public final class Load
     // ### *fasl-version*
     // internal symbol
     static final Symbol _FASL_VERSION_ =
-        exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(40));
+        exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(41));
 
     // ### *fasl-external-format*
     // internal symbol
@@ -443,7 +443,8 @@ public final class Load
                         + second.princToString() + "' but expected '"
                         + _FASL_VERSION_.getSymbolValue().princToString()
                         + "' in "
-                        + Symbol.LOAD_PATHNAME.symbolValue(thread).princToString()));
+                        + Symbol.LOAD_PATHNAME.symbolValue(thread).princToString()
+                        + " (try recompiling the file)"));
         }
     }
 
