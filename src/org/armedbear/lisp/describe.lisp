@@ -110,7 +110,7 @@
   (format stream "  TYPE         ~S~%" (pathname-type object))
   (format stream "  VERSION      ~S~%" (pathname-version object)))
 
-(defmethod describe-object ((object standard-object) stream)
+(defun %describe-standard-object/funcallable (object stream)
   (let* ((class (class-of object))
          (slotds (mop:class-slots class))
          (max-slot-name-length 0)
@@ -145,8 +145,15 @@
         (dolist (slotd (nreverse class-slotds))
           (describe-slot
            (%slot-definition-name slotd)))
-        (format stream "~%"))))
-    (values))
+        (format stream "~%")))))
+
+(defmethod describe-object ((object standard-object) stream)
+  (%describe-standard-object/funcallable object stream)
+  (values))
+
+(defmethod describe-object ((object mop:funcallable-standard-object) stream)
+  (%describe-standard-object/funcallable object stream)
+  (values))
 
 (defmethod describe-object ((object java:java-object) stream)
   (java:describe-java-object object stream))
