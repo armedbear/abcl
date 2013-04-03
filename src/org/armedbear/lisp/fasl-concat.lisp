@@ -33,6 +33,9 @@
 (in-package #:system)
 
 
+(export '(concatenate-fasls))
+
+
 (defun pathname-directory-p (pathname)
   (and (null (pathname-type pathname))
        (null (pathname-name pathname))
