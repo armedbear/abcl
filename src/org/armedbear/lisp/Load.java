@@ -323,6 +323,7 @@ public final class Load
             && truename.type.princToString().equals(COMPILE_FILE_TYPE) && Utilities.checkZipFile(truename))  {
             Pathname init = new Pathname(truename.getNamestring());
             init.type = COMPILE_FILE_INIT_FASL_TYPE;
+            init.name = new SimpleString("__loader__");
             LispObject t = Pathname.truename(init);
             if (t instanceof Pathname) {
                 truename = (Pathname)t;

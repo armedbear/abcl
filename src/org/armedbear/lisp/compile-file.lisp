@@ -687,6 +687,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
               (push resource pathnames))))))
     (setf pathnames (nreverse (remove nil pathnames)))
     (let ((load-file (make-pathname :defaults output-file
+                                    :name "__loader__"
                                     :type "_")))
       (rename-file output-file load-file)
       (push load-file pathnames))

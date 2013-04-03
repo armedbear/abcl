@@ -44,44 +44,48 @@
 (defun load-concatenated-fasl (sub-fasl)
   (let ((fasl-path (merge-pathnames (make-pathname :directory (list :relative
                                                                     sub-fasl)
-                                                   :name sub-fasl
+                                                   :name "__loader__"
                                                    :type "_")
                                     *load-truename-fasl*)))
     (load fasl-path)))
 
 (defun concatenate-fasls (inputs output)
-  (let* ((directory (print (ext:make-temp-directory)))
-         (unpacked (mapcan #'(lambda (input)
-                               (sys:unzip (print input)
-                                          (ensure-directories-exist
-                                           (sub-directory directory
-                                                          (pathname-name (print input))))))
-                           inputs))
-         (chain-loader (make-pathname :name (pathname-name output)
-                                      :type "_"
-                                      :defaults directory)))
-    (with-open-file (f chain-loader
-                       :direction :output
-                       :if-does-not-exist :create
-                       :if-exists :overwrite)
-      (write-string
-       ";; loader code to delegate loading of the embedded fasls below" f)
-      (terpri f)
-      (sys::dump-form `(sys:init-fasl :version ,sys:*fasl-version*) f)
-      (terpri f)
-      (dolist (input inputs)
-        (sys::dump-form `(load-concatenated-fasl ,(pathname-name input)) f)
-        (terpri f)))
-    (let ((paths (remove-if #'pathname-directory-p
-                            (directory
-                             (merge-pathnames
-                              (make-pathname :directory '(:relative
-                                                          :wild-inferiors)
-                                             :name "*"
-                                             :type "*")
-                              directory)))))
-      (sys:zip output paths directory))
-    (values directory unpacked chain-loader)))
+  (let ((directory (ext:make-temp-directory))
+        paths)
+    (unwind-protect
+         (let* ((unpacked (mapcan #'(lambda (input)
+                                      (sys:unzip input
+                                                 (ensure-directories-exist
+                                                  (sub-directory directory
+                                                                 (pathname-name  input)))))
+                                   inputs))
+                (chain-loader (make-pathname :name "__loader__"
+                                             :type "_"
+                                             :defaults directory)))
+           (with-open-file (f chain-loader
+                              :direction :output
+                              :if-does-not-exist :create
+                              :if-exists :overwrite)
+             (write-string
+              ";; loader code to delegate loading of the embedded fasls below" f)
+             (terpri f)
+             (sys::dump-form `(sys:init-fasl :version ,sys:*fasl-version*) f)
+             (terpri f)
+             (dolist (input inputs)
+               (sys::dump-form `(load-concatenated-fasl ,(pathname-name input)) f)
+               (terpri f)))
+           (setf paths
+                 (directory (merge-pathnames
+                             (make-pathname :directory '(:relative
+                                                         :wild-inferiors)
+                                            :name "*"
+                                            :type "*")
+                             directory)))
+           (sys:zip output (remove-if #'pathname-directory-p paths) directory)
+           (values directory unpacked chain-loader))
+      (dolist (path paths)
+        (ignore-errors (delete-file path)))
+      (ignore-errors (delete-file directory)))))
 
 (defun sub-directory (directory name)
   (merge-pathnames (make-pathname :directory (list :relative name))
