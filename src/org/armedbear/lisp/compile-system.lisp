@@ -369,6 +369,7 @@
                            "ensure-directories-exist.lisp"
                            "error.lisp"
                            "extensible-sequences.lisp"
+                           "fasl-concat.lisp"
                            "featurep.lisp"
                            "fdefinition.lisp"
                            "fill.lisp"
