@@ -993,7 +993,7 @@ component-list := ( @var{component-def}* )
 
 component-def  := ( component-type simple-component-name @var{option}* )
 
-component-type := :system | :module | :file | :static-file | other-component-type
+component-type := :module | :file | :static-file | other-component-type
 
 other-component-type := symbol-by-name (@pxref{The defsystem grammar,,Component types})
 
@@ -1035,10 +1035,15 @@ the current package.  So a component type @code{my-component-type}, in
 the current package @code{my-system-asd} can be specified as
 @code{:my-component-type}, or @code{my-component-type}.
 
+@code{system} and its subclasses are @emph{not}
+allowed as component types for such children components.
+
 @subsection System class names
 
-A system class name will be looked up in the same way as a Component
-type (see above).  Typically, one will not need to specify a system
+A system class name will be looked up
+in the same way as a Component type (see above),
+except that only @code{system} and its subclasses are allowed.
+Typically, one will not need to specify a system
 class name, unless using a non-standard system class defined in some
 ASDF extension, typically loaded through @code{DEFSYSTEM-DEPENDS-ON},
 see below.  For such class names in the ASDF package, we recommend that
