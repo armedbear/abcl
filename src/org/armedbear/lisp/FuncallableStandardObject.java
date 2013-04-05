@@ -42,9 +42,6 @@ public class FuncallableStandardObject extends StandardObject
 {
   protected LispObject function;
 
-  public static int SLOT_INDEX_NAME = 1;
-
-
   protected FuncallableStandardObject()
   {
     super();
