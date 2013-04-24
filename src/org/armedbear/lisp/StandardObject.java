@@ -676,13 +676,13 @@ public class StandardObject extends LispObject
         // functions early in the boot process and subtypep isn't
         // working yet.  allocate-funcallable-instance takes over later.
         return new StandardGenericFunction();
-      } else if (arg instanceof FuncallableStandardClass) {
-        FuncallableStandardClass cls = (FuncallableStandardClass)arg;
-        Layout layout = cls.getClassLayout();
-        if (layout == null) {
-          program_error("No layout for funcallable class " + cls.princToString() + ".");
+      } else if (arg.typep(StandardClass.FUNCALLABLE_STANDARD_CLASS) != NIL) {
+        LispObject l = Symbol.CLASS_LAYOUT.execute(arg);
+        if (! (l instanceof Layout)) {
+          program_error("Invalid class layout for funcallable class "
+                        + arg.princToString() + ".");
         }
-        return new FuncallableStandardObject(cls, layout.getLength());
+        return new FuncallableStandardObject((Layout)l);
       } else if (arg instanceof StandardClass) {
         StandardClass cls = (StandardClass)arg;
         Layout layout = cls.getClassLayout();

@@ -109,31 +109,6 @@ public class StandardClass extends SlotClass
         }
       };
 
-  static Layout layoutStandardGenericFunction =
-      new Layout(null,
-                 list(Symbol.NAME,
-                      Symbol.LAMBDA_LIST,
-                      Symbol.REQUIRED_ARGS,
-                      Symbol.OPTIONAL_ARGS,
-                      Symbol.INITIAL_METHODS,
-                      Symbol.METHODS,
-                      Symbol.METHOD_CLASS,
-                      Symbol._METHOD_COMBINATION,
-                      Symbol.ARGUMENT_PRECEDENCE_ORDER,
-                      Symbol.DECLARATIONS,
-                      Symbol.CLASSES_TO_EMF_TABLE,
-                      Symbol._DOCUMENTATION),
-                 NIL)
-      {
-        @Override
-        public LispClass getLispClass()
-        {
-          return STANDARD_GENERIC_FUNCTION;
-        }
-      };
-
-  
-
   public StandardClass()
   {
       super(layoutStandardClass);
@@ -848,7 +823,6 @@ public class StandardClass extends SlotClass
     STANDARD_EFFECTIVE_SLOT_DEFINITION.finalizeClass();
 
     // STANDARD-GENERIC-FUNCTION
-    STANDARD_GENERIC_FUNCTION.setClassLayout(layoutStandardGenericFunction);
     STANDARD_GENERIC_FUNCTION.setCPL(STANDARD_GENERIC_FUNCTION,
                                      GENERIC_FUNCTION, METAOBJECT,
                                      FUNCALLABLE_STANDARD_OBJECT,
