@@ -118,7 +118,7 @@ public final class ZeroRankArray extends AbstractArray
     public void aset(int index, LispObject obj)
     {
         if (obj.typep(elementType) == NIL)
-            error(new TypeError(obj, elementType));
+            type_error(obj, elementType);
         if (index == 0)
             data = obj;
         else
@@ -129,7 +129,7 @@ public final class ZeroRankArray extends AbstractArray
     public void fill(LispObject obj)
     {
         if (obj.typep(elementType) == NIL)
-            error(new TypeError(obj, elementType));
+            type_error(obj, elementType);
         data = obj;
     }
 

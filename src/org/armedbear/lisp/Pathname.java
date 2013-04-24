@@ -2639,7 +2639,7 @@ public class Pathname extends LispObject {
         @Override
         public LispObject execute(LispObject arg) {
             if (!(arg instanceof AbstractString)) {
-                return error(new TypeError(arg, Symbol.STRING));
+                return type_error(arg, Symbol.STRING);
             }
             String result = uriDecode(((AbstractString)arg).toString());
             return new SimpleString(result);
@@ -2666,7 +2666,7 @@ public class Pathname extends LispObject {
         @Override
         public LispObject execute(LispObject arg) {
             if (!(arg instanceof AbstractString)) {
-                return error(new TypeError(arg, Symbol.STRING));
+                return type_error(arg, Symbol.STRING);
             }
             String result = uriEncode(((AbstractString)arg).toString());
             return new SimpleString(result);

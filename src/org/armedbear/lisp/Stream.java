@@ -350,7 +350,7 @@ public class Stream extends StructureObject {
       if (arg instanceof Stream) {
         return ((Stream)arg).getExternalFormat();
       } else {
-        return error(new TypeError(arg, Symbol.STREAM));
+        return type_error(arg, Symbol.STREAM);
       }
     }
   }

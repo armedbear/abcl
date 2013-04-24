@@ -273,7 +273,7 @@ public final class ConcatenatedStream extends Stream
         {
             if (arg instanceof ConcatenatedStream) 
                 return ((ConcatenatedStream)arg).streams;
-            return error(new TypeError(arg, Symbol.CONCATENATED_STREAM));
+            return type_error(arg, Symbol.CONCATENATED_STREAM);
         }
     };
 }

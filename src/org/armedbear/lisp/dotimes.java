@@ -136,7 +136,7 @@ public final class dotimes extends SpecialOperator
             result = eval(resultForm, ext, thread);
           }
         else
-          return error(new TypeError(limit, Symbol.INTEGER));
+          return type_error(limit, Symbol.INTEGER);
         return result;
       }
     catch (Return ret)

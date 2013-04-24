@@ -48,7 +48,7 @@ public final class unbound_slot_instance extends Primitive
     {
         if (arg instanceof UnboundSlot)
             return ((UnboundSlot)arg).getInstance();
-        return error(new TypeError(arg, Symbol.UNBOUND_SLOT));
+        return type_error(arg, Symbol.UNBOUND_SLOT);
     }
 
     private static final unbound_slot_instance CELL_ERROR_NAME =

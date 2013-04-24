@@ -202,7 +202,7 @@ public final class JProxy
 	      			return error(new WrongNumberOfArgumentsException(this, 1));
 	      		}
 	      		if(!(args[0] instanceof Function)) {
-	      			return error(new TypeError(args[0], Symbol.FUNCTION));
+	      			return type_error(args[0], Symbol.FUNCTION);
 	      		}
 	      		return new JavaObject(new LispInvocationHandler((Function) args[0]));
 	      	}
@@ -218,7 +218,7 @@ public final class JProxy
 	      			return error(new WrongNumberOfArgumentsException(this, 3));
 	      		}
 	      		if(!(args[0] instanceof Cons)) {
-			    return error(new TypeError(args[0], new SimpleString("CONS")));
+			    return type_error(args[0], Symbol.CONS);
 	      		}
 			Class[] ifaces = new Class[args[0].length()];
 			LispObject ifList = args[0];

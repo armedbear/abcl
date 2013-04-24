@@ -162,7 +162,7 @@ public class StreamError extends LispError
         {
             if (arg instanceof StreamError)
                 return ((StreamError)arg).getStream();
-            return error(new TypeError(arg, Symbol.STREAM_ERROR));
+            return type_error(arg, Symbol.STREAM_ERROR);
         }
     };
 }

@@ -48,7 +48,7 @@ public final class interactive_stream_p extends Primitive
     {
         if (arg instanceof Stream)
             return ((Stream)arg).isInteractive() ? T : NIL;
-        return error(new TypeError(arg, Symbol.STREAM));
+        return type_error(arg, Symbol.STREAM);
     }
 
     private static final Primitive INTERACTIVE_STREAM_P = new interactive_stream_p();

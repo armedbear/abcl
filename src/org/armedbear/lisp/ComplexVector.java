@@ -379,7 +379,7 @@ public final class ComplexVector extends AbstractVector
                 for (int i = 0; i < newCapacity; i++)
                     newElements[i] = initialContents.elt(i);
             } else
-                error(new TypeError(initialContents, Symbol.SEQUENCE));
+                type_error(initialContents, Symbol.SEQUENCE);
             elements = newElements;
         } else {
             if (elements == null) {

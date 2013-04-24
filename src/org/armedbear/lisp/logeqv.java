@@ -60,7 +60,7 @@ public final class logeqv extends Primitive
             return arg;
         if (arg instanceof Bignum)
             return arg;
-        return error(new TypeError(arg, Symbol.INTEGER));
+        return type_error(arg, Symbol.INTEGER);
     }
 
     @Override
@@ -75,7 +75,7 @@ public final class logeqv extends Primitive
             else if (arg instanceof Bignum)
                 n = ((Bignum)arg).value;
             else
-                return error(new TypeError(arg, Symbol.INTEGER));
+                return type_error(arg, Symbol.INTEGER);
             if (result == null)
                 result = n;
             else

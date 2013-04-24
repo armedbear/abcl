@@ -277,7 +277,7 @@ public class Layout extends LispObject
             return arg;
           oldLayout = Symbol.CLASS_LAYOUT.execute(lispClass);
         } else {
-          return error(new TypeError(arg, Symbol.CLASS));
+          return type_error(arg, Symbol.CLASS);
         }
 
         Layout newLayout = new Layout((Layout)oldLayout);

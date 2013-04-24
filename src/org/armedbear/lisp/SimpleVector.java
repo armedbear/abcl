@@ -338,7 +338,7 @@ public final class SimpleVector extends AbstractVector
               newData[i] = initialContents.elt(i);
           }
         else
-          error(new TypeError(initialContents, Symbol.SEQUENCE));
+          type_error(initialContents, Symbol.SEQUENCE);
         return new SimpleVector(newData);
       }
     if (capacity != newCapacity)

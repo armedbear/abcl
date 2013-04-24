@@ -133,7 +133,7 @@ public class ArithmeticError extends LispError
                 return ((ArithmeticError)arg).getOperation();
             }
             else {
-                return error(new TypeError(arg, Symbol.ARITHMETIC_ERROR));
+                return type_error(arg, Symbol.ARITHMETIC_ERROR);
             }
         }
     };
@@ -148,7 +148,7 @@ public class ArithmeticError extends LispError
                 return ((ArithmeticError)arg).getOperands();
             }
             else {
-                return error(new TypeError(arg, Symbol.ARITHMETIC_ERROR));
+                return type_error(arg, Symbol.ARITHMETIC_ERROR);
             }
         }
     };

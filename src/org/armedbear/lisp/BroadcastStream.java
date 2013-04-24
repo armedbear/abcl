@@ -243,10 +243,10 @@ public final class BroadcastStream extends Stream
                         streams[i] = (Stream) args[i];
                         continue;
                     } else
-                        return error(new TypeError(args[i], list(Symbol.SATISFIES,
-                                                                   Symbol.OUTPUT_STREAM_P)));
+                        return type_error(args[i],
+                                          list(Symbol.SATISFIES, Symbol.OUTPUT_STREAM_P));
                 } else
-                    return error(new TypeError(args[i], Symbol.STREAM));
+                    return type_error(args[i], Symbol.STREAM);
             }
             // All is well.
             return new BroadcastStream(streams);
@@ -268,7 +268,7 @@ public final class BroadcastStream extends Stream
                     result = new Cons(streams[i], result);
                 return result;
             }
-            return error(new TypeError(arg, Symbol.BROADCAST_STREAM));
+            return type_error(arg, Symbol.BROADCAST_STREAM);
         }
     };
 }

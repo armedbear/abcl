@@ -123,7 +123,7 @@ public final class ByteArrayOutputStream extends Stream
             if (arg instanceof ByteArrayOutputStream) {
                 return JavaObject.getInstance(((ByteArrayOutputStream)arg).getByteArray());
             }
-            return error(new TypeError(this, Symbol.STREAM)); //TODO
+            return type_error(this, Symbol.STREAM); //TODO
         }
     };
 
@@ -137,7 +137,7 @@ public final class ByteArrayOutputStream extends Stream
             if (arg instanceof ByteArrayOutputStream)
                 return new BasicVector_UnsignedByte8(((ByteArrayOutputStream)arg).getByteArray());
 
-            return error(new TypeError(this, Symbol.STREAM)); // TODO
+            return type_error(this, Symbol.STREAM); // TODO
         }
     };
 

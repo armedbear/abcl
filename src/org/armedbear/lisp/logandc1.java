@@ -57,7 +57,7 @@ public final class logandc1 extends Primitive
                 BigInteger n2 = ((Bignum)second).value;
                 return number(n1.not().and(n2));
             }
-            return error(new TypeError(second, Symbol.INTEGER));
+            return type_error(second, Symbol.INTEGER);
         }
         if (first instanceof Bignum) {
             BigInteger n1 = ((Bignum)first).value;
@@ -69,9 +69,9 @@ public final class logandc1 extends Primitive
                 BigInteger n2 = ((Bignum)second).value;
                 return number(n1.not().and(n2));
             }
-            return error(new TypeError(second, Symbol.INTEGER));
+            return type_error(second, Symbol.INTEGER);
         }
-        return error(new TypeError(first, Symbol.INTEGER));
+        return type_error(first, Symbol.INTEGER);
     }
 
     private static final Primitive LOGANDC1 = new logandc1();

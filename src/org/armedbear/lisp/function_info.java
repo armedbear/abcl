@@ -92,7 +92,7 @@ public final class function_info
                             return LispThread.currentThread().setValues(cons.cdr(), T);
                         }
                     } else if (cons != NIL)
-                        error(new TypeError(cons, Symbol.LIST));
+                        type_error(cons, Symbol.LIST);
                     info = info.cdr();
                 }
             }
@@ -124,7 +124,7 @@ public final class function_info
                         return value;
                     }
                 } else if (cons != NIL)
-                    error(new TypeError(cons, Symbol.LIST));
+                    type_error(cons, Symbol.LIST);
                 alist = alist.cdr();
             }
             // Not found.

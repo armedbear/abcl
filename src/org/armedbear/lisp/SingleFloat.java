@@ -284,7 +284,7 @@ public final class SingleFloat extends LispObject
             Complex c = (Complex) obj;
             return Complex.getInstance(add(c.getRealPart()), c.getImaginaryPart());
         }
-        return error(new TypeError(obj, Symbol.NUMBER));
+        return type_error(obj, Symbol.NUMBER);
     }
 
     @Override
@@ -315,7 +315,7 @@ public final class SingleFloat extends LispObject
             return Complex.getInstance(subtract(c.getRealPart()),
                                        ZERO.subtract(c.getImaginaryPart()));
         }
-        return error(new TypeError(obj, Symbol.NUMBER));
+        return type_error(obj, Symbol.NUMBER);
     }
 
     @Override
@@ -336,7 +336,7 @@ public final class SingleFloat extends LispObject
             return Complex.getInstance(multiplyBy(c.getRealPart()),
                                        multiplyBy(c.getImaginaryPart()));
         }
-        return error(new TypeError(obj, Symbol.NUMBER));
+        return type_error(obj, Symbol.NUMBER);
     }
 
     @Override
@@ -362,7 +362,7 @@ public final class SingleFloat extends LispObject
                 multiplyBy(Fixnum.MINUS_ONE).multiplyBy(im).divideBy(denom);
             return Complex.getInstance(resX, resY);
         }
-        return error(new TypeError(obj, Symbol.NUMBER));
+        return type_error(obj, Symbol.NUMBER);
     }
 
     @Override
@@ -380,7 +380,7 @@ public final class SingleFloat extends LispObject
             return rational().isEqualTo(obj);
         if (obj instanceof Complex)
             return obj.isEqualTo(this);
-        error(new TypeError(obj, Symbol.NUMBER));
+        type_error(obj, Symbol.NUMBER);
         // Not reached.
         return false;
     }
@@ -404,7 +404,7 @@ public final class SingleFloat extends LispObject
             return rational().isLessThan(obj);
         if (obj instanceof Ratio)
             return rational().isLessThan(obj);
-        error(new TypeError(obj, Symbol.REAL));
+        type_error(obj, Symbol.REAL);
         // Not reached.
         return false;
     }
@@ -422,7 +422,7 @@ public final class SingleFloat extends LispObject
             return rational().isGreaterThan(obj);
         if (obj instanceof Ratio)
             return rational().isGreaterThan(obj);
-        error(new TypeError(obj, Symbol.REAL));
+        type_error(obj, Symbol.REAL);
         // Not reached.
         return false;
     }
@@ -440,7 +440,7 @@ public final class SingleFloat extends LispObject
             return rational().isLessThanOrEqualTo(obj);
         if (obj instanceof Ratio)
             return rational().isLessThanOrEqualTo(obj);
-        error(new TypeError(obj, Symbol.REAL));
+        type_error(obj, Symbol.REAL);
         // Not reached.
         return false;
     }
@@ -458,7 +458,7 @@ public final class SingleFloat extends LispObject
             return rational().isGreaterThanOrEqualTo(obj);
         if (obj instanceof Ratio)
             return rational().isGreaterThanOrEqualTo(obj);
-        error(new TypeError(obj, Symbol.REAL));
+        type_error(obj, Symbol.REAL);
         // Not reached.
         return false;
     }
@@ -542,7 +542,7 @@ public final class SingleFloat extends LispObject
             LispObject remainder = subtract(product);
             return thread.setValues(result, remainder);
         }
-        return error(new TypeError(obj, Symbol.REAL));
+        return type_error(obj, Symbol.REAL);
     }
 
     @Override

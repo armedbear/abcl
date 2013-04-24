@@ -393,7 +393,7 @@ public final class ComplexVector_UnsignedByte8 extends AbstractVector
                 for (int i = 0; i < newCapacity; i++)
                     newElements[i] = coerceLispObjectToJavaByte(initialContents.elt(i));
             } else
-                error(new TypeError(initialContents, Symbol.SEQUENCE));
+                type_error(initialContents, Symbol.SEQUENCE);
             elements = newElements;
         } else {
             if (elements == null) {

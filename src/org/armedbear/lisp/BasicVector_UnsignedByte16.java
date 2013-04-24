@@ -178,7 +178,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
         }
         }
         else {
-            error(new TypeError(obj, UNSIGNED_BYTE_16));
+            type_error(obj, UNSIGNED_BYTE_16);
         }
     }
 
@@ -263,7 +263,7 @@ public final class BasicVector_UnsignedByte16 extends AbstractVector
                 for (int i = 0; i < newCapacity; i++)
                     newElements[i] = initialContents.elt(i);
             } else
-                error(new TypeError(initialContents, Symbol.SEQUENCE));
+                type_error(initialContents, Symbol.SEQUENCE);
             return new BasicVector_UnsignedByte16(newElements);
         }
         if (capacity != newCapacity) {

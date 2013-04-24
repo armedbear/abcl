@@ -211,7 +211,7 @@ public final class SimpleBitVector extends AbstractBitVector
                 for (int i = 0; i < newCapacity; i++)
                     v.aset(i, initialContents.elt(i));
             } else
-                error(new TypeError(initialContents, Symbol.SEQUENCE));
+                type_error(initialContents, Symbol.SEQUENCE);
             return v;
         }
         if (capacity != newCapacity) {

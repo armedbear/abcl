@@ -428,7 +428,7 @@ public final class HashTableFunctions
           } else if (first instanceof WeakHashTable) {
               return ((WeakHashTable)first).getWeakness();
           }
-          return error(new TypeError(first, Symbol.HASH_TABLE));
+          return type_error(first, Symbol.HASH_TABLE);
       }
   };
 

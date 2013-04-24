@@ -242,7 +242,7 @@ public final class SynonymStream extends Stream
         {
             if (arg instanceof SynonymStream) 
                 return ((SynonymStream)arg).symbol;
-            return error(new TypeError(arg, Symbol.SYNONYM_STREAM));
+            return type_error(arg, Symbol.SYNONYM_STREAM);
         }
     };
 }

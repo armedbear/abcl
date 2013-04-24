@@ -138,7 +138,7 @@ public abstract class AbstractBitVector extends AbstractVector
             }
             // Fall through...
         }
-        error(new TypeError(obj, Symbol.BIT));
+        type_error(obj, Symbol.BIT);
     }
 
     @Override

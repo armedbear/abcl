@@ -458,7 +458,7 @@ public final class Java
                         error(new LispError("no such method"));
                 }
             } else
-                error(new TypeError("wrong type: " + methodRef));
+              type_error(methodRef, Symbol.STRING);
             Object[] methodArgs = new Object[args.length-2];
             Class[] argTypes = m.getParameterTypes();
             for (int i = 2; i < args.length; i++) {
@@ -1232,7 +1232,7 @@ public final class Java
 	    try {
 		return JavaObject.getInstance(o, c);
 	    } catch(ClassCastException e) {
-		return error(new TypeError(javaObject, new SimpleString(c.getName())));
+          return type_error(javaObject, new SimpleString(c.getName()));
 	    }
         }
     };
