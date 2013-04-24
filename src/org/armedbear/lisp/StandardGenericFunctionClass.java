@@ -73,10 +73,4 @@ public final class StandardGenericFunctionClass extends FuncallableStandardClass
     setClassLayout(new Layout(this, instanceSlotNames, NIL));
     setFinalized(true);
   }
-
-  @Override
-  public LispObject allocateInstance()
-  {
-    return new StandardGenericFunction();
-  }
 }

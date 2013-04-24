@@ -72,20 +72,6 @@ public class FuncallableStandardClass extends StandardClass
     return super.typep(type);
   }
 
-  public LispObject allocateInstance()
-  {
-    Layout layout = getClassLayout();
-    if (layout == null)
-      {
-        Symbol.ERROR.execute(Symbol.SIMPLE_ERROR,
-                             Keyword.FORMAT_CONTROL,
-                             new SimpleString("No layout for class ~S."),
-                             Keyword.FORMAT_ARGUMENTS,
-                             list(this));
-      }
-    return new FuncallableStandardObject(this, layout.getLength());
-  }
-
   @Override
   public String printObject()
   {

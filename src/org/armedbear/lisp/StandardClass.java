@@ -373,20 +373,6 @@ public class StandardClass extends SlotClass
     return super.typep(type);
   }
 
-  public LispObject allocateInstance()
-  {
-    Layout layout = getClassLayout();
-    if (layout == null)
-      {
-        Symbol.ERROR.execute(Symbol.SIMPLE_ERROR,
-                             Keyword.FORMAT_CONTROL,
-                             new SimpleString("No layout for class ~S."),
-                             Keyword.FORMAT_ARGUMENTS,
-                             list(this));
-      }
-    return new StandardObject(this, layout.getLength());
-  }
-
   @Override
   public String printObject()
   {

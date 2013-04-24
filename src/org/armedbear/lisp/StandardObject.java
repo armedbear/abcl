@@ -656,18 +656,34 @@ public class StandardObject extends LispObject
     @Override
     public LispObject execute(LispObject arg)
     {
-      if (arg == StandardClass.STANDARD_CLASS)
+      if (arg == StandardClass.STANDARD_CLASS) {
         return new StandardClass();
-      if (arg instanceof StandardClass)
-        return ((StandardClass)arg).allocateInstance();
-      if (arg.typep(StandardClass.STANDARD_CLASS) != NIL) {
+      } else if (arg instanceof StandardGenericFunctionClass) {
+        return new StandardGenericFunction();
+      } else if (arg instanceof FuncallableStandardClass) {
+        FuncallableStandardClass cls = (FuncallableStandardClass)arg;
+        Layout layout = cls.getClassLayout();
+        if (layout == null) {
+          error(new ProgramError("No layout for funcallable class "
+                                 + cls.princToString()));
+        }
+        return new FuncallableStandardObject(cls, layout.getLength());
+      } else if (arg instanceof StandardClass) {
+        StandardClass cls = (StandardClass)arg;
+        Layout layout = cls.getClassLayout();
+        if (layout == null) {
+          error(new ProgramError("No layout for class " + cls.princToString()));
+        }
+        return new StandardObject(cls, layout.getLength());
+      } else if (arg.typep(StandardClass.STANDARD_CLASS) != NIL) {
         LispObject l = Symbol.CLASS_LAYOUT.execute(arg);
-        if (! (l instanceof Layout))
-          return error(new ProgramError("Invalid standard class layout for: " + arg.princToString()));
-        
+        if (! (l instanceof Layout)) {
+          error(new ProgramError("Invalid standard class layout for class " + arg.princToString()));
+        }
         return new StandardObject((Layout)l);
+      } else {
+        return type_error(arg, Symbol.STANDARD_CLASS);
       }
-      return type_error(arg, Symbol.STANDARD_CLASS);
     }
   };
 }
