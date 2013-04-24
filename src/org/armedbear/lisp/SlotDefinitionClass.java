@@ -61,14 +61,17 @@ public final class SlotDefinitionClass extends StandardClass
         // The Java class SlotDefinition sets the location slot to NIL
         // in its constructor; here we make Lisp-side subclasses of
         // standard-*-slot-definition do the same.
-        LispObject locationSlot = slotDefinitions.nthcdr(8).car();
-        SlotDefinition.SET_SLOT_DEFINITION_INITFORM.execute(locationSlot, NIL);
-        SlotDefinition.SET_SLOT_DEFINITION_INITFUNCTION.execute(locationSlot, StandardClass.constantlyNil);
+        StandardObject locationSlot =
+          SlotDefinition.checkSlotDefinition(slotDefinitions.nthcdr(8).car());
+        locationSlot.setInstanceSlotValue(Symbol.INITFORM, NIL);
+        locationSlot.setInstanceSlotValue(Symbol.INITFUNCTION, StandardClass.constantlyNil);
         // Fix initargs of TYPE, DOCUMENTATION slots.
-        LispObject typeSlot = slotDefinitions.nthcdr(9).car();
-        SlotDefinition.SET_SLOT_DEFINITION_INITARGS.execute(typeSlot, list(internKeyword("TYPE")));
-        LispObject documentationSlot = slotDefinitions.nthcdr(10).car();
-        SlotDefinition.SET_SLOT_DEFINITION_INITARGS.execute(documentationSlot, list(internKeyword("DOCUMENTATION")));
+        StandardObject typeSlot =
+          SlotDefinition.checkSlotDefinition(slotDefinitions.nthcdr(9).car());
+        typeSlot.setInstanceSlotValue(Symbol.INITARGS, list(internKeyword("TYPE")));
+        StandardObject documentationSlot =
+          SlotDefinition.checkSlotDefinition(slotDefinitions.nthcdr(10).car());
+        documentationSlot.setInstanceSlotValue(Symbol.INITARGS, list(internKeyword("DOCUMENTATION")));
         setDirectSlotDefinitions(slotDefinitions);
         setSlotDefinitions(slotDefinitions);
         setFinalized(true);

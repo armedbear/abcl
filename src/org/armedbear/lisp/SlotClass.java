@@ -170,10 +170,10 @@ public class SlotClass extends LispClass
         LispObject tail = getSlotDefinitions();
         while (tail != NIL) {
             SlotDefinition slotDefinition = (SlotDefinition) tail.car();
-            SlotDefinition.SET_SLOT_DEFINITION_LOCATION
-              .execute(slotDefinition, Fixnum.getInstance(i));
-            instanceSlotNames[i++] = SlotDefinition._SLOT_DEFINITION_NAME
-              .execute(slotDefinition);
+            slotDefinition.setInstanceSlotValue(Symbol.LOCATION,
+                                                Fixnum.getInstance(i));
+            instanceSlotNames[i++] =
+              slotDefinition.getInstanceSlotValue(Symbol.NAME);
             tail = tail.cdr();
         }
         setClassLayout(new Layout(this, instanceSlotNames, NIL));

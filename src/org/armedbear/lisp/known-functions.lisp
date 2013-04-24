@@ -290,8 +290,6 @@
 
 (defknown %class-slots (class) t)
 (defknown set-class-slots (class list) t)
-(defknown %slot-definition-name * t)
-(defknown %slot-definition-initargs * t)
 (defknown %slot-definition-initfunction * t)
 (defknown std-slot-boundp * t)
 (defknown std-slot-value * t)

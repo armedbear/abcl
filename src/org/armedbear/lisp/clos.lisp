@@ -255,6 +255,8 @@
       (cons (funcall fun (car x) (cadr x))
             (mapplist fun (cddr x)))))
 
+(defsetf std-slot-value set-std-slot-value)
+
 (defsetf std-instance-layout %set-std-instance-layout)
 (defsetf standard-instance-access %set-standard-instance-access)
 (defun funcallable-standard-instance-access (instance location)
@@ -377,81 +379,81 @@
   `(function (lambda () ,initform)))
 
 (defun slot-definition-allocation (slot-definition)
-  (%slot-definition-allocation slot-definition))
+  (std-slot-value slot-definition 'sys::allocation))
 
 (declaim (notinline (setf slot-definition-allocation)))
 (defun (setf slot-definition-allocation) (value slot-definition)
-  (set-slot-definition-allocation slot-definition value))
+  (setf (std-slot-value slot-definition 'sys::allocation) value))
 
 (defun slot-definition-initargs (slot-definition)
-  (%slot-definition-initargs slot-definition))
+  (std-slot-value slot-definition 'sys::initargs))
 
 (declaim (notinline (setf slot-definition-initargs)))
 (defun (setf slot-definition-initargs) (value slot-definition)
-  (set-slot-definition-initargs slot-definition value))
+  (setf (std-slot-value slot-definition 'sys::initargs) value))
 
 (defun slot-definition-initform (slot-definition)
-  (%slot-definition-initform slot-definition))
+  (std-slot-value slot-definition 'sys::initform))
 
 (declaim (notinline (setf slot-definition-initform)))
 (defun (setf slot-definition-initform) (value slot-definition)
-  (set-slot-definition-initform slot-definition value))
+  (setf (std-slot-value slot-definition 'sys::initform) value))
 
 (defun slot-definition-initfunction (slot-definition)
-  (%slot-definition-initfunction slot-definition))
+  (std-slot-value slot-definition 'sys::initfunction))
 
 (declaim (notinline (setf slot-definition-initfunction)))
 (defun (setf slot-definition-initfunction) (value slot-definition)
-  (set-slot-definition-initfunction slot-definition value))
+  (setf (std-slot-value slot-definition 'sys::initfunction) value))
 
 (defun slot-definition-name (slot-definition)
-  (%slot-definition-name slot-definition))
+  (std-slot-value slot-definition 'sys:name))
 
 (declaim (notinline (setf slot-definition-name)))
 (defun (setf slot-definition-name) (value slot-definition)
-  (set-slot-definition-name slot-definition value))
+  (setf (std-slot-value slot-definition 'sys:name) value))
 
 (defun slot-definition-readers (slot-definition)
-  (%slot-definition-readers slot-definition))
+  (std-slot-value slot-definition 'sys::readers))
 
 (declaim (notinline (setf slot-definition-readers)))
 (defun (setf slot-definition-readers) (value slot-definition)
-  (set-slot-definition-readers slot-definition value))
+  (setf (std-slot-value slot-definition 'sys::readers) value))
 
 (defun slot-definition-writers (slot-definition)
-  (%slot-definition-writers slot-definition))
+  (std-slot-value slot-definition 'sys::writers))
 
 (declaim (notinline (setf slot-definition-writers)))
 (defun (setf slot-definition-writers) (value slot-definition)
-  (set-slot-definition-writers slot-definition value))
+  (setf (std-slot-value slot-definition 'sys::writers) value))
 
 (defun slot-definition-allocation-class (slot-definition)
-  (%slot-definition-allocation-class slot-definition))
+  (std-slot-value slot-definition 'sys::allocation-class))
 
 (declaim (notinline (setf slot-definition-allocation-class)))
 (defun (setf slot-definition-allocation-class) (value slot-definition)
-  (set-slot-definition-allocation-class slot-definition value))
+  (setf (std-slot-value slot-definition 'sys::allocation-class) value))
 
 (defun slot-definition-location (slot-definition)
-  (%slot-definition-location slot-definition))
+  (std-slot-value slot-definition 'sys::location))
 
 (declaim (notinline (setf slot-definition-location-class)))
 (defun (setf slot-definition-location) (value slot-definition)
-  (set-slot-definition-location slot-definition value))
+  (setf (std-slot-value slot-definition 'sys::location) value))
 
 (defun slot-definition-type (slot-definition)
-  (%slot-definition-type slot-definition))
+  (std-slot-value slot-definition 'sys::%type))
 
 (declaim (notinline (setf slot-definition-type)))
 (defun (setf slot-definition-type) (value slot-definition)
-  (set-slot-definition-type slot-definition value))
+  (setf (std-slot-value slot-definition 'sys::%type) value))
 
 (defun slot-definition-documentation (slot-definition)
-  (%slot-definition-documentation slot-definition))
+  (std-slot-value slot-definition 'sys:%documentation))
 
 (declaim (notinline (setf slot-definition-documentation)))
 (defun (setf slot-definition-documentation) (value slot-definition)
-  (set-slot-definition-documentation slot-definition value))
+  (setf (std-slot-value slot-definition 'sys:%documentation) value))
 
 (defun init-slot-definition (slot &key name
                                     (initargs ())
@@ -758,8 +760,6 @@
         (std-slot-value object slot-name)
         (slot-value-using-class class object
                                 (find-slot-definition class slot-name)))))
-
-(defsetf std-slot-value set-std-slot-value)
 
 (defun %set-slot-value (object slot-name new-value)
   (let* ((class (class-of object))
@@ -3957,128 +3957,134 @@ or T when any keyword is acceptable due to presence of
 (atomic-defgeneric slot-definition-allocation (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (%slot-definition-allocation slot-definition)
+      (std-slot-value slot-definition 'sys::allocation)
       (slot-value slot-definition 'sys::allocation))))
 
 (atomic-defgeneric (setf slot-definition-allocation) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (set-slot-definition-allocation slot-definition value)
+      (setf (std-slot-value slot-definition 'sys::allocation) value)
       (setf (slot-value slot-definition 'sys::allocation) value))))
 
 (atomic-defgeneric slot-definition-initargs (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (%slot-definition-initargs slot-definition)
+      (std-slot-value slot-definition 'sys::initargs)
       (slot-value slot-definition 'sys::initargs))))
+
+(atomic-defgeneric (setf slot-definition-initargs) (value slot-definition)
+  (:method (value (slot-definition slot-definition))
+    (slot-definition-dispatch slot-definition
+      (setf (std-slot-value slot-definition 'sys::initargs) value)
+      (setf (slot-value slot-definition 'sys::initargs) value))))
 
 (atomic-defgeneric slot-definition-initform (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (%slot-definition-initform slot-definition)
+      (std-slot-value slot-definition 'sys::initform)
       (slot-value slot-definition 'sys::initform))))
 
 (atomic-defgeneric (setf slot-definition-initform) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (set-slot-definition-initform slot-definition value)
+      (setf (std-slot-value slot-definition 'sys::initform) value)
       (setf (slot-value slot-definition 'sys::initform) value))))
 
 (atomic-defgeneric slot-definition-initfunction (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (%slot-definition-initfunction slot-definition)
+      (std-slot-value slot-definition 'sys::initfunction)
       (slot-value slot-definition 'sys::initfunction))))
 
 (atomic-defgeneric (setf slot-definition-initfunction) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (set-slot-definition-initfunction slot-definition value)
+      (setf (std-slot-value slot-definition 'sys::initfunction) value)
       (setf (slot-value slot-definition 'sys::initfunction) value))))
 
 (atomic-defgeneric slot-definition-name (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (%slot-definition-name slot-definition)
-      (slot-value slot-definition 'sys::name))))
+      (std-slot-value slot-definition 'sys:name)
+      (slot-value slot-definition 'sys:name))))
 
 (atomic-defgeneric (setf slot-definition-name) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (set-slot-definition-name slot-definition value)
-      (setf (slot-value slot-definition 'sys::name) value))))
+      (setf (std-slot-value slot-definition 'sys:name) value)
+      (setf (slot-value slot-definition 'sys:name) value))))
 
 (atomic-defgeneric slot-definition-readers (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (%slot-definition-readers slot-definition)
+      (std-slot-value slot-definition 'sys::readers)
       (slot-value slot-definition 'sys::readers))))
 
 (atomic-defgeneric (setf slot-definition-readers) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (set-slot-definition-readers slot-definition value)
+      (setf (std-slot-value slot-definition 'sys::readers) value)
       (setf (slot-value slot-definition 'sys::readers) value))))
 
 (atomic-defgeneric slot-definition-writers (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (%slot-definition-writers slot-definition)
+      (std-slot-value slot-definition 'sys::writers)
       (slot-value slot-definition 'sys::writers))))
 
 (atomic-defgeneric (setf slot-definition-writers) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (set-slot-definition-writers slot-definition value)
+      (setf (std-slot-value slot-definition 'sys::writers) value)
       (setf (slot-value slot-definition 'sys::writers) value))))
 
 (atomic-defgeneric slot-definition-allocation-class (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (%slot-definition-allocation-class slot-definition)
+      (std-slot-value slot-definition 'sys::allocation-class)
       (slot-value slot-definition 'sys::allocation-class))))
 
 (atomic-defgeneric (setf slot-definition-allocation-class)
                        (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (set-slot-definition-allocation-class slot-definition value)
+      (setf (std-slot-value slot-definition 'sys::allocation-class) value)
       (setf (slot-value slot-definition 'sys::allocation-class) value))))
 
 (atomic-defgeneric slot-definition-location (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (%slot-definition-location slot-definition)
+      (std-slot-value slot-definition 'sys::location)
       (slot-value slot-definition 'sys::location))))
 
 (atomic-defgeneric (setf slot-definition-location) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (set-slot-definition-location slot-definition value)
+      (setf (std-slot-value slot-definition 'sys::location) value)
       (setf (slot-value slot-definition 'sys::location) value))))
 
 (atomic-defgeneric slot-definition-type (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (%slot-definition-type slot-definition)
+      (std-slot-value slot-definition 'sys::%type)
       (slot-value slot-definition 'sys::%type))))
 
 (atomic-defgeneric (setf slot-definition-type) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (set-slot-definition-type slot-definition value)
+      (setf (std-slot-value slot-definition 'sys::%type) value)
       (setf (slot-value slot-definition 'sys::%type) value))))
 
 (atomic-defgeneric slot-definition-documentation (slot-definition)
   (:method ((slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (%slot-definition-documentation slot-definition)
+      (std-slot-value slot-definition 'sys:%documentation)
       (slot-value slot-definition 'sys:%documentation))))
 
 (atomic-defgeneric (setf slot-definition-documentation) (value slot-definition)
   (:method (value (slot-definition slot-definition))
     (slot-definition-dispatch slot-definition
-      (set-slot-definition-documentation slot-definition value)
+      (setf (std-slot-value slot-definition 'sys:%documentation) value)
       (setf (slot-value slot-definition 'sys:%documentation) value))))
 
 

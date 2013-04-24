@@ -3129,12 +3129,6 @@ public class Symbol extends LispObject implements java.io.Serializable
   public static final Symbol SLOTS = PACKAGE_SYS.addExternalSymbol("SLOTS");
   public static final Symbol SLOT_DEFINITION =
     PACKAGE_SYS.addExternalSymbol("SLOT-DEFINITION");
-  public static final Symbol _SLOT_DEFINITION_NAME =
-    PACKAGE_SYS.addExternalSymbol("%SLOT-DEFINITION-NAME");
-  public static final Symbol _SLOT_DEFINITION_INITARGS =
-    PACKAGE_SYS.addExternalSymbol("%SLOT-DEFINITION-INITARGS");
-  public static final Symbol _SLOT_DEFINITION_INITFUNCTION =
-    PACKAGE_SYS.addExternalSymbol("%SLOT-DEFINITION-INITFUNCTION");
   public static final Symbol STD_SLOT_BOUNDP =
     PACKAGE_SYS.addExternalSymbol("STD-SLOT-BOUNDP");
   public static final Symbol STD_SLOT_VALUE =

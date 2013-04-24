@@ -376,7 +376,7 @@ public final class Load
     // ### *fasl-version*
     // internal symbol
     static final Symbol _FASL_VERSION_ =
-        exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(41));
+        exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(42));
 
     // ### *fasl-external-format*
     // internal symbol

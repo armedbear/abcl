@@ -49,7 +49,7 @@
                (incf index))))
           ((typep object 'standard-object)
            (dolist (slot (mop:class-slots class))
-             (let ((slot-name (%slot-definition-name slot)))
+             (let ((slot-name (mop:slot-definition-name slot)))
                (when (or (memq slot-name slot-names)
                          (null slot-names))
                  (when (slot-boundp object slot-name)

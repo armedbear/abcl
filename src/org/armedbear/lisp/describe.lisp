@@ -118,11 +118,11 @@
          (class-slotds ()))
     (format stream "~S is an instance of ~S.~%" object class)
     (dolist (slotd slotds)
-      (let* ((name (%slot-definition-name slotd))
+      (let* ((name (mop:slot-definition-name slotd))
              (length (length (symbol-name name))))
         (when (> length max-slot-name-length)
           (setf max-slot-name-length length)))
-      (case (%slot-definition-allocation slotd)
+      (case (mop:slot-definition-allocation slotd)
         (:instance (push slotd instance-slotds))
         (:class  (push slotd class-slotds))))
     (setf max-slot-name-length  (min (+ max-slot-name-length 3) 30))
@@ -138,13 +138,13 @@
         (format stream "The following slots have :INSTANCE allocation:~%")
         (dolist (slotd (nreverse instance-slotds))
           (describe-slot
-           (%slot-definition-name slotd))))
+           (mop:slot-definition-name slotd))))
         (format stream "~%")
       (when class-slotds
         (format stream "The following slots have :CLASS allocation:~%")
         (dolist (slotd (nreverse class-slotds))
           (describe-slot
-           (%slot-definition-name slotd)))
+           (mop:slot-definition-name slotd)))
         (format stream "~%")))))
 
 (defmethod describe-object ((object standard-object) stream)
