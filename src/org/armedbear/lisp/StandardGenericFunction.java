@@ -52,21 +52,19 @@ public final class StandardGenericFunction extends FuncallableStandardObject
   public StandardGenericFunction(Layout layout)
   {
     super(layout);
-    slots[StandardGenericFunctionClass.SLOT_INDEX_NAME] = NIL;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_LAMBDA_LIST] = NIL;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS] = NIL;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_OPTIONAL_ARGS] = NIL;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_INITIAL_METHODS] = NIL;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_METHODS] = NIL;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_CLASS] =
-      StandardClass.STANDARD_METHOD;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_METHOD_COMBINATION] =
-      list(Symbol.STANDARD); // fixed up by clos.lisp:shared-initialize :after
-    slots[StandardGenericFunctionClass.SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER] =
-      NIL;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_DECLARATIONS] = NIL;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_CLASSES_TO_EMF_TABLE] = NIL;
-    slots[StandardGenericFunctionClass.SLOT_INDEX_DOCUMENTATION] = NIL;
+    setInstanceSlotValue(Symbol.NAME, NIL);
+    setInstanceSlotValue(Symbol.LAMBDA_LIST, NIL);
+    setInstanceSlotValue(Symbol.REQUIRED_ARGS, NIL);
+    setInstanceSlotValue(Symbol.OPTIONAL_ARGS, NIL);
+    setInstanceSlotValue(Symbol.INITIAL_METHODS, NIL);
+    setInstanceSlotValue(Symbol.METHODS, NIL);
+    setInstanceSlotValue(Symbol.METHOD_CLASS, StandardClass.STANDARD_METHOD);
+    // method combination class set by clos.lisp:shared-initialize :after
+    setInstanceSlotValue(Symbol._METHOD_COMBINATION, list(Symbol.STANDARD));
+    setInstanceSlotValue(Symbol.ARGUMENT_PRECEDENCE_ORDER, NIL);
+    setInstanceSlotValue(Symbol.DECLARATIONS, NIL);
+    setInstanceSlotValue(Symbol.CLASSES_TO_EMF_TABLE, NIL);
+    setInstanceSlotValue(Symbol._DOCUMENTATION, NIL);
   }
 
   void finalizeInternal()
@@ -76,12 +74,12 @@ public final class StandardGenericFunction extends FuncallableStandardObject
 
   public LispObject getName()
   {
-    return slots[StandardGenericFunctionClass.SLOT_INDEX_NAME];
+    return getInstanceSlotValue(Symbol.NAME);
   }
 
   public void setName(LispObject name)
   {
-    slots[StandardGenericFunctionClass.SLOT_INDEX_NAME] = name;
+    setInstanceSlotValue(Symbol.NAME, name);
   }
 
 
@@ -162,8 +160,7 @@ public final class StandardGenericFunction extends FuncallableStandardObject
       final StandardGenericFunction gf = checkStandardGenericFunction(first);
       LispObject args = second;
       int numberOfRequiredArgs
-        = gf.slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS]
-        .length();
+        = gf.getInstanceSlotValue(Symbol.REQUIRED_ARGS).length();
       LispObject[] array = new LispObject[numberOfRequiredArgs];
       for (int i = numberOfRequiredArgs; i-- > 0;)
         {
@@ -194,8 +191,7 @@ public final class StandardGenericFunction extends FuncallableStandardObject
       final StandardGenericFunction gf = checkStandardGenericFunction(first);
       LispObject args = second;
       int numberOfRequiredArgs
-        = gf.slots[StandardGenericFunctionClass.SLOT_INDEX_REQUIRED_ARGS]
-        .length();
+        = gf.getInstanceSlotValue(Symbol.REQUIRED_ARGS).length();
       LispObject[] array = new LispObject[numberOfRequiredArgs];
       for (int i = numberOfRequiredArgs; i-- > 0;)
         {

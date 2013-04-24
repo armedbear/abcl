@@ -37,19 +37,6 @@ import static org.armedbear.lisp.Lisp.*;
 
 public final class StandardGenericFunctionClass extends FuncallableStandardClass
 {
-  public static final int SLOT_INDEX_NAME                      = 0;
-  public static final int SLOT_INDEX_LAMBDA_LIST               = 1;
-  public static final int SLOT_INDEX_REQUIRED_ARGS             = 2;
-  public static final int SLOT_INDEX_OPTIONAL_ARGS             = 3;
-  public static final int SLOT_INDEX_INITIAL_METHODS           = 4;
-  public static final int SLOT_INDEX_METHODS                   = 5;
-  public static final int SLOT_INDEX_METHOD_CLASS              = 6;
-  public static final int SLOT_INDEX_METHOD_COMBINATION        = 7;
-  public static final int SLOT_INDEX_ARGUMENT_PRECEDENCE_ORDER = 8;
-  public static final int SLOT_INDEX_DECLARATIONS              = 9;
-  public static final int SLOT_INDEX_CLASSES_TO_EMF_TABLE      = 10;
-  public static final int SLOT_INDEX_DOCUMENTATION             = 11;
-
   public StandardGenericFunctionClass()
   {
     super(Symbol.STANDARD_GENERIC_FUNCTION,
