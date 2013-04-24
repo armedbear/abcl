@@ -842,7 +842,7 @@ present in the \code{sun.net.protocol.dynamic} package. See
 dynamically loaded resources for the JVM.  The \code{EXT:URL-PATHNAME}
 specialization has a corresponding \textsc{URI} whose canonical
 representation is defined to be the \code{NAMESTRING} of the
-\cpde{CL:PATHNAME}. The \code{EXT:JAR-PATHNAME} extension further
+\code{CL:PATHNAME}. The \code{EXT:JAR-PATHNAME} extension further
 specializes the the \code{EXT:URL-PATHNAME} to provide access to
 components of zip archives.  
 
@@ -1107,6 +1107,11 @@ method definition (see the section below).
 \textsc{ABCL} implements the metaobject protocol for \textsc{CLOS} as
 specified in \textsc{(A)MOP}.  The symbols are exported from the
 package \code{MOP}.
+
+Contrary to the AMOP specification and following \textsc{SBCL}'s lead,
+the metaclass \code{funcallable-standard-object} has
+\code{funcallable-standard-class} as metaclass instead of
+\code{standard-class}.
 
 \subsection{Specializing on Java classes}
 

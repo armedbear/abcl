@@ -1465,6 +1465,11 @@ method definition (see the section below).
 ABCL implements the metaobject protocol for CLOS as specified in AMOP.
 The symbols are exported from the package @code{MOP}.
 
+Contrary to the AMOP specification and following SBCL's lead,
+the metaclass @code{funcallable-standard-object} has
+@code{funcallable-standard-class} as metaclass instead of
+@code{standard-class}.
+
 @node Specializing on Java classes
 @subsection Specializing on Java classes
 

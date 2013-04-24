@@ -424,6 +424,14 @@ public class StandardClass extends SlotClass
     return c;
   }
 
+  private static final FuncallableStandardClass addFuncallableStandardClass
+    (Symbol name, LispObject directSuperclasses)
+  {
+    FuncallableStandardClass c = new FuncallableStandardClass(name, directSuperclasses);
+    addClass(name, c);
+    return c;
+  }
+
   // At this point, BuiltInClass.java has not been completely loaded yet, and
   // BuiltInClass.CLASS_T is null. So we need to call setDirectSuperclass()
   // for STANDARD_CLASS and STANDARD_OBJECT in initializeStandardClasses()
@@ -466,16 +474,15 @@ public class StandardClass extends SlotClass
 
 
   // BuiltInClass.FUNCTION is also null here (see previous comment).
+  // Following SBCL's lead, we make funcallable-standard-object a
+  // funcallable-standard-class.
   public static final StandardClass FUNCALLABLE_STANDARD_OBJECT =
-      addStandardClass(Symbol.FUNCALLABLE_STANDARD_OBJECT,
+      addFuncallableStandardClass(Symbol.FUNCALLABLE_STANDARD_OBJECT,
                        list(STANDARD_OBJECT, BuiltInClass.FUNCTION));
 
   public static final StandardClass GENERIC_FUNCTION =
-    new FuncallableStandardClass(Symbol.GENERIC_FUNCTION,
-                                 list(METAOBJECT, FUNCALLABLE_STANDARD_OBJECT));
-  static {
-    addClass(Symbol.GENERIC_FUNCTION, GENERIC_FUNCTION);
-  }
+    addFuncallableStandardClass(Symbol.GENERIC_FUNCTION,
+                                list(METAOBJECT, FUNCALLABLE_STANDARD_OBJECT));
 
   public static final StandardClass CLASS =
     addStandardClass(Symbol.CLASS, list(SPECIALIZER));
