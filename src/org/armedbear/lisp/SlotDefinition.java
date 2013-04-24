@@ -37,7 +37,7 @@ import static org.armedbear.lisp.Lisp.*;
 
 public final class SlotDefinition extends StandardObject
 {
-  public SlotDefinition()
+  private SlotDefinition()
   {
     super(StandardClass.STANDARD_SLOT_DEFINITION,
           StandardClass.STANDARD_SLOT_DEFINITION.getClassLayout().getLength());
@@ -46,7 +46,7 @@ public final class SlotDefinition extends StandardObject
     setInstanceSlotValue(Symbol._DOCUMENTATION, NIL);
   }
 
-  public SlotDefinition(StandardClass clazz) {
+  private SlotDefinition(StandardClass clazz) {
     // clazz layout needs to have SlotDefinitionClass layout as prefix
     // or indexed slot access won't work
     super(clazz, clazz.getClassLayout().getLength());
@@ -122,11 +122,6 @@ public final class SlotDefinition extends StandardObject
     setInstanceSlotValue(Symbol.ALLOCATION, Keyword.INSTANCE);
   }
 
-  public static StandardObject checkSlotDefinition(LispObject obj) {
-    if (obj instanceof StandardObject) return (StandardObject)obj;
-    return (StandardObject)type_error(obj, Symbol.SLOT_DEFINITION);
-  }
-
   @Override
   public String printObject()
   {
@@ -142,24 +137,25 @@ public final class SlotDefinition extends StandardObject
 
   private static final Primitive MAKE_SLOT_DEFINITION 
     = new pf_make_slot_definition();
-  @DocString(name="make-slot-definition",
-             args="&optional class",
-             doc="Cannot be called with user-defined subclasses of standard-slot-definition.")
+  @DocString(name="%make-slot-definition",
+             args="slot-class",
+             doc="Argument must be a subclass of standard-slot-definition")
   private static final class pf_make_slot_definition extends Primitive
   {
     pf_make_slot_definition()
     {
-      super("make-slot-definition", PACKAGE_SYS, true, "&optional class");
-    }
-    @Override
-    public LispObject execute()
-    {
-      return new SlotDefinition();
+      super("%make-slot-definition", PACKAGE_SYS, true, "slot-class");
     }
     @Override
     public LispObject execute(LispObject slotDefinitionClass)
     {
-      return new SlotDefinition((StandardClass) slotDefinitionClass);
+      if (!(slotDefinitionClass instanceof StandardClass))
+        return type_error(slotDefinitionClass,
+                          StandardClass.STANDARD_SLOT_DEFINITION);
+      // we could check whether slotClass is a subtype of
+      // standard-slot-definition here, but subtypep doesn't work early
+      // in the build process
+      return new SlotDefinition((StandardClass)slotDefinitionClass);
     }
   };
 

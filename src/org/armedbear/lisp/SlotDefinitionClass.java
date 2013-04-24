@@ -62,18 +62,23 @@ public final class SlotDefinitionClass extends StandardClass
         // in its constructor; here we make Lisp-side subclasses of
         // standard-*-slot-definition do the same.
         StandardObject locationSlot =
-          SlotDefinition.checkSlotDefinition(slotDefinitions.nthcdr(8).car());
+          checkSlotDefinition(slotDefinitions.nthcdr(8).car());
         locationSlot.setInstanceSlotValue(Symbol.INITFORM, NIL);
         locationSlot.setInstanceSlotValue(Symbol.INITFUNCTION, StandardClass.constantlyNil);
         // Fix initargs of TYPE, DOCUMENTATION slots.
         StandardObject typeSlot =
-          SlotDefinition.checkSlotDefinition(slotDefinitions.nthcdr(9).car());
+          checkSlotDefinition(slotDefinitions.nthcdr(9).car());
         typeSlot.setInstanceSlotValue(Symbol.INITARGS, list(internKeyword("TYPE")));
         StandardObject documentationSlot =
-          SlotDefinition.checkSlotDefinition(slotDefinitions.nthcdr(10).car());
+          checkSlotDefinition(slotDefinitions.nthcdr(10).car());
         documentationSlot.setInstanceSlotValue(Symbol.INITARGS, list(internKeyword("DOCUMENTATION")));
         setDirectSlotDefinitions(slotDefinitions);
         setSlotDefinitions(slotDefinitions);
         setFinalized(true);
     }
+
+  private static StandardObject checkSlotDefinition(LispObject obj) {
+    if (obj instanceof StandardObject) return (StandardObject)obj;
+    return (StandardObject)type_error(obj, Symbol.SLOT_DEFINITION);
+  }
 }

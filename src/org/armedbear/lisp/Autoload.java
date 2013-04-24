@@ -642,7 +642,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "make-fill-pointer-output-stream", "FillPointerOutputStream");
         autoload(PACKAGE_SYS, "make-layout", "Layout", true);
         autoload(PACKAGE_SYS, "make-single-float", "FloatFunctions", true);
-        autoload(PACKAGE_SYS, "make-slot-definition", "SlotDefinition", true);
+        autoload(PACKAGE_SYS, "%make-slot-definition", "SlotDefinition", true);
         autoload(PACKAGE_SYS, "make-structure-class", "StructureClass");
         autoload(PACKAGE_SYS, "make-symbol-macro", "Primitives");
         autoload(PACKAGE_SYS, "psxhash", "HashTableFunctions");
