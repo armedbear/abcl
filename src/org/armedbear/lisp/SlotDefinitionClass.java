@@ -37,26 +37,8 @@ import static org.armedbear.lisp.Lisp.*;
 
 public final class SlotDefinitionClass extends StandardClass
 {
-    public static final int SLOT_INDEX_NAME             = 0;
-    public static final int SLOT_INDEX_INITFUNCTION     = 1;
-    public static final int SLOT_INDEX_INITFORM         = 2;
-    public static final int SLOT_INDEX_INITARGS         = 3;
-    public static final int SLOT_INDEX_READERS          = 4;
-    public static final int SLOT_INDEX_WRITERS          = 5;
-    public static final int SLOT_INDEX_ALLOCATION       = 6;
-    public static final int SLOT_INDEX_ALLOCATION_CLASS = 7;
-    public static final int SLOT_INDEX_LOCATION         = 8;
-    public static final int SLOT_INDEX_TYPE             = 9;
-    public static final int SLOT_INDEX_DOCUMENTATION    = 10;
-
-    /**
-     * For internal use only. This constructor hardcodes the layout of
-     * the class, and can't be used to create arbitrary subclasses of
-     * slot-definition since new slots get added at the beginning.
-     */
     public SlotDefinitionClass(Symbol symbol, LispObject cpl) {
         super(symbol, cpl);
-        Package pkg = PACKAGE_SYS;
         LispObject[] instanceSlotNames = {
             Symbol.NAME,
             Symbol.INITFUNCTION,
@@ -79,17 +61,16 @@ public final class SlotDefinitionClass extends StandardClass
         // The Java class SlotDefinition sets the location slot to NIL
         // in its constructor; here we make Lisp-side subclasses of
         // standard-*-slot-definition do the same.
-        LispObject locationSlot = slotDefinitions.nthcdr(SLOT_INDEX_LOCATION).car();
+        LispObject locationSlot = slotDefinitions.nthcdr(8).car();
         SlotDefinition.SET_SLOT_DEFINITION_INITFORM.execute(locationSlot, NIL);
         SlotDefinition.SET_SLOT_DEFINITION_INITFUNCTION.execute(locationSlot, StandardClass.constantlyNil);
+        // Fix initargs of TYPE, DOCUMENTATION slots.
+        LispObject typeSlot = slotDefinitions.nthcdr(9).car();
+        SlotDefinition.SET_SLOT_DEFINITION_INITARGS.execute(typeSlot, list(internKeyword("TYPE")));
+        LispObject documentationSlot = slotDefinitions.nthcdr(10).car();
+        SlotDefinition.SET_SLOT_DEFINITION_INITARGS.execute(documentationSlot, list(internKeyword("DOCUMENTATION")));
         setDirectSlotDefinitions(slotDefinitions);
         setSlotDefinitions(slotDefinitions);
-        // Fix initargs of TYPE, DOCUMENTATION slots.
-        LispObject typeSlot = slotDefinitions.nthcdr(SLOT_INDEX_TYPE).car();
-        SlotDefinition.SET_SLOT_DEFINITION_INITARGS.execute(typeSlot, list(internKeyword("TYPE")));
-        LispObject documentationSlot = slotDefinitions.nthcdr(SLOT_INDEX_DOCUMENTATION).car();
-        SlotDefinition.SET_SLOT_DEFINITION_INITARGS.execute(documentationSlot, list(internKeyword("DOCUMENTATION")));
-
         setFinalized(true);
     }
 }

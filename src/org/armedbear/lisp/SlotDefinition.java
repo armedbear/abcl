@@ -41,43 +41,44 @@ public final class SlotDefinition extends StandardObject
   {
     super(StandardClass.STANDARD_SLOT_DEFINITION,
           StandardClass.STANDARD_SLOT_DEFINITION.getClassLayout().getLength());
-    slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = NIL;
-    slots[SlotDefinitionClass.SLOT_INDEX_TYPE] = T;
-    slots[SlotDefinitionClass.SLOT_INDEX_DOCUMENTATION] = NIL;
+    setInstanceSlotValue(Symbol.LOCATION, NIL);
+    setInstanceSlotValue(Symbol._TYPE, T);
+    setInstanceSlotValue(Symbol._DOCUMENTATION, NIL);
   }
 
-    public SlotDefinition(StandardClass clazz) {
-      // clazz layout needs to have SlotDefinitionClass layout as prefix
-      // or indexed slot access won't work
-        super(clazz, clazz.getClassLayout().getLength());
-        slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = NIL;
-    }
+  public SlotDefinition(StandardClass clazz) {
+    // clazz layout needs to have SlotDefinitionClass layout as prefix
+    // or indexed slot access won't work
+    super(clazz, clazz.getClassLayout().getLength());
+    setInstanceSlotValue(Symbol.LOCATION, NIL);
+  }
 
-    public SlotDefinition(StandardClass clazz, LispObject name) {
-      // clazz layout needs to have SlotDefinitionClass layout as prefix
-      // or indexed slot access won't work
-        super(clazz, clazz.getClassLayout().getLength());
-        slots[SlotDefinitionClass.SLOT_INDEX_NAME] = name;
-        slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = NIL;
-        slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] =
-            new Cons(PACKAGE_KEYWORD.intern(((Symbol)name).getName()));
-        slots[SlotDefinitionClass.SLOT_INDEX_READERS] = NIL;
-        slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
-        slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = NIL;
-        slots[SlotDefinitionClass.SLOT_INDEX_TYPE] = T;
-        slots[SlotDefinitionClass.SLOT_INDEX_DOCUMENTATION] = NIL;
-    }
-
+  public SlotDefinition(StandardClass clazz, LispObject name) {
+    // clazz layout needs to have SlotDefinitionClass layout as prefix
+    // or indexed slot access won't work
+    super(clazz, clazz.getClassLayout().getLength());
+    Debug.assertTrue(name instanceof Symbol);
+    setInstanceSlotValue(Symbol.NAME, name);
+    setInstanceSlotValue(Symbol.INITFUNCTION, NIL);
+    setInstanceSlotValue(Symbol.INITARGS,
+                         new Cons(PACKAGE_KEYWORD.intern(((Symbol)name).getName())));
+    setInstanceSlotValue(Symbol.READERS, NIL);
+    setInstanceSlotValue(Symbol.ALLOCATION, Keyword.INSTANCE);
+    setInstanceSlotValue(Symbol.LOCATION, NIL);
+    setInstanceSlotValue(Symbol._TYPE, T);
+    setInstanceSlotValue(Symbol._DOCUMENTATION, NIL);
+  }
+  
   public SlotDefinition(LispObject name, LispObject readers)
   {
     this();
     Debug.assertTrue(name instanceof Symbol);
-    slots[SlotDefinitionClass.SLOT_INDEX_NAME] = name;
-    slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = NIL;
-    slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] =
-      new Cons(PACKAGE_KEYWORD.intern(((Symbol)name).getName()));
-    slots[SlotDefinitionClass.SLOT_INDEX_READERS] = readers;
-    slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
+    setInstanceSlotValue(Symbol.NAME, name);
+    setInstanceSlotValue(Symbol.INITFUNCTION, NIL);
+    setInstanceSlotValue(Symbol.INITARGS,
+                         new Cons(PACKAGE_KEYWORD.intern(((Symbol)name).getName())));
+    setInstanceSlotValue(Symbol.READERS, readers);
+    setInstanceSlotValue(Symbol.ALLOCATION, Keyword.INSTANCE);
   }
 
   public SlotDefinition(LispObject name, LispObject readers,
@@ -85,13 +86,13 @@ public final class SlotDefinition extends StandardObject
   {
     this();
     Debug.assertTrue(name instanceof Symbol);
-    slots[SlotDefinitionClass.SLOT_INDEX_NAME] = name;
-    slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = NIL;
-    slots[SlotDefinitionClass.SLOT_INDEX_INITFORM] = initForm;
-    slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] =
-      new Cons(PACKAGE_KEYWORD.intern(((Symbol)name).getName()));
-    slots[SlotDefinitionClass.SLOT_INDEX_READERS] = readers;
-    slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
+    setInstanceSlotValue(Symbol.NAME, name);
+    setInstanceSlotValue(Symbol.INITFUNCTION, NIL);
+    setInstanceSlotValue(Symbol.INITFORM, initForm);
+    setInstanceSlotValue(Symbol.INITARGS,
+                         new Cons(PACKAGE_KEYWORD.intern(((Symbol)name).getName())));
+    setInstanceSlotValue(Symbol.READERS, readers);
+    setInstanceSlotValue(Symbol.ALLOCATION, Keyword.INSTANCE);
   }
 
   public SlotDefinition(LispObject name, LispObject readers,
@@ -99,13 +100,13 @@ public final class SlotDefinition extends StandardObject
   {
     this();
     Debug.assertTrue(name instanceof Symbol);
-    slots[SlotDefinitionClass.SLOT_INDEX_NAME] = name;
-    slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = initFunction;
-    slots[SlotDefinitionClass.SLOT_INDEX_INITFORM] = NIL;
-    slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] =
-      new Cons(PACKAGE_KEYWORD.intern(((Symbol)name).getName()));
-    slots[SlotDefinitionClass.SLOT_INDEX_READERS] = readers;
-    slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
+    setInstanceSlotValue(Symbol.NAME, name);
+    setInstanceSlotValue(Symbol.INITFUNCTION, initFunction);
+    setInstanceSlotValue(Symbol.INITFORM, NIL);
+    setInstanceSlotValue(Symbol.INITARGS,
+                         new Cons(PACKAGE_KEYWORD.intern(((Symbol)name).getName())));
+    setInstanceSlotValue(Symbol.READERS, readers);
+    setInstanceSlotValue(Symbol.ALLOCATION, Keyword.INSTANCE);
   }
 
   public SlotDefinition(LispObject name, LispObject readers,
@@ -113,12 +114,12 @@ public final class SlotDefinition extends StandardObject
   {
     this();
     Debug.assertTrue(name instanceof Symbol);
-    slots[SlotDefinitionClass.SLOT_INDEX_NAME] = name;
-    slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = initFunction;
-    slots[SlotDefinitionClass.SLOT_INDEX_INITFORM] = NIL;
-    slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] = initargs;
-    slots[SlotDefinitionClass.SLOT_INDEX_READERS] = readers;
-    slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
+    setInstanceSlotValue(Symbol.NAME, name);
+    setInstanceSlotValue(Symbol.INITFUNCTION, initFunction);
+    setInstanceSlotValue(Symbol.INITFORM, NIL);
+    setInstanceSlotValue(Symbol.INITARGS, initargs);
+    setInstanceSlotValue(Symbol.READERS, readers);
+    setInstanceSlotValue(Symbol.ALLOCATION, Keyword.INSTANCE);
   }
 
   public static StandardObject checkSlotDefinition(LispObject obj) {
@@ -131,12 +132,11 @@ public final class SlotDefinition extends StandardObject
   {
     StringBuilder sb =
       new StringBuilder(Symbol.SLOT_DEFINITION.printObject());
-    LispObject name = slots[SlotDefinitionClass.SLOT_INDEX_NAME];
-    if (name != null && name != NIL)
-      {
-        sb.append(' ');
-        sb.append(name.printObject());
-      }
+    LispObject name = getInstanceSlotValue(Symbol.NAME);
+    if (name != null && name != NIL) {
+      sb.append(' ');
+      sb.append(name.printObject());
+    }
     return unreadableString(sb.toString());
   }
 
@@ -176,10 +176,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject arg)
     {
       StandardObject o = checkSlotDefinition(arg);
-      if (o instanceof SlotDefinition)
-        return o.slots[SlotDefinitionClass.SLOT_INDEX_NAME];
-      else
-        return o.getInstanceSlotValue(Symbol.NAME);
+      return o.getInstanceSlotValue(Symbol.NAME);
     }
   };
 
@@ -198,10 +195,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject first, LispObject second)
     {
       StandardObject o = checkSlotDefinition(first);
-      if (o instanceof SlotDefinition)
-        o.slots[SlotDefinitionClass.SLOT_INDEX_NAME] = second;
-      else
-        o.setInstanceSlotValue(Symbol.NAME, second);
+      o.setInstanceSlotValue(Symbol.NAME, second);
       return second;
     }
   };
@@ -219,10 +213,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject arg)
     {
       StandardObject o = checkSlotDefinition(arg);
-      if (o instanceof SlotDefinition)
-        return o.slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION];
-      else
-        return o.getInstanceSlotValue(Symbol.INITFUNCTION);
+      return o.getInstanceSlotValue(Symbol.INITFUNCTION);
     }
   };
 
@@ -241,10 +232,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject first, LispObject second)
     {
       StandardObject o = checkSlotDefinition(first);
-      if (o instanceof SlotDefinition)
-        o.slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = second;
-      else
-        o.setInstanceSlotValue(Symbol.INITFUNCTION, second);
+      o.setInstanceSlotValue(Symbol.INITFUNCTION, second);
       return second;
     }
   };
@@ -263,10 +251,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject arg)
     {
       StandardObject o = checkSlotDefinition(arg);
-      if (o instanceof SlotDefinition)
-        return o.slots[SlotDefinitionClass.SLOT_INDEX_INITFORM];
-      else
-        return o.getInstanceSlotValue(Symbol.INITFORM);
+      return o.getInstanceSlotValue(Symbol.INITFORM);
     }
   };
 
@@ -285,10 +270,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject first, LispObject second)
     {
       StandardObject o = checkSlotDefinition(first);
-      if (o instanceof SlotDefinition)
-        o.slots[SlotDefinitionClass.SLOT_INDEX_INITFORM] = second;
-      else
-        o.setInstanceSlotValue(Symbol.INITFORM, second);
+      o.setInstanceSlotValue(Symbol.INITFORM, second);
       return second;
     }
   };
@@ -306,10 +288,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject arg)
     {
       StandardObject o = checkSlotDefinition(arg);
-      if (o instanceof SlotDefinition)
-        return o.slots[SlotDefinitionClass.SLOT_INDEX_INITARGS];
-      else
-        return o.getInstanceSlotValue(Symbol.INITARGS);
+      return o.getInstanceSlotValue(Symbol.INITARGS);
     }
   };
 
@@ -328,10 +307,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject first, LispObject second)
     {
       StandardObject o = checkSlotDefinition(first);
-      if (o instanceof SlotDefinition)
-        o.slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] = second;
-      else
-        o.setInstanceSlotValue(Symbol.INITARGS, second);
+      o.setInstanceSlotValue(Symbol.INITARGS, second);
       return second;
     }
   };
@@ -350,10 +326,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject arg)
     {
       StandardObject o = checkSlotDefinition(arg);
-      if (o instanceof SlotDefinition)
-        return o.slots[SlotDefinitionClass.SLOT_INDEX_READERS];
-      else
-        return o.getInstanceSlotValue(Symbol.READERS);
+      return o.getInstanceSlotValue(Symbol.READERS);
     }
   };
 
@@ -372,10 +345,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject first, LispObject second)
     {
       StandardObject o = checkSlotDefinition(first);
-      if (o instanceof SlotDefinition)
-        o.slots[SlotDefinitionClass.SLOT_INDEX_READERS] = second;
-      else
-        o.setInstanceSlotValue(Symbol.READERS, second);
+      o.setInstanceSlotValue(Symbol.READERS, second);
       return second;
     }
   };
@@ -395,10 +365,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject arg)
     {
       StandardObject o = checkSlotDefinition(arg);
-      if (o instanceof SlotDefinition)
-        return o.slots[SlotDefinitionClass.SLOT_INDEX_WRITERS];
-      else
-        return o.getInstanceSlotValue(Symbol.WRITERS);
+      return o.getInstanceSlotValue(Symbol.WRITERS);
     }
   };
 
@@ -417,10 +384,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject first, LispObject second)
     {
       StandardObject o = checkSlotDefinition(first);
-      if (o instanceof SlotDefinition)
-        o.slots[SlotDefinitionClass.SLOT_INDEX_WRITERS] = second;
-      else
-        o.setInstanceSlotValue(Symbol.WRITERS, second);
+      o.setInstanceSlotValue(Symbol.WRITERS, second);
       return second;
     }
   };
@@ -440,10 +404,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject arg)
     {
       StandardObject o = checkSlotDefinition(arg);
-      if (o instanceof SlotDefinition)
-        return o.slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION];
-      else
-        return o.getInstanceSlotValue(Symbol.ALLOCATION);
+      return o.getInstanceSlotValue(Symbol.ALLOCATION);
     }
   };
 
@@ -462,10 +423,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject first, LispObject second)
     {
       StandardObject o = checkSlotDefinition(first);
-      if (o instanceof SlotDefinition)
-        o.slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = second;
-      else
-        o.setInstanceSlotValue(Symbol.ALLOCATION, second);
+      o.setInstanceSlotValue(Symbol.ALLOCATION, second);
       return second;
     }
   };
@@ -485,10 +443,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject arg)
     {
       StandardObject o = checkSlotDefinition(arg);
-      if (o instanceof SlotDefinition)
-        return o.slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION_CLASS];
-      else
-        return o.getInstanceSlotValue(Symbol.ALLOCATION_CLASS);
+      return o.getInstanceSlotValue(Symbol.ALLOCATION_CLASS);
     }
   };
 
@@ -507,10 +462,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject first, LispObject second)
     {
       StandardObject o = checkSlotDefinition(first);
-      if (o instanceof SlotDefinition)
-        o.slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION_CLASS] = second;
-      else
-        o.setInstanceSlotValue(Symbol.ALLOCATION_CLASS, second);
+      o.setInstanceSlotValue(Symbol.ALLOCATION_CLASS, second);
       return second;
     }
   };
@@ -528,10 +480,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject arg)
     {
       StandardObject o = checkSlotDefinition(arg);
-      if (o instanceof SlotDefinition)
-        return o.slots[SlotDefinitionClass.SLOT_INDEX_LOCATION];
-      else
-        return o.getInstanceSlotValue(Symbol.LOCATION);
+      return o.getInstanceSlotValue(Symbol.LOCATION);
     }
   };
 
@@ -550,10 +499,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject first, LispObject second)
     {
       StandardObject o = checkSlotDefinition(first);
-      if (o instanceof SlotDefinition)
-        o.slots[SlotDefinitionClass.SLOT_INDEX_LOCATION] = second;
-      else
-        o.setInstanceSlotValue(Symbol.LOCATION, second);
+      o.setInstanceSlotValue(Symbol.LOCATION, second);
       return second;
     }
   };
@@ -571,10 +517,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject arg)
     {
       StandardObject o = checkSlotDefinition(arg);
-      if (o instanceof SlotDefinition)
-        return o.slots[SlotDefinitionClass.SLOT_INDEX_TYPE];
-      else
-        return o.getInstanceSlotValue(Symbol._TYPE);
+      return o.getInstanceSlotValue(Symbol._TYPE);
     }
   };
 
@@ -593,10 +536,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject first, LispObject second)
     {
       StandardObject o = checkSlotDefinition(first);
-      if (o instanceof SlotDefinition)
-        o.slots[SlotDefinitionClass.SLOT_INDEX_TYPE] = second;
-      else
-        o.setInstanceSlotValue(Symbol._TYPE, second);
+      o.setInstanceSlotValue(Symbol._TYPE, second);
       return second;
     }
   };
@@ -614,10 +554,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject arg)
     {
       StandardObject o = checkSlotDefinition(arg);
-      if (o instanceof SlotDefinition)
-        return o.slots[SlotDefinitionClass.SLOT_INDEX_DOCUMENTATION];
-      else
-        return o.getInstanceSlotValue(Symbol._DOCUMENTATION);
+      return o.getInstanceSlotValue(Symbol._DOCUMENTATION);
     }
   };
 
@@ -636,10 +573,7 @@ public final class SlotDefinition extends StandardObject
     public LispObject execute(LispObject first, LispObject second)
     {
       StandardObject o = checkSlotDefinition(first);
-      if (o instanceof SlotDefinition)
-        o.slots[SlotDefinitionClass.SLOT_INDEX_DOCUMENTATION] = second;
-      else
-        o.setInstanceSlotValue(Symbol._DOCUMENTATION, second);
+      o.setInstanceSlotValue(Symbol._DOCUMENTATION, second);
       return second;
     }
   };
