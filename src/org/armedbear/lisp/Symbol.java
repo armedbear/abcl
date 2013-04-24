@@ -3044,34 +3044,50 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_JAVA.addExternalSymbol("ADD-TO-CLASSPATH");
 
   // External symbols in SYSTEM package.
-  public static final Symbol _ENABLE_AUTOCOMPILE_ =
-    PACKAGE_SYS.addExternalSymbol("*ENABLE-AUTOCOMPILE*");
   public static final Symbol AUTOCOMPILE =
     PACKAGE_SYS.addExternalSymbol("AUTOCOMPILE");
-  public static final Symbol ENVIRONMENT =
-    PACKAGE_SYS.addExternalSymbol("ENVIRONMENT");
-  public static final Symbol FORWARD_REFERENCED_CLASS =
-    PACKAGE_SYS.addExternalSymbol("FORWARD-REFERENCED-CLASS");
-  public static final Symbol FLOAT_UNDERFLOW_MODE =
-    PACKAGE_SYS.addExternalSymbol("FLOAT-UNDERFLOW-MODE");
-  public static final Symbol FLOAT_OVERFLOW_MODE =
-    PACKAGE_SYS.addExternalSymbol("FLOAT-OVERFLOW-MODE");
-  public static final Symbol ENSURE_INPUT_STREAM =
-    PACKAGE_SYS.addExternalSymbol("ENSURE-INPUT-STREAM");
   public static final Symbol CLASS_BYTES =
     PACKAGE_SYS.addExternalSymbol("CLASS-BYTES");
   public static final Symbol _CLASS_SLOTS =
     PACKAGE_SYS.addExternalSymbol("%CLASS-SLOTS");
   public static final Symbol COMPILED_LISP_FUNCTION_P =
     PACKAGE_SYS.addExternalSymbol("COMPILED-LISP-FUNCTION-P");
+  public static final Symbol _DOCUMENTATION =
+    PACKAGE_SYS.addExternalSymbol("%DOCUMENTATION");
+  public static final Symbol _ENABLE_AUTOCOMPILE_ =
+    PACKAGE_SYS.addExternalSymbol("*ENABLE-AUTOCOMPILE*");
+  public static final Symbol ENSURE_INPUT_STREAM =
+    PACKAGE_SYS.addExternalSymbol("ENSURE-INPUT-STREAM");
+  public static final Symbol ENVIRONMENT =
+    PACKAGE_SYS.addExternalSymbol("ENVIRONMENT");
+  public static final Symbol FLOAT_UNDERFLOW_MODE =
+    PACKAGE_SYS.addExternalSymbol("FLOAT-UNDERFLOW-MODE");
+  public static final Symbol FLOAT_OVERFLOW_MODE =
+    PACKAGE_SYS.addExternalSymbol("FLOAT-OVERFLOW-MODE");
+  public static final Symbol FORWARD_REFERENCED_CLASS =
+    PACKAGE_SYS.addExternalSymbol("FORWARD-REFERENCED-CLASS");
+  public static final Symbol GETHASH1 =
+    PACKAGE_SYS.addExternalSymbol("GETHASH1");
+  public static final Symbol HASH_TABLE_WEAKNESS =
+    PACKAGE_SYS.addExternalSymbol("HASH-TABLE-WEAKNESS");
+  public static final Symbol JAR_STREAM =
+    PACKAGE_SYS.addExternalSymbol("JAR-STREAM");
   public static final Symbol LAYOUT =
     PACKAGE_SYS.addExternalSymbol("LAYOUT");
   public static final Symbol NAMED_LAMBDA =
     PACKAGE_SYS.addExternalSymbol("NAMED-LAMBDA");
   public static final Symbol OUTPUT_OBJECT =
     PACKAGE_SYS.addExternalSymbol("OUTPUT-OBJECT");
+  public static final Symbol PUTHASH =
+    PACKAGE_SYS.addExternalSymbol("PUTHASH");
+  public static final Symbol SET_CHAR =
+    PACKAGE_SYS.addExternalSymbol("SET-CHAR");
   public static final Symbol _SET_CLASS_SLOTS =
     PACKAGE_SYS.addExternalSymbol("%SET-CLASS-SLOTS");
+  public static final Symbol SET_SCHAR =
+    PACKAGE_SYS.addExternalSymbol("SET-SCHAR");
+  public static final Symbol SET_STD_SLOT_VALUE =
+    PACKAGE_SYS.addExternalSymbol("SET-STD-SLOT-VALUE");
   public static final Symbol SETF_FUNCTION =
     PACKAGE_SYS.addExternalSymbol("SETF-FUNCTION");
   public static final Symbol SETF_INVERSE =
@@ -3084,32 +3100,16 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("%SLOT-DEFINITION-INITARGS");
   public static final Symbol _SLOT_DEFINITION_INITFUNCTION =
     PACKAGE_SYS.addExternalSymbol("%SLOT-DEFINITION-INITFUNCTION");
-  public static final Symbol _DOCUMENTATION =
-    PACKAGE_SYS.addExternalSymbol("%DOCUMENTATION");
   public static final Symbol STD_SLOT_BOUNDP =
     PACKAGE_SYS.addExternalSymbol("STD-SLOT-BOUNDP");
   public static final Symbol STD_SLOT_VALUE =
     PACKAGE_SYS.addExternalSymbol("STD-SLOT-VALUE");
-  public static final Symbol SET_STD_SLOT_VALUE =
-    PACKAGE_SYS.addExternalSymbol("SET-STD-SLOT-VALUE");
-  public static final Symbol SYMBOL_MACRO =
-    PACKAGE_SYS.addExternalSymbol("SYMBOL-MACRO");
   public static final Symbol SUBCLASSP =
     PACKAGE_SYS.addExternalSymbol("SUBCLASSP");
-  public static final Symbol GETHASH1 =
-    PACKAGE_SYS.addExternalSymbol("GETHASH1");
-  public static final Symbol PUTHASH =
-    PACKAGE_SYS.addExternalSymbol("PUTHASH");
-  public static final Symbol HASH_TABLE_WEAKNESS =
-    PACKAGE_SYS.addExternalSymbol("HASH-TABLE-WEAKNESS");
+  public static final Symbol SYMBOL_MACRO =
+    PACKAGE_SYS.addExternalSymbol("SYMBOL-MACRO");
   public static final Symbol UNDEFINED_FUNCTION_CALLED =
     PACKAGE_SYS.addExternalSymbol("UNDEFINED-FUNCTION-CALLED");
-  public static final Symbol SET_CHAR =
-    PACKAGE_SYS.addExternalSymbol("SET-CHAR");
-  public static final Symbol SET_SCHAR =
-    PACKAGE_SYS.addExternalSymbol("SET-SCHAR");
-  public static final Symbol JAR_STREAM =
-    PACKAGE_SYS.addExternalSymbol("JAR-STREAM");
   public static final Symbol URL_STREAM =
     PACKAGE_SYS.addExternalSymbol("URL-STREAM");
 
