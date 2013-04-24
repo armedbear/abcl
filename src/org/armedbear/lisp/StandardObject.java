@@ -302,9 +302,18 @@ public class StandardObject extends LispObject
       }
     Debug.assertTrue(layout != null);
     int index = layout.getSlotIndex(slotName);
-    //### FIXME: should call SLOT-MISSING (clhs)
-    if (index < 0)
-      return error(new LispError("Missing slot " + slotName.princToString()));
+    if (index < 0) {
+      // Not found.
+      final LispThread thread = LispThread.currentThread();
+      // If the operation is slot-value, only the primary value [of
+      // slot-missing] will be used by the caller, and all other values
+      // will be ignored.
+      LispObject value = thread.execute(Symbol.SLOT_MISSING,
+                                        this.getLispClass(), this,
+                                        slotName, Symbol.SLOT_VALUE);
+      thread._values = null;
+      return value;
+    }
     return slots[index];
   }
 
@@ -320,9 +329,15 @@ public class StandardObject extends LispObject
       }
     Debug.assertTrue(layout != null);
     int index = layout.getSlotIndex(slotName);
-    // FIXME: should call SLOT-MISSING (clhs)
-    if (index < 0)
-      error(new LispError("Missing slot " + slotName.princToString()));
+    if (index < 0) {
+      // Not found.
+      final LispThread thread = LispThread.currentThread();
+      // If the operation is setf or slot-makunbound, any values
+      // [returned by slot-missing] will be ignored by the caller.
+      thread.execute(Symbol.SLOT_MISSING, this.getLispClass(), this,
+                     slotName, Symbol.SETF, newValue);
+      thread._values = null;
+    }
     slots[index] = newValue;
   }
   
