@@ -57,17 +57,17 @@ public final class StandardGenericFunctionClass extends FuncallableStandardClass
     Package pkg = PACKAGE_SYS;
     LispObject[] instanceSlotNames =
       {
-        pkg.intern("NAME"),
-        pkg.intern("LAMBDA-LIST"),
-        pkg.intern("REQUIRED-ARGS"),
-        pkg.intern("OPTIONAL-ARGS"),
-        pkg.intern("INITIAL-METHODS"),
-        pkg.intern("METHODS"),
-        pkg.intern("METHOD-CLASS"),
-        pkg.intern("%METHOD-COMBINATION"),
-        pkg.intern("ARGUMENT-PRECEDENCE-ORDER"),
-        pkg.intern("DECLARATIONS"),
-        pkg.intern("CLASSES-TO-EMF-TABLE"),
+        Symbol.NAME,
+        Symbol.LAMBDA_LIST,
+        Symbol.REQUIRED_ARGS,
+        Symbol.OPTIONAL_ARGS,
+        Symbol.INITIAL_METHODS,
+        Symbol.METHODS,
+        Symbol.METHOD_CLASS,
+        Symbol._METHOD_COMBINATION,
+        Symbol.ARGUMENT_PRECEDENCE_ORDER,
+        Symbol.DECLARATIONS,
+        Symbol.CLASSES_TO_EMF_TABLE,
         Symbol._DOCUMENTATION
       };
     setClassLayout(new Layout(this, instanceSlotNames, NIL));

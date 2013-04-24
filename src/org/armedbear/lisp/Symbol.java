@@ -3119,16 +3119,22 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addInternalSymbol("ALLOCATION");
   public static final Symbol ALLOCATION_CLASS =
     PACKAGE_SYS.addInternalSymbol("ALLOCATION-CLASS");
+  public static final Symbol ARGUMENT_PRECEDENCE_ORDER =
+    PACKAGE_SYS.addInternalSymbol("ARGUMENT-PRECEDENCE-ORDER");
   public static final Symbol BACKQUOTE_MACRO =
     PACKAGE_SYS.addInternalSymbol("BACKQUOTE-MACRO");
   public static final Symbol CASE_FROB_STREAM =
     PACKAGE_SYS.addInternalSymbol("CASE-FROB-STREAM");
   public static final Symbol CAUSE =
     PACKAGE_SYS.addInternalSymbol("CAUSE");
+  public static final Symbol CLASSES_TO_EMF_TABLE =
+    PACKAGE_SYS.addInternalSymbol("CLASSES-TO-EMF-TABLE");
   public static final Symbol COMMA_MACRO =
     PACKAGE_SYS.addInternalSymbol("COMMA-MACRO");
   public static final Symbol DATUM =
     PACKAGE_SYS.addInternalSymbol("DATUM");
+  public static final Symbol DECLARATIONS =
+    PACKAGE_SYS.addInternalSymbol("DECLARATIONS");
   public static final Symbol DEFTYPE_DEFINITION =
     PACKAGE_SYS.addInternalSymbol("DEFTYPE-DEFINITION");
   public static final Symbol EXPECTED_TYPE =
@@ -3152,6 +3158,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addInternalSymbol("INITFORM");
   public static final Symbol INITFUNCTION =
     PACKAGE_SYS.addInternalSymbol("INITFUNCTION");
+  public static final Symbol INITIAL_METHODS =
+    PACKAGE_SYS.addInternalSymbol("INITIAL-METHODS");
   public static final Symbol INSTANCE =
     PACKAGE_SYS.addInternalSymbol("INSTANCE");
   public static final Symbol JAVA_STACK_FRAME =
@@ -3168,12 +3176,19 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addInternalSymbol("MACROEXPAND-MACRO");
   public static final Symbol MAKE_FUNCTION_PRELOADING_CONTEXT =
     PACKAGE_SYS.addInternalSymbol("MAKE-FUNCTION-PRELOADING-CONTEXT");
+  public static final Symbol METHOD_CLASS =
+    PACKAGE_SYS.addInternalSymbol("METHOD-CLASS");
+  public static final Symbol _METHOD_COMBINATION =
+    PACKAGE_SYS.addInternalSymbol("%METHOD-COMBINATION");
+  public static final Symbol METHODS = PACKAGE_SYS.addInternalSymbol("METHODS");
   public static final Symbol NAME = PACKAGE_SYS.addInternalSymbol("NAME");
   public static final Symbol OBJECT = PACKAGE_SYS.addInternalSymbol("OBJECT");
   public static final Symbol OPERANDS =
     PACKAGE_SYS.addInternalSymbol("OPERANDS");
   public static final Symbol OPERATION =
     PACKAGE_SYS.addInternalSymbol("OPERATION");
+  public static final Symbol OPTIONAL_ARGS =
+    PACKAGE_SYS.addInternalSymbol("OPTIONAL-ARGS");
   public static final Symbol OTHER_KEYWORDS_P =
     PACKAGE_SYS.addInternalSymbol("OTHER-KEYWORDS-P");
   public static final Symbol PROXY_PRELOADED_FUNCTION =
@@ -3182,6 +3197,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addInternalSymbol("QUALIFIERS");
   public static final Symbol READERS =
     PACKAGE_SYS.addInternalSymbol("READERS");
+  public static final Symbol REQUIRED_ARGS =
+    PACKAGE_SYS.addInternalSymbol("REQUIRED-ARGS");
   public static final Symbol _SOURCE =
     PACKAGE_SYS.addInternalSymbol("%SOURCE");
   public static final Symbol SOCKET_STREAM =
