@@ -118,8 +118,6 @@
 (defconstant +the-funcallable-standard-object-class+
   (find-class 'funcallable-standard-object))
 (defconstant +the-standard-method-class+ (find-class 'standard-method))
-(defconstant +the-forward-referenced-class+
-  (find-class 'forward-referenced-class))
 (defconstant +the-standard-generic-function-class+
   (find-class 'standard-generic-function))
 (defconstant +the-T-class+ (find-class 'T))
@@ -208,8 +206,7 @@
     (add-subclasses 'effective-slot-definition
                     'standard-effective-slot-definition)
     (add-subclasses 'class
-                    '(built-in-class forward-referenced-class standard-class
-                      funcallable-standard-class))))
+                    '(built-in-class standard-class funcallable-standard-class))))
 (fixup-standard-class-hierarchy)
 
 (defun no-applicable-method (generic-function &rest args)
@@ -952,6 +949,23 @@ Handle with care."
   ())
 (defconstant +the-structure-class+ (find-class 'structure-class))
 
+(define-primordial-class forward-referenced-class (class)
+  ;; The standard-class layout.  Not all of these slots are necessary,
+  ;; but at least NAME and DIRECT-SUBCLASSES are.
+  ((sys::name :initarg :name :initform nil)
+   (sys::layout :initform nil)
+   (sys::direct-superclasses :initform nil)
+   (sys::direct-subclasses :initform nil)
+   (sys::precedence-list :initform nil)
+   (sys::direct-methods :initform nil)
+   (sys::direct-slots :initform nil)
+   (sys::slots :initform nil)
+   (sys::direct-default-initargs :initform nil)
+   (sys::default-initargs :initform nil)
+   (sys::finalized-p :initform nil)
+   (sys::%documentation :initform nil)))
+(defconstant +the-forward-referenced-class+
+  (find-class 'forward-referenced-class))
 
 (defvar *extensible-built-in-classes*
   (list (find-class 'sequence)

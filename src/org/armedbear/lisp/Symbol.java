@@ -3096,8 +3096,6 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("FLOAT-UNDERFLOW-MODE");
   public static final Symbol FLOAT_OVERFLOW_MODE =
     PACKAGE_SYS.addExternalSymbol("FLOAT-OVERFLOW-MODE");
-  public static final Symbol FORWARD_REFERENCED_CLASS =
-    PACKAGE_SYS.addExternalSymbol("FORWARD-REFERENCED-CLASS");
   public static final Symbol GETHASH1 =
     PACKAGE_SYS.addExternalSymbol("GETHASH1");
   public static final Symbol HASH_TABLE_WEAKNESS =

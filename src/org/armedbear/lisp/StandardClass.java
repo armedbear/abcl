@@ -470,9 +470,6 @@ public class StandardClass extends SlotClass
   public static final StandardClass BUILT_IN_CLASS =
     addStandardClass(Symbol.BUILT_IN_CLASS, list(CLASS));
 
-  public static final StandardClass FORWARD_REFERENCED_CLASS =
-    addStandardClass(Symbol.FORWARD_REFERENCED_CLASS, list(CLASS));
-
   public static final StandardClass FUNCALLABLE_STANDARD_CLASS =
     addStandardClass(Symbol.FUNCALLABLE_STANDARD_CLASS, list(CLASS));
 
@@ -643,13 +640,6 @@ public class StandardClass extends SlotClass
     FLOATING_POINT_UNDERFLOW.setCPL(FLOATING_POINT_UNDERFLOW, ARITHMETIC_ERROR,
                                     ERROR, SERIOUS_CONDITION, CONDITION,
                                     STANDARD_OBJECT, BuiltInClass.CLASS_T);
-    FORWARD_REFERENCED_CLASS.setCPL(FORWARD_REFERENCED_CLASS, CLASS,
-                                    SPECIALIZER, METAOBJECT, STANDARD_OBJECT, BuiltInClass.CLASS_T);
-    // Not all of these slots are necessary, but for now we take the
-    // standard layout.  Instances of this class will be redefined and
-    // get a new layout in due course.
-    FORWARD_REFERENCED_CLASS.setClassLayout(layoutStandardClass);
-    FORWARD_REFERENCED_CLASS.setDirectSlotDefinitions(standardClassSlotDefinitions());
     FUNCALLABLE_STANDARD_OBJECT.setCPL(FUNCALLABLE_STANDARD_OBJECT,
                                        STANDARD_OBJECT, BuiltInClass.FUNCTION,
                                        BuiltInClass.CLASS_T);
@@ -755,7 +745,6 @@ public class StandardClass extends SlotClass
     STANDARD_OBJECT.finalizeClass();
     FUNCALLABLE_STANDARD_OBJECT.finalizeClass();
     FUNCALLABLE_STANDARD_CLASS.finalizeClass();
-    FORWARD_REFERENCED_CLASS.finalizeClass();
     GENERIC_FUNCTION.finalizeClass();
     ARITHMETIC_ERROR.finalizeClass();
     CELL_ERROR.finalizeClass();
