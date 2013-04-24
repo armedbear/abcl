@@ -109,6 +109,29 @@ public class StandardClass extends SlotClass
         }
       };
 
+  static Layout layoutStandardGenericFunction =
+      new Layout(null,
+                 list(Symbol.NAME,
+                      Symbol.LAMBDA_LIST,
+                      Symbol.REQUIRED_ARGS,
+                      Symbol.OPTIONAL_ARGS,
+                      Symbol.INITIAL_METHODS,
+                      Symbol.METHODS,
+                      Symbol.METHOD_CLASS,
+                      Symbol._METHOD_COMBINATION,
+                      Symbol.ARGUMENT_PRECEDENCE_ORDER,
+                      Symbol.DECLARATIONS,
+                      Symbol.CLASSES_TO_EMF_TABLE,
+                      Symbol._DOCUMENTATION),
+                 NIL)
+      {
+        @Override
+        public LispClass getLispClass()
+        {
+          return STANDARD_GENERIC_FUNCTION;
+        }
+      };
+
   
 
   public StandardClass()
@@ -579,11 +602,8 @@ public class StandardClass extends SlotClass
     addStandardClass(Symbol.STANDARD_METHOD, list(METHOD));
 
   public static final StandardClass STANDARD_GENERIC_FUNCTION =
-    new StandardGenericFunctionClass();
-  static
-  {
-    addClass(Symbol.STANDARD_GENERIC_FUNCTION, STANDARD_GENERIC_FUNCTION);
-  }
+    addFuncallableStandardClass(Symbol.STANDARD_GENERIC_FUNCTION,
+                                list(GENERIC_FUNCTION));
 
   public static void initializeStandardClasses()
   {
@@ -828,7 +848,7 @@ public class StandardClass extends SlotClass
     STANDARD_EFFECTIVE_SLOT_DEFINITION.finalizeClass();
 
     // STANDARD-GENERIC-FUNCTION
-    Debug.assertTrue(STANDARD_GENERIC_FUNCTION.isFinalized());
+    STANDARD_GENERIC_FUNCTION.setClassLayout(layoutStandardGenericFunction);
     STANDARD_GENERIC_FUNCTION.setCPL(STANDARD_GENERIC_FUNCTION,
                                      GENERIC_FUNCTION, METAOBJECT,
                                      FUNCALLABLE_STANDARD_OBJECT,
@@ -852,6 +872,7 @@ public class StandardClass extends SlotClass
            new SlotDefinition(Symbol._DOCUMENTATION, NIL, constantlyNil,
                               list(internKeyword("DOCUMENTATION")))));
     // There are no inherited slots.
-    STANDARD_GENERIC_FUNCTION.setSlotDefinitions(STANDARD_GENERIC_FUNCTION.getDirectSlotDefinitions());
+    // STANDARD_GENERIC_FUNCTION.setSlotDefinitions(STANDARD_GENERIC_FUNCTION.getDirectSlotDefinitions());
+    STANDARD_GENERIC_FUNCTION.finalizeClass();
   }
 }

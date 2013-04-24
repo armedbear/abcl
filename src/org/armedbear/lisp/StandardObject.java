@@ -670,7 +670,11 @@ public class StandardObject extends LispObject
     {
       if (arg == StandardClass.STANDARD_CLASS) {
         return new StandardClass();
-      } else if (arg instanceof StandardGenericFunctionClass) {
+      } else if (arg == StandardClass.STANDARD_GENERIC_FUNCTION) {
+        // Not checking for (subtypep arg standard-generic-function)
+        // here, since allocate-instance is only called for generic
+        // functions early in the boot process and subtypep isn't
+        // working yet.  allocate-funcallable-instance takes over later.
         return new StandardGenericFunction();
       } else if (arg instanceof FuncallableStandardClass) {
         FuncallableStandardClass cls = (FuncallableStandardClass)arg;

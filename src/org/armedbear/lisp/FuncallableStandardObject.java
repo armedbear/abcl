@@ -189,7 +189,7 @@ public class FuncallableStandardObject extends StandardObject
           return program_error("Invalid standard class layout for: "
                                + arg.princToString() + ".");
         }
-        if (Symbol.SUBTYPEP.execute(arg, StandardClass.STANDARD_GENERIC_FUNCTION) != NIL) {
+        if (arg == StandardClass.STANDARD_GENERIC_FUNCTION || Symbol.SUBTYPEP.execute(arg, StandardClass.STANDARD_GENERIC_FUNCTION) != NIL) {
           return new StandardGenericFunction((Layout)l);
         } else {
           return new FuncallableStandardObject((Layout)l);
