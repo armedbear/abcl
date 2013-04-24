@@ -2987,6 +2987,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_MOP.addExternalSymbol("CLASS-DIRECT-SUBCLASSES");
   public static final Symbol CLASS_DIRECT_SUPERCLASSES =
     PACKAGE_MOP.addExternalSymbol("CLASS-DIRECT-SUPERCLASSES");
+  public static final Symbol CLASS_DOCUMENTATION =
+    PACKAGE_MOP.addExternalSymbol("CLASS-DOCUMENTATION");
   public static final Symbol CLASS_FINALIZED_P =
     PACKAGE_MOP.addExternalSymbol("CLASS-FINALIZED-P");
   public static final Symbol CLASS_PRECEDENCE_LIST =

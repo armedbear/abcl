@@ -392,7 +392,7 @@ public class StandardClass extends SlotClass
            new SlotDefinition(symDefaultInitargs, list(Symbol.CLASS_DEFAULT_INITARGS), constantlyNil),
            new SlotDefinition(symFinalizedP, list(Symbol.CLASS_FINALIZED_P), constantlyNil),
            new SlotDefinition(Symbol._DOCUMENTATION,
-                              list(PACKAGE_MOP.intern("CLASS-DOCUMENTATION")),
+                              list(Symbol.CLASS_DOCUMENTATION),
                               constantlyNil, list(internKeyword("DOCUMENTATION"))));
   }
 
@@ -595,9 +595,9 @@ public class StandardClass extends SlotClass
                             CONDITION, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     ARITHMETIC_ERROR.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.OPERATION,
-                               list(PACKAGE_CL.intern("ARITHMETIC-ERROR-OPERATION"))),
+                               list(Symbol.ARITHMETIC_ERROR_OPERATION)),
             new SlotDefinition(Symbol.OPERANDS,
-                               list(PACKAGE_CL.intern("ARITHMETIC-ERROR-OPERANDS")))));
+                               list(Symbol.ARITHMETIC_ERROR_OPERANDS))));
     BUILT_IN_CLASS.setCPL(BUILT_IN_CLASS, CLASS, SPECIALIZER, METAOBJECT, STANDARD_OBJECT,
                           BuiltInClass.CLASS_T);
     CELL_ERROR.setCPL(CELL_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
@@ -629,7 +629,7 @@ public class StandardClass extends SlotClass
                       STANDARD_OBJECT, BuiltInClass.CLASS_T);
     FILE_ERROR.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.PATHNAME,
-                               list(PACKAGE_CL.intern("FILE-ERROR-PATHNAME")))));
+                               list(Symbol.FILE_ERROR_PATHNAME))));
     FLOATING_POINT_INEXACT.setCPL(FLOATING_POINT_INEXACT, ARITHMETIC_ERROR,
                                   ERROR, SERIOUS_CONDITION, CONDITION,
                                   STANDARD_OBJECT, BuiltInClass.CLASS_T);
@@ -683,14 +683,14 @@ public class StandardClass extends SlotClass
                          STANDARD_OBJECT, BuiltInClass.CLASS_T);
     PACKAGE_ERROR.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.PACKAGE,
-                               list(PACKAGE_CL.intern("PACKAGE-ERROR-PACKAGE")))));
+                               list(Symbol.PACKAGE_ERROR_PACKAGE))));
     PARSE_ERROR.setCPL(PARSE_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
                        STANDARD_OBJECT, BuiltInClass.CLASS_T);
     PRINT_NOT_READABLE.setCPL(PRINT_NOT_READABLE, ERROR, SERIOUS_CONDITION,
                               CONDITION, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     PRINT_NOT_READABLE.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.OBJECT,
-                               list(PACKAGE_CL.intern("PRINT-NOT-READABLE-OBJECT")))));
+                               list(Symbol.PRINT_NOT_READABLE_OBJECT))));
     PROGRAM_ERROR.setCPL(PROGRAM_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
                          STANDARD_OBJECT, BuiltInClass.CLASS_T);
     READER_ERROR.setCPL(READER_ERROR, PARSE_ERROR, STREAM_ERROR, ERROR,
@@ -727,21 +727,21 @@ public class StandardClass extends SlotClass
                         STANDARD_OBJECT, BuiltInClass.CLASS_T);
     STREAM_ERROR.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.STREAM,
-                               list(PACKAGE_CL.intern("STREAM-ERROR-STREAM")))));
+                               list(Symbol.STREAM_ERROR_STREAM))));
     STYLE_WARNING.setCPL(STYLE_WARNING, WARNING, CONDITION, STANDARD_OBJECT,
                          BuiltInClass.CLASS_T);
     TYPE_ERROR.setCPL(TYPE_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
                       STANDARD_OBJECT, BuiltInClass.CLASS_T);
     TYPE_ERROR.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.DATUM,
-                               list(PACKAGE_CL.intern("TYPE-ERROR-DATUM"))),
+                               list(Symbol.TYPE_ERROR_DATUM)),
             new SlotDefinition(Symbol.EXPECTED_TYPE,
-                               list(PACKAGE_CL.intern("TYPE-ERROR-EXPECTED-TYPE")))));
+                               list(Symbol.TYPE_ERROR_EXPECTED_TYPE))));
     UNBOUND_SLOT.setCPL(UNBOUND_SLOT, CELL_ERROR, ERROR, SERIOUS_CONDITION,
                         CONDITION, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     UNBOUND_SLOT.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.INSTANCE,
-                               list(PACKAGE_CL.intern("UNBOUND-SLOT-INSTANCE")))));
+                               list(Symbol.UNBOUND_SLOT_INSTANCE))));
     UNBOUND_VARIABLE.setCPL(UNBOUND_VARIABLE, CELL_ERROR, ERROR,
                             SERIOUS_CONDITION, CONDITION, STANDARD_OBJECT,
                             BuiltInClass.CLASS_T);
@@ -846,7 +846,6 @@ public class StandardClass extends SlotClass
            new SlotDefinition(Symbol._DOCUMENTATION, NIL, constantlyNil,
                               list(internKeyword("DOCUMENTATION")))));
     // There are no inherited slots.
-    // STANDARD_GENERIC_FUNCTION.setSlotDefinitions(STANDARD_GENERIC_FUNCTION.getDirectSlotDefinitions());
     STANDARD_GENERIC_FUNCTION.finalizeClass();
   }
 }
