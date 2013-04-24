@@ -74,6 +74,17 @@ public final class StandardGenericFunction extends FuncallableStandardObject
     cache = null;
   }
 
+  public LispObject getName()
+  {
+    return slots[StandardGenericFunctionClass.SLOT_INDEX_NAME];
+  }
+
+  public void setName(LispObject name)
+  {
+    slots[StandardGenericFunctionClass.SLOT_INDEX_NAME] = name;
+  }
+
+
   @Override
   public LispObject typep(LispObject type)
   {

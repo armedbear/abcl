@@ -37,8 +37,6 @@ import static org.armedbear.lisp.Lisp.*;
 
 public class FuncallableStandardClass extends StandardClass
 {
-  public static final int SLOT_INDEX_NAME                      = 0;
-
   public FuncallableStandardClass()
   {
       super(StandardClass.layoutFuncallableStandardClass);

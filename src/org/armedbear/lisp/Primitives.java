@@ -2657,12 +2657,15 @@ public final class Primitives {
                 value1 = NIL;
                 value2 = T;
                 value3 = ((Function)arg).getLambdaName();
-            } else if (arg instanceof FuncallableStandardObject) {
+            } else if (arg instanceof StandardGenericFunction) {
                 value1 = NIL;
                 value2 = T;
-                value3 = ((FuncallableStandardObject)arg).getName();
-            } else
-                return type_error(arg, Symbol.FUNCTION);
+                value3 = ((StandardGenericFunction)arg).getName();
+            } else if (arg instanceof FuncallableStandardObject) {
+              return this.execute(((FuncallableStandardObject)arg).function);
+            } else {
+              return type_error(arg, Symbol.FUNCTION);
+            }
             return LispThread.currentThread().setValues(value1, value2, value3);
         }
     };
@@ -4217,8 +4220,11 @@ public final class Primitives {
             if (arg instanceof Operator) {
                 return ((Operator)arg).getLambdaName();
             }
+            if (arg instanceof StandardGenericFunction) {
+                return ((StandardGenericFunction)arg).getName();
+            }
             if (arg instanceof FuncallableStandardObject) {
-                return ((FuncallableStandardObject)arg).getName();
+              return this.execute(((FuncallableStandardObject)arg).function);
             }
             return type_error(arg, Symbol.FUNCTION);
         }
@@ -4239,9 +4245,12 @@ public final class Primitives {
                 ((Operator)first).setLambdaName(second);
                 return second;
             }
-            if (first instanceof FuncallableStandardObject) {
-                ((FuncallableStandardObject)first).setName(second);
+            if (first instanceof StandardGenericFunction) {
+                ((StandardGenericFunction)first).setName(second);
                 return second;
+            }
+            if (first instanceof FuncallableStandardObject) {
+              return this.execute(((FuncallableStandardObject)first).function, second);
             }
             return type_error(first, Symbol.FUNCTION);
         }
