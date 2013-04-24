@@ -2975,8 +2975,24 @@ public class Symbol extends LispObject implements java.io.Serializable
   // MOP.
   public static final Symbol CLASS_LAYOUT =
     PACKAGE_MOP.addInternalSymbol("CLASS-LAYOUT");
+  public static final Symbol CLASS_DEFAULT_INITARGS =
+    PACKAGE_MOP.addExternalSymbol("CLASS-DEFAULT_INITARGS");
+  public static final Symbol CLASS_DIRECT_METHODS =
+    PACKAGE_MOP.addExternalSymbol("CLASS-DIRECT-METHODS");
+  public static final Symbol CLASS_DIRECT_DEFAULT_INITARGS =
+    PACKAGE_MOP.addExternalSymbol("CLASS-DIRECT-DEFAULT_INITARGS");
+  public static final Symbol CLASS_DIRECT_SLOTS =
+    PACKAGE_MOP.addExternalSymbol("CLASS-DIRECT-SLOTS");
+  public static final Symbol CLASS_DIRECT_SUBCLASSES =
+    PACKAGE_MOP.addExternalSymbol("CLASS-DIRECT-SUBCLASSES");
+  public static final Symbol CLASS_DIRECT_SUPERCLASSES =
+    PACKAGE_MOP.addExternalSymbol("CLASS-DIRECT-SUPERCLASSES");
+  public static final Symbol CLASS_FINALIZED_P =
+    PACKAGE_MOP.addExternalSymbol("CLASS-FINALIZED-P");
   public static final Symbol CLASS_PRECEDENCE_LIST =
-    PACKAGE_MOP.addInternalSymbol("CLASS-PRECEDENCE-LIST");
+    PACKAGE_MOP.addExternalSymbol("CLASS-PRECEDENCE-LIST");
+  public static final Symbol CLASS_SLOTS =
+    PACKAGE_MOP.addExternalSymbol("CLASS-SLOTS");
   public static final Symbol EQL_SPECIALIZER =
     PACKAGE_MOP.addExternalSymbol("EQL-SPECIALIZER");
   public static final Symbol EQL_SPECIALIZER_OBJECT =
@@ -3052,6 +3068,18 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("%CLASS-SLOTS");
   public static final Symbol COMPILED_LISP_FUNCTION_P =
     PACKAGE_SYS.addExternalSymbol("COMPILED-LISP-FUNCTION-P");
+  public static final Symbol DEFAULT_INITARGS =
+    PACKAGE_SYS.addExternalSymbol("DEFAULT-INITARGS");
+  public static final Symbol DIRECT_METHODS =
+    PACKAGE_SYS.addExternalSymbol("DIRECT-METHODS");
+  public static final Symbol DIRECT_SLOTS =
+    PACKAGE_SYS.addExternalSymbol("DIRECT-SLOTS");
+  public static final Symbol DIRECT_SUBCLASSES =
+    PACKAGE_SYS.addExternalSymbol("DIRECT-SUBCLASSES");
+  public static final Symbol DIRECT_DEFAULT_INITARGS =
+    PACKAGE_SYS.addExternalSymbol("DIRECT-DEFAULT-INITARGS");
+  public static final Symbol DIRECT_SUPERCLASSES =
+    PACKAGE_SYS.addExternalSymbol("DIRECT-SUPERCLASSES");
   public static final Symbol _DOCUMENTATION =
     PACKAGE_SYS.addExternalSymbol("%DOCUMENTATION");
   public static final Symbol _ENABLE_AUTOCOMPILE_ =
@@ -3060,6 +3088,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("ENSURE-INPUT-STREAM");
   public static final Symbol ENVIRONMENT =
     PACKAGE_SYS.addExternalSymbol("ENVIRONMENT");
+  public static final Symbol FINALIZED_P =
+    PACKAGE_SYS.addExternalSymbol("FINALIZED-P");
   public static final Symbol FLOAT_UNDERFLOW_MODE =
     PACKAGE_SYS.addExternalSymbol("FLOAT-UNDERFLOW-MODE");
   public static final Symbol FLOAT_OVERFLOW_MODE =
@@ -3074,10 +3104,14 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("JAR-STREAM");
   public static final Symbol LAYOUT =
     PACKAGE_SYS.addExternalSymbol("LAYOUT");
+  public static final Symbol NAME =
+    PACKAGE_SYS.addExternalSymbol("NAME");
   public static final Symbol NAMED_LAMBDA =
     PACKAGE_SYS.addExternalSymbol("NAMED-LAMBDA");
   public static final Symbol OUTPUT_OBJECT =
     PACKAGE_SYS.addExternalSymbol("OUTPUT-OBJECT");
+  public static final Symbol PRECEDENCE_LIST =
+    PACKAGE_SYS.addExternalSymbol("PRECEDENCE-LIST");
   public static final Symbol PUTHASH =
     PACKAGE_SYS.addExternalSymbol("PUTHASH");
   public static final Symbol SET_CHAR =
@@ -3092,6 +3126,7 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("SETF-FUNCTION");
   public static final Symbol SETF_INVERSE =
     PACKAGE_SYS.addExternalSymbol("SETF-INVERSE");
+  public static final Symbol SLOTS = PACKAGE_SYS.addExternalSymbol("SLOTS");
   public static final Symbol SLOT_DEFINITION =
     PACKAGE_SYS.addExternalSymbol("SLOT-DEFINITION");
   public static final Symbol _SLOT_DEFINITION_NAME =
@@ -3181,7 +3216,6 @@ public class Symbol extends LispObject implements java.io.Serializable
   public static final Symbol _METHOD_COMBINATION =
     PACKAGE_SYS.addInternalSymbol("%METHOD-COMBINATION");
   public static final Symbol METHODS = PACKAGE_SYS.addInternalSymbol("METHODS");
-  public static final Symbol NAME = PACKAGE_SYS.addInternalSymbol("NAME");
   public static final Symbol OBJECT = PACKAGE_SYS.addInternalSymbol("OBJECT");
   public static final Symbol OPERANDS =
     PACKAGE_SYS.addInternalSymbol("OPERANDS");

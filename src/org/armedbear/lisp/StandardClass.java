@@ -37,27 +37,20 @@ import static org.armedbear.lisp.Lisp.*;
 
 public class StandardClass extends SlotClass
 {
-
-  public static Symbol symName = PACKAGE_MOP.intern("NAME");
-  public static Symbol symLayout = PACKAGE_MOP.intern("LAYOUT");
-  public static Symbol symDirectSuperclasses
-    = PACKAGE_MOP.intern("DIRECT-SUPERCLASSES");
-  public static Symbol symDirectSubclasses
-    = PACKAGE_MOP.intern("DIRECT-SUBCLASSES");
-  public static Symbol symPrecedenceList
-    = PACKAGE_MOP.intern("PRECEDENCE-LIST");
-  public static Symbol symDirectMethods
-    = PACKAGE_MOP.intern("DIRECT-METHODS");
-  public static Symbol symDirectSlots
-    = PACKAGE_MOP.intern("DIRECT-SLOTS");
-  public static Symbol symSlots
-    = PACKAGE_MOP.intern("SLOTS");
+  // Slot names for standard-class.  Must agree with
+  // redefine-class-forwarder calls in clos.lisp.
+  public static Symbol symName = Symbol.NAME;
+  public static Symbol symLayout = Symbol.LAYOUT;
+  public static Symbol symDirectSuperclasses = Symbol.DIRECT_SUPERCLASSES;
+  public static Symbol symDirectSubclasses = Symbol.DIRECT_SUBCLASSES;
+  public static Symbol symPrecedenceList = Symbol.PRECEDENCE_LIST;
+  public static Symbol symDirectMethods = Symbol.DIRECT_METHODS;
+  public static Symbol symDirectSlots = Symbol.DIRECT_SLOTS; 
+  public static Symbol symSlots = Symbol.SLOTS;
   public static Symbol symDirectDefaultInitargs
-    = PACKAGE_MOP.intern("DIRECT-DEFAULT-INITARGS");
-  public static Symbol symDefaultInitargs
-    = PACKAGE_MOP.intern("DEFAULT-INITARGS");
-  public static Symbol symFinalizedP
-    = PACKAGE_MOP.intern("FINALIZED-P");
+    = Symbol.DIRECT_DEFAULT_INITARGS;
+  public static Symbol symDefaultInitargs = Symbol.DEFAULT_INITARGS;
+  public static Symbol symFinalizedP = Symbol.FINALIZED_P;
 
   // used as init-function for slots in this file.
   static Function constantlyNil = new Function() {
@@ -389,31 +382,20 @@ public class StandardClass extends SlotClass
   private static final LispObject standardClassSlotDefinitions()
   {
     return
-        list(helperMakeSlotDefinition("NAME", constantlyNil),
-             helperMakeSlotDefinition("LAYOUT", constantlyNil),
-             helperMakeSlotDefinition("DIRECT-SUPERCLASSES", constantlyNil),
-             helperMakeSlotDefinition("DIRECT-SUBCLASSES", constantlyNil),
-             helperMakeSlotDefinition("PRECEDENCE-LIST", constantlyNil),
-             helperMakeSlotDefinition("DIRECT-METHODS", constantlyNil),
-             helperMakeSlotDefinition("DIRECT-SLOTS", constantlyNil),
-             helperMakeSlotDefinition("SLOTS", constantlyNil),
-             helperMakeSlotDefinition("DIRECT-DEFAULT-INITARGS", constantlyNil),
-             helperMakeSlotDefinition("DEFAULT-INITARGS", constantlyNil),
-             helperMakeSlotDefinition("FINALIZED-P", constantlyNil),
-             new SlotDefinition(Symbol._DOCUMENTATION,
-                                list(PACKAGE_MOP.intern("CLASS-DOCUMENTATION")),
-                                constantlyNil, list(internKeyword("DOCUMENTATION"))));
-  }
-
-
-
-  private static final SlotDefinition helperMakeSlotDefinition(String name,
-                                                               Function init)
-  {
-    return
-        new SlotDefinition(PACKAGE_MOP.intern(name),   // name
-             list(PACKAGE_MOP.intern("CLASS-" + name)), // readers
-             init);
+      list(new SlotDefinition(symName, list(Symbol.CLASS_NAME), constantlyNil),
+           new SlotDefinition(symLayout, list(Symbol.CLASS_LAYOUT), constantlyNil),
+           new SlotDefinition(symDirectSuperclasses, list(Symbol.CLASS_DIRECT_SUPERCLASSES), constantlyNil),
+           new SlotDefinition(symDirectSubclasses, list(Symbol.CLASS_DIRECT_SUBCLASSES), constantlyNil),
+           new SlotDefinition(symPrecedenceList, list(Symbol.CLASS_PRECEDENCE_LIST), constantlyNil),
+           new SlotDefinition(symDirectMethods, list(Symbol.CLASS_DIRECT_METHODS), constantlyNil),
+           new SlotDefinition(symDirectSlots, list(Symbol.CLASS_DIRECT_SLOTS), constantlyNil),
+           new SlotDefinition(symSlots, list(Symbol.CLASS_SLOTS), constantlyNil),
+           new SlotDefinition(symDirectDefaultInitargs, list(Symbol.CLASS_DIRECT_DEFAULT_INITARGS), constantlyNil),
+           new SlotDefinition(symDefaultInitargs, list(Symbol.CLASS_DEFAULT_INITARGS), constantlyNil),
+           new SlotDefinition(symFinalizedP, list(Symbol.CLASS_FINALIZED_P), constantlyNil),
+           new SlotDefinition(Symbol._DOCUMENTATION,
+                              list(PACKAGE_MOP.intern("CLASS-DOCUMENTATION")),
+                              constantlyNil, list(internKeyword("DOCUMENTATION"))));
   }
 
   private static final StandardClass addStandardClass(Symbol name,

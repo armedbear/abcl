@@ -3053,32 +3053,33 @@ instance and, for setters, `new-value' the new value."
                   '(built-in-class forward-referenced-class structure-class
                     standard-class funcallable-standard-class)))))
 
-
-(redefine-class-forwarder class-name name)
+;;; The slot names here must agree with the ones defined in
+;;; StandardClass.java:layoutStandardClass.
+(redefine-class-forwarder class-name sys:name)
 ;;; AMOP pg. 230
-(redefine-class-forwarder (setf class-name) name
+(redefine-class-forwarder (setf class-name) sys:name
    ((standard-class . (progn (reinitialize-instance class :name new-value) new-value))
     (funcallable-standard-class . (progn (reinitialize-instance class :name new-value) new-value))))
-(redefine-class-forwarder class-slots slots)
-(redefine-class-forwarder (setf class-slots) slots)
-(redefine-class-forwarder class-direct-slots direct-slots)
-(redefine-class-forwarder (setf class-direct-slots) direct-slots)
-(redefine-class-forwarder class-layout layout)
-(redefine-class-forwarder (setf class-layout) layout)
-(redefine-class-forwarder class-direct-superclasses direct-superclasses)
-(redefine-class-forwarder (setf class-direct-superclasses) direct-superclasses)
-(redefine-class-forwarder class-direct-subclasses direct-subclasses)
-(redefine-class-forwarder (setf class-direct-subclasses) direct-subclasses)
-(redefine-class-forwarder class-direct-methods direct-methods)
-(redefine-class-forwarder (setf class-direct-methods) direct-methods)
-(redefine-class-forwarder class-precedence-list precedence-list)
-(redefine-class-forwarder (setf class-precedence-list) precedence-list)
-(redefine-class-forwarder class-finalized-p finalized-p)
-(redefine-class-forwarder (setf class-finalized-p) finalized-p)
-(redefine-class-forwarder class-default-initargs default-initargs)
-(redefine-class-forwarder (setf class-default-initargs) default-initargs)
-(redefine-class-forwarder class-direct-default-initargs direct-default-initargs)
-(redefine-class-forwarder (setf class-direct-default-initargs) direct-default-initargs)
+(redefine-class-forwarder class-slots sys:slots)
+(redefine-class-forwarder (setf class-slots) sys:slots)
+(redefine-class-forwarder class-direct-slots sys:direct-slots)
+(redefine-class-forwarder (setf class-direct-slots) sys:direct-slots)
+(redefine-class-forwarder class-layout sys:layout)
+(redefine-class-forwarder (setf class-layout) sys:layout)
+(redefine-class-forwarder class-direct-superclasses sys:direct-superclasses)
+(redefine-class-forwarder (setf class-direct-superclasses) sys:direct-superclasses)
+(redefine-class-forwarder class-direct-subclasses sys:direct-subclasses)
+(redefine-class-forwarder (setf class-direct-subclasses) sys:direct-subclasses)
+(redefine-class-forwarder class-direct-methods sys:direct-methods)
+(redefine-class-forwarder (setf class-direct-methods) sys:direct-methods)
+(redefine-class-forwarder class-precedence-list sys:precedence-list)
+(redefine-class-forwarder (setf class-precedence-list) sys:precedence-list)
+(redefine-class-forwarder class-finalized-p sys:finalized-p)
+(redefine-class-forwarder (setf class-finalized-p) sys:finalized-p)
+(redefine-class-forwarder class-default-initargs sys:default-initargs)
+(redefine-class-forwarder (setf class-default-initargs) sys:default-initargs)
+(redefine-class-forwarder class-direct-default-initargs sys:direct-default-initargs)
+(redefine-class-forwarder (setf class-direct-default-initargs) sys:direct-default-initargs)
 
 ;;; Class definition
 
