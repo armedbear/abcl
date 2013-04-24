@@ -56,7 +56,7 @@ public class StructureClass extends SlotClass
     @Override
     public LispObject classOf()
     {
-        return StandardClass.STRUCTURE_CLASS;
+      return LispClass.findClass(Symbol.STRUCTURE_CLASS);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class StructureClass extends SlotClass
     {
         if (type == Symbol.STRUCTURE_CLASS)
             return T;
-        if (type == StandardClass.STRUCTURE_CLASS)
+        if (type == LispClass.findClass(Symbol.STRUCTURE_CLASS))
             return T;
         return super.typep(type);
     }

@@ -114,7 +114,6 @@
 (defconstant +the-standard-class+ (find-class 'standard-class))
 (defconstant +the-funcallable-standard-class+
   (find-class 'funcallable-standard-class))
-(defconstant +the-structure-class+ (find-class 'structure-class))
 (defconstant +the-standard-object-class+ (find-class 'standard-object))
 (defconstant +the-funcallable-standard-object-class+
   (find-class 'funcallable-standard-object))
@@ -948,6 +947,10 @@ Handle with care."
   ())
 (defconstant +the-standard-writer-method-class+
   (find-class 'standard-writer-method))
+
+(define-primordial-class structure-class (class)
+  ())
+(defconstant +the-structure-class+ (find-class 'structure-class))
 
 
 (defvar *extensible-built-in-classes*

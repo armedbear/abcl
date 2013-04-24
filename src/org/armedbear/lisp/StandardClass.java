@@ -500,9 +500,6 @@ public class StandardClass extends SlotClass
   public static final StandardClass FORWARD_REFERENCED_CLASS =
     addStandardClass(Symbol.FORWARD_REFERENCED_CLASS, list(CLASS));
 
-  public static final StandardClass STRUCTURE_CLASS =
-    addStandardClass(Symbol.STRUCTURE_CLASS, list(CLASS));
-
   public static final StandardClass FUNCALLABLE_STANDARD_CLASS =
     addStandardClass(Symbol.FUNCALLABLE_STANDARD_CLASS, list(CLASS));
 
@@ -761,8 +758,6 @@ public class StandardClass extends SlotClass
     STREAM_ERROR.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.STREAM,
                                list(PACKAGE_CL.intern("STREAM-ERROR-STREAM")))));
-    STRUCTURE_CLASS.setCPL(STRUCTURE_CLASS, CLASS, SPECIALIZER, METAOBJECT,
-                           STANDARD_OBJECT, BuiltInClass.CLASS_T);
     STYLE_WARNING.setCPL(STYLE_WARNING, WARNING, CONDITION, STANDARD_OBJECT,
                          BuiltInClass.CLASS_T);
     TYPE_ERROR.setCPL(TYPE_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
