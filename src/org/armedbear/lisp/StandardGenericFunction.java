@@ -45,8 +45,7 @@ public final class StandardGenericFunction extends FuncallableStandardObject
 
   public StandardGenericFunction()
   {
-    super(StandardClass.STANDARD_GENERIC_FUNCTION,
-          StandardClass.STANDARD_GENERIC_FUNCTION.getClassLayout().getLength());
+    this(StandardClass.STANDARD_GENERIC_FUNCTION.getClassLayout());
   }
 
   public StandardGenericFunction(Layout layout)
@@ -86,13 +85,6 @@ public final class StandardGenericFunction extends FuncallableStandardObject
   @Override
   public LispObject typep(LispObject type)
   {
-    if (type == Symbol.COMPILED_FUNCTION)
-      {
-        if (function != null)
-          return function.typep(type);
-        else
-          return NIL;
-      }
     if (type == Symbol.STANDARD_GENERIC_FUNCTION)
       return T;
     if (type == StandardClass.STANDARD_GENERIC_FUNCTION)
@@ -409,7 +401,7 @@ public final class StandardGenericFunction extends FuncallableStandardObject
     }
   }
   
-  public static final StandardGenericFunction checkStandardGenericFunction(LispObject obj)
+  private static final StandardGenericFunction checkStandardGenericFunction(LispObject obj)
   {
     if (obj instanceof StandardGenericFunction)
       return (StandardGenericFunction) obj;
