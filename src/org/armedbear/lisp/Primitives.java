@@ -1780,9 +1780,7 @@ public final class Primitives {
             if (name instanceof Symbol) {
                 Symbol symbol = (Symbol) name;
                 if (symbol.getSymbolFunction() instanceof SpecialOperator) {
-                    String message =
-                        symbol.getName() + " is a special operator and may not be redefined.";
-                    return error(new ProgramError(message));
+                    return program_error(symbol.getName() + " is a special operator and may not be redefined.");
                 }
             } else if (!isValidSetfFunctionName(name))
                 return type_error(name, FUNCTION_NAME);
@@ -2310,7 +2308,8 @@ public final class Primitives {
                 sb.append(args.length - 1);
                 sb.append(") for array of rank ");
                 sb.append(rank);
-                error(new ProgramError(sb.toString()));
+                sb.append(".");
+                program_error(sb.toString());
             }
             for (int i = 0; i < rank; i++) {
                 LispObject arg = args[i+1];
@@ -2366,7 +2365,7 @@ public final class Primitives {
                 new StringBuilder("Wrong number of subscripts (0) for array of rank ");
             sb.append(array.getRank());
             sb.append('.');
-            return error(new ProgramError(sb.toString()));
+            return program_error(sb.toString());
         }
         @Override
         public LispObject execute(LispObject first, LispObject second)

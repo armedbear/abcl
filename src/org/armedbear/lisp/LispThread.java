@@ -915,14 +915,14 @@ public final class LispThread extends LispObject
             LispObject name = NIL;
             if (length > 1) {
                 if ((length - 1) % 2 != 0)
-                    error(new ProgramError("Odd number of keyword arguments."));
+                    program_error("Odd number of keyword arguments.");
                 if (length > 3)
                     error(new WrongNumberOfArgumentsException(this, -1, 2)); // don't count the keyword itself as an argument
                 if (args[1] == Keyword.NAME)
                     name = args[2].STRING();
                 else
-                    error(new ProgramError("Unrecognized keyword argument " +
-                                            args[1].princToString() + "."));
+                    program_error("Unrecognized keyword argument "
+                                  + args[1].princToString() + ".");
             }
             return new LispThread(checkFunction(args[0]), name);
         }

@@ -197,7 +197,8 @@ public class FuncallableStandardObject extends StandardObject
       if (arg.typep(StandardClass.FUNCALLABLE_STANDARD_CLASS) != NIL) {
         LispObject l = Symbol.CLASS_LAYOUT.execute(arg);
         if (! (l instanceof Layout)) {
-          return error(new ProgramError("Invalid standard class layout for: " + arg.princToString()));
+          return program_error("Invalid standard class layout for: "
+                               + arg.princToString() + ".");
         }
         if (Symbol.SUBTYPEP.execute(arg, StandardClass.STANDARD_GENERIC_FUNCTION) != NIL) {
           return new StandardGenericFunction((Layout)l);

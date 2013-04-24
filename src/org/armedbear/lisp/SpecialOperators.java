@@ -199,16 +199,14 @@ for (Cons x : nonSequentialVars)
                         Symbol symbol = checkSymbol(obj.car());
                         if (symbol.isSpecialVariable()
                                 || ext.isDeclaredSpecial(symbol)) {
-                            return error(new ProgramError(
-                                             "Attempt to bind the special variable " +
-                                             symbol.princToString() +
-                                             " with SYMBOL-MACROLET."));
+                            return program_error("Attempt to bind the special variable "
+                                                 + symbol.princToString()
+                                                 + " with SYMBOL-MACROLET.");
                         }
                         ext.bind(symbol, new SymbolMacro(obj.cadr()));
                     } else {
-                        return error(new ProgramError(
-                                         "Malformed symbol-expansion pair in SYMBOL-MACROLET: " +
-                                         obj.princToString()));
+                        return program_error("Malformed symbol-expansion pair in SYMBOL-MACROLET: "
+                                             + obj.princToString() + ".");
                     }
                 }
                 return progn(body, ext, thread);
@@ -322,9 +320,8 @@ for (Cons x : nonSequentialVars)
             if (name instanceof Symbol) {
                 symbol = checkSymbol(name);
                 if (symbol.getSymbolFunction() instanceof SpecialOperator) {
-                    String message =
-                        symbol.getName() + " is a special operator and may not be redefined";
-                    return error(new ProgramError(message));
+                  return program_error(symbol.getName()
+                                       + " is a special operator and may not be redefined.");
                 }
             } else if (isValidSetfFunctionName(name))
                 symbol = checkSymbol(name.cadr());
@@ -521,8 +518,8 @@ for (Cons x : nonSequentialVars)
             while (args != NIL) {
                 Symbol symbol = checkSymbol(args.car());
                 if (symbol.isConstant()) {
-                    return error(new ProgramError(symbol.princToString() +
-                                                  " is a constant and thus cannot be set."));
+                    return program_error(symbol.princToString()
+                                         + " is a constant and thus cannot be set.");
                 }
                 args = args.cdr();
                 if (symbol.isSpecialVariable() || env.isDeclaredSpecial(symbol)) {

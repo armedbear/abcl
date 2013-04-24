@@ -48,7 +48,7 @@ public final class FloatFunctions
         public LispObject execute(LispObject[] args)
         {
             if (args.length % 2 != 0)
-                error(new ProgramError("Odd number of keyword arguments."));
+                program_error("Odd number of keyword arguments.");
             for (int i = 0; i < args.length; i += 2) {
                 LispObject key = checkSymbol(args[i]);
                 LispObject value = args[i+1];

@@ -2233,8 +2233,8 @@ public class Stream extends StructureObject {
             final Stream stream = checkStream(first);
             if (second == Keyword.ABORT)
                 return stream.close(third);
-            return error(new ProgramError("Unrecognized keyword argument " +
-                                          second.princToString() + "."));
+            return program_error("Unrecognized keyword argument "
+                                 + second.princToString() + ".");
         }
     };
 

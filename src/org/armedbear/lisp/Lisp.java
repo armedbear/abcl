@@ -418,9 +418,18 @@ public final class Lisp
 
   public static final LispObject type_error(LispObject datum,
                                             LispObject expectedType)
-
   {
     return error(new TypeError(datum, expectedType));
+  }
+
+  public static final LispObject program_error(String message)
+  {
+    return error(new ProgramError(message));
+  }
+
+  public static final LispObject program_error(LispObject initArgs)
+  {
+    return error(new ProgramError(initArgs));
   }
 
   public static volatile boolean interrupted;
@@ -526,8 +535,8 @@ public final class Lisp
                 return evalCall(closure, ((Cons)obj).cdr, env, thread);
               }
             else
-              return error(new ProgramError("Illegal function object: " +
-                                             first.princToString()));
+              return program_error("Illegal function object: "
+                                   + first.princToString() + ".");
           }
       }
     else

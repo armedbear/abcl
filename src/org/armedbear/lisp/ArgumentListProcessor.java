@@ -188,7 +188,7 @@ public class ArgumentListProcessor {
         
         if (remaining.car() == Symbol.AND_WHOLE) {
             if (type == LambdaListType.ORDINARY) {
-                error(new ProgramError("&WHOLE not allowed in ordinary lambda lists."));
+              program_error("&WHOLE not allowed in ordinary lambda lists.");
             } else {
                 // skip the &WHOLE <var> part of the lambda list
                 remaining = remaining.cdr().cdr();
@@ -203,9 +203,9 @@ public class ArgumentListProcessor {
               {
                 if (obj == Symbol.AND_WHOLE) {
                     if (type == LambdaListType.ORDINARY)
-                      error(new ProgramError("&WHOLE not allowed in ordinary lambda lists."));
+                      program_error("&WHOLE not allowed in ordinary lambda lists.");
                     else
-                      error(new ProgramError("&WHOLE must appear first in macro lambda list."));
+                      program_error("&WHOLE must appear first in macro lambda list.");
                 }
                 if (state == STATE_AUX)
                   {
@@ -223,24 +223,21 @@ public class ArgumentListProcessor {
                   {
                     if (_andKey)
                       {
-                        error(new ProgramError(
-                          "&REST/&BODY must precede &KEY."));
+                        program_error("&REST/&BODY must precede &KEY.");
                       }
                     if (type == LambdaListType.ORDINARY && obj == Symbol.AND_BODY)
-                      error(new ProgramError("&BODY not allowed in ordinary lambda lists."));
+                      program_error("&BODY not allowed in ordinary lambda lists.");
                     state = STATE_REST;
                     arity = -1;
                     maxArgs = -1;
                     remaining = remaining.cdr();
                     if (remaining == NIL)
                       {
-                        error(new ProgramError(
-                          "&REST/&BODY must be followed by a variable."));
+                        program_error("&REST/&BODY must be followed by a variable.");
                       }
                     if (restVar != null) 
                       {
-                        error(new ProgramError(
-                          "&REST/&BODY may occur only once."));
+                        program_error("&REST/&BODY may occur only once.");
                       }
                     final LispObject remainingcar =  remaining.car();
                     if (remainingcar instanceof Symbol)
@@ -250,14 +247,13 @@ public class ArgumentListProcessor {
                       }
                     else
                       {
-                        error(new ProgramError(
-                          "&REST/&BODY must be followed by a variable."));
+                        program_error("&REST/&BODY must be followed by a variable.");
                       }
                   }
                 else if (obj == Symbol.AND_ENVIRONMENT)
                   {
                     if (type == LambdaListType.ORDINARY)
-                      error(new ProgramError("&ENVIRONMENT not allowed in ordinary lambda lists."));
+                      program_error("&ENVIRONMENT not allowed in ordinary lambda lists.");
                     remaining = remaining.cdr();
                     envVar = (Symbol) remaining.car();
                     envParam = new EnvironmentParam(envVar, isSpecial(envVar, specials));
@@ -304,8 +300,7 @@ public class ArgumentListProcessor {
                       {
                         if (state != STATE_REQUIRED)
                           {
-                            error(new ProgramError(
-                              "required parameters cannot appear after &REST/&BODY."));
+                            program_error("required parameters cannot appear after &REST/&BODY.");
                           }
                         if (required == null)
                           required = new ArrayList<Param>();
@@ -545,8 +540,8 @@ public class ArgumentListProcessor {
   }
   
   private static void invalidParameter(LispObject obj) {
-    error(new ProgramError(obj.princToString() +
-                         " may not be used as a variable in a lambda list."));
+    program_error(obj.princToString()
+                  + " may not be used as a variable in a lambda list.");
   }
 
   private Symbol[] extractVariables()
@@ -618,8 +613,8 @@ public class ArgumentListProcessor {
                           if (k.keyword == key)
                               continue next_key;
 
-                      error(new ProgramError("Unrecognized keyword argument " +
-                                              key.printObject()));
+                      program_error("Unrecognized keyword argument "
+                                    + key.printObject() + ".");
                   }
               }
         } 
@@ -702,8 +697,8 @@ public class ArgumentListProcessor {
                 arglist.consume();
                 
                 if (key != Keyword.ALLOW_OTHER_KEYS)
-                    error(new ProgramError("Invalid keyword argument " + key.printObject()));
-                
+                    program_error("Invalid keyword argument "
+                                  + key.printObject() + ".");
                 allowOtherKeysValue = null;
             }
             
@@ -756,7 +751,7 @@ public class ArgumentListProcessor {
       /** Asserts the number of remaining arguments is even. */
       void assertRemainderKeywords() {
           if (((len - argsConsumed) & 1) == 1)
-              error(new ProgramError("Odd number of keyword arguments."));
+              program_error("Odd number of keyword arguments.");
       }
       
       /** Returns the next unconsumed value from the argument set, or 'null'

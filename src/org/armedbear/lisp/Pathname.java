@@ -1306,7 +1306,7 @@ public class Pathname extends LispObject {
 
     static final Pathname _makePathname(LispObject[] args) {
         if (args.length % 2 != 0) {
-            error(new ProgramError("Odd number of keyword arguments."));
+            program_error("Odd number of keyword arguments.");
         }
         LispObject host = NIL;
         LispObject device = NIL;
@@ -1908,8 +1908,8 @@ public class Pathname extends LispObject {
             } else if (second == Keyword.VERSION) {
                 value = pathname.version;
             } else {
-                return error(new ProgramError("Unrecognized keyword "
-                                              + second.princToString() + "."));
+                return program_error("Unrecognized keyword "
+                                     + second.princToString() + ".");
             }
             if (value == Keyword.WILD || value == Keyword.WILD_INFERIORS) {
                 return T;

@@ -805,7 +805,7 @@ public final class Java
                 instance = instanceArg.javaInstance();
             }
             if(instance == null) {
-                return error(new ProgramError("JRESOLVE-METHOD: instance must not be null"));
+                return program_error("JRESOLVE-METHOD: instance must not be null.");
             }
             String methodName = methodArg.getStringValue();
             Object[] methodArgs = translateMethodArguments(args, 2);

@@ -147,7 +147,7 @@ public abstract class AbstractArray extends LispObject implements java.io.Serial
             // ### i18n
             final String errorMsg =
                 "Wrong number of subscripts (%d) for array of rank %d.";
-            error(new ProgramError(String.format(errorMsg, subscripts.length, rank)));
+            program_error(String.format(errorMsg, subscripts.length, rank));
         }
         int sum = 0;
         int size = 1;
@@ -160,7 +160,7 @@ public abstract class AbstractArray extends LispObject implements java.io.Serial
                 // ### i18n
                 final String errorMsg =
                     "Invalid index %d for array %s.";
-                error(new ProgramError(String.format(errorMsg, n, printObject())));
+                program_error(String.format(errorMsg, n, printObject()));
             }
             sum += n * lastSize;
         }

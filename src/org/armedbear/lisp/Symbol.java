@@ -295,7 +295,8 @@ public class Symbol extends LispObject implements java.io.Serializable
   {
     if (isConstant())
       // Complement the check already done in SpecialOperators.sf_setq
-      error(new ProgramError("Can't change value of constant symbol " + princToString() + "."));
+      program_error("Can't change value of constant symbol "
+                    + princToString() + ".");
     this.value = value;
   }
 
@@ -311,7 +312,7 @@ public class Symbol extends LispObject implements java.io.Serializable
 
     public void setSymbolMacro(SymbolMacro symbolMacro) {
         if(isSpecialVariable()) {
-            error(new ProgramError("Symbol " + princToString() + " names a special variable; can't install symbol macro."));
+            program_error("Symbol " + princToString() + " names a special variable; can't install symbol macro.");
         }
         put(this, SYMBOL_MACRO, symbolMacro);
     }

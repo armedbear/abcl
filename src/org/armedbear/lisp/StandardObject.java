@@ -448,9 +448,8 @@ public class StandardObject extends LispObject
                             list(Symbol.INTEGER, Fixnum.ZERO,
                                  Fixnum.getInstance(instance.slots.length - 1)));
         else
-          return error(new ProgramError("The object "
-                                        + instance.princToString() +
-                                        " has no slots."));
+          return program_error("The object " + instance.princToString()
+                               + " has no slots.");
 
       }
       // We let UNBOUND_VALUE escape here, since invoking
@@ -495,10 +494,8 @@ public class StandardObject extends LispObject
                             list(Symbol.INTEGER, Fixnum.ZERO,
                                  Fixnum.getInstance(instance.slots.length - 1)));
         else
-          return error(new ProgramError("The object "
-                                        + instance.princToString() +
-                                        " has no slots."));
-
+          return program_error("The object " + instance.princToString()
+                               + " has no slots.");
       }
       return third;
     }
@@ -664,21 +661,21 @@ public class StandardObject extends LispObject
         FuncallableStandardClass cls = (FuncallableStandardClass)arg;
         Layout layout = cls.getClassLayout();
         if (layout == null) {
-          error(new ProgramError("No layout for funcallable class "
-                                 + cls.princToString()));
+          program_error("No layout for funcallable class " + cls.princToString() + ".");
         }
         return new FuncallableStandardObject(cls, layout.getLength());
       } else if (arg instanceof StandardClass) {
         StandardClass cls = (StandardClass)arg;
         Layout layout = cls.getClassLayout();
         if (layout == null) {
-          error(new ProgramError("No layout for class " + cls.princToString()));
+          program_error("No layout for class " + cls.princToString() + ".");
         }
         return new StandardObject(cls, layout.getLength());
       } else if (arg.typep(StandardClass.STANDARD_CLASS) != NIL) {
         LispObject l = Symbol.CLASS_LAYOUT.execute(arg);
         if (! (l instanceof Layout)) {
-          error(new ProgramError("Invalid standard class layout for class " + arg.princToString()));
+          program_error("Invalid standard class layout for class "
+                        + arg.princToString() + ".");
         }
         return new StandardObject((Layout)l);
       } else {

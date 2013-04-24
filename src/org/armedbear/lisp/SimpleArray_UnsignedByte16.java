@@ -235,7 +235,7 @@ public final class SimpleArray_UnsignedByte16 extends AbstractArray
             sb.append(") for array of rank ");
             sb.append(rank);
             sb.append('.');
-            error(new ProgramError(sb.toString()));
+            program_error(sb.toString());
         }
         int sum = 0;
         int size = 1;
@@ -250,7 +250,7 @@ public final class SimpleArray_UnsignedByte16 extends AbstractArray
                 sb.append(" for array ");
                 sb.append(this);
                 sb.append('.');
-                error(new ProgramError(sb.toString()));
+                program_error(sb.toString());
             }
             sum += n * lastSize;
         }

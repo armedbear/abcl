@@ -86,8 +86,8 @@ public class Closure extends Function
     final LispObject lambdaList = lambdaExpression.cadr();
     setLambdaList(lambdaList);
     if (!(lambdaList == NIL || lambdaList instanceof Cons))
-      error(new ProgramError("The lambda list " + lambdaList.princToString() +
-                           " is invalid."));
+      program_error("The lambda list " + lambdaList.princToString()
+                    + " is invalid.");
     this.body = lambdaExpression.cddr();
     LispObject bodyAndDecls = parseBody(this.body, false);
     this.executionBody = bodyAndDecls.car();
