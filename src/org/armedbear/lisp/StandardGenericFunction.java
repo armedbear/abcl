@@ -41,7 +41,6 @@ public final class StandardGenericFunction extends FuncallableStandardObject
 {
 
   ConcurrentHashMap<CacheEntry,LispObject> cache;
-  ConcurrentHashMap<LispObject,LispObject> slotCache;
 
   public StandardGenericFunction()
   {
@@ -280,53 +279,6 @@ public final class StandardGenericFunction extends FuncallableStandardObject
     {
       final StandardGenericFunction gf = checkStandardGenericFunction(first);
       return gf.getArgSpecialization(second);
-    }
-  };
-
-  private static final Primitive CACHE_SLOT_LOCATION 
-    = new pf_cache_slot_location(); 
-  @DocString(name="cache-slot-location",
-           args="generic-function layout location")
-  private static final class pf_cache_slot_location extends Primitive
-  {
-    pf_cache_slot_location()
-    {
-      super("cache-slot-location", PACKAGE_SYS, true, "generic-function layout location");
-    }
-    @Override
-    public LispObject execute(LispObject first, LispObject second,
-                                LispObject third)
-    {
-      final StandardGenericFunction gf = checkStandardGenericFunction(first);
-      LispObject layout = second;
-      LispObject location = third;
-      ConcurrentHashMap<LispObject,LispObject> ht = gf.slotCache;
-      if (ht == null)
-        ht = gf.slotCache = new ConcurrentHashMap<LispObject,LispObject>();
-      ht.put(layout, location);
-      return third;
-    }
-  };
-
-  private static final Primitive GET_CACHED_SLOT_LOCATION 
-    = new pf_get_cached_slot_location();
-  @DocString(name="get-cached-slot-location")
-  private static final class pf_get_cached_slot_location extends Primitive
-  {
-    pf_get_cached_slot_location()
-    {
-      super("get-cached-slot-location", PACKAGE_SYS, true, "generic-function layout");
-    }
-    @Override
-    public LispObject execute(LispObject first, LispObject second)
-    {
-      final StandardGenericFunction gf = checkStandardGenericFunction(first);
-      LispObject layout = second;
-      ConcurrentHashMap<LispObject,LispObject> ht = gf.slotCache;
-      if (ht == null)
-        return NIL;
-      LispObject location = (LispObject) ht.get(layout);
-      return location != null ? location : NIL;
     }
   };
 

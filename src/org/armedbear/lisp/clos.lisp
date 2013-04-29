@@ -2259,12 +2259,6 @@ Initialized with the true value near the end of the file.")
 
 (declaim (ftype (function * t) slow-method-lookup-1))
 
-(declaim (ftype (function (t t t) t) slow-reader-lookup))
-(defun slow-reader-lookup (gf layout slot-name)
-  (let ((location (layout-slot-location layout slot-name)))
-    (cache-slot-location gf layout location)
-    location))
-
 (defun std-compute-discriminating-function (gf)
   ;; In this function, we know that gf is of class
   ;; standard-generic-function, so we can access the instance's slots
@@ -2274,33 +2268,14 @@ Initialized with the true value near the end of the file.")
     (cond
       ((and (= (length methods) 1)
             (eq (type-of (car methods)) 'standard-reader-method)
-            (eq (type-of (car (std-method-specializers (%car methods))))
+            (eq (type-of (car (std-method-specializers (car methods))))
                 'standard-class))
-       (let* ((method (%car methods))
-              (class (car (std-method-specializers method)))
-              (slot-name (slot-definition-name (accessor-method-slot-definition
-                                                method)))
-              (reader (if (typep class 'funcallable-standard-class)
-                          #'funcallable-standard-instance-access
-                          #'standard-instance-access)))
+       (let ((slot-name (slot-definition-name (accessor-method-slot-definition
+                                               (first methods)))))
          #'(lambda (arg)
-             (declare (optimize speed))
-             (let* ((layout (std-instance-layout arg))
-                    (location (get-cached-slot-location gf layout)))
-               (unless location
-                 (unless (simple-typep arg class)
-                   ;; FIXME no applicable method
-                   (error 'simple-type-error
-                          :datum arg
-                          :expected-type class))
-                 (setf location (slow-reader-lookup gf layout slot-name)))
-               (let ((value (if (consp location)
-                                (cdr location) ; :allocation :class
-                                (funcall reader arg location))))
-                 (if (eq value +slot-unbound+)
-                     ;; fix SLOT-UNBOUND.5 from ansi test suite
-                     (nth-value 0 (slot-unbound class arg slot-name))
-                     value))))))
+             ;; this evades linear scan through slot names (see
+             ;; SLOT_VALUE in StandardObject.java)
+             (std-slot-value arg slot-name))))
 
       (t
        (let* ((emf-table (classes-to-emf-table gf))

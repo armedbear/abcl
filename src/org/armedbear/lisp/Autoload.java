@@ -611,7 +611,6 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%string>=", "StringFunctions");
         autoload(PACKAGE_SYS, "%time", "Time");
         autoload(PACKAGE_SYS, "cache-emf", "StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "cache-slot-location", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "canonicalize-logical-host", "LogicalPathname", true);
         autoload(PACKAGE_SYS, "%class-direct-slots", "SlotClass");
         autoload(PACKAGE_SYS, "%float-bits", "FloatFunctions");
@@ -628,7 +627,6 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "float-string", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "function-info", "function_info");
         autoload(PACKAGE_SYS, "get-cached-emf", "StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "get-cached-slot-location", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "get-function-info-value", "function_info");
         autoload(PACKAGE_SYS, "hash-table-entries", "HashTableFunctions");
         autoload(PACKAGE_SYS, "hash-table-entries", "HashTableFunctions");
