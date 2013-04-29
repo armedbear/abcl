@@ -2270,11 +2270,15 @@ Initialized with the true value near the end of the file.")
             (eq (type-of (car methods)) 'standard-reader-method)
             (eq (type-of (car (std-method-specializers (car methods))))
                 'standard-class))
-       (let ((slot-name (slot-definition-name (accessor-method-slot-definition
-                                               (first methods)))))
+       (let* ((method (first methods))
+              (slot-definition (std-slot-value method 'sys::%slot-definition))
+              (slot-name (std-slot-value slot-definition 'sys:name))
+              (class (car (std-method-specializers method))))
          #'(lambda (arg)
-             ;; this evades linear scan through slot names (see
-             ;; SLOT_VALUE in StandardObject.java)
+             ;; TODO: elide this test for low values of SAFETY
+             (unless (typep arg class) (no-applicable-method gf (list arg)))
+             ;; hash table lookup for slot position in Layout object via
+             ;; StandardObject.SLOT_VALUE, so should be reasonably fast
              (std-slot-value arg slot-name))))
 
       (t
