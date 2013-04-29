@@ -2278,7 +2278,11 @@ Initialized with the true value near the end of the file.")
                 'standard-class))
        (let* ((method (%car methods))
               (class (car (std-method-specializers method)))
-              (slot-name (slot-definition-name (accessor-method-slot-definition method))))
+              (slot-name (slot-definition-name (accessor-method-slot-definition
+                                                method)))
+              (reader (if (typep class 'funcallable-standard-class)
+                          #'funcallable-standard-instance-access
+                          #'standard-instance-access)))
          #'(lambda (arg)
              (declare (optimize speed))
              (let* ((layout (std-instance-layout arg))
@@ -2292,7 +2296,7 @@ Initialized with the true value near the end of the file.")
                  (setf location (slow-reader-lookup gf layout slot-name)))
                (let ((value (if (consp location)
                                 (cdr location) ; :allocation :class
-                                (funcallable-standard-instance-access arg location))))
+                                (funcall reader arg location))))
                  (if (eq value +slot-unbound+)
                      ;; fix SLOT-UNBOUND.5 from ansi test suite
                      (nth-value 0 (slot-unbound class arg slot-name))
