@@ -5553,7 +5553,7 @@ public final class Primitives {
         = new pf_class_documentation();
     private static final class pf_class_documentation extends Primitive {
         pf_class_documentation() {
-            super("class-documentation", PACKAGE_SYS, true);
+            super("class-documentation", PACKAGE_MOP, true);
         }
 
         @Override
