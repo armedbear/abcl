@@ -2274,13 +2274,28 @@ Initialized with the true value near the end of the file.")
               (slot-definition (std-slot-value method 'sys::%slot-definition))
               (slot-name (std-slot-value slot-definition 'sys:name))
               (class (car (std-method-specializers method))))
-         #'(lambda (arg)
+         #'(lambda (instance)
              ;; TODO: elide this test for low values of SAFETY
-             (unless (typep arg class) (no-applicable-method gf (list arg)))
+             (unless (typep instance class)
+               (no-applicable-method gf (list instance)))
              ;; hash table lookup for slot position in Layout object via
              ;; StandardObject.SLOT_VALUE, so should be reasonably fast
-             (std-slot-value arg slot-name))))
-
+             (std-slot-value instance slot-name))))
+      ((and (= (length methods) 1)
+            (eq (type-of (car methods)) 'standard-writer-method)
+            (eq (type-of (second (std-method-specializers (car methods))))
+                'standard-class))
+       (let* ((method (first methods))
+              (slot-definition (std-slot-value method 'sys::%slot-definition))
+              (slot-name (std-slot-value slot-definition 'sys:name))
+              (class (car (std-method-specializers method))))
+         #'(lambda (new-value instance)
+             ;; TODO: elide this test for low values of SAFETY
+             (unless (typep instance class)
+               (no-applicable-method gf (list new-value instance)))
+             ;; hash table lookup for slot position in Layout object via
+             ;; StandardObject.SET_SLOT_VALUE, so should be reasonably fast
+             (setf (std-slot-value instance slot-name) new-value))))
       (t
        (let* ((emf-table (classes-to-emf-table gf))
               (number-required (length (generic-function-required-arguments gf)))
