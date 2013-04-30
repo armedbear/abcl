@@ -211,9 +211,9 @@ public class StandardObject extends LispObject
     return unreadableString(typeOf().printObject());
   }
 
-  Layout updateLayout()
+  synchronized Layout updateLayout()
   {
-    Debug.assertTrue(layout.isInvalid());
+    if (!layout.isInvalid()) return layout;
     Layout oldLayout = layout;
     LispObject cls = oldLayout.getLispClass();
     Layout newLayout;
