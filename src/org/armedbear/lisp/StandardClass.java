@@ -831,7 +831,6 @@ public class StandardClass extends SlotClass
            new SlotDefinition(Symbol.ARGUMENT_PRECEDENCE_ORDER, NIL,
                               constantlyNil),
            new SlotDefinition(Symbol.DECLARATIONS, NIL, constantlyNil),
-           new SlotDefinition(Symbol.CLASSES_TO_EMF_TABLE, NIL, constantlyNil),
            new SlotDefinition(Symbol._DOCUMENTATION, NIL, constantlyNil,
                               list(internKeyword("DOCUMENTATION")))));
     // There are no inherited slots.

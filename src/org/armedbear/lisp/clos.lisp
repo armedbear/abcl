@@ -1612,13 +1612,6 @@ compare the method combination name to the symbol 'standard.")
 (defun generic-function-optional-arguments (gf)
   (std-slot-value gf 'sys::optional-args))
 
-(declaim (ftype (function * t) classes-to-emf-table))
-(defun classes-to-emf-table (gf)
-  (std-slot-value gf 'sys::classes-to-emf-table))
-
-(defun (setf classes-to-emf-table) (new-value gf)
-  (setf (std-slot-value gf 'sys::classes-to-emf-table) new-value))
-
 (defun (setf method-lambda-list) (new-value method)
   (setf (std-slot-value method 'sys::lambda-list) new-value))
 
@@ -1826,10 +1819,7 @@ compare the method combination name to the symbol 'standard.")
     result))
 
 (defun finalize-standard-generic-function (gf)
-  (%finalize-generic-function gf)
-  (if (classes-to-emf-table gf)
-      (clrhash (classes-to-emf-table gf))
-      (setf (classes-to-emf-table gf) (make-hash-table :test #'equal)))
+  (%clear-emf-cache gf)
   (%init-eql-specializations gf (collect-eql-specializer-objects gf))
   (set-funcallable-instance-function
    gf
@@ -1865,7 +1855,6 @@ compare the method combination name to the symbol 'standard.")
     (setf (std-slot-value gf 'sys::%method-combination) method-combination)
     (setf (std-slot-value gf 'sys::declarations) declarations)
     (setf (std-slot-value gf 'sys::%documentation) documentation)
-    (setf (std-slot-value gf 'sys::classes-to-emf-table) nil)
     (let* ((plist (analyze-lambda-list (generic-function-lambda-list gf)))
            (required-args (getf plist ':required-args)))
       (setf (std-slot-value gf 'sys::required-args) required-args)
@@ -2257,8 +2246,6 @@ Initialized with the true value near the end of the file.")
        (null (intersection (generic-function-lambda-list gf)
                            '(&rest &optional &key &allow-other-keys &aux)))))
 
-(declaim (ftype (function * t) slow-method-lookup-1))
-
 (defun std-compute-discriminating-function (gf)
   ;; In this function, we know that gf is of class
   ;; standard-generic-function, so we can access the instance's slots
@@ -2297,8 +2284,7 @@ Initialized with the true value near the end of the file.")
              ;; StandardObject.SET_SLOT_VALUE, so should be reasonably fast
              (setf (std-slot-value instance slot-name) new-value))))
       (t
-       (let* ((emf-table (classes-to-emf-table gf))
-              (number-required (length (generic-function-required-arguments gf)))
+       (let* ((number-required (length (generic-function-required-arguments gf)))
               (lambda-list (generic-function-lambda-list gf))
               (exact (null (intersection lambda-list
                                          '(&rest &optional &key
@@ -2338,15 +2324,11 @@ Initialized with the true value near the end of the file.")
                   (t
                    #'(lambda (arg)
                        (declare (optimize speed))
-                       (let* ((specialization
-                                (%get-arg-specialization gf arg))
-                              (emfun (or (gethash1 specialization
-                                                   emf-table)
-                                         (slow-method-lookup-1
-                                          gf arg specialization))))
+                       (let* ((args (list arg))
+                              (emfun (get-cached-emf gf args)))
                          (if emfun
-                             (funcall emfun (list arg))
-                             (apply #'no-applicable-method gf (list arg))))))))
+                             (funcall emfun args)
+                             (slow-method-lookup gf args)))))))
                ((= number-required 2)
                 #'(lambda (arg1 arg2)
                     (declare (optimize speed))
@@ -2375,8 +2357,6 @@ Initialized with the true value near the end of the file.")
                       (if emfun
                           (funcall emfun args)
                           (slow-method-lookup gf args))))))
-             ;;           (let ((non-key-args (+ number-required
-             ;;                                  (length (generic-function-optional-arguments gf))))))
              #'(lambda (&rest args)
                  (declare (optimize speed))
                  (let ((len (length args)))
@@ -2525,23 +2505,6 @@ to ~S with argument list ~S."
           (cache-emf gf args emfun)
           (funcall emfun args))
         (apply #'no-applicable-method gf args))))
-
-(defun slow-method-lookup-1 (gf arg arg-specialization)
-  (let ((applicable-methods
-          (if (eq (class-of gf) +the-standard-generic-function-class+)
-              (std-compute-applicable-methods gf (list arg))
-              (or (compute-applicable-methods-using-classes gf (list (class-of arg)))
-                  (compute-applicable-methods gf (list arg))))))
-    (if applicable-methods
-        (let ((emfun (funcall (if (eq (class-of gf)
-                                      +the-standard-generic-function-class+)
-                                  #'std-compute-effective-method
-                                  #'compute-effective-method)
-                              gf (generic-function-method-combination gf)
-                              applicable-methods)))
-          (when emfun
-            (setf (gethash arg-specialization (classes-to-emf-table gf)) emfun))
-          emfun))))
 
 (defun sub-specializer-p (c1 c2 c-arg)
   (find c2 (cdr (memq c1 (%class-precedence-list c-arg)))))

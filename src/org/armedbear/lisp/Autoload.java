@@ -552,8 +552,8 @@ public class Autoload extends Function
         autoload(PACKAGE_PROF, "stop-profiler", "Profiler", true);
         autoload(PACKAGE_SYS, "%%string=", "StringFunctions");
         autoload(PACKAGE_SYS, "%adjust-array", "adjust_array");
+        autoload(PACKAGE_SYS, "%clear-emf-cache", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%defpackage", "PackageFunctions");
-        autoload(PACKAGE_SYS, "%finalize-generic-function", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%get-output-stream-bytes", "ByteArrayOutputStream"); //AS 20090325
         autoload(PACKAGE_SYS, "%get-output-stream-array", "ByteArrayOutputStream");
         autoload(PACKAGE_SYS, "%make-array", "make_array");
@@ -578,7 +578,6 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%set-class-direct-slots", "SlotClass", true);
         autoload(PACKAGE_SYS, "%set-function-info", "function_info");
         autoload(PACKAGE_SYS, "%init-eql-specializations", "StandardGenericFunction", true);
-        autoload(PACKAGE_SYS, "%get-arg-specialization", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%set-symbol-macro", "Primitives");
         autoload(PACKAGE_SYS, "%simple-bit-vector-bit-and", "SimpleBitVector");
         autoload(PACKAGE_SYS, "%simple-bit-vector-bit-andc1", "SimpleBitVector");

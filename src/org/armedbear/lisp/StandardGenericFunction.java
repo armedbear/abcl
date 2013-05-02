@@ -61,11 +61,10 @@ public final class StandardGenericFunction extends FuncallableStandardObject
     setInstanceSlotValue(Symbol._METHOD_COMBINATION, list(Symbol.STANDARD));
     setInstanceSlotValue(Symbol.ARGUMENT_PRECEDENCE_ORDER, NIL);
     setInstanceSlotValue(Symbol.DECLARATIONS, NIL);
-    setInstanceSlotValue(Symbol.CLASSES_TO_EMF_TABLE, NIL);
     setInstanceSlotValue(Symbol._DOCUMENTATION, NIL);
   }
 
-  void finalizeInternal()
+  void clearCache()
   {
     cache = null;
   }
@@ -114,22 +113,22 @@ public final class StandardGenericFunction extends FuncallableStandardObject
   }
 
 
-  private static final Primitive _FINALIZE_GENERIC_FUNCTION 
+  private static final Primitive _CLEAR_EMF_CACHE 
     = new pf__finalize_generic_function();
-  @DocString(name="%finalize-generic-function",
+  @DocString(name="%clear-emf-cache",
              args="generic-function")
   private static final class  pf__finalize_generic_function extends Primitive
   {
     pf__finalize_generic_function()
     {
-      super("%finalize-generic-function", PACKAGE_SYS, true,
+      super("%clear-emf-cache", PACKAGE_SYS, true,
             "generic-function");
     }
     @Override
     public LispObject execute(LispObject arg)
     {
       final StandardGenericFunction gf = checkStandardGenericFunction(arg);
-      gf.finalizeInternal();        
+      gf.clearCache();        
       return T;
     }
   };
@@ -263,24 +262,6 @@ public final class StandardGenericFunction extends FuncallableStandardObject
       }
     return arg.classOf();
   }
-
-  private static final Primitive _GET_ARG_SPECIALIZATION 
-    = new pf__get_arg_specialization();
-  @DocString(name="%get-arg-specialization",
-             args="generic-function arg")
-  private static final class pf__get_arg_specialization extends Primitive
-  {
-    pf__get_arg_specialization() 
-    {
-      super("%get-arg-specialization", PACKAGE_SYS, true, "generic-function arg");
-    }
-    @Override
-    public LispObject execute(LispObject first, LispObject second)
-    {
-      final StandardGenericFunction gf = checkStandardGenericFunction(first);
-      return gf.getArgSpecialization(second);
-    }
-  };
 
   private static class CacheEntry
   {

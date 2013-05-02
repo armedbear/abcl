@@ -3156,8 +3156,6 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addInternalSymbol("CASE-FROB-STREAM");
   public static final Symbol CAUSE =
     PACKAGE_SYS.addInternalSymbol("CAUSE");
-  public static final Symbol CLASSES_TO_EMF_TABLE =
-    PACKAGE_SYS.addInternalSymbol("CLASSES-TO-EMF-TABLE");
   public static final Symbol COMMA_MACRO =
     PACKAGE_SYS.addInternalSymbol("COMMA-MACRO");
   public static final Symbol DATUM =
