@@ -552,7 +552,6 @@ public class Autoload extends Function
         autoload(PACKAGE_PROF, "stop-profiler", "Profiler", true);
         autoload(PACKAGE_SYS, "%%string=", "StringFunctions");
         autoload(PACKAGE_SYS, "%adjust-array", "adjust_array");
-        autoload(PACKAGE_SYS, "%clear-emf-cache", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%defpackage", "PackageFunctions");
         autoload(PACKAGE_SYS, "%get-output-stream-bytes", "ByteArrayOutputStream"); //AS 20090325
         autoload(PACKAGE_SYS, "%get-output-stream-array", "ByteArrayOutputStream");
@@ -560,6 +559,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%make-byte-array-input-stream", "ByteArrayInputStream"); //AS 20100317
         autoload(PACKAGE_SYS, "%make-byte-array-output-stream", "ByteArrayOutputStream"); //AS 20090325
         autoload(PACKAGE_SYS, "%make-condition", "make_condition", true);
+        autoload(PACKAGE_SYS, "%make-emf-cache", "EMFCache", true);
         autoload(PACKAGE_SYS, "%make-hash-table", "HashTableFunctions");
         autoload(PACKAGE_SYS, "%make-hash-table", "HashTableFunctions");
         autoload(PACKAGE_SYS, "%make-logical-pathname", "LogicalPathname", true);
@@ -570,6 +570,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%nstring-capitalize", "StringFunctions");
         autoload(PACKAGE_SYS, "%nstring-downcase", "StringFunctions");
         autoload(PACKAGE_SYS, "%nstring-upcase", "StringFunctions");
+        autoload(PACKAGE_SYS, "%reinit-emf-cache", "EMFCache", true);
         autoload(PACKAGE_SYS, "%run-shell-command", "ShellCommand");
         autoload(PACKAGE_SYS, "%server-socket-close", "server_socket_close");
         autoload(PACKAGE_SYS, "%set-arglist", "arglist");
@@ -577,7 +578,6 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%set-find-class", "LispClass", true);
         autoload(PACKAGE_SYS, "%set-class-direct-slots", "SlotClass", true);
         autoload(PACKAGE_SYS, "%set-function-info", "function_info");
-        autoload(PACKAGE_SYS, "%init-eql-specializations", "StandardGenericFunction", true);
         autoload(PACKAGE_SYS, "%set-symbol-macro", "Primitives");
         autoload(PACKAGE_SYS, "%simple-bit-vector-bit-and", "SimpleBitVector");
         autoload(PACKAGE_SYS, "%simple-bit-vector-bit-andc1", "SimpleBitVector");
@@ -609,7 +609,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "%string>", "StringFunctions");
         autoload(PACKAGE_SYS, "%string>=", "StringFunctions");
         autoload(PACKAGE_SYS, "%time", "Time");
-        autoload(PACKAGE_SYS, "cache-emf", "StandardGenericFunction", true);
+        autoload(PACKAGE_SYS, "cache-emf", "EMFCache", true);
         autoload(PACKAGE_SYS, "canonicalize-logical-host", "LogicalPathname", true);
         autoload(PACKAGE_SYS, "%class-direct-slots", "SlotClass");
         autoload(PACKAGE_SYS, "%float-bits", "FloatFunctions");
@@ -625,7 +625,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "float-nan-p", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "float-string", "FloatFunctions", true);
         autoload(PACKAGE_SYS, "function-info", "function_info");
-        autoload(PACKAGE_SYS, "get-cached-emf", "StandardGenericFunction", true);
+        autoload(PACKAGE_SYS, "get-cached-emf", "EMFCache", true);
         autoload(PACKAGE_SYS, "get-function-info-value", "function_info");
         autoload(PACKAGE_SYS, "hash-table-entries", "HashTableFunctions");
         autoload(PACKAGE_SYS, "hash-table-entries", "HashTableFunctions");

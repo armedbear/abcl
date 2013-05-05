@@ -2660,7 +2660,7 @@ public final class Primitives {
             } else if (arg instanceof StandardGenericFunction) {
                 value1 = NIL;
                 value2 = T;
-                value3 = ((StandardGenericFunction)arg).getName();
+                value3 = ((StandardGenericFunction)arg).getInstanceSlotValue(Symbol.NAME);
             } else if (arg instanceof FuncallableStandardObject) {
               return this.execute(((FuncallableStandardObject)arg).function);
             } else {
@@ -4221,7 +4221,7 @@ public final class Primitives {
                 return ((Operator)arg).getLambdaName();
             }
             if (arg instanceof StandardGenericFunction) {
-                return ((StandardGenericFunction)arg).getName();
+                return ((StandardGenericFunction)arg).getInstanceSlotValue(Symbol.NAME);
             }
             if (arg instanceof FuncallableStandardObject) {
               return this.execute(((FuncallableStandardObject)arg).function);
@@ -4246,7 +4246,7 @@ public final class Primitives {
                 return second;
             }
             if (first instanceof StandardGenericFunction) {
-                ((StandardGenericFunction)first).setName(second);
+                ((StandardGenericFunction)first).setInstanceSlotValue(Symbol.NAME, second);
                 return second;
             }
             if (first instanceof FuncallableStandardObject) {

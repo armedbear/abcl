@@ -1819,8 +1819,7 @@ compare the method combination name to the symbol 'standard.")
     result))
 
 (defun finalize-standard-generic-function (gf)
-  (%clear-emf-cache gf)
-  (%init-eql-specializations gf (collect-eql-specializer-objects gf))
+  (%reinit-emf-cache gf (collect-eql-specializer-objects gf))
   (set-funcallable-instance-function
    gf
    (if (eq (class-of gf) +the-standard-generic-function-class+)
