@@ -40,7 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class StandardGenericFunction extends FuncallableStandardObject
 {
 
-  ConcurrentHashMap<CacheEntry,LispObject> cache;
+  ConcurrentHashMap<CacheEntry,LispObject> cache
+    = new ConcurrentHashMap<CacheEntry,LispObject>();;
 
   public StandardGenericFunction()
   {
@@ -66,7 +67,7 @@ public final class StandardGenericFunction extends FuncallableStandardObject
 
   void clearCache()
   {
-    cache = null;
+    cache = new ConcurrentHashMap<CacheEntry,LispObject>();
   }
 
   public LispObject getName()
@@ -159,8 +160,6 @@ public final class StandardGenericFunction extends FuncallableStandardObject
         }
       CacheEntry specializations = new CacheEntry(array);
       ConcurrentHashMap<CacheEntry,LispObject> ht = gf.cache;
-      if (ht == null)
-        ht = gf.cache = new ConcurrentHashMap<CacheEntry,LispObject>();
       ht.put(specializations, third);
       return third;
     }
@@ -190,8 +189,6 @@ public final class StandardGenericFunction extends FuncallableStandardObject
         }
       CacheEntry specializations = new CacheEntry(array);
       ConcurrentHashMap<CacheEntry,LispObject> ht = gf.cache;
-      if (ht == null)
-        return NIL;
       LispObject emf = (LispObject) ht.get(specializations);
       return emf != null ? emf : NIL;
     }
