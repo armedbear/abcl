@@ -670,19 +670,6 @@ public class StandardObject extends LispObject
     {
       if (arg == StandardClass.STANDARD_CLASS) {
         return new StandardClass();
-      } else if (arg == StandardClass.STANDARD_GENERIC_FUNCTION) {
-        // Not checking for (subtypep arg standard-generic-function)
-        // here, since allocate-instance is only called for generic
-        // functions early in the boot process and subtypep isn't
-        // working yet.  allocate-funcallable-instance takes over later.
-        return new StandardGenericFunction();
-      } else if (arg.typep(StandardClass.FUNCALLABLE_STANDARD_CLASS) != NIL) {
-        LispObject l = Symbol.CLASS_LAYOUT.execute(arg);
-        if (! (l instanceof Layout)) {
-          program_error("Invalid class layout for funcallable class "
-                        + arg.princToString() + ".");
-        }
-        return new FuncallableStandardObject((Layout)l);
       } else if (arg instanceof StandardClass) {
         StandardClass cls = (StandardClass)arg;
         Layout layout = cls.getClassLayout();

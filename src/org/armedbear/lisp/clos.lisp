@@ -1841,7 +1841,7 @@ compare the method combination name to the symbol 'standard.")
   ;; to avoid circularities, we do not call generic functions in here.
   (declare (ignore generic-function-class))
   (check-argument-precedence-order lambda-list argument-precedence-order)
-  (let ((gf (std-allocate-instance +the-standard-generic-function-class+)))
+  (let ((gf (allocate-funcallable-instance +the-standard-generic-function-class+)))
     (unless (classp method-class) (setf method-class (find-class method-class)))
     (unless (typep method-combination 'method-combination)
       (setf method-combination
