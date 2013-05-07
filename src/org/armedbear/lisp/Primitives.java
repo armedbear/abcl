@@ -2657,10 +2657,10 @@ public final class Primitives {
                 value1 = NIL;
                 value2 = T;
                 value3 = ((Function)arg).getLambdaName();
-            } else if (arg instanceof StandardGenericFunction) {
+            } else if (arg.typep(StandardClass.GENERIC_FUNCTION) != NIL) {
                 value1 = NIL;
                 value2 = T;
-                value3 = ((StandardGenericFunction)arg).getInstanceSlotValue(Symbol.NAME);
+                value3 = Symbol.GENERIC_FUNCTION_NAME.execute(arg);
             } else if (arg instanceof FuncallableStandardObject) {
               return this.execute(((FuncallableStandardObject)arg).function);
             } else {
@@ -4220,8 +4220,8 @@ public final class Primitives {
             if (arg instanceof Operator) {
                 return ((Operator)arg).getLambdaName();
             }
-            if (arg instanceof StandardGenericFunction) {
-                return ((StandardGenericFunction)arg).getInstanceSlotValue(Symbol.NAME);
+            if (arg.typep(StandardClass.GENERIC_FUNCTION) != NIL) {
+                return Symbol.GENERIC_FUNCTION_NAME.execute(arg);
             }
             if (arg instanceof FuncallableStandardObject) {
               return this.execute(((FuncallableStandardObject)arg).function);
@@ -4245,8 +4245,11 @@ public final class Primitives {
                 ((Operator)first).setLambdaName(second);
                 return second;
             }
-            if (first instanceof StandardGenericFunction) {
-                ((StandardGenericFunction)first).setInstanceSlotValue(Symbol.NAME, second);
+            // KLUDGE: this isn't fully general, but lots of other stuff
+            // will break for generic functions that aren't subclasses
+            // of standard-generic-function as well.
+            if (first.typep(StandardClass.STANDARD_GENERIC_FUNCTION) != NIL) {
+                ((StandardObject)first).setInstanceSlotValue(Symbol.NAME, second);
                 return second;
             }
             if (first instanceof FuncallableStandardObject) {

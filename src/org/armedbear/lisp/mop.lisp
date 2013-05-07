@@ -1,17 +1,6 @@
-;;;; Does not currently include all the MOP, but it should.
+
 
 (in-package #:mop)
-
-;;; StandardGenericFunction.java defines FUNCALLABLE-INSTANCE-FUNCTION and
-;;; SET-FUNCALLABLE-INSTANCE-FUNCTION.
-;;;
-;;; TODO 
-;;;
-;;;   1. Verify that we can make FUNCALLABLE-STANDARD-CLASS instances
-;;;      which work.
-;;;
-;;;   2. Tighten the type checks so that only instances of
-;;;      FUNCALLABLE-STANDARD-CLASS are callable.
 
 ;;; AMOP pg. 240ff.
 (defgeneric validate-superclass (class superclass)

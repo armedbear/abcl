@@ -3005,6 +3005,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_MOP.addExternalSymbol("FUNCALLABLE-STANDARD-CLASS");
   public static final Symbol GENERIC_FUNCTION_METHODS =
     PACKAGE_MOP.addExternalSymbol("GENERIC-FUNCTION-METHODS");
+  public static final Symbol GENERIC_FUNCTION_NAME =
+    PACKAGE_MOP.addExternalSymbol("GENERIC-FUNCTION-NAME");
   public static final Symbol METAOBJECT =
     PACKAGE_MOP.addExternalSymbol("METAOBJECT");
   public static final Symbol METHOD_FUNCTION =
