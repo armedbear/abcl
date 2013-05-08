@@ -53,11 +53,11 @@ public final class EMFCache extends LispObject
     return unreadableString("EMF-CACHE");
   }
 
-  static final StandardGenericFunction checkStandardGenericFunction(LispObject obj)
+  static final FuncallableStandardObject checkStandardGenericFunction(LispObject obj)
   {
-    if (obj instanceof StandardGenericFunction)
-      return (StandardGenericFunction) obj;
-    return (StandardGenericFunction) // Not reached.
+    if (obj instanceof FuncallableStandardObject)
+      return (FuncallableStandardObject) obj;
+    return (FuncallableStandardObject) // Not reached.
       type_error(obj, Symbol.STANDARD_GENERIC_FUNCTION);
   }
 
@@ -135,7 +135,7 @@ public final class EMFCache extends LispObject
     @Override
     public LispObject execute(LispObject generic_function, LispObject eql_specializers)
     {
-      final StandardGenericFunction gf = checkStandardGenericFunction(generic_function);
+      final FuncallableStandardObject gf = checkStandardGenericFunction(generic_function);
       EMFCache cache = gf.cache;
       cache.clearCache();
       cache.eqlSpecializations = new EqlSpecialization[eql_specializers.length()];
@@ -161,7 +161,7 @@ public final class EMFCache extends LispObject
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third)
     {
-      final StandardGenericFunction gf = checkStandardGenericFunction(first);
+      final FuncallableStandardObject gf = checkStandardGenericFunction(first);
       EMFCache cache = gf.cache;
       LispObject args = second;
       int numberOfRequiredArgs
@@ -191,7 +191,7 @@ public final class EMFCache extends LispObject
     @Override
     public LispObject execute(LispObject first, LispObject second)
     {
-      final StandardGenericFunction gf = checkStandardGenericFunction(first);
+      final FuncallableStandardObject gf = checkStandardGenericFunction(first);
       EMFCache cache = gf.cache;
       LispObject args = second;
       int numberOfRequiredArgs
