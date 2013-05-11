@@ -105,7 +105,8 @@ public class StreamError extends LispError
     {
         super(StandardClass.STREAM_ERROR);
         setStream(stream != null ? stream : NIL);
-        setFormatControl(cause.getMessage());
+        String message = cause.getMessage();
+        setFormatControl(message != null ? message : cause.toString());
         setFormatArguments(NIL);
         this.cause = cause;
     }
