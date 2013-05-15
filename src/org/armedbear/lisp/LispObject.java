@@ -670,7 +670,7 @@ public class LispObject //extends Lisp
                     SimpleString doc = new SimpleString(docstring);
                     ((Symbol)this).setDocumentation(Symbol.FUNCTION, doc);
                     return doc;
-                } else if (fn.typep(StandardClass.STANDARD_GENERIC_FUNCTION) != NIL) {
+                } else if (fn.typep(Symbol.STANDARD_GENERIC_FUNCTION) != NIL) {
                     return Symbol.SLOT_VALUE.execute(fn, Symbol._DOCUMENTATION);
                 }
             }

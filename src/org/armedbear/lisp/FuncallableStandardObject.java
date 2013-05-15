@@ -194,7 +194,7 @@ public class FuncallableStandardObject extends StandardObject
                                + arg.princToString() + ".");
         }
         FuncallableStandardObject o = new FuncallableStandardObject((Layout)l);
-        if (arg == StandardClass.STANDARD_GENERIC_FUNCTION || Symbol.SUBTYPEP.execute(arg, StandardClass.STANDARD_GENERIC_FUNCTION) != NIL) {
+        if (Symbol.SUBTYPEP.execute(arg, LispClass.findClass(Symbol.STANDARD_GENERIC_FUNCTION)) != NIL) {
           // KLUDGE: this initialization should be moved Lisp-side
           o.setInstanceSlotValue(Symbol.NAME, NIL);
           o.setInstanceSlotValue(Symbol.LAMBDA_LIST, NIL);

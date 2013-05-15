@@ -72,7 +72,7 @@ public class Profiler
                             object.setCallCount(0);
                             object.setHotCount(0);
                             LispObject methods = null;
-                            if (object.typep(StandardClass.STANDARD_GENERIC_FUNCTION) != NIL) {
+                            if (object.typep(Symbol.STANDARD_GENERIC_FUNCTION) != NIL) {
                                 methods =
                                     Symbol.GENERIC_FUNCTION_METHODS.execute(object);
                             }

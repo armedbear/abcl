@@ -4248,7 +4248,7 @@ public final class Primitives {
             // KLUDGE: this isn't fully general, but lots of other stuff
             // will break for generic functions that aren't subclasses
             // of standard-generic-function as well.
-            if (first.typep(StandardClass.STANDARD_GENERIC_FUNCTION) != NIL) {
+            if (first.typep(Symbol.STANDARD_GENERIC_FUNCTION) != NIL) {
                 ((StandardObject)first).setInstanceSlotValue(Symbol.NAME, second);
                 return second;
             }
