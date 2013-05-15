@@ -2657,7 +2657,7 @@ public final class Primitives {
                 value1 = NIL;
                 value2 = T;
                 value3 = ((Function)arg).getLambdaName();
-            } else if (arg.typep(StandardClass.GENERIC_FUNCTION) != NIL) {
+            } else if (arg.typep(Symbol.GENERIC_FUNCTION) != NIL) {
                 value1 = NIL;
                 value2 = T;
                 value3 = Symbol.GENERIC_FUNCTION_NAME.execute(arg);
@@ -4220,7 +4220,7 @@ public final class Primitives {
             if (arg instanceof Operator) {
                 return ((Operator)arg).getLambdaName();
             }
-            if (arg.typep(StandardClass.GENERIC_FUNCTION) != NIL) {
+            if (arg.typep(Symbol.GENERIC_FUNCTION) != NIL) {
                 return Symbol.GENERIC_FUNCTION_NAME.execute(arg);
             }
             if (arg instanceof FuncallableStandardObject) {
