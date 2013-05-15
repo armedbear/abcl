@@ -460,10 +460,6 @@ public class StandardClass extends SlotClass
       addFuncallableStandardClass(Symbol.FUNCALLABLE_STANDARD_OBJECT,
                        list(STANDARD_OBJECT, BuiltInClass.FUNCTION));
 
-  public static final StandardClass GENERIC_FUNCTION =
-    addFuncallableStandardClass(Symbol.GENERIC_FUNCTION,
-                                list(METAOBJECT, FUNCALLABLE_STANDARD_OBJECT));
-
   public static final StandardClass CLASS =
     addStandardClass(Symbol.CLASS, list(SPECIALIZER));
 
@@ -581,9 +577,6 @@ public class StandardClass extends SlotClass
     STANDARD_CLASS.setDirectSuperclass(CLASS);
     STANDARD_OBJECT.setDirectSuperclass(BuiltInClass.CLASS_T);
     FUNCALLABLE_STANDARD_OBJECT.setDirectSuperclasses(list(STANDARD_OBJECT, BuiltInClass.FUNCTION));
-    GENERIC_FUNCTION.setDirectSuperclasses(list(METAOBJECT,
-                                                FUNCALLABLE_STANDARD_OBJECT));
-
     ARITHMETIC_ERROR.setCPL(ARITHMETIC_ERROR, ERROR, SERIOUS_CONDITION,
                             CONDITION, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     ARITHMETIC_ERROR.setDirectSlotDefinitions(
@@ -639,10 +632,6 @@ public class StandardClass extends SlotClass
     FUNCALLABLE_STANDARD_OBJECT.setCPL(FUNCALLABLE_STANDARD_OBJECT,
                                        STANDARD_OBJECT, BuiltInClass.FUNCTION,
                                        BuiltInClass.CLASS_T);
-    GENERIC_FUNCTION.setCPL(GENERIC_FUNCTION, METAOBJECT,
-                            FUNCALLABLE_STANDARD_OBJECT, STANDARD_OBJECT,
-                            BuiltInClass.FUNCTION,
-                            BuiltInClass.CLASS_T);
     JAVA_EXCEPTION.setCPL(JAVA_EXCEPTION, ERROR, SERIOUS_CONDITION, CONDITION,
                           STANDARD_OBJECT, BuiltInClass.CLASS_T);
     JAVA_EXCEPTION.setDirectSlotDefinitions(
@@ -741,7 +730,6 @@ public class StandardClass extends SlotClass
     STANDARD_OBJECT.finalizeClass();
     FUNCALLABLE_STANDARD_OBJECT.finalizeClass();
     FUNCALLABLE_STANDARD_CLASS.finalizeClass();
-    GENERIC_FUNCTION.finalizeClass();
     ARITHMETIC_ERROR.finalizeClass();
     CELL_ERROR.finalizeClass();
     CONDITION.finalizeClass();

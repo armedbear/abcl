@@ -189,9 +189,8 @@
     (add-subclasses 'function 'funcallable-standard-object)
     (add-subclasses 'standard-object '(funcallable-standard-object metaobject))
     (add-subclasses 'metaobject
-                    '(generic-function method slot-definition specializer))
+                    '(method slot-definition specializer))
     (add-subclasses 'specializer '(class))
-    (add-subclasses 'funcallable-standard-object 'generic-function)
     (add-subclasses 'method 'standard-method)
     (add-subclasses 'slot-definition
                     '(direct-slot-definition effective-slot-definition
@@ -995,6 +994,10 @@ Will not modify existing classes to avoid breaking std-generic-function-p."
    (sys::%documentation :initform nil)))
 (defconstant +the-forward-referenced-class+
   (find-class 'forward-referenced-class))
+
+(define-funcallable-primordial-class generic-function
+    (metaobject funcallable-standard-object)
+  ())
 
 (define-funcallable-primordial-class standard-generic-function (generic-function)
   ((sys::name :initarg :name :initform nil)
