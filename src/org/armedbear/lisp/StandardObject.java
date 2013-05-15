@@ -668,7 +668,9 @@ public class StandardObject extends LispObject
     @Override
     public LispObject execute(LispObject arg)
     {
-      if (arg == StandardClass.STANDARD_CLASS) {
+      if (arg == StandardClass.FUNCALLABLE_STANDARD_CLASS) {
+        return new FuncallableStandardClass();
+      } else if (arg == StandardClass.STANDARD_CLASS) {
         return new StandardClass();
       } else if (arg instanceof StandardClass) {
         StandardClass cls = (StandardClass)arg;

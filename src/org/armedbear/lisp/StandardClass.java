@@ -573,10 +573,6 @@ public class StandardClass extends SlotClass
   public static final StandardClass STANDARD_METHOD =
     addStandardClass(Symbol.STANDARD_METHOD, list(METHOD));
 
-  public static final StandardClass STANDARD_GENERIC_FUNCTION =
-    addFuncallableStandardClass(Symbol.STANDARD_GENERIC_FUNCTION,
-                                list(GENERIC_FUNCTION));
-
   public static void initializeStandardClasses()
   {
     // We need to call setDirectSuperclass() here for classes that have a
@@ -811,29 +807,5 @@ public class StandardClass extends SlotClass
                                               BuiltInClass.CLASS_T);
     STANDARD_EFFECTIVE_SLOT_DEFINITION.finalizeClass();
 
-    // STANDARD-GENERIC-FUNCTION
-    STANDARD_GENERIC_FUNCTION.setCPL(STANDARD_GENERIC_FUNCTION,
-                                     GENERIC_FUNCTION, METAOBJECT,
-                                     FUNCALLABLE_STANDARD_OBJECT,
-                                     STANDARD_OBJECT,
-                                     BuiltInClass.FUNCTION,
-                                     BuiltInClass.CLASS_T);
-    STANDARD_GENERIC_FUNCTION.setDirectSlotDefinitions(
-      list(new SlotDefinition(Symbol.NAME, NIL, constantlyNil),
-           new SlotDefinition(Symbol.LAMBDA_LIST, NIL, constantlyNil),
-           new SlotDefinition(Symbol.REQUIRED_ARGS, NIL, constantlyNil),
-           new SlotDefinition(Symbol.OPTIONAL_ARGS, NIL, constantlyNil),
-           new SlotDefinition(Symbol.INITIAL_METHODS, NIL, constantlyNil),
-           new SlotDefinition(Symbol.METHODS, NIL, constantlyNil),
-           new SlotDefinition(Symbol.METHOD_CLASS, NIL, constantlyNil),
-           new SlotDefinition(Symbol._METHOD_COMBINATION, NIL, constantlyNil,
-                              list(internKeyword("METHOD-COMBINATION"))),
-           new SlotDefinition(Symbol.ARGUMENT_PRECEDENCE_ORDER, NIL,
-                              constantlyNil),
-           new SlotDefinition(Symbol.DECLARATIONS, NIL, constantlyNil),
-           new SlotDefinition(Symbol._DOCUMENTATION, NIL, constantlyNil,
-                              list(internKeyword("DOCUMENTATION")))));
-    // There are no inherited slots.
-    STANDARD_GENERIC_FUNCTION.finalizeClass();
   }
 }

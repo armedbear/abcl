@@ -118,8 +118,6 @@
 (defconstant +the-funcallable-standard-object-class+
   (find-class 'funcallable-standard-object))
 (defconstant +the-standard-method-class+ (find-class 'standard-method))
-(defconstant +the-standard-generic-function-class+
-  (find-class 'standard-generic-function))
 (defconstant +the-T-class+ (find-class 'T))
 (defconstant +the-standard-slot-definition-class+ (find-class 'standard-slot-definition))
 (defconstant +the-standard-direct-slot-definition-class+ (find-class 'standard-direct-slot-definition))
@@ -194,7 +192,6 @@
                     '(generic-function method slot-definition specializer))
     (add-subclasses 'specializer '(class))
     (add-subclasses 'funcallable-standard-object 'generic-function)
-    (add-subclasses 'generic-function 'standard-generic-function)
     (add-subclasses 'method 'standard-method)
     (add-subclasses 'slot-definition
                     '(direct-slot-definition effective-slot-definition
@@ -861,6 +858,23 @@
                                           :direct-default-initargs direct-default-initargs)
     class))
 
+(defun make-or-find-instance-funcallable-standard-class
+    (metaclass &rest initargs &key name direct-superclasses direct-slots
+                                direct-default-initargs documentation)
+  (declare (ignore metaclass initargs))
+  (or (find-class name nil)
+      (let ((class (std-allocate-instance +the-funcallable-standard-class+)))
+        (%set-class-name name class)
+        (unless *clos-booting* (%set-class-layout nil class))
+        (%set-class-direct-subclasses ()  class)
+        (%set-class-direct-methods ()  class)
+        (%set-class-documentation class documentation)
+        (std-after-initialization-for-classes class
+                                              :direct-superclasses direct-superclasses
+                                              :direct-slots direct-slots
+                                              :direct-default-initargs direct-default-initargs)
+        class)))
+
 ;(defun convert-to-direct-slot-definition (class canonicalized-slot)
 ;  (apply #'make-instance
 ;         (apply #'direct-slot-definition-class
@@ -895,8 +909,6 @@
   (maybe-finalize-class-subtree class)
   (values))
 
-;;; Bootstrap the lower parts of the metaclass hierarchy.
-
 (defmacro define-primordial-class (name superclasses direct-slots)
   "Primitive class definition tool.
 No non-standard metaclasses, accessor methods, duplicate slots,
@@ -904,6 +916,21 @@ non-existent superclasses, default initargs, or other complicated stuff.
 Handle with care."
   (let ((class (gensym)))
     `(let ((,class (make-instance-standard-class
+                    nil
+                    :name ',name
+                    :direct-superclasses ',(mapcar #'find-class superclasses)
+                    :direct-slots ,(canonicalize-direct-slots direct-slots))))
+       (%set-find-class ',name ,class)
+       ,class)))
+
+(defmacro define-funcallable-primordial-class (name superclasses direct-slots)
+  "Primitive funcallable class definition tool.
+No non-standard metaclasses, accessor methods, duplicate slots,
+non-existent superclasses, default initargs, or other complicated stuff.
+Handle with care.
+Will not modify existing classes to avoid breaking std-generic-function-p."
+  (let ((class (gensym)))
+    `(let ((,class (make-or-find-instance-funcallable-standard-class
                     nil
                     :name ',name
                     :direct-superclasses ',(mapcar #'find-class superclasses)
@@ -968,6 +995,24 @@ Handle with care."
    (sys::%documentation :initform nil)))
 (defconstant +the-forward-referenced-class+
   (find-class 'forward-referenced-class))
+
+(define-funcallable-primordial-class standard-generic-function (generic-function)
+  ((sys::name :initarg :name :initform nil)
+   (sys::lambda-list :initarg :lambda-list :initform nil)
+   (sys::required-args :initarg :required-args :initform nil)
+   (sys::optional-args :initarg :optional-args :initform nil)
+   (sys::initial-methods :initarg :initial-methods :initform nil)
+   (sys::methods :initarg :methods :initform nil)
+   (sys::method-class :initarg :method-class
+                      :initform +the-standard-method-class+)
+   (sys::%method-combination :initarg :method-combination
+                             :initform (std-find-method-combination 'standard))
+   (sys::argument-precedence-order :initarg :argument-precedence-order
+                                   :initform nil)
+   (sys::declarations :initarg :declarations :initform nil)
+   (sys::%documentation :initarg :documentation :initform nil)))
+(defconstant +the-standard-generic-function-class+
+  (find-class 'standard-generic-function))
 
 (defun std-generic-function-p (gf)
   (eq (class-of gf) +the-standard-generic-function-class+))
