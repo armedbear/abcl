@@ -209,6 +209,11 @@
                     '(built-in-class standard-class funcallable-standard-class))))
 (fixup-standard-class-hierarchy)
 
+(defun std-class-p (class)
+  (let ((metaclass (class-of class)))
+    (or (eq metaclass +the-standard-class+)
+        (eq metaclass +the-funcallable-standard-class+))))
+
 (defun no-applicable-method (generic-function &rest args)
   (error "There is no applicable method for the generic function ~S when called with arguments ~S."
          generic-function
@@ -525,12 +530,12 @@
   (when (class-finalized-p class)
     (return-from std-finalize-inheritance))
   (setf (class-precedence-list class)
-   (funcall (if (eq (class-of class) +the-standard-class+)
-                #'std-compute-class-precedence-list
-                #'compute-class-precedence-list)
-            class))
+        (funcall (if (std-class-p class)
+                     #'std-compute-class-precedence-list
+                     #'compute-class-precedence-list)
+                 class))
   (setf (class-slots class)
-        (funcall (if (eq (class-of class) +the-standard-class+)
+        (funcall (if (std-class-p class)
                      #'std-compute-slots
                      #'compute-slots) class))
   (let ((old-layout (class-layout class))
@@ -681,7 +686,7 @@
                      :from-end t)))
     (mapcar #'(lambda (name)
                (funcall
-                (if (eq (class-of class) +the-standard-class+)
+                (if (std-class-p class)
                     #'std-compute-effective-slot-definition
                     #'compute-effective-slot-definition)
                 class
@@ -772,10 +777,8 @@
 (defsetf slot-value %set-slot-value)
 
 (defun slot-boundp (object slot-name)
-  (let* ((class (class-of object))
-         (metaclass (class-of class)))
-    (if (or (eq metaclass +the-standard-class+) 
-            (eq metaclass +the-funcallable-standard-class+))
+  (let ((class (class-of object)))
+    (if (std-class-p class)
         (std-slot-boundp object slot-name)
         (slot-boundp-using-class class object
                                  (find-slot-definition class slot-name)))))
@@ -791,10 +794,8 @@
   instance)
 
 (defun slot-makunbound (object slot-name)
-  (let* ((class (class-of object))
-         (metaclass (class-of class)))
-    (if (or (eq metaclass +the-standard-class+)
-            (eq metaclass +the-funcallable-standard-class+))
+  (let ((class (class-of object)))
+    (if (std-class-p class)
         (std-slot-makunbound object slot-name)
         (slot-makunbound-using-class class object
                                      (find-slot-definition class slot-name)))))
@@ -804,9 +805,10 @@
                    :key 'slot-definition-name))))
 
 (defun slot-exists-p (object slot-name)
-  (if (eq (class-of (class-of object)) +the-standard-class+)
-      (std-slot-exists-p object slot-name)
-      (slot-exists-p-using-class (class-of object) object slot-name)))
+  (let ((class (class-of object)))
+    (if (std-class-p class)
+        (std-slot-exists-p object slot-name)
+        (slot-exists-p-using-class class object slot-name))))
 
 (defun instance-slot-p (slot)
   (eq (slot-definition-allocation slot) :instance))
@@ -966,6 +968,9 @@ Handle with care."
    (sys::%documentation :initform nil)))
 (defconstant +the-forward-referenced-class+
   (find-class 'forward-referenced-class))
+
+(defun std-generic-function-p (gf)
+  (eq (class-of gf) +the-standard-generic-function-class+))
 
 (defvar *extensible-built-in-classes*
   (list (find-class 'sequence)
@@ -1797,16 +1802,12 @@ compare the method combination name to the symbol 'standard.")
                    :format-arguments (list function-name)))
           (when mc-p
             (error "Preliminary ensure-method does not support :method-combination argument."))
-          (setf gf (apply (if (eq generic-function-class
-                                  +the-standard-generic-function-class+)
-                              #'make-instance-standard-generic-function
-                              #'make-instance)
-                          generic-function-class
-                          :name function-name
-                          :method-class method-class
-                          :method-combination method-combination
-                          all-keys))
-          gf))))
+          (apply #'make-instance-standard-generic-function
+                 generic-function-class
+                 :name function-name
+                 :method-class method-class
+                 :method-combination method-combination
+                 all-keys)))))
 
 (defun collect-eql-specializer-objects (generic-function)
   (let ((result nil))
@@ -1822,7 +1823,7 @@ compare the method combination name to the symbol 'standard.")
   (%reinit-emf-cache gf (collect-eql-specializer-objects gf))
   (set-funcallable-instance-function
    gf
-   (if (eq (class-of gf) +the-standard-generic-function-class+)
+   (if (std-generic-function-p gf)
        (std-compute-discriminating-function gf)
        (compute-discriminating-function gf)))
   ;; FIXME Do we need to warn on redefinition somewhere else?
@@ -2144,7 +2145,7 @@ Initialized with the true value near the end of the file.")
                (apply #'make-instance (generic-function-method-class gf) all-keys))))
       (if (and
            (eq (generic-function-method-class gf) +the-standard-method-class+)
-           (eq (class-of gf) +the-standard-generic-function-class+))
+           (std-generic-function-p gf))
           (progn
             (std-add-method gf method)
             (map-dependents gf
@@ -2198,7 +2199,7 @@ Initialized with the true value near the end of the file.")
   (let ((old-method (%find-method gf (std-method-qualifiers method)
                                  (method-specializers method) nil)))
     (when old-method
-      (if (and (eq (class-of gf) +the-standard-generic-function-class+)
+      (if (and (std-generic-function-p gf)
                (eq (class-of old-method) +the-standard-method-class+))
           (std-remove-method gf old-method)
           (remove-method gf old-method))))
@@ -2372,7 +2373,7 @@ Initialized with the true value near the end of the file.")
   (if (or (null methods) (null (%cdr methods)))
       methods
       (sort methods
-            (if (eq (class-of gf) +the-standard-generic-function-class+)
+            (if (std-generic-function-p gf)
                 (let ((method-indices
                        (argument-precedence-order-indices
                         (generic-function-argument-precedence-order gf)
@@ -2473,13 +2474,12 @@ to ~S with argument list ~S."
 
 (defun slow-method-lookup (gf args)
   (let ((applicable-methods
-          (if (eq (class-of gf) +the-standard-generic-function-class+)
+          (if (std-generic-function-p gf)
               (std-compute-applicable-methods gf args)
               (or (compute-applicable-methods-using-classes gf (mapcar #'class-of args))
                   (compute-applicable-methods gf args)))))
     (if applicable-methods
-        (let* ((emfun (funcall (if (eq (class-of gf)
-                                       +the-standard-generic-function-class+)
+        (let* ((emfun (funcall (if (std-generic-function-p gf)
                                    #'std-compute-effective-method
                                    #'compute-effective-method)
                                gf (generic-function-method-combination gf)
@@ -2602,7 +2602,7 @@ to ~S with argument list ~S."
       (around
        (let ((next-emfun
               (funcall
-               (if (eq (class-of gf) +the-standard-generic-function-class+)
+               (if (std-generic-function-p gf)
                    #'std-compute-effective-method
                    #'compute-effective-method)
                gf method-combination (remove around methods))))
@@ -2875,7 +2875,7 @@ to ~S with argument list ~S."
 (defun add-reader-method (class function-name slot-definition)
   (let* ((slot-name (slot-definition-name slot-definition))
          (lambda-expression
-          (if (eq (class-of class) +the-standard-class+)
+          (if (std-class-p class)
               `(lambda (object) (std-slot-value object ',slot-name))
               `(lambda (object) (slot-value object ',slot-name))))
          (method-function (compute-method-function lambda-expression))
@@ -2892,7 +2892,7 @@ to ~S with argument list ~S."
                                          fast-function
                                          (autocompile fast-function))
                      :slot-definition ,slot-definition))
-         (method-class (if (eq class +the-standard-class+)
+         (method-class (if (std-class-p class)
                            +the-standard-reader-method-class+
                            (apply #'reader-method-class class slot-definition
                                   initargs))))
@@ -2911,7 +2911,7 @@ to ~S with argument list ~S."
                (apply #'make-instance method-class
                       :generic-function nil ; handled by add-method
                       initargs))))
-      (if (eq (class-of gf) +the-standard-generic-function-class+)
+      (if (std-generic-function-p gf)
           (progn
             (std-add-method gf method)
             (map-dependents gf
@@ -2923,7 +2923,7 @@ to ~S with argument list ~S."
 (defun add-writer-method (class function-name slot-definition)
   (let* ((slot-name (slot-definition-name slot-definition))
          (lambda-expression
-          (if (eq (class-of class) +the-standard-class+)
+          (if (std-class-p class)
               `(lambda (new-value object)
                  (setf (std-slot-value object ',slot-name) new-value))
               `(lambda (new-value object)
@@ -2942,7 +2942,7 @@ to ~S with argument list ~S."
                                          fast-function
                                          (autocompile fast-function))
                      :slot-definition ,slot-definition))
-         (method-class (if (eq class +the-standard-class+)
+         (method-class (if (std-class-p class)
                            +the-standard-writer-method-class+
                            (apply #'writer-method-class class slot-definition
                                   initargs))))
@@ -2961,7 +2961,7 @@ to ~S with argument list ~S."
                (apply #'make-instance method-class
                       :generic-function nil ; handled by add-method
                       initargs))))
-      (if (eq (class-of gf) +the-standard-generic-function-class+)
+      (if (std-generic-function-p gf)
           (progn
             (std-add-method gf method)
             (map-dependents gf
@@ -3481,8 +3481,7 @@ instance and, for setters, `new-value' the new value."
                                                     shared-initialize-param
                                                     initargs))
              (mapcan #'(lambda (gf)
-                         (if (eq (class-of gf)
-                                 +the-standard-generic-function-class+)
+                         (if (std-generic-function-p gf)
                              (std-compute-applicable-methods gf args)
                              (compute-applicable-methods gf args)))
                      gf-list)))
