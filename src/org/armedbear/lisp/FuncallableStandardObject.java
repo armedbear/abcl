@@ -193,23 +193,7 @@ public class FuncallableStandardObject extends StandardObject
           return program_error("Invalid standard class layout for: "
                                + arg.princToString() + ".");
         }
-        FuncallableStandardObject o = new FuncallableStandardObject((Layout)l);
-        if (Symbol.SUBTYPEP.execute(arg, LispClass.findClass(Symbol.STANDARD_GENERIC_FUNCTION)) != NIL) {
-          // KLUDGE: this initialization should be moved Lisp-side
-          o.setInstanceSlotValue(Symbol.NAME, NIL);
-          o.setInstanceSlotValue(Symbol.LAMBDA_LIST, NIL);
-          o.setInstanceSlotValue(Symbol.REQUIRED_ARGS, NIL);
-          o.setInstanceSlotValue(Symbol.OPTIONAL_ARGS, NIL);
-          o.setInstanceSlotValue(Symbol.INITIAL_METHODS, NIL);
-          o.setInstanceSlotValue(Symbol.METHODS, NIL);
-          o.setInstanceSlotValue(Symbol.METHOD_CLASS, StandardClass.STANDARD_METHOD);
-          // method combination class set by clos.lisp:shared-initialize :after
-          o.setInstanceSlotValue(Symbol._METHOD_COMBINATION, list(Symbol.STANDARD));
-          o.setInstanceSlotValue(Symbol.ARGUMENT_PRECEDENCE_ORDER, NIL);
-          o.setInstanceSlotValue(Symbol.DECLARATIONS, NIL);
-          o.setInstanceSlotValue(Symbol._DOCUMENTATION, NIL);
-        }
-        return o;
+        return new FuncallableStandardObject((Layout)l);
       }
       return type_error(arg, Symbol.FUNCALLABLE_STANDARD_CLASS);
     }

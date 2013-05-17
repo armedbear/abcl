@@ -814,6 +814,11 @@
 
 (defun allocate-funcallable-instance (class)
   (let ((instance (sys::%allocate-funcallable-instance class)))
+    ;; KLUDGE: without this, the build fails with unbound-slot
+    (when (or (eq class +the-standard-generic-function-class+)
+              (subtypep class +the-standard-generic-function-class+))
+      (setf (std-slot-value instance 'sys::method-class)
+            +the-standard-method-class+))
     (set-funcallable-instance-function
      instance
      #'(lambda (&rest args)
