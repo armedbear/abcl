@@ -6,26 +6,20 @@
 
 @c We use @&key, etc to escape & from TeX in lambda lists --
 @c so we need to define them for info as well.
-@macro &allow-other-keys
+@macro AallowOtherKeys
 &allow-other-keys
 @end macro
-@macro &optional
+@macro Aoptional
 &optional
 @end macro
-@macro &rest
+@macro Arest
 &rest
 @end macro
-@macro &key
+@macro Akey
 &key
 @end macro
-@macro &body
+@macro Abody
 &body
-@end macro
-@macro &curly
-{
-@end macro
-@macro &ylruc
-}
 @end macro
 
 @c for install-info
@@ -869,22 +863,24 @@ without having to edit the system definition.
 @c defsystem grammar, but the cross-referencing is so broken by
 @c insufficient node breakdown that I have not put one in.
 @item
-Make sure you know how the @code{:version} numbers will be parsed!  They
-are parsed as period-separated lists of integers.  I.e., in the example,
-@code{0.2.1} is to be interpreted, roughly speaking, as @code{(0 2 1)}.
-In particular, version @code{0.2.1} is interpreted the same as
-@code{0.0002.1} and is strictly version-less-than version @code{0.20.1},
+Make sure you know how the @code{:version} numbers will be parsed!
+They are parsed as period-separated lists of integers.
+I.e., in the example, @code{0.2.1} is to be interpreted,
+roughly speaking, as @code{(0 2 1)}.
+In particular, version @code{0.2.1}
+is interpreted the same as @code{0.0002.1} and
+is strictly version-less-than version @code{0.20.1},
 even though the two are the same when interpreted as decimal fractions.
 Instead of a string representing the version,
 the @code{:version} argument can be an expression that is resolved to
 such a string using the following trivial domain-specific language:
 in addition to being a literal string, it can be an expression of the form
 @code{(:read-file-form <pathname-or-string> :at <access-at-specifier>)},
-which will be resolved by reading a form
-in the specified pathname
+which will be resolved by reading a form in the specified pathname
 (read as a subpathname of the current system if relative or a unix-namestring).
-You may use an access-at specifier with the (optional) :at keyword,
-by default the specifier is 0, meaning the first form is returned.
+You may use a @code{uiop:access-at} specifier
+with the (optional) @code{:at} keyword,
+by default the specifier is @code{0}, meaning the first form is returned.
 
 @cindex :version
 
@@ -1012,7 +1008,7 @@ simple-component-name := string
 
 pathname-specifier := pathname | string | symbol
 
-method-form := (operation-name qual lambda-list @&rest body)
+method-form := (operation-name qual lambda-list @Arest body)
 qual := method qualifier
 
 component-dep-fail-option := :fail | :try-next | :ignore
@@ -1188,15 +1184,19 @@ be forced upon you if you were specifying a string.
 @cindex version specifiers
 @cindex :version
 
-Version specifiers are parsed as period-separated lists of integers.  I.e., in the example,
-@code{0.2.1} is to be interpreted, roughly speaking, as @code{(0 2 1)}.
-In particular, version @code{0.2.1} is interpreted the same as
-@code{0.0002.1} and is strictly version-less-than version @code{0.20.1},
-even though the two are the same when interpreted as decimal fractions.
+Version specifiers are strings to be parsed as period-separated lists of integers.
+I.e., in the example, @code{"0.2.1"} is to be interpreted,
+roughly speaking, as @code{(0 2 1)}.
+In particular, version @code{"0.2.1"} is interpreted the same as @code{"0.0002.1"},
+though the latter is not canonical and may lead to a warning being issued.
+Also, @code{"1.3"} and @code{"1.4"} are both strictly @code{uiop:version<} to @code{"1.30"},
+quite unlike what would have happened
+had the version strings been interpreted as decimal fractions.
 
 System definers are encouraged to use version identifiers of the form
-@var{x}.@var{y}.@var{z} for major version, minor version (compatible
-API) and patch level.
+@var{x}.@var{y}.@var{z} for
+major version, minor version and patch level,
+where significant API incompatibilities are signaled by an increased major number.
 
 @xref{Common attributes of components}.
 
@@ -1348,10 +1348,15 @@ Please use the @code{if-feature} option instead.
 
 Files containing @code{defsystem} forms
 are regular Lisp files that are executed by @code{load}.
-Consequently, you can put whatever Lisp code you like into these files
-(e.g., code that examines the compile-time environment
-and adds appropriate features to @code{*features*}).
-However, some conventions should be followed,
+Consequently, you can put whatever Lisp code you like into these files.
+However, it is recommended to keep such forms to a minimal,
+and to instead define @code{defsystem} extensions
+that you use with @code{:defsystem-depends-on}.
+
+If however, you might insist on including code in the @code{.asd} file itself,
+e.g., to examine and adjust the compile-time environment,
+possibly adding appropriate features to @code{*features*}.
+If so, here are some conventions we recommend you follow,
 so that users can control certain details of execution
 of the Lisp in @file{.asd} files:
 
@@ -1484,8 +1489,8 @@ and easier than having them all be @code{EQL} methods.
 
 Operations are invoked on systems via @code{operate}.
 @anchor{operate}
-@deffn {Generic function} @code{operate} @var{operation} @var{system} @&rest @var{initargs} @&key @code{force} @code{force-not} @code{verbose} @&allow-other-keys
-@deffnx {Generic function} @code{oos} @var{operation} @var{system} @&rest @var{initargs} @&key @&allow-other-keys
+@deffn {Generic function} @code{operate} @var{operation} @var{system} @Arest @var{initargs} @Akey @code{force} @code{force-not} @code{verbose} @AallowOtherKeys
+@deffnx {Generic function} @code{oos} @var{operation} @var{system} @Arest @var{initargs} @Akey @AallowOtherKeys
 @code{operate} invokes @var{operation} on @var{system}.
 @code{oos} is a synonym for @code{operate}.
 
@@ -1540,7 +1545,7 @@ They are invoked via the @code{operate} generic function.
 (asdf:operate 'asdf:@var{operation-name} :@var{system-name} @{@var{operation-options ...}@})
 @end lisp
 
-@deffn Operation @code{compile-op} @&key @code{proclamations}
+@deffn Operation @code{compile-op} @Akey @code{proclamations}
 
 This operation compiles the specified component.
 If proclamations are supplied, they will be proclaimed.
@@ -1557,7 +1562,7 @@ does not necessarily load all the parts of the system, though;
 use @code{load-op} to load a system.
 @end deffn
 
-@deffn Operation @code{load-op} @&key @code{proclamations}
+@deffn Operation @code{load-op} @Akey @code{proclamations}
 
 This operation loads a system.
 
@@ -1565,7 +1570,7 @@ The default methods for @code{load-op} compile files before loading them.
 For parity, your own methods on new component types should probably do so too.
 @end deffn
 
-@deffn Operation @code{parent-load-op} @&key @code{proclamations}
+@deffn Operation @code{parent-load-op} @Akey @code{proclamations}
 
 This operation ensures that the dependencies
 of a module, and its parent, and so on, are loaded (as per @code{load-op})
@@ -1651,43 +1656,6 @@ as part of a separate system @code{asdf-bundle},
 itself descended from @code{asdf-ecl}.
 @end deffn
 
-
-@c @deffn Operation test-system-version @&key minimum
-
-@c Asks the system whether it satisfies a version requirement.
-
-@c The default method accepts a string, which is expected to contain of a
-@c number of integers separated by #\. characters.  The method is not
-@c recursive.  The component satisfies the version dependency if it has
-@c the same major number as required and each of its sub-versions is
-@c greater than or equal to the sub-version number required.
-
-@c @lisp
-@c (defun version-satisfies (x y)
-@c   (labels ((bigger (x y)
-@c           (cond ((not y) t)
-@c                 ((not x) nil)
-@c                 ((> (car x) (car y)) t)
-@c                 ((= (car x) (car y))
-@c                  (bigger (cdr x) (cdr y))))))
-@c     (and (= (car x) (car y))
-@c       (or (not (cdr y)) (bigger (cdr x) (cdr y))))))
-@c @end lisp
-
-@c If that doesn't work for your system, you can override it.  I hope
-@c you have as much fun writing the new method as @verb{|#lisp|} did
-@c reimplementing this one.
-@c @end deffn
-
-@c @deffn Operation feature-dependent-op
-
-@c An instance of @code{feature-dependent-op} will ignore any components
-@c which have a @code{features} attribute, unless the feature combination
-@c it designates is satisfied by @code{*features*}.  This operation is
-@c not intended to be instantiated directly, but other operations may
-@c inherit from it.
-
-@c @end deffn
 
 @node  Creating new operations,  , Predefined operations of ASDF, Operations
 @comment  node-name,  next,  previous,  up
@@ -1882,47 +1850,44 @@ to a Unix-style syntax.
 @findex version-satisfies
 @cindex :version
 
-This optional attribute is used by the generic function
-@code{version-satisfies}, which tests to see if @code{:version}
-dependencies are satisfied.
-the version should be a string of integers separated by dots,
+This optional attribute specifies a version for the current component.
+The version should typically be a string of integers separated by dots,
 for example @samp{1.0.11}.
-For more information on the semantics of version specifiers, see @ref{The defsystem grammar}.
+For more information on version specifiers, see @ref{The defsystem grammar}.
 
-@c This optional attribute is intended to be used by the @code{test-system-version} operation.
-@c @xref{Predefined operations of ASDF}.
-@c @emph{Nota Bene}:
-@c This operation, planned for ASDF 1,
-@c is still not implemented yet as of ASDF 3.
-@c Don't hold your breath.
+A version may then be queried by the generic function @code{version-satisfies},
+to see if @code{:version} dependencies are satisfied,
+and when specifying dependencies, a constraint of minimal version to satisfy
+can be specified using e.g. @code{(:version "mydepname" "1.0.11")}.
 
-
+Note that in the wild, we typically see version numbering
+only on components of type @code{system}.
+Presumably it is much less useful within a given system,
+wherein the library author is responsible to keep the various files in synch.
 
 @subsubsection Required features
 
-@emph{FIXME: This subsection seems to contradict the
-@code{defsystem} grammar subsection,
-which doesn't provide any obvious way to specify required features.
-Furthermore, in 2009, discussions on the
-@url{http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-devel,asdf-devel mailing list}
-suggested that the specification of required features may be broken,
-and that no one may have been using them for a while.
-Please contact the
-@url{http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-devel,asdf-devel mailing list}
-if you are interested in getting this features feature fixed.}
-
-Traditionally defsystem users have used reader conditionals
+Traditionally defsystem users have used @code{#+} reader conditionals
 to include or exclude specific per-implementation files.
 This means that any single implementation cannot read the entire system,
 which becomes a problem if it doesn't wish to compile it,
 but instead for example to create an archive file containing all the sources,
 as it will omit to process the system-dependent sources for other systems.
 
-Each component in an asdf system may therefore specify features using
-the same syntax as @code{#+} does, and it will (somehow) be ignored for
-certain operations unless the feature conditional is a member of
-@code{*features*}.
+Each component in an asdf system may therefore specify using @code{:if-feature}
+a feature expression using the same syntax as @code{#+} does,
+such that any reference to the component will be ignored
+during compilation, loading and/or linking if the expression evaluates to false.
+Since the expression is read by the normal reader,
+you must explicitly prefix your symbols with @code{:} so they be read as keywords;
+this is as contrasted with the @code{#+} syntax
+that implicitly reads symbols in the keyword package by default.
 
+For instance, @code{:if-feature (:and :x86 (:or :sbcl :cmu :scl))} specifies that
+the given component is only to be compiled and loaded
+when the implementation is SBCL, CMUCL or Scieneer CL on an x86 machine.
+You can not write it as @code{:if-feature (and x86 (or sbcl cmu scl))}
+since the symbols would presumably fail to be read as keywords.
 
 @subsubsection Dependencies
 
@@ -1952,7 +1917,7 @@ before performing @code{load-op}, we have to load @var{foo}
 The syntax is approximately
 
 @verbatim
-(this-op {(other-op required-components)}+)
+(this-op @{(other-op required-components)@}+)
 
 simple-component-name := string
                       |  symbol
@@ -2005,8 +1970,11 @@ If you have the time for some CLISP hacking,
 I'm sure they'd welcome your fixes.
 @c Doesn't CLISP now support LIST method combination?
 
-See the discussion of the semantics of @code{:version} in the defsystem
-grammar.
+A minimal version can be specified for a component you depend on
+(typically another system), by specifying @code{(:version "other-system" "1.2.3")}
+instead of simply @code{"other-system"} as the dependency.
+See the discussion of the semantics of @code{:version}
+in the defsystem grammar.
 
 @c FIXME: Should have cross-reference to "Version specifiers" in the
 @c defsystem grammar, but the cross-referencing is so broken by
@@ -2172,16 +2140,33 @@ The new component type is used in a @code{defsystem} form in this way:
 
 @deffn version-satisfies @var{version} @var{version-spec}
 Does @var{version} satisfy the @var{version-spec}.  A generic function.
-ASDF provides built-in methods for @var{version} being a
-@code{component} or @code{string}.  @var{version-spec} should be a
-string.
+ASDF provides built-in methods for @var{version} being a @code{component} or @code{string}.
+@var{version-spec} should be a string.
+If it's a component, its version is extracted as a string before further processing.
 
-In the wild, we typically see version numbering only on components of
-type @code{system}.
-
-For more information about how @code{version-satisfies} interprets
-version strings and specifications, @pxref{The defsystem grammar} and
+A version string satisfies the version-spec if after parsing,
+the former is no older than the latter.
+Therefore @code{"1.9.1"}, @code{"1.9.2"} and @code{"1.10"} all satisfy @code{"1.9.1"},
+but @code{"1.8.4"} or @code{"1.9"} do not.
+For more information about how @code{version-satisfies} parses and interprets
+version strings and specifications,
+@pxref{The defsystem grammar} (version specifiers) and
 @ref{Common attributes of components}.
+
+Note that in versions of ASDF prior to 3.0.1,
+including the entire ASDF 1 and ASDF 2 series,
+@code{version-satisfies} would also require that the version and the version-spec
+have the same major version number (the first integer in the list);
+if the major version differed, the version would be considered as not matching the spec.
+But that feature was not documented, therefore presumably not relied upon,
+whereas it was a nuisance to several users.
+Starting with ASDF 3.0.1,
+@code{version-satisfies} does not treat the major version number specially,
+and returns T simply if the first argument designates a version that isn't older
+than the one specified as a second argument.
+If needs be, the @code{(:version ...)} syntax for specifying dependencies
+could be in the future extended to specify an exclusive upper bound for compatible versions
+as well as an inclusive lower bound.
 @end deffn
 
 @node Controlling where ASDF searches for systems, Controlling where ASDF saves compiled files, The object model of ASDF, Top
@@ -2583,7 +2568,7 @@ The specified functions are exported from your build system's package.
 Thus for ASDF the corresponding functions are in package ASDF,
 and for XCVB the corresponding functions are in package XCVB.
 
-@defun initialize-source-registry @&optional PARAMETER
+@defun initialize-source-registry @Aoptional PARAMETER
    will read the configuration and initialize all internal variables.
    You may extend or override configuration
    from the environment and configuration files
@@ -2608,7 +2593,7 @@ and for XCVB the corresponding functions are in package XCVB.
    where to look for systems not yet defined.
 @end defun
 
-@defun ensure-source-registry @&optional PARAMETER
+@defun ensure-source-registry @Aoptional PARAMETER
    checks whether a source registry has been initialized.
    If not, initialize it with the given @var{PARAMETER}.
 @end defun
@@ -2828,7 +2813,7 @@ as configured by the system distributor, or by default.
 Nevertheless, if you are a fan of @code{ASDF-Binary-Locations},
 we provide a limited emulation mode:
 
-@defun enable-asdf-binary-locations-compatibility @&key centralize-lisp-binaries default-toplevel-directory include-per-user-information map-all-source-files source-to-target-mappings
+@defun enable-asdf-binary-locations-compatibility @Akey centralize-lisp-binaries default-toplevel-directory include-per-user-information map-all-source-files source-to-target-mappings
 This function will initialize the new @code{asdf-output-translations} facility in a way
 that emulates the behavior of the old @code{ASDF-Binary-Locations} facility.
 Where you would previously set global variables
@@ -3071,7 +3056,7 @@ To explicitly flush any information cached by the system, use the API below.
 
 The specified functions are exported from package ASDF.
 
-@defun initialize-output-translations @&optional PARAMETER
+@defun initialize-output-translations @Aoptional PARAMETER
    will read the configuration and initialize all internal variables.
    You may extend or override configuration
    from the environment and configuration files
@@ -3102,7 +3087,7 @@ The specified functions are exported from package ASDF.
    where to look for systems not yet defined.
 @end defun
 
-@defun ensure-output-translations @&optional PARAMETER
+@defun ensure-output-translations @Aoptional PARAMETER
    checks whether output translations have been initialized.
    If not, initialize them with the given @var{PARAMETER}.
    This function will be called before any attempt to operate on a system.
@@ -3401,7 +3386,7 @@ Most of these functions are not exported by ASDF anymore,
 but only used for private purposes of ASDF.
 Please use ASDF-UTILS for the same functions exported from a stable library.
 
-@defun coerce-pathname name @&key type defaults
+@defun coerce-pathname name @Akey type defaults
 
 This function (available starting with ASDF 2.012.11)
 takes an argument, and portably interprets it as a pathname.
@@ -3421,7 +3406,7 @@ The host, device and version components come from @var{defaults}, which defaults
 
 @end defun
 
-@defun merge-pathnames* @&key specified defaults
+@defun merge-pathnames* @Akey specified defaults
 
 This function is a replacement for @code{merge-pathnames} that uses the host and device
 from the @var{defaults} rather than the @var{specified} pathname when the latter
@@ -3431,7 +3416,7 @@ of the absolute pathnames they are relative to.
 
 @end defun
 
-@defun system-relative-pathname system name @&key type
+@defun system-relative-pathname system name @Akey type
 
 It's often handy to locate a file relative to some system.
 The @code{system-relative-pathname} function meets this need.
