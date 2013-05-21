@@ -4,6 +4,9 @@
 ;;; Public API
    #:resolve
 
+   #:ensure-mvn-version
+
+;;; Leaning towards deprecation
    #:resolve-dependencies
    #:resolve-artifact
 
@@ -38,5 +41,5 @@
    #:*inhibit-add-to-classpath*))
 
 (defpackage #:abcl-asdf-test
-  (:use :cl #+nil :abcl-test-lisp) ;;; FIXME include some sort of test framework
+  (:use :cl :abcl-asdf)
   (:export #:run))

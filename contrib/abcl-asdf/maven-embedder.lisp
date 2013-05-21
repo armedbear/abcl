@@ -52,6 +52,8 @@ Test:
 
 Returns the path of the Maven executable or nil if none are found.
 
+Returns the version of Maven found as the second value.
+
 Emits warnings if not able to find a suitable executable."
 
   (let ((m2-home (ext:getenv "M2_HOME"))
@@ -66,7 +68,8 @@ Emits warnings if not able to find a suitable executable."
                         m2-home))
              (mvn (truename mvn-path)))
         (if mvn
-            (return-from find-mvn mvn)
+            (values (return-from find-mvn mvn)
+                    (ensure-mvn-version))
             (warn "M2_HOME was set to '~A' in the process environment but '~A' doesn't exist." 
                   m2-home mvn-path))))
     (when (and m2 (probe-file m2))
@@ -74,7 +77,8 @@ Emits warnings if not able to find a suitable executable."
              (mvn-path (merge-pathnames mvn-executable m2))
              (mvn (truename mvn-path)))
         (if mvn
-            (return-from find-mvn mvn)
+            (values (return-from find-mvn mvn)
+                    (ensure-mvn-version))
             (warn "M2 was set to '~A' in the process environment but '~A' doesn't exist." 
                   m2 mvn-path))))
     (let* ((which-cmd 
@@ -100,7 +104,7 @@ Emits warnings if not able to find a suitable executable."
                              mvn-path e)))))
             (when mvn
               (return-from find-mvn mvn)))))))
-  (warn "Unable to locate Maven executable."))
+  (warn "Unable to locate Maven executable to find Maven Aether adaptors."))
 
 (defun find-mvn-libs ()
   (let ((mvn (find-mvn)))
@@ -142,12 +146,14 @@ Emits warnings if not able to find a suitable executable."
          (major (first version))
          (minor (second version))
          (patch (third version)))
-    (or 
-     (and (>= major 3)
-          (>= minor 1))
-     (and (>= major 3)
-          (>= minor 0)
-          (>= patch 3)))))
+    (values
+     (or 
+      (and (>= major 3)
+           (>= minor 1))
+      (and (>= major 3)
+           (>= minor 0)
+           (>= patch 3)))
+     (list major minor patch))))
 
 (defparameter *init* nil)
 
