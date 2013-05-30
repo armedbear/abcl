@@ -20,9 +20,9 @@
   dc:identifier         <urn:abcl.org/1.2.0#dev> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "14-FEB-2013" ;
+  dc:modified          "30-MAY-2013" ;
   dc:version           "abcl-1.2.0" ;
-  abcl:release   "dev" .
+  abcl:release   "rc-0" .
 
 <> 
   rdfs:seeAlso <file:README> ;
@@ -69,7 +69,8 @@
 _:user dc:identifier <http://ville.not.org/#me>  ; 
        rdf:label "V-ille"  .
 
- <http://purl.org/dc/elements/1.1/>  rdfs:seeAlso <http://dublincore.org/documents/2012/06/14/dcmi-terms/> .
+ <http://purl.org/dc/elements/1.1/>  
+  rdfs:seeAlso <http://dublincore.org/documents/2012/06/14/dcmi-terms/> .
 
 <> doap:license  [
      dc:license <http://usefulinc.com/doap/licenses/gplv2> ;
@@ -77,7 +78,8 @@ _:user dc:identifier <http://ville.not.org/#me>  ;
 
      rdfs:seeAlso <urn:abcl.org/release/1.2.0> ;
      dc:licenseDocument <file:COPYING> ;
-     dc:licenseDocument <http://svn.common-lisp.net/armedbear/trunk/abcl/src/org/armedbear/LICENSE> ;
+     dc:licenseDocument 
+       <http://svn.common-lisp.net/armedbear/trunk/abcl/src/org/armedbear/LICENSE> ;
 ] .
 
 doap:Project rdfs:seeAlso [
