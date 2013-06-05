@@ -103,6 +103,7 @@
           slot-definition-readers
           slot-definition-type
           slot-definition-writers
+          slot-definition-documentation
 
           standard-instance-access
           funcallable-standard-instance-access
