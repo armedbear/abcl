@@ -1004,27 +1004,6 @@ Will not modify existing classes to avoid breaking std-generic-function-p."
     (metaobject funcallable-standard-object)
   ())
 
-(define-funcallable-primordial-class standard-generic-function (generic-function)
-  ((sys::name :initarg :name :initform nil)
-   (sys::lambda-list :initarg :lambda-list :initform nil)
-   (sys::required-args :initarg :required-args :initform nil)
-   (sys::optional-args :initarg :optional-args :initform nil)
-   (sys::initial-methods :initarg :initial-methods :initform nil)
-   (sys::methods :initarg :methods :initform nil)
-   (sys::method-class :initarg :method-class
-                      :initform +the-standard-method-class+)
-   (sys::%method-combination :initarg :method-combination
-                             :initform (std-find-method-combination 'standard))
-   (sys::argument-precedence-order :initarg :argument-precedence-order
-                                   :initform nil)
-   (sys::declarations :initarg :declarations :initform nil)
-   (sys::%documentation :initarg :documentation :initform nil)))
-(defconstant +the-standard-generic-function-class+
-  (find-class 'standard-generic-function))
-
-(defun std-generic-function-p (gf)
-  (eq (class-of gf) +the-standard-generic-function-class+))
-
 (defvar *extensible-built-in-classes*
   (list (find-class 'sequence)
         (find-class 'java:java-object)))
@@ -1566,6 +1545,27 @@ Do not use this object for identity since it changes between
 compile-time and run-time.  To detect the standard method combination,
 compare the method combination name to the symbol 'standard.")
 (setf (get 'standard 'method-combination-object) +the-standard-method-combination+)
+
+(define-funcallable-primordial-class standard-generic-function (generic-function)
+  ((sys::name :initarg :name :initform nil)
+   (sys::lambda-list :initarg :lambda-list :initform nil)
+   (sys::required-args :initarg :required-args :initform nil)
+   (sys::optional-args :initarg :optional-args :initform nil)
+   (sys::initial-methods :initarg :initial-methods :initform nil)
+   (sys::methods :initarg :methods :initform nil)
+   (sys::method-class :initarg :method-class
+                      :initform +the-standard-method-class+)
+   (sys::%method-combination :initarg :method-combination
+                             :initform +the-standard-method-combination+)
+   (sys::argument-precedence-order :initarg :argument-precedence-order
+                                   :initform nil)
+   (sys::declarations :initarg :declarations :initform nil)
+   (sys::%documentation :initarg :documentation :initform nil)))
+(defconstant +the-standard-generic-function-class+
+  (find-class 'standard-generic-function))
+
+(defun std-generic-function-p (gf)
+  (eq (class-of gf) +the-standard-generic-function-class+))
 
 (defparameter *eql-specializer-table* (make-hash-table :test 'eql))
 
