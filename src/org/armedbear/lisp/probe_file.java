@@ -39,11 +39,15 @@ import java.io.File;
 
 public final class probe_file
 {
-    // ### probe-file
-    // probe-file pathspec => truename
-    private static final Primitive PROBE_FILE =
-        new Primitive("probe-file", "pathspec")
-    {
+    public static final Primitive PROBE_FILE 
+      = new pf_probe_file();
+    @DocString(name="probe-file",
+               args="pathspec",
+               returns="truename")
+    private static final class pf_probe_file extends Primitive {
+        pf_probe_file() {
+            super("probe-file", "pathspec");
+        }
         @Override
         public LispObject execute(LispObject arg)
         {
@@ -51,11 +55,15 @@ public final class probe_file
         }
     };
 
-    // ### truename
-    // truename filespec => truename
-    private static final Primitive TRUENAME =
-        new Primitive("truename", "filespec")
-    {
+    public static final Primitive TRUENAME 
+        = new pf_truename();
+    @DocString(name="truename",
+               args="pathspec",
+               returns="pathname")
+    private static class pf_truename extends Primitive {
+        pf_truename() {
+            super("truename", "filespec");
+        }
         @Override
         public LispObject execute(LispObject arg)
         {
@@ -63,11 +71,15 @@ public final class probe_file
         }
     };
 
-    // ### probe-directory
-    // probe-directory pathspec => truename
-    private static final Primitive PROBE_DIRECTORY =
-        new Primitive("probe-directory", PACKAGE_EXT, true)
-    {
+    public static final Primitive PROBE_DIRECTORY 
+        = new pf_probe_directory();
+    @DocString(name="probe-directory",
+               args="pathspec",
+               returns="truename")
+    private static final class pf_probe_directory extends Primitive {
+        pf_probe_directory() {
+            super("probe-directory", PACKAGE_EXT, true);
+        }
         @Override
         public LispObject execute(LispObject arg)
         {
@@ -80,11 +92,16 @@ public final class probe_file
         }
     };
 
-    // ### file-directory-p
-    // file-directory-p pathspec => generalized-boolean
-    private static final Primitive FILE_DIRECTORY_P =
-        new Primitive("file-directory-p", PACKAGE_EXT, true)
-    {
+    public static final Primitive FILE_DIRECTORY_P 
+        = new pf_file_directory_p();
+    @DocString(name="file-directory-p",
+               args="pathspec",
+               returns="generalized-boolean")
+    private static final class pf_file_directory_p extends Primitive {
+        pf_file_directory_p() {
+            super("file-directory-p", PACKAGE_EXT, true);
+        }
+
         @Override
         public LispObject execute(LispObject arg)  // XXX Should this merge with defaults?
         {

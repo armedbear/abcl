@@ -539,8 +539,11 @@ public final class Load
                         // between the "jar:jar:http:" and "jar:jar:file:"
                         // cases but this currently passes the tests.
                         if (!(truePathname.device.car() instanceof AbstractString)) {
-                            truePathname = (Pathname)truePathname.device.car();
-                            truePathname.invalidateNamestring();
+                          assert truePathname.device.car() instanceof Pathname;
+                          Pathname p = new Pathname((Pathname)truePathname.device.car());
+                          truePathname 
+                            = (Pathname) probe_file.PROBE_FILE.execute(p);
+                          truePathname.invalidateNamestring();
                         }
                     }
                     thread.bindSpecial(Symbol.LOAD_TRUENAME, truePathname);
