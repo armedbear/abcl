@@ -568,7 +568,7 @@ public final class Package extends LispObject implements java.io.Serializable
       if (externalSymbols.get(symbol.name.toString()) == symbol) {
         externalSymbols.remove(symbol.name.toString());
         internalSymbols.put(symbol.name.toString(), symbol);
-      } else if (!(internalSymbols.get(symbol.name.toString()) == symbol)) {
+      } else if (findAccessibleSymbol(symbol.name.toString()) != symbol) {
         StringBuilder sb = new StringBuilder("The symbol ");
         sb.append(symbol.getQualifiedName());
         sb.append(" is not accessible in package ");
