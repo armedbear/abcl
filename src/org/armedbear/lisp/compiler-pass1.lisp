@@ -41,6 +41,7 @@
 (require "DUMP-FORM")
 (require "JAVA")
 
+(proclaim '(optimize speed))
 
 (defun generate-inline-expansion (name lambda-list body
                                   &optional (args nil args-p))
@@ -444,13 +445,18 @@ where each of the vars returned is a list with these elements:
 (declaim (ftype (function (t) t) p1-body))
 (defun p1-body (body)
   (declare (optimize speed))
-  (loop for form in body
-     collect (p1 form)))
+  (loop
+     for form in body
+     for processed-form = (p1 form)
+     collect processed-form
+     while (not (and (consp processed-form)
+                     (memq (car processed-form) '(GO RETURN-FROM THROW))))))
 
 (defknown p1-default (t) t)
 (declaim (inline p1-default))
 (defun p1-default (form)
-  (cons (car form) (p1-body (cdr form))))
+  (declare (optimize speed))
+  (cons (car form) (loop for f in (cdr form) collect (p1 f))))
 
 (defun let/let*-variables (block bindings)
   (loop for binding in bindings
@@ -634,17 +640,12 @@ where each of the vars returned is a list with these elements:
          (body (cddr form))
          (block (make-synchronized-node))
          (*block* block)
-         (*blocks* (cons block *blocks*))
-         result)
-    (dolist (subform body)
-      (let ((op (and (consp subform) (%car subform))))
-        (push (p1 subform) result)
-        (when (memq op '(GO RETURN-FROM THROW))
-          (return))))
+         (*blocks* (cons block *blocks*)))
     (setf (synchronized-form block)
           (list* 'threads:synchronized-on synchronized-object
-                 (nreverse result)))
+                 (p1-body body)))
     block))
+
 
 (defun p1-unwind-protect (form)
   (if (= (length form) 2)
