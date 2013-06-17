@@ -602,43 +602,21 @@ public final class Package extends LispObject implements java.io.Serializable
 
     public synchronized void shadowingImport(Symbol symbol)
     {
-        LispObject where = NIL;
         final String symbolName = symbol.getName();
-        Symbol sym = externalSymbols.get(symbol.name.toString());
-        if (sym != null) {
-            where = Keyword.EXTERNAL;
-        } else {
+        Symbol sym = externalSymbols.get(symbolName);
+        if (sym == null)
             sym = internalSymbols.get(symbol.name.toString());
-            if (sym != null) {
-                where = Keyword.INTERNAL;
-            } else {
-                // Look in external symbols of used packages.
-                if (useList instanceof Cons) {
-                    LispObject usedPackages = useList;
-                    while (usedPackages != NIL) {
-                        Package pkg = (Package) usedPackages.car();
-                        sym = pkg.findExternalSymbol(symbol.name);
-                        if (sym != null) {
-                            where = Keyword.INHERITED;
-                            break;
-                        }
-                        usedPackages = usedPackages.cdr();
-                    }
-                }
-            }
         }
-        if (sym != null) {
-            if (where == Keyword.INTERNAL || where == Keyword.EXTERNAL) {
-                if (sym != symbol) {
-                    if (shadowingSymbols != null)
-                        shadowingSymbols.remove(symbolName);
-                    unintern(sym);
-                } else if (where == Keyword.INTERNAL) {
-                    // Assert rgument is already correctly a shadowing import
-                    Debug.assertTrue(shadowingSymbols != null);
-                    Debug.assertTrue(shadowingSymbols.get(symbolName) != null);
-                    return;
-                }
+        if (sym != null)
+            if (sym != symbol) {
+                if (shadowingSymbols != null)
+                    shadowingSymbols.remove(symbolName);
+                unintern(sym);
+            } else {
+                // Assert argument is already correctly a shadowing import
+                Debug.assertTrue(shadowingSymbols != null);
+                Debug.assertTrue(shadowingSymbols.get(symbolName) != null);
+                return;
             }
         }
         internalSymbols.put(symbol.name.toString(), symbol);
