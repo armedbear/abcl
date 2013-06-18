@@ -606,8 +606,7 @@ public final class Package extends LispObject implements java.io.Serializable
         Symbol sym = externalSymbols.get(symbolName);
         if (sym == null)
             sym = internalSymbols.get(symbol.name.toString());
-        }
-        if (sym != null)
+        if (sym != null) {
             if (sym != symbol) {
                 if (shadowingSymbols != null)
                     shadowingSymbols.remove(symbolName);
