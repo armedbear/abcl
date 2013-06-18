@@ -646,6 +646,17 @@ where each of the vars returned is a list with these elements:
                  (p1-body body)))
     block))
 
+(defun p1-java-jrun-exception-protected (form)
+  (assert (eq (first form) 'java:jrun-exception-protected))
+  (assert (eq (car (second form)) 'lambda))
+  (assert (eq (cadr (second form)) nil))
+  (let* ((body (cddr (second form)))
+         (block (make-exception-protected-node))
+         (*block* block)
+         (*blocks* (cons block *blocks*)))
+    (setf (exception-protected-form block)
+          (p1-body body))
+    block))
 
 (defun p1-unwind-protect (form)
   (if (= (length form) 2)
@@ -1368,6 +1379,8 @@ where each of the vars returned is a list with these elements:
                   (UNWIND-PROTECT       p1-unwind-protect)
                   (THREADS:SYNCHRONIZED-ON
                                         p1-threads-synchronized-on)
+                  (JAVA:JRUN-EXCEPTION-PROTECTED
+                                        p1-java-jrun-exception-protected)
                   (JVM::WITH-INLINE-CODE identity)))
     (install-p1-handler (%car pair) (%cadr pair))))
 

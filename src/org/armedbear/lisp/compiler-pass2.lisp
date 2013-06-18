@@ -604,6 +604,8 @@ before the emitted code: the code is 'stack-neutral'."
                 nil)
                ((jump-node-p form)
                 (single-valued-p (node-form form)))
+               ((exception-protected-node-p form)
+                (single-valued-p (exception-protected-form form)))
                (t
                 (assert (not "SINGLE-VALUED-P unhandled NODE-P branch")))))
         ((var-ref-p form)
@@ -6745,6 +6747,36 @@ We need more thought here.
                            END-PROTECTED-RANGE
                            END-PROTECTED-RANGE nil)))
 
+(defun p2-java-jrun-exception-protected (block target)
+  (let* ((form (exception-protected-form block))
+         (*register* *register*)
+         (*blocks* (cons block *blocks*))
+         (BEGIN-PROTECTED-RANGE (gensym "F"))
+         (END-PROTECTED-RANGE (gensym "U"))
+         (STACK-EXHAUST (gensym "S"))
+         (MEMORY-EXHAUST (gensym "M"))
+         (EXIT (gensym "E")))
+    (label BEGIN-PROTECTED-RANGE)
+    (compile-progn-body form target)
+    (emit 'goto EXIT)
+    (label END-PROTECTED-RANGE)
+    (label STACK-EXHAUST)
+    (emit 'pop)
+    (emit-invokestatic +lisp+ "stackError" nil +lisp-object+)
+    (emit 'areturn)
+    (add-exception-handler BEGIN-PROTECTED-RANGE
+                           END-PROTECTED-RANGE
+                           STACK-EXHAUST
+                           +java-stack-overflow+)
+    (label MEMORY-EXHAUST)
+    (emit-invokestatic +lisp+ "memoryError" (list +java-out-of-memory+)
+                       +lisp-object+)
+    (emit 'areturn)
+    (add-exception-handler BEGIN-PROTECTED-RANGE
+                           END-PROTECTED-RANGE
+                           MEMORY-EXHAUST
+                           +java-out-of-memory+)
+    (label EXIT)))
 
 (defknown p2-catch-node (t t) t)
 (defun p2-catch-node (block target)
@@ -6979,6 +7011,9 @@ We need more thought here.
         (p2-progv-node form target representation))
        ((synchronized-node-p form)
         (p2-threads-synchronized-on form target)
+        (fix-boxing representation nil))
+       ((protected-node-p form)
+        (p2-java-jrun-exception-protected form target)
         (fix-boxing representation nil))
        (t
         (aver (not "Can't happen")))))

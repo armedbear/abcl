@@ -573,6 +573,19 @@ if that parent belongs to the same compiland."
     (add-node-child *block* block)
     block))
 
+
+(defstruct (exception-protected-node
+             (:conc-name exception-protected-)
+             (:include protected-node)
+             (:constructor %make-exception-protected-node ())))
+(defknown make-exception-protected-node () t)
+(defun make-exception-protected-node ()
+  (let ((block (%make-exception-protected-node)))
+    (push block (compiland-blocks *current-compiland*))
+    (add-node-child *block* block)
+    block))
+
+
 (defun find-block (name)
   (dolist (block *blocks*)
     (when (and (block-node-p block)

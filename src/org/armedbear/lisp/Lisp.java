@@ -383,6 +383,19 @@ public final class Lisp
     return Symbol.ERROR.execute(condition);
   }
 
+  public static final LispObject stackError()
+  {
+    pushJavaStackFrames();
+    return Symbol.ERROR.execute(new StorageCondition("Stack overflow."));
+  }
+
+  public static final LispObject memoryError(OutOfMemoryError exception)
+  {
+    pushJavaStackFrames();
+    return Symbol.ERROR.execute(new StorageCondition("Out of memory: "
+                                                     + exception.getMessage()));
+  }
+
   public static final int ierror(LispObject condition)
   {
     error(condition);

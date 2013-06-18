@@ -158,6 +158,8 @@ initialized from the `java-dotted-name'."
 (define-class-name +java-object+ "java.lang.Object")
 (define-class-name +java-string+ "java.lang.String")
 (define-class-name +java-system+ "java.lang.System")
+(define-class-name +java-stack-overflow+ "java.lang.StackOverflowError")
+(define-class-name +java-out-of-memory+ "java.lang.OutOfMemoryError")
 (define-class-name +java-io-input-stream+ "java.io.InputStream")
 (define-class-name +java-util-collection+ "java.util.Collection")
 (define-class-name +lisp-object+ "org.armedbear.lisp.LispObject")
