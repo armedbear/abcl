@@ -606,22 +606,23 @@ public final class Package extends LispObject implements java.io.Serializable
         Symbol sym = externalSymbols.get(symbolName);
         if (sym == null)
             sym = internalSymbols.get(symbol.name.toString());
-        if (sym != null) {
-            if (sym != symbol) {
-                if (shadowingSymbols != null)
-                    shadowingSymbols.remove(symbolName);
-                unintern(sym);
-            } else {
-                // Assert argument is already correctly a shadowing import
-                Debug.assertTrue(shadowingSymbols != null);
-                Debug.assertTrue(shadowingSymbols.get(symbolName) != null);
-                return;
-            }
+
+        // if a different symbol with the same name is accessible,
+        // [..] which implies that it must be uninterned if it was present
+        if (sym != null && sym != symbol) {
+            if (shadowingSymbols != null)
+                shadowingSymbols.remove(symbolName);
+            unintern(sym);
         }
-        internalSymbols.put(symbol.name.toString(), symbol);
+
+        if (sym == null || sym != symbol) {
+            // there was no symbol, or we just unintered it another one
+            // intern the new one
+            internalSymbols.put(symbol.name.toString(), symbol);
+        }
+
         if (shadowingSymbols == null)
             shadowingSymbols = new HashMap<String,Symbol>();
-        Debug.assertTrue(shadowingSymbols.get(symbolName) == null);
         shadowingSymbols.put(symbolName, symbol);
     }
 
