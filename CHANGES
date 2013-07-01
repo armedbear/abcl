@@ -1,7 +1,45 @@
+Version 1.3.0-dev
+=================
+http://abcl.org/svn/trunk/abcl
+
+Unreleased
+
+*  per function call stack and memory exception handler in CL:COMPILE
+
+Version 1.2.1
+=============
+http//abcl.org/svn/tags/1.2.1/abcl/CHANGES
+27 June 2013
+http://abcl.org/releases/1.2.1
+
+*  Tested:  orcl-jdk-1.7.0_25 orcl-jdk-1.6.0_43
+
+** ansi tests rc-2 failing 11-13 of 21708 total.  
+   Some regressions since 1.1.1
+
+*  Stablility fixes; additional Quicklisp compatibility
+
+** Fix (make-instance 'standard-generic-function)
+
+
 Version 1.2.0
 =============
-svn.uri=:"http//common-lisp.net/project/armedbear/svn/trunk/abcl/"
-(unreleased)
+svn.uri=:"http//abcl.org/svn/tags/1.2.0/"
+http//abcl.org/svn/tags/1.2.0/abcl/CHANGES
+released at ECLM 2013 Madrid, ES // 01 June 2013 
+
+   * Package local nicknames to behave like SBCL
+
+   * ASDF 3.0.1 is now shipped with the implementation
+
+   * a more robust MOP implementation
+
+   * Common cases of creating purely synthetic JAVA:JNEW-RUNTIME-CLASS
+     now (mostly) work.  Please report corner cases for fixing.
+
+   * the system autoloader has been extended to cover functions bound to
+     symbol properties
+
 
 
 Version 1.1.1
