@@ -39,7 +39,7 @@ public class MainAlternative
 		// upper case. Package needs the prefix, because java
 		// also has a class named Package.
 		org.armedbear.lisp.Package defaultPackage = 
-		    Packages.findPackage("CL-USER");
+		    org.armedbear.lisp.Package.findPackage("CL-USER");
 		Symbol sym = 
 		    defaultPackage.findAccessibleSymbol("LISPFUNCTION");
 		Function function = (Function) sym.getSymbolFunction();
