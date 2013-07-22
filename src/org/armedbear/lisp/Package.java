@@ -64,7 +64,7 @@ public final class Package extends LispObject implements java.io.Serializable
     private transient ArrayList<String> nicknames;
     private transient LispObject useList = null;
     private transient ArrayList<Package> usedByList = null;
-  private transient ConcurrentHashMap<String, Package> localNicknames;
+    private transient ConcurrentHashMap<String, Package> localNicknames;
 
     // Anonymous package.
     public Package()

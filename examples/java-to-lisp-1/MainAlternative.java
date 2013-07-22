@@ -19,7 +19,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-import org.armedbear.lisp.*;
+import org.armedbear.lisp.Function;
+import org.armedbear.lisp.Interpreter;
+import org.armedbear.lisp.Package;
+import org.armedbear.lisp.Packages;
+import org.armedbear.lisp.Symbol;
 
 public class MainAlternative
 {
@@ -36,12 +40,11 @@ public class MainAlternative
 		interpreter.eval("(load \"lispfunction.lisp\")");
 		// the function is not in a separate package, thus the
 		// correct package is CL-USER. Symbol names are
-		// upper case. Package needs the prefix, because java
-		// also has a class named Package.
-		org.armedbear.lisp.Package defaultPackage = 
-		    org.armedbear.lisp.Package.findPackage("CL-USER");
-		Symbol sym = 
-		    defaultPackage.findAccessibleSymbol("LISPFUNCTION");
+		// (usually) upper case. 
+		Package defaultPackage 
+                  = Packages.findPackage("CL-USER");
+		Symbol sym 
+                  = defaultPackage.findAccessibleSymbol("LISPFUNCTION");
 		Function function = (Function) sym.getSymbolFunction();
 		function.execute();
 	    }

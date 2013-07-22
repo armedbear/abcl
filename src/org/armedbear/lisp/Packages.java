@@ -86,6 +86,16 @@ public final class Packages
       }
   }
 
+  /** 
+      Returns the current package of the current LispThread.
+      
+      Intended to be used from Java code manipulating an Interpreter
+      instance.
+  */
+  public static final synchronized Package findPackage(String name) {
+    return getCurrentPackage().findPackage(name);
+  }
+    
   // Finds package named `name'.  Returns null if package doesn't exist.
   // Called by Package.findPackage after checking package-local package
   // nicknames.
