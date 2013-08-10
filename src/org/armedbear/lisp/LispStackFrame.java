@@ -44,7 +44,7 @@ public class LispStackFrame
   private final LispObject third;
   private final LispObject[] args;
 
-  private final class UnavailableArgument extends LispObject 
+  private final static class UnavailableArgument extends LispObject 
   {
     public UnavailableArgument () { }
     @Override
@@ -53,7 +53,7 @@ public class LispStackFrame
     }
   }
 
-  private final LispObject UNAVAILABLE_ARG = new UnavailableArgument();
+  private final static LispObject UNAVAILABLE_ARG = new UnavailableArgument();
 
   public LispStackFrame(LispObject operator)
   {
