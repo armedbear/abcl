@@ -93,6 +93,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <include name="org/armedbear/lisp/scripting/*.class" if="abcl.jsr-223.p"/>
       <include name="org/armedbear/lisp/scripting/util/*.class" if="abcl.jsr-223.p"/>
       <patternset refid="abcl.source.lisp.dist"/>
+      <include name="abcl.rdf"/>
     </patternset>
     
     <path id="abcl.classpath.dist">
@@ -194,11 +195,13 @@ For help on the automatic tests available, use the Ant target 'help.test'.
             file="${build.classes.dir}/org/armedbear/lisp/build"/>
     </target>
 
+    <!-- Slightly misnamed at this point:  copy Lisp files (and metadata) needed at runtime in abcl.jar -->
     <target name="abcl.copy.lisp">
       <copy todir="${build.classes.dir}" preservelastmodified="yes">
         <fileset dir="${src.dir}">
           <patternset refid="abcl.source.lisp.dist"/>
         </fileset>
+	<file name="${basedir}/abcl.rdf"/>
       </copy>
     </target>
 
@@ -646,6 +649,7 @@ will compile (if necessary) and load JSS.
 
     <patternset id="abcl.dist.misc"
                 description="Additional includes in the source distributions relative to basedir">
+      <include name="abcl.rdf"/>
       <include name="build.xml"/>
       <include name="abcl.properties.in"/>
       <include name="COPYING"/>
