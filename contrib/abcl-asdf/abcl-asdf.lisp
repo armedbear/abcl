@@ -85,8 +85,8 @@
         (setf path (format nil "~A/~A/~A" group-id artifact-id version))))
     component))
 
-(export `(mvn iri ensure-parsed-mvn
-              group-id artifact-id version) 'asdf)
+(export `(mvn iri ensure-parsed-mvn group-id artifact-id version) 
+	'asdf)
 
 (defmethod source-file-type ((component iri) (system system))
   nil)
@@ -130,6 +130,9 @@ single entry denoting a remote binary artifact."
             (values (namestring alternate-uri) alternate-uri)
             (t 
              (error "Failed to resolve MVN component name ~A." name))))))
+
+(defmethod resolve ((uri pathname))
+  (warn "Unimplemented."))
 
 (defun as-classpath (classpath)
   "Break apart the JVM CLASSPATH string into a list of its consituents."

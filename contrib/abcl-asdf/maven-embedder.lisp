@@ -184,10 +184,16 @@ maso2000 in the Manual.)"
   "Returns an implementation of the org.sonatype.aether.connector.wagon.WagonProvider contract.
 
 The implementation is specified as Lisp closures.  Currently, it only
-specializes the lookup() method if passed an 'http' role hint."
+specializes the lookup() method if passed an 'http' or an 'https' role
+hint."
   (unless *init* (init))
   (java:jinterface-implementation 
-   "org.sonatype.aether.connector.wagon.WagonProvider"
+   (#"getName" 
+    (or
+     (ignore-errors  ;; Maven 3.1.0+
+       (jss:find-java-class 'aether.connector.wagon.WagonProvider))
+     (ignore-errors  ;; Maven 3.0.x
+      (jss:find-java-class 'org.sonatype.aether.connector.wagon.WagonProvider))))
    "lookup"
    (lambda (role-hint)
      (cond 
@@ -203,23 +209,44 @@ specializes the lookup() method if passed an 'http' role hint."
      (declare (ignore wagon)))))
 
 (defun find-service-locator ()
-  (handler-case 
-      (java:jnew "org.apache.maven.repository.internal.MavenServiceLocator") ;; maven-3.0.4
-    (error () 
-      (java:jnew "org.apache.maven.repository.internal.DefaultServiceLocator"))))
+  (or 
+   (ignore-errors 
+     (#"newServiceLocator" 'org.apache.maven.repository.internal.MavenRepositorySystemUtils)) ;; maven-3.1.0
+   (ignore-errors
+      (java:jnew "org.apache.maven.repository.internal.MavenServiceLocator")) ;; maven-3.0.4
+   (ignore-errors
+     (java:jnew "org.apache.maven.repository.internal.DefaultServiceLocator"))
+   (ignore-errors  ;; maven-3.1.0 using org.eclipse.aether...
+     (jss:find-java-class 'aether.impl.DefaultServiceLocator))))
 
 (defun make-repository-system ()
   (unless *init* (init))
   (let ((locator 
          (find-service-locator))
         (wagon-provider-class 
-         (java:jclass "org.sonatype.aether.connector.wagon.WagonProvider"))
+	 (or 
+	  (ignore-errors 
+	    (java:jclass "org.sonatype.aether.connector.wagon.WagonProvider"))
+	  (ignore-errors  ;; Maven-3.1.x 
+	    (jss:find-java-class 'aether.connector.wagon.WagonProvider))))
         (wagon-repository-connector-factory-class
-         (java:jclass "org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory"))
+	 (or 
+	  (ignore-errors 
+	    (java:jclass "org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory"))
+	  (ignore-errors 
+	    (jss:find-java-class 'aether.connector.wagon.WagonRepositoryConnectorFactory))))
         (repository-connector-factory-class 
-         (java:jclass "org.sonatype.aether.spi.connector.RepositoryConnectorFactory"))
+	 (or 
+	  (ignore-errors 
+	    (java:jclass "org.sonatype.aether.spi.connector.RepositoryConnectorFactory"))
+	  (ignore-errors
+	    (jss:find-java-class 'aether.spi.connector.RepositoryConnectorFactory))))
         (repository-system-class
-         (java:jclass "org.sonatype.aether.RepositorySystem")))
+	 (or
+	  (ignore-errors
+	    (java:jclass "org.sonatype.aether.RepositorySystem"))
+	  (ignore-errors 
+	    (jss:find-java-class 'aether.RepositorySystem)))))
     (#"setServices" locator
                     wagon-provider-class
                    (java:jarray-from-list
@@ -232,23 +259,30 @@ specializes the lookup() method if passed an 'http' role hint."
             locator)))
         
 (defun make-session (repository-system)
-  "Construct a new org.sonatype.aether.RepositorySystemSession from REPOSITORY-SYSTEM"
-  (let ((session 
-         (java:jnew (jss:find-java-class "MavenRepositorySystemSession")))
+  "Construct a new aether.RepositorySystemSession from the specified REPOSITORY-SYSTEM."
+  (let ((session
+	 (or 
+	  (ignore-errors (#"newSession" 'org.apache.maven.repository.internal.MavenRepositorySystemUtils))
+	  (ignore-errors (java:jnew (jss:find-java-class "MavenRepositorySystemSession")))))
         (local-repository 
          (java:jnew (jss:find-java-class "LocalRepository")
                   (namestring (merge-pathnames ".m2/repository/"
                                                (user-homedir-pathname))))))
     (#"setLocalRepositoryManager" 
      session
-     (#"newLocalRepositoryManager" repository-system
-                                   local-repository))))
+     (or 
+      (ignore-errors      ;; maven-3.1.0
+	(#"newLocalRepositoryManager" 
+	 repository-system session local-repository))
+      (ignore-errors 
+	(#"newLocalRepositoryManager" 
+	 repository-system local-repository))))))
 
 (defparameter *maven-http-proxy* nil
   "A string containing the URI of an http proxy for Maven to use.")
 
 (defun make-proxy ()
-  "Return an org.sonatype.aether.repository.Proxy instance initialized from *MAVEN-HTTP-PROXY*."
+  "Return an aether.repository.Proxy instance initialized from *MAVEN-HTTP-PROXY*."
   (unless *maven-http-proxy*
     (warn "No proxy specified in *MAVEN-HTTP-PROXY*")
     (return-from make-proxy nil))
@@ -262,11 +296,16 @@ specializes the lookup() method if passed an 'http' role hint."
                  (parse-integer (subseq authority (1+ (search ":" authority))))))
          ;; TODO allow specification of authentication
          (authentication java:+null+))
-    (jss:new 'org.sonatype.aether.repository.Proxy
-             scheme host port authentication)))
+    (or 
+     (ignore-errors
+       (jss:new 'org.eclipse.aether.repository.Proxy
+		scheme host port authentication))
+     (ignore-errors
+       (jss:new 'org.sonatype.aether.repository.Proxy
+		scheme host port authentication)))))
 
 (defparameter *repository-system*  nil
-  "The org.sonatype.aether.RepositorySystem used by the Maeven Aether connector.")
+  "The aether.RepositorySystem used by the Maeven Aether connector.")
 (defun ensure-repository-system (&key (force nil))
   (when (or force (not *repository-system*))
     (setf *repository-system* (make-repository-system)))
@@ -290,6 +329,22 @@ If *MAVEN-HTTP-PROXY* is non-nil, parse its value as the http proxy."
                 java:+null+))))
     *session*)
 
+(defun make-artifact (artifact-string)
+  "Return an instance of aether.artifact.DefaultArtifact initialized from ARTIFACT-STRING." 
+  (or 
+   (ignore-errors
+     (jss:new "org.sonatype.aether.util.artifact.DefaultArtifact" artifact-string))
+   (ignore-errors
+     (jss:new 'aether.artifact.DefaultArtifact artifact-string))))
+
+(defun make-artifact-request () 
+  "Construct a new aether.resolution.ArtifactRequest."
+  (or 
+   (ignore-errors
+     (java:jnew (jss:find-java-class 'aether.resolution.ArtifactRequest)))
+   (ignore-errors
+     (java:jnew "org.sonatype.aether.resolution.ArtifactRequest"))))
+
 ;;; TODO change this to work on artifact strings like log4j:log4j:jar:1.2.16
 (defun resolve-artifact (group-id artifact-id &optional (version "LATEST" versionp))
   "Resolve artifact to location on the local filesystem.
@@ -302,11 +357,12 @@ Returns the Maven specific string for the artifact "
   (unless versionp
     (warn "Using LATEST for unspecified version."))
   (unless *init* (init))
-  (let* ((artifact-string (format nil "~A:~A:~A" group-id artifact-id version))
+  (let* ((artifact-string 
+	  (format nil "~A:~A:~A" group-id artifact-id version))
          (artifact 
-          (jss:new "org.sonatype.aether.util.artifact.DefaultArtifact" artifact-string))
+	  (make-artifact artifact-string))
          (artifact-request 
-          (java:jnew "org.sonatype.aether.resolution.ArtifactRequest")))
+	  (make-artifact-request)))
     (#"setArtifact" artifact-request artifact)
     (#"addRepository" artifact-request (ensure-remote-repository))
     (#"toString" (#"getFile" 
@@ -314,7 +370,11 @@ Returns the Maven specific string for the artifact "
                                                       (ensure-session) artifact-request))))))
 
 (defun make-remote-repository (id type url) 
-  (jss:new 'aether.repository.RemoteRepository id type url))
+  (or 
+   (ignore-errors 
+     (#"build" (jss:new "org.eclipse.aether.repository.RemoteRepository$Builder" id type url)))
+   (ignore-errors
+     (jss:new 'aether.repository.RemoteRepository id type url))))
 
 (defparameter *default-repository* 
    "http://repo1.maven.org/maven2/")
@@ -337,6 +397,7 @@ Returns the Maven specific string for the artifact "
       (setf *maven-remote-repository* r)))
   *maven-remote-repository*)
 
+
 (defun resolve-dependencies (group-id artifact-id 
                              &optional  ;;; XXX Uggh.  Move to keywords when we get the moxie.
                              (version "LATEST" versionp)
@@ -353,13 +414,13 @@ in Java CLASSPATH representation."
   (unless *init* (init))
   (unless versionp
     (warn "Using LATEST for unspecified version."))
-  (let* ((artifact
-          (java:jnew (jss:find-java-class "aether.util.artifact.DefaultArtifact")
-                     (format nil "~A:~A:~A"
-                             group-id artifact-id version)))
+  (let* ((coords 
+	  (format nil "~A:~A:~A" group-id artifact-id (if versionp version "LATEST")))
+	 (artifact 
+	  (make-artifact coords))
          (dependency 
-          (java:jnew (jss:find-java-class "aether.graph.Dependency")
-                     artifact (java:jfield (jss:find-java-class "JavaScopes") "RUNTIME")))
+          (java:jnew (jss:find-java-class 'aether.graph.Dependency)
+		     artifact (java:jfield (jss:find-java-class "JavaScopes") "RUNTIME")))
          (collect-request (java:jnew (jss:find-java-class "CollectRequest"))))
     (#"setRoot" collect-request dependency)
     (#"addRepository" collect-request 
@@ -381,7 +442,7 @@ in Java CLASSPATH representation."
   (flet ((log (e) 
            (format *maven-verbose* "~&~A~%" (#"toString" e))))
     (java:jinterface-implementation 
-     "org.sonatype.aether.RepositoryListener"
+     (#"getName" (jss:find-java-class 'aether.RepositoryListener))
      "artifactDeployed" 
      #'log
      "artifactDeploying" 

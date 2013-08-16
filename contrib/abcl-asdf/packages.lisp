@@ -6,21 +6,15 @@
 
    #:ensure-mvn-version
 
-;;; Leaning towards deprecation
-   #:resolve-dependencies
-   #:resolve-artifact
-
    #:find-mvn
 
    #:*mvn-directory*
 
    #:init
 
-;;; ASDF
-;;;   #:iri #:mvn
-;;;   #:ensure-parsed-mvn
-
 ;;; "Internal" API
+   #:resolve-dependencies
+   #:resolve-artifact
 
 ;;;; Maven 
    #:*mvn-libs-directory*

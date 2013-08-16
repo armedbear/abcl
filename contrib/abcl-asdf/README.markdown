@@ -53,7 +53,7 @@ ASDF classes derived from ASDF:COMPONENT:
     the inheritance of the MVN component while allowing other forms of
     uri-like resources to be encapsulated in the future.
 
-The MVN component should specifiy a [Maven URI][1] as its PATH.  A
+The MVN component should specify a [Maven URI][1] as its PATH.  A
 Maven URI has the form "GROUP-ID/ARTIFACT-ID/VERSION" which specifies
 the dependency to be satisfied for this component by resolution
 through the Maven distributed dependency graph.  The scheme (the
@@ -164,5 +164,5 @@ The following ASDF defintion loads enough JVM artifacts to use the
     Mark <evenson.not.org@gmail.com>
     
     Created: 2011-01-01
-    Revised: 2013-03-20
+    Revised: 2013-08-16
     
