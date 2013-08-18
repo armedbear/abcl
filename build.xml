@@ -195,13 +195,25 @@ For help on the automatic tests available, use the Ant target 'help.test'.
             file="${build.classes.dir}/org/armedbear/lisp/build"/>
     </target>
 
-    <!-- Slightly misnamed at this point:  copy Lisp files (and metadata) needed at runtime in abcl.jar -->
+    <!-- Additional artifacts to stage relative to Ant ${basedir} -->
+    <patternset id="abcl.stage">
+      <include name="abcl.rdf"/>
+    </patternset>
+
+    <target name="abcl.stage"
+	    depends="abcl.copy.lisp">
+      <copy todir="${build.classes.dir}" preservelastmodified="yes">
+	<fileset dir="${basedir}/">
+	  <patternset refid="abcl.stage"/>
+	</fileset>
+      </copy>
+    </target>
+    
     <target name="abcl.copy.lisp">
       <copy todir="${build.classes.dir}" preservelastmodified="yes">
         <fileset dir="${src.dir}">
           <patternset refid="abcl.source.lisp.dist"/>
         </fileset>
-	<file name="${basedir}/abcl.rdf"/>
       </copy>
     </target>
 
