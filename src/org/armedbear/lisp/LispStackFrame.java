@@ -2,7 +2,7 @@
  * LispStackFrame.java
  *
  * Copyright (C) 2009 Mark Evenson
- * $Id$
+ * $Id: LispStackFrame.java 14572 2013-08-10 08:24:46Z mevenson $
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -39,9 +39,6 @@ public class LispStackFrame
   extends StackFrame
 {
   public final LispObject operator;
-  private final LispObject first;
-  private final LispObject second;
-  private final LispObject third;
   private final LispObject[] args;
 
   private final static class UnavailableArgument extends LispObject 
@@ -55,52 +52,14 @@ public class LispStackFrame
 
   private final static LispObject UNAVAILABLE_ARG = new UnavailableArgument();
 
-  public LispStackFrame(LispObject operator)
+  public LispStackFrame(Object[] stack, int framePos, int numArgs)
   {
-    this.operator = operator;
-    first = null;
-    second = null;
-    third = null;
-    args = null;
-  }
-
-  public LispStackFrame(LispObject operator, LispObject arg)
-  {
-    this.operator = operator;
-    first = arg;
-    second = null;
-    third = null;
-    args = null;
-  }
-
-  public LispStackFrame(LispObject operator, LispObject first,
-			LispObject second)
-  {
-    this.operator = operator;
-    this.first = first;
-    this.second = second;
-    third = null;
-    args = null;
-  }
-
-  public LispStackFrame(LispObject operator, LispObject first,
-			LispObject second, LispObject third)
-
-  {
-    this.operator = operator;
-    this.first = first;
-    this.second = second;
-    this.third = third;
-    args = null;
-  }
-
-  public LispStackFrame(LispObject operator, LispObject... args)
-  {
-    this.operator = operator;
-    first = null;
-    second = null;
-    third = null;
-    this.args = args;
+    operator = (LispObject) stack[framePos];
+    args = new LispObject[numArgs];
+    for (int i = 0; i < numArgs; i++) 
+    {
+      args[i] = (LispObject) stack[framePos + 1 + i];
+    }
   }
 
    @Override
@@ -151,37 +110,20 @@ public class LispStackFrame
     return result.push(operator);
   }
 
-  private LispObject argsToLispList() 
+  private LispObject argsToLispList()
 
   {
     LispObject result = Lisp.NIL;
-    if (args != null) {
-      for (int i = 0; i < args.length; i++)
-        // `args' come here from LispThread.execute. I don't know
-        // how it comes that some callers pass NULL ptrs around but
-        // we better do not create conses with their CAR being NULL;
-        // it'll horribly break printing such a cons; and probably
-        // other bad things may happen, too. --TCR, 2009-09-17.
-        if (args[i] == null)
-          result = result.push(UNAVAILABLE_ARG);
-        else
-          result = result.push(args[i]);
-    } else {
-      do {
-	if (first != null)
-	  result = result.push(first);
-	else
-	  break;
-	if (second != null)
-	  result = result.push(second);
-	else
-	  break;
-	if (third != null)
-	  result = result.push(third);
-	else
-	  break;
-      } while (false);
-    }
+    for (int i = 0; i < args.length; i++)
+      // `args' come here from LispThread.execute. I don't know
+      // how it comes that some callers pass NULL ptrs around but
+      // we better do not create conses with their CAR being NULL;
+      // it'll horribly break printing such a cons; and probably
+      // other bad things may happen, too. --TCR, 2009-09-17.
+      if (args[i] == null)
+        result = result.push(UNAVAILABLE_ARG);
+      else
+        result = result.push(args[i]);
     return result.nreverse();
   }
 
@@ -197,6 +139,11 @@ public class LispStackFrame
       result = unreadableString("LISP-STACK-FRAME");
     }
     return new SimpleString(result);
+  }
+
+  public int getNumArgs()
+  {
+    return args.length;
   }
 
   public LispObject getOperator() {
