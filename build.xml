@@ -252,7 +252,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
               value="${build.classes.dir}/org/armedbear/lisp/system.lisp"/>
 
     <target name="abcl.compile.lisp" 
-            depends="abcl.copy.lisp,abcl.compile.java,abcl.system.update.maybe,abcl.fasls.uptodate"
+            depends="abcl.stage,abcl.compile.java,abcl.system.update.maybe,abcl.fasls.uptodate"
             unless="abcl.fasls.uptodate.p">
       <abcl.compile.lisp/>
     </target>
@@ -291,7 +291,7 @@ from ${abcl.home.dir}
     <property name="abcl.compile.lisp.debug.jvmarg"
               value="-agentlib:jdwp=transport=dt_socket,server=y,address=6789,suspend=y"/>
     <target name="abcl.compile.lisp.debug" 
-            depends="abcl.copy.lisp,abcl.compile.java,abcl.system.update.maybe,abcl.fasls.uptodate"
+            depends="abcl.stage,abcl.compile.java,abcl.system.update.maybe,abcl.fasls.uptodate"
             unless="abcl.fasls.uptodate.p">
       <echo>Debugging with jvmarg ${abcl.compile.lisp.debug.jvmarg}</echo>
       <abcl.compile.lisp> 
