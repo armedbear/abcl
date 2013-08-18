@@ -1,7 +1,7 @@
 <project xmlns="antlib:org.apache.tools.ant">
 
 <target name="abcl.snapshot" 
-        depends="abcl.release,abcl.diagnostic,abcl.version"
+        depends="abcl.release,abcl.diagnostic,abcl.version,abcl"
         description="Introspect and dump the current build and
   (presumed ) runtime targets as binary executable JVM objects.">
 
