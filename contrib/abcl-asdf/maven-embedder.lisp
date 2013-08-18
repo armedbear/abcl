@@ -500,8 +500,9 @@ artifact and all of its transitive dependencies."
       ((string= string "com.sun.jna:jna")
        (warn "Replacing request for no longer available com.sun.jna:jna with net.java.dev.jna:jna")
        (resolve-dependencies "net.java.dev.jna" "jna" "LATEST"))
-      (t
-       (apply #'resolve-dependencies result)))))
+      (t 
+       (setf result 
+             (apply #'resolve-dependencies (split-string string "/")))))))
   
 ;;; Currently the last file listed in ASDF
 (provide 'abcl-asdf)
