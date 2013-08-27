@@ -35,8 +35,11 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
+import org.armedbear.lisp.protocol.Inspectable;
+
 public class JavaStackFrame 
   extends StackFrame
+  implements Inspectable
 {
   public final StackTraceElement javaFrame;
 
