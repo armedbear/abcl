@@ -1,10 +1,53 @@
 Version 1.3.0-dev
 =================
 http://abcl.org/svn/trunk/abcl
-
 Unreleased
 
+## Features
+
+*  ASDF 3.0.3.0.3 shipped with the implementation
+
 *  per function call stack and memory exception handler in CL:COMPILE
+
+   [???]
+
+*  Make LispStackFrame?.UNAVAILABLE_ARG a singleton object,
+
+    Memory profiling of ABCL shows that the classes with largest
+    allocation count are org.armedbear.lisp.LispStackFrame and
+    org.armedbear.lisp.LispStackFrame.UnavailableArgument.
+
+    Contributed by Dmitry Nadezhin.
+
+    [r14572]: http://abcl.org/trac/changeset/14572
+    [r14579]: http://abcl.org/trac/changeset/14579
+
+*  SYS:SHA256 audited
+
+The functionality if the SYS:SHA256 algorithim has been audited for
+use on inputs of single for files with recently shipping ORCL Java 7
+implementations (through jdk-1.7.0_45).
+
+[r14582]:  http://abcl.org/trac/changeset/14582
+
+## Compatbility
+
+### Contrib
+
+#### abcl-asdf
+
+[#328]: http://abcl.org/trac/ticket/328
+
+Working with both Maven 3.0.x and 3.1.x.  Thanks to Anton for the
+help!
+
+#### jna
+  
+   Now references jna-4.0.0.  Some incompatibility with CFFI ([in
+   progress with fixing upstream][1]).
+
+[1]: http://slack.net/~evenson/abcl/cffi/encoding.diff
+
 
 Version 1.2.1
 =============

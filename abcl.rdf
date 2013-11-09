@@ -20,14 +20,15 @@
   dc:identifier         <urn:abcl.org/1.3.0#dev> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "31-MAY-2013" ;
+  dc:modified          "09-NOV-2013" ;
   dc:version           "abcl-1.3.0" ;
   abcl:release         "dev" .
 
 <> 
   rdfs:seeAlso <file:README> ;
   rdfs:seeAlso <file:MANUAL> ;
-   rdfs:seeAlso <file:doc/manual/abcl.tex> .
+  rdfs:seeAlso <file:CHANGES> ;
+  rdfs:seeAlso <file:doc/manual/abcl.tex> .
 
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 
@@ -40,7 +41,6 @@
   doap:shortname   "ABCL" ;
   abcl:contributors """ehu easye v-ille astalla rudi peter""" .
 
-
 <abcl:doap>  doap:language  "Common Lisp" .
 
 <> <urn:abcl.org:releng:implementation:language> [ 
@@ -50,7 +50,6 @@
    rdf:_3 "Bourne Shell Script"; 
    rdf:_4 "Windows Batch Script" 
 ] .
-
 
 <abcl:doap> 
   dc:contributor [ 
