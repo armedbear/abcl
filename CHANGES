@@ -5,7 +5,7 @@ Unreleased
 
 ## Features
 
-*  ASDF 3.0.3.0.3 shipped with the implementation
+*  ASDF 3.0.3.0.1 shipped with the implementation
 
 *  per function call stack and memory exception handler in CL:COMPILE
 
