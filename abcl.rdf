@@ -16,11 +16,11 @@
 
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 <> 
-  abcl:branch           <http://svn.common-lisp.net/armedbear/trunk/abcl> ;
+  abcl:branch           <http://abcl.org/svn/trunk/abcl> ;
   dc:identifier         <urn:abcl.org/1.3.0#dev> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "09-NOV-2013" ;
+  dc:modified          "10-NOV-2013" ;
   dc:version           "abcl-1.3.0" ;
   abcl:release         "dev" .
 
@@ -35,7 +35,7 @@
 <abcl:doap>
   a                     doap:Project ;
   doap:label            "Armed Bear Common Lisp" ;
-  doap:download    <http://common-lisp.net/project/armedbear/> ;
+  doap:download         <http://abcl.org/> ;
 
   dc:abstract      "An implementation of ANSI Common Lisp that runs on the JVM." ;
   doap:shortname   "ABCL" ;
@@ -78,13 +78,13 @@ _:user dc:identifier <http://ville.not.org/#me>  ;
      rdfs:seeAlso <urn:abcl.org/release/1.2.0> ;
      dc:licenseDocument <file:COPYING> ;
      dc:licenseDocument 
-       <http://svn.common-lisp.net/armedbear/trunk/abcl/src/org/armedbear/LICENSE> ;
+       <http://abcl.org/svn/trunk/abcl/src/org/armedbear/LICENSE> ;
 ] .
 
 doap:Project rdfs:seeAlso [
   a rdf:Bag;
-  rdf:_1 <http://trac.common-lisp.net/armedbear/timeline> ;
-  rdf:_2 <http://trac.common-lisp.net/armedbear/wiki> ;
+  rdf:_1 <http://abcl.org/trac/timeline> ;
+  rdf:_2 <http://abcl.org/trac/wiki> ;
   rdf:_3 <http://code.google.com/p/abcl-dynamic-install/> ;
   dc:source   abcl:tag ;
   dc:Software [ 
@@ -111,10 +111,10 @@ doap:Project rdfs:seeAlso [
 <> rdfs:seeAlso <urn:abcl.org/ansi/common-lisp#X3J13> .
 
 doap:Project rdfs:seeAlso 
-  <http://lisp.not.org/trac/armedbear/timeline> , 
-  <http://lisp.not.org/trac/armedbear/wiki> , 
+  <http://abcl.org/trac/timeline> , 
+  <http://abcl.org/trac/wiki> , 
   <http://code.google.com/p/abcl-dynamic-install/> ,
-  <svn://abcl.org/svn/trunk/abcl/> .
+  <http://abcl.org/svn/trunk/abcl/> .
 
 <> doap:packages  [ 
     a rdf:Alt;

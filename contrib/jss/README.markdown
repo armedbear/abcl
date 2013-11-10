@@ -127,7 +127,7 @@ Some notes on other compatibility issues:
   3.0 
      In the JSS package loaded from [abcl-contrib]() 
      
-abcl-contrib: http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/     
+abcl-contrib: http://abcl.org/svn/trunk/abcl/contrib/     
    
 # Colophon
 

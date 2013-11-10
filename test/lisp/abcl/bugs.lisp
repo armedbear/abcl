@@ -84,7 +84,7 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
     (values-list result))
   "LOWER" "upper" "LOWER" "upper")
 
-;;; http://trac.common-lisp.net/armedbear/ticket/165
+;;; http://abcl.org/trac/ticket/165
 (deftest bugs.pprint.1
     (let ((result (make-array '(0) :element-type 'base-char :fill-pointer t)))
       (with-output-to-string (s result)
@@ -104,14 +104,14 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
       (string= result docstring))
   t)
 
-;;; http://trac.common-lisp.net/armedbear/ticket/199
+;;; http://abcl.org/trac/ticket/199
 (deftest bugs.clos.aux.1
     ((lambda (a &aux (b (+ a 1))) 
        b)
      2)
   3)
       
-;;; http://trac.common-lisp.net/armedbear/ticket/243
+;;; http://abcl.org/trac/ticket/243
 (deftest bugs.pathname.make-pathname.1
     (signals-error 
      (make-pathname :device (list "foo"))
@@ -126,7 +126,7 @@ Subject: [armedbear-devel] Bug in translate-logical-pathname.
   (probe-file (make-pathname :device (list "foo")))
 nil)
 
-;; http://trac.common-lisp.net/armedbear/ticket/293
+;; http://abcl.org/trac/ticket/293
 (deftest bugs.loop.1
     (loop :with x :of-type (float 0) = 0.0
        :for y :upto 1
@@ -134,14 +134,14 @@ nil)
   ((0.0 . 0) (0.0 . 1)))
 
 
-;; http://trac.common-lisp.net/armedbear/ticket/294
+;; http://abcl.org/trac/ticket/294
 (deftest bugs.reader.1
     (let ((*readtable* *readtable*))
       (set-macro-character #\? (lambda (stream char) (code-char (read stream nil nil t))))
       '(a .?0))
   (A . #\Null))
       
-;;; http://trac.common-lisp.net/armedbear/ticket/311
+;;; http://abcl.org/trac/ticket/311
 (deftest bugs.export.1
    (let ((a (symbol-name (gensym "PACKAGE-")))
          (b (symbol-name (gensym "PACKAGE-")))

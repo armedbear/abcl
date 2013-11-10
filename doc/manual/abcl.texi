@@ -893,7 +893,7 @@ feature will not be built.
 This section describes the design decisions behind the ABCL JSR-223
 support. It is not a description of what JSR-223 is or a tutorial on how
 to use it. See
-@url{http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/jsr-223}
+@url{http://abcl.org/svn/trunk/abcl/examples/jsr-223}
 for example usage.
 
 
@@ -1706,7 +1706,7 @@ systems the code in this package will recursively package all the
 required source and fasls in a jar archive.
 
 The documentation for this contrib can be found at
-@url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/asdf-jar/README.markdown}.
+@url{http://abcl.org/svn/trunk/abcl/contrib/asdf-jar/README.markdown}.
 
 
 @node JSS
@@ -1747,7 +1747,7 @@ CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 @end lisp
 
 Some more information on jss can be found in its documentation at
-@url{http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/jss/README.markdown}
+@url{http://abcl.org/svn/trunk/abcl/contrib/jss/README.markdown}
 
 @node jfli
 @section jfli
@@ -1818,6 +1818,6 @@ to @emph{modify} this manual, you are strongly advised to seek out a
 Texinfo version and modify that instead of modifying a translated
 version. Even better might be to seek out @emph{the} Texinfo version
 (maintained at the time of this writing as part of the ABCL project at
-@uref{http://common-lisp.net/project/armedbear/}) and submit a patch.
+@uref{http://abcl.org/}) and submit a patch.
 
 @bye

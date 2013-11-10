@@ -309,7 +309,7 @@
 
 
 ;; Tests for D-M-C with :arguments option
-;; created due to http://trac.common-lisp.net/armedbear/ticket/201
+;; created due to http://abcl.org/trac/ticket/201
 
 (define-method-combination dmc-test-args-with-whole.1 ()
   ((methods ()))

@@ -17,7 +17,7 @@
   <packaging>jar</packaging>
   <name>Armed Bear Common Lisp (ABCL) Contribs</name>
   <description>Extra packages--contribs--for ABCL</description>
-  <url>http://common-lisp/project/armedbear</url>
+  <url>http://abcl.org</url>
   <licenses>
     <license>
       <name>GNU General Public License with Classpath exception</name>
@@ -26,9 +26,9 @@
     </license>
   </licenses>
   <scm>
-    <connection>scm:svn:svn://common-lisp.net/project/armedbear/svn/trunk/</connection>
-    <developerConnection>scm:svn:svn+ssh://common-lisp.net/project/armedbear/svn/trunk/</developerConnection>
-    <url>http://trac.common-lisp.net/armedbear/browser/trunk/abcl/contrib</url>
+    <connection>scm:svn:http://abcl.org/svn/trunk/abcl</connection>
+    <developerConnection>scm:svn:svn+ssh://abcl.org/project/armedbear/svn</developerConnection>
+    <url>http://abcl.org/trac/browser/trunk/abcl/contrib</url>
   </scm>
   <developers>
     <developer>

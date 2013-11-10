@@ -464,7 +464,7 @@
   (signals-error (read-from-string "1.0f-1000") 'reader-error)
   t)
 
-;;; Test for http://trac.common-lisp.net/armedbear/ticket/142
+;;; Test for http://abcl.org/trac/ticket/142
 (define-compiler-test math.logand.1
     (lambda (switchp)
       (logand 

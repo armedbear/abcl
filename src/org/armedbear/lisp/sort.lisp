@@ -52,7 +52,7 @@
 ;;; - the merge-vectors algorithm is inspired from the CCL base code 
 ;;;
 
-;;; http://trac.common-lisp.net/armedbear/ticket/196
+;;; http://abcl.org/trac/ticket/196
 ;;; TODO Restore the optimization for SIMPLE-VECTOR types by
 ;;; conditionally using aref/svref instead of always using AREF
 

@@ -5,14 +5,14 @@
 
 (in-package :abcl-test-lisp)
 
-;;; http://trac.common-lisp.net/armedbear/ticket/205
+;;; http://abcl.org/trac/ticket/205
 (deftest jss.with-constant-signature.1 
     (progn 
       (jss:with-constant-signature ((substring "substring")) 
         (substring "01234" 2)))
   "234")
 
-;;; http://trac.common-lisp.net/armedbear/ticket/229
+;;; http://abcl.org/trac/ticket/229
 (deftest jss.jcall.1
     (let* ((headers (#"getHeaderFields" 
                     (#"openConnection" 
