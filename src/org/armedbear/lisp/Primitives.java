@@ -2043,12 +2043,14 @@ public final class Primitives {
 
         @Override
         public LispObject execute(LispObject args, Environment env)
-
         {
             final LispThread thread = LispThread.currentThread();
             LispObject result = NIL;
             while (args != NIL) {
                 LispObject clause = args.car();
+                if (! (clause instanceof Cons))
+                  return error(new ProgramError("COND clause is not a non-empty list: "
+                                                + clause.princToString()));
                 result = eval(clause.car(), env, thread);
                 thread._values = null;
                 if (result != NIL) {
