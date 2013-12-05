@@ -91,7 +91,7 @@ doap:Project rdfs:seeAlso [
      a rdf:Bag;
      rdf:_1 <urn:abcl:previousVersion> ;
      rdf:_2 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.0.1.jar> ;
-     rdf:_3 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.0.2.jar> 
+     rdf:_3 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.0.2.jar> ;
      rdf:_3 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.1.jar> 
   ] ;
 ] .
