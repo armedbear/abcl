@@ -72,11 +72,11 @@
 ;;;<hair> involves starting over again pretending you had read ".,a)" instead
 ;;; of ",@a)"
 
-;; (%defvar '*backquote-count* 0)
+;; (%defvar '*backquote-count* 0) ; defined in Java, q.v. Lisp.java:2754
 (%defvar '*bq-comma-flag* '(|,|))
 (%defvar '*bq-at-flag* '(|,@|))
 (%defvar '*bq-dot-flag* '(|,.|))
-;; (%defvar '*bq-vector-flag* '(|bqv|))
+;; (%defvar '*bq-vector-flag* '(|bqv|)) ; defined in Java, q.v. Lisp.java:2757
 
 ;;; the actual character macro
 (defun backquote-macro (stream ignore)

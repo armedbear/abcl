@@ -595,10 +595,19 @@ public final class Interpreter
             initializeJLisp();
         StringInputStream stream = new StringInputStream(s);
         final LispThread thread = LispThread.currentThread();
-        LispObject obj = stream.read(false, EOF, false, thread,
-                                     Stream.currentReadtable);
+        LispObject obj = null;
+
+        final SpecialBindingsMark mark0 = thread.markSpecialBindings();
+        thread.bindSpecial(Symbol.DEBUGGER_HOOK, _DEBUGGER_HOOK_FUNCTION);
+        try {  // catch possible errors from use of SHARPSIGN_DOT macros in --eval stanzas
+          obj = stream.read(false, EOF, false, thread,
+                            Stream.currentReadtable);
+        } finally {
+          thread.resetSpecialBindings(mark0);
+        }
         if (obj == EOF)
             return error(new EndOfFile(stream));
+
         final SpecialBindingsMark mark = thread.markSpecialBindings();
         thread.bindSpecial(Symbol.DEBUGGER_HOOK, _DEBUGGER_HOOK_FUNCTION);
         try {

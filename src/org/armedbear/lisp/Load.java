@@ -484,6 +484,7 @@ public final class Load
         for (Symbol special : savedSpecials)
             thread.bindSpecialToCurrentValue(special);
 
+        thread.bindSpecial(_BACKQUOTE_COUNT_, Fixnum.getInstance(0));
         int loadDepth = Fixnum.getValue(_LOAD_DEPTH_.symbolValue(thread));
         thread.bindSpecial(_LOAD_DEPTH_, Fixnum.getInstance(++loadDepth));
         final String prefix = getLoadVerbosePrefix(loadDepth);
