@@ -783,6 +783,7 @@ software.
 * A more involved example::
 * The defsystem grammar::
 * Other code in .asd files::
+* The package-system extension::
 @end menu
 
 @node  The defsystem form, A more involved example, Defining systems with defsystem, Defining systems with defsystem
@@ -1351,7 +1352,7 @@ Its semantics was limited in purpose and dubious to explain,
 and its implementation was breaking a hole into the ASDF object model.
 Please use the @code{if-feature} option instead.
 
-@node Other code in .asd files,  , The defsystem grammar, Defining systems with defsystem
+@node Other code in .asd files, The package-system extension, The defsystem grammar, Defining systems with defsystem
 @section Other code in .asd files
 
 Files containing @code{defsystem} forms
@@ -1378,6 +1379,75 @@ so that users can easily control the disposition
 of output from ASDF operations.
 @end itemize
 
+
+@node The package-system extension,  , Other code in .asd files, Defining systems with defsystem
+@section The package-system extension
+
+Starting with ASDF 3.0.3,
+ASDF supports a one-package-per-file style of programming,
+whereby each file is its own system,
+and dependencies are deduced from the @code{defpackage} form.
+
+In this style, packages referring to a same-named system (downcased);
+and if a system is defined with @code{:class package-system},
+then system names that start with that name
+(using the slash @code{/} separator)
+refer to files under the filesystem hierarchy where the system is defined.
+For instance, if system @code{my-lib} is defined in
+@file{/foo/bar/my-lib/my-lib.asd}, then system @code{my-lib/src/utility}
+will be found in file @file{/foo/bar/my-lib/src/utility.lisp}.
+
+This style was made popular by @code{faslpath} and @code{quick-build} before,
+and at the cost of a stricter package discipline,
+seems to make for more maintainable code.
+It is used by ASDF itself (starting with ASDF 3) and by @code{lisp-interface-library}.
+
+To use this style, choose a toplevel system name, e.g. @code{my-lib},
+and create a file @file{my-lib.asd}
+with the @code{:class :package-system} option in its @code{defsystem}.
+For instance:
+@example
+#-asdf (error "my-lib requires ASDF 3")
+(defsystem my-lib
+  :class :package-system
+  :defsystem-depends-on (:asdf-package-system)
+  :depends-on (:my-lib/src/all)
+  :in-order-to ((test-op (load-op :my-lib/test/all)))
+  :perform (test-op (o c) (symbol-call :my-lib/test/all :test-suite)))
+(register-system-packages :closer-mop
+ '(:c2mop :closer-common-lisp :c2cl :closer-common-lisp-user :c2cl-user))
+@end example
+
+In the code above, the
+@code{:defsystem-depends-on (:asdf-package-system)} is
+for compatibility with older versions of ASDF 3 (ASDF 2 not supported),
+and requires the @code{asdf-package-system} library to be present
+(it is implicitly provided by ASDF starting with ASDF 3.0.3).
+
+The function @code{register-system-packages} has to be called to register
+packages used or provided by your system and its components
+where the name of the system that provides the package
+is not the downcase of the package name.
+
+File @file{my-lib/src/utility.lisp} might start with:
+
+@example
+(defpackage :my-lib/src/utility
+  (:use :closer-common-lisp :my-lib/src/macros :my-lib/src/variables)
+  (:import-from :cl-ppcre #:register-groups-bind)
+  (:export #:foo #:bar))
+@end example
+
+And from the @code{:use} and @code{:import-from} clauses,
+ASDF could tell that you depend on systems @code{closer-mop} (registered above),
+@code{cl-ppcre} (package and system names match), and
+@code{my-lib/src/macros} and @code{my-lib/src/variables}
+(package and system names match, and they will be looked up hierarchically).
+
+The form @code{uiop:define-package} is supported as well as @code{defpackage},
+and has many options that prove useful in this context,
+such as @code{:use-reexport} and @code{:mix-reexport}
+that allow for ``inheritance'' of symbols being exported.
 
 @node The object model of ASDF, Controlling where ASDF searches for systems, Defining systems with defsystem, Top
 @comment  node-name,  next,  previous,  up
