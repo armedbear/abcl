@@ -117,8 +117,15 @@ namestrings.")
 (defvar *temporary-directory* 
   (pathname-sans-name+type (user-homedir-pathname)))
 
+(defparameter *asdf-install-verbose* t)
+(export '*asdf-install-verbose*)
+
 #+abcl
 (eval-when (:load-toplevel)
   (require 'asdf)
   (dolist (location *locations*)
-    (pushnew (second location) asdf:*central-registry*)))
+	(let
+		((asdf-designator (second location)))
+	  (format *asdf-install-verbose* "Adding ~A to ASDF." asdf-designator)
+	  (pushnew (second location) asdf:*central-registry*))))
+
