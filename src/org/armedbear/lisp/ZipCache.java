@@ -1,7 +1,7 @@
 /*
  * ZipCache.java
  *
- * Copyright (C) 2010 Mark Evenson
+ * Copyright (C) 2010, 2014 Mark Evenson
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -53,9 +53,9 @@ import java.util.zip.ZipFile;
  * A cache for all zip/jar file accesses by URL that uses the last
  * modified time of the cached resource.
  *
- * This implementation is NOT thread safe, although usage without
- * multiple threads recompiling code that is then re-loaded should be
- * fine.
+ * This implementation is synchronized on accesses via get().
+ * Usage without multiple threads recompiling code that is then
+ * re-loaded should be fine.
  *
  * If you run into problems with caching, use
  * (SYS::DISABLE-ZIP-CACHE).  Once disabled, the caching cannot be

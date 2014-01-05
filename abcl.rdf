@@ -20,7 +20,7 @@
   dc:identifier         <urn:abcl.org/1.3.0#dev> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "10-NOV-2013" ;
+  dc:modified          "01-JAN-2014" ;
   dc:version           "abcl-1.3.0" ;
   abcl:release         "dev" .
 
