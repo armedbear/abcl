@@ -127,5 +127,5 @@ namestrings.")
 	(let
 		((asdf-designator (second location)))
 	  (format *asdf-install-verbose* "Adding ~A to ASDF." asdf-designator)
-	  (pushnew (second location) asdf:*central-registry*))))
+	  (pushnew asdf-designator asdf:*central-registry*))))
 

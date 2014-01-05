@@ -13,7 +13,7 @@
   #+:sbcl :depends-on
   #+:sbcl (sb-bsd-sockets)
   :version "0.6.10.3"
-  :description "<> asdf:defsystem <urn:abcl.org/release/1.3.0-dev/contrib/asdf-install#0.6.10.2>"
+  :description "<> asdf:defsystem <urn:abcl.org/release/1.3.0-dev/contrib/asdf-install#0.6.10.3>"
   :author "Dan Barlow <dan@telent.net>, Edi Weitz <edi@agharta.de> and many others. See the file COPYRIGHT for more details."
   :maintainer "Gary Warren King <gwking@metabang.com> // ABCL <evenson@not.org> ."
   :components ((:file "defpackage")
