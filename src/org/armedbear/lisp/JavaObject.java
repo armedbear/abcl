@@ -359,26 +359,30 @@ public final class JavaObject extends LispObject {
         if (obj instanceof ControlTransfer)
             return obj.toString();
         final String s;
-        if(obj != null) {
+        if (obj != null) {
             Class<?> c = obj.getClass();
             StringBuilder sb
                 = new StringBuilder(c.isArray() ? "jarray" : c.getName());
             sb.append(' ');
-            String ts = obj.toString();
-            int length = -1;
-            LispObject stringLength = _JAVA_OBJECT_TO_STRING_LENGTH.symbolValueNoThrow();
-            if (stringLength instanceof Fixnum) {
-                length = Fixnum.getValue(stringLength);
-            }
-            if (length < 0) {
-                sb.append(ts);
-            }else if (ts.length() > length) { 
-                // use '....' to not confuse user with PPRINT conventions
-                sb.append(ts.substring(0, length)).append("...."); 
-            } else {
-                sb.append(ts);
-            }
-            s = sb.toString();
+			try {
+				String ts = obj.toString();
+				int length = -1;
+				LispObject stringLength = _JAVA_OBJECT_TO_STRING_LENGTH.symbolValueNoThrow();
+				if (stringLength instanceof Fixnum) {
+					length = Fixnum.getValue(stringLength);
+				}
+				if (length < 0) {
+					sb.append(ts);
+				} else if (ts.length() > length) { 
+					// use '....' to not confuse user with PPRINT conventions
+					sb.append(ts.substring(0, length)).append("...."); 
+				} else {
+					sb.append(ts);
+				}
+				s = sb.toString();
+			} catch (Exception e) {
+				return serror(new JavaException(e));
+			}
         } else {
             s = "null";
         }
