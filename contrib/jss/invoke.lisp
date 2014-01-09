@@ -327,7 +327,7 @@ If OBJECT is a symbol it names a dot qualified static FIELD."
 			 field
                          (find field (#"getDeclaredFields" class) 
                                :key 'jfield-name :test 'equal))))
-	(#"setAccessible" jfield t)
+	(#"setAccessible" jfield +true+)
 	(values (#"get" jfield object) jfield))
       (if (symbolp object)
           (let ((class (find-java-class object)))
@@ -350,7 +350,7 @@ associated is used to look up the static FIELD."
 	     (jfield (if (java-object-p field)
 			 field
 		       (find field (#"getDeclaredFields" class) :key 'jfield-name :test 'equal))))
-	(#"setAccessible" jfield t)
+	(#"setAccessible" jfield +true+)
 	(values (#"set" jfield object value) jfield))
     (if (symbolp object)
 	(let ((class (find-java-class object)))
@@ -461,7 +461,7 @@ current classpath."
   (let ((classes-field 
 	 (find "classes" (#"getDeclaredFields" (jclass "java.lang.ClassLoader"))
 	       :key #"getName" :test 'equal)))
-    (#"setAccessible" classes-field t)
+    (#"setAccessible" classes-field +true+)
     (loop for classloader in (mapcar #'first (dump-classpath))
 	 append
 	 (loop with classesv = (#"get" classes-field classloader)
