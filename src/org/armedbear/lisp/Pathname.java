@@ -177,15 +177,15 @@ public class Pathname extends LispObject {
                 Debug.assertTrue(false);
             }
         }
-	if (p.version != NIL) {
-	    if (p.version instanceof Symbol) {
-		version = p.version;
-	    } else if (p.version instanceof LispInteger) {
-		version = p.version;
-	    } else {
-		Debug.assertTrue(false);
-	    }
-	}
+    if (p.version != NIL) {
+        if (p.version instanceof Symbol) {
+        version = p.version;
+        } else if (p.version instanceof LispInteger) {
+        version = p.version;
+        } else {
+        Debug.assertTrue(false);
+        }
+    }
     }
 
     public Pathname(String s) {
@@ -376,11 +376,11 @@ public class Pathname extends LispObject {
                 }
                 String uriPath = uri.getPath();
                 if (null == uriPath) {
-		    // We make an exception for forms like "file:z:/foo/path"
-		    uriPath = uri.getSchemeSpecificPart();
-		    if (uriPath == null || uriPath.equals("")) {
-		       error(new LispError("The URI has no path: " + uri));
-     		    }
+            // We make an exception for forms like "file:z:/foo/path"
+            uriPath = uri.getSchemeSpecificPart();
+            if (uriPath == null || uriPath.equals("")) {
+               error(new LispError("The URI has no path: " + uri));
+                }
                 }
                 final File file = new File(uriPath);
                 final Pathname p = new Pathname(file.getPath());
@@ -402,22 +402,22 @@ public class Pathname extends LispObject {
                                     + " because: " + e));
             }
             String authority = uri.getAuthority();
-	    if (authority == null) {
-		authority = url.getAuthority();
-		if (authority == null) {
-		    Debug.trace(MessageFormat.format("{0} has a null authority.",
-						     url));
-		}
-	    }
+        if (authority == null) {
+        authority = url.getAuthority();
+        if (authority == null) {
+            Debug.trace(MessageFormat.format("{0} has a null authority.",
+                             url));
+        }
+        }
 
             host = NIL;
             host = host.push(SCHEME);
             host = host.push(new SimpleString(scheme));
 
-	    if (authority != null) {
-		host = host.push(AUTHORITY);
-		host = host.push(new SimpleString(authority));
-	    }
+        if (authority != null) {
+        host = host.push(AUTHORITY);
+        host = host.push(new SimpleString(authority));
+        }
 
             device = NIL;
             
@@ -654,10 +654,10 @@ public class Pathname extends LispObject {
             StringBuilder prefix = new StringBuilder();
             for (int i = 0; i < jars.length; i++) {
                 prefix.append("jar:");
-		LispObject component = jars[i];
-		if (!(component instanceof Pathname)) {
-		   return null; // If DEVICE is a CONS, it should only contain Pathname 
-		}
+        LispObject component = jars[i];
+        if (!(component instanceof Pathname)) {
+           return null; // If DEVICE is a CONS, it should only contain Pathname 
+        }
                 if (! ((Pathname)component).isURL() && i == 0) {
                     sb.append("file:");
                     uriEncoded = true;
@@ -1566,7 +1566,7 @@ public class Pathname extends LispObject {
     @DocString(name="list-directory",
                args="directory &optional (resolve-symlinks t)",
                returns="pathnames",
-    doc="Lists the contents of DIRECTORY, optionally resolving symbolic links.")
+               doc="Lists the contents of DIRECTORY, optionally resolving symbolic links.")
     private static class pf_list_directory extends Primitive {
         pf_list_directory() {
             super("list-directory", PACKAGE_SYS, true, "directory &optional (resolve-symlinks t)");
