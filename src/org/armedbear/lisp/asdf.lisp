@@ -1,5 +1,5 @@
 ;;; -*- mode: Common-Lisp; Base: 10 ; Syntax: ANSI-Common-Lisp -*-
-;;; This is ASDF 3.1.0.36: Another System Definition Facility.
+;;; This is ASDF 3.1.0.49: Another System Definition Facility.
 ;;;
 ;;; Feedback, bug reports, and patches are all welcome:
 ;;; please mail to <asdf-devel@common-lisp.net>.
@@ -19,7 +19,7 @@
 ;;;  http://www.opensource.org/licenses/mit-license.html on or about
 ;;;  Monday; July 13, 2009)
 ;;;
-;;; Copyright (c) 2001-2012 Daniel Barlow and contributors
+;;; Copyright (c) 2001-2014 Daniel Barlow and contributors
 ;;;
 ;;; Permission is hereby granted, free of charge, to any person obtaining
 ;;; a copy of this software and associated documentation files (the
@@ -51,10 +51,9 @@
 
 #+cmu
 (eval-when (:load-toplevel :compile-toplevel :execute)
-  (declaim (optimize (speed 1) (safety 3) (debug 3)))
   (setf ext:*gc-verbose* nil))
 
-#+(or abcl clozure cmu ecl xcl) ;; punt on hard package upgrade on those implementations
+;; Punt on hard package upgrade: from ASDF1 always, and even from ASDF2 on most implementations.
 (eval-when (:load-toplevel :compile-toplevel :execute)
   (unless (member :asdf3 *features*)
     (let* ((existing-version
@@ -71,7 +70,8 @@
            (existing-version-number (and existing-version (read-from-string existing-major-minor)))
            (away (format nil "~A-~A" :asdf existing-version)))
       (when (and existing-version
-                 (< existing-version-number 2.27))
+                 (< existing-version-number
+		    (or #+(or allegro clisp lispworks sbcl) 2.0 2.27)))
         (rename-package :asdf away)
         (when *load-verbose*
           (format t "~&; Renamed old ~A package away to ~A~%" :asdf away))))))
@@ -561,7 +561,7 @@ or when loading the package is optional."
                     (home-package-p existing to-package) (symbol-package-name existing)))
             (t
              (ensure-inherited name symbol to-package from-package t shadowed imported inherited)))))))
-  
+
   (defun recycle-symbol (name recycle exported)
     ;; Takes a symbol NAME (a string), a list of package designators for RECYCLE
     ;; packages, and a hash-table of names (strings) of symbols scheduled to be
@@ -786,7 +786,7 @@ or when loading the package is optional."
                          :mix ,mix :reexport ,reexport :unintern ,unintern)))))
 
 (defmacro define-package (package &rest clauses)
-  "DEFINE-PACKAGE takes a PACKAGE and a number of CLAUSES, of the form 
+  "DEFINE-PACKAGE takes a PACKAGE and a number of CLAUSES, of the form
 \(KEYWORD . ARGS\).
 DEFINE-PACKAGE supports the following keywords:
 USE, SHADOW, SHADOWING-IMPORT-FROM, IMPORT-FROM, EXPORT, INTERN -- as per CL:DEFPACKAGE.
@@ -800,7 +800,7 @@ should appear in first position if it already exists, and even if it doesn't,
 ahead of any package that is not going to be deleted afterwards and never
 created again. In short, except for special cases, always make it the first
 package on the list if the list is not empty.
-MIX -- Takes a list of package designators.  MIX behaves like 
+MIX -- Takes a list of package designators.  MIX behaves like
 \(:USE PKG1 PKG2 ... PKGn\) but additionally uses :SHADOWING-IMPORT-FROM to
 resolve conflicts in favor of the first found symbol.  It may still yield
 an error if there is a conflict with an explicitly :IMPORT-FROM symbol.
@@ -1448,13 +1448,16 @@ When CALL-NOW-P is true, also call the function immediately."
 ;;; Hash-tables
 (with-upgradability ()
   (defun ensure-gethash (key table default)
-    "Lookup the TABLE for a KEY as by gethash, but if not present,
+    "Lookup the TABLE for a KEY as by GETHASH, but if not present,
 call the (possibly constant) function designated by DEFAULT as per CALL-FUNCTION,
-set the corresponding entry to the result in the table, and return that result."
+set the corresponding entry to the result in the table.
+Return two values: the entry after its optional computation, and whether it was found"
     (multiple-value-bind (value foundp) (gethash key table)
-      (if foundp
-          value
-          (setf (gethash key table) (values (call-function default))))))
+      (values
+       (if foundp
+           value
+           (setf (gethash key table) (call-function default)))
+       foundp)))
 
   (defun list-to-hash-set (list &aux (h (make-hash-table :test 'equal)))
     "Convert a LIST into hash-table that has the same elements when viewed as a set,
@@ -4276,6 +4279,7 @@ by setting appropriate variables, running various hooks, and calling any specifi
                                 (postlude *image-postlude*)
                                 (dump-hook *image-dump-hook*)
                                 #+clozure prepend-symbols #+clozure (purify t)
+                                #+sbcl compression
                                 #+(and sbcl windows) application-type)
     "Dump an image of the current Lisp environment at pathname FILENAME, with various options"
     ;; Note: at least SBCL saves only global values of variables in the heap image,
@@ -4338,10 +4342,13 @@ by setting appropriate variables, running various hooks, and calling any specifi
       (setf sb-ext::*gc-run-time* 0)
       (apply 'sb-ext:save-lisp-and-die filename
              :executable t ;--- always include the runtime that goes with the core
-             (when executable (list :toplevel #'restore-image :save-runtime-options t)) ;--- only save runtime-options for standalone executables
-             #+(and sbcl windows) ;; passing :application-type :gui will disable the console window.
-             ;; the default is :console - only works with SBCL 1.1.15 or later.
-             (when application-type (list :application-type application-type))))
+             (append
+              (when compression (list :compression compression))
+              ;;--- only save runtime-options for standalone executables
+              (when executable (list :toplevel #'restore-image :save-runtime-options t))
+              #+(and sbcl windows) ;; passing :application-type :gui will disable the console window.
+              ;; the default is :console - only works with SBCL 1.1.15 or later.
+              (when application-type (list :application-type application-type)))))
     #-(or allegro clisp clozure cmu gcl lispworks sbcl scl)
     (error "Can't ~S ~S: UIOP doesn't support image dumping with ~A.~%"
            'dump-image filename (nth-value 1 (implementation-type))))
@@ -4963,7 +4970,14 @@ It returns a process-info plist with possible keys:
             #+clozure (nth-value 1 (ccl:external-process-status process))
             #+(or cmu scl) (ext:process-exit-code process)
             #+ecl (nth-value 1 (ext:external-process-status process))
-            #+lispworks (system:pid-exit-status process :wait t)
+            #+lispworks
+            (if-let ((stream (or (getf process-info :input-stream)
+                                 (getf process-info :output-stream)
+                                 (getf process-info :bidir-stream)
+                                 (getf process-info :error-stream))))
+              (system:pipe-exit-status stream :wait t)
+              (if-let ((f (find-symbol* :pid-exit-status :system nil)))
+                (funcall f process :wait t)))
             #+sbcl (sb-ext:process-exit-code process)))))
 
   (defun %check-result (exit-code &key command process ignore-error-status)
@@ -6435,7 +6449,7 @@ You can compare this string with e.g.: (ASDF:VERSION-SATISFIES (ASDF:ASDF-VERSIO
   (defvar *previous-asdf-versions* (if-let (previous (asdf-version)) (list previous)))
   (defvar *asdf-version* nil)
   ;; We need to clear systems from versions yet older than the below:
-  (defparameter *oldest-forward-compatible-asdf-version* "2.27")
+  (defparameter *oldest-forward-compatible-asdf-version* "2.33") ;; 2.32.13 renames a slot in component.
   (defmacro defparameter* (var value &optional docstring)
     (let* ((name (string-trim "*" var))
            (valfun (intern (format nil "%~A-~A-~A" :compute name :value)))
@@ -6466,7 +6480,7 @@ You can compare this string with e.g.: (ASDF:VERSION-SATISFIES (ASDF:ASDF-VERSIO
          ;; "3.4.5.67" would be a development version in the official branch, on top of 3.4.5.
          ;; "3.4.5.0.8" would be your eighth local modification of official release 3.4.5
          ;; "3.4.5.67.8" would be your eighth local modification of development version 3.4.5.67
-         (asdf-version "3.1.0.36")
+         (asdf-version "3.1.0.49")
          (existing-version (asdf-version)))
     (setf *asdf-version* asdf-version)
     (when (and existing-version (not (equal asdf-version existing-version)))
@@ -7355,14 +7369,17 @@ Going forward, we recommend new users should be using the source-registry.
                (version (and (probe-file* version-pathname :truename nil)
                              (read-file-form version-pathname)))
                (old-version (asdf-version)))
-          (or (version<= old-version version)
-              (ensure-gethash
-               (list pathname old-version) *old-asdf-systems*
-                 #'(lambda ()
-                     (let ((old-pathname
-                             (if-let (pair (system-registered-p "asdf"))
-                               (system-source-file (cdr pair)))))
-                       (warn "~@<~
+          (cond
+            ((version< old-version version) t) ;; newer version: good!
+            ((equal old-version version) nil) ;; same version: don't load, but don't warn
+            (t ;; old version: bad
+             (ensure-gethash
+              (list (namestring pathname) version) *old-asdf-systems*
+              #'(lambda ()
+                 (let ((old-pathname
+                         (if-let (pair (system-registered-p "asdf"))
+                           (system-source-file (cdr pair)))))
+                   (warn "~@<~
         You are using ASDF version ~A ~:[(probably from (require \"asdf\") ~
         or loaded by quicklisp)~;from ~:*~S~] and have an older version of ASDF ~
         ~:[(and older than 2.27 at that)~;~:*~A~] registered at ~S. ~
@@ -7384,8 +7401,8 @@ Going forward, we recommend new users should be using the source-registry.
         then you might indeed want to either install and register a more recent version, ~
         or use :ignore-inherited-configuration to avoid registering the old one. ~
         Please consult ASDF documentation and/or experts.~@:>~%"
-                             old-version old-pathname version pathname)
-                       t)))))))
+                         old-version old-pathname version pathname))))
+             nil))))) ;; only issue the warning the first time, but always return nil
 
   (defun locate-system (name)
     "Given a system NAME designator, try to locate where to load the system from.
@@ -7675,8 +7692,14 @@ PREVIOUS-TIME when not null is the time at which the PREVIOUS system was loaded.
    #:action-path #:find-action #:stamp #:done-p))
 (in-package :asdf/action)
 
-(eval-when (#-lispworks :compile-toplevel :load-toplevel :execute)
-  (deftype action () '(cons operation component))) ;; a step to be performed while building
+(eval-when (#-lispworks :compile-toplevel :load-toplevel :execute) ;; LispWorks issues spurious warning
+  (deftype action () '(cons operation component)) ;; a step to be performed while building
+
+  (deftype operation-designator ()
+    ;; an operation designates itself,
+    ;; nil designates a context-dependent current operation, and
+    ;; class-name or class designates an instance of the designated class.
+    '(or operation null symbol class)))
 
 (with-upgradability ()
   (defgeneric traverse-actions (actions &key &allow-other-keys))
@@ -7780,44 +7803,65 @@ You can put together sentences using this phrase."))
     (cdr (assoc (type-of o) (component-in-order-to c))))) ; User-specified in-order dependencies
 
 
-;;;; upward-operation, downward-operation
-;; These together handle actions that propagate along the component hierarchy.
-;; Downward operations like load-op or compile-op propagate down the hierarchy:
-;; operation on a parent depends-on operation on its children.
-;; By default, an operation propagates itself, but it may propagate another one instead.
+;;;; upward-operation, downward-operation, sideway-operation, selfward-operation
+;; These together handle actions that propagate along the component hierarchy or operation universe.
 (with-upgradability ()
   (defclass downward-operation (operation)
     ((downward-operation
-      :initform nil :initarg :downward-operation :reader downward-operation :allocation :class)))
+      :initform nil :reader downward-operation
+      :type operation-designator :allocation :class))
+    (:documentation "A DOWNWARD-OPERATION's dependencies propagate down the component hierarchy.
+I.e., if O is a DOWNWARD-OPERATION and its DOWNWARD-OPERATION slot designates operation D, then
+the action (O . M) of O on module M will depends on each of (D . C) for each child C of module M.
+The default value for slot DOWNWARD-OPERATION is NIL, which designates the operation O itself.
+E.g. in order for a MODULE to be loaded with LOAD-OP (resp. compiled with COMPILE-OP), all the
+children of the MODULE must have been loaded with LOAD-OP (resp. compiled with COMPILE-OP."))
   (defmethod component-depends-on ((o downward-operation) (c parent-component))
     `((,(or (downward-operation o) o) ,@(component-children c)) ,@(call-next-method)))
-  ;; Upward operations like prepare-op propagate up the component hierarchy:
-  ;; operation on a child depends-on operation on its parent.
-  ;; By default, an operation propagates itself, but it may propagate another one instead.
+
   (defclass upward-operation (operation)
     ((upward-operation
-      :initform nil :initarg :downward-operation :reader upward-operation :allocation :class)))
+      :initform nil :reader upward-operation
+      :type operation-designator :allocation :class))
+    (:documentation "An UPWARD-OPERATION has dependencies that propagate up the component hierarchy.
+I.e., if O is an instance of UPWARD-OPERATION, and its UPWARD-OPERATION slot designates operation U,
+then the action (O . C) of O on a component C that has the parent P will depends on (U . P).
+The default value for slot UPWARD-OPERATION is NIL, which designates the operation O itself.
+E.g. in order for a COMPONENT to be prepared for loading or compiling with PREPARE-OP, its PARENT
+must first be prepared for loading or compiling with PREPARE-OP."))
   ;; For backward-compatibility reasons, a system inherits from module and is a child-component
   ;; so we must guard against this case. ASDF4: remove that.
   (defmethod component-depends-on ((o upward-operation) (c child-component))
     `(,@(if-let (p (component-parent c))
           `((,(or (upward-operation o) o) ,p))) ,@(call-next-method)))
-  ;; Sibling operations propagate to siblings in the component hierarchy:
-  ;; operation on a child depends-on operation on its parent.
-  ;; By default, an operation propagates itself, but it may propagate another one instead.
+
   (defclass sideway-operation (operation)
     ((sideway-operation
-      :initform nil :initarg :sideway-operation :reader sideway-operation :allocation :class)))
+      :initform nil :reader sideway-operation
+      :type operation-designator :allocation :class))
+    (:documentation "A SIDEWAY-OPERATION has dependencies that propagate \"sideway\" to siblings
+that a component depends on. I.e. if O is a SIDEWAY-OPERATION, and its SIDEWAY-OPERATION slot
+designates operation S (where NIL designates O itself), then the action (O . C) of O on component C
+depends on each of (S . D) where D is a declared dependency of C.
+E.g. in order for a COMPONENT to be prepared for loading or compiling with PREPARE-OP,
+each of its declared dependencies must first be loaded as by LOAD-OP."))
   (defmethod component-depends-on ((o sideway-operation) (c component))
     `((,(or (sideway-operation o) o)
        ,@(loop :for dep :in (component-sideway-dependencies c)
                :collect (resolve-dependency-spec c dep)))
       ,@(call-next-method)))
-  ;; Selfward operations propagate to themselves a sub-operation:
-  ;; they depend on some other operation being acted on the same component.
+
   (defclass selfward-operation (operation)
     ((selfward-operation
-      :initform nil :initarg :selfward-operation :reader selfward-operation :allocation :class)))
+      ;; NB: no :initform -- if an operation depends on others, it must explicitly specify which
+      :type (or operation-designator list) :reader selfward-operation :allocation :class))
+    (:documentation "A SELFWARD-OPERATION depends on another operation on the same component.
+I.e., if O is a SELFWARD-OPERATION, and its SELFWARD-OPERATION designates a list of operations L,
+then the action (O . C) of O on component C depends on each (S . C) for S in L.
+A operation-designator designates a singleton list of the designated operation;
+a list of operation-designators designates the list of designated operations;
+NIL is not a valid operation designator in that context.
+E.g. before a component may be loaded by LOAD-OP, it must have been compiled by COMPILE-OP."))
   (defmethod component-depends-on ((o selfward-operation) (c component))
     `(,@(loop :for op :in (ensure-list (selfward-operation o))
               :collect `(,op ,c))
@@ -8011,22 +8055,22 @@ in some previous image, or T if it needs to be done.")
 ;;; Our default operations: loading into the current lisp image
 (with-upgradability ()
   (defclass prepare-op (upward-operation sideway-operation)
-    ((sideway-operation :initform 'load-op)))
+    ((sideway-operation :initform 'load-op :allocation :class)))
   (defclass load-op (basic-load-op downward-operation sideway-operation selfward-operation)
     ;; NB: even though compile-op depends on prepare-op it is not needed-in-image-p,
     ;; so we need to directly depend on prepare-op for its side-effects in the current image.
-    ((selfward-operation :initform '(prepare-op compile-op))))
+    ((selfward-operation :initform '(prepare-op compile-op) :allocation :class)))
   (defclass compile-op (basic-compile-op downward-operation selfward-operation)
-    ((selfward-operation :initform 'prepare-op)
-     (downward-operation :initform 'load-op)))
+    ((selfward-operation :initform 'prepare-op :allocation :class)
+     (downward-operation :initform 'load-op :allocation :class)))
 
   (defclass prepare-source-op (upward-operation sideway-operation)
-    ((sideway-operation :initform 'load-source-op)))
+    ((sideway-operation :initform 'load-source-op :allocation :class)))
   (defclass load-source-op (basic-load-op downward-operation selfward-operation)
-    ((selfward-operation :initform 'prepare-source-op)))
+    ((selfward-operation :initform 'prepare-source-op :allocation :class)))
 
   (defclass test-op (selfward-operation)
-    ((selfward-operation :initform 'load-op))))
+    ((selfward-operation :initform 'load-op :allocation :class))))
 
 
 ;;;; prepare-op, compile-op and load-op
@@ -9884,11 +9928,11 @@ system names to pathnames of .asd files")
   (defclass basic-fasl-op (bundle-compile-op)
     ((bundle-type :initform :fasl)))
   (defclass prepare-fasl-op (sideway-operation)
-    ((sideway-operation :initform 'load-fasl-op)))
+    ((sideway-operation :initform 'load-fasl-op :allocation :class)))
   (defclass fasl-op (basic-fasl-op selfward-operation)
-    ((selfward-operation :initform '(prepare-fasl-op #+ecl lib-op))))
+    ((selfward-operation :initform '(prepare-fasl-op #+ecl lib-op) :allocation :class)))
   (defclass load-fasl-op (basic-load-op selfward-operation)
-    ((selfward-operation :initform '(prepare-op fasl-op))))
+    ((selfward-operation :initform '(prepare-op fasl-op) :allocation :class)))
 
   ;; NB: since the monolithic-op's can't be sideway-operation's,
   ;; if we wanted lib-op, dll-op, binary-op to be sideway-operation's,
@@ -9902,12 +9946,12 @@ system names to pathnames of .asd files")
     (:documentation #+(or ecl mkcl) "compile the system and produce linkable (.a) library for it."
      #-(or ecl mkcl) "just compile the system"))
 
-  (defclass dll-op (bundle-compile-op selfward-operation no-ld-flags-op)
+  (defclass dll-op (bundle-compile-op no-ld-flags-op)
     ((bundle-type :initform :dll))
     (:documentation "compile the system and produce dynamic (.so/.dll) library for it."))
 
   (defclass binary-op (basic-compile-op selfward-operation)
-    ((selfward-operation :initform '(fasl-op lib-op)))
+    ((selfward-operation :initform '(fasl-op lib-op) :allocation :class))
     (:documentation "produce fasl and asd files for the system"))
 
   (defclass monolithic-op (operation) ()) ;; operation on a system and its dependencies
@@ -9921,7 +9965,7 @@ system names to pathnames of .asd files")
     (:documentation "Abstract operation for ways to bundle the outputs of compiling *Lisp* files over all systems"))
 
   (defclass monolithic-binary-op (monolithic-op binary-op)
-    ((selfward-operation :initform '(monolithic-fasl-op monolithic-lib-op)))
+    ((selfward-operation :initform '(monolithic-fasl-op monolithic-lib-op) :allocation :class))
     (:documentation "produce fasl and asd files for combined system and dependencies."))
 
   (defclass monolithic-fasl-op (monolithic-bundle-compile-op basic-fasl-op) ()
@@ -10368,19 +10412,19 @@ system names to pathnames of .asd files")
 
   (defclass concatenate-source-op (basic-concatenate-source-op) ())
   (defclass load-concatenated-source-op (basic-load-concatenated-source-op)
-    ((selfward-operation :initform '(prepare-op concatenate-source-op))))
+    ((selfward-operation :initform '(prepare-op concatenate-source-op) :allocation :class)))
   (defclass compile-concatenated-source-op (basic-compile-concatenated-source-op)
-    ((selfward-operation :initform '(prepare-op concatenate-source-op))))
+    ((selfward-operation :initform '(prepare-op concatenate-source-op) :allocation :class)))
   (defclass load-compiled-concatenated-source-op (basic-load-compiled-concatenated-source-op)
-    ((selfward-operation :initform '(prepare-op compile-concatenated-source-op))))
+    ((selfward-operation :initform '(prepare-op compile-concatenated-source-op) :allocation :class)))
 
   (defclass monolithic-concatenate-source-op (basic-concatenate-source-op monolithic-bundle-op) ())
   (defclass monolithic-load-concatenated-source-op (basic-load-concatenated-source-op)
-    ((selfward-operation :initform 'monolithic-concatenate-source-op)))
+    ((selfward-operation :initform 'monolithic-concatenate-source-op :allocation :class)))
   (defclass monolithic-compile-concatenated-source-op (basic-compile-concatenated-source-op)
-    ((selfward-operation :initform 'monolithic-concatenate-source-op)))
+    ((selfward-operation :initform 'monolithic-concatenate-source-op :allocation :class)))
   (defclass monolithic-load-compiled-concatenated-source-op (basic-load-compiled-concatenated-source-op)
-    ((selfward-operation :initform 'monolithic-compile-concatenated-source-op)))
+    ((selfward-operation :initform 'monolithic-compile-concatenated-source-op :allocation :class)))
 
   (defmethod input-files ((operation basic-concatenate-source-op) (s system))
     (loop :with encoding = (or (component-encoding s) *default-encoding*)
@@ -10635,6 +10679,7 @@ Please use UIOP:RUN-PROGRAM instead."
           :when (defpackage-form-p form) :return form))
 
   (defun file-defpackage-form (file)
+    "Return the first DEFPACKAGE form in FILE."
     (with-input-file (f file)
       (stream-defpackage-form f)))
 
@@ -10647,6 +10692,9 @@ Please use UIOP:RUN-PROGRAM instead."
                        (error-system c) (error-pathname c)))))
 
   (defun package-dependencies (defpackage-form)
+    "Return a list of packages depended on by the package
+defined in DEFPACKAGE-FORM.  A package is depended upon if
+the DEFPACKAGE-FORM uses it or imports a symbol from it."
     (assert (defpackage-form-p defpackage-form))
     (remove-duplicates
      (while-collecting (dep)
@@ -10666,11 +10714,14 @@ Please use UIOP:RUN-PROGRAM instead."
       (symbol (string package))))
 
   (defun register-system-packages (system packages)
+    "Register SYSTEM as providing PACKAGES."
     (let ((name (or (eq system t) (coerce-name system))))
       (dolist (p (ensure-list packages))
         (setf (gethash (package-designator-name p) *package-systems*) name))))
 
   (defun package-name-system (package-name)
+    "Return the name of the SYSTEM providing PACKAGE-NAME, if such exists,
+otherwise return a default system name computed from PACKAGE-NAME."
     (check-type package-name string)
     (if-let ((system-name (gethash package-name *package-systems*)))
       system-name
@@ -10737,7 +10788,7 @@ Please use UIOP:RUN-PROGRAM instead."
    :asdf/backward-internals :asdf/backward-interface :asdf/package-system)
   ;; TODO: automatically generate interface with reexport?
   (:export
-   #:defsystem #:find-system #:locate-system #:coerce-name
+   #:defsystem #:find-system #:locate-system #:coerce-name #:primary-system-name
    #:oos #:operate #:make-plan #:perform-plan #:sequential-plan
    #:system-definition-pathname #:with-system-definitions
    #:search-for-system-definition #:find-component #:component-find-path

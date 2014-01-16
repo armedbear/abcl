@@ -4296,7 +4296,10 @@ Since ASDF 2,
 it should always be a good time to upgrade to a recent version of ASDF.
 You may consult with the maintainer for which specific version they recommend,
 but the latest @code{release} should be correct.
-We trust you to thoroughly test it with your implementation
+Though we do try to test ASDF releases against all implementations that we can,
+we may not be testing against all variants of your implementation,
+and we may not be running enough tetst;
+we trust you to thoroughly test it with your own implementation
 before you release it.
 If there are any issues with the current release,
 it's a bug that you should report upstream and that we will fix ASAP.
@@ -4350,6 +4353,13 @@ then you may add them to the @code{wrapping-source-registry},
 and you are welcome to include @file{asdf.asd} amongst them.
 Non-magic systems should be at the back of the @code{wrapping-source-registry}
 while magic systems are at the front.
+
+@item
+Since ASDF 3, the library UIOP comes transcluded in ASDF.
+But for extra brownies, you may package UIOP separately,
+so that one may @code{(require "uiop")} and not pull ASDF,
+or one may @code{(require "asdf")}
+and that would implicitly require the former.
 
 @item
 Please send us upstream any patches you make to ASDF itself,
