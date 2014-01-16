@@ -343,51 +343,59 @@
       (dotimes (i (- current column) t)
         (stream-write-char stream #\Space)))))
 
+(defun basic-read-sequence (stream sequence start end
+                            expected-element-type read-fun)
+  (let ((element-type (stream-element-type stream)))
+    (if (subtypep element-type expected-element-type)
+        (dotimes (count (- end start)
+                  ;; If (< end start), skip the dotimes body but
+                  ;; return start
+                  (max start end))
+          (let ((el (funcall read-fun stream)))
+            (when (eq el :eof)
+              (return (+ count start)))
+            (setf (elt sequence (+ count start)) el)))
+        (error "Cannot READ-SEQUENCE on stream of :ELEMENT-TYPE ~A"
+               element-type))))
+
+(defun basic-write-sequence (stream sequence start end
+                             expected-element-type write-fun)
+  (let ((element-type (stream-element-type stream)))
+    (if (subtypep element-type expected-element-type)
+        ;; Avoid LOOP because it isn't loaded yet
+        (do ((n start (+ n 1)))
+            ((= n end))
+          (funcall write-fun stream (elt sequence n)))
+        (error "Cannot WRITE-SEQUENCE on stream of :ELEMENT-TYPE ~A"
+               element-type)))
+  (stream-force-output stream)
+  sequence)
+
 (defmethod stream-read-sequence ((stream  fundamental-character-input-stream)
                                  sequence &optional (start 0) end)
-  (let ((element-type (stream-element-type stream))
-        (end (or end (length sequence)))
-        (eof (cons nil nil)))
-    (cond
-     ((eq element-type 'character)
-      (dotimes (count (- end start) (- end start))
-        (let ((c (stream-read-char stream nil eof)))
-          (if (eq c eof)
-              (return (+ count start)))
-          (setf (elt sequence (+ count start)) c))))
-     ((or (eq element-type 'byte)
-          (eq element-type 'unsigned-byte)
-          (eq element-type 'signed-byte))
-      (dotimes (count (- end start) (- end start))
-        (let ((b (stream-read-byte stream nil eof)))
-          (if (eq b eof)
-              (return (+ count start)))
-          (setf (elt sequence (+ count start)) b))))
-     (t (error "Cannot READ-SEQUENCE on stream of :ELEMENT-TYPE ~A"
-               element-type)))))
+  (basic-read-sequence stream sequence start (or end (length sequence))
+                       'character #'stream-read-char))
 
 (defmethod stream-write-sequence ((stream fundamental-character-output-stream)
                                   sequence &optional (start 0) end)
-  (let ((element-type (stream-element-type stream))
-        (end (or end (length sequence))))
-    (if (eq element-type 'character)
-        (do ((n start (+ n 1)))
-            ((= n end))
-          (stream-write-char
-           stream
-           (if (typep (elt sequence n) 'number)
-               (#+nil ccl:int-char code-char (elt sequence n))
-               (elt sequence n))))
-        (do ((n start (+ n 1)))
-            ((= n end))
-          (stream-write-byte (elt sequence n) stream))))    ;; recoded to avoid LOOP, because it isn't loaded yet
-  (stream-force-output stream))
+  (basic-write-sequence stream sequence start (or end (length sequence))
+                        'character #'stream-write-char))
 
 (defclass fundamental-binary-input-stream
   (fundamental-input-stream fundamental-binary-stream))
 
 (defclass fundamental-binary-output-stream
   (fundamental-output-stream fundamental-binary-stream))
+
+(defmethod stream-read-sequence ((stream fundamental-binary-input-stream)
+                                 sequence &optional (start 0) end)
+  (basic-read-sequence stream sequence start (or end (length sequence))
+                       'signed-byte #'stream-read-byte))
+
+(defmethod stream-write-sequence ((stream fundamental-binary-output-stream)
+                                  sequence &optional (start 0) end)
+  (basic-write-sequence stream sequence start (or end (length sequence))
+                        'signed-byte #'stream-write-byte))
 
 (defun decode-read-arg (arg)
   (cond ((null arg) *standard-input*)
