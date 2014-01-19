@@ -314,6 +314,10 @@
   (declare (ignore stream))
   nil)
 
+(defmethod stream-finish-output (stream)
+  (declare (ignore stream))
+  nil)
+
 (defmethod stream-clear-output (stream)
   (declare (ignore stream))
   nil)
