@@ -1109,6 +1109,8 @@ user.dir
     <import file="not.org-build.xml" optional="true"/> 
     
     <import file="build-snapshot.xml" optional="true"/>
+
+    <import file="build-maven.xml" optional="true"/>
 </project>
 
 

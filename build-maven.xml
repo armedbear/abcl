@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="antlib:org.apache.tools.ant">
+
+  <target name="abcl.mvn.install"
+          depends="abcl.jar,abcl-contrib.jar"
+          description="Installs an ABCL snapshot directly into a local
+repository via maven-install-plugin.">
+
+    <copy file="${abcl.jar.path}"
+          tofile="${dist.dir}/abcl-${abcl.version}.jar"/>
+    <exec executable="mvn" vmlauncher="false">
+      <arg line="install:install-file -DpomFile=pom.xml"/>
+      <arg prefix="-Dfile=" file="${dist.dir}/abcl-${abcl.version}.jar"/>
+    </exec>
+
+    <copy file="${abcl-contrib.jar}"
+          tofile="${dist.dir}/abcl-contrib-${abcl.version}.jar"/>
+    <exec executable="mvn" vmlauncher="false">
+      <arg line="install:install-file -DpomFile=contrib/pom.xml"/>
+      <arg prefix="-Dfile="
+           file="${dist.dir}/abcl-contrib-${abcl.version}.jar"/>
+    </exec>
+
+  </target>
+
+</project>
