@@ -654,12 +654,12 @@ public final class LispThread extends LispObject
             this.next = next;
         }
         public LispObject getParts() {
-	    Cons result = new Cons(NIL);
-	    return result
-		.push(new Symbol("INITIAL-SEGMENT-SIZE"))
-                    .push(LispInteger.getInstance(LispThread.INITIAL_SEGMENT_SIZE))
-		.push(new Symbol("SEGMENT-SIZE"))
-                    .push(LispInteger.getInstance(LispThread.SEGMENT_SIZE)).nreverse();
+        Cons result = new Cons(NIL);
+        return result
+          .push(new Symbol("INITIAL-SEGMENT-SIZE"))
+            .push(LispInteger.getInstance(LispThread.INITIAL_SEGMENT_SIZE))
+          .push(new Symbol("SEGMENT-SIZE"))
+            .push(LispInteger.getInstance(LispThread.SEGMENT_SIZE)).nreverse();
         }
     }
     
@@ -1179,7 +1179,7 @@ public final class LispThread extends LispObject
     doc="Returns T if THREAD is alive.")
     private static final Primitive THREAD_ALIVE_P =
         new Primitive("thread-alive-p", PACKAGE_THREADS, true, "thread",
-		      "Boolean predicate whether THREAD is alive.")
+              "Boolean predicate whether THREAD is alive.")
     {
         @Override
         public LispObject execute(LispObject arg)
@@ -1317,8 +1317,8 @@ public final class LispThread extends LispObject
         "order is not guaranteed.")
     private static final Primitive INTERRUPT_THREAD =
         new Primitive("interrupt-thread", PACKAGE_THREADS, true,
-		      "thread function &rest args",
-		      "Interrupts THREAD and forces it to apply FUNCTION to ARGS.\nWhen the function returns, the thread's original computation continues. If  multiple interrupts are queued for a thread, they are all run, but the order is not guaranteed.")
+              "thread function &rest args",
+              "Interrupts THREAD and forces it to apply FUNCTION to ARGS.\nWhen the function returns, the thread's original computation continues. If  multiple interrupts are queued for a thread, they are all run, but the order is not guaranteed.")
     {
         @Override
         public LispObject execute(LispObject[] args)
