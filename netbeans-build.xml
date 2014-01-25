@@ -11,8 +11,13 @@
   </target>
 
   <target name="-post-compile" unless="abcl.compile.lisp.skip">
-    <antcall target="abcl.compile.lisp" />
-    <antcall target="abcl-contrib.jar"/>
+    <antcall>
+	  <target name="abcl.compile.lisp"/>
+	  <target name="abcl.jar" />
+      <target name="abcl-contrib.jar"/>
+	  <target name="abcl.wrapper" />
+	</antcall>
   </target>
+
 </project>
 
