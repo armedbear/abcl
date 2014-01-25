@@ -860,13 +860,13 @@ The following Ant targets run various test suites:
   abcl.test
     --  Run all available tests.
   abcl.test.java
-    --  Run the ABCL junit Java tests under ${basedir}/test/src
+    --  Run the ABCL junit Java tests under ${basedir}/test/src/
   abcl.test.lisp
     --  Run the 'test.ansi.compiled', 'test.abcl', 'test.cl-bench' targets
   test.ansi.compiled
     --  Run the compiled version of the ANSI test suite
   test.abcl
-    --  Run the Lisp RT tests collected in ${basedir}/test/lisp/abcl
+    --  Run the Lisp RT tests collected in ${basedir}/test/lisp/abcl/
   test.cl-bench 
     --  Run the cl-bench test suite.
 
@@ -889,9 +889,7 @@ ${basedir}/../cl-bench
               value="${basedir}/test/src"/>
 
     <patternset id="abcl.test.source.java">
-      <!-- For now, we list tests explicitly, because we have to
-           enumerate them later to the JUnit test runner. -->
-      <include name="org/armedbear/lisp/*.java"/>
+      <include name="org/armedbear/lisp/**/*.java"/>
     </patternset>
 
     <property name="junit.path"
@@ -946,6 +944,9 @@ ${basedir}/../cl-bench
         <arg value="org.armedbear.lisp.PathnameTest"/>
         <arg value="org.armedbear.lisp.StreamTest"/>
         <arg value="org.armedbear.lisp.UtilitiesTest"/>
+		<!-- currently hangs(!) the running process
+        <arg value="org.armedbear.lisp.util.HttpHeadTest"/>
+		-->
       </java>
     </target>
 

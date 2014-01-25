@@ -202,10 +202,11 @@ Returns the two values of the pathnames of the created archives."
   t)
 
 (defparameter *url-jar-pathname-base*
-  "jar:http://abcl-dynamic-install.googlecode.com/files/baz-20130403a.jar!/")
+  "jar:http://abcl.org/fasl/42/baz-20140105a-fasl-42.jar!/")
+;; fasl 41  "jar:http://abcl-dynamic-install.googlecode.com/files/baz-20130403a.jar!/")
 
 (defmacro load-url-relative (path) 
-  `(load (format nil "~A~A" *url-jar-pathname-base* ,path)))
+  `(load (probe-file (format nil "~A~A" *url-jar-pathname-base* ,path))))
 
 ;;; wrapped in PROGN for easy disabling without a network connection
 ;;; XXX come up with a better abstraction
