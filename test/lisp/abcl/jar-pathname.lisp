@@ -212,7 +212,6 @@ Returns the two values of the pathnames of the created archives."
 ;;; XXX come up with a better abstraction
 
 ;; disable until fix loading fasls via HTTP 
-#+nil
 (progn 
   (deftest jar-pathname.load.http.1
       (load-url-relative "foo")

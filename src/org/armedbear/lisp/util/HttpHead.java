@@ -85,6 +85,7 @@ public class HttpHead {
             PrintWriter out = null;
             BufferedReader in = null;
             try {
+                socket.setSoTimeout(5000); // ms
                 out = new PrintWriter(socket.getOutputStream());
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             } catch (IOException e) {
