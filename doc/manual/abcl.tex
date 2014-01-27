@@ -8,7 +8,7 @@
 
 \begin{document}
 \title{Armed Bear Common Lisp User Manual}
-\date{Version 1.3.0-dev\\
+\date{Version 1.3.0-rc-0\\
 \smallskip
 January 27, 2014}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
@@ -19,7 +19,8 @@ January 27, 2014}
 \tableofcontents
 \subsection{Preface to the Fourth Edition}
 
-\textsc{ABCL} 1.3 now implements a lazily-created LispStack --The Mgmt.
+\textsc{ABCL} 1.3 now implements an optimized implementation of the
+LispStack abstraction thanks to Dmitry Nadezhin.
 
 %%Preface to the Third edition, abcl-1.2.
 \subsection{Preface to the Third Edition}
@@ -1183,8 +1184,8 @@ code is greater than 0x00ff.
 
 \section{Overloading of the CL:REQUIRE Mechanism}
 
-The \code{CL:REQUIRE} mechanism is overloaded by attaching the following
-semantic to the execution of \code{REQUIRE} on the following symbols:
+The \code{CL:REQUIRE} mechanism is overloaded by attaching these
+semantics to the execution of \code{REQUIRE} on the following symbols:
 
 \begin{description}
 
@@ -1205,7 +1206,7 @@ semantic to the execution of \code{REQUIRE} on the following symbols:
     \begin{enumerate}
       \item \code{abcl-asdf} 
         Functions for loading JVM artifacts
-        dynamically, hooking into ASDF 2 objects where possible.
+        dynamically, hooking into ASDF 3 objects where possible.
       \item \code{asdf-jar} 
         Package addressable JVM artifacts via
         \code{abcl-asdf} descriptions as a single binary artifact
@@ -1215,7 +1216,7 @@ semantic to the execution of \code{REQUIRE} on the following symbols:
         the distributed pom.xml graph of Maven Aether:
         \begin{enumerate}
           \item \code{jna} 
-            Dynamically load 'jna.jar' version 3.5.1
+            Dynamically load 'jna.jar' version 4.0.0
             from the network \footnote{This loading can be inhibited
               if, at runtime, the Java class corresponding
               ``:classname'' clause of the system defition is present.}
