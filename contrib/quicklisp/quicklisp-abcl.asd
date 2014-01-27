@@ -9,7 +9,7 @@
 
 (defsystem :quicklisp-abcl
     :description 
-    "Load Quicklisp from the network if it isn't already installed. <urn:abcl.org/release/1.3.0-dev/contrib/quicklisp-abcl#0.2.0>"
+    "Load Quicklisp from the network if it isn't already installed. <urn:abcl.org/release/1.3.0/contrib/quicklisp-abcl#0.2.0>"
     :version "0.2.0"
     :components nil)
 

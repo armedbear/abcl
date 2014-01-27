@@ -17,12 +17,14 @@
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 <> 
   abcl:branch           <http://abcl.org/svn/trunk/abcl> ;
-  dc:identifier         <urn:abcl.org/1.3.0#dev> ;           
+  dc:identifier         <urn:abcl.org/1.3.0#rc-0> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "01-JAN-2014" ;
+  dc:modified          "27-JAN-2014" ;
   dc:version           "abcl-1.3.0" ;
-  abcl:release         "dev" .
+  abcl:release         "dev" ;
+
+  abcl:release-candidate "rc-0" . 
 
 <> 
   rdfs:seeAlso <file:README> ;
@@ -75,7 +77,7 @@ _:user dc:identifier <http://ville.not.org/#me>  ;
      dc:license <http://usefulinc.com/doap/licenses/gplv2> ;
      dc:license <http://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
 
-     rdfs:seeAlso <urn:abcl.org/release/1.2.0> ;
+     rdfs:seeAlso <urn:abcl.org/release/1.3.0> ;
      dc:licenseDocument <file:COPYING> ;
      dc:licenseDocument 
        <http://abcl.org/svn/trunk/abcl/src/org/armedbear/LICENSE> ;
@@ -93,6 +95,9 @@ doap:Project rdfs:seeAlso [
      rdf:_2 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.0.1.jar> ;
      rdf:_3 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.0.2.jar> ;
      rdf:_3 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.1.jar> 
+
+     rdf:_4 <http://abcl.org/releases/1.2.1/abcl-1.2.1.jar> 
+
   ] ;
 ] .
 

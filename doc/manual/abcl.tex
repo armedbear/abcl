@@ -8,15 +8,24 @@
 
 \begin{document}
 \title{Armed Bear Common Lisp User Manual}
-\date{Version 1.2.0-dev\\
+\date{Version 1.3.0-dev\\
 \smallskip
-March 2, 2013}
+January 27, 2014}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
 \maketitle
 
 \tableofcontents
+\subsection{Preface to the Third Edition}
+
+\textsc{ABCL} 1.3 now implements a lazily-created LispStack --The Mgmt.
+
+%%Preface to the Third edition, abcl-1.2.
+\subsection{Preface to the Third Edition}
+The implementation now contains a performant and conformant
+implementation of (A)MOP to the point of inclusion in CLOSER-MOP's
+test suite.
 
 %%Preface to the second edition, abcl-1.1.
 
@@ -42,6 +51,13 @@ code and libraries:
 \item \code{jinterface-implementation} creates Lisp-side implementations
   of Java interfaces that can be used as listeners for Swing classes and
   similar.
+\item \code{java:jnew-runtime-class} can inject fully synthetic Java
+  classes--and their objects-- into the current JVM process whose
+  behavior is specified via closures expressed in Common Lisp.. \footnote{Parts of
+    the current implementation are not fully finished, so the status
+    of some interfaces here should be treated with skepticism if you
+    run into problems.}
+
 \end{itemize}
 \textsc{ABCL} is supported by the Lisp library manager
 \textsc{QuickLisp}\footnote{\url{http://quicklisp.org/}} and can run many of the
@@ -113,7 +129,7 @@ contemporary Common Lisp.
 \textsc{ABCL} is licensed under the terms of the \textsc{GPL} v2 of
 June 1991 with the ``classpath-exception'' (see the file
 \texttt{COPYING} in the source distribution \footnote{See
-  \url{http://abcl.org/svn/trunk/abcl/COPYING}} for
+  \url{http://abcl.org/svn/trunk/tags/1.3.0/COPYING}} for
 the license, term 13 in the same file for the classpath exception).
 This license broadly means that you must distribute the sources to
 ABCL, including any changes you make, together with a program that
@@ -138,7 +154,7 @@ course.
 
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-\texttt{abcl.jar} or possibly something like \texttt{abcl-1.2.0.jar} if
+\texttt{abcl.jar} or possibly something like \texttt{abcl-1.3.0.jar} if
 using a versioned package on the local filesystem from your system
 vendor.  This jar file can be executed from the command line to obtain a
 \textsc{REPL}\footnote{Read-Eval Print Loop, a Lisp command-line}, viz:
@@ -873,7 +889,7 @@ following caveats:
   cannot be the target of write operations.
 
 \index{URI}
-\item Any results of canonicalization procesures performed on the
+\item Any results of canonicalization procedures performed on the
   underlying \textsc{URI} are discarded between resolutions (i.e. the
   implementation does not attempt to cache the results of current name
   resolution of the representing resource unless it is requested to be
@@ -882,7 +898,7 @@ following caveats:
   discarded.  Users may programatically initiate a new, local
   computation of the resolution of the resource by applying the
   \code{CL:TRUENAME} function to a \code{EXT:URL-PATHNAME} object.
-  Depending on the reliablity and properties of your local
+  Depending on the reliability and properties of your local
   \textsc{REST} infrastructure, these results may not necessarily be
   idempotent over time\footnote {See \cite{evenson2011} for the draft
     of the publication of the technical details}.
@@ -908,7 +924,7 @@ In order to ``smooth over'' the bit about types being \code{CL:READ}
 from \code{CL:PATHNAME} components, we extend the semantics for the
 usual PATHNAME merge semantics when \code{*DEFAULT-PATHNAME-DEFAULTS*}
 contains a \code{EXT:JAR-PATHNAME} with the ``do what I mean''
-algorithim described in \ref{section:conformance} on page
+algorithm described in \ref{section:conformance} on page
 \pageref{section:conformance}.
 
 %See \ref{_:quicklisp} on page \pageref{_:quicklisp}.
@@ -927,9 +943,9 @@ expect the following:
   the entries containing \code{CL:PATHNAME} objects which describe the
   outer and (possibly inner) locations of the jar
   archive \footnote{The case of inner and outer
-    \code{EXT:EJAR-PATHNAME} arises when zip archives themselves
-    contain zip archives which is the case when the ABCL fasl is
-    included in the abcl.jar zip archive.}.
+    \code{EXT:JAR-PATHNAME} \ref{EXT:JAR-PATHNAME} arises when zip
+    archives themselves contain zip archives which is the case when
+    the ABCL fasl is included in the abcl.jar zip archive.}.
 
 \item A \code{EXT:URL-PATHNAME} always has a \code{HOST} component that is a
   property list.  The values of the \code{HOST} property list are
@@ -943,7 +959,7 @@ expect the following:
   \end{description}
 
 \item In order to encapsulate the implementation decisions for these
-  meanings, the following functions provide a setf-able API for
+  meanings, the following functions provide a SETF-able API for
   reading and writing such values: \code{URL-PATHNAME-QUERY},
   \code{URL-PATHNAME-FRAGMENT}, \code{URL-PATHNAME-AUTHORITY}, and
   \code{URL-PATHNAME-SCHEME}.  The specific subtype of a Pathname may
@@ -1008,7 +1024,7 @@ Example:
 --- Function: \textbf{package-local-nicknames} [\textbf{ext}] \textit{package-designator}
 
 \begin{adjustwidth}{5em}{5em}
-  Returns an alist of \code{(local-nickname . actual-package)}
+  Returns an ALIST of \code{(local-nickname . actual-package)}
   describing the nicknames local to the designated package.
 
   When in the designated package, calls to \code{find-package} with any
@@ -1230,7 +1246,7 @@ reader in the definition of the \code{SHARPSIGN-DOUBLE-QUOTE}
 
 \section{ASDF}
 
-asdf-2.30 (see \cite{asdf}) is packaged as core component of \textsc{ABCL},
+asdf-3.1.0.49 (see \cite{asdf}) is packaged as core component of \textsc{ABCL},
 but not initialized by default, as it relies on the \textsc{CLOS} subsystem
 which can take a bit of time to start \footnote{While this time is
   ``merely'' on the order of seconds for contemporary 2011 machines,
@@ -1247,7 +1263,7 @@ CL-USER> (require 'asdf)
 
 The \textsc{ABCL} contrib is packaged as a separate jar archive usually named
 \code{abcl-contrib.jar} or possibly something like
-\code{abcl-contrib-1.2.0.jar}.  The contrib jar is not loaded by the
+\code{abcl-contrib-1.3.0.jar}.  The contrib jar is not loaded by the
 implementation by default, and must be first intialized by the
 \code{REQUIRE} mechanism before using any specific contrib:
 
@@ -1334,7 +1350,7 @@ Notice that all recursive dependencies have been located and installed
 locally from the network as well.
 
 More extensive documentations and examples can be found at
-\url{http://abcl.org/svn/trunk/abcl/contrib/abcl-asdf/README.markdown}.
+\url{http://abcl.org/svn/tags/1.3.0/contrib/abcl-asdf/README.markdown}.
 
 
 \section{asdf-jar}
@@ -1346,7 +1362,7 @@ this package will recursively package all the required source and
 fasls in a jar archive.
 
 The documentation for this contrib can be found at
-\url{http://abcl.org/svn/trunk/abcl/contrib/asdf-jar/README.markdown}.
+\url{http://abcl.org/svn/tags/1.3.0/abcl-contrib/asdf-jar/README.markdown}.
 
 
 \section{jss}
@@ -1382,14 +1398,14 @@ CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 \end{listing-lisp} %$ <-- un-confuse Emacs font-lock
 
 Some more information on jss can be found in its documentation at
-\url{http://abcl.org/svn/trunk/abcl/contrib/jss/README.markdown}
+\url{http://abcl.org/svn/tags/1.3.0/contrib/jss/README.markdown}
 
 \section{jfli}
 \label{section:jfli}
 
 The contrib contains a pure-Java version of JFLI. 
 
-\url{http://abcl.org/svn/trunk/abcl/contrib/jfli/README}.
+\url{http://abcl.org/svn/tags/1.3.0/contrib/jfli/README}.
 
 
 \section{asdf-install}
@@ -1404,7 +1420,7 @@ the value of the \textsc{ASDF} central registry in
 stashing \textsc{ABCL} specific system definitions for convenient
 access.
 
-\url{http://abcl.org/svn/trunk/abcl/contrib/asdf-install/README}.
+\url{http://abcl.org/tags/1.3.0/contrib/asdf-install/README}.
 
 
 \chapter{History}
@@ -1433,16 +1449,22 @@ In December 2012, we revised the implementation by adding
 \textsc{(A)MOP} with the release of abcl-1.1.0.  We released
 abcl-1.1.1 as a maintainence release on Feburary 14, 2013.
 
+At the beginning of June 2013, we enhanced the stability of the
+implementation with the release of abcl-1.2.1.
+
+In January 2014, we introduced the Third Edition of the implementation
+with abcl-1.3.0.
+
 \appendix 
 
 \chapter{The MOP Dictionary}
 
-\include{mop}o
+\include{mop}
 
 \chapter{The SYSTEM Dictionary}
 
 The public interfaces in this package are subject to change with
-\textsc{ABCL} 1.2.
+\textsc{ABCL} 1.4.
 
 \include{system}
 
