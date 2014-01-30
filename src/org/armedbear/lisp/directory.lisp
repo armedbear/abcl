@@ -134,18 +134,18 @@ error to its caller."
                                 namestring nil resolve-symlinks))
                       (matching-entries ()))
                   (dolist (entry entries)
-					(when 
-						(or 
-						 (and 
-						  (file-directory-p entry)
-						  (pathname-match-p (file-namestring (pathname-as-file entry)) 
-											(file-namestring pathname)))
-						 (pathname-match-p (or (file-namestring entry) "") (file-namestring pathname)))
-					  (push 
-					   (if resolve-symlinks
-						   (truename entry) 
-						   entry)
-					   matching-entries)))
+                    (when 
+                        (or 
+                         (and 
+                          (file-directory-p entry)
+                          (pathname-match-p (file-namestring (pathname-as-file entry)) 
+                                            (file-namestring pathname)))
+                         (pathname-match-p (or (file-namestring entry) "") (file-namestring pathname)))
+                      (push 
+                       (if resolve-symlinks
+                           (truename entry) 
+                           entry)
+                       matching-entries)))
                   matching-entries))))
         ;; Not wild.
         (let ((truename (probe-file pathname)))

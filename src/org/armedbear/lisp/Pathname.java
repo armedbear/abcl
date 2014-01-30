@@ -1641,14 +1641,14 @@ public class Pathname extends LispObject {
                         for (int i = files.length; i-- > 0;) {
                             File file = files[i];
                             Pathname p;
-							String path;
-							if (resolveSymlinks == NIL) {
-							  path = file.getAbsolutePath();
-							} else {
-							  path = file.getCanonicalPath();
-							}
-							URI pathURI = (new File(path)).toURI();
-							p = new Pathname(pathURI.toString());
+                            String path;
+                            if (resolveSymlinks == NIL) {
+                              path = file.getAbsolutePath();
+                            } else {
+                              path = file.getCanonicalPath();
+                            }
+                            URI pathURI = (new File(path)).toURI();
+                            p = new Pathname(pathURI.toString());
                             result = new Cons(p, result);
                         }
                     } catch (IOException e) {
@@ -2036,21 +2036,21 @@ public class Pathname extends LispObject {
             result.type = d.type;
         }
         //  CLtLv2 MERGE-PATHNAMES 
-	
-	// "[T]he missing components in the given pathname are filled
-	// in from the defaults pathname, except that if no version is
-	// specified the default version is used."
+    
+    // "[T]he missing components in the given pathname are filled
+    // in from the defaults pathname, except that if no version is
+    // specified the default version is used."
 
-	// "The merging rules for the version are more complicated and
-	// depend on whether the pathname specifies a name. If the
-	// pathname doesn't specify a name, then the version, if not
-	// provided, will come from the defaults, just like the other
-	// components. However, if the pathname does specify a name,
-	// then the version is not affected by the defaults. The
-	// reason is that the version ``belongs to'' some other file
-	// name and is unlikely to have anything to do with the new
-	// one. Finally, if this process leaves the
-	// version missing, the default version is used."
+    // "The merging rules for the version are more complicated and
+    // depend on whether the pathname specifies a name. If the
+    // pathname doesn't specify a name, then the version, if not
+    // provided, will come from the defaults, just like the other
+    // components. However, if the pathname does specify a name,
+    // then the version is not affected by the defaults. The
+    // reason is that the version ``belongs to'' some other file
+    // name and is unlikely to have anything to do with the new
+    // one. Finally, if this process leaves the
+    // version missing, the default version is used."
 
         if (p.version != NIL) {
             result.version = p.version;
@@ -2202,9 +2202,9 @@ public class Pathname extends LispObject {
             // Possibly canonicalize jar file directory
             Cons jars = (Cons) pathname.device;
             LispObject o = jars.car();
-	    if (!(o instanceof Pathname)) {
-	       return doTruenameExit(pathname, errorIfDoesNotExist);
-	    }
+        if (!(o instanceof Pathname)) {
+           return doTruenameExit(pathname, errorIfDoesNotExist);
+        }
             if (o instanceof Pathname 
                 && !(((Pathname)o).isURL())
                 // XXX Silently fail to call truename() if the default
@@ -2282,7 +2282,7 @@ public class Pathname extends LispObject {
             }
         }
         error:
-	  return doTruenameExit(pathname, errorIfDoesNotExist);
+      return doTruenameExit(pathname, errorIfDoesNotExist);
     }
     
     static private LispObject doTruenameExit(Pathname pathname, boolean errorIfDoesNotExist) {
