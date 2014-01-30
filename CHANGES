@@ -5,13 +5,25 @@ Unreleased
 
 ## Features
 
-*  ASDF 3.0.1.49 shipped with the implementation
-
-*  per function call stack and memory exception handler in CL:COMPILE
-
-    [???]
-
 *  Make LispStackFrame?.UNAVAILABLE_ARG a singleton object,
+   and lazily create the little used portions of the Lisp stack.
+
+    Aggressively cache and control the use of memory by the underlying
+    Lisp stack frame representation by introducing the private
+    LispThread.StackFrame and LispThread.StackSegments classes.
+
+    Contributed by Dmitry Nadezhin.
+
+    LispStackFrame? object are allocated on every
+    LispThread.execute(...) .  However, they are seldom [accessed]
+    ([... verify via] inspect[tion of the] stack trace). This patch
+    delays allocation of LispStackFrame? objects until they are
+    requested.  Raw information about stack frames is stored in
+    stack. Stack is an Object[] array (more precisely a list of [...]4
+    [Mib] Object[] arrays).
+
+    ME: We are going to need a way to try to less agressively grab 4Mib
+    chunks in low memory situations.
 
     Memory profiling of ABCL shows that the classes with largest
     allocation count are org.armedbear.lisp.LispStackFrame and
@@ -21,6 +33,16 @@ Unreleased
 
     [r14572]: http://abcl.org/trac/changeset/14572
     [r14579]: http://abcl.org/trac/changeset/14579
+
+*  ASDF 3.0.1.49 shipped with the implementation
+
+*  per function call stack and memory exception handler in CL:COMPILE
+
+   Inline calls to jrun-exception-protected (used by handler-bind to
+   catch out of memory conditions).  This commit saves generation
+   roughly 50 cls files.
+
+   [r14552]: http://abcl.org/trac/changeset/14552
 
 *  SYS:SHA256 audited
 
