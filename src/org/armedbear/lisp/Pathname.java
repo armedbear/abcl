@@ -1564,7 +1564,7 @@ public class Pathname extends LispObject {
 
     private static final Primitive LIST_DIRECTORY = new pf_list_directory();
     @DocString(name="list-directory",
-               args="directory &optional (resolve-symlinks t)",
+               args="directory &optional (resolve-symlinks nil)",
                returns="pathnames",
                doc="Lists the contents of DIRECTORY, optionally resolving symbolic links.")
     private static class pf_list_directory extends Primitive {
@@ -1576,7 +1576,7 @@ public class Pathname extends LispObject {
             return execute(arg, T);
         }
         @Override
-        public LispObject execute(LispObject arg, LispObject arg2) {
+        public LispObject execute(LispObject arg, LispObject resolveSymlinks) {
             Pathname pathname = coerceToPathname(arg);
             if (pathname instanceof LogicalPathname) {
                 pathname = LogicalPathname.translateLogicalPathname((LogicalPathname) pathname);
@@ -1641,19 +1641,14 @@ public class Pathname extends LispObject {
                         for (int i = files.length; i-- > 0;) {
                             File file = files[i];
                             Pathname p;
-                            if (file.isDirectory()) {
-                                if (arg2 != NIL) {
-                                    p = Pathname.getDirectoryPathname(file);
-                                } else {
-                                    p = new Pathname(file.getAbsolutePath()); 
-                                }
-                            } else {
-                                if (arg2 != NIL) {
-                                    p = new Pathname(file.getCanonicalPath());
-                                } else {
-                                    p = new Pathname(file.getAbsolutePath());
-                                }
-                            }
+							String path;
+							if (resolveSymlinks == NIL) {
+							  path = file.getAbsolutePath();
+							} else {
+							  path = file.getCanonicalPath();
+							}
+							URI pathURI = (new File(path)).toURI();
+							p = new Pathname(pathURI.toString());
                             result = new Cons(p, result);
                         }
                     } catch (IOException e) {

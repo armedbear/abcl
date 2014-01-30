@@ -96,8 +96,27 @@
                                 resolve-symlinks)))))))
                    entries))))))
 
+;;; XXX Kludge for compatibilty:  hope no one uses.
+(defun directory-old (pathspec &key (resolve-symlinks t))
+  (warn "Deprecated:  Please use CL:DIRECTORY which has a NIL default for :RESOLVE-SYMLINKS.")
+  (directory pathspec :resolve-symlinks resolve-symlinks))
 
-(defun directory (pathspec &key (resolve-symlinks t))
+(defun directory (pathspec &key (resolve-symlinks nil))
+  "Determines which, if any, files that are present in the file system have names matching PATHSPEC, and returns
+a fresh list of pathnames corresponding to the potential truenames of those files.  
+
+With :RESOLVE-SYMLINKS set to nil, not all pathnames returned may
+correspond to an existing file.  Symbolic links are considered to be
+be valid entries even if they do not currently have a valid file or
+directory as a target.  Therefore, subsequent CL:TRUENAME call on
+individual pathnames in the list may signal an error, i.e. the
+pathnames have been constructed as truenames, without calling the
+entire resolution routine of CL:TRUENAME.
+
+If called with :RESOLVE-SYMLINKS set to T, and any of the pathnames
+have truenames which do not exist, this routine will signal a file
+error to its caller."
+
   (let ((pathname (merge-pathnames pathspec)))
     (when (logical-pathname-p pathname)
       (setq pathname (translate-logical-pathname pathname)))
@@ -115,11 +134,18 @@
                                 namestring nil resolve-symlinks))
                       (matching-entries ()))
                   (dolist (entry entries)
-                    (cond ((file-directory-p entry)
-                           (when (pathname-match-p (file-namestring (pathname-as-file entry)) (file-namestring pathname))
-                             (push (truename entry) matching-entries)))
-                          ((pathname-match-p (or (file-namestring entry) "") (file-namestring pathname))
-                           (push (truename entry) matching-entries))))
+					(when 
+						(or 
+						 (and 
+						  (file-directory-p entry)
+						  (pathname-match-p (file-namestring (pathname-as-file entry)) 
+											(file-namestring pathname)))
+						 (pathname-match-p (or (file-namestring entry) "") (file-namestring pathname)))
+					  (push 
+					   (if resolve-symlinks
+						   (truename entry) 
+						   entry)
+					   matching-entries)))
                   matching-entries))))
         ;; Not wild.
         (let ((truename (probe-file pathname)))
