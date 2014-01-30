@@ -6,16 +6,19 @@
   '("foo.ext" "a/b/c/foo.ext" "a/d/e/foo.ext" "b/foo.ext" "a/foo.ext"))
 
 (defvar *temp-directory-root* 
-  (merge-pathnames "tmp/" *this-directory*))
+  (ext:make-temp-directory))
 
 (defun create-wild-test-hierarchy ()
+  (ensure-directories-exist *temp-directory-root*)
   (dolist (file *test-files*)
     (let ((file (merge-pathnames file *temp-directory-root*)))
       (ensure-directories-exist (directory-namestring file))
-      (touch file))))
+	  (unless (probe-file file)
+		(touch file)))))
 
 (defun remove-wild-test-hierarchy ()
-  (delete-directory-and-files *temp-directory-root*))
+  (ignore-errors
+	(delete-directory-and-files *temp-directory-root*)))
 
 (defmacro with-test-directories (&rest body)
   `(prog2 (create-wild-test-hierarchy)
@@ -29,21 +32,23 @@
    (subsetp b a :test #'equal)))
     
 (deftest wild-pathnames.1
-    (let ((results
-           (with-test-directories
-               (directory (merge-pathnames "**/*.ext"
-                                           *temp-directory-root*))))
-          (expected
-           (loop :for file :in *test-files*
-              :collecting (merge-pathnames file
-                                           *temp-directory-root*))))
-      (set-equal results expected))
+	(with-test-directories
+		(let ((results
+			   (directory (merge-pathnames "**/*.ext"
+										   *temp-directory-root*)))
+			  (expected
+			   (loop :for file :in *test-files*
+				  :collecting (merge-pathnames file
+											   *temp-directory-root*))))
+	  (values 
+	   (eq (length results) (length expected))
+	  ;; link --> file is not resolved by change in DIRECTORY to :RESOLVE-SYMLINKS nil
+	   results
+	   expected
+	   (set-equal (mapcar #'truename results) 
+				  (mapcar #'truename expected)))))
   t)
 
-;;; XXX try to track this down by going to the git version?
-;;;
-;;; Passing, but some form of :VERSION :NEWEST was failing for
-;;; ASDF-2.116 according to Faré in proviate email of 18.08.2010
 (deftest wild-pathnames.2
     (equal 
      (first (with-test-directories
@@ -53,4 +58,5 @@
      (merge-pathnames *temp-directory-root* "foo.ext"))
   t)
 
+	
 
