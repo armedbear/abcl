@@ -9,7 +9,7 @@ Unreleased
 
 *  per function call stack and memory exception handler in CL:COMPILE
 
-   [???]
+    [???]
 
 *  Make LispStackFrame?.UNAVAILABLE_ARG a singleton object,
 
@@ -30,36 +30,51 @@ Unreleased
 
     [r14582]:  http://abcl.org/trac/changeset/14582
 
-* The Netbeans IDE configuration now includes a way to connect to the
-  running-under-jdb ABCL via SLIME.  One needs to be able to load
-  things from 'swank.asd', which currently doesn't work in newer, more
-  github-ier SLIMEs.
+* Connect to Netbeans via SLIME
 
-* The Ant `abcl.mvn.install` target now installs build artifacts into
-  the local Maven repository (Olof-Joachim Frahm)
+    The Netbeans IDE configuration now includes a way to connect to
+    the running-under-jdb ABCL via SLIME.  One needs to be able to
+    load things from 'swank.asd', which currently doesn't work in
+    newer, more github-ier SLIMEs.
+
+* Install 'abcl.jar' and 'abcl-contrib.jar' locally as Maven artifacts
+
+    The Ant `abcl.mvn.install` target now installs build artifacts
+    into the local Maven repository (Olof-Joachim Frahm)
 
     [r14579]: http://abcl.org/trac/changeset/14606
 
-
 ## Compatibility
 
-*  Tested:  orcl-jdk-1.7.0_51 x64
+*  CL:DIRECTORY 
+
+   The implementation specific :RESOLVE-SYMLINKS argument to the ANSI
+   DIRECTORY function has been changed to nil.  This implements
+   behavior closer to SBCL and guarantees that a DIRECTORY operation
+   will not signal a file error.
+
+   [r14619]: http://abcl.org/trac/changeset/14619
+   [ticket-340]: http://abcl.org/trac/ticket/340
+
+## Tested
+
+### "Java_HotSpot(TM)_64-Bit_Server_VM-Oracle_Corporation-1.7.0_51-b13" "x86_64-Mac_OS_X-10.9.1"
 
 ### Contrib
 
 #### abcl-asdf
 
-[#328]: http://abcl.org/trac/ticket/328
+[ticket-328]: http://abcl.org/trac/ticket/328
 
-Working with both Maven 3.0.x and 3.1.x.  Thanks to Anton for the
+Now working with both Maven 3.0.x and 3.1.x.  Thanks to Anton for the
 help!
 
 #### jna
   
    Now references jna-4.0.0.  Some incompatibility with CFFI ([in
-   progress with fixing upstream][1]).
+   progress with fixing upstream][cffi-easye]).
 
-[1]: http://slack.net/~evenson/abcl/cffi/encoding.diff
+[cffi-easye]: http://github.com/easye/cffi/
 
 
 Version 1.2.1
