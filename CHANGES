@@ -55,9 +55,8 @@ Unreleased
 * Connect to Netbeans via SLIME
 
     The Netbeans IDE configuration now includes a way to connect to
-    the running-under-jdb ABCL via SLIME.  One needs to be able to
-    load things from 'swank.asd', which currently doesn't work in
-    newer, more github-ier SLIMEs.
+    the running-under-jdb ABCL via SLIME.  One needs a version of
+    SLIME able to be loaded from its 'swank.asd' definition.  
 
 * Install 'abcl.jar' and 'abcl-contrib.jar' locally as Maven artifacts
 
