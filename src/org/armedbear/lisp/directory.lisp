@@ -61,49 +61,43 @@
          (newpath (make-pathname :directory non-wild
                                  :name nil :type nil :defaults pathname))
          (entries (list-directory newpath resolve-symlinks)))
-    (if (not (or wild wild-inferiors-found))
-        entries
-        (let ((inferior-entries (when (or wild-inferiors-found first-wild-inferior) entries)))
-          (nconc 
-           (mapcan (lambda (entry) 
-                     (when (pathname-match-p (pathname entry) pathname)
-                       (list entry)))
-                   inferior-entries)
-           (mapcan (lambda (entry)
-                     (let* ((pathname (pathname entry))
-                            (directory (pathname-directory pathname))
-                            (rest-wild (cdr wild)))
-                       (unless (pathname-name pathname)
-                         (when (pathname-match-p (first (last directory))
-                                    (cond ((eql (car wild) :wild)
-                                           "*")
-                                          ((eql (car wild) :wild-inferiors)
-                                           "*")
-                                          (wild 
-                                           (car wild))
-                                          (t "")))
-                           (when (and 
-                                  (not (or first-wild-inferior 
-                                           wild-inferiors-found)) 
-                                  rest-wild)
-                             (setf directory (nconc directory rest-wild)))
-                           (let ((recurse (make-pathname :directory directory
-                                                  :defaults newpath)))
-                             (when (not (equal recurse newpath))
-                               (list-directories-with-wildcards
-                                recurse
-                                (or first-wild-inferior wild-inferiors-found)
-                                resolve-symlinks)))))))
-                   entries))))))
-
-;;; XXX Kludge for compatibilty:  hope no one uses.
-(defun directory-old (pathspec &key (resolve-symlinks t))
-  (warn "Deprecated:  Please use CL:DIRECTORY which has a NIL default for :RESOLVE-SYMLINKS.")
-  (directory pathspec :resolve-symlinks resolve-symlinks))
+    (when (not (or wild wild-inferiors-found)) ;; no further recursion necessary
+        (return-from list-directories-with-wildcards entries))
+    (let ((inferior-entries (when (or wild-inferiors-found first-wild-inferior) entries)))
+      (nconc 
+       (mapcan (lambda (entry) 
+                 (when (pathname-match-p (pathname entry) pathname)
+                   (list entry)))
+               inferior-entries)
+       (mapcan (lambda (entry)
+                 (let* ((pathname (pathname entry))
+                        (directory (pathname-directory pathname))
+                        (rest-wild (cdr wild)))
+                   (unless (pathname-name pathname)
+                     (when (pathname-match-p (first (last directory))
+                                             (cond ((eql (car wild) :wild)
+                                                    "*")
+                                                   ((eql (car wild) :wild-inferiors)
+                                                    "*")
+                                                   (wild 
+                                                    (car wild))
+                                                   (t "")))
+                       (when (and 
+                              (not (or first-wild-inferior 
+                                       wild-inferiors-found)) 
+                              rest-wild)
+                         (setf directory (nconc directory rest-wild)))
+                       (let ((recurse (make-pathname :directory directory
+                                                     :defaults newpath)))
+                         (when (not (equal recurse newpath))
+                           (list-directories-with-wildcards
+                            recurse
+                            (or first-wild-inferior wild-inferiors-found)
+                            resolve-symlinks)))))))
+                     entries)))))
 
 (defun directory (pathspec &key (resolve-symlinks nil))
-  "Determines which, if any, files that are present in the file system have names matching PATHSPEC, and returns
-a fresh list of pathnames corresponding to the potential truenames of those files.  
+  "Determines which, if any, files that are present in the file system have names matching PATHSPEC, and returns a fresh list of pathnames corresponding to the potential truenames of those files.  
 
 With :RESOLVE-SYMLINKS set to nil, not all pathnames returned may
 correspond to an existing file.  Symbolic links are considered to be
@@ -140,11 +134,17 @@ error to its caller."
                           (file-directory-p entry)
                           (pathname-match-p (file-namestring (pathname-as-file entry)) 
                                             (file-namestring pathname)))
-                         (pathname-match-p (or (file-namestring entry) "") (file-namestring pathname)))
+                         (pathname-match-p (or (file-namestring entry) "") 
+                                           (file-namestring pathname)))
                       (push 
                        (if resolve-symlinks
                            (truename entry) 
-                           entry)
+                           ;; Normalize nil DEVICE to :UNSPECIFIC under non-Windows
+                           ;; fixes ANSI DIRECTORY.[67]
+                           (if (and (not (find :windows *features*))
+                                    (not (pathname-device entry)))
+                               (make-pathname :defaults entry :device :unspecific)
+                               entry))
                        matching-entries)))
                   matching-entries))))
         ;; Not wild.

@@ -217,6 +217,10 @@ public class Pathname extends LispObject {
          // characters. 
         init(url.toString());
     }
+    
+    public Pathname(URI uri) {
+        init(uri.toString());
+    }
 
     static final Symbol SCHEME = internKeyword("SCHEME");
     static final Symbol AUTHORITY = internKeyword("AUTHORITY");
@@ -368,22 +372,28 @@ public class Pathname extends LispObject {
             if (scheme.equals("file")) {
                 URI uri = null;
                 try {
-                    uri = url.toURI();
+                    uri = new URI(s);
                 } catch (URISyntaxException ex) {
                     error(new SimpleError("Improper URI syntax for "
                                     + "'" + url.toString() + "'"
                                     + ": " + ex.toString()));
                 }
+            
                 String uriPath = uri.getPath();
                 if (null == uriPath) {
-            // We make an exception for forms like "file:z:/foo/path"
-            uriPath = uri.getSchemeSpecificPart();
-            if (uriPath == null || uriPath.equals("")) {
-               error(new LispError("The URI has no path: " + uri));
-                }
+				  // Under Windows, deal with pathnames containing
+				  // devices expressed as "file:z:/foo/path"
+				  uriPath = uri.getSchemeSpecificPart();
+				  if (uriPath == null || uriPath.equals("")) {
+                    error(new LispError("The URI has no path: " + uri));
+                  }
                 }
                 final File file = new File(uriPath);
-                final Pathname p = new Pathname(file.getPath());
+                String path = file.getPath();
+                if (uri.toString().endsWith("/") && !path.endsWith("/")) {
+                  path += "/";
+                }
+                final Pathname p = new Pathname(path);
                 this.host = p.host;
                 this.device = p.device;
                 this.directory = p.directory;
@@ -403,32 +413,31 @@ public class Pathname extends LispObject {
             }
             String authority = uri.getAuthority();
         if (authority == null) {
-        authority = url.getAuthority();
-        if (authority == null) {
-            Debug.trace(MessageFormat.format("{0} has a null authority.",
-                             url));
-        }
+          authority = url.getAuthority();
+          if (authority == null) {
+            Debug.trace(MessageFormat.format("{0} has a null authority.", url));
+          }
         }
 
-            host = NIL;
-            host = host.push(SCHEME);
-            host = host.push(new SimpleString(scheme));
+        host = NIL;
+        host = host.push(SCHEME);
+        host = host.push(new SimpleString(scheme));
 
         if (authority != null) {
-        host = host.push(AUTHORITY);
-        host = host.push(new SimpleString(authority));
+          host = host.push(AUTHORITY);
+          host = host.push(new SimpleString(authority));
         }
 
-            device = NIL;
+        device = NIL;
             
-            // URI encode necessary characters
-            String path = uri.getRawPath();
-            if (path == null) {
-                path = "";
-            } 
-            String query = uri.getRawQuery();
-            if (query != null) {
-                host = host.push(QUERY);
+        // URI encode necessary characters
+        String path = uri.getRawPath();
+        if (path == null) {
+          path = "";
+        } 
+        String query = uri.getRawQuery();
+        if (query != null) {
+          host = host.push(QUERY);
                 host = host.push(new SimpleString(query));
             }
             String fragment = uri.getRawFragment();
@@ -1648,11 +1657,12 @@ public class Pathname extends LispObject {
                               path = file.getCanonicalPath();
                             }
                             URI pathURI = (new File(path)).toURI();
-                            p = new Pathname(pathURI.toString());
+                            p = new Pathname(pathURI);
                             result = new Cons(p, result);
                         }
                     } catch (IOException e) {
-                        return error(new FileError("Unable to list directory " + pathname.princToString() + ".",
+                        return error(new FileError("Unable to list directory " 
+                                                   + pathname.princToString() + ".",
                                                    pathname));
                     } catch (SecurityException e) {
                         Debug.trace(e);

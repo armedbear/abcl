@@ -101,4 +101,17 @@ public class PathnameTest
       String s = r.getNamestring();
       assertTrue(s.equals("jar:file:/a/b/c/foo.jar!/bar.abcl"));
   }
+  @Test 
+  public void constructorFileDirectory() {
+    Pathname p = new Pathname("file://tmp/");
+    assertTrue(p.getNamestring().endsWith("/"));
+  }
+  @Test 
+    public void constructorFileWindowsDevice() {
+    Pathname p = new Pathname("file:c://tmp/");
+    LispObject device = p.getDevice();
+    if (Utilities.isPlatformWindows) {
+      assert(device != Lisp.NIL);
+    }
+  }
 }

@@ -99,16 +99,33 @@ for non-Windows systems.
 TRUENAME sets DEVICE to :UNSPECIFIC running on non-Windows when
 resolving a path to a plain file.
 
+
+### DIRECTORY sets DEVICE to :UNSPECIFIC
+
+When the default for the :RESOLVE-SYMLINKS argument to DIRECTORY was
+changed to nil, DIRECTORY was changed not to always resolve its
+results via TRUENAME.  As a result
+
+    (equal (truename "~/.emacs")
+           (first (directory "~/.emacs")) )
+
+forms would return nil.  This is a bit counter to expectations set by
+CLHS that DIRECTORY "returns a list of pathnames corresponding to the
+truenames".  In particular, this breaks the ANSI CL DIRECTORY.[67]
+tests.  Thus, under non-Windows we now explicitly normalize DEVICE
+components which are nil to :UNSPECIFIC for the results of DIRECTORY
+calls.
+
 ### Use an implicit type for merging 
 
 In the case for which a merge occurs when DEFAULT-PATHNAME
 is a JAR-PATHNAME and the following conditions hold:
 
-1.  HOST and DEVICE of the PATHNAME are NIL
+    1.  HOST and DEVICE of the PATHNAME are NIL
 
-2.  The DIRECTORY of the PATHNAME represents an absolute path. 
+    2.  The DIRECTORY of the PATHNAME represents an absolute path.
 
-3.  We are not on Windows.
+    3.  We are not running under Windows.
 
 we set the DEVICE to be :UNSPECIFIC.
 
@@ -116,5 +133,5 @@ we set the DEVICE to be :UNSPECIFIC.
 
 Mark <evenson@panix.com>
 Created:  01-SEP-2012
-Revised:  09-OCT-2012
+Revised:  06-FEB-2014
 
