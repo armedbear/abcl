@@ -35,11 +35,11 @@ for Common Lisp programs and libraries.
 You can find the latest version of this manual at
 @url{http://common-lisp.net/project/asdf/asdf.html}.
 
-ASDF Copyright @copyright{} 2001-2013 Daniel Barlow and contributors.
+ASDF Copyright @copyright{} 2001-2014 Daniel Barlow and contributors.
 
-This manual Copyright @copyright{} 2001-2013 Daniel Barlow and contributors.
+This manual Copyright @copyright{} 2001-2014 Daniel Barlow and contributors.
 
-This manual revised @copyright{} 2009-2013 Robert P. Goldman and Francois-Rene Rideau.
+This manual revised @copyright{} 2009-2014 Robert P. Goldman and Francois-Rene Rideau.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -173,7 +173,7 @@ the ASDF internals and how to extend ASDF.
 
 @emph{Nota Bene}:
 We have released ASDF 2.000 on May 31st 2010,
-and ASDF 3.0 on January 31st 2013.
+and ASDF 3.0.0 on May 15th 2013.
 Releases of ASDF 2 and later have since then been included
 in all actively maintained CL implementations that used to bundle ASDF 1,
 plus some implementations that didn't use to,

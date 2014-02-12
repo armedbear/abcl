@@ -1,5 +1,5 @@
-;;; -*- mode: Common-Lisp; Base: 10 ; Syntax: ANSI-Common-Lisp -*-
-;;; This is ASDF 3.1.0.49: Another System Definition Facility.
+;;; -*- mode: Common-Lisp; Base: 10 ; Syntax: ANSI-Common-Lisp ; buffer-read-only: t; -*-
+;;; This is ASDF 3.1.0.65: Another System Definition Facility.
 ;;;
 ;;; Feedback, bug reports, and patches are all welcome:
 ;;; please mail to <asdf-devel@common-lisp.net>.
@@ -53,6 +53,13 @@
 (eval-when (:load-toplevel :compile-toplevel :execute)
   (setf ext:*gc-verbose* nil))
 
+;;; pre 1.3.0 ABCL versions do not support the bundle-op on Mac OS X
+#+abcl
+(eval-when (:load-toplevel :compile-toplevel :execute)
+  (unless (and (member :darwin *features*)
+               (second (third (sys::arglist 'directory))))
+    (push :abcl-bundle-op-supported *features*)))
+
 ;; Punt on hard package upgrade: from ASDF1 always, and even from ASDF2 on most implementations.
 (eval-when (:load-toplevel :compile-toplevel :execute)
   (unless (member :asdf3 *features*)
@@ -71,7 +78,8 @@
            (away (format nil "~A-~A" :asdf existing-version)))
       (when (and existing-version
                  (< existing-version-number
-		    (or #+(or allegro clisp lispworks sbcl) 2.0 2.27)))
+                    #+(or allegro clisp lispworks sbcl) 2.0
+                    #-(or allegro clisp lispworks sbcl) 2.27))
         (rename-package :asdf away)
         (when *load-verbose*
           (format t "~&; Renamed old ~A package away to ~A~%" :asdf away))))))
@@ -2241,6 +2249,9 @@ ways that the filename components can be missing are for it to be NIL,
 Note that this does _not_ check to see that PATHNAME points to an
 actually-existing directory."
     (when pathname
+      ;; I tried using Allegro's excl:file-directory-p, but this cannot be done,
+      ;; because it rejects apparently legal pathnames as
+      ;; ill-formed. [2014/02/10:rpg]
       (let ((pathname (pathname pathname)))
         (flet ((check-one (x)
                  (member x '(nil :unspecific "") :test 'equal)))
@@ -2811,6 +2822,13 @@ or the original (parsed) pathname if it is false (the default)."
 
   (defun directory-exists-p (x)
     "Is X the name of a directory that exists on the filesystem?"
+    #+allegro
+    (excl:probe-directory x)
+    #+clisp
+    (handler-case (ext:probe-directory x)
+           (sys::simple-file-error ()
+             nil))
+    #-(or allegro clisp)
     (let ((p (probe-file* x :truename t)))
       (and (directory-pathname-p p) p)))
 
@@ -2835,26 +2853,33 @@ Try to override the defaults to not resolving symlinks, if implementation allows
     "Given ENTRIES in a DIRECTORY, remove if the directory is logical
 the entries which are physical yet when transformed by MERGER have a different TRUENAME.
 This function is used as a helper to DIRECTORY-FILES to avoid invalid entries when using logical-pathnames."
-    (if (logical-pathname-p directory)
-        ;; Try hard to not resolve logical-pathname into physical pathnames;
-        ;; otherwise logical-pathname users/lovers will be disappointed.
-        ;; If directory* could use some implementation-dependent magic,
-        ;; we will have logical pathnames already; otherwise,
-        ;; we only keep pathnames for which specifying the name and
-        ;; translating the LPN commute.
-        (loop :for f :in entries
-              :for p = (or (and (logical-pathname-p f) f)
-                           (let* ((u (ignore-errors (call-function merger f))))
-                             ;; The first u avoids a cumbersome (truename u) error.
-                             ;; At this point f should already be a truename,
-                             ;; but isn't quite in CLISP, for it doesn't have :version :newest
-                             (and u (equal (truename* u) (truename* f)) u)))
-              :when p :collect p)
-        entries))
+    (remove-duplicates ;; on CLISP, querying ~/ will return duplicates
+     (if (logical-pathname-p directory)
+         ;; Try hard to not resolve logical-pathname into physical pathnames;
+         ;; otherwise logical-pathname users/lovers will be disappointed.
+         ;; If directory* could use some implementation-dependent magic,
+         ;; we will have logical pathnames already; otherwise,
+         ;; we only keep pathnames for which specifying the name and
+         ;; translating the LPN commute.
+         (loop :for f :in entries
+               :for p = (or (and (logical-pathname-p f) f)
+                            (let* ((u (ignore-errors (call-function merger f))))
+                              ;; The first u avoids a cumbersome (truename u) error.
+                              ;; At this point f should already be a truename,
+                              ;; but isn't quite in CLISP, for it doesn't have :version :newest
+                              (and u (equal (truename* u) (truename* f)) u)))
+               :when p :collect p)
+         entries)
+     :test 'pathname-equal))
+
 
   (defun directory-files (directory &optional (pattern *wild-file*))
-    "Return a list of the files in a directory according to the PATTERN,
-which is not very portable to override. Try not resolve symlinks if implementation allows."
+    "Return a list of the files in a directory according to the PATTERN.
+Subdirectories should NOT be returned.
+  PATTERN defaults to a pattern carefully chosen based on the implementation;
+override the default at your own risk.
+  DIRECTORY-FILES tries NOT to resolve symlinks if the implementation
+permits this."
     (let ((dir (pathname directory)))
       (when (logical-pathname-p dir)
         ;; Because of the filtering we do below,
@@ -2870,13 +2895,14 @@ which is not very portable to override. Try not resolve symlinks if implementati
                               #+clisp
                               (when (equal :wild (pathname-type pattern))
                                 (ignore-errors (directory* (make-pathname :type nil :defaults pat)))))))
-        (filter-logical-directory-results
-         directory entries
-         #'(lambda (f)
-             (make-pathname :defaults dir
-                            :name (make-pathname-component-logical (pathname-name f))
-                            :type (make-pathname-component-logical (pathname-type f))
-                            :version (make-pathname-component-logical (pathname-version f))))))))
+        (remove-if 'directory-pathname-p
+                   (filter-logical-directory-results
+                    directory entries
+                    #'(lambda (f)
+                        (make-pathname :defaults dir
+                                       :name (make-pathname-component-logical (pathname-name f))
+                                       :type (make-pathname-component-logical (pathname-type f))
+                                       :version (make-pathname-component-logical (pathname-version f)))))))))
 
   (defun subdirectories (directory)
     "Given a DIRECTORY pathname designator, return a list of the subdirectories under it."
@@ -4576,35 +4602,27 @@ Programmers are encouraged to define their own methods for this generic function
      :linewise linewise :prefix prefix :element-type element-type :buffer-size buffer-size))
 
   (defmethod slurp-input-stream ((x (eql 'string)) stream &key stripped)
-    (declare (ignorable x))
     (slurp-stream-string stream :stripped stripped))
 
   (defmethod slurp-input-stream ((x (eql :string)) stream &key stripped)
-    (declare (ignorable x))
     (slurp-stream-string stream :stripped stripped))
 
   (defmethod slurp-input-stream ((x (eql :lines)) stream &key count)
-    (declare (ignorable x))
     (slurp-stream-lines stream :count count))
 
   (defmethod slurp-input-stream ((x (eql :line)) stream &key (at 0))
-    (declare (ignorable x))
     (slurp-stream-line stream :at at))
 
   (defmethod slurp-input-stream ((x (eql :forms)) stream &key count)
-    (declare (ignorable x))
     (slurp-stream-forms stream :count count))
 
   (defmethod slurp-input-stream ((x (eql :form)) stream &key (at 0))
-    (declare (ignorable x))
     (slurp-stream-form stream :at at))
 
   (defmethod slurp-input-stream ((x (eql t)) stream &rest keys &key &allow-other-keys)
-    (declare (ignorable x))
     (apply 'slurp-input-stream *standard-output* stream keys))
 
-  (defmethod slurp-input-stream ((x null) stream &key)
-    (declare (ignorable x stream))
+  (defmethod slurp-input-stream ((x null) (stream t) &key)
     nil)
 
   (defmethod slurp-input-stream ((pathname pathname) input
@@ -4679,11 +4697,9 @@ Programmers are encouraged to define their own methods for this generic function
     (values))
 
   (defmethod vomit-output-stream ((x (eql t)) stream &rest keys &key &allow-other-keys)
-    (declare (ignorable x))
     (apply 'vomit-output-stream *standard-input* stream keys))
 
-  (defmethod vomit-output-stream ((x null) stream &key)
-    (declare (ignorable x stream))
+  (defmethod vomit-output-stream ((x null) (stream t) &key)
     (values))
 
   (defmethod vomit-output-stream ((pathname pathname) input
@@ -6418,7 +6434,7 @@ directive.")
 ;;;; Handle upgrade as forward- and backward-compatibly as possible
 ;; See https://bugs.launchpad.net/asdf/+bug/485687
 
-(asdf/package:define-package :asdf/upgrade
+(uiop/package:define-package :asdf/upgrade
   (:recycle :asdf/upgrade :asdf)
   (:use :uiop/common-lisp :uiop)
   (:export
@@ -6428,7 +6444,7 @@ directive.")
    #:*post-upgrade-cleanup-hook* #:*post-upgrade-restart-hook* #:cleanup-upgraded-asdf
    ;; There will be no symbol left behind!
    #:intern*)
-  (:import-from :asdf/package #:intern* #:find-symbol*))
+  (:import-from :uiop/package #:intern* #:find-symbol*))
 (in-package :asdf/upgrade)
 
 ;;; Special magic to detect if this is an upgrade
@@ -6467,6 +6483,8 @@ You can compare this string with e.g.: (ASDF:VERSION-SATISFIES (ASDF:ASDF-VERSIO
   (defun upgrading-p ()
     (and *previous-asdf-versions* (not (equal *asdf-version* (first *previous-asdf-versions*)))))
   (defmacro when-upgrading ((&key (upgrading-p '(upgrading-p)) when) &body body)
+    "A wrapper macro for code that should only be run when upgrading a
+previously-loaded version of ASDF."
     `(with-upgradability ()
        (when (and ,upgrading-p ,@(when when `(,when)))
          (handler-bind ((style-warning #'muffle-warning))
@@ -6480,7 +6498,7 @@ You can compare this string with e.g.: (ASDF:VERSION-SATISFIES (ASDF:ASDF-VERSIO
          ;; "3.4.5.67" would be a development version in the official branch, on top of 3.4.5.
          ;; "3.4.5.0.8" would be your eighth local modification of official release 3.4.5
          ;; "3.4.5.67.8" would be your eighth local modification of development version 3.4.5.67
-         (asdf-version "3.1.0.49")
+         (asdf-version "3.1.0.65")
          (existing-version (asdf-version)))
     (setf *asdf-version* asdf-version)
     (when (and existing-version (not (equal asdf-version existing-version)))
@@ -6514,8 +6532,7 @@ You can compare this string with e.g.: (ASDF:VERSION-SATISFIES (ASDF:ASDF-VERSIO
              #:component-self-dependencies
              #:resolve-relative-location-component #:resolve-absolute-location-component
              #:output-files-for-system-and-operation))) ; obsolete ASDF-BINARY-LOCATION function
-    (declare (ignorable redefined-functions uninterned-symbols))
-    (loop :for name :in (append redefined-functions)
+    (loop :for name :in redefined-functions
           :for sym = (find-symbol* name :asdf nil) :do
             (when sym
               ;; On CLISP we seem to be unable to fmakunbound and define a function in the same fasl. Sigh.
@@ -6575,7 +6592,7 @@ You can compare this string with e.g.: (ASDF:VERSION-SATISFIES (ASDF:ASDF-VERSIO
 ;;;; -------------------------------------------------------------------------
 ;;;; Components
 
-(asdf/package:define-package :asdf/component
+(uiop/package:define-package :asdf/component
   (:recycle :asdf/component :asdf/defsystem :asdf/find-system :asdf)
   (:use :uiop/common-lisp :uiop :asdf/upgrade)
   (:export
@@ -6635,7 +6652,7 @@ another pathname in a degenerate way."))
   (defgeneric component-version (component))
   (defgeneric (setf component-version) (new-version component))
   (defgeneric component-parent (component))
-  (defmethod component-parent ((component null)) (declare (ignorable component)) nil)
+  (defmethod component-parent ((component null)) nil)
 
   ;; Backward compatible way of computing the FILE-TYPE of a component.
   ;; TODO: find users, have them stop using that, remove it for ASDF4.
@@ -6656,11 +6673,6 @@ another pathname in a degenerate way."))
                (format s (compatfmt "~@<Error while defining system: multiple components are given same name ~S~@:>")
                        (duplicate-names-name c))))))
 
-
-
-(when-upgrading (:when (find-class 'component nil))
-  (defmethod reinitialize-instance :after ((c component) &rest initargs &key)
-    (declare (ignorable c initargs)) (values)))
 
 (with-upgradability ()
   (defclass component ()
@@ -6716,6 +6728,8 @@ another pathname in a degenerate way."))
       :initarg :build-operation :initform nil :reader component-build-operation)))
 
   (defun component-find-path (component)
+    "Return a path from a root system to the COMPONENT.
+The return value is a list of component NAMES; a list of strings."
     (check-type component (or null component))
     (reverse
      (loop :for c = component :then (component-parent c)
@@ -6734,7 +6748,9 @@ another pathname in a degenerate way."))
 ;;;; Component hierarchy within a system
 ;; The tree typically but not necessarily follows the filesystem hierarchy.
 (with-upgradability ()
-  (defclass child-component (component) ())
+  (defclass child-component (component) ()
+    (:documentation "A CHILD-COMPONENT is a component that may be part of
+a PARENT-COMPONENT."))
 
   (defclass file-component (child-component)
     ((type :accessor file-type :initarg :type))) ; no default
@@ -6763,7 +6779,9 @@ another pathname in a degenerate way."))
      (default-component-class
       :initform nil
       :initarg :default-component-class
-      :accessor module-default-component-class))))
+      :accessor module-default-component-class))
+  (:documentation "A PARENT-COMPONENT is a component that may have
+children.")))
 
 (with-upgradability ()
   (defun compute-children-by-name (parent &key only-if-needed-p)
@@ -6776,19 +6794,6 @@ another pathname in a degenerate way."))
               :do (when previous (error 'duplicate-names :name name))
                   (setf (gethash name hash) c))
         hash))))
-
-(when-upgrading (:when (find-class 'module nil))
-  (defmethod reinitialize-instance :after ((m module) &rest initargs &key)
-    (declare (ignorable m initargs)) (values))
-  (defmethod update-instance-for-redefined-class :after
-      ((m module) added deleted plist &key)
-    (declare (ignorable m added deleted plist))
-    (when (and (member 'children added) (member 'components deleted))
-      (setf (slot-value m 'children)
-            ;; old ECLs provide an alist instead of a plist(!)
-            (if (or #+ecl (consp (first plist))) (or #+ecl (cdr (assoc 'components plist)))
-                (getf plist 'components)))
-      (compute-children-by-name m))))
 
 (with-upgradability ()
   (defclass module (child-component parent-component)
@@ -6815,9 +6820,10 @@ another pathname in a degenerate way."))
           pathname)))
 
   (defmethod component-relative-pathname ((component component))
-    ;; source-file-type is backward-compatibility with ASDF1;
-    ;; we ought to be able to extract this from the component alone with COMPONENT-TYPE.
-    ;; TODO: track who uses it, and have them not use it anymore.
+    ;; SOURCE-FILE-TYPE below is strictly for backward-compatibility with ASDF1.
+    ;; We ought to be able to extract this from the component alone with COMPONENT-TYPE.
+    ;; TODO: track who uses it, and have them not use it anymore;
+    ;; maybe issue a WARNING (then eventually CERROR) if the two methods diverge?
     (parse-unix-namestring
      (or (and (slot-boundp component 'relative-pathname)
               (slot-value component 'relative-pathname))
@@ -6826,12 +6832,10 @@ another pathname in a degenerate way."))
      :type (source-file-type component (component-system component))
      :defaults (component-parent-pathname component)))
 
-  (defmethod source-file-type ((component parent-component) system)
-    (declare (ignorable component system))
+  (defmethod source-file-type ((component parent-component) (system parent-component))
     :directory)
 
-  (defmethod source-file-type ((component file-component) system)
-    (declare (ignorable system))
+  (defmethod source-file-type ((component file-component) (system parent-component))
     (file-type component)))
 
 
@@ -6885,7 +6889,7 @@ another pathname in a degenerate way."))
 ;;;; -------------------------------------------------------------------------
 ;;;; Systems
 
-(asdf/package:define-package :asdf/system
+(uiop/package:define-package :asdf/system
   (:recycle :asdf :asdf/system)
   (:use :uiop/common-lisp :uiop :asdf/upgrade :asdf/component)
   (:export
@@ -6913,7 +6917,6 @@ another pathname in a degenerate way."))
 
   (defgeneric component-entry-point (component))
   (defmethod component-entry-point ((c component))
-    (declare (ignorable c))
     nil))
 
 
@@ -6990,13 +6993,12 @@ in which the system specification (.asd file) is located."
     (system-source-directory system))
 
   (defmethod component-build-pathname ((c component))
-    (declare (ignorable c))
     nil))
 
 ;;;; -------------------------------------------------------------------------
 ;;;; Stamp cache
 
-(asdf/package:define-package :asdf/cache
+(uiop/package:define-package :asdf/cache
   (:use :uiop/common-lisp :uiop :asdf/upgrade)
   (:export #:get-file-stamp #:compute-file-stamp #:register-file-stamp
            #:consult-asdf-cache #:do-asdf-cache #:normalize-namestring
@@ -7061,7 +7063,7 @@ in which the system specification (.asd file) is located."
 ;;;; -------------------------------------------------------------------------
 ;;;; Finding systems
 
-(asdf/package:define-package :asdf/find-system
+(uiop/package:define-package :asdf/find-system
   (:recycle :asdf/find-system :asdf)
   (:use :uiop/common-lisp :uiop :asdf/upgrade
    :asdf/component :asdf/system :asdf/cache)
@@ -7306,7 +7308,6 @@ Going forward, we recommend new users should be using the source-registry.
     (register-preloaded-system s :version *asdf-version*))
 
   (defmethod find-system ((name null) &optional (error-p t))
-    (declare (ignorable name))
     (when error-p
       (sysdef-error (compatfmt "~@<NIL is not a valid system name~@:>"))))
 
@@ -7483,7 +7484,7 @@ PREVIOUS-TIME when not null is the time at which the PREVIOUS system was loaded.
 ;;;; -------------------------------------------------------------------------
 ;;;; Finding components
 
-(asdf/package:define-package :asdf/find-component
+(uiop/package:define-package :asdf/find-component
   (:recycle :asdf/find-component :asdf)
   (:use :uiop/common-lisp :uiop :asdf/upgrade
    :asdf/component :asdf/system :asdf/find-system)
@@ -7561,8 +7562,7 @@ PREVIOUS-TIME when not null is the time at which the PREVIOUS system was loaded.
   (defmethod find-component ((c component) (name cons))
     (find-component (find-component c (car name)) (cdr name)))
 
-  (defmethod find-component (base (actual component))
-    (declare (ignorable base))
+  (defmethod find-component ((base t) (actual component))
     actual)
 
   (defun resolve-dependency-name (component name &optional version)
@@ -7602,41 +7602,41 @@ PREVIOUS-TIME when not null is the time at which the PREVIOUS system was loaded.
            (cons combinator arguments) component))
 
   (defmethod resolve-dependency-combination (component (combinator (eql :feature)) arguments)
-    (declare (ignorable combinator))
     (when (featurep (first arguments))
       (resolve-dependency-spec component (second arguments))))
 
   (defmethod resolve-dependency-combination (component (combinator (eql :version)) arguments)
-    (declare (ignorable combinator)) ;; See https://bugs.launchpad.net/asdf/+bug/527788
-    (resolve-dependency-name component (first arguments) (second arguments))))
+    (resolve-dependency-name component (first arguments) (second arguments)))) ;; See lp#527788
 
 ;;;; -------------------------------------------------------------------------
 ;;;; Operations
 
-(asdf/package:define-package :asdf/operation
+(uiop/package:define-package :asdf/operation
   (:recycle :asdf/operation :asdf/action :asdf) ;; asdf/action for FEATURE pre 2.31.5.
   (:use :uiop/common-lisp :uiop :asdf/upgrade)
   (:export
    #:operation
    #:operation-original-initargs #:original-initargs ;; backward-compatibility only. DO NOT USE.
-   #:build-op ;; THE generic operation
    #:*operations* #:make-operation #:find-operation #:feature))
 (in-package :asdf/operation)
 
 ;;; Operation Classes
 
 (when-upgrading (:when (find-class 'operation nil))
-  (defmethod shared-initialize :after ((o operation) slot-names &rest initargs &key)
-    (declare (ignorable o slot-names initargs)) (values)))
+  ;; override any obsolete shared-initialize method when upgrading from ASDF2.
+  (defmethod shared-initialize :after ((o operation) (slot-names t) &key)
+    (values)))
 
 (with-upgradability ()
   (defclass operation ()
     ((original-initargs ;; for backward-compat -- used by GBBopen and swank (via operation-forced)
       :initform nil :initarg :original-initargs :accessor operation-original-initargs)))
 
+  ;; Cache a copy of the INITARGS in the ORIGINAL-INITARGS slot, if that slot is not
+  ;; already bound.
   (defmethod initialize-instance :after ((o operation) &rest initargs
                                          &key force force-not system verbose &allow-other-keys)
-    (declare (ignorable force force-not system verbose))
+    (declare (ignore force force-not system verbose))
     (unless (slot-boundp o 'original-initargs)
       (setf (operation-original-initargs o) initargs)))
 
@@ -7656,8 +7656,7 @@ PREVIOUS-TIME when not null is the time at which the PREVIOUS system was loaded.
 
   (defgeneric find-operation (context spec)
     (:documentation "Find an operation by resolving the SPEC in the CONTEXT"))
-  (defmethod find-operation (context (spec operation))
-    (declare (ignorable context))
+  (defmethod find-operation ((context t) (spec operation))
     spec)
   (defmethod find-operation (context (spec symbol))
     (unless (member spec '(nil feature))
@@ -7666,15 +7665,12 @@ PREVIOUS-TIME when not null is the time at which the PREVIOUS system was loaded.
       (apply 'make-operation spec (operation-original-initargs context))))
   (defmethod operation-original-initargs ((context symbol))
     (declare (ignorable context))
-    nil)
-
-  (defclass build-op (operation) ()))
-
+    nil))
 
 ;;;; -------------------------------------------------------------------------
 ;;;; Actions
 
-(asdf/package:define-package :asdf/action
+(uiop/package:define-package :asdf/action
   (:nicknames :asdf-action)
   (:recycle :asdf/action :asdf)
   (:use :uiop/common-lisp :uiop :asdf/upgrade
@@ -7682,14 +7678,17 @@ PREVIOUS-TIME when not null is the time at which the PREVIOUS system was loaded.
   (:export
    #:action #:define-convenience-action-methods
    #:explain #:action-description
-   #:downward-operation #:upward-operation #:sideway-operation #:selfward-operation
+   #:downward-operation #:upward-operation #:sideway-operation #:selfward-operation #:non-propagating-operation
    #:component-depends-on
    #:input-files #:output-files #:output-file #:operation-done-p
    #:action-status #:action-stamp #:action-done-p
    #:component-operation-time #:mark-operation-done #:compute-action-stamp
    #:perform #:perform-with-restarts #:retry #:accept
    #:traverse-actions #:traverse-sub-actions #:required-components ;; in plan
-   #:action-path #:find-action #:stamp #:done-p))
+   #:action-path #:find-action #:stamp #:done-p
+   #:operation-definition-warning #:operation-definition-error ;; condition
+   #:build-op ;; THE generic operation
+   ))
 (in-package :asdf/action)
 
 (eval-when (#-lispworks :compile-toplevel :load-toplevel :execute) ;; LispWorks issues spurious warning
@@ -7785,7 +7784,14 @@ You can put together sentences using this phrase."))
         and each <component> is a component designator with respect to
         FIND-COMPONENT in the context of the COMPONENT argument,
         and means that the component depends on
-        <operation> having been performed on each <component>; or
+        <operation> having been performed on each <component>;
+
+        [Note: an <operation> is an operation designator -- it can be either an
+        operation name or an operation object.  Similarly, a <component> may be
+        a component name or a component object.  Also note that, the degenerate
+        case of (<operation>) is a no-op.]
+
+      or
 
       (FEATURE <feature>), which means that the component depends
         on the <feature> expression satisfying FEATUREP.
@@ -7797,10 +7803,7 @@ You can put together sentences using this phrase."))
 
   (defmethod component-depends-on :around ((o operation) (c component))
     (do-asdf-cache `(component-depends-on ,o ,c)
-      (call-next-method)))
-
-  (defmethod component-depends-on ((o operation) (c component))
-    (cdr (assoc (type-of o) (component-in-order-to c))))) ; User-specified in-order dependencies
+      (call-next-method))))
 
 
 ;;;; upward-operation, downward-operation, sideway-operation, selfward-operation
@@ -7816,8 +7819,10 @@ the action (O . M) of O on module M will depends on each of (D . C) for each chi
 The default value for slot DOWNWARD-OPERATION is NIL, which designates the operation O itself.
 E.g. in order for a MODULE to be loaded with LOAD-OP (resp. compiled with COMPILE-OP), all the
 children of the MODULE must have been loaded with LOAD-OP (resp. compiled with COMPILE-OP."))
+  (defun downward-operation-depends-on (o c)
+    `((,(or (downward-operation o) o) ,@(component-children c))))
   (defmethod component-depends-on ((o downward-operation) (c parent-component))
-    `((,(or (downward-operation o) o) ,@(component-children c)) ,@(call-next-method)))
+    `(,@(downward-operation-depends-on o c) ,@(call-next-method)))
 
   (defclass upward-operation (operation)
     ((upward-operation
@@ -7831,9 +7836,10 @@ E.g. in order for a COMPONENT to be prepared for loading or compiling with PREPA
 must first be prepared for loading or compiling with PREPARE-OP."))
   ;; For backward-compatibility reasons, a system inherits from module and is a child-component
   ;; so we must guard against this case. ASDF4: remove that.
+  (defun upward-operation-depends-on (o c)
+    (if-let (p (component-parent c)) `((,(or (upward-operation o) o) ,p))))
   (defmethod component-depends-on ((o upward-operation) (c child-component))
-    `(,@(if-let (p (component-parent c))
-          `((,(or (upward-operation o) o) ,p))) ,@(call-next-method)))
+    `(,@(upward-operation-depends-on o c) ,@(call-next-method)))
 
   (defclass sideway-operation (operation)
     ((sideway-operation
@@ -7845,11 +7851,12 @@ designates operation S (where NIL designates O itself), then the action (O . C) 
 depends on each of (S . D) where D is a declared dependency of C.
 E.g. in order for a COMPONENT to be prepared for loading or compiling with PREPARE-OP,
 each of its declared dependencies must first be loaded as by LOAD-OP."))
-  (defmethod component-depends-on ((o sideway-operation) (c component))
+  (defun sideway-operation-depends-on (o c)
     `((,(or (sideway-operation o) o)
        ,@(loop :for dep :in (component-sideway-dependencies c)
-               :collect (resolve-dependency-spec c dep)))
-      ,@(call-next-method)))
+               :collect (resolve-dependency-spec c dep)))))
+  (defmethod component-depends-on ((o sideway-operation) (c component))
+    `(,@(sideway-operation-depends-on o c) ,@(call-next-method)))
 
   (defclass selfward-operation (operation)
     ((selfward-operation
@@ -7858,14 +7865,73 @@ each of its declared dependencies must first be loaded as by LOAD-OP."))
     (:documentation "A SELFWARD-OPERATION depends on another operation on the same component.
 I.e., if O is a SELFWARD-OPERATION, and its SELFWARD-OPERATION designates a list of operations L,
 then the action (O . C) of O on component C depends on each (S . C) for S in L.
+E.g. before a component may be loaded by LOAD-OP, it must have been compiled by COMPILE-OP.
 A operation-designator designates a singleton list of the designated operation;
 a list of operation-designators designates the list of designated operations;
-NIL is not a valid operation designator in that context.
-E.g. before a component may be loaded by LOAD-OP, it must have been compiled by COMPILE-OP."))
+NIL is not a valid operation designator in that context.  Note that any dependency
+ordering between the operations in a list of SELFWARD-OPERATION should be specified separately
+in the respective operation's COMPONENT-DEPENDS-ON methods so that they be scheduled properly."))
+  (defun selfward-operation-depends-on (o c)
+    (loop :for op :in (ensure-list (selfward-operation o)) :collect `(,op ,c)))
   (defmethod component-depends-on ((o selfward-operation) (c component))
-    `(,@(loop :for op :in (ensure-list (selfward-operation o))
-              :collect `(,op ,c))
-      ,@(call-next-method))))
+    `(,@(selfward-operation-depends-on o c) ,@(call-next-method)))
+
+  (defclass non-propagating-operation (operation)
+    ()
+    (:documentation "A NON-PROPAGATING-OPERATION is an operation that propagates
+no dependencies whatsoever.  It is supplied in order that the programmer be able
+to specify that s/he is intentionally specifying an operation which invokes no
+dependencies.")))
+
+
+;;;---------------------------------------------------------------------------
+;;; Help programmers catch obsolete OPERATION subclasses
+;;;---------------------------------------------------------------------------
+(with-upgradability ()
+  (define-condition operation-definition-warning (simple-warning)
+    ()
+    (:documentation "Warning condition related to definition of obsolete OPERATION objects."))
+
+  (define-condition operation-definition-error (simple-error)
+    ()
+    (:documentation "Error condition related to definition of incorrect OPERATION objects."))
+
+  (defmethod initialize-instance :before ((o operation) &key)
+    ;; build-op is a special case.
+    (unless (typep o '(or downward-operation upward-operation sideway-operation
+                          selfward-operation non-propagating-operation))
+      (warn 'operation-definition-warning
+            :format-control
+            "No dependency propagating scheme specified for operation class ~S.
+The class needs to be updated for ASDF 3.1 and specify appropriate propagation mixins."
+            :format-arguments (list (type-of o)))))
+
+  (defmethod initialize-instance :before ((o non-propagating-operation) &key)
+    (when (typep o '(or downward-operation upward-operation sideway-operation selfward-operation))
+      (error 'operation-definition-error
+             :format-control
+             "Inconsistent class: ~S
+  NON-PROPAGATING-OPERATION is incompatible with propagating operation classes as superclasses."
+             :format-arguments
+             (list (type-of o)))))
+
+  (defmethod component-depends-on ((o operation) (c component))
+    `(;; Normal behavior, to allow user-specified in-order-to dependencies
+      ,@(cdr (assoc (type-of o) (component-in-order-to c)))
+      ;; For backward-compatibility with ASDF2, any operation that doesn't specify propagation
+      ;; or non-propagation through an appropriate mixin will be downward and sideway.
+      ,@(unless (typep o '(or downward-operation upward-operation sideway-operation
+                              selfward-operation non-propagating-operation))
+          `(,@(downward-operation-depends-on o c)
+            ,@(sideway-operation-depends-on o c)))))
+
+  (defmethod downward-operation ((o operation)) nil)
+  (defmethod sideway-operation ((o operation)) nil))
+
+
+;;;---------------------------------------------------------------------------
+;;; End of OPERATION class checking
+;;;---------------------------------------------------------------------------
 
 
 ;;;; Inputs, Outputs, and invisible dependencies
@@ -7879,7 +7945,6 @@ E.g. before a component may be loaded by LOAD-OP, it must have been compiled by 
   (define-convenience-action-methods operation-done-p (operation component))
 
   (defmethod operation-done-p ((o operation) (c component))
-    (declare (ignorable o c))
     t)
 
   (defmethod output-files :around (operation component)
@@ -7901,7 +7966,6 @@ E.g. before a component may be loaded by LOAD-OP, it must have been compiled by 
                (mapcar *output-translation-function* absolute-pathnames))))
        t)))
   (defmethod output-files ((o operation) (c component))
-    (declare (ignorable o c))
     nil)
   (defun output-file (operation component)
     "The unique output file of performing OPERATION on COMPONENT"
@@ -7915,7 +7979,6 @@ E.g. before a component may be loaded by LOAD-OP, it must have been compiled by 
       (call-next-method)))
 
   (defmethod input-files ((o operation) (c component))
-    (declare (ignorable o c))
     nil)
 
   (defmethod input-files ((o selfward-operation) (c component))
@@ -7981,7 +8044,6 @@ in some previous image, or T if it needs to be done.")
   (defmethod perform :after ((o operation) (c component))
     (mark-operation-done o c))
   (defmethod perform ((o operation) (c parent-component))
-    (declare (ignorable o c))
     nil)
   (defmethod perform ((o operation) (c source-file))
     (sysdef-error
@@ -8012,13 +8074,19 @@ in some previous image, or T if it needs to be done.")
 
 ;;; Generic build operation
 (with-upgradability ()
+  ;; BUILD-OP was intended to be the default "master" operation to invoke on a system in ASDF3
+  ;; (LOAD-OP typically serves that function now).
+  ;; This feature has not yet been fully implemented yet, and is not used by anyone yet.
+  ;; This is a path forward, and its default below is to backward compatibly depend on LOAD-OP.
+  ;; [2014/01/26:rpg]
+  (defclass build-op (non-propagating-operation) ())
   (defmethod component-depends-on ((o build-op) (c component))
     `((,(or (component-build-operation c) 'load-op) ,c))))
 
 ;;;; -------------------------------------------------------------------------
 ;;;; Actions to build Common Lisp software
 
-(asdf/package:define-package :asdf/lisp-action
+(uiop/package:define-package :asdf/lisp-action
   (:recycle :asdf/lisp-action :asdf)
   (:intern #:proclamations #:flags)
   (:use :uiop/common-lisp :uiop :asdf/upgrade :asdf/cache
@@ -8055,14 +8123,14 @@ in some previous image, or T if it needs to be done.")
 ;;; Our default operations: loading into the current lisp image
 (with-upgradability ()
   (defclass prepare-op (upward-operation sideway-operation)
-    ((sideway-operation :initform 'load-op :allocation :class)))
-  (defclass load-op (basic-load-op downward-operation sideway-operation selfward-operation)
+    ((sideway-operation :initform 'load-op :allocation :class))
+    (:documentation "Load dependencies necessary for COMPILE-OP or LOAD-OP of a given COMPONENT."))
+  (defclass load-op (basic-load-op downward-operation selfward-operation)
     ;; NB: even though compile-op depends on prepare-op it is not needed-in-image-p,
     ;; so we need to directly depend on prepare-op for its side-effects in the current image.
     ((selfward-operation :initform '(prepare-op compile-op) :allocation :class)))
   (defclass compile-op (basic-compile-op downward-operation selfward-operation)
-    ((selfward-operation :initform 'prepare-op :allocation :class)
-     (downward-operation :initform 'load-op :allocation :class)))
+    ((selfward-operation :initform 'prepare-op :allocation :class)))
 
   (defclass prepare-source-op (upward-operation sideway-operation)
     ((sideway-operation :initform 'load-source-op :allocation :class)))
@@ -8078,25 +8146,17 @@ in some previous image, or T if it needs to be done.")
 ;;; prepare-op
 (with-upgradability ()
   (defmethod action-description ((o prepare-op) (c component))
-    (declare (ignorable o))
     (format nil (compatfmt "~@<loading dependencies of ~3i~_~A~@:>") c))
   (defmethod perform ((o prepare-op) (c component))
-    (declare (ignorable o c))
-    nil)
-  (defmethod input-files ((o prepare-op) (c component))
-    (declare (ignorable o c))
     nil)
   (defmethod input-files ((o prepare-op) (s system))
-    (declare (ignorable o))
     (if-let (it (system-source-file s)) (list it))))
 
 ;;; compile-op
 (with-upgradability ()
   (defmethod action-description ((o compile-op) (c component))
-    (declare (ignorable o))
     (format nil (compatfmt "~@<compiling ~3i~_~A~@:>") c))
   (defmethod action-description ((o compile-op) (c parent-component))
-    (declare (ignorable o))
     (format nil (compatfmt "~@<completing compilation for ~3i~_~A~@:>") c))
   (defgeneric call-with-around-compile-hook (component thunk))
   (defmethod call-with-around-compile-hook ((c component) function)
@@ -8162,10 +8222,6 @@ in some previous image, or T if it needs to be done.")
   (defmethod output-files ((o compile-op) (c cl-source-file))
     (lisp-compilation-output-files o c))
   (defmethod perform ((o compile-op) (c static-file))
-    (declare (ignorable o c))
-    nil)
-  (defmethod output-files ((o compile-op) (c static-file))
-    (declare (ignorable o c))
     nil)
   (defmethod perform ((o compile-op) (c system))
     (when (and *warnings-file-type* (not (builtin-system-p c)))
@@ -8185,15 +8241,11 @@ in some previous image, or T if it needs to be done.")
 ;;; load-op
 (with-upgradability ()
   (defmethod action-description ((o load-op) (c cl-source-file))
-    (declare (ignorable o))
     (format nil (compatfmt "~@<loading FASL for ~3i~_~A~@:>") c))
   (defmethod action-description ((o load-op) (c parent-component))
-    (declare (ignorable o))
     (format nil (compatfmt "~@<completing load for ~3i~_~A~@:>") c))
-  (defmethod action-description ((o load-op) component)
-    (declare (ignorable o))
-    (format nil (compatfmt "~@<loading ~3i~_~A~@:>")
-            component))
+  (defmethod action-description ((o load-op) (c component))
+    (format nil (compatfmt "~@<loading ~3i~_~A~@:>") c))
   (defmethod perform-with-restarts ((o load-op) (c cl-source-file))
     (loop
       (restart-case
@@ -8209,7 +8261,6 @@ in some previous image, or T if it needs to be done.")
   (defmethod perform ((o load-op) (c cl-source-file))
     (perform-lisp-load-fasl o c))
   (defmethod perform ((o load-op) (c static-file))
-    (declare (ignorable o c))
     nil))
 
 
@@ -8218,25 +8269,17 @@ in some previous image, or T if it needs to be done.")
 ;;; prepare-source-op
 (with-upgradability ()
   (defmethod action-description ((o prepare-source-op) (c component))
-    (declare (ignorable o))
     (format nil (compatfmt "~@<loading source for dependencies of ~3i~_~A~@:>") c))
-  (defmethod input-files ((o prepare-source-op) (c component))
-    (declare (ignorable o c))
-    nil)
   (defmethod input-files ((o prepare-source-op) (s system))
-    (declare (ignorable o))
     (if-let (it (system-source-file s)) (list it)))
   (defmethod perform ((o prepare-source-op) (c component))
-    (declare (ignorable o c))
     nil))
 
 ;;; load-source-op
 (with-upgradability ()
-  (defmethod action-description ((o load-source-op) c)
-    (declare (ignorable o))
+  (defmethod action-description ((o load-source-op) (c component))
     (format nil (compatfmt "~@<Loading source of ~3i~_~A~@:>") c))
   (defmethod action-description ((o load-source-op) (c parent-component))
-    (declare (ignorable o))
     (format nil (compatfmt "~@<Loaded source of ~3i~_~A~@:>") c))
   (defun perform-lisp-load-source (o c)
     (call-with-around-compile-hook
@@ -8247,27 +8290,21 @@ in some previous image, or T if it needs to be done.")
   (defmethod perform ((o load-source-op) (c cl-source-file))
     (perform-lisp-load-source o c))
   (defmethod perform ((o load-source-op) (c static-file))
-    (declare (ignorable o c))
-    nil)
-  (defmethod output-files ((o load-source-op) (c component))
-    (declare (ignorable o c))
     nil))
 
 
 ;;;; test-op
 (with-upgradability ()
   (defmethod perform ((o test-op) (c component))
-    (declare (ignorable o c))
     nil)
   (defmethod operation-done-p ((o test-op) (c system))
     "Testing a system is _never_ done."
-    (declare (ignorable o c))
     nil))
 
 ;;;; -------------------------------------------------------------------------
 ;;;; Plan
 
-(asdf/package:define-package :asdf/plan
+(uiop/package:define-package :asdf/plan
   (:recycle :asdf/plan :asdf)
   (:use :uiop/common-lisp :uiop :asdf/upgrade
    :asdf/component :asdf/operation :asdf/system
@@ -8334,9 +8371,8 @@ the action of OPERATION on COMPONENT in the PLAN"))
       (with-slots (stamp done-p planned-p index) status
         (format stream "~@{~S~^ ~}" :stamp stamp :done-p done-p :planned-p planned-p :index index))))
 
-  (defmethod action-planned-p (action-status)
-    (declare (ignorable action-status)) ; default method for non planned-action-status objects
-    t)
+  (defmethod action-planned-p ((action-status t))
+    t) ; default method for non planned-action-status objects
 
   ;; TODO: eliminate NODE-FOR, use CONS.
   ;; Supposes cleaner protocol for operation initargs passed to MAKE-OPERATION.
@@ -8347,12 +8383,10 @@ the action of OPERATION on COMPONENT in the PLAN"))
     (action-done-p (plan-action-status plan operation component)))
 
   (defmethod plan-action-status ((plan null) (o operation) (c component))
-    (declare (ignorable plan))
     (multiple-value-bind (stamp done-p) (component-operation-time o c)
       (make-instance 'action-status :stamp stamp :done-p done-p)))
 
   (defmethod (setf plan-action-status) (new-status (plan null) (o operation) (c component))
-    (declare (ignorable plan))
     (let ((to (type-of o))
           (times (component-operation-times c)))
       (if (action-done-p new-status)
@@ -8373,7 +8407,7 @@ the action of OPERATION on COMPONENT in the PLAN"))
       ((eql t) (when system (list-to-hash-set (list (coerce-name system)))))))
 
   (defun action-override-p (plan operation component override-accessor)
-    (declare (ignorable operation))
+    (declare (ignore operation))
     (let* ((override (funcall override-accessor plan)))
       (and override
            (if (typep override 'hash-table)
@@ -8397,12 +8431,10 @@ the action of OPERATION on COMPONENT in the PLAN"))
      ;; Force takes precedence over force-not
      (not (action-forced-p plan operation component))))
 
-  (defmethod action-forced-p ((plan null) operation component)
-    (declare (ignorable plan operation component))
+  (defmethod action-forced-p ((plan null) (operation operation) (component component))
     nil)
 
-  (defmethod action-forced-not-p ((plan null) operation component)
-    (declare (ignorable plan operation component))
+  (defmethod action-forced-not-p ((plan null) (operation operation) (component component))
     nil))
 
 
@@ -8410,14 +8442,11 @@ the action of OPERATION on COMPONENT in the PLAN"))
 (with-upgradability ()
   (defgeneric action-valid-p (plan operation component)
     (:documentation "Is this action valid to include amongst dependencies?"))
-  (defmethod action-valid-p (plan operation (c component))
-    (declare (ignorable plan operation))
+  (defmethod action-valid-p ((plan plan-traversal) (o operation) (c component))
     (if-let (it (component-if-feature c)) (featurep it) t))
-  (defmethod action-valid-p (plan (o null) c) (declare (ignorable plan o c)) nil)
-  (defmethod action-valid-p (plan o (c null)) (declare (ignorable plan o c)) nil)
-  (defmethod action-valid-p ((plan null) operation component)
-    (declare (ignorable plan operation component))
-    (and operation component t)))
+  (defmethod action-valid-p ((plan t) (o null) (c t)) nil)
+  (defmethod action-valid-p ((plan t) (o t) (c null)) nil)
+  (defmethod action-valid-p ((plan null) (o operation) (c component)) t))
 
 
 ;;;; Is the action needed in this image?
@@ -8455,6 +8484,12 @@ the action of OPERATION on COMPONENT in the PLAN"))
   (defun direct-dependencies (operation component)
     (reduce-direct-dependencies operation component #'acons nil))
 
+  ;; In a distant future, get-file-stamp, component-operation-time and latest-stamp
+  ;; shall also be parametrized by the plan, or by a second model object,
+  ;; so they need not refer to the state of the filesystem,
+  ;; and the stamps could be cryptographic checksums rather than timestamps.
+  ;; Such a change remarkably would only affect VISIT-DEPENDENCIES and COMPUTE-ACTION-STAMP.
+
   (defun visit-dependencies (plan operation component dependency-stamper &aux stamp)
     (map-direct-dependencies
      operation component
@@ -8464,8 +8499,16 @@ the action of OPERATION on COMPONENT in the PLAN"))
     stamp)
 
   (defmethod compute-action-stamp (plan (o operation) (c component) &key just-done)
-    ;; In a distant future, get-file-stamp and component-operation-time
-    ;; shall also be parametrized by the plan, or by a second model object.
+    ;; Given an action, figure out at what time in the past it has been done,
+    ;; or if it has just been done, return the time that it has.
+    ;; Returns two values:
+    ;; 1- the TIMESTAMP of the action if it has already been done and is up to date,
+    ;;   or T is either hasn't been done or is out of date.
+    ;; 2- the DONE-IN-IMAGE-P boolean flag that is T if the action has already been done
+    ;;   in the current image, or NIL if it hasn't.
+    ;; Note that if e.g. LOAD-OP only depends on up-to-date files, but
+    ;; hasn't been done in the current image yet, then it can have a non-T timestamp,
+    ;; yet a NIL done-in-image-p flag.
     (let* ((stamp-lookup #'(lambda (o c)
                              (if-let (it (plan-action-status plan o c)) (action-stamp it) t)))
            (out-files (output-files o c))
@@ -8566,42 +8609,63 @@ the action of OPERATION on COMPONENT in the PLAN"))
 
   (defgeneric traverse-action (plan operation component needed-in-image-p))
 
+  ;; TRAVERSE-ACTION, in the context of a given PLAN object that accumulates dependency data,
+  ;; visits the action defined by its OPERATION and COMPONENT arguments,
+  ;; and all its transitive dependencies (unless already visited),
+  ;; in the context of the action being (or not) NEEDED-IN-IMAGE-P,
+  ;; i.e. needs to be done in the current image vs merely have been done in a previous image.
+  ;; For actions that are up-to-date, it returns a STAMP identifying the state of the action
+  ;; (that's timestamp, but it could be a cryptographic digest in some ASDF extension),
+  ;; or T if the action needs to be done again.
+  ;;
+  ;; Note that for an XCVB-like plan with one-image-per-file-outputting-action,
+  ;; the below method would be insufficient, since it assumes a single image
+  ;; to traverse each node at most twice; non-niip actions would be traversed only once,
+  ;; but niip nodes could be traversed once per image, i.e. once plus once per non-niip action.
+
   (defmethod traverse-action (plan operation component needed-in-image-p)
     (block nil
+      ;; ACTION-VALID-P among other things, handles forcing logic, including FORCE-NOT,
+      ;; and IF-FEATURE filtering.
       (unless (action-valid-p plan operation component) (return nil))
+      ;; the following hook is needed by POIU, which tracks a full dependency graph,
+      ;; instead of just a dependency order as in vanilla ASDF
       (plan-record-dependency plan operation component)
-      (let* ((aniip (needed-in-image-p operation component))
+      ;; needed in image distinguishes b/w things that must happen in the
+      ;; current image and those things that simply need to have been done in a previous one.
+      (let* ((aniip (needed-in-image-p operation component)) ; action-specific needed-in-image
+             ;; effective niip: meaningful for the action and required by the plan as traversed
              (eniip (and aniip needed-in-image-p))
+             ;; status: have we traversed that action previously, and if so what was its status?
              (status (plan-action-status plan operation component)))
         (when (and status (or (action-done-p status) (action-planned-p status) (not eniip)))
-          ;; Already visited with sufficient need-in-image level: just return the stamp.
-          (return (action-stamp status)))
-        (labels ((visit-action (niip)
-                   (visit-dependencies plan operation component
+          (return (action-stamp status))) ; Already visited with sufficient need-in-image level!
+        (labels ((visit-action (niip) ; We may visit the action twice, once with niip NIL, then T
+                   (visit-dependencies plan operation component ; recursively traverse dependencies
                                        #'(lambda (o c) (traverse-action plan o c niip)))
-                   (multiple-value-bind (stamp done-p)
-                       (compute-action-stamp plan operation component)
+                   (multiple-value-bind (stamp done-p) ; AFTER dependencies have been traversed,
+                       (compute-action-stamp plan operation component) ; compute action stamp
                      (let ((add-to-plan-p (or (eql stamp t) (and niip (not done-p)))))
-                       (cond
-                         ((and add-to-plan-p (not niip)) ;; if we need to do it,
-                          (visit-action t)) ;; then we need to do it in the image!
+                       (cond ; it needs be done if it's out of date or needed in image but absent
+                         ((and add-to-plan-p (not niip)) ; if we need to do it,
+                          (visit-action t)) ; then we need to do it *in the (current) image*!
                          (t
-                          (setf (plan-action-status plan operation component)
+                          (setf (plan-action-status plan operation component) ; update status:
                                 (make-instance
                                  'planned-action-status
-                                 :stamp stamp
-                                 :done-p (and done-p (not add-to-plan-p))
-                                 :planned-p add-to-plan-p
-                                 :index (if status
-                                            (action-index status)
-                                            (incf (plan-total-action-count plan)))))
-                          (when add-to-plan-p
-                            (incf (plan-planned-action-count plan))
-                            (unless aniip
-                              (incf (plan-planned-output-action-count plan))))
-                          stamp))))))
+                                 :stamp stamp ; computed stamp
+                                 :done-p (and done-p (not add-to-plan-p)) ; done *and* up-to-date?
+                                 :planned-p add-to-plan-p ; included in list of things to be done?
+                                 :index (if status ; index of action amongst all nodes in traversal
+                                            (action-index status) ;; if already visited, keep index
+                                            (incf (plan-total-action-count plan))))) ; else new index
+                          (when add-to-plan-p ; if it needs to be added to the plan,
+                            (incf (plan-planned-action-count plan)) ; count it
+                            (unless aniip ; if it's output-producing,
+                              (incf (plan-planned-output-action-count plan)))) ; count it
+                          stamp)))))) ; return the stamp
           (while-visiting-action (plan operation component) ; maintain context, handle circularity.
-            (visit-action eniip)))))))
+            (visit-action eniip))))))) ; visit the action
 
 
 ;;;; Sequential plans (the default)
@@ -8615,9 +8679,7 @@ the action of OPERATION on COMPONENT in the PLAN"))
   (defmethod plan-actions ((plan sequential-plan))
     (reverse (plan-actions-r plan)))
 
-  (defmethod plan-record-dependency ((plan sequential-plan)
-                                     (operation operation) (component component))
-    (declare (ignorable plan operation component))
+  (defmethod plan-record-dependency ((plan sequential-plan) (o operation) (c component))
     (values))
 
   (defmethod (setf plan-action-status) :after
@@ -8668,6 +8730,9 @@ the action of OPERATION on COMPONENT in the PLAN"))
 
 
 ;;;; Incidental traversals
+
+;;; Making a FILTERED-SEQUENTIAL-PLAN can be used to, e.g., all of the source
+;;; files required by a bundling operation.
 (with-upgradability ()
   (defclass filtered-sequential-plan (sequential-plan)
     ((action-filter :initform t :initarg :action-filter :reader plan-action-filter)
@@ -8715,7 +8780,7 @@ the action of OPERATION on COMPONENT in the PLAN"))
 ;;;; -------------------------------------------------------------------------
 ;;;; Invoking Operations
 
-(asdf/package:define-package :asdf/operate
+(uiop/package:define-package :asdf/operate
   (:recycle :asdf/operate :asdf)
   (:use :uiop/common-lisp :uiop :asdf/upgrade
    :asdf/component :asdf/system :asdf/operation :asdf/action
@@ -8737,11 +8802,11 @@ the action of OPERATION on COMPONENT in the PLAN"))
 
 1. It creates an instance of OPERATION-CLASS using any keyword parameters as initargs.
 2. It finds the  asdf-system specified by SYSTEM (possibly loading it from disk).
-3. It then calls TRAVERSE with the operation and system as arguments
+3. It then calls MAKE-PLAN with the operation and system as arguments
 
-The traverse operation is wrapped in WITH-COMPILATION-UNIT and error handling code.
-If a VERSION argument is supplied, then operate also ensures that the system found
-satisfies it using the VERSION-SATISFIES method.
+The operation of making a plan is wrapped in WITH-COMPILATION-UNIT and error
+handling code.  If a VERSION argument is supplied, then operate also ensures
+that the system found satisfies it using the VERSION-SATISFIES method.
 
 Note that dependencies may cause the operation to invoke other operations on the system
 or its components: the new operations will be created with the same initargs as the original one.
@@ -8767,7 +8832,6 @@ The :FORCE or :FORCE-NOT argument to OPERATE can be:
                               &key verbose
                                 (on-warnings *compile-file-warnings-behaviour*)
                                 (on-failure *compile-file-failure-behaviour*) &allow-other-keys)
-    (declare (ignorable operation component))
     (let* ((systems-being-operated *systems-being-operated*)
            (*systems-being-operated* (or systems-being-operated (make-hash-table :test 'equal)))
            (operation-name (reify-symbol (etypecase operation
@@ -8874,18 +8938,15 @@ for how to load or compile stuff")
     ((module :initarg :module :initform nil :accessor required-module)))
 
   (defmethod perform ((o compile-op) (c require-system))
-    (declare (ignorable o c))
     nil)
 
   (defmethod perform ((o load-op) (s require-system))
-    (declare (ignorable o))
     (let* ((module (or (required-module s) (coerce-name s)))
            (*modules-being-required* (cons module *modules-being-required*)))
       (assert (null (component-children s)))
       (require module)))
 
   (defmethod resolve-dependency-combination (component (combinator (eql :require)) arguments)
-    (declare (ignorable component combinator))
     (unless (length=n-p arguments 1)
       (error (compatfmt "~@<Bad dependency ~S for ~S. ~S takes only one argument~@:>")
              (cons combinator arguments) component combinator))
@@ -8933,7 +8994,7 @@ for how to load or compile stuff")
 ;;;; ---------------------------------------------------------------------------
 ;;;; asdf-output-translations
 
-(asdf/package:define-package :asdf/output-translations
+(uiop/package:define-package :asdf/output-translations
   (:recycle :asdf/output-translations :asdf)
   (:use :uiop/common-lisp :uiop :asdf/upgrade)
   (:export
@@ -9154,7 +9215,6 @@ and the order is by decreasing length of namestring of the source pathname.")
     (process-output-translations (parse-output-translations-string string)
                                  :inherit inherit :collect collect))
   (defmethod process-output-translations ((x null) &key inherit collect)
-    (declare (ignorable x))
     (inherit-output-translations inherit :collect collect))
   (defmethod process-output-translations ((form cons) &key inherit collect)
     (dolist (directive (cdr (validate-output-translations-form form)))
@@ -9246,7 +9306,7 @@ effectively disabling the output translation facility."
 ;;;; Source Registry Configuration, by Francois-Rene Rideau
 ;;;; See the Manual and https://bugs.launchpad.net/asdf/+bug/485918
 
-(asdf/package:define-package :asdf/source-registry
+(uiop/package:define-package :asdf/source-registry
   (:recycle :asdf/source-registry :asdf)
   (:use :uiop/common-lisp :uiop :asdf/upgrade :asdf/find-system)
   (:export
@@ -9479,7 +9539,6 @@ system names to pathnames of .asd files")
     (process-source-registry (parse-source-registry-string string)
                              :inherit inherit :register register))
   (defmethod process-source-registry ((x null) &key inherit register)
-    (declare (ignorable x))
     (inherit-source-registry inherit :register register))
   (defmethod process-source-registry ((form cons) &key inherit register)
     (let ((*source-registry-exclusions* *default-source-registry-exclusions*))
@@ -9560,7 +9619,7 @@ system names to pathnames of .asd files")
 ;;;; -------------------------------------------------------------------------
 ;;; Internal hacks for backward-compatibility
 
-(asdf/package:define-package :asdf/backward-internals
+(uiop/package:define-package :asdf/backward-internals
   (:recycle :asdf/backward-internals :asdf)
   (:use :uiop/common-lisp :uiop :asdf/upgrade
    :asdf/system :asdf/component :asdf/operation
@@ -9650,7 +9709,7 @@ system names to pathnames of .asd files")
 ;;;; -------------------------------------------------------------------------
 ;;;; Defsystem
 
-(asdf/package:define-package :asdf/parse-defsystem
+(uiop/package:define-package :asdf/parse-defsystem
   (:recycle :asdf/parse-defsystem :asdf/defsystem :asdf)
   (:nicknames :asdf/defsystem) ;; previous name, to be compatible with, in case anyone cares
   (:use :uiop/common-lisp :asdf/driver :asdf/upgrade
@@ -9792,7 +9851,7 @@ system names to pathnames of .asd files")
                                 do-first if-component-dep-fails version
                                 ;; list ends
          &allow-other-keys) options
-      (declare (ignorable perform explain output-files operation-done-p builtin-system-p))
+      (declare (ignore perform explain output-files operation-done-p builtin-system-p))
       (check-component-input type name weakly-depends-on depends-on components)
       (when (and parent
                  (find-component parent name)
@@ -9891,7 +9950,7 @@ system names to pathnames of .asd files")
 ;;;; -------------------------------------------------------------------------
 ;;;; ASDF-Bundle
 
-(asdf/package:define-package :asdf/bundle
+(uiop/package:define-package :asdf/bundle
   (:recycle :asdf/bundle :asdf)
   (:use :uiop/common-lisp :uiop :asdf/upgrade
    :asdf/component :asdf/system :asdf/find-system :asdf/find-component :asdf/operation
@@ -9941,12 +10000,12 @@ system names to pathnames of .asd files")
 
   (defclass no-ld-flags-op (operation) ())
 
-  (defclass lib-op (bundle-compile-op no-ld-flags-op)
+  (defclass lib-op (bundle-compile-op no-ld-flags-op non-propagating-operation)
     ((bundle-type :initform #+(or ecl mkcl) :lib #-(or ecl mkcl) :no-output-file))
     (:documentation #+(or ecl mkcl) "compile the system and produce linkable (.a) library for it."
      #-(or ecl mkcl) "just compile the system"))
 
-  (defclass dll-op (bundle-compile-op no-ld-flags-op)
+  (defclass dll-op (bundle-compile-op no-ld-flags-op non-propagating-operation)
     ((bundle-type :initform :dll))
     (:documentation "compile the system and produce dynamic (.so/.dll) library for it."))
 
@@ -9954,7 +10013,12 @@ system names to pathnames of .asd files")
     ((selfward-operation :initform '(fasl-op lib-op) :allocation :class))
     (:documentation "produce fasl and asd files for the system"))
 
-  (defclass monolithic-op (operation) ()) ;; operation on a system and its dependencies
+  (defclass monolithic-op (operation) ()
+    (:documentation "A MONOLITHIC operation operates on a system *and all of its
+dependencies*.  So, for example, a monolithic concatenate operation will
+concatenate together a system's components and all of its dependencies, but a
+simple concatenate operation will concatenate only the components of the system
+itself.")) ;; operation on a system and its dependencies
 
   (defclass monolithic-bundle-op (monolithic-op bundle-op)
     ((prologue-code :accessor monolithic-op-prologue-code)
@@ -9962,28 +10026,32 @@ system names to pathnames of .asd files")
 
   (defclass monolithic-bundle-compile-op (monolithic-bundle-op bundle-compile-op)
     ()
-    (:documentation "Abstract operation for ways to bundle the outputs of compiling *Lisp* files over all systems"))
+    (:documentation "Abstract operation for ways to bundle the outputs of compiling
+*Lisp* files over a system, and all of its dependencies."))
 
   (defclass monolithic-binary-op (monolithic-op binary-op)
     ((selfward-operation :initform '(monolithic-fasl-op monolithic-lib-op) :allocation :class))
     (:documentation "produce fasl and asd files for combined system and dependencies."))
 
-  (defclass monolithic-fasl-op (monolithic-bundle-compile-op basic-fasl-op) ()
+  (defclass monolithic-fasl-op (monolithic-bundle-compile-op basic-fasl-op non-propagating-operation) ()
     (:documentation "Create a single fasl for the system and its dependencies."))
 
-  (defclass monolithic-lib-op (monolithic-bundle-compile-op basic-compile-op  no-ld-flags-op)
+  (defclass monolithic-lib-op (monolithic-bundle-compile-op non-propagating-operation no-ld-flags-op)
     ((bundle-type :initform #+(or ecl mkcl) :lib #-(or ecl mkcl) :no-output-file))
     (:documentation #+(or ecl mkcl) "Create a single linkable library for the system and its dependencies."
      #-(or ecl mkcl) "Compile a system and its dependencies."))
 
-  (defclass monolithic-dll-op (monolithic-bundle-compile-op sideway-operation selfward-operation no-ld-flags-op)
+  (defclass monolithic-dll-op (monolithic-bundle-compile-op non-propagating-operation no-ld-flags-op)
     ((bundle-type :initform :dll))
     (:documentation "Create a single dynamic (.so/.dll) library for the system and its dependencies."))
 
-  (defclass program-op #+(or mkcl ecl) (monolithic-bundle-compile-op)
+  ;; Fare reports that the PROGRAM-OP doesn't need any propagation on MKCL or
+  ;; ECL because the necessary dependency wrangling is done by other, earlier
+  ;; operations. [2014/01/20:rpg]
+  (defclass program-op #+(or mkcl ecl) (monolithic-bundle-compile-op non-propagating-operation)
             #-(or mkcl ecl) (monolithic-bundle-op selfward-operation)
     ((bundle-type :initform :program)
-     #-(or mkcl ecl) (selfward-operation :initform #-(or mkcl ecl) 'load-op))
+     #-(or mkcl ecl) (selfward-operation :initform 'load-op))
     (:documentation "create an executable file from the system and its dependencies"))
 
   (defun bundle-pathname-type (bundle-type)
@@ -10044,7 +10112,7 @@ system names to pathnames of .asd files")
   (defmethod initialize-instance :after ((instance bundle-op) &rest initargs
                                          &key (name-suffix nil name-suffix-p)
                                          &allow-other-keys)
-    (declare (ignorable initargs name-suffix))
+    (declare (ignore initargs name-suffix))
     (unless name-suffix-p
       (setf (slot-value instance 'name-suffix)
             (unless (typep instance 'program-op)
@@ -10065,7 +10133,6 @@ system names to pathnames of .asd files")
                              (operation-original-initargs instance))))
 
   (defmethod bundle-op-build-args :around ((o no-ld-flags-op))
-    (declare (ignorable o))
     (let ((args (call-next-method)))
       (remf args :ld-flags)
       args))
@@ -10110,7 +10177,6 @@ system names to pathnames of .asd files")
       ,@(call-next-method)))
 
   (defmethod component-depends-on :around ((o bundle-op) (c component))
-    (declare (ignorable o c))
     (if-let (op (and (eq (type-of o) 'bundle-op) (component-build-operation c)))
       `((,op ,c))
       (call-next-method)))
@@ -10172,7 +10238,6 @@ system names to pathnames of .asd files")
 ;;;
 (with-upgradability ()
   (defmethod component-depends-on ((o load-fasl-op) (c system))
-    (declare (ignorable o))
     `((,o ,@(loop :for dep :in (component-sideway-dependencies c)
                   :collect (resolve-dependency-spec c dep)))
       (,(if (user-system-p c) 'fasl-op 'load-op) ,c)
@@ -10181,10 +10246,6 @@ system names to pathnames of .asd files")
   (defmethod input-files ((o load-fasl-op) (c system))
     (when (user-system-p c)
       (output-files (find-operation o 'fasl-op) c)))
-
-  (defmethod perform ((o load-fasl-op) c)
-    (declare (ignorable o c))
-    nil)
 
   (defmethod perform ((o load-fasl-op) (c system))
     (when (input-files o c)
@@ -10203,11 +10264,7 @@ system names to pathnames of .asd files")
   (defmethod trivial-system-p ((s system))
     (every #'(lambda (c) (typep c 'compiled-file)) (component-children s)))
 
-  (defmethod output-files (o (c compiled-file))
-    (declare (ignorable o c))
-    nil)
-  (defmethod input-files (o (c compiled-file))
-    (declare (ignorable o))
+  (defmethod input-files ((o operation) (c compiled-file))
     (component-pathname c))
   (defmethod perform ((o load-op) (c compiled-file))
     (perform-lisp-load-fasl o c))
@@ -10216,7 +10273,6 @@ system names to pathnames of .asd files")
   (defmethod perform ((o load-fasl-op) (c compiled-file))
     (perform (find-operation o 'load-op) c))
   (defmethod perform ((o operation) (c compiled-file))
-    (declare (ignorable o c))
     nil))
 
 ;;;
@@ -10224,19 +10280,15 @@ system names to pathnames of .asd files")
 ;;;
 (with-upgradability ()
   (defmethod trivial-system-p ((s prebuilt-system))
-    (declare (ignorable s))
     t)
 
   (defmethod perform ((o lib-op) (c prebuilt-system))
-    (declare (ignorable o c))
     nil)
 
   (defmethod component-depends-on ((o lib-op) (c prebuilt-system))
-    (declare (ignorable o c))
     nil)
 
   (defmethod component-depends-on ((o monolithic-lib-op) (c prebuilt-system))
-    (declare (ignorable o))
     nil))
 
 
@@ -10309,14 +10361,12 @@ system names to pathnames of .asd files")
           (combine-fasls fasl-files output-file)))))
 
   (defmethod input-files ((o load-op) (s precompiled-system))
-    (declare (ignorable o))
     (bundle-output-files (find-operation o 'fasl-op) s))
 
   (defmethod perform ((o load-op) (s precompiled-system))
     (perform-lisp-load-fasl o s))
 
   (defmethod component-depends-on ((o load-fasl-op) (s precompiled-system))
-    (declare (ignorable o))
     `((load-op ,s) ,@(call-next-method))))
 
   #| ;; Example use:
@@ -10380,10 +10430,20 @@ system names to pathnames of .asd files")
   (defun bundle-system (system &rest args &key force (verbose t) version &allow-other-keys)
     (declare (ignore force verbose version))
     (apply #'operate 'binary-op system args)))
+
+#+(and (not asdf-use-unsafe-mac-bundle-op)
+       (or (and ecl darwin)
+           (and abcl darwin (not abcl-bundle-op-supported))))
+(defmethod perform :before ((o basic-fasl-op) (c component))
+  (unless (featurep :asdf-use-unsafe-mac-bundle-op)
+    (cerror "Continue after modifying *FEATURES*."
+            "BASIC-FASL-OP bundle operations are not supported on Mac OS X for this lisp.~%~T~
+To continue, push :asdf-use-unsafe-mac-bundle-op onto *FEATURES*.~%~T~
+Please report to ASDF-DEVEL if this works for you.")))
 ;;;; -------------------------------------------------------------------------
 ;;;; Concatenate-source
 
-(asdf/package:define-package :asdf/concatenate-source
+(uiop/package:define-package :asdf/concatenate-source
   (:recycle :asdf/concatenate-source :asdf)
   (:use :uiop/common-lisp :uiop :asdf/upgrade
    :asdf/component :asdf/operation
@@ -10410,7 +10470,7 @@ system names to pathnames of .asd files")
   (defclass basic-compile-concatenated-source-op (basic-compile-op selfward-operation) ())
   (defclass basic-load-compiled-concatenated-source-op (basic-load-op selfward-operation) ())
 
-  (defclass concatenate-source-op (basic-concatenate-source-op) ())
+  (defclass concatenate-source-op (basic-concatenate-source-op non-propagating-operation) ())
   (defclass load-concatenated-source-op (basic-load-concatenated-source-op)
     ((selfward-operation :initform '(prepare-op concatenate-source-op) :allocation :class)))
   (defclass compile-concatenated-source-op (basic-compile-concatenated-source-op)
@@ -10418,7 +10478,7 @@ system names to pathnames of .asd files")
   (defclass load-compiled-concatenated-source-op (basic-load-compiled-concatenated-source-op)
     ((selfward-operation :initform '(prepare-op compile-concatenated-source-op) :allocation :class)))
 
-  (defclass monolithic-concatenate-source-op (basic-concatenate-source-op monolithic-bundle-op) ())
+  (defclass monolithic-concatenate-source-op (basic-concatenate-source-op monolithic-bundle-op non-propagating-operation) ())
   (defclass monolithic-load-concatenated-source-op (basic-load-concatenated-source-op)
     ((selfward-operation :initform 'monolithic-concatenate-source-op :allocation :class)))
   (defclass monolithic-compile-concatenated-source-op (basic-compile-concatenated-source-op)
@@ -10472,7 +10532,7 @@ system names to pathnames of .asd files")
 ;;;; -------------------------------------------------------------------------
 ;;; Backward-compatible interfaces
 
-(asdf/package:define-package :asdf/backward-interface
+(uiop/package:define-package :asdf/backward-interface
   (:recycle :asdf/backward-interface :asdf)
   (:use :uiop/common-lisp :uiop :asdf/upgrade
    :asdf/component :asdf/system :asdf/find-system :asdf/operation :asdf/action
@@ -10514,13 +10574,13 @@ system names to pathnames of .asd files")
   (defgeneric (setf operation-on-warnings) (x operation))
   (defgeneric (setf operation-on-failure) (x operation))
   (defmethod operation-on-warnings ((o operation))
-    (declare (ignorable o)) *compile-file-warnings-behaviour*)
+    *compile-file-warnings-behaviour*)
   (defmethod operation-on-failure ((o operation))
-    (declare (ignorable o)) *compile-file-failure-behaviour*)
+    *compile-file-failure-behaviour*)
   (defmethod (setf operation-on-warnings) (x (o operation))
-    (declare (ignorable o)) (setf *compile-file-warnings-behaviour* x))
+    (setf *compile-file-warnings-behaviour* x))
   (defmethod (setf operation-on-failure) (x (o operation))
-    (declare (ignorable o)) (setf *compile-file-failure-behaviour* x))
+    (setf *compile-file-failure-behaviour* x))
 
   (defun system-definition-pathname (x)
     ;; As of 2.014.8, we mean to make this function obsolete,
@@ -10590,7 +10650,7 @@ processed in order by OPERATE."))
          :ignore-inherited-configuration))))
 
   (defmethod operate :before (operation-class system &rest args &key &allow-other-keys)
-    (declare (ignorable operation-class system args))
+    (declare (ignore operation-class system args))
     (when (find-symbol* '#:output-files-for-system-and-operation :asdf nil)
       (error "ASDF 2 is not compatible with ASDF-BINARY-LOCATIONS, which you are using.
 ASDF 2 now achieves the same purpose with its builtin ASDF-OUTPUT-TRANSLATIONS,
@@ -10771,7 +10831,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
 ;;;; ---------------------------------------------------------------------------
 ;;;; Handle ASDF package upgrade, including implementation-dependent magic.
 
-(asdf/package:define-package :asdf/interface
+(uiop/package:define-package :asdf/interface
   (:nicknames :asdf :asdf-utilities)
   (:recycle :asdf/interface :asdf)
   (:unintern
@@ -10796,6 +10856,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
    #:require-system #:test-system #:clear-system
    #:operation #:make-operation #:find-operation
    #:upward-operation #:downward-operation #:sideway-operation #:selfward-operation
+                      #:non-propagating-operation
    #:build-system #:build-op
    #:load-op #:prepare-op #:compile-op
    #:prepare-source-op #:load-source-op #:test-op
@@ -10890,6 +10951,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
    #:circular-dependency        ; errors
    #:duplicate-names #:non-toplevel-system #:non-system-system
    #:package-system-missing-package-error
+   #:operation-definition-warning #:operation-definition-error
 
    #:try-recompiling
    #:retry
@@ -10936,13 +10998,15 @@ otherwise return a default system name computed from PACKAGE-NAME."
 ;;;; ---------------------------------------------------------------------------
 ;;;; ASDF-USER, where the action happens.
 
-(asdf/package:define-package :asdf/user
+(uiop/package:define-package :asdf/user
   (:nicknames :asdf-user)
-  (:use :asdf/common-lisp :asdf/package :asdf/interface))
+  ;; TODO: it would be nice to have :UIOP in the list,
+  ;; but we need test compatibility with cl-test-grid first.
+  (:use :uiop/common-lisp :uiop/package :asdf/interface))
 ;;;; -----------------------------------------------------------------------
 ;;;; ASDF Footer: last words and cleanup
 
-(asdf/package:define-package :asdf/footer
+(uiop/package:define-package :asdf/footer
   (:recycle :asdf/footer :asdf)
   (:use :uiop/common-lisp :uiop :asdf/upgrade :asdf/operate :asdf/bundle))
 (in-package :asdf/footer)
