@@ -106,6 +106,7 @@ Returns either a string in jvm classpath format as entries delimited
 by classpath separator string or T.  If the value T is returned, it
 denotes that current JVM already has already loaded a given class. Can possibly be a
 single entry denoting a remote binary artifact."
+  (asdf:ensure-parsed-mvn mvn-component)
   (let ((name (slot-value mvn-component 'asdf::name))
         (group-id (slot-value mvn-component 'asdf::group-id))
         (artifact-id (slot-value mvn-component 'asdf::artifact-id))
