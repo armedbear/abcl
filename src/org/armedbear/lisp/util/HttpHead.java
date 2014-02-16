@@ -37,6 +37,7 @@ import org.armedbear.lisp.Debug;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -48,7 +49,7 @@ import java.net.URL;
  * Use HTTP/1.1 HEAD to retrieve the specified header field.
  */
 public class HttpHead {
-    static private String get(String urlString, String key) {
+    static private String get(String urlString, String key) throws IOException {
         URL url = null;
         try {
             url = new URL(urlString);
@@ -58,7 +59,7 @@ public class HttpHead {
         return get(url, key);
     }
 
-    static public String get(URL url, String key) {
+    static public String get(URL url, String key) throws IOException {
         Socket socket = null;
         String result = null;
         try {
@@ -67,37 +68,30 @@ public class HttpHead {
                 log("The protocol " + "'" + protocol + "'" + " is not http.");
                 return result;
             }
-
-            socket = new Socket(Proxy.NO_PROXY); // XXX add Proxy
-
+            String host = url.getHost();
             int port = url.getPort();
             if (port == -1) {
                 port = 80;
             }
-            InetSocketAddress address = new InetSocketAddress(url.getHost(), port);
-            try {
-                socket.connect(address, 5000); // ??? too long?  too short?
-            } catch (IOException ex) {
-                log("Connection failed: " + ex);
-                return result;
-            }
-
+            socket = new Socket(host, port);
+           
             PrintWriter out = null;
             BufferedReader in = null;
             try {
                 socket.setSoTimeout(5000); // ms
-                out = new PrintWriter(socket.getOutputStream());
+                out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             } catch (IOException e) {
                 log("Failed to establish socket io: " + e);
                 return result;
             }
 
+            String CRLF = "\r\n";
             String head = "HEAD " + url.getPath() + " HTTP/1.1";
-            out.println(head);
-            out.println("Host: " + url.getAuthority());
-            out.println("Connection: close");
-            out.println("");
+            out.print(head + CRLF);
+            out.print("Host: " + url.getAuthority() + CRLF);
+            out.print("Connection: close" + CRLF);
+            out.print(CRLF);
             out.flush();
 
             String line = null;
@@ -105,6 +99,9 @@ public class HttpHead {
                 line = in.readLine();
             } catch (IOException e) {
                 log("Failed to read HTTP response: " + e);
+            }
+            if (line == null) {
+              throw new IOException("Could not access URL to parse headers."); 
             }
             String status[] = line.split("\\s");
             if (status[1].equals("200")) {
@@ -154,15 +151,21 @@ public class HttpHead {
     }
 
     public static void main(String argv[]) {
-        if (argv.length != 1) {
-            System.out.println("Usage: <cmd> URL");
-            return;
-        }
-        String modified = get(argv[0], "Last-Modified");
-        if (modified != null) {
-            System.out.println("Last-Modified: " + modified);
-        } else {
-            System.out.println("No result returned.");
-        }
+      if (argv.length != 1) {
+        System.out.println("Usage: <cmd> URL");
+        return;
+      }
+      String modified = null;
+      try {
+        modified = get(argv[0], "Last-Modified");
+      } catch (IOException ex) {
+        System.err.println("Unable to get Last-Modified header: ");
+        ex.printStackTrace(System.err);
+      }
+      if (modified != null) {
+        System.out.println("Last-Modified: " + modified);
+      } else {
+        System.out.println("No result returned.");
+      }
     }
 }

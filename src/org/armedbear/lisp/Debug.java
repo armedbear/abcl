@@ -86,11 +86,17 @@ public final class Debug
         System.err.println(s);
     }
 
+    @SuppressWarnings("CallToThreadDumpStack")
     public static final void trace(Throwable t)
     {
         t.printStackTrace();
     }
 
+    public static final void trace(String message, Throwable t)
+    {
+       trace(message);
+       trace(t);
+    }
     public static final Symbol _DEBUG_WARN_
         = exportSpecial("*DEBUG-WARN*", PACKAGE_SYS, NIL);
 

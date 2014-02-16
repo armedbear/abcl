@@ -164,7 +164,12 @@ public class ZipCache {
                 // implementation only looking for Last-Modified
                 // headers, which if we don't find, we give up and
                 // refetch the resource.
-                String dateString = HttpHead.get(url, "Last-Modified");
+                String dateString = null;
+                try {
+                  dateString = HttpHead.get(url, "Last-Modified");
+                } catch (IOException ex) {
+                  Debug.trace(ex);
+                }
                 Date date = null;
                 ParsePosition pos = new ParsePosition(0);
 

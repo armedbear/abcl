@@ -1,11 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.armedbear.lisp.util;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -17,10 +12,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-/**
- *
- * @author evenson
- */
 public class HttpHeadTest {
   
   public HttpHeadTest() {
@@ -42,36 +33,30 @@ public class HttpHeadTest {
   public void tearDown() {
   }
 
-  /**
-   * Test of get method, of class HttpHead.
-   */
   @Test
   public void testGet() {
-    System.out.println("get");
     URL url = null;
     try {
-      url = new URL("http://abcl-dynamic-install.googlecode.com/files/baz-20130403a.jar");
+      url = new URL("http://abcl.org/fasl/42/baz-20140105a-fasl-42.jar");
     } catch (MalformedURLException ex) {
       Logger.getLogger(HttpHeadTest.class.getName()).log(Level.SEVERE, null, ex);
     }
     String key = "Last-Modified";
-    String expResult = "";
-    String result = HttpHead.get(url, key);
-    assertEquals(expResult, result);
-    System.out.println("Last-Modifed result was "+ result);
-    fail("The test case is a prototype.");
+    String result = null;
+    try {
+      result = HttpHead.get(url, key);
+    } catch (IOException ex) {
+      Logger.getLogger(HttpHeadTest.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    assertNotNull(result);
+    System.out.println("Last-Modified result was "+ result);
   }
 
-  /**
-   * Test of main method, of class HttpHead.
-   */
   @Test
   public void testMain() {
     System.out.println("main");
-    String[] argv = null;
+    String[] argv = {"http://google.com/"};
     HttpHead.main(argv);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
   }
   
 }

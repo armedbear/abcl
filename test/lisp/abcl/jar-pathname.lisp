@@ -149,7 +149,7 @@ Returns the two values of the pathnames of the created archives."
     (load-from-jar *tmp-jar-path* "eek")
   t)
 
-çu(deftest jar-pathname.load.5
+(deftest jar-pathname.load.5
     (load-from-jar *tmp-jar-path* "eek.lisp")
   t)
 
@@ -209,10 +209,6 @@ Returns the two values of the pathnames of the created archives."
   `(load (probe-file (format nil "~A~A" *url-jar-pathname-base* ,path))))
 
 ;;; wrapped in PROGN for easy disabling without a network connection
-;;; XXX come up with a better abstraction
-
-;; disable until fix loading fasls via HTTP 
-#+nil  Bombs JVM!  --ME 20140126
 (progn 
   (deftest jar-pathname.load.http.1
       (load-url-relative "foo")
