@@ -85,8 +85,9 @@
         (setf path (format nil "~A/~A/~A" group-id artifact-id version))))
     component))
 
-(export `(mvn iri ensure-parsed-mvn group-id artifact-id version) 
-	'asdf)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export `(mvn iri ensure-parsed-mvn group-id artifact-id version) 
+          'asdf))
 
 (defmethod source-file-type ((component iri) (system system))
   nil)
