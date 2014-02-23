@@ -129,9 +129,8 @@ single entry denoting a remote binary artifact."
     (if (find-mvn)
         (resolve-dependencies group-id artifact-id version)
         (if alternate-uri
-            (values (namestring alternate-uri) alternate-uri)
-            (t 
-             (error "Failed to resolve MVN component name ~A." name))))))
+            (values (namestring alternate-uri) alternate-uri) 
+	    (error "Failed to resolve MVN component name ~A." name)))))
 
 (defmethod resolve ((uri pathname))
   (warn "Unimplemented."))
