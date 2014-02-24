@@ -1,6 +1,6 @@
 ;;;; The ABCL specific overrides in ASDF.  
 ;;;;
-;;;; Done separate from asdf.lisp for stability.
+;;;; Done separately from asdf.lisp for stability.
 (require :asdf)
 (in-package :asdf)
 
@@ -14,7 +14,8 @@
 (defclass mvn (iri) 
   ((group-id :initarg :group-id :initform nil)
    (artifact-id :initarg :artifact-id :initform nil)
-   (repository :initform "http://repo1.maven.org/maven2/") ;;; XXX unimplmented
+   (repository :initform "http://repo1.maven.org/maven2/") ;;; XXX unimplemented
+   (resolved-classpath :initform nil :accessor resolved-classpath)
    (classname :initarg :classname :initform nil)
    (alternate-uri :initarg :alternate-uri :initform nil)
    ;; inherited from ASDF:COMPONENT ??? what are the CL semantics on overriding -- ME 2012-04-01
@@ -27,14 +28,15 @@
 
 ;;; We intercept compilation to ensure that load-op will succeed
 (defmethod perform ((op compile-op) (c mvn))
-  (abcl-asdf:resolve   
-   (ensure-parsed-mvn c)))
+  (unless (resolved-classpath c)
+    (setf (resolved-classpath c)
+          (abcl-asdf:resolve   
+           (ensure-parsed-mvn c)))))
 
 (defmethod perform ((operation load-op) (c mvn))
-  (let ((resolved-path 
-         (abcl-asdf:resolve (ensure-parsed-mvn c))))
-    (when (stringp resolved-path)
-      (java:add-to-classpath (abcl-asdf:as-classpath resolved-path)))))
+  (let ((resolved-classpath (resolved-classpath c)))
+    (when (stringp resolved-classpath)
+      (java:add-to-classpath (abcl-asdf:as-classpath resolved-classpath)))))
 
 ;;; A Maven URI has the form "mvn:group-id/artifact-id/version"
 ;;;
