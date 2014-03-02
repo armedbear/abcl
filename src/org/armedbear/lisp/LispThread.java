@@ -1237,35 +1237,52 @@ public final class LispThread extends LispObject
             } 
         }
     };
+    
+    final static DoubleFloat THOUSAND = new DoubleFloat(1000);
 
-
-    public static final long javaSleepInterval(LispObject lispSleep)
-
-    {
-        double d =
-            checkDoubleFloat(lispSleep.multiplyBy(new DoubleFloat(1000))).getValue();
-        if (d < 0)
-            type_error(lispSleep, list(Symbol.REAL, Fixnum.ZERO));
-
-        return (d < Long.MAX_VALUE ? (long) d : Long.MAX_VALUE);
+    static final long sleepMillisPart(LispObject seconds) {
+      double d 
+        = checkDoubleFloat(seconds.multiplyBy(THOUSAND)).getValue();
+      if (d < 0) {
+        type_error(seconds, list(Symbol.REAL, Fixnum.ZERO));
+      }
+      return (d < Long.MAX_VALUE ? (long) d : Long.MAX_VALUE);
     }
 
+    static final int sleepNanosPart(LispObject seconds) {
+      double d  // d contains millis
+        = checkDoubleFloat(seconds.multiplyBy(THOUSAND)).getValue();
+      double n = d * 1000000; // sleep interval in nanoseconds
+      d = 1.0e6 * ((long)d); //  sleep interval to millisecond precision
+      n = n - d; 
+
+      return (n < Integer.MAX_VALUE ? (int) n : Integer.MAX_VALUE);
+    }
+
+
     @DocString(name="sleep", args="seconds",
-    doc="Causes the invoking thread to sleep for SECONDS seconds.\n"+
-        "SECONDS may be a value between 0 1and 1.")
+    doc="Causes the invoking thread to sleep for an interveral expressed in SECONDS.\n"
+      + "SECONDS may be specified as a fraction of a second, with intervals\n"
+      + "less than or equal to a nanosecond resulting in a yield of execution\n"
+      + "to other waiting threads rather than an actual sleep.")
     private static final Primitive SLEEP = new Primitive("sleep", PACKAGE_CL, true)
     {
         @Override
         public LispObject execute(LispObject arg)
         {
+          long millis = sleepMillisPart(arg);
+          int nanos = sleepNanosPart(arg);
 
-            try {
-                Thread.sleep(javaSleepInterval(arg));
-            }
-            catch (InterruptedException e) {
-                currentThread().processThreadInterrupts();
-            }
-            return NIL;
+          try {
+            if (millis == 0 && nanos == 0) { 
+              Thread.yield(); 
+            } else {
+              Thread.sleep(millis, nanos);
+            } 
+          } catch (InterruptedException e) {
+            currentThread().processThreadInterrupts();
+          }
+          return NIL;
         }
     };
 
@@ -1418,7 +1435,15 @@ public final class LispThread extends LispObject
         }
     };
 
-    @DocString(name="object-wait", args="object &optional timeout")
+    @DocString(
+    name="object-wait", args="object &optional timeout", 
+    doc="Causes the current thread to block until object-notify or object-notify-all is called on OBJECT.\n"
+       + "Optionally unblock execution after TIMEOUT seconds.  A TIMEOUT of zero\n"
+       + "means to wait indefinitely.\n"
+       + "\n"
+       + "See the documentation of java.lang.Object.wait() for further\n"
+       + "information.\n"
+    )
     private static final Primitive OBJECT_WAIT =
         new Primitive("object-wait", PACKAGE_THREADS, true)
     {
@@ -1443,7 +1468,8 @@ public final class LispThread extends LispObject
 
         {
             try {
-                object.lockableInstance().wait(javaSleepInterval(timeout));
+	      object.lockableInstance().wait(sleepMillisPart(timeout),
+					     sleepNanosPart(timeout));
             }
             catch (InterruptedException e) {
                 currentThread().processThreadInterrupts();
