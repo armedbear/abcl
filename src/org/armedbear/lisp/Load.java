@@ -127,6 +127,24 @@ public final class Load
     {
         return load(pathname, verbose, print, ifDoesNotExist, false, Keyword.DEFAULT);
     }
+  
+    public static final LispObject load(InputStream in) 
+    {
+      return load(in, new SimpleString("UTF-8"));
+    }
+  
+    public static  final LispObject load(InputStream in, LispObject format) {
+        Stream stream = new Stream(Symbol.SYSTEM_STREAM, in, Symbol.CHARACTER, 
+                                   format);
+        final LispThread thread = LispThread.currentThread();
+        return loadFileFromStream(null, 
+                                  null,
+                                  stream,
+                                  Symbol.LOAD_VERBOSE.symbolValue(thread) != NIL,
+                                  Symbol.LOAD_PRINT.symbolValue(thread) != NIL,
+                                  false);
+    }
+
 
     public static final LispObject load(final Pathname pathname,
                                         boolean verbose,
