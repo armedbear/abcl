@@ -34,7 +34,7 @@ Unreleased
     [r14572]: http://abcl.org/trac/changeset/14572
     [r14579]: http://abcl.org/trac/changeset/14579
 
-*  ASDF 3.0.1.49 shipped with the implementation
+*  ASDF 3.0.1.65 shipped with the implementation
 
 *  per function call stack and memory exception handler in CL:COMPILE
 
@@ -77,18 +77,40 @@ Unreleased
    [r14619]: http://abcl.org/trac/changeset/14619
    [ticket-340]: http://abcl.org/trac/ticket/340
 
+## Fixes
+
+*  Fix CL:SLEEP for intervals less than a millisecond.  
+
+   For intervals less than or equal to a nanosecond, including an
+   interval of zero, the current thread merely yields execution to
+   other threads.
+
+   [r14632]: http://abcl.org/trac/changeset/14632
+
+
 ## Tested
 
 ### "Java_HotSpot(TM)_64-Bit_Server_VM-Oracle_Corporation-1.7.0_51-b13" "x86_64-Mac_OS_X-10.9.1"
 
-### Contrib
+### "Java_HotSpot(TM)_64-Bit_Server_VM-Oracle_Corporation-1.8.0-b129" "x86_64-Mac_OS_X-10.9.2"
+
+## Contrib
 
 #### abcl-asdf
 
-[ticket-328]: http://abcl.org/trac/ticket/328
+*  Now working with both Maven 3.0.x and 3.1.x.  Thanks to Anton for
+   the help!
 
-Now working with both Maven 3.0.x and 3.1.x.  Thanks to Anton for the
-help!
+   [ticket-328]: http://abcl.org/trac/ticket/328
+
+*  cache Maven dependency resolution to avoid repeated lookups.
+
+   Instead of calling ABCL-ASDF:RESOLVE in both the ASDF COMPILE-OP
+   and LOAD-OP, we now cache the result of invocation in COMPILE-OP
+   and add this value in the LOAD-OP phase. Contributed by Cyrus
+   Harmon.
+
+   [r14631]: http://abcl.org/trac/changeset/14631
 
 #### jna
   

@@ -9,6 +9,7 @@
 @prefix rdf:             <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:            <http://www.w3.org/2000/01/rdf-schema#> .
 
+
 <> a doap:Project .
 
 <> rdfs:seeAlso         <urn:abcl.not.org> .
@@ -94,7 +95,7 @@ doap:Project rdfs:seeAlso [
      rdf:_1 <urn:abcl:previousVersion> ;
      rdf:_2 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.0.1.jar> ;
      rdf:_3 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.0.2.jar> ;
-     rdf:_3 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.1.jar> 
+     rdf:_3 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.1.jar> ;
 
      rdf:_4 <http://abcl.org/releases/1.2.1/abcl-1.2.1.jar> 
 
@@ -133,6 +134,8 @@ doap:Project rdfs:seeAlso
     rdf:_8 abcl:asdf-jar ;
     rdf:_9 abcl:quicklisp-abcl ;
 ] .
+
+abcl:asdf-install dc:version "3.1.0.65" .
 
 abcl:abcl-contrib  
   rdfs:seeAlso <file:contrib/README.markdown> .                             
