@@ -1,11 +1,11 @@
-Version 1.3.0-rc-0
-==================
-http://abcl.org/svn/trunk/abcl
-Unreleased
+Version 1.3.0
+=============
+http://abcl.org/tags/1.3.0/
+15-MAR-2014
 
 ## Features
 
-*  Make LispStackFrame?.UNAVAILABLE_ARG a singleton object,
+*  Make LispStackFrame.UNAVAILABLE_ARG a singleton object,
    and lazily create the little used portions of the Lisp stack.
 
     Aggressively cache and control the use of memory by the underlying
@@ -14,7 +14,7 @@ Unreleased
 
     Contributed by Dmitry Nadezhin.
 
-    LispStackFrame? object are allocated on every
+    LispStackFrame object are allocated on every
     LispThread.execute(...) .  However, they are seldom [accessed]
     ([... verify via] inspect[tion of the] stack trace). This patch
     delays allocation of LispStackFrame? objects until they are
@@ -34,7 +34,7 @@ Unreleased
     [r14572]: http://abcl.org/trac/changeset/14572
     [r14579]: http://abcl.org/trac/changeset/14579
 
-*  ASDF 3.0.1.65 shipped with the implementation
+*  ASDF 3.0.1.94 shipped with the implementation
 
 *  per function call stack and memory exception handler in CL:COMPILE
 
@@ -52,7 +52,7 @@ Unreleased
 
     [r14582]:  http://abcl.org/trac/changeset/14582
 
-* Connect to Netbeans via SLIME
+* Connect to NetBeans controlled JDWP via SLIME
 
     The Netbeans IDE configuration now includes a way to connect to
     the running-under-jdb ABCL via SLIME.  One needs a version of
