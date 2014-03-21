@@ -27,7 +27,7 @@
                       "java.util.regex.Pattern"
                       (concatenate 'string name "(-[0-9]\\.[0-9]\\.[0-9]\\.[0-9]([+~-]+)?)?")
                       (pathname-name p)))
-       (make-pathname :defaults p :name name)))
+       p))
 
 (defun find-system ()
   "Find the location of the system.
@@ -46,12 +46,21 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
    (ignore-errors
      #p"http://abcl.org/releases/current/abcl.jar")))
 
-(defun find-system-jar ()
-  "Return the pathname of the system jar, one of `abcl.jar` or `abcl-m.n.p.jar` or `abcl-m.n.p[.~-]something.jar`."
+(defun find-jar (predicate)
   (dolist (loader (java:dump-classpath))
-    (let ((abcl-jar (some #'system-jar-p loader)))
-      (when abcl-jar
-        (return abcl-jar)))))
+    (let ((jar (some predicate loader)))
+      (when jar
+        (return jar)))))
+
+(defun find-system-jar ()
+  "Return the pathname of the system jar, one of `abcl.jar` or
+`abcl-m.n.p.jar` or `abcl-m.n.p[.~-]something.jar`."
+  (find-jar #'system-jar-p))
+
+(defun find-contrib-jar ()
+  "Return the pathname of the contrib jar, one of `abcl-contrib.jar` or
+`abcl-contrib-m.n.p.jar` or `abcl-contrib-m.n.p[.~-]something.jar`."
+  (find-jar #'contrib-jar-p))
 
 (defvar *abcl-contrib* nil
   "Pathname of the ABCL contrib.
@@ -87,10 +96,7 @@ Returns the pathname of the contrib if it can be found."
 (defun find-contrib ()
   "Introspect runtime classpaths to find a loadable ABCL-CONTRIB."
   (or (ignore-errors
-        (when (find-system-jar)
-          (probe-file
-           (make-pathname :defaults (find-system-jar)
-                          :name "abcl-contrib"))))
+        (find-contrib-jar))
       (some
        (lambda (u)
          (probe-file (make-pathname
