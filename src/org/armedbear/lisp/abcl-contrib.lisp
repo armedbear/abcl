@@ -97,6 +97,14 @@ Returns the pathname of the contrib if it can be found."
   "Introspect runtime classpaths to find a loadable ABCL-CONTRIB."
   (or (ignore-errors
         (find-contrib-jar))
+      (ignore-errors
+        (let ((system-jar (find-system-jar)))
+          (when system-jar
+            (probe-file (make-pathname
+                         :defaults system-jar
+                         :name (concatenate 'string
+                                            "abcl-contrib"
+                                            (subseq (pathname-name system-jar) 4)))))))
       (some
        (lambda (u)
          (probe-file (make-pathname
