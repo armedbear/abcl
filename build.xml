@@ -156,6 +156,8 @@ For help on the automatic tests available, use the Ant target 'help.test'.
           <!-- 1.7.0_04 works much better. -->
           <matches string="${java.version}" 
                    pattern="1\.7\.0_(0[4-9])|([1-9][0-9])"/>
+          <matches string="${java.version}" 
+                   pattern="1\.8\.0"/>
         </or>  
       </condition>
 
