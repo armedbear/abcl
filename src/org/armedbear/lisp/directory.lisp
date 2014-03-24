@@ -121,9 +121,15 @@ error to its caller."
             (let ((namestring (directory-namestring pathname)))
               (when (and namestring (> (length namestring) 0))
                 (when (featurep :windows)
-                  (let ((device (pathname-device pathname)))
-                    (when device
-                      (setq namestring (concatenate 'string device ":" namestring)))))
+                  (let ((host (pathname-host pathname))
+                        (device (pathname-device pathname)))
+                    (cond 
+                      ((and host device)
+                       (setq namestring 
+                             (concatenate 'string "//" host "/" device  namestring)))
+                      (device
+                       (setq namestring 
+                             (concatenate 'string device ":" namestring))))))
                 (let ((entries (list-directories-with-wildcards 
                                 namestring nil resolve-symlinks))
                       (matching-entries ()))

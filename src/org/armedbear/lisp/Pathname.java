@@ -242,28 +242,34 @@ public class Pathname extends LispObject {
             return;
         }
         if (Utilities.isPlatformWindows) {
-            if (s.startsWith("\\\\")) { // XXX What if string starts with '//'?
-                //UNC path support
-                // match \\<server>\<share>\[directories-and-files]
-
-                int shareIndex = s.indexOf('\\', 2);
-                int dirIndex = s.indexOf('\\', shareIndex + 1);
-
-                if (shareIndex == -1 || dirIndex == -1) {
-                    error(new LispError("Unsupported UNC path format: \"" + s + '"'));
-                }
-
-                host = new SimpleString(s.substring(2, shareIndex));
-                device = new SimpleString(s.substring(shareIndex + 1, dirIndex));
-
-                Pathname p = new Pathname(s.substring(dirIndex));
-                directory = p.directory;
-                name = p.name;
-                type = p.type;
-                version = p.version;
-                invalidateNamestring();
-                return;
+          if (s.startsWith("\\\\") || s.startsWith("//")) { 
+            // UNC path support
+            int shareIndex;
+            int dirIndex;
+            // match \\<server>\<share>\[directories-and-files]
+            if (s.startsWith("\\\\")) {
+              shareIndex = s.indexOf('\\', 2);
+              dirIndex = s.indexOf('\\', shareIndex + 1);
+              // match //<server>/<share>/[directories-and-files]
+            } else {
+              shareIndex = s.indexOf('/', 2);
+              dirIndex = s.indexOf('/', shareIndex + 1);
             }
+            if (shareIndex == -1 || dirIndex == -1) {
+              error(new LispError("Unsupported UNC path format: \"" + s + '"'));
+            }
+
+            host = new SimpleString(s.substring(2, shareIndex));
+            device = new SimpleString(s.substring(shareIndex + 1, dirIndex));
+
+            Pathname p = new Pathname(s.substring(dirIndex));
+            directory = p.directory;
+            name = p.name;
+            type = p.type;
+            version = p.version;
+            invalidateNamestring();
+            return;
+          }
         }
         
         // A JAR file
@@ -381,10 +387,10 @@ public class Pathname extends LispObject {
             
                 String uriPath = uri.getPath();
                 if (null == uriPath) {
-				  // Under Windows, deal with pathnames containing
-				  // devices expressed as "file:z:/foo/path"
-				  uriPath = uri.getSchemeSpecificPart();
-				  if (uriPath == null || uriPath.equals("")) {
+                                  // Under Windows, deal with pathnames containing
+                                  // devices expressed as "file:z:/foo/path"
+                                  uriPath = uri.getSchemeSpecificPart();
+                                  if (uriPath == null || uriPath.equals("")) {
                     error(new LispError("The URI has no path: " + uri));
                   }
                 }
@@ -651,8 +657,8 @@ public class Pathname extends LispObject {
                 sb.append(host.getStringValue());
                 sb.append(':');
             } else { 
-                // UNC paths now use unprintable representation
-                return null;
+              // A UNC path
+              sb.append("//").append(host.getStringValue()).append("/");
             }
         }
         boolean uriEncoded = false;
@@ -663,20 +669,20 @@ public class Pathname extends LispObject {
             StringBuilder prefix = new StringBuilder();
             for (int i = 0; i < jars.length; i++) {
                 prefix.append("jar:");
-        LispObject component = jars[i];
-        if (!(component instanceof Pathname)) {
-           return null; // If DEVICE is a CONS, it should only contain Pathname 
-        }
+                LispObject component = jars[i];
+                if (!(component instanceof Pathname)) {
+                  return null; // If DEVICE is a CONS, it should only contain Pathname 
+                }
                 if (! ((Pathname)component).isURL() && i == 0) {
-                    sb.append("file:");
-                    uriEncoded = true;
+                  sb.append("file:");
+                  uriEncoded = true;
                 }
                 Pathname jar = (Pathname) component;
                 String encodedNamestring;
                 if (uriEncoded) {
-                    encodedNamestring = uriEncode(jar.getNamestring());
+                  encodedNamestring = uriEncode(jar.getNamestring());
                 } else { 
-                    encodedNamestring = jar.getNamestring();
+                  encodedNamestring = jar.getNamestring();
                 }
                 sb.append(encodedNamestring);
                 sb.append("!/");
@@ -685,8 +691,8 @@ public class Pathname extends LispObject {
         } else if (device instanceof AbstractString) {
             sb.append(device.getStringValue());
             if (this instanceof LogicalPathname
-              || host == NIL) {
-                sb.append(':'); // non-UNC paths
+                || host == NIL) {
+              sb.append(':'); // non-UNC paths
             }
         } else {
             Debug.assertTrue(false);
