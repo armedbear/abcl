@@ -19,8 +19,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-exec @JAVA@ @ABCL_JAVA_OPTIONS@ \
+exec @JAVA@ \
   -cp  @ABCL_CLASSPATH@:"$CLASSPATH" \
+  @ABCL_JAVA_OPTIONS@ \
   org.armedbear.lisp.Main \
   "$@"
 
