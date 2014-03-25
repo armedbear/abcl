@@ -246,8 +246,9 @@ we recommend you upgrade to ASDF 3
 --- and we explain how to do that. @xref{Loading ASDF}.
 (In the context of compatibility requirements,
 ASDF 2.27, released on Feb 1st 2013, and further 2.x releases up to 2.33,
-count as pre-releases of ASDF 3, and define the :asdf3 feature;
+count as pre-releases of ASDF 3, and define the @code{:asdf3} feature;
 still, please use the latest release).
+Release ASDF 3.1.1 and later also define the @code{:asdf3.1} feature.
 
 Also note that ASDF is not to be confused with ASDF-Install.
 ASDF-Install is not part of ASDF, but a separate piece of software.
@@ -256,6 +257,9 @@ We recommend you use Quicklisp instead,
 which works great and is being actively maintained.
 If you want to download software from version control instead of tarballs,
 so you may more easily modify it, we recommend clbuild.
+We recommend @file{~/common-lisp/}
+as a place into which to install Common Lisp software;
+starting with ASDF 3.1.1, it is included in the default source-registry configuration.
 
 @node  Quick start summary, Loading ASDF, Introduction, Top
 @chapter Quick start summary
@@ -276,7 +280,9 @@ Make sure ASDF can find system definitions
 through proper source-registry configuration.
 For more details, @xref{Configuring ASDF to find your systems}.
 The simplest way is simply to put all your lisp code in subdirectories of
-@file{~/.local/share/common-lisp/source/}.
+@file{~/common-lisp/} (starting with ASDF 3.1.1),
+or @file{~/.local/share/common-lisp/source/}
+(for ASDF 2 and later, or if you want to keep source in a hidden directory).
 Such code will automatically be found.
 
 @item
@@ -433,10 +439,12 @@ we assume you're an expert deliberately using a legacy implementation,
 and are proficient enough to install this fasl.
 Still, the ASDF source repository contains a script
 @file{bin/install-asdf-as-module} that can help you do that.
-It relies on cl-launch 4 for command-line invocation,
+It relies on @file{cl-launch} 4 for command-line invocation,
 which may depend on ASDF being checked out in @file{~/cl/asdf/}
 if your implementation doesn't even have an ASDF 2;
-but you can run the code it manually if needs be.
+but if you don't have @file{cl-launch},
+you can instead @code{(load "bin/install-asdf-as-module")}
+from your implementation's REPL.
 
 Finally, if your implementation only provides ASDF 2,
 and you can't or won't upgrade it or override its ASDF module,
@@ -553,7 +561,7 @@ and resetting the ASDF configuration is usually only needed in corner cases.
 * Resetting the ASDF configuration::
 @end menu
 
-@node Configuring ASDF to find your systems, Configuring where ASDF stores object files, Configuring ASDF, Configuring ASDF
+@node Configuring ASDF to find your systems, Configuring ASDF to find your systems --- old style, Configuring ASDF, Configuring ASDF
 @section Configuring ASDF to find your systems
 
 In order to compile and load your systems, ASDF must be configured to find
@@ -566,9 +574,11 @@ ASDF, starting from easiest to the most complex:
 
 @item
 Put all of your systems in subdirectories of
+@file{~/common-lisp/} or
 @file{~/.local/share/common-lisp/source/}.
-If you install software there (it can be a symlink),
-you don't need further configuration.
+If you install software there, you don't need further configuration.
+(NB: @file{~/common-lisp/} is only included in the default configuration
+starting with ASDF 3.1.1 or later)
 
 @item
 If you're using some tool to install software (e.g. Quicklisp),
@@ -614,16 +624,6 @@ If necessary, you can reset the source-registry configuration with:
 @lisp
 (asdf:clear-source-registry)
 @end lisp
-
-@c FIXME: too specific.  Push this down to discussion of dumping an
-@c image?
-
-@c And you probably should do so before you dump your Lisp image,
-@c if the configuration may change
-@c between the machine where you save it at the time you save it
-@c and the machine you resume it at the time you resume it.
-@c Actually, you should use @code{(asdf:clear-configuration)}
-@c before you dump your Lisp image, which includes the above.
 
 @item
 In earlier versions of ASDF, the system source registry was configured
@@ -731,7 +731,7 @@ but it is supported for old users, and for users who want to programmatically
 control what directories are added to the ASDF search path.
 
 
-@node Configuring where ASDF stores object files,  , Configuring ASDF to find your systems, Configuring ASDF
+@node Configuring where ASDF stores object files, Resetting the ASDF configuration, Configuring ASDF to find your systems --- old style, Configuring ASDF
 @section Configuring where ASDF stores object files
 @findex clear-output-translations
 
@@ -828,19 +828,15 @@ For that you may use the following function:
    regarding source-registry or output-translations.
 @end defun
 
-If you use SBCL, CMUCL or SCL, you may use this snippet
-so that the ASDF configuration be cleared automatically as you dump an image:
-
-@example
-#+(or cmu sbcl scl)
-(pushnew 'clear-configuration
-         #+(or cmu scl) ext:*before-save-initializations*
-         #+sbcl sb-ext:*save-hooks*)
-@end example
-
-For compatibility with all Lisp implementations, however,
-you might want instead your build script to explicitly call
-@code{(asdf:clear-configuration)} at an appropriate moment before dumping.
+This function is pushed onto the @code{uiop:*image-dump-hook*} by default,
+which means that if you save an image using @code{uiop:dump-image},
+or via @code{asdf:image-op} and @code{asdf:program-op},
+it will be automatically called to clear your configuration.
+If for some reason you prefer to call your implementation's underlying functionality,
+be sure to call @code{clear-configuration} manually,
+or push it into your implementation's equivalent of @code{uiop:*image-dump-hook*},
+e.g. @code{sb-ext:*save-hooks*} on SBCL, or @code{ext:*before-save-initializations*}
+on CMUCL and SCL, etc.
 
 @node  Using ASDF, Defining systems with defsystem, Configuring ASDF, Top
 @chapter Using ASDF
