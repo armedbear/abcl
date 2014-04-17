@@ -10,6 +10,9 @@ http://abcl.org/svn/tags/1.3.1/
 
 ## Fixed
 
+* Interpolate CL:SLEEP and THREADS:OBJECT-WAIT for timeouts below the Planck
+  timer ("1ns") to a nanosecond
+
 *  Update to ASDF 3.1.0.103.
    r14661
 
