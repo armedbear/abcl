@@ -1040,17 +1040,32 @@ public final class Java
         return result;
     }
 
+    private static boolean isAssignable(Class<?> from, Class<?> to) {
+        from = maybeBoxClass(from);
+        to = maybeBoxClass(to);
+        if (to.isAssignableFrom(from)) {
+            return true;
+        }
+        if (Byte.class.equals(from)) {
+            return Short.class.equals(to) || Integer.class.equals(to) || Long.class.equals(to) || Float.class.equals(to) || Double.class.equals(to);
+        } else if (Short.class.equals(from) || Character.class.equals(from)) {
+            return Integer.class.equals(to) || Long.class.equals(to) || Float.class.equals(to) || Double.class.equals(to);
+        } else if (Integer.class.equals(from)) {
+            return Long.class.equals(to) || Float.class.equals(to) || Double.class.equals(to);
+        } else if (Long.class.equals(from)) {
+            return Float.class.equals(to) || Double.class.equals(to);
+        } else if (Float.class.equals(from)) {
+            return Double.class.equals(to);
+        }
+        return false;
+    }
+
     private static boolean isApplicableMethod(Class<?>[] methodTypes,
             Object[] args) {
         for (int i = 0; i < methodTypes.length; ++i) {
             Class<?> methodType = methodTypes[i];
             Object arg = args[i];
-            if (methodType.isPrimitive()) {
-                Class<?> x = getBoxedClass(methodType);
-                if (!x.isInstance(arg)) {
-                    return false;
-                }
-            } else if (arg != null && !methodType.isInstance(arg)) {
+            if (!isAssignable(arg.getClass(), methodType)) {
                 return false;
             }
         }
@@ -1059,18 +1074,12 @@ public final class Java
 
     private static boolean isMoreSpecialized(Class<?>[] xtypes, Class<?>[] ytypes) {
         for (int i = 0; i < xtypes.length; ++i) {
-            Class<?> xtype = xtypes[i];
-            if (xtype.isPrimitive()) {
-                xtype = getBoxedClass(xtype);
-            }
-            Class<?> ytype = ytypes[i];
-            if (ytype.isPrimitive()) {
-                ytype = getBoxedClass(ytype);
-            }
+            Class<?> xtype = maybeBoxClass(xtypes[i]);
+            Class<?> ytype = maybeBoxClass(ytypes[i]);
             if (xtype.equals(ytype)) {
                 continue;
             }
-            if (ytype.isAssignableFrom(xtype)) {
+            if (isAssignable(xtype, ytype)) {
                 return true;
             }
         }

@@ -195,6 +195,14 @@
     (jcall method "test" (make-immediate-object nil :boolean) 0 "this is a test" 10 4))
   t)
 
+(deftest jcall.5
+  (jcall "join" (jstatic "currentThread" "java.lang.Thread") 1 1)
+  nil)
+
+(deftest jcall.6
+  (jcall "offsetByCodePoints" "foobar" 0 #\Nul)
+  0)
+
 (deftest jfield.1
   (type-of (jfield "java.lang.Integer" "TYPE"))
   #+abcl    java-object
