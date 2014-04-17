@@ -1264,7 +1264,9 @@ public final class LispThread extends LispObject
     doc="Causes the invoking thread to sleep for an interveral expressed in SECONDS.\n"
       + "SECONDS may be specified as a fraction of a second, with intervals\n"
       + "less than or equal to a nanosecond resulting in a yield of execution\n"
-      + "to other waiting threads rather than an actual sleep.")
+      + "to other waiting threads rather than an actual sleep.\n"
+      + "A zero value of SECONDS *may* result in the JVM sleeping indefinitely,\n"
+      + "depending on the implementation.")
     private static final Primitive SLEEP = new Primitive("sleep", PACKAGE_CL, true)
     {
         @Override
@@ -1272,10 +1274,15 @@ public final class LispThread extends LispObject
         {
           long millis = sleepMillisPart(arg);
           int nanos = sleepNanosPart(arg);
+          boolean zeroArgP = arg.ZEROP() != NIL;
 
           try {
             if (millis == 0 && nanos == 0) { 
-              Thread.yield(); 
+              if (zeroArgP) {
+                Thread.sleep(0, 0);
+              } else { 
+                Thread.sleep(0, 1);
+              }
             } else {
               Thread.sleep(millis, nanos);
             } 
@@ -1440,6 +1447,7 @@ public final class LispThread extends LispObject
     doc="Causes the current thread to block until object-notify or object-notify-all is called on OBJECT.\n"
        + "Optionally unblock execution after TIMEOUT seconds.  A TIMEOUT of zero\n"
        + "means to wait indefinitely.\n"
+       + "A non-zero TIMEOUT of less than a nanosecond is interpolated as a nanosecond wait."
        + "\n"
        + "See the documentation of java.lang.Object.wait() for further\n"
        + "information.\n"
@@ -1467,9 +1475,20 @@ public final class LispThread extends LispObject
         public LispObject execute(LispObject object, LispObject timeout)
 
         {
+          long millis = sleepMillisPart(timeout);
+          int nanos = sleepNanosPart(timeout);
+          boolean zeroArgP = timeout.ZEROP() != NIL;
+          
             try {
-	      object.lockableInstance().wait(sleepMillisPart(timeout),
-					     sleepNanosPart(timeout));
+              if (millis == 0 && nanos == 0) { 
+                if (zeroArgP) {
+                  object.lockableInstance().wait(0, 0);
+                } else {
+                  object.lockableInstance().wait(0, 1);
+                }
+              } else {
+                object.lockableInstance().wait(millis, nanos);
+              }
             }
             catch (InterruptedException e) {
                 currentThread().processThreadInterrupts();
