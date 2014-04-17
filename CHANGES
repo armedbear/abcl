@@ -3,6 +3,52 @@ Version 1.4.0-dev
 http://abcl.org/svn/trunk/
 Unreleased.
 
+Version 1.3.1
+=============
+http://abcl.org/svn/tags/1.3.1/
+20-APR-2014
+
+## Fixed
+
+*  Update to ASDF 3.1.0.103.
+   r14661
+
+   Fixes loading of Ironclad and other Quicklisp systems.
+
+*  Fix Uniform Naming Convention (aka "UNC" or "network") paths under Windows.
+   r14659
+
+   DIRECTORY now works again on UNC paths.
+
+   UNC paths may be either specified with either back slash (#\\) or
+   forward slash (#\/) doubled as the first character in a Pathname
+   namestring.
+
+   The patterns in
+
+        //<server>/<share>/[directories-and-files]
+
+   are parsed as
+
+    <server> is stored as HOST.
+
+    <share> is stored as DEVICE.
+
+    [directories-and-files] gets parsed as per the normal rules under
+    Windows.
+
+   Mixing namestrings with both backslash and slash characters can
+   lead to unpredictable results.  It is recommended not to use
+   backslash characters in namestrings if it can be avoided.  The
+   pathname printed representation is always normalized to using
+   forward slash delimiters.
+
+
+*  Find contrib based on system jar name.
+   r14657 
+
+   From Olof-Joachim Frahm.
+
 
 Version 1.3.0
 =============
