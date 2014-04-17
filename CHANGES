@@ -10,16 +10,20 @@ http://abcl.org/svn/tags/1.3.1/
 
 ## Fixed
 
-* Interpolate CL:SLEEP and THREADS:OBJECT-WAIT for timeouts below the Planck
-  timer ("1ns") to a nanosecond
+*  Make JCALL work in more places.  Thanks to Olof-Joachim Frahm.
+   <http://abcl.org/trac/changeset/14683>
+
+*  Interpolate CL:SLEEP and THREADS:OBJECT-WAIT for timeouts below the
+   Planck timer ("1ns") to a nanosecond.
+   <http://abcl.org/trac/changeset/14679>
 
 *  Update to ASDF 3.1.0.103.
-   r14661
+   <http://abcl.org/trac/changeset/14661>
 
    Fixes loading of Ironclad and other Quicklisp systems.
 
 *  Fix Uniform Naming Convention (aka "UNC" or "network") paths under Windows.
-   r14659
+   <http://abcl.org/trac/changeset/14659>
 
    DIRECTORY now works again on UNC paths.
 
@@ -48,7 +52,7 @@ http://abcl.org/svn/tags/1.3.1/
 
 
 *  Find contrib based on system jar name.
-   r14657 
+   <http://abcl.org/trac/changeset/14657>
 
    From Olof-Joachim Frahm.
 
