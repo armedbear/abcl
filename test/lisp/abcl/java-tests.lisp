@@ -203,6 +203,11 @@
   (jcall "offsetByCodePoints" "foobar" 0 #\Nul)
   0)
 
+(deftest jcall.7
+  (signals-error (jcall "offsetByCodePoints" "foobar" 0 nil)
+                 #+abcl    'java-exception
+                 #+allegro 'jlinker-error))
+
 (deftest jfield.1
   (type-of (jfield "java.lang.Integer" "TYPE"))
   #+abcl    java-object

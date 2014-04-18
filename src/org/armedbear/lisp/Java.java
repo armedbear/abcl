@@ -1065,7 +1065,9 @@ public final class Java
         for (int i = 0; i < methodTypes.length; ++i) {
             Class<?> methodType = methodTypes[i];
             Object arg = args[i];
-            if (!isAssignable(arg.getClass(), methodType)) {
+            if (arg == null) {
+                return !methodType.isPrimitive();
+            } else if (!isAssignable(arg.getClass(), methodType)) {
                 return false;
             }
         }
