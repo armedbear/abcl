@@ -5,17 +5,20 @@
 (defpackage #:asdf-jar
   (:use :cl)
   (:export #:package 
+           ;; "Si vis pacem, para bellum" -- Publius Flavius Vegetius Renatus
+           #:prepare-for-war 
            #:add-to-asdf))
 
-(in-package :asdf-jar)
+(in-package #:asdf-jar)
 
 (defvar *debug* nil)
 
-(defun package (system
-          &key (out #p"/var/tmp/") 
-               (recursive t)          ; whether to package dependencies
-               (force nil)            ; whether to force ASDF compilation
-               (verbose t))
+(defun package (system &key 
+                         (out #p"/var/tmp/") 
+                         (recursive t)          ; whether to package dependencies
+                         (force nil)            ; whether to force ASDF compilation
+                         (root nil)
+                         (verbose t))
 "Compile and package the asdf SYSTEM in a jar.
 
 When RECURSIVE is true (the default), recursively add all asdf
@@ -31,11 +34,13 @@ Returns the pathname of the packaged jar archive.
              (setf system (asdf:find-system system)))
   (let* ((name 
           (slot-value system 'asdf::name))
-         (version 
-          (handler-case (slot-value system 'asdf:version)
-            (unbound-slot () "unknown")))
+         (version (let ((v (slot-value system 'asdf:version)))
+                    (when v
+                      v)))
          (package-jar-name 
-          (format nil "~A~A-~A" name (if recursive "-all" "") version))
+          (format nil "~A~A~A" name (if recursive "-all" "") (if version 
+                                                                 (format nil "-~A" version)
+                                                                 "")))
          (package-jar
           (make-pathname :name package-jar-name
                          :type "jar"
@@ -57,12 +62,20 @@ Returns the pathname of the packaged jar archive.
       (let ((base (slot-value system 'asdf::absolute-pathname))
             (name (slot-value system 'asdf::name))
             (asdf (slot-value system 'asdf::source-file)))
-        (setf (gethash asdf mapping) (archive-relative-path base name asdf))
+        (setf (gethash asdf mapping) (let ((relative-path (archive-relative-path 
+                                                           base name asdf)))
+                                       (if root
+                                         (merge-pathnames
+                                          relative-path
+                                          (make-pathname :directory root))
+                                         relative-path)))
         (loop :for component :in (all-files system) 
            :for source = (slot-value component 'asdf::absolute-pathname)
            :for source-entry = (archive-relative-path base name source)
            :do (setf (gethash source mapping)
-                     source-entry)
+                     (if root 
+                         (merge-pathnames source-entry (make-pathname :directory root))
+                         source-entry))
            :do (when *debug*
                  (format verbose "~&~A~& => ~A" source source-entry))
            :when (and (typep component 'asdf::source-file)
@@ -72,8 +85,10 @@ Returns the pathname of the packaged jar archive.
                        :defaults (asdf:apply-output-translations source)
                        :type "abcl"))
                      (output-entry 
-                      (make-pathname :defaults source-entry
-                                     :type "abcl")))
+                      (make-pathname :defaults source-entry 
+                                     :type "abcl"
+                                     :directory (append root
+                                                        (rest (pathname-directory source-entry))))))
                  (when *debug*
                    (format verbose "~&~A~& => ~A" output output-entry))
                  (setf (gethash output mapping)
@@ -139,5 +154,20 @@ conventions."
     (asdf:initialize-output-translations
      `(:output-translations (,(merge-pathnames "/**/*.*" jar)) 
                             :inherit-configuration))))
+
+(defun prepare-for-war (system &key 
+                                 (out #p"/var/tmp/") 
+                                 (recursive nil)          ; whether to package dependencies
+                                 (force nil)            ; whether to force ASDF compilation
+                                 (root (list :relative "WEB-INF" "resources"))
+                                 (verbose t))
+  "Package named asdf SYSTEM for deployment in a Java Servlet container war file. 
+
+c.f. PACKAGE for further options."
+
+  (warn "Unaudited.  Please see your local Honey dealer.")
+  (package system :out out :recursive recursive :force force :verbose verbose
+           :root root))
+
 
 (provide :asdf-jar)
