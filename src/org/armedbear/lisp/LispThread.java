@@ -1365,83 +1365,93 @@ public final class LispThread extends LispObject
         }
     };
 
+    public static final Primitive CURRENT_THREAD 
+      = new pf_current_thread();
     @DocString(name="current-thread",
-    doc="Returns a reference to invoking thread.")
-    private static final Primitive CURRENT_THREAD =
-        new Primitive("current-thread", PACKAGE_THREADS, true)
-    {
-        @Override
-        public LispObject execute()
-        {
-            return currentThread();
-        }
+               doc="Returns a reference to invoking thread.")
+    private static final class pf_current_thread extends Primitive {
+      pf_current_thread() {
+        super("current-thread", PACKAGE_THREADS, true);
+      }
+      @Override
+      public LispObject execute() {
+        return currentThread();
+      }
     };
 
+    public static final Primitive BACKTRACE
+      = new pf_backtrace();
     @DocString(name="backtrace",
-               doc="Returns a backtrace of the invoking thread.")
-    private static final Primitive BACKTRACE =
-        new Primitive("backtrace", PACKAGE_SYS, true)
-    {
-        @Override
-        public LispObject execute(LispObject[] args)
-
-        {
-            if (args.length > 1)
-                return error(new WrongNumberOfArgumentsException(this, -1, 1));
-            int limit = args.length > 0 ? Fixnum.getValue(args[0]) : 0;
-            return currentThread().backtrace(limit);
-        }
-    };
-    @DocString(name="frame-to-string", args="frame")
-    private static final Primitive FRAME_TO_STRING =
-        new Primitive("frame-to-string", PACKAGE_SYS, true)
-    {
-        @Override
-        public LispObject execute(LispObject[] args)
-
-        {
-            if (args.length != 1)
-                return error(new WrongNumberOfArgumentsException(this, 1));
-            
-            return checkStackFrame(args[0]).toLispString();
-        }
+               doc="Returns a Java backtrace of the invoking thread.")
+    private static final class pf_backtrace extends Primitive {
+      pf_backtrace() {
+        super("backtrace", PACKAGE_SYS, true);
+      }
+      @Override
+      public LispObject execute(LispObject[] args) {
+        if (args.length > 1)
+          return error(new WrongNumberOfArgumentsException(this, -1, 1));
+        int limit = args.length > 0 ? Fixnum.getValue(args[0]) : 0;
+        return currentThread().backtrace(limit);
+      }
     };
 
+    public static final Primitive FRAME_TO_STRING
+      = new pf_frame_to_string();
+    @DocString(name="frame-to-string", 
+               args="frame",
+               doc="Convert stack FRAME to a (potentially) readable string.")
+    private static final class pf_frame_to_string extends Primitive {
+      pf_frame_to_string() {
+        super("frame-to-string", PACKAGE_SYS, true);
+      }
+      @Override
+      public LispObject execute(LispObject[] args) {
+        if (args.length != 1)
+          return error(new WrongNumberOfArgumentsException(this, 1));
+        return checkStackFrame(args[0]).toLispString();
+      }
+    };
+
+    public static final Primitive FRAME_TO_LIST
+      = new pf_frame_to_list();
     @DocString(name="frame-to-list", args="frame")
-    private static final Primitive FRAME_TO_LIST =
-        new Primitive("frame-to-list", PACKAGE_SYS, true)
-    {
-        @Override
-        public LispObject execute(LispObject[] args)
+    private static final class pf_frame_to_list extends Primitive {
+      pf_frame_to_list() {
+        super("frame-to-list", PACKAGE_SYS, true);
+      }
+      @Override
+      public LispObject execute(LispObject[] args) {
+        if (args.length != 1)
+          return error(new WrongNumberOfArgumentsException(this, 1));
 
-        {
-            if (args.length != 1)
-                return error(new WrongNumberOfArgumentsException(this, 1));
-
-            return checkStackFrame(args[0]).toLispList();
-        }
+        return checkStackFrame(args[0]).toLispList();
+      }
     };
 
 
+    public static final SpecialOperator SYNCHRONIZED_ON 
+      = new so_synchronized_on();
     @DocString(name="synchronized-on", args="form &body body")
-    private static final SpecialOperator SYNCHRONIZED_ON =
-        new SpecialOperator("synchronized-on", PACKAGE_THREADS, true,
-                            "form &body body")
-    {
-        @Override
-        public LispObject execute(LispObject args, Environment env)
-
-        {
-          if (args == NIL)
-            return error(new WrongNumberOfArgumentsException(this, 1));
-
-          LispThread thread = LispThread.currentThread();
-          synchronized (eval(args.car(), env, thread).lockableInstance()) {
-              return progn(args.cdr(), env, thread);
-          }
+    private static final class so_synchronized_on extends SpecialOperator {
+      so_synchronized_on() {
+        super("synchronized-on", PACKAGE_THREADS, true, "form &body body");
+      }
+      @Override
+      public LispObject execute(LispObject args, Environment env) {
+        if (args == NIL)
+          return error(new WrongNumberOfArgumentsException(this, 1));
+        
+        LispThread thread = LispThread.currentThread();
+        synchronized (eval(args.car(), env, thread).lockableInstance()) {
+          return progn(args.cdr(), env, thread);
         }
+      }
     };
 
+  
+    public static final Primitive OBJECT_WAIT
+      = new pf_object_wait();
     @DocString(
     name="object-wait", args="object &optional timeout", 
     doc="Causes the current thread to block until object-notify or object-notify-all is called on OBJECT.\n"
@@ -1452,90 +1462,89 @@ public final class LispThread extends LispObject
        + "See the documentation of java.lang.Object.wait() for further\n"
        + "information.\n"
     )
-    private static final Primitive OBJECT_WAIT =
-        new Primitive("object-wait", PACKAGE_THREADS, true)
-    {
-        @Override
-        public LispObject execute(LispObject object)
-
-        {
-            try {
-                object.lockableInstance().wait();
-            }
-            catch (InterruptedException e) {
-                currentThread().processThreadInterrupts();
-            }
-            catch (IllegalMonitorStateException e) {
-                return error(new IllegalMonitorState(e.getMessage()));
-            }
-            return NIL;
+    private static final class pf_object_wait extends Primitive {
+      pf_object_wait() {
+        super("object-wait", PACKAGE_THREADS, true);
+      }
+      @Override
+      public LispObject execute(LispObject object) {
+        try {
+          object.lockableInstance().wait();
+        } catch (InterruptedException e) {
+          currentThread().processThreadInterrupts();
+        } catch (IllegalMonitorStateException e) {
+          return error(new IllegalMonitorState(e.getMessage()));
         }
+        return NIL;
+      }
 
-        @Override
-        public LispObject execute(LispObject object, LispObject timeout)
-
-        {
-          long millis = sleepMillisPart(timeout);
-          int nanos = sleepNanosPart(timeout);
-          boolean zeroArgP = timeout.ZEROP() != NIL;
+      @Override
+      public LispObject execute(LispObject object, LispObject timeout) {
+        long millis = sleepMillisPart(timeout);
+        int nanos = sleepNanosPart(timeout);
+        boolean zeroArgP = timeout.ZEROP() != NIL;
           
-            try {
-              if (millis == 0 && nanos == 0) { 
-                if (zeroArgP) {
-                  object.lockableInstance().wait(0, 0);
-                } else {
-                  object.lockableInstance().wait(0, 1);
-                }
-              } else {
-                object.lockableInstance().wait(millis, nanos);
-              }
+        try {
+          if (millis == 0 && nanos == 0) { 
+            if (zeroArgP) {
+              object.lockableInstance().wait(0, 0);
+            } else {
+              object.lockableInstance().wait(0, 1);
             }
-            catch (InterruptedException e) {
-                currentThread().processThreadInterrupts();
-            }
-            catch (IllegalMonitorStateException e) {
-                return error(new IllegalMonitorState(e.getMessage()));
-            }
-            return NIL;
+          } else {
+            object.lockableInstance().wait(millis, nanos);
+          }
+        } catch (InterruptedException e) {
+          currentThread().processThreadInterrupts();
+        } catch (IllegalMonitorStateException e) {
+          return error(new IllegalMonitorState(e.getMessage()));
         }
+        return NIL;
+      }
     };
 
-    @DocString(name="object-notify", args="object")
-    private static final Primitive OBJECT_NOTIFY =
-        new Primitive("object-notify", PACKAGE_THREADS, true,
-                      "object")
-    {
-        @Override
-        public LispObject execute(LispObject object)
-
-        {
-            try {
-                object.lockableInstance().notify();
-            }
-            catch (IllegalMonitorStateException e) {
-                return error(new IllegalMonitorState(e.getMessage()));
-            }
-            return NIL;
+    public static final Primitive OBJECT_NOTIFY
+      = new pf_object_notify();
+    @DocString(name="object-notify", 
+               args="object",
+               doc="Wakes up a single thread that is waiting on OBJECT's monitor."
++ "\nIf any threads are waiting on this object, one of them is chosen to be"
++ " awakened. The choice is arbitrary and occurs at the discretion of the"
++ " implementation. A thread waits on an object's monitor by calling one"
++ " of the wait methods.")
+    private static final class pf_object_notify extends Primitive {
+      pf_object_notify() {
+        super("object-notify", PACKAGE_THREADS, true, "object");
+      }
+      @Override
+      public LispObject execute(LispObject object) {
+        try {
+          object.lockableInstance().notify();
+        } catch (IllegalMonitorStateException e) {
+          return error(new IllegalMonitorState(e.getMessage()));
         }
+        return NIL;
+      }
     };
 
-    @DocString(name="object-notify-all", args="object")
-    private static final Primitive OBJECT_NOTIFY_ALL =
-        new Primitive("object-notify-all", PACKAGE_THREADS, true)
-    {
-        @Override
-        public LispObject execute(LispObject object)
-
-        {
-            try {
-                object.lockableInstance().notifyAll();
-            }
-            catch (IllegalMonitorStateException e) {
-                return error(new IllegalMonitorState(e.getMessage()));
-            }
-            return NIL;
+    public static final Primitive OBJECT_NOTIFY_ALL
+      = new pf_object_notify_all();
+    @DocString(name="object-notify-all", 
+               args="object",
+               doc="Wakes up all threads that are waiting on this OBJECT's monitor."
++ "\nA thread waits on an object's monitor by calling one of the wait methods.")
+    private static final class pf_object_notify_all extends Primitive {
+      pf_object_notify_all() {
+        super("object-notify-all", PACKAGE_THREADS, true);
+      }
+      @Override
+      public LispObject execute(LispObject object) {
+        try {
+          object.lockableInstance().notifyAll();
+        } catch (IllegalMonitorStateException e) {
+          return error(new IllegalMonitorState(e.getMessage()));
         }
+        return NIL;
+      }
     };
-
-
 }

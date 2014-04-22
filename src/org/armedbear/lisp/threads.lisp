@@ -32,13 +32,11 @@
 
 (in-package #:threads)
 
-
 (export '(make-mailbox mailbox-send mailbox-empty-p
           mailbox-read mailbox-peek
           make-thread-lock with-thread-lock
+          current-thread yield
           make-mutex get-mutex release-mutex with-mutex))
-
-
 ;;
 ;; MAKE-THREAD helper to establish restarts
 ;;
@@ -147,3 +145,8 @@ and releases the lock."
        (synchronized-on ,glock
           ,@body))))
 
+(defun yield ()
+  "A hint to the scheduler that the current thread is willing to yield its current use of a processor. The scheduler is free to ignore this hint. 
+
+See java.lang.Thread.yield()."
+  (java:jcall "yield" (JAVA:jstatic "currentThread" "java.lang.Thread")))
