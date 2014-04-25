@@ -17,7 +17,7 @@
 ;;; We guard with #+abcl for tests that other Lisps cannot load.  This
 ;;; could be possibly be done at finer granularity in the files
 ;;; themselves.
-(defsystem :abcl-test-lisp :version "1.2" :components
+(defsystem :abcl-test-lisp :version "1.3.0" :components
 	   ((:module abcl-rt 
                      :pathname "test/lisp/abcl/" :serial t :components
 		     ((:file "rt-package") 
@@ -59,6 +59,8 @@
                       (:file "weak-hash-tables")
                       #+abcl 
                       (:file "zip")
+                      #+abcl 
+                      (:file "java")
                       #+abcl
                       (:file "pathname-tests" :depends-on 
                              ("utilities"))

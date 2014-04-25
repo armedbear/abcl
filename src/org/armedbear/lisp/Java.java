@@ -457,16 +457,20 @@ public final class Java
                     if (m == null)
                         error(new LispError("no such method"));
                 }
-            } else
+            } else {
               type_error(methodRef, Symbol.STRING);
+            }
             Object[] methodArgs = new Object[args.length-2];
             Class[] argTypes = m.getParameterTypes();
             for (int i = 2; i < args.length; i++) {
                 LispObject arg = args[i];
-                if (arg == NIL)
-                    methodArgs[i-2] = null;
-                else
-                    methodArgs[i-2] = arg.javaInstance(argTypes[i-2]);
+                if (arg.equals(NIL)) {
+                  methodArgs[i-2] = false;
+                } else if (arg.equals(T)) {
+                  methodArgs[i-2] = true;
+                } else {
+                  methodArgs[i-2] = arg.javaInstance(argTypes[i-2]);
+                }
             }
             m.setAccessible(true);
             Object result = m.invoke(null, methodArgs);
@@ -562,10 +566,12 @@ public final class Java
                 Object[] initargs = new Object[args.length-1];
                 for (int i = 1; i < args.length; i++) {
                     LispObject arg = args[i];
-                    if (arg == NIL)
-                        initargs[i-1] = null;
-                    else {
-                        initargs[i-1] = arg.javaInstance(argTypes[i-1]);
+                    if (arg.equals(NIL)) {
+                      initargs[i-1] = false ;
+                    } else if (arg.equals(T)) {
+                      initargs[i-1] = true;
+                    } else {
+                      initargs[i-1] = arg.javaInstance(argTypes[i-1]);
                     }
                 }
                 return JavaObject.getInstance(constructor.newInstance(initargs));
@@ -878,11 +884,14 @@ public final class Java
 	    }
             methodArgs = new Object[argTypes.length];
             for (int i = 2; i < args.length; i++) {
-                LispObject arg = args[i];
-                if (arg == NIL)
-                    methodArgs[i-2] = null;
-                else
-                    methodArgs[i-2] = arg.javaInstance(argTypes[i-2]);
+              LispObject arg = args[i];
+              if (arg.equals(NIL)) {
+                methodArgs[i-2] = false;
+              } else if (arg.equals(T)) {
+                methodArgs[i-2] = true;
+              } else {
+                methodArgs[i-2] = arg.javaInstance(argTypes[i-2]);
+              }
             }
             if (!method.isAccessible()) {
                  // Possible for static member classes: see #229
@@ -923,12 +932,14 @@ public final class Java
 	int argCount = args.length - offs;
         Object[] javaArgs = new Object[argCount];
         for (int i = 0; i < argCount; ++i) {
-            Object x = args[i + offs];
-            if (x == NIL) {
-                javaArgs[i] = null;
-            } else {
-                javaArgs[i] = ((LispObject) x).javaInstance();
-            }
+          Object x = args[i + offs];
+          if (x.equals(NIL)) {
+            javaArgs[i] = false;
+          } else if (x.equals(T)) {
+            javaArgs[i] = true;
+          } else {
+            javaArgs[i] = ((LispObject) x).javaInstance();
+          }
         }
 	return javaArgs;
     }
