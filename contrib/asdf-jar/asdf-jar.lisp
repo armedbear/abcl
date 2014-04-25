@@ -159,13 +159,12 @@ conventions."
                                  (out #p"/var/tmp/") 
                                  (recursive nil)          ; whether to package dependencies
                                  (force nil)            ; whether to force ASDF compilation
-                                 (root (list :relative "WEB-INF" "resources"))
+                                 (root (list :relative "META-INF" "resources"))
                                  (verbose t))
   "Package named asdf SYSTEM for deployment in a Java Servlet container war file. 
 
 c.f. PACKAGE for further options."
 
-  (warn "Unaudited.  Please see your local Honey dealer.")
   (package system :out out :recursive recursive :force force :verbose verbose
            :root root))
 
