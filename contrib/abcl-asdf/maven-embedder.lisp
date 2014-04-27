@@ -107,14 +107,16 @@ Emits warnings if not able to find a suitable executable."
   (warn "Unable to locate Maven executable to find Maven Aether adaptors."))
 
 (defun find-mvn-libs ()
-  (let ((mvn (find-mvn)))
-    (unless mvn
-      (warn "Failed to find Maven3 libraries.")
-      (return-from find-mvn-libs nil))
-    (truename (make-pathname 
-               :defaults (merge-pathnames "../lib/" mvn)
-               :name nil :type nil))))
-
+  (unless (find-mvn)
+    (warn "Failed to find Maven executable to determine Aether library location."))
+  (some 
+   (lambda (d)
+     (when (directory (merge-pathnames "maven-core-*.jar" d))
+       (truename d)))
+   (list (make-pathname :defaults (merge-pathnames "../lib/" (find-mvn))
+                        :name nil :type nil)
+         #p"/usr/local/maven/lib/"))) ;; OpenBSD location suggested by Timo Myyrä
+                                  
 (defparameter *mvn-libs-directory*
   nil
   "Location of 'maven-core-3.<m>.<p>.jar', 'maven-embedder-3.<m>.<p>.jar' etc.")
@@ -158,7 +160,11 @@ Emits warnings if not able to find a suitable executable."
 (defparameter *init* nil)
 
 (defun init (&optional &key (force nil))
- "Run the initialization strategy to bootstrap a Maven dependency node."
+ "Run the initialization strategy to bootstrap a Maven dependency node.
+
+Set *MVN-LIBS-DIRECTORY* to an explicit value before running this
+function in order to bypass the dynamic introspection of the location
+of the mvn executable with an explicit value."
  (unless (or force *mvn-libs-directory*)
    (setf *mvn-libs-directory* (find-mvn-libs)))
   (unless (and *mvn-libs-directory*
