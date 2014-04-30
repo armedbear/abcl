@@ -6,9 +6,14 @@ Unreleased.
 Version 1.3.1
 =============
 http://abcl.org/svn/tags/1.3.1/
-20-APR-2014
+30-APR-2014
 
 ## Fixed
+
+*  The underlying Java Function Interface (JFI) now converts CL:T and
+   CL:NIL to JAVA:+TRUE+ and JAVA:+FALSE+.  Users who wish to
+   reference a JAVA:+NULL+ should do so explicitly.
+   <http://abcl.org/trac/changeset/14694>
 
 *  Make JCALL work in more places.  Thanks to Olof-Joachim Frahm.
    <http://abcl.org/trac/changeset/14683>
