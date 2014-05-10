@@ -86,6 +86,10 @@ which the server starts will be written to `'/tmp/swank.port'` and also
 returned as the result of evaluating `SWANK:START-SERVER`.  One may
 connect to this port via issuing `M-x slime-connect` in Emacs.
 
+## M$FT Windows
+
+See <http://slack.net/~evenson/abcl/slime-under-cygwin.html> for
+instructions specific to installing SLIME under Windows.
 
 ### Historivia
 
