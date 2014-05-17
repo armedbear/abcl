@@ -104,7 +104,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 * Concept Index::
 * Function and Class Index::
 * Variable Index::              @c @detailmenu
-@c 
+@c
 
 @detailmenu
  --- The Detailed Node Listing ---
@@ -114,12 +114,25 @@ Loading ASDF
 * Loading a pre-installed ASDF::
 * Checking whether ASDF is loaded::
 * Upgrading ASDF::
-* Loading an otherwise installed ASDF::
+* Loading ASDF from source::
+
+Upgrading ASDF
+
+* Upgrading your implementation's ASDF::
+* Issues with upgrading ASDF::
 
 Configuring ASDF
 
 * Configuring ASDF to find your systems::
+* Configuring ASDF to find your systems --- old style::
 * Configuring where ASDF stores object files::
+* Resetting the ASDF configuration::
+
+Using ASDF
+
+* Loading a system::
+* Other Operations::
+* Moving on::
 
 Defining systems with defsystem
 
@@ -127,12 +140,13 @@ Defining systems with defsystem
 * A more involved example::
 * The defsystem grammar::
 * Other code in .asd files::
-* The package-system extension::
+* The package-inferred-system extension::
 
-The object model of ASDF
+The Object model of ASDF
 
 * Operations::
 * Components::
+* Dependencies::
 * Functions::
 
 Operations
@@ -151,6 +165,51 @@ properties
 * Pre-defined subclasses of component::
 * Creating new component types::
 
+Controlling where ASDF searches for systems
+
+* Configurations::
+* Truenames and other dangers::
+* XDG base directory::
+* Backward Compatibility::
+* Configuration DSL::
+* Configuration Directories::
+* Shell-friendly syntax for configuration::
+* Search Algorithm::
+* Caching Results::
+* Configuration API::
+* Introspection::
+* Status::
+* Rejected ideas::
+* TODO::
+* Credits for the source-registry::
+
+Configuration Directories
+
+* The here directive::
+
+Introspection
+
+* *source-registry-parameter* variable::
+* Information about system dependencies::
+
+Controlling where ASDF saves compiled files
+
+* Output Configurations::
+* Output Backward Compatibility::
+* Output Configuration DSL::
+* Output Configuration Directories::
+* Output Shell-friendly syntax for configuration::
+* Semantics of Output Translations::
+* Output Caching Results::
+* Output location API::
+* Credits for output translations::
+
+Miscellaneous additional functionality
+
+* Controlling file compilation::
+* Controlling source file character encoding::
+* Some Utility Functions::
+
 FAQ
 
 * Where do I report a bug?::
@@ -160,9 +219,10 @@ FAQ
 * Issues with using and extending ASDF to define systems::
 * ASDF development FAQs::
 
-``What has changed between ASDF 1 and ASDF 2?''
+``What has changed between ASDF 1, ASDF 2 and ASDF 3?''
 
 * What are ASDF 1 2 3?::
+* How do I detect the ASDF version?::
 * ASDF can portably name files in subdirectories::
 * Output translations::
 * Source Registry Configuration::
@@ -190,6 +250,8 @@ Issues with using and extending ASDF to define systems
 * How can I maintain non-Lisp (e.g. C) source files?::
 * I want to put my module's files at the top level.  How do I do this?::
 * How do I create a system definition where all the source files have a .cl extension?::
+* How do I mark a source file to be loaded only and not compiled?::
+* How do I work with readtables?::
 
 ASDF development FAQs
 
@@ -215,51 +277,40 @@ ASDF development FAQs
 
 ASDF is Another System Definition Facility:
 a tool for specifying how systems of Common Lisp software
-are comprised of components (sub-systems and files),
+are made up of components (sub-systems and files),
 and how to operate on these components in the right order
 so that they can be compiled, loaded, tested, etc.
+If you are new to ASDF, @pxref{Quick start summary,,the quick start
+guide}.
 
 ASDF presents three faces:
 one for users of Common Lisp software who want to reuse other people's code,
 one for writers of Common Lisp software who want to specify how to build their systems,
-one for implementers of Common Lisp extensions who want to extend the build system.
-@xref{Using ASDF,,Loading a system},
+and one for implementers of Common Lisp extensions who want to extend
+the build system.
+For more specifics,
+@pxref{Using ASDF,,Loading a system},
 to learn how to use ASDF to load a system.
 @xref{Defining systems with defsystem},
 to learn how to define a system of your own.
 @xref{The object model of ASDF}, for a description of
 the ASDF internals and how to extend ASDF.
 
-@emph{Nota Bene}:
-We have released ASDF 2.000 on May 31st 2010,
-and ASDF 3.0.0 on May 15th 2013.
-Releases of ASDF 2 and later have since then been included
-in all actively maintained CL implementations that used to bundle ASDF 1,
-plus some implementations that didn't use to,
-and has been made to work with all actively used CL implementations and a few more.
-@xref{FAQ,,``What has changed between ASDF 1 and ASDF 2?''}.
-Furthermore, it is possible to upgrade from ASDF 1 to ASDF 2 or ASDF 3 on the fly
-(though we recommend instead upgrading your implementation or its ASDF module).
-For this reason, we have stopped supporting ASDF 1 and ASDF 2.
-If you are using ASDF 1 or ASDF 2 and are experiencing any kind of issues or limitations,
-we recommend you upgrade to ASDF 3
---- and we explain how to do that. @xref{Loading ASDF}.
-(In the context of compatibility requirements,
-ASDF 2.27, released on Feb 1st 2013, and further 2.x releases up to 2.33,
-count as pre-releases of ASDF 3, and define the @code{:asdf3} feature;
-still, please use the latest release).
-Release ASDF 3.1.1 and later also define the @code{:asdf3.1} feature.
-
-Also note that ASDF is not to be confused with ASDF-Install.
-ASDF-Install is not part of ASDF, but a separate piece of software.
+Note that
+ASDF is @emph{not} a tool for library and system @emph{installation}; it
+plays a role like @t{make} or @t{ant}, not like a package manager.
+In particular, ASDF should not to be confused with ASDF-Install, which attempts to find and
+download ASDF systems for you.
+Despite the name, ASDF-Install is not part of ASDF, but a separate piece of software.
 ASDF-Install is also unmaintained and obsolete.
-We recommend you use Quicklisp instead,
-which works great and is being actively maintained.
+We recommend you use Quicklisp
+(@uref{http://www.quicklisp.org}) instead,
+a Common Lisp package manager which works well and is being actively maintained.
 If you want to download software from version control instead of tarballs,
-so you may more easily modify it, we recommend clbuild.
+so you may more easily modify it, we recommend clbuild (@uref{http://common-lisp.net/project/clbuild/}).
 We recommend @file{~/common-lisp/}
 as a place into which to install Common Lisp software;
-starting with ASDF 3.1.1, it is included in the default source-registry configuration.
+starting with ASDF 3.1.2, it is included in the default source-registry configuration.
 
 @node  Quick start summary, Loading ASDF, Introduction, Top
 @chapter Quick start summary
@@ -280,7 +331,7 @@ Make sure ASDF can find system definitions
 through proper source-registry configuration.
 For more details, @xref{Configuring ASDF to find your systems}.
 The simplest way is simply to put all your lisp code in subdirectories of
-@file{~/common-lisp/} (starting with ASDF 3.1.1),
+@file{~/common-lisp/} (starting with ASDF 3.1.2),
 or @file{~/.local/share/common-lisp/source/}
 (for ASDF 2 and later, or if you want to keep source in a hidden directory).
 Such code will automatically be found.
@@ -299,6 +350,9 @@ As above, load and configure ASDF.
 @item
 Make a new directory for your system, @code{my-system/} in a location
 where ASDF can find it (@pxref{Configuring ASDF to find your systems}).
+All else being equal, the easiest location is probably
+@file{~/common-lisp/my-system/}.
+
 
 @item
 Create an ASDF system definition listing the dependencies of
@@ -329,7 +383,7 @@ to make sure it's all working properly. @xref{Using ASDF}.
 * Loading a pre-installed ASDF::
 * Checking whether ASDF is loaded::
 * Upgrading ASDF::
-* Loading an otherwise installed ASDF::
+* Loading ASDF from source::
 @end menu
 
 @node  Loading a pre-installed ASDF, Checking whether ASDF is loaded, Loading ASDF, Loading ASDF
@@ -349,17 +403,16 @@ For portability's sake, you should use @code{(require "asdf")}.
 
 As of the writing of this manual,
 the following implementations provide ASDF 3 this way:
-ABCL, Allegro CL, Clozure CL, CMUCL, ECL, GNU CLISP, mkcl, SBCL.
+ABCL, Allegro CL, Clozure CL, CMUCL, ECL, GNU CLISP, MKCL, SBCL.
 The following implementations only provide ASDF 2:
 LispWorks, mocl, XCL.
-The following implementation doesn't provide ASDF yet but will in an upcoming release:
-SCL.
-The following implementations are obsolete, not actively maintained,
-and most probably will never bundle ASDF:
-Corman CL, GCL, Genera, MCL.
+The following implementations don't provide ASDF:
+Corman CL, GCL, Genera, MCL, SCL.
+The latter implementations are not actively maintained;
+if some of them are ever released again, they probably will include ASDF 3.
 
 If the implementation you are using doesn't provide ASDF 2 or ASDF 3,
-see @pxref{Loading ASDF,,Loading an otherwise installed ASDF} below.
+see @pxref{Loading ASDF,,Loading ASDF from source} below.
 If that implementation is still actively maintained,
 you may also send a bug report to your Lisp vendor and complain
 about their failing to provide ASDF.
@@ -379,7 +432,8 @@ that is the version of ASDF that is currently installed.
 
 If it raises an error,
 then either ASDF is not loaded, or
-you are using an old version of ASDF.
+you are using a very old version of ASDF,
+and need to install ASDF 3.
 
 You can check whether an old version is loaded
 by checking if the ASDF package is present.
@@ -389,12 +443,15 @@ or none at all:
 
 @lisp
 (when (find-package :asdf)
-  (let ((ver (symbol-value (or (find-symbol (string :*asdf-version*) :asdf)
-                               (find-symbol (string :*asdf-revision*) :asdf)))))
+  (let ((ver (symbol-value
+                   (or (find-symbol (string :*asdf-version*) :asdf)
+                       (find-symbol (string :*asdf-revision*) :asdf)))))
     (etypecase ver
       (string ver)
       (cons (with-output-to-string (s)
-              (loop for (n . m) on ver do (princ n s) (when m (princ "." s)))))
+              (loop for (n . m) on ver
+                    do (princ n s)
+                       (when m (princ "." s)))))
       (null "1.0"))))
 @end lisp
 
@@ -408,7 +465,7 @@ please try upgrading to the latest released version,
 using the method below,
 before you contact us and raise an issue.
 
-@node  Upgrading ASDF, Loading an otherwise installed ASDF, Checking whether ASDF is loaded, Loading ASDF
+@node  Upgrading ASDF, Loading ASDF from source, Checking whether ASDF is loaded, Loading ASDF
 @section Upgrading ASDF
 @c FIXME: tighten this up a bit -- there's a lot of stuff here that
 @c doesn't matter to almost anyone.  Move discussion of updating antique
@@ -423,28 +480,41 @@ you only need to @code{(require "asdf")}:
 ASDF will automatically look whether an updated version of itself is available
 amongst the regularly configured systems, before it compiles anything else.
 
-@subsection Notes about ASDF 1 and ASDF 2
+@menu
+* Upgrading your implementation's ASDF::
+* Issues with upgrading ASDF::
+@end menu
 
-Most implementations provide ASDF 3 in their latest release,
-and we recommend upgrading your implementation rather than using ASDF 1 or 2.
-A few implementations only provide ASDF 2,
-that can be overridden by installing a fasl (see below).
-A few implementations don't provide ASDF,
-but a fasl can be installed to provide it.
-GCL so far is still lacking a usable @code{require} interface.
+@node Upgrading your implementation's ASDF, Issues with upgrading ASDF, Upgrading ASDF, Upgrading ASDF
+@subsection Upgrading your implementation's ASDF
 
-If your implementation has no suitable upgrade available (yet),
-or somehow upgrading is not an option,
-we assume you're an expert deliberately using a legacy implementation,
-and are proficient enough to install this fasl.
-Still, the ASDF source repository contains a script
-@file{bin/install-asdf-as-module} that can help you do that.
-It relies on @file{cl-launch} 4 for command-line invocation,
-which may depend on ASDF being checked out in @file{~/cl/asdf/}
-if your implementation doesn't even have an ASDF 2;
-but if you don't have @file{cl-launch},
+Most implementations provide a recent ASDF 3 in their latest release.
+If yours doesn't, we recommend upgrading your implementation.
+If the latest version of your implementation still doesn't provide ASDF,
+or provides an old version, we recommend installing a recent ASDF so your implementation provides it,
+as explained below.
+If all fails, we recommend you load ASDF from source
+@pxref{Loading ASDF,,Loading ASDF from source}.
+
+The ASDF source repository contains a script
+@file{bin/install-asdf-as-module} that can help you upgrade your implementation's ASDF.
+It works on
+Allegro CL, Clozure CL, CMU CL, ECL, GNU CLISP, LispWorks, MKCL, SBCL, SCL, XCL.
+That's all known implementations except ABCL, Corman CL, GCL, Genera, MCL, MOCL.
+Happily, ABCL is usually pretty up to date and shouldn't need that script.
+GCL would be supported, except that so far is still lacking usable support for @code{require}.
+Corman CL, Genera, MCL are obsolete anyway.
+MOCL is under development.
+On an old version of an implementation that does not provide ASDF,
+you may have to load ASDF 3 from source before you load that script.
+
+The script relies on @code{cl-launch} 4 for command-line invocation,
+which may depend on ASDF being checked out in @file{~/common-lisp/asdf/}
+(which we recommend anyway)
+if your implementation doesn't even have an ASDF 2.
+If you don't have @code{cl-launch},
 you can instead @code{(load "bin/install-asdf-as-module")}
-from your implementation's REPL.
+from your implementation's REPL after loading ASDF from source.
 
 Finally, if your implementation only provides ASDF 2,
 and you can't or won't upgrade it or override its ASDF module,
@@ -459,6 +529,7 @@ after requiring the builtin ASDF 2:
 (asdf:load-system :asdf)
 @end lisp
 
+@node Issues with upgrading ASDF,  , Upgrading your implementation's ASDF, Upgrading ASDF
 @subsection Issues with upgrading ASDF
 
 Note that there are some limitations to upgrading ASDF:
@@ -515,8 +586,8 @@ system-depends-on asdf, or transitively does,
 you should also do as well.
 @end itemize
 
-@node Loading an otherwise installed ASDF,  , Upgrading ASDF, Loading ASDF
-@section Loading an otherwise installed ASDF
+@node Loading ASDF from source,  , Upgrading ASDF, Loading ASDF
+@section Loading ASDF from source
 
 If your implementation doesn't include ASDF,
 if for some reason the upgrade somehow fails,
@@ -573,12 +644,18 @@ ASDF, starting from easiest to the most complex:
 @itemize @bullet
 
 @item
-Put all of your systems in subdirectories of
+Put all of your systems in one of the standard locations, subdirectories
+of
+@itemize
+@item
 @file{~/common-lisp/} or
+@item
 @file{~/.local/share/common-lisp/source/}.
-If you install software there, you don't need further configuration.
-(NB: @file{~/common-lisp/} is only included in the default configuration
-starting with ASDF 3.1.1 or later)
+@end itemize
+If you install software there, you don't need further
+configuration.@footnote{@file{~/common-lisp/} is only included in
+the default configuration
+starting with ASDF 3.1.2 or later.}
 
 @item
 If you're using some tool to install software (e.g. Quicklisp),
@@ -641,10 +718,12 @@ may already have configured system-managed libraries for you.
 
 
 @node Configuring ASDF to find your systems --- old style, Configuring where ASDF stores object files, Configuring ASDF to find your systems, Configuring ASDF
+@section Configuring ASDF to find your systems --- old style
+
 
 @c FIXME: this section should be moved elsewhere.  The novice user
 @c should not be burdened with it. [2014/02/27:rpg]
-@section Configuring ASDF to find your systems --- old style
+
 
 The old way to configure ASDF to find your systems is by
 @code{push}ing directory pathnames onto the variable
@@ -815,16 +894,18 @@ cl-launch 3.000 and common-lisp-controller 7.2 have been updated
 to delegate object file placement to ASDF.
 
 @node Resetting the ASDF configuration,  , Configuring where ASDF stores object files, Configuring ASDF
+@section Resetting the ASDF configuration
+
 @c FIXME: this should probably be moved out of the "quickstart" part of
 @c the manual. [2014/02/27:rpg]
-@section Resetting the ASDF configuration
+
 
 When you dump and restore an image, or when you tweak your configuration,
 you may want to reset the ASDF configuration.
 For that you may use the following function:
 
 @defun clear-configuration
-   undoes any ASDF configuration,
+   Undoes any ASDF configuration
    regarding source-registry or output-translations.
 @end defun
 
@@ -841,6 +922,13 @@ on CMUCL and SCL, etc.
 @node  Using ASDF, Defining systems with defsystem, Configuring ASDF, Top
 @chapter Using ASDF
 
+@menu
+* Loading a system::
+* Other Operations::
+* Moving on::
+@end menu
+
+@node Loading a system, Other Operations, Using ASDF, Using ASDF
 @section Loading a system
 
 The system @var{foo} is loaded (and compiled, if necessary)
@@ -851,8 +939,7 @@ by evaluating the following Lisp form:
 @end example
 
 On some implementations (namely recent versions of
-ABCL, Allegro CL, Clozure CL, CMUCL, ECL, GNU CLISP,
-LispWorks, MKCL, SBCL and XCL),
+ABCL, Clozure CL, CMUCL, ECL, GNU CLISP, MKCL and SBCL),
 ASDF hooks into the @code{CL:REQUIRE} facility
 and you can just use:
 
@@ -864,7 +951,7 @@ In older versions of ASDF, you needed to use
 @code{(asdf:oos 'asdf:load-op :@var{foo})}.
 If your ASDF is too old to provide @code{asdf:load-system} though
 we recommend that you upgrade to ASDF 3.
-@xref{Loading ASDF,,Loading an otherwise installed ASDF}.
+@xref{Loading ASDF,,Loading ASDF from source}.
 
 Note the name of a system is specified as a string or a symbol.
 If a symbol (including a keyword), its name is taken and lowercased.
@@ -880,18 +967,29 @@ or silently convert lowercase to uppercase (lpns).
 @c so this makes more sense than attempting to use @code{:case :common},
 @c which is reported not to work on some implementations
 
-
+@node Other Operations, Moving on, Loading a system, Using ASDF
 @section Other Operations
 
+@findex load-system
+@findex compile-system
+@findex test-system
+@findex requrie-system
+
 ASDF provides three commands for the most common system operations:
-@code{load-system}, @code{compile-system} or @code{test-system}.
+@code{load-system}, @code{compile-system}, and @code{test-system}.
 It also provides @code{require-system}, a version of @code{load-system}
 that skips trying to update systems that are already loaded.
+
+@c FIXME: We seem to export @findex bundle-system also.
+
+@findex operate
+@findex oos
 
 Because ASDF is an extensible system
 for defining @emph{operations} on @emph{components},
 it also provides a generic function @code{operate}
-(which is usually abbreviated by @code{oos}).
+(which is usually abbreviated by @code{oos},
+which stands for operate-on-system).
 You'll use @code{oos} whenever you want to do something beyond
 compiling, loading and testing.
 
@@ -906,17 +1004,21 @@ should redirect all output from ASDF operations.
 
 @c FIXME: the following is too complicated for here, especially since
 @c :force hasn't been defined yet.  Move it. [2014/02/27:rpg]
-@findex already-loaded-systems
 
+@findex already-loaded-systems
+@findex require-system
+@findex load-system
+@vindex *load-system-operation*
 For advanced users, note that
 @code{require-system} calls @code{load-system}
 with keyword arguments @code{:force-not (already-loaded-systems)}.
 @code{already-loaded-systems} returns a list of the names of loaded systems.
 @code{load-system} applies @code{operate} with the operation from
-@code{*load-system-operation*}, which by default is @code{load-op},
+@code{*load-system-operation*} (which by default is @code{load-op}),
 the system, and any provided keyword arguments.
 
 
+@node Moving on,  , Other Operations, Using ASDF
 @section Moving on
 
 That's all you need to know to use ASDF to load systems written by others.
@@ -929,7 +1031,7 @@ including how to extend ASDF to define new operation and component types.
 @comment  node-name,  next,  previous,  up
 @chapter Defining systems with defsystem
 
-This chapter describes how to use asdf to define systems and develop
+This chapter describes how to use ASDF to define systems and develop
 software.
 
 
@@ -938,30 +1040,33 @@ software.
 * A more involved example::
 * The defsystem grammar::
 * Other code in .asd files::
-* The package-system extension::
+* The package-inferred-system extension::
 @end menu
 
 @node  The defsystem form, A more involved example, Defining systems with defsystem, Defining systems with defsystem
 @comment  node-name,  next,  previous,  up
 @section The defsystem form
+@findex defsystem
+@cindex asdf-user
+@findex load-asd
 
-Systems can be constructed programmatically
-by instantiating components using @code{make-instance}.
-Most of the time, however, it is much more practical to use
-a static @code{defsystem} form.
 This section begins with an example of a system definition,
 then gives the full grammar of @code{defsystem}.
 
 Let's look at a simple system.
-This is a complete file that would
-usually be saved as @file{hello-lisp.asd}:
+This is a complete file that should be saved as @file{hello-lisp.asd}
+(in order that ASDF can find it
+when ordered to operate on the system named @code{"hello-lisp"}).
+
+@c FIXME: the first example should have an outside dependency, e.g.,
+@c CL-PPCRE.
 
 @lisp
-(in-package :asdf)
+(in-package :asdf-user)
 
 (defsystem "hello-lisp"
   :description "hello-lisp: a sample Lisp system."
-  :version "0.2.1"
+  :version "0.0.1"
   :author "Joe User <joe@@example.com>"
   :licence "Public Domain"
   :components ((:file "packages")
@@ -975,30 +1080,51 @@ Some notes about this example:
 
 @item
 The file starts with an @code{in-package} form
-to use package @code{asdf}.
-You could instead start your definition by using
-a qualified name @code{asdf:defsystem}.
+for package @code{asdf-user}.  Quick summary: just do this, because it
+helps make interactive development of @code{defsystem} forms behave in
+the same was as when these forms are loaded by ASDF.  If that's enough
+for you, skip the rest of this item.  Otherwise read on for the gory details.
+
+If your file is loaded by ASDF 3, it will be loaded into the
+@code{asdf-user} package.  The @code{in-package} form
+will ensure that the system definition is read the
+same as within ASDF when you load it interactively with @code{cl:load}.
+However, we recommend that you load @file{.asd} files
+through function @code{asdf::load-asd} rather than through @code{cl:load},
+in which case this form is unnecessary.
+Recent versions of SLIME (2013-02 and later) know to do that.
 
 @item
-If in addition to simply using @code{defsystem},
-you are going to define functions,
-create ASDF extension, globally bind symbols, etc.,
-it is recommended that to avoid namespace pollution between systems,
-you should create your own package for that purpose,
-for instance replacing the above @code{(in-package :asdf)} with:
+You can always rely on symbols
+from both package @code{asdf} and @code{common-lisp} being available in
+@code{.asd} files --
+most importantly including @code{defsystem}.
 
-@lisp
-(defpackage :foo-system
-  (:use :cl :asdf))
+@c FIXME: the following should be inserted in a more advanced
+@c bit of the manual.  For now, it is simply elided.
+@c Starting with ASDF 3.1,
+@c @file{.asd} files are read in the package @code{asdf-user}
+@c that uses @code{asdf}, @code{uiop} and @code{uiop/common-lisp}
+@c (a variant of @code{common-lisp}
+@c that has some portability fixes on old implementations).
+@c ASDF 3 releases before 3.1 also read in package @code{asdf-user}
+@c but that package don't use the full @code{uiop}, only @code{uiop/package}.
+@c ASDF 1 and ASDF 2 releases (up until 2.26) instead read @file{.asd} files
+@c in a temporary package @code{asdf@emph{N}}
+@c that uses @code{asdf} and @code{common-lisp}.
+@c You may thus have to package-qualify some symbols with @code{uiop:}
+@c to support older variants of ASDF 3,
+@c and/or package-qualify them with @code{asdf::}
+@c to be compatible with even older variants of ASDF 2
+@c (and then only use the few already available in ASDF 2).
 
-(in-package :foo-system)
-@end lisp
 
 @item
 The @code{defsystem} form defines a system named @code{hello-lisp}
 that contains three source files:
 @file{packages}, @file{macros} and @file{hello}.
 
+@c FIXME: The first example system should probably use just :serial T.
 @item
 The file @file{macros} depends on @file{packages}
 (presumably because the package it's in is defined in @file{packages}),
@@ -1008,38 +1134,26 @@ This means that ASDF will compile and load @file{packages} and @file{macros}
 before starting the compilation of file @file{hello}.
 
 @item
-The files are located in the same directory
-as the file with the system definition.
-ASDF resolves symbolic links (or Windows shortcuts)
-before loading the system definition file and
-stores its location in the resulting system@footnote{
-It is possible, though almost never necessary, to override this behaviour.}.
-This is a good thing because the user can move the system sources
-without having to edit the system definition.
+System source files should be located in the same directory
+as the @code{.asd} file with the system definition.
+@c FIXME: the following should live somewhere, but not in the quickstart
+@c page. [2014/05/03:rpg]
+@c ASDF resolves symbolic links (or Windows shortcuts)
+@c before loading the system definition file and
+@c stores its location in the resulting system@footnote{
+@c It is possible, though almost never necessary, to override this behaviour.}.
+@c This is a good thing because the user can move the system sources
+@c without having to edit the system definition.
 
 @c FIXME: Should have cross-reference to "Version specifiers" in the
 @c defsystem grammar, but the cross-referencing is so broken by
 @c insufficient node breakdown that I have not put one in.
+@c FIXME: this is way too detailed for the first example!
+@c move it!
 @item
 Make sure you know how the @code{:version} numbers will be parsed!
-They are parsed as period-separated lists of integers.
-I.e., in the example, @code{0.2.1} is to be interpreted,
-roughly speaking, as @code{(0 2 1)}.
-In particular, version @code{0.2.1}
-is interpreted the same as @code{0.0002.1} and
-is strictly version-less-than version @code{0.20.1},
-even though the two are the same when interpreted as decimal fractions.
-Instead of a string representing the version,
-the @code{:version} argument can be an expression that is resolved to
-such a string using the following trivial domain-specific language:
-in addition to being a literal string, it can be an expression of the form
-@code{(:read-file-form <pathname-or-string> :at <access-at-specifier>)},
-which will be resolved by reading a form in the specified pathname
-(read as a subpathname of the current system if relative or a unix-namestring).
-You may use a @code{uiop:access-at} specifier
-with the (optional) @code{:at} keyword,
-by default the specifier is @code{0}, meaning the first form is returned.
-
+Only period-separated non-negative integers are accepted.
+See below Version specifiers in @ref{The defsystem grammar}.
 @cindex :version
 
 @end itemize
@@ -1047,22 +1161,25 @@ by default the specifier is @code{0}, meaning the first form is returned.
 @node  A more involved example, The defsystem grammar, The defsystem form, Defining systems with defsystem
 @comment  node-name,  next,  previous,  up
 @section A more involved example
+@findex defsystem
 
 Let's illustrate some more involved uses of @code{defsystem} via a
 slightly convoluted example:
 
 @lisp
+(in-package :asdf-user)
+
 (defsystem "foo"
   :version "1.0.0"
   :components ((:module "mod"
-                            :components ((:file "bar")
-                                                  (:file"baz")
-                                                  (:file "quux"))
-                            :perform (compile-op :after (op c)
-                                                  (do-something c))
-                            :explain (compile-op :after (op c)
-                                            (explain-something c)))
-                         (:file "blah")))
+                :components ((:file "bar")
+                             (:file"baz")
+                             (:file "quux"))
+                :perform (compile-op :after (op c)
+                           (do-something c))
+                :explain (compile-op :after (op c)
+                           (explain-something c)))
+               (:file "blah")))
 @end lisp
 
 The @code{:module} component named @code{"mod"} is a collection of three files,
@@ -1101,7 +1218,7 @@ grammar}.
 For more details on what these methods do, @pxref{Operations} in
 @ref{The object model of ASDF}.
 
-@c The following plunge into the weeds is not appropriate in this
+@c FIXME: The following plunge into detail weeds is not appropriate in this
 @c location. [2010/10/03:rpg]
 @c note that although this also supports @code{:before} methods,
 @c they may not do what you want them to ---
@@ -1109,9 +1226,29 @@ For more details on what these methods do, @pxref{Operations} in
 @c will run after all the dependencies and sub-components have been processed,
 @c but before the component in question has been compiled.
 
+
+@c FIXME: There should be YA example that shows definitions of functions
+@c and classes.  The following material should go there.
+@c @item
+@c If in addition to simply using @code{defsystem},
+@c you are going to define functions,
+@c create ASDF extension, globally bind symbols, etc.,
+@c it is recommended that to avoid namespace pollution between systems,
+@c you should create your own package for that purpose, with:
+
+@c @lisp
+@c (defpackage :hello-lisp-system
+@c   (:use :cl :asdf))
+
+@c (in-package :hello-lisp-system)
+@c @end lisp
+
+
 @node  The defsystem grammar, Other code in .asd files, A more involved example, Defining systems with defsystem
 @comment  node-name,  next,  previous,  up
 @section The defsystem grammar
+@findex defsystem
+@cindex DEFSYSTEM grammar
 
 @c FIXME: @var typesetting not consistently used here.  We should either expand
 @c its use to everywhere, or we should kill it everywhere.
@@ -1149,7 +1286,8 @@ component-def  := ( component-type simple-component-name @var{option}* )
 
 component-type := :module | :file | :static-file | other-component-type
 
-other-component-type := symbol-by-name (@pxref{The defsystem grammar,,Component types})
+other-component-type := symbol-by-name
+                        (@pxref{The defsystem grammar,,Component types})
 
 # This is used in :depends-on, as opposed to ``dependency,''
 # which is used in :in-order-to
@@ -1170,13 +1308,15 @@ simple-component-name := string
 
 pathname-specifier := pathname | string | symbol
 
-method-form := (operation-name qual lambda-list @Arest body)
+method-form := (operation-name qual lambda-list @Arest{} body)
 qual := method qualifier
 
 component-dep-fail-option := :fail | :try-next | :ignore
 
-feature-expression := keyword | (:and @var{feature-expression}*)
-                      | (:or @var{feature-expression}*) | (:not @var{feature-expression})
+feature-expression := keyword
+                      | (:and @var{feature-expression}*)
+                      | (:or @var{feature-expression}*)
+                      | (:not @var{feature-expression})
 @end example
 
 
@@ -1295,13 +1435,9 @@ will be interpreted as the pathname @file{#p"foo/bar"},
 and a string @code{"foo/bar.quux"}
 will be interpreted as the pathname @file{#p"foo/bar.quux"}.
 
-ASDF does not interpret the string @code{".."} to designate the parent
-directory.  This string will be passed through to the underlying
-operating system for interpretation.  We @emph{believe} that this will
-work on all platforms where ASDF is deployed, but do not guarantee this
-behavior.  A pathname object with a relative directory component of
-@code{:up} or @code{:back} is the only guaranteed way to specify a
-parent directory.
+ASDF interprets the string @code{".."}
+as the pathname directory component word @code{:back},
+which when merged, goes back one level in the directory hierarchy.
 
 If a symbol is given, it will be translated into a string,
 and downcased in the process.
@@ -1328,7 +1464,7 @@ can usually be done more easily with the string syntax above.
 The only case that you really need a pathname object is to override
 the component-type default file type for a given component.
 Therefore, pathname objects should only rarely be used.
-Unhappily, ASDF 1 didn't properly support
+Unhappily, ASDF 1 used not to properly support
 parsing component names as strings specifying paths with directories,
 and the cumbersome @code{#.(make-pathname ...)} syntax had to be used.
 An alternative to @code{#.} read-time evaluation is to use
@@ -1356,6 +1492,20 @@ though the latter is not canonical and may lead to a warning being issued.
 Also, @code{"1.3"} and @code{"1.4"} are both strictly @code{uiop:version<} to @code{"1.30"},
 quite unlike what would have happened
 had the version strings been interpreted as decimal fractions.
+
+Instead of a string representing the version,
+the @code{:version} argument can be an expression that is resolved to
+such a string using the following trivial domain-specific language:
+in addition to being a literal string, it can be an expression of the form
+@code{(:read-file-form <pathname-or-string> :at <access-at-specifier>)},
+which will be resolved by reading a form in the specified pathname
+(read as a subpathname of the current system if relative or a unix-namestring).
+You may use a @code{uiop:access-at} specifier
+with the (optional) @code{:at} keyword,
+by default the specifier is @code{0}, meaning the first form is returned;
+subforms can also be specified, with e.g. @code{(1 2 2)} specifying
+``the third subform (index 2) of the third subform (index 2) of the second form (index 1)''
+in the file (mind the off-by-one error in the English language).
 
 System definers are encouraged to use version identifiers of the form
 @var{x}.@var{y}.@var{z} for
@@ -1447,13 +1597,18 @@ is equivalent to
 @end lisp
 
 
-@subsection Source location
+@subsection Source location (@code{:pathname})
 
 The @code{:pathname} option is optional in all cases for systems
-defined via @code{defsystem},
-and in the usual case the user is recommended not to supply it.
+defined via @code{defsystem}, and generally is unnecessary.  In the
+simple case, source files will be found in the same directory as the
+system or, in the case of modules, in a subdirectory with the same name
+as the module.
 
-Instead, ASDF follows a hairy set of rules that are designed so that
+@c FIXME: This should be moved elsewhere -- it's too much detail for the
+@c grammar section.
+
+More specifically, ASDF follows a hairy set of rules that are designed so that
 @enumerate
 @item
 @code{find-system}
@@ -1531,13 +1686,18 @@ and its implementation was breaking a hole into the ASDF object model.
 Please use the @code{if-feature} option instead.
 
 @subsection feature requirement
-This requirement was removed in ASDF 3.1.
-It used to ensure that a chain of component dependencies will raise an error,
-which in conjunction with if-component-dep-fails would offer
+This requirement was removed in ASDF 3.1.  Please do not use it.  In
+most cases, @code{:if-feature} (@pxref{if-feature-option}) will provide
+an adequate substitute.
+
+The @code{feature} requirement used to ensure that a chain of component
+dependencies would fail when a key feature was absent.
+Used in conjunction with @code{:if-component-dep-fails}
+this provided
 a roundabout way to express conditional compilation.
 
 
-@node Other code in .asd files, The package-system extension, The defsystem grammar, Defining systems with defsystem
+@node Other code in .asd files, The package-inferred-system extension, The defsystem grammar, Defining systems with defsystem
 @section Other code in .asd files
 
 Files containing @code{defsystem} forms
@@ -1547,7 +1707,7 @@ However, it is recommended to keep such forms to a minimal,
 and to instead define @code{defsystem} extensions
 that you use with @code{:defsystem-depends-on}.
 
-If however, you might insist on including code in the @code{.asd} file itself,
+If however, you might insist on including code in the @file{.asd} file itself,
 e.g., to examine and adjust the compile-time environment,
 possibly adding appropriate features to @code{*features*}.
 If so, here are some conventions we recommend you follow,
@@ -1565,16 +1725,18 @@ of output from ASDF operations.
 @end itemize
 
 
-@node The package-system extension,  , Other code in .asd files, Defining systems with defsystem
-@section The package-system extension
+@node The package-inferred-system extension,  , Other code in .asd files, Defining systems with defsystem
+@section The package-inferred-system extension
 
-Starting with ASDF 3.0.3,
+Starting with release 3.1.2,
 ASDF supports a one-package-per-file style of programming,
 whereby each file is its own system,
-and dependencies are deduced from the @code{defpackage} form.
+and dependencies are deduced from the @code{defpackage} form
+(or its variant @code{uiop:define-package}).
 
-In this style, packages referring to a same-named system (downcased);
-and if a system is defined with @code{:class package-system},
+
+In this style, packages refer to a system with the same name (downcased);
+and if a system is defined with @code{:class package-inferred-system},
 then system names that start with that name
 (using the slash @code{/} separator)
 refer to files under the filesystem hierarchy where the system is defined.
@@ -1589,45 +1751,78 @@ It is used by ASDF itself (starting with ASDF 3) and by @code{lisp-interface-lib
 
 To use this style, choose a toplevel system name, e.g. @code{my-lib},
 and create a file @file{my-lib.asd}
-with the @code{:class :package-system} option in its @code{defsystem}.
+with the @code{:class :package-inferred-system} option in its @code{defsystem}.
 For instance:
 @example
 #-asdf (error "my-lib requires ASDF 3")
 (defsystem my-lib
-  :class :package-system
+  :class :package-inferred-system
   :defsystem-depends-on (:asdf-package-system)
-  :depends-on (:my-lib/src/all)
-  :in-order-to ((test-op (load-op :my-lib/test/all)))
-  :perform (test-op (o c) (symbol-call :my-lib/test/all :test-suite)))
-(register-system-packages :closer-mop
+  :depends-on (:lil/interface/all
+               :lil/pure/all
+               :lil/stateful/all
+               :lil/transform/all)
+  :in-order-to ((test-op (load-op :lil/test/all)))
+  :perform (test-op (o c) (symbol-call :lil/test/all :test-suite)))
+
+(defsystem :lil/test :depends-on (:lil/test/all))
+
+(register-system-packages :lil/interface/all '(:interface))
+(register-system-packages :lil/pure/all '(:pure))
+(register-system-packages :lil/stateful/all '(:stateful))
+(register-system-packages :lil/transform/classy '(:classy))
+(register-system-packages :lil/transform/posh '(:posh))
+(register-system-packages :lil/test/all '(:lil/test))
+
+(register-system-packages
+ :closer-mop
  '(:c2mop :closer-common-lisp :c2cl :closer-common-lisp-user :c2cl-user))
 @end example
 
 In the code above, the
 @code{:defsystem-depends-on (:asdf-package-system)} is
-for compatibility with older versions of ASDF 3 (ASDF 2 not supported),
+for compatibility with older versions of ASDF 3 (ASDF 2 is not supported),
 and requires the @code{asdf-package-system} library to be present
-(it is implicitly provided by ASDF starting with ASDF 3.0.3).
+(it is implicitly provided by ASDF starting with release 3.1.2,
+which can be detected with the feature @code{:asdf3.1}).
 
 The function @code{register-system-packages} has to be called to register
 packages used or provided by your system and its components
 where the name of the system that provides the package
 is not the downcase of the package name.
 
-File @file{my-lib/src/utility.lisp} might start with:
+Then, file @file{interface/order.lisp} under the @code{lil} hierarchy,
+that defines abstract interfaces for order comparisons,
+starts with the following form,
+dependencies being trivially computed from the @code{:use} and @code{:mix} clauses:
 
 @example
-(defpackage :my-lib/src/utility
-  (:use :closer-common-lisp :my-lib/src/macros :my-lib/src/variables)
-  (:import-from :cl-ppcre #:register-groups-bind)
-  (:export #:foo #:bar))
+(uiop:define-package :lil/interface/order
+  (:use :closer-common-lisp
+   :lil/interface/definition
+   :lil/interface/base
+   :lil/interface/eq :lil/interface/group)
+  (:mix :fare-utils :uiop :alexandria)
+  (:export ...))
 @end example
 
-And from the @code{:use} and @code{:import-from} clauses,
-ASDF could tell that you depend on systems @code{closer-mop} (registered above),
-@code{cl-ppcre} (package and system names match), and
-@code{my-lib/src/macros} and @code{my-lib/src/variables}
+ASDF can tell that this file depends on system @code{closer-mop} (registered above),
+@code{lil/interface/definition}, @code{lil/interface/base},
+@code{lil/interface/eq}, and @code{lil/interface/group}
 (package and system names match, and they will be looked up hierarchically).
+
+ASDF also detects dependencies from @code{:import-from} clauses.
+To depend on a system without using a package or importing any symbol from it
+(because you'll fully qualify them when used),
+you may thus use an @code{:import-from} clause with an empty list of symbols, as in:
+
+@example
+(defpackage :foo/bar
+  (:use :cl)
+  (:import-from :foo/baz #:sym1 #:sym2)
+  (:import-from :foo/quux)
+  (:export ...))
+@end example
 
 The form @code{uiop:define-package} is supported as well as @code{defpackage},
 and has many options that prove useful in this context,
@@ -1636,93 +1831,67 @@ that allow for ``inheritance'' of symbols being exported.
 
 @node The object model of ASDF, Controlling where ASDF searches for systems, Defining systems with defsystem, Top
 @comment  node-name,  next,  previous,  up
-@chapter The object model of ASDF
+@chapter The Object model of ASDF
+@tindex component
+@tindex operation
 
 ASDF is designed in an object-oriented way from the ground up.
 Both a system's structure and the operations that can be performed on systems
-follow a extensible protocol.
+follow a extensible protocol, allowing programmers to add new behaviors to ASDF.
+For example, @code{cffi} adds support for special FFI description files
+that interface with C libraries and for wrapper files that embed C code in Lisp.
+@code{abcl-jar} supports creating Java JAR archives in ABCL.
+@code{poiu} supports compiling code in parallel using background processes.
 
-This allows the addition of behaviours:
-for example, @code{cffi} adds support of special FFI description files
-to interface with C libraries and of wrapper files to embed C code in Lisp;
-@code{abcl-jar} supports creating Java JAR archives in ABCL;
-and @code{poiu} supports for compiling code in parallel using background processes.
-
-This chapter deals with @code{component}s and @code{operation}s.
-
+The key classes in ASDF are @code{component} and @code{operation}.
 A @code{component} represents an individual source file or a group of source files,
-and the things that get transformed into.
-A @code{system} is a component at the top level of the component hierarchy.
-A @code{source-file} is a component representing a single source-file
-and the successive output files into which it is transformed.
-A @code{module} is an intermediate component itself grouping several other components,
-themselves source-files or further modules.
-
-An @code{Operation} represents a transformation that can be performed on a component,
+and the products (e.g., fasl files) produced from it.
+An @code{operation} represents a transformation that can be performed on a component,
 turning them from source files to intermediate results to final outputs.
+Components are related by @emph{dependencies}, specified in system
+definitions.
 
-A pair of an @code{operation} and a @code{component} is called an @code{action}.
-An @code{action} represents a particular build step to be @code{perform}ed,
-after all its dependencies have been fulfilled.
-In the ASDF model, actions depend on other actions.
-The term @emph{action} itself was used by Kent Pitman in his old article,
-but was only used by ASDF hackers starting with the ASDF 2;
-but the concept is ubiquitous since the very beginning of ASDF 1,
-though previously implicit.
+When ordered to @code{operate} with some operation on a component (usually a system),
+ASDF will first compute a @emph{plan}
+by traversing the dependency graph using function @code{make-plan}.@footnote{
+  Historically, the function that built a plan was
+  called @code{traverse}, and returned a list of actions;
+  it was deprecated in favor of @code{make-plan} (that returns a plan object)
+  when the @code{plan} objects were introduced;
+  the old function is kept for backward compatibility and debugging purposes only.
+}
+The resulting plan object contains an ordered list of @emph{actions}.
+An action is a pair of an @code{operation} and a @code{component},
+representing  a particular build step to be @code{perform}ed.
+The ordering of the plan ensures that no action is performed before
+all its dependencies have been fulfilled.@footnote{
+  The term @emph{action}
+  was used by Kent Pitman in his article, ``The Description of Large Systems,''
+  (@pxref{Bibliography}).
+  Although the term was only used by ASDF hackers starting with ASDF 2,
+  the concept was there since the very beginning of ASDF 1,
+  just not clearly articulated.
+}
 
-Then, there are many @emph{functions} available
-to users, extenders and implementers of ASDF
-to use, define or implement the activities
-that are part of building your software.
-Though they manipulate @code{action}s,
-most of these functions do not take as an argument
-a reified pair (a @code{cons} cell) of an operation and a component;
-instead, they usually take two separate arguments,
-which allows to take advantage of the power CLOS-style multiple dispatch
-for fun and profit.
+In this chapter, we describe ASDF's object-oriented protocol,
+the classes that make it up, and the generic functions on those classes.
+These generic functions often take
+both an operation and a component as arguments:
+much of the power and configurability of ASDF is provided by
+this use of CLOS's multiple dispatch.
+We will describe the built-in component and operation classes, and
+explain how to extend the ASDF protocol by defining new classes and
+methods for ASDF's generic functions.
+We will also describe the many @emph{hooks} that can be configured to
+customize the behavior of existing @emph{functions}.
 
-There are many @emph{hooks} in which to add functionality,
-by customizing the behavior of existing @emph{functions}.
-
-Last but not least is the notion of @emph{dependency} between two actions.
-The structure of dependencies between actions is
-a directed @emph{dependency graph}.
-ASDF is invoked by being told to @emph{operate}
-with some @emph{operation} on some toplevel @emph{system};
-it will then @emph{traverse} the graph and build a @emph{plan}
-that follows its structure.
-To be successfully buildable, this graph of actions but be acyclic.
-If, as a user, extender or implementer of ASDF, you fail
-to keep the dependency graph without cycles,
-ASDF will fail loudly as it eventually finds one.
-To clearly distinguish the direction of dependencies,
-ASDF 3 uses the words @emph{requiring} and @emph{required}
-as applied to an action depending on the other:
-the requiring action @code{depends-on} the completion of all required actions
-before it may itself be @code{perform}ed.
-
-Using the @code{defsystem} syntax, users may easily express
-direct dependencies along the graph of the object hierarchy:
-between a component and its parent, its children, and its siblings.
-By defining custom CLOS methods, you can express more elaborate dependencies as you wish.
-Most common operations, such as @code{load-op}, @code{compile-op} or @code{load-source-op}
-are automatically propagate ``downward'' the component hierarchy and are ``covariant'' with it:
-to act the operation on the parent module, you must first act it on all the children components,
-with the action on the parent being parent of the action on each child.
-Other operations, such as @code{prepare-op} and @code{prepare-source-op}
-(introduced in ASDF 3) are automatically propagated ``upward'' the component hierarchy
-and are ``contravariant'' with it:
-to perform the operation of preparing for compilation of a child component,
-you must perform the operation of preparing for compilation of its parent component, and so on,
-ensuring that all the parent's dependencies are (compiled and) loaded
-before the child component may be compiled and loaded.
-Yet other operations, such as @code{test-op} or @code{load-fasl-op}
-remain at the system level, and are not propagated along the hierarchy,
-but instead do something global on the system.
-
+@c FIXME: Swap operations and components.
+@c FIXME: Possibly add a description of the PLAN object.
+@c Not critical, since the user isn't expected to interact with it.
 @menu
 * Operations::
 * Components::
+* Dependencies::
 * Functions::
 @end menu
 
@@ -1764,17 +1933,26 @@ discuss these in turn below.
 
 Operations are invoked on systems via @code{operate}.
 @anchor{operate}
-@deffn {Generic function} @code{operate} @var{operation} @var{system} @Arest @var{initargs} @Akey @code{force} @code{force-not} @code{verbose} @AallowOtherKeys
-@deffnx {Generic function} @code{oos} @var{operation} @var{system} @Arest @var{initargs} @Akey @AallowOtherKeys
+@deffn {Generic function} @code{operate} @var{operation} @var{component} @Arest{} @var{initargs} @Akey{} @code{force} @code{force-not} @code{verbose} @AallowOtherKeys
+@deffnx {Generic function} @code{oos} @var{operation} @var{component} @Arest{} @var{initargs} @Akey{} @AallowOtherKeys{}
 @code{operate} invokes @var{operation} on @var{system}.
-@code{oos} is a synonym for @code{operate}.
+@code{oos} is a synonym for @code{operate} (it stands for operate-on-system).
 
-@var{operation} is a symbol that is passed, along with the supplied
-@var{initargs}, to @code{make-instance} to create the operation object.
-@var{system} is a system designator.
+@var{operation} is a symbol that is passed,
+along with the supplied @var{initargs},
+to @code{make-operation} (which will call @code{make-instance})
+to create the operation object.
+@var{component} is a component designator,
+usually a string or symbol that designates a system,
+sometimes a list of strings or symbols that designate a subcomponent of a system.
 
 The @var{initargs} are passed to the @code{make-instance} call
 when creating the operation object.
+@c We probably want to deprecate that, because
+@c (1) there is a mix of flags for operate, for the operation-class, for the plan-class, etc.
+@c (2) flags to operations have never been well-supported, anyway.
+@c The future solution probably involves having an explicit :operation-options keyword or some such
+@c (if operation options are not wholly eliminated), a separate :plan-options, etc.
 Note that dependencies may cause the operation
 to invoke other operations on the system or its components:
 the new operations will be created
@@ -1791,13 +1969,13 @@ If @var{force-not} is @code{:all}, then all systems
 are forced not to be recompiled even if modified since last compilation.
 If @var{force-not} is @code{t}, then all systems but the system being loaded
 are forced not to be recompiled even if modified since last compilation
-(note: this was changed in ASDF 3.1.1).
+(note: this was changed in ASDF 3.1.2).
 If @var{force-not} is a list, then it specifies a list of systems that
 are forced not to be recompiled even if modified since last compilation.
 
 Both @var{force} and @var{force-not} apply to systems that are dependencies and were already compiled.
 @var{force-not} takes precedences over @var{force},
-as it should, really, but unhappily only since ASDF 3.1.1.
+as it should, really, but unhappily only since ASDF 3.1.2.
 Moreover, systems the name of which is member of the set @var{*immutable-systems*}
 (represented as an equal hash-table) are always considered @var{forced-not}, and
 even their @file{.asd} is not refreshed from the filesystem.
@@ -1814,6 +1992,8 @@ To see what @code{operate} would do, you can use:
 @node Predefined operations of ASDF, Creating new operations, Operations, Operations
 @comment  node-name,  next,  previous,  up
 @subsection Predefined operations of ASDF
+@c FIXME: All these deffn's should be replaced with deftyp.  Also, we
+@c should set up an appropriate index.
 
 All the operations described in this section are in the @code{asdf} package.
 They are invoked via the @code{operate} generic function.
@@ -1844,10 +2024,10 @@ Use @code{load-op} to load a system.
 This operation loads the compiled code for a specified component.
 A @code{cl-source-file} will have its compiled fasl @code{load}ed,
 which fasl is the output of @code{compile-op} that @code{load-op} depends on.
-All the children and dependencies of a system or module
-will be recursively loaded by @code{load-op}.
 
-@code{load-op} depends on @code{prepare-op} which
+@code{load-op} will recursively load all the children of a system or module.
+
+@code{load-op} also depends on @code{prepare-op} which
 itself depends on a @code{load-op} of all of a component's dependencies,
 as well as of its parent's dependencies.
 @end deffn
@@ -1863,21 +2043,10 @@ may be performed on a given component.
 @deffn Operation @code{load-source-op}, @code{prepare-source-op}
 
 @code{load-source-op} will load the source for the files in a module
-rather than they compiled fasl output.
+rather than the compiled fasl output.
 It has a @code{prepare-source-op} analog to @code{prepare-op},
 that ensures the dependencies are themselves loaded via @code{load-source-op}.
 
-There is no provision in ASDF for ensuring that
-some components are always loaded as source, while others are always compiled.
-While this idea often comes up in discussions,
-it actually doesn't play well with either the linking model of ECL
-or with various bundle operations (see below), and is eventually not workable;
-also the dependency model of ASDF would have to be modified incompatibly
-to allow for such trick.
-If your code doesn't compile cleanly, fix it.
-If compilation makes it slow, use @code{declaim} or @code{eval-when}
-to adjust your compiler settings,
-or eschew compilation by @code{eval}uating a quoted source form at load-time.
 @end deffn
 
 @anchor{test-op}
@@ -1887,8 +2056,9 @@ This operation will perform some tests on the module.
 The default method will do nothing.
 The default dependency is to require
 @code{load-op} to be performed on the module first.
-The default @code{operation-done-p} is that the operation is @emph{never} done
----
+Its @code{operation-done-p} method returns @code{nil},
+which means that the operation is @emph{never} done
+--
 we assume that if you invoke the @code{test-op},
 you want to test the system, even if you have already done so.
 
@@ -1896,60 +2066,78 @@ The results of this operation are not defined by ASDF.
 It has proven difficult to define how the test operation
 should signal its results to the user
 in a way that is compatible with all of the various test libraries
-and test techniques in use in the community.
+and test techniques in use in the community, and
+given the fact that ASDF operations do not return a value indicating
+success or failure.
+For those willing to go to the effort, we suggest defining conditions to
+signal when a @code{test-op} fails, and storing in those conditions
+information that describes which tests fail.
 
-People typically define @code{test-op} methods like thus:
-@example
-(defmethod perform ((o asdf:test-op)
-                    (s (eql (asdf:find-system @var{:my-system}))))
-  (asdf:load-system @var{:my-system-test})
-  (funcall (read-from-string "my-system-test:test-suite")))
-@end example
+People typically define a separate test @emph{system} to hold the tests.
+Doing this avoids unnecessarily adding a test framework as a dependency
+on a library.  For example, one might have
+@lisp
+(defsystem foo
+  :in-order-to ((test-op (test-op "foo/test")))
+ ...)
 
-Using @code{load-system} in the perform method
-rather than an @code{:in-order-to} dependency,
-is sometimes necessary for backward compatibility with ASDF 2 and older,
-to avoid circular dependencies that could arise
-because of the way these old versions propagate dependencies.
+(defsystem foo/test
+  :depends-on (foo fiveam) ; fiveam is a test framework library
+  ...)
+@end lisp
 
-If you don't care for compatibility with ASDF 2,
-you could use the following options in your @code{defsystem} form:
-@example
-  :in-order-to ((test-op (load-op :my-system-test)))
-  :perform (test-op (o c) (symbol-call :my-system-test :test-suite))
-@end example
+Then one defines @code{perform} methods on
+@code{test-op} such as the following:
+@lisp
+(defsystem foo/test
+  :depends-on (foo fiveam) ; fiveam is a test framework library
+  :perform (test-op (o s)
+                    (uiop:symbol-call :fiveam  '#:run!
+                       (uiop:find-symbol* '#:foo-test-suite
+                                            :foo-tests)))
+  ...)
+@end lisp
+
 @end deffn
 
-@deffn Operation @code{fasl-op}, @code{monolithic-fasl-op}, @code{load-fasl-op}, @code{binary-op}, @code{monolithic-binary-op}, @code{lib-op}, @code{monolithic-lib-op}, @code{dll-op}, @code{monolithic-dll-op}, @code{program-op}
+
+
+@deffn Operation @code{compile-bundle-op}, @code{monolithic-compile-bundle-op}, @code{load-bundle-op}, @code{monolithic-load-bundle-op}, @code{deliver-asd-op}, @code{monolithic-deliver-asd-op}, @code{lib-op}, @code{monolithic-lib-op}, @code{dll-op}, @code{monolithic-dll-op}, @code{image-op}, @code{program-op}
 
 These are ``bundle'' operations, that can create a single-file ``bundle''
 for all the contents of each system in an application,
 or for the entire application.
 
-@code{fasl-op} will create a single fasl file for each of the systems needed,
+@code{compile-bundle-op} will create a single fasl file for each of the systems needed,
 grouping all its many fasls in one,
-so you can deliver each system as a single fasl.
-@code{monolithic-fasl-op} will create a single fasl file for target system
+so you can deliver each system as a single fasl
+@code{monolithic-compile-bundle-op} will create a single fasl file for the target system
 and all its dependencies,
 so you can deliver your entire application as a single fasl.
-@code{load-fasl-op} will load the output of @code{fasl-op}
-(though if it the output is not up-to-date,
-it will load the intermediate fasls indeed as part of building it);
-this matters a lot on ECL, where the dynamic linking involved in loading
-tens of individual fasls can be noticeably more expensive
-than loading a single one.
+@code{load-bundle-op} will load the output of @code{compile-bundle-op}.
+Note that if it the output is not up-to-date,
+@code{compile-bundle-op} may load the intermediate fasls as a side-effect.
+Bundling fasls together matters a lot on ECL,
+where the dynamic linking involved in loading tens of individual fasls
+can be noticeably more expensive than loading a single one.
 
-Once you have created a fasl with @code{fasl-op},
+NB: @code{compile-bundle-op}, @code{monolithic-compile-bundle-op}, @code{load-bundle-op}, @code{monolithic-load-bundle-op}, @code{deliver-asd-op}, @code{monolithic-deliver-asd-op} were respectively called
+@code{fasl-op}, @code{monolithic-fasl-op}, @code{load-fasl-op}, @code{monolithic-load-fasl-op}, @code{binary-op}, @code{monolithic-binary-op} before ASDF 3.1.
+The old names still exist for backward compatibility,
+though they poorly label what is going on.
+
+Once you have created a fasl with @code{compile-bundle-op},
 you can use @code{precompiled-system} to deliver it in a way
 that is compatible with clients having dependencies on your system,
 whether it is distributed as source or as a single binary;
 the @file{.asd} file to be delivered with the fasl will look like this:
 @example
 (defsystem :mysystem :class :precompiled-system
-    :fasl (some expression that will evaluate to a pathname))
+  :fasl (some expression that will evaluate to a pathname))
 @end example
-Or you can use @code{binary-op} to let ASDF create such a system for you
-as well as the @code{fasl-op} output, or @code{monolithic-binary-op}.
+Or you can use @code{deliver-asd-op} to let ASDF create such a system for you
+as well as the @code{compile-bundle-op} output,
+or @code{monolithic-deliver-asd-op}.
 This allows you to deliver code for your systems or applications
 as a single file.
 Of course, if you want to test the result in the current image,
@@ -1972,6 +2160,11 @@ See the example in
 @file{test/hello-world-example.asd} and @file{test/hello.lisp},
 as built and tested by
 @file{test/test-program.script} and @file{test/make-hello-world.lisp}.
+@code{image-op} will dump an image that may not be standalone
+and does not start its own function,
+but follows the usual execution convention of the underlying Lisp,
+just with more code pre-loaded,
+for use as an intermediate build result or with a wrapper invocation script.
 
 There is also @code{lib-op}
 for building a linkable @file{.a} file (Windows: @file{.lib})
@@ -2002,19 +2195,19 @@ Maybe you have suggestions on how to better configure it?
 
 @deffn Operation @code{concatenate-source-op}, @code{monolithic-concatenate-source-op}, @code{load-concatenated-source-op}, @code{compile-concatenated-source-op}, @code{load-compiled-concatenated-source-op}, @code{monolithic-load-concatenated-source-op}, @code{monolithic-compile-concatenated-source-op}, @code{monolithic-load-compiled-concatenated-source-op}
 
-These operation, as their respective names indicate,
-consist in concatenating all @code{cl-source-file} source files in a system
+These operations, as their respective names indicate,
+will concatenate all the @code{cl-source-file} source files in a system
 (or in a system and all its dependencies, if monolithic),
 in the order defined by dependencies,
-then loading the result, or compiling then loading the result.
+then load the result, or compile and then load the result.
 
 These operations are useful to deliver a system or application
 as a single source file,
-and for testing that said file loads properly, or compiles then loads properly.
+and for testing that said file loads properly, or compiles and then loads properly.
 
-ASDF itself is notably delivered as a single source file this way
+ASDF itself is delivered as a single source file this way,
 using @code{monolithic-concatenate-source-op},
-transcluding a prelude and the @code{uiop} library
+prepending a prelude and the @code{uiop} library
 before the @code{asdf/defsystem} system itself.
 @end deffn
 
@@ -2039,6 +2232,7 @@ for one or more of the following generic functions:
 
 @itemize
 
+@findex perform
 @item @code{perform}
 Unless your operation, like @code{prepare-op},
 is for dependency propagation only,
@@ -2047,8 +2241,8 @@ is usually @code{perform},
 which will be called to perform the operation on a specified component,
 after all dependencies have been performed.
 
-The @code{perform} method must call @code{output-files} (see below)
-to find out where to put its files,
+The @code{perform} method must call @code{input-files} and @code{output-files} (see below)
+to locate its inputs and outputs,
 because the user is allowed to override the method
 or tweak the output-translation mechanism.
 Perform should only use the primary value returned by @code{output-files}.
@@ -2056,6 +2250,7 @@ If one and only one output file is expected,
 it can call @code{output-file} that checks that this is the case
 and returns the first and only list element.
 
+@findex output-files
 @item @code{output-files}
 If your perform method has any output,
 you must define a method for this function.
@@ -2069,6 +2264,7 @@ in some implementation-dependent cache.
 If the boolean is @code{t} then the pathnames are marked
 not be translated by the enclosing @code{:around} method.
 
+@findex component-depends-on
 @item @code{component-depends-on}
 If the action of performing the operation on a component has dependencies,
 you must define a method on @code{component-depends-on}.
@@ -2095,6 +2291,9 @@ a symbol that names an operation class
 For instance, @code{load-op}, @code{compile-op} and @code{prepare-op}
 are common such names, denoting the respective operations.
 
+@c FIXME COERCE-NAME is referenced, but not defined.
+@findex coerce-name
+@findex find-component
 The rest of each entry is a list of component designators:
 either a component object designating itself,
 or an identifier to be used with @code{find-component}.
@@ -2112,6 +2311,7 @@ An operation @emph{may} provide methods for the following generic functions:
 @itemize
 
 @item @code{input-files}
+@findex input-files
 A method for this function is often not needed,
 since ASDF has a pretty clever default @code{input-files} mechanism.
 You only need create a method if there are multiple ultimate input files,
@@ -2119,6 +2319,7 @@ and/or the bottom one doesn't depend
 on the @code{component-pathname} of the component.
 
 @item @code{operation-done-p}
+@findex operation-done-p
 You only need to define a method on that function
 if you can detect conditions that invalidate previous runs of the operation,
 even though no filesystem timestamp has changed,
@@ -2136,7 +2337,7 @@ in which case you could have this method return @code{t}.
 Operations that print output should send that output to the standard
 CL stream @code{*standard-output*}, as the Lisp compiler and loader do.
 
-@node Components, Functions, Operations, The object model of ASDF
+@node Components, Dependencies, Operations, The object model of ASDF
 @comment  node-name,  next,  previous,  up
 @section Components
 @cindex component
@@ -2145,10 +2346,14 @@ CL stream @code{*standard-output*}, as the Lisp compiler and loader do.
 @cindex component designator
 @vindex *system-definition-search-functions*
 
-A @dfn{component} represents a source file or
-(recursively) a collection of components.
-A @dfn{system} is (roughly speaking) a top-level component
+A @code{component} represents an individual source file or a group of source files,
+and the things that get transformed into.
+A @code{system} is a component at the top level of the component hierarchy,
 that can be found via @code{find-system}.
+A @code{source-file} is a component representing a single source-file
+and the successive output files into which it is transformed.
+A @code{module} is an intermediate component itself grouping several other components,
+themselves source-files or further modules.
 
 A @dfn{system designator} is a system itself,
 or a string or symbol that behaves just like any other component name
@@ -2159,7 +2364,7 @@ is either a component itself,
 or a string or symbol,
 or a list of designators.
 
-@defun find-system system-designator @Aoptional (error-p t)
+@defun find-system system-designator @Aoptional{} (error-p t)
 
 Given a system designator, @code{find-system} finds and returns a system.
 If no system is found, an error of type
@@ -2213,6 +2418,7 @@ starting from the @var{base}.
 If @var{path} is a component object, it designates itself,
 independently from the base.
 
+@findex coerce-name
 If @var{path} is a string, or symbol denoting a string via @code{coerce-name},
 then @var{base} is resolved to a component object,
 which must be a system or module,
@@ -2249,9 +2455,10 @@ All components, regardless of type, have the following attributes.
 All attributes except @code{name} are optional.
 
 @subsubsection Name
-
+@findex coerce-name
 A component name is a string or a symbol.
-If a symbol, its name is taken and lowercased.
+If a symbol, its name is taken and lowercased.  This translation is
+performed by the exported function @code{coerce-name}.
 
 Unless overridden by a @code{:pathname} attribute,
 the name will be interpreted as a pathname specifier according
@@ -2557,12 +2764,47 @@ The new component type is used in a @code{defsystem} form in this way:
     )
 @end lisp
 
-@node Functions,  , Components, The object model of ASDF
+@node Dependencies, Functions, Components, The object model of ASDF
+@section Dependencies
+@c FIXME: Moved this material here, but it isn't very comfortable
+@c here....  Also needs to be revised to be coherent.
+
+To be successfully buildable, this graph of actions but be acyclic.
+If, as a user, extender or implementer of ASDF, you fail
+to keep the dependency graph without cycles,
+ASDF will fail loudly as it eventually finds one.
+To clearly distinguish the direction of dependencies,
+ASDF 3 uses the words @emph{requiring} and @emph{required}
+as applied to an action depending on the other:
+the requiring action @code{depends-on} the completion of all required actions
+before it may itself be @code{perform}ed.
+
+Using the @code{defsystem} syntax, users may easily express
+direct dependencies along the graph of the object hierarchy:
+between a component and its parent, its children, and its siblings.
+By defining custom CLOS methods, you can express more elaborate dependencies as you wish.
+Most common operations, such as @code{load-op}, @code{compile-op} or @code{load-source-op}
+are automatically propagate ``downward'' the component hierarchy and are ``covariant'' with it:
+to act the operation on the parent module, you must first act it on all the children components,
+with the action on the parent being parent of the action on each child.
+Other operations, such as @code{prepare-op} and @code{prepare-source-op}
+(introduced in ASDF 3) are automatically propagated ``upward'' the component hierarchy
+and are ``contravariant'' with it:
+to perform the operation of preparing for compilation of a child component,
+you must perform the operation of preparing for compilation of its parent component, and so on,
+ensuring that all the parent's dependencies are (compiled and) loaded
+before the child component may be compiled and loaded.
+Yet other operations, such as @code{test-op} or @code{load-bundle-op}
+remain at the system level, and are not propagated along the hierarchy,
+but instead do something global on the system.
+
+
+@node Functions,  , Dependencies, The object model of ASDF
 @comment  node-name,  next,  previous,  up
 @section Functions
-@findex version-satisfies
 
-@deffn version-satisfies @var{version} @var{version-spec}
+@c FIXME: this does not belong here....
+@defun version-satisfies @var{version} @var{version-spec}
 Does @var{version} satisfy the @var{version-spec}.  A generic function.
 ASDF provides built-in methods for @var{version} being a @code{component} or @code{string}.
 @var{version-spec} should be a string.
@@ -2591,12 +2833,33 @@ than the one specified as a second argument.
 If needs be, the @code{(:version ...)} syntax for specifying dependencies
 could be in the future extended to specify an exclusive upper bound for compatible versions
 as well as an inclusive lower bound.
-@end deffn
+@end defun
 
 @node Controlling where ASDF searches for systems, Controlling where ASDF saves compiled files, The object model of ASDF, Top
 @comment  node-name,  next,  previous,  up
 @chapter Controlling where ASDF searches for systems
 
+
+
+@menu
+* Configurations::
+* Truenames and other dangers::
+* XDG base directory::
+* Backward Compatibility::
+* Configuration DSL::
+* Configuration Directories::
+* Shell-friendly syntax for configuration::
+* Search Algorithm::
+* Caching Results::
+* Configuration API::
+* Introspection::
+* Status::
+* Rejected ideas::
+* TODO::
+* Credits for the source-registry::
+@end menu
+
+@node  Configurations, Truenames and other dangers, Controlling where ASDF searches for systems, Controlling where ASDF searches for systems
 @section Configurations
 
 Configurations specify paths where to find system files.
@@ -2639,9 +2902,19 @@ if it exists.
 
 @item
 The source registry will be configured from
+default user configuration trees
+@file{~/common-lisp/} (since ASDF 3.1.2 only),
+@file{~/.sbcl/systems/} (on SBCL only),
+@file{$XDG_DATA_HOME/common-lisp/systems/} (no recursion, link farm)
+@file{$XDG_DATA_HOME/common-lisp/source/}.
+The @code{XDG_DATA_HOME} directory defaults to @file{~/.local/share/}.
+On Windows, the @code{local-appdata} and @code{appdata} directories are used instead.
+
+@item
+The source registry will be configured from
 system configuration file
 @file{/etc/common-lisp/source-registry.conf}
-if it exists/
+if it exists.
 
 @item
 The source registry will be configured from
@@ -2655,10 +2928,13 @@ This configuration may allow for implementation-specific systems
 to be found, for systems to be found the current directory
 (at the time that the configuration is initialized) as well as
 @code{:directory} entries for @file{$XDG_DATA_DIRS/common-lisp/systems/} and
-@code{:tree} entries for @file{$XDG_DATA_DIRS/common-lisp/source/}.
-For instance, SBCL will include directories for its contribs
-when it can find them; it will look for them where SBCL was installed,
-or at the location specified by the @code{SBCL_HOME} environment variable.
+@code{:tree} entries for @file{$XDG_DATA_DIRS/common-lisp/source/},
+where @code{XDG_DATA_DIRS} defaults to @file{/usr/local/share} and @file{/usr/share} on Unix,
+and the @code{common-appdata} directory on Windows.
+
+@item
+The source registry may include implementation-dependent directories
+that correspond to implementation-provided extensions.
 
 @end enumerate
 
@@ -2675,7 +2951,7 @@ Additionally, some implementation-specific directories
 may be automatically prepended to whatever directories are specified
 in configuration files, no matter if the last one inherits or not.
 
-
+@node Truenames and other dangers, XDG base directory, Configurations, Controlling where ASDF searches for systems
 @section Truenames and other dangers
 
 One great innovation of the original ASDF was its ability to leverage
@@ -2698,7 +2974,7 @@ by setting the variable @var{asdf:*resolve-symlinks*} to @code{nil}.
 PS: Yes, if you haven't read Vernor Vinge's short but great classic
 ``True Names... and Other Dangers'' then you're in for a treat.
 
-
+@node XDG base directory, Backward Compatibility, Truenames and other dangers, Controlling where ASDF searches for systems
 @section XDG base directory
 
 Note that we purport to respect the XDG base directory specification
@@ -2720,10 +2996,11 @@ Since support for querying the Windows registry
 is not possible to do in reasonable amounts of portable Common Lisp code,
 ASDF 3 relies on the environment variables that Windows usually exports.
 
+@node Backward Compatibility, Configuration DSL, XDG base directory, Controlling where ASDF searches for systems
 @section Backward Compatibility
 
 For backward compatibility as well as to provide a practical backdoor for hackers,
-ASDF will first search for @code{.asd} files in the directories specified in
+ASDF will first search for @file{.asd} files in the directories specified in
 @code{asdf:*central-registry*}
 before it searches in the source registry above.
 
@@ -2734,6 +3011,7 @@ By default, @code{asdf:*central-registry*} will be empty.
 This old mechanism will therefore not affect you if you don't use it,
 but will take precedence over the new mechanism if you do use it.
 
+@node Configuration DSL, Configuration Directories, Backward Compatibility, Controlling where ASDF searches for systems
 @section Configuration DSL
 @cindex :inherit-configuration source config directive
 @cindex inherit-configuration source config directive
@@ -2758,27 +3036,31 @@ configuration:
 @c FIXME: This is too wide for happy compilation into pdf.
 
 @example
-;; A configuration is a single SEXP starting with keyword :source-registry
-;; followed by a list of directives.
+;; A configuration is a single SEXP starting with the keyword
+;; :source-registry followed by a list of directives.
 CONFIGURATION := (:source-registry DIRECTIVE ...)
 
 ;; A directive is one of the following:
 DIRECTIVE :=
     ;; INHERITANCE DIRECTIVE:
     ;; Your configuration expression MUST contain
-    ;; exactly one of either of these:
-    :inherit-configuration | ; splices inherited configuration (often specified last)
-    :ignore-inherited-configuration | ; drop inherited configuration (specified anywhere)
+    ;; exactly one of the following:
+    :inherit-configuration |
+    ;; splices inherited configuration (often specified last) or
+    :ignore-inherited-configuration |
+    ;; drop inherited configuration (specified anywhere)
 
     ;; forward compatibility directive (since ASDF 2.011.4), useful when
-    ;; you want to use new configuration features but have to bootstrap a
-    ;; the newer required ASDF from an older release that doesn't sport said features:
-    :ignore-invalid-entries | ; drops subsequent invalid entries instead of erroring out
+    ;; you want to use new configuration features but have to bootstrap
+    ;; the newer required ASDF from an older release that doesn't
+    ;; support said features:
+    :ignore-invalid-entries |
 
     ;; add a single directory to be scanned (no recursion)
     (:directory DIRECTORY-PATHNAME-DESIGNATOR) |
 
-    ;; add a directory hierarchy, recursing but excluding specified patterns
+    ;; add a directory hierarchy, recursing but
+    ;; excluding specified patterns
     (:tree DIRECTORY-PATHNAME-DESIGNATOR) |
 
     ;; override the defaults for exclusion patterns
@@ -2794,16 +3076,19 @@ DIRECTIVE :=
     ;; This directive specifies that some default must be spliced.
     :default-registry
 
-REGULAR-FILE-PATHNAME-DESIGNATOR := PATHNAME-DESIGNATOR ;; interpreted as a file
-DIRECTORY-PATHNAME-DESIGNATOR := PATHNAME-DESIGNATOR ;; interpreted as a directory name
+REGULAR-FILE-PATHNAME-DESIGNATOR
+    := PATHNAME-DESIGNATOR ; interpreted as a file
+DIRECTORY-PATHNAME-DESIGNATOR
+    := PATHNAME-DESIGNATOR ; interpreted as a directory
 
 PATHNAME-DESIGNATOR :=
     NIL | ;; Special: skip this entry.
     ABSOLUTE-COMPONENT-DESIGNATOR ;; see pathname DSL
 
-EXCLUSION-PATTERN := a string without wildcards, that will be matched exactly
-	against the name of a any subdirectory in the directory component
-        of a path. e.g. @code{"_darcs"} will match @file{#p"/foo/bar/_darcs/src/bar.asd"}
+EXCLUSION-PATTERN := a string without wildcards, that will be matched
+    exactly against the name of a any subdirectory in the directory
+    component of a path. e.g. @code{"_darcs"} will match
+    @file{#p"/foo/bar/_darcs/src/bar.asd"}
 @end example
 
 Pathnames are designated using another DSL,
@@ -2814,36 +3099,50 @@ to be documented and exported at some point in the future.
 @example
 ABSOLUTE-COMPONENT-DESIGNATOR :=
     (ABSOLUTE-COMPONENT-DESIGNATOR RELATIVE-COMPONENT-DESIGNATOR ...) |
-    STRING | ;; namestring (better be absolute or bust, directory assumed where applicable).
-             ;; In output-translations, directory is assumed and **/*.*.* added if it's last.
-             ;; On MCL, a MacOSX-style POSIX namestring (for MacOS9 style, use #p"...");
-             ;; Note that none of the above applies to strings used in *central-registry*,
-             ;; which doesn't use this DSL: they are processed as normal namestrings.
-             ;; however, you can compute what you put in the *central-registry*
-             ;; based on the results of say (asdf::resolve-location "/Users/fare/cl/cl-foo/")
-    PATHNAME | ;; pathname (better be an absolute path, or bust)
-               ;; In output-translations, unless followed by relative components,
-               ;; it better have appropriate wildcards, as in **/*.*.*
-    :HOME | ;; designates the user-homedir-pathname ~/
-    :USER-CACHE | ;; designates the default location for the user cache
-    :HERE | ;; designates the location of the configuration file
-            ;; (or *default-pathname-defaults*, if invoked interactively)
-    :ROOT ;; magic, for output-translations source only: paths that are relative
-          ;; to the root of the source host and device
-    ;; Not valid anymore: :SYSTEM-CACHE (was a security hazard)
+    STRING |
+    ;; namestring (better be absolute or bust, directory assumed where
+    ;; applicable).  In output-translations, directory is assumed and
+    ;; **/*.*.* added if it's last.  On MCL, a MacOSX-style POSIX
+    ;; namestring (for MacOS9 style, use #p"..."); Note that none of the
+    ;; above applies to strings used in *central-registry*, which
+    ;; doesn't use this DSL: they are processed as normal namestrings.
+    ;; however, you can compute what you put in the *central-registry*
+    ;; based on the results of say
+    ;; (asdf::resolve-location "/Users/fare/cl/cl-foo/")
+    PATHNAME |
+    ;; pathname (better be an absolute path, or bust)
+    ;; In output-translations, unless followed by relative components,
+    ;; it better have appropriate wildcards, as in **/*.*.*
+    :HOME | ; designates the user-homedir-pathname ~/
+    :USER-CACHE | ; designates the default location for the user cache
+    :HERE |
+    ;; designates the location of the configuration file
+    ;; (or *default-pathname-defaults*, if invoked interactively)
+    :ROOT
+    ;; magic, for output-translations source only: paths that are relative
+    ;; to the root of the source host and device
+
+They keyword :SYSTEM-CACHE is not accepted in ASDF 3.1 and beyond: it
+was a security hazard.
 
 RELATIVE-COMPONENT-DESIGNATOR :=
     (RELATIVE-COMPONENT-DESIGNATOR RELATIVE-COMPONENT-DESIGNATOR ...) |
-    STRING | ;; relative directory pathname as interpreted by parse-unix-namestring.
-             ;; In output translations, if last component, **/*.*.* is added
-    PATHNAME | ;; pathname; unless last component, directory is assumed.
-    :IMPLEMENTATION | ;; directory based on implementation, e.g. sbcl-1.0.45-linux-x64
-    :IMPLEMENTATION-TYPE | ;; a directory based on lisp-implementation-type only, e.g. sbcl
-    :DEFAULT-DIRECTORY | ;; a relativized version of the default directory
+    STRING |
+      ;; relative directory pathname as interpreted by
+      ;; parse-unix-namestring.
+      ;; In output translations, if last component, **/*.*.* is added
+    PATHNAME | ; pathname; unless last component, directory is assumed.
+    :IMPLEMENTATION |
+       ;; directory based on implementation, e.g. sbcl-1.0.45-linux-x64
+    :IMPLEMENTATION-TYPE |
+       ;; a directory based on lisp-implementation-type only, e.g. sbcl
+    :DEFAULT-DIRECTORY |
+       ;; a relativized version of the default directory
     :*/ | ;; any direct subdirectory (since ASDF 2.011.4)
     :**/ | ;; any recursively inferior subdirectory (since ASDF 2.011.4)
     :*.*.* | ;; any file (since ASDF 2.011.4)
-    ;; Not supported (anymore): :UID and :USERNAME
+
+The keywords :UID and :USERNAME are no longer supported.
 @end example
 
 For instance, as a simple case, my @file{~/.config/common-lisp/source-registry.conf},
@@ -2854,6 +3153,7 @@ which is the default place ASDF looks for this configuration, once contained:
   :inherit-configuration)
 @end example
 
+@node Configuration Directories, Shell-friendly syntax for configuration, Configuration DSL, Controlling where ASDF searches for systems
 @section Configuration Directories
 
 Configuration directories consist in files each containing
@@ -2863,16 +3163,21 @@ the lists of directives of these files with be concatenated in order.
 An implicit @code{:inherit-configuration} will be included
 at the @emph{end} of the list.
 
-This allows for packaging software that has file granularity
-(e.g. Debian's @code{dpkg} or some future version of @code{clbuild})
-to easily include configuration information about distributed software.
+System-wide or per-user Common Lisp software distributions
+such as Debian packages or some future version of @code{clbuild}
+may then include files such as
+@file{/etc/common-lisp/source-registry.conf.d/10-foo.conf} or
+@file{~/.config/common-lisp/source-registry.conf.d/10-foo.conf}
+to easily and modularly register configuration information
+about software being distributed.
 
 The convention is that, for sorting purposes,
 the names of files in such a directory begin with two digits
 that determine the order in which these entries will be read.
-Also, the type of these files is conventionally @code{"conf"}
-and as a limitation to some implementations (e.g. GNU clisp),
-the type cannot be @code{nil}.
+Also, the type of these files must be @file{.conf},
+which not only simplifies the implementation by allowing
+for more portable techniques in finding those files,
+but also makes it trivial to disable a file, by renaming it to a different file type.
 
 Directories may be included by specifying a directory pathname
 or namestring in an @code{:include} directive, e.g.:
@@ -2890,6 +3195,11 @@ alone in its directory with the following contents:
 (:tree "/home/fare/cl/")
 @end example
 
+@menu
+* The here directive::
+@end menu
+
+@node The here directive,  , Configuration Directories, Configuration Directories
 @subsection The :here directive
 
 The @code{:here} directive is an absolute pathname designator that
@@ -2907,7 +3217,7 @@ complex project with a master directory @file{dir/}.  Ordinarily, one
 might simply have the user add a directive that would look something
 like this:
 @example
-   (:tree  "path/to/dir")
+   (:tree "path/to/dir")
 @end example
 But what if X knows that there are very large subtrees
 under dir that are filled with, e.g., Java source code, image files for
@@ -2935,6 +3245,7 @@ form containing that s-expression.  ASDF will find the .conf file that X
 has provided, and then set up source locations within the working
 directory according to X's (relative) instructions.
 
+@node Shell-friendly syntax for configuration, Search Algorithm, Configuration Directories, Controlling where ASDF searches for systems
 @section Shell-friendly syntax for configuration
 
 When considering environment variable @code{CL_SOURCE_REGISTRY}
@@ -2958,7 +3269,7 @@ list of paths, where
     then it indicates that the inherited configuration should be
     spliced there.
 
-
+@node Search Algorithm, Caching Results, Shell-friendly syntax for configuration, Controlling where ASDF searches for systems
 @section Search Algorithm
 @vindex *default-source-registry-exclusions*
 
@@ -2994,6 +3305,7 @@ specifications from the next configuration
 (@pxref{Controlling where ASDF searches for systems,,Configurations} above).
 
 
+@node Caching Results, Configuration API, Search Algorithm, Controlling where ASDF searches for systems
 @section Caching Results
 
 The implementation is allowed to either eagerly compute the information
@@ -3001,14 +3313,14 @@ from the configurations and file system, or to lazily re-compute it
 every time, or to cache any part of it as it goes.
 To explicitly flush any information cached by the system, use the API below.
 
-
+@node Configuration API, Introspection, Caching Results, Controlling where ASDF searches for systems
 @section Configuration API
 
 The specified functions are exported from your build system's package.
 Thus for ASDF the corresponding functions are in package ASDF,
 and for XCVB the corresponding functions are in package XCVB.
 
-@defun initialize-source-registry @Aoptional PARAMETER
+@defun initialize-source-registry @Aoptional{} PARAMETER
    will read the configuration and initialize all internal variables.
    You may extend or override configuration
    from the environment and configuration files
@@ -3033,7 +3345,7 @@ and for XCVB the corresponding functions are in package XCVB.
    where to look for systems not yet defined.
 @end defun
 
-@defun ensure-source-registry @Aoptional PARAMETER
+@defun ensure-source-registry @Aoptional{} PARAMETER
    checks whether a source registry has been initialized.
    If not, initialize it with the given @var{PARAMETER}.
 @end defun
@@ -3047,8 +3359,15 @@ you need to explicitly @code{initialize-source-registry} again,
 or maybe simply to @code{clear-source-registry} (or @code{clear-configuration})
 which will cause the initialization to happen next time around.
 
+@node Introspection, Status, Configuration API, Controlling where ASDF searches for systems
 @section Introspection
 
+@menu
+* *source-registry-parameter* variable::
+* Information about system dependencies::
+@end menu
+
+@node *source-registry-parameter* variable, Information about system dependencies, Introspection, Introspection
 @subsection *source-registry-parameter* variable
 @vindex *source-registry-parameter*
 
@@ -3059,6 +3378,7 @@ never be set!}  It will be set as a side-effect of calling
 @code{initialize-source-registry}; user code should treat it as
 read-only.
 
+@node Information about system dependencies,  , *source-registry-parameter* variable, Introspection
 @subsection Information about system dependencies
 
 ASDF makes available three functions to read system interdependencies.
@@ -3082,6 +3402,7 @@ than the return values of the other two system dependency introspection
 functions.
 @end defun
 
+@node Status, Rejected ideas, Introspection, Controlling where ASDF searches for systems
 @section Status
 
 This mechanism is vastly successful, and we have declared
@@ -3091,10 +3412,10 @@ All hooks into implementation-specific search mechanisms
 have been integrated in the @code{wrapping-source-registry}
 that everyone uses implicitly.
 
-
+@node Rejected ideas, TODO, Status, Controlling where ASDF searches for systems
 @section Rejected ideas
 
-Alternatives I considered and rejected included:
+Alternatives I (FRR) considered and rejected while developing ASDF 2 included:
 
 @enumerate
 @item Keep @code{asdf:*central-registry*} as the master with its current semantics,
@@ -3103,7 +3424,7 @@ Alternatives I considered and rejected included:
    lookup, pre-recursing through specified hierarchies. This is kludgy,
    and leaves little space of future cleanups and extensions.
 
-@item Keep @code{asdf:*central-registry*} remains the master but extend its semantics
+@item Keep @code{asdf:*central-registry*} as the master but extend its semantics
    in completely new ways, so that new kinds of entries may be implemented
    as a recursive search, etc. This seems somewhat backwards.
 
@@ -3145,13 +3466,14 @@ for the sake of keeping ASDF no more complex than strictly necessary.
   It isn't that Lisp friendly either.
 @end itemize
 
+@node TODO, Credits for the source-registry, Rejected ideas, Controlling where ASDF searches for systems
 @section TODO
 
 @itemize
 @item Add examples
 @end itemize
 
-
+@node Credits for the source-registry,  , TODO, Controlling where ASDF searches for systems
 @section Credits for the source-registry
 
 Thanks a lot to Stelian Ionescu for the initial idea.
@@ -3172,20 +3494,40 @@ But so are good design ideas and elegant implementation tricks.
 @vindex ASDF_OUTPUT_TRANSLATIONS
 
 Each Common Lisp implementation has its own format
-for compiled files (fasls for short, short for ``fast loading'').
+for compiled files or fasls.@footnote{``FASL'' is short for ``FASt Loading.''}
 If you use multiple implementations
 (or multiple versions of the same implementation),
 you'll soon find your source directories
-littered with various @file{fasl}s, @file{dfsl}s, @file{cfsl}s and so on.
-Worse yet, some implementations use the same file extension
-while changing formats from version to version (or platform to platform)
-which means that you'll have to recompile binaries
+littered with various @file{fasl}s, @file{dfsl}s, @file{cfsl}s and so
+on.
+Worse yet, multiple implementations use the same file extension and
+some implementations maintain the same file extension
+while changing formats from version to version (or platform to
+platform).
+This can lead to many errors and much confusion
 as you switch from one implementation to the next.
 
 Since ASDF 2, ASDF includes the @code{asdf-output-translations} facility
 to mitigate the problem.
 
+@menu
+* Output Configurations::
+* Output Backward Compatibility::
+* Output Configuration DSL::
+* Output Configuration Directories::
+* Output Shell-friendly syntax for configuration::
+* Semantics of Output Translations::
+* Output Caching Results::
+* Output location API::
+* Credits for output translations::
+@end menu
+
+@node Output Configurations, Output Backward Compatibility, Controlling where ASDF saves compiled files, Controlling where ASDF saves compiled files
 @section Configurations
+
+@c FIXME: Explain how configurations work: can't expect reader will have
+@c looked at previous chapter. Probably cut and paste will do.
+
 
 Configurations specify mappings from input locations to output locations.
 Once again we rely on the XDG base directory specification for configuration.
@@ -3241,12 +3583,13 @@ if it exists.
 @end enumerate
 
 Each of these configurations is specified as a SEXP
-in a trival domain-specific language (defined below).
+in a trivial domain-specific language (@pxref{Configuration DSL}).
 Additionally, a more shell-friendly syntax is available
-for the environment variable (defined yet below).
+for the environment variable (@pxref{Shell-friendly syntax for configuration}).
 
-Each of these configurations is only used if the previous
-configuration explicitly or implicitly specifies that it
+When processing an entry in the above list of configuration methods,
+ASDF will stop unless that entry
+explicitly or implicitly specifies that it
 includes its inherited configuration.
 
 Note that by default, a per-user cache is used for output files.
@@ -3254,24 +3597,27 @@ This allows the seamless use of shared installations of software
 between several users, and takes files out of the way of the developers
 when they browse source code,
 at the expense of taking a small toll when developers have to clean up
-output files and find they need to get familiar with output-translations first.
+output files and find they need to get familiar with output-translations
+first.@footnote{A @code{CLEAN-OP} would be a partial solution to this problem.}
 
 
+@node Output Backward Compatibility, Output Configuration DSL, Output Configurations, Controlling where ASDF saves compiled files
 @section Backward Compatibility
 @cindex ASDF-BINARY-LOCATIONS compatibility
+@c FIXME: Demote this section -- the typical reader doesn't care about
+@c backwards compatibility.
 
 
-We purposefully do NOT provide backward compatibility with earlier versions of
+We purposely do @emph{not} provide backward compatibility with earlier versions of
 @code{ASDF-Binary-Locations} (8 Sept 2009),
 @code{common-lisp-controller} (7.0) or
 @code{cl-launch} (2.35),
 each of which had similar general capabilities.
-The previous APIs of these programs were not designed
-for configuration by the end-user
-in an easy way with configuration files.
-Recent versions of same packages use
-the new @code{asdf-output-translations} API as defined below:
-@code{common-lisp-controller} (7.2) and @code{cl-launch} (3.000).
+The APIs of these programs were not designed
+for easy user configuration
+through configuration files.
+Recent versions of @code{common-lisp-controller} (7.2) and @code{cl-launch} (3.000)
+use the new @code{asdf-output-translations} API as defined below.
 @code{ASDF-Binary-Locations} is fully superseded and not to be used anymore.
 
 This incompatibility shouldn't inconvenience many people.
@@ -3287,7 +3633,7 @@ as configured by the system distributor, or by default.
 Nevertheless, if you are a fan of @code{ASDF-Binary-Locations},
 we provide a limited emulation mode:
 
-@defun enable-asdf-binary-locations-compatibility @Akey centralize-lisp-binaries default-toplevel-directory include-per-user-information map-all-source-files source-to-target-mappings
+@defun enable-asdf-binary-locations-compatibility @Akey{} centralize-lisp-binaries default-toplevel-directory include-per-user-information map-all-source-files source-to-target-mappings
 This function will initialize the new @code{asdf-output-translations} facility in a way
 that emulates the behavior of the old @code{ASDF-Binary-Locations} facility.
 Where you would previously set global variables
@@ -3311,7 +3657,7 @@ or you might experience ``interesting'' issues.
 Also, note that output translation is enabled by default.
 To disable it, use @code{(asdf:disable-output-translations)}.
 
-
+@node Output Configuration DSL, Output Configuration Directories, Output Backward Compatibility, Controlling where ASDF saves compiled files
 @section Configuration DSL
 
 Here is the grammar of the SEXP DSL
@@ -3327,18 +3673,22 @@ DIRECTIVE :=
     ;; INHERITANCE DIRECTIVE:
     ;; Your configuration expression MUST contain
     ;; exactly one of either of these:
-    :inherit-configuration | ; splices inherited configuration (often specified last)
-    :ignore-inherited-configuration | ; drop inherited configuration (specified anywhere)
+    :inherit-configuration |
+      ;; splices inherited configuration (often specified last)
+    :ignore-inherited-configuration |
+      ;; drop inherited configuration (specified anywhere)
 
     ;; forward compatibility directive (since ASDF 2.011.4), useful when
     ;; you want to use new configuration features but have to bootstrap a
-    ;; the newer required ASDF from an older release that doesn't sport said features:
-    :ignore-invalid-entries | ; drops subsequent invalid entries instead of erroring out
+    ;; the newer required ASDF from an older release that doesn't have
+    ;; said features:
+    :ignore-invalid-entries |
 
     ;; include a configuration file or directory
     (:include PATHNAME-DESIGNATOR) |
 
-    ;; enable global cache in ~/.common-lisp/cache/sbcl-1.0.45-linux-amd64/ or something.
+    ;; enable global cache in ~/.common-lisp/cache/sbcl-1.0.45-linux-amd64/
+    ;; or something.
     :enable-user-cache |
     ;; Disable global cache. Map / to /
     :disable-cache |
@@ -3350,21 +3700,27 @@ DIRECTIVE :=
     (DIRECTORY-DESIGNATOR (:function TRANSLATION-FUNCTION))
 
 DIRECTORY-DESIGNATOR :=
-    NIL | ;; As source: skip this entry. As destination: same as source
-    T | ;; as source matches anything, as destination leaves pathname unmapped.
-    ABSOLUTE-COMPONENT-DESIGNATOR ;; same as in the source-registry language
+    NIL | ; As source: skip this entry. As destination: same as source
+    T | ; as source matches anything, as destination
+        ; maps pathname to itself.
+    ABSOLUTE-COMPONENT-DESIGNATOR ; same as in the source-registry language
 
 TRANSLATION-FUNCTION :=
-    SYMBOL | ;; symbol of a function that takes two arguments,
-             ;; the pathname to be translated and the matching DIRECTORY-DESIGNATOR
-    LAMBDA   ;; A form which evalutates to a function taking two arguments consisting of
-             ;; the pathname to be translated and the matching DIRECTORY-DESIGNATOR
+    SYMBOL | ;; symbol naming a function that takes two arguments:
+             ;; the pathname to be translated and the matching
+             ;; DIRECTORY-DESIGNATOR
+    LAMBDA   ;; A form which evalutates to a function taking two arguments:
+             ;; the pathname to be translated and the matching
+             ;; DIRECTORY-DESIGNATOR
 
 @end verbatim
 
 Relative components better be either relative
 or subdirectories of the path before them, or bust.
 
+@c FIXME: the following assumes that the reader is familiar with the use
+@c of this pattern in logical pathnames, which may not be a reasonable
+@c assumption.  Expand.
 The last component, if not a pathname, is notionally completed by @file{/**/*.*}.
 You can specify more fine-grained patterns
 by using a pathname object as the last component
@@ -3396,12 +3752,14 @@ in your configuration file,
 or you may use @code{enable-asdf-binary-locations-compatibility}
 with @code{:centralize-lisp-binaries nil}
 which will do the same thing internally for you:
-@verbatim
-  #.(let ((wild-subdir (make-pathname :directory '(:relative :wild-inferiors)))
-          (wild-file (make-pathname :name :wild :version :wild :type :wild)))
-     `((:root ,wild-subdir ,wild-file) ;; Or using the implicit wildcard, just :root
-       (:root ,wild-subdir :implementation ,wild-file)))
-@end verbatim
+@lisp
+#.(let ((wild-subdir
+          (make-pathname :directory '(:relative :wild-inferiors)))
+        (wild-file
+          (make-pathname :name :wild :version :wild :type :wild)))
+   `((:root ,wild-subdir ,wild-file)
+     (:root ,wild-subdir :implementation ,wild-file)))
+@end lisp
 Starting with ASDF 2.011.4, you can use the simpler:
 	@code{`(:root (:root :**/ :implementation :*.*.*))}
 
@@ -3420,12 +3778,13 @@ either a symbol which designates a function or a lambda expression.
 The function designated by the second argument must take two arguments,
 the first being the pathname of the source file,
 the second being the wildcard that was matched.
-The result of the function invocation should be the translated pathname.
+When invoked, the function should return the translated pathname.
 
-An @code{:inherit-configuration} statement cause the search to recurse with the path
-specifications from the next configuration.
+An @code{:inherit-configuration} statement causes the search to recurse with the path
+specifications from the next configuration in the bulleted list.
 @xref{Controlling where ASDF saves compiled files,,Configurations}, above.
 
+@vindex @code{asdf::*user-cache*}
 @itemize
 @item
 @code{:enable-user-cache} is the same as @code{(t :user-cache)}.
@@ -3438,9 +3797,10 @@ which by default is the same as using
 @end itemize
 
 
+@node Output Configuration Directories, Output Shell-friendly syntax for configuration, Output Configuration DSL, Controlling where ASDF saves compiled files
 @section Configuration Directories
 
-Configuration directories consist in files each contains
+Configuration directories consist of files, each of which contains
 a list of directives without any enclosing
 @code{(:output-translations ...)} form.
 The files will be sorted by namestring as if by @code{string<} and
@@ -3448,26 +3808,34 @@ the lists of directives of these files with be concatenated in order.
 An implicit @code{:inherit-configuration} will be included
 at the @emph{end} of the list.
 
-This allows for packaging software that has file granularity
-(e.g. Debian's @command{dpkg} or some future version of @command{clbuild})
-to easily include configuration information about software being distributed.
+System-wide or per-user Common Lisp software distributions
+such as Debian packages or some future version of @code{clbuild}
+may then include files such as
+@file{/etc/common-lisp/asdf-output-translations.conf.d/10-foo.conf} or
+@file{~/.config/common-lisp/asdf-output-translations.conf.d/10-foo.conf}
+to easily and modularly register configuration information
+about software being distributed.
 
 The convention is that, for sorting purposes,
 the names of files in such a directory begin with two digits
 that determine the order in which these entries will be read.
-Also, the type of these files is conventionally @code{"conf"}
-and as a limitation of some implementations, the type cannot be @code{nil}.
+Also, the type of these files must be @file{.conf},
+which not only simplifies the implementation by allowing
+for more portable techniques in finding those files,
+but also makes it trivial to disable a file, by renaming it to a different file type.
 
 Directories may be included by specifying a directory pathname
 or namestring in an @code{:include} directive, e.g.:
+
 @verbatim
 	(:include "/foo/bar/")
 @end verbatim
 
+@node Output Shell-friendly syntax for configuration, Semantics of Output Translations, Output Configuration Directories, Controlling where ASDF saves compiled files
 @section Shell-friendly syntax for configuration
 
 When considering environment variable @code{ASDF_OUTPUT_TRANSLATIONS}
-ASDF will skip to next configuration if it's an empty string.
+ASDF will skip to the next configuration if it's an empty string.
 It will @code{READ} the string as an SEXP in the DSL
 if it begins with a paren @code{(}
 and it will be interpreted as a list of directories.
@@ -3482,8 +3850,13 @@ indicates the splicing of inherited configuration.
 If it comes as the second entry in a pair,
 it indicates that the directory specified first is to be left untranslated
 (which has the same effect as if the directory had been repeated).
+Thus @code{"/foo:/bar::/baz:"} means that
+things under directory @file{/foo/}
+are translated to be under @file{/bar/},
+then include the inherited configuration,
+then specify that things under directory @file{/baz/} are not translated.
 
-
+@node Semantics of Output Translations, Output Caching Results, Output Shell-friendly syntax for configuration, Controlling where ASDF saves compiled files
 @section Semantics of Output Translations
 
 From the specified configuration,
@@ -3513,6 +3886,7 @@ If no match is found, return the source pathname.
 may ensure that there will always be a match,
 with same fall-through semantics).
 
+@node Output Caching Results, Output location API, Semantics of Output Translations, Controlling where ASDF saves compiled files
 @section Caching Results
 
 The implementation is allowed to either eagerly compute the information
@@ -3521,11 +3895,12 @@ every time, or to cache any part of it as it goes.
 To explicitly flush any information cached by the system, use the API below.
 
 
+@node Output location API, Credits for output translations, Output Caching Results, Controlling where ASDF saves compiled files
 @section Output location API
 
 The specified functions are exported from package ASDF.
 
-@defun initialize-output-translations @Aoptional PARAMETER
+@defun initialize-output-translations @Aoptional{} PARAMETER
    will read the configuration and initialize all internal variables.
    You may extend or override configuration
    from the environment and configuration files
@@ -3556,7 +3931,7 @@ The specified functions are exported from package ASDF.
    where to look for systems not yet defined.
 @end defun
 
-@defun ensure-output-translations @Aoptional PARAMETER
+@defun ensure-output-translations @Aoptional{} PARAMETER
    checks whether output translations have been initialized.
    If not, initialize them with the given @var{PARAMETER}.
    This function will be called before any attempt to operate on a system.
@@ -3577,10 +3952,11 @@ or maybe @code{clear-output-translations} (or @code{clear-configuration}),
 which will cause the initialization to happen next time around.
 
 
+@node Credits for output translations,  , Output location API, Controlling where ASDF saves compiled files
 @section Credits for output translations
 
-Thanks a lot to Bjorn Lindberg and Gary King for @code{ASDF-Binary-Locations},
-and to Peter van Eynde for @code{Common Lisp Controller}.
+Thanks a lot to Peter van Eynde for @code{Common Lisp Controller}
+and to Bjorn Lindberg and Gary King for @code{ASDF-Binary-Locations}.
 
 All bad design ideas and implementation bugs are to mine, not theirs.
 But so are good design ideas and elegant implementation tricks.
@@ -3647,12 +4023,24 @@ The valid values for these variables are
 ASDF includes several additional features that are generally
 useful for system definition and development.
 
+@menu
+* Controlling file compilation::
+* Controlling source file character encoding::
+* Some Utility Functions::
+@end menu
+
+@node Controlling file compilation, Controlling source file character encoding, Miscellaneous additional functionality, Miscellaneous additional functionality
 @section Controlling file compilation
 @cindex :around-compile
 @cindex around-compile keyword
 @cindex compile-check keyword
 @cindex :compile-check
 @findex compile-file*
+
+@c FIXME: Needs rewrite.  Start with motivation -- why are we doing
+@c this?  (there is some, but it's buried).  Also, all of a sudden in
+@c the middle of the discussion we start talking about a "hook," which
+@c is confusing.
 
 When declaring a component (system, module, file),
 you can specify a keyword argument @code{:around-compile function}.
@@ -3661,7 +4049,7 @@ the value will be inherited from the parent component if any,
 or with a default of @code{nil}
 if no value is specified in any transitive parent.
 
-The argument must be a either @code{nil}, a fbound symbol,
+The argument must be either @code{nil}, an fbound symbol,
 a lambda-expression (e.g. @code{(lambda (thunk) ...(funcall thunk ...) ...)})
 a function object (e.g. using @code{#.#'} but that's discouraged
 because it prevents the introspection done by e.g. asdf-dependency-grovel),
@@ -3719,6 +4107,7 @@ though it may at times require some creativity
 (see e.g. the @code{package-renaming} system).
 
 
+@node Controlling source file character encoding, Some Utility Functions, Controlling file compilation, Miscellaneous additional functionality
 @section Controlling source file character encoding
 
 Starting with ASDF 2.21, components accept a @code{:encoding} option
@@ -3727,35 +4116,57 @@ to read and evaluate their source code.
 When left unspecified, the encoding is inherited
 from the parent module or system;
 if no encoding is specified at any point,
-the default @code{:autodetect} is assumed.
-By default, only @code{:default}, @code{:utf-8}
-and @code{:autodetect} are accepted.
-@code{:autodetect}, the default, calls
-@code{*encoding-detection-hook*} which by default always returns
-@code{*default-encoding*} which itself defaults to @code{:default}.
+or if @code{nil} is explicitly specified,
+an extensible protocol described below is followed,
+that ultimately defaults to @code{:utf-8} since ASDF 3.
+
+The protocol to determine the encoding is
+to call the function @code{detect-encoding},
+which itself, if provided a valid file,
+calls the function specified by @var{*encoding-detection-hook*},
+or else defaults to the @var{*default-encoding*}.
+The @var{*encoding-detection-hook*} is by default bound
+to function @code{always-default-encoding},
+that always returns the contents of @var{*default-encoding*}.
+@var{*default-encoding*} is bound to @code{:utf-8} by default
+(before ASDF 3, the default was @code{:default}).
+
+Whichever encoding is returned must be a portable keyword,
+that will be translated to an implementation-specific external-format designator
+by function @code{encoding-external-format},
+which itself simply calls the function specified @var{*encoding-external-format-hook*};
+that function by default is @code{default-encoding-external-format},
+that only recognizes @code{:utf-8} and @code{:default},
+and translates the former to the implementation-dependent @var{*utf-8-external-format*},
+and the latter to itself (that itself is portable but has an implementation-dependent meaning).
 
 In other words, there now are plenty of extension hooks, but
-by default ASDF follows the backwards compatible behavior
-of using whichever @code{:default} encoding your implementation uses,
-which itself may or may not vary based on environment variables
-and other locale settings.
-In practice this means that only source code that only uses ASCII
-is guaranteed to be read the same on all implementations
-independently from any user setting.
+by default ASDF enforces the previous @emph{de facto} standard behavior
+of using @code{:utf-8}, independently from
+whatever configuration the user may be using.
+Thus, system authors can now rely on @code{:utf-8}
+being used while compiling their files,
+even if the user is currently using @code{:koi8-r} or @code{:euc-jp}
+as their interactive encoding.
+(Before ASDF 3, there was no such guarantee, @code{:default} was used,
+and only plain ASCII was safe to include in source code.)
 
-Additionally, for backward-compatibility with older versions of ASDF
-and/or with implementations that do not support unicode and its many encodings,
-you may want to use
-the reader conditionals @code{#+asdf-unicode #+asdf-unicode}
-to protect any @code{:encoding @emph{encoding}} statement
-as @code{:asdf-unicode} will be present in @code{*features*}
-only if you're using a recent ASDF
-on an implementation that supports unicode.
+Some legacy implementations only support 8-bit characters,
+and some implementations provide 8-bit only variants.
+On these implementations, the @var{*utf-8-external-format*}
+gracefully falls back to @code{:default},
+and Unicode characters will be read as multi-character mojibake.
+To detect such situations, UIOP will push the @code{:asdf-unicode} feature
+on implementations that support Unicode, and you can use reader-conditionalization
+to protect any @code{:encoding @emph{encoding}} statement, as in
+@code{#+asdf-unicode :encoding #+asdf-unicode :utf-8}.
 We recommend that you avoid using unprotected @code{:encoding} specifications
-until after ASDF 2.21 or later becomes widespread, hopefully by the end of 2012.
+until after ASDF 2.21 or later becomes widespread
+(in April 2014, only LispWorks lags with ASDF 2.019,
+and is scheduled to be updated later this year).
 
 While it offers plenty of hooks for extension,
-and one such extension is being developed (see below),
+and one such extension is available (see @code{asdf-encodings} below),
 ASDF itself only recognizes one encoding beside @code{:default},
 and that is @code{:utf-8}, which is the @emph{de facto} standard,
 already used by the vast majority of libraries that use more than ASCII.
@@ -3776,7 +4187,7 @@ See for instance @code{lambda-reader}.
 
 We invite you to embrace UTF-8
 as the encoding for non-ASCII characters starting today,
-even without any explicit specification in your @code{.asd} files.
+even without any explicit specification in your @file{.asd} files.
 Indeed, on some implementations and configurations,
 UTF-8 is already the @code{:default},
 and loading your code may cause errors if it is encoded in anything but UTF-8.
@@ -3785,10 +4196,7 @@ non-UTF-8 is guaranteed to break for some users,
 whereas UTF-8 is pretty much guaranteed not to break anywhere
 (provided you do @emph{not} use a BOM),
 although it might be read incorrectly on some implementations.
-In the future, we intend to make @code{:utf-8}
-the default value of @code{*default-encoding*},
-to be enforced everywhere, so at least the code is guaranteed
-to be read correctly everywhere it can be.
+@code{:utf-8} has been the default value of @code{*default-encoding*} since ASDF 3.
 
 If you need non-standard character encodings for your source code,
 use the extension system @code{asdf-encodings}, by specifying
@@ -3796,70 +4204,49 @@ use the extension system @code{asdf-encodings}, by specifying
 This extension system will register support for more encodings using the
 @code{*encoding-external-format-hook*} facility,
 so you can explicitly specify @code{:encoding :latin1}
-in your @code{.asd} file.
+in your @file{.asd} file.
 Using the @code{*encoding-detection-hook*} it will also
 eventually implement some autodetection of a file's encoding
 from an emacs-style @code{-*- mode: lisp ; coding: latin1 -*-} declaration,
 or otherwise based on an analysis of octet patterns in the file.
-At this point, asdf-encoding only supports the encodings
+At this point, @code{asdf-encoding} only supports the encodings
 that are supported as part of your implementation.
 Since the list varies depending on implementations,
-we once again recommend you use @code{:utf-8} everywhere,
-which is the most portable (next is @code{:latin1}).
+we still recommend you use @code{:utf-8} everywhere,
+which is the most portable (next to it is @code{:latin1}).
 
-If you're not using a version of Quicklisp that has it,
-you may get the source for @code{asdf-encodings} using git:
+Recent versions of Quicklisp include @code{asdf-encodings};
+if you're not using it, you may get this extension using git:
 @kbd{git clone git://common-lisp.net/projects/asdf/asdf-encodings.git}
 or
 @kbd{git clone ssh://common-lisp.net/project/asdf/git/asdf-encodings.git}.
 You can also browse the repository on
 @url{http://common-lisp.net/gitweb?p=projects/asdf/asdf-encodings.git}.
 
-In the future, we intend to change the default @code{*default-encoding*}
-to @code{:utf-8}, which is already the de facto standard
-for most libraries that use non-ASCII characters:
-utf-8 works everywhere and was backhandedly enforced by
-a lot of people using SBCL and utf-8 and sending reports to authors
-so they make their packages compatible.
-A survey showed only about a handful few libraries
-are incompatible with non-UTF-8, and then, only in comments,
-and we believe that authors will adopt UTF-8 when prompted.
-See the April 2012 discussion on the asdf-devel mailing-list.
-For backwards compatibility with users who insist on a non-UTF-8 encoding,
-but cannot immediately transition to using @code{asdf-encodings}
-(maybe because it isn't ready), it will still be possible to use
-the @code{:encoding :default} option in your @code{defsystem} form
-to restore the behavior of ASDF 2.20 and earlier.
-This shouldn't be required in libraries,
-because user pressure as mentioned above will already have pushed
-library authors towards using UTF-8;
-but authors of end-user programs might care.
+When you use @code{asdf-encodings},
+any @file{.asd} file loaded
+will use the autodetection algorithm to determine its encoding.
+If you depend on this detection happening,
+you should explicitly load @code{asdf-encodings} early in your build.
+Note that @code{:defsystem-depends-on} cannot be used here: by the time
+the @code{:defsystem-depends-on} is loaded, the enclosing
+@code{defsystem} form has already been read.
 
-When you use @code{asdf-encodings}, any further loaded @code{.asd} file
-will use the autodetection algorithm to determine its encoding;
-yet if you depend on this detection happening,
-you may want to explicitly load @code{asdf-encodings} early in your build,
-for by the time you can use @code{:defsystem-depends-on},
-it is already too late to load it.
 In practice, this means that the @code{*default-encoding*}
-is usually used for @code{.asd} files.
-Currently, this defaults to @code{:default} for backwards compatibility,
-and that means that you shouldn't rely on non-ASCII characters in a .asd file.
-Since component (path)names are the only real data in these files,
-and non-ASCII characters are not very portable for file names,
-this isn't too much of an issue.
-We still encourage you to use either plain ASCII or UTF-8
-in @code{.asd} files,
-as we intend to make @code{:utf-8} the default encoding in the future.
+is usually used for @file{.asd} files.
+Currently, this defaults to @code{:utf-8}, and
+you should be safe using Unicode characters in those files.
 This might matter, for instance, in meta-data about author's names.
-
+Otherwise, the main data in these files is component (path)names,
+and we don't recommend using non-ASCII characters for these,
+for the result probably isn't very portable.
 
 @section Miscellaneous Functions
 
 These functions are exported by ASDF for your convenience.
 
 @anchor{system-relative-pathname}
-@defun system-relative-pathname system name @Akey type
+@defun system-relative-pathname system name @Akey{} type
 
 It's often handy to locate a file relative to some system.
 The @code{system-relative-pathname} function meets this need.
@@ -3893,36 +4280,34 @@ The @var{system-designator} may be a string, symbol, or ASDF system object.
 @defun clear-system system-designator
 
 It is sometimes useful to force recompilation of a previously loaded system.
-In these cases, it may be useful to @code{(asdf:clear-system :foo)}
-to remove the system from the table of currently loaded systems;
+For these cases, @code{(asdf:clear-system :foo)}
+will remove the system from the table of currently loaded systems:
 the next time the system @code{foo} or one that depends on it is re-loaded,
-@code{foo} will then be loaded again.
-Alternatively, you could touch @code{foo.asd} or
-remove the corresponding fasls from the output file cache.
-(It was once conceived that one should provide
-a list of systems the recompilation of which to force
-as the @code{:force} keyword argument to @code{load-system};
-but this has never worked, and though the feature was fixed in ASDF 2.000,
-it remains @code{cerror}'ed out as nobody ever used it.)
+@code{foo} will be loaded again.@footnote{Alternatively, you could touch @code{foo.asd} or
+remove the corresponding fasls from the output file cache.}
 
-Note that this does not and cannot by itself undo the previous loading
-of the system. Common Lisp has no provision for such an operation,
-and its reliance on irreversible side-effects to global datastructures
+Note that this does not and cannot undo
+the previous loading of the system.
+Common Lisp has no provision for such an operation,
+and its reliance on irreversible side-effects to global data structures
 makes such a thing impossible in the general case.
 If the software being re-loaded is not conceived with hot upgrade in mind,
-this re-loading may cause many errors, warnings or subtle silent problems,
+re-loading may cause many errors, warnings or subtle silent problems,
 as packages, generic function signatures, structures, types, macros, constants, etc.
 are being redefined incompatibly.
 It is up to the user to make sure that reloading is possible and has the desired effect.
 In some cases, extreme measures such as recursively deleting packages,
 unregistering symbols, defining methods on @code{update-instance-for-redefined-class}
 and much more are necessary for reloading to happen smoothly.
-ASDF itself goes through notable pains to make such a hot upgrade possible
-with respect to its own code, and what it does is ridiculously complex;
-look at the beginning of @file{asdf.lisp} to see what it does.
+ASDF itself goes to extensive effort to make a hot upgrade possible
+with respect to its own code.
+If you want, you can reuse some of its utilities such as
+@code{uiop:define-package} and @code{uiop:with-upgradability},
+and get inspiration (or disinspiration)
+from what it does in @file{header.lisp} and @file{upgrade.lisp}.
 @end defun
 
-@defun register-preloaded-system name @Arest keys
+@defun register-preloaded-system name @Arest{} keys
 A system with name @var{name},
 created by @code{make-instance} with extra keys @var{keys}
 (e.g. @code{:version}),
@@ -3933,12 +4318,12 @@ it is considered as already provided,
 and ASDF will not raise a @code{missing-component} error.
 
 This function is particularly useful if you distribute your code
-as fasls with either @code{fasl-op} or @code{monolithic-fasl-op},
+as fasls with either @code{compile-bundle-op} or @code{monolithic-compile-bundle-op},
 and want to register systems so that dependencies will work uniformly
 whether you're using your software from source or from fasl.
 @end defun
 
-@defun run-shell-command control-string @Arest args
+@defun run-shell-command control-string @Arest{} args
 
 This function is obsolete and present only for the sake of backwards-compatibility:
 ``If it's not backwards, it's not compatible''. We @emph{strongly} discourage its use.
@@ -3959,6 +4344,7 @@ while others (like SBCL) will make an attempt at invoking a POSIX shell
 (and fail if it is not present).
 @end defun
 
+@node Some Utility Functions,  , Controlling source file character encoding, Miscellaneous additional functionality
 @section Some Utility Functions
 
 The below functions are not exported by ASDF itself, but by UIOP, available since ASDF 3.
@@ -3968,12 +4354,12 @@ UIOP provides many, many more utility functions, and we recommend
 you read its README and sources for more information.
 
 
-@defun parse-unix-namestring name @Akey type defaults dot-dot ensure-directory @AallowOtherKeys
+@defun parse-unix-namestring name @Akey{} type defaults dot-dot ensure-directory @AallowOtherKeys
 Coerce NAME into a PATHNAME using standard Unix syntax.
 
 Unix syntax is used whether or not the underlying system is Unix;
-on such non-Unix systems it is only usable but for relative pathnames;
-but especially to manipulate relative pathnames portably, it is of crucial
+on non-Unix systems it is only usable for relative pathnames.
+In order to manipulate relative pathnames portably, it is crucial
 to possess a portable pathname syntax independent of the underlying OS.
 This is what @code{parse-unix-namestring} provides, and why we use it in ASDF.
 
@@ -3996,8 +4382,10 @@ Directory components with an empty name the name @code{.} are removed.
 Any directory named @code{..} is read as @var{dot-dot},
 which must be one of @code{:back} or @code{:up} and defaults to @code{:back}.
 
+@vindex *nil-pathname*
 @code{host}, @code{device} and @code{version} components are taken from @var{defaults},
-which itself defaults to @code{*nil-pathname*}, also used if @var{defaults} is @code{nil}.
+which itself defaults to @code{*nil-pathname*}.
+@code{*nil-pathname*} is also used if @var{defaults} is @code{nil}.
 No host or device can be specified in the string itself,
 which makes it unsuitable for absolute pathnames outside Unix.
 
@@ -4009,10 +4397,10 @@ Arbitrary keys are accepted, and the parse result is passed to @code{ensure-path
 with those keys, removing @var{type}, @var{defaults} and @var{dot-dot}.
 When you're manipulating pathnames that are supposed to make sense portably
 even though the OS may not be Unixish, we recommend you use @code{:want-relative t}
-to throw an error if the pathname is absolute
+so that @code{parse-unix-namestring} will throw an error if the pathname is absolute.
 @end defun
 
-@defun merge-pathnames* specified @Aoptional defaults
+@defun merge-pathnames* specified @Aoptional{} defaults
 
 This function is a replacement for @code{merge-pathnames} that uses the host and device
 from the @var{defaults} rather than the @var{specified} pathname when the latter
@@ -4022,7 +4410,7 @@ of the absolute pathnames they are relative to.
 
 @end defun
 
-@defun subpathname pathname subpath @Akey type
+@defun subpathname pathname subpath @Akey{} type
 
 This function takes a @var{pathname} and a @var{subpath} and a @var{type}.
 If @var{subpath} is already a @code{pathname} object (not namestring),
@@ -4036,15 +4424,15 @@ We strongly encourage the use of this function
 for portably resolving relative pathnames in your code base.
 @end defun
 
-@defun subpathname* pathname subpath @Akey type
+@defun subpathname* pathname subpath @Akey{} type
 
 This function returns @code{nil} if the base @var{pathname} is @code{nil},
 otherwise acts like @code{subpathname}.
 @end defun
 
-@defun run-program command @Akey ignore-error-status force-shell input output error-output
-	if-input-does-not-exist if-output-exists if-error-output-exists
-	element-type external-format @AallowOtherKeys
+@defun run-program command @Akey{} ignore-error-status force-shell input output @
+error-output if-input-does-not-exist if-output-exists if-error-output-exists @
+element-type external-format @AallowOtherKeys
 
 @code{run-program} takes a @var{command} argument that is either
 a list of a program name or path and its arguments,
@@ -4123,52 +4511,54 @@ See the source code for more documentation.
 
 @end defun
 
-@defun slurp-input-stream processor input-stream @Akey
+@defun slurp-input-stream processor input-stream @Akey{}
 
-It's a generic function of two arguments, a target object and an input stream,
+@code{slurp-input-stream} is a generic function of two arguments, a target object and an input stream,
 and accepting keyword arguments.
-Predefined methods based on the target object are as follow:
+Predefined methods based on the target object are as follows:
 
+@itemize
+@item
 If the object is a function, the function is called with the stream as argument.
 
-If the object is a cons, its first element is applied to its rest appended by
+@item If the object is a cons, its first element is applied to its rest appended by
 a list of the input stream.
 
-If the object is an output stream, the contents of the input stream are copied to it.
+@item If the object is an output stream, the contents of the input stream are copied to it.
 If the @var{linewise} keyword argument is provided, copying happens line by line,
 and an optional @var{prefix} is printed before each line.
 Otherwise, copying happen based on a buffer of size @var{buffer-size},
 using the specified @var{element-type}.
 
-If the object is @code{'string} or @code{:string}, the content is captured into a string.
+@item If the object is @code{'string} or @code{:string}, the content is captured into a string.
 Accepted keywords include the @var{element-type} and a flag @var{stripped},
 which when true causes any single line ending to be removed as per @code{uiop:stripln}.
 
-If the object is @code{:lines}, the content is captured as a list of strings,
+@item If the object is @code{:lines}, the content is captured as a list of strings,
 one per line, without line ending. If the @var{count} keyword argument is provided,
 it is a maximum count of lines to be read.
 
-If the object is @code{:line}, the content is capture as with @code{:lines} above,
+@item If the object is @code{:line}, the content is captured as with @code{:lines} above,
 and then its sub-object is extracted with the @var{at} argument,
 which defaults to @code{0}, extracting the first line.
 A number will extract the corresponding line.
 See the documentation for @code{uiop:access-at}.
 
-If the object is @code{:forms}, the content is captured as a list of S-expressions,
+@item If the object is @code{:forms}, the content is captured as a list of S-expressions,
 as read by the Lisp reader.
 If the @var{count} argument is provided,
 it is a maximum count of lines to be read.
 We recommend you control the syntax with such macro as
 @code{uiop:with-safe-io-syntax}.
 
-If the object is @code{:form}, the content is capture as with @code{:forms} above,
+@item If the object is @code{:form}, the content is captured as with @code{:forms} above,
 and then its sub-object is extracted with the @var{at} argument,
 which defaults to @code{0}, extracting the first form.
 A number will extract the corresponding form.
 See the documentation for @code{uiop:access-at}.
 We recommend you control the syntax with such macro as
 @code{uiop:with-safe-io-syntax}.
-
+@end itemize
 @end defun
 
 
@@ -4221,10 +4611,33 @@ use the @url{http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-devel,asdf-dev
 
 
 @node What has changed between ASDF 1 and ASDF 2?, Issues with installing the proper version of ASDF, Where do I report a bug?, FAQ
-@section ``What has changed between ASDF 1 and ASDF 2?''
+@section ``What has changed between ASDF 1, ASDF 2 and ASDF 3?''
+
+We released ASDF 2.000 on May 31st 2010,
+and ASDF 3.0.0 on May 15th 2013.
+Releases of ASDF 2 and later have since then been included
+in all actively maintained CL implementations that used to bundle ASDF 1,
+plus some implementations that previously did not.
+ASDF has been made to work with all actively maintained CL
+implementations and even a few implementations that are @emph{not}
+actively maintained.
+@xref{FAQ,,``What has changed between ASDF 1 and ASDF 2?''}.
+Furthermore, it is possible to upgrade from ASDF 1 to ASDF 2 or ASDF 3 on the fly
+(though we recommend instead upgrading your implementation or its ASDF module).
+For this reason, we have stopped supporting ASDF 1 and ASDF 2.
+If you are using ASDF 1 or ASDF 2 and are experiencing any kind of issues or limitations,
+we recommend you upgrade to ASDF 3
+--- and we explain how to do that. @xref{Loading ASDF}.
+(In the context of compatibility requirements,
+ASDF 2.27, released on Feb 1st 2013, and further 2.x releases up to 2.33,
+count as pre-releases of ASDF 3, and define the @code{:asdf3} feature;
+still, please use the latest release).
+Release ASDF 3.1.2 and later also define the @code{:asdf3.1} feature.
+
 
 @menu
 * What are ASDF 1 2 3?::
+* How do I detect the ASDF version?::
 * ASDF can portably name files in subdirectories::
 * Output translations::
 * Source Registry Configuration::
@@ -4236,8 +4649,8 @@ use the @url{http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-devel,asdf-dev
 * Pitfalls of the transition to ASDF 2::
 @end menu
 
-@node What are ASDF 1 2 3?, ASDF can portably name files in subdirectories, What has changed between ASDF 1 and ASDF 2?, What has changed between ASDF 1 and ASDF 2?
-@subsection What are ASDF 1, ASDF 2 and ASDF 3?
+@node What are ASDF 1 2 3?, How do I detect the ASDF version?, What has changed between ASDF 1 and ASDF 2?, What has changed between ASDF 1 and ASDF 2?
+@subsection What are ASDF 1, ASDF 2, and ASDF 3?
 
 ASDF 1 refers to any release earlier than 1.369 or so (from August 2001 to October 2009),
 and to any development revision earlier than 2.000 (May 2010).
@@ -4250,14 +4663,19 @@ and any development revision newer than ASDF 1 and older than 2.27 (Feb 1 2013).
 ASDF 3 refers to releases from 2.27 (Feb 1 2013) to 2.33 and 3.0.0 onward (May 15 2013).
 2.27 to 2.33 count as pre-releases to ASDF 3.
 
+@node How do I detect the ASDF version?, ASDF can portably name files in subdirectories, What are ASDF 1 2 3?, What has changed between ASDF 1 and ASDF 2?
+@subsection How do I detect the ASDF version?
+@findex asdf-version
+@cindex *features*
+
 All releases of ASDF
 push @code{:asdf} onto @code{*features*}.
 Releases starting with ASDF 2
- push @code{:asdf2} onto @code{*features*}.
+push @code{:asdf2} onto @code{*features*}.
 Releases starting with ASDF 3 (including 2.27 and later pre-releases)
 push @code{:asdf3} onto @code{*features*}.
-Furthermore, releases starting with ASDF 3.1 (March 2014),
-though they count as ASDF 3, includes enough progress that they
+Furthermore, releases starting with ASDF 3.1.2 (May 2014),
+though they count as ASDF 3, include enough progress that they
 push @code{:asdf3.1} onto @code{*features*}.
 You may depend on the presence or absence of these features
 to write code that takes advantage of recent ASDF functionality
@@ -4272,11 +4690,11 @@ If you are experiencing problems or limitations of any sort with ASDF 1 or ASDF 
 we recommend that you should upgrade to the latest release, be it ASDF 3 or other.
 
 
-@node ASDF can portably name files in subdirectories, Output translations, What are ASDF 1 2 3?, What has changed between ASDF 1 and ASDF 2?
+@node ASDF can portably name files in subdirectories, Output translations, How do I detect the ASDF version?, What has changed between ASDF 1 and ASDF 2?
 @subsection ASDF can portably name files in subdirectories
 
 Common Lisp namestrings are not portable,
-except maybe for logical pathnamestrings,
+except maybe for logical pathname namestrings,
 that themselves have various limitations and require a lot of setup
 that is itself ultimately non-portable.
 
@@ -4397,8 +4815,8 @@ the @code{:force (system1 .. systemN)} feature have been fixed.
 Performance has been notably improved for large systems
 (say with thousands of components) by using
 hash-tables instead of linear search,
-and linear-time list accumulation
-instead of quadratic-time recursive appends.
+and linear-time list accumulation instead of cubic time recursive append,
+for an overall @emph{O(n)} complexity vs @emph{O(n^4)}.
 
 @item
 Many features used to not be portable,
@@ -4409,7 +4827,7 @@ Windows support was notably quirky because of such non-portability.
 The internal test suite used to massively fail on many implementations.
 While still incomplete, it now fully passes
 on all implementations supported by the test suite,
-except for GCL (due to GCL bugs).
+though some tests are commented out on a few implementations.
 
 @item
 Support was lacking for some implementations.
@@ -4631,15 +5049,17 @@ ABCL, CCL, CLISP, CMUCL, ECL, SBCL and SCL do it.
 Please send us appropriate code to this end.
 
 @item
-You may, like SBCL, have ASDF be implicitly used to require systems
-that are bundled with your Lisp distribution.
-If you do have a few magic systems that come with your implementation
-in a precompiled way such that one should only use the binary version
-that goes with your distribution, like SBCL does,
-then you should add them in the beginning of @code{wrapping-source-registry}.
+You may, like SBCL since 1.1.13 or MKCL since 1.1.9,
+have ASDF create bundle FASLs
+that are provided as modules by your Lisp distribution.
+You may also, but we don't recommend that anymore,
+have ASDF like SBCL up until 1.1.12 be implicitly used
+when requiring modules that are provided by your Lisp distribution;
+if you do, you should add them in the beginning of both
+@code{wrapping-source-registry} and @code{wrapping-output-translations}.
 
 @item
-If you have magic systems as above, like SBCL does,
+If you have magic systems as above, like SBCL used to do,
 then we explicitly ask you to @emph{NOT} distribute
 @file{asdf.asd} as part of those magic systems.
 You should still include the file @file{asdf.lisp} in your source distribution
@@ -4663,6 +5083,8 @@ then you may add them to the @code{wrapping-source-registry},
 and you are welcome to include @file{asdf.asd} amongst them.
 Non-magic systems should be at the back of the @code{wrapping-source-registry}
 while magic systems are at the front.
+If they are precompiled,
+they should also be in the @code{wrapping-output-translations}.
 
 @item
 Since ASDF 3, the library UIOP comes transcluded in ASDF.
@@ -4742,6 +5164,10 @@ use (after loading ASDF but before using it):
 (asdf:disable-output-translations)
 @end example
 
+Note that this does @emph{NOT} belong in a @file{.asd} file.
+Please do not tamper with ASDF configuration from a @file{.asd} file,
+and only do this from your personal configuration or build scripts.
+
 @node Issues with using and extending ASDF to define systems, ASDF development FAQs, Issues with configuring ASDF, FAQ
 @section Issues with using and extending ASDF to define systems
 
@@ -4751,6 +5177,8 @@ use (after loading ASDF but before using it):
 * How can I maintain non-Lisp (e.g. C) source files?::
 * I want to put my module's files at the top level.  How do I do this?::
 * How do I create a system definition where all the source files have a .cl extension?::
+* How do I mark a source file to be loaded only and not compiled?::
+* How do I work with readtables?::
 @end menu
 
 @node How can I cater for unit-testing in my system?, How can I cater for documentation generation in my system?, Issues with using and extending ASDF to define systems, Issues with using and extending ASDF to define systems
@@ -4764,48 +5192,50 @@ a topic of considerable discussion on the
 @url{http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-devel,asdf-devel mailing list},
 and on the
 @url{https://launchpad.net/asdf,launchpad bug-tracker}.
+We provide some guidelines in the discussion of @code{test-op}.
 
-Here are some guidelines:
+@c cut the following because it's discussed in the discussion of test-op.
+@c Here are some guidelines:
 
-@itemize
-@item
-For a given system, @var{foo}, you will want to define a corresponding
-test system, such as @var{foo-test}.  The reason that you will want this
-separate system is that ASDF does not out of the box supply components
-that are conditionally loaded.  So if you want to have source files
-(with the test definitions) that will not be loaded except when testing,
-they should be put elsewhere.
+@c @itemize
+@c @item
+@c For a given system, @var{foo}, you will want to define a corresponding
+@c test system, such as @var{foo-test}.  The reason that you will want this
+@c separate system is that ASDF does not out of the box supply components
+@c that are conditionally loaded.  So if you want to have source files
+@c (with the test definitions) that will not be loaded except when testing,
+@c they should be put elsewhere.
 
-@item
-The @var{foo-test} system can be defined in an asd file of its own or
-together with @var{foo}.  An aesthetic preference against cluttering up
-the filesystem with extra asd files should be balanced against the
-question of whether one might want to directly load @var{foo-test}.
-Typically one would not want to do this except in early stages of
-debugging.
+@c @item
+@c The @var{foo-test} system can be defined in an asd file of its own or
+@c together with @var{foo}.  An aesthetic preference against cluttering up
+@c the filesystem with extra asd files should be balanced against the
+@c question of whether one might want to directly load @var{foo-test}.
+@c Typically one would not want to do this except in early stages of
+@c debugging.
 
-@item
-Record that testing is implemented by @var{foo-test}.  For example:
-@example
-(defsystem @var{foo}
-   :in-order-to ((test-op (test-op @var{foo-test})))
-   ....)
+@c @item
+@c Record that testing is implemented by @var{foo-test}.  For example:
+@c @example
+@c (defsystem @var{foo}
+@c    :in-order-to ((test-op (test-op @var{foo-test})))
+@c    ....)
 
-(defsystem @var{foo-test}
-   :depends-on (@var{foo} @var{my-test-library} ...)
-   ....)
-@end example
-@end itemize
+@c (defsystem @var{foo-test}
+@c    :depends-on (@var{foo} @var{my-test-library} ...)
+@c    ....)
+@c @end example
+@c @end itemize
 
-This procedure will allow you to support users who do not wish to
-install your test framework.
+@c This procedure will allow you to support users who do not wish to
+@c install your test framework.
 
-One oddity of ASDF is that @code{operate} (@pxref{Operations,operate})
-does not return a value.  So in current versions of ASDF there is no
-reliable programmatic means of determining whether or not a set of tests
-has passed, or which tests have failed.  The user must simply read the
-console output.  This limitation has been the subject of much
-discussion.
+@c One oddity of ASDF is that @code{operate} (@pxref{Operations,operate})
+@c does not return a value.  So in current versions of ASDF there is no
+@c reliable programmatic means of determining whether or not a set of tests
+@c has passed, or which tests have failed.  The user must simply read the
+@c console output.  This limitation has been the subject of much
+@c discussion.
 
 @node How can I cater for documentation generation in my system?, How can I maintain non-Lisp (e.g. C) source files?, How can I cater for unit-testing in my system?, Issues with using and extending ASDF to define systems
 @subsection ``How can I cater for documentation generation in my system?''
@@ -4885,7 +5315,7 @@ either as the name component of a pathname
 or as a name component plus optional dot-separated type component
 (if the component class doesn't specifies a pathname type).
 
-@node How do I create a system definition where all the source files have a .cl extension?,  , I want to put my module's files at the top level.  How do I do this?, Issues with using and extending ASDF to define systems
+@node How do I create a system definition where all the source files have a .cl extension?, How do I mark a source file to be loaded only and not compiled?, I want to put my module's files at the top level.  How do I do this?, Issues with using and extending ASDF to define systems
 @subsection How do I create a system definition where all the source files have a .cl extension?
 
 Starting with ASDF 2.014.14, you may just pass
@@ -4954,6 +5384,93 @@ you also define the following method:
   "lis")
 @end lisp
 
+@node How do I mark a source file to be loaded only and not compiled?, How do I work with readtables?, How do I create a system definition where all the source files have a .cl extension?, Issues with using and extending ASDF to define systems
+@subsection How do I mark a source file to be loaded only and not compiled?
+
+There is no provision in ASDF for ensuring that
+some components are always loaded as source, while others are always
+compiled.
+There is @code{load-source-op} (@pxref{Predefined operations of
+ASDF,load-source-op}), but that is an operation to be applied to a
+system as a whole, not to one or another specific source files.
+While this idea often comes up in discussions,
+it doesn't play well with either the linking model of ECL
+or with various bundle operations.
+In addition, the dependency model of ASDF would have to be modified incompatibly
+to allow for such a trick.
+@c If your code doesn't compile cleanly, fix it.
+@c If compilation makes it slow, use @code{declaim} or @code{eval-when}
+@c to adjust your compiler settings,
+@c or eschew compilation by @code{eval}uating a quoted source form at load-time.
+
+@node How do I work with readtables?,  , How do I mark a source file to be loaded only and not compiled?, Issues with using and extending ASDF to define systems
+@subsection How do I work with readtables?
+
+@cindex readtables
+
+It is possible to configure the lisp syntax by modifying the currently-active readtable.
+However, this same readtable is shared globally by all software being compiled by ASDF,
+especially since @code{load} and @code{compile-file} both bind @var{*readtable*},
+so that its value is the same across the build at the start of every file
+(unless overridden by some @code{perform :around} method),
+even if a file locally binds it to a different readtable during the build.
+
+Therefore, the following hygiene restrictions apply. If you don't abide by these restrictions,
+there will be situations where your output files will be corrupted during an incremental build.
+We are not trying to prescribe new restrictions for the sake of good style:
+these restrictions have always applied implicitly, and
+we are simply describing what they have always been.
+
+@itemize
+@item It is forbidden to modifying any standard character or standard macro dispatch defined in the CLHS.
+@item No two dependencies may assign different meanings to the same non-standard character.
+@item Using any non-standard character while expecting the implementation to treat some way
+    counts as such an assignment of meaning.
+@item libraries need to document these assignments of meaning to non-standard characters.
+@item free software libraries will register these changes on:
+        @url{http://www.cliki.net/Macro%20Characters}
+@end itemize
+
+If you want to use readtable modifications that cannot abide by those restrictions,
+you @emph{must} create a different readtable object and set @var{*readtable*}
+to temporarily bind it to your new readtable (which will be undone after processing the file).
+
+For that, we recommend you use system @code{named-readtables}
+to define or combine such readtables using @code{named-readtables:defreadtable}
+and use them using @code{named-readtables:in-readtable}.
+Equivalently, you can use system @code{cl-syntax},
+that itself uses @code{named-readtables},
+but may someday do more with, e.g. @var{*print-pprint-dispatch*}.
+
+For even more advanced syntax modification beyond what a readtable can express,
+you may consider either:
+@itemize
+@item a @code{perform} method that compiles a constant file that contains a single form
+  @code{#.*code-read-with-alternate-reader*} in an environment where this special variable
+  was bound to the code read by your alternate reader, or
+@item using the system @code{reader-interception}.
+@end itemize
+
+Beware that @c unless and until the @code{syntax-control} branch is merged,
+it is unsafe to use ASDF from the REPL to compile or load systems
+while the readtable isn't the shared readtable previously used to build software.
+You @emph{must} manually undo any binding of @var{*readtable*} at the REPL
+and restore its initial value whenever you call @code{operate}
+(via e.g. @code{load-system}, @code{test-system} or @code{require})
+from a REPL that is using a different readtable.
+
+@subsubsection How should my system use a readtable exported by another system?
+
+Use from the @code{named-readtables} system the macro @code{named-readtables:in-readtable}.
+
+If the other system fails to use @code{named-readtables}, fix it and send a patch upstream.
+In the day and age of Quicklisp and clbuild, there is little reason
+to eschew using such an important library anymore.
+
+@subsubsection How should my library make a readtable available to other systems?
+
+Use from the @code{named-readtables} system the macro @code{named-readtables:defreadtable}.
+
 @node ASDF development FAQs,  , Issues with using and extending ASDF to define systems, FAQ
 @section ASDF development FAQs
 
@@ -4970,10 +5487,35 @@ interested, too.
 
 Here's the procedure for experimenting with tests in a REPL:
 @example
+;; BEWARE! Some tests expect you to be in the .../asdf/test directory
+;; If your REPL is not there yet, change your current directory:
+;; under SLIME, you may: ,change-directory ~/common-lisp/asdf/test/
+;; otherwise you may evaluate something like:
+(require "asdf") (asdf:upgrade-asdf) ;load UIOP & update asdf.lisp
+(uiop:chdir (asdf:system-relative-pathname :asdf "test/"))
+(setf *default-pathname-defaults* (uiop:getcwd))
+
+;; Load the test script support.
 (load "script-support.lisp")
-(in-package :asdf-test)
-(compile-load-asdf) ; there are a number of other functions to load ASDF
-;; experiment with test code from a .script file...
+
+;; Initialize the script support.
+;; This will also change your *package* to asdf-test.
+;; NB: this function is also available from package cl-user,
+;; and also available with the shorter name da in both packages.
+(asdf-test::debug-asdf)
+
+;; In case you modified ASDF since you last tested it,
+;; you need to update asdf.lisp itself by evaluating 'make' in a shell,
+;; or (require "asdf") (asdf:load-system :asdf) in another CL REPL,
+;; if not done in this REPL above.
+;; *Then*, in this REPL, you need to evaluate:
+;(asdf-test::compile-load-asdf)
+
+;; Now, you may experiment with test code from a .script file.
+;; See the instructions given at the end of your failing test
+;; to identify which form is needed, e.g.
+(frob-packages)
+(asdf::with-asdf-cache () (load "test-utilities.script"))
 @end example
 
 
@@ -4985,13 +5527,26 @@ Here's the procedure for experimenting with tests in a REPL:
 For an active list of things to be done,
 see the @file{TODO} file in the source repository.
 
-Also, bugs that are now tracked on launchpad:
+Also, bugs are now tracked on launchpad:
 @url{https://launchpad.net/asdf}.
 
 @node Bibliography, Concept Index, Ongoing Work, Top
 @unnumbered Bibliography
 
 @itemize
+@item Francois-Rene Rideau:
+  ``ASDF 3, or Why Lisp is Now an Acceptable Scripting Language'', 2014.
+  This article describes the innovations in ASDF 3 and 3.1,
+  as well as historical information on previous versions.
+  @url{http://github.com/fare/asdf3-2013}
+@item Alastair Bridgewater:
+  ``Quick-build'' (private communication), 2012.
+  @code{quick-build} is a simple and robust one file, one package build system,
+  similar to @code{faslpath}, in 182 lines of code
+  (117 of which are not blank, not comments, not docstrings).
+  Unhappily, it remains unpublished and its IP status is unclear as of April 2014.
+  @code{asdf/package-system} is mostly compatible with it,
+  modulo a different setup for toplevel hierarchies.
 @item Zach Beane:
   ``Quicklisp'', 2011.
   The Quicklisp blog and Xach's livejournal contain information on Quicklisp.
@@ -5008,7 +5563,17 @@ Also, bugs that are now tracked on launchpad:
   many ideas of which have been incorporated into ASDF 2 and 3,
   though many other of which still haven't.
   @url{http://common-lisp.net/projects/xcvb/}
-@item Dan Barlow: ``ASDF Manual'', 2004
+@item Peter von Etter:
+  ``faslpath'', 2009.
+  @code{faslpath} is similar to the latter @code{quick-build}
+  and our letter @code{asdf/package-system} extension,
+  except that it uses the dot @code{.} rather than the slash @code{/} as a separator.
+  @url{https://code.google.com/p/faslpath/}
+@item Drew McDermott:
+  ``A Framework for Maintaining the Coherence of a Running Lisp,''
+  International Lisp Conference, 2005, available in pre-print form at
+  @url{http://www.cs.yale.edu/homes/dvm/papers/lisp05.pdf}
+@item Dan Barlow: ``ASDF Manual'', 2004.
   Older versions of this document from the days of ASDF 1;
   they include ideas laid down by Dan Barlow,
   and comparisons with older defsystems (@code{mk-defsystem})
@@ -5029,9 +5594,6 @@ Also, bugs that are now tracked on launchpad:
   ``Lisp Machine Manual'', MIT, 1981.
   The famous CHINE NUAL describes one of the earliest variants of DEFSYSTEM.
   @url{https://bitsavers.trailing-edge.com/pdf/mit/cadr/chinual_4thEd_Jul81.pdf}
-@item Drew McDermott: ``A Framework for Maintaining the Coherence of a
-  Running Lisp,'' International Lisp Conference, 2005, available in
-  pre-print form at @url{http://www.cs.yale.edu/homes/dvm/papers/lisp05.pdf}.
 @end itemize
 
 

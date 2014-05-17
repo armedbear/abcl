@@ -1,5 +1,5 @@
 ;;; -*- mode: Common-Lisp; Base: 10 ; Syntax: ANSI-Common-Lisp ; buffer-read-only: t; -*-
-;;; This is ASDF 3.1.0.103: Another System Definition Facility.
+;;; This is ASDF 3.1.2.2: Another System Definition Facility.
 ;;;
 ;;; Feedback, bug reports, and patches are all welcome:
 ;;; please mail to <asdf-devel@common-lisp.net>.
@@ -819,7 +819,7 @@ UNINTERN -- Remove symbols here from PACKAGE."
   (let ((ensure-form
           `(apply 'ensure-package ',(parse-define-package-form package clauses))))
     `(progn
-       #+(or ecl gcl) (defpackage ,package (:use))
+       #+(or ecl gcl mkcl) (defpackage ,package (:use))
        (eval-when (:compile-toplevel :load-toplevel :execute)
          ,ensure-form))))
 
@@ -1667,10 +1667,11 @@ keywords explicitly."
     "Detects the current operating system. Only needs be run at compile-time,
 except on ABCL where it might change between FASL compilation and runtime."
     (loop* :with o
-           :for (feature . detect) :in '((:os-unix . os-unix-p) (:os-windows . os-windows-p)
-                                         (:os-macosx . os-macosx-p)
+           :for (feature . detect) :in '((:os-unix . os-unix-p) (:os-macosx . os-macosx-p)
+                                         (:os-windows . os-windows-p)
                                          (:genera . os-genera-p) (:os-oldmac . os-oldmac-p))
-           :when (and (not o) (funcall detect)) :do (setf o feature) (pushnew o *features*)
+           :when (and (or (not o) (eq feature :os-macosx)) (funcall detect))
+           :do (setf o feature) (pushnew feature *features*)
            :else :do (setf *features* (remove feature *features*))
            :finally
            (return (or o (error "Congratulations for trying ASDF on an operating system~%~
@@ -1850,9 +1851,9 @@ suitable for use as a directory name to segregate Lisp FASLs, C dynamic librarie
 
   (defun getcwd ()
     "Get the current working directory as per POSIX getcwd(3), as a pathname object"
-    (or #+abcl (symbol-call :asdf/filesystem :parse-native-namestring
-                            (java:jstatic "getProperty" "java.lang.System" "user.dir")
-                                                     :ensure-directory t)
+    (or #+abcl (truename (symbol-call :asdf/filesystem :parse-native-namestring
+                          (java:jstatic "getProperty" "java.lang.System" "user.dir")
+                          :ensure-directory t))
         #+allegro (excl::current-directory)
         #+clisp (ext:default-directory)
         #+clozure (ccl:current-directory)
@@ -3989,7 +3990,7 @@ Upon success, the KEEP form is evaluated and the file is is deleted unless it ev
     (check-type pathname symbol)
     (assert (or streamp pathnamep))
     (let* ((afterp (position :close-stream body))
-           (before (if afterp (subseq body 0 (1- afterp)) body))
+           (before (if afterp (subseq body 0 afterp) body))
            (after (when afterp (subseq body (1+ afterp))))
            (beforef (gensym "BEFORE"))
            (afterf (gensym "AFTER")))
@@ -4009,7 +4010,7 @@ Upon success, the KEEP form is evaluated and the file is is deleted unless it ev
           ,@(when suffix `(:suffix ,suffix))
           ,@(when type `(:type ,type))
           ,@(when keep `(:keep ,keep))
-          ,@(when after `(:after `#',afterf))
+          ,@(when after `(:after #',afterf))
           ,@(when element-type `(:element-type ,element-type))
           ,@(when external-format `(:external-format ,external-format))))))
 
@@ -4467,31 +4468,35 @@ or COMPRESSION on SBCL, and APPLICATION-TYPE on SBCL/Windows."
   (defun create-image (destination lisp-object-files
                        &key kind output-name prologue-code epilogue-code extra-object-files
                          (prelude () preludep) (postlude () postludep)
-                         (entry-point () entry-point-p) build-args)
+                         (entry-point () entry-point-p) build-args no-uiop)
     (declare (ignorable destination lisp-object-files extra-object-files kind output-name
                         prologue-code epilogue-code prelude preludep postlude postludep
-                        entry-point entry-point-p build-args))
+                        entry-point entry-point-p build-args no-uiop))
     "On ECL, create an executable at pathname DESTINATION from the specified OBJECT-FILES and options"
     ;; Is it meaningful to run these in the current environment?
     ;; only if we also track the object files that constitute the "current" image,
     ;; and otherwise simulate dump-image, including quitting at the end.
     #-(or ecl mkcl) (error "~S not implemented for your implementation (yet)" 'create-image)
     #+(or ecl mkcl)
-    (let ((epilogue-forms
-            (append
-             (when epilogue-code `(,epilogue-code))
-             (when postludep `((setf *image-postlude* ',postlude)))
-             (when preludep `((setf *image-prelude* ',prelude)))
-             (when entry-point-p `((setf *image-entry-point* ',entry-point)))
-             (case kind
-               ((:image)
-                (setf kind :program) ;; to ECL, it's just another program.
-                `((setf *image-dumped-p* t)
-                  (si::top-level #+ecl t) (quit)))
-               ((:program)
-                `((setf *image-dumped-p* :executable)
-                  (shell-boolean-exit
-                   (restore-image))))))))
+    (let ((epilogue-code
+            (if no-uiop
+                epilogue-code
+                (let ((forms
+                        (append
+                         (when epilogue-code `(,epilogue-code))
+                         (when postludep `((setf *image-postlude* ',postlude)))
+                         (when preludep `((setf *image-prelude* ',prelude)))
+                         (when entry-point-p `((setf *image-entry-point* ',entry-point)))
+                         (case kind
+                           ((:image)
+                            (setf kind :program) ;; to ECL, it's just another program.
+                            `((setf *image-dumped-p* t)
+                              (si::top-level #+ecl t) (quit)))
+                           ((:program)
+                            `((setf *image-dumped-p* :executable)
+                              (shell-boolean-exit
+                               (restore-image))))))))
+                  (when forms `(progn ,@forms))))))
       #+ecl (check-type kind (member :dll :lib :static-library :program :object :fasl))
       (apply #+ecl 'c::builder #+ecl kind
              #+mkcl (ecase kind
@@ -4504,7 +4509,7 @@ or COMPRESSION on SBCL, and APPLICATION-TYPE on SBCL/Windows."
              #+ecl :init-name #+ecl (c::compute-init-name (or output-name destination) :kind kind)
              (append
               (when prologue-code `(:prologue-code ,prologue-code))
-              (when epilogue-forms `(:epilogue-code (progn ,@epilogue-forms)))
+              (when epilogue-code `(:epilogue-code ,epilogue-code))
               #+mkcl (when extra-object-files `(:object-files ,extra-object-files))
               build-args)))))
 
@@ -5427,7 +5432,7 @@ or an indication of failure via the EXIT-CODE of the process"
    ;; Types
    #+sbcl #:sb-grovel-unknown-constant-condition
    ;; Functions & Macros
-   #:get-optimization-settings #:proclaim-optimization-settings
+   #:get-optimization-settings #:proclaim-optimization-settings #:with-optimization-settings
    #:call-with-muffled-compiler-conditions #:with-muffled-compiler-conditions
    #:call-with-muffled-loader-conditions #:with-muffled-loader-conditions
    #:reify-simple-sexp #:unreify-simple-sexp
@@ -5467,20 +5472,37 @@ This can help you produce more deterministic output for FASLs."))
     "Optimization settings to be used by PROCLAIM-OPTIMIZATION-SETTINGS")
   (defvar *previous-optimization-settings* nil
     "Optimization settings saved by PROCLAIM-OPTIMIZATION-SETTINGS")
+  (defparameter +optimization-variables+
+    ;; TODO: allegro genera corman mcl
+    (or #+(or abcl xcl) '(system::*speed* system::*space* system::*safety* system::*debug*)
+        #+clisp '() ;; system::*optimize* is a constant hash-table! (with non-constant contents)
+        #+clozure '(ccl::*nx-speed* ccl::*nx-space* ccl::*nx-safety*
+                    ccl::*nx-debug* ccl::*nx-cspeed*)
+        #+(or cmu scl) '(c::*default-cookie*)
+        #+ecl (unless (use-ecl-byte-compiler-p) '(c::*speed* c::*space* c::*safety* c::*debug*))
+        #+gcl '(compiler::*speed* compiler::*space* compiler::*compiler-new-safety* compiler::*debug*)
+        #+lispworks '(compiler::*optimization-level*)
+        #+mkcl '(si::*speed* si::*space* si::*safety* si::*debug*)
+        #+sbcl '(sb-c::*policy*)))
   (defun get-optimization-settings ()
     "Get current compiler optimization settings, ready to PROCLAIM again"
-    #-(or clisp clozure cmu ecl mkcl sbcl scl)
-    (warn "~S does not support ~S. Please help me fix that." 'get-optimization-settings (implementation-type))
-    #+clozure (ccl:declaration-information 'optimize nil)
-    #+(or clisp cmu ecl mkcl sbcl scl)
+    #-(or abcl allegro clisp clozure cmu ecl lispworks mkcl sbcl scl xcl)
+    (warn "~S does not support ~S. Please help me fix that."
+          'get-optimization-settings (implementation-type))
+    #+(or abcl allegro clisp clozure cmu ecl lispworks mkcl sbcl scl xcl)
     (let ((settings '(speed space safety debug compilation-speed #+(or cmu scl) c::brevity)))
-      #.`(loop :for x :in settings
-               ,@(or #+ecl '(:for v :in '(c::*speed* c::*space* c::*safety* c::*debug*))
-                     #+mkcl '(:for v :in '(si::*speed* si::*space* si::*safety* si::*debug*))
-                     #+(or cmu scl) '(:for f :in '(c::cookie-speed c::cookie-space c::cookie-safety c::cookie-debug c::cookie-cspeed c::cookie-brevity)))
-               :for y = (or #+clisp (gethash x system::*optimize*)
-                            #+(or ecl mkcl) (symbol-value v)
-                            #+(or cmu scl) (funcall f c::*default-cookie*)
+      #.`(loop #+(or allegro clozure)
+               ,@'(:with info = #+allegro (sys:declaration-information 'optimize)
+                   #+clozure (ccl:declaration-information 'optimize nil))
+               :for x :in settings
+               ,@(or #+(or abcl ecl gcl mkcl xcl) '(:for v :in +optimization-variables+))
+               :for y = (or #+(or allegro clozure) (second (assoc x info)) ; normalize order
+                            #+clisp (gethash x system::*optimize* 1)
+                            #+(or abcl ecl mkcl xcl) (symbol-value v)
+                            #+(or cmu scl) (slot-value c::*default-cookie*
+                                                       (case x (compilation-speed 'c::cspeed)
+                                                             (otherwise x)))
+                            #+lispworks (slot-value compiler::*optimization-level* x)
                             #+sbcl (cdr (assoc x sb-c::*policy*)))
                :when y :collect (list x y))))
   (defun proclaim-optimization-settings ()
@@ -5488,7 +5510,18 @@ This can help you produce more deterministic output for FASLs."))
     (proclaim `(optimize ,@*optimization-settings*))
     (let ((settings (get-optimization-settings)))
       (unless (equal *previous-optimization-settings* settings)
-        (setf *previous-optimization-settings* settings)))))
+        (setf *previous-optimization-settings* settings))))
+  (defmacro with-optimization-settings ((&optional (settings *optimization-settings*)) &body body)
+    #+(or allegro clisp)
+    (let ((previous-settings (gensym "PREVIOUS-SETTINGS")))
+      `(let ((,previous-settings (get-optimization-settings)))
+         ,@(when settings `((proclaim `(optimize ,@,settings))))
+         (unwind-protect (progn ,@body)
+           (proclaim `(optimize ,@,previous-settings)))))
+    #-(or allegro clisp)
+    `(let ,(loop :for v :in +optimization-variables+ :collect `(,v ,v))
+       ,@(when settings `((proclaim `(optimize ,@,settings))))
+       ,@body)))
 
 
 ;;; Condition control
@@ -6535,7 +6568,8 @@ directive.")
    :uiop/run-program :uiop/lisp-build
    :uiop/configuration :uiop/backward-driver))
 
-#+mkcl (provide :uiop)
+;; Provide both lowercase and uppercase, to satisfy more people.
+(provide "uiop") (provide "UIOP")
 ;;;; -------------------------------------------------------------------------
 ;;;; Handle upgrade as forward- and backward-compatibly as possible
 ;; See https://bugs.launchpad.net/asdf/+bug/485687
@@ -6605,7 +6639,7 @@ previously-loaded version of ASDF."
          ;; "3.4.5.67" would be a development version in the official branch, on top of 3.4.5.
          ;; "3.4.5.0.8" would be your eighth local modification of official release 3.4.5
          ;; "3.4.5.67.8" would be your eighth local modification of development version 3.4.5.67
-         (asdf-version "3.1.0.103")
+         (asdf-version "3.1.2.2")
          (existing-version (asdf-version)))
     (setf *asdf-version* asdf-version)
     (when (and existing-version (not (equal asdf-version existing-version)))
@@ -6963,11 +6997,15 @@ children.")))
 
 ;;;; version-satisfies
 (with-upgradability ()
+  ;; short-circuit testing of null version specifications.
+  ;; this is an all-pass, without warning
+  (defmethod version-satisfies :around ((c t) (version null))
+    t)
   (defmethod version-satisfies ((c component) version)
     (unless (and version (slot-boundp c 'version) (component-version c))
       (when version
         (warn "Requested version ~S but ~S has no version" version c))
-      (return-from version-satisfies t))
+      (return-from version-satisfies nil))
     (version-satisfies (component-version c) version))
 
   (defmethod version-satisfies ((cver string) version)
@@ -9126,8 +9164,8 @@ the implementation's REQUIRE rather than by internal ASDF mechanisms."))
   (defun restart-upgraded-asdf ()
     ;; If we're in the middle of something, restart it.
     (when *asdf-cache*
-      (let ((l (loop* :for (x y) :being :the hash-keys :of *asdf-cache*
-                      :when (eq x 'find-system) :collect y)))
+      (let ((l (loop :for k :being :the hash-keys :of *asdf-cache*
+                     :when (eq (first k) 'find-system) :collect (second k))))
         (clrhash *asdf-cache*)
         (dolist (s l) (find-system s nil)))))
   (register-hook-function '*post-upgrade-restart-hook* 'restart-upgraded-asdf))
@@ -10162,6 +10200,7 @@ itself.")) ;; operation on a system and its dependencies
     ;; New style (ASDF3.1) way of specifying prologue and epilogue on ECL: in the system
     ((prologue-code :initform nil :initarg :prologue-code :reader prologue-code)
      (epilogue-code :initform nil :initarg :epilogue-code :reader epilogue-code)
+     (no-uiop :initform nil :initarg :no-uiop :reader no-uiop)
      (prefix-lisp-object-files :initarg :prefix-lisp-object-files
                                :initform nil :accessor prefix-lisp-object-files)
      (postfix-lisp-object-files :initarg :postfix-lisp-object-files
@@ -10173,6 +10212,7 @@ itself.")) ;; operation on a system and its dependencies
 
   (defmethod prologue-code ((x t)) nil)
   (defmethod epilogue-code ((x t)) nil)
+  (defmethod no-uiop ((x t)) nil)
   (defmethod prefix-lisp-object-files ((x t)) nil)
   (defmethod postfix-lisp-object-files ((x t)) nil)
   (defmethod extra-object-files ((x t)) nil)
@@ -10272,10 +10312,10 @@ itself.")) ;; operation on a system and its dependencies
       #+ecl
       ((member :dll :lib :shared-library :static-library :program :object :program)
        (compile-file-type :type bundle-type))
-      ((member :image) "image")
+      ((member :image) #-allegro "image" #+allegro "dxl")
       ((member :dll :shared-library) (cond ((os-macosx-p) "dylib") ((os-unix-p) "so") ((os-windows-p) "dll")))
       ((member :lib :static-library) (cond ((os-unix-p) "a")
-					   ((os-windows-p) (if (featurep '(:or :mingw32 :mingw64)) "a" "lib"))))
+                                           ((os-windows-p) (if (featurep '(:or :mingw32 :mingw64)) "a" "lib"))))
       ((eql :program) (cond ((os-unix-p) nil) ((os-windows-p) "exe")))))
 
   (defun bundle-output-files (o c)
@@ -10336,7 +10376,8 @@ itself.")) ;; operation on a system and its dependencies
         #+ecl (setf (extra-object-files instance) lisp-files)))
     (setf (extra-build-args instance)
           (remove-plist-keys
-           '(:type :monolithic :name-suffix :epilogue-code :prologue-code :lisp-files)
+           '(:type :monolithic :name-suffix :epilogue-code :prologue-code :lisp-files
+             :force :force-not :plan-class) ;; TODO: refactor so we don't mix plan and operation arguments
            (operation-original-initargs instance))))
 
   (defun bundlable-file-p (pathname)
@@ -10586,25 +10627,30 @@ itself.")) ;; operation on a system and its dependencies
   ;;  (setf *load-system-operation* 'load-bundle-op))
 
   (defun asdf-library-pathname ()
-    #+ecl (compile-file-pathname "sys:asdf" :type :lib)
+    #+ecl (or (probe-file* (compile-file-pathname "sys:asdf" :type :lib)) ;; new style
+              (probe-file* (compile-file-pathname "sys:asdf" :type :object))) ;; old style
     #+mkcl (make-pathname :type (bundle-pathname-type :lib) :defaults #p"sys:contrib;asdf"))
 
+  (defun compiler-library-pathname ()
+    #+ecl (compile-file-pathname "sys:cmp" :type :lib)
+    #+mkcl (make-pathname :type (bundle-pathname-type :lib) :defaults #p"sys:cmp"))
+
   (defun make-library-system (name pathname)
-    (make-instance 'prebuilt-system :name name :static-library (resolve-symlinks* pathname)))
+    (make-instance 'prebuilt-system
+                   :name (coerce-name name) :static-library (resolve-symlinks* pathname)))
 
   (defmethod component-depends-on :around ((o image-op) (c system))
     (destructuring-bind ((lib-op . deps)) (call-next-method)
       (flet ((has-it-p (x) (find x deps :test 'equal :key 'coerce-name)))
         `((,lib-op
-           #+mkcl ,@(unless (has-it-p "cmp")
-                      `(,(make-library-system
-                          "cmp" (make-pathname :type (bundle-pathname-type :lib)
-                                               :defaults #p"sys:cmp"))))
-           ,@(unless (or (has-it-p "asdf") (has-it-p "uiop"))
+           ,@(unless (or (no-uiop c) (has-it-p "cmp"))
+               `(,(make-library-system
+                   "cmp" (compiler-library-pathname))))
+           ,@(unless (or (no-uiop c) (has-it-p "uiop") (has-it-p "asdf"))
                `(,(cond
                     ((system-source-directory :uiop) (find-system :uiop))
                     ((system-source-directory :asdf) (find-system :asdf))
-                    (t (make-fake-asdf-system "asdf" (asdf-library-pathname))))))
+                    (t (make-library-system "asdf" (asdf-library-pathname))))))
            ,@deps)))))
 
   (defmethod perform ((o link-op) (c system))
@@ -10624,6 +10670,7 @@ itself.")) ;; operation on a system and its dependencies
                :epilogue-code (or (epilogue-code o) (when programp (epilogue-code c)))
                :build-args (or (extra-build-args o) (when programp (extra-build-args c)))
                :extra-object-files (or (extra-object-files o) (when programp (extra-object-files c)))
+               :no-uiop (no-uiop c)
                (when programp `(:entry-point ,(component-entry-point c))))))))
 
 #+(and (not asdf-use-unsafe-mac-bundle-op)
@@ -10637,7 +10684,7 @@ To continue, push :asdf-use-unsafe-mac-bundle-op onto *FEATURES*.~%~T~
 Please report to ASDF-DEVEL if this works for you.")))
 
 
-;;; Backward compatibility with pre-3.1.1 names
+;;; Backward compatibility with pre-3.1.2 names
 (defclass fasl-op (selfward-operation)
   ((selfward-operation :initform 'compile-bundle-op :allocation :class)))
 (defclass load-fasl-op (selfward-operation)
@@ -10917,30 +10964,35 @@ Please use UIOP:RUN-PROGRAM instead."
 ;;;; -------------------------------------------------------------------------
 ;;;; Package systems in the style of quick-build or faslpath
 
-(uiop:define-package :asdf/package-system
-  (:recycle :asdf/package-system :asdf)
+(uiop:define-package :asdf/package-inferred-system
+  (:recycle :asdf/package-inferred-system :asdf/package-system :asdf)
   (:use :uiop/common-lisp :uiop
         :asdf/defsystem ;; Using the old name of :asdf/parse-defsystem for compatibility
         :asdf/upgrade :asdf/component :asdf/system :asdf/find-system :asdf/lisp-action)
   (:export
-   #:package-system #:register-system-packages #:sysdef-package-system-search
-   #:*defpackage-forms* #:*package-systems* #:package-system-missing-package-error))
-(in-package :asdf/package-system)
+   #:package-inferred-system #:sysdef-package-inferred-system-search
+   #:package-system ;; backward compatibility only. To be removed.
+   #:register-system-packages
+   #:*defpackage-forms* #:*package-inferred-systems* #:package-inferred-system-missing-package-error))
+(in-package :asdf/package-inferred-system)
 
 (with-upgradability ()
-  (defparameter *defpackage-forms* '(cl:defpackage uiop:define-package))
+  (defparameter *defpackage-forms* '(defpackage define-package))
 
-  (defun initial-package-systems-table ()
+  (defun initial-package-inferred-systems-table ()
     (let ((h (make-hash-table :test 'equal)))
       (dolist (p (list-all-packages))
         (dolist (n (package-names p))
           (setf (gethash n h) t)))
       h))
 
-  (defvar *package-systems* (initial-package-systems-table))
+  (defvar *package-inferred-systems* (initial-package-inferred-systems-table))
 
-  (defclass package-system (system)
+  (defclass package-inferred-system (system)
     ())
+
+  ;; For backward compatibility only. To be removed in an upcoming release:
+  (defclass package-system (package-inferred-system) ())
 
   (defun defpackage-form-p (form)
     (and (consp form)
@@ -10955,12 +11007,12 @@ Please use UIOP:RUN-PROGRAM instead."
     (with-input-file (f file)
       (stream-defpackage-form f)))
 
-  (define-condition package-system-missing-package-error (system-definition-error)
+  (define-condition package-inferred-system-missing-package-error (system-definition-error)
     ((system :initarg :system :reader error-system)
      (pathname :initarg :pathname :reader error-pathname))
     (:report (lambda (c s)
                (format s (compatfmt "~@<No package form found while ~
-                                     trying to define package-system ~A from file ~A~>")
+                                     trying to define package-inferred-system ~A from file ~A~>")
                        (error-system c) (error-pathname c)))))
 
   (defun package-dependencies (defpackage-form)
@@ -10989,23 +11041,23 @@ the DEFPACKAGE-FORM uses it or imports a symbol from it."
     "Register SYSTEM as providing PACKAGES."
     (let ((name (or (eq system t) (coerce-name system))))
       (dolist (p (ensure-list packages))
-        (setf (gethash (package-designator-name p) *package-systems*) name))))
+        (setf (gethash (package-designator-name p) *package-inferred-systems*) name))))
 
   (defun package-name-system (package-name)
     "Return the name of the SYSTEM providing PACKAGE-NAME, if such exists,
 otherwise return a default system name computed from PACKAGE-NAME."
     (check-type package-name string)
-    (if-let ((system-name (gethash package-name *package-systems*)))
+    (if-let ((system-name (gethash package-name *package-inferred-systems*)))
       system-name
       (string-downcase package-name)))
 
-  (defun package-system-file-dependencies (file &optional system)
+  (defun package-inferred-system-file-dependencies (file &optional system)
     (if-let (defpackage-form (file-defpackage-form file))
       (remove t (mapcar 'package-name-system (package-dependencies defpackage-form)))
-      (error 'package-system-missing-package-error :system system :pathname file)))
+      (error 'package-inferred-system-missing-package-error :system system :pathname file)))
 
-  (defun same-package-system-p (system name directory subpath dependencies)
-    (and (eq (type-of system) 'package-system)
+  (defun same-package-inferred-system-p (system name directory subpath dependencies)
+    (and (eq (type-of system) 'package-inferred-system)
          (equal (component-name system) name)
          (pathname-equal directory (component-pathname system))
          (equal dependencies (component-sideway-dependencies system))
@@ -11017,29 +11069,32 @@ otherwise return a default system name computed from PACKAGE-NAME."
                        (and (slot-boundp child 'relative-pathname)
                             (equal (slot-value child 'relative-pathname) subpath))))))))
 
-  (defun sysdef-package-system-search (system)
+  (defun sysdef-package-inferred-system-search (system)
     (let ((primary (primary-system-name system)))
       (unless (equal primary system)
         (let ((top (find-system primary nil)))
-          (when (typep top 'package-system)
+          (when (typep top 'package-inferred-system)
             (if-let (dir (system-source-directory top))
               (let* ((sub (subseq system (1+ (length primary))))
                      (f (probe-file* (subpathname dir sub :type "lisp")
                                      :truename *resolve-symlinks*)))
                 (when (file-pathname-p f)
-                  (let ((dependencies (package-system-file-dependencies f system))
+                  (let ((dependencies (package-inferred-system-file-dependencies f system))
                         (previous (cdr (system-registered-p system))))
-                    (if (same-package-system-p previous system dir sub dependencies)
+                    (if (same-package-inferred-system-p previous system dir sub dependencies)
                         previous
                         (eval `(defsystem ,system
-                                 :class package-system
+                                 :class package-inferred-system
                                  :source-file nil
                                  :pathname ,dir
                                  :depends-on ,dependencies
                                  :components ((cl-source-file "lisp" :pathname ,sub)))))))))))))))
 
 (with-upgradability ()
-  (pushnew 'sysdef-package-system-search *system-definition-search-functions*))
+  (pushnew 'sysdef-package-inferred-system-search *system-definition-search-functions*)
+  (setf *system-definition-search-functions*
+        (remove (find-symbol* :sysdef-package-system-search :asdf/package-system nil)
+                *system-definition-search-functions*)))
 ;;;; ---------------------------------------------------------------------------
 ;;;; Handle ASDF package upgrade, including implementation-dependent magic.
 
@@ -11054,7 +11109,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
    :asdf/operation :asdf/action :asdf/lisp-action
    :asdf/output-translations :asdf/source-registry
    :asdf/plan :asdf/operate :asdf/parse-defsystem :asdf/bundle :asdf/concatenate-source
-   :asdf/backward-internals :asdf/backward-interface :asdf/package-system)
+   :asdf/backward-internals :asdf/backward-interface :asdf/package-inferred-system)
   ;; Note: (1) we are NOT automatically reexporting everything from previous packages.
   ;; (2) we only reexport UIOP functionality when backward-compatibility requires it.
   (:export
@@ -11101,7 +11156,8 @@ otherwise return a default system name computed from PACKAGE-NAME."
    #:static-file #:doc-file #:html-file
    #:file-type #:source-file-type
 
-   #:package-system #:register-system-packages
+   #:package-inferred-system #:register-system-packages
+   #:package-system ;; backward-compatibility during migration, to be removed in a further release.
 
    #:component-children          ; component accessors
    #:component-children-by-name
@@ -11164,7 +11220,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
    #:missing-dependency-of-version
    #:circular-dependency        ; errors
    #:duplicate-names #:non-toplevel-system #:non-system-system
-   #:package-system-missing-package-error
+   #:package-inferred-system-missing-package-error
    #:operation-definition-warning #:operation-definition-error
 
    #:try-recompiling
@@ -11214,7 +11270,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
 
 (uiop/package:define-package :asdf/user
   (:nicknames :asdf-user)
-  ;; NB: releases before 3.1.1 this :use'd only uiop/package instead of uiop below.
+  ;; NB: releases before 3.1.2 this :use'd only uiop/package instead of uiop below.
   ;; They also :use'd uiop/common-lisp, that reexports common-lisp and is not included in uiop.
   ;; ASDF3 releases from 2.27 to 2.31 called uiop asdf-driver and asdf/foo uiop/foo.
   ;; ASDF1 and ASDF2 releases (2.26 and earlier) create a temporary package
