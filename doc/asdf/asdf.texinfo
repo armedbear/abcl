@@ -909,6 +909,7 @@ For that you may use the following function:
    regarding source-registry or output-translations.
 @end defun
 
+@vindex *image-dump-hook*
 This function is pushed onto the @code{uiop:*image-dump-hook*} by default,
 which means that if you save an image using @code{uiop:dump-image},
 or via @code{asdf:image-op} and @code{asdf:program-op},
@@ -2388,25 +2389,150 @@ the file's @code{last-modified} time exceeds the @code{last-modified} time
 of the system in memory
 @end itemize
 
+@cindex ASDF-USER package
 When system definitions are loaded from @file{.asd} files,
-a new scratch package is created for them to load into,
-so that different systems do not overwrite each others operations.
-The user may also wish to (and is recommended to)
-include @code{defpackage} and @code{in-package} forms
-in his system definition files, however,
-so that they can be loaded manually if need be.
+they are implicitly loaded into the @code{ASDF-USER} package,
+which uses @code{ASDF}, @code{UIOP} and @code{UIOP/COMMON-LISP}@footnote{
+Note that between releases 2.27 and 3.0.3, only @code{UIOP/PACKAGE},
+not all of @code{UIOP}, was used; if you want your code to work
+with releases earlier than 3.1.2, you may have to explicitly define a package
+that uses @code{UIOP}, or use proper package prefix to your symbols, as in
+@code{uiop:version<}.}
+Programmers who do anything non-trivial in a @file{.asd} file,
+such as defining new variables, functions or classes,
+should include @code{defpackage} and @code{in-package} forms in this file,
+so they will not overwrite each others' extensions.
+Such forms might also help the files behave identically
+if loaded manually with @code{cl:load} for development or debugging,
+though we recommend you use the function @code{asdf::load-asd} instead,
+which the @code{slime-asdf} contrib knows about.
 
 The default value of @code{*system-definition-search-functions*}
-is a list of two functions.
+is a list of three functions.
 The first function looks in each of the directories given
 by evaluating members of @code{*central-registry*}
-for a file whose name is the name of the system and whose type is @file{asd}.
-The first such file is returned,
+for a file whose name is the name of the system and whose type is @file{asd};
+the first such file is returned,
 whether or not it turns out to actually define the appropriate system.
 The second function does something similar,
-for the directories specified in the @code{source-registry}.
-Hence, it is strongly advised to define a system
-@var{foo} in the corresponding file @var{foo.asd}.
+for the directories specified in the @code{source-registry},
+but searches the filesystem only once and caches its results.
+The third function makes the @code{package-inferred-system} extension work,
+@pxref{The package-inferred-system extension}.
+
+Because of the way these search functions are defined,
+you should put the definition for a system
+@var{foo} in a file named @file{foo.asd},
+in a directory that is
+in the central registry or
+which can be found using the
+source registry configuration.
+
+@c FIXME: Move this discussion to the system definition grammar, or somewhere else.
+@anchor{System names}
+@cindex System names
+@cindex Primary system name
+@findex primary-system-name
+It is often useful to define multiple systems in a same file,
+but ASDF can only locate a system's definition file based on the system
+name.
+For this reason,
+ASDF 3's system search algorithm has been extended to
+allow a file @file{foo.asd} to contain
+secondary systems named @var{foo/bar}, @var{foo/baz}, @var{foo/quux}, etc.,
+in addition to the primary system named @var{foo}.
+The first component of a system name,
+separated by the slash character, @code{/},
+is called the primary name of a system.
+The primary name may be
+extracted by function @code{asdf::primary-system-name};
+when ASDF 3 is told to find a system whose name has a slash,
+it will first attempt to load the corresponding primary system,
+and will thus see any such definitions, and/or any
+definition of a @code{package-inferred-system}.@footnote{
+ASDF 2.26 and earlier versions
+do not support this primary system name convention.
+With these versions of ASDF
+you must explicitly load @file{foo.asd}
+before you can use system @var{foo/bar} defined therein,
+e.g. using @code{(asdf:find-system "foo")}.
+We do not support ASDF 2, and recommend that you should upgrade to ASDF 3.
+}
+If your file @file{foo.asd} also defines systems
+that do not follow this convention, e.g., a system named @var{foo-test},
+ASDF will not be able to automatically locate a definition for these systems,
+and will only see their definition
+if you explicitly find or load the primary system
+using e.g. @code{(asdf:find-system "foo")} before you try to use them.
+We strongly recommend against this practice,
+though it is currently supported for backward compatibility.
+
+@end defun
+
+@defun primary-system-name name
+
+Internal (not exported) function, @code{asdf::primary-system-name}.
+Returns the primary system name (the portion before
+the slash, @code{/}, in a secondary system name) from @var{name}.
+
+@end defun
+
+@defun locate-system name
+
+This function should typically @emph{not} be invoked directly.  It is
+exported as part of the API only for programmers who wish to provide
+their own @code{*system-definition-search-functions*}.
+
+Given a system @var{name} designator,
+try to locate where to load the system definition from.
+@c (This does not include the loading of the system definition,
+@c which is done by @code{find-system},
+@c or the loading of the system itself, which is done by @code{load-system};
+@c however, for systems the definition of which has already been loaded,
+@c @code{locate-system} may return an object of class @code{system}.)
+Returns five values: @var{foundp}, @var{found-system}, @var{pathname},
+@var{previous}, and @var{previous-time}.
+@var{foundp} is true when a system was found,
+either a new as yet unregistered one, or a previously registered one.
+The @var{found-system} return value
+will be a @code{system} object, if a system definition is found in your
+source registry.
+@c This system may be registered (by @code{register-system}) or may not, if
+@c it's preloaded code.  Fare writes:
+@c In the case of preloaded code, as for "asdf", "uiop", etc.,
+@c themselves, the system objects are not registered until after they are
+@c initially located by sysdef-preloaded-system-search as a fallback when
+@c no source code was found.
+The system definition will @emph{not} be
+loaded if it hasn't been loaded already.
+@var{pathname} when not null is a path from which to load the system,
+either associated with @var{found-system}, or with the @var{previous} system.
+If @var{previous} is not null, it will be a @emph{previously loaded}
+@code{system} object of the same name (note that the system
+@emph{definition} is previously-loaded: the system itself may or may not be).
+@var{previous-time} when not null is
+the timestamp of the previous system definition file, at the
+time when the @var{previous} system definition was loaded.
+
+For example, if your current registry has @file{foo.asd} in
+@file{/current/path/to/foo.asd},
+but system @code{foo} was previously loaded from @file{/previous/path/to/foo.asd}
+then @var{locate-system} will return the following values:
+@enumerate
+@item
+@var{foundp} will be @code{T},
+@item
+@var{found-system} will be @code{NIL},
+@item
+@var{pathname} will be @code{#p"/current/path/to/foo.asd"},
+@item
+@var{previous} will be an object of type @code{SYSTEM} with
+@code{system-source-file} slot value of 
+@code{#p"/previous/path/to/foo.asd"}
+@item
+@var{previous-time} will be the timestamp of
+@code{#p"/previous/path/to/foo.asd"} at the time it was loaded.
+@end enumerate
 @end defun
 
 @defun find-component base path
@@ -2725,8 +2851,8 @@ the default @code{defsystem} macro takes a @code{:class} keyword argument.
 New component types are defined by subclassing one of the existing
 component classes and specializing methods on the new component class.
 
-@emph{FIXME: this should perhaps be explained more throughly,
-not only by example ...}
+@c FIXME: this should perhaps be explained more throughly,
+@c not only by example ...
 
 As an example, suppose we have some implementation-dependent
 functionality that we want to isolate
@@ -2769,10 +2895,10 @@ The new component type is used in a @code{defsystem} form in this way:
 @c FIXME: Moved this material here, but it isn't very comfortable
 @c here....  Also needs to be revised to be coherent.
 
-To be successfully buildable, this graph of actions but be acyclic.
-If, as a user, extender or implementer of ASDF, you fail
-to keep the dependency graph without cycles,
-ASDF will fail loudly as it eventually finds one.
+To be successfully build-able, this graph of actions must be acyclic.
+If, as a user, extender or implementer of ASDF, you introduce
+a cycle into the dependency graph,
+ASDF will fail loudly.
 To clearly distinguish the direction of dependencies,
 ASDF 3 uses the words @emph{requiring} and @emph{required}
 as applied to an action depending on the other:
@@ -2963,7 +3089,7 @@ however we recommend you instead use
 our source-registry configuration mechanism described below,
 because it is easier to setup in a portable way across users and implementations.
 
-Addtionally, some people dislike truename,
+Additionally, some people dislike truename,
 either because it is very slow on their system, or
 because they are using content-addressed storage where the truename of a file
 is related to a digest of its individual contents,
@@ -3251,9 +3377,9 @@ directory according to X's (relative) instructions.
 When considering environment variable @code{CL_SOURCE_REGISTRY}
 ASDF will skip to next configuration if it's an empty string.
 It will @code{READ} the string as a SEXP in the DSL
-if it begins with a paren @code{(}
-and it will be interpreted much like @code{TEXINPUTS}
-list of paths, where
+if it begins with a paren @code{(},
+otherwise it will be interpreted much like @code{TEXINPUTS},
+as a list of paths, where
 
   * paths are separated
    by a @code{:} (colon) on Unix platforms (including cygwin),
@@ -3709,7 +3835,7 @@ TRANSLATION-FUNCTION :=
     SYMBOL | ;; symbol naming a function that takes two arguments:
              ;; the pathname to be translated and the matching
              ;; DIRECTORY-DESIGNATOR
-    LAMBDA   ;; A form which evalutates to a function taking two arguments:
+    LAMBDA   ;; A form which evaluates to a function taking two arguments:
              ;; the pathname to be translated and the matching
              ;; DIRECTORY-DESIGNATOR
 
@@ -3770,7 +3896,7 @@ from the file specified.
 
 If the @code{translate-pathname} mechanism cannot achieve a desired
 translation, the user may provide a function which provides the
-required algorithim.  Such a translation function is specified by
+required algorithm.  Such a translation function is specified by
 supplying a list as the second @code{directory-designator}
 the first element of which is the keyword @code{:function},
 and the second element of which is
@@ -5613,3 +5739,6 @@ Also, bugs are now tracked on launchpad:
 @printindex vr
 
 @bye
+
+@c  LocalWords:  clbuild tarballs defsystem Quicklisp initarg uiop fasl
+@c  LocalWords:  namestring initargs fasls
