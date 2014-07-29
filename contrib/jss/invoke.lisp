@@ -325,14 +325,32 @@ If OBJECT is a symbol it names a dot qualified static FIELD."
                             (jobject-class object))))
 	     (jfield (if (java-object-p field)
 			 field
-                         (find field (#"getDeclaredFields" class) 
-                               :key 'jfield-name :test 'equal))))
+                         (or (find-declared-field field class)
+                             (error "Unable to find a FIELD named ~a for ~a"
+                                    field object)))))
 	(#"setAccessible" jfield +true+)
 	(values (#"get" jfield object) jfield))
       (if (symbolp object)
           (let ((class (find-java-class object)))
             (jfield class field))
           (jfield field object))))
+
+(defun find-declared-field (field class)
+  "Return a FIELD object corresponding to the definition of FIELD
+\(a string\) visible at CLASS. *Not* restricted to public classes, and checks
+all superclasses of CLASS.
+   Returns NIL if no field object is found."
+  (loop while class
+        for field-obj = (get-declared-field class field)
+        if field-obj
+          do (return-from find-declared-field field-obj)
+        else
+          do (setf class (jclass-superclass class)))
+  nil)
+
+(defun get-declared-field (class fieldname)
+  (find fieldname (#"getDeclaredFields" class)
+        :key 'jfield-name :test 'equal))
 
 ;; TODO use #"getSuperclass" and #"getInterfaces" to see whether there
 ;; are fields in superclasses that we might set
