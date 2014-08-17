@@ -314,6 +314,18 @@ CLASS-NAME may either be a symbol or a string according to the usual JSS convent
 
 (defvar *running-in-osgi* (ignore-errors (jclass "org.osgi.framework.BundleActivator")))
 
+(define-condition no-such-java-field (error)
+  ((field-name
+    :initarg :field-name
+    :reader field-name
+    )
+   (object
+    :initarg :object
+    :reader object
+    ))
+  (:report (lambda (c stream)
+             (error 'no-such-java-field :field-name field :object object))))
+
 (defun get-java-field (object field &optional (try-harder *running-in-osgi*))
   "Get the value of the FIELD contained in OBJECT.
 If OBJECT is a symbol it names a dot qualified static FIELD."
@@ -367,7 +379,8 @@ associated is used to look up the static FIELD."
 			(jobject-class object))))
 	     (jfield (if (java-object-p field)
 			 field
-		       (find field (#"getDeclaredFields" class) :key 'jfield-name :test 'equal))))
+                        (or (find-declared-field field class)
++                            (error 'no-such-java-field :field-name field :object object)))))
 	(#"setAccessible" jfield +true+)
 	(values (#"set" jfield object value) jfield))
     (if (symbolp object)
@@ -376,6 +389,9 @@ associated is used to look up the static FIELD."
         (if (typep object 'java-object)
             (setf (jfield (jclass-of object) field) value)
             (setf (jfield object field) value)))))
+
+(defun (setf get-java-field) (value object field &optional (try-harder *running-in-osgi*))
+  (set-java-field object field value try-harder))
 
 
 (defconstant +for-name+ 
