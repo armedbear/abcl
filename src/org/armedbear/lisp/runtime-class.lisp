@@ -28,10 +28,20 @@
    be called with the second and first arguments.
 
    Method definitions are lists of the form
-   (method-name return-type argument-types function &key modifiers annotations)
-   where method-name is a string, return-type and argument-types are strings or keywords for
-   primitive types (:void, :int, etc.), and function is a Lisp function of minimum arity
-   (1+ (length argument-types)); the instance (`this') is passed in as the first argument.
+
+     (METHOD-NAME RETURN-TYPE ARGUMENT-TYPES FUNCTION &key MODIFIERS ANNOTATIONS)
+
+   where 
+      METHOD-NAME is a string 
+      RETURN-TYPE denotes the type of the object returned by the method
+      ARGUMENT-TYPES is a list of parameters to the method
+      
+        The types are either strings naming fully qualified java classes or Lisp keywords referring to 
+        primitive types (:void, :int, etc.).
+
+     FUNCTION is a Lisp function of minimum arity (1+ (length
+     argument-types)). The instance (`this') is passed as the first
+     argument.
 
    Field definitions are lists of the form (field-name type &key modifiers annotations)."
   (declare (ignorable superclass interfaces constructors methods fields access-flags annotations))
@@ -73,8 +83,10 @@
     (write-class-file class-file stream)
     (finish-output stream)
     #+test-record-generated-class-file
-    (with-open-file (f (format nil "~A.class" class-name) :direction :output :element-type '(signed-byte 8))
-      (write-sequence (java::list-from-jarray (sys::%get-output-stream-bytes stream)) f))
+    (let ((filename (merge-pathnames (format nil "~A.class" class-name))))
+      (with-open-file (f filename :direction :output :element-type '(signed-byte 8))
+        (write-sequence (java::list-from-jarray (sys::%get-output-stream-bytes stream)) f))
+      (format *standard-output* "~&Wrote class file ~A.~%" filename))
     (values class-file method-implementation-fields)))
 
 (defun java::make-accessor-name (prefix name)

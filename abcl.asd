@@ -65,6 +65,8 @@
                       (:file "pathname-tests" :depends-on 
                              ("utilities"))
                       #+abcl
+                      (:file "runtime-class")
+                      #+abcl
                       (:file "package-local-nicknames-tests")))))
 
 (defmethod perform ((o test-op) (c (eql (find-system 'abcl-test-lisp))))
