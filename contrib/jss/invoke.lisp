@@ -380,7 +380,7 @@ associated is used to look up the static FIELD."
 	     (jfield (if (java-object-p field)
 			 field
                         (or (find-declared-field field class)
-+                            (error 'no-such-java-field :field-name field :object object)))))
+                            (error 'no-such-java-field :field-name field :object object)))))
 	(#"setAccessible" jfield +true+)
 	(values (#"set" jfield object value) jfield))
     (if (symbolp object)
