@@ -132,18 +132,12 @@ dependencies into the same jar.
 
 Place the resulting packaged jar in the OUT directory.
 
-If FORCE is true, force asdf to recompile all the necessary fasls.
+If FORCE is true, force asdf to recompile all the necessary fasls for
+inclusion in the packaging artifact.
 
-VERBOSE controls how many messages will be logged to
-*standard-output*.
-
-ROOT controls if the relative pathnames will be appended to something
-before being added to the mapping. The purpose of having this option
-is to add the paths to an internal directory, such as (list :relative
-\"META-INF\" \"resources\") for generating WAR files.
-
-VERBOSE controls how many messages will be logged to
-*standard-output*.
+VERBOSE designates the stream to which information messages about the
+packaging process will be logged, or nil if one wishes to muffle
+output.
 
 ROOT controls if the relative pathnames will be appended to something
 before being added to the mapping. The purpose of having this option
