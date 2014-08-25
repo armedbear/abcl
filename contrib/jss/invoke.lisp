@@ -147,11 +147,11 @@ NAME can either string or a symbol according to the usual JSS conventions."
 (defun maybe-resolve-class-against-imports (classname)
   (or (gethash classname *imports-resolved-classes*)
       (let ((found (lookup-class-name classname)))
-	(if found
-	    (progn 
-	      (setf (gethash classname *imports-resolved-classes*) found)
-	      found)
-	    (string classname)))))
+        (if found
+            (progn 
+              (setf (gethash classname *imports-resolved-classes*) found)
+              found)
+            (string classname)))))
 
 (defvar *class-name-to-full-case-insensitive* (make-hash-table :test 'equalp))
 
@@ -227,84 +227,84 @@ want to avoid the overhead of the dynamic dispatch."
   (if (null fname-jname-pairs)
       `(progn ,@body)
       (destructuring-bind ((fname jname &optional raw) &rest ignore) fname-jname-pairs
-	(declare (ignore ignore))
-	(let ((varname (gensym)))
-	  `(let ((,varname nil))
-	     (macrolet ((,fname (&rest args)
-			  `(if ,',varname
-			       (if ,',raw
-				   (jcall-raw ,',varname ,@args)
-				   (jcall ,',varname ,@args))
-			       (progn
-				 (setq ,',varname (invoke-find-method ,',jname ,(car args) (list ,@(rest args))))
-				 (if ,',raw
-				     (jcall-raw ,',varname ,@args)
-				     (jcall ,',varname ,@args))))))
-	       (with-constant-signature ,(cdr fname-jname-pairs)
-		 ,@body)))))))
+        (declare (ignore ignore))
+        (let ((varname (gensym)))
+          `(let ((,varname nil))
+             (macrolet ((,fname (&rest args)
+                          `(if ,',varname
+                               (if ,',raw
+                                   (jcall-raw ,',varname ,@args)
+                                   (jcall ,',varname ,@args))
+                               (progn
+                                 (setq ,',varname (invoke-find-method ,',jname ,(car args) (list ,@(rest args))))
+                                 (if ,',raw
+                                     (jcall-raw ,',varname ,@args)
+                                     (jcall ,',varname ,@args))))))
+               (with-constant-signature ,(cdr fname-jname-pairs)
+                 ,@body)))))))
 
 (defun lookup-class-name (name)
   (setq name (string name))
   (let* (;; cant (last-name-pattern (#"compile" '|java.util.regex.Pattern| ".*?([^.]*)$"))
-	 ;; reason: bootstrap - the class name would have to be looked up...
-	 (last-name-pattern (load-time-value (jstatic (jmethod "java.util.regex.Pattern" "compile"
-							       (jclass "java.lang.String"))
-						      (jclass "java.util.regex.Pattern") 
-						      ".*?([^.]*)$")))
-	 (last-name 
-	  (let ((matcher (#0"matcher" last-name-pattern name)))
-	    (#"matches" matcher)
-	    (#"group" matcher 1))))
+         ;; reason: bootstrap - the class name would have to be looked up...
+         (last-name-pattern (load-time-value (jstatic (jmethod "java.util.regex.Pattern" "compile"
+                                                               (jclass "java.lang.String"))
+                                                      (jclass "java.util.regex.Pattern") 
+                                                      ".*?([^.]*)$")))
+         (last-name 
+          (let ((matcher (#0"matcher" last-name-pattern name)))
+            (#"matches" matcher)
+            (#"group" matcher 1))))
     (let* ((bucket (gethash last-name *class-name-to-full-case-insensitive*))
-	   (bucket-length (length bucket)))
+           (bucket-length (length bucket)))
       (or (find name bucket :test 'equalp)
-	  (flet ((matches-end (end full test)
-		   (= (+ (or (search end full :from-end t :test test) -10)
-			 (length end))
-		      (length full)))
-		 (ambiguous (choices)
-		   (error "Ambiguous class name: ~a can be ~{~a~^, ~}" name choices)))
-	    (if (zerop bucket-length)
-		name
-		(let ((matches (loop for el in bucket when (matches-end name el 'char=) collect el)))
-		  (if (= (length matches) 1)
-		      (car matches)
-		      (if (= (length matches) 0)
-			  (let ((matches (loop for el in bucket when (matches-end name el 'char-equal) collect el)))
-			    (if (= (length matches) 1)
-				(car matches)
-				(if (= (length matches) 0)
-				    name
-				    (ambiguous matches))))
-			  (ambiguous matches))))))))))
+          (flet ((matches-end (end full test)
+                   (= (+ (or (search end full :from-end t :test test) -10)
+                         (length end))
+                      (length full)))
+                 (ambiguous (choices)
+                   (error "Ambiguous class name: ~a can be ~{~a~^, ~}" name choices)))
+            (if (zerop bucket-length)
+                name
+                (let ((matches (loop for el in bucket when (matches-end name el 'char=) collect el)))
+                  (if (= (length matches) 1)
+                      (car matches)
+                      (if (= (length matches) 0)
+                          (let ((matches (loop for el in bucket when (matches-end name el 'char-equal) collect el)))
+                            (if (= (length matches) 1)
+                                (car matches)
+                                (if (= (length matches) 0)
+                                    name
+                                    (ambiguous matches))))
+                          (ambiguous matches))))))))))
 
 (defun get-all-jar-classnames (jar-file-name)
   (let* ((jar (jnew (jconstructor "java.util.jar.JarFile" (jclass "java.lang.String")) (namestring (truename jar-file-name))))
          (entries (#"entries" jar)))
     (with-constant-signature ((matcher "matcher" t) (substring "substring")
-			      (jreplace "replace" t) (jlength "length")
-			      (matches "matches") (getname "getName" t)
-			      (next "nextElement" t) (hasmore "hasMoreElements")
-			      (group "group"))
+                              (jreplace "replace" t) (jlength "length")
+                              (matches "matches") (getname "getName" t)
+                              (next "nextElement" t) (hasmore "hasMoreElements")
+                              (group "group"))
       (loop while (hasmore entries)
-	 for name =  (getname (next entries))
-	 with class-pattern = (#"compile" '|java.util.regex.Pattern| "[^$]*\\.class$")
-	 with name-pattern = (#"compile" '|java.util.regex.Pattern| ".*?([^.]*)$")
-	 when (matches (matcher class-pattern name))
-	 collect
-	   (let* ((fullname (substring (jreplace name #\/ #\.) 0 (- (jlength name) 6)))
-		  (matcher (matcher name-pattern fullname))
-		  (name (progn (matches matcher) (group matcher 1))))
-	     (cons name fullname))
-	 ))))
+         for name =  (getname (next entries))
+         with class-pattern = (#"compile" '|java.util.regex.Pattern| "[^$]*\\.class$")
+         with name-pattern = (#"compile" '|java.util.regex.Pattern| ".*?([^.]*)$")
+         when (matches (matcher class-pattern name))
+         collect
+           (let* ((fullname (substring (jreplace name #\/ #\.) 0 (- (jlength name) 6)))
+                  (matcher (matcher name-pattern fullname))
+                  (name (progn (matches matcher) (group matcher 1))))
+             (cons name fullname))
+         ))))
 
 (defun jar-import (file)
   "Import all the Java classes contained in the pathname FILE into the JSS dynamic lookup cache."
   (when (probe-file file)
     (loop for (name . full-class-name) in (get-all-jar-classnames file)
        do 
-	 (pushnew full-class-name (gethash name *class-name-to-full-case-insensitive*) 
-		  :test 'equal))))
+         (pushnew full-class-name (gethash name *class-name-to-full-case-insensitive*) 
+                  :test 'equal))))
 
 (defun new (class-name &rest args)
   "Invoke the Java constructor for CLASS-NAME with ARGS.
@@ -324,24 +324,25 @@ CLASS-NAME may either be a symbol or a string according to the usual JSS convent
     :reader object
     ))
   (:report (lambda (c stream)
-             (error 'no-such-java-field :field-name field :object object))))
+             (format stream "Unable to find a FIELD named ~a for ~a"
+                     (field-name c) (object c))))
+  )
 
 (defun get-java-field (object field &optional (try-harder *running-in-osgi*))
   "Get the value of the FIELD contained in OBJECT.
 If OBJECT is a symbol it names a dot qualified static FIELD."
   (if try-harder
       (let* ((class (if (symbolp object)
-			(setq object (find-java-class object))
+                        (setq object (find-java-class object))
                         (if (equal "java.lang.Class" (jclass-name (jobject-class object)))
                             object
                             (jobject-class object))))
-	     (jfield (if (java-object-p field)
-			 field
+             (jfield (if (java-object-p field)
+                         field
                          (or (find-declared-field field class)
-                             (error "Unable to find a FIELD named ~a for ~a"
-                                    field object)))))
-	(#"setAccessible" jfield +true+)
-	(values (#"get" jfield object) jfield))
+                             (error 'no-such-java-field :field-name field :object object)))))
+        (#"setAccessible" jfield +true+)
+        (values (#"get" jfield object) jfield))
       (if (symbolp object)
           (let ((class (find-java-class object)))
             (jfield class field))
@@ -373,18 +374,18 @@ a static FIELD.  If OBJECT is an instance of java:java-object, the
 associated is used to look up the static FIELD."
   (if try-harder
       (let* ((class (if (symbolp object)
-			(setq object (find-java-class object))
-		      (if (equal "java.lang.Class" (jclass-name (jobject-class object)) )
-			  object
-			(jobject-class object))))
-	     (jfield (if (java-object-p field)
-			 field
+                        (setq object (find-java-class object))
+                      (if (equal "java.lang.Class" (jclass-name (jobject-class object)) )
+                          object
+                        (jobject-class object))))
+             (jfield (if (java-object-p field)
+                         field
                         (or (find-declared-field field class)
                             (error 'no-such-java-field :field-name field :object object)))))
-	(#"setAccessible" jfield +true+)
-	(values (#"set" jfield object value) jfield))
+        (#"setAccessible" jfield +true+)
+        (values (#"set" jfield object value) jfield))
     (if (symbolp object)
-	(let ((class (find-java-class object)))
+        (let ((class (find-java-class object)))
           (setf (jfield (#"getName" class) field) value))
         (if (typep object 'java-object)
             (setf (jfield (jclass-of object) field) value)
@@ -420,14 +421,14 @@ associated is used to look up the static FIELD."
                                       (list p)))
                             :collecting entry)))
          (import-classpath (cp)
-	   (mapcar 
-		(lambda (p) 
-		  (when *load-verbose*
-		    (format t ";; Importing ~A~%" p))
-		  (cond 
-		    ((file-directory-p p) )
-		    ((equal (pathname-type p) "jar")
-		     (jar-import (merge-pathnames p
+           (mapcar 
+                (lambda (p) 
+                  (when *load-verbose*
+                    (format t ";; Importing ~A~%" p))
+                  (cond 
+                    ((file-directory-p p) )
+                    ((equal (pathname-type p) "jar")
+                     (jar-import (merge-pathnames p
                                                   (format nil "~a/" (jstatic "getProperty" "java.lang.System" "user.dir")))))))
                 cp))
          (split-classpath (cp)
@@ -449,20 +450,20 @@ associated is used to look up the static FIELD."
   (setq string (string string))
   (let ((matches nil))
     (maphash (lambda(key value) 
-	       (declare (ignore key))
-	       (loop for class in value
-		  when (search string class :test 'string-equal)
-		    do (pushnew (list class "Java Class") matches :test 'equal)))
-	     *class-name-to-full-case-insensitive*)
+               (declare (ignore key))
+               (loop for class in value
+                  when (search string class :test 'string-equal)
+                    do (pushnew (list class "Java Class") matches :test 'equal)))
+             *class-name-to-full-case-insensitive*)
     (loop for (match type) in (sort matches 'string-lessp :key 'car)
-	 do (format t "~a: ~a~%" match type))
+         do (format t "~a: ~a~%" match type))
     ))
 
 (defun jclass-method-names (class &optional full)
   (if (java-object-p class)
       (if (equal (jclass-name (jobject-class class)) "java.lang.Class")
-	  (setq class (jclass-name class))
-	  (setq class (jclass-name (jobject-class class)))))
+          (setq class (jclass-name class))
+          (setq class (jclass-name (jobject-class class)))))
   (union
    (remove-duplicates (map 'list (if full #"toString" 'jmethod-name) (#"getMethods" (find-java-class class))) :test 'equal)
    (ignore-errors (remove-duplicates (map 'list (if full #"toString" 'jmethod-name) (#"getConstructors" (find-java-class class))) :test 'equal))))
@@ -477,7 +478,7 @@ notation, or a symbol resolved against all class entries in the
 current classpath."
   (if stream
       (dolist (method (jclass-method-names class t))
-	(format stream "~a~%" method))
+        (format stream "~a~%" method))
       (jclass-method-names class)))
 
 (setf (symbol-function 'jcmn) 'java-class-method-names)
@@ -493,19 +494,19 @@ current classpath."
 
 (defun all-loaded-classes ()
   (let ((classes-field 
-	 (find "classes" (#"getDeclaredFields" (jclass "java.lang.ClassLoader"))
-	       :key #"getName" :test 'equal)))
+         (find "classes" (#"getDeclaredFields" (jclass "java.lang.ClassLoader"))
+               :key #"getName" :test 'equal)))
     (#"setAccessible" classes-field +true+)
     (loop for classloader in (mapcar #'first (dump-classpath))
-	 append
-	 (loop with classesv = (#"get" classes-field classloader)
-	    for i below (#"size" classesv)
-	    collect (#"getName" (#"elementAt" classesv i)))
-	 append
-	 (loop with classesv = (#"get" classes-field (#"getParent" classloader))
-	    for i below (#"size" classesv)
-	    collect (#"getName" (#"elementAt" classesv i))))))
-	 
+         append
+         (loop with classesv = (#"get" classes-field classloader)
+            for i below (#"size" classesv)
+            collect (#"getName" (#"elementAt" classesv i)))
+         append
+         (loop with classesv = (#"get" classes-field (#"getParent" classloader))
+            for i below (#"size" classesv)
+            collect (#"getName" (#"elementAt" classesv i))))))
+         
 (defun get-dynamic-class-path ()
   (rest 
    (find-if (lambda (loader) 
@@ -523,9 +524,9 @@ current classpath."
 (defun java-room ()
   (let ((rt (#"getRuntime" 'java.lang.runtime)))
     (values (- (#"totalMemory" rt) (#"freeMemory" rt))
-	   (#"totalMemory" rt)
-	   (#"freeMemory" rt)
-	   (list :used :total :free))))
+           (#"totalMemory" rt)
+           (#"freeMemory" rt)
+           (list :used :total :free))))
 
 (defun verbose-gc (&optional (new-value nil new-value-supplied))
   (if new-value-supplied
@@ -549,8 +550,8 @@ current classpath."
 (defun all-classes-below-directory (directory)
   (loop for file in (all-classfiles-below directory) collect
        (format nil "~{~a.~}~a"
-	       (subseq (pathname-directory file) (length (pathname-directory directory)))
-	       (pathname-name file))
+               (subseq (pathname-directory file) (length (pathname-directory directory)))
+               (pathname-name file))
        ))
 
 (defun classfiles-import (directory)
@@ -560,7 +561,7 @@ current classpath."
        for name = (#"replaceAll" full-class-name "^.*\\." "")
      do
        (pushnew full-class-name (gethash name *class-name-to-full-case-insensitive*) 
-		:test 'equal)))
+                :test 'equal)))
 
 (defun set-to-list (set)
   (declare (optimize (speed 3) (safety 0)))
@@ -602,21 +603,21 @@ current classpath."
  (declare (optimize (speed 3) (safety 0)))
  (let ((it (#"iterator" iterable)))
    (with-constant-signature ((has-next "hasNext")
-			     (next "next"))
+                             (next "next"))
      (loop :while (has-next it)
-	:collect (next it)))))
+        :collect (next it)))))
 
 (defun vector-to-list (vector)
   "Return the elements of java.lang.Vector VECTOR as a list."
  (declare (optimize (speed 3) (safety 0)))
  (with-constant-signature ((has-more "hasMoreElements")
-			   (next "nextElement"))
+                           (next "nextElement"))
    (let ((elements (#"elements" vector)))
      (loop :while (has-more elements)
-	:collect (next elements)))))
+        :collect (next elements)))))
 
 (defun hashmap-to-hashtable (hashmap &rest rest &key (keyfun #'identity) (valfun #'identity) (invert? nil)
-				    table 
+                                    table 
                              &allow-other-keys )
   "Converts the a HASHMAP reference to a java.util.HashMap object to a Lisp hashtable.
 
@@ -627,19 +628,19 @@ of the HASHMAP right before they are placed in the hashtable.
 
 If INVERT? is non-nil than reverse the keys and values in the resulting hashtable."
   (let ((keyset (#"keySet" hashmap))
-	(table (or table (apply 'make-hash-table
-				(loop for (key value) on rest by #'cddr
-				   unless (member key '(:invert? :valfun :keyfun :table)) 
-				   collect key and collect value)))))
+        (table (or table (apply 'make-hash-table
+                                (loop for (key value) on rest by #'cddr
+                                   unless (member key '(:invert? :valfun :keyfun :table)) 
+                                   collect key and collect value)))))
     (with-constant-signature ((iterator "iterator" t) (hasnext "hasNext") (next "next"))
       (loop with iterator = (iterator keyset)
-	 while (hasNext iterator)
-	 for item = (next iterator)
-	 do (if invert?
-		(setf (gethash (funcall valfun (#"get" hashmap item)) table) (funcall keyfun item))
-		(setf (gethash (funcall keyfun item) table) (funcall valfun (#"get" hashmap item)))))
+         while (hasNext iterator)
+         for item = (next iterator)
+         do (if invert?
+                (setf (gethash (funcall valfun (#"get" hashmap item)) table) (funcall keyfun item))
+                (setf (gethash (funcall keyfun item) table) (funcall valfun (#"get" hashmap item)))))
     table)))
-	   
+           
 (defun jclass-all-interfaces (class)
   "Return a list of interfaces the class implements"
   (unless (java-object-p class)
@@ -651,10 +652,10 @@ If INVERT? is non-nil than reverse the keys and values in the resulting hashtabl
 (defun safely (f name)
   (let ((fname (gensym)))
     (compile fname
-	     `(lambda(&rest args)
-		(with-simple-restart (top-level
-				      "Return from lisp method implementation for ~a." ,name)
-		  (apply ,f args))))
+             `(lambda(&rest args)
+                (with-simple-restart (top-level
+                                      "Return from lisp method implementation for ~a." ,name)
+                  (apply ,f args))))
     (symbol-function fname)))
 
 (defun jdelegating-interface-implementation (interface dispatch-to &rest method-names-and-defs)
@@ -672,25 +673,25 @@ If INVERT? is non-nil than reverse the keys and values in the resulting hashtabl
    calls the method on DISPATCH-TO."
   (let ((implemented-methods
          (loop for m in method-names-and-defs
-	    for i from 0
-	    if (evenp i) 
-	    do (assert (stringp m) (m) "Method names must be strings: ~s" m) and collect m
-	    else
-	    do (assert (or (symbolp m) (functionp m)) (m) "Methods must be function designators: ~s" m))))
+            for i from 0
+            if (evenp i) 
+            do (assert (stringp m) (m) "Method names must be strings: ~s" m) and collect m
+            else
+            do (assert (or (symbolp m) (functionp m)) (m) "Methods must be function designators: ~s" m))))
     (let ((safe-method-names-and-defs 
-	   (loop for (name function) on method-names-and-defs by #'cddr
-	      collect name collect (safely function name))))
+           (loop for (name function) on method-names-and-defs by #'cddr
+              collect name collect (safely function name))))
       (loop for method across
-	   (jclass-methods interface :declared nil :public t)
-	   for method-name = (jmethod-name method)
-	   when (not (member method-name implemented-methods :test #'string=))
-	   do
-	   (let* ((def  `(lambda
-			     (&rest args)
-			   (invoke-restargs ,(jmethod-name method) ,dispatch-to args t)
-			   )))
-	     (push (coerce def 'function) safe-method-names-and-defs)
-	     (push method-name safe-method-names-and-defs)))
+           (jclass-methods interface :declared nil :public t)
+           for method-name = (jmethod-name method)
+           when (not (member method-name implemented-methods :test #'string=))
+           do
+           (let* ((def  `(lambda
+                             (&rest args)
+                           (invoke-restargs ,(jmethod-name method) ,dispatch-to args t)
+                           )))
+             (push (coerce def 'function) safe-method-names-and-defs)
+             (push method-name safe-method-names-and-defs)))
       (apply #'java::%jnew-proxy  interface safe-method-names-and-defs))))
 
 
