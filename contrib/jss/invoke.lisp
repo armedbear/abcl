@@ -1,5 +1,3 @@
-;; invoke.lisp v2.0
-;;
 ;; Copyright (C) 2005 Alan Ruttenberg
 ;; Copyright (C) 2011-2 Mark Evenson
 ;;
@@ -163,7 +161,7 @@ NAME can either string or a symbol according to the usual JSS conventions."
 ;; otherwise a regular method is called.
 
 (defun invoke (method object &rest args)
-    (invoke-restargs method object args))
+  (invoke-restargs method object args))
 
 (defun invoke-restargs (method object args &optional (raw? nil))
   (let* ((object-as-class-name 
@@ -296,7 +294,7 @@ want to avoid the overhead of the dynamic dispatch."
                   (matcher (matcher name-pattern fullname))
                   (name (progn (matches matcher) (group matcher 1))))
              (cons name fullname))
-         ))))
+           ))))
 
 (defun jar-import (file)
   "Import all the Java classes contained in the pathname FILE into the JSS dynamic lookup cache."
@@ -354,11 +352,11 @@ If OBJECT is a symbol it names a dot qualified static FIELD."
 all superclasses of CLASS.
    Returns NIL if no field object is found."
   (loop while class
-        for field-obj = (get-declared-field class field)
-        if field-obj
-          do (return-from find-declared-field field-obj)
-        else
-          do (setf class (jclass-superclass class)))
+     for field-obj = (get-declared-field class field)
+     if field-obj
+     do (return-from find-declared-field field-obj)
+     else
+     do (setf class (jclass-superclass class)))
   nil)
 
 (defun get-declared-field (class fieldname)
@@ -375,21 +373,21 @@ associated is used to look up the static FIELD."
   (if try-harder
       (let* ((class (if (symbolp object)
                         (setq object (find-java-class object))
-                      (if (equal "java.lang.Class" (jclass-name (jobject-class object)) )
-                          object
-                        (jobject-class object))))
+                        (if (equal "java.lang.Class" (jclass-name (jobject-class object)) )
+                            object
+                            (jobject-class object))))
              (jfield (if (java-object-p field)
                          field
-                        (or (find-declared-field field class)
-                            (error 'no-such-java-field :field-name field :object object)))))
+                         (or (find-declared-field field class)
+                             (error 'no-such-java-field :field-name field :object object)))))
         (#"setAccessible" jfield +true+)
         (values (#"set" jfield object value) jfield))
-    (if (symbolp object)
-        (let ((class (find-java-class object)))
-          (setf (jfield (#"getName" class) field) value))
-        (if (typep object 'java-object)
-            (setf (jfield (jclass-of object) field) value)
-            (setf (jfield object field) value)))))
+      (if (symbolp object)
+          (let ((class (find-java-class object)))
+            (setf (jfield (#"getName" class) field) value))
+          (if (typep object 'java-object)
+              (setf (jfield (jclass-of object) field) value)
+              (setf (jfield object field) value)))))
 
 (defun (setf get-java-field) (value object field &optional (try-harder *running-in-osgi*))
   (set-java-field object field value try-harder))
@@ -413,31 +411,31 @@ associated is used to look up the static FIELD."
 
 (defun do-auto-imports ()
   (labels ((expand-paths (cp)
-           (loop :for s :in cp
-              :appending (loop :for entry 
-                            :in (let ((p (pathname s)))
-                                  (if (wild-pathname-p p)
-                                      (directory p)
-                                      (list p)))
-                            :collecting entry)))
-         (import-classpath (cp)
-           (mapcar 
-                (lambda (p) 
-                  (when *load-verbose*
-                    (format t ";; Importing ~A~%" p))
-                  (cond 
-                    ((file-directory-p p) )
-                    ((equal (pathname-type p) "jar")
-                     (jar-import (merge-pathnames p
-                                                  (format nil "~a/" (jstatic "getProperty" "java.lang.System" "user.dir")))))))
-                cp))
-         (split-classpath (cp)
-           (coerce 
-            (jcall "split" cp 
-                   (string (jfield (jclass "java.io.File") "pathSeparatorChar")))
-            'cons))
-         (do-imports (cp)
-           (import-classpath (expand-paths (split-classpath cp)))))
+             (loop :for s :in cp
+                :appending (loop :for entry 
+                              :in (let ((p (pathname s)))
+                                    (if (wild-pathname-p p)
+                                        (directory p)
+                                        (list p)))
+                              :collecting entry)))
+           (import-classpath (cp)
+             (mapcar 
+              (lambda (p) 
+                (when *load-verbose*
+                  (format t ";; Importing ~A~%" p))
+                (cond 
+                  ((file-directory-p p) )
+                  ((equal (pathname-type p) "jar")
+                   (jar-import (merge-pathnames p
+                                                (format nil "~a/" (jstatic "getProperty" "java.lang.System" "user.dir")))))))
+              cp))
+           (split-classpath (cp)
+             (coerce 
+              (jcall "split" cp 
+                     (string (jfield (jclass "java.io.File") "pathSeparatorChar")))
+              'cons))
+           (do-imports (cp)
+             (import-classpath (expand-paths (split-classpath cp)))))
     (do-imports (jcall "getClassPath" (jstatic "getRuntimeMXBean" '|java.lang.management.ManagementFactory|)))
     (do-imports (jcall "getBootClassPath" (jstatic "getRuntimeMXBean" '|java.lang.management.ManagementFactory|)))))
 
@@ -446,17 +444,17 @@ associated is used to look up the static FIELD."
     (do-auto-imports)))
 
 (defun japropos (string)
-"Output the names of all Java class names loaded in the current process which match STRING.."
+  "Output the names of all Java class names loaded in the current process which match STRING.."
   (setq string (string string))
   (let ((matches nil))
     (maphash (lambda(key value) 
                (declare (ignore key))
                (loop for class in value
                   when (search string class :test 'string-equal)
-                    do (pushnew (list class "Java Class") matches :test 'equal)))
+                  do (pushnew (list class "Java Class") matches :test 'equal)))
              *class-name-to-full-case-insensitive*)
     (loop for (match type) in (sort matches 'string-lessp :key 'car)
-         do (format t "~a: ~a~%" match type))
+       do (format t "~a: ~a~%" match type))
     ))
 
 (defun jclass-method-names (class &optional full)
@@ -498,15 +496,15 @@ current classpath."
                :key #"getName" :test 'equal)))
     (#"setAccessible" classes-field +true+)
     (loop for classloader in (mapcar #'first (dump-classpath))
-         append
+       append
          (loop with classesv = (#"get" classes-field classloader)
             for i below (#"size" classesv)
             collect (#"getName" (#"elementAt" classesv i)))
-         append
+       append
          (loop with classesv = (#"get" classes-field (#"getParent" classloader))
             for i below (#"size" classesv)
             collect (#"getName" (#"elementAt" classesv i))))))
-         
+
 (defun get-dynamic-class-path ()
   (rest 
    (find-if (lambda (loader) 
@@ -524,9 +522,9 @@ current classpath."
 (defun java-room ()
   (let ((rt (#"getRuntime" 'java.lang.runtime)))
     (values (- (#"totalMemory" rt) (#"freeMemory" rt))
-           (#"totalMemory" rt)
-           (#"freeMemory" rt)
-           (list :used :total :free))))
+            (#"totalMemory" rt)
+            (#"freeMemory" rt)
+            (list :used :total :free))))
 
 (defun verbose-gc (&optional (new-value nil new-value-supplied))
   (if new-value-supplied
@@ -545,7 +543,7 @@ current classpath."
      if (null (pathname-name top)) do (setq q (append q (all-classfiles-below top ))) 
      if (equal (pathname-type top) "class")
      collect top
-     ))
+       ))
 
 (defun all-classes-below-directory (directory)
   (loop for file in (all-classfiles-below directory) collect
@@ -558,7 +556,7 @@ current classpath."
   "Load all Java classes recursively contained under DIRECTORY in the current process."
   (setq directory (truename directory))
   (loop for full-class-name in (all-classes-below-directory directory)
-       for name = (#"replaceAll" full-class-name "^.*\\." "")
+     for name = (#"replaceAll" full-class-name "^.*\\." "")
      do
        (pushnew full-class-name (gethash name *class-name-to-full-case-insensitive*) 
                 :test 'equal)))
@@ -600,24 +598,24 @@ current classpath."
 
 (defun iterable-to-list (iterable)
   "Return the items contained the java.lang.Iterable ITERABLE as a list."
- (declare (optimize (speed 3) (safety 0)))
- (let ((it (#"iterator" iterable)))
-   (with-constant-signature ((has-next "hasNext")
-                             (next "next"))
-     (loop :while (has-next it)
-        :collect (next it)))))
+  (declare (optimize (speed 3) (safety 0)))
+  (let ((it (#"iterator" iterable)))
+    (with-constant-signature ((has-next "hasNext")
+                              (next "next"))
+      (loop :while (has-next it)
+         :collect (next it)))))
 
 (defun vector-to-list (vector)
   "Return the elements of java.lang.Vector VECTOR as a list."
- (declare (optimize (speed 3) (safety 0)))
- (with-constant-signature ((has-more "hasMoreElements")
-                           (next "nextElement"))
-   (let ((elements (#"elements" vector)))
-     (loop :while (has-more elements)
-        :collect (next elements)))))
+  (declare (optimize (speed 3) (safety 0)))
+  (with-constant-signature ((has-more "hasMoreElements")
+                            (next "nextElement"))
+    (let ((elements (#"elements" vector)))
+      (loop :while (has-more elements)
+         :collect (next elements)))))
 
 (defun hashmap-to-hashtable (hashmap &rest rest &key (keyfun #'identity) (valfun #'identity) (invert? nil)
-                                    table 
+                                                  table 
                              &allow-other-keys )
   "Converts the a HASHMAP reference to a java.util.HashMap object to a Lisp hashtable.
 
@@ -639,8 +637,8 @@ If INVERT? is non-nil than reverse the keys and values in the resulting hashtabl
          do (if invert?
                 (setf (gethash (funcall valfun (#"get" hashmap item)) table) (funcall keyfun item))
                 (setf (gethash (funcall keyfun item) table) (funcall valfun (#"get" hashmap item)))))
-    table)))
-           
+      table)))
+
 (defun jclass-all-interfaces (class)
   "Return a list of interfaces the class implements"
   (unless (java-object-p class)
@@ -683,9 +681,9 @@ If INVERT? is non-nil than reverse the keys and values in the resulting hashtabl
               collect name collect (safely function name))))
       (loop for method across
            (jclass-methods interface :declared nil :public t)
-           for method-name = (jmethod-name method)
-           when (not (member method-name implemented-methods :test #'string=))
-           do
+         for method-name = (jmethod-name method)
+         when (not (member method-name implemented-methods :test #'string=))
+         do
            (let* ((def  `(lambda
                              (&rest args)
                            (invoke-restargs ,(jmethod-name method) ,dispatch-to args t)
