@@ -41,7 +41,7 @@
 			 (parse-defmacro lambda-list whole body access-fn
 					 'define-setf-expander
 					 :environment environment)
-      `(progn
+      `(eval-when (:compile-toplevel :load-toplevel :execute)
          ,@(when doc
              `((%set-documentation ',access-fn 'setf ,doc)))
          (setf (get ',access-fn 'setf-expander)
