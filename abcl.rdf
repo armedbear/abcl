@@ -130,7 +130,7 @@ doap:Project rdfs:seeAlso
     rdf:_9 abcl:quicklisp-abcl ;
 ] .
 
-abcl:asdf dc:version "3.1.0.94" .
+abcl:asdf dc:version "3.1.3" .
 
 abcl:abcl-contrib  
   rdfs:seeAlso <file:contrib/README.markdown> .                             
