@@ -104,8 +104,8 @@ The &key arguments have the following meanings:
     (let ((process (make-process (%process-builder-start process-builder))))
       (when wait (process-wait process))
       process)))
-;;The process structure.
 
+;;; The process structure.
 (defstruct (process (:constructor %make-process (jprocess)))
   jprocess input output error)
 

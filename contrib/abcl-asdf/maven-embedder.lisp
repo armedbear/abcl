@@ -123,25 +123,38 @@ Emits warnings if not able to find a suitable executable."
   "Location of 'maven-core-3.<m>.<p>.jar', 'maven-embedder-3.<m>.<p>.jar' etc.")
 
 (defun mvn-version ()
-  "Return the Maven version used by the Aether connector."
-  (let ((stream (sys::process-output
-                 (sys::run-program (truename (find-mvn)) '("-version"))))
-        (pattern (#"compile"
-                  'regex.Pattern
-                  "Apache Maven ([0-9]+)\\.([0-9]+)\\.([0-9]+)")))
-    (do ((line (read-line stream nil :eof) 
-              (read-line stream nil :eof)))
-        ((or (not line) (eq line :eof)) nil)
-      (let ((matcher (#"matcher" pattern line)))
-        (when (#"find" matcher)
-          (return-from mvn-version
-            (handler-case 
+  "Return the Maven version used by the Aether connector located by
+  FIND-MVN as a list of (MAJOR MINOR PATHLEVEL) integers.
+
+Signals a simple-error with additional information if this attempt fails."
+  (handler-case 
+      (let* ((process (sys:run-program (truename (find-mvn)) '("-version")))
+             (output (sys:process-output process))
+             (pattern (#"compile"
+                       'regex.Pattern
+                       "Apache Maven ([0-9]+)\\.([0-9]+)\\.([0-9]+)"))
+             lines)
+        (do ((line (read-line output nil :eof) 
+                   (read-line output nil :eof)))
+            ((or (not line) (eq line :eof)) nil)
+          (push line lines)
+          (let ((matcher (#"matcher" pattern line)))
+            (when (#"find" matcher)
+              (return-from mvn-version
                 (mapcar #'parse-integer 
                         `(,(#"group" matcher 1) 
                            ,(#"group" matcher 2) 
-                           ,(#"group" matcher 3)))
-              (t (e) 
-                (error "Failed to parse Maven version from ~A because~&~A." line e)))))))))
+                           ,(#"group" matcher 3)))))))
+        (when lines 
+          (signal "No parseable Maven version found in ~{~&  ~A~}" (nreverse lines)))
+        (let ((error (sys:process-error process)))
+          (do ((line (read-line error nil :eof) 
+                     (read-line error nil :eof)))
+              ((or (not line) (eq line :eof)) nil)
+            (push line lines)
+            (signal "Invocation of Maven returned the error ~{~&  ~A~}" (nreverse lines)))))
+    (t (e) 
+      (error "Failed to determine Maven version: ~A." e))))
 
 (defun ensure-mvn-version ()
   "Return t if Maven version is 3.0.3 or greater."
@@ -504,6 +517,9 @@ artifact and all of its transitive dependencies."
       ((= (length result) 3)
        (resolve-dependencies 
         (first result) (second result) (third result)))
+      ((= (length result) 2)
+       (resolve-dependencies
+        (first result) (second result)))
       ((string= string "com.sun.jna:jna")
        (warn "Replacing request for no longer available com.sun.jna:jna with net.java.dev.jna:jna")
        (resolve-dependencies "net.java.dev.jna" "jna" "LATEST"))
