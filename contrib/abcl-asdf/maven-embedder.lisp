@@ -517,12 +517,12 @@ artifact and all of its transitive dependencies."
       ((= (length result) 3)
        (resolve-dependencies 
         (first result) (second result) (third result)))
-      ((= (length result) 2)
-       (resolve-dependencies
-        (first result) (second result)))
       ((string= string "com.sun.jna:jna")
        (warn "Replacing request for no longer available com.sun.jna:jna with net.java.dev.jna:jna")
        (resolve-dependencies "net.java.dev.jna" "jna" "LATEST"))
+      ((= (length result) 2)
+       (resolve-dependencies
+        (first result) (second result)))
       (t 
        (setf result 
              (apply #'resolve-dependencies (split-string string "/")))))))
