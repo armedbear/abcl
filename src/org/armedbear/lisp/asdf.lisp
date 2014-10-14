@@ -1,5 +1,5 @@
 ;;; -*- mode: Common-Lisp; Base: 10 ; Syntax: ANSI-Common-Lisp ; buffer-read-only: t; -*-
-;;; This is ASDF 3.1.3: Another System Definition Facility.
+;;; This is ASDF 3.1.4: Another System Definition Facility.
 ;;;
 ;;; Feedback, bug reports, and patches are all welcome:
 ;;; please mail to <asdf-devel@common-lisp.net>.
@@ -151,7 +151,7 @@ or when loading the package is optional."
   (defun shadowing-import* (symbol package-designator)
     (shadowing-import (or symbol (list symbol)) (find-package* package-designator)))
   (defun shadow* (name package-designator)
-    (shadow (string name) (find-package* package-designator)))
+    (shadow (list (string name)) (find-package* package-designator)))
   (defun make-symbol* (name)
     (etypecase name
       (string (make-symbol name))
@@ -1485,7 +1485,7 @@ A symbol otherwise designates a class by name."
       (or (and found
                (or (eq super t) (#-cormanlisp subtypep #+cormanlisp cl::subclassp found super))
                found)
-          (call-function error "Can't coerce ~S to a ~@[class~;subclass of ~:*~S]" class super)))))
+          (call-function error "Can't coerce ~S to a ~:[class~;subclass of ~:*~S~]" class super)))))
 
 
 ;;; Hash-tables
@@ -1877,7 +1877,7 @@ suitable for use as a directory name to segregate Lisp FASLs, C dynamic librarie
         #+ecl (ext:getcwd)
         #+gcl (let ((*default-pathname-defaults* #p"")) (truename #p""))
         #+genera *default-pathname-defaults* ;; on a Lisp OS, it *is* canonical!
-        #+lispworks (system:current-directory)
+        #+lispworks (hcl:get-working-directory)
         #+mkcl (mk-ext:getcwd)
         #+sbcl (sb-ext:parse-native-namestring (sb-unix:posix-getcwd/))
         #+xcl (extensions:current-directory)
@@ -1886,19 +1886,21 @@ suitable for use as a directory name to segregate Lisp FASLs, C dynamic librarie
   (defun chdir (x)
     "Change current directory, as per POSIX chdir(2), to a given pathname object"
     (if-let (x (pathname x))
-      (or #+abcl (java:jstatic "setProperty" "java.lang.System" "user.dir" (namestring x))
-          #+allegro (excl:chdir x)
-          #+clisp (ext:cd x)
-          #+clozure (setf (ccl:current-directory) x)
-          #+(or cmu scl) (unix:unix-chdir (ext:unix-namestring x))
-          #+cormanlisp (unless (zerop (win32::_chdir (namestring x)))
-                         (error "Could not set current directory to ~A" x))
-          #+ecl (ext:chdir x)
-          #+genera (setf *default-pathname-defaults* x)
-          #+lispworks (hcl:change-directory x)
-          #+mkcl (mk-ext:chdir x)
-          #+sbcl (progn (require :sb-posix) (symbol-call :sb-posix :chdir (sb-ext:native-namestring x)))
-          (error "chdir not supported on your implementation")))))
+      #+abcl (java:jstatic "setProperty" "java.lang.System" "user.dir" (namestring x))
+      #+allegro (excl:chdir x)
+      #+clisp (ext:cd x)
+      #+clozure (setf (ccl:current-directory) x)
+      #+(or cmu scl) (unix:unix-chdir (ext:unix-namestring x))
+      #+cormanlisp (unless (zerop (win32::_chdir (namestring x)))
+                     (error "Could not set current directory to ~A" x))
+      #+ecl (ext:chdir x)
+      #+gcl (system:chdir x)
+      #+genera (setf *default-pathname-defaults* x)
+      #+lispworks (hcl:change-directory x)
+      #+mkcl (mk-ext:chdir x)
+      #+sbcl (progn (require :sb-posix) (symbol-call :sb-posix :chdir (sb-ext:native-namestring x)))
+      #-(or abcl allegro clisp clozure cmu cormanlisp ecl gcl genera lispworks mkcl sbcl scl)
+      (error "chdir not supported on your implementation"))))
 
 
 ;;;; -----------------------------------------------------------------
@@ -2340,7 +2342,7 @@ will be treated as part of the directory path.
 
 An empty string is thus read as meaning a pathname object with all fields nil.
 
-Note that : characters will NOT be interpreted as host specification.
+Note that colon characters #\: will NOT be interpreted as host specification.
 Absolute pathnames are only appropriate on Unix-style systems.
 
 The intention of this function is to support structured component names,
@@ -2917,8 +2919,8 @@ This function is used as a helper to DIRECTORY-FILES to avoid invalid entries wh
 Subdirectories should NOT be returned.
   PATTERN defaults to a pattern carefully chosen based on the implementation;
 override the default at your own risk.
-  DIRECTORY-FILES tries NOT to resolve symlinks if the implementation
-permits this."
+  DIRECTORY-FILES tries NOT to resolve symlinks if the implementation permits this,
+but the behavior in presence of symlinks is not portable. Use IOlib to handle such situations."
     (let ((dir (pathname directory)))
       (when (logical-pathname-p dir)
         ;; Because of the filtering we do below,
@@ -2944,7 +2946,8 @@ permits this."
                                        :version (make-pathname-component-logical (pathname-version f)))))))))
 
   (defun subdirectories (directory)
-    "Given a DIRECTORY pathname designator, return a list of the subdirectories under it."
+    "Given a DIRECTORY pathname designator, return a list of the subdirectories under it.
+The behavior in presence of symlinks is not portable. Use IOlib to handle such situations."
     (let* ((directory (ensure-directory-pathname directory))
            #-(or abcl cormanlisp genera xcl)
            (wild (merge-pathnames*
@@ -2982,14 +2985,17 @@ permits this."
                      :directory (append prefix (make-pathname-component-logical (last dir)))))))))))
 
   (defun collect-sub*directories (directory collectp recursep collector)
-    "Given a DIRECTORY, call-function the COLLECTOR function designator
-on the directory if COLLECTP returns true when CALL-FUNCTION'ed with the directory,
-and recurse each of its subdirectories on which the RECURSEP returns true when CALL-FUNCTION'ed with them."
+    "Given a DIRECTORY, when COLLECTP returns true when CALL-FUNCTION'ed with the directory,
+call-function the COLLECTOR function designator on the directory,
+and recurse each of its subdirectories on which the RECURSEP returns true when CALL-FUNCTION'ed with them.
+This function will thus let you traverse a filesystem hierarchy,
+superseding the functionality of CL-FAD:WALK-DIRECTORY.
+The behavior in presence of symlinks is not portable. Use IOlib to handle such situations."
     (when (call-function collectp directory)
-      (call-function collector directory))
-    (dolist (subdir (subdirectories directory))
-      (when (call-function recursep subdir)
-        (collect-sub*directories subdir collectp recursep collector)))))
+      (call-function collector directory)
+      (dolist (subdir (subdirectories directory))
+        (when (call-function recursep subdir)
+          (collect-sub*directories subdir collectp recursep collector))))))
 
 ;;; Resolving symlinks somewhat
 (with-upgradability ()
@@ -3390,7 +3396,7 @@ If you're suicidal or extremely confident, just use :VALIDATE T."
    #:encoding-external-format #:*encoding-external-format-hook* #:default-encoding-external-format
    #:*default-encoding* #:*utf-8-external-format*
    #:with-safe-io-syntax #:call-with-safe-io-syntax #:safe-read-from-string
-   #:with-output #:output-string #:with-input
+   #:with-output #:output-string #:with-input #:input-string
    #:with-input-file #:call-with-input-file #:with-output-file #:call-with-output-file
    #:null-device-pathname #:call-with-null-input #:with-null-input
    #:call-with-null-output #:with-null-output
@@ -3641,8 +3647,14 @@ Otherwise, signal an error."
   (defmacro with-input ((input-var &optional (value input-var)) &body body)
     "Bind INPUT-VAR to an input stream, coercing VALUE (default: previous binding of INPUT-VAR)
 as per CALL-WITH-INPUT, and evaluate BODY within the scope of this binding."
-    `(call-with-input ,value #'(lambda (,input-var) ,@body))))
+    `(call-with-input ,value #'(lambda (,input-var) ,@body)))
 
+  (defun input-string (&optional input)
+    "If the desired INPUT is a string, return that string; otherwise slurp the INPUT into a string
+and return that"
+    (if (stringp input)
+        input
+        (with-input (input) (funcall 'slurp-stream-string input)))))
 
 ;;; Null device
 (with-upgradability ()
@@ -4293,7 +4305,7 @@ depending on whether *LISP-INTERACTION* is set, enter debugger or die"
     #+abcl ext:*command-line-argument-list* ; Use 1.0.0 or later!
     #+allegro (sys:command-line-arguments) ; default: :application t
     #+clisp (coerce (ext:argv) 'list)
-    #+clozure (ccl::command-line-arguments)
+    #+clozure ccl:*command-line-argument-list*
     #+(or cmu scl) extensions:*command-line-strings*
     #+ecl (loop :for i :from 0 :below (si:argc) :collect (si:argv i))
     #+gcl si:*command-args*
@@ -6658,7 +6670,7 @@ previously-loaded version of ASDF."
          ;; "3.4.5.67" would be a development version in the official branch, on top of 3.4.5.
          ;; "3.4.5.0.8" would be your eighth local modification of official release 3.4.5
          ;; "3.4.5.67.8" would be your eighth local modification of development version 3.4.5.67
-         (asdf-version "3.1.3")
+         (asdf-version "3.1.4")
          (existing-version (asdf-version)))
     (setf *asdf-version* asdf-version)
     (when (and existing-version (not (equal asdf-version existing-version)))
@@ -9017,7 +9029,7 @@ The :FORCE or :FORCE-NOT argument to OPERATE can be:
              (etypecase operation
                (operation (let ((name (type-of operation))
                                 (initargs (operation-original-initargs operation)))
-                            #'(lambda () (make-operation name :original-initargs initargs initargs))))
+                            #'(lambda () (apply 'make-operation name :original-initargs initargs initargs))))
                ((or symbol string) (constantly operation))))
            (component-path (typecase component ;; to remake the component after ASDF upgrade
                              (component (component-find-path component))
@@ -9519,7 +9531,7 @@ effectively disabling the output translation facility."
    #:ensure-source-registry #:*source-registry-parameter*
    #:*default-source-registry-exclusions* #:*source-registry-exclusions*
    #:*wild-asd* #:directory-asd-files #:register-asd-directory
-   #:collect-asds-in-directory #:collect-sub*directories-asd-files
+   #:*recurse-beyond-asds* #:collect-asds-in-directory #:collect-sub*directories-asd-files
    #:validate-source-registry-directive #:validate-source-registry-form
    #:validate-source-registry-file #:validate-source-registry-directory
    #:parse-source-registry-string #:wrapping-source-registry
@@ -9565,15 +9577,33 @@ system names to pathnames of .asd files")
     (directory-files directory *wild-asd*))
 
   (defun collect-asds-in-directory (directory collect)
-    (map () collect (directory-asd-files directory)))
+    (let ((asds (directory-asd-files directory)))
+      (map () collect asds)
+      asds))
+
+  (defvar *recurse-beyond-asds* t
+    "Should :tree entries of the source-registry recurse in subdirectories
+after having found a .asd file? True by default.")
+
+  (defun process-source-registry-cache (directory collect)
+    (let ((cache (ignore-errors
+                  (safe-read-file-form (subpathname directory ".cl-source-registry.cache")))))
+      (when (and (listp cache) (eq :source-registry-cache (first cache)))
+        (loop :for s :in (rest cache) :do (funcall collect (subpathname directory s)))
+        t)))
 
   (defun collect-sub*directories-asd-files
-      (directory &key (exclude *default-source-registry-exclusions*) collect)
+      (directory &key (exclude *default-source-registry-exclusions*) collect
+                   (recurse-beyond-asds *recurse-beyond-asds*) ignore-cache)
     (collect-sub*directories
      directory
-     (constantly t)
-     #'(lambda (x &aux (l (car (last (pathname-directory x))))) (not (member l exclude :test #'equal)))
-     #'(lambda (dir) (collect-asds-in-directory dir collect))))
+     #'(lambda (dir)
+         (unless (and (not ignore-cache) (process-source-registry-cache directory collect))
+           (let ((asds (collect-asds-in-directory dir collect)))
+             (or recurse-beyond-asds (not asds)))))
+     #'(lambda (x)
+         (not (member (car (last (pathname-directory x))) exclude :test #'equal)))
+     (constantly nil)))
 
   (defun validate-source-registry-directive (directive)
     (or (member directive '(:default-registry))
@@ -9729,7 +9759,8 @@ system names to pathnames of .asd files")
         ((:also-exclude)
          (appendf *source-registry-exclusions* rest))
         ((:default-registry)
-         (inherit-source-registry '(default-source-registry) :register register))
+         (inherit-source-registry
+          '(default-user-source-registry default-system-source-registry) :register register))
         ((:inherit-configuration)
          (inherit-source-registry inherit :register register))
         ((:ignore-inherited-configuration)
@@ -10187,7 +10218,6 @@ system names contained using COERCE-NAME. Return the result."
    #:bundle-op #:bundle-type #:program-system
    #:bundle-system #:bundle-pathname-type #:bundlable-file-p #:direct-dependency-files
    #:monolithic-op #:monolithic-bundle-op #:operation-monolithic-p
-   #:fasl-op #:load-fasl-op #:monolithic-fasl-op #:binary-op #:monolithic-binary-op
    #:basic-compile-bundle-op #:prepare-bundle-op
    #:compile-bundle-op #:load-bundle-op #:monolithic-compile-bundle-op #:monolithic-load-bundle-op
    #:lib-op #:monolithic-lib-op
@@ -10648,6 +10678,11 @@ itself.")) ;; operation on a system and its dependencies
   ;;(unless (or #+ecl (use-ecl-byte-compiler-p))
   ;;  (setf *load-system-operation* 'load-bundle-op))
 
+  (defun uiop-library-pathname ()
+    #+ecl (or (probe-file* (compile-file-pathname "sys:uiop" :type :lib)) ;; new style
+              (probe-file* (compile-file-pathname "sys:uiop" :type :object))) ;; old style
+    #+mkcl (make-pathname :type (bundle-pathname-type :lib) :defaults #p"sys:contrib;uiop"))
+
   (defun asdf-library-pathname ()
     #+ecl (or (probe-file* (compile-file-pathname "sys:asdf" :type :lib)) ;; new style
               (probe-file* (compile-file-pathname "sys:asdf" :type :object))) ;; old style
@@ -10669,10 +10704,12 @@ itself.")) ;; operation on a system and its dependencies
                `(,(make-library-system
                    "cmp" (compiler-library-pathname))))
            ,@(unless (or (no-uiop c) (has-it-p "uiop") (has-it-p "asdf"))
-               `(,(cond
-                    ((system-source-directory :uiop) (find-system :uiop))
-                    ((system-source-directory :asdf) (find-system :asdf))
-                    (t (make-library-system "asdf" (asdf-library-pathname))))))
+               `(cond
+                  ((system-source-directory :uiop) `(,(find-system :uiop)))
+                  ((system-source-directory :asdf) `(,(find-system :asdf)))
+                  (t `(,@(if-let (uiop (uiop-library-pathname))
+                           `(,(make-library-system "uiop" uiop)))
+                       ,(make-library-system "asdf" (asdf-library-pathname))))))
            ,@deps)))))
 
   (defmethod perform ((o link-op) (c system))
@@ -10707,18 +10744,18 @@ Please report to ASDF-DEVEL if this works for you.")))
 
 
 ;;; Backward compatibility with pre-3.1.2 names
-(defclass fasl-op (selfward-operation)
-  ((selfward-operation :initform 'compile-bundle-op :allocation :class)))
-(defclass load-fasl-op (selfward-operation)
-  ((selfward-operation :initform 'load-bundle-op :allocation :class)))
-(defclass binary-op (selfward-operation)
-  ((selfward-operation :initform 'deliver-asd-op :allocation :class)))
-(defclass monolithic-fasl-op (selfward-operation)
-  ((selfward-operation :initform 'monolithic-compile-bundle-op :allocation :class)))
-(defclass monolithic-load-fasl-op (selfward-operation)
-  ((selfward-operation :initform 'monolithic-load-bundle-op :allocation :class)))
-(defclass monolithic-binary-op (selfward-operation)
-  ((selfward-operation :initform 'monolithic-deliver-asd-op :allocation :class)))
+;; (defclass fasl-op (selfward-operation)
+;;   ((selfward-operation :initform 'compile-bundle-op :allocation :class)))
+;; (defclass load-fasl-op (selfward-operation)
+;;   ((selfward-operation :initform 'load-bundle-op :allocation :class)))
+;; (defclass binary-op (selfward-operation)
+;;   ((selfward-operation :initform 'deliver-asd-op :allocation :class)))
+;; (defclass monolithic-fasl-op (selfward-operation)
+;;   ((selfward-operation :initform 'monolithic-compile-bundle-op :allocation :class)))
+;; (defclass monolithic-load-fasl-op (selfward-operation)
+;;   ((selfward-operation :initform 'monolithic-load-bundle-op :allocation :class)))
+;; (defclass monolithic-binary-op (selfward-operation)
+;;   ((selfward-operation :initform 'monolithic-deliver-asd-op :allocation :class)))
 ;;;; -------------------------------------------------------------------------
 ;;;; Concatenate-source
 
@@ -11155,7 +11192,6 @@ otherwise return a default system name computed from PACKAGE-NAME."
    #:component-load-dependencies #:run-shell-command ; deprecated, do not use
    #:bundle-op #:monolithic-bundle-op #:precompiled-system #:compiled-file #:bundle-system
    #:program-system #:make-build
-   #:fasl-op #:load-fasl-op #:monolithic-fasl-op #:binary-op #:monolithic-binary-op
    #:basic-compile-bundle-op #:prepare-bundle-op
    #:compile-bundle-op #:load-bundle-op #:monolithic-compile-bundle-op #:monolithic-load-bundle-op
    #:lib-op #:dll-op #:deliver-asd-op #:program-op #:image-op
@@ -11306,7 +11342,8 @@ otherwise return a default system name computed from PACKAGE-NAME."
 
 (uiop/package:define-package :asdf/footer
   (:recycle :asdf/footer :asdf)
-  (:use :uiop/common-lisp :uiop :asdf/upgrade :asdf/operate :asdf/bundle))
+  (:use :uiop/common-lisp :uiop
+        :asdf/upgrade :asdf/find-system :asdf/operate :asdf/bundle))
 (in-package :asdf/footer)
 
 ;;;; Hook ASDF into the implementation's REQUIRE and other entry points.
@@ -11336,7 +11373,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
                 (if (eq f 'module-provide-asdf) f
                     #'(lambda (name)
                         (let ((l (multiple-value-list (funcall f name))))
-                          (and (first l) (register-pre-built-system (coerce-name name)))
+                          (and (first l) (register-preloaded-system (coerce-name name)))
                           (values-list l))))))))
 
 #+cmu ;; Hook into the CMUCL herald.
@@ -11361,4 +11398,3 @@ otherwise return a default system name computed from PACKAGE-NAME."
 
 (when *load-verbose*
   (asdf-message ";; ASDF, version ~a~%" (asdf-version)))
-
