@@ -50,7 +50,11 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
+import java.nio.charset.UnsupportedCharsetException;
 import org.armedbear.lisp.Debug;
+import static org.armedbear.lisp.Lisp.error;
+import org.armedbear.lisp.SimpleError;
+import org.armedbear.lisp.SimpleString;
 
 public class RandomAccessCharacterFile {
 
@@ -305,12 +309,19 @@ public class RandomAccessCharacterFile {
     }
 
     public void setEncoding(String encoding) {
-        cset = (encoding == null)
-            ? Charset.defaultCharset() : Charset.forName(encoding);
-        cdec = cset.newDecoder();
-        cdec.onMalformedInput(CodingErrorAction.REPLACE);
-        cdec.onUnmappableCharacter(CodingErrorAction.REPLACE);
-        cenc = cset.newEncoder();
+      if (encoding == null) {
+        cset = Charset.defaultCharset();
+      } else {
+        try {
+          cset = Charset.forName(encoding);
+        } catch (UnsupportedCharsetException e) {
+          error(new SimpleError("Undefined encoding: " + encoding));
+        }
+      }
+      cdec = cset.newDecoder();
+      cdec.onMalformedInput(CodingErrorAction.REPLACE);
+      cdec.onUnmappableCharacter(CodingErrorAction.REPLACE);
+      cenc = cset.newEncoder();
     }
 
     public Writer getWriter() {
