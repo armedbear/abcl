@@ -17,18 +17,20 @@
                                      mapping
                                      system-base
                                      system-name
-                                     &optional root verbose)
-  "Auxiliary procedure that adds all the files of a SYSTEM to the
-MAPPING with a given SYSTEM-BASE and SYSTEM-NAME. The whole idea of
-this procedure is to modify MAPPING, so a NIL is returned."
+                                     root
+                                     &key (verbose nil))
+  "Add all the files of a SYSTEM to the MAPPING with a given
+SYSTEM-BASE and SYSTEM-NAME. 
+
+This function destructively modifies MAPPING returning nil."
   (let ((abcl-file-type "abcl"))
     (loop :for component :in (all-files system) 
        :for source = (slot-value component 'asdf::absolute-pathname)
-       :for source-entry = (archive-relative-path system-base system-name source)
+       :for source-entry = (merge-pathnames
+                            (archive-relative-path system-base system-name source)
+                            (make-pathname :directory root))
        :do (setf (gethash source mapping)
-                 (if root 
-                     (merge-pathnames source-entry (make-pathname :directory root))
-                     source-entry))
+                 source-entry)
        :do (format verbose "~&~A~& => ~A" source source-entry)
        :when (and (typep component 'asdf::source-file)
                   (not (typep component 'asdf::static-file)))
@@ -38,19 +40,18 @@ this procedure is to modify MAPPING, so a NIL is returned."
                    :type abcl-file-type))
                  (output-entry 
                   (make-pathname :defaults source-entry 
-                                 :type abcl-file-type
-                                 :directory
-                                 (append root
-                                         (cadr (pathname-directory source-entry))))))
+                                 :type abcl-file-type)))
              (format verbose "~&~A~& => ~A" output output-entry)
              (setf (gethash output mapping)
                    output-entry)))))
 
-(defun systems->hash-table (systems &optional root verbose)
-  "Auxiliary function that, given a list of SYSTEMS, builds a hash
-table mapping absolute file names to of these systems into relative
-path names. This mapping will be used to zip the files of the system
-into a JAR file."
+(defun systems->hash-table (systems root &key (verbose nil))
+  "Build a hash table from a list of SYSTEMS mapping absolute file
+names to of these systems into relative path names under the pathname
+directory component ROOT.
+
+This mapping will be used to zip the files of the system
+into a jar file."
   (let ((mapping (make-hash-table :test 'equal)))
     (dolist (system systems)
       (let ((base (slot-value system 'asdf::absolute-pathname))
@@ -58,65 +59,11 @@ into a JAR file."
             (asdf (slot-value system 'asdf::source-file)))
         (setf (gethash asdf mapping)
               (let ((relative-path (archive-relative-path base name asdf)))
-                (if root
-                    (merge-pathnames
-                     relative-path
-                     (make-pathname :directory root))
-                    relative-path)))
-        (add-system-files-to-mapping! system mapping base name root verbose)))
-    mapping))
-
-(defun add-system-files-to-mapping! (system
-                                     mapping
-                                     system-base
-                                     system-name
-                                     &optional root verbose)
-  "Auxiliary procedure that adds all the files of a SYSTEM to the
-MAPPING with a given SYSTEM-BASE and SYSTEM-NAME. The whole idea of
-this procedure is to modify MAPPING, so a NIL is returned."
-  (let ((abcl-file-type "abcl"))
-    (loop :for component :in (all-files system) 
-       :for source = (slot-value component 'asdf::absolute-pathname)
-       :for source-entry = (archive-relative-path system-base system-name source)
-       :do (setf (gethash source mapping)
-                 (if root 
-                     (merge-pathnames source-entry (make-pathname :directory root))
-                     source-entry))
-       :do (format verbose "~&~A~& => ~A" source source-entry)
-       :when (and (typep component 'asdf::source-file)
-                  (not (typep component 'asdf::static-file)))
-       :do (let ((output 
-                  (make-pathname
-                   :defaults (asdf:apply-output-translations source)
-                   :type abcl-file-type))
-                 (output-entry 
-                  (make-pathname :defaults source-entry 
-                                 :type abcl-file-type
-                                 :directory
-                                 (append root
-                                         (cadr (pathname-directory source-entry))))))
-             (format verbose "~&~A~& => ~A" output output-entry)
-             (setf (gethash output mapping)
-                   output-entry)))))
-
-(defun systems->hash-table (systems &optional root verbose)
-  "Auxiliary function that, given a list of SYSTEMS, builds a hash
-table mapping absolute file names to of these systems into relative
-path names. This mapping will be used to zip the files of the system
-into a JAR file."
-  (let ((mapping (make-hash-table :test 'equal)))
-    (dolist (system systems)
-      (let ((base (slot-value system 'asdf::absolute-pathname))
-            (name (slot-value system 'asdf::name))
-            (asdf (slot-value system 'asdf::source-file)))
-        (setf (gethash asdf mapping)
-              (let ((relative-path (archive-relative-path base name asdf)))
-                (if root
-                    (merge-pathnames
-                     relative-path
-                     (make-pathname :directory root))
-                    relative-path)))
-        (add-system-files-to-mapping! system mapping base name root verbose)))
+                (merge-pathnames
+                 relative-path
+                 (make-pathname :directory root))))
+        (add-system-files-to-mapping! system mapping base name root
+                                      :verbose verbose)))
     mapping))
 
 (defun package (system &key 
@@ -132,12 +79,10 @@ dependencies into the same jar.
 
 Place the resulting packaged jar in the OUT directory.
 
-If FORCE is true, force asdf to recompile all the necessary fasls for
-inclusion in the packaging artifact.
+If FORCE is true, force asdf to recompile all the necessary fasls.
 
-VERBOSE designates the stream to which information messages about the
-packaging process will be logged, or nil if one wishes to muffle
-output.
+VERBOSE controls how many messages will be logged to
+*standard-output*.
 
 ROOT controls if the relative pathnames will be appended to something
 before being added to the mapping. The purpose of having this option
@@ -154,10 +99,10 @@ Returns the pathname of the packaged jar archive.
                     (when v
                       v)))
          (package-jar-name 
-           (format nil "~A~A~A" name (if recursive "-all" "")
-                   (if version 
-                       (format nil "-~A" version)
-                       "")))
+          (format nil "~A~A~A" name (if recursive "-all" "")
+                  (if version 
+                      (format nil "-~A" version)
+                      "")))
          (package-jar
           (make-pathname :name package-jar-name
                          :type "jar"
@@ -169,18 +114,18 @@ Returns the pathname of the packaged jar archive.
     (asdf:compile-system system :force force)
     (when verbose
       (format verbose "~&Packaging contents in ~A" package-jar))
-     (system:zip package-jar
-                 (systems->hash-table 
-                  (append (list system) 
-                          (when recursive
-                            (let ((dependencies (dependent-systems system)))
-                              (when (and verbose dependencies) 
-                                (format verbose
-                                        "~&  with recursive dependencies~{ ~A~^, ~}."
-                                        dependencies)
-                                (mapcar #'asdf:find-system dependencies)))))
-                  root
-                  verbose))))
+    (system:zip package-jar
+                (systems->hash-table 
+                 (append (list system) 
+                         (when recursive
+                           (let ((dependencies (dependent-systems system)))
+                             (when (and verbose dependencies) 
+                               (format verbose
+                                       "~&  with recursive dependencies~{ ~A~^, ~}."
+                                       dependencies))
+                             (mapcar #'asdf:find-system dependencies))))
+                 root
+                 :verbose verbose))))
 
 (defun all-files (component)
   (loop :for c 
