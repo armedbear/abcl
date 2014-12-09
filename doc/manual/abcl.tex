@@ -525,6 +525,30 @@ CL function \code{NULL} in the following way:
  }
 \end{listing-java}
 
+\subsubsection{Multiple Values}
+
+After a call to a function that returns Lisp multiple values, the
+values are associated with the executing \code{LispThread} until the
+next call into Lisp.  One may access the values object as a list of
+\code{LispObject} instances via a call to \code{getValues()} on that
+thread reference
+as evidenced by the following code:
+
+\begin{listing-java}
+
+  org.armedbear.lisp.Package cl = Packages.findPackage("CL");
+  Symbol valuesSymbol = cl.findAccessibleSymbol("VALUES");
+  LispObject[] valuesArgs = {
+    LispInteger.getInstance(1), LispInteger.getInstance(2)
+  };
+  // equivalent to ``(values 1 2)''
+  LispObject result = valuesSymbol.execute(valuesArgs); 
+  LispObject[] values = LispThread.currentThread().getValues();
+  for (LispObject value: values) {
+    System.out.println("value ==> " + value.printObject());
+  }
+\end{listing-java}
+
 \subsubsection{Introspecting a LispObject}
 \label{topic:Introspecting a LispObject}
 
