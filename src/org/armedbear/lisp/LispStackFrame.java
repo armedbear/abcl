@@ -78,7 +78,7 @@ public class LispStackFrame
      String result = "";
      final String LISP_STACK_FRAME = "LISP-STACK-FRAME";
      try {
-       unreadableString(LISP_STACK_FRAME + " " + toLispList().printObject());
+       result = unreadableString(LISP_STACK_FRAME + " " + toLispList().printObject());
      } catch (Throwable t) { // error while printing stack
        Debug.trace("Serious printing error: ");
        Debug.trace(t);
