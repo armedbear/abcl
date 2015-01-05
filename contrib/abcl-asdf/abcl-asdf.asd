@@ -3,7 +3,7 @@
 (asdf:defsystem :abcl-asdf
   :author "Mark Evenson"
   :version "1.4.0"
-  :description "<> asdf:defsystem <urn:abcl.org/release/1.4.0-dev/contrib/abcl-asdf#1.3.2>"
+  :description "<> asdf:defsystem <urn:abcl.org/release/1.4.0-dev/contrib/abcl-asdf#1.4.0>"
   :depends-on (jss)
   :components 
   ((:module packages :pathname "" 
