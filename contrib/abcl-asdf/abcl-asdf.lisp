@@ -83,7 +83,9 @@
                       name version)))
         (setf schema "mvn")
         (pushnew repository *mvn-repositories*)
-        ;;; Always normalized path "on the way out" to contain group-id/artifact-id/version
+        ;;; Always set path to normalized path "on the way out" to
+        ;;; contain group-id/artifact-id/version
+        ;;; TODO? record repository as well in path of component
         (setf path (format nil "~A/~A/~A" group-id artifact-id version))))
     component))
 

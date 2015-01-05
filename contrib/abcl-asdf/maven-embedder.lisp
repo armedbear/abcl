@@ -366,7 +366,7 @@ If *MAVEN-HTTP-PROXY* is non-nil, parse its value as the http proxy."
      (java:jnew "org.sonatype.aether.resolution.ArtifactRequest"))))
 
 ;;; TODO change this to work on artifact strings like log4j:log4j:jar:1.2.16
-(defun resolve-artifact (group-id artifact-id &optional (version "LATEST" versionp))
+(defun resolve-artifact (group-id artifact-id &key (version "LATEST" versionp))
   "Resolve artifact to location on the local filesystem.
 
 Declared dependencies are not attempted to be located.
@@ -419,7 +419,7 @@ Returns the Maven specific string for the artifact "
 
 
 (defun resolve-dependencies (group-id artifact-id 
-                             &optional  ;;; XXX Uggh.  Move to keywords when we get the moxie.
+                             &key
                              (version "LATEST" versionp)
                              (repository *maven-remote-repository* repository-p))
   "Dynamically resolve Maven dependencies for item with GROUP-ID and ARTIFACT-ID 
@@ -516,16 +516,22 @@ artifact and all of its transitive dependencies."
     (cond 
       ((= (length result) 3)
        (resolve-dependencies 
-        (first result) (second result) (third result)))
+        (first result) (second result) :version (third result)))
       ((string= string "com.sun.jna:jna")
        (warn "Replacing request for no longer available com.sun.jna:jna with net.java.dev.jna:jna")
-       (resolve-dependencies "net.java.dev.jna" "jna" "LATEST"))
+       (resolve-dependencies "net.java.dev.jna" "jna" :version "LATEST"))
       ((= (length result) 2)
        (resolve-dependencies
         (first result) (second result)))
       (t 
-       (setf result 
-             (apply #'resolve-dependencies (split-string string "/")))))))
+       (destructuring-bind (group-id artifact-id &optional version repository)
+           (split-string string "/")
+         (setf result 
+               (apply #'resolve-dependencies group-id artifact-id
+                      (append (when version
+                                `(:version ,version))
+                              (when repository
+                                `(:repository ,repository))))))))))
   
 ;;; Currently the last file listed in ASDF
 (provide 'abcl-asdf)
