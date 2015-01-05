@@ -88,14 +88,14 @@ Emits warnings if not able to find a suitable executable."
                 "where.exe"))
            (which-cmd-p 
             (handler-case 
-                (sys::run-program which-cmd nil)
+                (sys:run-program which-cmd nil)
               (t () nil))))
       (when which-cmd-p
         (dolist (mvn-path *mavens*)
           (let ((mvn 
                  (handler-case 
-                     (truename (read-line (sys::process-output 
-                                           (sys::run-program 
+                     (truename (read-line (sys:process-output 
+                                           (sys:run-program 
                                             which-cmd `(,mvn-path))))) 
                    (end-of-file () nil)
                    (t (e) 
