@@ -443,10 +443,11 @@ in Java CLASSPATH representation."
 		     artifact (java:jfield (jss:find-java-class "JavaScopes") "RUNTIME")))
          (collect-request (java:jnew (jss:find-java-class "CollectRequest"))))
     (#"setRoot" collect-request dependency)
-    (#"addRepository" collect-request 
-                      (if repository-p
-                          (ensure-remote-repository :repository repository)
-                          (ensure-remote-repository)))
+    (when repository
+      (#"addRepository" collect-request 
+                        (if repository-p
+                            (ensure-remote-repository :repository repository)
+                            (ensure-remote-repository))))
     (let* ((node 
             (#"getRoot" (#"collectDependencies" (ensure-repository-system) (ensure-session) collect-request)))
            (dependency-request 
