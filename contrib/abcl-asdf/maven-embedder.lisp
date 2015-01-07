@@ -210,10 +210,12 @@ hint."
   (java:jinterface-implementation 
    (#"getName" 
     (or
+     (ignore-errors  ;; Maven 3.2.5+
+       (jss:find-java-class 'aether.transport.wagon.WagonProvider))
      (ignore-errors  ;; Maven 3.1.0+
        (jss:find-java-class 'aether.connector.wagon.WagonProvider))
      (ignore-errors  ;; Maven 3.0.x
-      (jss:find-java-class 'org.sonatype.aether.connector.wagon.WagonProvider))))
+       (jss:find-java-class 'org.sonatype.aether.connector.wagon.WagonProvider))))
    "lookup"
    (lambda (role-hint)
      (cond 
@@ -244,29 +246,37 @@ hint."
   (let ((locator 
          (find-service-locator))
         (wagon-provider-class 
-	 (or 
-	  (ignore-errors 
-	    (java:jclass "org.sonatype.aether.connector.wagon.WagonProvider"))
+	 (or
+          (ignore-errors ;; Maven-3.2.5
+            (jss:find-java-class 'org.eclipse.aether.transport.wagon.WagonProvider))
 	  (ignore-errors  ;; Maven-3.1.x 
-	    (jss:find-java-class 'aether.connector.wagon.WagonProvider))))
+	    (jss:find-java-class 'aether.connector.wagon.WagonProvider))
+          (ignore-errors 
+	    (java:jclass "org.sonatype.aether.connector.wagon.WagonProvider"))))
         (wagon-repository-connector-factory-class
 	 (or 
+          (ignore-errors 
+	    (jss:find-java-class 'org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory))
 	  (ignore-errors 
-	    (java:jclass "org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory"))
-	  (ignore-errors 
-	    (jss:find-java-class 'aether.connector.wagon.WagonRepositoryConnectorFactory))))
+	    (jss:find-java-class 'aether.connector.wagon.WagonRepositoryConnectorFactory))
+          (ignore-errors 
+	    (java:jclass "org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory"))))
         (repository-connector-factory-class 
-	 (or 
-	  (ignore-errors 
-	    (java:jclass "org.sonatype.aether.spi.connector.RepositoryConnectorFactory"))
+	 (or
+          (ignore-errors
+	    (jss:find-java-class 'org.eclipse.aether.spi.connector.RepositoryConnectorFactory))
 	  (ignore-errors
-	    (jss:find-java-class 'aether.spi.connector.RepositoryConnectorFactory))))
+	    (jss:find-java-class 'aether.spi.connector.RepositoryConnectorFactory))
+          (ignore-errors 
+	    (java:jclass "org.sonatype.aether.spi.connector.RepositoryConnectorFactory"))))
         (repository-system-class
 	 (or
-	  (ignore-errors
-	    (java:jclass "org.sonatype.aether.RepositorySystem"))
 	  (ignore-errors 
-	    (jss:find-java-class 'aether.RepositorySystem)))))
+	    (jss:find-java-class 'org.eclipse.aether.RepositorySystem))
+          (ignore-errors 
+	    (jss:find-java-class 'aether.RepositorySystem))
+          (ignore-errors
+	    (java:jclass "org.sonatype.aether.RepositorySystem")))))
     (#"setServices" locator
                     wagon-provider-class
                    (java:jarray-from-list
