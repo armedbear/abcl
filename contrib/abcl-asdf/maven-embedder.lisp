@@ -59,8 +59,8 @@ Emits warnings if not able to find a suitable executable."
   (let ((m2-home (ext:getenv "M2_HOME"))
         (m2 (ext:getenv "M2"))
         (mvn-executable (if (find :unix *features*)
-                               "mvn"
-                               "mvn.bat")))
+                            "mvn"
+                            "mvn.bat")))
     (when (and m2-home (probe-file m2-home))
       (let* ((m2-home (truename m2-home))
              (mvn-path (merge-pathnames 
@@ -117,7 +117,7 @@ Emits warnings if not able to find a suitable executable."
                         :name nil :type nil)
          #p"/usr/local/share/java/maven3/lib/" ;; FreeBSD ports
          #p"/usr/local/maven/lib/"))) ;; OpenBSD location suggested by Timo Myyrä
-                                  
+
 (defparameter *mvn-libs-directory*
   nil
   "Location of 'maven-core-3.<m>.<p>.jar', 'maven-embedder-3.<m>.<p>.jar' etc.")
@@ -174,19 +174,19 @@ Signals a simple-error with additional information if this attempt fails."
 (defparameter *init* nil)
 
 (defun init (&optional &key (force nil))
- "Run the initialization strategy to bootstrap a Maven dependency node.
+  "Run the initialization strategy to bootstrap a Maven dependency node.
 
 Set *MVN-LIBS-DIRECTORY* to an explicit value before running this
 function in order to bypass the dynamic introspection of the location
 of the mvn executable with an explicit value."
- (unless (or force *mvn-libs-directory*)
-   (setf *mvn-libs-directory* (find-mvn-libs)))
+  (unless (or force *mvn-libs-directory*)
+    (setf *mvn-libs-directory* (find-mvn-libs)))
   (unless (and *mvn-libs-directory*
                (probe-file *mvn-libs-directory*))
-   (error "Please obtain and install maven-3.0.4 or lates locally from <http://maven.apache.org/download.html>, then set ABCL-ASDF:*MVN-LIBS-DIRECTORY* to the directory containing maven-core-3.*.jar et. al."))
- (unless (ensure-mvn-version)
-   (error "We need maven-3.0.4 or later."))  (add-directory-jars-to-class-path *mvn-libs-directory* nil)
-  (setf *init* t))
+    (error "Please obtain and install maven-3.0.4 or lates locally from <http://maven.apache.org/download.html>, then set ABCL-ASDF:*MVN-LIBS-DIRECTORY* to the directory containing maven-core-3.*.jar et. al."))
+  (unless (ensure-mvn-version)
+    (error "We need maven-3.0.4 or later."))  (add-directory-jars-to-class-path *mvn-libs-directory* nil)
+    (setf *init* t))
 
 (defun find-http-wagon ()
   "Find an implementation of the object that provides access to http and https resources.
@@ -225,7 +225,7 @@ hint."
         (progn 
           (format *maven-verbose* 
                   "~&WagonProvider stub passed '~A' as a hint it couldn't satisfy.~%" role-hint)
-           java:+null+))))
+          java:+null+))))
    "release"
    (lambda (wagon)
      (declare (ignore wagon)))))
@@ -235,7 +235,7 @@ hint."
    (ignore-errors 
      (#"newServiceLocator" 'org.apache.maven.repository.internal.MavenRepositorySystemUtils)) ;; maven-3.1.0
    (ignore-errors
-      (java:jnew "org.apache.maven.repository.internal.MavenServiceLocator")) ;; maven-3.0.4
+     (java:jnew "org.apache.maven.repository.internal.MavenServiceLocator")) ;; maven-3.0.4
    (ignore-errors
      (java:jnew "org.apache.maven.repository.internal.DefaultServiceLocator"))
    (ignore-errors  ;; maven-3.1.0 using org.eclipse.aether...
@@ -246,67 +246,67 @@ hint."
   (let ((locator 
          (find-service-locator))
         (wagon-provider-class 
-	 (or
+         (or
           (ignore-errors ;; Maven-3.2.5
             (jss:find-java-class 'org.eclipse.aether.transport.wagon.WagonProvider))
-	  (ignore-errors  ;; Maven-3.1.x 
-	    (jss:find-java-class 'aether.connector.wagon.WagonProvider))
+          (ignore-errors  ;; Maven-3.1.x 
+            (jss:find-java-class 'aether.connector.wagon.WagonProvider))
           (ignore-errors 
-	    (java:jclass "org.sonatype.aether.connector.wagon.WagonProvider"))))
+            (java:jclass "org.sonatype.aether.connector.wagon.WagonProvider"))))
         (wagon-repository-connector-factory-class
-	 (or 
+         (or 
           (ignore-errors 
-	    (jss:find-java-class 'org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory))
-	  (ignore-errors 
-	    (jss:find-java-class 'aether.connector.wagon.WagonRepositoryConnectorFactory))
+            (jss:find-java-class 'org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory))
           (ignore-errors 
-	    (java:jclass "org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory"))))
+            (jss:find-java-class 'aether.connector.wagon.WagonRepositoryConnectorFactory))
+          (ignore-errors 
+            (java:jclass "org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory"))))
         (repository-connector-factory-class 
-	 (or
+         (or
           (ignore-errors
-	    (jss:find-java-class 'org.eclipse.aether.spi.connector.RepositoryConnectorFactory))
-	  (ignore-errors
-	    (jss:find-java-class 'aether.spi.connector.RepositoryConnectorFactory))
+            (jss:find-java-class 'org.eclipse.aether.spi.connector.RepositoryConnectorFactory))
+          (ignore-errors
+            (jss:find-java-class 'aether.spi.connector.RepositoryConnectorFactory))
           (ignore-errors 
-	    (java:jclass "org.sonatype.aether.spi.connector.RepositoryConnectorFactory"))))
+            (java:jclass "org.sonatype.aether.spi.connector.RepositoryConnectorFactory"))))
         (repository-system-class
-	 (or
-	  (ignore-errors 
-	    (jss:find-java-class 'org.eclipse.aether.RepositorySystem))
+         (or
           (ignore-errors 
-	    (jss:find-java-class 'aether.RepositorySystem))
+            (jss:find-java-class 'org.eclipse.aether.RepositorySystem))
+          (ignore-errors 
+            (jss:find-java-class 'aether.RepositorySystem))
           (ignore-errors
-	    (java:jclass "org.sonatype.aether.RepositorySystem")))))
+            (java:jclass "org.sonatype.aether.RepositorySystem")))))
     (#"setServices" locator
                     wagon-provider-class
-                   (java:jarray-from-list
-                    (list (make-wagon-provider))))
+                    (java:jarray-from-list
+                     (list (make-wagon-provider))))
     (#"addService" locator
                    repository-connector-factory-class
                    wagon-repository-connector-factory-class)
     (values (#"getService" locator
                            repository-system-class)
             locator)))
-        
+
 (defun make-session (repository-system)
   "Construct a new aether.RepositorySystemSession from the specified REPOSITORY-SYSTEM."
   (let ((session
-	 (or 
-	  (ignore-errors (#"newSession" 'org.apache.maven.repository.internal.MavenRepositorySystemUtils))
-	  (ignore-errors (java:jnew (jss:find-java-class "MavenRepositorySystemSession")))))
+         (or 
+          (ignore-errors (#"newSession" 'org.apache.maven.repository.internal.MavenRepositorySystemUtils))
+          (ignore-errors (java:jnew (jss:find-java-class "MavenRepositorySystemSession")))))
         (local-repository 
          (java:jnew (jss:find-java-class "LocalRepository")
-                  (namestring (merge-pathnames ".m2/repository/"
-                                               (user-homedir-pathname))))))
+                    (namestring (merge-pathnames ".m2/repository/"
+                                                 (user-homedir-pathname))))))
     (#"setLocalRepositoryManager" 
      session
      (or 
       (ignore-errors      ;; maven-3.1.0
-	(#"newLocalRepositoryManager" 
-	 repository-system session local-repository))
+        (#"newLocalRepositoryManager" 
+         repository-system session local-repository))
       (ignore-errors 
-	(#"newLocalRepositoryManager" 
-	 repository-system local-repository))))))
+        (#"newLocalRepositoryManager" 
+         repository-system local-repository))))))
 
 (defparameter *maven-http-proxy* nil
   "A string containing the URI of an http proxy for Maven to use.")
@@ -329,10 +329,10 @@ hint."
     (or 
      (ignore-errors
        (jss:new 'org.eclipse.aether.repository.Proxy
-		scheme host port authentication))
+                scheme host port authentication))
      (ignore-errors
        (jss:new 'org.sonatype.aether.repository.Proxy
-		scheme host port authentication)))))
+                scheme host port authentication)))))
 
 (defparameter *repository-system*  nil
   "The aether.RepositorySystem used by the Maeven Aether connector.")
@@ -357,7 +357,7 @@ If *MAVEN-HTTP-PROXY* is non-nil, parse its value as the http proxy."
                 proxy 
                 ;; A string specifying non proxy hosts, or null
                 java:+null+))))
-    *session*)
+  *session*)
 
 (defun make-artifact (artifact-string)
   "Return an instance of aether.artifact.DefaultArtifact initialized from ARTIFACT-STRING." 
@@ -388,11 +388,11 @@ Returns the Maven specific string for the artifact "
     (warn "Using LATEST for unspecified version."))
   (unless *init* (init))
   (let* ((artifact-string 
-	  (format nil "~A:~A:~A" group-id artifact-id version))
+          (format nil "~A:~A:~A" group-id artifact-id version))
          (artifact 
-	  (make-artifact artifact-string))
+          (make-artifact artifact-string))
          (artifact-request 
-	  (make-artifact-request)))
+          (make-artifact-request)))
     (#"setArtifact" artifact-request artifact)
     (#"addRepository" artifact-request (ensure-remote-repository))
     (#"toString" (#"getFile" 
@@ -407,13 +407,13 @@ Returns the Maven specific string for the artifact "
      (jss:new 'aether.repository.RemoteRepository id type url))))
 
 (defparameter *default-repository* 
-   "http://repo1.maven.org/maven2/")
+  "http://repo1.maven.org/maven2/")
 
 (defun add-repository (repository)
   (ensure-remote-repository :repository repository))
 
 (defparameter *maven-remote-repository*  nil
-    "The remote repository used by the Maven Aether embedder.")
+  "The remote repository used by the Maven Aether embedder.")
 (defun ensure-remote-repository (&key 
                                    (force nil)
                                    (repository *default-repository* repository-p))
@@ -430,8 +430,8 @@ Returns the Maven specific string for the artifact "
 
 (defun resolve-dependencies (group-id artifact-id 
                              &key
-                             (version "LATEST" versionp)
-                             (repository *maven-remote-repository* repository-p))
+                               (version "LATEST" versionp)
+                               (repository *maven-remote-repository* repository-p))
   "Dynamically resolve Maven dependencies for item with GROUP-ID and ARTIFACT-ID 
 optionally with a VERSION and a REPOSITORY.  Users of the function are advised 
 
@@ -445,12 +445,12 @@ in Java CLASSPATH representation."
   (unless versionp
     (warn "Using LATEST for unspecified version."))
   (let* ((coords 
-	  (format nil "~A:~A:~A" group-id artifact-id (if versionp version "LATEST")))
-	 (artifact 
-	  (make-artifact coords))
+          (format nil "~A:~A:~A" group-id artifact-id (if versionp version "LATEST")))
+         (artifact 
+          (make-artifact coords))
          (dependency 
           (java:jnew (jss:find-java-class 'aether.graph.Dependency)
-		     artifact (java:jfield (jss:find-java-class "JavaScopes") "RUNTIME")))
+                     artifact (java:jfield (jss:find-java-class "JavaScopes") "RUNTIME")))
          (collect-request (java:jnew (jss:find-java-class "CollectRequest"))))
     (#"setRoot" collect-request dependency)
     (when repository
@@ -513,7 +513,7 @@ in Java CLASSPATH representation."
      "metadataResolving"
      #'log)))
 
-         
+
 (defmethod resolve ((string string))
   "Resolve a colon separated GROUP-ID:ARTIFACT-ID[:VERSION] reference to a Maven artifact.
 
@@ -543,6 +543,6 @@ artifact and all of its transitive dependencies."
                                 `(:version ,version))
                               (when repository
                                 `(:repository ,repository))))))))))
-  
+
 ;;; Currently the last file listed in ASDF
 (provide 'abcl-asdf)

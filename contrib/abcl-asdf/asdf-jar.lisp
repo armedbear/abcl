@@ -14,9 +14,9 @@
   (loop :with q = (system:list-directory directory) 
      :while q :for top = (pop q)
      :if (null (pathname-name top)) 
-       :do (setq q (append q (all-jars-below top))) 
+     :do (setq q (append q (all-jars-below top))) 
      :if (equal (pathname-type top) "jar") 
-       :collect top))
+     :collect top))
 
 (defun need-to-add-directory-jar? (directory recursive-p)
   (loop :for jar :in (if recursive-p 
@@ -77,10 +77,10 @@
               (make-pathname :defaults absolute-pathname :name new-name)))
         (setf name new-name
               absolute-pathname new-absolute-pathname)))))
-  
+
 (defmethod perform :before ((operation compile-op) (c jar-file))
   (normalize-jar-name c))
-  
+
 (defmethod perform :before ((operation load-op) (c jar-file))
   (normalize-jar-name c))
 

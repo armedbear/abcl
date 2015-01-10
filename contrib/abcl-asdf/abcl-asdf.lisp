@@ -138,7 +138,7 @@ single entry denoting a remote binary artifact."
                               :repository repository)
         (if alternate-uri
             (values (namestring alternate-uri) alternate-uri) 
-	    (error "Failed to resolve MVN component name ~A." name)))))
+            (error "Failed to resolve MVN component name ~A." name)))))
 
 (defmethod resolve ((uri pathname))
   (warn "Unimplemented."))

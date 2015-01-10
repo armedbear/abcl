@@ -37,9 +37,9 @@
  ;;; FIXME
 #+nil
 (defmethod asdf:perform ((o asdf:test-op) (c (eql (asdf:find-system 'abcl-asdf))))
-   "Invoke tests with (asdf:test-system 'abcl-asdf)."
-   (asdf:load-system 'abcl)
-   (asdf:load-system 'abcl-test-lisp)
-   (asdf:load-system 'abcl-asdf-test)
-   (funcall (intern (symbol-name 'run) 'abcl-asdf-test)))
+  "Invoke tests with (asdf:test-system 'abcl-asdf)."
+  (asdf:load-system 'abcl)
+  (asdf:load-system 'abcl-test-lisp)
+  (asdf:load-system 'abcl-asdf-test)
+  (funcall (intern (symbol-name 'run) 'abcl-asdf-test)))
 
