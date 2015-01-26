@@ -216,9 +216,17 @@ public final class Bignum extends LispInteger
     if (obj instanceof Bignum)
       return value.equals(((Bignum)obj).value);
     if (obj instanceof SingleFloat)
-      return floatValue() == ((SingleFloat)obj).value;
+    {
+      // do not raise errors on bignums exceeding the largest representable float
+      float f = value.floatValue();
+      return !Float.isInfinite(f) && f == ((SingleFloat)obj).value;
+    }
     if (obj instanceof DoubleFloat)
-      return doubleValue() == ((DoubleFloat)obj).value;
+    {
+      // do not raise errors on bignums exceeding the largest representable double
+      double d = value.doubleValue();
+      return !Double.isInfinite(d) && d == ((DoubleFloat)obj).value;
+    }
     return false;
   }
 
