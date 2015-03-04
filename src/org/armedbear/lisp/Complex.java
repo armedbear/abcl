@@ -143,38 +143,8 @@ public final class Complex extends LispObject
   @Override
   public boolean equalp(LispObject obj)
   {
-    if (this == obj)
-      return true;
-    if (obj instanceof Complex)
-      {
-        Complex c = (Complex) obj;
-        return (realpart.isEqualTo(c.realpart) &&
-                imagpart.isEqualTo(c.imagpart));
-      }
     if (obj.numberp())
-      {
-        // obj is a number, but not complex.
-        if (imagpart instanceof SingleFloat)
-          {
-            if (((SingleFloat)imagpart).value == 0)
-              {
-                if (obj instanceof Fixnum)
-                  return ((Fixnum)obj).value == ((SingleFloat)realpart).value;
-                if (obj instanceof SingleFloat)
-                  return ((SingleFloat)obj).value == ((SingleFloat)realpart).value;
-              }
-          }
-        if (imagpart instanceof DoubleFloat)
-          {
-            if (((DoubleFloat)imagpart).value == 0)
-              {
-                if (obj instanceof Fixnum)
-                  return ((Fixnum)obj).value == ((DoubleFloat)realpart).value;
-                if (obj instanceof DoubleFloat)
-                  return ((DoubleFloat)obj).value == ((DoubleFloat)realpart).value;
-              }
-          }
-      }
+      return isEqualTo(obj);
     return false;
   }
 

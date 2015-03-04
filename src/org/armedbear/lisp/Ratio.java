@@ -137,16 +137,8 @@ public final class Ratio extends LispObject
     @Override
     public boolean equalp(LispObject obj)
     {
-        if (obj instanceof Ratio) {
-            return numerator.equals(((Ratio)obj).numerator) &&
-                denominator.equals(((Ratio)obj).denominator);
-        }
-        if (obj instanceof SingleFloat) {
-            return floatValue() == ((SingleFloat)obj).value;
-        }
-        if (obj instanceof DoubleFloat) {
-            return doubleValue() == ((DoubleFloat)obj).value;
-        }
+        if (obj.numberp())
+            return isEqualTo(obj);
         return false;
     }
 

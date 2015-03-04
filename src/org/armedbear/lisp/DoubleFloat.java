@@ -169,16 +169,8 @@ public final class DoubleFloat extends LispObject
     @Override
     public boolean equalp(LispObject obj)
     {
-        if (obj instanceof SingleFloat)
-            return value == ((SingleFloat)obj).value;
-        if (obj instanceof DoubleFloat)
-            return value == ((DoubleFloat)obj).value;
-        if (obj instanceof Fixnum)
-            return value == ((Fixnum)obj).value;
-        if (obj instanceof Bignum)
-            return value == ((Bignum)obj).doubleValue();
-        if (obj instanceof Ratio)
-            return value == ((Ratio)obj).doubleValue();
+        if (obj.numberp())
+            return isEqualTo(obj);
         return false;
     }
 

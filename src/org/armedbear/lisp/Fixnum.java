@@ -228,12 +228,8 @@ public final class Fixnum extends LispInteger
   @Override
   public boolean equalp(LispObject obj)
   {
-    if (obj instanceof Fixnum)
-      return value == ((Fixnum)obj).value;
-    if (obj instanceof SingleFloat)
-      return value == ((SingleFloat)obj).value;
-    if (obj instanceof DoubleFloat)
-      return value == ((DoubleFloat)obj).value;
+    if (obj.numberp())
+      return isEqualTo(obj);
     return false;
   }
 

@@ -213,20 +213,8 @@ public final class Bignum extends LispInteger
   @Override
   public boolean equalp(LispObject obj)
   {
-    if (obj instanceof Bignum)
-      return value.equals(((Bignum)obj).value);
-    if (obj instanceof SingleFloat)
-    {
-      // do not raise errors on bignums exceeding the largest representable float
-      float f = value.floatValue();
-      return !Float.isInfinite(f) && f == ((SingleFloat)obj).value;
-    }
-    if (obj instanceof DoubleFloat)
-    {
-      // do not raise errors on bignums exceeding the largest representable double
-      double d = value.doubleValue();
-      return !Double.isInfinite(d) && d == ((DoubleFloat)obj).value;
-    }
+    if (obj.numberp())
+      return isEqualTo(obj);
     return false;
   }
 
