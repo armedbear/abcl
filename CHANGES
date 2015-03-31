@@ -3,6 +3,50 @@ Version 1.4.0-dev
 http://abcl.org/svn/trunk/
 Unreleased.
 
+
+Version 1.3.2
+=============
+http://abcl.org/svn/tags/1.3.2/
+Unreleased.
+
+Enhancements
+------------
+
+* Make result of DEFINE-MODIFY-MACRO available at compilation time [r14727]
+
+
+Fixes
+-----
+
+* Numeric tower repairs on promoting floats across representation
+  boundaries [r14749-50]
+
+* Lisp stack frame representation now formatted as unreadable. [r14738-9]
+
+* JSS: no longer error on NO-SUCH-JAVA-FIELD, with setting accesible
+  fields where necessary [r14715] [r14725]  Fix GET-JAVA-FIELD and SET-JAVA-FIELD [r14718]
+
+*  ABCL-ASDF enhancements
+
+** Special-case asdf-abcl JNA artifacts with alternate network location
+   [r14733]
+
+**  Further work on ABCL-ASDF:RESOLVE [r14732]
+
+**  Fix ASDF-JAR:PACKAGE [#376] [r14736]
+
+** Find Maven under FreeBSD ports [r14723]
+
+** Enhancements to ASDF-JAR strategies [r14717] [r14720] 
+
+Maintainence
+------------
+
+* Update to current Maven support (keep up with changing APIs through
+  3.2.3-3.2.5 hysteresis) [r14742-7]
+
+*  Return SIMPLE-ERROR for invalid external-format arguments.[r14735]
+
 *  ASDF updated to version 3.1.4.
 
 
