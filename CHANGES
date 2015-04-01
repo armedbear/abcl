@@ -26,9 +26,13 @@ Fixes
 * JSS: no longer error on NO-SUCH-JAVA-FIELD, with setting accesible
   fields where necessary [r14715] [r14725]  Fix GET-JAVA-FIELD and SET-JAVA-FIELD [r14718]
 
-*  ABCL-ASDF enhancements
+* ABCL-ASDF
 
-** Special-case asdf-abcl JNA artifacts with alternate network location
+  enhancements to specific contributions to ASDF system definition
+  mainly concerned with finding JVM artifacts such as jar archives to
+  be dynamically loaded.
+
+** Special-case JNA artifacts with alternate network location
    [r14733]
 
 **  Further work on ABCL-ASDF:RESOLVE [r14732]
@@ -37,10 +41,10 @@ Fixes
 
 ** Find Maven under FreeBSD ports [r14723]
 
-** Enhancements to ASDF-JAR strategies [r14717] [r14720] 
+** Enhancements to ASDF-JAR packaging strategies [r14717] [r14720] 
 
-Maintainence
-------------
+Maintenance
+-----------
 
 * Update to current Maven support (keep up with changing APIs through
   3.2.3-3.2.5 hysteresis) [r14742-7]
