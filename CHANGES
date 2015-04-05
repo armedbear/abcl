@@ -17,6 +17,11 @@ Enhancements
 
 Fixes
 -----
+* Fix incorrect dead code elimination
+
+  Additionally, don't recurse into flet/labels upon elimination of a
+  single labels function; simply continue by changing the applicable
+  set.  Reported by Vibhu Mohindra. [r14754]
 
 * Numeric tower repairs on promoting floats across representation
   boundaries [r14749-50]
