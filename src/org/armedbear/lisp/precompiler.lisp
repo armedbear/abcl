@@ -795,24 +795,35 @@
              (find-use name (%cdr expression))))))
 
 (defun precompile-flet/labels (form)
-  (let ((*precompile-env* (make-environment *precompile-env*))
-        (operator (car form))
-        (locals (cadr form))
-	body)
+  (let* ((*precompile-env* (make-environment *precompile-env*))
+         (operator (car form))
+         (precompiled-locals
+          ;; precompile expands macros -- macros may hide the fact
+          ;; that locally defined functions are being used.
+          (mapcar #'(lambda (local)
+                      (let ((precompiled-lambda
+                             (precompile-lambda (list*  'lambda (cdr local)))))
+                        (list* (car local)
+                               (cadr precompiled-lambda) ;; precompiled args
+                               (cddr precompiled-lambda) ;; precompiled body
+                              )))
+                  (cadr form)))
+         (applicable-locals precompiled-locals)
+         body)
     ;; first augment the environment with the newly-defined local functions
     ;; to shadow preexisting macro definitions with the same names
-    (dolist (local locals)
+    (dolist (local precompiled-locals)
       (environment-add-function-definition *precompile-env*
 					   (car local) (cddr local)))
     ;; then precompile (thus macro-expand) the body before inspecting it
     ;; for the use of our locals and optimizing them away
     (setq body (mapcar #'precompile1 (cddr form)))
-    (dolist (local locals)
+    (dolist (local precompiled-locals)
       (let* ((name (car local))
              (used-p (find-use name body)))
         (unless used-p
           (when (eq operator 'LABELS)
-            (dolist (local locals)
+            (dolist (local precompiled-locals)
               (when (neq name (car local))
                 (when (find-use name (cddr local))
                   (setf used-p t)
@@ -824,21 +835,17 @@
                              (cdr (memq '&optional (cadr local)))
                              (cdr (memq '&key (cadr local)))
                              (cdr (memq '&aux (cadr local))))))
-                  (when (and vars (find-use name vars)
-                             (setf used-p t)
-                             (return))))))))
+                  (when (and vars (find-use name vars))
+                    (setf used-p t)
+                    (return)))
+                ))))
         (unless used-p
           (format t "; Note: deleting unused local function ~A ~S~%"
                   operator name)
-          (let* ((new-locals (remove local locals :test 'eq))
-                 (new-form
-                  (if new-locals
-                      (list* operator new-locals body)
-                      (list* 'LOCALLY body))))
-            (return-from precompile-flet/labels (precompile1 new-form))))))
-    (list* (car form)
-           (precompile-local-functions locals)
-           body)))
+          (setf applicable-locals (remove local applicable-locals)))))
+    (if applicable-locals
+        (list* operator applicable-locals body)
+        (list* 'LOCALLY body))))
 
 (defun precompile-function (form)
   (if (and (consp (cadr form)) (eq (caadr form) 'LAMBDA))
