@@ -797,26 +797,28 @@
 (defun precompile-flet/labels (form)
   (let* ((*precompile-env* (make-environment *precompile-env*))
          (operator (car form))
-         (precompiled-locals
-          ;; precompile expands macros -- macros may hide the fact
-          ;; that locally defined functions are being used.
-          (mapcar #'(lambda (local)
-                      (let ((precompiled-lambda
-                             (precompile-lambda (list*  'lambda (cdr local)))))
-                        (list* (car local)
-                               (cadr precompiled-lambda) ;; precompiled args
-                               (cddr precompiled-lambda) ;; precompiled body
-                              )))
-                  (cadr form)))
-         (applicable-locals precompiled-locals)
+         (locals (cadr form))
+         precompiled-locals
+         applicable-locals
          body)
-    ;; first augment the environment with the newly-defined local functions
+    (when (eq operator 'FLET)
+       ;; FLET functions *don't* shadow within their own FLET form
+       (setf precompiled-locals
+             (precompile-local-functions locals))
+       (setf applicable-locals precompiled-locals))
+    ;; augment the environment with the newly-defined local functions
     ;; to shadow preexisting macro definitions with the same names
-    (dolist (local precompiled-locals)
+    (dolist (local locals)
+      ;; we can use the non-precompiled locals, because the function body isn't used
       (environment-add-function-definition *precompile-env*
 					   (car local) (cddr local)))
+    (when (eq operator 'LABELS)
+       ;; LABELS functions *do* shadow within their own LABELS form
+       (setf precompiled-locals
+             (precompile-local-functions locals))
+       (setf applicable-locals precompiled-locals))
     ;; then precompile (thus macro-expand) the body before inspecting it
-    ;; for the use of our locals and optimizing them away
+    ;; for the use of our locals and eliminating dead code
     (setq body (mapcar #'precompile1 (cddr form)))
     (dolist (local precompiled-locals)
       (let* ((name (car local))
