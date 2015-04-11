@@ -12,7 +12,8 @@ Unreleased.
 Enhancements
 ------------
 
-* Make result of DEFINE-MODIFY-MACRO available at compilation time [r14727]
+* Make result of DEFINE-MODIFY-MACRO available at compilation time
+  [r14727]
 
 
 Fixes
@@ -21,42 +22,43 @@ Fixes
 
   Additionally, don't recurse into flet/labels upon elimination of a
   single labels function; simply continue by changing the applicable
-  set.  Reported by Vibhu Mohindra. [r14754]
+  set.  Reported by Vibhu Mohindra. [r14754][r14756]
 
 * Numeric tower repairs on promoting floats across representation
-  boundaries [r14749-50]
+  boundaries [r14749-50] (Massimiliano Ghilardi).
+
+* Return SIMPLE-ERROR for invalid external-format arguments.[r14735]
 
 * Lisp stack frame representation now formatted as unreadable. [r14738-9]
 
-* JSS: no longer error on NO-SUCH-JAVA-FIELD, with setting accesible
-  fields where necessary [r14715] [r14725]  Fix GET-JAVA-FIELD and SET-JAVA-FIELD [r14718]
+Contrib
+-------
+
+* JSS
+
+** Fix GET-JAVA-FIELD and SET-JAVA-FIELD [r14718]
+
+** no longer error on NO-SUCH-JAVA-FIELD, by setting fields as
+   accessible where necessary [r14715] [r14725]
 
 * ABCL-ASDF
 
-  enhancements to specific contributions to ASDF system definition
-  mainly concerned with finding JVM artifacts such as jar archives to
-  be dynamically loaded.
+** Update to current Maven support (keep up with changing APIs through
+   the Maven 3.2.3-3.2.5 hysteresis) [r14742-7] (Cyrus Hamon).
 
-** Special-case JNA artifacts with alternate network location
-   [r14733]
+** Special-case JNA artifacts with alternate network location [r14733]
 
-**  Further work on ABCL-ASDF:RESOLVE [r14732]
-
-**  Fix ASDF-JAR:PACKAGE [#376] [r14736]
+** Further work on ABCL-ASDF:RESOLVE [r14732] (Cyrus Hamon)
 
 ** Find Maven under FreeBSD ports [r14723]
 
-** Enhancements to ASDF-JAR packaging strategies [r14717] [r14720] 
+* ABCL-JAR
 
-Maintenance
------------
+** Fix ASDF-JAR:PACKAGE [#376] [r14717][r14720][r14736] (Eduardo Bellani)
 
-* Update to current Maven support (keep up with changing APIs through
-  3.2.3-3.2.5 hysteresis) [r14742-7]
+*  ASDF
 
-*  Return SIMPLE-ERROR for invalid external-format arguments.[r14735]
-
-*  ASDF updated to version 3.1.4.
+** Updated to version 3.1.4.
 
 
 Version 1.3.1
