@@ -213,7 +213,7 @@ public final class Bignum extends LispInteger
   @Override
   public boolean equalp(LispObject obj)
   {
-    if (obj.numberp())
+    if (obj != null && obj.numberp())
       return isEqualTo(obj);
     return false;
   }
