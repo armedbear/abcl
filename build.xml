@@ -818,7 +818,7 @@ will compile (if necessary) and load JSS.
       </jar>
     </target>
 
-    <target name="abcl.binary.prepare" depends="abcl.jar,abcl.contrib,abcl.stamp.version">
+    <target name="abcl.binary.prepare" depends="abcl.jar,abcl.contrib,abcl.documentation,abcl.stamp.version">
       <property name="abcl.build.binary.dir"
                 value="${build.dir}/abcl-bin-${abcl.version}"/>
       <mkdir dir="${abcl.build.binary.dir}"/>
@@ -828,6 +828,7 @@ will compile (if necessary) and load JSS.
           <patternset>
             <include name="abcl.jar"/>
             <include name="abcl-contrib.jar"/>
+            <include name="*.pdf"/>
           </patternset>
         </fileset>
         <fileset dir="${basedir}">
@@ -1105,6 +1106,28 @@ user.dir
             tofile="${dist.dir}/abcl-${abcl.version}.jar"/>
       <copy file="${abcl-contrib.jar}"
             tofile="${dist.dir}/abcl-contrib-${abcl.version}.jar"/>
+    </target>
+
+    <target name="abcl.documentation"
+            depends="abcl.documentation.manual,abcl.documentation.asdf"/>
+    <target name="abcl.documentation.manual"
+            depends="abcl.version">
+      <echo>This target requires 'make' and a LaTeX installation to be on the PATH.</echo>
+      <exec
+          executable="make"
+          dir="${basedir}/doc/manual"/>
+      <copy file="doc/manual/abcl.pdf"
+            tofile="${dist.dir}/abcl-${abcl.version}.pdf"/>
+    </target>
+    <target name="abcl.documentation.asdf">
+      <echo>This target requires 'texi2pdf' to be on the PATH.</echo>
+      <exec
+          executable="texi2pdf"
+          dir="${basedir}/doc/asdf">
+        <arg value="asdf.texinfo"/>
+      </exec>
+      <copy file="doc/asdf/asdf.pdf"
+            tofile="${dist.dir}/asdf.pdf"/>
     </target>
 
     <import file="netbeans-build.xml" optional="true"/> 
