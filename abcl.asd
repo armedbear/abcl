@@ -163,3 +163,10 @@ be in a directory named '../ansi-test/'."
 (defmethod perform ((o load-op) (c (eql (find-system :abcl-contrib))))
  (require :abcl-contrib))
 
+(defsystem :abcl/documentation
+  :depends-on (swank)
+  :components
+  ((:module grovel :pathname "doc/manual/" :serial t
+            :components ((:file "package")
+                         (:file "grovel")))))
+

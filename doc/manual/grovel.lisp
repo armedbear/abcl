@@ -1,14 +1,15 @@
+(in-package :abcl/documentation)
 
-(defun grovel-docstrings-as-tex (&optional (package (find-package :java)))
-  (let ((output-file (format nil "~A.tex" (string-downcase (package-name package)))))
+(defun grovel-docstrings-as-tex (&key
+                                   (package (find-package :java))
+                                   (directory (asdf:component-pathname (asdf:find-component :abcl/documentation 'grovel))))
+  "Transform exported symbols documentation in PACKAGE to DIRECTORY."
+  (let ((output-file (merge-pathnames (format nil "~A.tex" (string-downcase (package-name package))) directory))
+        (symbols (loop :for symbol :being :each :external-symbol :of package :collecting symbol)))
     (with-open-file (stream output-file :direction :output)
-      (format t "Writing output to ~A.~%" output-file)
-      (loop :for symbol :being :each :external-symbol :of package 
+      (format t "Writing output to '~A'.~%" output-file)
+      (loop :for symbol :in (sort symbols (lambda (a b) (string-lessp (symbol-name a) (symbol-name b))))
          :doing (format stream "~&~A~%~%" (symbol-as-tex symbol))))))
-
-(require :asdf)
-
-(asdf:load-system 'swank) ;; XXX Does this load the SWANK-BACKEND package as well
 
 (defun texify-string (string &optional remove)
   (with-output-to-string (s)
@@ -29,7 +30,7 @@ Downcase symbol names but leave strings alone."
 
 (defun arglist-as-tex (symbol)
   (handler-case 
-      (loop :for arg :in (arglist symbol)
+      (loop :for arg :in (ext:arglist symbol)
          :collecting (texify arg))
     (t (e) 
       (progn (warn "Failed to form arglist for ~A: ~A" symbol e)
