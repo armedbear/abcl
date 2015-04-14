@@ -9,12 +9,14 @@
     (with-open-file (stream output-file :direction :output)
       (format t "Writing output to '~A'.~%" output-file)
       (loop :for symbol :in (sort symbols (lambda (a b) (string-lessp (symbol-name a) (symbol-name b))))
-         :doing (format stream "~&~A~%~%" (symbol-as-tex symbol))))))
+         :doing (let ((documentation (symbol-as-tex symbol)))
+                  (when documentation
+                    (format stream "~&~A~%~%" documentation)))))))
 
 (defun texify-string (string &optional remove)
   (with-output-to-string (s)
     (loop for char across string
-         do (if (find char '(#\& #\% #\#))
+         do (if (find char '(#\& #\% #\# #\_))
                 (unless remove
                   (write-char #\\ s)
                   (write-char char s))
@@ -35,7 +37,6 @@ Downcase symbol names but leave strings alone."
     (t (e) 
       (progn (warn "Failed to form arglist for ~A: ~A" symbol e)
              (list "")))))
-             
 
 (defvar *type-alist* 
   '((:function 
