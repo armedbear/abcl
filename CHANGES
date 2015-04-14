@@ -18,6 +18,8 @@ Enhancements
 
 Fixes
 -----
+* Fix failed AVER [#289] [r14763]
+
 * Fix incorrect dead code elimination
 
   Additionally, don't recurse into flet/labels upon elimination of a
