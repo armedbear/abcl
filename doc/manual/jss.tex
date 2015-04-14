@@ -1,4 +1,59 @@
 \paragraph{}
+\label{JSS:*CL-USER-COMPATIBILITY*}
+\index{*CL-USER-COMPATIBILITY*}
+--- Variable: \textbf{*cl-user-compatibility*} [\textbf{jss}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Whether backwards compatibility with JSS's use of CL-USER has been enabled.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JSS:*DO-AUTO-IMPORTS*}
+\index{*DO-AUTO-IMPORTS*}
+--- Variable: \textbf{*do-auto-imports*} [\textbf{jss}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Whether to automatically introspect all Java classes on the classpath when JSS is loaded.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JSS:CLASSFILES-IMPORT}
+\index{CLASSFILES-IMPORT}
+--- Function: \textbf{classfiles-import} [\textbf{jss}] \textit{directory}
+
+\begin{adjustwidth}{5em}{5em}
+Load all Java classes recursively contained under DIRECTORY in the current process.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JSS:ENSURE-COMPATIBILITY}
+\index{ENSURE-COMPATIBILITY}
+--- Function: \textbf{ensure-compatibility} [\textbf{jss}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Ensure backwards compatibility with JSS's use of CL-USER.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JSS:FIND-JAVA-CLASS}
+\index{FIND-JAVA-CLASS}
+--- Function: \textbf{find-java-class} [\textbf{jss}] \textit{name}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{JSS:GET-JAVA-FIELD}
+\index{GET-JAVA-FIELD}
+--- Function: \textbf{get-java-field} [\textbf{jss}] \textit{object field \&optional (try-harder *running-in-osgi*)}
+
+\begin{adjustwidth}{5em}{5em}
+Get the value of the FIELD contained in OBJECT.
+If OBJECT is a symbol it names a dot qualified static FIELD.
+\end{adjustwidth}
+
+\paragraph{}
 \label{JSS:HASHMAP-TO-HASHTABLE}
 \index{HASHMAP-TO-HASHTABLE}
 --- Function: \textbf{hashmap-to-hashtable} [\textbf{jss}] \textit{hashmap \&rest rest \&key (keyfun (function identity)) (valfun (function identity)) (invert? NIL) table \&allow-other-keys}
@@ -15,15 +70,6 @@ If INVERT? is non-nil than reverse the keys and values in the resulting hashtabl
 \end{adjustwidth}
 
 \paragraph{}
-\label{JSS:FIND-JAVA-CLASS}
-\index{FIND-JAVA-CLASS}
---- Function: \textbf{find-java-class} [\textbf{jss}] \textit{name}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
 \label{JSS:INVOKE-ADD-IMPORTS}
 \index{INVOKE-ADD-IMPORTS}
 --- Macro: \textbf{invoke-add-imports} [\textbf{jss}] \textit{}
@@ -32,7 +78,50 @@ not-documented
 not-documented
 \end{adjustwidth}
 
-NIL
+\paragraph{}
+\label{JSS:INVOKE-RESTARGS}
+\index{INVOKE-RESTARGS}
+--- Function: \textbf{invoke-restargs} [\textbf{jss}] \textit{method object args \&optional (raw? NIL)}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{JSS:ITERABLE-TO-LIST}
+\index{ITERABLE-TO-LIST}
+--- Function: \textbf{iterable-to-list} [\textbf{jss}] \textit{iterable}
+
+\begin{adjustwidth}{5em}{5em}
+Return the items contained the java.lang.Iterable ITERABLE as a list.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JSS:JAPROPOS}
+\index{JAPROPOS}
+--- Function: \textbf{japropos} [\textbf{jss}] \textit{string}
+
+\begin{adjustwidth}{5em}{5em}
+Output the names of all Java class names loaded in the current process which match STRING..
+\end{adjustwidth}
+
+\paragraph{}
+\label{JSS:JAR-IMPORT}
+\index{JAR-IMPORT}
+--- Function: \textbf{jar-import} [\textbf{jss}] \textit{file}
+
+\begin{adjustwidth}{5em}{5em}
+Import all the Java classes contained in the pathname FILE into the JSS dynamic lookup cache.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JSS:JARRAY-TO-LIST}
+\index{JARRAY-TO-LIST}
+--- Function: \textbf{jarray-to-list} [\textbf{jss}] \textit{jarray}
+
+\begin{adjustwidth}{5em}{5em}
+Convert the Java array named by JARRARY into a Lisp list.
+\end{adjustwidth}
 
 \paragraph{}
 \label{JSS:JAVA-CLASS-METHOD-NAMES}
@@ -50,23 +139,30 @@ current classpath.
 \end{adjustwidth}
 
 \paragraph{}
-\label{JSS:*DO-AUTO-IMPORTS*}
-\index{*DO-AUTO-IMPORTS*}
---- Variable: \textbf{*do-auto-imports*} [\textbf{jss}] \textit{}
+\label{JSS:JCLASS-ALL-INTERFACES}
+\index{JCLASS-ALL-INTERFACES}
+--- Function: \textbf{jclass-all-interfaces} [\textbf{jss}] \textit{class}
 
 \begin{adjustwidth}{5em}{5em}
-Whether to automatically introspect all Java classes on the classpath when JSS is loaded.
+Return a list of interfaces the class implements
 \end{adjustwidth}
 
 \paragraph{}
-\label{JSS:NEW}
-\index{NEW}
---- Function: \textbf{new} [\textbf{jss}] \textit{class-name \&rest args}
+\label{JSS:JCMN}
+\index{JCMN}
+--- Function: \textbf{jcmn} [\textbf{jss}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Invoke the Java constructor for CLASS-NAME with ARGS.
+not-documented
+\end{adjustwidth}
 
-CLASS-NAME may either be a symbol or a string according to the usual JSS conventions.
+\paragraph{}
+\label{JSS:JLIST-TO-LIST}
+\index{JLIST-TO-LIST}
+--- Function: \textbf{jlist-to-list} [\textbf{jss}] \textit{list}
+
+\begin{adjustwidth}{5em}{5em}
+Convert a LIST implementing java.util.List to a Lisp list.
 \end{adjustwidth}
 
 \paragraph{}
@@ -79,21 +175,14 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{JSS:JARRAY-TO-LIST}
-\index{JARRAY-TO-LIST}
---- Function: \textbf{jarray-to-list} [\textbf{jss}] \textit{jarray}
+\label{JSS:NEW}
+\index{NEW}
+--- Function: \textbf{new} [\textbf{jss}] \textit{class-name \&rest args}
 
 \begin{adjustwidth}{5em}{5em}
-Convert the Java array named by JARRARY into a Lisp list.
-\end{adjustwidth}
+Invoke the Java constructor for CLASS-NAME with ARGS.
 
-\paragraph{}
-\label{JSS:SET-TO-LIST}
-\index{SET-TO-LIST}
---- Function: \textbf{set-to-list} [\textbf{jss}] \textit{set}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
+CLASS-NAME may either be a symbol or a string according to the usual JSS conventions.
 \end{adjustwidth}
 
 \paragraph{}
@@ -109,12 +198,21 @@ associated is used to look up the static FIELD.
 \end{adjustwidth}
 
 \paragraph{}
-\label{JSS:JCLASS-ALL-INTERFACES}
-\index{JCLASS-ALL-INTERFACES}
---- Function: \textbf{jclass-all-interfaces} [\textbf{jss}] \textit{class}
+\label{JSS:SET-TO-LIST}
+\index{SET-TO-LIST}
+--- Function: \textbf{set-to-list} [\textbf{jss}] \textit{set}
 
 \begin{adjustwidth}{5em}{5em}
-Return a list of interfaces the class implements
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{JSS:VECTOR-TO-LIST}
+\index{VECTOR-TO-LIST}
+--- Function: \textbf{vector-to-list} [\textbf{jss}] \textit{vector}
+
+\begin{adjustwidth}{5em}{5em}
+Return the elements of java.lang.Vector VECTOR as a list.
 \end{adjustwidth}
 
 \paragraph{}
@@ -124,107 +222,5 @@ Return a list of interfaces the class implements
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{JSS:GET-JAVA-FIELD}
-\index{GET-JAVA-FIELD}
---- Function: \textbf{get-java-field} [\textbf{jss}] \textit{object field \&optional (try-harder *running-in-osgi*)}
-
-\begin{adjustwidth}{5em}{5em}
-Get the value of the FIELD contained in OBJECT.
-If OBJECT is a symbol it names a dot qualified static FIELD.
-\end{adjustwidth}
-
-\paragraph{}
-\label{JSS:JLIST-TO-LIST}
-\index{JLIST-TO-LIST}
---- Function: \textbf{jlist-to-list} [\textbf{jss}] \textit{list}
-
-\begin{adjustwidth}{5em}{5em}
-Convert a LIST implementing java.util.List to a Lisp list.
-\end{adjustwidth}
-
-\paragraph{}
-\label{JSS:ITERABLE-TO-LIST}
-\index{ITERABLE-TO-LIST}
---- Function: \textbf{iterable-to-list} [\textbf{jss}] \textit{iterable}
-
-\begin{adjustwidth}{5em}{5em}
-Return the items contained the java.lang.Iterable ITERABLE as a list.
-\end{adjustwidth}
-
-\paragraph{}
-\label{JSS:*CL-USER-COMPATIBILITY*}
-\index{*CL-USER-COMPATIBILITY*}
---- Variable: \textbf{*cl-user-compatibility*} [\textbf{jss}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-Whether backwards compatibility with JSS's use of CL-USER has been enabled.
-\end{adjustwidth}
-
-\paragraph{}
-\label{JSS:JCMN}
-\index{JCMN}
---- Function: \textbf{jcmn} [\textbf{jss}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{JSS:CLASSFILES-IMPORT}
-\index{CLASSFILES-IMPORT}
---- Function: \textbf{classfiles-import} [\textbf{jss}] \textit{directory}
-
-\begin{adjustwidth}{5em}{5em}
-Load all Java classes recursively contained under DIRECTORY in the current process.
-\end{adjustwidth}
-
-\paragraph{}
-\label{JSS:JAPROPOS}
-\index{JAPROPOS}
---- Function: \textbf{japropos} [\textbf{jss}] \textit{string}
-
-\begin{adjustwidth}{5em}{5em}
-Output the names of all Java class names loaded in the current process which match STRING..
-\end{adjustwidth}
-
-\paragraph{}
-\label{JSS:VECTOR-TO-LIST}
-\index{VECTOR-TO-LIST}
---- Function: \textbf{vector-to-list} [\textbf{jss}] \textit{vector}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-NIL
-
-\paragraph{}
-\label{JSS:INVOKE-RESTARGS}
-\index{INVOKE-RESTARGS}
---- Function: \textbf{invoke-restargs} [\textbf{jss}] \textit{method object args \&optional (raw? NIL)}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{JSS:JAR-IMPORT}
-\index{JAR-IMPORT}
---- Function: \textbf{jar-import} [\textbf{jss}] \textit{file}
-
-\begin{adjustwidth}{5em}{5em}
-Import all the Java classes contained in the pathname FILE into the JSS dynamic lookup cache.
-\end{adjustwidth}
-
-\paragraph{}
-\label{JSS:ENSURE-COMPATIBILITY}
-\index{ENSURE-COMPATIBILITY}
---- Function: \textbf{ensure-compatibility} [\textbf{jss}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-Ensure backwards compatibility with JSS's use of CL-USER.
 \end{adjustwidth}
 

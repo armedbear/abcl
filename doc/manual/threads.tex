@@ -1,19 +1,10 @@
 \paragraph{}
-\label{THREADS:MAILBOX-EMPTY-P}
-\index{MAILBOX-EMPTY-P}
---- Function: \textbf{mailbox-empty-p} [\textbf{threads}] \textit{mailbox}
+\label{THREADS:CURRENT-THREAD}
+\index{CURRENT-THREAD}
+--- Function: \textbf{current-thread} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Returns non-NIL if the mailbox can be read from, NIL otherwise.
-\end{adjustwidth}
-
-\paragraph{}
-\label{THREADS:THREADP}
-\index{THREADP}
---- Function: \textbf{threadp} [\textbf{threads}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
+Returns a reference to invoking thread.
 \end{adjustwidth}
 
 \paragraph{}
@@ -26,36 +17,80 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{THREADS:WITH-MUTEX}
-\index{WITH-MUTEX}
---- Macro: \textbf{with-mutex} [\textbf{threads}] \textit{}
+\label{THREADS:GET-MUTEX}
+\index{GET-MUTEX}
+--- Function: \textbf{get-mutex} [\textbf{threads}] \textit{mutex}
+
+\begin{adjustwidth}{5em}{5em}
+Acquires a lock on the `mutex'.
+\end{adjustwidth}
+
+\paragraph{}
+\label{THREADS:INTERRUPT-THREAD}
+\index{INTERRUPT-THREAD}
+--- Function: \textbf{interrupt-thread} [\textbf{threads}] \textit{thread function \&rest args}
+
+\begin{adjustwidth}{5em}{5em}
+Interrupts THREAD and forces it to apply FUNCTION to ARGS.
+When the function returns, the thread's original computation continues. If  multiple interrupts are queued for a thread, they are all run, but the order is not guaranteed.
+\end{adjustwidth}
+
+\paragraph{}
+\label{THREADS:MAILBOX-EMPTY-P}
+\index{MAILBOX-EMPTY-P}
+--- Function: \textbf{mailbox-empty-p} [\textbf{threads}] \textit{mailbox}
+
+\begin{adjustwidth}{5em}{5em}
+Returns non-NIL if the mailbox can be read from, NIL otherwise.
+\end{adjustwidth}
+
+\paragraph{}
+\label{THREADS:MAILBOX-PEEK}
+\index{MAILBOX-PEEK}
+--- Function: \textbf{mailbox-peek} [\textbf{threads}] \textit{mailbox}
+
+\begin{adjustwidth}{5em}{5em}
+Returns two values. The second returns non-NIL when the mailbox
+is empty. The first is the next item to be read from the mailbox.
+
+Note that due to multi-threading, the first value returned upon
+peek, may be different from the one returned upon next read in the
+calling thread.
+\end{adjustwidth}
+
+\paragraph{}
+\label{THREADS:MAILBOX-READ}
+\index{MAILBOX-READ}
+--- Function: \textbf{mailbox-read} [\textbf{threads}] \textit{mailbox}
+
+\begin{adjustwidth}{5em}{5em}
+Blocks on the mailbox until an item is available for reading.
+When an item is available, it is returned.
+\end{adjustwidth}
+
+\paragraph{}
+\label{THREADS:MAILBOX-SEND}
+\index{MAILBOX-SEND}
+--- Function: \textbf{mailbox-send} [\textbf{threads}] \textit{mailbox item}
+
+\begin{adjustwidth}{5em}{5em}
+Sends an item into the mailbox, notifying 1 waiter
+to wake up for retrieval of that object.
+\end{adjustwidth}
+
+\paragraph{}
+\label{THREADS:MAKE-MAILBOX}
+\index{MAKE-MAILBOX}
+--- Function: \textbf{make-mailbox} [\textbf{threads}] \textit{\&key ((queue g1973515) NIL)}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{THREADS:THREAD-JOIN}
-\index{THREAD-JOIN}
---- Function: \textbf{thread-join} [\textbf{threads}] \textit{thread}
-
-\begin{adjustwidth}{5em}{5em}
-Waits for thread to finish.
-\end{adjustwidth}
-
-\paragraph{}
-\label{THREADS:RELEASE-MUTEX}
-\index{RELEASE-MUTEX}
---- Function: \textbf{release-mutex} [\textbf{threads}] \textit{mutex}
-
-\begin{adjustwidth}{5em}{5em}
-Releases a lock on the `mutex'.
-\end{adjustwidth}
-
-\paragraph{}
-\label{THREADS:OBJECT-WAIT}
-\index{OBJECT-WAIT}
---- Function: \textbf{object-wait} [\textbf{threads}] \textit{}
+\label{THREADS:MAKE-MUTEX}
+\index{MAKE-MUTEX}
+--- Function: \textbf{make-mutex} [\textbf{threads}] \textit{\&key ((in-use g1973775) NIL)}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -80,18 +115,9 @@ Returns an object to be used with the `with-thread-lock' macro.
 \end{adjustwidth}
 
 \paragraph{}
-\label{THREADS:OBJECT-NOTIFY-ALL}
-\index{OBJECT-NOTIFY-ALL}
---- Function: \textbf{object-notify-all} [\textbf{threads}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{THREADS:MAKE-MAILBOX}
-\index{MAKE-MAILBOX}
---- Function: \textbf{make-mailbox} [\textbf{threads}] \textit{\&key ((queue g2304220) NIL)}
+\label{THREADS:MAPCAR-THREADS}
+\index{MAPCAR-THREADS}
+--- Function: \textbf{mapcar-threads} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -103,75 +129,48 @@ not-documented
 --- Function: \textbf{object-notify} [\textbf{threads}] \textit{object}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Wakes up a single thread that is waiting on OBJECT's monitor.
+If any threads are waiting on this object, one of them is chosen to be awakened. The choice is arbitrary and occurs at the discretion of the implementation. A thread waits on an object's monitor by calling one of the wait methods.
 \end{adjustwidth}
 
 \paragraph{}
-\label{THREADS:GET-MUTEX}
-\index{GET-MUTEX}
---- Function: \textbf{get-mutex} [\textbf{threads}] \textit{mutex}
+\label{THREADS:OBJECT-NOTIFY-ALL}
+\index{OBJECT-NOTIFY-ALL}
+--- Function: \textbf{object-notify-all} [\textbf{threads}] \textit{object}
 
 \begin{adjustwidth}{5em}{5em}
-Acquires a lock on the `mutex'.
+Wakes up all threads that are waiting on this OBJECT's monitor.
+A thread waits on an object's monitor by calling one of the wait methods.
 \end{adjustwidth}
 
 \paragraph{}
-\label{THREADS:MAILBOX-PEEK}
-\index{MAILBOX-PEEK}
---- Function: \textbf{mailbox-peek} [\textbf{threads}] \textit{mailbox}
+\label{THREADS:OBJECT-WAIT}
+\index{OBJECT-WAIT}
+--- Function: \textbf{object-wait} [\textbf{threads}] \textit{object \&optional timeout}
 
 \begin{adjustwidth}{5em}{5em}
-Returns two values. The second returns non-NIL when the mailbox
-is empty. The first is the next item to be read from the mailbox
-if the first is NIL.
+Causes the current thread to block until object-notify or object-notify-all is called on OBJECT.
+Optionally unblock execution after TIMEOUT seconds.  A TIMEOUT of zero
+means to wait indefinitely.
+A non-zero TIMEOUT of less than a nanosecond is interpolated as a nanosecond wait.
+See the documentation of java.lang.Object.wait() for further
+information.
 
-Note that due to multi-threading, the first value returned upon
-peek, may be different from the one returned upon next read in the
-calling thread.
 \end{adjustwidth}
 
 \paragraph{}
-\label{THREADS:THREAD-ALIVE-P}
-\index{THREAD-ALIVE-P}
---- Function: \textbf{thread-alive-p} [\textbf{threads}] \textit{thread}
+\label{THREADS:RELEASE-MUTEX}
+\index{RELEASE-MUTEX}
+--- Function: \textbf{release-mutex} [\textbf{threads}] \textit{mutex}
 
 \begin{adjustwidth}{5em}{5em}
-Boolean predicate whether THREAD is alive.
-\end{adjustwidth}
-
-\paragraph{}
-\label{THREADS:MAILBOX-READ}
-\index{MAILBOX-READ}
---- Function: \textbf{mailbox-read} [\textbf{threads}] \textit{mailbox}
-
-\begin{adjustwidth}{5em}{5em}
-Blocks on the mailbox until an item is available for reading.
-When an item is available, it is returned.
+Releases a lock on the `mutex'.
 \end{adjustwidth}
 
 \paragraph{}
 \label{THREADS:SYNCHRONIZED-ON}
 \index{SYNCHRONIZED-ON}
 --- Special Operator: \textbf{synchronized-on} [\textbf{threads}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{THREADS:INTERRUPT-THREAD}
-\index{INTERRUPT-THREAD}
---- Function: \textbf{interrupt-thread} [\textbf{threads}] \textit{thread function \&rest args}
-
-\begin{adjustwidth}{5em}{5em}
-Interrupts THREAD and forces it to apply FUNCTION to ARGS.
-When the function returns, the thread's original computation continues. If  multiple interrupts are queued for a thread, they are all run, but the order is not guaranteed.
-\end{adjustwidth}
-
-\paragraph{}
-\label{THREADS:MAKE-MUTEX}
-\index{MAKE-MUTEX}
---- Function: \textbf{make-mutex} [\textbf{threads}] \textit{\&key ((in-use g2304421) NIL)}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -187,22 +186,21 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{THREADS:WITH-THREAD-LOCK}
-\index{WITH-THREAD-LOCK}
---- Macro: \textbf{with-thread-lock} [\textbf{threads}] \textit{}
+\label{THREADS:THREAD-ALIVE-P}
+\index{THREAD-ALIVE-P}
+--- Function: \textbf{thread-alive-p} [\textbf{threads}] \textit{thread}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Boolean predicate whether THREAD is alive.
 \end{adjustwidth}
 
 \paragraph{}
-\label{THREADS:MAILBOX-SEND}
-\index{MAILBOX-SEND}
---- Function: \textbf{mailbox-send} [\textbf{threads}] \textit{mailbox item}
+\label{THREADS:THREAD-JOIN}
+\index{THREAD-JOIN}
+--- Function: \textbf{thread-join} [\textbf{threads}] \textit{thread}
 
 \begin{adjustwidth}{5em}{5em}
-Sends an item into the mailbox, notifying 1 waiter
-to wake up for retrieval of that object.
+Waits for thread to finish.
 \end{adjustwidth}
 
 \paragraph{}
@@ -215,20 +213,40 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{THREADS:CURRENT-THREAD}
-\index{CURRENT-THREAD}
---- Function: \textbf{current-thread} [\textbf{threads}] \textit{}
+\label{THREADS:THREADP}
+\index{THREADP}
+--- Function: \textbf{threadp} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{THREADS:MAPCAR-THREADS}
-\index{MAPCAR-THREADS}
---- Function: \textbf{mapcar-threads} [\textbf{threads}] \textit{}
+\label{THREADS:WITH-MUTEX}
+\index{WITH-MUTEX}
+--- Macro: \textbf{with-mutex} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{THREADS:WITH-THREAD-LOCK}
+\index{WITH-THREAD-LOCK}
+--- Macro: \textbf{with-thread-lock} [\textbf{threads}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{THREADS:YIELD}
+\index{YIELD}
+--- Function: \textbf{yield} [\textbf{threads}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+A hint to the scheduler that the current thread is willing to yield its current use of a processor. The scheduler is free to ignore this hint. 
+
+See java.lang.Thread.yield().
 \end{adjustwidth}
 
