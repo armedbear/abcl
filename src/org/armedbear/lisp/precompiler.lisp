@@ -335,12 +335,15 @@
 ;; Special precompilation in precompile-when and precompile-unless
 ;; No precompilation in precompile-nth-value
 ;; Special precompilation in precompile-return
-;; Special precompilation in expand-macro
 ;;
 ;; if *in-jvm-compile* is false
 
 (defvar *in-jvm-compile* nil)
 (defvar *precompile-env* nil)
+
+(declaim (inline expand-macro))
+(defun expand-macro (form)
+  (macroexpand-1 form *precompile-env*))
 
 
 (declaim (ftype (function (t) t) precompile1))
@@ -951,24 +954,6 @@
   (list* 'UNWIND-PROTECT
          (precompile1 (cadr form))
          (mapcar #'precompile1 (cddr form))))
-
-;; EXPAND-MACRO is like MACROEXPAND, but EXPAND-MACRO quits if *IN-JVM-COMPILE*
-;; is false and a macro is encountered that is also implemented as a special
-;; operator, so interpreted code can use the special operator implementation.
-(defun expand-macro (form)
-  (let (exp)
-    (loop
-       (unless *in-jvm-compile*
-         (when (and (consp form)
-                    (symbolp (%car form))
-                    (special-operator-p (%car form)))
-           (return-from expand-macro (values form exp))))
-       (multiple-value-bind (result expanded)
-           (macroexpand-1 form *precompile-env*)
-         (unless expanded
-           (return-from expand-macro (values result exp)))
-         (setf form result
-               exp t)))))
 
 (declaim (ftype (function (t t) t) precompile-form))
 (defun precompile-form (form in-jvm-compile
