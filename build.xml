@@ -1111,7 +1111,7 @@ user.dir
     <target name="abcl.documentation"
             depends="abcl.documentation.manual,abcl.documentation.asdf"/>
     <target name="abcl.documentation.manual"
-            depends="abcl.version">
+            depends="abcl.stamp.version">
       <echo>This target requires 'make' and a LaTeX installation to be on the PATH.</echo>
       <exec
           executable="make"
