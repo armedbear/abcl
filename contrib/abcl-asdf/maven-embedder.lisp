@@ -115,6 +115,9 @@ Emits warnings if not able to find a suitable executable."
        (truename d)))
    (list (make-pathname :defaults (merge-pathnames "../lib/" (find-mvn))
                         :name nil :type nil)
+         ;; library location for homebrew maven package on OS X
+         (make-pathname :defaults (merge-pathnames "../libexec/lib/" (find-mvn))
+                        :name nil :type nil)
          #p"/usr/local/share/java/maven3/lib/" ;; FreeBSD ports
          #p"/usr/local/maven/lib/"))) ;; OpenBSD location suggested by Timo Myyrä
 
