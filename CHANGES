@@ -52,7 +52,8 @@ Contrib
 
 ** Further work on ABCL-ASDF:RESOLVE [r14732] (Cyrus Hamon)
 
-** Find Maven under FreeBSD ports [r14723]
+** Find Maven under FreeBSD ports [r14723], under OS X Homebrew [r14776]
+
 
 * ABCL-JAR
 
