@@ -266,6 +266,9 @@ public final class LispCharacter extends LispObject
           case 127:
             sb.append("Rubout");
             break;
+          case 160:
+            sb.append("No-break_space");
+            break;
 	  default:
 	    if (name!=null)
               sb.append(name);
@@ -580,6 +583,8 @@ public final class LispCharacter extends LispObject
       return ' ';
     if (lower.equals("rubout") || lower.equals("del") || lower.equals("delete"))
       return 127;
+    if (lower.equals("no-break_space"))
+      return 160;
     if (lower.startsWith("u")) {
       int length = lower.length();
       if (length > 1 && length < 5) {
@@ -632,6 +637,8 @@ public final class LispCharacter extends LispObject
         return "Space";
       case 127:
         return "Rubout";
+      case 160:
+        return "No-break_space";
       }
 
     if (c<0 || c>255) return null;
