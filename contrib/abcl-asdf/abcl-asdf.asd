@@ -2,7 +2,7 @@
 
 (asdf:defsystem :abcl-asdf
   :author "Mark Evenson"
-  :version "1.4.2"
+  :version "1.5.0"
   :description "<> asdf:defsystem <urn:abcl.org/release/1.4.0-dev/contrib/abcl-asdf#1.4.2>"
   :depends-on (jss)
   :components 

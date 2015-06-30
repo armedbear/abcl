@@ -191,7 +191,7 @@ of the mvn executable with an explicit value."
                (probe-file *mvn-libs-directory*))
     (error "Please obtain and install maven-3.0.3 or later locally from <http://maven.apache.org/download.html>, then set ABCL-ASDF:*MVN-LIBS-DIRECTORY* to the directory containing maven-core-3.*.jar et. al."))
   (unless (ensure-mvn-version)
-    (error "We need maven-3.0.4 or later."))  (add-directory-jars-to-class-path *mvn-libs-directory* nil)
+    (error "We need maven-3.0.3 or later."))  (add-directory-jars-to-class-path *mvn-libs-directory* nil)
     (setf *init* t))
 
 (defun find-http-wagon ()
