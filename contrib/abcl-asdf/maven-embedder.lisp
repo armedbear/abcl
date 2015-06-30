@@ -182,11 +182,14 @@ Signals a simple-error with additional information if this attempt fails."
 Set *MVN-LIBS-DIRECTORY* to an explicit value before running this
 function in order to bypass the dynamic introspection of the location
 of the mvn executable with an explicit value."
+  (when force
+    (setf *session* nil
+          *repository-system* nil))
   (unless (or force *mvn-libs-directory*)
     (setf *mvn-libs-directory* (find-mvn-libs)))
   (unless (and *mvn-libs-directory*
                (probe-file *mvn-libs-directory*))
-    (error "Please obtain and install maven-3.0.4 or lates locally from <http://maven.apache.org/download.html>, then set ABCL-ASDF:*MVN-LIBS-DIRECTORY* to the directory containing maven-core-3.*.jar et. al."))
+    (error "Please obtain and install maven-3.0.3 or later locally from <http://maven.apache.org/download.html>, then set ABCL-ASDF:*MVN-LIBS-DIRECTORY* to the directory containing maven-core-3.*.jar et. al."))
   (unless (ensure-mvn-version)
     (error "We need maven-3.0.4 or later."))  (add-directory-jars-to-class-path *mvn-libs-directory* nil)
     (setf *init* t))
@@ -250,6 +253,8 @@ hint."
          (find-service-locator))
         (wagon-provider-class 
          (or
+          (ignore-errors ;; Maven-3.3.x
+            (jss:find-java-class 'connector.transport.TransporterFactory))
           (ignore-errors ;; Maven-3.2.5
             (jss:find-java-class 'org.eclipse.aether.transport.wagon.WagonProvider))
           (ignore-errors  ;; Maven-3.1.x 
@@ -280,10 +285,18 @@ hint."
             (jss:find-java-class 'aether.RepositorySystem))
           (ignore-errors
             (java:jclass "org.sonatype.aether.RepositorySystem")))))
-    (#"setServices" locator
-                    wagon-provider-class
-                    (java:jarray-from-list
-                     (list (make-wagon-provider))))
+
+    (if (equal wagon-provider-class (ignore-errors (jss:find-java-class 'TransporterFactory)))
+        ;;; Maven-3.3.3
+        (let ((wagon-transporter-factory (jss:new 'WagonTransporterFactory)))
+          (#"setWagonProvider" wagon-transporter-factory (make-wagon-provider))
+          (#"setServices" locator
+                          wagon-provider-class
+                          (java:jarray-from-list (list wagon-transporter-factory))))
+        (#"setServices" locator
+                        wagon-provider-class
+                        (java:jarray-from-list
+                         (list (make-wagon-provider)))))
     (#"addService" locator
                    repository-connector-factory-class
                    wagon-repository-connector-factory-class)
@@ -364,11 +377,11 @@ If *MAVEN-HTTP-PROXY* is non-nil, parse its value as the http proxy."
 
 (defun make-artifact (artifact-string)
   "Return an instance of aether.artifact.DefaultArtifact initialized from ARTIFACT-STRING." 
-  (or 
+  (or
    (ignore-errors
-     (jss:new "org.sonatype.aether.util.artifact.DefaultArtifact" artifact-string))
+     (jss:new 'aether.artifact.DefaultArtifact artifact-string))
    (ignore-errors
-     (jss:new 'aether.artifact.DefaultArtifact artifact-string))))
+     (jss:new "org.sonatype.aether.util.artifact.DefaultArtifact" artifact-string))))
 
 (defun make-artifact-request () 
   "Construct a new aether.resolution.ArtifactRequest."
@@ -453,21 +466,24 @@ in Java CLASSPATH representation."
           (make-artifact coords))
          (dependency 
           (java:jnew (jss:find-java-class 'aether.graph.Dependency)
-                     artifact (java:jfield (jss:find-java-class "JavaScopes") "RUNTIME")))
+                     artifact (java:jfield (jss:find-java-class "JavaScopes") "COMPILE")))
          (collect-request (java:jnew (jss:find-java-class "CollectRequest"))))
     (#"setRoot" collect-request dependency)
-    (when repository
-      (#"addRepository" collect-request 
-                        (if repository-p
-                            (ensure-remote-repository :repository repository)
-                            (ensure-remote-repository))))
+    (#"addRepository" collect-request 
+                      (if repository-p
+                          (ensure-remote-repository :repository repository)
+                          (ensure-remote-repository)))
     (let* ((node 
             (#"getRoot" (#"collectDependencies" (ensure-repository-system) (ensure-session) collect-request)))
-           (dependency-request 
+           (dependency-request
+            ;;; pre Maven-3.3.x
+            #+nil
             (java:jnew (jss:find-java-class "DependencyRequest")
-                       node java:+null+))
+                       node java:+null+)
+            (jss:new 'DependencyRequest))
            (nlg 
             (java:jnew (jss:find-java-class "PreorderNodeListGenerator"))))
+      (#"setRoot" dependency-request node)
       (#"resolveDependencies" (ensure-repository-system) (ensure-session) dependency-request)
       (#"accept" node nlg)
       (#"getClassPath" nlg))))
