@@ -449,7 +449,7 @@ Returns the Maven specific string for the artifact "
                                (version "LATEST" versionp)
                                (repository *maven-remote-repository* repository-p))
   "Dynamically resolve Maven dependencies for item with GROUP-ID and ARTIFACT-ID 
-optionally with a VERSION and a REPOSITORY.  Users of the function are advised 
+optionally with a VERSION and a REPOSITORY.  
 
 All recursive dependencies will be visited before resolution is successful.
 
@@ -469,10 +469,12 @@ in Java CLASSPATH representation."
                      artifact (java:jfield (jss:find-java-class "JavaScopes") "COMPILE")))
          (collect-request (java:jnew (jss:find-java-class "CollectRequest"))))
     (#"setRoot" collect-request dependency)
-    (#"addRepository" collect-request 
-                      (if repository-p
-                          (ensure-remote-repository :repository repository)
-                          (ensure-remote-repository)))
+     ;; Don't call addRepository if we explicitly specify a NIL repository
+    (unless (and repository-p (not repository))
+      (#"addRepository" collect-request 
+                        (if repository-p
+                            (ensure-remote-repository :repository repository)
+                            (ensure-remote-repository))))
     (let* ((node 
             (#"getRoot" (#"collectDependencies" (ensure-repository-system) (ensure-session) collect-request)))
            (dependency-request
