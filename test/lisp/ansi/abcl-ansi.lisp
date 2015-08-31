@@ -1,14 +1,10 @@
 (in-package :abcl.test.ansi)
 
 (defparameter *ansi-tests-master-source-location*
-  "<svn://common-lisp.net/project/ansi-test/svn/trunk/ansi-tests>")  
+  "<git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git>")
 
 (defparameter *ansi-tests-directory*
-  (if (find :asdf2 *features*)
-      (asdf:system-relative-pathname :ansi-compiled "../ansi-tests/")
-      (merge-pathnames #p"../ansi-tests/"
-		       (asdf:component-pathname 
-			(asdf:find-system :ansi-compiled)))))
+  (asdf:system-relative-pathname :ansi-compiled "../ansi-test/"))
 
 (defun run (&key (compile-tests nil)) 
   "Run the ANSI-TESTS suite, to be found in *ANSI-TESTS-DIRECTORY*.

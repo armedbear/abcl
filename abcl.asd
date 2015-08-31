@@ -92,9 +92,9 @@
   :description "Enapsulation of the REGRESSION-TEST framework use by ~
 the ANSI test suite, so that we may build on its 'API'.
 
-Requires that the contents of <svn://common-lisp.net/project/ansi-test/svn/trunk/ansi-tests> ~
+Requires that the contents of <git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git> ~
 be in a directory named '../ansi-test/'."
-  :pathname "../ansi-tests/" ;;; NB works when loaded from ASDF but not with a naked EVAL
+  :pathname "../ansi-test/" ;;; NB works when loaded from ASDF but not with a naked EVAL
   :default-component-class cl-source-file.lsp
   :components ((:file "rt-package")
                (:file "rt" :depends-on (rt-package))))
