@@ -329,4 +329,9 @@ public final class LogicalPathname extends Pathname
             return error(new TypeError("Logical namestring does not specify a host: \"" + s + '"'));
         }
     }
+
+    public long getLastModified() {
+        Pathname p = translateLogicalPathname(this);
+        return p.getLastModified();
+    }
 }
