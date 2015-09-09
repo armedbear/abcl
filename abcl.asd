@@ -79,7 +79,7 @@
 
 ;;; We refer to the ANSI-TESTS source tree, which isn't shipped as
 ;;; part of ABCL, but may be obtained at 
-;;; <svn://common-lisp.net/project/ansi-test/svn/trunk/ansi-tests>.
+;;; <git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git>
 
 ;;; We currently require that the ANSI-TESTS to be in a sibling
 ;;; directory named "ansi-tests" which should be manually synced with
