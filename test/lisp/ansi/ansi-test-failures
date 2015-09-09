@@ -611,3 +611,50 @@
        PRINT.SYMBOL.RANDOM.4 PRINT.RANDOM-STATE.1
        PPRINT-LOGICAL-BLOCK.17 TRACE.8))
 
+;;; Results which follow this line use "different" ANSI tests from
+;;; above, so are no longer strictly comparable.  Future versions of
+;;; this database should include ansi-test revisions
+
+
+;;; Tests below this line use the last version of the ansi tests
+;;; before directory reorganization, as versions of abcl prior to
+;;; changeset svn-r14783 fail as they are unable to invoke
+;;; FILE-WRITE-DATE on a logical pathname.
+
+#| 
+
+The hg revision corresponds to a repository that is the results of
+using the hg-git Mercurial bridge.
+
+hg: 2150:22f411f1c69fef712c5e6ebfacd1dea00b62bada
+git: 8412195bfb681da255b79806b97990cf0d3c1ed3
+2015-08-19 19:09 +0200 Daniel Kochmański <daniel@turtleware.eu>
+ctypecase: fix invalid tests (constant assignment)
+
+|#
+
+;; 35 out of 21727 total tests failed
+(compileit abcl-1.3.3-dev-r14797 :id illin-jdk1.8.0_60
+   (SHIFTF.7 LOOP.1.40 LOOP.1.41 LOOP.1.42 LOOP.1.43
+    CALL-NEXT-METHOD.ERROR.1 CALL-NEXT-METHOD.ERROR.2
+    INVOKE-DEBUGGER.1 MAKE-CONDITION.3 MAKE-CONDITION.4 SXHASH.8
+    DEFPACKAGE.2B MAP.48 TYPE-OF.1 TYPE-OF.4 READ-BYTE.ERROR.5
+    WRITE-BYTE.ERROR.4 CLEAR-INPUT.ERROR.5 FINISH-OUTPUT.ERROR.3
+    FORCE-OUTPUT.ERROR.3 CLEAR-OUTPUT.ERROR.3
+    MAKE-CONCATENATED-STREAM.30 PRINT.RANDOM-STATE.1
+    PPRINT-LOGICAL-BLOCK.17 FORMAT.F.5 FORMAT.F.8 FORMAT.F.45
+    FORMATTER.F.45 FORMAT.F.46 FORMATTER.F.46 FORMAT.F.46B
+    FORMATTER.F.46B FORMAT.F.47 FORMATTER.F.47 TRACE.8))
+
+;; 37 out of 21727 total tests failed
+(compileit abcl-1.4.0-dev-r14793 :id illin-jdk1.8.0_60
+  (SHIFTF.7 LOOP.1.40 LOOP.1.41 LOOP.1.42 LOOP.1.43
+   CALL-NEXT-METHOD.ERROR.1 CALL-NEXT-METHOD.ERROR.2 INVOKE-DEBUGGER.1
+   MAKE-CONDITION.3 MAKE-CONDITION.4 SXHASH.8 DEFPACKAGE.2B MAP.48
+   TYPE-OF.1 TYPE-OF.4 READ-BYTE.ERROR.5 WRITE-BYTE.ERROR.4
+   CLEAR-INPUT.ERROR.5 FINISH-OUTPUT.ERROR.3 FORCE-OUTPUT.ERROR.3
+   CLEAR-OUTPUT.ERROR.3 MAKE-CONCATENATED-STREAM.30
+   PRINT.RANDOM-STATE.1 PPRINT-LOGICAL-BLOCK.17 FORMAT.C.2A
+   FORMATTER.C.2A FORMAT.F.5 FORMAT.F.8 FORMAT.F.45 FORMATTER.F.45
+   FORMAT.F.46 FORMATTER.F.46 FORMAT.F.46B FORMATTER.F.46B FORMAT.F.47
+   FORMATTER.F.47 TRACE.8))
