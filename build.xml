@@ -876,7 +876,7 @@ The following Ant targets run various test suites:
 The ANSI tests require that the [ansi-tests][1] be manually installed in 
 ${basedir}/../ansi-tests.
 
-[1]: <git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git>
+[1]: git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git
 
 The CL-BENCH tests require that [cl-bench][2] be manually installed in
 ${basedir}/../cl-bench
