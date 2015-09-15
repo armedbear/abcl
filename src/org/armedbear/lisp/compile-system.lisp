@@ -317,10 +317,8 @@
       (load (do-compile "concatenate.lisp"))
       (load (do-compile "ldb.lisp"))
       (load (do-compile "destructuring-bind.lisp"))
-      (load (do-compile "asdf.lisp"))
       ;; But not for these.
-      (mapc #'do-compile '("abcl-contrib.lisp"
-                           "adjoin.lisp"
+      (mapc #'do-compile '("adjoin.lisp"
                            "and.lisp"
                            "apropos.lisp"
                            "arrays.lisp"
@@ -460,6 +458,14 @@
                            "with-slots.lisp"
                            "with-standard-io-syntax.lisp"
                            "write-sequence.lisp"))
+
+      ;; Compile ASDF after the whole ANSI system has been
+      ;; constructed.
+      (load (do-compile "asdf.lisp"))
+      ;; ABCL-CONTRIB depends on ASDF
+      (load (do-compile "abcl-contrib.lisp"))
+
+
       ;; With all files compiled, we need to use the symbols collected
       ;; to generate and compile autoloads.lisp
 
