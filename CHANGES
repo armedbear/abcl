@@ -47,7 +47,7 @@ Fixes
 
    Closes <http://abcl.org/trac/ticket/390>.
 
-** [r14806] çfix usage with local repository
+** [r14806] Fix Maven usage with local repository
 
 ** More complete attempt at re-initialization via
         (ABCL-ASDF:INIT :force t)
