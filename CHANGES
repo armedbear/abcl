@@ -43,11 +43,13 @@ Fixes
 
 * ABCL-ASDF
 
-** [r14803-] Fix usage with maven-3.3.x
+** Maven fixes
+
+*** [r14803-] Fix usage with all known versions of Maven 
 
    Closes <http://abcl.org/trac/ticket/390>.
 
-** [r14806] Fix Maven usage with local repository
+*** [r14806] Fix usage with local Maven repository
 
 ** More complete attempt at re-initialization via
         (ABCL-ASDF:INIT :force t)
