@@ -4,10 +4,59 @@ http://abcl.org/svn/trunk/
 Unreleased.
 
 
+Version 1.3.3
+=============
+http://abcl.org/svn/tags/1.3.3/
+18-SEP-2015
+
+Enhancements
+------------
+
+*  [r14802] Add character name for non-breaking space
+
+   Use a human readable name for character 160, #\No-break_space,
+   which is used in sbcl, ccl and clisp, and permits spinneret to
+   load.  The #\No-break_space name is a valid CHAR-NAME/NAME-CHAR
+   pair, but is emitted as a glyph under the current output encoding
+   under the CL:FORMAT "~:c" directive as these implementations do by
+   default.
+
+   Thanks to Javier Olaechea.
+
+Fixes
+-----
+
+* [r14808] CL:FILE-WRITE-DATE fixed for logical pathnames
+
+* ANSI-TEST
+
+** Update references to new git repository at
+   <git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git>
+
+** now runs on git master ansi-test with subdirectories and separate
+   *default-pathname-defaults*; cleans artifacts recursively
+
+* ASDF
+
+  Fix COMPILE-SYSTEM to offer full ANSI environment for ASDF and
+  ABCL-CONTRIB. 
+
+* ABCL-ASDF
+
+** [r14803-] Fix usage with maven-3.3.x
+
+   Closes <http://abcl.org/trac/ticket/390>.
+
+** [r14806] çfix usage with local repository
+
+** More complete attempt at re-initialization via
+        (ABCL-ASDF:INIT :force t)
+
+
 Version 1.3.2
 =============
 http://abcl.org/svn/tags/1.3.2/
-Unreleased.
+19-APR-2015
 
 Enhancements
 ------------
