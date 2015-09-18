@@ -12,14 +12,14 @@ http://abcl.org/svn/tags/1.3.3/
 Enhancements
 ------------
 
-*  [r14802] Add character name for non-breaking space
+*  [r14802,r14813] Add character name for non-breaking space
 
    Use a human readable name for character 160, #\No-break_space,
-   which is used in sbcl, ccl and clisp, and permits spinneret to
-   load.  The #\No-break_space name is a valid CHAR-NAME/NAME-CHAR
-   pair, but is emitted as a glyph under the current output encoding
-   under the CL:FORMAT "~:c" directive as these implementations do by
-   default.
+   following sbcl, ccl and clisp. This permits the Quicklisp system
+   spinneret to load.  The #\No-break_space name is a valid
+   CHAR-NAME/NAME-CHAR pair, but is not emitted as a glyph under the
+   current output encoding under the CL:FORMAT "~:c" directive as
+   these implementations do by default.
 
    Thanks to Javier Olaechea.
 
@@ -33,8 +33,12 @@ Fixes
 ** Update references to new git repository at
    <git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git>
 
-** now runs on git master ansi-test with subdirectories and separate
-   *default-pathname-defaults*; cleans artifacts recursively
+** ABCL now runs the git master consolidated ANSI-TEST suite which
+   features subdirectories and distinquished value for
+   *DEFAULT-PATHNAME-DEFAULTS*.
+
+** ABCL.TEST.ANSI:CLEAN-TESTS now acts recursively via appropiate
+   Pathname wildcards to match new directory structure.
 
 * ASDF
 
@@ -43,15 +47,16 @@ Fixes
 
 * ABCL-ASDF
 
-** Maven fixes
+** Use of Maven has been robustified.
 
-*** [r14803-] Fix usage with all known versions of Maven 
+*** [r14803] Fix usage with all known versions through maven-3.3.3
 
-   Closes <http://abcl.org/trac/ticket/390>.
+   Addresses <http://abcl.org/trac/ticket/390>.
 
-*** [r14806] Fix usage with local Maven repository
+*** [r14806] Fix usage with specifying local Maven repository
 
 ** More complete attempt at re-initialization via
+
         (ABCL-ASDF:INIT :force t)
 
 
