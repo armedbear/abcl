@@ -123,7 +123,7 @@
   (defvar *do-auto-imports* t 
     "Whether to automatically introspect all Java classes on the classpath when JSS is loaded."))
 
-(defvar *imports-resolved-classes* (make-hash-table :test 'equal))
+(defvar *imports-resolved-classes* (make-hash-table :test 'equalp))
 
 (defun find-java-class (name)
   "Returns the java.lang.Class representation of NAME.
@@ -143,7 +143,7 @@ NAME can either string or a symbol according to the usual JSS conventions."
   (clrhash *imports-resolved-classes*))
 
 (defun maybe-resolve-class-against-imports (classname)
-  (or (gethash classname *imports-resolved-classes*)
+  (or (gethash (string classname) *imports-resolved-classes*)
       (let ((found (lookup-class-name classname)))
         (if found
             (progn 
