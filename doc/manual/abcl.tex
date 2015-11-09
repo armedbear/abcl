@@ -1242,18 +1242,20 @@ semantics to the execution of \code{REQUIRE} on the following symbols:
         the distributed pom.xml graph of Maven Aether:
         \begin{enumerate}
           \item \code{jna} 
-            Dynamically load 'jna.jar' version 4.0.0
+            Dynamically load 'jna.jar' version 4.1.0
             from the network \footnote{This loading can be inhibited
               if, at runtime, the Java class corresponding
               ``:classname'' clause of the system defition is present.}
         \end{enumerate}
       \item \code{quicklisp-abcl} Boot a local Quicklisp installation
-        via the ASDF:IRI type introduced bia ABCL-ASDF.
+        via the ASDF:IRI type introduced via ABCL-ASDF.
 
-\begin{listing-lisp}
-CL-USER> (asdf:load-system :quicklisp-abcl)
-\end{listing-lisp}
-
+      \item \code{jfli} A descendent of Rich Hickey's pre-Clojure work
+        on the JVM.
+      \item \code{jss} Introduces dynamic inspection of present
+        symbols via the \code{SHARPSIGN-DOUBLE-QUOTE} macros as Java Syntax
+        Sucks
+      \item \code{asdf-install} DEPRECATED.  Scheduled for removal in 1.4.0.
 \end{enumerate}
 
 \end{description}
