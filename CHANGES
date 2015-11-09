@@ -3,6 +3,18 @@ Version 1.4.0-dev
 http://abcl.org/svn/trunk/
 Unreleased.
 
+Enhancements
+============
+
+* implemented "time of time" semantics for {encode,decode}-universal time.
+
+Fixes
+-----
+
+*  JSS
+
+Ensure the interpolation of Java symbol names as strings 
+
 
 Version 1.3.3
 =============
