@@ -126,14 +126,15 @@ public final class Time
     }
   };
 
+  // ### get-time-zone time-in-millis => time-zone-difference-in-hours
   public static final Primitive GET_TIME_ZONE = new pf_get_time_zone();
   @DocString(name="get-time-zone",
              args="time-in-millis",
              returns="timezone",
-             doc="Return the timezone for TIME-IN-MILLIS via the Daylight assumptions that were in place at its occurance. i.e. implement 'time of the time semantics'." )
+             doc="Return the timezone difference in hours for TIME-IN-MILLIS via the Daylight assumptions that were in place at its occurance. i.e. implement 'time of the time semantics'." )
   public static final class pf_get_time_zone extends Primitive {
     pf_get_time_zone() {
-      super("get-time-zone", PACKAGE_EXT, true, "");
+      super("get-time-zone", PACKAGE_EXT, true, "time-in-millis");
     }
 
     public LispObject execute(LispObject unixTimeMillis) {
