@@ -111,25 +111,46 @@ public final class Time
     };
 
   // ### default-time-zone => offset daylight-p
-  private static final Primitive DEFAULT_TIME_ZONE =
-    new Primitive("default-time-zone", PACKAGE_SYS, false)
+  public static final Primitive DEFAULT_TIME_ZONE = new pf_default_time_zone();
+  @DocString(name="default-time-zone",
+             args="",
+             returns="offset daylight-p",
+             doc="Returns the OFFSET of the default time zone for this instance of the implementation, and as a second value the state of the DAYLIGHT-P predicate.")
+  public static final class pf_default_time_zone extends Primitive {
+    pf_default_time_zone() {
+      super("default-time-zone", PACKAGE_SYS, true);
+    }
+    public LispObject execute()
     {
-      @Override
-      public LispObject execute()
-      {
-        TimeZone tz = TimeZone.getDefault();
-        //int offset = tz.getOffset(System.currentTimeMillis());
-        // Classpath hasn't implemented TimeZone.getOffset(long).
-        int rawOffset = tz.getRawOffset();
-        final boolean inDaylightTime =
-          tz.inDaylightTime(new Date(System.currentTimeMillis()));
-        if (inDaylightTime)
-          rawOffset += tz.getDSTSavings();
-        // "Time zone values increase with motion to the west..."
-        // Convert milliseconds to hours.
-        return LispThread.currentThread().setValues(
-          Fixnum.getInstance(- rawOffset).divideBy(Fixnum.getInstance(3600000)),
-          inDaylightTime ? T : NIL);
-      }
-    };
+      return GET_TIME_ZONE.execute(LispInteger.getInstance(System.currentTimeMillis()));
+    }
+  };
+
+  public static final Primitive GET_TIME_ZONE = new pf_get_time_zone();
+  @DocString(name="get-time-zone",
+             args="time-in-millis",
+             returns="timezone",
+             doc="Return the timezone for TIME-IN-MILLIS via the Daylight assumptions that were in place at its occurance. i.e. implement 'time of the time semantics'." )
+  public static final class pf_get_time_zone extends Primitive {
+    pf_get_time_zone() {
+      super("get-time-zone", PACKAGE_EXT, true, "");
+    }
+
+    public LispObject execute(LispObject unixTimeMillis) {
+      // should be a reference to a singleton for the lifetime of an ABCL process
+      TimeZone tz = TimeZone.getDefault(); 
+      // int offset = tz.getOffset(System.currentTimeMillis());
+      // Classpath hasn't implemented TimeZone.getOffset(long).
+      int rawOffset = tz.getRawOffset();
+      final boolean inDaylightTime = tz.inDaylightTime(new Date(unixTimeMillis.longValue()));
+      if (inDaylightTime)
+        rawOffset += tz.getDSTSavings();
+      // "Time zone values increase with motion to the west..."
+      // Convert milliseconds to hours.
+      return LispThread.currentThread()
+        .setValues(Fixnum
+                   .getInstance(- rawOffset).divideBy(Fixnum.getInstance(3600000)),
+                   inDaylightTime ? T : NIL);
+    }
+  };
 }

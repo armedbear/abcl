@@ -519,6 +519,7 @@ public class Autoload extends Function
         autoload(PACKAGE_EXT, "file-directory-p", "probe_file", true);
         autoload(PACKAGE_EXT, "gc", "gc", true);
         autoload(PACKAGE_EXT, "get-floating-point-modes", "FloatFunctions", true);
+        autoload(PACKAGE_EXT, "get-time-zone", "Time", true);
         autoload(PACKAGE_EXT, "make-slime-input-stream", "SlimeInputStream", true);
         autoload(PACKAGE_EXT, "make-slime-output-stream", "SlimeOutputStream", true);
         autoload(PACKAGE_EXT, "probe-directory", "probe_file", true);
