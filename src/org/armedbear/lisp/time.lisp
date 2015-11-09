@@ -129,7 +129,7 @@
 		  (* (- year 1900) 365)))
 	 (hours (+ hour (* days 24))))
     (cond (time-zone
-           (let* ((tz-guess (get-time-zone (* hours 3600)))
+           (let* ((tz-guess (ext:get-time-zone (* hours 3600)))
 		  (guess (+ second (* 60 (+ minute (* 60 (+ hours tz-guess))))))
 		  (tz (get-time-zone guess)))
              (+ guess (* 3600 (- tz tz-guess)))))
