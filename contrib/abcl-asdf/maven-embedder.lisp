@@ -33,9 +33,12 @@ that the Maven specific "~/.m2/settings.xml" file is NOT parsed for settings.
 
 #| 
 Test:
-(resolve-dependencies "org.slf4j" "slf4j-api" "1.6.1")
+(abcl-asdf:resolve "org.slf4j:slf4j-api:1.6.1")
 
-(resolve-dependencies "org.apache.maven" "maven-aether-provider" "3.0.4")
+(abcl-asdf:resolve "org.apache.maven:maven-aether-provider:3.0.4")
+
+(abcl-asdf:resolve "com.google.gwt:gwt-user")
+
 |#
 
 (defparameter *maven-verbose* t
