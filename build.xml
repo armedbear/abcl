@@ -680,7 +680,7 @@ will compile (if necessary) and load JSS.
       
       <include name="test/**"/>
 
-      <include name="build-from-lisp.sh"/>
+      <include name="build-from-lisp.bash"/>
       
       <!-- The remainder of these files are used by the Lisp hosted
            build in 'build-abcl.lisp' but not used by Ant, so include

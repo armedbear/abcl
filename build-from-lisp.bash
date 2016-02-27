@@ -1,11 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash 
 # $Id$
 #
 # Build ABCL from a supported Lisp
 
 usage()
 {
-   echo "$0 <implementation> [[ --clean=T | --full=T | --batch=NIL ]]"
+    echo "WARNING: This build method can produce slightly different results than"
+    echo "         the canonical Ant build method."
+    echo
+    echo "USAGE:"
+    echo "$0 <implementation> [[ --clean=T | --full=T | --batch=NIL ]]"
 }
 
 if [ -z "$1" ]; then
@@ -63,6 +67,18 @@ done
 
 FORM="(build-abcl:build-abcl :clean $CLEAN :full $FULL :batch $BATCH)"
 FILE="build-abcl.lisp"
+
+if [[ ! -r customizations.lisp ]]; then
+    cat <<-EOF
+
+Failed to find configuration in 'customizations.lisp'.  Please copy
+'customizations.lisp.in' to 'customizations.lisp', editing it to
+reflect local configuration.
+
+EOF
+    exit 1
+fi
+
 
 
 abcl()
