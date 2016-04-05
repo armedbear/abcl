@@ -35,4 +35,7 @@ mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-contrib.jar -DpomFile=contrib/pom.
 mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-contrib-sources.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=sources
 mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-contrib-javadoc.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=javadoc
 
-
+# <http://www.sonatype.org/nexus/2015/06/02/how-to-publish-software-artifacts-to-maven-central/>
+# <http://central.sonatype.org/pages/releasing-the-deployment.html>
+#
+# For specifying gpg executable, use a property specified via '-Dgpg.executable=gpg2'
