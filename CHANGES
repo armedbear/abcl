@@ -6,14 +6,19 @@ Unreleased.
 Enhancements
 ============
 
-* implemented "time of time" semantics for {encode,decode}-universal time.
+* Implemented "time of time" semantics for {encode,decode}-universal time.
 
 Fixes
 -----
 
-*  JSS
+*  (JSS) Ensure the interpolation of Java symbol names as strings
 
-Ensure the interpolation of Java symbol names as strings 
+Updates
+------
+
+* asdf-3.1.7
+
+* jna-4.2.2
 
 
 Version 1.3.3
