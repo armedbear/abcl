@@ -275,7 +275,7 @@ public final class Extensions
     {
       try
         {
-          File file = File.createTempFile("abcl", null, null);
+          File file = File.createTempFile("abcl", "", null);
           if (file != null)
             return new Pathname(file.getPath());
         }

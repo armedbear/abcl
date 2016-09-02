@@ -35,16 +35,19 @@
 
 (export '(run-program process process-p process-input process-output
           process-error process-alive-p process-wait process-exit-code
-          process-kill))
+          process-kill process-pid))
 
-;;; Vaguely inspired by sb-ext:run-program in SBCL. 
+;;; Vaguely inspired by sb-ext:run-program in SBCL.
 ;;;
-;;; See <http://www.sbcl.org/manual/Running-external-programs.html>. 
+;;; See <http://www.sbcl.org/manual/Running-external-programs.html>.
 ;;;
 ;;; This implementation uses the JVM facilities for running external
 ;;; processes.
 ;;; <http://download.oracle.com/javase/6/docs/api/java/lang/ProcessBuilder.html>.
-(defun run-program (program args &key environment (wait t) clear-environment)
+(defun run-program (program args &key environment (wait t) clear-environment
+                                      (input :stream) (output :stream) (error :stream)
+                                      if-input-does-not-exist (if-output-exists :error)
+                                      (if-error-exists :error) directory)
   "Run PROGRAM with ARGS in with ENVIRONMENT variables.
 
 Possibly WAIT for subprocess to exit.
@@ -53,7 +56,7 @@ Optionally CLEAR-ENVIRONMENT of the subprocess of any non specified values.
 
 Creates a new process running the the PROGRAM.
 
-ARGS are a list of strings to be passed to the program as arguments. 
+ARGS are a list of strings to be passed to the program as arguments.
 
 For no arguments, use nil which means that just the name of the
 program is passed as arg 0.
@@ -77,44 +80,156 @@ Notes about Unix environments (as in the :environment):
 
 The &key arguments have the following meanings:
 
-:environment 
+:environment
     An alist of STRINGs (name . value) describing new
     environment values that replace existing ones.
 
-:clear-env
+:clear-environment
     If non-NIL, the current environment is cleared before the
     values supplied by :environment are inserted.
 
-:wait 
+:wait
     If non-NIL, which is the default, wait until the created process
     finishes. If NIL, continue running Lisp until the program
     finishes.
+
+:input
+    If T, I/O is inherited from the Java process. If NIL, /dev/null is used
+    (nul on Windows). If a PATHNAME designator other than a stream is
+    supplied, input will be read from that file. If set to :STREAM, a stream
+    will be available via PROCESS-INPUT to read from. Defaults to :STREAM.
+
+:if-input-does-not-exist
+    If :input points to a non-existing file, this may be set to :ERROR in
+    order to signal an error, :CREATE to create and read from an empty file,
+    or NIL to immediately NIL instead of creating the process.
+    Defaults to NIL.
+
+:output
+    If T, I/O is inherited from the Java process. If NIL, /dev/null is used
+    (nul on Windows). If a PATHNAME designator other than a stream is
+    supplied, output will be redirect to that file. If set to :STREAM, a
+    stream will be available via PROCESS-OUTPUT to write to.
+    Defaults to :STREAM.
+
+:if-output-exists
+    If :output points to a non-existing file, this may be set to :ERROR in
+    order to signal an error, :SUPERSEDE to supersede the existing file,
+    :APPEND to append to it instead, or NIL to immediately NIL instead of
+    creating the process. Defaults to :ERROR.
+
+:error
+    Same as :output, but can also be :output, in which case the error stream
+    is redirected to wherever the standard output stream goes.
+    Defaults to :STREAM.
+
+:if-error-exists
+    Same as :if-output-exists, but for the :error target.
+
+:directory
+    If set will become the working directory for the new process, otherwise
+    the working directory will be unchanged from the current Java process.
+    Defaults to NIL.
 "
   (let* ((program-namestring (namestring (pathname program)))
-
          (process-builder (%make-process-builder program-namestring args)))
     (let ((env-map (%process-builder-environment process-builder)))
       (when clear-environment
-        (%process-builder-env-clear env-map))            
+        (%process-builder-env-clear env-map))
       (when environment
         (dolist (entry environment)
           (%process-builder-env-put env-map
                                     (princ-to-string (car entry))
                                     (princ-to-string (cdr entry))))))
-    (let ((process (make-process (%process-builder-start process-builder))))
-      (when wait (process-wait process))
-      process)))
+    (let ((input-stream-p (eq input :stream))
+          (output-stream-p (eq output :stream))
+          (error-stream-p (eq error :stream)))
+      (unless output-stream-p
+        (unless (setup-output-redirection process-builder output NIL if-output-exists)
+          (return-from run-program)))
+      (if (eq error :output)
+          (java:jcall "redirectErrorStream" process-builder T)
+          (unless error-stream-p
+            (unless (setup-output-redirection process-builder error T if-error-exists)
+              (return-from run-program))))
+      (unless input-stream-p
+        (unless (setup-input-redirection process-builder input if-input-does-not-exist)
+          (return-from run-program)))
+      (when directory
+        (java:jcall "directory" process-builder (java:jnew "java.io.File" (namestring directory))))
+      (let ((process (make-process (%process-builder-start process-builder)
+                                   input-stream-p output-stream-p error-stream-p)))
+        (when wait (process-wait process))
+        process))))
+
+(defconstant +inherit+
+  (java:jfield "java.lang.ProcessBuilder$Redirect" "INHERIT"))
+
+(defun coerce-to-file (value)
+  (java:jnew
+   "java.io.File"
+   (if value
+       (namestring value)
+       #+unix "/dev/null"
+       #+windows "nul"
+       #-(or unix windows) (error "Don't know how to set up null stream on this platform."))))
+
+(defun setup-input-redirection (process-builder value if-does-not-exist)
+  (let ((redirect (if (eq value T)
+                      +inherit+
+                      (let ((file (coerce-to-file value)))
+                        (when value
+                          (if (eq if-does-not-exist :create)
+                              (open value :direction :probe :if-does-not-exist :create)
+                              (unless (probe-file value)
+                                (ecase if-does-not-exist
+                                  (:error (error "Input file ~S does not exist." value))
+                                  ((NIL) (return-from setup-input-redirection))))))
+                        (java:jstatic "from" "java.lang.ProcessBuilder$Redirect" file)))))
+    (java:jcall "redirectInput" process-builder redirect))
+  T)
+
+(defun setup-output-redirection (process-builder value errorp if-does-exist)
+  (let ((redirect (if (eq value T)
+                      +inherit+
+                      (let ((file (coerce-to-file value))
+                            appendp)
+                        (when (and value (probe-file value))
+                          (ecase if-does-exist
+                            (:error (error "Output file ~S does already exist." value))
+                            (:supersede (rename-file (make-temp-file) value))
+                            (:append (setf appendp T))
+                            ((NIL) (return-from setup-output-redirection))))
+                        (if appendp
+                            (java:jstatic "appendTo" "java.lang.ProcessBuilder$Redirect" file)
+                            (java:jstatic "to" "java.lang.ProcessBuilder$Redirect" file))))))
+    (if errorp
+        (java:jcall "redirectError" process-builder redirect)
+        (java:jcall "redirectOutput" process-builder redirect)))
+  T)
 
 ;;; The process structure.
 (defstruct (process (:constructor %make-process (jprocess)))
-  jprocess input output error)
+  jprocess %input %output %error)
 
-(defun make-process (proc)
+(defun make-process (proc inputp outputp errorp)
   (let ((process (%make-process proc)))
-    (setf (process-input process) (%make-process-input-stream proc))
-    (setf (process-output process) (%make-process-output-stream proc))
-    (setf (process-error process) (%make-process-error-stream proc))
+    (when inputp
+      (setf (%process-input process) (%make-process-input-stream proc)))
+    (when outputp
+      (setf (%process-output process) (%make-process-output-stream proc)))
+    (when errorp
+      (setf (%process-error process) (%make-process-error-stream proc)))
     process))
+
+(defun process-input (process)
+  (%process-input process))
+
+(defun process-output (process)
+  (%process-output process))
+
+(defun process-error (process)
+  (%process-error process))
 
 (defun process-alive-p (process)
   "Return t if process is still alive, nil otherwise."
@@ -131,6 +246,10 @@ The &key arguments have the following meanings:
 (defun process-kill (process)
   "Kills the process."
   (%process-kill (process-jprocess process)))
+
+(defun process-pid (process)
+  "Return the process ID."
+  (%process-pid (process-jprocess process)))
 
 ;;; Low-level functions. For now they're just a refactoring of the
 ;;; initial implementation with direct jnew & jcall forms in the
@@ -175,6 +294,16 @@ The &key arguments have the following meanings:
 
 (defun %process-exit-code (jprocess)
   (ignore-errors (java:jcall "exitValue" jprocess)))
+
+#+unix
+(defconstant +pid-field+
+  (let ((field (java:jcall "getDeclaredField" (java:jclass "java.lang.UNIXProcess") "pid")))
+    (java:jcall "setAccessible" field java:+true+)
+    field))
+
+(defun %process-pid (jprocess)
+  #+unix (java:jcall "get" +pid-field+ jprocess)
+  #-unix (error "Can't retrieve PID on this platform."))
 
 (defun %process-kill (jprocess)
   (java:jcall "destroy" jprocess))
