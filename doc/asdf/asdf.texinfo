@@ -36,11 +36,11 @@ for Common Lisp programs and libraries.
 You can find the latest version of this manual at
 @url{https://common-lisp.net/project/asdf/asdf.html}.
 
-ASDF Copyright @copyright{} 2001-2015 Daniel Barlow and contributors.
+ASDF Copyright @copyright{} 2001-2016 Daniel Barlow and contributors.
 
-This manual Copyright @copyright{} 2001-2015 Daniel Barlow and contributors.
+This manual Copyright @copyright{} 2001-2016 Daniel Barlow and contributors.
 
-This manual revised @copyright{} 2009-2015 Robert P. Goldman and Francois-Rene Rideau.
+This manual revised @copyright{} 2009-2016 Robert P. Goldman and Francois-Rene Rideau.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -65,7 +65,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @titlepage
 @title ASDF: Another System Definition Facility
-@subtitle Manual for Version 3.1.7
+@subtitle Manual for Version 3.1.7.8
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
@@ -82,7 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @node Top, Introduction, (dir), (dir)
 @top ASDF: Another System Definition Facility
 @ifnottex
-Manual for Version 3.1.6.14
+Manual for Version 3.1.7.1
 @end ifnottex
 
 
@@ -256,6 +256,7 @@ Issues with using and extending ASDF to define systems
 * How do I mark a source file to be loaded only and not compiled?::
 * How do I work with readtables?::
 * How can I capture ASDF's output?::
+* LOAD-PATHNAME has a weird value::
 
 ASDF development FAQs
 
@@ -678,6 +679,11 @@ may already have configured system-managed libraries for you.
 @c FIXME: this section should be moved elsewhere.  The novice user
 @c should not be burdened with it. [2014/02/27:rpg]
 
+Novices may skip this section.
+@c ``Experts may read it then proceed to ...''
+@c some better section explaining
+@c *central-registry* vs source-registry vs *system-definition-search-functions*,
+@c and .../asdf/tools/cl-source-registry-cache.lisp
 
 The old way to configure ASDF to find your systems is by
 @code{push}ing directory pathnames onto the variable
@@ -702,7 +708,7 @@ search forward for
 
 For example, let's say you want ASDF to find the @file{.asd} file
 @file{/home/me/src/foo/foo.asd}.
-In your lisp initialization file, you could have the following:
+In your Lisp initialization file, you could have the following:
 
 @lisp
 (require "asdf")
@@ -726,7 +732,7 @@ The variable @code{asdf:*central-registry*} is thus a list of
 ``system directory designators''.
 A @dfn{system directory designator} is a form
 which will be evaluated whenever a system is to be found,
-and must evaluate to a directory to look in (or @code{NIL}).
+and must evaluate to a directory to look in (or @code{nil}).
 By ``directory'', we mean
 ``designator for a pathname with a non-empty DIRECTORY component''.
 }
@@ -1441,6 +1447,7 @@ other-component-type := symbol-by-name
 # which is used in :in-order-to
 dependency-def := simple-component-name
                | ( :feature @var{feature-expression} dependency-def )
+                 # (@pxref{The defsystem grammar,,Feature dependencies})
                | ( :version simple-component-name version-specifier )
                | ( :require module-name )
 
@@ -1458,8 +1465,6 @@ pathname-specifier := pathname | string | symbol
 
 method-form := (operation-name qual lambda-list @Arest{} body)
 qual := method qualifier?
-
-component-dep-fail-option := :fail | :try-next | :ignore
 
 feature-expression := keyword
                       | (:and @var{feature-expression}*)
@@ -1684,6 +1689,25 @@ rather than @code{#+@emph{implementation-name}}
 to only depend on the specified module on the specific implementation that provides it.
 @xref{if-feature-option}.
 
+@subsection Feature dependencies
+@cindex :feature dependencies
+
+A feature dependency is of the form
+@code{(:feature @var{feature-expression} @var{dependency})}
+If the @var{feature-expression} is satisfied by the running lisp at the
+time the system definition is parsed, then the @var{dependency} will be
+added to the system's dependencies.  If the @var{feature-expression} is
+@emph{not} satisfied, then the feature dependency form is ignored.
+
+Note that this means that @code{:feature} @strong{cannot} be used to
+enforce a feature dependency for the system in question.  I.e., it
+cannot be used to require that a feature hold in order for the system
+definition to be loaded.  E.g., one cannot use @code{(:feature :sbcl)}
+to require that a system only be used on SBCL.
+
+Feature dependencies are not to be confused with the obsolete
+feature requirement (@pxref{The defsystem grammar,,feature requirement}), or
+with @code{if-feature}.
 
 @subsection Using logical pathnames
 @cindex logical pathnames
@@ -1843,13 +1867,6 @@ been performed.
 This option was added in ASDF 3.  For more information,
 @xref{required-features, Required features}.
 
-@subsection if-component-dep-fails option
-@cindex :if-component-dep-fails component option
-This option was removed in ASDF 3.
-Its semantics was limited in purpose and dubious to explain,
-and its implementation was breaking a hole into the ASDF object model.
-Please use the @code{if-feature} option instead.
-
 @subsection feature requirement
 This requirement was removed in ASDF 3.1.  Please do not use it.  In
 most cases, @code{:if-feature} (@pxref{if-feature-option}) will provide
@@ -2004,7 +2021,7 @@ where the @file{.asd} file resides.
 
 ASDF is designed in an object-oriented way from the ground up.
 Both a system's structure and the operations that can be performed on systems
-follow a extensible protocol, allowing programmers to add new behaviours to ASDF.
+follow an extensible protocol, allowing programmers to add new behaviours to ASDF.
 For example, @code{cffi} adds support for special FFI description files
 that interface with C libraries and for wrapper files that embed C code in Lisp.
 @code{asdf-jar} supports creating Java JAR archives in ABCL.
@@ -2699,9 +2716,9 @@ but system @code{foo} was previously loaded from @file{/previous/path/to/foo.asd
 then @var{locate-system} will return the following values:
 @enumerate
 @item
-@var{foundp} will be @code{T},
+@var{foundp} will be @code{t},
 @item
-@var{found-system} will be @code{NIL},
+@var{found-system} will be @code{nil},
 @item
 @var{pathname} will be @code{#p"/current/path/to/foo.asd"},
 @item
@@ -4545,7 +4562,7 @@ to protect any @code{:encoding @emph{encoding}} statement, as in
 @code{#+asdf-unicode :encoding #+asdf-unicode :utf-8}.
 We recommend that you avoid using unprotected @code{:encoding} specifications
 until after ASDF 2.21 or later becomes widespread.
-As of May 2015, all maintained implementations provide ASDF 3,
+As of May 2016, all maintained implementations provide ASDF 3.1,
 so you may prudently start using this and other features without such protection.
 
 While it offers plenty of hooks for extension,
@@ -4753,14 +4770,14 @@ while others (like SBCL) will make an attempt at invoking a POSIX shell
 @section Some Utility Functions
 
 The below functions are not exported by ASDF itself, but by UIOP, available since ASDF 3.
-Some of them have precursors in ASDF 2, but we recommend
-you rely on ASDF 3 for active developments.
+Some of them have precursors in ASDF 2, but we recommend that for active developments,
+you should rely on the package UIOP as included in ASDF 3.
 UIOP provides many, many more utility functions, and we recommend
-you read its README and sources for more information.
+you read its @file{README.md} and sources for more information.
 
 
 @defun parse-unix-namestring name @Akey{} type defaults dot-dot ensure-directory @AallowOtherKeys
-Coerce NAME into a PATHNAME using standard Unix syntax.
+Coerce @var{name} into a @var{pathname} using standard Unix syntax.
 
 Unix syntax is used whether or not the underlying system is Unix;
 on non-Unix systems it is only usable for relative pathnames.
@@ -4949,7 +4966,7 @@ which defaults to @code{0}, extracting the first line.
 A number will extract the corresponding line.
 See the documentation for @code{uiop:access-at}.
 
-@item If the object is @code{:forms}, the content is captured as a list of S-expressions,
+@item If the object is @code{:forms}, the content is captured as a list of s-expressions,
 as read by the Lisp reader.
 If the @var{count} argument is provided,
 it is a maximum count of lines to be read.
@@ -5518,7 +5535,7 @@ and ensure that ASDF 3 or later is present indeed,
 before they start using ASDF to load anything else.
 
 @item
-Now that all implementations provide ASDF 3 or later (since May 2015),
+Now that all implementations provide ASDF 3.1 or later (since May 2016),
 the simple solution is just to use code as below in your setup,
 and when it fails, upgrade your implementation or replace its ASDF.
 (@pxref{Replacing your implementation's ASDF}):
@@ -5783,6 +5800,7 @@ and only do this from your personal configuration or build scripts.
 * How do I mark a source file to be loaded only and not compiled?::
 * How do I work with readtables?::
 * How can I capture ASDF's output?::
+* LOAD-PATHNAME has a weird value::
 @end menu
 
 @node How can I cater for unit-testing in my system?, How can I cater for documentation generation in my system?, Issues with using and extending ASDF to define systems, Issues with using and extending ASDF to define systems
@@ -6062,7 +6080,7 @@ to eschew using such an important library anymore.
 
 Use from the @code{named-readtables} system the macro @code{named-readtables:defreadtable}.
 
-@node How can I capture ASDF's output?,  , How do I work with readtables?, Issues with using and extending ASDF to define systems
+@node How can I capture ASDF's output?, LOAD-PATHNAME has a weird value, How do I work with readtables?, Issues with using and extending ASDF to define systems
 @subsection How can I capture ASDF's output?
 
 @cindex ASDF output
@@ -6073,7 +6091,36 @@ Output from ASDF and ASDF extensions are sent to the CL stream
 @code{*standard-output*}, so rebinding that stream around calls to
 @code{asdf:operate} should redirect all output from ASDF operations.
 
+@node LOAD-PATHNAME has a weird value,  , How can I capture ASDF's output?, Issues with using and extending ASDF to define systems
+@subsection *LOAD-PATHNAME* and *LOAD-TRUENAME* have weird values, help!
+@vindex *LOAD-PATHNAME*
+@vindex *LOAD-TRUENAME*
 
+Conventional Common Lisp code may use @code{*LOAD-TRUENAME*} or @code{*LOAD-PATHNAME*} to find
+files adjacent to source files.  This will generally @emph{not} work in
+ASDF-loaded systems.  Recall that ASDF relocates the FASL files it
+builds, typically to a special cache directory.  Thus the value of
+@code{*LOAD-PATHNAME*} and @code{*LOAD-TRUENAME*}  at load time, when ASDF is loading your system,
+will typically be a pathname in that cache directory, and useless to you
+for finding other system components.
+
+There are two ways to work around this problem:
+@enumerate
+@findex system-relative-pathname
+@item
+Use the @code{system-relative-pathname} function.  This can readily be
+used from outside the system, but it is probably not good software
+engineering to require a source file @emph{of} a system to know what
+system it is going to be part of.  Contained objects should not have to
+know their containers.
+@item
+Store the pathname at compile time, so that you get the pathname of the
+source file, which is presumably what you want.  To do this, you can
+capture the value of @code{(or *compile-file-pathname* *load-truename*)}
+(or @code{*LOAD-PATHNAME*}, if you prefer)
+in a macro expansion or other compile-time evaluated context.
+
+@end enumerate
 
 @node ASDF development FAQs,  , Issues with using and extending ASDF to define systems, FAQ
 @section ASDF development FAQs
