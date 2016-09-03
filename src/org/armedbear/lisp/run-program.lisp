@@ -215,21 +215,21 @@ The &key arguments have the following meanings:
 (defun make-process (proc inputp outputp errorp)
   (let ((process (%make-process proc)))
     (when inputp
-      (setf (%process-input process) (%make-process-input-stream proc)))
+      (setf (process-%input process) (%make-process-input-stream proc)))
     (when outputp
-      (setf (%process-output process) (%make-process-output-stream proc)))
+      (setf (process-%output process) (%make-process-output-stream proc)))
     (when errorp
-      (setf (%process-error process) (%make-process-error-stream proc)))
+      (setf (process-%error process) (%make-process-error-stream proc)))
     process))
 
 (defun process-input (process)
-  (%process-input process))
+  (process-%input process))
 
 (defun process-output (process)
-  (%process-output process))
+  (process-%output process))
 
 (defun process-error (process)
-  (%process-error process))
+  (process-%error process))
 
 (defun process-alive-p (process)
   "Return t if process is still alive, nil otherwise."
