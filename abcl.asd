@@ -6,6 +6,7 @@
 
 #+abcl
 (eval-when (:load-toplevel :execute)
+  (require :abcl-contrib)
   (asdf:load-system :quicklisp-abcl))
 
 ;;; Wrapper for all ABCL ASDF definitions.
