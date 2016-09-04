@@ -59,11 +59,12 @@
     rdf:_3 _:ville ;
     rdf:_4 _:astalla ;
     rdf:_5 _:rudi ;
-    rdf:_5 _:ferada ; 
-    rdf:_5 _:cyrus ; 
-    rdf:_5 _:dmiles ; 
-    rdf:_5 _:alanr ; 
-    rdf:_5 _:pipping ; 
+    rdf:_6 _:ferada ; 
+    rdf:_7 _:cyrus ; 
+    rdf:_8 _:dmiles ; 
+    rdf:_9 _:alanr ; 
+    rdf:_10 _:pipping ; 
+    rdf:_11 _:olof ; 
 ] .
 
 <abcl:doap>  
