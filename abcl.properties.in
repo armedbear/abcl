@@ -15,8 +15,11 @@ abcl.build.incremental=true
 
 ## java.options sets the Java options in the abcl wrapper scripts
 
+# Reasonable defaults for Java 8
+java.options=-d64  -XX:+UseG1GC -XshowSettings:vm 
+
 # Reasonable defaults for circa-2012, ORCL JVM implementations
-java.options=-d64 -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g -XX:+UseConcMarkSweepGC
+#java.options=-d64 -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g -XX:+UseConcMarkSweepGC
 
 # See
 # http://www.oracle.com/technetwork/java/javase/tech/vmoptions-jsp-140102.html
@@ -55,5 +58,6 @@ java.options=-d64 -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g -XX:+UseConcM
 # JVM option to execute when debugging the Lisp compilation via 'abcl.compile.lisp.debug'
 # Debug the compilation by connecting a JVM debugger to localhost:6789 via JDWP.
 #abcl.compile.lisp.debug.jvmarg=-agentlib:jdwp=transport=dt_socket,server=y,address=6789,suspend=y
+
 
 

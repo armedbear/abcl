@@ -121,11 +121,13 @@ debug process.
 Building from Lisp
 ------------------
 
-Building from a Lisp is the most venerable and untested way of
-building ABCL.  It produces a "non-standard" version of the
-distribution that doesn't share build instructions with the previous
-two methods, but it still may be of interest to those who absolutely
-don't want to know anything about Java.
+Building from another Common Lisp implementation is the most venerable
+and least tested way of building ABCL.  It produces a "non-standard"
+version of the distribution that doesn't share build instructions with
+the previous two methods, but it still may be of interest to those who
+absolutely don't want to know anything about Java.  The other Common
+Lisp implementation does not actually perform any compliation, but is
+merely used to orchestrate the invocation of tools in the JDK.
 
 First, copy the file 'customizations.lisp.in' to 'customization.lisp',
 in the directory containing this README file, editing to suit your
@@ -135,16 +137,21 @@ Java Development Kit.  Underneath the directory referenced by the
 value of '*JDK*' there should be an executable Java compiler in
 'bin/javac' ('bin/javac.exe' under Windows).
 
-Then, one may either use the 'build-from-lisp.sh' shell script or load
+Then, one may either use the 'build-from-lisp.bash' shell script or load
 the necessary files into your Lisp image by hand.
 
-** Using the 'build-from-lisp.sh' script
+** Using the 'build-from-lisp.bash' script
 
-Under UNIX-like systems, you may simply invoke the
-'build-from-lisp.sh' script as './build-from-lisp.sh
-<lisp-of-choice>', e.g.
+Under UNIX-like systems, one may simply invoke the
+'build-from-lisp.bash' script.  As noted above, one must first copy the
+'customizations.lisp.in' file to 'customizations.lisp', then edit it
+to reflect the local configuration most importantly the path to the
+Java Development Kit.
 
-    unix$ ./build-from-lisp.sh sbcl
+After configuring 'customizations.lisp', the following would use SBCL
+as the compilation driver to build ABCL:
+
+    unix$ ./build-from-lisp.bash sbcl
 
 After a successful build, you may use 'abcl' ('abcl.bat' on Windows)
 to start ABCL.  Note that this wrappers contain absolute paths, so
@@ -152,18 +159,18 @@ you'll need to edit them if you move things around after the build.
 
 If you're developing on ABCL, you may want to use
 
-    unix$ ./build-from-lisp.sh <implementation> --clean=nil
+    unix$ ./build-from-lisp.bash <implementation> --clean=nil
 
 to not do a full rebuild.
 
 In case of failure in the javac stage, you might try this:
 
-    unix$ ./build-from-lisp.sh <implementation> --full=t --clean=t --batch=nil
+    unix$ ./build-from-lisp.bash <implementation> --full=t --clean=t --batch=nil
 
 This invokes javac separately for each .java file, which avoids running
 into limitations on command line length (but is a lot slower).
 
-** Building from another Lisp by hand
+** Building from another Lisp manually
 
 There is also an ASDF definition in 'abcl.asd' for the BUILD-ABCL
 which can be used to load the necessary Lisp definitions, after which
@@ -188,7 +195,7 @@ Because of this,
 
 ### Tests 
 
-ABCL 1.3.0 now fails only 1[2-4] out of 21708 total tests in the ANSI CL
+ABCL 1.4.0 now fails only 1[2-4] out of 21708 total tests in the ANSI CL
 test suite (derived from the tests originally written for GCL).
 
 Maxima's test suite runs without failures.
@@ -221,6 +228,11 @@ On behalf of all ABCL development team and contributors,
     Alessio Stalla
     Ville Voutilainen
 
-March 2014
+    ferada
+    olof
+    pipping
+    slyrus
+
+September 2016
 
 
