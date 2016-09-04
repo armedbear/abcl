@@ -109,3 +109,12 @@
                                          x)
                                  (values 42 2))))))
   42 2)
+
+(deftest string-output-stream.seekable
+    (string= "Goodbye, World! Something."
+             (let ((stream (make-string-output-stream)))
+               (write-string "Hello, World!   Something." stream)
+               (file-position stream :start)
+               (write-string "Goodbye, World!" stream)
+               (get-output-stream-string stream)))
+  T)

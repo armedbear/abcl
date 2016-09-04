@@ -35,11 +35,12 @@ package org.armedbear.lisp;
 
 import static org.armedbear.lisp.Lisp.*;
 
+import java.io.IOException;
 import java.io.StringWriter;
 
 public final class StringOutputStream extends Stream
 {
-    private final StringWriter stringWriter;
+    private final SeekableStringWriter stringWriter;
 
     public StringOutputStream()
     {
@@ -51,7 +52,7 @@ public final class StringOutputStream extends Stream
         super(Symbol.STRING_OUTPUT_STREAM);
         this.elementType = elementType;
         this.eolStyle = EolStyle.RAW;
-        initAsCharacterOutputStream(stringWriter = new StringWriter());
+        initAsCharacterOutputStream(stringWriter = new SeekableStringWriter());
     }
 
     @Override
@@ -85,7 +86,35 @@ public final class StringOutputStream extends Stream
     {
         if (elementType == NIL)
             return 0;
-        return stringWriter.getBuffer().length();
+        return offset;
+    }
+
+    @Override
+    protected boolean _setFilePosition(LispObject arg) {
+        if (elementType == NIL)
+            return false;
+
+        try {
+            int offset;
+
+            if (arg == Keyword.START)
+                offset = 0;
+            else if (arg == Keyword.END)
+                offset = stringWriter.getBuffer().length();
+            else {
+                long n = Fixnum.getValue(arg);
+                offset = (int) n; // FIXME arg might be a bignum
+            }
+
+            stringWriter.seek(offset);
+
+            this.offset = offset;
+        }
+        catch (IllegalArgumentException e) {
+            error(new StreamError(this, e));
+        }
+
+        return true;
     }
 
     public LispObject getString()

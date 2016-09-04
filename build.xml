@@ -946,6 +946,7 @@ ${basedir}/../cl-bench
             classname="org.junit.runner.JUnitCore">
         <arg value="org.armedbear.lisp.PathnameTest"/>
         <arg value="org.armedbear.lisp.StreamTest"/>
+        <arg value="org.armedbear.lisp.SeekableStringWriterTest"/>
         <arg value="org.armedbear.lisp.UtilitiesTest"/>
 		<!-- currently hangs(!) the running process
         <arg value="org.armedbear.lisp.util.HttpHeadTest"/>
