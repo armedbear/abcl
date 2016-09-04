@@ -286,7 +286,7 @@ want to avoid the overhead of the dynamic dispatch."
                               (group "group"))
       (loop while (hasmore entries)
          for name =  (getname (next entries))
-         with class-pattern = (#"compile" '|java.util.regex.Pattern| "[^$]*\\.class$")
+         with class-pattern = (#"compile" '|java.util.regex.Pattern| ".*\\.class$")
          with name-pattern = (#"compile" '|java.util.regex.Pattern| ".*?([^.]*)$")
          when (matches (matcher class-pattern name))
          collect
