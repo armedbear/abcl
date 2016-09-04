@@ -1,11 +1,15 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP -*-
 ;;; $Id$
 
-(require 'asdf)
+(require :asdf)
 (in-package :asdf)
 
+#+abcl
+(eval-when (:load-toplevel :execute)
+  (asdf:load-system :quicklisp-abcl))
+
 ;;; Wrapper for all ABCL ASDF definitions.
-(defsystem :abcl :version "0.6.0")
+(defsystem :abcl :version "1.4.0")
 
 ;;;  Run via (asdf:operate 'asdf:test-op :abcl :force t)
 (defmethod perform ((o test-op) (c (eql (find-system :abcl))))
