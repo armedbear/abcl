@@ -1,15 +1,11 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP -*-
 ;;; $Id$
 
-(require :asdf)
+(require 'asdf)
 (in-package :asdf)
 
-#+abcl
-(eval-when (:load-toplevel :execute)
-  (asdf:load-system :quicklisp-abcl))
-
 ;;; Wrapper for all ABCL ASDF definitions.
-(defsystem :abcl :version "1.4.0")
+(defsystem :abcl :version "0.6.0")
 
 ;;;  Run via (asdf:operate 'asdf:test-op :abcl :force t)
 (defmethod perform ((o test-op) (c (eql (find-system :abcl))))
@@ -83,7 +79,7 @@
 
 ;;; We refer to the ANSI-TESTS source tree, which isn't shipped as
 ;;; part of ABCL, but may be obtained at 
-;;; <git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git>
+;;; <svn://common-lisp.net/project/ansi-test/svn/trunk/ansi-tests>.
 
 ;;; We currently require that the ANSI-TESTS to be in a sibling
 ;;; directory named "ansi-tests" which should be manually synced with
@@ -96,9 +92,9 @@
   :description "Enapsulation of the REGRESSION-TEST framework use by ~
 the ANSI test suite, so that we may build on its 'API'.
 
-Requires that the contents of <git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git> ~
+Requires that the contents of <svn://common-lisp.net/project/ansi-test/svn/trunk/ansi-tests> ~
 be in a directory named '../ansi-test/'."
-  :pathname "../ansi-test/" ;;; NB works when loaded from ASDF but not with a naked EVAL
+  :pathname "../ansi-tests/" ;;; NB works when loaded from ASDF but not with a naked EVAL
   :default-component-class cl-source-file.lsp
   :components ((:file "rt-package")
                (:file "rt" :depends-on (rt-package))))
@@ -166,11 +162,4 @@ be in a directory named '../ansi-test/'."
 ;; XXX Currently need to force load via (asdf:load-system :abcl-contrib :force t)
 (defmethod perform ((o load-op) (c (eql (find-system :abcl-contrib))))
  (require :abcl-contrib))
-
-(defsystem :abcl/documentation
-  :depends-on (swank)
-  :components
-  ((:module grovel :pathname "doc/manual/" :serial t
-            :components ((:file "package")
-                         (:file "grovel")))))
 
