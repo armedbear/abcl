@@ -6,6 +6,16 @@ Unreleased.
 Enhancements
 ============
 
+* Consolidated RUN-PROGRAM fixes (ferada, pipping)
+
+* Upstream consolidated patchset (ferada)
+
+** [r14857] Support `FILE-POSITION` on string streams.
+** [r14858] Runtime class improvements.
+** [r14859] Add multiple disassembler selector.
+** [r14860] Add EXTERNAL-ONLY option to APROPOS.
+** [r14861] Fix nested classes from JARs not visible with JSS.
+
 * Implemented "time of time" semantics for {encode,decode}-universal time.
 
 Fixes
@@ -16,7 +26,7 @@ Fixes
 Updates
 ------
 
-* asdf-3.1.7
+* asdf-3.1.7.9
 
 * jna-4.2.2
 
