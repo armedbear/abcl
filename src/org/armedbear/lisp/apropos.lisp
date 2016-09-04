@@ -34,7 +34,8 @@
 (in-package #:system)
 
 
-(defun apropos-list (string-designator &optional package-designator)
+(defun apropos-list (string-designator &optional package-designator
+                                                 external-only)
   (if package-designator
       (let ((package (find-package package-designator))
             (string (string string-designator))
@@ -43,18 +44,20 @@
           (declare (type symbol symbol))
           (when (search string (symbol-name symbol) :test #'char-equal)
             (push symbol result)))
-        (dolist (symbol (package-internal-symbols package))
-          (declare (type symbol symbol))
-          (when (search string (symbol-name symbol) :test #'char-equal)
-            (push symbol result)))
+        (unless external-only
+          (dolist (symbol (package-internal-symbols package))
+            (declare (type symbol symbol))
+            (when (search string (symbol-name symbol) :test #'char-equal)
+              (push symbol result))))
         result)
       (mapcan (lambda (package)
-                (apropos-list string-designator package))
+                (apropos-list string-designator package external-only))
               (list-all-packages))))
 
-(defun apropos (string-designator &optional package-designator)
+(defun apropos (string-designator &optional package-designator external-only)
   (dolist (symbol (remove-duplicates (apropos-list string-designator
-                                                   package-designator)))
+                                                   package-designator
+                                                   external-only)))
     (fresh-line)
     (prin1 symbol)
     (when (boundp symbol)
