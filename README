@@ -8,7 +8,6 @@ Armed Bear Common Lisp is a conforming implementation of ANSI Common
 Lisp that runs in a Java virtual machine.  It compiles Lisp code
 directly to Java byte code.
 
-
 LICENSE
 =======
 
@@ -41,22 +40,31 @@ exception statement from your version.
 RUNNING FROM BINARY RELEASE
 ===========================
 
-After you have downloaded a binary release archive unpack it into its
-own directory. To run ABCL directly from this directory, make sure
-Java (version 1.5 or up) is in your shell's path. Then issue the
-following command:
+After you have downloaded a binary release from either
+[Maven][maven-abcl] or from [abcl.org][abcl.org-release] archive
+unpack it into its own directory. To run ABCL directly from this
+directory, make sure Java (version 1.5 or up) is in your shell's
+path. 
+
+[maven-abcl]:         <mvn:abcl.org/abcl/>
+[maven-abcl-contrib]: <mvn:abcl.org/abcl/abcl-contrib>
+[abcl.org-release:    <http://abcl.org/releases/>
+
+Then issue the following command:
 
     cmd$ java -jar abcl.jar
 
 which should result in output like the following
 
     Armed Bear Common Lisp 1.4.0-dev
-    Java 1.7.0_51 Sun Microsystems Inc.
-    Java HotSpot(TM) Client VM
-    Low-level initialization completed in 0.3 seconds.
-    Startup completed in 2.294 seconds.
+    Java 1.8.0_102 Oracle Corporation
+    Java HotSpot(TM) 64-Bit Server VM
+    Low-level initialization completed in 0.324 seconds.
+    Startup completed in 1.892 seconds.
     Type ":help" for a list of available commands.
     CL-USER(1):
+
+Yer now at the interactive ABCL "Read Eval Print Loop" (REPL):  hacks 'n glory await.
 
 
 BUILDING FROM SOURCE RELEASE
@@ -190,7 +198,6 @@ behavior should be reported as a bug.
 
 ABCL now has a manual stating its conformance to the ANSI standard,
 providing a compliant and practical Common Lisp implementation.
-Because of this, 
 
 
 ### Tests 
@@ -205,7 +212,7 @@ information.
 
 ### Deficiencies 
 
-The MOP implementation is incompletel untested.
+The MOP implementation is incompletely untested.
 
 Patches to address any of the issues mentioned above will
 be gladly accepted.
