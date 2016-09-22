@@ -197,7 +197,10 @@ The &key arguments have the following meanings:
                         (when (and value (probe-file value))
                           (ecase if-does-exist
                             (:error (error "Output file ~S does already exist." value))
-                            (:supersede (rename-file (make-temp-file) value))
+                            (:supersede
+                             (with-open-file (f value
+                                                :direction :output
+                                                :if-exists if-does-exist)))
                             (:append (setf appendp T))
                             ((NIL) (return-from setup-output-redirection))))
                         (if appendp
