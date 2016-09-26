@@ -65,7 +65,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @titlepage
 @title ASDF: Another System Definition Facility
-@subtitle Manual for Version 3.1.7.9
+@subtitle Manual for Version 3.1.7.26
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
@@ -82,7 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @node Top, Introduction, (dir), (dir)
 @top ASDF: Another System Definition Facility
 @ifnottex
-Manual for Version 3.1.7.1
+Manual for Version 3.1.7.10
 @end ifnottex
 
 
@@ -4233,27 +4233,36 @@ or namestring in an @code{:include} directive, e.g.:
 @node Output Shell-friendly syntax for configuration, Semantics of Output Translations, Output Configuration Directories, Controlling where ASDF saves compiled files
 @section Shell-friendly syntax for configuration
 
-When considering environment variable @code{ASDF_OUTPUT_TRANSLATIONS}
-ASDF will skip to the next configuration if it's an empty string.
-It will @code{READ} the string as an SEXP in the DSL
-if it begins with a paren @code{(}
-and it will be interpreted as a list of directories.
-Directories should come by pairs, indicating a mapping directive.
+When processing the environment variable
+@code{ASDF_OUTPUT_TRANSLATIONS}:
+@itemize
+@item ASDF will skip to the next configuration if it's an empty string.
+@item ASDF will @code{READ} the string as an SEXP in the DSL, if it
+begins with a parenthesis @code{(}.
+@item Otherwise ASDF will interpret the value as a list of directories
+(see below).
+@end itemize
+
+In the directory list format,
+directories should come in pairs, each pair indicating a mapping directive.
 Entries are separated
-by a @code{:} (colon) on Unix platforms (including cygwin),
+by a @code{:} (colon) on Unix platforms (including Mac and cygwin), and
 by a @code{;} (semicolon) on other platforms (mainly, Windows).
 
 The magic empty entry,
 if it comes in what would otherwise be the first entry in a pair,
-indicates the splicing of inherited configuration.
-If it comes as the second entry in a pair,
-it indicates that the directory specified first is to be left untranslated
+indicates the splicing of inherited configuration;
+the next entry (if any) then starts a new pair.
+If the second entry in a pair is empty,
+it indicates that the directory in the first entry is to be left untranslated
 (which has the same effect as if the directory had been repeated).
-Thus @code{"/foo:/bar::/baz:"} means that
-things under directory @file{/foo/}
-are translated to be under @file{/bar/},
-then include the inherited configuration,
-then specify that things under directory @file{/baz/} are not translated.
+
+For example, @code{"/foo:/bar::/baz:"} means:
+specify that outputs for things under directory @file{/foo/}
+are translated to be under @file{/bar/};
+then include the inherited configuration;
+then specify that outputs for things under directory @file{/baz/} are not translated.
+
 
 @node Semantics of Output Translations, Output Caching Results, Output Shell-friendly syntax for configuration, Controlling where ASDF saves compiled files
 @section Semantics of Output Translations
@@ -4708,12 +4717,16 @@ and get inspiration (or disinspiration)
 from what it does in @file{header.lisp} and @file{upgrade.lisp}.
 @end defun
 
-@defun register-preloaded-system name @Arest{} keys
+@defun register-preloaded-system name @Arest{} keys @Akey{} version @AallowOtherKeys{}
 A system with name @var{name},
 created by @code{make-instance} with extra keys @var{keys}
 (e.g. @code{:version}),
 is registered as @emph{preloaded}.
-That is, its code has already been loaded into the current image,
+If @var{version} is @code{t} (default), then the version is copied from the defined system
+of the same name (if registered) or else is @code{nil}
+(this automatic copy of version is only available starting since ASDF 3.1.8).
+
+A preloaded system is considered as having already been loaded into the current image,
 and if at some point some other system @code{:depends-on} it yet no source code is found,
 it is considered as already provided,
 and ASDF will not raise a @code{missing-component} error.
@@ -4722,24 +4735,34 @@ This function is particularly useful if you distribute your code
 as fasls with either @code{compile-bundle-op} or @code{monolithic-compile-bundle-op},
 and want to register systems so that dependencies will work uniformly
 whether you're using your software from source or from fasl.
+
+Note that if the system was already defined or loaded from source code,
+its build information will remain active until you call @code{clear-system} on it,
+at which point a system without build information will be registered in its place.
 @end defun
 
 @defun register-immutable-system name @Arest{} keys
-A system with name @var{name},
-created by @code{make-instance} with extra keys @var{keys}
-(e.g. @code{:version}),
-is registered as @emph{immutable}.
-That is, its code has already been loaded into the current image,
-and if at some point some other system @code{:depends-on} it,
-it is considered as already provided, and
-no attempt will be made to search for an updated version from the source-registry
-or any other method.
-There will be no search for an @file{.asd} file, and no @code{missing-component} error.
+A system with name @var{name} is registered as preloaded,
+and additionally is marked as @emph{immutable}:
+that is, attempts to compile or load it will be succeed
+without actually reading, creating or loading any file,
+as if the system was passed as a @code{force-not} argument
+to all calls to @code{plan} or @code{operate}.
+There will be no search for an updated @file{.asd} file
+to override the loaded version,
+whether from the source-register or any other method.
 
-This function (available since ASDF 3.1.5) is particularly useful if
-you distribute a large body of code as a precompiled image,
+If a @var{version} keyword argument is specified as @code{t} or left unspecified,
+then the version is copied from the defined system
+of the same name (if registered) or else is @code{nil}.
+This automatic copy of version is available starting
+since immutable systems have been available in ASDF 3.1.5.
+
+This function, available since ASDF 3.1.5, is particularly useful
+if you distribute a large body of code as a precompiled image,
 and want to allow users to extend the image with further extension systems,
-but without making thousands of filesystem requests looking for inexistent (or worse, out of date) source code
+but without making thousands of filesystem requests looking for inexistent
+(or worse, out of date) source code
 for all the systems that came bundled with the image but aren't
 distributed as source code to regular users.
 @cindex immutable systems
