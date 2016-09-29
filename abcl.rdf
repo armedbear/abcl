@@ -4,7 +4,6 @@
 <> 
  abcl:is "W3C Turtle RDF serializations format" .
 
-
 @prefix doap:            <http://usefulinc.com/ns/doap#> .
 @prefix rdf:             <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:            <http://www.w3.org/2000/01/rdf-schema#> .
@@ -20,9 +19,13 @@
   dc:identifier         <urn:abcl.org/1.4.0#dev> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "04-SEP-2016" ;
+  dc:modified          "29-SEP-2016" ;
   dc:version           "abcl-1.4.0" ;
-  dc:release           "rc-0" ;
+  dc:release           "dev" ;
+  abcl:git             <https://github.com/easye/abcl/> ; # Does this overwrite?  TODO Check RDF specs.
+  abcl:git             <https://gitlab.common-lisp.net/mevenson/abcl/> ;
+  abcl:svn             <http://abcl.org/trac/changeset/14873> .
+ 
 <> 
   rdfs:seeAlso <file:README> ;
   rdfs:seeAlso <file:MANUAL> ;
@@ -59,7 +62,7 @@
     rdf:_3 _:ville ;
     rdf:_4 _:astalla ;
     rdf:_5 _:rudi ;
-    rdf:_6 _:ferada ; 
+    rdf:_11 _:ferada ; 
     rdf:_7 _:cyrus ; 
     rdf:_8 _:dmiles ; 
     rdf:_9 _:alanr ; 
@@ -102,9 +105,10 @@ doap:Project rdfs:seeAlso [
      rdf:_4 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.1.jar> ;
      rdf:_5 <http://abcl.org/releases/1.2.1/abcl-1.2.1.jar> ;
      rdf:_6 <http://abcl.org/releases/1.3.0/abcl-1.3.0.jar> ;
-     rdf:_7 <http://abcl.org/releases/1.3.3/abcl-1.3.3.jar> ;
+     rdf:_7 <http://abcl.org/releases/1.3.2/abcl-1.3.2.jar> ;
      rdf:_8 <http://abcl.org/releases/1.3.3/abcl-1.3.3.jar> ;
-     rdf:_9 <http://abcl.org/releases/1.4.0/abcl-1.4.0.jar> 
+     rdf:_9 <http://abcl.org/releases/1.4.0/abcl-1.4.0.jar> ;
+     rdf:_14 <http://abcl.org/releases/1.3.2/abcl-1.3.1.jar> ;
   ] ;
 ] .
 
@@ -141,7 +145,7 @@ doap:Project rdfs:seeAlso
     rdf:_9 abcl:quicklisp-abcl ;
 ] .
 
-abcl:asdf dc:version "3.1.7.9" .
+abcl:asdf dc:version "3.1.7.26" .
 
 abcl:abcl-contrib  
   rdfs:seeAlso <file:contrib/README.markdown> .                             
