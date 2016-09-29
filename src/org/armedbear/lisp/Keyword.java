@@ -122,6 +122,7 @@ public final class Keyword
         PACKAGE             = internKeyword("PACKAGE"),
         PATHNAME            = internKeyword("PATHNAME"),
         PROBE               = internKeyword("PROBE"),
+        PREFIX              = internKeyword("PREFIX"), // EXT:MAKE-TEMP-FILE
         PUBLIC              = internKeyword("PUBLIC"),
         PRESERVE            = internKeyword("PRESERVE"),
         REF                 = internKeyword("REF"),
@@ -134,6 +135,7 @@ public final class Keyword
         STATUS              = internKeyword("STATUS"),
         STREAM              = internKeyword("STREAM"),
         SUNOS               = internKeyword("SUNOS"),
+        SUFFIX              = internKeyword("SUFFIX"),  // EXT:MAKE-TEMP-FILE
         SUPERSEDE           = internKeyword("SUPERSEDE"),
         TEST                = internKeyword("TEST"),
         TEST_NOT            = internKeyword("TEST-NOT"),
