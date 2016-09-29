@@ -317,6 +317,8 @@
       (load (do-compile "concatenate.lisp"))
       (load (do-compile "ldb.lisp"))
       (load (do-compile "destructuring-bind.lisp"))
+      (load (do-compile "featurep.lisp"))
+
       ;; But not for these.
       (mapc #'do-compile '("adjoin.lisp"
                            "and.lisp"
@@ -368,7 +370,6 @@
                            "error.lisp"
                            "extensible-sequences.lisp"
                            "fasl-concat.lisp"
-                           "featurep.lisp"
                            "fdefinition.lisp"
                            "fill.lisp"
                            "find-all-symbols.lisp"

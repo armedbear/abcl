@@ -51,3 +51,33 @@
            (when (featurep subform) (return t))))
         (t
          (error "Unknown operator in feature expression: ~S" form)))))
+
+;;;; Cribbed from ASDF 3.1.7; duplicated to establish runtime conditionals before ASDF is constructed
+(defun os-macosx-p ()
+  "Is the underlying operating system MacOS X?"
+  ;; OS-MACOSX is not mutually exclusive with OS-UNIX,
+  ;; in fact the former implies the latter.
+  (featurep '(:or :darwin (:and :allegro :macosx) (:and :clisp :macos))))
+
+(defun os-unix-p ()
+  "Is the underlying operating system some Unix variant?"
+  (or (featurep '(:or :unix :cygwin)) (os-macosx-p)))
+
+(defun os-windows-p ()
+  "Is the underlying operating system Microsoft Windows?"
+  (and (not (os-unix-p)) (featurep '(:or :win32 :windows :mswindows :mingw32 :mingw64))))
+
+(defun os-genera-p ()
+  "Is the underlying operating system Genera (running on a Symbolics Lisp Machine)?"
+  (featurep :genera))
+
+(defun os-oldmac-p ()
+  "Is the underlying operating system an (emulated?) MacOS 9 or earlier?"
+  (featurep :mcl))
+
+(defun os-haiku-p ()
+  "Is the underlying operating system Haiku?"
+  (featurep :haiku))
+
+(export '(os-unix-p os-windows-p))
+
