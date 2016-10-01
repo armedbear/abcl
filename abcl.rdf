@@ -19,12 +19,12 @@
   dc:identifier         <urn:abcl.org/1.4.0#dev> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "29-SEP-2016" ;
+  dc:modified          "01-OCT-2016" ;
   dc:version           "abcl-1.4.0" ;
   dc:release           "dev" ;
   abcl:git             <https://github.com/easye/abcl/> ; # Does this overwrite?  TODO Check RDF specs.
   abcl:git             <https://gitlab.common-lisp.net/mevenson/abcl/> ;
-  abcl:svn             <http://abcl.org/trac/changeset/14875> .
+  abcl:svn             <http://abcl.org/trac/changeset/14885> .
  
 <> 
   rdfs:seeAlso <file:README> ;
@@ -137,7 +137,6 @@ doap:Project rdfs:seeAlso
     a rdf:Alt;
     rdf:_1 abcl:abcl ;
     rdf:_2 abcl:abcl-contrib ;
-    rdf:_3 abcl:asdf-install ; # remove with abcl-1.4.0
     rdf:_4 abcl:jss ;
     rdf:_5 abcl:jfli ;
     rdf:_6 abcl:abcl-asdf ;
@@ -146,22 +145,17 @@ doap:Project rdfs:seeAlso
     rdf:_9 abcl:quicklisp-abcl ;
 ] .
 
-abcl:asdf dc:version "3.1.7.26" .
+abcl:jna dc:version "4.2.2" .
+abcl:asdf dc:version "3.1.7.27" .
 
 abcl:abcl-contrib  
   rdfs:seeAlso <file:contrib/README.markdown> .                             
-
-abcl:asdf-install
-  rdfs:seeAlso <file:contrib/asdf-install/README> .                             
-
 abcl:abcl-asdf
   rdfs:seeAlso <file:contrib/asdf-asdf/README.markdown> .                             
 abcl:asdf-jar 
   rdfs:seeAlso <file:contrib/asdf-jar/README.markdown> .                             
-
 abcl:jfli
   rdfs:seeAlso <file:contrib/jfli/README> .                             
-
 abcl:jss
   rdfs:seeAlso <file:contrib/jss/README.markdown> .                             
 

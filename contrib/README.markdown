@@ -4,6 +4,10 @@ ABCL-CONTRIB
 The contributions to Armed Bear constitute Common Lisp only code that
 is potentially useful for system construction and distribution.
 
+quicklisp-abcl
+
+    Loads and installs the Quicklisp library manager from the network
+    if not locally present.
 
 abcl-asdf 
 
@@ -37,13 +41,6 @@ jfli
     interface.
     
 [jfli]: http://sourceforge.net/projects/jfli/
-
-quicklisp-abcl
-
-    Stub for loading Quicklisp from main repository if not locally
-    present.  Must currently be invoked with the force option:
-    
-    CL-USER> (asdf:load-system :quicklisp-abcl :force t)
    
 mvn
     A collection of various useful JVM artifacts downloaded and cached by
@@ -53,30 +50,17 @@ mvn
     
     mvn currently includes only the single artifact:
     
-    jna     
-         Cache, from the network if necessary, the jna-3.4.0.jar in
-         the current JVM process, allowing the bootstrapping of
-         dynamically linking to shared executables on the host platform.
-
-
-Deprecated
-----------
-
-asdf-install
-    
-    Install ASDF system definitions from the network.  
-    
-    Deprecated, use Quicklisp from the REPL via
-    
-        CL-USER> (load "http://beta.quicklisp.org/quicklisp.lisp")
-       
-    instead.
+    jna
+         Cache, from the network if necessary, the jna-4.2.2.jar binary
+         artifact in the current JVM process, allowing the
+         bootstrapping of dynamically linking to shared executables on
+         the host platform.
 
 # Colophon
 
 Mark <evenson.not.org@gmail.com>
 Created:  2011-09-11
-Revised:  2012-12-06
+Revised:  2016-10-01
 <> abcl:documents <release#abcl-contrib.jar> .
 
 

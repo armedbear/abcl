@@ -1255,7 +1255,6 @@ semantics to the execution of \code{REQUIRE} on the following symbols:
       \item \code{jss} Introduces dynamic inspection of present
         symbols via the \code{SHARPSIGN-DOUBLE-QUOTE} macros as Java Syntax
         Sucks
-      \item \code{asdf-install} DEPRECATED.  Scheduled for removal in 1.4.0.
 \end{enumerate}
 
 \end{description}
@@ -1435,21 +1434,6 @@ Some more information on jss can be found in its documentation at
 The contrib contains a pure-Java version of JFLI. 
 
 \url{http://abcl.org/svn/tags/1.3.0/contrib/jfli/README}.
-
-
-\section{asdf-install}
-
-The asdf-install contrib provides an implementation of ASDF-INSTALL.
-Superseded by Quicklisp (see Xach2011 \cite{quicklisp}).
-
-The \code{require} of the \code{asdf-install} symbol has the side
-effect of pushing the directory \verb+~/.asdf-install-dir/systems/+ into
-the value of the \textsc{ASDF} central registry in
-\code{asdf:*central-registry*}, providing a convenient mechanism for
-stashing \textsc{ABCL} specific system definitions for convenient
-access.
-
-\url{http://abcl.org/tags/1.3.0/contrib/asdf-install/README}.
 
 
 \chapter{History}
