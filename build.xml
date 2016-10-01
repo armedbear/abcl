@@ -3,7 +3,7 @@
          name="abcl-master" default="abcl.wrapper" basedir=".">
     <description>Compiling, testing, and packaging Armed Bear Common Lisp</description>
 
-    <target name="abcl" depends="abcl.wrapper"/>
+    <target name="abcl" depends="abcl.wrapper,abcl-contrib.jar"/>
         
     <target name="help">
       <echo>
