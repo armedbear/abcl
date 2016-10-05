@@ -416,6 +416,7 @@ public final class SimpleString extends AbstractString
     @Override
     public int sxhash()
     {
+        if(capacity == 0) return 0;
         int hashCode = randomStringHashBase;
         for (int i = 0; i < capacity; i++) {
             hashCode += chars[i];
@@ -432,6 +433,7 @@ public final class SimpleString extends AbstractString
     @Override
     public int psxhash()
     {
+        if(capacity == 0) return 0;
         int hashCode = randomStringHashBase;
         for (int i = 0; i < capacity; i++) {
             hashCode += Character.toUpperCase(chars[i]);
