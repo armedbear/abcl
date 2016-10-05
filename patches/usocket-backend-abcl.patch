@@ -1,0 +1,28 @@
+# HG changeset patch
+# Parent  394d3a2e64b9b0c297b6e8dbdb58cee2e425f414
+Fixed incorrect IPv6 addresses on ABCL
+
+On ABCL, the vector form of IPv6 addresses only included the first half
+of the bytes, resulting in an 8-byte vector instead of the full 16 bytes
+of the vector.
+
+<https://github.com/usocket/usocket/pull/26/commits/11361bda5f93be74cdf06cf376e4943cc5c0600d?diff=unified>
+
+<http://abcl.org/trac/changeset/r14881>
+
+diff -r 394d3a2e64b9 backend/abcl.lisp
+--- a/backend/abcl.lisp	Fri Sep 30 11:11:41 2016 +0200
++++ b/backend/abcl.lisp	Fri Sep 30 11:16:38 2016 +0200
+@@ -174,8 +174,10 @@
+           ((= 4 length)
+            (vector (jbyte 0) (jbyte 1) (jbyte 2) (jbyte 3)))
+           ((= 16 length)
+-           (vector (jbyte 0) (jbyte 1) (jbyte 2) (jbyte 3) 
+-                   (jbyte 4) (jbyte 5) (jbyte 6) (jbyte 7)))
++           (vector (jbyte 0) (jbyte 1) (jbyte 2) (jbyte 3)
++                   (jbyte 4) (jbyte 5) (jbyte 6) (jbyte 7)
++                   (jbyte 8) (jbyte 9) (jbyte 10) (jbyte 11)
++                   (jbyte 12) (jbyte 13) (jbyte 14) (jbyte 15)))
+           (t nil)))))) ; neither a IPv4 nor IPv6 address?!
+ 
+ (defun get-hosts-by-name (name)

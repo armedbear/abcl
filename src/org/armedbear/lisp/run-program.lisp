@@ -170,9 +170,13 @@ The &key arguments have the following meanings:
    "java.io.File"
    (if value
        (namestring value)
-       #+unix "/dev/null"
-       #+windows "nul"
-       #-(or unix windows) (error "Don't know how to set up null stream on this platform."))))
+       (cond
+         ((ext:os-unix-p)
+          "/dev/null")
+         ((ext:os-windows-p) 
+          "nul")
+         (t
+          (error "Don't know how to set up null stream on this platform."))))))
 
 (defun setup-input-redirection (process-builder value if-does-not-exist)
   (let ((redirect (if (eq value T)
@@ -298,15 +302,13 @@ The &key arguments have the following meanings:
 (defun %process-exit-code (jprocess)
   (ignore-errors (java:jcall "exitValue" jprocess)))
 
-#+unix
-(defconstant +pid-field+
-  (let ((field (java:jcall "getDeclaredField" (java:jclass "java.lang.UNIXProcess") "pid")))
-    (java:jcall "setAccessible" field java:+true+)
-    field))
-
 (defun %process-pid (jprocess)
-  #+unix (java:jcall "get" +pid-field+ jprocess)
-  #-unix (error "Can't retrieve PID on this platform."))
+  (if (ext:os-unix-p)
+      ;; TODO: memoize this 
+      (let ((field (java:jcall "getDeclaredField" (java:jclass "java.lang.UNIXProcess") "pid")))
+        (java:jcall "setAccessible" field java:+true+)
+        (java:jcall "get" field jprocess))
+      (error "Can't retrieve PID on this platform.")))
 
 (defun %process-kill (jprocess)
   (java:jcall "destroy" jprocess))

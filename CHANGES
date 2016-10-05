@@ -12,12 +12,17 @@ Enhancements
 
 ** [r14857] Support `FILE-POSITION` on string streams.
 ** [r14858] Runtime class improvements.
+FIXME:  currently borks CFFI-TESTS
 ** [r14859] Add multiple disassembler selector.
 ** [r14860] Add EXTERNAL-ONLY option to APROPOS.
 ** [r14861] Fix nested classes from JARs not visible with JSS.
 
-* Implemented "time of time" semantics for {encode,decode}-universal time.
+* Implemented "time of time" semantics {encode,decode}-universal time.
+FIXME:  breaking a number of ANSI tests.  Need to conditionalize runtime behavior.
 
+* EXTENSIONS:MAKE-TEMP-FILE now takes keyword arguments to specify
+  values of the prefix and suffix strings to the underlying JVM
+  implementation of java.io.File.createTempFile().
 
 Fixes
 -----
@@ -29,7 +34,7 @@ Fixes
 Updates
 ------
 
-* asdf-3.1.7.9
+* asdf-3.1.7.26
 
 * jna-4.2.2
 
