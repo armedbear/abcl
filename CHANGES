@@ -1,7 +1,8 @@
-Version 1.4.0-dev
-=================
-http://abcl.org/svn/trunk/
-Unreleased.
+Version 1.4.0
+=============
+<http://abcl.org/svn/tags/1.4.0/>
+<http://abcl.org/trac/changeset/14888>
+08-OCT-2016
 
 Enhancements
 ============
@@ -11,25 +12,27 @@ Enhancements
 * Upstream consolidated patchset (ferada)
 
 ** [r14857] Support `FILE-POSITION` on string streams.
-** [r14858] Runtime class improvements.
-FIXME:  currently borks CFFI-TESTS
 ** [r14859] Add multiple disassembler selector.
 ** [r14860] Add EXTERNAL-ONLY option to APROPOS.
 ** [r14861] Fix nested classes from JARs not visible with JSS.
 
-* Implemented "time of time" semantics {encode,decode}-universal time.
-FIXME:  breaking a number of ANSI tests.  Need to conditionalize runtime behavior.
+* [r14840-2] (Scott L. Burson) Introduced "time of time" semantics for
+  {encode,decode}-universal time.
 
 * EXTENSIONS:MAKE-TEMP-FILE now takes keyword arguments to specify
   values of the prefix and suffix strings to the underlying JVM
   implementation of java.io.File.createTempFile().
 
+* [r14849] EXT:OS-{UNIX,WINDOWS}-P now provide a pre-ASDF runtime check on hosting platform
+
 Fixes
 -----
 
-*  RandomCharacterFile et. al.
+* [r14863] RandomCharacterFile et. al.
 
-*  (JSS) Ensure the interpolation of Java symbol names as strings
+* [r14839] (JSS) Ensure the interpolation of Java symbol names as strings (alan ruttenberg)
+
+* [r14889] Fix ANSI-TEST SXHASH.8 (dmiles)
 
 Updates
 ------
@@ -37,6 +40,11 @@ Updates
 * asdf-3.1.7.26
 
 * jna-4.2.2
+
+Removed
+-------
+
+* [r14885] ASDF-INSTALL was removed
 
 
 Version 1.3.3

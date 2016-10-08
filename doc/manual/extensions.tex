@@ -107,15 +107,6 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{EXTENSIONS:*GUI-BACKEND*}
-\index{*GUI-BACKEND*}
---- Variable: \textbf{*gui-backend*} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
 \label{EXTENSIONS:*INSPECTOR-HOOK*}
 \index{*INSPECTOR-HOOK*}
 --- Variable: \textbf{*inspector-hook*} [\textbf{extensions}] \textit{}
@@ -441,6 +432,15 @@ EXTERNAL-FORMAT must be of the same format as specified for OPEN.
 \end{adjustwidth}
 
 \paragraph{}
+\label{EXTENSIONS:GET-TIME-ZONE}
+\index{GET-TIME-ZONE}
+--- Function: \textbf{get-time-zone} [\textbf{extensions}] \textit{time-in-millis}
+
+\begin{adjustwidth}{5em}{5em}
+Return the timezone difference in hours for TIME-IN-MILLIS via the Daylight assumptions that were in place at its occurance. i.e. implement 'time of the time semantics'.
+\end{adjustwidth}
+
+\paragraph{}
 \label{EXTENSIONS:GETENV}
 \index{GETENV}
 --- Function: \textbf{getenv} [\textbf{extensions}] \textit{variable}
@@ -464,7 +464,7 @@ Returns all environment variables as an alist containing (name . value)
 --- Function: \textbf{init-gui} [\textbf{extensions}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Dummy function used to autoload this file
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -560,7 +560,7 @@ Create and return the pathname of a previously non-existent directory.
 \paragraph{}
 \label{EXTENSIONS:MAKE-TEMP-FILE}
 \index{MAKE-TEMP-FILE}
---- Function: \textbf{make-temp-file} [\textbf{extensions}] \textit{}
+--- Function: \textbf{make-temp-file} [\textbf{extensions}] \textit{\&key prefix suffix}
 
 \begin{adjustwidth}{5em}{5em}
 Create and return the pathname of a previously non-existent file.
@@ -572,7 +572,7 @@ Create and return the pathname of a previously non-existent file.
 --- Function: \textbf{make-weak-reference} [\textbf{extensions}] \textit{obj}
 
 \begin{adjustwidth}{5em}{5em}
-Creates a weak reference to 'obj'.
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -636,6 +636,24 @@ not-documented
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{EXTENSIONS:OS-UNIX-P}
+\index{OS-UNIX-P}
+--- Function: \textbf{os-unix-p} [\textbf{extensions}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Is the underlying operating system some Unix variant?
+\end{adjustwidth}
+
+\paragraph{}
+\label{EXTENSIONS:OS-WINDOWS-P}
+\index{OS-WINDOWS-P}
+--- Function: \textbf{os-windows-p} [\textbf{extensions}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Is the underlying operating system Microsoft Windows?
 \end{adjustwidth}
 
 \paragraph{}
@@ -735,7 +753,7 @@ Returns either the function or NIL if no resolution was possible.
 --- Function: \textbf{run-shell-command} [\textbf{extensions}] \textit{command \&key directory (output *standard-output*)}
 
 \begin{adjustwidth}{5em}{5em}
-Deprecated.  Use SYS:RUN-PROGRAM.
+not-documented
 \end{adjustwidth}
 
 \paragraph{}

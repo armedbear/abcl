@@ -44,7 +44,7 @@ import java.util.zip.ZipFile;
 
 @DocString(name="unzip",
            args="pathname &optional directory => unzipped_pathnames",
-           doc="Unpack zip archive at PATHNAME returning a list of extracted pathnames.\nIf the optional DIRECTORY is specified, root the abstraction in that directory, otherwise use the current value of *DEFAULT-PATHNAME-DEFAULTS.")
+           doc="Unpack zip archive at PATHNAME returning a list of extracted pathnames.\nIf the optional DIRECTORY is specified, root the abstraction in that directory, otherwise use the current value of *DEFAULT-PATHNAME-DEFAULTS*.")
 public final class unzip 
   extends Primitive
 {

@@ -16,15 +16,14 @@
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 <> 
   abcl:branch           <http://abcl.org/svn/trunk/abcl> ;
-  dc:identifier         <urn:abcl.org/1.4.0#dev> ;           
+  dc:identifier         <urn:abcl.org/1.4.0#rc-0> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "01-OCT-2016" ;
+  dc:modified          "08-OCT-2016" ;
   dc:version           "abcl-1.4.0" ;
-  dc:release           "dev" ;
   abcl:git             <https://github.com/easye/abcl/> ; # Does this overwrite?  TODO Check RDF specs.
-  abcl:git             <https://gitlab.common-lisp.net/mevenson/abcl/> ;
-  abcl:svn             <http://abcl.org/trac/changeset/14885> .
+  abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
+  abcl:svn             <http://abcl.org/trac/changeset/14886> .
  
 <> 
   rdfs:seeAlso <file:README> ;
@@ -57,18 +56,22 @@
 <abcl:doap> 
   dc:contributor [ 
     a rdf:Bag;
+    rdf:_1024 _:peter ;
+    rdf:_2048 _:piso ;
     rdf:_1 _:ehu ;  
     rdf:_2 _:easye ;
     rdf:_3 _:ville ;
     rdf:_4 _:astalla ;
     rdf:_5 _:rudi ;
-    rdf:_11 _:ferada ; 
+    rdf:_11 _:ferada ;
+    rdf:_11 _:olof ;
+    rdf:_11 "Olof-Joachim Frahm" ;
     rdf:_7 _:cyrus ; 
     rdf:_8 _:dmiles ; 
     rdf:_9 _:alanr ; 
-    rdf:_10 _:pipping ; 
-    rdf:_11 _:olof
-    rdf:_12
+    rdf:_10 _:pipping ;
+    rdf:_10 "Elias Pipping" ;
+    rdf:_12 "Vibhu Mohindra" ;
 ] .
 
 <abcl:doap>  
@@ -94,9 +97,11 @@ _:user dc:identifier <http://ville.not.org/#me>  ;
 
 doap:Project rdfs:seeAlso [
   a rdf:Bag;
+  rdf:_0 <http://abcl.org/releases/1.4.0/abcl-1.4.0.jar> ;
   rdf:_1 <http://abcl.org/trac/timeline> ;
   rdf:_2 <http://abcl.org/trac/wiki> ;
-  rdf:_3 <http://code.google.com/p/abcl-dynamic-install/> ;
+  rdf:_4 <https://github.com/easye/abcl/> ;
+  rdf:_5 <https://gitlab.common-lisp.net/mevenson/abcl/> ;
   dc:source   abcl:tag ;
   dc:Software [ 
      a rdf:Bag;
@@ -109,7 +114,6 @@ doap:Project rdfs:seeAlso [
     rdf:_14 <http://abcl.org/releases/1.3.2/abcl-1.3.1.jar> ;
      rdf:_7 <http://abcl.org/releases/1.3.2/abcl-1.3.2.jar> ;
      rdf:_8 <http://abcl.org/releases/1.3.3/abcl-1.3.3.jar> ;
-     rdf:_9 <http://abcl.org/releases/1.4.0/abcl-1.4.0.jar> ;
   ] ;
 ] .
 

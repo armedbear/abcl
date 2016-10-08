@@ -8,15 +8,23 @@
 
 \begin{document}
 \title{Armed Bear Common Lisp User Manual}
-\date{Version 1.4.0-dev\\
+\date{Version 1.4.0\\
 \smallskip
-April 2015}
+October 2016}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
 \maketitle
 
 \tableofcontents
+
+%%Preface to the Fifth edition, abcl-1.4.0
+\subsection{Preface to the Fifth Edition}
+
+\textsc{ABCL} 1.4 consolidates eighteen months of production bugfixes,
+and substatianally improves the support for invoking external
+processes via SYS:RUN-PROGRAM.
+
 %%Preface to the Fourth edition, abcl-1.3.
 \subsection{Preface to the Fourth Edition}
 
@@ -116,13 +124,16 @@ contemporary Common Lisp.
     allowed by \textsc{ANSI}}, the inability to inspect local variables
   in a given call frame, and the inability to resume a halted
   computation at an arbitrarily selected call frame.
-\item Incomplete streams abstraction, in that \textsc{ABCL} needs
-  suitable abstraction between \textsc{ANSI} and Gray
-  streams.  \footnote{The streams could be optimized to the
+\item Incomplete streams abstraction, in that \textsc{ABCL} needs a
+  suitable abstraction between \textsc{ANSI} and \textsc{Gray streams}
+  with a runtime switch for the beyond conforming
+  behavior.  \footnote{The streams could be optimized to the
     \textsc{JVM} NIO \cite{nio} abstractions at great profit for
     binary byte-level manipulations.}
-\item Incomplete documentation (missing docstrings from exported
-  symbols and the draft status of this user manual).
+\item Incomplete documentation: source code is missing docstrings from
+  all exported symbols from the \code{EXTENSIONS}, \code{SYSTEM},
+  \code{JAVA}, \code{MOP}, and \code{THREADS} packages.  This user
+  manual is currently in draft status.
 \end{itemize}
 
 
@@ -132,11 +143,11 @@ contemporary Common Lisp.
 \textsc{ABCL} is licensed under the terms of the \textsc{GPL} v2 of
 June 1991 with the ``classpath-exception'' (see the file
 \texttt{COPYING} in the source distribution \footnote{See
-  \url{http://abcl.org/svn/trunk/tags/1.3.0/COPYING}} for
+  \url{http://abcl.org/svn/trunk/tags/1.4.0/COPYING}} for
 the license, term 13 in the same file for the classpath exception).
 This license broadly means that you must distribute the sources to
-ABCL, including any changes you make, together with a program that
-includes ABCL, but that you are not required to distribute the sources
+\textsc{ABCL}, including any changes you make, together with a program that
+includes \textsc{ABCL}, but that you are not required to distribute the sources
 of the whole program.  Submitting your changes upstream to the ABCL
 development team is actively encouraged and very much appreciated, of
 course.
@@ -148,6 +159,7 @@ course.
 \item Douglas Miles \texttt{Thanks for the whacky IKVM stuff and keeping the flame alive
   in the dark years.}
 \item Alan Ruttenberg \texttt{Thanks for JSS.}
+  \item piso
 \item and of course
 \emph{Peter Graves}
 \end{itemize}
@@ -157,7 +169,7 @@ course.
 
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-\texttt{abcl.jar} or possibly something like \texttt{abcl-1.3.0.jar} if
+\texttt{abcl.jar} or possibly something like \texttt{abcl-1.4.0.jar} if
 using a versioned package on the local filesystem from your system
 vendor.  This jar file can be executed from the command line to obtain a
 \textsc{REPL}\footnote{Read-Eval Print Loop, a Lisp command-line}, viz:
@@ -258,7 +270,7 @@ FFI functions and are recognizable by their name ending with
 \subsection{Low-level Java API}
 
 This subsection covers the low-level API available after evaluating
-\code{(require 'JAVA)}.  A higher level Java API, developed by Alan
+\code{(require :java)}.  A higher level Java API, developed by Alan
 Ruttenberg, is available in the \code{contrib/} directory and described
 later in this document, see Section~\ref{section:jss} on page
 \pageref{section:jss}.
@@ -808,17 +820,17 @@ or EXTENSIONS packages.
 
 \subsection{Modifying the JVM CLASSPATH}
 
-The JAVA:ADD-TO-CLASSPATH generic functions allows one to add the
+The \code{JAVA:ADD-TO-CLASSPATH} generic functions allows one to add the
 specified pathname or list of pathnames to the current classpath
-used by ABCL, allowing the dynamic loading of JVM objects:
+used by ABCL, allowing the dynamic loading of \textsc{JVM} objects:
 
 \begin{listing-lisp}
 CL-USER> (add-to-classpath "/path/to/some.jar")
 \end{listing-lisp}
 
-N.b \code{ADD-TO-CLASSPATH} only affects the classloader used by ABCL
+N.b \code{ADD-TO-CLASSPATH} only affects the classloader used by \textsc{ABCL}
 (the value of the special variable \code{JAVA:*CLASSLOADER*}. It has
-no effect on Java code outside ABCL.
+no effect on \textsc{Java} code outside \textsc{ABCL}.
 
 \subsection{Creating a synthetic Java Class at Runtime}
 
@@ -832,7 +844,7 @@ See \code{JAVA:JNEW-RUNTIME-CLASS} on \ref{JAVA:JNEW-RUNTIME-CLASS}.
 The extensions for handling multithreaded execution are collected in
 the \code{THREADS} package.  Most of the abstractions in Doug Lea's
 excellent \code{java.util.concurrent} packages may be manipulated
-directly via the JSS contrib to great effect.
+directly via the JSS contrib to great effect \cite{lea-1998}
 
 % include autogen docs for the THREADS package.
 \include{threads}
@@ -917,18 +929,22 @@ following caveats:
 
 \index{URI}
 \item Any results of canonicalization procedures performed on the
-  underlying \textsc{URI} are discarded between resolutions (i.e. the
-  implementation does not attempt to cache the results of current name
-  resolution of the representing resource unless it is requested to be
-  resolved.)  Upon resolution, any canonicalization procedures
-  followed in resolving the resource (e.g. following redirects) are
-  discarded.  Users may programatically initiate a new, local
-  computation of the resolution of the resource by applying the
-  \code{CL:TRUENAME} function to a \code{EXT:URL-PATHNAME} object.
-  Depending on the reliability and properties of your local
-  \textsc{REST} infrastructure, these results may not necessarily be
-  idempotent over time\footnote {See \cite{evenson2011} for the draft
-    of the publication of the technical details}.
+  \textsc{URI} via local or network resolutions are discarded between
+  attempts (i.e. the implementation does not attempt to cache the
+  results of current name resolution of the URI for underlying
+  resource unless it is requested to be resolved.)  Upon resolution,
+  any canonicalization procedures followed in resolving the resource
+  (e.g. following redirects) are discarded.  Users may programatically
+  initiate a new, local computation of the resolution of the resource
+  by applying the \code{CL:TRUENAME} function to a
+  \code{EXT:URL-PATHNAME} object.  Depending on the reliability and
+  properties of your local \textsc{REST} infrastructure, these results
+  may not necessarily be idempotent over time\footnote {See
+    \cite{uri-pathname} for the design and implementation notes for
+    the technical details}.  A future implementation may attempt to
+  expose an API to observer/customize the content negotiation
+  initiated during retrieval of the representation of a given
+  resource, which is currently handled at the application level.
 
 \end{itemize}
 
@@ -1112,13 +1128,12 @@ designated package.
          
 \section{Extensible Sequences}
 
-See Rhodes2007 \cite{RHODES2007} for the design.
-
 The SEQUENCE package fully implements Christopher Rhodes' proposal for
 extensible sequences.  These user extensible sequences are used
 directly in \code{java-collections.lisp} provide these CLOS
 abstractions on the standard Java collection classes as defined by the
 \code{java.util.List} contract.
+
 
 %% an Example of using java.util.Lisp in Lisp would be nice
 
@@ -1126,22 +1141,26 @@ This extension is not automatically loaded by the implementation.   It
 may be loaded via:
 
 \begin{listing-lisp}
-CL-USER> (require 'java-collections)
+CL-USER> (require :java-collections)
 \end{listing-lisp}
 
 if both extensible sequences and their application to Java collections
 is required, or
 
 \begin{listing-lisp}
-CL-USER> (require 'extensible-sequences)
+CL-USER> (require :extensible-sequences)
 \end{listing-lisp}
 
 if only the extensible sequences API as specified in \cite{RHODES2007} is
 required.
 
-Note that \code{(require 'java-collections)} must be issued before
+Note that \code{(require :java-collections)} must be issued before
 \code{java.util.List} or any subclass is used as a specializer in a \textsc{CLOS}
 method definition (see the section below).
+
+See Rhodes2007 \cite{RHODES2007} for the an overview of the
+abstractions of the \code{java.util.collection} package afforded by
+\code{JAVA-COLLECTIONS}.
 
 \section{Extensions to CLOS}
 
@@ -1155,6 +1174,9 @@ Contrary to the AMOP specification and following \textsc{SBCL}'s lead,
 the metaclass \code{funcallable-standard-object} has
 \code{funcallable-standard-class} as metaclass instead of
 \code{standard-class}.
+
+\textsc{ABCL}'s fidelity to the AMOP specification is codified as part
+of Pascal Costanza's \code{closer-mop} \ref{closer-mop} \cite{closer-mop}.
 
 \subsection{Specializing on Java classes}
 
@@ -1202,7 +1224,22 @@ bit characters to the Lisp reader\footnote{This represents a
 allow a sequences of the form \verb~#\U~\emph{\texttt{xxxx}} to be processed
 by the reader as character whose code is specified by the hexadecimal
 digits \emph{\texttt{xxxx}}.  The hexadecimal sequence may be one to four digits
-long.  % Why doesn't ALEXANDRIA work?
+long.
+
+% Why doesn't ALEXANDRIA work?  Good question: Alexandria from
+% Quicklisp 2010-10-07 fails a number of tests:
+%% Form: (ALEXANDRIA.0.DEV:TYPE= 'LIST '(OR NULL CONS))
+%% Expected values: T
+%%                  T
+%% Actual values: NIL
+%%                T.
+%% Test ALEXANDRIA-TESTS::TYPE=.3 failed
+%% Form: (ALEXANDRIA.0.DEV:TYPE= 'NULL '(AND SYMBOL LIST))
+%% Expected values: T
+%%                  T
+%% Actual values: NIL
+%%                NIL.
+
 
 Note that this sequence is never output by the implementation.  Instead,
 the corresponding Unicode character is output for characters whose
@@ -1222,8 +1259,8 @@ semantics to the execution of \code{REQUIRE} on the following symbols:
     otherwise unresolved, are passed to ASDF for a chance for
     resolution.  This means, for instance if \code{CL-PPCRE} can be
     located as a loadable \textsc{ASDF} system \code{(require
-      'cl-ppcre)} is equivalent to \code{(asdf:load-system
-      'cl-ppcre)}.
+      :cl-ppcre)} is equivalent to \code{(asdf:load-system
+      :cl-ppcre)}.
 
   \item{\code{ABCL-CONTRIB}} 
     Locates and pushes the toplevel contents of
@@ -1274,7 +1311,7 @@ reader in the definition of the \code{SHARPSIGN-DOUBLE-QUOTE}
 
 \section{ASDF}
 
-asdf-3.1.6 (see \cite{asdf}) is packaged as core component of \textsc{ABCL},
+asdf-3.1.7.27 (see \cite{asdf}) is packaged as core component of \textsc{ABCL},
 but not initialized by default, as it relies on the \textsc{CLOS} subsystem
 which can take a bit of time to start \footnote{While this time is
   ``merely'' on the order of seconds for contemporary 2011 machines,
@@ -1284,19 +1321,19 @@ may be loaded by the \textsc{ANSI} \code{REQUIRE} mechanism as
 follows:
 
 \begin{listing-lisp}
-CL-USER> (require 'asdf)
+CL-USER> (require :asdf)
 \end{listing-lisp}
 
 \chapter{Contrib}
 
 The \textsc{ABCL} contrib is packaged as a separate jar archive usually named
 \code{abcl-contrib.jar} or possibly something like
-\code{abcl-contrib-1.3.0.jar}.  The contrib jar is not loaded by the
+\code{abcl-contrib-1.4.0.jar}.  The contrib jar is not loaded by the
 implementation by default, and must be first intialized by the
 \code{REQUIRE} mechanism before using any specific contrib:
 
 \begin{listing-lisp}
-CL-USER> (require 'abcl-contrib)
+CL-USER> (require :abcl-contrib)
 \end{listing-lisp}
 
 \section{abcl-asdf}
@@ -1378,7 +1415,7 @@ Notice that all recursive dependencies have been located and installed
 locally from the network as well.
 
 More extensive documentations and examples can be found at
-\url{http://abcl.org/svn/tags/1.3.0/contrib/abcl-asdf/README.markdown}.
+\url{http://abcl.org/svn/tags/1.4.0/contrib/abcl-asdf/README.markdown}.
 
 
 \section{asdf-jar}
@@ -1390,7 +1427,7 @@ this package will recursively package all the required source and
 fasls in a jar archive.
 
 The documentation for this contrib can be found at
-\url{http://abcl.org/svn/tags/1.3.0/contrib/asdf-jar/README.markdown}.
+\url{http://abcl.org/svn/tags/1.4.0/contrib/asdf-jar/README.markdown}.
 
 
 \section{jss}
@@ -1415,9 +1452,9 @@ last experiment in wrangling Java from Common Lisp.
 Example:
 
 \begin{listing-lisp}
-CL-USER> (require 'abcl-contrib)
+CL-USER> (require :abcl-contrib)
 ==> ("ABCL-CONTRIB")
-CL-USER> (require 'jss)
+CL-USER> (require :jss)
 ==> ("JSS")
 CL-USER) (#"getProperties" 'java.lang.System)
 ==> #<java.util.Properties {java.runtime.name=Java.... {2FA21ACF}>
@@ -1426,14 +1463,14 @@ CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 \end{listing-lisp} %$ <-- un-confuse Emacs font-lock
 
 Some more information on jss can be found in its documentation at
-\url{http://abcl.org/svn/tags/1.3.0/contrib/jss/README.markdown}
+\url{http://abcl.org/svn/tags/1.4.0/contrib/jss/README.markdown}
 
 \section{jfli}
 \label{section:jfli}
 
 The contrib contains a pure-Java version of JFLI. 
 
-\url{http://abcl.org/svn/tags/1.3.0/contrib/jfli/README}.
+\url{http://abcl.org/svn/tags/1.4.0/contrib/jfli/README}.
 
 
 \chapter{History}
@@ -1468,6 +1505,16 @@ implementation with the release of abcl-1.2.1.
 In March 2014, we introduced the Fourth Edition of the implementation
 with abcl-1.3.0.  At the end of April 2014, we released abcl-1.3.1 as
 a maintainence release.
+
+In October 2016 we blessed the current \textsc{svn} trunk
+\url{http://abcl.org/svn/trunk/} as 1.4.0, which includes the
+community contributions from Vihbu, Olof, Pipping, and Cyrus.  We
+gingerly stepped into current century by establishing \textsc{git}
+bridges to the source repository at
+\url{https://github.com/easye/abcl/} and
+\url{https://gitlab.common-lisp.net/abcl/abcl/} so that pull
+requests for enhancements to the implementation many be more easily
+facilitated.
 
 \appendix 
 

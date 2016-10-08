@@ -56,7 +56,7 @@ Then issue the following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 1.4.0-dev
+    Armed Bear Common Lisp 1.4.0
     Java 1.8.0_102 Oracle Corporation
     Java HotSpot(TM) 64-Bit Server VM
     Low-level initialization completed in 0.324 seconds.
@@ -81,7 +81,7 @@ preferred (and most tested way) is to being to use the Ant build tool:
   implementations for this process: SBCL, CMUCL, OpenMCL, Allegro
   CL, LispWorks or CLISP.
 
-In all cases you need a Java 5 or later JDK (JDK 1.[567] have been
+In all cases you need a Java 5 or later JDK (JDK 1.[5678] have been
 tested).  Just the JRE isn't enough, as you need the Java compiler
 ('javac') to compile the Java source of the ABCL implementation.
 
@@ -202,17 +202,20 @@ providing a compliant and practical Common Lisp implementation.
 
 ### Tests 
 
-ABCL 1.4.0 now fails only 1[2-4] out of 21708 total tests in the ANSI CL
-test suite (derived from the tests originally written for GCL).
+ABCL 1.4.0 now fails 47 out of 21708 total tests in the [revised and
+expanded ANSI CL test suite][ansi-test] (derived from the tests
+originally written for GCL).
+
+[ansi-test]: git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git
 
 Maxima's test suite runs without failures.
 
-ABCL comes with a test suite, see the output of `ant help.test` for more
-information.
+ABCL comes with a test suite, see the output of `ant help.test` for
+more information.
 
-### Deficiencies 
+### Deficiencies
 
-The MOP implementation is incompletely untested.
+Many.  But patches are solicited.
 
 Patches to address any of the issues mentioned above will
 be gladly accepted.
@@ -235,11 +238,12 @@ On behalf of all ABCL development team and contributors,
     Alessio Stalla
     Ville Voutilainen
 
-    ferada
-    olof
+    olof ferada
     pipping
     slyrus
+    vibhu
+    dmiles
 
-September 2016
+October 2016
 
 

@@ -75,7 +75,7 @@ If INVERT? is non-nil than reverse the keys and values in the resulting hashtabl
 --- Macro: \textbf{invoke-add-imports} [\textbf{jss}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Push these imports onto the search path. If multiple, earlier in list take precedence
 \end{adjustwidth}
 
 \paragraph{}
@@ -221,6 +221,14 @@ Return the elements of java.lang.Vector VECTOR as a list.
 --- Macro: \textbf{with-constant-signature} [\textbf{jss}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Expand all references to FNAME-JNAME-PAIRS in BODY into static function calls promising that the same function bound in the FNAME-JNAME-PAIRS will be invoked with the same argument signature.
+
+FNAME-JNAME-PAIRS is a list of (symbol function \&optional raw)
+elements where symbol will be the symbol bound to the method named by
+the string function.  If the optional parameter raw is non-nil, the
+result will be the raw JVM object, uncoerced by the usual conventions.
+
+Use this macro if you are making a lot of calls and 
+want to avoid the overhead of the dynamic dispatch.
 \end{adjustwidth}
 
