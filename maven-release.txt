@@ -27,13 +27,13 @@ mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-contrib-.jar -DpomFile=contrib/pom
 
 # For releases - the version in the POM should be x.y.z
 mvn gpg:sign-and-deploy-file -Dfile=dist/abcl.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging
-mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-${abcl.version}-sources.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=sources
-mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-${abcl.version}-javadoc.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=javadoc
+mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-${abcl_version}-sources.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=sources
+mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-${abcl_version}-javadoc.jar -DpomFile=pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=javadoc
 
 # Contrib releases
 mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-contrib.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging 
-mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-contrib-sources.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=sources
-mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-contrib-javadoc.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=javadoc
+mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-contrib-${abcl_version}-sources.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=sources
+mvn gpg:sign-and-deploy-file -Dfile=dist/abcl-contrib-${abcl_version}-javadoc.jar -DpomFile=contrib/pom.xml -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -Dclassifier=javadoc
 
 # <http://www.sonatype.org/nexus/2015/06/02/how-to-publish-software-artifacts-to-maven-central/>
 # <http://central.sonatype.org/pages/releasing-the-deployment.html>
