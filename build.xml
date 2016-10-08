@@ -782,7 +782,7 @@ will compile (if necessary) and load JSS.
       </fixcrlf>
     </target>
 
-    <target name="abcl.source.zip" depends="abcl.source.windows">
+    <target name="abcl.source.zip" depends="abcl.stamp,abcl.source.windows">
       <mkdir dir="${dist.dir}"/>
       <zip destfile="${dist.dir}/abcl-src-${abcl.version}.zip"
            compress="true">
@@ -790,7 +790,7 @@ will compile (if necessary) and load JSS.
       </zip>
     </target>
 
-    <target name="abcl.source.jar" depends="abcl.source.unix">
+    <target name="abcl.source.jar" depends="abcl.stamp,abcl.source.unix">
       <mkdir dir="${dist.dir}"/>
       <jar destfile="${dist.dir}/abcl-${abcl.version}-sources.jar">
         <metainf dir="${abcl.build.src.dir}">
@@ -805,7 +805,7 @@ will compile (if necessary) and load JSS.
 
     <property name="abcl.javadoc.dir" value="${build.dir}/javadoc"/>
 
-    <target name="abcl.javadoc">
+    <target name="abcl.javadoc" depends="abcl.stamp">
       <mkdir dir="${abcl.javadoc.dir}"/>
       <javadoc destdir="${abcl.javadoc.dir}"
                sourcepath="${src.dir}"/>
