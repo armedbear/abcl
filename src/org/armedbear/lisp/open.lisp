@@ -146,7 +146,12 @@
             (error 'file-error
                    :pathname pathname
                    :format-control "The file ~S does not exist."
-                   :format-arguments (list namestring)))))
+                   :format-arguments (list namestring))))
+         (:create
+          ;; CREATE-NEW-FILE "atomically creates a new, empty file named by
+          ;; this abstract pathname if and only if a file with this name does
+          ;; not yet exist." See java.io.File.createNewFile().
+          (create-new-file namestring)))
        (make-file-stream pathname namestring element-type :input nil external-format))
       (:probe
        (case if-does-not-exist

@@ -5,6 +5,11 @@ Version 1.5.0
 <http://github.com/easye/abcl/>
 Unreleased
 
+Fixes
+-----
+
+* CL:OPEN
+
 Version 1.4.0
 =============
 <http://abcl.org/svn/tags/1.4.0/>
