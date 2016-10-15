@@ -7,9 +7,13 @@
 
 (defconstant +abcl-java-object+ (make-jvm-class-name "org.armedbear.lisp.JavaObject"))
 
+(defun java::make-memory-class-loader (&optional (parent (java:get-current-classloader)))
+  (java:jnew "org.armedbear.lisp.MemoryClassLoader" parent))
+
 (defun java:jnew-runtime-class
     (class-name &rest args &key (superclass "java.lang.Object")
-     interfaces constructors methods fields (access-flags '(:public)) annotations)
+     interfaces constructors methods fields (access-flags '(:public)) annotations
+     (class-loader (java::make-memory-class-loader)))
   "Creates and loads a Java class with methods calling Lisp closures
    as given in METHODS.  CLASS-NAME and SUPER-NAME are strings,
    INTERFACES is a list of strings, CONSTRUCTORS, METHODS and FIELDS are
@@ -31,12 +35,12 @@
 
      (METHOD-NAME RETURN-TYPE ARGUMENT-TYPES FUNCTION &key MODIFIERS ANNOTATIONS)
 
-   where 
-      METHOD-NAME is a string 
+   where
+      METHOD-NAME is a string
       RETURN-TYPE denotes the type of the object returned by the method
       ARGUMENT-TYPES is a list of parameters to the method
-      
-        The types are either strings naming fully qualified java classes or Lisp keywords referring to 
+
+        The types are either strings naming fully qualified java classes or Lisp keywords referring to
         primitive types (:void, :int, etc.).
 
      FUNCTION is a Lisp function of minimum arity (1+ (length
@@ -45,17 +49,36 @@
 
    Field definitions are lists of the form (field-name type &key modifiers annotations)."
   (declare (ignorable superclass interfaces constructors methods fields access-flags annotations))
-  (let* ((stream (sys::%make-byte-array-output-stream))
-        (current-class-loader (java:get-current-classloader))
-        (memory-class-loader (java:jnew "org.armedbear.lisp.MemoryClassLoader" current-class-loader)))
+  (let ((stream (sys::%make-byte-array-output-stream)))
     (multiple-value-bind (class-file method-implementation-fields)
-        (apply #'java::%jnew-runtime-class class-name stream args)
-      (sys::put-memory-function memory-class-loader
+        (apply #'java::%jnew-runtime-class class-name stream :allow-other-keys T args)
+      (sys::put-memory-function class-loader
                                 class-name (sys::%get-output-stream-bytes stream))
-      (let ((jclass (java:jcall "loadClass" memory-class-loader class-name)))
+      (let ((jclass (java:jcall "loadClass" class-loader class-name)))
         (dolist (method method-implementation-fields)
           (setf (java:jfield jclass (car method)) (cdr method)))
         jclass))))
+
+(defconstant +abcl-lisp-integer-object+ (make-jvm-class-name "org.armedbear.lisp.LispInteger"))
+
+(defun box-arguments (argument-types offset all-argc)
+  ;;Box each argument
+  (loop
+    :for arg-type :in argument-types
+    :for i :from offset
+    :do (progn
+          (cond
+            ((eq arg-type :int)
+             (iload i)
+             (emit-invokestatic +abcl-lisp-integer-object+ "getInstance"
+                                (list :int) +abcl-lisp-integer-object+))
+            ((keywordp arg-type)
+             (error "Unsupported arg-type: ~A" arg-type))
+            (t (aload i)
+               (emit 'iconst_1) ;;true
+               (emit-invokestatic +abcl-java-object+ "getInstance"
+                                  (list +java-object+ :boolean) +lisp-object+)))
+          (astore (+ i all-argc)))))
 
 (defun java::%jnew-runtime-class
     (class-name stream &key (superclass "java.lang.Object")
@@ -78,7 +101,47 @@
           (aload 0)
           (emit-invokespecial-init (class-file-superclass class-file) nil)
           (emit 'return)))
-      (error "constructors not supported"))
+      (dolist (constructor constructors)
+        (destructuring-bind (argument-types function
+                             &key (modifiers '(:public)))
+            constructor
+          (let* ((argument-types (mapcar #'java::canonicalize-java-type argument-types))
+                 (argc (length argument-types))
+                 (ctor (make-jvm-method :constructor :void argument-types :flags modifiers))
+                 (field-name (string (gensym "CONSTRUCTOR")))
+                 (all-argc (1+ argc)))
+            (class-add-method class-file ctor)
+            (let ((field (make-field field-name +lisp-object+ :flags '(:public :static))))
+              (class-add-field class-file field))
+            (push (cons field-name function) method-implementation-fields)
+            (with-code-to-method (class-file ctor)
+              (dotimes (i (* 2 all-argc))
+                (allocate-register nil))
+
+              (aload 0)
+              (emit-invokespecial-init (class-file-superclass class-file) nil)
+
+              (aload 0)
+              (emit 'iconst_1) ;;true
+              (emit-invokestatic +abcl-java-object+ "getInstance"
+                                 (list +java-object+ :boolean) +lisp-object+)
+              (astore all-argc)
+
+              (box-arguments argument-types 1 all-argc)
+
+              ;;Load the Lisp function from its static field
+              (emit-getstatic (class-file-class class-file) field-name +lisp-object+)
+              (if (<= all-argc call-registers-limit)
+                  (progn
+                    ;;Load the boxed this
+                    (aload all-argc)
+                    ;;Load each boxed argument
+                    (dotimes (i argc)
+                      (aload (+ i 1 all-argc))))
+                  (error "execute(LispObject[]) is currently not supported"))
+              (emit-call-execute all-argc)
+
+              (emit 'return))))))
     (finalize-class-file class-file)
     (write-class-file class-file stream)
     (finish-output stream)
@@ -122,7 +185,8 @@
      (emit-invokevirtual +lisp-object+ "getBooleanValue" nil :boolean)
      (emit 'ireturn))
     ((jvm-class-name-p return-type)
-     (emit-invokevirtual +lisp-object+ "javaInstance" nil +java-object+)
+     (emit 'ldc_w (pool-class return-type))
+     (emit-invokevirtual +lisp-object+ "javaInstance" (list +java-class+) +java-object+)
      (emit-checkcast return-type)
      (emit 'areturn))
     (t
@@ -130,14 +194,18 @@
 
 (defun java::runtime-class-add-methods (class-file methods)
   (let (method-implementation-fields)
-    (dolist (m methods)
+    (dolist (method methods)
       (destructuring-bind (name return-type argument-types function
-                           &key (modifiers '(:public)) annotations override) m
+                           &key (modifiers '(:public)) annotations override)
+          method
         (let* ((argument-types (mapcar #'java::canonicalize-java-type argument-types))
                (argc (length argument-types))
                (return-type (java::canonicalize-java-type return-type))
                (jmethod (make-jvm-method name return-type argument-types :flags modifiers))
-               (field-name (string (gensym name))))
+               (field-name (string (gensym name)))
+               (staticp (member :static modifiers))
+               (offset (if staticp 0 1))
+               (all-argc (+ argc offset)))
           (class-add-method class-file jmethod)
           (let ((field (make-field field-name +lisp-object+ :flags '(:public :static))))
             (class-add-field class-file field)
@@ -147,39 +215,28 @@
                                            :list (mapcar #'parse-annotation annotations))))
           (with-code-to-method (class-file jmethod)
             ;;Allocate registers (2 * argc to load and store arguments + 2 to box "this")
-            (dotimes (i (* 2 (1+ argc)))
+            (dotimes (i (* 2 all-argc))
               (allocate-register nil))
-            ;;Box "this" (to be passed as the first argument to the Lisp function)
-            (aload 0)
-            (emit 'iconst_1) ;;true
-            (emit-invokestatic +abcl-java-object+ "getInstance"
-                               (list +java-object+ :boolean) +lisp-object+)
-            (astore (1+ argc))
-            ;;Box each argument
-            (loop
-               :for arg-type :in argument-types
-               :for i :from 1
-               :do (progn
-                     (cond
-                       ((keywordp arg-type)
-                        (error "Unsupported arg-type: ~A" arg-type))
-                       ((eq arg-type :int) :todo)
-                       (t (aload i)
-                          (emit 'iconst_1) ;;true
-                          (emit-invokestatic +abcl-java-object+ "getInstance"
-                                             (list +java-object+ :boolean) +lisp-object+)))
-                     (astore (+ i (1+ argc)))))
+            (unless staticp
+              ;;Box "this" (to be passed as the first argument to the Lisp function)
+              (aload 0)
+              (emit 'iconst_1) ;;true
+              (emit-invokestatic +abcl-java-object+ "getInstance"
+                                 (list +java-object+ :boolean) +lisp-object+)
+              (astore all-argc))
+            (box-arguments argument-types offset all-argc)
             ;;Load the Lisp function from its static field
             (emit-getstatic (class-file-class class-file) field-name +lisp-object+)
-            (if (<= (1+ argc) call-registers-limit)
+            (if (<= all-argc call-registers-limit)
                 (progn
                   ;;Load the boxed this
-                  (aload (1+ argc))
+                  (unless staticp
+                    (aload all-argc))
                   ;;Load each boxed argument
                   (dotimes (i argc)
-                    (aload (+ argc 2 i))))
+                    (aload (+ i 1 all-argc))))
                 (error "execute(LispObject[]) is currently not supported"))
-            (emit-call-execute (1+ (length argument-types)))
+            (emit-call-execute all-argc)
             (java::emit-unbox-and-return return-type))
           (cond
             ((eq override t)

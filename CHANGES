@@ -8,7 +8,9 @@ Unreleased
 Fixes
 -----
 
-* CL:OPEN
+* JNEW-RUNTIME-CLASS 
+
+* Fix CL:OPEN for :DIRECTION :INPUT (pipping)
 
 Version 1.4.0
 =============

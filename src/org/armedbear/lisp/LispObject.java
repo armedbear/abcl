@@ -128,9 +128,18 @@ public class LispObject //extends Lisp
 
   public Object javaInstance(Class<?> c)
   {
-      if (c.isAssignableFrom(getClass()))
-	  return this;
-      return error(new LispError("The value " + princToString() +
+    if (c.isAssignableFrom(getClass())) {
+      return this;
+    }
+
+    String cn = c.getName();
+    if (cn != null) {
+      if (cn.equals("java.lang.Boolean") || cn.equals("boolean")) {
+        return Boolean.TRUE;
+      }
+    }
+
+    return error(new LispError("The value " + princToString() +
 				 " is not of class " + c.getName()));
   }
 

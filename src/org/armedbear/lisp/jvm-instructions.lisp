@@ -461,6 +461,24 @@
     (3 (emit 'astore_3))
     (t (emit 'astore index))))
 
+(defknown iload (fixnum) t)
+(defun iload (index)
+  (case index
+    (0 (emit 'iload_0))
+    (1 (emit 'iload_1))
+    (2 (emit 'iload_2))
+    (3 (emit 'iload_3))
+    (t (emit 'iload index))))
+
+(defknown istore (fixnum) t)
+(defun istore (index)
+  (case index
+    (0 (emit 'istore_0))
+    (1 (emit 'istore_1))
+    (2 (emit 'istore_2))
+    (3 (emit 'istore_3))
+    (t (emit 'istore index))))
+
 (declaim (ftype (function (t) t) branch-p)
          (inline branch-p))
 (defun branch-p (opcode)
@@ -571,6 +589,10 @@
                  13 ; fconst_2
                  14 ; dconst_0
                  15 ; dconst_1
+                 26 ; iload_0
+                 27 ; iload_1
+                 28 ; iload_2
+                 29 ; iload_3
                  42 ; aload_0
                  43 ; aload_1
                  44 ; aload_2
@@ -580,6 +602,11 @@
                  48 ; faload
                  49 ; daload
                  50 ; aaload
+                 54 ; istore
+                 59 ; istore_0
+                 60 ; istore_1
+                 61 ; istore_2
+                 62 ; istore_3
                  75 ; astore_0
                  76 ; astore_1
                  77 ; astore_2
