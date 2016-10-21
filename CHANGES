@@ -12,6 +12,9 @@ Fixes
 
 * Fix CL:OPEN for :DIRECTION :INPUT (pipping)
 
+* ABCL-ASDF uses the value of the reported Maven home to look for
+  libraries, fixing loading CFFI under FreeBSD 11-RELEASE
+
 Version 1.4.0
 =============
 <http://abcl.org/svn/tags/1.4.0/>

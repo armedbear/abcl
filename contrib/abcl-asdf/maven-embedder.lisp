@@ -118,6 +118,9 @@ Emits warnings if not able to find a suitable executable."
        (truename d)))
    (list (make-pathname :defaults (merge-pathnames "../lib/" (find-mvn))
                         :name nil :type nil)
+         (ignore-errors
+           (make-pathname :defaults (merge-pathnames "lib/" (mvn-home))
+                          :name nil :type nil))
          ;; library location for homebrew maven package on OS X
          (make-pathname :defaults (merge-pathnames "../libexec/lib/" (find-mvn))
                         :name nil :type nil)
@@ -162,6 +165,30 @@ Signals a simple-error with additional information if this attempt fails."
     (t (e) 
       (error "Failed to determine Maven version: ~A." e))))
 
+(defun mvn-home ()
+  "If the Maven executable can be invoked, introspect the value
+  reported as Maven home."
+  (handler-case 
+      (multiple-value-bind (output error-output status)
+          (uiop/run-program:run-program
+           (format nil "~a --version" (truename (find-mvn)))
+           :output :string
+           :error-output :string)
+        (unless (zerop status)
+          (error "Failed to invoke Maven executable to introspect library locations: ~a." error-output))
+        (let ((pattern (#"compile"
+                        'regex.Pattern
+                        "Maven home: (.+)$")))
+          (with-input-from-string (s output)
+            (do ((line (read-line s nil :eof) 
+                       (read-line s nil :eof)))
+                ((or (not line) (eq line :eof)) nil)
+              (let ((matcher (#"matcher" pattern line)))
+                (when (#"find" matcher)
+                  (return-from mvn-home (uiop/pathname:ensure-directory-pathname (#"group" matcher 1)))))))))
+    (subprocess-error (e)
+          (error "Failed to invoke Maven executable to introspect library locations: ~a." e))))
+                        
 (defun ensure-mvn-version ()
   "Return t if Maven version is 3.0.3 or greater."
   (let* ((version (mvn-version))
@@ -178,7 +205,7 @@ Signals a simple-error with additional information if this attempt fails."
      (list major minor patch))))
 
 (defparameter *init* nil)
-
+  
 (defun init (&optional &key (force nil))
   "Run the initialization strategy to bootstrap a Maven dependency node.
 
