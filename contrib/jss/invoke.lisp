@@ -263,7 +263,7 @@ want to avoid the overhead of the dynamic dispatch."
                  (ambiguous (choices)
                    (error "Ambiguous class name: ~a can be ~{~a~^, ~}" name choices)))
             (if (zerop bucket-length)
-                name
+		(progn (warn "can't find class named ~a" name) nil)
                 (let ((matches (loop for el in bucket when (matches-end name el 'char=) collect el)))
                   (if (= (length matches) 1)
                       (car matches)
@@ -272,7 +272,7 @@ want to avoid the overhead of the dynamic dispatch."
                             (if (= (length matches) 1)
                                 (car matches)
                                 (if (= (length matches) 0)
-                                    name
+				    (progn (warn "can't find class named ~a" name) nil)
                                     (ambiguous matches))))
                           (ambiguous matches))))))))))
 
