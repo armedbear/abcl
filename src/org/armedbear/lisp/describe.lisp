@@ -80,6 +80,9 @@
        (let ((doc (documentation object 'function)))
          (when doc
            (format stream "Function documentation:~%  ~A~%" doc)))
+       (let ((doc (documentation object 'variable)))
+         (when doc
+           (format stream "Variable documentation:~%  ~A~%" doc)))
        (let ((plist (symbol-plist object)))
          (when plist
            (format stream "The symbol's property list contains these indicator/value pairs:~%")

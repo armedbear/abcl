@@ -1,7 +1,7 @@
 ;;; defmacro.lisp
 ;;;
 ;;; Copyright (C) 2003-2006 Peter Graves
-;;; $Id$
+;;; $Id: defmacro.lisp 13696 2011-11-15 22:34:19Z astalla $
 ;;;
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -41,6 +41,7 @@
         (parse-defmacro lambda-list whole body name 'defmacro :environment env)
       (let ((expander `(lambda (,whole ,env) ,@decls ,body)))
         `(progn
+;	   (sys::record-source-information-for-type ',name :macro)
            (let ((macro (make-macro ',name
                                     (or (precompile nil ,expander) ,expander))))
              ,@(if (special-operator-p name)

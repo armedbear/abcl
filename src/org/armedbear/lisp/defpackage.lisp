@@ -152,8 +152,11 @@
                     `(:shadow ,@shadows)
                     `(:shadowing-import-from
                       ,@(apply #'append (mapcar #'rest shadowing-imports))))
+;    `(progn
+;       (record-source-information-for-type ',package :package)
     `(%defpackage ,(string package) ',nicknames ',size
                   ',shadows (ensure-available-symbols ',shadowing-imports)
                   ',(if use-p use nil)
                   (ensure-available-symbols ',imports) ',interns ',exports
-                  ',local-nicknames ',doc)))
+                  ',local-nicknames ',doc)
+    ))

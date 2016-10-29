@@ -4127,10 +4127,12 @@ or T when any keyword is acceptable due to presence of
     (typecase report
       (null
        `(progn
+;	  (sys::record-source-information-for-type  ',name :condition)
           (defclass ,name ,parent-types ,slot-specs ,@options)
           ',name))
       (string
        `(progn
+;	  (sys::record-source-information-for-type  ',name :condition)
           (defclass ,name ,parent-types ,slot-specs ,@options)
           (defmethod print-object ((condition ,name) stream)
             (if *print-escape*
@@ -4139,6 +4141,7 @@ or T when any keyword is acceptable due to presence of
           ',name))
       (t
        `(progn
+;	  (sys::record-source-information-for-type  ',name :condition)
           (defclass ,name ,parent-types ,slot-specs ,@options)
           (defmethod print-object ((condition ,name) stream)
             (if *print-escape*

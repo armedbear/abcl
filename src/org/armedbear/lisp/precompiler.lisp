@@ -1178,6 +1178,12 @@
                (setf lambda-expression (precompiler:precompile-form lambda-expression nil)))
              `(prog1
                   (%defun ',name ,lambda-expression)
+;		(unless (consp ',name)
+;		  (record-source-information-for-type ',name :function))
+		;; alanr
+;		(unless (consp ',name)
+;		  (%set-arglist (symbol-function ',name) ,(format nil "~{~s~^ ~}" (third lambda-expression))))
+		;; alanr
                 ,@(when doc
                    `((%set-documentation ',name 'function ,doc)))))))))
 
