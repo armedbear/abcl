@@ -372,8 +372,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
         (%defvar name)))
   (let ((name (second form)))
     `(progn 
-;       (put ',name '%source-by-type (cons (list :variable ,*source* ,*source-position*) (get ',name  '%source-by-type nil)))
-       ,form)))
+       (put ',name '%source-by-type (cons (list :variable ,*source* ,*source-position*) (get ',name  '%source-by-type nil)))
+      ,form)))
 
 (declaim (ftype (function (t t t) t) process-toplevel-defpackage/in-package))
 (defun process-toplevel-defpackage/in-package (form stream compile-time-too)
@@ -438,6 +438,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 
 
 (declaim (ftype (function (t t t) t) process-toplevel-defmethod/defgeneric))
+
 (defun process-toplevel-defmethod/defgeneric (form stream compile-time-too)
   (note-toplevel-form form)
   (note-name-defined (second form))
@@ -449,8 +450,15 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
   (let ((*compile-print* nil))
     (process-toplevel-form (macroexpand-1 form *compile-file-environment*)
 			   stream compile-time-too))
-;  `(put ',(second form) '%source-by-type (cons (list :generic-function  ,*source* ,*source-position*) (get ',(second form)  '%source-by-type nil)))
-  )
+  (let* ((sym (if (consp (second form)) (second (second form)) (second form)))
+	 (what 
+	   (if (eq (car form) 'defmethod)
+	       (multiple-value-bind (function-name qualifiers lambda-list specializers documentation declarations body) (mop::parse-defmethod (cdr form))
+		 `(:method ,(second form) ,qualifiers,specializers)) 
+	       `(:generic-function ,(second form)))))
+    `(put ',sym '%source-by-type
+	  (cons  '(,what  ,*source* ,*source-position*) (get ',sym  '%source-by-type nil)))
+    ))
 
 (declaim (ftype (function (t t t) t) process-toplevel-locally))
 (defun process-toplevel-locally (form stream compile-time-too)
