@@ -7,8 +7,10 @@
                         :pathname "" :serial t 
                         :components ((:file "packages")
                                      (:file "invoke")
+				     (:file "optimize-java-call")
                                      (:file "classpath")
-                                     (:file "compat")))))
+                                     (:file "compat")
+				     ))))
 
 #+nil FIXME
 (asdf:defsystem :jss-tests
