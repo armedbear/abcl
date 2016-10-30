@@ -61,6 +61,7 @@
                          (declare (ignorable ,env))
                          (block ,block-name ,body))))
         `(progn
+	   (record-source-information-for-type ',name :compiler-macro)
            (setf (compiler-macro-function ',name) (function ,expander))
            ',name)))))
 

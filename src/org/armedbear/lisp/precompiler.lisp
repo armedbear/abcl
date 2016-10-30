@@ -1172,20 +1172,18 @@
                 (fset ',name ,lambda-expression)
                 ',name))
             (t
-             (when (and env (empty-environment-p env))
+	     (when (and env (empty-environment-p env))
                (setf env nil))
              (when (null env)
                (setf lambda-expression (precompiler:precompile-form lambda-expression nil)))
-             `(prog1
-                  (%defun ',name ,lambda-expression)
-;		(unless (consp ',name)
-;		  (record-source-information-for-type ',name :function))
-		;; alanr
-;		(unless (consp ',name)
-;		  (%set-arglist (symbol-function ',name) ,(format nil "~{~s~^ ~}" (third lambda-expression))))
-		;; alanr
-                ,@(when doc
-                   `((%set-documentation ',name 'function ,doc)))))))))
+	     (let ((sym (if (consp name) (second name) name)))
+	       `(prog1
+		    (%defun ',name ,lambda-expression)
+		  (record-source-information-for-type ',sym '(:function ,name))
+;		  (%set-arglist (fdefinition ',name) ,(format nil "~{~s~^ ~}" (third lambda-expression)))
+		  ,@(when doc
+		      `((%set-documentation ',name 'function ,doc)))
+		  )))))))
 
 (export '(precompile))
 

@@ -80,13 +80,8 @@
       (let ((source (if source-position
 			(list source-pathname source-position)
 			(list source-pathname))))
-	(cond ((symbolp name)
-	       (put name '%source-by-type (cons `(,type ,@source) (get name  '%source-by-type nil)))
-	       ))))))
-
-(defun source-information-for-type-form (name type)
-  (unless (consp name)
-    `(push ',(assoc type (get name '%source-by-type) :test 'equalp) (get ',name '%source-by-type nil))))
+	(let ((sym (if (consp name) (second name) name)))
+	  (put sym '%source-by-type (cons `(,type ,(if (symbolp (car source)) (car source) (namestring (car source))) ,(second source)) (get sym  '%source-by-type nil))))))))
 
 ;; Redefined in trace.lisp.
 (defun trace-redefined-update (&rest args)

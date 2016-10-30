@@ -41,14 +41,16 @@
 			 (parse-defmacro lambda-list whole body access-fn
 					 'define-setf-expander
 					 :environment environment)
-      `(eval-when (:compile-toplevel :load-toplevel :execute)
-         ,@(when doc
-             `((%set-documentation ',access-fn 'setf ,doc)))
-         (setf (get ',access-fn 'setf-expander)
-             #'(lambda (,whole ,environment)
-                ,@local-decs
-                (block ,access-fn ,body)))
-         ',access-fn))))
+      `(progn
+	 (record-source-information-for-type ',access-fn :setf-expander)
+	 (eval-when (:compile-toplevel :load-toplevel :execute)
+	   ,@(when doc
+	       `((%set-documentation ',access-fn 'setf ,doc)))
+	   (setf (get ',access-fn 'setf-expander)
+		 #'(lambda (,whole ,environment)
+		     ,@local-decs
+		     (block ,access-fn ,body)))
+	   ',access-fn)))))
 
 (define-setf-expander values (&rest places &environment env)
   (let ((setters ())

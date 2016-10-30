@@ -51,12 +51,12 @@
 
 (defmacro defconstant (name initial-value &optional docstring)
   `(progn
-;     (record-source-information-for-type ',name :constant)
+     (record-source-information-for-type ',name :constant)
      (%defconstant ',name ,initial-value ,docstring)))
 
 (defmacro defparameter (name initial-value &optional docstring)
   `(progn
-;     (record-source-information-for-type ',name :variable)
+     (record-source-information-for-type ',name :variable)
      (%defparameter ',name ,initial-value ,docstring)))
 
 (defmacro truly-the (type value)

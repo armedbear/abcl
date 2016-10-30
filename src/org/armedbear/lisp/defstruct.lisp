@@ -695,6 +695,7 @@
                              :slots ',*dd-slots*
                              :inherited-accessors ',*dd-inherited-accessors*
                              :documentation ',*dd-documentation*))
+       (record-source-information-for-type ',*dd-name* :defstruct)
        ,@(define-constructors)
        ,@(define-predicate)
        ,@(define-access-functions)

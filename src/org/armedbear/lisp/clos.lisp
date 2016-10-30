@@ -3238,12 +3238,14 @@ instance and, for setters, `new-value' the new value."
   (unless (>= (length form) 3)
     (error 'program-error "Wrong number of arguments for DEFCLASS."))
   (check-declaration-type name)
-  `(ensure-class ',name
+  `(progn
+     (sys::record-source-information-for-type ',name :class)
+     (ensure-class ',name
                  :direct-superclasses
                  (canonicalize-direct-superclasses ',direct-superclasses)
                  :direct-slots
                  ,(canonicalize-direct-slots direct-slots)
-                 ,@(canonicalize-defclass-options options)))
+                 ,@(canonicalize-defclass-options options))))
 
 
 ;;; AMOP pg. 180
