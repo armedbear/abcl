@@ -309,8 +309,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (when (quoted-form-p name) (setq name (second name)))
     (when (quoted-form-p type) (setq type (second type)))
     (let ((sym (if (consp name) (second name) name)))
-      `(put ',sym '%source-by-type (cons '(,type ,(namestring *source*) ,*source-position*)
-					 (get ',sym  '%source-by-type nil)))
+      `(put ',sym 'sys::source (cons '(,type ,(namestring *source*) ,*source-position*)
+					 (get ',sym  'sys::source nil)))
       )))
 
 	  
@@ -375,7 +375,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
         (%defvar name)))
   (let ((name (second form)))
     `(progn 
-       (put ',name '%source-by-type (cons (list :variable ,(namestring *source*) ,*source-position*) (get ',name  '%source-by-type nil)))
+       (put ',name 'sys::source (cons (list :variable ,(namestring *source*) ,*source-position*) (get ',name  'sys::source nil)))
       ,form)))
 
 (declaim (ftype (function (t t t) t) process-toplevel-defpackage/in-package))
@@ -393,9 +393,9 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     ;; The defpackage is at top, so we know where the name is (though it is a string by now)
     ;; (if it is a defpackage)
     (if defpackage-name
-	`(put ,defpackage-name '%source-by-type
+	`(put ,defpackage-name 'sys::source
 	      (cons '(:package ,(namestring *source*) ,*source-position*)
-		    (get ,defpackage-name '%source-by-type nil)))
+		    (get ,defpackage-name 'sys::source nil)))
 	nil)))
 
 (declaim (ftype (function (t t t) t) process-toplevel-declare))
@@ -415,7 +415,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
   (note-toplevel-form form)
   (eval form)
   `(progn
-     (put ',(second form) '%source-by-type (cons '(,(second form) ,(namestring *source*) ,*source-position*) (get ',(second form)  '%source-by-type nil)))
+     (put ',(second form) 'sys::source (cons '(,(second form) ,(namestring *source*) ,*source-position*) (get ',(second form)  'sys::source nil)))
      ,form)
   )
 
@@ -460,16 +460,22 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
           *toplevel-setf-functions*))
   (let ((*compile-print* nil))
     (process-toplevel-form (macroexpand-1 form *compile-file-environment*)
-			   stream compile-time-too))
-  (let* ((sym (if (consp (second form)) (second (second form)) (second form)))
-	 (what 
-	   (if (eq (car form) 'defmethod)
-	       (multiple-value-bind (function-name qualifiers lambda-list specializers documentation declarations body) (mop::parse-defmethod (cdr form))
-		 `(:method ,(second form) ,qualifiers,specializers)) 
-	       `(:generic-function ,(second form)))))
-    `(put ',sym '%source-by-type
-	  (cons  '(,what  ,(namestring *source*) ,*source-position*) (get ',sym  '%source-by-type nil)))
-    ))
+  			   stream compile-time-too))
+  (let* ((sym (if (consp (second form)) (second (second form)) (second form))))
+    (when (eq (car form) 'defgeneric)
+      `(progn
+	 (put ',sym 'sys::source
+	      (cons  '((:generic-function ,(second form))  ,(namestring *source*) ,*source-position*) (get ',sym  'sys::source nil)))
+	 ,@(loop for method-form in (cdddr form)
+		 when (eq (car method-form) :method)
+		   collect
+		   (multiple-value-bind (function-name qualifiers lambda-list specializers documentation declarations body) 
+		       (mop::parse-defmethod `(,(second form) ,@(rest method-form)))
+		     `(put ',sym 'sys::source
+			   (cons `((:method ,',sym ,',qualifiers ,',specializers) ,,(namestring *source*) ,,*source-position*)
+				 (get ',sym  'sys::source nil)))))
+	 ))))
+
 
 (declaim (ftype (function (t t t) t) process-toplevel-locally))
 (defun process-toplevel-locally (form stream compile-time-too)
@@ -514,8 +520,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                             (sys::get-fasl-function *fasl-loader*
                                                     ,saved-class-number)))
 	  `(progn
-	     (put ',name '%source-by-type
-		  (cons '(:macro  ,(namestring *source*) ,*source-position*) (get ',name  '%source-by-type nil)))
+	     (put ',name 'sys::source
+		  (cons '(:macro  ,(namestring *source*) ,*source-position*) (get ',name  'sys::source nil)))
 	     (fset ',name
 		   (make-macro ',name
 			       (sys::get-fasl-function *fasl-loader*
@@ -566,7 +572,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 	       (let ((sym (if (consp name) (second name) name)))
 		 (setf form
 		       `(progn
-			 (put ',sym '%source-by-type (cons '((:function ,name)  ,(namestring *source*) ,*source-position*) (get ',sym  '%source-by-type nil)))		       
+			 (put ',sym 'sys::source (cons '((:function ,name)  ,(namestring *source*) ,*source-position*) (get ',sym  'sys::source nil)))		       
 			 (fset ',name
                             (sys::get-fasl-function *fasl-loader*
                                                     ,saved-class-number)

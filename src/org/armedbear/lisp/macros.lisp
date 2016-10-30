@@ -181,6 +181,7 @@
 
 (defmacro defvar (var &optional (val nil valp) (doc nil docp))
   `(progn
+     (sys::record-source-information-for-type ',var :variable)
      (%defvar ',var)
      ,@(when valp
          `((unless (boundp ',var)
