@@ -2892,7 +2892,7 @@ to ~S with argument list ~S."
                (push `',specializer specializers-form))))
       (setf specializers-form `(list ,@(nreverse specializers-form)))
       `(progn
-	 (sys::record-source-information-for-type ',function-name '(:method ,function-name))
+	 (sys::record-source-information-for-type ',function-name '(:method ,function-name ,qualifiers ,specializers))
          (ensure-method ',function-name
                         :lambda-list ',lambda-list
                         :qualifiers ',qualifiers
