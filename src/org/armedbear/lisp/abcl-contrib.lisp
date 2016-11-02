@@ -10,7 +10,8 @@
     (java:jcall +get-classloader+ boot-class)))
 
 (defun system-jar-p (p)
-  (named-jar-p "abcl" p))
+  (or (named-jar-p "abcl" p)
+      (named-jar-p "abcl-aio" p)))
 
 (defun contrib-jar-p (p)
   (named-jar-p "abcl-contrib" p))
@@ -68,12 +69,12 @@ Initialized via SYSTEM:FIND-CONTRIB.")
 
 (defparameter *verbose* t)
 
-(defun add-contrib (abcl-contrib-jar)
+(defun add-contrib (abcl-contrib-jar &optional relative)
   "Introspects ABCL-CONTRIB-JAR for asdf systems to add to ASDF:*CENTRAL-REGISTRY*"
   (when abcl-contrib-jar
     (dolist (asdf-file
              (directory (make-pathname :device (list abcl-contrib-jar)
-                                       :directory '(:absolute :wild)
+                                       :directory (if relative `(:absolute ,relative :wild) '(:absolute :wild))
                                        :name :wild
                                        :type "asd")))
       (let ((asdf-directory (make-pathname :defaults asdf-file :name nil :type nil)))
@@ -87,16 +88,27 @@ Returns the pathname of the contrib if it can be found."
   (if *abcl-contrib*
       (format verbose "~&Using already initialized value of abcl-contrib:~&'~A'.~%"
               *abcl-contrib*)
-    (progn
-      (setf *abcl-contrib* (find-contrib))
-      (format verbose "~&Using probed value of abcl-contrib:~&'~A'.~%"
-              *abcl-contrib*)))
-  (add-contrib *abcl-contrib*))
+      (progn
+	(setf *abcl-contrib* (find-contrib))
+	(format verbose "~&Using probed value of abcl-contrib:~&'~A'.~%"
+		*abcl-contrib*)))
+  (add-contrib *abcl-contrib*
+	       (and (equalp *abcl-contrib* (find-system-jar))
+		    "contrib"))
+  )
 
 (defun find-contrib ()
   "Introspect runtime classpaths to find a loadable ABCL-CONTRIB."
   (or (ignore-errors
-        (find-contrib-jar))
+       (let ((system-jar (find-system-jar)))
+	 (and
+	  (probe-file (make-pathname
+			:device (list system-jar)
+			:directory '(:absolute "contrib")
+			:name "README" :type "markdown" ))
+	  system-jar)))
+      (ignore-errors
+       (find-contrib-jar))
       (ignore-errors
         (let ((system-jar (find-system-jar)))
           (when system-jar
