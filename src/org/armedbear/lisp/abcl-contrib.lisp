@@ -14,7 +14,9 @@
       (named-jar-p "abcl-aio" p)))
 
 (defun contrib-jar-p (p)
-  (named-jar-p "abcl-contrib" p))
+  (or 
+   (named-jar-p "abcl-contrib" p)
+   (named-jar-p "abcl-aio" p)))
 
 (defun named-jar-p (name p)
   (and (pathnamep p)
