@@ -10,7 +10,8 @@
     (java:jcall +get-classloader+ boot-class)))
 
 (defun system-jar-p (p)
-  (named-jar-p "abcl" p))
+  (or (named-jar-p "abcl" p)
+      (named-jar-p "abcl-aio" p)))
 
 (defun contrib-jar-p (p)
   (named-jar-p "abcl-contrib" p))
