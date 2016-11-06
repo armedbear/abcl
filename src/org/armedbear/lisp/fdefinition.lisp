@@ -80,11 +80,7 @@
 		      (list source-pathname source-position)
 		      (list source-pathname))))
       (let ((sym (if (consp name) (second name) name)))
-	;; early in boot/compile pushnew isn't defined yet.
-	(if (fboundp 'pushnew)
-	    (pushnew   `(,type ,(if (symbolp (car source)) (car source) (namestring (car source))) ,(second source)) (get sym  'sys::source nil)
-		       :key 'car :test 'equal)
-	    (put sym 'sys::source (cons `(,type ,(if (symbolp (car source)) (car source) (namestring (car source))) ,(second source)) (get sym  'sys::source nil))))))))
+	(put sym 'sys::source (cons `(,type ,(if (symbolp (car source)) (car source) (namestring (car source))) ,(second source)) (get sym  'sys::source nil)))))))
 
 ;; Redefined in trace.lisp.
 (defun trace-redefined-update (&rest args)
