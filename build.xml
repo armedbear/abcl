@@ -40,6 +40,8 @@ For help on the automatic tests available, use the Ant target 'help.test'.
               value="${basedir}/dist"/>
     <property name="abcl.jar.path"
               value="${dist.dir}/abcl.jar"/>
+    <property name="abcl.aio.jar.path"
+              value="${dist.dir}/abcl-aio.jar"/>
     <property name="abcl.ext.dir"
               value="${basedir}/ext"/>
 
@@ -489,6 +491,39 @@ from ${abcl.home.dir}
         </metainf>
       </jar>
     </target>
+
+    <target name="abcl.aio" depends="abcl.compile,abcl.stamp">
+      <mkdir dir="${dist.dir}"/>
+      <jar destfile="${abcl.aio.jar.path}"
+           compress="true"
+           update="true"
+           basedir="${build.classes.dir}">
+	<fileset dir="${src.dir}">
+          <patternset refid="abcl.objects"/>
+	  <patternset refid="abcl.source.java"/>
+	  <patternset refid="abcl.source.lisp"/>
+	</fileset>
+	<fileset dir="${basedir}">
+	  <patternset refid="abcl.contrib.source"/>
+	</fileset>
+        <manifest>
+          <attribute name="Main-Class" value="org.armedbear.lisp.Main"/>
+          <section name="org/armedbear/lisp">
+            <attribute name="Implementation-Title" 
+                       value="ABCL"/>
+            <attribute name="Implementation-Version"  
+                       value="${abcl.implementation.version}"/>
+            <attribute name="Implementation-Build" 
+                       value="${build}"/>
+          </section>
+        </manifest>
+        <metainf dir="${src.dir}/META-INF"> 
+          <exclude name="services/javax.script.ScriptEngineFactory"
+                   unless="abcl.jsr-223.p"/>
+        </metainf>
+      </jar>
+    </target>
+
     
     <target name="abcl.wrapper" 
             depends="abcl.jar,abcl.contrib,abcl.wrapper.unix,abcl.wrapper.windows">
