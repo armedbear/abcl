@@ -33,7 +33,7 @@
        p))
 
 (defun find-system ()
-  "Find the location of the system.
+  "Find the location of the Armed Bear system implementation
 
 Used to determine relative pathname to find 'abcl-contrib.jar'."
   (or
@@ -71,14 +71,15 @@ Initialized via SYSTEM:FIND-CONTRIB.")
 
 (defparameter *verbose* t)
 
-(defun add-contrib (abcl-contrib-jar &optional relative)
-  "Introspects ABCL-CONTRIB-JAR for asdf systems to add to ASDF:*CENTRAL-REGISTRY*"
-  (when abcl-contrib-jar
+;;; FIXME: stop using the obsolete ASDF:*CENTRAL-REGISTRY*
+(defun add-contrib (abcl-contrib-jar)
+  "Introspects a abcl-contrib-jar path whose immediate sub-directories
+  contain asdf definitions, adding those found to asdf."
+  (let ((jar-path (if (ext:pathname-jar-p abcl-contrib-jar)
+                      abcl-contrib-jar
+                      (make-pathname :device (list abcl-contrib-jar)))))
     (dolist (asdf-file
-             (directory (make-pathname :device (list abcl-contrib-jar)
-                                       :directory (if relative `(:absolute ,relative :wild) '(:absolute :wild))
-                                       :name :wild
-                                       :type "asd")))
+             (directory (merge-pathnames "*/*.asd" jar-path)))
       (let ((asdf-directory (make-pathname :defaults asdf-file :name nil :type nil)))
         (unless (find asdf-directory asdf:*central-registry* :test #'equal)
           (push asdf-directory asdf:*central-registry*)
@@ -86,45 +87,83 @@ Initialized via SYSTEM:FIND-CONTRIB.")
 
 (defun find-and-add-contrib (&key (verbose nil))
   "Attempt to find the ABCL contrib jar and add its contents to ASDF.
-Returns the pathname of the contrib if it can be found."
-  (if *abcl-contrib*
-      (format verbose "~&Using already initialized value of abcl-contrib:~&'~A'.~%"
-              *abcl-contrib*)
-      (progn
-	(setf *abcl-contrib* (find-contrib))
-	(format verbose "~&Using probed value of abcl-contrib:~&'~A'.~%"
-		*abcl-contrib*)))
-  (add-contrib *abcl-contrib*
-	       (and (equalp *abcl-contrib* (find-system-jar))
-		    "contrib"))
-  )
+returns the pathname of the contrib if it can be found."
+   (if *abcl-contrib*
+       (format verbose "~&Using already initialized value of abcl-contrib:~&'~A'.~%"
+               *abcl-contrib*)
+       (progn
+         (let ((contrib (find-contrib)))
+           (when contrib
+             (format verbose "~&Using probed value of abcl-contrib:~&'~A'.~%"
+                     contrib)
+             (setf *abcl-contrib* contrib)))))
+   (when *abcl-contrib*  ;; For bootstrap compile there will be no contrib
+     (add-contrib *abcl-contrib*)))
+
+(defun find-name-for-implementation-title (file id)
+  "For a jar FILE containing a manifest, return the name of the
+  section which annotates 'Implementation-Title' whose string value is
+  ID."
+  (declare (type pathname file))
+  (let* ((jar (java:jnew "java.util.jar.JarFile" (namestring file)))
+         (manifest (java:jcall "getManifest" jar))
+         (entries (java:jcall "toArray"
+                              (java:jcall "entrySet"
+                                          (java:jcall "getEntries" manifest)))))
+    (dolist (entry 
+              (loop :for entry :across entries
+                 :collecting entry))
+      (let ((title (java:jcall "getValue"
+                               (java:jcall "getValue" entry)
+                               "Implementation-Title")))
+        (when (string-equal title id)
+          (return-from find-name-for-implementation-title
+            (java:jcall "getKey" entry))))
+    nil)))
 
 (defun find-contrib ()
-  "Introspect runtime classpaths to find a loadable ABCL-CONTRIB."
-  (or (ignore-errors
-       (let ((system-jar (find-system-jar)))
-	 (and
-	  (probe-file (make-pathname
-			:device (list system-jar)
-			:directory '(:absolute "contrib")
-			:name "README" :type "markdown" ))
-	  system-jar)))
-      (ignore-errors
-       (find-contrib-jar))
-      (ignore-errors
-        (let ((system-jar (find-system-jar)))
-          (when system-jar
-            (probe-file (make-pathname
-                         :defaults system-jar
-                         :name (concatenate 'string
-                                            "abcl-contrib"
-                                            (subseq (pathname-name system-jar) 4)))))))
-      (some
-       (lambda (u)
+  "Introspect runtime classpaths to return a pathname containing
+  subdirectories containing ASDF definitions."
+
+  (or
+   ;; We identify the location of the directory within a jar file
+   ;; containing abcl-contrib ASDF definitions by looking for a section
+   ;; which contains the Implementation-Title "org.abcl-contrib".  The
+   ;; name of that section then identifies the relative pathname to the
+   ;; top-most directory in the Jar
+   ;;
+   ;; e.g. for an entry of the form
+   ;;
+   ;;     Name: contrib
+   ;;     Implementation-Title: org.abcl-contrib
+   ;;
+   ;; the directory 'contrib' would be searched for ASDF definitions.
+   (ignore-errors
+        (let* ((system-jar
+                (find-system-jar))
+               (relative-pathname 
+                (find-name-for-implementation-title system-jar "org.abcl-contrib")))
+          (when (and system-jar relative-pathname)
+            (merge-pathnames (pathname (concatenate 'string
+                                                   relative-pathname "/"))
+                            (make-pathname
+                             :device (list system-jar))))))
+   (ignore-errors
+     (find-contrib-jar))
+   (ignore-errors
+     (let ((system-jar (find-system-jar)))
+       (when system-jar
          (probe-file (make-pathname
-                      :defaults (java:jcall "toString" u)
-                      :name "abcl-contrib")))
-       (java:jcall "getURLs" (boot-classloader)))))
+                      :defaults system-jar
+                      :name (concatenate 'string
+                                         "abcl-contrib"
+                                         (subseq (pathname-name system-jar) 4)))))))
+   (some
+    (lambda (u)
+      (probe-file (make-pathname
+                   :defaults (java:jcall "toString" u)
+                   :name "abcl-contrib")))
+    (java:jcall "getURLs" (boot-classloader)))))
 
 (export `(find-system
           find-contrib
