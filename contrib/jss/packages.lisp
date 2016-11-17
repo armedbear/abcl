@@ -5,6 +5,7 @@
    #:*inhibit-add-to-classpath*
    #:*added-to-classpath*
    #:*do-auto-imports*
+   #:*muffle-warnings*
 
    #:invoke-restargs
    #:with-constant-signature
