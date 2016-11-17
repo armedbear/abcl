@@ -2,14 +2,14 @@
 
 (format t "~%~%")
 
-(eval-when (:compile-toplevel :load-toplevel)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (setq *inhibit-jss-optimization* nil)
   (format t "With optimization: ~s~%" (macroexpand (precompiler::precompile-form '(#"compile" 'regex.Pattern ".*") t))))
 
 (defun optimized-jss (count)
   (loop repeat count do (#"compile" 'regex.Pattern ".*")))
 
-(eval-when (:compile-toplevel :load-toplevel)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (setq *inhibit-jss-optimization* t)
   (format t "Without optimization: ~s~%" (precompiler::precompile-form '(#"compile" 'regex.Pattern ".*") t)))
 

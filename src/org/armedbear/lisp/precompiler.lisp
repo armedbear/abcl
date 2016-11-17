@@ -414,13 +414,13 @@
 		;; simplest case - we have a simple arglist with as many
 		;; arguments as call args. Transform to let.
 		(return-from precompile-function-position-lambda
-		  `((let* ,(append
+		  `(let* ,(append
 			    (loop for arg-name in arglist
 				  for arg in (mapcar #'precompile1 args)
 				  until (eq arg-name '&aux)
 				  collect (list arg-name arg))
 			    (subseq arglist (1+ arglist-length)))
-		      ,@body)))
+		      ,@body))
 		(error "Argument mismatch for lambda in function position: ~a applied to ~a" `(lambda ,arglist body) args)))))))
 
 (defmacro define-function-position-lambda-transform (body-function-name (arglist form args) &body body)

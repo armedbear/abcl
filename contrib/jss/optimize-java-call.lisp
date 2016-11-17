@@ -17,12 +17,9 @@
   (setq args (cdr args))
   (if (and (consp object) (eq (car object) 'quote))
       (let ((object (eval object)))
-	(let* ((object-as-class-name
-		 (if (symbolp object)
-		     (jss::maybe-resolve-class-against-imports object)
-		     ))
-	       (object-as-class
-		 (if object-as-class-name (find-java-class object-as-class-name))))
+	(let* ((object-as-class
+		 (or (ignore-errors (let ((*muffle-warnings* t)) (find-java-class object)))
+		     `(find-java-class ',object))))
 	  (if raw?
 	      `(jstatic-raw ,method ,object-as-class ,@args)
 	      `(jstatic ,method ,object-as-class ,@args))))
@@ -33,4 +30,6 @@
 	  `(if (symbolp ,object)
 	       (jstatic ,method (find-java-class ,object) ,@args)
 	       (jcall ,method ,object ,@args)))))
+
+
 

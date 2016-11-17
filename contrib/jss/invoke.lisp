@@ -123,6 +123,8 @@
   (defvar *do-auto-imports* t 
     "Whether to automatically introspect all Java classes on the classpath when JSS is loaded."))
 
+(defvar *muffle-warnings* t) 
+
 (defvar *imports-resolved-classes* (make-hash-table :test 'equalp))
 
 (defun find-java-class (name)
@@ -241,7 +243,7 @@ want to avoid the overhead of the dynamic dispatch."
                (with-constant-signature ,(cdr fname-jname-pairs)
                  ,@body)))))))
 
-(defun lookup-class-name (name)
+(defun lookup-class-name (name &key (muffle *muffle-warnings*))
   (setq name (string name))
   (let* (;; cant (last-name-pattern (#"compile" '|java.util.regex.Pattern| ".*?([^.]*)$"))
          ;; reason: bootstrap - the class name would have to be looked up...
@@ -263,7 +265,7 @@ want to avoid the overhead of the dynamic dispatch."
                  (ambiguous (choices)
                    (error "Ambiguous class name: ~a can be ~{~a~^, ~}" name choices)))
             (if (zerop bucket-length)
-		(progn (warn "can't find class named ~a" name) nil)
+		(progn (unless muffle (warn "can't find class named ~a" name)) nil)
                 (let ((matches (loop for el in bucket when (matches-end name el 'char=) collect el)))
                   (if (= (length matches) 1)
                       (car matches)
@@ -272,7 +274,7 @@ want to avoid the overhead of the dynamic dispatch."
                             (if (= (length matches) 1)
                                 (car matches)
                                 (if (= (length matches) 0)
-				    (progn (warn "can't find class named ~a" name) nil)
+				    (progn (unless muffle (warn "can't find class named ~a" name)) nil)
                                     (ambiguous matches))))
                           (ambiguous matches))))))))))
 
