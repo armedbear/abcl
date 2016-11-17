@@ -125,6 +125,8 @@
 
 (defvar *muffle-warnings* t) 
 
+(defvar *muffle-warnings* t) 
+
 (defvar *imports-resolved-classes* (make-hash-table :test 'equalp))
 
 (defun find-java-class (name)
@@ -288,8 +290,8 @@ want to avoid the overhead of the dynamic dispatch."
                               (group "group"))
       (loop while (hasmore entries)
          for name =  (getname (next entries))
-         with class-pattern = (#"compile" '|java.util.regex.Pattern| ".*\\.class$")
-         with name-pattern = (#"compile" '|java.util.regex.Pattern| ".*?([^.]*)$")
+         with class-pattern = (jstatic "compile" "java.util.regex.Pattern" ".*\\.class$")
+         with name-pattern = (jstatic "compile" "java.util.regex.Pattern" ".*?([^.]*)$")
          when (matches (matcher class-pattern name))
          collect
            (let* ((fullname (substring (jreplace name #\/ #\.) 0 (- (jlength name) 6)))
