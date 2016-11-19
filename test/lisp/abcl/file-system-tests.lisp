@@ -26,12 +26,12 @@
                    (if (find :asdf2 *features*)
                        (merge-pathnames 
                         (make-pathname :name (pathname-name *load-truename*))
-                        (asdf:system-relative-pathname :abcl-test-lisp "test/lisp/abcl/"))
+                        (asdf:system-relative-pathname :abcl "test/lisp/abcl/"))
                        *load-truename*)))
 
 (defparameter *this-directory*
   (if (find :asdf2 *features*)
-      (asdf:system-relative-pathname :abcl-test-lisp "test/lisp/abcl/")
+      (asdf:system-relative-pathname :abcl "test/lisp/abcl/")
       (make-pathname :host (pathname-host *load-truename*)
                      :device (pathname-device *load-truename*)
                      :directory (pathname-directory *load-truename*))))

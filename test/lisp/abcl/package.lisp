@@ -10,13 +10,13 @@
    #:pathnames-equal-p #:run-shell-command #:copy-file #:make-symbolic-link
    #:touch #:make-temporary-directory #:delete-directory-and-files
    ;;; Deprecated
-   #:do-matching #:run-matching
-   ))
+   #:do-matching #:run-matching))
+
 (in-package #:abcl.test.lisp)
 
 (defparameter *abcl-test-directory* 
   (if (find :asdf2 *features*)
-      (asdf:system-relative-pathname :abcl-test-lisp "test/lisp/abcl/")
+      (asdf:system-relative-pathname :abcl "test/lisp/abcl/")
       (make-pathname :host (pathname-host *load-truename*)
                      :device (pathname-device *load-truename*)
                      :directory (pathname-directory *load-truename*))))

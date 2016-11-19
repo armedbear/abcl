@@ -4,7 +4,7 @@
   "<git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git>")
 
 (defparameter *ansi-tests-directory*
-  (asdf:system-relative-pathname :ansi-compiled "../ansi-test/"))
+  (asdf:system-relative-pathname :abcl/test/ansi/compiled "../ansi-test/"))
 
 (defun run (&key (compile-tests nil)) 
   "Run the ANSI-TESTS suite, to be found in *ANSI-TESTS-DIRECTORY*.
@@ -12,7 +12,7 @@ Possibly running the compiled version of the tests if COMPILE-TESTS is non-NIL."
   (verify-ansi-tests)
   (mapcar (lambda (result)
             (when (second result)
-              (format t "Removed ~A.~&" (first result))))
+              (format t "~&Removed '~A'.~%" (first result))))
           (clean-tests))
   (let* ((ansi-tests-directory 
 	  *ansi-tests-directory*)

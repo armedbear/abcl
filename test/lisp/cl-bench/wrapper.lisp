@@ -9,11 +9,7 @@
   "<http://www.chez.com/emarsden/downloads/cl-bench.tar.gz>")
 
 (defparameter *cl-bench-directory*
-  (if (find :asdf2 *features*)
-      (asdf:system-relative-pathname 
-       :cl-bench "../cl-bench/")
-      (merge-pathnames #p"../cl-bench/"
-                       (component-pathname (find-system :abcl)))))
+  (asdf:system-relative-pathname :abcl "../cl-bench/"))
   
 ;;; cl-bench defines BENCH-GC and WITH-SPAWNED-THREAD in
 ;;; '*cl-bench-directory*/sysdep/setup-ablisp.lisp'.  

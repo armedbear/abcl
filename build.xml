@@ -1023,8 +1023,7 @@ ${basedir}/../cl-bench
         <arg value="--eval"/><arg value="(require (quote asdf))"/>
         <arg value="--eval"/>
           <arg value="(asdf:initialize-source-registry `(:source-registry (:directory ,*default-pathname-defaults*) :inherit-configuration)))"/>
-        <arg value="--eval"/><arg value="(asdf:load-system :abcl)"/>
-        <arg value="--eval"/><arg value="(asdf:test-system :ansi-interpreted)"/>
+        <arg value="--eval"/><arg value="(asdf:test-system :abcl/test/ansi/interpreted)"/>
         <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
@@ -1053,8 +1052,7 @@ ${basedir}/../cl-bench
         <arg value="--eval"/><arg value="(require (quote asdf))"/>
         <arg value="--eval"/>
           <arg value="(asdf:initialize-source-registry `(:source-registry (:directory ,*default-pathname-defaults*) :inherit-configuration)))"/>
-        <arg value="--eval"/><arg value="(asdf:load-system :abcl)"/>
-        <arg value="--eval"/><arg value="(asdf:test-system :ansi-compiled)"/>
+        <arg value="--eval"/><arg value="(asdf:test-system :abcl/test/ansi/compiled)"/>
         <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
@@ -1071,8 +1069,7 @@ ${basedir}/../cl-bench
         <arg value="--eval"/><arg value="(require (quote asdf))"/>
         <arg value="--eval"/>
           <arg value="(asdf:initialize-source-registry `(:source-registry (:directory ,*default-pathname-defaults*) :inherit-configuration)))"/>
-        <arg value="--eval"/><arg value="(asdf:load-system :abcl)"/>
-        <arg value="--eval"/><arg value="(asdf:test-system :abcl-test-lisp)"/>
+        <arg value="--eval"/><arg value="(asdf:test-system :abcl)"/>
         <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>
@@ -1088,9 +1085,8 @@ ${basedir}/../cl-bench
         <arg value="--noinit"/> 
         <arg value="--eval"/><arg value="(require (quote asdf))"/>
         <arg value="--eval"/>
-          <arg value="(asdf:initialize-source-registry `(:source-registry (:directory ,*default-pathname-defaults*) :inherit-configuration)))"/>
-        <arg value="--eval"/><arg value="(asdf:load-system :abcl)"/>
-        <arg value="--eval"/><arg value="(asdf:test-system :cl-bench)"/>
+          <arg value="(asdf:initialize-source-registry `(:source-registry (:directory ,*default-pathname-defaults*) :inherit-configuration))"/>
+        <arg value="--eval"/><arg value="(asdf:test-system :abcl/test/cl-bench)"/>
         <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>

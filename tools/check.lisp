@@ -40,15 +40,11 @@ known version in which the 'check.lisp' raises the error.
 ;;; XXX separate out runtime yucky top-level forms
 (require :asdf)
 (require :abcl-contrib)
-(require :asdf-install)  ;;; to push "~/.asdf-install-dir/systems/" into ASDF:*CENTRAL-REGISTRY*
-
-
 
 ;;; The ASDF definition for ANSI-COMPILED contains the ANSI-TESTS package.
 ;;; The CL-TEST package is defined by the GCL ANSI tests.
 (eval-when (:load-toplevel :execute)
-  (asdf:load-system :abcl)
-  (asdf:load-system :ansi-compiled)
+  (asdf:load-system :abcl/test/ansi/compiled)
   (ansi-tests:load-tests)) ;; TODO figure out how to not load all the tests
 
 (defparameter *test*

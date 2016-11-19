@@ -1,28 +1,16 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP -*-
-;;; $Id$
 
 (require :asdf)
 (in-package :asdf)
 
-#+abcl
-(eval-when (:load-toplevel :execute)
-  (require :abcl-contrib)
-  (asdf:load-system :quicklisp-abcl))
+(defsystem :abcl :version "1.5.0"
+           :in-order-to ((test-op (test-op "abcl/test/lisp"))))
 
-;;; Wrapper for all ABCL ASDF definitions.
-(defsystem :abcl :version "1.5.0")
-
-;;;  Run via (asdf:operate 'asdf:test-op :abcl :force t)
-(defmethod perform ((o test-op) (c (eql (find-system :abcl))))
-  (load-system (find-system :abcl-test-lisp))
-  (operate 'test-op :abcl-test-lisp))
-
-;;; Test ABCL with the Lisp unit tests collected in "test/lisp/abcl"
-;;;
-;;; We guard with #+abcl for tests that other Lisps cannot load.  This
-;;; could be possibly be done at finer granularity in the files
-;;; themselves.
-(defsystem :abcl-test-lisp :version "1.5.0" :components
+(defsystem :abcl/test/lisp :version "1.5.0"
+           :description "Test ABCL with the its own collection of unit tests."
+           :perform  (test-op (o s)
+                              (uiop:symbol-call :abcl.test.lisp '#:run))
+           :components
 	   ((:module abcl-rt 
                      :pathname "test/lisp/abcl/" :serial t :components
 		     ((:file "rt-package") 
@@ -74,27 +62,22 @@
                       #+abcl
                       (:file "package-local-nicknames-tests")))))
 
-(defmethod perform ((o test-op) (c (eql (find-system 'abcl-test-lisp))))
-   "Invoke tests with (asdf:oos 'asdf:test-op :abcl-test-lisp)."
-   (funcall (intern (symbol-name 'run) :abcl.test.lisp)))
-
-;;;;
-;;;; ASDF definitions and the ANSI-TEST
-;;;;
-
-;;; We refer to the ANSI-TESTS source tree, which isn't shipped as
-;;; part of ABCL, but may be obtained at 
+;;;
+;;; ASDF definitions and the ANSI-TEST suite
+;;;
+;;; Below refer to the ANSI-TEST source tree, which isn't included as
+;;; part of ABCL, but may be obtained at
 ;;; <git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git>
-
-;;; We currently require that the ANSI-TESTS to be in a sibling
-;;; directory named "ansi-tests" which should be manually synced with
-;;; the contents of the SVN repository listed above.
-
-;;; The ASDF definition for ABCL.TEST.ANSI defines VERIFY-ANSI-TESTS
-;;; which provides a more useful diagnostic, but I can't seem to find
-;;; a way to hook this into the ASDF:LOAD-OP phase
-(defsystem :ansi-rt
-  :description "Enapsulation of the REGRESSION-TEST framework use by ~
+;;; For the 'abcl/test/ansi/*' definitions to work, we require that
+;;; the ANSI-TEST to be in a sibling directory named "ansi-tests"
+;;; which should be manually synced with the contents of the SVN
+;;; repository listed above.
+;;; The ABCL.TEST.ANSI defines a function VERIFY-ANSI-TESTS to check
+;;; whether the test suite is present, which provides a more useful
+;;; diagnostic, but I can't seem to find a way to hook this into the
+;;; ASDF:LOAD-OP phase.
+(defsystem :abcl/ansi-rt
+  :description "Enapsulation of the REGRESSION-TEST framework used by ~
 the ANSI test suite, so that we may build on its 'API'.
 
 Requires that the contents of <git+https://gitlab.common-lisp.net/ansi-test/ansi-test.git> ~
@@ -104,71 +87,54 @@ be in a directory named '../ansi-test/'."
   :components ((:file "rt-package")
                (:file "rt" :depends-on (rt-package))))
 
-(defsystem :ansi-interpreted 
-  :version "1.2" 
-  :description "Test ABCL with the interpreted ANSI tests." 
-  :depends-on (ansi-rt) :components 
+(defsystem :abcl/test/ansi
+  :depends-on (abcl/ansi-rt)
+  :components 
   ((:module ansi-tests :pathname "test/lisp/ansi/" :components
             ((:file "packages")
              (:file "abcl-ansi" :depends-on ("packages"))
              (:file "parse-ansi-errors" :depends-on ("abcl-ansi"))))))
-(defmethod perform :before ((o test-op) (c (eql (find-system :ansi-interpreted))))
-  (load-system :ansi-interpreted))
 
-(defmethod perform :after ((o load-op) (c (eql (find-system :ansi-interpreted))))
-  (funcall (intern (symbol-name 'load-tests) :abcl.test.ansi)))
-
-(defmethod perform ((o test-op) (c (eql (find-system :ansi-interpreted))))
-  (funcall (intern (symbol-name 'run) :abcl.test.ansi)
-	   :compile-tests nil))
-
-(defsystem :ansi-compiled :version "1.2" 
+(defsystem :abcl/test/ansi/interpreted 
+  :version "1.2" 
+  :description "Test ABCL with the interpreted ANSI tests." 
+  :depends-on (abcl/test/ansi)
+  :perform (test-op (o s)
+                    (uiop:symbol-call :abcl.test.ansi 'run :compile-tests nil)))
+  
+(defsystem :abcl/test/ansi/compiled :version "1.2" 
            :description "Test ABCL with the compiled ANSI tests." 
-           :depends-on (ansi-rt)
+           :depends-on (abcl/test/ansi)
+           :perform (test-op (o s)
+                             (uiop:symbol-call :abcl.test.ansi 'run :compile-tests t))
            :components 
            ((:module ansi-tests :pathname "test/lisp/ansi/" :components
                      ((:file "packages")
                       (:file "abcl-ansi" :depends-on ("packages"))
                       (:file "parse-ansi-errors" :depends-on ("abcl-ansi"))))))
 
-(defmethod perform :before ((o test-op) (c (eql (find-system :ansi-compiled))))
-  (load-system :ansi-compiled))
-(defmethod perform ((o test-op) (c (eql (find-system :ansi-compiled))))
-  (funcall (intern (symbol-name 'run) :abcl.test.ansi)
-	   :compile-tests t))
-
-(defsystem :cl-bench 
+(defsystem :abcl/test/cl-bench 
   :description "Test ABCL with CL-BENCH."
-  :components ((:module cl-bench-package :pathname "../cl-bench/"
+  :perform (test-op (o s)
+                    (uiop:symbol-call :abcl.test.cl-bench 'run))
+  :components ((:module package :pathname "../cl-bench/"
                         :components ((:file "defpackage")))
-               (:module cl-bench-wrapper :pathname "test/lisp/cl-bench/" 
-                        :depends-on (cl-bench-package) :components
+               (:module wrapper :pathname "test/lisp/cl-bench/" 
+                        :depends-on (package) :components
                         ((:file "wrapper")))))
-(defmethod perform :before ((o test-op) (c (eql (find-system :cl-bench))))
-  (load-system :cl-bench))
-(defmethod perform ((o test-op) (c (eql (find-system :cl-bench))))
-  (funcall (intern (symbol-name 'run) :abcl.test.cl-bench)))
  
-;;; Build ABCL from a Lisp.
-;;; aka the "Lisp-hosted build system"
+;;; aka the "Lisp-hosted build system" which doesn't share build
+;;; instructions with the canonical build system in <file:build.xml>
 ;;; Works for: abcl, sbcl, clisp, cmu, lispworks, allegro, openmcl
-(defsystem :build-abcl :components 
-	   ((:module build :pathname ""  :components
-		     ((:file "build-abcl") 
-		      (:file "customizations" :depends-on ("build-abcl"))))))
-
-(defsystem :abcl-contrib
-  ;; :version "1.1"
-  :components ((:static-file "README")))
-  ;; #+nil ((:module source :pathname "src/org/armedbear/lisp/" :components 
-  ;;                       ((:file  "abcl-contrib")
-  ;;                        #+nil::needs-abcl-asdf (:iri "jar-file:dist/abcl-contrib.jar"))))
-
-;; XXX Currently need to force load via (asdf:load-system :abcl-contrib :force t)
-(defmethod perform ((o load-op) (c (eql (find-system :abcl-contrib))))
- (require :abcl-contrib))
+(defsystem :abcl/build
+  :description "Build ABCL from a Lisp.  Not the canonical build recipe."
+  :components
+  ((:module build :pathname ""  :components
+            ((:file "build-abcl") 
+             (:file "customizations" :depends-on ("build-abcl"))))))
 
 (defsystem :abcl/documentation
+  :description "Tools to generate LaTeX source from docstrings."
   :depends-on (swank)
   :components
   ((:module grovel :pathname "doc/manual/" :serial t
