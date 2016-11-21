@@ -57,6 +57,7 @@
         (push thing new-lambda-list))
       (setf lambda-list (nreverse new-lambda-list))))
   `(progn
+     (record-source-information-for-type ',name :type)
      (setf (get ',name 'deftype-definition)
            #'(lambda ,lambda-list (block ,name ,@body)))
      ',name))
