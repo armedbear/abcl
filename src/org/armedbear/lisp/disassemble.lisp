@@ -78,27 +78,54 @@
                       (class-resource-path class)))
     (read-byte-array-from-stream stream)))
 
+;; disassemble more things
+(defun disassemble-function (arg)
+  (flet ((disassemble-bytes (bytes) (funcall (or *disassembler-function* 'system::disassemble-class-bytes) bytes)))
+    (let ((function (cond ((java:jcall "isInstance" (java:jclass "org.armedbear.lisp.CompiledClosure") arg)
+			   (return-from disassemble-function "don't know how to disassemble CompiledClosure"))
+			  ((java::java-object-p arg) 
+			   (cond ((java::jinstance-of-p arg "java.lang.Class")
+				  arg)
+				 ((java::jinstance-of-p arg "java.lang.reflect.Method")
+				  (java::jmethod-declaring-class arg))
+				 ;; use isInstance instead of jinstance-of-p
+				 ;; because the latter checked java-object-p
+				 ;; which fails since its a lisp object
+				 ((and (java:jcall "isInstance"  (java:jclass "org.armedbear.lisp.Closure") arg)
+				       (not (java:jcall "isInstance"  (java:jclass "org.armedbear.lisp.CompiledClosure") arg)))
+				  (return-from disassemble-function 
+				    (with-output-to-string (s)
+				      (format s "Not a compiled function: ~%")
+				      (pprint (java:jcall "getBody" arg) s))))
+				 ))
+			  ((functionp arg)
+			   arg)
+			  ((symbolp arg)
+			   (or (macro-function arg) (symbol-function arg)))
+			  (t arg))))
+      (when (typep function 'generic-function)
+	(setf function (mop::funcallable-instance-function function)))
+      (print function)
+      (let ((bytes (and nil (and function (not (java::java-object-p function)) (system::function-class-bytes  function)))))
+	;; we've got bytes here then we've covered the case that the diassembler already handled
+	;; If not then we've either got a primitive (in function) or we got passed a method object as arg.
+	(if bytes
+	    (disassemble-bytes bytes)
+	    (let ((class (if (java:java-object-p function) function (java:jcall "getClass" function))))
+	      (let ((classloader (java:jcall "getClassLoader" class)))
+		(if (or (java:jinstance-of-p classloader "org.armedbear.lisp.MemoryClassLoader")
+			(java:jinstance-of-p classloader "org.armedbear.lisp.FaslClassLoader"))
+		    (disassemble-bytes 
+		     (java:jcall "getFunctionClassBytes" classloader class))
+		    (disassemble-bytes 
+		     (java:jstatic "toByteArray" "com.google.common.io.ByteStreams" 
+				   (java:jcall-raw
+				    "getResourceAsStream"
+				    (java:jcall-raw "getClassLoader" class)
+				    (class-resource-path class))))))))))))
+
 (defun disassemble (arg)
-  (require-type arg '(OR FUNCTION
-                      SYMBOL
-                      (CONS (EQL SETF) (CONS SYMBOL NULL))
-                      (CONS (EQL LAMBDA) LIST)))
-  (let ((function (cond ((functionp arg)
-                         arg)
-                        ((symbolp arg)
-                         (or (macro-function arg) (symbol-function arg))))))
-    (when (typep function 'generic-function)
-      (setf function (mop::funcallable-instance-function function)))
-    (when (functionp function)
-      (unless (compiled-function-p function)
-        (setf function (compile nil function)))
-      (let ((class-bytes (or (function-class-bytes function)
-                             (class-bytes (java:jcall-raw "getClass" function)))))
-        (if class-bytes
-            (let ((disassembler (or *disassembler-function*
-                                    (choose-disassembler))))
-              (and disassembler (funcall disassembler class-bytes)))
-            (%format t "; Disassembly is not available.~%"))))))
+  (print-lines-with-prefix (disassemble-function arg)))
 
 (defun print-lines-with-prefix (string)
   (with-input-from-string (stream string)
@@ -110,7 +137,7 @@
         (terpri)))))
 
 (defun external-disassemble (object)
-  (print-lines-with-prefix (disassemble-class-bytes object)))
+  (disassemble-class-bytes object))
 
 (defun external-test ()
   (ignore-errors
@@ -124,7 +151,7 @@
          ;; this is to support both the 1.X and subsequent releases
          (flags (ignore-errors (java:jfield "org.objectweb.asm.ClassReader" "SKIP_DEBUG"))))
     (java:jcall-raw "accept" reader tracer (or flags java:+false+))
-    (print-lines-with-prefix (java:jcall "toString" writer))))
+    (java:jcall "toString" writer)))
 
 (defun objectweb-test ()
   (ignore-errors
