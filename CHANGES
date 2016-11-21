@@ -2,7 +2,7 @@ Version 1.5.0
 =============
 <http://abcl.org/svn/trunk/>
 <http://gitlab.common-lisp.net/abcl/abcl/>
-<http://github.com/easye/abcl/>
+<http://github.com/armedbear/abcl/>
 Unreleased
 
 Fixes
@@ -14,6 +14,12 @@ Fixes
 
 * ABCL-ASDF uses the value of the reported Maven home to look for
   libraries, fixing loading CFFI under FreeBSD 11-RELEASE
+
+Updates
+-------
+
+* ASDF 3.1.7.35
+
 
 Version 1.4.0
 =============
