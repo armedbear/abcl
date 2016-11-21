@@ -299,6 +299,21 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                                             (list sym-or-syms))))))
   (precompile-toplevel-form form stream compile-time-too))
 
+
+(declaim (ftype (function (t t t) t) process-record-source-information))
+
+(defun process-record-source-information (form stream compile-time-too)
+  (declare (ignore stream compile-time-too))
+  (let* ((name (second form))
+	 (type (third form)))
+    (when (quoted-form-p name) (setq name (second name)))
+    (when (quoted-form-p type) (setq type (second type)))
+    (let ((sym (if (consp name) (second name) name)))
+      `(put ',sym 'sys::source (cons '(,type ,(namestring *source*) ,*source-position*)
+					 (get ',sym  'sys::source nil)))
+      )))
+
+	  
 (declaim (ftype (function (t t t) t) process-toplevel-mop.ensure-method))
 (defun process-toplevel-mop.ensure-method (form stream compile-time-too)
   (declare (ignore stream))
@@ -358,19 +373,30 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
       ;; time."
       (let ((name (second form)))
         (%defvar name)))
-  form)
+  (let ((name (second form)))
+    `(progn 
+       (put ',name 'sys::source (cons (list :variable ,(namestring *source*) ,*source-position*) (get ',name  'sys::source nil)))
+      ,form)))
 
 (declaim (ftype (function (t t t) t) process-toplevel-defpackage/in-package))
 (defun process-toplevel-defpackage/in-package (form stream compile-time-too)
   (declare (ignore stream compile-time-too))
   (note-toplevel-form form)
-  (setf form
-        (precompiler:precompile-form form nil *compile-file-environment*))
-  (eval form)
-  ;; Force package prefix to be used when dumping form.
-  (let ((*package* +keyword-package+))
-    (output-form form))
-  nil)
+  (let ((defpackage-name (and (eq (car form) 'defpackage) (intern (string (second form)) :keyword))) )
+    (setf form
+	  (precompiler:precompile-form form nil *compile-file-environment*))
+    (eval form)
+    ;; Force package prefix to be used when dumping form.
+    (let ((*package* +keyword-package+))
+      (output-form form))
+    ;; a bit ugly here. Since we precompile, and added record-source-information we need to know where it is.
+    ;; The defpackage is at top, so we know where the name is (though it is a string by now)
+    ;; (if it is a defpackage)
+    (if defpackage-name
+	`(put ,defpackage-name 'sys::source
+	      (cons '(:package ,(namestring *source*) ,*source-position*)
+		    (get ,defpackage-name 'sys::source nil)))
+	nil)))
 
 (declaim (ftype (function (t t t) t) process-toplevel-declare))
 (defun process-toplevel-declare (form stream compile-time-too)
@@ -388,7 +414,10 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
   (declare (ignore stream compile-time-too))
   (note-toplevel-form form)
   (eval form)
-  form)
+  `(progn
+     (put ',(second form) 'sys::source (cons '(,(second form) ,(namestring *source*) ,*source-position*) (get ',(second form)  'sys::source nil)))
+     ,form)
+  )
 
 (declaim (ftype (function (t t t) t) process-toplevel-eval-when))
 (defun process-toplevel-eval-when (form stream compile-time-too)
@@ -431,8 +460,22 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
           *toplevel-setf-functions*))
   (let ((*compile-print* nil))
     (process-toplevel-form (macroexpand-1 form *compile-file-environment*)
-                           stream compile-time-too))
-  nil)
+  			   stream compile-time-too))
+  (let* ((sym (if (consp (second form)) (second (second form)) (second form))))
+    (when (eq (car form) 'defgeneric)
+      `(progn
+	 (put ',sym 'sys::source
+	      (cons  '((:generic-function ,(second form))  ,(namestring *source*) ,*source-position*) (get ',sym  'sys::source nil)))
+	 ,@(loop for method-form in (cdddr form)
+		 when (eq (car method-form) :method)
+		   collect
+		   (multiple-value-bind (function-name qualifiers lambda-list specializers documentation declarations body) 
+		       (mop::parse-defmethod `(,(second form) ,@(rest method-form)))
+		     `(put ',sym 'sys::source
+			   (cons `((:method ,',sym ,',qualifiers ,',specializers) ,,(namestring *source*) ,,*source-position*)
+				 (get ',sym  'sys::source nil)))))
+	 ))))
+
 
 (declaim (ftype (function (t t t) t) process-toplevel-locally))
 (defun process-toplevel-locally (form stream compile-time-too)
@@ -476,12 +519,17 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                 (make-macro ',name
                             (sys::get-fasl-function *fasl-loader*
                                                     ,saved-class-number)))
-          `(fset ',name
-                 (make-macro ',name
-                             (sys::get-fasl-function *fasl-loader*
-                                                     ,saved-class-number))
-                 ,*source-position*
-                 ',(third form))))))
+	  `(progn
+	     (put ',name 'sys::source
+		  (cons '(:macro  ,(namestring *source*) ,*source-position*) (get ',name  'sys::source nil)))
+	     (fset ',name
+		   (make-macro ',name
+			       (sys::get-fasl-function *fasl-loader*
+						       ,saved-class-number))
+		   ,*source-position*
+		   ',(third form)
+		   ,(%documentation name 'cl:function)
+		   ))))))
 
 (declaim (ftype (function (t t t) t) process-toplevel-defun))
 (defun process-toplevel-defun (form stream compile-time-too)
@@ -521,13 +569,16 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                     compiled-function)
                (when compile-time-too
                  (eval form))
-               (setf form
-                     `(fset ',name
+	       (let ((sym (if (consp name) (second name) name)))
+		 (setf form
+		       `(progn
+			 (put ',sym 'sys::source (cons '((:function ,name)  ,(namestring *source*) ,*source-position*) (get ',sym  'sys::source nil)))		       
+			 (fset ',name
                             (sys::get-fasl-function *fasl-loader*
                                                     ,saved-class-number)
                             ,*source-position*
                             ',lambda-list
-                            ,doc)))
+                            ,doc)))))
               (t
                (compiler-warn "Unable to compile function ~A.  Using interpreted form instead.~%" name)
                (when internal-compiler-errors
@@ -599,7 +650,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                 (REQUIRE precompile-toplevel-form)
                 (SHADOW precompile-toplevel-form)
                 (%SET-FDEFINITION precompile-toplevel-form)
-                (MOP::ENSURE-METHOD process-toplevel-mop.ensure-method)))
+                (MOP::ENSURE-METHOD process-toplevel-mop.ensure-method)
+		(record-source-information-for-type process-record-source-information)))
   (install-toplevel-handler (car pair) (cadr pair)))
 
 (declaim (ftype (function (t stream t) t) process-toplevel-form))
@@ -896,7 +948,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
               ;; copy remaining content
               (loop for line = (read-line in nil :eof)
                  while (not (eq line :eof))
-                 do (write-line line out)))))
+		    do (write-line line out)))))
         (delete-file temp-file)
         (when (find :windows *features*)
           (remove-zip-cache-entry output-file))

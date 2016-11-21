@@ -39,4 +39,5 @@
   (when (special-variable-p symbol) ;;TODO astalla also check local declarations?
     (error 'program-error "~S has already been defined as a global variable." symbol))
   `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (record-source-information-for-type ',symbol :symbol-macro)
      (%define-symbol-macro ',symbol ',expansion)))
