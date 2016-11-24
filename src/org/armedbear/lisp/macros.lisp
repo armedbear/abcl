@@ -50,10 +50,14 @@
   `(return-from nil ,result))
 
 (defmacro defconstant (name initial-value &optional docstring)
-  `(%defconstant ',name ,initial-value ,docstring))
+  `(progn
+     (record-source-information-for-type ',name :constant)
+     (%defconstant ',name ,initial-value ,docstring)))
 
 (defmacro defparameter (name initial-value &optional docstring)
-  `(%defparameter ',name ,initial-value ,docstring))
+  `(progn
+     (record-source-information-for-type ',name :variable)
+     (%defparameter ',name ,initial-value ,docstring)))
 
 (defmacro truly-the (type value)
   `(the ,type ,value))
@@ -177,6 +181,7 @@
 
 (defmacro defvar (var &optional (val nil valp) (doc nil docp))
   `(progn
+     (sys::record-source-information-for-type ',var :variable)
      (%defvar ',var)
      ,@(when valp
          `((unless (boundp ',var)

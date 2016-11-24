@@ -70,6 +70,18 @@
     (cond ((symbolp name)
            (put name '%source source)))))
 
+(defun record-source-information-for-type (name type &optional source-pathname source-position)
+  (unless SYS::*LOAD-TRUENAME-FASL*
+    (unless source-pathname
+      (setf source-pathname (or *source* :top-level)))
+    (unless source-position
+      (setf source-position *source-position*))
+    (let ((source (if source-position
+		      (list source-pathname source-position)
+		      (list source-pathname))))
+      (let ((sym (if (consp name) (second name) name)))
+	(put sym 'sys::source (cons `(,type ,(if (symbolp (car source)) (car source) (namestring (car source))) ,(second source)) (get sym  'sys::source nil)))))))
+
 ;; Redefined in trace.lisp.
 (defun trace-redefined-update (&rest args)
   (declare (ignore args))
