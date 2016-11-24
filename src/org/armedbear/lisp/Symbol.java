@@ -3116,6 +3116,8 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("PRECEDENCE-LIST");
   public static final Symbol PUTHASH =
     PACKAGE_SYS.addExternalSymbol("PUTHASH");
+  public static final Symbol RECORD_SOURCE_INFORMATION_FOR_TYPE =
+    PACKAGE_SYS.addExternalSymbol("RECORD-SOURCE-INFORMATION-FOR-TYPE");
   public static final Symbol SET_CHAR =
     PACKAGE_SYS.addExternalSymbol("SET-CHAR");
   public static final Symbol _SET_CLASS_SLOTS =
@@ -3131,6 +3133,8 @@ public class Symbol extends LispObject implements java.io.Serializable
   public static final Symbol SLOTS = PACKAGE_SYS.addExternalSymbol("SLOTS");
   public static final Symbol SLOT_DEFINITION =
     PACKAGE_SYS.addExternalSymbol("SLOT-DEFINITION");
+  public static final Symbol __SOURCE =
+    PACKAGE_SYS.addInternalSymbol("SOURCE");
   public static final Symbol STD_SLOT_BOUNDP =
     PACKAGE_SYS.addExternalSymbol("STD-SLOT-BOUNDP");
   public static final Symbol STD_SLOT_VALUE =
@@ -3227,6 +3231,7 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addInternalSymbol("READERS");
   public static final Symbol REQUIRED_ARGS =
     PACKAGE_SYS.addInternalSymbol("REQUIRED-ARGS");
+  // DEPRECATED: to be removed with abcl-1.7
   public static final Symbol _SOURCE =
     PACKAGE_SYS.addInternalSymbol("%SOURCE");
   public static final Symbol SOCKET_STREAM =
