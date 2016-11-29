@@ -114,7 +114,7 @@ Emits warnings if not able to find a suitable executable."
     (warn "Failed to find Maven executable to determine Aether library location."))
   (some 
    (lambda (d)
-     (when (directory (merge-pathnames "maven-core-*.jar" d))
+     (when (directory (merge-pathnames "maven-core*.jar" d))
        (truename d)))
    (list (make-pathname :defaults (merge-pathnames "../lib/" (find-mvn))
                         :name nil :type nil)
