@@ -267,7 +267,9 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
   ;; it always evaluates to the same value."
   (note-toplevel-form form)
   (eval form)
-  form)
+  `(progn
+     (put ',(second form) 'sys::source (cons '(,(second form) ,(namestring *source*) ,*source-position*) (get ',(second form)  'sys::source nil)))
+     ,form))
 
 (declaim (ftype (function (t t t) t) process-toplevel-quote))
 (defun process-toplevel-quote (form stream compile-time-too)
@@ -310,9 +312,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (when (quoted-form-p type) (setq type (second type)))
     (let ((sym (if (consp name) (second name) name)))
       `(put ',sym 'sys::source (cons '(,type ,(namestring *source*) ,*source-position*)
-					 (get ',sym  'sys::source nil)))
-      )))
-
+					 (get ',sym  'sys::source nil))))))
 	  
 (declaim (ftype (function (t t t) t) process-toplevel-mop.ensure-method))
 (defun process-toplevel-mop.ensure-method (form stream compile-time-too)
@@ -416,8 +416,12 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
   (eval form)
   `(progn
      (put ',(second form) 'sys::source (cons '(,(second form) ,(namestring *source*) ,*source-position*) (get ',(second form)  'sys::source nil)))
+<<<<<<< HEAD
      ,form)
   )
+=======
+     ,form))
+>>>>>>> master
 
 (declaim (ftype (function (t t t) t) process-toplevel-eval-when))
 (defun process-toplevel-eval-when (form stream compile-time-too)
@@ -465,16 +469,27 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (when (eq (car form) 'defgeneric)
       `(progn
 	 (put ',sym 'sys::source
+<<<<<<< HEAD
 	      (cons  '((:generic-function ,(second form))  ,(namestring *source*) ,*source-position*) (get ',sym  'sys::source nil)))
+=======
+	      (cons  '((:generic-function ,(second form)) ,(namestring *source*) ,*source-position*) (get ',sym  'sys::source nil)))
+>>>>>>> master
 	 ,@(loop for method-form in (cdddr form)
 		 when (eq (car method-form) :method)
 		   collect
 		   (multiple-value-bind (function-name qualifiers lambda-list specializers documentation declarations body) 
 		       (mop::parse-defmethod `(,(second form) ,@(rest method-form)))
+<<<<<<< HEAD
 		     `(put ',sym 'sys::source
 			   (cons `((:method ,',sym ,',qualifiers ,',specializers) ,,(namestring *source*) ,,*source-position*)
 				 (get ',sym  'sys::source nil)))))
 	 ))))
+=======
+                     ;;; FIXME: style points for refactoring double backquote to "normal" form
+		     `(put ',sym 'sys::source
+			   (cons `((:method ,',sym ,',qualifiers ,',specializers) ,,(namestring *source*) ,,*source-position*)
+				 (get ',sym  'sys::source nil)))))))))
+>>>>>>> master
 
 
 (declaim (ftype (function (t t t) t) process-toplevel-locally))
@@ -528,8 +543,12 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 						       ,saved-class-number))
 		   ,*source-position*
 		   ',(third form)
+<<<<<<< HEAD
 		   ,(%documentation name 'cl:function)
 		   ))))))
+=======
+		   ,(%documentation name 'cl:function)))))))
+>>>>>>> master
 
 (declaim (ftype (function (t t t) t) process-toplevel-defun))
 (defun process-toplevel-defun (form stream compile-time-too)

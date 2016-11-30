@@ -359,6 +359,7 @@
           ((or (eq *dd-type* 'vector)
                (and (consp *dd-type*) (eq (car *dd-type*) 'vector)))
            `((declaim (ftype (function * ,type) ,accessor-name))
+	     (record-source-information-for-type ',accessor-name '(:structure-reader ,*dd-name*))
              (setf (symbol-function ',accessor-name)
                    (make-vector-reader ,index))
 	     (record-source-information-for-type ',accessor-name '(:structure-reader ,*dd-name*))

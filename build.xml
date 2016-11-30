@@ -685,12 +685,14 @@ will compile (if necessary) and load JSS.
     <property name="quicklisp.common-lisp.fasls"
               value="${user.home}/.cache/common-lisp/"/>
     <target name="abcl.clean.application.fasls">
-      <echo>WARNING:  This target is removing local application inter-Lisp fasls, forcing recompilation.
-      </echo>
-      <echo>Deleting local SLIME fasls under ${slime.fasls}</echo>
-      <delete dir="${slime.fasls}"/>
-      <echo>Deleting local Quicklisp fasls under ${quicklisp.common-lisp.fasls}</echo>
-      <delete dir="${quicklisp.common-lisp.fasls}"/>
+      <echo>Deleting ABCL SLIME fasls under ${slime.fasls}</echo>
+      <delete>
+        <fileset dir="${slime.fasls}" includes="**/*.abcl"/>
+      </delete>
+      <echo>Deleting ABCL Quicklisp fasls under ${quicklisp.common-lisp.fasls}</echo>
+      <delete>
+        <fileset dir="${quicklisp.common-lisp.fasls}" includes="**/*.abcl"/>
+      </delete>
     </target>
 
     <target name="abcl.dist" depends="abcl.jar">
