@@ -35,9 +35,11 @@
 
 (defvar *disassembler-function* NIL)
 
+;; default is :external, jad, which is what the abcl java code calls
+
 (defvar *disassemblers*
-  `((:objectweb . objectweb-test)
-    (:external . external-test)))
+  `((:objectweb . objectweb-disassemble)
+    (:external . disassemble-class-bytes)))
 
 (defun choose-disassembler (&optional name)
   (setf *disassembler-function*
@@ -78,36 +80,38 @@
                       (class-resource-path class)))
     (read-byte-array-from-stream stream)))
 
-;; disassemble more things
+;; alanr: disassemble more things
 (defun disassemble-function (arg)
-  (flet ((disassemble-bytes (bytes) (funcall (or *disassembler-function* 'system::disassemble-class-bytes) bytes)))
-    (let ((function (cond ((java:jcall "isInstance" (java:jclass "org.armedbear.lisp.CompiledClosure") arg)
-			   (return-from disassemble-function "don't know how to disassemble CompiledClosure"))
-			  ((java::java-object-p arg) 
+  (flet ((disassemble-bytes (bytes) (funcall (or *disassembler-function* 'disassemble-class-bytes) bytes)))
+    (let ((function (cond ((java::java-object-p arg) 
 			   (cond ((java::jinstance-of-p arg "java.lang.Class")
 				  arg)
 				 ((java::jinstance-of-p arg "java.lang.reflect.Method")
 				  (java::jmethod-declaring-class arg))
-				 ;; use isInstance instead of jinstance-of-p
-				 ;; because the latter checked java-object-p
-				 ;; which fails since its a lisp object
-				 ((and (java:jcall "isInstance"  (java:jclass "org.armedbear.lisp.Closure") arg)
-				       (not (java:jcall "isInstance"  (java:jclass "org.armedbear.lisp.CompiledClosure") arg)))
-				  (return-from disassemble-function 
-				    (with-output-to-string (s)
-				      (format s "Not a compiled function: ~%")
-				      (pprint (java:jcall "getBody" arg) s))))
 				 ))
 			  ((functionp arg)
 			   arg)
 			  ((symbolp arg)
 			   (or (macro-function arg) (symbol-function arg)))
 			  (t arg))))
+
       (when (typep function 'generic-function)
 	(setf function (mop::funcallable-instance-function function)))
-      (print function)
-      (let ((bytes (and nil (and function (not (java::java-object-p function)) (system::function-class-bytes  function)))))
-	;; we've got bytes here then we've covered the case that the diassembler already handled
+      ;; use isInstance instead of jinstance-of-p
+      ;; because the latter checked java-object-p
+      ;; which fails since its a lisp object
+      (when (and (java:jcall "isInstance"  (java:jclass "org.armedbear.lisp.Closure") function)
+		 (not (java:jcall "isInstance"  (java:jclass "org.armedbear.lisp.CompiledClosure") function)))
+	(return-from disassemble-function 
+	  (with-output-to-string (s)
+	    (format s "Not a compiled function: ~%")
+	    (pprint (java:jcall "getBody" function) s))))
+      (let ((bytes (and (java:jcall "isInstance" (java:jclass "org.armedbear.lisp.CompiledClosure") function)
+			(equalp (java::jcall "getName" (java::jobject-class 
+							(java:jcall "getClassLoader" (java::jcall "getClass" function))))
+				"org.armedbear.lisp.FaslClassLoader")
+			(fasl-compiled-closure-class-bytes function))))
+	;; we've got bytes here then we've covered the case that the disassembler already handled
 	;; If not then we've either got a primitive (in function) or we got passed a method object as arg.
 	(if bytes
 	    (disassemble-bytes bytes)
@@ -124,6 +128,23 @@
 				    (java:jcall-raw "getClassLoader" class)
 				    (class-resource-path class))))))))))))
 
+;; PITA. make loadedFrom public
+(defun get-loaded-from (function)
+  (let* ((jfield (find "loadedFrom" (java:jcall "getDeclaredFields" (java:jclass "org.armedbear.lisp.Function")) 
+		       :key 'java:jfield-name :test 'equal)))
+    (java:jcall "setAccessible" jfield java:+true+)
+    (java:jcall "get" jfield function)))
+
+;; because getFunctionClassBytes gets a null pointer exception
+(defun fasl-compiled-closure-class-bytes (function)
+  (let* ((loaded-from (get-loaded-from function))
+	 (class-name (subseq (java:jcall "getName" (java:jcall "getClass" function)) (length "org.armedbear.lisp.")))
+	 (url (java:jnew "java.net.URL" (format nil "jar:file:~a!/~a.cls" (namestring loaded-from) class-name))))
+    (java:jstatic "toByteArray" "com.google.common.io.ByteStreams" (java:jcall "openStream" url))))
+
+;; closure bindings
+;; (get-java-field (elt (#"get" (elt (#"getFields" (#"getClass" #'foo)) 0) #'foo) 0) "value") 
+
 (defun disassemble (arg)
   (print-lines-with-prefix (disassemble-function arg)))
 
@@ -136,13 +157,6 @@
         (write-string line)
         (terpri)))))
 
-(defun external-disassemble (object)
-  (disassemble-class-bytes object))
-
-(defun external-test ()
-  (ignore-errors
-    (and (disassemble-class-bytes #'cons) #'external-disassemble)))
-
 (defun objectweb-disassemble (object)
   (let* ((reader (java:jnew "org.objectweb.asm.ClassReader" object))
          (writer (java:jnew "java.io.StringWriter"))
@@ -153,6 +167,3 @@
     (java:jcall-raw "accept" reader tracer (or flags java:+false+))
     (java:jcall "toString" writer)))
 
-(defun objectweb-test ()
-  (ignore-errors
-    (and (java:jclass "org.objectweb.asm.ClassReader") #'objectweb-disassemble)))
