@@ -65,7 +65,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @titlepage
 @title ASDF: Another System Definition Facility
-@subtitle Manual for Version 3.1.7.35
+@subtitle Manual for Version 3.1.7.40
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
@@ -82,7 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @node Top, Introduction, (dir), (dir)
 @top ASDF: Another System Definition Facility
 @ifnottex
-Manual for Version 3.1.7.10
+Manual for Version 3.1.7.37
 @end ifnottex
 
 
@@ -2124,25 +2124,21 @@ Operations are invoked on systems via @code{operate}.
 @code{operate} invokes @var{operation} on @var{system}.
 @code{oos} is a synonym for @code{operate} (it stands for operate-on-system).
 
-@var{operation} is a symbol that is passed,
-along with the supplied @var{initargs},
-to @code{make-operation} (which will call @code{make-instance})
+@var{operation} is an operation designator:
+it can be an operation object itself, or, typically,
+a symbol that is passed to @code{make-operation} (which will call @code{make-instance}),
 to create the operation object.
-@var{component} is a component designator,
-usually a string or symbol that designates a system,
-sometimes a list of strings or symbols that designate a subcomponent of a system.
+@var{component} is a component designator:
+it can be a component object itself, or, typically,
+a string or symbol (to be @code{string-downcase}d) that names a system,
+more rarely a list of strings or symbols that designate a subcomponent of a system.
 
-The @var{initargs} are passed to the @code{make-instance} call
-when creating the operation object.
-@c We probably want to deprecate that, because
-@c (1) there is a mix of flags for operate, for the operation-class, for the plan-class, etc.
-@c (2) flags to operations have never been well-supported, anyway.
-@c The future solution probably involves having an explicit :operation-options keyword or some such
-@c (if operation options are not wholly eliminated), a separate :plan-options, etc.
+The ability to pass @var{initargs} to @code{make-operation} is now deprecated, and will be removed.
+For more details, @pxref{make-operation}.
 Note that dependencies may cause the operation
 to invoke other operations on the system or its components:
-the new operations will be created
-with the same @var{initargs} as the original one.
+the new operations may or may not be created
+with the same @var{initargs} as the original one (for the moment).
 
 If @var{force} is @code{:all}, then all systems
 are forced to be recompiled even if not modified since last compilation.
@@ -2176,6 +2172,20 @@ To see what @code{operate} would do, you can use:
 
 @end deffn
 
+@defun @code{make-operation} @var{operation-class} @Arest{} @var{initargs}
+@anchor{make-operation}
+
+The @var{initargs} are passed to @code{make-instance} call
+when creating the operation object.
+
+@strong{Note:}@var{initargs} for @code{operation}s are now deprecated,
+and will be removed from ASDF in the near future.
+
+@strong{Note:} @code{operation} instances must @strong{never} be created
+using @code{make-instance} directly: only through
+@code{make-operation}. Attempts to directly make @code{operation}
+instances will cause a run-time error.
+@end defun
 
 
 @node Predefined operations of ASDF, Creating new operations, Operations, Operations
@@ -5611,14 +5621,14 @@ and lose configuration as they do.
 @code{asdf-ecl} and its short-lived successor @code{asdf-bundle} are no more,
 having been replaced by code now built into ASDF 3.
 Moreover, the name of the bundle operations has changed since ASDF 3.1.3.
+Starting with ASDF 3.2.0, @code{load-system}
+will once again use @code{load-bundle-op} instead of @code{load-op} on ECL,
+as originally intended by @code{asdf-ecl} authors, but disabled for a long time
+due to bugs in both ECL and ASDF.
 
-And yet, the feature is not enabled to be used by @code{load-system} by default on ECL as originally intended,
-because of a bug in ECL itself found during testing.
-
-
-Some of the bundle operations were renamed after ASDF 3.1.3, and the old
-names have been removed.  Old bundle operations, and their modern
-equivalents are:
+Note that some of the bundle operations were renamed after ASDF 3.1.3,
+and the old names have been removed.
+Old bundle operations, and their modern equivalents are:
 
 @itemize
 @item
@@ -6228,7 +6238,8 @@ Also, bugs are currently tracked on launchpad:
   @url{http://xach.livejournal.com/}
 @item Francois-Rene Rideau and Robert Goldman:
   ``Evolving ASDF: More Cooperation, Less Coordination'', 2010.
-  This article describes the main issues solved by ASDF 2.
+  This article describes the main issues solved by ASDF 2,
+  and exposes its design principles.
   @url{https://common-lisp.net/project/asdf/doc/ilc2010draft.pdf}
   @url{https://gitlab.common-lisp.org/asdf/ilc2010}
 @item Francois-Rene Rideau and Spencer Brody:
