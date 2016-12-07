@@ -137,7 +137,7 @@ error to its caller."
                     (when 
                         (or 
                          (and 
-                          (file-directory-p entry)
+                          (file-directory-p entry :wild-error-p nil)
                           (pathname-match-p (file-namestring (pathname-as-file entry)) 
                                             (file-namestring pathname)))
                          (pathname-match-p (or (file-namestring entry) "") 

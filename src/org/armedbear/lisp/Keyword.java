@@ -152,6 +152,7 @@ public final class Keyword
         VALUE               = internKeyword("VALUE"),
         VERSION             = internKeyword("VERSION"),
         WILD                = internKeyword("WILD"),
+        WILD_ERROR_P        = internKeyword("WILD-ERROR-P"),
         WILD_INFERIORS      = internKeyword("WILD-INFERIORS"),
         WINDOWS             = internKeyword("WINDOWS"),
         X86                 = internKeyword("X86"),

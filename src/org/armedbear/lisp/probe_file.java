@@ -95,21 +95,41 @@ public final class probe_file
     public static final Primitive FILE_DIRECTORY_P 
         = new pf_file_directory_p();
     @DocString(name="file-directory-p",
-               args="pathspec",
+               args="pathspec &key (wild-error-p t)",
                returns="generalized-boolean")
     private static final class pf_file_directory_p extends Primitive {
         pf_file_directory_p() {
             super("file-directory-p", PACKAGE_EXT, true);
         }
 
+        private LispObject isDirectory(Pathname p) {
+            File file = p.getFile();
+            return file.isDirectory() ? T : NIL;
+        }
+
         @Override
         public LispObject execute(LispObject arg)  // XXX Should this merge with defaults?
         {
             Pathname pathname = coerceToPathname(arg);
-            if (pathname.isWild())
+            if (pathname.isWild()) {
                 error(new FileError("Bad place for a wild pathname.", pathname));
-            File file = pathname.getFile();
-            return file.isDirectory() ? T : NIL;
+            }
+            return isDirectory(pathname);
+        }
+
+        @Override
+        public LispObject execute(LispObject arg, LispObject wildErrorPKeyword, LispObject wildErrorP)
+        {
+            if (!(wildErrorPKeyword.equals(Keyword.WILD_ERROR_P))) {
+                type_error(wildErrorPKeyword, Keyword.WILD_ERROR_P);
+            }
+            Pathname pathname = coerceToPathname(arg);
+            if (wildErrorP != NIL) {
+                if (pathname.isWild()) {
+                    error(new FileError("Bad place for a wild pathname.", pathname));
+                }
+            }
+            return isDirectory(pathname);
         }
     };
 }
