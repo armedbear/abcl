@@ -135,6 +135,12 @@
     (java:jcall "setAccessible" jfield java:+true+)
     (java:jcall "get" jfield function)))
 
+(defun set-loaded-from (function value)
+  (let* ((jfield (find "loadedFrom" (java:jcall "getDeclaredFields" (java:jclass "org.armedbear.lisp.Function")) 
+		       :key 'java:jfield-name :test 'equal)))
+    (java:jcall "setAccessible" jfield java:+true+)
+    (java:jcall "set" jfield function value)))
+
 ;; because getFunctionClassBytes gets a null pointer exception
 (defun fasl-compiled-closure-class-bytes (function)
   (let* ((loaded-from (get-loaded-from function))
