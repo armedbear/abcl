@@ -80,9 +80,6 @@
        (let ((doc (documentation object 'function)))
          (when doc
            (format stream "Function documentation:~%  ~A~%" doc)))
-       (let ((doc (documentation object 'variable)))
-         (when doc
-           (format stream "Variable documentation:~%  ~A~%" doc)))
        (let ((plist (symbol-plist object)))
          (when plist
            (format stream "The symbol's property list contains these indicator/value pairs:~%")
@@ -92,7 +89,15 @@
              (setf plist (cddr plist))))))
       (FUNCTION
        (%describe-object object stream)
-       (describe-arglist object stream))
+       (describe-arglist object stream)
+       (let ((function-symbol (nth-value 2 (function-lambda-expression object))))
+	 (if (and (consp function-symbol) (eq (car function-symbol) 'macro-function))
+	     (setq function-symbol (second function-symbol)))
+	 (when  function-symbol
+	   (let ((doc (documentation function-symbol 'function)))
+	     (when doc
+	       (format stream "Function documentation:~%  ~A~%" doc)))
+	   )))
       (INTEGER
        (%describe-object object stream)
        (format stream "~D.~%~
