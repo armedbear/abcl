@@ -1,14 +1,15 @@
 ;;;; -*- Mode: LISP -*-
+(in-package :cl-user)
 
 (asdf:defsystem :abcl-asdf
   :author "Mark Evenson"
-  :version "1.5.1"
-  :description "<> asdf:defsystem <urn:abcl.org/release/1.5.0/contrib/abcl-asdf#1.5.1>"
+  :version "1.6.0"
+  :description "<> asdf:defsystem <urn:abcl.org/release/1.5.0/contrib/abcl-asdf#1.6.0>"
   :depends-on (jss)
   :components 
-  ((:module packages :pathname "" 
+  ((:module package :pathname "" 
             :components
-            ((:file "packages")))
+            ((:file "package")))
    (:module base :pathname "" 
             :components
             ((:file "abcl-asdf")
@@ -16,30 +17,23 @@
                     :depends-on ("abcl-asdf"))
              (:file "maven-embedder" 
                     :depends-on ("abcl-asdf" "asdf-jar")))
-            :depends-on (packages))))
+            :depends-on (package)))
+  :in-order-to ((asdf:test-op (asdf:test-op abcl-asdf/test))))
 
-(asdf:defsystem :abcl-asdf-test
+(asdf:defsystem :abcl-asdf/test
   :author "Mark Evenson"
-  :depends-on (abcl abcl-test-lisp abcl-asdf rt)
-  :components ((:module tests :serial t 
-                        :components ((:file "example")
-                                     (:file "maven")
-                                     (:file "test")))))
-
-
-(defmethod asdf:perform ((o asdf:test-op) (c (eql (asdf:find-system 'abcl-asdf-test))))
-  (funcall (intern (symbol-name 'run) 'abcl-asdf-test)))
-
-(defmethod asdf:perform ((o asdf:test-op) (c (eql (asdf:find-system 'abcl-asdf))))
-  (asdf:load-system :abcl-asdf-test)
-  (asdf:test-system :abcl-asdf-test))
-
- ;;; FIXME
-#+nil
-(defmethod asdf:perform ((o asdf:test-op) (c (eql (asdf:find-system 'abcl-asdf))))
-  "Invoke tests with (asdf:test-system 'abcl-asdf)."
-  (asdf:load-system 'abcl)
-  (asdf:load-system 'abcl-test-lisp)
-  (asdf:load-system 'abcl-asdf-test)
-  (funcall (intern (symbol-name 'run) 'abcl-asdf-test)))
+  :description "<> asdf:defsystem <urn:abcl.org/release/1.5.0/contrib/abcl-asdf/test#1.6.0>"
+  :defsystem-depends-on (prove-asdf)
+  :depends-on (abcl-asdf ;; our dependencies
+               ;; Actual testing framework
+               prove
+               log4j)
+  :components ((:module package :pathname "t/"
+                        :components ((:file "package")))
+               (:module tests :pathname "t/" :serial t
+                        :depends-on (package)
+                        :components ((:test-file "log4j")
+                                     (:test-file "maven"))))
+  :perform (asdf:test-op (op c)
+                         (uiop:symbol-call :prove-asdf 'run-test-system c)))
 
