@@ -1,5 +1,7 @@
-(defpackage #:abcl-asdf
-  (:use :cl)
+(in-package :cl-user)
+
+(defpackage abcl-asdf
+  (:use cl)
   (:export 
 ;;; Public API
    #:resolve
@@ -34,6 +36,5 @@
    #:*added-to-classpath*
    #:*inhibit-add-to-classpath*))
 
-(defpackage #:abcl-asdf-test
-  (:use :cl :abcl-asdf)
-  (:export #:run))
+
+
