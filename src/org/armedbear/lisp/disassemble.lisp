@@ -106,11 +106,13 @@
 	  (with-output-to-string (s)
 	    (format s "Not a compiled function: ~%")
 	    (pprint (java:jcall "getBody" function) s))))
-      (let ((bytes (and (java:jcall "isInstance" (java:jclass "org.armedbear.lisp.CompiledClosure") function)
+      (let ((bytes (or (and (java:jcall "isInstance" (java:jclass "org.armedbear.lisp.Function") function)
+			    (getf (function-plist function)) 'class-bytes)
+		    (and (java:jcall "isInstance" (java:jclass "org.armedbear.lisp.CompiledClosure") function)
 			(equalp (java::jcall "getName" (java::jobject-class 
 							(java:jcall "getClassLoader" (java::jcall "getClass" function))))
 				"org.armedbear.lisp.FaslClassLoader")
-			(fasl-compiled-closure-class-bytes function))))
+			(fasl-compiled-closure-class-bytes function)))))
 	;; we've got bytes here then we've covered the case that the disassembler already handled
 	;; If not then we've either got a primitive (in function) or we got passed a method object as arg.
 	(if bytes
@@ -127,6 +129,18 @@
 				    "getResourceAsStream"
 				    (java:jcall-raw "getClassLoader" class)
 				    (class-resource-path class))))))))))))
+
+(defparameter +propertyList+ 
+  (load-time-value
+   (let ((it (find "propertyList" (java::jcall "getDeclaredFields" (java::jclass "org.armedbear.lisp.Function")) :key (lambda(e)(java::jcall "getName" e)) :test 'equal)))
+     (java::jcall "setAccessible" it t)
+     it)))
+
+(defun function-plist (function)
+  (java::jcall "get" +propertylist+ function))
+
+(defun (setf function-plist) (new function)
+  (java::jcall "set" +propertylist+ function new))
 
 ;; PITA. make loadedFrom public
 (defun get-loaded-from (function)
@@ -145,7 +159,10 @@
 (defun fasl-compiled-closure-class-bytes (function)
   (let* ((loaded-from (get-loaded-from function))
 	 (class-name (subseq (java:jcall "getName" (java:jcall "getClass" function)) (length "org.armedbear.lisp.")))
-	 (url (java:jnew "java.net.URL" (format nil "jar:file:~a!/~a.cls" (namestring loaded-from) class-name))))
+	 (url (java:jnew "java.net.URL" 
+			 (namestring (make-pathname :directory (pathname-directory loaded-from)
+						    :device (pathname-device loaded-from)
+						    :name class-name :type "cls")))))
     (java:jstatic "toByteArray" "com.google.common.io.ByteStreams" (java:jcall "openStream" url))))
 
 ;; closure bindings
