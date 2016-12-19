@@ -109,7 +109,6 @@ called early in build when many of the sequence functions aren't
 present.  Will probably just filter when presenting in slime.
 
 |#  
-  (unless SYS::*LOAD-TRUENAME-FASL*
     (unless source-pathname
       (setf source-pathname (or *source* :top-level)))
     (unless source-position
@@ -117,8 +116,12 @@ present.  Will probably just filter when presenting in slime.
     (let ((source (if source-position
 		      (list source-pathname source-position)
 		      (list source-pathname))))
-      (let ((sym (if (consp name) (second name) name)))
-	(put sym 'sys::source (cons `(,type ,(if (symbolp (car source)) (car source) (namestring (car source))) ,(second source)) (get sym  'sys::source nil)))))))
+      (let ((sym (if (consp name) (second name) name))
+            (new `(,type ,(if (symbolp (car source)) (car source) (namestring (car source))) ,(second source))))
+        (if (autoloadp 'delete)
+ 	 (put sym 'sys::source (cons new (get sym  'sys::source nil)))
+         (put sym 'sys::source (cons new (delete new (get sym  'sys::source nil) 
+               :test (lambda(a b) (and (equalp (car a) (car b)) (equalp (second a) (second b) ))))))))))
 
 ;; Redefined in trace.lisp.
 (defun trace-redefined-update (&rest args)
@@ -128,6 +131,8 @@ present.  Will probably just filter when presenting in slime.
 (defun untraced-function (name)
   (declare (ignore name))
   nil)
+
+(%defvar '*fset-hooks* nil)
 
 (defun fset (name function &optional source-position arglist documentation)
   (cond ((symbolp name)
@@ -146,6 +151,7 @@ present.  Will probably just filter when presenting in slime.
          (require-type name '(or symbol (cons (eql setf) (cons symbol null))))))
   (when (functionp function) ; FIXME Is this test needed?
     (%set-lambda-name function name))
+  (dolist (hook *fset-hooks*) (ignore-errors (funcall hook name function)))
   (trace-redefined-update name function)
   function)
 

@@ -245,7 +245,7 @@ want to avoid the overhead of the dynamic dispatch."
                (with-constant-signature ,(cdr fname-jname-pairs)
                  ,@body)))))))
 
-(defun lookup-class-name (name &key (muffle *muffle-warnings*))
+(defun lookup-class-name (name &key (table *class-name-to-full-case-insensitive*) (muffle-warning nil) (return-ambiguous nil))
   (setq name (string name))
   (let* (;; cant (last-name-pattern (#"compile" '|java.util.regex.Pattern| ".*?([^.]*)$"))
          ;; reason: bootstrap - the class name would have to be looked up...
@@ -265,7 +265,9 @@ want to avoid the overhead of the dynamic dispatch."
                          (length end))
                       (length full)))
                  (ambiguous (choices)
-                   (error "Ambiguous class name: ~a can be ~{~a~^, ~}" name choices)))
+		   (if return-ambiguous 
+		       (return-from lookup-class-name choices)
+		       (error "Ambiguous class name: ~a can be ~{~a~^, ~}" name choices))))
             (if (zerop bucket-length)
 		(progn (unless muffle (warn "can't find class named ~a" name)) nil)
                 (let ((matches (loop for el in bucket when (matches-end name el 'char=) collect el)))
@@ -483,7 +485,7 @@ current classpath."
         (format stream "~a~%" method))
       (jclass-method-names class)))
 
-(setf (symbol-function 'jcmn) 'java-class-method-names)
+(setf (symbol-function 'jcmn) #'java-class-method-names)
 
 (defun path-to-class (classname)
   (let ((full (lookup-class-name classname)))

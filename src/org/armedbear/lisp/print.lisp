@@ -147,8 +147,11 @@
         ((xp::xp-structure-p stream)
          (let ((s (sys::%write-to-string object)))
            (xp::write-string++ s stream 0 (length s))))
+	((functionp object)
+	  (print-object object stream))
         (t
          (%output-object object stream))))
+
 
 ;;;; circularity detection stuff
 
