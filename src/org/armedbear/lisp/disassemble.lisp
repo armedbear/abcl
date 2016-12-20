@@ -106,7 +106,8 @@
 	  (with-output-to-string (s)
 	    (format s "Not a compiled function: ~%")
 	    (pprint (java:jcall "getBody" function) s))))
-      (let ((bytes (or (getf (function-plist function) 'class-bytes)
+      (let ((bytes (or (and (java:jcall "isInstance" (java:jclass "org.armedbear.lisp.Function") function)
+			    (getf (function-plist function)) 'class-bytes)
 		    (and (java:jcall "isInstance" (java:jclass "org.armedbear.lisp.CompiledClosure") function)
 			(equalp (java::jcall "getName" (java::jobject-class 
 							(java:jcall "getClassLoader" (java::jcall "getClass" function))))
