@@ -107,7 +107,7 @@
 	    (format s "Not a compiled function: ~%")
 	    (pprint (java:jcall "getBody" function) s))))
       (let ((bytes (or (and (java:jcall "isInstance" (java:jclass "org.armedbear.lisp.Function") function)
-			    (getf (function-plist function)) 'class-bytes)
+			    (ignore-errors (getf (function-plist function))) 'class-bytes)
 		    (and (java:jcall "isInstance" (java:jclass "org.armedbear.lisp.CompiledClosure") function)
 			(equalp (java::jcall "getName" (java::jobject-class 
 							(java:jcall "getClassLoader" (java::jcall "getClass" function))))
@@ -159,10 +159,15 @@
 (defun fasl-compiled-closure-class-bytes (function)
   (let* ((loaded-from (get-loaded-from function))
 	 (class-name (subseq (java:jcall "getName" (java:jcall "getClass" function)) (length "org.armedbear.lisp.")))
-	 (url (java:jnew "java.net.URL" 
-			 (namestring (make-pathname :directory (pathname-directory loaded-from)
-						    :device (pathname-device loaded-from)
-						    :name class-name :type "cls")))))
+	 (url (if (not (eq (pathname-device loaded-from) :unspecific))
+		  ;; we're loading from a jar
+		  (java:jnew "java.net.URL" 
+			     (namestring (make-pathname :directory (pathname-directory loaded-from)
+							       :device (pathname-device loaded-from)
+							       :name class-name :type "cls")))
+		  ;; we're loading from a fasl file
+		  (java:jnew "java.net.URL" (namestring (make-pathname :device (list loaded-from)
+								       :name class-name :type "cls"))))))
     (java:jstatic "toByteArray" "com.google.common.io.ByteStreams" (java:jcall "openStream" url))))
 
 ;; closure bindings
