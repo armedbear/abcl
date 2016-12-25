@@ -25,9 +25,12 @@ RUN ls -lR ${work}/abcl
 
 RUN JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 cd ${work}/abcl && ant clean && ant abcl
 
-ENV abcl.exec.path  "${work}/abcl/abcl"
+ENV abcl_exec_path  "${work}/abcl/abcl"
+
+USER root
+RUN ln -s ${abcl_exec_path} /usr/local/bin/abcl
 
 USER abcl
-CMD [ "/home/abcl/work/abcl/abcl", "--eval", "(loop :doing (sleep 1))" ]
+CMD [ "${abcl_exec_path}", "--eval", "(loop :doing (sleep 1))" ]
 
 
