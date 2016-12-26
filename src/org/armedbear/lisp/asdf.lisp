@@ -1,5 +1,5 @@
 ;;; -*- mode: Lisp; Base: 10 ; Syntax: ANSI-Common-Lisp ; buffer-read-only: t; -*-
-;;; This is ASDF 3.1.7.40: Another System Definition Facility.
+;;; This is ASDF 3.1.7.43: Another System Definition Facility.
 ;;;
 ;;; Feedback, bug reports, and patches are all welcome:
 ;;; please mail to <asdf-devel@common-lisp.net>.
@@ -1019,6 +1019,7 @@ Return a string made of the parts not omitted or emitted by FROB."
    #:with-upgradability ;; (un)defining functions in an upgrade-friendly way
    #:defun* #:defgeneric*
    #:nest #:if-let ;; basic flow control
+   #:parse-body ;; macro definition helper
    #:while-collecting #:appendf #:length=n-p #:ensure-list ;; lists
    #:remove-plist-keys #:remove-plist-key ;; plists
    #:emptyp ;; sequences
@@ -1027,7 +1028,7 @@ Return a string made of the parts not omitted or emitted by FROB."
    #:base-string-p #:strings-common-element-type #:reduce/strcat #:strcat ;; strings
    #:first-char #:last-char #:split-string #:stripln #:+cr+ #:+lf+ #:+crlf+
    #:string-prefix-p #:string-enclosed-p #:string-suffix-p
-   #:standard-case-symbol-name #:find-standard-case-symbol
+   #:standard-case-symbol-name #:find-standard-case-symbol ;; symbols
    #:coerce-class ;; CLOS
    #:stamp< #:stamps< #:stamp*< #:stamp<= ;; stamps
    #:earlier-stamp #:stamps-earliest #:earliest-stamp
@@ -1036,7 +1037,7 @@ Return a string made of the parts not omitted or emitted by FROB."
    #:ensure-function #:access-at #:access-at-count ;; functions
    #:call-function #:call-functions #:register-hook-function
    #:lexicographic< #:lexicographic<= ;; version
-   #:parse-version #:unparse-version #:version< #:version<= #:version-compatible-p
+   #:simple-style-warning #:style-warn ;; simple style warnings
    #:match-condition-p #:match-any-condition-p ;; conditions
    #:call-with-muffled-conditions #:with-muffled-conditions
    #:not-implemented-error #:parameter-error))
@@ -1122,6 +1123,30 @@ to supersede any previous definition."
              ,then-form
              ,else-form)))))
 
+;;; Macro definition helper
+(with-upgradability ()
+  (defun parse-body (body &key documentation whole) ;; from alexandria
+    "Parses BODY into (values remaining-forms declarations doc-string).
+Documentation strings are recognized only if DOCUMENTATION is true.
+Syntax errors in body are signalled and WHOLE is used in the signal
+arguments when given."
+    (let ((doc nil)
+          (decls nil)
+          (current nil))
+      (tagbody
+       :declarations
+         (setf current (car body))
+         (when (and documentation (stringp current) (cdr body))
+           (if doc
+               (error "Too many documentation strings in ~S." (or whole body))
+               (setf doc (pop body)))
+           (go :declarations))
+         (when (and (listp current) (eql (first current) 'declare))
+           (push (pop body) decls)
+           (go :declarations)))
+      (values body (nreverse decls) doc))))
+
+
 ;;; List manipulation
 (with-upgradability ()
   (defmacro while-collecting ((&rest collectors) &body body)
@@ -1158,7 +1183,7 @@ Returns two values: \(A B C\) and \(1 2 3\)."
     (if (listp x) x (list x))))
 
 
-;;; remove a key from a plist, i.e. for keyword argument cleanup
+;;; Remove a key from a plist, i.e. for keyword argument cleanup
 (with-upgradability ()
   (defun remove-plist-key (key plist)
     "Remove a single key from a plist"
@@ -1508,39 +1533,8 @@ up to the given equality TEST"
     (dolist (x list h) (setf (gethash x h) t))))
 
 
-;;; Version handling
+;;; Lexicographic comparison of lists of numbers
 (with-upgradability ()
-  (defun unparse-version (version-list)
-    "From a parsed version (a list of natural numbers), compute the version string"
-    (format nil "~{~D~^.~}" version-list))
-
-  (defun parse-version (version-string &optional on-error)
-    "Parse a VERSION-STRING as a series of natural numbers separated by dots.
-Return a (non-null) list of integers if the string is valid;
-otherwise return NIL.
-
-When invalid, ON-ERROR is called as per CALL-FUNCTION before to return NIL,
-with format arguments explaining why the version is invalid.
-ON-ERROR is also called if the version is not canonical
-in that it doesn't print back to itself, but the list is returned anyway."
-    (block nil
-      (unless (stringp version-string)
-        (call-function on-error "~S: ~S is not a string" 'parse-version version-string)
-        (return))
-      (unless (loop :for prev = nil :then c :for c :across version-string
-                    :always (or (digit-char-p c)
-                                (and (eql c #\.) prev (not (eql prev #\.))))
-                    :finally (return (and c (digit-char-p c))))
-        (call-function on-error "~S: ~S doesn't follow asdf version numbering convention"
-                       'parse-version version-string)
-        (return))
-      (let* ((version-list
-               (mapcar #'parse-integer (split-string version-string :separator ".")))
-             (normalized-version (unparse-version version-list)))
-        (unless (equal version-string normalized-version)
-          (call-function on-error "~S: ~S contains leading zeros" 'parse-version version-string))
-        version-list)))
-
   (defun lexicographic< (element< x y)
     "Lexicographically compare two lists of using the function element< to compare elements.
 element< is a strict total order; the resulting order on X and Y will also be strict."
@@ -1553,26 +1547,20 @@ element< is a strict total order; the resulting order on X and Y will also be st
   (defun lexicographic<= (element< x y)
     "Lexicographically compare two lists of using the function element< to compare elements.
 element< is a strict total order; the resulting order on X and Y will be a non-strict total order."
-    (not (lexicographic< element< y x)))
+    (not (lexicographic< element< y x))))
 
-  (defun version< (version1 version2)
-    "Compare two version strings"
-    (let ((v1 (parse-version version1 nil))
-          (v2 (parse-version version2 nil)))
-      (lexicographic< '< v1 v2)))
 
-  (defun version<= (version1 version2)
-    "Compare two version strings"
-    (not (version< version2 version1)))
+;;; Simple style warnings
+(with-upgradability ()
+  (define-condition simple-style-warning
+      #+sbcl (sb-int:simple-style-warning) #-sbcl (simple-condition style-warning)
+    ())
 
-  (defun version-compatible-p (provided-version required-version)
-    "Is the provided version a compatible substitution for the required-version?
-If major versions differ, it's not compatible.
-If they are equal, then any later version is compatible,
-with later being determined by a lexicographical comparison of minor numbers."
-    (let ((x (parse-version provided-version nil))
-          (y (parse-version required-version nil)))
-      (and x y (= (car x) (car y)) (lexicographic<= '< (cdr y) (cdr x))))))
+  (defun style-warn (datum &rest arguments)
+    (etypecase datum
+      (string (warn (make-condition 'simple-style-warning :format-control datum :format-arguments arguments)))
+      (symbol (assert (subtypep datum 'style-warning)) (apply 'warn datum arguments))
+      (style-warning (apply 'warn datum arguments)))))
 
 
 ;;; Condition control
@@ -1665,6 +1653,187 @@ message, that takes the functionality as its first argument (that can be skipped
            :format-control format-control
            :format-arguments format-arguments)))
 
+(uiop/package:define-package :uiop/version
+  (:recycle :uiop/version :uiop/utility :asdf)
+  (:use :uiop/common-lisp :uiop/package :uiop/utility)
+  (:export
+   #:*uiop-version*
+   #:parse-version #:unparse-version #:version< #:version<= ;; version support, moved from uiop/utility
+   #:next-version
+   #:deprecated-function-condition #:deprecated-function-name ;; deprecation control
+   #:deprecated-function-style-warning #:deprecated-function-warning
+   #:deprecated-function-error #:deprecated-function-should-be-deleted
+   #:version-deprecation #:with-deprecation))
+(in-package :uiop/version)
+
+(with-upgradability ()
+  (defparameter *uiop-version* "3.1.7.43")
+
+  (defun unparse-version (version-list)
+    "From a parsed version (a list of natural numbers), compute the version string"
+    (format nil "~{~D~^.~}" version-list))
+
+  (defun parse-version (version-string &optional on-error)
+    "Parse a VERSION-STRING as a series of natural numbers separated by dots.
+Return a (non-null) list of integers if the string is valid;
+otherwise return NIL.
+
+When invalid, ON-ERROR is called as per CALL-FUNCTION before to return NIL,
+with format arguments explaining why the version is invalid.
+ON-ERROR is also called if the version is not canonical
+in that it doesn't print back to itself, but the list is returned anyway."
+    (block nil
+      (unless (stringp version-string)
+        (call-function on-error "~S: ~S is not a string" 'parse-version version-string)
+        (return))
+      (unless (loop :for prev = nil :then c :for c :across version-string
+                    :always (or (digit-char-p c)
+                                (and (eql c #\.) prev (not (eql prev #\.))))
+                    :finally (return (and c (digit-char-p c))))
+        (call-function on-error "~S: ~S doesn't follow asdf version numbering convention"
+                       'parse-version version-string)
+        (return))
+      (let* ((version-list
+               (mapcar #'parse-integer (split-string version-string :separator ".")))
+             (normalized-version (unparse-version version-list)))
+        (unless (equal version-string normalized-version)
+          (call-function on-error "~S: ~S contains leading zeros" 'parse-version version-string))
+        version-list)))
+
+  (defun next-version (version)
+    "When VERSION is not nil, it is a string, then parse it as a version, compute the next version
+and return it as a string."
+    (when version
+      (let ((version-list (parse-version version)))
+        (incf (car (last version-list)))
+        (unparse-version version-list))))
+
+  (defun version< (version1 version2)
+    "Given two version strings, return T if the second is strictly newer"
+    (let ((v1 (parse-version version1 nil))
+          (v2 (parse-version version2 nil)))
+      (lexicographic< '< v1 v2)))
+
+  (defun version<= (version1 version2)
+    "Given two version strings, return T if the second is newer or the same"
+    (not (version< version2 version1))))
+
+
+(with-upgradability ()
+  (define-condition deprecated-function-condition (condition)
+    ((name :initarg :name :reader deprecated-function-name)))
+  (define-condition deprecated-function-style-warning (deprecated-function-condition style-warning) ())
+  (define-condition deprecated-function-warning (deprecated-function-condition warning) ())
+  (define-condition deprecated-function-error (deprecated-function-condition error) ())
+  (define-condition deprecated-function-should-be-deleted (deprecated-function-condition error) ())
+
+  (defun deprecated-function-condition-kind (type)
+    (ecase type
+      ((deprecated-function-style-warning) :style-warning)
+      ((deprecated-function-warning) :warning)
+      ((deprecated-function-error) :error)
+      ((deprecated-function-should-be-deleted) :delete)))
+
+  (defmethod print-object ((c deprecated-function-condition) stream)
+    (let ((name (deprecated-function-name c)))
+      (cond
+        (*print-readably*
+         (let ((fmt "#.(make-condition '~S :name ~S)")
+               (args (list (type-of c) name)))
+           (if *read-eval*
+               (apply 'format stream fmt args)
+               (error "Can't print ~?" fmt args))))
+        (*print-escape*
+         (print-unreadable-object (c stream :type t) (format stream ":name ~S" name)))
+        (t
+         (let ((*package* (find-package :cl))
+               (type (type-of c)))
+           (format stream
+                   (if (eq type 'deprecated-function-should-be-deleted)
+                       "~A: Still defining deprecated function~:P ~{~S~^ ~} that promised to delete"
+                       "~A: Using deprecated function ~S -- please update your code to use a newer API.~
+~@[~%The docstring for this function says:~%~A~%~]")
+                   type name (when (symbolp name) (documentation name 'function))))))))
+
+  (defun notify-deprecated-function (status name)
+    (ecase status
+      ((nil) nil)
+      ((:style-warning) (style-warn 'deprecated-function-style-warning :name name))
+      ((:warning) (warn 'deprecated-function-warning :name name))
+      ((:error) (cerror "USE FUNCTION ANYWAY" 'deprecated-function-error :name name))))
+
+  (defun version-deprecation (version &key (style-warning nil)
+                                        (warning (next-version style-warning))
+                                        (error (next-version warning))
+                                        (delete (next-version error)))
+    "Given a VERSION string, and the starting versions for notifying the programmer of
+various levels of deprecation, return the current level of deprecation as per WITH-DEPRECATION
+that is the highest level that has a declared version older than the specified version.
+Each start version for a level of deprecation can be specified by a keyword argument, or
+if left unspecified, will be the NEXT-VERSION of the immediate lower level of deprecation."
+    (cond
+      ((and delete (version<= delete version)) :delete)
+      ((and error (version<= error version)) :error)
+      ((and warning (version<= warning version)) :warning)
+      ((and style-warning (version<= style-warning version)) :style-warning)))
+
+  (defmacro with-deprecation ((level) &body definitions)
+    "Given a deprecation LEVEL (a form to be EVAL'ed at macro-expansion time), instrument the
+DEFUN and DEFMETHOD forms in DEFINITIONS to notify the programmer of the deprecation of the function
+when it is compiled or called.
+
+Increasing levels (as result from evaluating LEVEL) are: NIL (not deprecated yet),
+:STYLE-WARNING (a style warning is issued when used), :WARNING (a full warning is issued when used),
+:ERROR (a continuable error instead), and :DELETE (it's an error if the code is still there while
+at that level).
+
+Forms other than DEFUN and DEFMETHOD are not instrumented, and you can protect a DEFUN or DEFMETHOD
+from instrumentation by enclosing it in a PROGN."
+    (let ((level (eval level)))
+      (check-type level (member nil :style-warning :warning :error :delete))
+      (when (eq level :delete)
+        (error 'deprecated-function-should-be-deleted :name
+               (mapcar 'second
+                       (remove-if-not #'(lambda (x) (member x '(defun defmethod)))
+                                      definitions :key 'first))))
+      (labels ((instrument (name head body whole)
+                 (if level
+                     (let ((notifiedp
+                            (intern (format nil "*~A-~A-~A-~A*"
+                                            :deprecated-function level name :notified-p))))
+                       (multiple-value-bind (remaining-forms declarations doc-string)
+                           (parse-body body :documentation t :whole whole)
+                         `(progn
+                            (defparameter ,notifiedp nil)
+                            ;; tell some implementations to use the compiler-macro
+                            (declaim (inline ,name))
+                            (define-compiler-macro ,name (&whole form &rest args)
+                              (declare (ignore args))
+                              (notify-deprecated-function ,level ',name)
+                              form)
+                            (,@head ,@(when doc-string (list doc-string)) ,@declarations
+                                    (unless ,notifiedp
+                                      (setf ,notifiedp t)
+                                      (notify-deprecated-function ,level ',name))
+                                    ,@remaining-forms))))
+                     `(progn
+                        (eval-when (:compile-toplevel :load-toplevel :execute)
+                          (setf (compiler-macro-function ',name) nil))
+                        (declaim (notinline ,name))
+                        (,@head ,@body)))))
+        `(progn
+           ,@(loop :for form :in definitions :collect
+               (cond
+                 ((and (consp form) (eq (car form) 'defun))
+                  (instrument (second form) (subseq form 0 3) (subseq form 3) form))
+                 ((and (consp form) (eq (car form) 'defmethod))
+                  (let ((body-start (if (listp (third form)) 3 4)))
+                    (instrument (second form)
+                                (subseq form 0 body-start)
+                                (subseq form body-start)
+                                form)))
+                 (t
+                  form))))))))
 ;;;; ---------------------------------------------------------------------------
 ;;;; Access to the Operating System
 
@@ -5604,35 +5773,6 @@ by /bin/sh in POSIX"
 
 (with-upgradability ()
   ;;; Internal helpers for run-program
-  (defun %normalize-command (command)
-    "Given a COMMAND as a list or string, transform it in a format suitable
-for the implementation's underlying run-program function"
-    (etypecase command
-      #+os-unix (string `("/bin/sh" "-c" ,command))
-      #+os-unix (list command)
-      #+os-windows
-      (string
-       ;; NB: We add cmd /c here. Behavior without going through cmd is not well specified
-       ;; when the command contains spaces or special characters:
-       ;; IIUC, the system will use space as a separator, but the argv-decoding libraries won't,
-       ;; and you're supposed to use an extra argument to CreateProcess to bridge the gap,
-       ;; but neither allegro nor clisp provide access to that argument.
-       #+(or allegro clisp) (strcat "cmd /c " command)
-       ;; On ClozureCL for Windows, we assume you are using
-       ;; r15398 or later in 1.9 or later,
-       ;; so that bug 858 is fixed http://trac.clozure.com/ccl/ticket/858
-       ;; On SBCL, we assume the patch from https://bugs.launchpad.net/sbcl/+bug/1503496
-       #+(or clozure sbcl) (cons "cmd" (strcat "/c " command))
-       ;; NB: On other Windows implementations, this is utterly bogus
-       ;; except in the most trivial cases where no quoting is needed.
-       ;; Use at your own risk.
-       #-(or allegro clisp clozure sbcl)
-       (parameter-error "~S doesn't support string commands on Windows on this lisp: ~S" '%normalize-command command))
-      #+os-windows
-      (list
-       #+allegro (escape-windows-command command)
-       #-allegro command)))
-
   (defun %normalize-io-specifier (specifier &optional role)
     "Normalizes a portable I/O specifier for LAUNCH-PROGRAM into an implementation-dependent
 argument to pass to the internal RUN-PROGRAM"
@@ -5994,120 +6134,156 @@ LAUNCH-PROGRAM returns a PROCESS-INFO object."
                 (list input output error-output))
       (parameter-error "~S: Streams passed as I/O parameters need to be (synonymous with) file streams on this lisp"
                        'launch-program))
-    ;; see comments for these functions
-    (%handle-if-does-not-exist input if-input-does-not-exist)
-    (%handle-if-exists output if-output-exists)
-    (%handle-if-exists error-output if-error-output-exists)
     #+(or abcl allegro clozure cmucl ecl (and lispworks os-unix) mkcl sbcl scl)
-    (let* ((%command (%normalize-command command))
-           (%input (%normalize-io-specifier input :input))
-           (%output (%normalize-io-specifier output :output))
-           (%error-output (%normalize-io-specifier error-output :error-output))
-           #+(and allegro os-windows)
-           (interactive (%interactivep input output error-output))
-           (process*
-             (nest
-              #-(or allegro mkcl sbcl) (with-current-directory (directory))
-              #+(or allegro ecl lispworks mkcl) (multiple-value-list)
-              (apply
-               #+abcl #'sys:run-program
-               #+allegro 'excl:run-shell-command
-               #+(and allegro os-unix) (coerce (cons (first %command) %command) 'vector)
-               #+(and allegro os-windows) %command
-               #+clozure 'ccl:run-program
-               #+(or cmucl ecl scl) 'ext:run-program
-               #+lispworks 'system:run-shell-command
-               #+lispworks (cons "/usr/bin/env" %command) ; LW wants a full path
-               #+mkcl 'mk-ext:run-program
-               #+sbcl 'sb-ext:run-program
-               (append
-                #+(or abcl clozure cmucl ecl mkcl sbcl scl) `(,(car %command) ,(cdr %command))
-                `(:input ,%input :output ,%output
-                  #.(or #+(or allegro lispworks) :error-output :error) ,%error-output
-                  :wait nil :element-type ,element-type :external-format ,external-format
-                  :if-input-does-not-exist :error
-                  :if-output-exists :append
-                  #-(or allegro lispworks) :if-error-exists
-                  #+(or allegro lispworks) :if-error-output-exists :append
-                  :allow-other-keys t)
-                #+allegro `(:directory ,directory)
-                #+(and allegro os-windows) `(:show-window ,(if interactive nil :hide))
-                #+lispworks `(:save-exit-status t)
-                #+mkcl `(:directory ,(native-namestring directory))
-                #+sbcl `(:search t)
-                #-sbcl keys ;; on SBCL, don't pass :directory nil but remove it from the keys
-                #+sbcl (if directory keys (remove-plist-key :directory keys))))))
-           (process-info (make-instance 'process-info)))
-      (labels ((prop (key value) (setf (slot-value process-info key) value)))
-        #+allegro
-        (cond
-          (separate-streams
-           (destructuring-bind (in out err pid) process*
-             (prop 'process pid)
-             (when (eq input :stream) (prop 'input-stream in))
-             (when (eq output :stream) (prop 'output-stream out))
-             (when (eq error-output :stream) (prop 'error-stream err))))
-          (t
-           (prop 'process (third process*))
-           (let ((x (first process*)))
-             (ecase (+ (if (eq input :stream) 1 0) (if (eq output :stream) 2 0))
-               (0)
-               (1 (prop 'input-stream x))
-               (2 (prop 'output-stream x))
-               (3 (prop 'bidir-stream x))))
-           (when (eq error-output :stream)
-             (prop 'error-stream (second process*)))))
-        #+(or abcl clozure cmucl sbcl scl)
-        (progn
-          (prop 'process process*)
-          (when (eq input :stream)
-            (prop 'input-stream
-                  #+abcl (symbol-call :sys :process-input process*)
-                  #+clozure (ccl:external-process-input-stream process*)
-                  #+(or cmucl scl) (ext:process-input process*)
-                  #+sbcl (sb-ext:process-input process*)))
-          (when (eq output :stream)
-            (prop 'output-stream
-                  #+abcl (symbol-call :sys :process-output process*)
-                  #+clozure (ccl:external-process-output-stream process*)
-                  #+(or cmucl scl) (ext:process-output process*)
-                  #+sbcl (sb-ext:process-output process*)))
+    (nest
+     (progn ;; see comments for these functions
+       (%handle-if-does-not-exist input if-input-does-not-exist)
+       (%handle-if-exists output if-output-exists)
+       (%handle-if-exists error-output if-error-output-exists))
+     (let ((process-info (make-instance 'process-info))
+           (input (%normalize-io-specifier input :input))
+           (output (%normalize-io-specifier output :output))
+           (error-output (%normalize-io-specifier error-output :error-output))
+           #+(and allegro os-windows) (interactive (%interactivep input output error-output))
+           (command
+            (etypecase command
+              #+os-unix (string `("/bin/sh" "-c" ,command))
+              #+os-unix (list command)
+              #+os-windows
+              (string
+               ;; NB: We add cmd /c here. Behavior without going through cmd is not well specified
+               ;; when the command contains spaces or special characters:
+               ;; IIUC, the system will use space as a separator,
+               ;; but the C++ argv-decoding libraries won't, and
+               ;; you're supposed to use an extra argument to CreateProcess to bridge the gap,
+               ;; yet neither allegro nor clisp provide access to that argument.
+               #+(or allegro clisp) (strcat "cmd /c " command)
+               ;; On ClozureCL for Windows, we assume you are using
+               ;; r15398 or later in 1.9 or later,
+               ;; so that bug 858 is fixed http://trac.clozure.com/ccl/ticket/858
+               ;; On SBCL, we assume the patch from fcae0fd (to be part of SBCL 1.3.13)
+               #+(or clozure sbcl) (cons "cmd" (strcat "/c " command))
+               ;; NB: On other Windows implementations, this is utterly bogus
+               ;; except in the most trivial cases where no quoting is needed.
+               ;; Use at your own risk.
+               #-(or allegro clisp clozure sbcl)
+               (parameter-error "~S doesn't support string commands on Windows on this lisp: ~S"
+                                'launch-program command))
+              #+os-windows
+              (list
+               #+allegro (escape-windows-command command)
+               #-allegro command)))))
+     #+(or abcl (and allegro os-unix) clozure cmucl ecl mkcl sbcl)
+     (let ((program (car command))
+           #-allegro (arguments (cdr command))))
+     #+(and sbcl os-windows)
+     (multiple-value-bind (arguments escape-arguments)
+         (if (listp arguments)
+             (values arguments t)
+             (values (list arguments) nil)))
+     #-(or allegro mkcl sbcl) (with-current-directory (directory))
+     (multiple-value-bind
+       #+(or abcl clozure cmucl sbcl scl) (process)
+       #+allegro (in-or-io out-or-err err-or-pid pid-or-nil)
+       #+ecl (stream code process)
+       #+lispworks (io-or-pid err-or-nil #-lispworks7+ pid-or-nil)
+       #+mkcl (stream process code)
+       #.`(apply
+           #+abcl 'sys:run-program
+           #+allegro ,@'('excl:run-shell-command
+                         #+os-unix (coerce (cons program command) 'vector)
+                         #+os-windows command)
+           #+clozure 'ccl:run-program
+           #+(or cmucl ecl scl) 'ext:run-program
+           #+lispworks ,@'('system:run-shell-command `("/usr/bin/env" ,@command)) ; full path needed
+           #+mkcl 'mk-ext:run-program
+           #+sbcl 'sb-ext:run-program
+           #+(or abcl clozure cmucl ecl mkcl sbcl) ,@'(program arguments)
+           #+(and sbcl os-windows) ,@'(:escape-arguments escape-arguments)
+           :input input :if-input-does-not-exist :error
+           :output output :if-output-exists :append
+           ,(or #+(or allegro lispworks) :error-output :error) error-output
+           ,(or #+(or allegro lispworks) :if-error-output-exists :if-error-exists) :append
+           :wait nil :element-type element-type :external-format external-format
+           :allow-other-keys t
+           #+allegro ,@`(:directory directory
+                         #+os-windows ,@'(:show-window (if interactive nil :hide)))
+           #+lispworks ,@'(:save-exit-status t)
+           #+mkcl ,@'(:directory (native-namestring directory))
+           #-sbcl keys ;; on SBCL, don't pass :directory nil but remove it from the keys
+           #+sbcl ,@'(:search t (if directory keys (remove-plist-key :directory keys)))))
+     (labels ((prop (key value) (setf (slot-value process-info key) value)))
+       #+allegro
+       (cond
+         (separate-streams
+          (prop 'process pid-or-nil)
+          (when (eq input :stream) (prop 'input-stream in-or-io))
+          (when (eq output :stream) (prop 'output-stream out-or-err))
+          (when (eq error-output :stream) (prop 'error-stream err-or-pid)))
+         (t
+          (prop 'process err-or-pid)
+          (ecase (+ (if (eq input :stream) 1 0) (if (eq output :stream) 2 0))
+            (0)
+            (1 (prop 'input-stream in-or-io))
+            (2 (prop 'output-stream in-or-io))
+            (3 (prop 'bidir-stream in-or-io)))
           (when (eq error-output :stream)
-            (prop 'error-output-stream
-                  #+abcl (symbol-call :sys :process-error process*)
-                  #+clozure (ccl:external-process-error-stream process*)
-                  #+(or cmucl scl) (ext:process-error process*)
-                  #+sbcl (sb-ext:process-error process*))))
-        #+(or ecl mkcl)
-        (destructuring-bind #+ecl (stream code process) #+mkcl (stream process code) process*
-          (declare (ignore code))
-          (let ((mode (+ (if (eq input :stream) 1 0) (if (eq output :stream) 2 0))))
-            (unless (zerop mode)
-              (prop (case mode (1 'input-stream) (2 'output-stream) (3 'bidir-stream)) stream)))
-          (prop 'process process))
-        #+lispworks
-        (let ((mode (+ (if (eq input :stream) 1 0) (if (eq output :stream) 2 0))))
-          (if (or (plusp mode) (eq error-output :stream))
-              (destructuring-bind (io err pid) process*
-                #+lispworks7+ (declare (ignore pid))
-                (prop 'process #+lispworks7+ io #-lispworks7+ pid)
-                (when (plusp mode)
-                  (prop (ecase mode
-                          (1 'input-stream)
-                          (2 'output-stream)
-                          (3 'bidir-stream)) io))
-                (when (eq error-output :stream)
-                  (prop 'error-stream err)))
-              ;; lispworks6 returns (pid), lispworks7 returns (io err pid) of which we keep io
-              (prop 'process (first process*)))))
-      process-info)))
+            (prop 'error-stream out-or-err))))
+       #+(or abcl clozure cmucl sbcl scl)
+       (progn
+         (prop 'process process)
+         (when (eq input :stream)
+           (nest
+            (prop 'input-stream)
+            #+abcl (symbol-call :sys :process-input)
+            #+clozure (ccl:external-process-input-stream)
+            #+(or cmucl scl) (ext:process-input)
+            #+sbcl (sb-ext:process-input)
+            process))
+         (when (eq output :stream)
+           (nest
+            (prop 'output-stream)
+            #+abcl (symbol-call :sys :process-output)
+            #+clozure (ccl:external-process-output-stream)
+            #+(or cmucl scl) (ext:process-output)
+            #+sbcl (sb-ext:process-output)
+            process))
+         (when (eq error-output :stream)
+           (nest
+            (prop 'error-output-stream)
+            #+abcl (symbol-call :sys :process-error)
+            #+clozure (ccl:external-process-error-stream)
+            #+(or cmucl scl) (ext:process-error)
+            #+sbcl (sb-ext:process-error)
+            process)))
+       #+(or ecl mkcl)
+       (let ((mode (+ (if (eq input :stream) 1 0) (if (eq output :stream) 2 0))))
+         code ;; ignore
+         (unless (zerop mode)
+           (prop (case mode (1 'input-stream) (2 'output-stream) (3 'bidir-stream)) stream))
+         (prop 'process process))
+       #+lispworks
+       (let ((mode (+ (if (eq input :stream) 1 0) (if (eq output :stream) 2 0))))
+         (cond
+           ((or (plusp mode) (eq error-output :stream))
+            (prop 'process #+lispworks7+ io-or-pid #-lispworks7+ pid-or-nil)
+            (when (plusp mode)
+              (prop (ecase mode
+                      (1 'input-stream)
+                      (2 'output-stream)
+                      (3 'bidir-stream)) io-or-pid))
+            (when (eq error-output :stream)
+              (prop 'error-stream err-or-nil)))
+           ;; lispworks6 returns (pid), lispworks7 returns (io err pid) of which we keep io
+           (t (prop 'process io-or-pid)))))
+     process-info)))
 
 ;;;; -------------------------------------------------------------------------
 ;;;; run-program initially from xcvb-driver.
 
 (uiop/package:define-package :uiop/run-program
   (:nicknames :asdf/run-program) ; OBSOLETE. Used by cl-sane, printv.
-  (:use :uiop/common-lisp :uiop/package :uiop/utility
+  (:use :uiop/common-lisp :uiop/package :uiop/utility :uiop/version
    :uiop/pathname :uiop/os :uiop/filesystem :uiop/stream :uiop/launch-program)
   (:export
    #:run-program
@@ -7100,46 +7276,48 @@ or just the first one (for direction :output or :io).
 objects. Side-effects for cached file location computation."
     (setf *user-cache* (xdg-cache-home "common-lisp" :implementation)))
   (register-image-restore-hook 'compute-user-cache))
-;;;; -------------------------------------------------------------------------
-;;; Hacks for backward-compatibility of the driver
+;;; -------------------------------------------------------------------------
+;;; Hacks for backward-compatibility with older versions of UIOP
 
 (uiop/package:define-package :uiop/backward-driver
-  (:use :uiop/common-lisp :uiop/package :uiop/utility
+  (:recycle :uiop/backward-driver :asdf/backward-driver :uiop)
+  (:use :uiop/common-lisp :uiop/package :uiop/utility :uiop/version
    :uiop/pathname :uiop/stream :uiop/os :uiop/image
    :uiop/run-program :uiop/lisp-build :uiop/configuration)
   (:export
    #:coerce-pathname
    #:user-configuration-directories #:system-configuration-directories
    #:in-first-directory #:in-user-configuration-directory #:in-system-configuration-directory
-   ))
+   #:version-compatible-p))
 (in-package :uiop/backward-driver)
 
-;;;; Backward compatibility with various pathname functions.
+(eval-when (:compile-toplevel :load-toplevel :execute)
+(with-deprecation ((version-deprecation *uiop-version* :style-warning "3.2.0" :warning "3.2.1"))
+  ;; Backward compatibility with ASDF 2.000 to 2.26
 
-(with-upgradability ()
+  ;; For backward-compatibility only, for people using internals
+  ;; Reported users in quicklisp 2015-11: hu.dwim.asdf (removed in next release)
+  ;; Will be removed after 2015-12.
   (defun coerce-pathname (name &key type defaults)
-    ;; For backward-compatibility only, for people using internals
-    ;; Reported users in quicklisp 2015-11: hu.dwim.asdf (removed in next release)
-    ;; Will be removed after 2015-12.
-    ;;(warn "Please don't use ASDF::COERCE-PATHNAME. Use ASDF/PATHNAME:PARSE-UNIX-NAMESTRING.")
+    "DEPRECATED. Please use UIOP:PARSE-UNIX-NAMESTRING instead."
     (parse-unix-namestring name :type type :defaults defaults))
 
   ;; Backward compatibility for ASDF 2.27 to 3.1.4
   (defun user-configuration-directories ()
     "Return the current user's list of user configuration directories
 for configuring common-lisp.
-    DEPRECATED. Use uiop:xdg-config-pathnames instead."
+DEPRECATED. Use UIOP:XDG-CONFIG-PATHNAMES instead."
     (xdg-config-pathnames "common-lisp"))
   (defun system-configuration-directories ()
     "Return the list of system configuration directories for common-lisp.
-    DEPRECATED. Use uiop:config-system-pathnames instead."
+DEPRECATED. Use UIOP:CONFIG-SYSTEM-PATHNAMES instead."
     (system-config-pathnames "common-lisp"))
   (defun in-first-directory (dirs x &key (direction :input))
     "Finds the first appropriate file named X in the list of DIRS for I/O
 in DIRECTION \(which may be :INPUT, :OUTPUT, :IO, or :PROBE).
-   If direction is :INPUT or :PROBE, will return the first extant file named
+If direction is :INPUT or :PROBE, will return the first extant file named
 X in one of the DIRS.
-   If direction is :OUTPUT or :IO, will simply return the file named X in the
+If direction is :OUTPUT or :IO, will simply return the file named X in the
 first element of DIRS that exists. DEPRECATED."
     (find-preferred-file
      (mapcar #'(lambda (dir) (subpathname (ensure-directory-pathname dir) x)) dirs)
@@ -7151,7 +7329,21 @@ DEPRECATED."
   (defun in-system-configuration-directory (x &key (direction :input))
     "Return the pathname for the file named X under the system configuration directory
 for common-lisp. DEPRECATED."
-    (find-preferred-file (system-config-pathnames "common-lisp" x) :direction direction)))
+    (find-preferred-file (system-config-pathnames "common-lisp" x) :direction direction))
+
+
+  ;; Backward compatibility with ASDF 1 to ASDF 2.32
+
+  (defun version-compatible-p (provided-version required-version)
+    "Is the provided version a compatible substitution for the required-version?
+If major versions differ, it's not compatible.
+If they are equal, then any later version is compatible,
+with later being determined by a lexicographical comparison of minor numbers.
+DEPRECATED."
+    (let ((x (parse-version provided-version nil))
+          (y (parse-version required-version nil)))
+      (and x y (= (car x) (car y)) (lexicographic<= '< (cdr y) (cdr x)))))))
+
 ;;;; ---------------------------------------------------------------------------
 ;;;; Re-export all the functionality in UIOP
 
@@ -7164,7 +7356,7 @@ for common-lisp. DEPRECATED."
    ;; that could cause potential conflicts for packages that would :use (cl uiop)
    ;; or :use (closer-common-lisp uiop), etc.
   (:use-reexport
-   :uiop/package :uiop/utility
+   :uiop/package :uiop/utility :uiop/version
    :uiop/os :uiop/pathname :uiop/filesystem :uiop/stream :uiop/image
    :uiop/launch-program :uiop/run-program
    :uiop/lisp-build :uiop/configuration :uiop/backward-driver))
@@ -7184,6 +7376,7 @@ for common-lisp. DEPRECATED."
    #:upgrading-p #:when-upgrading #:upgrade-asdf #:defparameter*
    #:*post-upgrade-cleanup-hook* #:cleanup-upgraded-asdf
    ;; There will be no symbol left behind!
+   #:with-asdf-deprecation
    #:intern*)
   (:import-from :uiop/package #:intern* #:find-symbol*))
 (in-package :asdf/upgrade)
@@ -7265,7 +7458,7 @@ previously-loaded version of ASDF."
          ;; "3.4.5.67" would be a development version in the official branch, on top of 3.4.5.
          ;; "3.4.5.0.8" would be your eighth local modification of official release 3.4.5
          ;; "3.4.5.67.8" would be your eighth local modification of development version 3.4.5.67
-         (asdf-version "3.1.7.40")
+         (asdf-version "3.1.7.43")
          (existing-version (asdf-version)))
     (setf *asdf-version* asdf-version)
     (when (and existing-version (not (equal asdf-version existing-version)))
@@ -7336,7 +7529,12 @@ previously-loaded version of ASDF."
     (let ((*load-print* nil)
           (*compile-print* nil))
       (handler-bind (((or style-warning) #'muffle-warning))
-        (symbol-call :asdf :load-system :asdf :verbose nil)))))
+        (symbol-call :asdf :load-system :asdf :verbose nil))))
+
+  (defmacro with-asdf-deprecation ((&rest keys &key &allow-other-keys) &body body)
+    `(with-upgradability ()
+       (with-deprecation ((version-deprecation *asdf-version* ,@keys))
+         ,@body))))
 ;;;; -------------------------------------------------------------------------
 ;;;; Session cache
 
@@ -8970,15 +9168,23 @@ The class needs to be updated for ASDF 3.1 and specify appropriate propagation m
              :format-arguments
              (list (type-of o)))))
 
+  (with-asdf-deprecation (:style-warning "3.2")
+    (defun backward-compatible-depends-on (o c)
+      "DEPRECATED: all subclasses of OPERATION used in ASDF should inherit from one of
+ DOWNWARD-OPERATION UPWARD-OPERATION SIDEWAY-OPERATION SELFWARD-OPERATION NON-PROPAGATING-OPERATION.
+ The function BACKWARD-COMPATIBLE-DEPENDS-ON temporarily provides ASDF2 behaviour for those that
+ don't. In the future this functionality will be removed, and the default will be no propagation."
+      `(,@(sideway-operation-depends-on o c)
+        ,@(when (typep c 'parent-component) (downward-operation-depends-on o c)))))
+
   (defmethod component-depends-on ((o operation) (c component))
     `(;; Normal behavior, to allow user-specified in-order-to dependencies
       ,@(cdr (assoc (type-of o) (component-in-order-to c)))
-      ;; For backward-compatibility with ASDF2, any operation that doesn't specify propagation
-      ;; or non-propagation through an appropriate mixin will be downward and sideway.
-      ,@(unless (typep o '(or downward-operation upward-operation sideway-operation
-                              selfward-operation non-propagating-operation))
-          `(,@(sideway-operation-depends-on o c)
-            ,@(when (typep c 'parent-component) (downward-operation-depends-on o c))))))
+        ;; For backward-compatibility with ASDF2, any operation that doesn't specify propagation
+        ;; or non-propagation through an appropriate mixin will be downward and sideway.
+        ,@(unless (typep o '(or downward-operation upward-operation sideway-operation
+                             selfward-operation non-propagating-operation))
+            (backward-compatible-depends-on o c))))
 
   (defmethod downward-operation ((o operation)) nil)
   (defmethod sideway-operation ((o operation)) nil))
@@ -10657,6 +10863,13 @@ itself."))
   ;; and all transitive sub-components as required components (excluding other systems).
   (defmethod component-depends-on ((o gather-operation) (s system))
     (let* ((mono (operation-monolithic-p o))
+           (go (make-operation (or (gather-operation o) 'compile-op)))
+           (bundle-p (typep go 'bundle-op))
+           ;; In a non-mono operation, don't recurse to other systems.
+           ;; In a mono operation gathering bundles, don't recurse inside systems.
+           (component-type (if mono (if bundle-p 'system t) '(not system)))
+           ;; In the end, only keep system bundles or non-system bundles, depending.
+           (keep-component (if bundle-p 'system '(not system)))
            (deps
             ;; Required-components only looks at the dependencies of an action, excluding the action
             ;; itself, so it may be safely used by an action recursing on its dependencies (which
@@ -10669,10 +10882,9 @@ itself."))
             ;; Note that we use basic-compile-op rather than compile-op so it will still work on
             ;; systems when *load-system-operation* is load-bundle-op.
             (required-components
-             s :other-systems mono :component-type (if mono 'system '(not system))
+             s :other-systems mono :component-type component-type :keep-component keep-component
              :goal-operation 'load-op :keep-operation 'basic-compile-op)))
-      `((,(or (gather-operation o) (if mono 'lib-op 'compile-op)) ,@deps)
-        ,@(call-next-method))))
+      `((,go ,@deps) ,@(call-next-method))))
 
   ;; Create a single fasl for the entire library
   (defclass basic-compile-bundle-op (bundle-op)
@@ -10700,13 +10912,11 @@ On CLASP, ECL, MKCL, these object files _also_ include the contents of Lisp file
 themselves. In any case, this operation will produce what you need to further build
 a static runtime for your system, or a dynamic library to load in an existing runtime."))
 
-  ;; What works: On ECL (and CLASP?), we link the .a output of lib-op into a .so;
-  ;; on MKCL, we link the many .o files from the system directly into the .so;
+  ;; What works: on ECL, CLASP(?), MKCL, we link the many .o files from the system into the .so;
   ;; on other implementations, we combine (usually concatenate) the .fasl files into one.
-  (defclass compile-bundle-op (basic-compile-bundle-op selfward-operation
-                               #+(or clasp ecl mkcl) link-op #-(or clasp ecl) gather-operation)
-    ((selfward-operation :initform '(prepare-bundle-op #+(or clasp ecl) lib-op)
-                         :allocation :class))
+  (defclass compile-bundle-op (basic-compile-bundle-op selfward-operation gather-operation
+                                                       #+(or clasp ecl mkcl) link-op)
+    ((selfward-operation :initform '(prepare-bundle-op) :allocation :class))
     (:documentation "This operator is an alternative to COMPILE-OP. Build a system
 and all of its dependencies, but build only a single (\"monolithic\") FASL, instead
 of one per source file, which may be more resource efficient.  That monolithic
@@ -10750,12 +10960,7 @@ for all the linkable object files associated with the system. Compare with LIB-O
   (defclass monolithic-compile-bundle-op
       (basic-compile-bundle-op monolithic-bundle-op
        #+(or clasp ecl mkcl) link-op gather-operation non-propagating-operation)
-    ((gather-operation
-      :initform #-(or clasp ecl mkcl) 'compile-bundle-op #+(or clasp ecl mkcl) 'lib-op
-      :allocation :class)
-     (gather-type
-      :initform #-(or clasp ecl mkcl) :fasl #+(or clasp ecl mkcl) :static-library
-      :allocation :class))
+    ()
     (:documentation "Create a single fasl for the system and its dependencies."))
 
   (defclass monolithic-load-bundle-op (load-bundle-op monolithic-bundle-op)
@@ -10763,18 +10968,19 @@ for all the linkable object files associated with the system. Compare with LIB-O
     (:documentation "Load a single fasl for the system and its dependencies."))
 
   (defclass monolithic-lib-op (lib-op monolithic-bundle-op non-propagating-operation)
-    ((gather-type :initform :static-library :allocation :class))
+    ((gather-type :initform :object :allocation :class))
     (:documentation "Compile the system and produce a linkable static library (.a/.lib)
 for all the linkable object files associated with the system or its dependencies. See LIB-OP."))
 
   (defclass monolithic-dll-op (dll-op monolithic-bundle-op non-propagating-operation)
-    ((gather-type :initform :static-library :allocation :class))
+    ((gather-type :initform :object :allocation :class))
     (:documentation "Compile the system and produce a dynamic loadable library (.so/.dll)
 for all the linkable object files associated with the system or its dependencies. See LIB-OP"))
 
   (defclass image-op (monolithic-bundle-op selfward-operation
                       #+(or clasp ecl mkcl) link-op #+(or clasp ecl mkcl) gather-operation)
     ((bundle-type :initform :image :allocation :class)
+     (gather-operation :initform 'lib-op :allocation :class)
      #+(or clasp ecl mkcl) (gather-type :initform :static-library :allocation :class)
      (selfward-operation :initform '(#-(or clasp ecl mkcl) load-op) :allocation :class))
     (:documentation "create an image file from the system and its dependencies"))
@@ -10865,7 +11071,7 @@ or of opaque libraries shipped along the source code."))
 ;;; a FASL, a statically linked library, a shared library, etc.
 ;;; The different targets are defined by specialization.
 ;;;
-(when-upgrading (:version "3.1.9")
+(when-upgrading (:version "3.2.0")
   ;; Cancel any previously defined method
   (defmethod initialize-instance :after ((instance bundle-op) &rest initargs &key &allow-other-keys)
     (declare (ignore initargs))))
@@ -11267,7 +11473,6 @@ into a single file"))
 
 ;; (setf output-translations) between 2.27 and 3.0.3 was using a defsetf macro
 ;; for the sake of obsolete versions of GCL 2.6. Make sure it doesn't come to haunt us.
-#-mkcl ; mkcl 1.1.9 can't fmakunbound a setf function.
 (when-upgrading (:version "3.1.2") (fmakunbound '(setf output-translations)))
 
 (with-upgradability ()
@@ -12111,6 +12316,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
    #:error-component #:error-operation #:traverse
    #:component-load-dependencies
    #:enable-asdf-binary-locations-compatibility
+   #:operation-forced
    #:operation-on-failure #:operation-on-warnings #:on-failure #:on-warnings
    #:component-property
    #:run-shell-command
@@ -12118,29 +12324,53 @@ otherwise return a default system name computed from PACKAGE-NAME."
    #:explain))
 (in-package :asdf/backward-interface)
 
-(with-upgradability ()
+;; NB: the warning status of these functions may have to be distinguished later,
+;; as some get removed faster than the others in client code.
+(with-asdf-deprecation (:style-warning "3.2")
+
   ;; These conditions from ASDF 1 and 2 are used by many packages in Quicklisp;
   ;; but ASDF3 replaced them with somewhat different variants of uiop:compile-condition
   ;; that do not involve ASDF actions.
   ;; TODO: find the offenders and stop them.
-  (define-condition operation-error (error) ;; Bad, backward-compatible name
-    ;; Used by SBCL, cffi-tests, clsql-mysql, clsql-uffi, qt, elephant, uffi-tests, sb-grovel
-    ((component :reader error-component :initarg :component)
-     (operation :reader error-operation :initarg :operation))
-    (:report (lambda (c s)
-               (format s (compatfmt "~@<~A while invoking ~A on ~A~@:>")
-                       (type-of c) (error-operation c) (error-component c)))))
-  (define-condition compile-error (operation-error) ())
-  (define-condition compile-failed (compile-error) ())
-  (define-condition compile-warned (compile-error) ())
+  (progn
+    (define-condition operation-error (error) ;; Bad, backward-compatible name
+      ;; Used by SBCL, cffi-tests, clsql-mysql, clsql-uffi, qt, elephant, uffi-tests, sb-grovel
+      ((component :reader error-component :initarg :component)
+       (operation :reader error-operation :initarg :operation))
+      (:report (lambda (c s)
+                 (format s (compatfmt "~@<~A while invoking ~A on ~A~@:>")
+                         (type-of c) (error-operation c) (error-component c)))))
+    (define-condition compile-error (operation-error) ())
+    (define-condition compile-failed (compile-error) ())
+    (define-condition compile-warned (compile-error) ()))
 
-  (defun component-load-dependencies (component)
-    "DEPRECATED. Please use COMPONENT-SIDEWAY-DEPENDENCIES instead."
+  ;; In Quicklisp 2015-05, still used by lisp-executable, staple, repl-utilities, cffi
+  (defun component-load-dependencies (component) ;; from ASDF 2.000 to 2.26
+    "DEPRECATED. Please use COMPONENT-SIDEWAY-DEPENDENCIES instead; or better,
+define your operations with proper use of SIDEWAY-OPERATION, SELFWARD-OPERATION,
+or define methods on PREPARE-OP, etc."
     ;; Old deprecated name for the same thing. Please update your software.
     (component-sideway-dependencies component))
 
+  (defun* (operation-forced) (operation)
+    "DEPRECATED. Assume it's (constantly nil) instead -- until it disappears."
+    ;; This function exists for backward compatibility with swank.asd, its only user,
+    ;; that still abuses it as of 2016-10-01.
+    ;;
+    ;; The magic PERFORM method in swank.asd only actually loads swank if it sees
+    ;; that the operation was forced. But it actually fails, badly, in that case.
+    ;; The correctness criterion for a build specification (which is _not_
+    ;; specific to ASDF) requires that the effects of a build step must NOT depend
+    ;; on whether the step was "forced" or not. Therefore it is correct that this
+    ;; method should return constantly the same result. Since returning T currently
+    ;; causes massive failure in SLIME, it shall be constantly NIL.
+    ;; see also https://bugs.launchpad.net/asdf/+bug/1629582
+    (declare (ignore operation))
+    nil)
+
   ;; These old interfaces from ASDF1 have never been very meaningful
   ;; but are still used in obscure places.
+  ;; In Quicklisp 2015-05, still used by cl-protobufs and clx.
   (defgeneric operation-on-warnings (operation)
     (:documentation "DEPRECATED. Please use UIOP:*COMPILE-FILE-WARNINGS-BEHAVIOUR* instead."))
   (defgeneric operation-on-failure (operation)
@@ -12149,19 +12379,23 @@ otherwise return a default system name computed from PACKAGE-NAME."
     (:documentation "DEPRECATED. Please SETF UIOP:*COMPILE-FILE-WARNINGS-BEHAVIOUR* instead."))
   (defgeneric (setf operation-on-failure) (x operation)
     (:documentation "DEPRECATED. Please SETF UIOP:*COMPILE-FILE-FAILURE-BEHAVIOUR* instead."))
-  (defmethod operation-on-warnings ((o operation))
-    *compile-file-warnings-behaviour*)
-  (defmethod operation-on-failure ((o operation))
-    *compile-file-failure-behaviour*)
-  (defmethod (setf operation-on-warnings) (x (o operation))
-    (setf *compile-file-warnings-behaviour* x))
-  (defmethod (setf operation-on-failure) (x (o operation))
-    (setf *compile-file-failure-behaviour* x))
+  (progn
+    (defmethod operation-on-warnings ((o operation))
+      *compile-file-warnings-behaviour*)
+    (defmethod operation-on-failure ((o operation))
+      *compile-file-failure-behaviour*)
+    (defmethod (setf operation-on-warnings) (x (o operation))
+      (setf *compile-file-warnings-behaviour* x))
+    (defmethod (setf operation-on-failure) (x (o operation))
+      (setf *compile-file-failure-behaviour* x)))
 
+  ;; Quicklisp 2015-05: Still used by SLIME's swank-asdf (!), common-lisp-stat,
+  ;; js-parser, osicat, babel, staple, weblocks, cl-png, plain-odbc, autoproject,
+  ;; cl-blapack, com.informatimago, cells-gtk3, asdf-dependency-grovel,
+  ;; cl-glfw, cffi, jwacs, montezuma
   (defun system-definition-pathname (x)
     ;; As of 2.014.8, we mean to make this function obsolete,
     ;; but that won't happen until all clients have been updated.
-    ;;(cerror "Use ASDF:SYSTEM-SOURCE-FILE instead"
     "DEPRECATED. This function used to expose ASDF internals with subtle
 differences with respect to user expectations, that have been refactored
 away since. We recommend you use ASDF:SYSTEM-SOURCE-FILE instead for a
@@ -12170,69 +12404,72 @@ ASDF:SYSTEM-SOURCE-DIRECTORY or ASDF:SYSTEM-RELATIVE-PATHNAME
 if that's whay you mean." ;;)
     (system-source-file x))
 
-
   ;; TRAVERSE is the function used to compute a plan in ASDF 1 and 2.
   ;; It was never officially exposed but some people still used it.
   (defgeneric traverse (operation component &key &allow-other-keys)
     (:documentation
-     "Generate and return a plan for performing OPERATION on COMPONENT.
+     "DEPRECATED. Use MAKE-PLAN and PLAN-ACTIONS, or REQUIRED-COMPONENTS,
+or some other supported interface instead.
+
+Generate and return a plan for performing OPERATION on COMPONENT.
 
 The plan returned is a list of dotted-pairs. Each pair is the CONS
 of ASDF operation object and a COMPONENT object. The pairs will be
 processed in order by OPERATE."))
-  (define-convenience-action-methods traverse (operation component &key))
-
+  (progn
+    (define-convenience-action-methods traverse (operation component &key)))
   (defmethod traverse ((o operation) (c component) &rest keys &key plan-class &allow-other-keys)
-    (plan-actions (apply 'make-plan plan-class o c keys))))
+    (plan-actions (apply 'make-plan plan-class o c keys)))
 
 
-;;;; ASDF-Binary-Locations compatibility
-;; This remains supported for legacy user, but not recommended for new users.
-;; We suspect there are no more legacy users in 2016.
-(with-upgradability ()
+  ;; ASDF-Binary-Locations compatibility
+  ;; This remains supported for legacy user, but not recommended for new users.
+  ;; We suspect there are no more legacy users in 2016.
   (defun enable-asdf-binary-locations-compatibility
       (&key
-       (centralize-lisp-binaries nil)
-       (default-toplevel-directory
-        (subpathname (user-homedir-pathname) ".fasls/")) ;; Use ".cache/common-lisp/" instead ???
-       (include-per-user-information nil)
-       (map-all-source-files (or #+(or clasp clisp ecl mkcl) t nil))
-       (source-to-target-mappings nil)
-       (file-types `(,(compile-file-type)
-                     "build-report"
-                     #+clasp (compile-file-type :output-type :object)
-                     #+ecl (compile-file-type :type :object)
-                     #+mkcl (compile-file-type :fasl-p nil)
-                     #+clisp "lib" #+sbcl "cfasl"
-                     #+sbcl "sbcl-warnings" #+clozure "ccl-warnings")))
+         (centralize-lisp-binaries nil)
+         (default-toplevel-directory
+             ;; Use ".cache/common-lisp/" instead ???
+             (subpathname (user-homedir-pathname) ".fasls/"))
+         (include-per-user-information nil)
+         (map-all-source-files (or #+(or clasp clisp ecl mkcl) t nil))
+         (source-to-target-mappings nil)
+         (file-types `(,(compile-file-type)
+                        "build-report"
+                        #+clasp (compile-file-type :output-type :object)
+                        #+ecl (compile-file-type :type :object)
+                        #+mkcl (compile-file-type :fasl-p nil)
+                        #+clisp "lib" #+sbcl "cfasl"
+                        #+sbcl "sbcl-warnings" #+clozure "ccl-warnings")))
+    "DEPRECATED. Use asdf-output-translations instead."
     #+(or clasp clisp ecl mkcl)
     (when (null map-all-source-files)
       (error "asdf:enable-asdf-binary-locations-compatibility doesn't support :map-all-source-files nil on CLISP, ECL and MKCL"))
     (let* ((patterns (if map-all-source-files (list *wild-file*)
                          (loop :for type :in file-types
-                               :collect (make-pathname :type type :defaults *wild-file*))))
+                           :collect (make-pathname :type type :defaults *wild-file*))))
            (destination-directory
-             (if centralize-lisp-binaries
-                 `(,default-toplevel-directory
-                   ,@(when include-per-user-information
-                       (cdr (pathname-directory (user-homedir-pathname))))
-                   :implementation ,*wild-inferiors*)
-                 `(:root ,*wild-inferiors* :implementation))))
+            (if centralize-lisp-binaries
+                `(,default-toplevel-directory
+                     ,@(when include-per-user-information
+                             (cdr (pathname-directory (user-homedir-pathname))))
+                     :implementation ,*wild-inferiors*)
+                `(:root ,*wild-inferiors* :implementation))))
       (initialize-output-translations
        `(:output-translations
          ,@source-to-target-mappings
          #+abcl (#p"jar:file:/**/*.jar!/**/*.*" (:function translate-jar-pathname))
          #+abcl (#p"/___jar___file___root___/**/*.*" (,@destination-directory))
          ,@(loop :for pattern :in patterns
-                 :collect `((:root ,*wild-inferiors* ,pattern)
-                            (,@destination-directory ,pattern)))
+             :collect `((:root ,*wild-inferiors* ,pattern)
+                        (,@destination-directory ,pattern)))
          (t t)
          :ignore-inherited-configuration))))
-
-  (defmethod operate :before (operation-class system &rest args &key &allow-other-keys)
-    (declare (ignore operation-class system args))
-    (when (find-symbol* '#:output-files-for-system-and-operation :asdf nil)
-      (error "ASDF 2 is not compatible with ASDF-BINARY-LOCATIONS, which you are using.
+  (progn
+    (defmethod operate :before (operation-class system &rest args &key &allow-other-keys)
+      (declare (ignore operation-class system args))
+      (when (find-symbol* '#:output-files-for-system-and-operation :asdf nil)
+        (error "ASDF 2 is not compatible with ASDF-BINARY-LOCATIONS, which you are using.
 ASDF 2 now achieves the same purpose with its builtin ASDF-OUTPUT-TRANSLATIONS,
 which should be easier to configure. Please stop using ASDF-BINARY-LOCATIONS,
 and instead use ASDF-OUTPUT-TRANSLATIONS. See the ASDF manual for details.
@@ -12242,39 +12479,32 @@ ASDF:ENABLE-ASDF-BINARY-LOCATIONS-COMPATIBILITY as documented in the manual;
 call that function where you would otherwise have loaded and configured A-B-L."))))
 
 
-;;; run-shell-command
-;; WARNING! The function below is not just deprecated but also dysfunctional.
-;; Please use asdf/run-program:run-program instead.
-(with-upgradability ()
+  ;; run-shell-command from ASDF 2, lightly fixed from ASDF 1, copied from MK-DEFSYSTEM. Die!
   (defun run-shell-command (control-string &rest args)
-    "Interpolate ARGS into CONTROL-STRING as if by FORMAT, and
-synchronously execute the result using a Bourne-compatible shell, with
-output to *VERBOSE-OUT*.  Returns the shell's exit code.
-
-PLEASE DO NOT USE.
-Deprecated function, for backward-compatibility only.
+    "PLEASE DO NOT USE. This function is not just DEPRECATED, but also dysfunctional.
 Please use UIOP:RUN-PROGRAM instead."
     #-(and ecl os-windows)
     (let ((command (apply 'format nil control-string args)))
       (asdf-message "; $ ~A~%" command)
       (let ((exit-code
-              (ignore-errors
+             (ignore-errors
                (nth-value 2 (run-program command :force-shell t :ignore-error-status t
-                                                 :output *verbose-out*)))))
+                                         :output *verbose-out*)))))
         (typecase exit-code
           ((integer 0 255) exit-code)
           (t 255))))
     #+(and ecl os-windows)
-    (not-implemented-error "run-shell-command" "for ECL on Windows.")
-    ))
+    (not-implemented-error "run-shell-command" "for ECL on Windows."))
 
+  ;; HOW do we get rid of variables??? With a symbol-macro that issues a warning?
+  ;; In Quicklisp 2015-05, cl-protobufs still uses it, but that should be fixed in next version.
+  (progn
+    (defvar *asdf-verbose* nil)) ;; backward-compatibility with ASDF2 only. Unused.
 
-(with-upgradability ()
-  (defvar *asdf-verbose* nil)) ;; backward-compatibility with ASDF2 only. Unused.
-
-
-;;; backward-compatibility methods. Do NOT use in new code. NOT SUPPORTED.
-(with-upgradability ()
+  ;; Do NOT use in new code. NOT SUPPORTED.
+  ;; NB: When this goes away, remove the slot PROPERTY in COMPONENT.
+  ;; In Quicklisp 2014-05, it's still used by yaclml, amazon-ecs, blackthorn-engine, cl-tidy.
+  ;; See TODO for further cleanups required before to get rid of it.
   (defgeneric component-property (component property))
   (defgeneric (setf component-property) (new-value component property))
 
@@ -12287,19 +12517,18 @@ Please use UIOP:RUN-PROGRAM instead."
           (setf (cdr a) new-value)
           (setf (slot-value c 'properties)
                 (acons property new-value (slot-value c 'properties)))))
-    new-value))
+    new-value)
 
 
-;;; This method survives from ASDF 1, but really it is superseded by action-description.
-(with-upgradability ()
+  ;; This method survives from ASDF 1, but really it is superseded by action-description.
   (defgeneric explain (operation component)
     (:documentation "Display a message describing an action.
+
 DEPRECATED. Use ASDF:ACTION-DESCRIPTION and/or ASDF::FORMAT-ACTION instead."))
+  (progn
+    (define-convenience-action-methods explain (operation component)))
   (defmethod explain ((o operation) (c component))
-    (asdf-message (compatfmt "~&~@<; ~@;~A~:>~%") (action-description o c)))
-  (define-convenience-action-methods explain (operation component)))
-
-
+    (asdf-message (compatfmt "~&~@<; ~@;~A~:>~%") (action-description o c))))
 ;;;; -------------------------------------------------------------------------
 ;;; Internal hacks for backward-compatibility
 
@@ -12309,7 +12538,7 @@ DEPRECATED. Use ASDF:ACTION-DESCRIPTION and/or ASDF::FORMAT-ACTION instead."))
   (:export #:load-sysdef))
 (in-package :asdf/backward-internals)
 
-(with-upgradability ()
+(with-asdf-deprecation (:style-warning "3.2")
   (defun load-sysdef (name pathname)
     (declare (ignore name pathname))
     ;; Needed for backward compatibility with swank-asdf from SLIME 2015-12-01 or older.
@@ -12518,9 +12747,9 @@ DEPRECATED. Use ASDF:ACTION-DESCRIPTION and/or ASDF::FORMAT-ACTION instead."))
 
 ;;;; Register ASDF itself and all its subsystems as preloaded.
 (with-upgradability ()
-  (dolist (s '("asdf" "uiop" "asdf-defsystem" "asdf-package-system"))
+  (dolist (s '("asdf" "uiop" "asdf-package-system"))
     ;; Don't bother with these system names, no one relies on them anymore:
-    ;; "asdf-utils" "asdf-bundle" "asdf-driver"
+    ;; "asdf-utils" "asdf-bundle" "asdf-driver" "asdf-defsystem"
     (register-preloaded-system s :version *asdf-version*)))
 
 
