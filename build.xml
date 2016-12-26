@@ -955,7 +955,12 @@ ${basedir}/../cl-bench
 
     <property name="junit.path"
               value="${abcl.ext.dir}/junit-4.8.1.jar"/>
-
+    <property name="maven.dist.name"
+              value="apache-maven-3.3.9-bin.zip"/>
+    <property name="maven.dist.uri"
+              value="http://www-eu.apache.org/dist/maven/maven-3/3.3.9/binaries/${maven.dist.name}"/>
+    <property name="maven.local.path"
+              value="${abcl.ext.dir}/${maven.dist.name}"/>
 
     <path id="abcl.test.compile.classpath">
       <pathelement location="${junit.path}"/>
@@ -966,16 +971,32 @@ ${basedir}/../cl-bench
 
     <target name="abcl.ext.p">
       <!--XXX generalize over enumeration of all contributions to
-           abcl.ext if we get more of them.  -->
-      <available file="${junit.path}" property="abcl.ext.p"/>
+          abcl.ext if we get more of them.  -->
+      <condition property="abcl.ext.p">
+        <and>
+          <available file="${junit.path}"/>
+          <available file="${maven.local.path}"/>
+        </and>
+      </condition>
     </target>
-    <target name="abcl.ext" depends="abcl.ext.p" unless="abcl.ext.p">
 
+    <target name="abcl.ext" depends="abcl.ext.p" unless="abcl.ext.p">
       <mkdir dir="${abcl.ext.dir}"/>
       <get 
           src="http://cloud.github.com/downloads/KentBeck/junit/junit-4.8.1.jar"
           usetimestamp="true"
           dest="${junit.path}"/>
+      <get 
+          src="${maven.dist.uri}"
+          usetimestamp="true"
+          dest="${maven.local.path}"/>
+    </target>
+
+    <target name="abcl.ext.maven" depends="abcl.ext">
+      <echo>Installing Maven for ABCL from ${maven.dist.uri}.</echo>
+      <unzip src="${maven.local.path}"
+             dest="${abcl.ext.dir}">
+      </unzip>
     </target>
         
     <target name="abcl.test.compile" 
