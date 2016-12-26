@@ -11,12 +11,6 @@
                                      (:file "classpath")
                                      (:file "compat")))))
 
-#+nil FIXME
-(asdf:defsystem :jss-tests
-  :depends-on (jss abcl abcl-test-lisp)
-  :components ((:module tests
-                        :pathname "" 
-                        :components ((:file "tests")))))
 
 
 
