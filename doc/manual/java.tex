@@ -77,7 +77,23 @@ ultimately return the result of the last method call.
 --- Macro: \textbf{define-java-class} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Performs chained method invocations. `target' is the receiver
+object (when the first call is a virtual method call) or a list in the
+form (:static <jclass>) when the first method call is a static method
+call. `op' and each of the `ops' are either method designators or lists
+in the form (<method designator> \&rest args), where a method designator
+is either a string naming a method, or a jmethod object. `chain' will
+perform the method call specified by `op' on `target'; then, for each
+of the `ops', `chain' will perform the specified method call using the
+object returned by the previous method call as the receiver, and will
+ultimately return the result of the last method call.
+  For example, the form:
+
+  (chain (:static "java.lang.Runtime") "getRuntime" ("exec" "ls"))
+
+  is equivalent to the following Java code:
+
+  java.lang.Runtime.getRuntime().exec("ls");
 \end{adjustwidth}
 
 \paragraph{}
@@ -224,7 +240,8 @@ Returns the cause of JAVA-EXCEPTION. (The cause is the Java Throwable
 --- Class: \textbf{java-object} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Returns the cause of JAVA-EXCEPTION. (The cause is the Java Throwable
+  object that caused JAVA-EXCEPTION to be signalled.)
 \end{adjustwidth}
 
 \paragraph{}
@@ -343,9 +360,7 @@ When called with one argument, returns the name of the Java class
 --- Function: \textbf{jclass-of} [\textbf{java}] \textit{object \&optional name}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the name of the Java class of OBJECT. If the NAME argument is
-  supplied, verifies that OBJECT is an instance of the named class. The name
-  of the class or nil is always returned as a second value.
+not-documented
 \end{adjustwidth}
 
 \paragraph{}

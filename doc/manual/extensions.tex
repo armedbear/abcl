@@ -319,7 +319,24 @@ not-documented
 --- Function: \textbf{classp} [\textbf{extensions}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Collect ({(Name [Initial-Value] [Function])}*) {Form}*
+  Collect some values somehow.  Each of the collections specifies a bunch of
+  things which collected during the evaluation of the body of the form.  The
+  name of the collection is used to define a local macro, a la MACROLET.
+  Within the body, this macro will evaluate each of its arguments and collect
+  the result, returning the current value after the collection is done.  The
+  body is evaluated as a PROGN; to get the final values when you are done, just
+  call the collection macro with no arguments.
+
+  Initial-Value is the value that the collection starts out with, which
+  defaults to NIL.  Function is the function which does the collection.  It is
+  a function which will accept two arguments: the value to be collected and the
+  current collection.  The result of the function is made the new value for the
+  collection.  As a totally magical special-case, the Function may be Collect,
+  which tells us to build a list in forward order; this is the default.  If an
+  Initial-Value is supplied for Collect, the stuff will be rplacd'd onto the
+  end.  Note that Function may be anything that can appear in the functional
+  position, including macros and lambdas.
 \end{adjustwidth}
 
 \paragraph{}
@@ -445,6 +462,17 @@ not-documented
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{EXTENSIONS:GET-PID}
+\index{GET-PID}
+--- Function: \textbf{get-pid} [\textbf{extensions}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Get the process identifier of this lisp process. 
+
+Used to be in SLIME but generally useful, so now back in ABCL proper.
 \end{adjustwidth}
 
 \paragraph{}
