@@ -52,7 +52,23 @@ directory to search for classes or a list of such values.
 --- Macro: \textbf{chain} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Performs chained method invocations. `target' is the receiver
+object (when the first call is a virtual method call) or a list in the
+form (:static <jclass>) when the first method call is a static method
+call. `op' and each of the `ops' are either method designators or lists
+in the form (<method designator> \&rest args), where a method designator
+is either a string naming a method, or a jmethod object. `chain' will
+perform the method call specified by `op' on `target'; then, for each
+of the `ops', `chain' will perform the specified method call using the
+object returned by the previous method call as the receiver, and will
+ultimately return the result of the last method call.
+  For example, the form:
+
+  (chain (:static "java.lang.Runtime") "getRuntime" ("exec" "ls"))
+
+  is equivalent to the following Java code:
+
+  java.lang.Runtime.getRuntime().exec("ls");
 \end{adjustwidth}
 
 \paragraph{}
@@ -198,7 +214,8 @@ not-documented
 --- Function: \textbf{java-exception-cause} [\textbf{java}] \textit{java-exception}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Returns the cause of JAVA-EXCEPTION. (The cause is the Java Throwable
+  object that caused JAVA-EXCEPTION to be signalled.)
 \end{adjustwidth}
 
 \paragraph{}
@@ -326,9 +343,7 @@ When called with one argument, returns the name of the Java class
 --- Function: \textbf{jclass-of} [\textbf{java}] \textit{object \&optional name}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the name of the Java class of OBJECT. If the NAME argument is
-  supplied, verifies that OBJECT is an instance of the named class. The name
-  of the class or nil is always returned as a second value.
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -647,7 +662,7 @@ Returns a new Java array with base type ELEMENT-TYPE (a string or a class-ref)
 \paragraph{}
 \label{JAVA:JNEW-RUNTIME-CLASS}
 \index{JNEW-RUNTIME-CLASS}
---- Function: \textbf{jnew-runtime-class} [\textbf{java}] \textit{class-name \&rest args \&key (superclass java.lang.Object) interfaces constructors methods fields (access-flags (quote (public))) annotations}
+--- Function: \textbf{jnew-runtime-class} [\textbf{java}] \textit{class-name \&rest args \&key (superclass java.lang.Object) interfaces constructors methods fields (access-flags (quote (public))) annotations (class-loader (make-memory-class-loader))}
 
 \begin{adjustwidth}{5em}{5em}
 Creates and loads a Java class with methods calling Lisp closures
@@ -671,12 +686,12 @@ Creates and loads a Java class with methods calling Lisp closures
 
      (METHOD-NAME RETURN-TYPE ARGUMENT-TYPES FUNCTION \&key MODIFIERS ANNOTATIONS)
 
-   where 
-      METHOD-NAME is a string 
+   where
+      METHOD-NAME is a string
       RETURN-TYPE denotes the type of the object returned by the method
       ARGUMENT-TYPES is a list of parameters to the method
-      
-        The types are either strings naming fully qualified java classes or Lisp keywords referring to 
+
+        The types are either strings naming fully qualified java classes or Lisp keywords referring to
         primitive types (:void, :int, etc.).
 
      FUNCTION is a Lisp function of minimum arity (1+ (length
