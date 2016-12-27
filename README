@@ -36,6 +36,23 @@ you may extend this exception to your version of the software, but you
 are not obligated to do so. If you do not wish to do so, delete this
 exception statement from your version.
 
+RUNNING FROM DOCKER
+===================
+
+With [Docker Engine][] installed so that one may execute:
+
+        docker pull easye/openjdk8
+        docker run easye/abcl
+
+[Docker Engine]: https://www.docker.com/products/docker-engine
+
+## Building Docker Container locally from modifications
+
+        docker pull easye/openjdk8
+        docker build -t easye/abcl .
+
+See <file:Dockerfile> for build instructions.
+
 
 RUNNING FROM BINARY RELEASE
 ===========================
