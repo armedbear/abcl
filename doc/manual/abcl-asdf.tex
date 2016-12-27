@@ -1,0 +1,168 @@
+\paragraph{}
+\label{ABCL-ASDF:*ADDED-TO-CLASSPATH*}
+\index{*ADDED-TO-CLASSPATH*}
+--- Variable: \textbf{*added-to-classpath*} [\textbf{abcl-asdf}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-ASDF:*INHIBIT-ADD-TO-CLASSPATH*}
+\index{*INHIBIT-ADD-TO-CLASSPATH*}
+--- Variable: \textbf{*inhibit-add-to-classpath*} [\textbf{abcl-asdf}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-ASDF:*MAVEN-HTTP-PROXY*}
+\index{*MAVEN-HTTP-PROXY*}
+--- Variable: \textbf{*maven-http-proxy*} [\textbf{abcl-asdf}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+A string containing the URI of an http proxy for Maven to use.
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-ASDF:*MAVEN-REMOTE-REPOSITORY*}
+\index{*MAVEN-REMOTE-REPOSITORY*}
+--- Variable: \textbf{*maven-remote-repository*} [\textbf{abcl-asdf}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+The remote repository used by the Maven Aether embedder.
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-ASDF:*MAVEN-VERBOSE*}
+\index{*MAVEN-VERBOSE*}
+--- Variable: \textbf{*maven-verbose*} [\textbf{abcl-asdf}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Stream to send output from the Maven Aether subsystem to, or NIL to muffle output
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-ASDF:*MVN-LIBS-DIRECTORY*}
+\index{*MVN-LIBS-DIRECTORY*}
+--- Variable: \textbf{*mvn-libs-directory*} [\textbf{abcl-asdf}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Location of 'maven-core-3.<m>.<p>.jar', 'maven-embedder-3.<m>.<p>.jar' etc.
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-ASDF:ADD-DIRECTORY-JARS-TO-CLASS-PATH}
+\index{ADD-DIRECTORY-JARS-TO-CLASS-PATH}
+--- Function: \textbf{add-directory-jars-to-class-path} [\textbf{abcl-asdf}] \textit{directory recursive-p}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-ASDF:AS-CLASSPATH}
+\index{AS-CLASSPATH}
+--- Function: \textbf{as-classpath} [\textbf{abcl-asdf}] \textit{classpath}
+
+\begin{adjustwidth}{5em}{5em}
+Break apart the JVM CLASSPATH string into a list of its consituents.
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-ASDF:ENSURE-MVN-VERSION}
+\index{ENSURE-MVN-VERSION}
+--- Function: \textbf{ensure-mvn-version} [\textbf{abcl-asdf}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Return t if Maven version is 3.0.3 or greater.
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-ASDF:FIND-MVN}
+\index{FIND-MVN}
+--- Function: \textbf{find-mvn} [\textbf{abcl-asdf}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Attempt to find a suitable Maven ('mvn') executable on the hosting operating system.
+
+Returns the path of the Maven executable or nil if none are found.
+
+Returns the version of Maven found as the second value.
+
+Emits warnings if not able to find a suitable executable.
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-ASDF:INIT}
+\index{INIT}
+--- Function: \textbf{init} [\textbf{abcl-asdf}] \textit{\&optional \&key (force NIL)}
+
+\begin{adjustwidth}{5em}{5em}
+Run the initialization strategy to bootstrap a Maven dependency node.
+
+Set *MVN-LIBS-DIRECTORY* to an explicit value before running this
+function in order to bypass the dynamic introspection of the location
+of the mvn executable with an explicit value.
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-ASDF:MAKE-REMOTE-REPOSITORY}
+\index{MAKE-REMOTE-REPOSITORY}
+--- Function: \textbf{make-remote-repository} [\textbf{abcl-asdf}] \textit{id type url}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-ASDF:NEED-TO-ADD-DIRECTORY-JAR?}
+\index{NEED-TO-ADD-DIRECTORY-JAR?}
+--- Function: \textbf{need-to-add-directory-jar?} [\textbf{abcl-asdf}] \textit{directory recursive-p}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-ASDF:RESOLVE}
+\index{RESOLVE}
+--- Generic Function: \textbf{resolve} [\textbf{abcl-asdf}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a string in JVM CLASSPATH format as entries delimited by classpath separator string.
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-ASDF:RESOLVE-ARTIFACT}
+\index{RESOLVE-ARTIFACT}
+--- Function: \textbf{resolve-artifact} [\textbf{abcl-asdf}] \textit{group-id artifact-id \&key (version LATEST versionp)}
+
+\begin{adjustwidth}{5em}{5em}
+Resolve artifact to location on the local filesystem.
+
+Declared dependencies are not attempted to be located.
+
+If unspecified, the string "LATEST" will be used for the VERSION.
+
+Returns the Maven specific string for the artifact 
+\end{adjustwidth}
+
+\paragraph{}
+\label{ABCL-ASDF:RESOLVE-DEPENDENCIES}
+\index{RESOLVE-DEPENDENCIES}
+--- Function: \textbf{resolve-dependencies} [\textbf{abcl-asdf}] \textit{group-id artifact-id \&key (version LATEST versionp) (repository *maven-remote-repository* repository-p)}
+
+\begin{adjustwidth}{5em}{5em}
+Dynamically resolve Maven dependencies for item with GROUP-ID and ARTIFACT-ID 
+optionally with a VERSION and a REPOSITORY.  
+
+All recursive dependencies will be visited before resolution is successful.
+
+If unspecified, the string "LATEST" will be used for the VERSION.
+
+Returns a string containing the necessary jvm classpath entries packed
+in Java CLASSPATH representation.
+\end{adjustwidth}
+

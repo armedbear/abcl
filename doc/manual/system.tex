@@ -1349,7 +1349,8 @@ not-documented
 --- Function: \textbf{find-contrib} [\textbf{system}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Introspect runtime classpaths to find a loadable ABCL-CONTRIB.
+Introspect runtime classpaths to return a pathname containing
+  subdirectories containing ASDF definitions.
 \end{adjustwidth}
 
 \paragraph{}
@@ -1358,7 +1359,7 @@ Introspect runtime classpaths to find a loadable ABCL-CONTRIB.
 --- Function: \textbf{find-system} [\textbf{system}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-Find the location of the system.
+Find the location of the Armed Bear system implementation
 
 Used to determine relative pathname to find 'abcl-contrib.jar'.
 \end{adjustwidth}
@@ -2021,12 +2022,21 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
+\label{SYSTEM:PROCESS}
+\index{PROCESS}
+--- Class: \textbf{process} [\textbf{system}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
 \label{SYSTEM:PROCESS-ALIVE-P}
 \index{PROCESS-ALIVE-P}
 --- Function: \textbf{process-alive-p} [\textbf{system}] \textit{process}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Return t if process is still alive, nil otherwise.
 \end{adjustwidth}
 
 \paragraph{}
@@ -2180,6 +2190,38 @@ not-documented
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{SYSTEM:RECORD-SOURCE-INFORMATION-FOR-TYPE}
+\index{RECORD-SOURCE-INFORMATION-FOR-TYPE}
+--- Function: \textbf{record-source-information-for-type} [\textbf{system}] \textit{name type \&optional source-pathname source-position}
+
+\begin{adjustwidth}{5em}{5em}
+Record source information on the SYS:SOURCE property for symbol with NAME
+
+TYPE is either a symbol or list.
+
+Source information for functions, methods, and generic functions are
+represented as lists of the following form:
+
+    (:generic-function function-name)
+    (:function function-name)
+    (:method method-name qualifiers specializers)
+
+Where FUNCTION-NAME or METHOD-NAME can be a either be of the form
+'symbol or '(setf symbol).
+
+Source information for all other forms have a symbol for TYPE which is
+one of the following:
+
+:class, :variable, :condition, :constant, :compiler-macro, :macro
+:package, :structure, :type, :setf-expander, :source-transform
+
+These values follow SBCL'S implemenation in SLIME
+c.f. <https://github.com/slime/slime/blob/bad2acf672c33b913aabc1a7facb9c3c16a4afe9/swank/sbcl.lisp\#L748>
+
+
 \end{adjustwidth}
 
 \paragraph{}
@@ -2387,7 +2429,7 @@ not-documented
 --- Function: \textbf{sha256} [\textbf{system}] \textit{\&rest paths-or-strings}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Returned ASCIIfied representation of SHA256 digest of byte-based resource at PATHS-OR-STRINGs.
 \end{adjustwidth}
 
 \paragraph{}
@@ -2603,7 +2645,8 @@ not-documented
 --- Function: \textbf{unzip} [\textbf{system}] \textit{pathname \&optional directory => unzipped\_pathnames}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Unpack zip archive at PATHNAME returning a list of extracted pathnames.
+If the optional DIRECTORY is specified, root the abstraction in that directory, otherwise use the current value of *DEFAULT-PATHNAME-DEFAULTS*.
 \end{adjustwidth}
 
 \paragraph{}

@@ -81,7 +81,7 @@ to wake up for retrieval of that object.
 \paragraph{}
 \label{THREADS:MAKE-MAILBOX}
 \index{MAKE-MAILBOX}
---- Function: \textbf{make-mailbox} [\textbf{threads}] \textit{\&key ((queue g282154) NIL)}
+--- Function: \textbf{make-mailbox} [\textbf{threads}] \textit{\&key ((queue g283945) NIL)}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -90,7 +90,7 @@ not-documented
 \paragraph{}
 \label{THREADS:MAKE-MUTEX}
 \index{MAKE-MUTEX}
---- Function: \textbf{make-mutex} [\textbf{threads}] \textit{\&key ((in-use g282414) NIL)}
+--- Function: \textbf{make-mutex} [\textbf{threads}] \textit{\&key ((in-use g284205) NIL)}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -227,7 +227,8 @@ not-documented
 --- Macro: \textbf{with-mutex} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Acquires a lock on `mutex', executes the body
+and releases the lock.
 \end{adjustwidth}
 
 \paragraph{}
@@ -236,7 +237,7 @@ not-documented
 --- Macro: \textbf{with-thread-lock} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Acquires a lock on the `lock', executes `body' and releases the lock.
 \end{adjustwidth}
 
 \paragraph{}
