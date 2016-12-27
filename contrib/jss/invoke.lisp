@@ -1,8 +1,8 @@
 ;; Copyright (C) 2005 Alan Ruttenberg
 ;; Copyright (C) 2011-2 Mark Evenson
 ;;
-;; Since most of this code is derivative of the Jscheme System, it is
-;; licensed under the same terms, namely:
+;; Since JSS 1.0 was largely derivative of the Jscheme System, the
+;; current system is licensed under the same terms, namely:
 
 ;; This software is provided 'as-is', without any express or
 ;; implied warranty.
@@ -123,9 +123,7 @@
   (defvar *do-auto-imports* t 
     "Whether to automatically introspect all Java classes on the classpath when JSS is loaded."))
 
-(defvar *muffle-warnings* t) 
-
-(defvar *muffle-warnings* t) 
+(defvar *muffle-warnings* t)
 
 (defvar *imports-resolved-classes* (make-hash-table :test 'equalp))
 
