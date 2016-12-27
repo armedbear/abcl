@@ -373,6 +373,7 @@
                            "fdefinition.lisp"
                            "fill.lisp"
                            "find-all-symbols.lisp"
+                           "get-pid.lisp"
                            "gentemp.lisp"
                            "gray-streams.lisp"
                            "gui.lisp"
