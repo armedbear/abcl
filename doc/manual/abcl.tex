@@ -10,7 +10,7 @@
 \title{Armed Bear Common Lisp User Manual}
 \date{Version 1.5.0-dev\\
 \smallskip
-October 2016}
+December 2016}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -1292,6 +1292,9 @@ semantics to the execution of \code{REQUIRE} on the following symbols:
       \item \code{jss} Introduces dynamic inspection of present
         symbols via the \code{SHARPSIGN-DOUBLE-QUOTE} macros as Java Syntax
         Sucks
+      \item \code{abcl-introspect} Provides a framework for
+        introspecting runtime Java and Lisp object values.
+        
 \end{enumerate}
 
 \end{description}
@@ -1311,7 +1314,7 @@ reader in the definition of the \code{SHARPSIGN-DOUBLE-QUOTE}
 
 \section{ASDF}
 
-asdf-3.1.7.27 (see \cite{asdf}) is packaged as core component of \textsc{ABCL},
+asdf-3.1.7.43 (see \cite{asdf}) is packaged as core component of \textsc{ABCL},
 but not initialized by default, as it relies on the \textsc{CLOS} subsystem
 which can take a bit of time to start \footnote{While this time is
   ``merely'' on the order of seconds for contemporary 2011 machines,
@@ -1471,6 +1474,45 @@ Some more information on jss can be found in its documentation at
 The contrib contains a pure-Java version of JFLI. 
 
 \url{http://abcl.org/svn/tags/1.4.0/contrib/jfli/README}.
+
+\section{abcl-introspect}
+
+A compiled function is an instance of a class - This class has
+multiple instances if it represents a closure, or a single instance if
+it represents a non-closed-over function.
+
+The ABCL compiler stores constants that are used in function execution
+as private java fields. This includes symbols used to invoke function,
+locally-defined functions (such as via labels or flet) and string and
+other literal
+
+ABCL-INTROSPECT provides access to those internal values, and
+uses them in at least two ways. First, to annotate locally defined
+functions with the top-level function they are defined within, and
+second to search for callers of a give function \footnote{ Since java
+  functions are strings, local fields also have these strings. In the
+  context of looking for callers of a function you can also give a
+  string that names a java method. Same caveat re: false positives.}
+. This may yield some false positives, such as when a symbol that
+names a function is also used for some other purpose. It can also have
+false negatives, as when a function is inlined. Still, it's pretty
+useful. The second use to to find source locations for frames in the
+debugger. If the source location for a local function is asked for the
+location of its 'owner' is instead returns.
+
+
+In order to record information about local functions, ABCL defines a
+function-plist, which is for the most part unused, but is used here
+with set of keys indicating where the local function was defined and
+in what manner, i.e. as normal local function, as a method function,
+or as an initarg function. There may be other places functions are
+stashed away (defstructs come to mind) and this file should be added
+to to take them into account as they are discovered.
+
+ABCL-INTROSPECT does not depend on jss, but provides a bit of
+jss-specific functionality if jss *is* loaded.
+
+\url{http://abcl.org/svn/abcl/contrib/abcl-introspect/}.
 
 
 \chapter{History}
