@@ -83,6 +83,7 @@ public class JavaStackFrame
   public LispObject toLispList()
   {
     LispObject result = Lisp.NIL;
+    String fileName;
     
     if ( javaFrame == null) 
       return result;
@@ -92,7 +93,11 @@ public class JavaStackFrame
     result = result.push(METHOD);
     result = result.push(new SimpleString(javaFrame.getMethodName()));
     result = result.push(FILE);
-    result = result.push(new SimpleString(javaFrame.getFileName()));
+    fileName=javaFrame.getFileName();
+    if (fileName == null)
+      { result.push(new SimpleString("(Unkown source)")) ; }
+    else
+      { result = result.push(new SimpleString(fileName)) ; }
     result = result.push(LINE);
     result = result.push(Fixnum.getInstance(javaFrame.getLineNumber()));
     if (javaFrame.isNativeMethod()) {
