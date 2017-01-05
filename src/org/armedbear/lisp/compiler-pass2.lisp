@@ -7374,9 +7374,12 @@ We need more thought here.
 
 (defvar *compiler-error-bailout*)
 
-(defun make-compiler-error-form (form)
+(defun make-compiler-error-form (form condition)
   `(lambda ,(cadr form)
-     (error 'program-error :format-control "Execution of a form compiled with errors.")))
+     (error 'program-error :format-control "Program error while compiling ~a" :format-arguments 
+	    (if ,condition 
+		(list (apply 'format nil ,(slot-value condition 'sys::format-control) ',(slot-value condition 'sys::format-arguments)))
+		(list "a form")))))
 
 (defun compile-defun (name form environment filespec stream *declare-inline*)
   "Compiles a lambda expression `form'. If `filespec' is NIL,
@@ -7387,9 +7390,9 @@ Returns the a abcl-class-file structure containing the description of the
 generated class."
   (aver (eq (car form) 'LAMBDA))
   (catch 'compile-defun-abort
-    (flet ((compiler-bailout ()
+    (flet ((compiler-bailout (&optional condition)
              (let ((class-file (make-abcl-class-file :pathname filespec))
-                   (error-form (make-compiler-error-form form)))
+                   (error-form (make-compiler-error-form form condition)))
                (compile-1 (make-compiland :name name
                                           :lambda-expression error-form
                                           :class-file class-file)
@@ -7441,7 +7444,7 @@ generated class."
   (fresh-line *error-output*)
   (note-error-context)
   (format *error-output* "; Caught ERROR:~%;   ~A~2%" condition)
-  (throw 'compile-defun-abort (funcall *compiler-error-bailout*)))
+  (throw 'compile-defun-abort (funcall *compiler-error-bailout* condition)))
 
 (defvar *in-compilation-unit* nil)
 
