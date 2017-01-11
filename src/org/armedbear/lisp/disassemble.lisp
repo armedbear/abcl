@@ -80,7 +80,7 @@
 
 ;; disassemble more things
 (defun disassemble-function (arg)
-  (let ((function (cond ((#"isInstance" (java:jclass "org.armedbear.lisp.CompiledClosure") arg)
+  (let ((function (cond ((java:jcall "isInstance" (java:jclass "org.armedbear.lisp.CompiledClosure") arg)
 			 (return-from disassemble-function "don't know how to disassemble CompiledClosure"))
 			((java::java-object-p arg) 
 			 (cond ((java::jinstance-of-p arg "java.lang.Class")
@@ -90,12 +90,12 @@
 			       ;; use isInstance instead of jinstance-of-p
 			       ;; because the latter checked java-object-p
 			       ;; which fails since its a lisp object
-			       ((and (#"isInstance"  (java:jclass "org.armedbear.lisp.Closure") arg)
-				     (not (#"isInstance"  (java:jclass "org.armedbear.lisp.CompiledClosure") arg)))
+			       ((and (java:jcall "isInstance"  (java:jclass "org.armedbear.lisp.Closure") arg)
+				     (not (java:jcall "isInstance"  (java:jclass "org.armedbear.lisp.CompiledClosure") arg)))
 				(return-from disassemble-function 
 				  (with-output-to-string (s)
 				    (format s "Not a compiled function: ~%")
-				    (pprint (#"getBody" arg) s))))
+				    (pprint (java:jcall "getBody" arg) s))))
 			       ))
 			((functionp arg)
                          arg)
@@ -110,19 +110,19 @@
       ;; If not then we've either got a primitive (in function) or we got passed a method object as arg.
       (if bytes
 	  (system::disassemble-class-bytes bytes)
-	  (let ((class (if (java:java-object-p function) function (#"getClass" function))))
-	    (let ((classloader (#"getClassLoader" class)))
+	  (let ((class (if (java:java-object-p function) function (java:jcall "getClass" function))))
+	    (let ((classloader (java:jcall "getClassLoader" class)))
 	      (if (or (java:jinstance-of-p classloader "org.armedbear.lisp.MemoryClassLoader")
 		      (java:jinstance-of-p classloader "org.armedbear.lisp.FaslClassLoader"))
 		  (system::disassemble-class-bytes 
-		   (#"getFunctionClassBytes" classloader class))
-		  (let ((path (jss::path-to-class (#"getName" class))))
-		    (let ((split (cl-user::split-at-char (#"replaceFirst" path "jar:file:" "") #\!)))
-		      (let ((jar (jss::new 'jarfile (car split))))
-			(system::disassemble-class-bytes 
-			 (#"toByteArray" 'ByteStreams 
-					 (#"getInputStream" jar 
-							    (#"getJarEntry" jar (subseq (second split) 1)))))))))))))))
+		   (java:jcall "getFunctionClassBytes" classloader class))
+		  (system::disassemble-class-bytes 
+		   (java:jstatic "toByteArray" "com.google.common.io.ByteStreams" 
+				 (java:jcall-raw
+				  "getResourceAsStream"
+				  (java:jcall-raw "getClassLoader" class)
+				  (class-resource-path class)))))))))))
+
 (defun disassemble (arg)
   (write-string (disassemble-function arg) *standard-output*))
 
