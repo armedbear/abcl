@@ -78,27 +78,53 @@
                       (class-resource-path class)))
     (read-byte-array-from-stream stream)))
 
-(defun disassemble (arg)
-  (require-type arg '(OR FUNCTION
-                      SYMBOL
-                      (CONS (EQL SETF) (CONS SYMBOL NULL))
-                      (CONS (EQL LAMBDA) LIST)))
-  (let ((function (cond ((functionp arg)
+;; disassemble more things
+(defun disassemble-function (arg)
+  (let ((function (cond ((#"isInstance" (java:jclass "org.armedbear.lisp.CompiledClosure") arg)
+			 (return-from disassemble-function "don't know how to disassemble CompiledClosure"))
+			((java::java-object-p arg) 
+			 (cond ((java::jinstance-of-p arg "java.lang.Class")
+				arg)
+			       ((java::jinstance-of-p arg "java.lang.reflect.Method")
+				(java::jmethod-declaring-class arg))
+			       ;; use isInstance instead of jinstance-of-p
+			       ;; because the latter checked java-object-p
+			       ;; which fails since its a lisp object
+			       ((and (#"isInstance"  (java:jclass "org.armedbear.lisp.Closure") arg)
+				     (not (#"isInstance"  (java:jclass "org.armedbear.lisp.CompiledClosure") arg)))
+				(return-from disassemble-function 
+				  (with-output-to-string (s)
+				    (format s "Not a compiled function: ~%")
+				    (pprint (#"getBody" arg) s))))
+			       ))
+			((functionp arg)
                          arg)
                         ((symbolp arg)
-                         (or (macro-function arg) (symbol-function arg))))))
+                         (or (macro-function arg) (symbol-function arg)))
+			(t arg))))
     (when (typep function 'generic-function)
       (setf function (mop::funcallable-instance-function function)))
-    (when (functionp function)
-      (unless (compiled-function-p function)
-        (setf function (compile nil function)))
-      (let ((class-bytes (or (function-class-bytes function)
-                             (class-bytes (java:jcall-raw "getClass" function)))))
-        (if class-bytes
-            (let ((disassembler (or *disassembler-function*
-                                    (choose-disassembler))))
-              (and disassembler (funcall disassembler class-bytes)))
-            (%format t "; Disassembly is not available.~%"))))))
+    (print function)
+    (let ((bytes (and nil (and function (not (java::java-object-p function)) (system::function-class-bytes  function)))))
+      ;; we've got bytes here then we've covered the case that the diassembler already handled
+      ;; If not then we've either got a primitive (in function) or we got passed a method object as arg.
+      (if bytes
+	  (system::disassemble-class-bytes bytes)
+	  (let ((class (if (java:java-object-p function) function (#"getClass" function))))
+	    (let ((classloader (#"getClassLoader" class)))
+	      (if (or (java:jinstance-of-p classloader "org.armedbear.lisp.MemoryClassLoader")
+		      (java:jinstance-of-p classloader "org.armedbear.lisp.FaslClassLoader"))
+		  (system::disassemble-class-bytes 
+		   (#"getFunctionClassBytes" classloader class))
+		  (let ((path (jss::path-to-class (#"getName" class))))
+		    (let ((split (cl-user::split-at-char (#"replaceFirst" path "jar:file:" "") #\!)))
+		      (let ((jar (jss::new 'jarfile (car split))))
+			(system::disassemble-class-bytes 
+			 (#"toByteArray" 'ByteStreams 
+					 (#"getInputStream" jar 
+							    (#"getJarEntry" jar (subseq (second split) 1)))))))))))))))
+(defun disassemble (arg)
+  (write-string (disassemble-function arg) *standard-output*))
 
 (defun print-lines-with-prefix (string)
   (with-input-from-string (stream string)
