@@ -1,5 +1,5 @@
 ;;; -*- mode: Lisp; Base: 10 ; Syntax: ANSI-Common-Lisp ; buffer-read-only: t; -*-
-;;; This is ASDF 3.1.7.43: Another System Definition Facility.
+;;; This is ASDF 3.2.0: Another System Definition Facility.
 ;;;
 ;;; Feedback, bug reports, and patches are all welcome:
 ;;; please mail to <asdf-devel@common-lisp.net>.
@@ -1667,7 +1667,7 @@ message, that takes the functionality as its first argument (that can be skipped
 (in-package :uiop/version)
 
 (with-upgradability ()
-  (defparameter *uiop-version* "3.1.7.43")
+  (defparameter *uiop-version* "3.2.0")
 
   (defun unparse-version (version-list)
     "From a parsed version (a list of natural numbers), compute the version string"
@@ -7458,7 +7458,7 @@ previously-loaded version of ASDF."
          ;; "3.4.5.67" would be a development version in the official branch, on top of 3.4.5.
          ;; "3.4.5.0.8" would be your eighth local modification of official release 3.4.5
          ;; "3.4.5.67.8" would be your eighth local modification of development version 3.4.5.67
-         (asdf-version "3.1.7.43")
+         (asdf-version "3.2.0")
          (existing-version (asdf-version)))
     (setf *asdf-version* asdf-version)
     (when (and existing-version (not (equal asdf-version existing-version)))
@@ -9168,14 +9168,16 @@ The class needs to be updated for ASDF 3.1 and specify appropriate propagation m
              :format-arguments
              (list (type-of o)))))
 
-  (with-asdf-deprecation (:style-warning "3.2")
-    (defun backward-compatible-depends-on (o c)
-      "DEPRECATED: all subclasses of OPERATION used in ASDF should inherit from one of
+  (defun backward-compatible-depends-on (o c)
+    "DEPRECATED: all subclasses of OPERATION used in ASDF should inherit from one of
  DOWNWARD-OPERATION UPWARD-OPERATION SIDEWAY-OPERATION SELFWARD-OPERATION NON-PROPAGATING-OPERATION.
  The function BACKWARD-COMPATIBLE-DEPENDS-ON temporarily provides ASDF2 behaviour for those that
  don't. In the future this functionality will be removed, and the default will be no propagation."
-      `(,@(sideway-operation-depends-on o c)
-        ,@(when (typep c 'parent-component) (downward-operation-depends-on o c)))))
+    (uiop/version::notify-deprecated-function
+     (version-deprecation *asdf-version* :style-warning "3.2")
+     'backward-compatible-depends-on)
+    `(,@(sideway-operation-depends-on o c)
+      ,@(when (typep c 'parent-component) (downward-operation-depends-on o c))))
 
   (defmethod component-depends-on ((o operation) (c component))
     `(;; Normal behavior, to allow user-specified in-order-to dependencies
@@ -12316,7 +12318,6 @@ otherwise return a default system name computed from PACKAGE-NAME."
    #:error-component #:error-operation #:traverse
    #:component-load-dependencies
    #:enable-asdf-binary-locations-compatibility
-   #:operation-forced
    #:operation-on-failure #:operation-on-warnings #:on-failure #:on-warnings
    #:component-property
    #:run-shell-command
@@ -12351,22 +12352,6 @@ define your operations with proper use of SIDEWAY-OPERATION, SELFWARD-OPERATION,
 or define methods on PREPARE-OP, etc."
     ;; Old deprecated name for the same thing. Please update your software.
     (component-sideway-dependencies component))
-
-  (defun* (operation-forced) (operation)
-    "DEPRECATED. Assume it's (constantly nil) instead -- until it disappears."
-    ;; This function exists for backward compatibility with swank.asd, its only user,
-    ;; that still abuses it as of 2016-10-01.
-    ;;
-    ;; The magic PERFORM method in swank.asd only actually loads swank if it sees
-    ;; that the operation was forced. But it actually fails, badly, in that case.
-    ;; The correctness criterion for a build specification (which is _not_
-    ;; specific to ASDF) requires that the effects of a build step must NOT depend
-    ;; on whether the step was "forced" or not. Therefore it is correct that this
-    ;; method should return constantly the same result. Since returning T currently
-    ;; causes massive failure in SLIME, it shall be constantly NIL.
-    ;; see also https://bugs.launchpad.net/asdf/+bug/1629582
-    (declare (ignore operation))
-    nil)
 
   ;; These old interfaces from ASDF1 have never been very meaningful
   ;; but are still used in obscure places.
@@ -12798,7 +12783,7 @@ DEPRECATED. Use ASDF:ACTION-DESCRIPTION and/or ASDF::FORMAT-ACTION instead."))
     (setf excl:*warn-on-nested-reader-conditionals* uiop/common-lisp::*acl-warn-save*))
 
   ;; Advertise the features we provide.
-  (dolist (f '(:asdf :asdf2 :asdf3 :asdf3.1 :asdf-package-system)) (pushnew f *features*))
+  (dolist (f '(:asdf :asdf2 :asdf3 :asdf3.1 :asdf3.2 :asdf-package-system)) (pushnew f *features*))
 
   ;; Provide both lowercase and uppercase, to satisfy more people, especially LispWorks users.
   (provide "asdf") (provide "ASDF")
