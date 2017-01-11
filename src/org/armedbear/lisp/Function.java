@@ -44,7 +44,7 @@ public abstract class Function extends Operator
      * The value of *load-truename* which was current when this function
      * was loaded, used for fetching the class bytes in case of disassembly.
      */
-    private final LispObject loadedFrom;
+    public final LispObject loadedFrom;
 
     protected Function() {
 	LispObject loadTruename = Symbol.LOAD_TRUENAME.symbolValueNoThrow();
