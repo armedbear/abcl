@@ -66,10 +66,14 @@
     (loop for binding across context
 	  collect 
 	  (java::jcall "get" (load-time-value (java::jclass-field "org.armedbear.lisp.ClosureBinding" "value")) binding))))
-   
+
+;;; FIXME:  failing to load with abcl-1.5.0-dev-20170112
 (defun foreach-internal-field (fn-fn not-fn-fn &optional (fns :all) (definer nil))
   "fn-n gets called with top, internal function, not-fn-fn gets called with top anything-but"
-  (declare (optimize (speed 3) (safety 0)))
+  (declare (optimize (debug 3)
+                     #+nil
+                     (speed 3)
+                     (safety 3)))
   (macrolet ((fields (c) `(java::jcall ,(java::jmethod "java.lang.Class" "getDeclaredFields") ,c))
 	     (get (f i) `(java::jcall ,(java::jmethod "java.lang.reflect.Field" "get" "java.lang.Object") ,f ,i))
 	     (access (f b) `(java::jcall ,(java::jmethod "java.lang.reflect.AccessibleObject" "setAccessible" "boolean") ,f ,b))
@@ -310,39 +314,4 @@ above have used annotate local functions"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 		 
-(defun get-pid ()
-  "Get the process identifier of this lisp process. Used to be in
-  slime but generally useful, so now back in abcl proper."
-  (handler-case
-      (let* ((runtime
-              (java::jstatic "getRuntime" "java.lang.Runtime"))
-             (command
-              (java::jnew-array-from-array
-               "java.lang.String" #("sh" "-c" "echo $PPID")))
-             (runtime-exec-jmethod
-              ;; Complicated because java.lang.Runtime.exec() is
-              ;; overloaded on a non-primitive type (array of
-              ;; java.lang.String), so we have to use the actual
-              ;; parameter instance to get java.lang.Class
-              (java::jmethod "java.lang.Runtime" "exec"
-                            (java::jcall
-                             (java::jmethod "java.lang.Object" "getClass")
-                             command)))
-             (process
-              (java::jcall runtime-exec-jmethod runtime command))
-             (output
-              (java::jcall (java::jmethod "java.lang.Process" "getInputStream")
-                          process)))
-         (java::jcall (java::jmethod "java.lang.Process" "waitFor")
-                     process)
-	 (loop :with b :do
-	    (setq b
-		  (java::jcall (java::jmethod "java.io.InputStream" "read")
-			      output))
-	    :until (member b '(-1 #x0a))	; Either EOF or LF
-	    :collecting (code-char b) :into result
-	    :finally (return
-		       (parse-integer (coerce result 'string)))))
-    (t () 0)))
-
 (provide :abcl-introspect)
