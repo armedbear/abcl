@@ -66,14 +66,10 @@
     (loop for binding across context
 	  collect 
 	  (java::jcall "get" (load-time-value (java::jclass-field "org.armedbear.lisp.ClosureBinding" "value")) binding))))
-
-;;; FIXME:  failing to load with abcl-1.5.0-dev-20170112
+   
 (defun foreach-internal-field (fn-fn not-fn-fn &optional (fns :all) (definer nil))
   "fn-n gets called with top, internal function, not-fn-fn gets called with top anything-but"
-  (declare (optimize (debug 3)
-                     #+nil
-                     (speed 3)
-                     (safety 3)))
+  (declare (optimize (speed 3) (safety 0)))
   (macrolet ((fields (c) `(java::jcall ,(java::jmethod "java.lang.Class" "getDeclaredFields") ,c))
 	     (get (f i) `(java::jcall ,(java::jmethod "java.lang.reflect.Field" "get" "java.lang.Object") ,f ,i))
 	     (access (f b) `(java::jcall ,(java::jmethod "java.lang.reflect.AccessibleObject" "setAccessible" "boolean") ,f ,b))
@@ -139,6 +135,35 @@
    fns
    definer))
 
+(defvar *function-class-names* (make-hash-table :test 'equalp :weakness :value)
+  "Table mapping java class names of function classes to their function. Value is either symbol or (:in symbol) if an internal function")
+
+(defun index-function-class-names (&optional (fns :all))
+  "Create a table mapping class names to function, for cases where the class name appears in backtrace (although perhaps that's a bug?)"
+  (if (eq fns :all)
+      (dolist (p (list-all-packages))
+	(do-symbols (s p)
+	  (when (and (eq (symbol-package s) p) (fboundp s)
+		     ;; system is touchy about #'autoload 
+		     (not (eq (symbol-function s) #'autoload)))
+	    (unless (#"matches" (#"getName" (#"getClass" (symbol-function s))) ".*Closure$")
+		(setf (gethash (#"getName" (#"getClass" (symbol-function s))) *function-class-names*) (symbol-function s))))))
+      (dolist (s fns)
+	(setf (gethash (#"getName" (#"getClass" (if (symbolp s) (symbol-function s) s))) *function-class-names*) s)))
+  (foreach-internal-field 
+   (lambda(top internal)
+     (let ((fn (if (symbolp top) (symbol-function top) top)))
+	   (unless (or (eq fn internal) (#"matches" (#"getName" (#"getClass" fn)) ".*Closure$"))
+	     (setf (gethash (#"getName" (#"getClass" internal)) *function-class-names*)
+		   internal))))
+   nil
+   fns
+   nil))
+
+(defun java-class-lisp-function (class-name)
+  "Return either function-name or (:in function-name) or nil if class isn't that of lisp function"
+  (gethash class-name *function-class-names* ))
+
 (defun annotate-clos-methods (&optional (which :all))
   "Iterate over all clos methods, marking method-functions and
 method-fast-functions with the function plist
@@ -201,27 +226,32 @@ object. This gets called once."
 named function or the values on the function-plist that functions
 above have used annotate local functions"
   (maybe-jss-function function)
-  (let ((plist (sys::function-plist function)))
-    (cond ((setq it (getf plist :internal-to-function))
-	   `(:local-function ,@(if (java::jcall "getLambdaName" function) 
-				   (list (java::jcall "getLambdaName" function))
-				   (if (getf plist :jss-function)
-				       (list (concatenate 'string "#\"" (getf plist :jss-function) "\"")))
-				   )
-			     :in ,@(if (typep it 'mop::standard-method)
-				       (cons :method (method-spec-list it))
-				       (list it))))
-	  ((setq it (getf plist :method-function))
-	   (cons :method-function (sys::method-spec-list it)))	   
-	  ((setq it (getf plist :method-fast-function))
-	   (cons :method-fast-function (sys::method-spec-list it)))
-	  ((setq it (getf plist :initfunction))
-	   (let ((class (and (slot-boundp it 'allocation-class) (slot-value it 'allocation-class))))
-	     (list :slot-initfunction (slot-value it 'name ) :for (if class (class-name class) '??))))
-	  (t (or (nth-value 2 (function-lambda-expression function))
-		 (and (not (compiled-function-p function))
-		      `(:anonymous-interpreted-function))
-		 (function-name-by-where-loaded-from function))))))
+  (let ((interpreted (not (compiled-function-p function))))
+    (let ((plist (sys::function-plist function)))
+      (cond ((setq it (getf plist :internal-to-function))
+	     `(:local-function ,@(if (java::jcall "getLambdaName" function) 
+				     (list (java::jcall "getLambdaName" function))
+				     (if (getf plist :jss-function)
+					 (list (concatenate 'string "#\"" (getf plist :jss-function) "\"")))
+				     )
+			       ,@(if interpreted '((interpreted)))
+			       :in ,@(if (typep it 'mop::standard-method)
+					 (cons :method (method-spec-list it))
+					 (list it))))
+	    ((setq it (getf plist :method-function))
+	     `(:method-function ,@(if interpreted '((interpreted))) ,@(sys::method-spec-list it)))	   
+	    ((setq it (getf plist :method-fast-function))
+	     `(:method-fast-function ,@(if interpreted '("(interpreted)")) ,@(sys::method-spec-list it)))
+	    ((setq it (getf plist :initfunction))
+	     (let ((class (and (slot-boundp it 'allocation-class) (slot-value it 'allocation-class))))
+	       `(:slot-initfunction ,(slot-value it 'name ) ,@(if interpreted '((interpreted))) :for ,(if class (class-name class) '??))))
+	    (t (or (and (nth-value 2 (function-lambda-expression function))
+			(if interpreted
+			    `(,(nth-value 2 (function-lambda-expression function)) ,'(interpreted))
+			(nth-value 2 (function-lambda-expression function))))    
+		   (and (not (compiled-function-p function))
+			`(:anonymous-interpreted-function))
+		   (function-name-by-where-loaded-from function)))))))
 
 (defun function-name-by-where-loaded-from (function)
   "name of last resource - used the loaded-from field from the function to construct the name"
@@ -233,7 +263,7 @@ above have used annotate local functions"
 			  ,@(if where (list (list :from where))))))
   
 (defun maybe-jss-function (f)
-  "Determing if function is something list #"foo" called as a
+  "Determing if function is something list #\"foo\" called as a
   function. If so add to function internal plist :jss-function and the
   name of the java methods"
   (and (find-package :jss)
@@ -289,13 +319,14 @@ above have used annotate local functions"
   "Called at the end of fset. If function annotations have not yet
   been added, add local function annotations to all functions. If not,
   just add annotations to function specified in the arglist"
-  (declare (ignore function))
   (when *annotate-function-backlog?* 
     (setq *annotate-function-backlog?* nil)
     (annotate-internal-functions)
     (annotate-clos-methods)
     (annotate-clos-slots)
+    (index-function-class-names)
     )
+  (index-function-class-names (list function))
   (annotate-internal-functions (list name)))
 
 ;; Here we hook into clos in order to have method and slot functions

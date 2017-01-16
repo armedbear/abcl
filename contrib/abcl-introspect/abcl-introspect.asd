@@ -6,4 +6,5 @@
   :version "1.0.1"
   :description "Introspection on compiled function to aid source location and other debugging functions."
   :depends-on (jss)
-  :components ((:file "abcl-introspect")))
+  :components ((:file "abcl-introspect")
+	       (:file "stacktrace")))
