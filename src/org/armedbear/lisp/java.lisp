@@ -444,17 +444,27 @@ ultimately return the result of the last method call.
 ;;; print-object
 
 (defmethod print-object ((obj java:java-object) stream)
-  (write-string (sys::%write-to-string obj) stream))
+  (handler-bind ((java-exception #'(lambda(c)
+				     (format stream "#<~a, while printing a ~a>"
+					     (jcall "toString" (java-exception-cause  c))
+					     (jcall "getName" (jcall "getClass" obj)))
+				     (return-from print-object))))
+    (write-string (sys::%write-to-string obj) stream)))
 
 (defmethod print-object ((e java:java-exception) stream)
-  (if *print-escape*
-      (print-unreadable-object (e stream :type t :identity t)
-        (format stream "~A"
-                (java:jcall (java:jmethod "java.lang.Object" "toString")
-                            (java:java-exception-cause e))))
-      (format stream "Java exception '~A'."
-              (java:jcall (java:jmethod "java.lang.Object" "toString")
-                          (java:java-exception-cause e)))))
+  (handler-bind ((java-exception #'(lambda(c)
+				     (format stream "#<~a,while printing a ~a>"
+					     (jcall "toString" (java-exception-cause  c))
+					     (jcall "getName" (jcall "getClass" e)))
+				     (return-from print-object))))
+    (if *print-escape*
+	(print-unreadable-object (e stream :type t :identity t)
+	  (format stream "~A"
+		  (java:jcall (java:jmethod "java.lang.Object" "toString")
+			      (java:java-exception-cause e))))
+	(format stream "Java exception '~A'."
+		(java:jcall (java:jmethod "java.lang.Object" "toString")
+			    (java:java-exception-cause e))))))
 
 ;;; JAVA-CLASS support
 (defconstant +java-lang-object+ (jclass "java.lang.Object"))
