@@ -108,11 +108,11 @@
 	    (pprint (java:jcall "getBody" function) s))))
       (let ((bytes (or (and (java:jcall "isInstance" (java:jclass "org.armedbear.lisp.Function") function)
 			    (ignore-errors (getf (function-plist function))) 'class-bytes)
-		    (and (java:jcall "isInstance" (java:jclass "org.armedbear.lisp.CompiledClosure") function)
-			(equalp (java::jcall "getName" (java::jobject-class 
-							(java:jcall "getClassLoader" (java::jcall "getClass" function))))
-				"org.armedbear.lisp.FaslClassLoader")
-			(fasl-compiled-closure-class-bytes function)))))
+		       (and (java:jcall "isInstance" (java:jclass "org.armedbear.lisp.CompiledClosure") function)
+			    (equalp (java::jcall "getName" (java::jobject-class 
+							    (java:jcall "getClassLoader" (java::jcall "getClass" function))))
+				    "org.armedbear.lisp.FaslClassLoader")
+			    (fasl-compiled-closure-class-bytes function)))))
 	;; we've got bytes here then we've covered the case that the disassembler already handled
 	;; If not then we've either got a primitive (in function) or we got passed a method object as arg.
 	(if bytes
@@ -123,12 +123,12 @@
 			(java:jinstance-of-p classloader "org.armedbear.lisp.FaslClassLoader"))
 		    (disassemble-bytes 
 		     (java:jcall "getFunctionClassBytes" classloader class))
-		    (disassemble-bytes 
-		     (java:jstatic "toByteArray" "com.google.common.io.ByteStreams" 
-				   (java:jcall-raw
-				    "getResourceAsStream"
-				    (java:jcall-raw "getClassLoader" class)
-				    (class-resource-path class))))))))))))
+		    (disassemble-bytes
+		     (read-byte-array-from-stream
+		      (java:jcall-raw
+		       "getResourceAsStream"
+		       (java:jcall-raw "getClassLoader" class)
+		       (class-resource-path class))))))))))))
 
 (defparameter +propertyList+ 
   (load-time-value
@@ -168,7 +168,7 @@
 		  ;; we're loading from a fasl file
 		  (java:jnew "java.net.URL" (namestring (make-pathname :device (list loaded-from)
 								       :name class-name :type "cls"))))))
-    (java:jstatic "toByteArray" "com.google.common.io.ByteStreams" (java:jcall "openStream" url))))
+    (read-byte-array-from-stream (java:jcall "openStream" url))))
 
 ;; closure bindings
 ;; (get-java-field (elt (#"get" (elt (#"getFields" (#"getClass" #'foo)) 0) #'foo) 0) "value") 
