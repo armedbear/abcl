@@ -1191,29 +1191,38 @@
                            ,@decls
                            ,@(when doc `(,doc))
                            (block ,block-name ,@body))))
-      (cond ((and (boundp 'jvm::*file-compilation*)
-                  ;; when JVM.lisp isn't loaded yet, this variable isn't bound
-                  ;; meaning that we're not trying to compile to a file:
-                  ;; Both COMPILE and COMPILE-FILE bind this variable.
-                  ;; This function is also triggered by MACROEXPAND, though
-                  jvm::*file-compilation*)
-             `(progn
-                (fset ',name ,lambda-expression)
-                ',name))
-            (t
-	     (when (and env (empty-environment-p env))
-               (setf env nil))
-             (when (null env)
-               (setf lambda-expression (precompiler:precompile-form lambda-expression nil)))
-	     (let ((sym (if (consp name) (second name) name)))
-	       `(prog1
-		    (%defun ',name ,lambda-expression)
-		  (record-source-information-for-type ',sym '(:function ,name))
-;		  (%set-arglist (fdefinition ',name) ,(format nil "~{~s~^ ~}" (third lambda-expression)))
+	(cond ((and (boundp 'jvm::*file-compilation*)
+		    ;; when JVM.lisp isn't loaded yet, this variable isn't bound
+		    ;; meaning that we're not trying to compile to a file:
+		    ;; Both COMPILE and COMPILE-FILE bind this variable.
+		    ;; This function is also triggered by MACROEXPAND, though.
+		    jvm::*file-compilation*)
+	       `(progn
+		  (fset ',name ,lambda-expression)
+		  ;; the below matter, for example when loading a
+		  ;; compiled defun that is inside some other form
+		  ;; (e.g. flet)
+		  (record-source-information-for-type ',(if (consp name) (second name) name) '(:function ,name))
+		  (%set-arglist (fdefinition ',name) ',(third lambda-expression))
 		  ,@(when doc
 		      `((%set-documentation ',name 'function ,doc)))
-		  )))))))
-
+		  ',name))
+	      (t
+	       (when (and env (empty-environment-p env))
+		 (setf env nil))
+	       (when (null env)
+		 (setf lambda-expression (precompiler:precompile-form lambda-expression nil)))
+	       (let ((sym (if (consp name) (second name) name)))
+		 `(prog1
+		      (%defun ',name ,lambda-expression)
+		    (record-source-information-for-type ',sym '(:function ,name))
+		    (%set-arglist (fdefinition ',name) ',(third lambda-expression))
+		    ;; don't do this. building abcl fails autoloading
+		    ;; stuff it shouldn't yet
+		    ;;(%set-arglist (symbol-function ',name) ,(format nil "~{~s~^ ;; ~}" (third lambda-expression)))
+		    ,@(when doc
+			`((%set-documentation ',name 'function ,doc)))
+		    )))))))
 (export '(precompile))
 
 ;;(provide "PRECOMPILER")
