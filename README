@@ -41,17 +41,44 @@ RUNNING FROM DOCKER
 
 With [Docker Engine][] installed so that one may execute:
 
-        docker pull easye/openjdk8
-        docker run easye/abcl
+    docker run -it easye/abcl
+
+to get
+
+    illin:~/work/abcl$ docker run -it easye/abcl
+    Armed Bear Common Lisp 1.5.0-dev
+    Java 1.8.0_111 Oracle Corporation
+    OpenJDK 64-Bit Server VM
+    Low-level initialization completed in 0.295 seconds.
+    Startup completed in 1.425 seconds.
+    Type ":help" for a list of available commands.
+    CL-USER(1): 23
+    23
+    23
+    CL-USER(2): (require :abcl-contrib)
+    (require :abcl-contrib)
+    Using probed value of abcl-contrib:
+    '/home/abcl/work/abcl/dist/abcl-contrib.jar'.
+    Added jar:file:/home/abcl/work/abcl/dist/abcl-contrib.jar!/quicklisp/ to ASDF.
+    Added jar:file:/home/abcl/work/abcl/dist/abcl-contrib.jar!/mvn/ to ASDF.
+    Added jar:file:/home/abcl/work/abcl/dist/abcl-contrib.jar!/jss/ to ASDF.
+    Added jar:file:/home/abcl/work/abcl/dist/abcl-contrib.jar!/jfli/ to ASDF.
+    Added jar:file:/home/abcl/work/abcl/dist/abcl-contrib.jar!/asdf-jar/ to ASDF.
+    Added jar:file:/home/abcl/work/abcl/dist/abcl-contrib.jar!/abcl-introspect/ to ASDF.
+    Added jar:file:/home/abcl/work/abcl/dist/abcl-contrib.jar!/abcl-asdf/ to ASDF.
+    ("uiop" "UIOP" "asdf" "ASDF" "ABCL-CONTRIB")
+
 
 [Docker Engine]: https://www.docker.com/products/docker-engine
 
 ## Building Docker Container locally from modifications
 
+Get the source; use the Dockerfile to build.
+
         docker pull easye/openjdk8
         docker build -t easye/abcl .
 
-See <file:Dockerfile> for build instructions.
+See <file:Dockerfile> for specifics on build instructions.
 
 RUNNING FROM DOCKER
 ===================
@@ -66,7 +93,8 @@ With [Docker Engine][] installed so that one may execute:
 ## Building Docker Container locally from modifications
 
         docker pull easye/openjdk8
-        docker build -t easye/abcl .
+        docker build -t e/abcl .
+        docker run -it e/abcl
 
 See <file:Dockerfile> for build instructions.
 

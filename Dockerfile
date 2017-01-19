@@ -31,6 +31,7 @@ USER root
 RUN ln -s ${abcl_exec_path} /usr/local/bin/abcl
 
 USER abcl
-CMD [ "${abcl_exec_path}", "--eval", "(loop :doing (sleep 1))" ]
+CMD [ "/usr/local/bin/abcl" ]
+
 
 
