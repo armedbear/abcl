@@ -27,6 +27,8 @@
    #:vector-to-list
    #:jarray-to-list
 
+   #:j2list
+
 ;;; XXX Necessary to work in OSGi?
    #:get-java-field ; use JAVA:JFIELD
    #:set-java-field ; use JAVA-JFIELD

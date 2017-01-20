@@ -1,9 +1,7 @@
 (in-package :jss)
 
-;; ****************************************************************
-;; Already defined in jss
-
 (defun set-to-list (set)
+  "Convert the java.util.Set named in SET to a Lisp list."
   (declare (optimize (speed 3) (safety 0)))
   (with-constant-signature ((iterator "iterator" t) (hasnext "hasNext") (next "next"))
     (loop with iterator = (iterator set)
@@ -100,6 +98,7 @@ If INVERT? is non-nil than reverse the keys and values in the resulting hashtabl
 
 
 (defun j2list (thing)
+  "Attempt to construct a Lisp list out of a Java THING"
   (declare (optimize (speed 3) (safety 0)))
   (flet ((iterator-collect (iterator)
 	   (with-constant-signature ((has-next "hasNext")

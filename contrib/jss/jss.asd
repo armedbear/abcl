@@ -1,7 +1,7 @@
 (in-package :asdf)
 (asdf:defsystem :jss
   :author "Alan Ruttenberg, Mark Evenson"
-  :version "3.2.2" 
+  :version "3.2.3" 
   :description "<> asdf:defsystem <urn:abcl.org/release/1.5.0/contrib/jss#3.2.2>"
   :components ((:module base 
                         :pathname "" :serial t 
@@ -11,8 +11,7 @@
 				     (:file "optimize-java-call")
                                      (:file "classpath")
 				     (:file "transform-to-field")
-                                     (:file "compat")
-				     )))
+                                     (:file "compat"))))
 ;;  :defsystem-depends-on (:prove-asdf)
 ;;  :in-order-to ((test-op (test-op jss/tests)))
   )
