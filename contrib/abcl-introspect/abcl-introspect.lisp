@@ -254,6 +254,8 @@ above have used annotate local functions"
 		      `(:slot-initfunction ,(slot-value it 'name ) ,@(if interpreted '((interpreted))) :for ,(if class (class-name class) '??))))
 		   ((#"equals" function (symbol-function 'lambda))
 		    '(:macro-function lambda))
+		   ((equal (#"getName" (#"getClass" function)) "org.armedbear.lisp.MacroObject")
+		    `(:macro-object ,@(any-function-name #"{function}.expander")))
 		   (t (or (and (nth-value 2 (function-lambda-expression function))
 			       (if interpreted
 				   `(,(nth-value 2 (function-lambda-expression function)) ,'(interpreted))
@@ -301,6 +303,8 @@ above have used annotate local functions"
   "For local function, return the 'owner' typically the top-level function or clos method"
   (local-function-p function))
 
+(defvar *function-print-object-prefix* "function ")
+
 (defmethod print-object ((f function) stream)
   "Print a function using any-function-name. Requires a patch to
   system::output-ugly-object in order to prevent the function being
@@ -312,7 +316,7 @@ above have used annotate local functions"
 	(let ((name (any-function-name  f)))
 	  (if (consp name)
 	      (format stream "~{~a~^ ~}" name)
-	      (format stream "function ~a" name))))))
+	      (format stream "~a~a" *function-print-object-prefix* name))))))
 
 (defun each-non-symbol-compiled-function (f)
   (loop for q = (list (find-class t)) then q
