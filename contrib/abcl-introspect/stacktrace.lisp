@@ -50,8 +50,8 @@
   "hackish test for whether a frame is some internal function from swank"
   (let ((el (car (sys::frame-to-list frame))))
     (let ((package
-	    (cond ((symbolp el) 
-		   (symbol-package el)
+	    (cond ((and (symbolp el) 
+			(symbol-package el))
 		   (package-name (symbol-package el)))
 		  ;; hack! really I mean anything with a function plist
 		  ((eq (type-of el) 'compiled-function)
