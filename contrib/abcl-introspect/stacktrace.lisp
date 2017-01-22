@@ -56,7 +56,8 @@
 		  ;; hack! really I mean anything with a function plist
 		  ((eq (type-of el) 'compiled-function)
 		   (let ((owner (getf (function-plist  el) :internal-to-function)))
-		     (if (symbolp owner)
+		     (if (and (symbolp owner)
+			      (symbol-package owner))
 			 (package-name 
 			  (symbol-package owner))
 			 "")))
