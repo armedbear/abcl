@@ -428,7 +428,8 @@ ultimately return the result of the last method call.
 		      (reduce #'make-binding ops
 			      :initial-value (list (make-binding-for first))))))
       `(let* ,bindings
-	 (declare (ignore ,@(mapcar #'car bindings)))))))
+	 (declare (ignore ,@(butlast (mapcar #'car bindings))))
+	 ,(caar (last bindings))))))
 
 (defmacro jmethod-let (bindings &body body)
   (let ((args (gensym)))
