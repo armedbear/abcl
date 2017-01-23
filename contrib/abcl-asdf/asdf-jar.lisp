@@ -68,7 +68,7 @@
 ;;; The original JSS specified jar pathnames as having a NAME ending
 ;;; in ".jar" without a TYPE.  If we encounter such a definition, we
 ;;; clean it up.
-(defun normalize-jar-name (component)
+(defmethod normalize-jar-name ((component jar-file))
   (when (#"endsWith" (slot-value component 'name) ".jar")
     (with-slots (name absolute-pathname) component
       (let* ((new-name 
@@ -103,7 +103,16 @@
 (defmethod perform ((operation load-op) (c class-file-directory))
   (java:add-to-classpath (component-pathname c)))
 
+;; a jar file where the pathname and name are relative to JAVA_HOME
+(defclass jdk-jar (jar-file) ())
+
+(defmethod normalize-jar-name :after ((c jdk-jar))
+  (setf (slot-value c 'absolute-pathname)
+	(merge-pathnames
+	 (merge-pathnames 
+	  (slot-value c 'name)
+	  (make-pathname :directory `(:relative ,(slot-value (component-parent c) 'relative-pathname))))
+	 (java::jstatic "getProperty" "java.lang.System" "java.home"))))
 
 
-
-
+		   
