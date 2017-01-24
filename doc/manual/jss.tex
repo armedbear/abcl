@@ -74,7 +74,7 @@ If OBJECT is a symbol it names a dot qualified static FIELD.
 \paragraph{}
 \label{JSS:HASHMAP-TO-HASHTABLE}
 \index{HASHMAP-TO-HASHTABLE}
---- Function: \textbf{hashmap-to-hashtable} [\textbf{jss}] \textit{hashmap \&rest rest \&key (keyfun (function identity)) (valfun (function identity)) (invert? NIL) table \&allow-other-keys}
+--- Function: \textbf{hashmap-to-hashtable} [\textbf{jss}] \textit{hashmap \&rest rest \&key (keyfun (function identity)) (valfun (function identity)) (invert? nil) table \&allow-other-keys}
 
 \begin{adjustwidth}{5em}{5em}
 Converts the a HASHMAP reference to a java.util.HashMap object to a Lisp hashtable.
@@ -99,7 +99,7 @@ Push these imports onto the search path. If multiple, earlier in list take prece
 \paragraph{}
 \label{JSS:INVOKE-RESTARGS}
 \index{INVOKE-RESTARGS}
---- Function: \textbf{invoke-restargs} [\textbf{jss}] \textit{method object args \&optional (raw? NIL)}
+--- Function: \textbf{invoke-restargs} [\textbf{jss}] \textit{method object args \&optional (raw? nil)}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -112,6 +112,15 @@ not-documented
 
 \begin{adjustwidth}{5em}{5em}
 Return the items contained the java.lang.Iterable ITERABLE as a list.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JSS:J2LIST}
+\index{J2LIST}
+--- Function: \textbf{j2list} [\textbf{jss}] \textit{thing}
+
+\begin{adjustwidth}{5em}{5em}
+Attempt to construct a Lisp list out of a Java THING
 \end{adjustwidth}
 
 \paragraph{}
@@ -168,10 +177,16 @@ Return a list of interfaces the class implements
 \paragraph{}
 \label{JSS:JCMN}
 \index{JCMN}
---- Function: \textbf{jcmn} [\textbf{jss}] \textit{}
+--- Function: \textbf{jcmn} [\textbf{jss}] \textit{class \&optional stream}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Return a list of the public methods encapsulated by the JVM CLASS.
+
+If STREAM non-nil, output a verbose description to the named output stream.
+
+CLASS may either be a string naming a fully qualified JVM class in dot
+notation, or a symbol resolved against all class entries in the
+current classpath.
 \end{adjustwidth}
 
 \paragraph{}
@@ -221,7 +236,7 @@ associated is used to look up the static FIELD.
 --- Function: \textbf{set-to-list} [\textbf{jss}] \textit{set}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Convert the java.util.Set named in SET to a Lisp list.
 \end{adjustwidth}
 
 \paragraph{}

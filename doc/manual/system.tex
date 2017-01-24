@@ -1772,10 +1772,11 @@ Returns true if OBJECT is of type logical-pathname; otherwise, returns false.
 \paragraph{}
 \label{SYSTEM:LOOKUP-KNOWN-SYMBOL}
 \index{LOOKUP-KNOWN-SYMBOL}
---- Function: \textbf{lookup-known-symbol} [\textbf{system}] \textit{}
+--- Function: \textbf{lookup-known-symbol} [\textbf{system}] \textit{symbol}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Returns the name of the field and its class designator
+which stores the Java object `symbol'.
 \end{adjustwidth}
 
 \paragraph{}
@@ -2429,7 +2430,7 @@ not-documented
 --- Function: \textbf{sha256} [\textbf{system}] \textit{\&rest paths-or-strings}
 
 \begin{adjustwidth}{5em}{5em}
-Returned ASCIIfied representation of SHA256 digest of byte-based resource at PATHS-OR-STRINGs.
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -2645,8 +2646,7 @@ not-documented
 --- Function: \textbf{unzip} [\textbf{system}] \textit{pathname \&optional directory => unzipped\_pathnames}
 
 \begin{adjustwidth}{5em}{5em}
-Unpack zip archive at PATHNAME returning a list of extracted pathnames.
-If the optional DIRECTORY is specified, root the abstraction in that directory, otherwise use the current value of *DEFAULT-PATHNAME-DEFAULTS*.
+not-documented
 \end{adjustwidth}
 
 \paragraph{}

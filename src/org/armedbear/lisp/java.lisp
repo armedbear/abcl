@@ -396,21 +396,24 @@ calls on the java.util.Enumeration `jenumeration`."
 ;;; higher-level operators
 
 (defmacro chain (target op &rest ops)
-  "Performs chained method invocations. `target' is the receiver
-object (when the first call is a virtual method call) or a list in the
-form (:static <jclass>) when the first method call is a static method
-call. `op' and each of the `ops' are either method designators or lists
-in the form (<method designator> &rest args), where a method designator
-is either a string naming a method, or a jmethod object. `chain' will
-perform the method call specified by `op' on `target'; then, for each
-of the `ops', `chain' will perform the specified method call using the
+  "Performs chained method invocations. 
+
+TARGET is either the receiver object when the first call is a virtual method
+call or a list in the form (:static <jclass>) when the first method
+call is a static method call. 
+
+OP and each of the OPS are either method designators or lists in the
+form (<method designator> &rest args), where a method designator is
+either a string naming a method, or a jmethod object. CHAIN will
+perform the method call specified by OP on TARGET; then, for each
+of the OPS, CHAIN will perform the specified method call using the
 object returned by the previous method call as the receiver, and will
-ultimately return the result of the last method call.
-  For example, the form:
+ultimately return the result of the last method call.  For example,
+the form:
 
   (chain (:static \"java.lang.Runtime\") \"getRuntime\" (\"exec\" \"ls\"))
 
-  is equivalent to the following Java code:
+is equivalent to the following Java code:
 
   java.lang.Runtime.getRuntime().exec(\"ls\");"
   (labels ((canonicalize-op (op) (if (listp op) op (list op)))
