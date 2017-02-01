@@ -66,14 +66,19 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
   (find-jar #'contrib-jar-p))
 
 (defvar *abcl-contrib* nil
-  "Pathname of the ABCL contrib.
+  "Pathname of the abcl-contrib artifact.
+
 Initialized via SYSTEM:FIND-CONTRIB.")
 
-(defparameter *verbose* t)
+(defvar *abcl-contrib-verbose* t
+  "Stream onto ABCL-CONTRIB reports its activities.
+
+Set to nil to muffle such messages.")
 
 ;;; FIXME: stop using the obsolete ASDF:*CENTRAL-REGISTRY*
-(defun add-contrib (abcl-contrib-jar)
-  "Introspects a abcl-contrib-jar path whose immediate sub-directories
+(defun add-contrib (abcl-contrib-jar
+                    &key (verbose *abcl-contrib-verbose*))
+  "Introspects the ABCL-CONTRIB-JAR path for sub-directories which
   contain asdf definitions, adding those found to asdf."
   (let ((jar-path (if (ext:pathname-jar-p abcl-contrib-jar)
                       abcl-contrib-jar
@@ -83,9 +88,9 @@ Initialized via SYSTEM:FIND-CONTRIB.")
       (let ((asdf-directory (make-pathname :defaults asdf-file :name nil :type nil)))
         (unless (find asdf-directory asdf:*central-registry* :test #'equal)
           (push asdf-directory asdf:*central-registry*)
-          (format *verbose* "~&Added ~A to ASDF.~&" asdf-directory))))))
+          (format verbose "~&Added ~A to ASDF.~&" asdf-directory))))))
 
-(defun find-and-add-contrib (&key (verbose nil))
+(defun find-and-add-contrib (&key (verbose *abcl-contrib-verbose*))
   "Attempt to find the ABCL contrib jar and add its contents to ASDF.
 returns the pathname of the contrib if it can be found."
    (if *abcl-contrib*
@@ -165,9 +170,11 @@ returns the pathname of the contrib if it can be found."
                    :name "abcl-contrib")))
     (java:jcall "getURLs" (boot-classloader)))))
 
-(export `(find-system
+(export '(find-system
           find-contrib
-          *abcl-contrib*))
+          *abcl-contrib*
+          *abcl-contrib-verbose*)
+        :system)
 
-(when (find-and-add-contrib :verbose t)
+(when (find-and-add-contrib :verbose *abcl-contrib-verbose*)
   (provide :abcl-contrib))
