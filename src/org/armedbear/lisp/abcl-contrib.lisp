@@ -69,7 +69,7 @@ Used to determine relative pathname to find 'abcl-contrib.jar'."
   "Pathname of the ABCL contrib.
 Initialized via SYSTEM:FIND-CONTRIB.")
 
-(defparameter *verbose* t)
+(defvar *verbose* t)
 
 ;;; FIXME: stop using the obsolete ASDF:*CENTRAL-REGISTRY*
 (defun add-contrib (abcl-contrib-jar)
@@ -85,7 +85,7 @@ Initialized via SYSTEM:FIND-CONTRIB.")
           (push asdf-directory asdf:*central-registry*)
           (format *verbose* "~&Added ~A to ASDF.~&" asdf-directory))))))
 
-(defun find-and-add-contrib (&key (verbose nil))
+(defun find-and-add-contrib (&key (verbose *verbose*))
   "Attempt to find the ABCL contrib jar and add its contents to ASDF.
 returns the pathname of the contrib if it can be found."
    (if *abcl-contrib*
@@ -169,5 +169,5 @@ returns the pathname of the contrib if it can be found."
           find-contrib
           *abcl-contrib*))
 
-(when (find-and-add-contrib :verbose t)
+(when (find-and-add-contrib :verbose *verbose*)
   (provide :abcl-contrib))
