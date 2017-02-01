@@ -6,7 +6,7 @@
   (:export
    #:*quicklisp-parent-dir*))
 
-(in-package :cl-user)
+(in-package :quicklisp-abcl)
 
 (asdf:defsystem quicklisp-abcl
     :description "Load Quicklisp from the network if it isn't already installed. <urn:abcl.org/release/1.5.0/contrib/quicklisp-abcl#>"
