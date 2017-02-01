@@ -1,16 +1,24 @@
 ;;;; -*- Mode: LISP -*-
 (require :asdf)
-(in-package :asdf)
 
-(defsystem :quicklisp-abcl
-    :description 
-    "Load Quicklisp from the network if it isn't already installed. <urn:abcl.org/release/1.5.0/contrib/quicklisp-abcl#0.3.0>"
-    :version "0.4.0"
+(defpackage quicklisp-abcl
+  (:use :cl :asdf)
+  (:export
+   #:*quicklisp-parent-dir*))
+
+(in-package :cl-user)
+
+(asdf:defsystem quicklisp-abcl
+    :description "Load Quicklisp from the network if it isn't already installed. <urn:abcl.org/release/1.5.0/contrib/quicklisp-abcl#>"
+    :version "0.5.0"
     :components nil)
 
-(defmethod perform ((o load-op) (c (eql (find-system 'quicklisp-abcl))))
+(defvar *quicklisp-parent-dir* (user-homedir-pathname)
+  "Pathname containing parent directory of a local Quicklisp implementation")
+  
+(defmethod asdf:perform ((o asdf:load-op) (c (eql (asdf:find-system :quicklisp-abcl))))
   (let* ((setup-base (merge-pathnames "quicklisp/setup" 
-                                      (user-homedir-pathname)))
+                                      *quicklisp-parent-dir*))
          (setup-source (probe-file (make-pathname :defaults setup-base
                                                   :type "lisp")))
          (setup-fasl (probe-file (make-pathname :defaults setup-base
@@ -37,7 +45,8 @@
                 (warn "Using insecure transport for remote installation of Quicklisp:~&~A~&." e)
                 (load "http://beta.quicklisp.org/quicklisp.lisp")))))
       (unless (find-package :quicklisp)
-        (funcall (intern "INSTALL" "QUICKLISP-QUICKSTART")))))
+        (funcall (intern "INSTALL" "QUICKLISP-QUICKSTART") :path
+		 (merge-pathnames "quicklisp/" *quicklisp-parent-dir*)))))
 
 
 
