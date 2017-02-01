@@ -8,9 +8,11 @@
     :version "0.4.0"
     :components nil)
 
+(defvar *quicklisp-parent-dir* (user-homedir-pathname))
+  
 (defmethod perform ((o load-op) (c (eql (find-system 'quicklisp-abcl))))
   (let* ((setup-base (merge-pathnames "quicklisp/setup" 
-                                      (user-homedir-pathname)))
+                                      *quicklisp-parent-dir*))
          (setup-source (probe-file (make-pathname :defaults setup-base
                                                   :type "lisp")))
          (setup-fasl (probe-file (make-pathname :defaults setup-base
@@ -37,7 +39,8 @@
                 (warn "Using insecure transport for remote installation of Quicklisp:~&~A~&." e)
                 (load "http://beta.quicklisp.org/quicklisp.lisp")))))
       (unless (find-package :quicklisp)
-        (funcall (intern "INSTALL" "QUICKLISP-QUICKSTART")))))
+        (funcall (intern "INSTALL" "QUICKLISP-QUICKSTART") :path
+		 (merge-pathnames "quicklisp/" *quicklisp-parent-dir*)))))
 
 
 
