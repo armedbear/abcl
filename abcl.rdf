@@ -19,7 +19,7 @@
   dc:identifier         <urn:abcl.org/1.5.0#dev> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "08-OCT-2016" ;
+  dc:modified          "03-FEB-2017" ;
   dc:version           "abcl-1.5.0" ;
   dc:release           "dev" ;
   abcl:git             <https://github.com/easye/abcl/> ; # Does this overwrite?  TODO Check RDF specs.
@@ -69,7 +69,8 @@
     rdf:_11 "Olof-Joachim Frahm" ;
     rdf:_7 _:cyrus ; 
     rdf:_8 _:dmiles ; 
-    rdf:_9 _:alanr ; 
+    rdf:_9 _:alanr ;
+    rdf:_9 "Alan Ruttenberg" ; 
     rdf:_10 _:pipping ;
     rdf:_10 "Elias Pipping" ;
     rdf:_12 "Vibhu Mohindra" ;
@@ -134,7 +135,9 @@ doap:Project rdfs:seeAlso [
 
 doap:Project rdfs:seeAlso 
   <http://abcl.org/trac/timeline> , 
-  <http://abcl.org/trac/wiki> , 
+  <http://abcl.org/trac/wiki> ,
+  <http://github.com/armedbear/abcl/> ,
+  <http://gitlab.common-lisp.net/abcl/abcl/> ,
   <http://code.google.com/p/abcl-dynamic-install/> ,
   <http://abcl.org/svn/trunk/abcl/> .
 
@@ -148,10 +151,11 @@ doap:Project rdfs:seeAlso
     rdf:_7 abcl:jna ;
     rdf:_8 abcl:asdf-jar ;
     rdf:_9 abcl:quicklisp-abcl ;
+    rdf:_10 abcl:abcl-introspect ;
 ] .
 
 abcl:jna dc:version "4.2.2" .
-abcl:asdf dc:version "3.1.7.35" .
+abcl:asdf dc:version "3.2.0" .
 
 abcl:abcl-contrib  
   rdfs:seeAlso <file:contrib/README.markdown> .                             

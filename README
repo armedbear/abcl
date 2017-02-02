@@ -8,6 +8,7 @@ Armed Bear Common Lisp is a conforming implementation of ANSI Common
 Lisp that runs in a Java virtual machine.  It compiles Lisp code
 directly to Java byte code.
 
+
 LICENSE
 =======
 
@@ -22,7 +23,9 @@ making a combined work based on this software. Thus, the terms and
 conditions of the GNU General Public License cover the whole
 combination.
 
-** Classpath Exception 
+
+Classpath Exception
+-------------------
 
 As a special exception, the copyright holders of this software give
 you permission to link this software with independent modules to
@@ -39,7 +42,7 @@ exception statement from your version.
 RUNNING FROM DOCKER
 ===================
 
-With [Docker Engine][] installed so that one may execute:
+With [Docker Engine][] installed one may execute:
 
     docker run -it easye/abcl
 
@@ -71,32 +74,16 @@ to get
 
 [Docker Engine]: https://www.docker.com/products/docker-engine
 
-## Building Docker Container locally from modifications
 
-Get the source; use the Dockerfile to build.
+Building a Docker Image With Modifications
+------------------------------------------
 
-        docker pull easye/openjdk8
-        docker build -t easye/abcl .
+Get the source (see below); make yer mods; use the Dockerfile to build.
 
-See <file:Dockerfile> for specifics on build instructions.
+        docker build -t YOURID/abcl .
+        docker run -it YOURID/abcl 
 
-RUNNING FROM DOCKER
-===================
-
-With [Docker Engine][] installed so that one may execute:
-
-        docker pull easye/openjdk8
-        docker run easye/abcl
-
-[Docker Engine]: https://www.docker.com/products/docker-engine
-
-## Building Docker Container locally from modifications
-
-        docker pull easye/openjdk8
-        docker build -t e/abcl .
-        docker run -it e/abcl
-
-See <file:Dockerfile> for build instructions.
+See <file:Dockerfile> for the build instructions.
 
 
 RUNNING FROM BINARY RELEASE
@@ -210,7 +197,7 @@ value of '*JDK*' there should be an executable Java compiler in
 Then, one may either use the 'build-from-lisp.bash' shell script or load
 the necessary files into your Lisp image by hand.
 
-** Using the 'build-from-lisp.bash' script
+### Using the 'build-from-lisp.bash' script
 
 Under UNIX-like systems, one may simply invoke the
 'build-from-lisp.bash' script.  As noted above, one must first copy the
@@ -240,7 +227,7 @@ In case of failure in the javac stage, you might try this:
 This invokes javac separately for each .java file, which avoids running
 into limitations on command line length (but is a lot slower).
 
-** Building from another Lisp manually
+### Building from another Lisp manually
 
 There is also an ASDF definition in 'abcl.asd' for the BUILD-ABCL
 which can be used to load the necessary Lisp definitions, after which
@@ -262,7 +249,8 @@ ABCL now has a manual stating its conformance to the ANSI standard,
 providing a compliant and practical Common Lisp implementation.
 
 
-### Tests 
+Tests
+-----
 
 ABCL 1.4.0 now fails 47 out of 21708 total tests in the [revised and
 expanded ANSI CL test suite][ansi-test] (derived from the tests
@@ -277,12 +265,11 @@ more information.
 
 ### Deficiencies
 
-Many.  But patches are solicited.
+Many.  But Patches to address issues mentioned above will be gladly
+accepted.
 
-Patches to address any of the issues mentioned above will
-be gladly accepted.
-
-# Contact
+CONTACT
+=======
 
 Please report problems to the development mailing list:
 
@@ -290,7 +277,8 @@ Please report problems to the development mailing list:
 
 Have fun!
 
-# Authors 
+AUTHORS
+=======
 
 On behalf of all ABCL development team and contributors,
 

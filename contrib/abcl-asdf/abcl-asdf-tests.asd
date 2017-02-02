@@ -3,7 +3,8 @@
 
 (asdf:defsystem :abcl-asdf-tests
   :author "Mark Evenson"
-  :description "<> asdf:defsystem <urn:abcl.org/release/1.5.0/contrib/abcl-asdf/test#1.6.0>"
+  :long-description "<urn:abcl.org/release/1.5.0/contrib/abcl-asdf/test#>"
+  :version "1.6.0"
   :defsystem-depends-on (prove-asdf)
   :depends-on (abcl-asdf ;; our dependencies
                ;; Actual testing framework
