@@ -3,8 +3,9 @@
 
 (asdf:defsystem :abcl-asdf
   :author "Mark Evenson"
-  :version "1.6.0"
-  :description "<> asdf:defsystem <urn:abcl.org/release/1.5.0/contrib/abcl-asdf#1.6.0>"
+  :description "Extensions to ASDF for handling Java binary artifacts."
+  :long-description "<urn:abcl.org/release/1.5.0/contrib/abcl-asdf#>"
+  :version "1.6.1"
   :depends-on (jss)
   :components 
   ((:module package :pathname "" 
