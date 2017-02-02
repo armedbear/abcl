@@ -1128,14 +1128,14 @@
       (sys::set-function-definition name result definition))
     (values (or name result) nil nil)))
 
-(defun precompile-package (pkg &key verbose)
+(defun precompile-package (pkg &key (verbose cl:*compile-verbose*))
   (dolist (sym (package-symbols pkg))
     (when (fboundp sym)
       (unless (special-operator-p sym)
         (let ((f (fdefinition sym)))
           (unless (compiled-function-p f)
             (when verbose
-              (format t "Precompiling ~S~%" sym)
+              (format t "~&; precompiler; Precompiling ~S~%" sym)
               (finish-output))
             (precompile sym))))))
   t)

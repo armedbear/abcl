@@ -23,8 +23,6 @@
    #:*maven-http-proxy*
    #:make-remote-repository
    #:*maven-remote-repository*
-   #:*maven-verbose*
-
    #:resolve-artifact
    #:resolve-dependencies
 

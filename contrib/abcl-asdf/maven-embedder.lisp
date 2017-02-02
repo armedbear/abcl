@@ -41,9 +41,6 @@ Test:
 
 |#
 
-(defparameter *maven-verbose* t
-  "Stream to send output from the Maven Aether subsystem to, or NIL to muffle output")
-
 (defparameter *mavens* 
   (if (find :windows *features*)
       '("mvn.bat" "mvn3.bat" "mvn.cmd" "mvn")
@@ -102,8 +99,8 @@ Emits warnings if not able to find a suitable executable."
                                             which-cmd `(,mvn-path))))) 
                    (end-of-file () nil)
                    (t (e) 
-                     (format *maven-verbose* 
-                             "~&Failed to find Maven executable '~A' in PATH because~&~A" 
+                     (format cl:*load-verbose*
+                             "~&; abcl-asdf; Failed to find Maven executable '~A' in PATH because~&~A" 
                              mvn-path e)))))
             (when mvn
               (return-from find-mvn mvn)))))))
@@ -259,8 +256,8 @@ hint."
         (find-http-wagon))
        (t
         (progn 
-          (format *maven-verbose* 
-                  "~&WagonProvider stub passed '~A' as a hint it couldn't satisfy.~%" role-hint)
+          (format cl:*load-verbose*
+                  "~&; abcl-asdf; WagonProvider stub passed '~A' as a hint it couldn't satisfy.~%" role-hint)
           java:+null+))))
    "release"
    (lambda (wagon)
@@ -522,7 +519,7 @@ in Java CLASSPATH representation."
 
 (defun make-repository-listener ()
   (flet ((log (e) 
-           (format *maven-verbose* "~&~A~%" (#"toString" e))))
+           (format cl:*load-verbose* "~&; abcl-asdf; ~A~%" (#"toString" e))))
     (java:jinterface-implementation 
      (#"getName" (jss:find-java-class 'aether.RepositoryListener))
      "artifactDeployed" 
