@@ -36,6 +36,7 @@ package org.armedbear.lisp;
 import static org.armedbear.lisp.Lisp.*;
 
 import java.io.Writer;
+import java.text.MessageFormat;
 
 public final class SeekableStringWriter extends Writer {
     private final StringBuffer stringBuffer;
@@ -81,11 +82,15 @@ public final class SeekableStringWriter extends Writer {
 
     @Override
     public void write(int c) {
+      try {
         if (offset == stringBuffer.length())
             stringBuffer.append((char) c);
         else
             stringBuffer.setCharAt(offset, (char) c);
         ++offset;
+      } catch (IndexOutOfBoundsException e) {
+        error(new JavaException(e));
+      }
     }
 
     @Override
@@ -137,4 +142,12 @@ public final class SeekableStringWriter extends Writer {
 
     @Override
     public void flush() {}
+
+  public String toStringAndClear() {
+    String result = stringBuffer.toString();
+    stringBuffer.delete(0, stringBuffer.length());
+    offset = 0;
+    return result;
+  }
+    
 }

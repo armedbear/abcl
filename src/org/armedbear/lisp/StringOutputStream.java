@@ -117,14 +117,25 @@ public final class StringOutputStream extends Stream
         return true;
     }
 
-    public LispObject getString()
+
+    public LispObject getString() {
+      if (elementType == NIL) {
+        return new NilVector(0);
+      }
+
+      StringBuffer sb = stringWriter.getBuffer();
+      SimpleString s = new SimpleString(sb);
+      sb.setLength(0);
+      return s;
+    }
+
+    public LispObject getSimpleStringAndClear()
     {
         if (elementType == NIL)
             return new NilVector(0);
-        StringBuffer sb = stringWriter.getBuffer();
-        SimpleString s = new SimpleString(sb);
-        sb.setLength(0);
-        return s;
+        String contents = stringWriter.toStringAndClear();
+        
+        return new SimpleString(contents);
     }
 
     // ### %make-string-output-stream
@@ -148,9 +159,10 @@ public final class StringOutputStream extends Stream
         @Override
         public LispObject execute(LispObject arg)
         {
-            if (arg instanceof StringOutputStream)
-                return ((StringOutputStream)arg).getString();
-            return type_error(this, Symbol.STRING_OUTPUT_STREAM);
+          if (arg instanceof StringOutputStream) {
+            return ((StringOutputStream)arg).getSimpleStringAndClear();
+          }
+          return type_error(this, Symbol.STRING_OUTPUT_STREAM);
         }
     };
 }

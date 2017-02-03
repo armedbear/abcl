@@ -16,4 +16,16 @@ public class SeekableStringWriterTest
     writer.append("meow");
     assertEquals("meowd", writer.toString());
   }
+  
+   @Test
+   public void writeAndClear() {
+     SeekableStringWriter writer = new SeekableStringWriter();
+     String buf1 = "empus";
+     String buf2 = "  fugit";
+     writer.append('t').append(buf1).append(buf2, 1, 7);
+     assertEquals("tempus fugit", writer.toString());
+     String result = writer.toStringAndClear();
+     assertEquals("tempus fugit", result);
+     assertEquals("", writer.toString());
+   }
 }
