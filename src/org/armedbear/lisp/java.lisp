@@ -381,6 +381,15 @@ calls on the java.util.Enumeration `jenumeration`."
                           object)
                          collecting
                          (jclass-name arg-type))))
+     ((string= class-name "java.lang.reflect.Field")
+      `(let ((field 
+	       (find ,(jcall "getName" object) 
+		     (jcall "getDeclaredFields"
+			    ,(jcall "getDeclaringClass" object))
+		     :key (lambda(el) (jcall "getName" el))
+		     :test 'equal)))
+	 (jcall "setAccessible" field t)
+	 field))
      ((jinstance-of-p object "java.lang.Class")
       `(java:jclass ,(jcall (jmethod "java.lang.Class" "getName") object)))
      (t
