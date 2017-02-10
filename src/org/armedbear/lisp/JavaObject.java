@@ -407,7 +407,7 @@ public final class JavaObject extends LispObject {
                 int length = Array.getLength(obj);
                 for (int i = 0; i < length; i++) {
                     parts = parts
-                        .push(new Cons(new SimpleString(i), 
+		      .push(new Cons(new SimpleString(String.valueOf(i)), 
                                        JavaObject.getInstance(Array.get(obj, i))));
                 }
             } else {
