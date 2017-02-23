@@ -494,7 +494,7 @@
     (setf (getf host :fragment) v))
   (%invalidate-namestring p))
 
-(defsetf url-pathname-query set-url-pathname-fragment)
+(defsetf url-pathname-fragment set-url-pathname-fragment)
 
 (export '(url-pathname-scheme
           url-pathname-authority
