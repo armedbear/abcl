@@ -21,12 +21,11 @@ RUN chown -R abcl:abcl ${work}
 USER abcl
 
 # Diagnostics for debugging ABCL construction
-RUN ls -lR ${work}/abcl
+#RUN ls -lR ${work}/abcl
 
-ENV java_home /usr/lib/jvm/java-8-openjdk-amd64
 RUN echo "java.options=-d64  -XX:+UseG1GC -XshowSettings:vm -Dfile.encoding=UTF-8 -XX:+AggressiveOpts -XX:CompileThreshold=10" > ${work}/abcl/abcl.properties
 
-RUN JAVA_HOME=${java_home} cd ${work}/abcl && ant clean && ant abcl
+RUN cd ${work}/abcl && ant clean && ant abcl
 ENV abcl_exec_path  "${work}/abcl/abcl"
 
 USER root
