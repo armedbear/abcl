@@ -44,7 +44,9 @@ Test:
 (defparameter *mavens* 
   (if (find :windows *features*)
       '("mvn.bat" "mvn3.bat" "mvn.cmd" "mvn")
-      '("/opt/local/bin/mvn3" "mvn3" "mvn"))
+      '("mvn3" "mvn"
+        ;; MacPorts
+        "/opt/local/bin/mvn3"))
   "Locations to search for the Maven executable.")
 
 (defun find-mvn () 
