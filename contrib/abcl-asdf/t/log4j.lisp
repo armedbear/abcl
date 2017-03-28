@@ -7,9 +7,9 @@ Note:  for users of SLIME, this will appear in the associated *inferior-lisp* bu
 
 (plan 1)
 
-(ok
- (require :log4j)
- (#"configure" 'log4j.BasicConfigurator)
+(require :log4j)
+(#"configure" 'log4j.BasicConfigurator)
+(ok 
  (#"info" (#"getRootLogger" 'log4j.Logger) "Kilroy wuz here."))
 
 (finalize)
