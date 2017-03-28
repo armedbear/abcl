@@ -599,22 +599,26 @@ public final class JavaObject extends LispObject {
         return sb.toString();
     }
 
-    // ### describe-java-object
-    private static final Primitive DESCRIBE_JAVA_OBJECT =
-        new Primitive("describe-java-object", PACKAGE_JAVA, true)
-    {
-        @Override
-        public LispObject execute(LispObject first, LispObject second)
-
-        {
-            if (!(first instanceof JavaObject))
-                return type_error(first, Symbol.JAVA_OBJECT);
-            final Stream stream = checkStream(second);
-            final JavaObject javaObject = (JavaObject) first;
-            stream._writeString(describeJavaObject(javaObject));
-            return LispThread.currentThread().nothing();
-        }
-    };
+  private static final Primitive DESCRIBE_JAVA_OBJECT 
+    = new pf_describe_java_object();
+  @DocString(name="describe-java-object",
+	     args="object stream",
+	     doc="Print a human friendly description of Java OBJECT to STREAM.")
+  private static final class pf_describe_java_object extends Primitive 
+  {
+    pf_describe_java_object() {
+      super("describe-java-object", PACKAGE_JAVA, true);
+    }
+    @Override
+    public LispObject execute(LispObject first, LispObject second) {
+      if (!(first instanceof JavaObject))
+	return type_error(first, Symbol.JAVA_OBJECT);
+      final Stream stream = checkStream(second);
+      final JavaObject javaObject = (JavaObject) first;
+      stream._writeString(describeJavaObject(javaObject));
+      return LispThread.currentThread().nothing();
+    }
+  };
 
     //JAVA-CLASS support
 
