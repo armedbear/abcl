@@ -65,8 +65,10 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <include name="org/armedbear/lisp/util/*.java"/>
       <include name="org/armedbear/lisp/protocol/*.java"/>
       <include name="org/armedbear/lisp/java/**/*.java"/>
-      <include name="org/armedbear/lisp/scripting/*.java" if="abcl.jsr-223.p"/>
-      <include name="org/armedbear/lisp/scripting/util/*.java" if="abcl.jsr-223.p"/>
+      <include if="abcl.jsr-223.p"
+               name="org/armedbear/lisp/scripting/*.java" />
+      <include if="abcl.jsr-223.p"
+               name="org/armedbear/lisp/scripting/util/*.java" />
       <include name="org/armedbear/Main.java"/>
     </patternset>
 
@@ -75,14 +77,20 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <include name="org/armedbear/lisp/java/**/*.lisp"/>
       <include name="org/armedbear/lisp/tests/*.lisp"/>
       <exclude name="org/armedbear/lisp/j.lisp"/>
-      <include name="org/armedbear/lisp/scripting/lisp/*.lisp" if="abcl.jsr-223.p"/>
+      <include if="abcl.jsr-223.p" name="org/armedbear/lisp/scripting/lisp/*.lisp"/>
     </patternset>
 
+    <patternset id="abcl.source.lisp.build">
+      <include name="org/abcl/lisp/build/*.lisp"/>
+    </patternset>
+    
     <!-- Lisp files required at runtime -->
     <patternset id="abcl.source.lisp.dist">
       <include name="org/armedbear/lisp/boot.lisp"/>
-      <include name="org/armedbear/lisp/scripting/lisp/*.lisp" if="abcl.jsr-223.p"/>
-      <include name="**/*.lisp" if="abcl.compile.lisp.skip"/>
+      <include if="abcl.jsr-223.p"
+               name="org/armedbear/lisp/scripting/lisp/*.lisp" />
+      <include if="abcl.compile.lisp.skip"
+               name="**/*.lisp" />
     </patternset>
 
     <patternset id="abcl.objects">
@@ -92,10 +100,18 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <include name="org/armedbear/lisp/**/*.cls"/> 
       <include name="org/armedbear/lisp/**/*.abcl"/>
       <include name="org/armedbear/lisp/version"/>
-      <include name="org/armedbear/lisp/scripting/*.class" if="abcl.jsr-223.p"/>
-      <include name="org/armedbear/lisp/scripting/util/*.class" if="abcl.jsr-223.p"/>
+      <include if="abcl.jsr-223.p"
+               name="org/armedbear/lisp/scripting/*.class"/>
+      <include if="abcl.jsr-223.p"
+               name="org/armedbear/lisp/scripting/util/*.class"/>
       <patternset refid="abcl.source.lisp.dist"/>
       <include name="abcl.rdf"/>
+      <include name="abcl.asd"/>
+      <include name="README"/>
+      <include name="build.xml"/>
+      <include name="abcl.properties.in"/>
+      <include name="abcl.in"/>
+      <include name="abcl.bat.in"/>
     </patternset>
     
     <path id="abcl.classpath.dist">
@@ -115,7 +131,6 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <echo>Setting 'abcl.build.incremental' enables incremental compilation.</echo>
       <antcall target="abcl.clean"/>
     </target>
-      
 
     <target name="abcl.init">
       <tstamp>
@@ -185,11 +200,11 @@ For help on the automatic tests available, use the Ant target 'help.test'.
             depends="abcl.init,abcl.java.warning,abcl.jsr-223.notice">
       <mkdir dir="${build.dir}"/>
       <mkdir dir="${build.classes.dir}"/>
-      <!-- Stock build for Java 1.5 (aka Java 2) container -->
+      <!-- abcl-1.5.0: Stock build for Java 1.6 (aka Java 2) container -->
       <javac destdir="${build.classes.dir}"
              debug="true"
-             target="1.5"
-             source="1.5"
+             target="1.6"
+             source="1.6"
              includeantruntime="false"
              failonerror="true">
         <src path="${src.dir}"/>
@@ -201,15 +216,26 @@ For help on the automatic tests available, use the Ant target 'help.test'.
 
     <!-- Additional artifacts to stage relative to Ant ${basedir} -->
     <patternset id="abcl.stage">
+      <include name="README"/>
+      <include name="COPYING"/>
       <include name="abcl.rdf"/>
+      <include name="abcl.asd"/> 
+      <include name="build.xml"/>
+      <include name="abcl.properties.in"/> <!--TODO: massage into abcl.properties at build-time -->
+      <include name="abcl.bat"/>
+      <include name="abcl.bat.in"/>
     </patternset>
 
     <target name="abcl.stage"
 	    depends="abcl.copy.lisp">
-      <copy todir="${build.classes.dir}" preservelastmodified="yes">
+      <copy todir="${build.classes.dir}" preservelastmodified="yes"
+            verbose="true">
 	<fileset dir="${basedir}/">
 	  <patternset refid="abcl.stage"/>
 	</fileset>
+        <fileset dir="${src.dir}">
+          <patternset refid="abcl.source.lisp.build"/>
+        </fileset>
       </copy>
     </target>
     
@@ -751,6 +777,7 @@ will compile (if necessary) and load JSS.
 
     </patternset>
 
+    <!-- TODO merge with artifacts from 'abcl.stage' -->
     <patternset 
         id="abcl.source.misc"
         description="Additional includes in the source distribution relative to source root">

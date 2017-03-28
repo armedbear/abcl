@@ -129,9 +129,10 @@ be in a directory named '../ansi-test/'."
 (defsystem :abcl/build
   :description "Build ABCL from a Lisp.  Not the canonical build recipe."
   :components
-  ((:module build :pathname ""  :components
+  ((:module build :pathname "src/org/abcl/lisp/build/"  :components
             ((:file "build-abcl") 
-             (:file "customizations" :depends-on ("build-abcl"))))))
+             (:file "customizations-default"
+                    :depends-on ("build-abcl"))))))
 
 (defsystem :abcl/documentation
   :description "Tools to generate LaTeX source from docstrings."
