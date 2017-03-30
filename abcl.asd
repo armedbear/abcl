@@ -63,6 +63,21 @@
                          #+abcl
                          (:file "package-local-nicknames-tests")))))
 
+(defsystem abcl/t
+  :description "Tests for ABCL via PROVE."
+  :defsystem-depends-on (prove-asdf)
+  :depends-on (abcl
+               prove)
+  :perform (asdf:test-op (op c)
+                         (uiop:symbol-call :prove-asdf :run-test-system c))
+  :components ((:module package
+                        :pathname "t/"
+                        :components ((:file "package")))
+               (:module build
+                        :depends-on (package)
+                        :pathname "t/"
+                        :components ((:test-file "pathname")))))
+
 ;;;
 ;;; ASDF definitions and the ANSI-TEST suite
 ;;;

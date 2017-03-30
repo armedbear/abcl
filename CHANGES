@@ -8,6 +8,8 @@ Unreleased
 Fixes
 -----
 
+* Fix CL:MAKE-PATHNAME for explicitly nil HOST
+
 * JNEW-RUNTIME-CLASS 
 
 * Fix CL:OPEN for :DIRECTION :INPUT (pipping)

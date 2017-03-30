@@ -1319,6 +1319,7 @@ public class Pathname extends LispObject {
         return new Pathname(namestring);
     }
 
+
     static final Pathname _makePathname(LispObject[] args) {
         if (args.length % 2 != 0) {
             program_error("Odd number of keyword arguments.");
@@ -1330,6 +1331,7 @@ public class Pathname extends LispObject {
         LispObject type = NIL;
         LispObject version = NIL;
         Pathname defaults = null;
+        boolean hostSupplied = false;
         boolean deviceSupplied = false;
         boolean nameSupplied = false;
         boolean typeSupplied = false;
@@ -1340,6 +1342,7 @@ public class Pathname extends LispObject {
             LispObject value = args[i + 1];
             if (key == Keyword.HOST) {
                 host = value;
+                hostSupplied = true;
             } else if (key == Keyword.DEVICE) {
                 device = value;
                 deviceSupplied = true;
@@ -1384,7 +1387,7 @@ public class Pathname extends LispObject {
             }
         }
         if (defaults != null) {
-            if (host == NIL) {
+            if (!hostSupplied) {
                 host = defaults.host;
             }
             if (!directorySupplied) {

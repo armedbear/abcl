@@ -3,5 +3,7 @@
   (:export
    #:install))
 
+(defpackage abcl/test
+  (:use :cl :prove))
 
 
