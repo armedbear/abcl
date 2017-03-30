@@ -19,20 +19,8 @@
 
 (in-package "BUILD-ABCL")
 
+
 ;; Standard compiler options.
 (setq *javac-options* "-g")
 (setq *jikes-options* "+D -g")
 
-;; *PLATFORM* will be either :WINDOWS, :DARWIN, :LINUX, or :UNKNOWN.
-(case *platform*
-  (:windows
-   (setq *jdk*           "C:\\Program Files\\Java\\jdk1.5.0_16\\")
-   #+nil  (setq *java-compiler* "jikes")
-   )
-  (:darwin
-   (setq *jdk*           "/usr/")
-   #+nil (setq *java-compiler* "jikes")
-   #+nil (setq *jar*    "jar"))
-  ((:linux :unknown)
-   (setq *jdk*           "/home/peter/sun/jdk1.5.0_16/")
-   (setq *jar*           "fastjar")))

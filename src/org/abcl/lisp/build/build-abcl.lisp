@@ -3,14 +3,6 @@
 #+abcl
 (require 'format)
 
-(defpackage build-abcl
-  (:use "COMMON-LISP")
-  (:export #:build-abcl #:make-dist)
-  #+abcl (:import-from #:extensions #:run-shell-command #:probe-directory)
-  #+allegro (:import-from #:excl #:probe-directory)
-  #+clisp (:import-from #:ext #:probe-directory)
-  )
-
 (in-package #:build-abcl)
 
 (defun comp (string char)
@@ -50,32 +42,6 @@ is infact a child of it while being rooted at the same root as `parent'."
          (file-write-date artifact))))
 
 
-
-;; Platform detection.
-
-(defun platform ()
-  #-clisp
-  (let ((software-type (software-type)))
-    (cond ((search "Linux" software-type)
-           :linux)
-          ((or (search "Mac OS X" software-type) ; abcl
-               (search "Darwin" software-type))  ; sbcl
-           :darwin)
-          ((search "Windows" software-type)
-           :windows)
-          (t
-           :unknown)))
-  #+clisp
-  (cond ((member :win32 *features*)
-         :windows)
-        ((equal 0 (ext:run-shell-command "uname | grep -i darwin" :output nil))
-         :darwin)
-        ((equal 0 (ext:run-shell-command "uname | grep -i linux" :output nil))
-         :linux)
-        (t
-         :unknown)))
-
-(defparameter *platform* (platform))
 
 (defparameter *file-separator-char*
   (if (eq *platform* :windows) #\\ #\/))
