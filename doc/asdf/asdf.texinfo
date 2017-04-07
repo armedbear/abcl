@@ -65,7 +65,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @titlepage
 @title ASDF: Another System Definition Facility
-@subtitle Manual for Version 3.2.0
+@subtitle Manual for Version 3.2.1
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
@@ -82,7 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @node Top, Introduction, (dir), (dir)
 @top ASDF: Another System Definition Facility
 @ifnottex
-Manual for Version 3.2.0
+Manual for Version 3.2.1
 @end ifnottex
 
 
@@ -3642,8 +3642,13 @@ When looking in a tree, if one system is found, the search succeeds.
 If multiple systems are found, the consequences are unspecified:
 the search may succeed with any of the found systems,
 or an error may be raised.
-ASDF currently returns the first system found,
-XCVB currently raised an error.
+ASDF 3.2.1 or later returns the pathname whose normalized directory component
+has the shortest length (as a list), and breaks ties by choosing the system
+with the smallest @code{unix-namestring} when compared with @code{string<}.
+Earlier versions of ASDF return ASDF return the first system found,
+which is implementation-dependent, and may or may not be the pathname
+with the smallest @code{unix-namestring} when compared with @code{string<}.
+XCVB raises an error.
 If none is found, the search continues.
 
 Exclude statements specify patterns of subdirectories
