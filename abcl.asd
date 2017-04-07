@@ -76,7 +76,8 @@
                (:module build
                         :depends-on (package)
                         :pathname "t/"
-                        :components ((:test-file "pathname")))))
+                        :components ((:test-file "resolve-multiple-maven-dependencies")
+                                     (:test-file "pathname")))))
 
 ;;;
 ;;; ASDF definitions and the ANSI-TEST suite
