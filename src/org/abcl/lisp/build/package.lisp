@@ -4,6 +4,10 @@
   (:export
 
    #:install
+   #:install/ant
+   
+   #:install-zip
+   #:download-artifact
    
    #:platform
 

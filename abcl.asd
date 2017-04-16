@@ -161,6 +161,7 @@ be in a directory named '../ansi-test/'."
                                      (:file "platform")
                                      (:file "customizations-default")
                                      (:file "install")
+                                     (:file "ant")
                                      (:file "build-abcl")))))
 (defsystem abcl/build/t
   :description "Test ABCL build system."

@@ -9,6 +9,10 @@
   (ok
    (directory (merge-pathnames "*.*" path))))
 
+(plan 1)
+(ok 
+ (build-abcl::install/ant))
+
 (finalize)
 
 
