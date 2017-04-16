@@ -16,10 +16,13 @@ abcl.build.incremental=true
 ## java.options sets the Java options in the abcl wrapper scripts
 
 # Reasonable defaults for Java 8
-java.options=-d64  -XX:+UseG1GC -XshowSettings:vm 
+java.options=-d64 -XshowSettings:vm -XX:+UseG1GC 
 
-# Reasonable defaults for circa-2012, ORCL JVM implementations
-#java.options=-d64 -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g -XX:+UseConcMarkSweepGC
+# Java7 on 64bit optimizations
+java.options=-d64 -XshowSettings:vm -XX:+UseG1GC 
+
+# Reasonable defaults for openjdk6
+#java.options=-d64 -XshowSettings:vm -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g -XX:+UseConcMarkSweepGC
 
 # See
 # http://www.oracle.com/technetwork/java/javase/tech/vmoptions-jsp-140102.html
