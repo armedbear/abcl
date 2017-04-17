@@ -53,7 +53,7 @@
     (if time-zone
         (setf seconds-west (* time-zone 3600)
               daylight nil)
-        (multiple-value-bind (time-zone daylight-p) (get-time-zone universal-time)
+        (multiple-value-bind (time-zone daylight-p) (ext:get-time-zone universal-time)
           (setf seconds-west (* time-zone 3600)
                 daylight daylight-p)))
     (multiple-value-bind (weeks secs)
@@ -142,7 +142,7 @@
                              (- (leap-years-before year)
                                 (leap-years-before fake-year))))))))
           (t
-           (let* ((tz-guess (get-time-zone (* hours 3600)))
+           (let* ((tz-guess (ext:get-time-zone (* hours 3600)))
 		  (guess (+ second (* 60 (+ minute (* 60 (+ hours tz-guess))))))
 		  (tz (get-time-zone guess)))
 	     (+ guess (* 3600 (- tz tz-guess))))))))

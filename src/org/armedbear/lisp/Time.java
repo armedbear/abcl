@@ -41,26 +41,23 @@ import java.util.TimeZone;
 
 public final class Time
 {
-
   // ### %time
-  private static final Primitive _TIME =
-    new Primitive("%time", PACKAGE_SYS, false)
-    {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-        Cons.setCount(0);
-        long realStart = System.currentTimeMillis();
-        try
-          {
-            return arg.execute();
-          }
-        finally
-          {
-            long realElapsed = System.currentTimeMillis() - realStart;
-            long count = Cons.getCount();
-            Stream out =
-              checkCharacterOutputStream(Symbol.TRACE_OUTPUT.symbolValue());
+  public static final Primitive _TIME = new pf__time();
+  private static final class pf__time extends Primitive {
+    pf__time() {
+      super("%time", PACKAGE_SYS, false);
+    }
+    @Override
+    public LispObject execute(LispObject arg) {
+      Cons.setCount(0);
+      long realStart = System.currentTimeMillis();
+      try {
+        return arg.execute();
+      } finally {
+        long realElapsed = System.currentTimeMillis() - realStart;
+        long count = Cons.getCount();
+        Stream out 
+          = checkCharacterOutputStream(Symbol.TRACE_OUTPUT.symbolValue());
             out.freshLine();
             StringBuilder sb = new StringBuilder();
             sb.append(String.valueOf((float)realElapsed / 1000));
@@ -73,53 +70,57 @@ public final class Time
             sb.append(System.getProperty("line.separator"));
             out._writeString(sb.toString());
             out._finishOutput();
-          }
       }
-    };
+    }
+  };
 
   // ### get-internal-real-time
-  private static final Primitive GET_INTERNAL_REAL_TIME =
-    new Primitive("get-internal-real-time", "")
-    {
-      @Override
-      public LispObject execute()
-      {
-        return number(System.currentTimeMillis());
-      }
-    };
+  private static final Primitive GET_INTERNAL_REAL_TIME = new pf_get_internal_real_time();
+  private static final class pf_get_internal_real_time extends Primitive {
+    pf_get_internal_real_time() {
+      super("get-internal-real-time", "");
+    }
+    @Override
+    public LispObject execute() {
+      return number(System.currentTimeMillis());
+    }
+  };
 
   // ### get-internal-run-time
-  private static final Primitive GET_INTERNAL_RUN_TIME =
-    new Primitive("get-internal-run-time", "")
-    {
-      @Override
-      public LispObject execute()
-      {
-        return number(System.currentTimeMillis());
-      }
-    };
+  private static final Primitive GET_INTERNAL_RUN_TIME = new pf_get_internal_run_time();
+  private static final class pf_get_internal_run_time extends Primitive {
+    pf_get_internal_run_time() {
+      super("get-internal-run-time", "");
+    }
+    @Override
+    public LispObject execute() {
+      return number(System.currentTimeMillis());
+    }
+  };
 
   // ### get-universal-time
-  private static final Primitive GET_UNIVERSAL_TIME =
-    new Primitive("get-universal-time", "")
-    {
-      @Override
-      public LispObject execute()
-      {
-        return number(System.currentTimeMillis() / 1000 + 2208988800L);
-      }
-    };
+  private static final Primitive GET_UNIVERSAL_TIME = new pf_get_universal_time();
+  private static final class pf_get_universal_time extends Primitive {
+    pf_get_universal_time() {
+      super("get-universal-time", "");
+    }
+    @Override
+    public LispObject execute() {
+      return number(System.currentTimeMillis() / 1000 + 2208988800L);
+    }
+  };
 
   // ### default-time-zone => offset daylight-p
-  private static final Primitive DEFAULT_TIME_ZONE =
-    new Primitive("default-time-zone", PACKAGE_SYS, false)
-    {
-      @Override
-      public LispObject execute()
-      {
-        return getTimeZone(System.currentTimeMillis());
-      }
-    };
+  private static final Primitive DEFAULT_TIME_ZONE = new pf_default_time_zone();
+  private static final class pf_default_time_zone extends Primitive {
+    pf_default_time_zone() {
+      super("default-time-zone", PACKAGE_SYS, false);
+    }
+    @Override
+    public LispObject execute() {
+      return getTimeZone(System.currentTimeMillis());
+    }
+  };
 
   private static final LispObject getTimeZone(long unixTimeMillis) {
     TimeZone tz = TimeZone.getDefault();
@@ -132,19 +133,24 @@ public final class Time
       rawOffset += tz.getDSTSavings();
     // "Time zone values increase with motion to the west..."
     // Convert milliseconds to hours.
-    return LispThread.currentThread().setValues(
-      Fixnum.getInstance(- rawOffset).divideBy(Fixnum.getInstance(3600000)),
-      inDaylightTime ? T : NIL);
+    return LispThread.currentThread()
+      .setValues(Fixnum.getInstance(- rawOffset).divideBy(Fixnum.getInstance(3600000)),
+                 inDaylightTime ? T : NIL);
   }
 
   // ### get-time-zone universal-time => hours-west daylight-p
-  private static final Primitive GET_TIME_ZONE =
-    new Primitive("get-time-zone", PACKAGE_SYS, false)
-    {
-      @Override
-      public LispObject execute(LispObject arg)
-      {
-        return getTimeZone((arg.longValue() - 2208988800L) * 1000);
-      }
-    };
+  private static final Primitive GET_TIME_ZONE = new pf_get_time_zone();
+  @DocString(name="get-time-zone",
+             args="time-in-millis",
+             returns="hours-west daylight-p",
+             doc= "Returns as the first value the timezone difference in hours from the Greenwich meridian for TIME-IN-MILLIS via the Daylight Savings Time assumptions that were in place at the instant's occurance.  Returns as the second value a boolean as to whether daylight savings time was in effect at the occurance.")
+  private static final class pf_get_time_zone extends Primitive {
+    pf_get_time_zone() {
+      super("get-time-zone", PACKAGE_EXT, true);
+    }
+    @Override
+    public LispObject execute(LispObject arg) {
+      return getTimeZone((arg.longValue() - 2208988800L) * 1000);
+    }
+  };
 }
