@@ -519,7 +519,6 @@ public class Autoload extends Function
         autoload(PACKAGE_EXT, "file-directory-p", "probe_file", true);
         autoload(PACKAGE_EXT, "gc", "gc", true);
         autoload(PACKAGE_EXT, "get-floating-point-modes", "FloatFunctions", true);
-        autoload(PACKAGE_EXT, "get-time-zone", "Time", true);
         autoload(PACKAGE_EXT, "make-slime-input-stream", "SlimeInputStream", true);
         autoload(PACKAGE_EXT, "make-slime-output-stream", "SlimeOutputStream", true);
         autoload(PACKAGE_EXT, "probe-directory", "probe_file", true);
@@ -628,6 +627,7 @@ public class Autoload extends Function
         autoload(PACKAGE_SYS, "function-info", "function_info");
         autoload(PACKAGE_SYS, "get-cached-emf", "EMFCache", true);
         autoload(PACKAGE_SYS, "get-function-info-value", "function_info");
+        autoload(PACKAGE_SYS, "get-time-zone", "Time");
         autoload(PACKAGE_SYS, "hash-table-entries", "HashTableFunctions");
         autoload(PACKAGE_SYS, "hash-table-entries", "HashTableFunctions");
         autoload(PACKAGE_SYS, "layout-class", "Layout", true);

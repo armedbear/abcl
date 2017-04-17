@@ -42,8 +42,6 @@
 (defconstant november-17-1858 678882)
 (defconstant weekday-november-17-1858 2)
 
-
-
 ;;; decode-universal-time universal-time &optional time-zone
 ;;; => second minute hour date month year day daylight-p zone
 ;;; If time-zone is not supplied, it defaults to the current time zone adjusted
@@ -55,7 +53,7 @@
     (if time-zone
         (setf seconds-west (* time-zone 3600)
               daylight nil)
-        (multiple-value-bind (time-zone daylight-p) (ext:get-time-zone (* 1000 universal-time))
+        (multiple-value-bind (time-zone daylight-p) (get-time-zone universal-time)
           (setf seconds-west (* time-zone 3600)
                 daylight daylight-p)))
     (multiple-value-bind (weeks secs)
@@ -128,7 +126,9 @@
 		      (leap-years-before year))
 		  (* (- year 1900) 365)))
 	 (hours (+ hour (* days 24))))
-    (cond ((> year 2037)
+    (cond (time-zone
+           (+ second (* (+ minute (* (+ hours time-zone) 60)) 60)))
+          ((> year 2037)
            (labels ((leap-year-p (year)
                       (cond ((zerop (mod year 400)) t)
                             ((zerop (mod year 100)) nil)
@@ -141,17 +141,8 @@
                  (* 86400 (+ (* 365 (- year fake-year))
                              (- (leap-years-before year)
                                 (leap-years-before fake-year))))))))
-          ((not time-zone)
-           (let* ((tz-guess (ext:get-time-zone (* 1000 (* hours 3600))))
-		  (guess (+ second (* 60 (+ minute (* 60 (+ hours tz-guess))))))
-		  (tz (ext:get-time-zone (* 1000 guess))))
-             (+ guess (* 3600 (- tz tz-guess)))))
           (t
-           (+ second (* (+ minute (* (+ hours time-zone) 60)) 60))))))
-
-#|
-(intern "GET-TIME-ZONE" (find-package :ext))
-(define-symbol-macro EXT:GET-TIME-ZONE
-    `(get-time-zone))
-(export (intern "GET-TIME-ZONE" (find-package :ext)))
-#|
+           (let* ((tz-guess (get-time-zone (* hours 3600)))
+		  (guess (+ second (* 60 (+ minute (* 60 (+ hours tz-guess))))))
+		  (tz (get-time-zone guess)))
+	     (+ guess (* 3600 (- tz tz-guess))))))))
