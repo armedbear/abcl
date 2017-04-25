@@ -67,7 +67,7 @@ public final class FileError extends LispError
     public FileError(String message)
     {
         super(StandardClass.FILE_ERROR);
-        setFormatControl(message);
+        setFormatControl(message.replaceAll("~","~~"));
         setFormatArguments(NIL);
         setPathname(NIL);
     }
@@ -76,7 +76,7 @@ public final class FileError extends LispError
 
     {
         super(StandardClass.FILE_ERROR);
-        setFormatControl(message);
+        setFormatControl(message.replaceAll("~","~~"));
         setFormatArguments(NIL);
         setPathname(pathname);
     }

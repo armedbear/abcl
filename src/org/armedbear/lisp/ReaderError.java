@@ -40,14 +40,14 @@ public final class ReaderError extends StreamError
     public ReaderError(String message)
     {
         super(StandardClass.READER_ERROR);
-        setFormatControl(message);
+        setFormatControl(message.replaceAll("~","~~"));
         setFormatArguments(NIL);
     }
 
     public ReaderError(String message, Stream stream)
     {
         super(StandardClass.READER_ERROR);
-        setFormatControl(message);
+        setFormatControl(message.replaceAll("~","~~"));
         setFormatArguments(NIL);
         setStream(stream);
     }

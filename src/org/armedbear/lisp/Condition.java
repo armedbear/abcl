@@ -98,7 +98,7 @@ public class Condition extends StandardObject
   {
     super(StandardClass.CONDITION);
     Debug.assertTrue(slots.length == 2);
-    setFormatControl(message);
+    setFormatControl(message.replaceAll("~","~~"));
     setFormatArguments(NIL);
   }
 

@@ -57,7 +57,7 @@ public class ProgramError extends LispError
     public ProgramError(String message)
     {
         super(StandardClass.PROGRAM_ERROR);
-        setFormatControl(message);
+        setFormatControl(message.replaceAll("~","~~"));
         setFormatArguments(NIL);
     }
 

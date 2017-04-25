@@ -46,7 +46,7 @@ public final class ControlError extends LispError
     public ControlError(String message)
     {
         super(StandardClass.CONTROL_ERROR);
-        setFormatControl(message);
+        setFormatControl(message.replaceAll("~","~~"));
         setFormatArguments(NIL);
     }
 

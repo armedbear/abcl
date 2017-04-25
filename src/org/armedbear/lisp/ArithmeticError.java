@@ -72,7 +72,7 @@ public class ArithmeticError extends LispError
     public ArithmeticError(String message)
     {
         super(StandardClass.ARITHMETIC_ERROR);
-        setFormatControl(message);
+        setFormatControl(message.replaceAll("~","~~"));
         setFormatArguments(NIL);
         setOperation(NIL);
         setOperands(NIL);
