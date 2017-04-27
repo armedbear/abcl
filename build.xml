@@ -732,9 +732,17 @@ will compile (if necessary) and load JSS.
       <delete file="abcl.bat"/>
     </target>
 
+    <condition property="etags.executable"
+               value="etags"
+               else="c:/cygwin64/bin/ctags.exe">
+      <not>
+        <os family="windows"/>
+      </not>
+    </condition>
+      
     <target name="TAGS">
       <delete file="TAGS"/>
-      <apply executable="etags" parallel="true" verbose="true" maxparallel="300">
+      <apply executable="${etags.executable}" parallel="true" verbose="true" maxparallel="300">
         <arg value="--append"/>
         <arg value="--regex=|[ \t]+//[ \t]+###[ \t]+\([^ \t]+\)|\1|"/>
         <arg value='--regex=|[ \t]*@DocString([ \n\r\t]*name=\"\([^\"]*\)|\1|m'/>
