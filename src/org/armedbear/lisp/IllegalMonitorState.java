@@ -43,7 +43,7 @@ public final class IllegalMonitorState extends ProgramError
         // This is really just an ordinary PROGRAM-ERROR, broken out into its
         // own Java class as a convenience for the implementation.
         super(StandardClass.PROGRAM_ERROR);
-        setFormatControl(getMessage());
+        setFormatControl(getMessage().replaceAll("~","~~"));
         setFormatArguments(NIL);
     }
 
@@ -55,7 +55,7 @@ public final class IllegalMonitorState extends ProgramError
         if (message != null) {
             this.message = message;
         } 
-        setFormatControl(getMessage());
+        setFormatControl(getMessage().replaceAll("~","~~"));
         setFormatArguments(NIL);
     }
     

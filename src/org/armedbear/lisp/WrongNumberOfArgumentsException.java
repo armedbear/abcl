@@ -56,7 +56,7 @@ public final class WrongNumberOfArgumentsException extends ProgramError
 	this.expectedMinArgs = expectedMin;
 	this.expectedMaxArgs = expectedMax;
         this.actualArgs = args;
-        setFormatControl(getMessage());
+        setFormatControl(getMessage().replaceAll("~","~~"));
         setFormatArguments(NIL);
     }
 
@@ -80,7 +80,7 @@ public final class WrongNumberOfArgumentsException extends ProgramError
 	    throw new NullPointerException("message can not be null");
 	}
 	this.message = message;
-        setFormatControl(getMessage());
+        setFormatControl(getMessage().replaceAll("~","~~"));
         setFormatArguments(NIL);
     }
 

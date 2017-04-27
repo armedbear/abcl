@@ -54,7 +54,7 @@ public final class SimpleError extends LispError
     public SimpleError(String message)
     {
         super(StandardClass.SIMPLE_ERROR);
-        setFormatControl(message);
+        setFormatControl(message.replaceAll("~","~~"));
         setFormatArguments(NIL);
     }
 

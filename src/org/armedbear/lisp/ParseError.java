@@ -40,7 +40,7 @@ public final class ParseError extends LispError
     public ParseError(String message)
     {
         super(StandardClass.PARSE_ERROR);
-        setFormatControl(message);
+        setFormatControl(message.replaceAll("~","~~"));
         setFormatArguments(NIL);
     }
 

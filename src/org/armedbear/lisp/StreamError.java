@@ -48,7 +48,7 @@ public class StreamError extends LispError
     public StreamError(String message)
     {
         super(StandardClass.STREAM_ERROR);
-        setFormatControl(message);
+        setFormatControl(message.replaceAll("~","~~"));
         setFormatArguments(NIL);
         setStream(NIL);
         cause = null;
@@ -64,7 +64,7 @@ public class StreamError extends LispError
     public StreamError(String message, Stream stream)
     {
         super(StandardClass.STREAM_ERROR);
-        setFormatControl(message);
+        setFormatControl(message.replaceAll("~","~~"));
         setFormatArguments(NIL);
         setStream(stream != null ? stream : NIL);
         cause = null;
@@ -95,7 +95,7 @@ public class StreamError extends LispError
     public StreamError(Stream stream, String message)
     {
         super(StandardClass.STREAM_ERROR);
-        setFormatControl(message);
+        setFormatControl(message.replaceAll("~","~~"));
         setFormatArguments(NIL);
         setStream(stream != null ? stream : NIL);
         cause = null;
@@ -106,7 +106,7 @@ public class StreamError extends LispError
         super(StandardClass.STREAM_ERROR);
         setStream(stream != null ? stream : NIL);
         String message = cause.getMessage();
-        setFormatControl(message != null ? message : cause.toString());
+        setFormatControl(message != null ? message.replaceAll("~","~~") : cause.toString().replaceAll("~","~~"));
         setFormatArguments(NIL);
         this.cause = cause;
     }
