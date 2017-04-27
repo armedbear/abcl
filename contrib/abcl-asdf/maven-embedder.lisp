@@ -43,7 +43,7 @@ Test:
 
 (defparameter *mavens* 
   (if (find :windows *features*)
-      '("mvn.bat" "mvn3.bat" "mvn.cmd" "mvn")
+      '("mvn" "mvn.bat" "mvn3.bat" "mvn.cmd")
       '("mvn3" "mvn"
         ;; MacPorts
         "/opt/local/bin/mvn3"))
