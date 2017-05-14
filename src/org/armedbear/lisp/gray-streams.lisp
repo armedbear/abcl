@@ -216,7 +216,7 @@
 (defmethod gray-streamp ((s fundamental-stream))
   s)
 
-(defclass fundamental-input-stream (fundamental-stream))
+(defclass fundamental-input-stream (fundamental-stream) ())
 
 (defmethod gray-input-character-stream-p (s)  ;; # fb 1.01
   (and (gray-input-stream-p s)
@@ -226,7 +226,7 @@
   (declare (ignore s))
   t)
 
-(defclass fundamental-output-stream (fundamental-stream))
+(defclass fundamental-output-stream (fundamental-stream) ())
 
 (defmethod gray-input-stream-p ((s fundamental-output-stream))
   (typep s 'fundamental-input-stream))
@@ -238,19 +238,19 @@
 (defmethod gray-output-stream-p ((s fundamental-input-stream))
   (typep s 'fundamental-output-stream))
 
-(defclass fundamental-character-stream (fundamental-stream))
+(defclass fundamental-character-stream (fundamental-stream) ())
 
 (defmethod gray-stream-element-type ((s fundamental-character-stream))
   (declare (ignore s))
   'character)
 
-(defclass fundamental-binary-stream (fundamental-stream))
+(defclass fundamental-binary-stream (fundamental-stream) ())
 
 (defgeneric stream-read-byte (stream))
 (defgeneric stream-write-byte (stream integer))
 
 (defclass fundamental-character-input-stream
-  (fundamental-input-stream fundamental-character-stream))
+  (fundamental-input-stream fundamental-character-stream) ())
 
 (defgeneric stream-read-char (stream))
 (defgeneric stream-unread-char (stream character))
@@ -292,7 +292,7 @@
   nil)
 
 (defclass fundamental-character-output-stream
-  (fundamental-output-stream fundamental-character-stream))
+  (fundamental-output-stream fundamental-character-stream) ())
 
 (defgeneric stream-write-char (stream character))
 (defgeneric stream-line-column (stream))
@@ -386,10 +386,10 @@
                         'character #'stream-write-char))
 
 (defclass fundamental-binary-input-stream
-  (fundamental-input-stream fundamental-binary-stream))
+  (fundamental-input-stream fundamental-binary-stream) ())
 
 (defclass fundamental-binary-output-stream
-  (fundamental-output-stream fundamental-binary-stream))
+  (fundamental-output-stream fundamental-binary-stream) ())
 
 (defmethod stream-read-sequence ((stream fundamental-binary-input-stream)
                                  sequence &optional (start 0) end)
