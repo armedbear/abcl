@@ -118,3 +118,15 @@
                (write-string "Goodbye, World!" stream)
                (get-output-stream-string stream)))
   T)
+
+(deftest destructuring-bind.1
+  (signals-error (destructuring-bind (a b &rest c) '(1) (list a b)) 'program-error)
+  T)
+
+(deftest destructuring-bind.2
+  (signals-error (destructuring-bind (a . b) '() (list a b)) 'program-error)
+  T)
+
+(deftest destructuring-bind.3
+  (destructuring-bind (a . b) '(1) (list a b))
+  (1 NIL))
