@@ -41,18 +41,18 @@
     (- (#"currentTimeMillis" 'system) start)))
 
 
-(is-type (let ((just-loop (cl-user::print-db (timeit (just-loop 10000)))))
+(is-type (let ((just-loop (timeit (just-loop 10000))))
 	   (+ 0.0 
 	      (print (/ (-  (timeit (optimized-jss 10000)) just-loop)
 			(-  (timeit (unoptimized-jss 10000)) just-loop)))))
 	 '(float 0 0.1))
 
-(is (let* ((jss::*inhibit-jss-optimization* nil)
-	   (optimized-jss (macroexpand (precompiler::precompile-form '(#"compile" 'regex.Pattern ".*") t))))
-      (let* ((jss::*inhibit-jss-optimization* t)
-	     (unoptimized-jss (macroexpand (precompiler::precompile-form '(#"compile" 'regex.Pattern ".*") t))))
-	(and (eq (car optimized-jss) 'jstatic)
-	     (eq (caar unoptimized-jss) 'lambda)))))
+(let* ((jss::*inhibit-jss-optimization* nil)
+       (optimized-jss (macroexpand (precompiler::precompile-form '(#"compile" 'regex.Pattern ".*") t))))
+  (let* ((jss::*inhibit-jss-optimization* t)
+         (unoptimized-jss (macroexpand (precompiler::precompile-form '(#"compile" 'regex.Pattern ".*") t))))
+    (is (car optimized-jss) 'java:jstatic)
+    (is (caar unoptimized-jss) 'lambda)))
 
 (finalize)
 
