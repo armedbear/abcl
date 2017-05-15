@@ -309,3 +309,10 @@
         (error (error)
           (return (equal (princ-to-string error) "foo")))))
   t)
+
+;; ensure-generic-function shouldn't kill existing definition
+(deftest ensure-generic-function.1
+    (progn
+      (ensure-generic-function 'mop-test.foo)
+      (not (null (mop:generic-function-argument-precedence-order #'mop-test.foo))))
+  t)

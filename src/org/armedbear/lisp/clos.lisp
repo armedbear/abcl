@@ -4313,16 +4313,18 @@ or T when any keyword is acceptable due to presence of
 
 (defmethod shared-initialize :after ((instance standard-generic-function)
                                      slot-names
-                                     &key lambda-list argument-precedence-order
+                                     &key (lambda-list nil lambda-list-p)
+                                       (argument-precedence-order nil a-p-o-p)
                                        (method-combination '(standard))
                                      &allow-other-keys)
-  (let* ((plist (analyze-lambda-list lambda-list))
-         (required-args (getf plist ':required-args)))
-    (setf (std-slot-value instance 'sys::required-args) required-args)
-    (setf (std-slot-value instance 'sys::optional-args)
-          (getf plist :optional-args)) 
-    (setf (std-slot-value instance 'sys::argument-precedence-order)
-          (or argument-precedence-order required-args)))
+  (when lambda-list-p
+    (let* ((plist (analyze-lambda-list lambda-list))
+           (required-args (getf plist ':required-args)))
+      (setf (std-slot-value instance 'sys::required-args) required-args)
+      (setf (std-slot-value instance 'sys::optional-args)
+            (getf plist :optional-args))
+      (setf (std-slot-value instance 'sys::argument-precedence-order)
+            (or (and a-p-o-p argument-precedence-order) required-args))))
   (unless (typep (generic-function-method-combination instance)
                  'method-combination)
     ;; this fixes (make-instance 'standard-generic-function) -- the
