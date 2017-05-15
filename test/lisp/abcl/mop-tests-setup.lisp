@@ -80,3 +80,28 @@
 (defun find-quux (&rest specializers)
   (find-method #'mop-test.quux nil
 	       (mapcar #'find-class specializers)))
+
+(defclass foo-meta-class (standard-class)
+  ())
+
+(defclass foo-direct-slot-definition (mop:standard-direct-slot-definition)
+  ())
+
+(defclass foo-effective-slot-definition (mop:standard-effective-slot-definition)
+  ())
+
+(defmethod mop:direct-slot-definition-class ((class foo-meta-class) &rest initargs)
+  (find-class 'foo-direct-slot-definition))
+
+(defmethod mop:effective-slot-definition ((class foo-meta-class) &rest initargs)
+  (find-class 'foo-effective-slot-definition))
+
+(defmethod mop:compute-effective-slot-definition ((class foo-meta-class) name direct-slots)
+  (car direct-slots))
+
+(defclass bar-class ()
+  ((x :initform T))
+  (:metaclass foo-meta-class))
+
+(defmethod mop:slot-boundp-using-class ((class foo-meta-class) object slot)
+  (error "foo"))

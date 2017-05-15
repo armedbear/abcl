@@ -3694,12 +3694,12 @@ or T when any keyword is acceptable due to presence of
       (multiple-value-bind (init-key init-value foundp)
           (get-properties all-keys (slot-definition-initargs slot))
         (if foundp
-            (setf (std-slot-value instance slot-name) init-value)
-            (unless (std-slot-boundp instance slot-name)
+            (setf (slot-value instance slot-name) init-value)
+            (unless (slot-boundp instance slot-name)
               (let ((initfunction (slot-definition-initfunction slot)))
                 (when (and initfunction (or (eq slot-names t)
                                             (memq slot-name slot-names)))
-                  (setf (std-slot-value instance slot-name)
+                  (setf (slot-value instance slot-name)
                         (funcall initfunction)))))))))
   instance)
 

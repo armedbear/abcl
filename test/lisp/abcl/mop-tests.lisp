@@ -302,4 +302,10 @@
       #'mop-test.quux (find-classes 'fixnum  'simple-base-string)))
   t)
 
-
+;; creating the instance should already call our meta class methods
+(deftest shared-initialize.1
+    (block NIL
+      (handler-case (make-instance 'bar-class)
+        (error (error)
+          (return (equal (princ-to-string error) "foo")))))
+  t)
