@@ -15,27 +15,4 @@
 				     (:file "transform-to-field")
                                      (:file "compat"))))
   :perform (asdf:test-op (op c)
-                         (asdf:test-system :jss/tests)))
-
-
-(asdf:defsystem jss/tests
-  :defsystem-depends-on (quicklisp-abcl
-                         prove-asdf)
-  :depends-on (jss
-               prove)
-  :components ((:module tests
-                        :pathname "" 
-                        :components ((:test-file "jss-tests"))))
-  :perform (asdf:test-op (op c)
-                         (uiop:symbol-call :prove-asdf 'run-test-system c)))
-
-
-
-
-
-
-
-
-   
-
-
+                         (asdf:test-system :jss-tests)))
