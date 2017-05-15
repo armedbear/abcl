@@ -40,9 +40,9 @@
 
 (defvar *compiler-error-context* nil)
 
-(define-condition compiler-error (error))
-(define-condition internal-compiler-error (compiler-error))
-(define-condition compiler-unsupported-feature-error (compiler-error))
+(define-condition compiler-error (error) ())
+(define-condition internal-compiler-error (compiler-error) ())
+(define-condition compiler-unsupported-feature-error (compiler-error) ())
 
 (defun compiler-style-warn (format-control &rest format-arguments)
   (warn 'style-warning
