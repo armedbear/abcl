@@ -1,7 +1,5 @@
-(require :asdf)
-(in-package :cl-user)
-
-(asdf:defsystem jss
+;;;; -*- Mode: LISP -*-
+(defsystem jss
   :author "Alan Ruttenberg, Mark Evenson"
   :long-description "<urn:abcl.org/release/1.5.0/contrib/jss#>"
   :version "3.2.3" 

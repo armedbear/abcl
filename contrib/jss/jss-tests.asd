@@ -1,7 +1,5 @@
-(require :asdf)
-(in-package :cl-user)
-
-(asdf:defsystem jss-tests
+;;;; -*- Mode: LISP -*-
+(defsystem jss-tests
   :defsystem-depends-on (quicklisp-abcl
                          prove-asdf)
   :depends-on (jss

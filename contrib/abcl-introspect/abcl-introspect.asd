@@ -1,7 +1,5 @@
 ;;;; -*- Mode: LISP -*-
-(in-package :cl-user)
-
-(asdf:defsystem :abcl-introspect
+(defsystem abcl-introspect
   :author "Alan Ruttenberg"
   :description "Introspection on compiled function to aid source location and other debugging functions."
   :long-description "<urn:abcl.org/release/1.5.0/contrib/abcl-introspect#>"

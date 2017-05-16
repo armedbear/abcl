@@ -1,7 +1,6 @@
 ;;;; -*- Mode: LISP -*-
-(in-package :cl-user)
 
-(asdf:defsystem :abcl-asdf-tests
+(defsystem abcl-asdf-tests
   :author "Mark Evenson"
   :long-description "<urn:abcl.org/release/1.5.0/contrib/abcl-asdf/test#>"
   :version "1.6.0"

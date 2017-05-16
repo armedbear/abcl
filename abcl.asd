@@ -1,8 +1,4 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP -*-
-
-(require :asdf)
-(in-package :asdf)
-
 (defsystem abcl
   :version "1.5.0"
   :in-order-to ((test-op (test-op "abcl/test/lisp"))))
