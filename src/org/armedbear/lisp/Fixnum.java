@@ -76,12 +76,11 @@ public final class Fixnum extends LispInteger
   @Override
   public Object javaInstance(Class c)
   {
-    String cn = c.getName();
-    if (cn.equals("java.lang.Byte") || cn.equals("byte"))
+    if (c == Byte.class || c == byte.class)
       return Byte.valueOf((byte)value);
-    if (cn.equals("java.lang.Short") || cn.equals("short"))
+    if (c == Short.class || c == short.class)
       return Short.valueOf((short)value);
-    if (cn.equals("java.lang.Long") || cn.equals("long"))
+    if (c == Long.class || c == long.class)
       return Long.valueOf((long)value);
     return javaInstance();
   }
