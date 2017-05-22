@@ -148,8 +148,3 @@ single entry denoting a remote binary artifact."
   (split-string classpath 
                 (java:jfield "java.io.File" "pathSeparator")))
 
-(defun split-string (string split-char)
-  (loop :for i = 0 :then (1+ j)
-     :as j = (position split-char string :test #'string-equal :start i)
-     :collect (subseq string i j)
-     :while j))

@@ -2,6 +2,8 @@
 
 (defpackage abcl-asdf
   (:use cl)
+  (:import-from :abcl/build
+                #:split-string)
   (:export 
 ;;; Public API
    #:resolve
@@ -33,6 +35,10 @@
    
    #:*added-to-classpath*
    #:*inhibit-add-to-classpath*))
+
+
+
+
 
 
 
