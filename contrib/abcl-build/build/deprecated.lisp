@@ -1,11 +1,9 @@
-;;; build-abcl.lisp
+;;;; Historic cross platform build infrastructure
+;;;; N.b. currently unused in favor of canonicalizing build.xml 
 
-#+abcl
-(require 'format)
+(in-package :abcl/build)
 
-(in-package #:build-abcl)
-
-(defun comp (string char)
+(defun chop-end-from-char (string char)
   "Chops off the character at the end of `string' if it matches char"
   (let ((len (length string)))
     (if (eql char (char string (1- len)))
@@ -16,10 +14,9 @@
   (let ((string (namestring pathname)))
     (when (position #\space string)
       (setf string (concatenate 'string "\""
-                                (comp string #\\)
+                                (chop-end-from-char string #\\)
                                 "\"")))
     string))
-
 
 (defun child-pathname (pathname parent)
   "Returns `pathname' relative to `parent', assuming that it
@@ -41,127 +38,11 @@ is infact a child of it while being rooted at the same root as `parent'."
       (> (file-write-date orig)
          (file-write-date artifact))))
 
-
-
 (defparameter *file-separator-char*
-  (if (eq *platform* :windows) #\\ #\/))
+  (if (uiop:os-windows-p) #\\ #\/))
 
 (defparameter *path-separator-char*
-  (if (eq *platform* :windows) #\; #\:))
-
-
-#+sbcl
-(defun run-shell-command (command &key directory (output *standard-output*))
-  (when directory
-    (setf command (concatenate 'string
-                               "\\cd \""
-                               (namestring (pathname directory))
-                               "\" && "
-                               command)))
-  (sb-ext:process-exit-code
-   (sb-ext:run-program 
-    "/bin/sh"
-    (list  "-c" command)
-    :input nil :output output)))
-
-#+cmu
-(defun run-shell-command (command &key directory (output *standard-output*))
-  (when directory
-    (setf command (concatenate 'string
-                               "\\cd \""
-                               (namestring (pathname directory))
-                               "\" && "
-                               command)))
-  (ext::process-exit-code
-   (ext:run-program
-    "/bin/sh"
-    (list  "-c" command)
-    :input nil :output output)))
-
-#+clisp
-(defun run-shell-command (command &key directory (output *standard-output*))
-  (declare (ignore output)) ;; FIXME
-  (let (status old-directory)
-    (when directory
-      (setf old-directory (ext:cd))
-      (ext:cd directory))
-    (unwind-protect
-        (setf status (ext:shell command))
-      (when old-directory
-        (ext:cd old-directory)))
-    (cond ((numberp status)
-           status)
-          ((or (eq status t) (null status)) ;; clisp 2.47 returns NIL on success
-           0)
-          (t
-           -1))))
-
-#+lispworks
-(defun run-shell-command (command &key directory (output *standard-output*))
-  (when directory
-    (unless (eq *platform* :windows)
-      (setf command (concatenate 'string
-                                 "\\cd \""
-                                 (namestring (pathname directory))
-                                 "\" && "
-                                 command))))
-  (system:call-system-showing-output command
-                                     :shell-type "/bin/sh"
-                                     :output-stream output))
-
-#+allegro
-(defun run-shell-command (command &key directory (output *standard-output*))
-  (excl:run-shell-command command
-                          :directory directory
-                          :input nil
-                          :output #+ide nil #-ide output))
-
-#+openmcl
-(defun run-shell-command (command &key directory (output *standard-output*))
-  (when directory
-    (setf command (concatenate 'string
-                               "\\cd \""
-                               (namestring (pathname directory))
-                               "\" && "
-                               command)))
-  (multiple-value-bind (status exitcode)
-      (ccl:external-process-status
-       (ccl:run-program
-        "/bin/sh"
-        (list  "-c" command)
-        :wait t :input nil :output output))
-    (declare (ignore status))
-    exitcode))
-
-#+ecl 
-(defun run-shell-command (command &key directory (output *standard-output*))
-  (when directory
-    (if (member :windows *features*)
-        (error "Unimplemented.")
-        (setf command (concatenate 'string
-                                   "\\cd \""
-                                   (namestring (pathname directory))
-                                   "\" && "
-                                   command))))
-  (ext:system command))
-  ;; (multiple-value-bind (stream exit details)
-  ;;     (ext:run-program 
-  ;;      "/bin/sh" (list "-c" command)
-  ;;      :input nil :output :stream :error :output)
-  ;;   (declare (ignore details))
-  ;;   (loop for line = (read-line stream nil)
-  ;;      while line do (format output "~A~%" line))
-  ;;   exit))
-
-
-#+(or sbcl cmu lispworks openmcl ecl)
-(defun probe-directory (pathspec)
-  (let* ((truename (probe-file pathspec)) ; TRUENAME is a pathname.
-         (namestring (and truename (namestring truename)))) ; NAMESTRING is a string.
-    (and namestring
-         (> (length namestring) 0)
-         (eql (char namestring (1- (length namestring))) *file-separator-char*)
-         truename)))
+  (if (uiop:os-windows-p) #\; #\:))
 
 (defparameter *tree-root*
   (make-pathname :device (pathname-device *load-truename*)
@@ -172,7 +53,6 @@ is infact a child of it while being rooted at the same root as `parent'."
   (merge-pathnames "src/" *tree-root*))
 (defparameter *dist-root*
   (merge-pathnames "dist/" *tree-root*))
-
 
 (defparameter *customizations-file*
   (merge-pathnames "customizations.lisp" *tree-root*))
@@ -192,30 +72,20 @@ is infact a child of it while being rooted at the same root as `parent'."
 (defvar *java-compiler-command-line-prefix*)
 
 (defun initialize-build ()
-  (setf *jdk*           nil
-        *java-compiler* nil
-        *javac-options* nil
-        *jikes-options* nil
-        *jar*           nil)
-  (load *customizations-file*)
-  (setf *java* (probe-file (merge-pathnames (if (eq *platform* :windows)
-                                                "bin\\java.exe"
-                                                "bin/java")
-                                            *jdk*)))
+  ;;; FIXME:  highly breakable; user shouldn't be reading
+  (load (asdf:system-relative-pathname :build-abcl
+                                       "src/org/abcl/lisp/build/customizations-default.lisp"))
+  (setf *java*
+        (introspect-path-for "java"))
+
   (unless *java*
     (error "Can't find Java executable."))
   (unless *java-compiler*
-    (setf *java-compiler* (merge-pathnames (if (eq *platform* :windows)
-                                               "bin/javac.exe"
-                                               "bin/javac")
-                                           *jdk*)))
+    (setf *java-compiler* (introspect-path-for "java")))
   (unless *jar*
-    (setf *jar* (merge-pathnames (if (eq *platform* :windows)
-                                     "bin/jar.exe"
-                                     "bin/jar")
-                                 *jdk*)))
+    (setf *jar* (introspect-path-for "jar")))
   (let ((classpath-components (list *source-root*
-                                    (if (eq *platform* :darwin)
+                                    (if (uiop:os-macosx-p)
                                         #p"/System/Library/Frameworks/JavaVM.framework/Classes/classes.jar"
                                         (merge-pathnames "jre/lib/rt.jar" *jdk*)))))
     (setf *classpath*
@@ -270,8 +140,14 @@ is infact a child of it while being rooted at the same root as `parent'."
                (namestring source-file)))
 
 (defun java-compile-file (source-file)
-  (let ((cmdline (build-javac-command-line source-file)))
-    (equal 0 (run-shell-command cmdline :directory *abcl-dir*))))
+  (let ((command-line (build-javac-command-line source-file)))
+
+          ;; TODO: detect failure of invocation
+          (values
+           (uiop:run-program command-line
+                                   :directory *abcl-dir*
+                                   :output :string))
+           cmdline))
 
 (defun do-compile-classes (force batch)
   (let* ((source-files
@@ -322,9 +198,9 @@ is infact a child of it while being rooted at the same root as `parent'."
     (when (position #\space jar-namestring)
       (setf jar-namestring (concatenate 'string "\"" jar-namestring "\"")))
     (let ((substitutions-alist (acons "@JAR@" jar-namestring nil))
-          (source-file (if (eq *platform* :windows) "make-jar.bat.in" "make-jar.in"))
-          (target-file (if (eq *platform* :windows) "make-jar.bat"    "make-jar"))
-          (command     (if (eq *platform* :windows) "make-jar.bat"    "sh make-jar")))
+          (source-file (if (uiop:os-windows-p) "make-jar.bat.in" "make-jar.in"))
+          (target-file (if (uiop:os-windows-p) "make-jar.bat"    "make-jar"))
+          (command     (if (uiop:os-windows-p) "make-jar.bat"    "sh make-jar")))
       (copy-with-substitutions source-file target-file substitutions-alist)
       (ensure-directories-exist *dist-root*)
       (let ((status (run-shell-command command :directory *tree-root*)))
@@ -340,14 +216,14 @@ is infact a child of it while being rooted at the same root as `parent'."
          status
          (abcl-home (substitute-in-string
                      (namestring *abcl-dir*)
-                     (when (eq *platform* :windows)
+                     (when (uiop:os-windows-p)
                        '(("\\" . "/")
                          ("/" . "\\\\")))))
          (output-path (substitute-in-string
                        (namestring
                         (merge-pathnames "build/classes/org/armedbear/lisp/"
                                          *tree-root*))
-                       (when (eq *platform* :windows)
+                       (when (uiop:os-windows-p)
                          '(("\\" . "/")))))
          (cmdline (format nil
                           "~A -cp build/classes -Dabcl.home=\"~A\" ~
@@ -367,7 +243,7 @@ org.armedbear.lisp.Main --noinit --nosystem ~
 (defun make-launch-script ()
   ;; Use the -Xss4M and -Xmx256M flags so that the default launch script can be
   ;; used to build sbcl.
-  (cond ((eq *platform* :windows)
+  (cond ((uiop:os-windows-p)
          (with-open-file (s
                           (merge-pathnames "abcl.bat" *tree-root*)
                           :direction :output
@@ -436,7 +312,7 @@ org.armedbear.lisp.Main --noinit --nosystem ~
         (delete-files (mapcan #'(lambda (name)
                                   (directory (merge-pathnames name default)))
                               (cdr f)))))))
-
+#+(or)
 (defun build-abcl (&key force
                         (batch t)
                         compile-system
@@ -446,16 +322,11 @@ org.armedbear.lisp.Main --noinit --nosystem ~
   (let ((start (get-internal-real-time)))
 
     #+lispworks
-    (when (eq *platform* :windows)
+    (when (uiop:os-windows-p)
       (setf batch nil))
 
     (initialize-build)
-    (format t "~&Platform: ~A~%"
-            (case *platform*
-              (:windows "Windows")
-              (:linux   "Linux")
-              (:darwin  "Mac OS X")
-              (t        (software-type))))
+    (format t "~&Platform: ~A~%" (software-type))
     (finish-output)
     ;; clean
     (when clean
@@ -521,8 +392,8 @@ org.armedbear.lisp.Main --noinit --nosystem ~
                (merge-pathnames file target-dir))))
 
 (defun make-dist-dir (version-string)
-  (unless (eq *platform* :linux)
-    (error "MAKE-DIST is only supported on Linux."))
+  (unless (uiop:os-unix-p)
+    (error "MAKE-DIST is only supported on Unices."))
   (let ((target-root (pathname (concatenate 'string "/var/tmp/" version-string "/"))))
     (when (probe-directory target-root)
       (error "Target directory ~S already exists." target-root))
@@ -562,6 +433,7 @@ org.armedbear.lisp.Main --noinit --nosystem ~
       (copy-files files source-dir target-dir))
     target-root))
 
+#+(or)
 (defun make-dist (version-string)
   (let* ((dist-dir (make-dist-dir version-string))
          (parent-dir (merge-pathnames (make-pathname :directory '(:relative :back))

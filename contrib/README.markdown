@@ -65,11 +65,16 @@ abcl-introspect
     Advanced introspection of Java and Lisp runtime classes
     representation.
 
+abcl-build
+
+    The ABCL build system plus associated utilities for manipulating
+    path executables
+
 # Colophon
 
 Mark <evenson.not.org@gmail.com>
 Created:  2011-09-11
-Revised:  2016-12-28
+Revised:  2017-05-22
 <> abcl:documents <abcl.org/release/1.5.0/#abcl-contrib.jar> .
 
 
