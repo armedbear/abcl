@@ -31,6 +31,7 @@
    #:download-and-unzip
    #:download
 
+   #:xdg/ant-executable
    #:with-ensured-ant
    #:ant/install
    #:ant/call

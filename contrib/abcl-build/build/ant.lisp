@@ -4,17 +4,24 @@
 (defun ant-zip-uri ()
   #p"http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.4-bin.zip"
   
-  #+nil ;; https on OPEN fails; probably attempting to upgrade
+  #+(or) ;; https on OPEN fails; probably attempting to upgrade
   #p"https://archive.apache.org/dist/ant/binaries/apache-ant-1.9.4-bin.zip"
 
-  #+nil ;; need apache-ant-1.9 for JVM version 49.0 
+  #+(or) ;; need apache-ant-1.9 for JVM version 49.0 
   #p"http://www-eu.apache.org/dist/ant/binaries/apache-ant-1.10.1-bin.zip")
 
 (defun xdg/ant-executable ()
-  (probe-file
-   (localize-executable-name
-    (merge-pathnames #p"bin/ant"
-                     (xdg/abcl-install-root (ant-zip-uri))))))
+  (let* ((uri (ant-zip-uri))
+         (directory (xdg/abcl-install-root uri))
+         (ant-root-name (let ((name (pathname-name uri)))
+                          (subseq name 0 (- (length name) (length "-bin")))))
+         (ant-home (merge-pathnames (make-pathname :directory `(:relative ,ant-root-name))
+                                    directory)))
+    (values
+     (probe-file
+      (localize-executable-name
+       (merge-pathnames #p"bin/ant" ant-home)))
+     ant-home)))
 
 (defun ant/install ()
   (unless (xdg/ant-executable)

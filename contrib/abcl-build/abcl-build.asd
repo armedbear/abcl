@@ -3,7 +3,7 @@
 ;;; Works for: abcl, sbcl, clisp, cmu, lispworks, allegro, openmcl
 (defsystem abcl-build
   :version "2.0.0"
-  :description "Build ABCL from a Lisp.  Downloads necessary build-time tools to local cache."
+  :description "Build ABCL from a Lisp.  Downloads necessary build-time tools to local cache if not available on system."
   :in-order-to ((test-op (test-op abcl-build-tests)))
   :components ((:module package
                         :pathname "build/"
