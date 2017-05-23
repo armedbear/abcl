@@ -15,11 +15,14 @@ abcl.build.incremental=true
 
 ## java.options sets the Java options in the abcl wrapper scripts
 
+# Maximum safe performance on JDK8
+java.options=-d64  -XX:+UseG1GC -XshowSettings:vm -Dfile.encoding=UTF-8 -XX:+AggressiveOpts -XX:CompileThreshold=10
+
 # Reasonable defaults for Java 8
-java.options=-d64 -XshowSettings:vm -XX:+UseG1GC 
+#java.options=-d64 -XshowSettings:vm -XX:+UseG1GC 
 
 # Java7 on 64bit optimizations
-java.options=-d64 -XshowSettings:vm -XX:+UseG1GC 
+#java.options=-d64 -XshowSettings:vm -XX:+UseG1GC 
 
 # Reasonable defaults for openjdk6
 #java.options=-d64 -XshowSettings:vm -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=1g -XX:+UseConcMarkSweepGC
