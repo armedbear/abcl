@@ -3084,6 +3084,10 @@ public class Symbol extends LispObject implements java.io.Serializable
     PACKAGE_SYS.addExternalSymbol("DIRECT-DEFAULT-INITARGS");
   public static final Symbol DIRECT_SUPERCLASSES =
     PACKAGE_SYS.addExternalSymbol("DIRECT-SUPERCLASSES");
+  public static final Symbol __DISASSEMBLERS__ =
+    PACKAGE_SYS.addExternalSymbol("*DISASSEMBLERS*");
+  public static final Symbol CHOOSE_DISASSEMBLER =
+    PACKAGE_SYS.addExternalSymbol("CHOOSE-DISASSEMBLER");
   public static final Symbol _DOCUMENTATION =
     PACKAGE_SYS.addExternalSymbol("%DOCUMENTATION");
   public static final Symbol _ENABLE_AUTOCOMPILE_ =

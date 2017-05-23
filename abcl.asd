@@ -73,6 +73,7 @@
                         :depends-on (package)
                         :pathname "t/"
                         :components ((:test-file "resolve-multiple-maven-dependencies")
+                                     (:test-file "disassemble")
                                      (:test-file "pathname")))))
 
 ;;;
