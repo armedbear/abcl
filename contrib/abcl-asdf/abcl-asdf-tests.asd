@@ -15,6 +15,7 @@
                         :depends-on (package)
                         :components ((:test-file "log4j")
                                      (:test-file "resolve")
+                                     (:test-file "resolve-multiple-maven-dependencies")
                                      (:test-file "maven"))))
   :perform (asdf:test-op (op c)
                          (uiop:symbol-call :prove-asdf 'run-test-system c)))
