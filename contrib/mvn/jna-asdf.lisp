@@ -1,9 +1,7 @@
 (in-package :cl-user)
-
 (defpackage jna
   (:nicknames :jna)
-  (:use :cl
-        :asdf))
+  (:use :cl))
 
 (in-package :jna)
 
