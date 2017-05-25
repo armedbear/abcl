@@ -1,6 +1,6 @@
 ;;;; The ABCL specific overrides in ASDF.  
 ;;;;
-;;;; Done separately from asdf.lisp for stability.
+;;;; Extensions to ASDF for use by ABCL
 (require :asdf)
 (in-package :asdf)
 
@@ -20,11 +20,6 @@
    (alternate-uri :initarg :alternate-uri :initform nil)
    ;; inherited from ASDF:COMPONENT ??? what are the CL semantics on overriding -- ME 2012-04-01
    #+nil   (version :initform nil)))
-
-#+nil
-(defmethod find-component ((component iri) path)
-  component)
-
 
 ;;; We intercept compilation to ensure that load-op will succeed
 (defmethod perform ((op compile-op) (c mvn))

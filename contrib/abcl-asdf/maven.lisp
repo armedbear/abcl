@@ -1,6 +1,8 @@
 ;;;; Use the Aether system in a localy installed Maven3 distribution to download
 ;;;; and install JVM artifact dependencies.
 
+;;; TODO refactor out aether.lisp
+
 #|
 
 # Implementation 
@@ -110,19 +112,23 @@ Emits warnings if not able to find a suitable executable."
 
 (defun find-mvn-libs ()
   (unless (find-mvn)
-    (warn "Failed to find Maven executable to determine Aether library location."))
+    (warn "Failed to find Maven executable to determine Aether library location.  Continuing anyways."))
   (some 
    (lambda (d)
-     (when (directory (merge-pathnames "maven-core*.jar" d))
+     (when (and
+            (pathnamep d)
+            (directory (merge-pathnames "maven-core*.jar" d)))
        (truename d)))
-   (list (make-pathname :defaults (merge-pathnames "../lib/" (find-mvn))
-                        :name nil :type nil)
+   (list (ignore-errors
+           (make-pathname :defaults (merge-pathnames "../lib/" (find-mvn))
+                          :name nil :type nil))
          (ignore-errors
            (make-pathname :defaults (merge-pathnames "lib/" (mvn-home))
                           :name nil :type nil))
          ;; library location for homebrew maven package on OS X
-         (make-pathname :defaults (merge-pathnames "../libexec/lib/" (find-mvn))
-                        :name nil :type nil)
+         (ignore-errors
+           (make-pathname :defaults (merge-pathnames "../libexec/lib/" (find-mvn))
+                          :name nil :type nil))
          #p"/usr/local/share/java/maven3/lib/" ;; FreeBSD ports
          #p"/usr/local/maven/lib/"))) ;; OpenBSD location suggested by Timo Myyrä
 
@@ -184,7 +190,8 @@ Signals a simple-error with additional information if this attempt fails."
                 ((or (not line) (eq line :eof)) nil)
               (let ((matcher (#"matcher" pattern line)))
                 (when (#"find" matcher)
-                  (return-from mvn-home (uiop/pathname:ensure-directory-pathname (#"group" matcher 1)))))))))
+                  (return-from mvn-home
+                    (uiop/pathname:ensure-directory-pathname (#"group" matcher 1)))))))))
     (subprocess-error (e)
           (error "Failed to invoke Maven executable to introspect library locations: ~a." e))))
                         
@@ -203,6 +210,14 @@ Signals a simple-error with additional information if this attempt fails."
            (>= patch 3)))
      (list major minor patch))))
 
+(define-condition no-aether-maven-libs (error)
+  ((locations :initarg :locations
+              :initform nil
+              :reader locations))
+  (:report (lambda (condition stream)
+             (format stream "No Maven Aether libraries found locally in '~a'."
+                     (locations condition)))))
+             
 (defparameter *init* nil)
   
 (defun init (&optional &key (force nil))
@@ -218,10 +233,22 @@ of the mvn executable with an explicit value."
     (setf *mvn-libs-directory* (find-mvn-libs)))
   (unless (and *mvn-libs-directory*
                (probe-file *mvn-libs-directory*))
-    (error "Please obtain and install maven-3.0.3 or later locally from <http://maven.apache.org/download.html>, then set ABCL-ASDF:*MVN-LIBS-DIRECTORY* to the directory containing maven-core-3.*.jar et. al."))
+    ;; FIXME Remove warning; put message in restart
+    (warn "Please obtain and install maven-3.0.3 or later locally from <http://maven.apache.org/download.html>, then set ABCL-ASDF:*MVN-LIBS-DIRECTORY* to the directory containing maven-core-3.*.jar et. al.")
+    (error (make-condition 'abcl-asdf::no-aether-maven-libs
+                           :locations (list *mvn-libs-directory*))))
   (unless (ensure-mvn-version)
-    (error "We need maven-3.0.3 or later."))  (add-directory-jars-to-class-path *mvn-libs-directory* nil)
-    (setf *init* t))
+    (error "We need maven-3.0.3 or later."))
+  (add-directory-jars-to-class-path *mvn-libs-directory* nil)
+  (setf *init* t))
+
+(defmacro with-aether ((&optional aether-directory) &body body)
+  "Ensure that the code in BODY is executed with the Maven Aether libraries on the classpath."
+  `(progn
+     (declare (ignore aether-directory)) ;;; FIXME
+     (unless abcl-asdf::*init*
+       (abcl-asdf::init))
+     ,@body))
 
 (defun find-http-wagon ()
   "Find an implementation of the object that provides access to http and https resources.
@@ -259,7 +286,8 @@ hint."
        (t
         (progn 
           (format cl:*load-verbose*
-                  "~&; abcl-asdf; WagonProvider stub passed '~A' as a hint it couldn't satisfy.~%" role-hint)
+                  "~&; abcl-asdf; WagonProvider stub passed '~A' as a hint it couldn't satisfy.~%"
+                  role-hint)
           java:+null+))))
    "release"
    (lambda (wagon)
@@ -267,13 +295,16 @@ hint."
 
 (defun find-service-locator ()
   (or 
-   (ignore-errors 
-     (#"newServiceLocator" 'org.apache.maven.repository.internal.MavenRepositorySystemUtils)) ;; maven-3.1.0
    (ignore-errors
-     (java:jnew "org.apache.maven.repository.internal.MavenServiceLocator")) ;; maven-3.0.4
+     ;; maven-3.1.0
+     (#"newServiceLocator" 'org.apache.maven.repository.internal.MavenRepositorySystemUtils)) 
+   (ignore-errors
+     ;; maven-3.0.4
+     (java:jnew "org.apache.maven.repository.internal.MavenServiceLocator")) 
    (ignore-errors
      (java:jnew "org.apache.maven.repository.internal.DefaultServiceLocator"))
-   (ignore-errors  ;; maven-3.1.0 using org.eclipse.aether...
+   (ignore-errors
+     ;; maven-3.1.0 using org.eclipse.aether...
      (jss:find-java-class 'aether.impl.DefaultServiceLocator))))
 
 (defun make-repository-system ()
@@ -337,7 +368,8 @@ hint."
   "Construct a new aether.RepositorySystemSession from the specified REPOSITORY-SYSTEM."
   (let ((session
          (or 
-          (ignore-errors (#"newSession" 'org.apache.maven.repository.internal.MavenRepositorySystemUtils))
+          (ignore-errors (#"newSession"
+                          'org.apache.maven.repository.internal.MavenRepositorySystemUtils))
           (ignore-errors (java:jnew (jss:find-java-class "MavenRepositorySystemSession")))))
         (local-repository 
          (java:jnew (jss:find-java-class "LocalRepository")
@@ -472,7 +504,6 @@ Returns the Maven specific string for the artifact "
       (setf *maven-remote-repository* r)))
   *maven-remote-repository*)
 
-
 (defun resolve-dependencies (group-id artifact-id 
                              &key
                                (version "LATEST" versionp)
@@ -562,7 +593,6 @@ in Java CLASSPATH representation."
      #'log
      "metadataResolving"
      #'log)))
-
 
 (defmethod resolve ((string string))
   "Resolve a colon separated GROUP-ID:ARTIFACT-ID[:VERSION] reference to a Maven artifact.

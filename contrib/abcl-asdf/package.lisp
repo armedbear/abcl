@@ -8,8 +8,13 @@
 ;;; Public API
    #:resolve
 
-   #:ensure-mvn-version
 
+   ;; Configuring Maven
+
+   #:with-aether
+
+   #:ensure-mvn-version
+   
    #:find-mvn
 
    #:*mvn-directory*
