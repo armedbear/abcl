@@ -4,7 +4,7 @@
 (defun asdf-add-test-mvn-module ()
   (asdf:initialize-source-registry
    `(:source-registry
-     (:directory ,(asdf:system-relative-pathname :mvn-module "t/eg/"))
+     (:directory ,(asdf:system-relative-pathname :asdf-mvn-module "t/eg/"))
      :inherit-configuration)))
 
 (unless (ignore-errors (asdf:find-system :test-mvn-module))
