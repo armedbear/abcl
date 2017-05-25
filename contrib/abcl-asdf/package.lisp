@@ -32,6 +32,7 @@
    #:*maven-remote-repository*
    #:resolve-artifact
    #:resolve-dependencies
+   #:resolve-multiple-maven-dependencies
 
    #:as-classpath
 
