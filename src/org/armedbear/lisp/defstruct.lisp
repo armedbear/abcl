@@ -431,12 +431,15 @@
 (defun define-copier ()
   (when *dd-copier*
     (cond ((eq *dd-type* 'list)
-           `((setf (fdefinition ',*dd-copier*) #'copy-list)))
+           `((declaim (ftype (function (list) list) ,*dd-copier*))
+             (setf (fdefinition ',*dd-copier*) #'copy-list)))
           ((or (eq *dd-type* 'vector)
                (and (consp *dd-type*) (eq (car *dd-type*) 'vector)))
-           `((setf (fdefinition ',*dd-copier*) #'copy-seq)))
+           `((declaim (ftype (function (vector) vector) ,*dd-copier*))
+             (setf (fdefinition ',*dd-copier*) #'copy-seq)))
           (t
-           `((setf (fdefinition ',*dd-copier*) #'copy-structure))))))
+           `((declaim (ftype (function (T) T) ,*dd-copier*))
+             (setf (fdefinition ',*dd-copier*) #'copy-structure))))))
 
 (defun define-print-function ()
   (cond (*dd-print-function*
