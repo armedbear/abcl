@@ -370,30 +370,30 @@
 
 (deftest log.3
   (log 17 10)
-  #+(and abcl java-1.4)               1.2304488
-  #+(and abcl (or java-1.5 java-1.6)) 1.230449
-  #+(or allegro clisp cmu sbcl)       1.230449
-  #+lispworks                         #.(log 17d0 10d0))
+  #+(and abcl java-1.4)         1.2304488
+  #+(and abcl (not java-1.4))   1.230449
+  #+(or allegro clisp cmu sbcl) 1.230449
+  #+lispworks                   #.(log 17d0 10d0))
 
 (deftest log.4
   (log 17.0 10.0)
-  #+(and abcl java-1.4)               1.2304488
-  #+(and abcl (or java-1.5 java-1.6)) 1.230449
-  #+(or cmu sbcl)                     1.2304488
-  #+(or allegro clisp)                1.230449
-  #+lispworks                         #.(log 17d0 10d0))
+  #+(and abcl java-1.4)       1.2304488
+  #+(and abcl (not java-1.4)) 1.230449
+  #+(or cmu sbcl)             1.2304488
+  #+(or allegro clisp)        1.230449
+  #+lispworks                 #.(log 17d0 10d0))
 
 (deftest log.5
   (log 17d0 10)
   #+(and abcl java-1.4)               1.2304489042913307d0
-  #+(and abcl (or java-1.5 java-1.6)) #.(log 17d0 10d0)
+  #+(and abcl (not java-1.4))         #.(log 17d0 10d0)
   #+(or allegro clisp lispworks)      #.(log 17d0 10d0)
   #-(or abcl allegro clisp lispworks) 1.2304489042913307d0)
 
 (deftest log.6
   (log 17 10d0)
   #+(and abcl java-1.4)               1.2304489149763256d0
-  #+(and abcl (or java-1.5 java-1.6)) #.(log 17d0 10d0)
+  #+(and abcl (not java-1.4))         #.(log 17d0 10d0)
   #+(or allegro clisp lispworks)      #.(log 17d0 10d0)
   #-(or abcl allegro clisp lispworks) 1.2304489149763256d0)
 
