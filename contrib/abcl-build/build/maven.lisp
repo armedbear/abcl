@@ -4,10 +4,7 @@
   #p"http://www-eu.apache.org/dist/maven/maven-3/3.5.0/binaries/apache-maven-3.5.0-bin.zip")
 
 (defun xdg/mvn-executable ()
-  (probe-file
-   (localize-executable-name
-    (merge-pathnames "bin/mvn"
-                     (xdg/abcl-install-root (maven-zip-uri))))))
+  (xdg/executable (maven-zip-uri) "bin/mvn"))
 
 (defparameter *maven-install-root* nil)
   

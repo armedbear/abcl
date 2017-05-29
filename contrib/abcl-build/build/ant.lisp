@@ -11,17 +11,28 @@
   #p"http://www-eu.apache.org/dist/ant/binaries/apache-ant-1.10.1-bin.zip")
 
 (defun xdg/ant-executable ()
+  (xdg/executable (ant-zip-uri) "bin/ant"))
+
+#+(or)
+(defun xdg/ant-executable ()
   (let* ((uri (ant-zip-uri))
          (directory (xdg/abcl-install-root uri))
          (ant-root-name (let ((name (pathname-name uri)))
                           (subseq name 0 (- (length name) (length "-bin")))))
          (ant-home (merge-pathnames (make-pathname :directory `(:relative ,ant-root-name))
-                                    directory)))
+                                    directory))
+         (ant (merge-pathnames #p"bin/ant" ant-home))
+         result)
+    (dolist (p (possible-executable-names ant))
+      (when (probe-file p)
+        (return-from xdg/ant-executable
+          (values
+           (probe-file p)
+           ant))))
+    ;; failure
     (values
-     (probe-file
-      (localize-executable-name
-       (merge-pathnames #p"bin/ant" ant-home)))
-     ant-home)))
+     nil
+     ant)))
 
 (defun ant/install ()
   (unless (xdg/ant-executable)

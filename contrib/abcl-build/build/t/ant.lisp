@@ -1,8 +1,9 @@
 (in-package :abcl/build/t)
 
 (prove:plan 1)
-(prove:diag "Testing private installation of Ant…")
-(prove:ok (build-abcl:ant/install))
+(prove:ok
+ (build-abcl:ant/install)
+ "Testing ABCL-specific Ant installation of Ant into XDG hierarchy…")
 
 (if (not (ignore-errors (asdf:find-system :abcl)))
     (prove:diag "Unable to find 'abcl.asd'.~&Enable ASDF to find 'abcl.asd' by adding symlink to ~~/common-lisp/ to ABCL source directory.")

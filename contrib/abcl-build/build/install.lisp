@@ -31,7 +31,7 @@
   (let ((archive 
          (download uri))
         (root
-         (xdg/abcl-download-root :for-uri uri)))
+         (xdg/abcl-install-root uri)))
     (ensure-directories-exist root)
     (sys:unzip archive root)
     (values
@@ -50,6 +50,27 @@ Returns the local pathname of the download artifact."
    (open uri :direction :input)
    destination)
   destination)
+
+(defun xdg/executable (uri relative-path)
+  (let* ((directory (xdg/abcl-install-root uri))
+         (root (let ((name (pathname-name uri)))
+                 (subseq name 0 (- (length name) (length "-bin")))))
+         (home (merge-pathnames (make-pathname :directory `(:relative ,root))
+                                    directory))
+         (path (merge-pathnames relative-path home)))
+    (dolist (p (possible-executable-names path))
+      (when (probe-file p)
+        (return-from xdg/executable
+          (values
+           (probe-file p)
+           path))))
+    ;; failure
+    (values
+     nil
+     path)))
+
+
+  
 
   
 

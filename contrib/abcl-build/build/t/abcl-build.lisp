@@ -7,7 +7,6 @@
       (prove:ok 
        (abcl-build:build-abcl)
        "Testing BUILD-ABCL…")
-      (prove:diag )
       (prove:ok
        (abcl-build:make-dist (format nil "test-" (random (expt 2 32))))
        "Testing MAKE-DIST…")
