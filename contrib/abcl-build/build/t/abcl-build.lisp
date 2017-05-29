@@ -1,7 +1,7 @@
 (in-package :abcl/build/t)
 
 (if (not (ignore-errors (asdf:find-system :abcl)))
-    (prove:diag "Unable to find 'abcl.asd'.~&Enable ASDF to find 'abcl.asd' by adding symlink to ~/common-lisp/ to ABCL source directory.")
+    (prove:diag "Unable to find 'abcl.asd'.~&Enable ASDF to find 'abcl.asd' by adding symlink to ~~/common-lisp/ to ABCL source directory.")
     (prove:subtest "Testing BUILD-ABCL."
       (prove:plan 2)
       (prove:ok 

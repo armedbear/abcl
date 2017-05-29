@@ -1,12 +1,10 @@
 (in-package :abcl/build/t)
 
-(let ((executable
-       (abcl/build:localize-executable-name "java"))) ;; RUNTIME difference
+(let ((possible-executables
+       (abcl/build:possible-executable-names "java"))) 
   (prove:plan 1)
-  (prove:ok executable)
-  (if (uiop:os-windows-p)
-      (prove:plan 1)
-      (prove:is (pathname-type executable) "exe")))
+  (prove:is-type possible-executables
+                 'cons))
 
 (prove:plan 1)
 (prove:is (length (abcl/build:split-string "one.two.three." #\.))

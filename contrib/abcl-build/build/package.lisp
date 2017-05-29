@@ -16,7 +16,8 @@
    ;; utility functions that should be moved into utility package
    #:introspect-path-for
    #:split-string
-   #:localize-executable-name
+   #:possible-executable-names
+   #:probe-for-executable
    #:stringify
    #:listify
    #:some-directory
