@@ -233,15 +233,17 @@ public final class FileStream extends Stream
     protected boolean _setFilePosition(LispObject arg)
     {
         try {
-            long pos;
+            long pos = 0;
             if (arg == Keyword.START)
                 pos = 0;
             else if (arg == Keyword.END)
                 pos = racf.length();
-            else {
-                long n = Fixnum.getValue(arg); // FIXME arg might be a bignum
-                pos = n * bytesPerUnit;
-            }
+            else if (arg instanceof Fixnum)
+                pos = ((Fixnum) arg).value * bytesPerUnit;
+            else if (arg instanceof Bignum)
+                pos = ((Bignum) arg).longValue() * bytesPerUnit;
+            else
+                type_error(arg, Symbol.INTEGER);
             racf.position(pos);
         }
         catch (IOException e) {
