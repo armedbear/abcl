@@ -55,13 +55,9 @@ public final class Nil extends Symbol
     @Override
     public Object javaInstance(Class c)
     {
-      String cn = c.getName();
-      if (cn != null) {
-        if (cn.equals("java.lang.Boolean") || cn.equals("boolean")) {
-          return Boolean.FALSE;
-        }
-      }
-      return javaInstance();
+        if (c == Boolean.class || c == boolean.class)
+            return Boolean.FALSE;
+        return javaInstance();
     }
 
     @Override

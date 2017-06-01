@@ -132,12 +132,8 @@ public class LispObject //extends Lisp
       return this;
     }
 
-    String cn = c.getName();
-    if (cn != null) {
-      if (cn.equals("java.lang.Boolean") || cn.equals("boolean")) {
-        return Boolean.TRUE;
-      }
-    }
+    if (c == Boolean.class || c == boolean.class)
+      return Boolean.TRUE;
 
     return error(new LispError("The value " + princToString() +
 				 " is not of class " + c.getName()));
