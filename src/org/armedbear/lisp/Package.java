@@ -460,7 +460,7 @@ public final class Package extends LispObject implements java.io.Serializable
                             sb.append(sym.getQualifiedName());
                             sb.append(" and ");
                             sb.append(s.getQualifiedName());
-                            return error(new PackageError(sb.toString()));
+                            return error(new PackageError(sb.toString(), this));
                         }
                     }
                     usedPackages = usedPackages.cdr();
@@ -500,7 +500,7 @@ public final class Package extends LispObject implements java.io.Serializable
             sb.append(" is already accessible in package ");
             sb.append(name);
             sb.append('.');
-            error(new PackageError(sb.toString()));
+            error(new PackageError(sb.toString(), this));
         }
         internalSymbols.put(symbol.name.toString(), symbol);
         if (symbol.getPackage() == NIL)
@@ -519,7 +519,7 @@ public final class Package extends LispObject implements java.io.Serializable
                 sb.append(" is not accessible in package ");
                 sb.append(name);
                 sb.append('.');
-                error(new PackageError(sb.toString()));
+                error(new PackageError(sb.toString(), this));
                 return;
             }
             internalSymbols.put(symbol.name.toString(), symbol);
@@ -540,7 +540,7 @@ public final class Package extends LispObject implements java.io.Serializable
                             sb.append(" is already accessible in package ");
                             sb.append(pkg.getName());
                             sb.append('.');
-                            error(new PackageError(sb.toString()));
+                            error(new PackageError(sb.toString(), pkg));
                             return;
                         }
                     }
@@ -559,7 +559,7 @@ public final class Package extends LispObject implements java.io.Serializable
         sb.append(" is not accessible in package ");
         sb.append(name);
         sb.append('.');
-        error(new PackageError(sb.toString()));
+        error(new PackageError(sb.toString(), this));
     }
 
     public synchronized void unexport(final Symbol symbol)
@@ -573,7 +573,7 @@ public final class Package extends LispObject implements java.io.Serializable
         sb.append(symbol.getQualifiedName());
         sb.append(" is not accessible in package ");
         sb.append(name);
-        error(new PackageError(sb.toString()));
+        error(new PackageError(sb.toString(), this));
       }
     }
 
@@ -646,7 +646,7 @@ public final class Package extends LispObject implements java.io.Serializable
                     {
                         error(new PackageError("A symbol named " + symbol.getName() +
                                                 " is already accessible in package " +
-                                                name + "."));
+                                                name + ".", this));
                         return;
                     }
                 }
@@ -932,7 +932,7 @@ public final class Package extends LispObject implements java.io.Serializable
 	if(pkg != null) {
 	    return pkg;
 	} else {
-	    return error(new PackageError(name + " is not the name of a package."));
+	    return error(new PackageError(name + " is not the name of a package.", new SimpleString(name)));
 	}
     }
 }
