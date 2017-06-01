@@ -45,18 +45,18 @@ public final class logcount extends Primitive
         super("logcount","integer");
     }
 
-    // FIXME Optimize fixnum case!
     @Override
     public LispObject execute(LispObject arg)
     {
-        BigInteger n;
-        if (arg instanceof Fixnum)
-            n = ((Fixnum)arg).getBigInteger();
-        else if (arg instanceof Bignum)
-            n = ((Bignum)arg).value;
+        int n;
+        if (arg instanceof Fixnum) {
+            int value = ((Fixnum)arg).value;
+            n = Integer.bitCount(value < 0 ? ~value : value);
+        } else if (arg instanceof Bignum)
+            n = ((Bignum)arg).value.bitCount();
         else
             return type_error(arg, Symbol.INTEGER);
-        return Fixnum.getInstance(n.bitCount());
+        return Fixnum.getInstance(n);
     }
 
     private static final Primitive LOGCOUNT = new logcount();
