@@ -338,7 +338,7 @@ public class StructureObject extends LispObject
   {
     try
       {
-        return slots[index] != NIL ? true : false;
+        return slots[index] != NIL;
       }
     catch (ArrayIndexOutOfBoundsException e)
       {
