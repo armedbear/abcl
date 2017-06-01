@@ -58,22 +58,6 @@ public final class Debug
             throw new Error(buffer.toString());
         }
     }
-    public static final void assertViolation(String msg) {
-	final String m = "Assert violation: " + msg;
-	Error e = new Error(m);
-
-	System.err.println(m);
-	e.printStackTrace(System.err);
-
-	StringBuffer buffer = new StringBuffer();
-	final String CR = "\n";
-	buffer.append(msg).append(CR);
-	StackTraceElement[] stack = e.getStackTrace();
-	for (int i = 0; i < stack.length; i++) {
-	    buffer.append(stack[i].toString()).append(CR);
-	}
-	throw new Error(buffer.toString());
-    }
 
     // Does not throw an exception.
     public static void bug()
