@@ -5531,16 +5531,18 @@ We need more thought here.
 
 (define-inlined-function compile-nth (form target representation)
   ((check-arg-count form 2))
-  (let ((index-form (second form))
-        (list-form (third form)))
+  (let* ((index-form (second form))
+         (list-form (third form))
+         (index-type (derive-compiler-type index-form)))
+    (unless (fixnum-type-p index-type)
+      (compile-function-call form target representation)
+      (return-from compile-nth))
     (with-operand-accumulation
         ((compile-operand index-form :int)
          (compile-operand list-form nil)
          (maybe-emit-clear-values index-form list-form))
       (emit 'swap)
-      (emit-invokevirtual +lisp-object+ "NTH" '(:int) +lisp-object+))
-    (fix-boxing representation nil) ; FIXME use derived result type
-    (emit-move-from-stack target representation)))
+      (emit-invokevirtual +lisp-object+ "NTH" '(:int) +lisp-object+))))
 
 (defun p2-times (form target representation)
   (case (length form)
