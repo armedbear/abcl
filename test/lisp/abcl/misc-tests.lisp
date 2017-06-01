@@ -135,3 +135,16 @@
 (deftest nth.inlined.1
     (prog1 T (compile NIL (lambda (list) (nth (lambda ()) list))))
   T)
+
+;; these used to fail during byte code verification
+(deftest throw.representation.1
+    (prog1 T (compile NIL (lambda () (eql (the fixnum (throw 'foo 42)) 2))))
+  T)
+
+(deftest throw.representation.2
+    (prog1 T (compile NIL (lambda () (char-code (the character (throw 'foo 42))))))
+  T)
+
+(deftest throw.representation.3
+    (prog1 T (compile NIL (lambda () (if (the boolean (throw 'foo 42)) 1 2))))
+  T)

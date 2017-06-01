@@ -6846,8 +6846,6 @@ We need more thought here.
   t)
 
 (defun p2-throw (form target representation)
-  ;; FIXME What if we're called with a non-NIL representation?
-  (declare (ignore representation))
   (with-operand-accumulation
       ((emit-thread-operand)
        (compile-operand (second form) nil) ; Tag.
@@ -6857,7 +6855,11 @@ We need more thought here.
 			 (lisp-object-arg-types 2) nil))
   ;; Following code will not be reached.
   (when target
-    (emit-push-nil)
+    (ecase representation
+      ((:int :boolean :char)
+       (emit 'iconst_0))
+      ((nil)
+       (emit-push-nil)))
     (emit-move-from-stack target)))
 
 (defun p2-unwind-protect-node (block target)
