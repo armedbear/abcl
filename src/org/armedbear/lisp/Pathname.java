@@ -1667,6 +1667,11 @@ public class Pathname extends LispObject {
                 if (f.isDirectory()) {
                     try {
                         File[] files = f.listFiles();
+                        if (files == null) {
+                            return error(new FileError("Unable to list directory "
+                                                       + pathname.princToString() + ".",
+                                                       pathname));
+                        }
                         for (int i = files.length; i-- > 0;) {
                             File file = files[i];
                             Pathname p;
