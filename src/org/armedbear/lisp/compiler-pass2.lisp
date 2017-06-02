@@ -5249,7 +5249,7 @@ for use with derive-type-times.")
         one-integer-type
       (derive-compiler-types args op))))
 
-(define-int-bounds-derivation max (low1 low2 high1 high2)
+(define-int-bounds-derivation max (low1 high1 low2 high2)
   (values (or (when (and low1 low2) (max low1 low2)) low1 low2)
           ; if either maximum is unbound, their maximum is unbound
           (when (and high1 high2) (max high1 high2))))

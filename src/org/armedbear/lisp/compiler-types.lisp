@@ -61,6 +61,10 @@
   low
   high)
 
+(defmethod print-object ((type integer-type) stream)
+  (print-unreadable-object (type stream :type t :identity t)
+    (format stream "~D ~D" (integer-type-low type) (integer-type-high type))))
+
 (defconstant +fixnum-type+  (%make-integer-type most-negative-fixnum
                                                 most-positive-fixnum))
 
