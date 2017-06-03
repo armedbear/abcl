@@ -363,10 +363,11 @@ public final class PackageFunctions
             if (nicknames != NIL) {
                 LispObject list = nicknames;
                 while (list != NIL) {
-                    String nick = javaString(list.car());
+                    LispObject lispNick = list.car();
+                    String nick = javaString(lispNick);
                     if (currentpkg.findPackage(nick) != null) {
                         return error(new PackageError("A package named " + nick +
-                                                       " already exists."));
+                                                       " already exists.", lispNick));
                     }
                     list = list.cdr();
                 }

@@ -1868,10 +1868,11 @@ public final class Lisp
   {
     if (obj instanceof Package)
       return (Package) obj;
-    Package pkg = getCurrentPackage().findPackage(javaString(obj));
+    String name = javaString(obj);
+    Package pkg = getCurrentPackage().findPackage(name);
     if (pkg != null)
       return pkg;
-    error(new PackageError(obj.princToString() + " is not the name of a package."));
+    error(new PackageError(obj.princToString() + " is not the name of a package.", obj));
     // Not reached.
     return null;
   }

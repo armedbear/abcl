@@ -84,6 +84,14 @@ public final class PackageError extends LispError
     {
         super(StandardClass.PACKAGE_ERROR);
         setFormatControl(message);
+        setPackage(NIL);
+    }
+
+    public PackageError(String message, LispObject pkg)
+    {
+        super(StandardClass.PACKAGE_ERROR);
+        setFormatControl(message);
+        setPackage(pkg);
     }
 
     @Override
@@ -110,17 +118,11 @@ public final class PackageError extends LispError
 
     public LispObject getPackage()
     {
-        Debug.assertTrue(layout != null);
-        int index = layout.getSlotIndex(Symbol.PACKAGE);
-        Debug.assertTrue(index >= 0);
-        return slots[index];
+        return getInstanceSlotValue(Symbol.PACKAGE);
     }
 
     public void setPackage(LispObject pkg)
     {
-        Debug.assertTrue(layout != null);
-        int index = layout.getSlotIndex(Symbol.PACKAGE);
-        Debug.assertTrue(index >= 0);
-        slots[index] = pkg;
+        setInstanceSlotValue(Symbol.PACKAGE, pkg);
     }
 }

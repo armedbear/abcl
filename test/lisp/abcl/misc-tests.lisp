@@ -148,3 +148,7 @@
 (deftest throw.representation.3
     (prog1 T (compile NIL (lambda () (if (the boolean (throw 'foo 42)) 1 2))))
   T)
+
+(deftest package-error-package.1
+    (package-error-package (nth-value 1 (ignore-errors (intern "FOO" :bar))))
+  :bar)
