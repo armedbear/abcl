@@ -130,3 +130,8 @@
 (deftest destructuring-bind.3
   (destructuring-bind (a . b) '(1) (list a b))
   (1 NIL))
+
+;; this used to fail during byte code verification
+(deftest nth.inlined.1
+    (prog1 T (compile NIL (lambda (list) (nth (lambda ()) list))))
+  T)
