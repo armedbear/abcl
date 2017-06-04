@@ -5542,7 +5542,9 @@ We need more thought here.
          (compile-operand list-form nil)
          (maybe-emit-clear-values index-form list-form))
       (emit 'swap)
-      (emit-invokevirtual +lisp-object+ "NTH" '(:int) +lisp-object+))))
+      (emit-invokevirtual +lisp-object+ "NTH" '(:int) +lisp-object+))
+    (fix-boxing representation nil) ; FIXME use derived result type
+    (emit-move-from-stack target representation)))
 
 (defun p2-times (form target representation)
   (case (length form)
