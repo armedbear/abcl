@@ -92,7 +92,7 @@ RUNNING FROM BINARY RELEASE
 After you have downloaded a binary release from either
 [Maven][maven-abcl] or from [abcl.org][abcl.org-release] archive
 unpack it into its own directory. To run ABCL directly from this
-directory, make sure Java (version 1.5 or up) is in your shell's
+directory, make sure Java (version 1.6 or up) is in your shell's
 path. 
 
 [maven-abcl]:         <mvn:abcl.org/abcl/>
@@ -105,7 +105,7 @@ Then issue the following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 1.4.0
+    Armed Bear Common Lisp 1.5.0
     Java 1.8.0_102 Oracle Corporation
     Java HotSpot(TM) 64-Bit Server VM
     Low-level initialization completed in 0.324 seconds.
@@ -282,6 +282,6 @@ On behalf of all ABCL development team and contributors,
     vibhu
     dmiles
 
-October 2016
+June 2017
 
 

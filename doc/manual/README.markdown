@@ -24,7 +24,6 @@ of the manual:
     (require :abcl-contrib)
     (require :jss)
     (asdf:load-system :abcl/documentation)
-    (loop :for package
-        :in '(:java :ext :sys :jss :mop :threads)
+    (dolist (package '(:java :ext :sys :jss :mop :threads))
         :doing (abcl/documentation:grovel-docstrings-as-tex :package package))    
     

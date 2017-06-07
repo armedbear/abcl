@@ -493,7 +493,7 @@ EXTERNAL-FORMAT must be of the same format as specified for OPEN.
 --- Function: \textbf{get-time-zone} [\textbf{extensions}] \textit{time-in-millis}
 
 \begin{adjustwidth}{5em}{5em}
-Return the timezone difference in hours for TIME-IN-MILLIS via the Daylight assumptions that were in place at its occurance. i.e. implement 'time of the time semantics'.
+Returns as the first value the timezone difference in hours from the Greenwich meridian for TIME-IN-MILLIS via the Daylight Savings Time assumptions that were in place at the instant's occurance.  Returns as the second value a boolean as to whether daylight savings time was in effect at the occurance.
 \end{adjustwidth}
 
 \paragraph{}

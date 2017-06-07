@@ -5,6 +5,11 @@ Version 1.5.0
 <http://github.com/armedbear/abcl/>
 Unreleased
 
+Enhancements
+------------
+
+* abcl-introspect 
+
 Fixes
 -----
 
@@ -20,7 +25,7 @@ Fixes
 Updates
 -------
 
-* ASDF 3.2.0
+* ASDF 3.2.1
 
 
 Version 1.4.0
