@@ -2038,12 +2038,21 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
+\label{SYSTEM:PROCESS}
+\index{PROCESS}
+--- Class: \textbf{process} [\textbf{system}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
 \label{SYSTEM:PROCESS-ALIVE-P}
 \index{PROCESS-ALIVE-P}
 --- Function: \textbf{process-alive-p} [\textbf{system}] \textit{process}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Return t if process is still alive, nil otherwise.
 \end{adjustwidth}
 
 \paragraph{}
@@ -2436,7 +2445,7 @@ not-documented
 --- Function: \textbf{sha256} [\textbf{system}] \textit{\&rest paths-or-strings}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Returned ASCIIfied representation of SHA256 digest of byte-based resource at PATHS-OR-STRINGs.
 \end{adjustwidth}
 
 \paragraph{}
@@ -2652,7 +2661,8 @@ not-documented
 --- Function: \textbf{unzip} [\textbf{system}] \textit{pathname \&optional directory => unzipped\_pathnames}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Unpack zip archive at PATHNAME returning a list of extracted pathnames.
+If the optional DIRECTORY is specified, root the abstraction in that directory, otherwise use the current value of *DEFAULT-PATHNAME-DEFAULTS*.
 \end{adjustwidth}
 
 \paragraph{}
