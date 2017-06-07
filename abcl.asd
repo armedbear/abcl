@@ -59,6 +59,8 @@
                          #+abcl
                          (:file "package-local-nicknames-tests")))))
 
+;;; FIXME Currently requires ACBL-CONTRIB and QUICKLISP-ABCL to be
+;;; loaded, but can't seem to put in the :defsystem-depends-on stanza
 (defsystem abcl/t
   :description "Tests for ABCL via PROVE."
   :defsystem-depends-on (prove-asdf)
@@ -69,6 +71,10 @@
   :components ((:module package
                         :pathname "t/"
                         :components ((:file "package")))
+               (:module java6
+                        :depends-on (package)
+                        :pathname "t/"
+                        :components ((:test-file "run-program")))
                (:module build
                         :depends-on (package)
                         :pathname "t/"

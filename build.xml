@@ -48,6 +48,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
     <property name="abcl.runtime.jar.path"
               value="${abcl.jar.path}"/>
 
+    <!-- TODO verify me -->
     <fail message="Please build using Ant 1.7.1 or higher.">
         <condition>
             <not>
@@ -56,7 +57,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
         </condition>
     </fail>
 
-    <!-- Checks if JSR-223 support is available - thanks to Mark Evenson -->
+    <!-- Deprecated.  Checks if JSR-223 support is available.  Should always be true.  Unused.  D -->
     <available property="abcl.jsr-223.p"
                classname="javax.script.ScriptEngine"/>
 
@@ -65,11 +66,10 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <include name="org/armedbear/lisp/util/*.java"/>
       <include name="org/armedbear/lisp/protocol/*.java"/>
       <include name="org/armedbear/lisp/java/**/*.java"/>
-      <include if="abcl.jsr-223.p"
-               name="org/armedbear/lisp/scripting/*.java" />
-      <include if="abcl.jsr-223.p"
-               name="org/armedbear/lisp/scripting/util/*.java" />
+      <include name="org/armedbear/lisp/scripting/*.java" />
+      <include name="org/armedbear/lisp/scripting/util/*.java" />
       <include name="org/armedbear/Main.java"/>
+      <include name="org/abcl/**/*.java"/>
     </patternset>
 
     <patternset id="abcl.source.lisp">
@@ -77,14 +77,13 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <include name="org/armedbear/lisp/java/**/*.lisp"/>
       <include name="org/armedbear/lisp/tests/*.lisp"/>
       <exclude name="org/armedbear/lisp/j.lisp"/>
-      <include if="abcl.jsr-223.p" name="org/armedbear/lisp/scripting/lisp/*.lisp"/>
+      <include name="org/armedbear/lisp/scripting/lisp/*.lisp"/>
     </patternset>
     
     <!-- Lisp files required at runtime -->
     <patternset id="abcl.source.lisp.dist">
       <include name="org/armedbear/lisp/boot.lisp"/>
-      <include if="abcl.jsr-223.p"
-               name="org/armedbear/lisp/scripting/lisp/*.lisp" />
+      <include name="org/armedbear/lisp/scripting/lisp/*.lisp" />
       <include if="abcl.compile.lisp.skip"
                name="**/*.lisp" />
     </patternset>
@@ -95,11 +94,10 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <include name="org/armedbear/lisp/**/*.class"/>
       <include name="org/armedbear/lisp/**/*.cls"/> 
       <include name="org/armedbear/lisp/**/*.abcl"/>
+      <include name="org/abcl/util/*.class"/>
       <include name="org/armedbear/lisp/version"/>
-      <include if="abcl.jsr-223.p"
-               name="org/armedbear/lisp/scripting/*.class"/>
-      <include if="abcl.jsr-223.p"
-               name="org/armedbear/lisp/scripting/util/*.class"/>
+      <include name="org/armedbear/lisp/scripting/*.class"/>
+      <include name="org/armedbear/lisp/scripting/util/*.class"/>
       <patternset refid="abcl.source.lisp.dist"/>
       <include name="abcl.rdf"/>
       <include name="abcl.asd"/>
@@ -160,9 +158,11 @@ For help on the automatic tests available, use the Ant target 'help.test'.
 
       <echo>java.version: ${java.version}</echo>
       <condition property="abcl.java.version.p">
-        <or>
+        <!-- Unsupported as of abcl-1.5.0 due to lack of open jdk
           <matches string="${java.version}" 
                    pattern="1\.5"/>
+          -->
+          <or>
           <!-- Don't use 1.6.0_09 or earlier. -->
           <matches string="${java.version}" 
                    pattern="1\.6\.0_[1-9][0-9]"/>
@@ -181,7 +181,8 @@ For help on the automatic tests available, use the Ant target 'help.test'.
             unless="abcl.java.version.p">
       <echo>WARNING: Use of Java version ${java.version} not recommended.</echo>
     </target>
-        
+
+    <!-- Deprecated.  JSR-223 is always present -->
     <target name="abcl.jsr-223.notice"
             depends="abcl.init"
             unless="abcl.jsr-223.p">
@@ -193,7 +194,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
     </target>
 
     <target name="abcl.compile.java" 
-            depends="abcl.init,abcl.java.warning,abcl.jsr-223.notice">
+            depends="abcl.init,abcl.java.warning">
       <mkdir dir="${build.dir}"/>
       <mkdir dir="${build.classes.dir}"/>
       <!-- abcl-1.5.0: Stock build for Java 1.6 (aka Java 2) container -->
@@ -503,8 +504,6 @@ from ${abcl.home.dir}
           </section>
         </manifest>
         <metainf dir="${src.dir}/META-INF"> 
-          <exclude name="services/javax.script.ScriptEngineFactory"
-                   unless="abcl.jsr-223.p"/>
         </metainf>
       </jar>
     </target>
@@ -555,8 +554,6 @@ from ${abcl.home.dir}
           </section>
         </manifest>
         <metainf dir="${src.dir}/META-INF"> 
-          <exclude name="services/javax.script.ScriptEngineFactory"
-                   unless="abcl.jsr-223.p"/>
         </metainf>
       </jar>
     </target>
