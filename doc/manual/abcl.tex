@@ -62,10 +62,14 @@ test suite.
 \chapter{Introduction}
 
 Armed Bear Common Lisp (\textsc{ABCL}) is an implementation of Common
-Lisp that runs on the Java Virtual Machine.  It compiles Common Lisp
-to Java 5 bytecode \footnote{The class file version is ``49.0''.},
-providing the following integration methods for interfacing with Java
-code and libraries:
+Lisp that runs on the Java Virtual Machine (\textsc{JVM}).
+\textsc{ABCL} compiles Common Lisp to Java bytecode \footnote{The
+  class file version is ``49.0''.}, with an efficiency that varies on
+the hosting JVM implementation.  \textsc{ABCL} supports Java 6, Java
+7, and Java 8 \textsc{JVM} implementations.
+
+Armed Bear provides the following integration methods for interfacing
+with Java code and libraries:
 \begin{itemize}
 \item Lisp code can create Java objects and call their methods (see
   Section~\ref{sec:lisp-java}, page~\pageref{sec:lisp-java}).
