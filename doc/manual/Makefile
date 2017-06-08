@@ -14,12 +14,16 @@ ABCL	= ../../abcl
 
 # XXX TODO 1) use more compact iterated form, 2) pare down to using --noinit
 grovel:
-	$(ABCL) --batch --noinform --load "grovel.lisp" \
-	  --eval '(grovel-docstrings-as-tex (find-package :java)' \
-	  --eval  '(grovel-docstrings-as-tex (find-package :extensions))' \
-	--eval  '(grovel-docstrings-as-tex (find-package :threads))' \
-	--eval  '(grovel-docstrings-as-tex (find-package :system))' \
-	--eval '(progn (require :abcl-contrib) (require :jss) (grovel-docstrings-as-tex (find-package :jss)))'
+	$(ABCL) --batch --noinform \
+	--eval '(require :abcl-contrib)' \
+	--eval '(require :jss)' \
+	--eval '(asdf:load-system :abcl/documentation)' \
+	--eval '(in-package :abcl/documentation)' \
+	--eval '(grovel-docstrings-as-tex :package :java)' \
+	--eval '(grovel-docstrings-as-tex :package :extensions)' \
+	--eval '(grovel-docstrings-as-tex :package :threads)' \
+	--eval '(grovel-docstrings-as-tex :package :system)' \
+	--eval '(grovel-docstrings-as-tex :package :jss)'
 
 clean:
 	rm -f *.aux *.bbl *.blg *.idx *.ilg *.ind *.log *.out *.toc abcl.pdf
