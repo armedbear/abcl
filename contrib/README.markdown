@@ -74,10 +74,11 @@ abcl-build
     The ABCL build system plus associated utilities for manipulating
     path executables
 
-named-readtables (BSD Licensed)
+named-readtables
+    (BSD Licensed)
     From <https://github.com/melisgl/named-readtables>:
 
-    Named-Readtables is a library that provides a namespace for
+    NAMED-READTABLES is a library that provides a namespace for
     readtables akin to the already-existing namespace of packages. In
     particular:
 
@@ -94,12 +95,11 @@ named-readtables (BSD Licensed)
       `C-c C-c` in Slime (yet to be done))
 
 
-
 # Colophon
 
 Mark <evenson.not.org@gmail.com>
 Created:  2011-09-11
-Revised:  2017-07-07
+Revised:  2017-07-08
 <> abcl:documents <abcl.org/release/1.5.0/#abcl-contrib.jar> .
 
 
