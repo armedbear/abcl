@@ -1732,3 +1732,11 @@
 (deftest pathname.make-pathname.4
     (directory-namestring (make-pathname :directory :unspecific))
   "")
+
+;; note that some inaccessible directory needs to be present for this to raise
+;; an error
+(deftest pathname.directory.1
+    (signals-error
+     (directory "/*/")
+     'file-error)
+  t)
