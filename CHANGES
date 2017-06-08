@@ -53,11 +53,11 @@ Enhancements
 Fixes
 -----
 
+* [r14902] Fix CL:OPEN for :DIRECTION :INPUT (pipping)
+
 * [r14903] JNEW-RUNTIME-CLASS (Olof)
   Make static functions and :int parameters work.  Fix return
   conversion for null.  Ensure that the same classloader is used.
-
-* Fix CL:OPEN for :DIRECTION :INPUT (pipping)
 
 * [r14905] ABCL-ASDF uses the value of the reported Maven home to look
   for libraries, fixing loading CFFI under FreeBSD 11-RELEASE.
