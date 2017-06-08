@@ -874,7 +874,7 @@
                     (return)))
                 ))))
         (unless used-p
-          (format t "; Note: deleting unused local function ~A ~S~%"
+          (compiler-style-warn "; Note: deleting unused local function ~A ~S~%"
                   operator name)
           (setf applicable-locals (remove local applicable-locals)))))
     (if applicable-locals
