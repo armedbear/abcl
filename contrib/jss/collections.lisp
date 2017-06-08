@@ -98,7 +98,10 @@ If INVERT? is non-nil than reverse the keys and values in the resulting hashtabl
 
 
 (defun j2list (thing)
-  "Attempt to construct a Lisp list out of a Java THING"
+  "Attempt to construct a Lisp list out of a Java THING.
+
+THING may be a wide range of Java collection types, their common
+iterators or a Java array."
   (declare (optimize (speed 3) (safety 0)))
   (flet ((iterator-collect (iterator)
 	   (with-constant-signature ((has-next "hasNext")
@@ -116,14 +119,25 @@ If INVERT? is non-nil than reverse the keys and values in the resulting hashtabl
 	     (let ((keyiterator (#"iterator" (#"keyset" map))))
 	       (loop :while (has-next keyiterator)
 		     :for key = (next keyiterator)
-		     :collect (cons key (#"get" map key)))))))
-    (let ((isinstance (load-time-value (jmethod  "java.lang.Class" "isInstance" "java.lang.Object"))))
-      (cond ((jcall isinstance (load-time-value (jclass "java.util.AbstractCollection")) thing) (iterator-collect (#"iterator" thing)))
-	    ((jcall isinstance (load-time-value (jclass "java.util.Iterator")) thing)  (iterator-collect thing))
-	    ((jcall isinstance (load-time-value (jclass "java.util.Enumeration")) thing) (enumeration-collect thing))
-	    ((jcall isinstance (load-time-value (jclass "java.util.AbstractMap")) thing) (map-collect thing))
-	    ((jcall isinstance (load-time-value (jclass "java.util.Collections")) thing) (iterator-collect (#"iterator" thing)))
-	    ((jcall isinstance (load-time-value (jclass "java.util.Spliterator")) thing) (iterator-collect (#"iterator" (#"stream" 'StreamSupport thing))))
-	    ((jcall isinstance (load-time-value (jclass "java.util.Dictionary")) thing) (iterator-collect (#"elements" thing)))
-	    ((ignore-errors (#"toArray" thing)) (coerce (#"toArray" thing) 'list))
-	    (t (error "yet another iteration type - fix it: ~a" (jclass-name (jobject-class thing))))))))
+                  :collect (cons key (#"get" map key)))))))
+    (let ((isinstance
+           (load-time-value (jmethod "java.lang.Class" "isInstance" "java.lang.Object"))))
+      (cond
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.AbstractCollection")) thing))
+         (iterator-collect (#"iterator" thing)))
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.Iterator")) thing))
+         (iterator-collect thing))
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.Enumeration")) thing))
+         (enumeration-collect thing))
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.AbstractMap")) thing))
+         (map-collect thing))
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.Collections")) thing))
+         (iterator-collect (#"iterator" thing)))
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.Spliterator")) thing))
+         (iterator-collect (#"iterator" (#"stream" 'StreamSupport thing))))
+        ((jcall isinstance (load-time-value (ignore-errors (jclass "java.util.Dictionary")) thing))
+         (iterator-collect (#"elements" thing)))
+        ((ignore-errors (#"toArray" thing))
+         (coerce (#"toArray" thing) 'list))
+        (t
+         (error "yet another iteration type - fix it: ~a" (jclass-name (jobject-class thing))))))))

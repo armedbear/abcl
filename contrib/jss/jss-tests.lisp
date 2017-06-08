@@ -5,7 +5,7 @@
 
 (in-package :jss-test)
 
-(plan 8)
+(plan 6)
 
 (is (read-from-string "#\"{bar}.{foo}\"") '(get-java-field bar foo t))
 (is (read-from-string "#\"q.bar.{foo}\"") '(get-java-field (load-time-value (find-java-class "q.bar")) foo t))
@@ -41,12 +41,14 @@
     (- (#"currentTimeMillis" 'system) start)))
 
 
+(plan 1)
 (is-type (let ((just-loop (timeit (just-loop 10000))))
 	   (+ 0.0 
 	      (print (/ (-  (timeit (optimized-jss 10000)) just-loop)
 			(-  (timeit (unoptimized-jss 10000)) just-loop)))))
 	 '(float 0 0.1))
 
+(plan 2)
 (let* ((jss::*inhibit-jss-optimization* nil)
        (optimized-jss (macroexpand (precompiler::precompile-form '(#"compile" 'regex.Pattern ".*") t))))
   (let* ((jss::*inhibit-jss-optimization* t)
