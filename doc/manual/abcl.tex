@@ -26,10 +26,9 @@ With the sixth major release of the implementation, we make the
 following explicit revision of our compatibility to the underlying
 JVM.  Since we are an open source implementation, we insist on
 possible open access to the sources from with an JDK may both be built
-and run upon.  This requirement is no longer met by Java 5, so with
-the release of \textsc{ABCL} 1.5 the henceforth the minimal platform
-for ABCL will be Java 6.
-
+and run upon.  This requirement is no longer met by Java 5, so
+henceforth with the release of \textsc{ABCL} 1.5 ABCL will support
+Java 6, Java 7 and Java 8 runtimes.
 
 %% We should probably not release a 1.5.0, go straight for abcl-1.6.0?
 %% Not worth the effort: Java 9 is the current abcl-1.6.0 release driver.
@@ -175,7 +174,8 @@ course.
 \item Douglas Miles \texttt{Thanks for the whacky IKVM stuff and keeping the flame alive
   in the dark years.}
 \item Alan Ruttenberg \texttt{Thanks for JSS.}
-  \item piso
+\item Olof-Joachim Frahm  
+\item piso
 \item and of course
 \emph{Peter Graves}
 \end{itemize}
@@ -1615,6 +1615,9 @@ bridges to the source repository at
 \url{https://gitlab.common-lisp.net/abcl/abcl/} so that pull
 requests for enhancements to the implementation many be more easily
 facilitated.
+
+In June 2017, we released the Sixth Edition of the implementation
+which dropped support for running on Java 5.
 
 \appendix 
 
