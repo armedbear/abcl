@@ -457,12 +457,29 @@ is equivalent to the following Java code:
 ;;; print-object
 
 (defmethod print-object ((obj java:java-object) stream)
+  (print-java-object-by-class (intern (jclass-name (jobject-class obj)) 'keyword) obj stream))
+
+;;define extensions by eql methods on class name interned in keyword package
+;;e.g. (defmethod java::print-java-object-by-class ((class (eql ':|uk.ac.manchester.cs.owl.owlapi.concurrent.ConcurrentOWLOntologyImpl|)) obj stream) 
+;;	   (print 'hi)
+;;         (call-next-method))
+(defmethod print-java-object-by-class :around (class obj stream)
   (handler-bind ((java-exception #'(lambda(c)
 				     (format stream "#<~a, while printing a ~a>"
 					     (jcall "toString" (java-exception-cause  c))
 					     (jcall "getName" (jcall "getClass" obj)))
-				     (return-from print-object))))
-    (write-string (sys::%write-to-string obj) stream)))
+				     (return-from print-java-object-by-class))))
+    (call-next-method)))
+
+;; we have to do our own inheritence for the java class
+(defmethod print-java-object-by-class (class obj stream)
+  (loop for super = class then (jclass-superclass super)
+	for keyword = (intern (jcall "getName" super) 'keyword)
+	for method = (find-method #'print-java-object-by-class nil (list `(eql ,keyword) t t) nil)
+	while (jclass-superclass super)
+	when method do (return-from print-java-object-by-class
+			 (print-java-object-by-class keyword obj stream)))
+  (write-string (sys::%write-to-string obj) stream))
 
 (defmethod print-object ((e java:java-exception) stream)
   (handler-bind ((java-exception #'(lambda(c)
